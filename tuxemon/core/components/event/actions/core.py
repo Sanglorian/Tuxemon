@@ -22,15 +22,22 @@
 # Contributor(s):
 #
 # William Edwards <shadowapex@gmail.com>
+# Leif Theden <leif.theden@gmail.com>
 #
+from __future__ import absolute_import
 
 import logging
+from core.tools import open_dialog
+
 
 # Create a logger for optional handling of debug messages.
 logger = logging.getLogger(__name__)
 
 
 class Core(object):
+    def __init__(self):
+        # this is a potentially temporary solution to a problem with dialog chains
+        self._dialog_chain_queue = list()
 
     def _replace_text(self, game, text):
         """Replaces ${{var}} tiled variables with their in-game value.
@@ -51,6 +58,7 @@ class Core(object):
 
         """
         text = text.replace("${{name}}", game.player1.name)
+        text = text.replace(r"\n", "\n")
 
         return text
 
@@ -72,8 +80,13 @@ class Core(object):
 
         **Examples:**
 
-        >>> action
-        ('set_variable', 'battle_won:yes', '4', 1)
+        >>> action.__dict__
+        {
+            "type": "set_variable",
+            "parameters": [
+                "battle_won:yes"
+            ]
+        }
 
         """
 
@@ -81,12 +94,12 @@ class Core(object):
         player = game.player1
 
         # Split the variable into a key: value pair
-        varlist = action[1].split(":")
-        varkey = str(varlist[0])
-        varvalue = str(varlist[1])
+        var_list = action.parameters[0].split(":")
+        var_key = str(var_list[0])
+        var_value = str(var_list[1])
 
         # Append the game_variables dictionary with the key: value pair
-        player.game_variables[varkey] = varvalue
+        player.game_variables[var_key] = var_value
 
 
     def dialog(self, game, action):
@@ -110,19 +123,22 @@ class Core(object):
 
         **Examples:**
 
-        >>> action
-        ('dialog', 'Red:\\n This is some dialog!', '3', 1)
+        >>> action.__dict__
+        {
+            "type": "dialog",
+            "parameters": [
+                "Red:\\n This is some dialog!"
+            ]
+        }
 
         """
 
-        text = str(action[1])
+        text = str(action.parameters[0])
         text = self._replace_text(game, text)
-        logger.info("Dialog window opened")
+        logger.info("Opening dialog window")
 
         # Open a dialog window in the current scene.
-        if not game.current_state.dialog_window.visible:
-            game.current_state.dialog_window.visible = True
-            game.current_state.dialog_window.text = text
+        open_dialog(game, [text])
 
 
     def dialog_chain(self, game, action):
@@ -147,32 +163,26 @@ class Core(object):
 
         **Examples:**
 
-        >>> action
-        ('dialog_chain', 'Red:\\n This is some dialog!', '3', 1)
+        >>> action.__dict__
+        {
+            "type": "dialog_chain",
+            "parameters": [
+                "Red:\\n This is some dialog!"
+            ]
+        }
 
         """
 
-        text = str(action[1])
+        text = str(action.parameters[0])
         text = self._replace_text(game, text)
-        dialog_window = game.current_state.dialog_window
+        logger.info("Opening chain dialog window")
 
-        # Do nothing if a dialog is already open
-        if dialog_window.visible:
-            return
-
-        # If this is the end of the dialog chain, display the window.
-        if "${{end}}" in text:
-            logger.info("Dialog window opened")
-            dialog_window.visible = True
-            if len(dialog_window.dialog_stack) > 0:
-                dialog_window.text = dialog_window.dialog_stack.pop(0)
-            return
-
-        # If this text is part of the dialog chain, add it to the dialog stack.
-        if dialog_window.elapsed_time >= dialog_window.delay:
-            logger.debug("Adding text to dialog stack: " + text)
-            logger.debug("Seconds since last dialog: " + str(dialog_window.elapsed_time))
-            dialog_window.dialog_stack.append(text)
+        if text == "${{end}}":
+            # Open a dialog window in the current scene.
+            open_dialog(game, self._dialog_chain_queue)
+            self._dialog_chain_queue = list()
+        else:
+            self._dialog_chain_queue.append(text)
 
 
     def rumble(self, game, action):
@@ -195,13 +205,19 @@ class Core(object):
 
         **Examples:**
 
-        >>> action
-        ('rumble', '2,100', '3', 1)
+        >>> action.__dict__
+        {
+            "type": "rumble",
+            "parameters": [
+                "2",
+                "100"
+            ]
+        }
 
         """
 
-        duration = float(action[1].split(',')[0])
-        power = int(action[1].split(',')[1])
+        duration = float(action.parameters[0])
+        power = int(action.parameters[1])
 
         min_power = 0
         max_power = 24576
@@ -234,11 +250,16 @@ class Core(object):
 
         **Examples:**
 
-        >>> action
-        ('wait_for_secs', '2.0')
+        >>> action.__dict__
+        {
+            "type": "wait_for_secs",
+            "parameters": [
+                "2.0"
+            ]
+        }
 
         """
-        secs = float(action[1])
+        secs = float(action.parameters[0])
         game.event_engine.state = "waiting"
         game.event_engine.wait = secs
 
@@ -262,11 +283,16 @@ class Core(object):
 
         **Examples:**
 
-        >>> action
-        ('wait_for_input', 'K_RETURN')
+        >>> action.__dict__
+        {
+            "type": "wait_for_input",
+            "parameters": [
+                "K_RETURN"
+            ]
+        }
 
         """
-        button = str(action[1])
+        button = str(action.parameters[0])
         game.event_engine.state = "waiting for input"
         game.event_engine.wait = 2
         game.event_engine.button = button
@@ -290,21 +316,18 @@ class Core(object):
 
         **Examples:**
 
-        >>> action
-        ('change_state', 'MAIN_MENU')
+        >>> action.__dict__
+        {
+            "type": "change_state",
+            "parameters": [
+                "MAIN_MENU"
+            ]
+        }
 
         """
-        # Handle if networking is not supported and the PC is trying to be
-        # accessed.
-        if action[1] == "PC":
-            if not game.imports["networking"].networking:
-                message = "Networking is not supported on your system"
-                self.dialog(game, (action[0], message))
-                return
-
         # Don't override previous state if we are still in the state.
-        if game.state_name != action[1]:
-            game.push_state(action[1])
+        if game.state_name != action.parameters[0]:
+            game.push_state(action.parameters[0])
 
 
     def call_event(self, game, action):
@@ -326,13 +349,18 @@ class Core(object):
 
         **Examples:**
 
-        >>> action
-        ('call_event', '2')
+        >>> action.__dict__
+        {
+            "type": "call_event",
+            "parameters": [
+                "2"
+            ]
+        }
 
         """
         event_engine = game.event_engine
         events = game.events
 
         for e in events:
-            if e['id'] == int(action[1]):
+            if e['id'] == int(action.parameters[0]):
                 event_engine.execute_action(e['acts'], game)

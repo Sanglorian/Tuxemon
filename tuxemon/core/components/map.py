@@ -30,13 +30,14 @@
 #
 
 import logging
-import pygame
-import os
-import sys
-from pprint import pprint
-from core.components.pyganim import PygAnimation
+import re
+from collections import namedtuple
 
-# PyTMX LOVES to change their API without notice. Here we try and handle that.
+from core.components.pyganim import PygAnimation
+from core.components.event import Action
+from core.components.event import Condition
+
+# Handle older versions of PyTMX.
 try:
     from pytmx import load_pygame
 except ImportError:
@@ -44,7 +45,7 @@ except ImportError:
 
 # Create a logger for optional handling of debug messages.
 logger = logging.getLogger(__name__)
-logger.debug("components.map successfully imported")
+logger.debug("%s successfully imported" % __name__)
 
 
 class Map(object):
@@ -182,23 +183,43 @@ class Map(object):
                         words = obj.properties[k].split(' ', 2)
 
                         # Conditions have the form 'operator type parameters'.
-                        operator, type = words[0:2]
+                        operator, cond_type = words[0:2]
 
-                        args = ''
+                        # If this condition has parameters, split them into a
+                        # list
                         if len(words) > 2:
-                            args = words[2]
+                            args = self.split_escaped(words[2])
+                        else:
+                            args = list()
 
-                        conds.append({
-                            'type': type,
-                            'parameters': args,
-                            'x': int(obj.x / self.tile_size[0]),
-                            'y': int(obj.y / self.tile_size[1]),
-                            'width': int(obj.width / self.tile_size[0]),
-                            'height': int(obj.height / self.tile_size[1]),
-                            'operator': operator
-                        })
+                        # Create a condition object using named tuples
+                        condition = Condition(cond_type,
+                                              args,
+                                              int(obj.x / self.tile_size[0]),
+                                              int(obj.y / self.tile_size[1]),
+                                              int(obj.width / self.tile_size[0]),
+                                              int(obj.height / self.tile_size[1]),
+                                              operator)
+
+                        conds.append(condition)
+
                     elif k.startswith('act'):
-                        acts.append(obj.properties[k].split(' ', 1))
+                        words = obj.properties[k].split(' ', 1)
+
+                        # Actions have the form 'type parameters'.
+                        act_type = words[0]
+
+                        # If this action has parameters, split them into a
+                        # list
+                        if len(words) > 1:
+                            args = self.split_escaped(words[1])
+                        else:
+                            args = list()
+
+                        # Create an action object using named tuples
+                        action = Action(act_type, args)
+
+                        acts.append(action)
 
                 self.events.append({'conds': conds, 'acts': acts, 'id': obj.id})
 
@@ -379,7 +400,7 @@ class Map(object):
         # Get the dimensions of the map
         mapsize = self.size
 
-        # Create a list of all tile positions that we cannot walk through
+        # Create a list of all tile monsters_in_play that we cannot walk through
         collision_map = {}
 
         # Create a dictionary of coordinates that have conditional collisions
@@ -569,6 +590,28 @@ class Map(object):
         """
         return int(base * round(float(x)/base))
 
+    def split_escaped(self, string_to_split, delim=","):
+        """Splits a string by the specified deliminator excluding escaped
+        deliminators.
+
+        :param string_to_split: The string to split.
+        :param delim: The deliminator to split the string by.
+
+        :type string_to_split: Str
+        :type delim: Str
+
+        :rtype: List
+        :returns: A list of the splitted string.
+
+        """
+        # Split by "," unless it is escaped by a "\"
+        split_list = re.split(r'(?<!\\)' + delim, string_to_split)
+
+        # Remove the escape character from the split list
+        split_list = [w.replace('\,', ',') for w in split_list]
+
+        return split_list
+
 
 class Tile(object):
     """A class to create tile objects. Tile objects are used to keep track of tile properties such
@@ -582,55 +625,3 @@ class Tile(object):
         self.type = None
         self.tileset = tileset
 
-# If the module is being run as a standalone program, run an example
-if __name__=="__main__":
-
-    from . import config
-
-    # set up pygame
-    pygame.init()
-
-    # read the configuration file
-    config = config.Config()
-
-    # The game resolution
-    resolution = config.resolution
-
-    # set up the window with epic name
-    screen = pygame.display.set_mode(resolution, config.fullscreen, 32)
-    pygame.display.set_caption('Tuxemon Map')
-
-    # Native resolution is similar to the old gameboy resolution. This is used for scaling.
-    native_resolution = [240, 160]
-
-    # If scaling is enabled, scale the tiles based on the resolution
-    if config.scaling == "1":
-        scale = int( (resolution[0] / native_resolution[0]) )
-
-    # Fill background
-    background = pygame.Surface(screen.get_size())
-    background = background.convert()
-    background.fill((0, 0, 0))
-
-    # Blit everything to the screen
-    screen.blit(background, (0, 0))
-    pygame.display.flip()
-
-    tile_size = [80, 80]    # 1 tile = 16 pixels
-    testmap = Map()
-    #testmap.loadfile("resources/maps/test.map", tile_size)
-    testmap.loadfile("resources/maps/test_pathfinding.map", tile_size)
-
-    # Event loop THIS IS WHAT SHIT IS DOING RIGHT NOW BRAH
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-
-            # Exit the game if you press ESC
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                pygame.quit()
-
-
-        screen.blit(background, (0, 0))
-        pygame.display.flip()

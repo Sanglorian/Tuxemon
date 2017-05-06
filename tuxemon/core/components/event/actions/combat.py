@@ -23,20 +23,20 @@
 #
 # William Edwards <shadowapex@gmail.com>
 #
+from __future__ import absolute_import
 
 import logging
 import random
 
-# from core import prepare
+from core import prepare
+from core.platform import mixer
+from core.components import ai
+from core.components import db
+from core.components import monster
+from core.components import player
 
 # Create a logger for optional handling of debug messages.
 logger = logging.getLogger(__name__)
-
-# Import the android mixer if on the android platform
-try:
-    import pygame.mixer as mixer
-except ImportError:
-    import android.mixer as mixer
 
 
 class Combat(object):
@@ -59,22 +59,25 @@ class Combat(object):
 
         **Examples:**
 
-        >>> action
-        ... (u'start_battle', u'1', 1, 9)
+        >>> action.__dict__
+        {
+            "type": "start_battle",
+            "parameters": [
+                "1"
+            ]
+        }
 
         """
-        prepare = game.imports["prepare"]
-        ai = game.imports["ai"]
-        db = game.imports["db"]
-        monster = game.imports["monster"]
-        player = game.imports["player"]
-
         # Don't start a battle if we don't even have monsters in our party yet.
         if not self.check_battle_legal(game.player1):
             return False
 
+        # Stop movement and keypress on the server.
+        if game.isclient or game.ishost:
+                game.client.update_player(game.player1.facing, event_type="CLIENT_START_BATTLE")
+
         # Start combat
-        npc_id = int(action[1])
+        npc_id = int(action.parameters[0])
 
         # Create an NPC object that will be used as our opponent
         npc = player.Npc()
@@ -133,11 +136,11 @@ class Combat(object):
             # Add our monster to the NPC's party
             npc.monsters.append(current_monster)
 
-        # Add our players and start combat
-        game.push_state("TRANSITION", params={
-            'players': (game.player1, npc),
-            'combat_type': "trainer",
-            'screen': game.screen})
+        # Add our players and setup combat
+        game.push_state("CombatState", players=(game.player1, npc), combat_type="trainer")
+
+        # Flash the screen before combat
+        # game.push_state("FlashTransition")
 
         # Start some music!
         logger.info("Playing battle music!")
@@ -166,19 +169,22 @@ class Combat(object):
         if not self.check_battle_legal(npc):
             return False
 
-        # Add our players and start combat
-        game.push_state("TRANSITION", params={
-            'players': (game.player1, npc),
-            'combat_type': "trainer",
-            'screen': game.screen})
+        # Stop movement and keypress on the server.
+        if game.isclient or game.ishost:
+                game.client.update_player(game.player1.facing, event_type="CLIENT_START_BATTLE")
+
+        # Add our players and setup combat
+        game.push_state("CombatState", players=(game.player1, npc), combat_type="trainer")
+
+        # flash the screen
+        game.push_state("FlashTransition")
 
         # Start some music!
         logger.info("Playing battle music!")
         filename = "147066_pokemon.ogg"
 
-        prepare = game.imports['prepare']
-        mixer.music.load(prepare.BASEDIR + "resources/music/" + filename)
-        mixer.music.play(-1)
+        # mixer.music.load(prepare.BASEDIR + "resources/music/" + filename)
+        # mixer.music.play(-1)
 
 
     def random_encounter(self, game, action):
@@ -200,13 +206,6 @@ class Combat(object):
         Valid Parameters: encounter_id
 
         """
-
-        prepare = game.imports["prepare"]
-        ai = game.imports["ai"]
-        db = game.imports["db"]
-        monster = game.imports["monster"]
-        player = game.imports["player"]
-
         player1 = game.player1
 
         # Don't start a battle if we don't even have monsters in our party yet.
@@ -214,7 +213,7 @@ class Combat(object):
             return False
 
         # Get the parameters to determine what encounter group we'll look up in the database.
-        encounter_id = int(action[1])
+        encounter_id = int(action.parameters[0])
 
         # Look up the encounter details
         monsters = db.JSONDatabase()
@@ -229,7 +228,7 @@ class Combat(object):
 
         for item in encounters:
             # Perform a roll to see if this monster is going to start a battle.
-            roll = random.randrange(1,1000)
+            roll = random.randrange(1, 1000)
             if roll <= int(item['encounter_rate']):
                 # Set our encounter details
                 encounter = item
@@ -238,6 +237,10 @@ class Combat(object):
         # battle.
         if encounter:
             logger.info("Start battle!")
+
+            # Stop movement and keypress on the server.
+            if game.isclient or game.ishost:
+                game.client.update_player(game.player1.facing, event_type="CLIENT_START_BATTLE")
 
             # Create a monster object
             current_monster = monster.Monster()
@@ -260,11 +263,12 @@ class Combat(object):
             # Set the NPC object's AI model.
             npc.ai = ai.AI()
 
-            # Add our players and start combat
-            game.push_state("TRANSITION", params={
-                'players': (player1, npc),
-                'combat_type': "monster",
-                'screen': game.screen})
+            # Add our players and setup combat
+            # "queueing" it will mean it starts after the top of the stack is popped (or replaced)
+            game.queue_state("CombatState", players=(player1, npc), combat_type="monster")
+
+            # flash the screen
+            game.push_state("FlashTransition")
 
             # Start some music!
             filename = "147066_pokemon.ogg"

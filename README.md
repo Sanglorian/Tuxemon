@@ -1,5 +1,3 @@
-![build-status](https://travis-ci.org/Tuxemon/Tuxemon.svg?branch=master)
-
 Tuxemon
 =========
 
@@ -10,7 +8,7 @@ Tuxemon is a free, open source monster-fighting RPG.
 Version
 ----
 
-0.3.1
+0.3.2
 
 Requirements
 -----------
@@ -20,8 +18,7 @@ Tuxemon uses a number of open source projects to work properly:
 * *python* - version 2.7+
 * *python-pygame* - python game library
 * *python-pytmx* - python library to read Tiled Map Editor's TMX maps.
-* *python-netifaces* - Cross platform network interface information.
-* *neteria* - Game networking framework for Python.
+* *[neteria](https://github.com/ShadowBlip/Neteria)* - Game networking framework for Python.
 
 *Optional*
 
@@ -33,9 +30,9 @@ Installation
 **Ubuntu**
 
 ```sh
-sudo apt-get install python python-pygame python-pip python-imaging git python-netifaces
+sudo apt-get install python python-pygame python-pip python-imaging git
 sudo pip install pytmx
-sudo pip install --pre neteria
+sudo pip install neteria
 git clone https://github.com/Tuxemon/Tuxemon.git
 cd Tuxemon/tuxemon
 ./tuxemon.py
@@ -50,6 +47,18 @@ cd libShake/
 make; make install
 ```
 
+**Debian**
+
+```sh
+sudo apt-get install python python-pygame python-pip python-imaging git
+sudo pip install neteria
+git clone https://github.com/bitcraft/PyTMX
+cd PyTMX; python setup.py install
+git clone https://github.com/Tuxemon/Tuxemon.git
+cd Tuxemon/tuxemon
+./tuxemon.py
+```
+
 **Mac OS X (Yosemite)**
 
 ```sh
@@ -60,8 +69,7 @@ brew install python
 brew install sdl sdl_image sdl_mixer sdl_ttf portmidi hg git
 pip install pytmx
 pip install pillow
-pip install netifaces
-pip install --pre neteria
+pip install neteria
 pip install hg+http://bitbucket.org/pygame/pygame
 git clone https://github.com/Tuxemon/Tuxemon.git
 cd Tuxemon/tuxemon
@@ -92,6 +100,6 @@ Copyright (C) 2015 William Edwards <shadowapex@gmail.com>,
 Benjamin Bean <superman2k5@gmail.com>
 
 This software is distributed under the GNU General Public Licence as published
-by the Free Software Foundation.  See the file LICENCE for the conditions
+by the Free Software Foundation.  See the file LICENSE for the conditions
 under which this software is made available.  Tuxemon also contains code from
 other sources.

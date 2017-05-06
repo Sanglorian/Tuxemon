@@ -23,161 +23,60 @@
 # Contributor(s):
 #
 # William Edwards <shadowapex@gmail.com>
+# Benjamin Bean <superman2k5@gmail.com>
 #
 #
-# core.states.start Handles the splash screen and start menu.
+# core.states.start Handles the start screen which loads and creates new games
 #
-#
-
+"""This module contains the Start state.
+"""
 import logging
-import pygame
+from functools import partial
 
 from core import prepare
-from core import state
-
+from core.components.menu.interface import MenuItem
+from core.components.menu.menu import PopUpMenu
 
 # Create a logger for optional handling of debug messages.
 logger = logging.getLogger(__name__)
-logger.debug("states.start successfully imported")
+logger.debug("%s successfully imported" % __name__)
 
 
-class START(state.State):
-    """ The state responsible for the splash screen and start menu.
+class StartState(PopUpMenu):
+    """ The state responsible for the start menu.
     """
+    def initialize_items(self):
+        def change_state(state, **kwargs):
+            return partial(self.game.push_state, state, **kwargs)
 
-    def startup(self, params=None):
-        self.state = "Splash"       # Can be Splash or Menu
-        self.fade = "in"            # Can be "in", "out", "waiting", or None
+        def new_game():
+            self.game.player1 = prepare.player1
+            state = self.game.replace_state("WorldState")
+            self.game.push_state("FadeInTransition")
 
-        # Create a surface to be used for transitions
-        self.transition = {}
-        self.transition['surface'] = pygame.Surface(prepare.SCREEN_SIZE)
-        self.transition['surface'].fill((0,0,0))
-        self.transition['surface'].set_alpha(255)
-        self.transition['alpha'] = 255
-        self.transition['time'] = 2     # 5 second transition time
-        self.wait_time = 0              # Current time we've waited between splash and start of game
+        def options():
+            pass
 
-        # Set up the splash screen logos
-        self.splash_pygame = {}
-        self.splash_pygame['path'] = prepare.BASEDIR + "resources/gfx/ui/intro/pygame_logo.png"
-        self.splash_pygame['surface'] = pygame.image.load(self.splash_pygame['path'])
-        self.splash_pygame['surface'] = pygame.transform.scale(self.splash_pygame['surface'],
-                                                           (self.splash_pygame['surface'].get_width() * prepare.SCALE,
-                                                            self.splash_pygame['surface'].get_height() * prepare.SCALE
-                                                            ))
+        def exit_game():
+            self.game.exit = True
 
-        splash_border = prepare.SCREEN_SIZE[0] / 20     # The space between the edge of the screen
-        self.splash_pygame['position'] = (splash_border,
-                                          prepare.SCREEN_SIZE[1] - splash_border - self.splash_pygame['surface'].get_height())
+        menu_items_map = (
+            ('NEW GAME', new_game),
+            ('LOAD', change_state("LoadMenuState")),
+            ('OPTIONS', options),
+            ('EXIT', exit_game),
+        )
 
-        self.splash_cc = {}
-        self.splash_cc['path'] = prepare.BASEDIR + "resources/gfx/ui/intro/creative_commons.png"
-        self.splash_cc['surface'] = pygame.image.load(self.splash_cc['path'])
-        self.splash_cc['surface'] = pygame.transform.scale(self.splash_cc['surface'],
-                                                           (self.splash_cc['surface'].get_width() * prepare.SCALE,
-                                                            self.splash_cc['surface'].get_height() * prepare.SCALE
-                                                            ))
-        self.splash_cc['position'] = (prepare.SCREEN_SIZE[0] - splash_border - self.splash_cc['surface'].get_width(),
-                                      prepare.SCREEN_SIZE[1] - splash_border - self.splash_cc['surface'].get_height())
+        for label, callback in menu_items_map:
+            image = self.shadow_text(label)
+            yield MenuItem(image, label, None, callback)
 
+    def on_menu_selection(self, item):
+        item.game_object()
 
-    def update(self, screen, keys, current_time, time_delta):
-        """Update function for state.
-
-        :param surface: The pygame.Surface of the screen to draw to.
-        :param keys: List of keys from pygame.event.get().
-        :param current_time: The amount of time that has passed.
-
-        :type surface: pygame.Surface
-        :type keys: Tuple
-        :type current_time: Integer
-
-        :rtype: None
-        :returns: None
-
-        **Examples:**
-
-        >>> surface
-        <Surface(1280x720x32 SW)>
-        >>> keys
-        (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ...
-        >>> current_time
-        435
-
-        """
-
-        self.draw()
-
-
-    def get_event(self, event):
-        """Processes events that were passed from the main event loop.
-        Must be overridden in children.
-
-        :param event: A pygame key event from pygame.event.get()
-
-        :type event: PyGame Event
-
-        :rtype: None
-        :returns: None
-
-        """
-
-        # Skip the splash screen if a key is pressed.
-        if event.type == pygame.KEYDOWN and self.state == "Splash":
-            self.fade = None
-            self.state = None
-            self.game.pop_state()
-
-
-    def draw(self):
-        """Draws the start screen to the screen.
-
-        :param None:
-        :type None:
-
-        :rtype: None
-        :returns: None
-
-        """
-
-        self.game.screen.fill((15, 15, 15))
-
-        # Skip the splash screen if it is disabled in the game configuration
-        if prepare.CONFIG.splash != "1":
-                self.fade = None
-                self.state = None
-                self.game.pop_state()
-
-        if self.state == "Splash":
-            self.game.screen.blit(self.splash_pygame['surface'], self.splash_pygame['position'])
-            self.game.screen.blit(self.splash_cc['surface'], self.splash_cc['position'])
-
-        if self.fade == "in":
-
-            self.transition['alpha'] -= (255 * ((self.game.time_passed_seconds)/self.transition['time']))
-            self.transition['surface'].set_alpha(self.transition['alpha'])
-
-            self.game.screen.blit(self.transition['surface'], (0,0))
-
-            if self.transition['alpha'] < 0:
-                self.fade = "waiting"
-
-        elif self.fade == "out":
-
-            self.transition['alpha'] += (255 * ((self.game.time_passed_seconds)/self.transition['time']))
-            self.transition['surface'].set_alpha(self.transition['alpha'])
-
-            self.game.screen.blit(self.transition['surface'], (0,0))
-
-            if self.transition['alpha'] > 255:
-                self.fade = None
-                self.state = None
-                self.game.pop_state()
-
-        elif self.fade == "waiting":
-            self.wait_time += self.game.time_passed_seconds
-
-            if self.wait_time > self.transition['time']:
-                self.fade = "out"
-
+    def calc_final_rect(self):
+        rect = self.rect.copy()
+        rect.width *= .3
+        rect.height *= .5
+        rect.center = self.rect.center
+        return rect

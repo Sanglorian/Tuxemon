@@ -23,12 +23,9 @@
 #
 # William Edwards <shadowapex@gmail.com>
 #
+from __future__ import absolute_import
 
-# Import the android mixer if on the android platform
-try:
-    import pygame.mixer as mixer
-except ImportError:
-    import android.mixer as mixer
+from core.platform import mixer
 
 
 class Music(object):
@@ -50,20 +47,27 @@ class Music(object):
 
         **Examples:**
 
-        >>> condition
-        {'action_id': '7',
-         'id': 7,
-         'type': 'music_playing',
-         'operator': 'is',
-         'parameters': '479403_its-a-unix-system.ogg',
-         'x': 0,
-         'y': 0}
+        >>> condition.__dict__
+        {
+            "type": "music_playing",
+            "parameters": [
+                "479403_its-a-unix-system.ogg"
+            ],
+            "width": 1,
+            "height": 1,
+            "operator": "is",
+            "x": 2,
+            "y": 2,
+            ...
+        }
 
         """
-        if game.state_name == "TRANSITION" or game.state_name == "COMBAT":
+        song = condition.parameters[0]
+
+        if game.state_name == "FlashTransition" or game.state_name == "CombatState":
             return True
 
-        if game.current_music["song"] == condition["parameters"] and mixer.music.get_busy():
+        if game.current_music["song"] == song and mixer.music.get_busy():
             return True
         else:
             return False

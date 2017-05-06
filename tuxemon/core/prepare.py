@@ -33,40 +33,53 @@ as display resolution, scale, etc.
 """
 
 import os
+import shutil
+
 import pygame as pg
 
 from .components import config
+from .platform import get_config_path
 
-# Import the android module. If we can't import it, set it to None - this
-# lets us test it, and check to see if we want android-specific behavior.
-try:
-    import android
-except ImportError:
-    android = None
 
 # Get the tuxemon base directory
 BASEDIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")) + os.sep
 if "library.zip" in BASEDIR:
     BASEDIR = os.path.abspath(os.path.join(BASEDIR, "..")) + os.sep
 
+# Set up our config directory
+CONFIG_PATH = get_config_path() + "/.tuxemon/"
+try:
+    os.makedirs(CONFIG_PATH)
+except OSError:
+    if not os.path.isdir(CONFIG_PATH):
+        raise
+
+# Create a copy of our default config if one does not exist in the home dir.
+CONFIG_FILE_PATH = CONFIG_PATH + "tuxemon.cfg"
+if not os.path.isfile(CONFIG_FILE_PATH):
+    try:
+        shutil.copyfile(BASEDIR + "tuxemon.cfg", CONFIG_FILE_PATH)
+    except OSError:
+        raise
+
 # Read the "tuxemon.cfg" configuration file
-CONFIG = config.Config(BASEDIR + "tuxemon.cfg")
-HEADLESSCONFIG = config.HeadlessConfig(BASEDIR + "tuxemon.cfg")
+CONFIG = config.Config(CONFIG_FILE_PATH)
+HEADLESSCONFIG = config.HeadlessConfig(CONFIG_FILE_PATH)
 
 # Set up the screen size and caption
 SCREEN_SIZE = CONFIG.resolution
 ORIGINAL_CAPTION = "Tuxemon"
 
 # Set the native tile size so we know how much to scale our maps
-TILE_SIZE = [16, 16]    # 1 tile = 16 pixels
+TILE_SIZE = [16, 16]  # 1 tile = 16 pixels
 
 # Set the status icon size so we know how much to scale our menu icons
 ICON_SIZE = [7, 7]
 
-# Set the healthbar color
+# Set the healthbar _color
 HP_COLOR = (112, 248, 168)
 
-# Set the XP bar color
+# Set the XP bar _color
 XP_COLOR = (248, 245, 71)
 
 # Native resolution is similar to the old gameboy resolution. This is
@@ -80,6 +93,14 @@ if CONFIG.scaling == "1":
     TILE_SIZE[1] *= SCALE
 else:
     SCALE = 1
+
+# Set up the saves directory
+try:
+    os.makedirs(CONFIG_PATH + "saves/")
+except OSError:
+    if not os.path.isdir(CONFIG_PATH + "saves/"):
+        raise
+SAVE_PATH = CONFIG_PATH + "saves/slot"
 
 
 # Initialization of PyGame dependent systems.
@@ -107,6 +128,12 @@ def init():
     global SFX
     global GFX
 
+    # initialize any platform-specific workarounds before pygame
+    from core import platform
+    platform.init()
+
+    from .platform import android
+
     # Initialize PyGame and our screen surface.
     pg.init()
     pg.display.set_caption(ORIGINAL_CAPTION)
@@ -121,7 +148,7 @@ def init():
     # JOYAXISMOTION JOYBALLMOTION JOYBUTTONDOWN JOYBUTTONUP JOYHATMOTION
     pg.joystick.init()
     JOYSTICKS = [pg.joystick.Joystick(x)
-        for x in range(pg.joystick.get_count())]
+                 for x in range(pg.joystick.get_count())]
 
     # Initialize the individual joysticks themselves.
     for joystick in JOYSTICKS:
@@ -139,12 +166,12 @@ def init():
     # Scale the sprite and its animations
     for key, animation in player1.sprite.items():
         animation.scale(
-            tuple(i * SCALE for i in animation.getMaxSize()))
+                tuple(i * SCALE for i in animation.getMaxSize()))
 
     for key, image in player1.standing.items():
         player1.standing[key] = pg.transform.scale(
-            image, (image.get_width() * SCALE,
-                    image.get_height() * SCALE))
+                image, (image.get_width() * SCALE,
+                        image.get_height() * SCALE))
 
     # Set the player's width and height based on the size of our scaled
     # sprite.
@@ -161,10 +188,10 @@ def init():
 
     # Set the player's collision rectangle
     player1.rect = pg.Rect(
-        player1.position[0],
-        player1.position[1],
-        TILE_SIZE[0],
-        TILE_SIZE[1])
+            player1.position[0],
+            player1.position[1],
+            TILE_SIZE[0],
+            TILE_SIZE[1])
 
     # Set the walking and running pixels per second based on the scale
     player1.walkrate *= SCALE

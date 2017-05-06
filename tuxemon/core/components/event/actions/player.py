@@ -23,9 +23,15 @@
 #
 # William Edwards <shadowapex@gmail.com>
 #
+from __future__ import absolute_import
 
 import logging
-import pygame
+from collections import namedtuple
+
+from core import prepare
+from core import tools
+from core.components import item
+from core.components import monster
 
 # Create a logger for optional handling of debug messages.
 logger = logging.getLogger(__name__)
@@ -50,25 +56,25 @@ class Player(object):
 
         **Examples:**
 
-        >>> action
-        ('teleport', 'pallet_town-room.tmx,5,5', '1', 1)
+        >>> action.__dict__
+        {
+            "type": "teleport",
+            "parameters": [
+                "map1.tmx",
+                "5",
+                "5"
+            ]
+        }
 
         """
-        prepare = game.imports["prepare"]
-        item = game.imports["item"]
-        monster = game.imports["monster"]
-        tools = game.imports["tools"]
-        Map = game.imports["map"].Map
-
         # Get the player object from the game.
         player = game.player1
         world = game.current_state
 
         # Get the teleport parameters for the position x,y and the map to load.
-        parameters = action[1].split(",")
-        mapname = str(parameters[0])
-        position_x = int(parameters[1])
-        position_y = int(parameters[2])
+        mapname = str(action.parameters[0])
+        position_x = int(action.parameters[1])
+        position_y = int(action.parameters[2])
 
         # If we're doing a screen transition with this teleport, set the map name that we'll
         # load during the apex of the transition.
@@ -88,7 +94,8 @@ class Player(object):
             world.global_x = player.position[0] - (position_x * player.tile_size[0])
             world.global_y = player.position[1] - (position_y * player.tile_size[1]) + player.tile_size[1]
 
-            ### THIS NEEDS TO BE MOVED IN ITS OWN FUNCTION AND IS DUPLICATED IN THE WORLD STATE ###
+            ### THIS NEEDS TO BE MOVED IN ITS OWN FUNCTION AND IS DUPLICATED IN THE World STATE ###
+            from core.components.map import Map
             if prepare.BASEDIR + "resources/maps/" + mapname != world.current_map.filename:
                 world.current_map = Map(
                     prepare.BASEDIR + "resources/maps/" + mapname)
@@ -146,25 +153,35 @@ class Player(object):
 
         **Examples:**
 
-        >>> action
-        ('teleport', 'pallet_town-room.tmx,5,5,2,2', '1', 1)
+        >>> action.__dict__
+        {
+            "type": "transition_teleport",
+            "parameters": [
+                "map1.tmx",
+                "5",
+                "5",
+                "2",
+                "2"
+            ]
+        }
 
         """
         # Get the teleport parameters for the position x,y and the map to load.
-        parameters = action[1].split(",")
-        mapname = parameters[0]
-        position_x = parameters[1]
-        position_y = parameters[2]
-        transition_time = parameters[3]
+        mapname = action.parameters[0]
+        position_x = action.parameters[1]
+        position_y = action.parameters[2]
+        transition_time = action.parameters[3]
 
         # Start the screen transition
         screen_transition = game.event_engine.actions["screen_transition"]["method"]
-        transition_action = (action[0], transition_time)
+        Action = namedtuple("action", ["type", "parameters"])
+        transition_action = Action(action.type, [transition_time])
         screen_transition(game, transition_action)
 
         # Start the teleport. The teleport action will notice a screen transition in progress,
         # and wait until it is done before teleporting.
-        teleport_action = (action[0], action[1])
+        teleport_action = Action(action.type, action.parameters)
+
         self.teleport(game, action)
 
 
@@ -186,9 +203,15 @@ class Player(object):
 
         **Example:**
 
-        >>> action
-        ... (u'add_monster', u'Bulbatux', 1, 9)
-        ...
+        >>> action.__dict__
+        {
+            "type": "add_monster",
+            "parameters": [
+                "Bulbatux",
+                "10"
+            ]
+        }
+
         >>> monster = core.components.monster.Monster()
         >>> monster.load_from_db(action[1])
         ...
@@ -222,12 +245,8 @@ class Player(object):
         ... [<core.components.monster.Monster instance at 0x2d0b3b0>]
 
         """
-
-        monster = game.imports["monster"]
-
-        parameters = action[1].split(",")
-        monster_name = parameters[0]
-        monster_level = parameters[1]
+        monster_name = action.parameters[0]
+        monster_level = action.parameters[1]
         current_monster = monster.Monster()
         current_monster.load_from_db(monster_name)
         current_monster.set_level(int(monster_level))
@@ -251,17 +270,17 @@ class Player(object):
 
         **Example:**
 
-        >>> action
-        ... (u'add_item', u'Potion', 1, 9)
-        ...
-        >>>
+        >>> action.__dict__
+        {
+            "type": "add_item",
+            "parameters": [
+                "Potion"
+            ]
+        }
 
         """
-
-        item = game.imports["item"]
-
         player = game.player1
-        item_to_add = item.Item(action[1])
+        item_to_add = item.Item(action.parameters[0])
 
         # If the item already exists in the player's inventory, add to its quantity, otherwise
         # just add the item.
@@ -290,12 +309,59 @@ class Player(object):
         """
 
         # Get the parameters to determine what direction the player will face.
-        parameters = action[1]
+        direction = action.parameters[0]
 
         # If we're doing a transition, only change the player's facing when we've reached the apex
         # of the transition.
         if game.current_state.start_transition:
-            game.current_state.delayed_facing = parameters
+            game.current_state.delayed_facing = direction
         else:
-            game.player1.facing = parameters
+            game.player1.facing = direction
 
+
+    def player_stop(self, game, action):
+        """Makes the player stop moving.
+
+        :param game: The main game object that contains all the game's variables.
+        :param action: The action (tuple) retrieved from the database that contains the action's
+            parameters
+
+        :type game: core.control.Control
+        :type action: Tuple
+
+        :rtype: None
+        :returns: None
+
+        Valid Parameters: None
+
+        """
+        # Get a copy of the world state.
+        world = game.get_state_name("world")
+        if not world:
+            return
+
+        world.menu_blocking = True
+
+
+    def player_resume(self, game, action):
+        """Makes the player resume movement.
+
+        :param game: The main game object that contains all the game's variables.
+        :param action: The action (tuple) retrieved from the database that contains the action's
+            parameters
+
+        :type game: core.control.Control
+        :type action: Tuple
+
+        :rtype: None
+        :returns: None
+
+        Valid Parameters: None
+
+        """
+        # Get a copy of the world state.
+        world = game.get_state_name("world")
+        if not world:
+            return
+
+        world.menu_blocking = False

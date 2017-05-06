@@ -35,6 +35,11 @@ except ImportError:
 
 import pygame
 
+# set default animation to 'out_quint'
+from core.components.animation import Animation
+Animation.default_transition = 'out_quint'
+
+
 class Config(object):
     """Handles loading of the configuration file for the primary game and map editor.
 
@@ -42,7 +47,6 @@ class Config(object):
     def __init__(self, file="tuxemon.cfg"):
         self.config = configparser.ConfigParser()
         self.config.read(file)
- 
 
         self.resolution_x = self.config.get("display", "resolution_x")
         self.resolution_y = self.config.get("display", "resolution_y")
@@ -58,7 +62,6 @@ class Config(object):
         self.controller_overlay = self.config.get("display", "controller_overlay")
         self.controller_transparency = int(self.config.get("display", "controller_transparency"))
 
-
         self.starting_map = self.config.get("game", "starting_map")
         self.starting_position = [int(self.config.get("game", "starting_position_x")),
                                   int(self.config.get("game", "starting_position_y"))]
@@ -71,7 +74,6 @@ class Config(object):
         self.debug_level = str(self.config.get("logging", "debug_level")).lower()
         self.loggers = self.config.get("logging", "loggers")
         self.loggers = self.loggers.replace(" ", "").split(",")
-
 
     def fullscreen_check(self):
         """If the fullscreen option is set in our configuration option, return a

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Tuxemon
 # Copyright (C) 2015, William Edwards <shadowapex@gmail.com>,
@@ -27,10 +26,10 @@
 # core.states.transition Handles the all graphical transitions.
 #
 #
+
+import logging
+
 from .fade import FadeInTransition, FadeOutTransition
 from .flash import FlashTransition
-
-# Create a logger for optional handling of debug messages.
-import logging
 
 logger = logging.getLogger(__name__)

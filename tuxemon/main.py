@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Tuxemon
 # Copyright (C) 2014, William Edwards <shadowapex@gmail.com>,
@@ -29,11 +28,11 @@
 """Executes the main game. Primarily used for Android builds
 of the game.
 """
-from __future__ import absolute_import
 
 import sys
-from core.main import main
 
 if __name__ == '__main__':
+    from tuxemon.core.main import main
+
     main()
     sys.exit()

@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Union
 
+from tuxemon.combat import set_var
 from tuxemon.item.itemeffect import ItemEffect, ItemEffectResult
 
 if TYPE_CHECKING:
@@ -12,14 +13,14 @@ if TYPE_CHECKING:
     from tuxemon.monster import Monster
 
 
-class GainXpEffectResult(ItemEffectResult):
-    pass
-
-
 @dataclass
 class GainXpEffect(ItemEffect):
     """
     Add exp to the target by 'amount'.
+
+    Parameters:
+        amount: amount of experience
+
     """
 
     name = "gain_xp"
@@ -27,7 +28,12 @@ class GainXpEffect(ItemEffect):
 
     def apply(
         self, item: Item, target: Union[Monster, None]
-    ) -> GainXpEffectResult:
+    ) -> ItemEffectResult:
         assert target
-        target.give_experience(self.amount)
-        return {"success": True}
+        set_var(self.session, self.name, str(target.instance_id.hex))
+        client = self.session.client.event_engine
+        _params = [self.name, self.amount]
+        client.execute_action("give_experience", _params, True)
+        return ItemEffectResult(
+            name=item.name, success=True, num_shakes=0, extra=[]
+        )

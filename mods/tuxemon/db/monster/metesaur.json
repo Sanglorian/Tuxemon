@@ -4,7 +4,7 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "berserk"
+            "technique": "peck"
         },
         {
             "level_learned": 2,
@@ -29,12 +29,23 @@
         {
             "level_learned": 20,
             "technique": "breathe_fire"
+        },
+        {
+            "level_learned": 44,
+            "technique": "peregrine"
+        },
+        {
+            "level_learned": 48,
+            "technique": "all_in"
+        },
+        {
+            "level_learned": 52,
+            "technique": "flamethrower"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
-            "at_level": 42,
+            "at_level": 40,
             "monster_slug": "qetzlrokilus"
         }
     ],
@@ -44,6 +55,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["flier", "jungle", "mountains"],
     "shape": "flier",
     "stage": "basic",
     "types": [
@@ -54,7 +66,7 @@
     "txmn_id": 202,
     "height": 95,
     "weight": 10,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

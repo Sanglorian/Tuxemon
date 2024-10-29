@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -36,13 +36,14 @@ class EnhanceEffect(TechEffect):
     def apply(
         self, tech: Technique, user: Monster, target: Monster
     ) -> EnhanceEffectResult:
-        player = self.session.player
-        value = float(player.game_variables["random_tech_hit"])
+        combat = tech.combat_state
+        value = combat._random_tech_hit.get(user, 0.0) if combat else 0.0
         hit = tech.accuracy >= value
-        if hit:
-            tech.hit = True
-            tech.advance_counter_success()
-            return {"success": True}
-        else:
-            tech.hit = False
-            return {"success": False}
+        tech.hit = hit
+        return {
+            "success": hit,
+            "damage": 0,
+            "element_multiplier": 0.0,
+            "should_tackle": False,
+            "extra": None,
+        }

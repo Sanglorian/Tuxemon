@@ -41,7 +41,7 @@ often out of date.
 
 ### Windows Source
 
-Requires Python 3.8+ and git.
+Requires Python 3.9+ and git.
 
 Install the latest version of Python 3 from
 [here](https://www.python.org/downloads/)
@@ -64,14 +64,35 @@ In the meantime please use the windows source instructions above to run Tuxemon 
 
 ### Flatpak
 
-Check the [web page](https://flathub.org/apps/details/org.tuxemon.Tuxemon) for a complete explanation
+Check the [web page](https://flathub.org/apps/details/org.tuxemon.Tuxemon) for a complete explanation.
 
-Before install check the flatpak [requires](https://www.flatpak.org/setup/)
+Before installing Tuxemon, make sure you have all the Flatpak [requirements](https://www.flatpak.org/setup/) installed.
 
+*Command line install:*
 ```shell
 flatpak install flathub org.tuxemon.Tuxemon
 flatpak run org.tuxemon.Tuxemon
 ```
+*Using Discover (Graphical Software Manager)*
+
+1. Install Discover using your system's package manager. 
+2. Once installed, open Discover and search for 'Tuxemon', select the Tuxemon entry and press install.
+
+*Flatpak Nightly Builds*
+
+1. Download Tuxemon.flatpak file from the [Release Latest Build (Development) Section](https://github.com/Tuxemon/Tuxemon/releases/tag/latest).
+2. Using your terminal, navigate to the directory where the Tuxemon.flatpak file was downloaded to.
+3. Run the following commands:
+
+```shell
+
+flatpak install Tuxemon.flatpak
+
+flatpak run org.tuxemon.Tuxemon
+
+```
+Depending on your desktop environment, you may also be able to launch via your start menu.
+
 
 ### Debian/Ubuntu with virtual environment
 
@@ -296,7 +317,7 @@ code in this project is licenced under [the GPLv3](https://www.gnu.org/licenses/
 
 GPL v3+
 
-Copyright (C) 2014-2023 William Edwards <shadowapex@gmail.com>,
+Copyright (C) 2014-2024 William Edwards <shadowapex@gmail.com>,
 Benjamin Bean <superman2k5@gmail.com>
 
 This software is distributed under the GNU General Public Licence as

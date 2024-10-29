@@ -12,11 +12,11 @@
         },
         {
             "level_learned": 6,
-            "technique": "headbutt"
+            "technique": "hammerhead"
         },
         {
             "level_learned": 8,
-            "technique": "ring"
+            "technique": "ants"
         },
         {
             "level_learned": 12,
@@ -40,7 +40,7 @@
         },
         {
             "level_learned": 32,
-            "technique": "maori"
+            "technique": "greenstone"
         },
         {
             "level_learned": 36,
@@ -53,6 +53,7 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["brute"],
     "shape": "brute",
     "stage": "standalone",
     "types": [
@@ -62,7 +63,7 @@
     "txmn_id": 0,
     "height": 62,
     "weight": 58,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

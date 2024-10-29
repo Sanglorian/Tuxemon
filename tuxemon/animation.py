@@ -1,21 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from collections import defaultdict
+from collections.abc import Callable, Mapping, Sequence
 from math import cos, pi, sin, sqrt
-from typing import (
-    Any,
-    Callable,
-    DefaultDict,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import Any, Optional, Union
 
 import pygame
 
@@ -70,9 +61,9 @@ class TaskBase(pygame.sprite.Sprite):
 
     def __init__(self) -> None:
         super().__init__()
-        self._callbacks: DefaultDict[
+        self._callbacks: defaultdict[
             str,
-            List[ScheduledFunction],
+            list[ScheduledFunction],
         ] = defaultdict(list)
 
     def schedule(
@@ -180,16 +171,19 @@ class Task(TaskBase):
         times: int = 1,
     ) -> None:
         if not callable(callback):
-            raise ValueError
+            raise ValueError("callback must be callable")
 
-        if times == 0:
-            raise ValueError
+        if interval < 0:
+            raise ValueError("interval must be non negative")
+
+        if times <= 0:
+            raise ValueError("times must be positive")
 
         super().__init__()
         self._interval = interval
         self._loops = times
         self._duration: float = 0
-        self._chain: List[Task] = list()
+        self._chain: list[Task] = []
         self._state = ANIMATION_RUNNING
         self.schedule(callback)
 
@@ -280,6 +274,26 @@ class Task(TaskBase):
             self._execute_callbacks("on finish")
             self._execute_chain()
             self._cleanup()
+
+    def is_finish(self) -> bool:
+        """
+        Returns:
+            Whether the task is finished or not.
+        """
+        return self._state is ANIMATION_FINISHED
+
+    def reset_delay(self, new_delay: float) -> None:
+        """
+        Reset the delay before starting task to make sure time left is
+        equal or bigger to the provided value
+
+        Parameters:
+            new_delay: the updated delay that should be respected
+        """
+        time_left = self._interval - self._duration
+        if new_delay > time_left:
+            self._interval = new_delay
+            self._duration = 0
 
     def abort(self) -> None:
         """Force task to finish, without executing callbacks."""
@@ -399,8 +413,8 @@ class Animation(pygame.sprite.Sprite):
         self.callback: Callable[[], Any]
         self.update_callback: Callable[[], Any]
 
-        self.targets: List[
-            Tuple[object, Mapping[str, Tuple[float, float]]]
+        self.targets: list[
+            tuple[object, Mapping[str, tuple[float, float]]]
         ] = list()
         self._targets: Sequence[object] = list()
         self.delay = delay

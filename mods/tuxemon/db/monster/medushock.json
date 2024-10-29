@@ -4,19 +4,19 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "rock"
+            "technique": "lightning_spheres"
         },
         {
             "level_learned": 2,
-            "technique": "flood"
+            "technique": "rot"
         },
         {
             "level_learned": 6,
-            "technique": "midnight_mantle"
+            "technique": "flood"
         },
         {
             "level_learned": 8,
-            "technique": "magma"
+            "technique": "surge"
         },
         {
             "level_learned": 12,
@@ -24,7 +24,7 @@
         },
         {
             "level_learned": 16,
-            "technique": "wall_fire"
+            "technique": "energy_claws"
         },
         {
             "level_learned": 20,
@@ -32,7 +32,7 @@
         },
         {
             "level_learned": 24,
-            "technique": "supernova"
+            "technique": "thunderclap"
         },
         {
             "level_learned": 28,
@@ -48,11 +48,12 @@
         },
         {
             "level_learned": 40,
-            "technique": "sunburst"
+            "technique": "electrical_storm"
         }
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["polliwog", "freshwater"],
     "shape": "polliwog",
     "stage": "standalone",
     "types": [
@@ -60,10 +61,10 @@
         "water"
     ],
     "possible_genders": ["male", "female"],
-    "txmn_id": 208,
+    "txmn_id": 345,
     "height": 133,
     "weight": 3,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

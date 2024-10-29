@@ -28,7 +28,7 @@
         },
         {
             "level_learned": 20,
-            "technique": "maori"
+            "technique": "greenstone"
         },
         {
             "level_learned": 28,
@@ -45,11 +45,18 @@
         {
             "level_learned": 38,
             "technique": "mudslide"
+        },
+        {
+            "level_learned": 52,
+            "technique": "earthquake"
+        },
+        {
+            "level_learned": 56,
+            "technique": "thunderball"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 50,
             "monster_slug": "conglolem"
         }
@@ -58,8 +65,13 @@
         {
             "mon_slug": "slichen",
             "evo_stage": "basic"
+        },
+        {
+            "mon_slug": "conglolem",
+            "evo_stage": "stage2"
         }
     ],
+    "tags": ["blob"],
     "shape": "blob",
     "stage": "stage1",
     "types": [
@@ -70,7 +82,7 @@
     "txmn_id": 273,
     "height": 87,
     "weight": 35,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

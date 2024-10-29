@@ -1,6 +1,6 @@
 {
     "slug": "demosnow",
-    "category": "tempted",	
+    "category": "tempted",
     "moveset": [
         {
             "level_learned": 2,
@@ -29,7 +29,6 @@
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 32,
             "monster_slug": "lucifice"
         }
@@ -38,8 +37,13 @@
         {
             "mon_slug": "waysprite",
             "evo_stage": "basic"
+        },
+        {
+            "mon_slug": "lucifice",
+            "evo_stage": "stage2"
         }
     ],
+    "tags": ["sprite", "extraplanar"],
     "shape": "sprite",
     "stage": "stage1",
     "types": [
@@ -49,7 +53,7 @@
     "txmn_id": 264,
     "height": 120,
     "weight": 35,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

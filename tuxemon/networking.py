@@ -1,28 +1,21 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """This module contains the Tuxemon server and client.
 """
 from __future__ import annotations
 
 import logging
 import pprint
+from collections.abc import Sequence
 from datetime import datetime
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    List,
-    Literal,
-    Optional,
-    Tuple,
-    TypedDict,
-)
+from typing import TYPE_CHECKING, Any, Literal, Optional, TypedDict
 
 import pygame as pg
 
 from tuxemon import prepare
 from tuxemon.middleware import Controller, Multiplayer
 from tuxemon.npc import NPC
+from tuxemon.platform.const import buttons
 from tuxemon.session import local_session
 from tuxemon.states import world
 
@@ -40,10 +33,11 @@ except ImportError:
 
 if TYPE_CHECKING:
     from tuxemon.client import LocalPygameClient
+    from tuxemon.platform.events import PlayerInput
 
 
 class CharDict(TypedDict):
-    tile_pos: Tuple[int, int]
+    tile_pos: tuple[int, int]
     name: str
     facing: Literal["front", "back", "left", "right"]
 
@@ -77,10 +71,10 @@ class TuxemonServer:
             self.server_name = "Default Tuxemon Server"
         else:
             self.server_name = server_name
-        self.network_events: List[str] = []
+        self.network_events: list[str] = []
         self.listening = False
-        self.interfaces: Dict[str, Any] = {}
-        self.ips: List[str] = []
+        self.interfaces: dict[str, Any] = {}
+        self.ips: list[str] = []
 
         # Handle users without networking support.
         if not networking:
@@ -120,35 +114,31 @@ class TuxemonServer:
         :param event_data: Event information sent by client.
 
         """
+        registry = self.server.registry
         # Only respond to the latest message of a given type
-        if not "event_list" in self.server.registry[cuuid]:
-            self.server.registry[cuuid]["event_list"] = {}
-        elif (
-            not event_data["type"] in self.server.registry[cuuid]["event_list"]
-        ):
-            self.server.registry[cuuid]["event_list"][event_data["type"]] = -1
-
+        if "event_list" not in registry[cuuid]:
+            registry[cuuid]["event_list"] = {}
+        elif event_data["type"] not in registry[cuuid]["event_list"]:
+            registry[cuuid]["event_list"][event_data["type"]] = -1
         elif (
             event_data["event_number"]
-            <= self.server.registry[cuuid]["event_list"][event_data["type"]]
+            <= registry[cuuid]["event_list"][event_data["type"]]
         ):
             return
         else:
-            self.server.registry[cuuid]["event_list"][
-                event_data["type"]
-            ] = event_data["event_number"]
+            registry[cuuid]["event_list"][event_data["type"]] = event_data[
+                "event_number"
+            ]
 
         if event_data["type"] == "PUSH_SELF":
-            self.server.registry[cuuid]["sprite_name"] = event_data[
-                "sprite_name"
-            ]
-            self.server.registry[cuuid]["map_name"] = event_data["map_name"]
-            self.server.registry[cuuid]["char_dict"] = event_data["char_dict"]
-            self.server.registry[cuuid]["ping_timestamp"] = datetime.now()
+            registry[cuuid]["sprite_name"] = event_data["sprite_name"]
+            registry[cuuid]["map_name"] = event_data["map_name"]
+            registry[cuuid]["char_dict"] = event_data["char_dict"]
+            registry[cuuid]["ping_timestamp"] = datetime.now()
             self.notify_populate_client(cuuid, event_data)
 
         elif event_data["type"] == "PING":
-            self.server.registry[cuuid]["ping_timestamp"] = datetime.now()
+            registry[cuuid]["ping_timestamp"] = datetime.now()
 
         elif (
             event_data["type"] == "CLIENT_INTERACTION"
@@ -158,7 +148,7 @@ class TuxemonServer:
 
         elif event_data["type"] == "CLIENT_KEYDOWN":
             if event_data["kb_key"] == "SHIFT":
-                self.server.registry[cuuid]["char_dict"]["running"] = True
+                registry[cuuid]["char_dict"]["running"] = True
                 self.notify_client(cuuid, event_data)
             elif event_data["kb_key"] == "CTRL":
                 self.notify_client(cuuid, event_data)
@@ -167,7 +157,7 @@ class TuxemonServer:
 
         elif event_data["type"] == "CLIENT_KEYUP":
             if event_data["kb_key"] == "SHIFT":
-                self.server.registry[cuuid]["char_dict"]["running"] = False
+                registry[cuuid]["char_dict"]["running"] = False
                 self.notify_client(cuuid, event_data)
             elif event_data["kb_key"] == "CTRL":
                 self.notify_client(cuuid, event_data)
@@ -175,17 +165,15 @@ class TuxemonServer:
                 self.notify_client(cuuid, event_data)
 
         elif event_data["type"] == "CLIENT_START_BATTLE":
-            self.server.registry[cuuid]["char_dict"]["running"] = False
+            registry[cuuid]["char_dict"]["running"] = False
             self.update_char_dict(cuuid, event_data["char_dict"])
-            self.server.registry[cuuid]["map_name"] = event_data["map_name"]
+            registry[cuuid]["map_name"] = event_data["map_name"]
             self.notify_client(cuuid, event_data)
 
         else:
             self.update_char_dict(cuuid, event_data["char_dict"])
             if "map_name" in event_data:
-                self.server.registry[cuuid]["map_name"] = event_data[
-                    "map_name"
-                ]
+                registry[cuuid]["map_name"] = event_data["map_name"]
             self.notify_client(cuuid, event_data)
 
     def update_char_dict(self, cuuid: str, char_dict: CharDict) -> None:
@@ -288,9 +276,9 @@ class ControllerServer:
 
     def __init__(self, game: LocalPygameClient) -> None:
         self.game = game
-        self.network_events: List[str] = []
+        self.network_events: list[str] = []
         self.listening = False
-        self.interfaces: Dict[str, Any] = {}
+        self.interfaces: dict[str, Any] = {}
 
         # Handle users without networking support
         if not networking:
@@ -308,56 +296,33 @@ class ControllerServer:
                 if self.game.current_state:
                     self.game.current_state.process_event(controller_event)
 
-    def net_controller_loop(self) -> Any:
+    def net_controller_loop(self) -> Sequence[PlayerInput]:
         """
         Process all network events from controllers and pass them
         down to current State. All network events are converted to keyboard
         events for compatibility.
         """
+        event_map = {
+            "KEYDOWN:up": PlayerInput(button=buttons.UP, value=1),
+            "KEYUP:up": PlayerInput(button=buttons.UP, value=0),
+            "KEYDOWN:down": PlayerInput(button=buttons.DOWN, value=1),
+            "KEYUP:down": PlayerInput(button=buttons.DOWN, value=0),
+            "KEYDOWN:left": PlayerInput(button=buttons.LEFT, value=1),
+            "KEYUP:left": PlayerInput(button=buttons.LEFT, value=0),
+            "KEYDOWN:right": PlayerInput(button=buttons.RIGHT, value=1),
+            "KEYUP:right": PlayerInput(button=buttons.RIGHT, value=0),
+            "KEYDOWN:enter": PlayerInput(button=buttons.A, value=1),
+            "KEYUP:enter": PlayerInput(button=buttons.A, value=0),
+            "KEYDOWN:esc": PlayerInput(button=buttons.BACK, value=1),
+            "KEYUP:esc": PlayerInput(button=buttons.BACK, value=0),
+        }
         events = []
         for event_data in self.network_events:
-            if event_data == "KEYDOWN:up":
-                event = self.game.keyboard_events["KEYDOWN"]["up"]
-
-            elif event_data == "KEYUP:up":
-                event = self.game.keyboard_events["KEYUP"]["up"]
-
-            elif event_data == "KEYDOWN:down":
-                event = self.game.keyboard_events["KEYDOWN"]["down"]
-
-            elif event_data == "KEYUP:down":
-                event = self.game.keyboard_events["KEYUP"]["down"]
-
-            elif event_data == "KEYDOWN:left":
-                event = self.game.keyboard_events["KEYDOWN"]["left"]
-
-            elif event_data == "KEYUP:left":
-                event = self.game.keyboard_events["KEYUP"]["left"]
-
-            elif event_data == "KEYDOWN:right":
-                event = self.game.keyboard_events["KEYDOWN"]["right"]
-
-            elif event_data == "KEYUP:right":
-                event = self.game.keyboard_events["KEYUP"]["right"]
-
-            elif event_data == "KEYDOWN:enter":
-                event = self.game.keyboard_events["KEYDOWN"]["enter"]
-
-            elif event_data == "KEYUP:enter":
-                event = self.game.keyboard_events["KEYUP"]["enter"]
-
-            elif event_data == "KEYDOWN:esc":
-                event = self.game.keyboard_events["KEYDOWN"]["escape"]
-
-            elif event_data == "KEYUP:esc":
-                event = self.game.keyboard_events["KEYUP"]["escape"]
-
-            else:
-                logger.debug("Unknown network event: " + str(event_data))
-                event = None
-
+            event = event_map.get(event_data)
             if event:
                 events.append(event)
+            else:
+                logger.warning(f"Unknown network event: {event_data}")
 
         # Clear out the network events list once all events have been processed.
         self.network_events = []
@@ -377,8 +342,8 @@ class TuxemonClient:
     def __init__(self, game: LocalPygameClient) -> None:
         self.game = game
         # tuple = (ip, port)
-        self.available_games: List[Tuple[str, int]] = []
-        self.server_list: List[str] = []
+        self.available_games: list[tuple[str, int]] = []
+        self.server_list: list[str] = []
         self.selected_game = None
         self.enable_join_multiplayer = False
         self.wait_broadcast = 0.0  # Used to delay autodiscover broadcast.
@@ -388,7 +353,7 @@ class TuxemonClient:
         )
         self.populated = False
         self.listening = False
-        self.event_list: Dict[str, int] = {}
+        self.event_list: dict[str, int] = {}
         self.ping_time = 2.0
 
         # Handle users without networking support.
@@ -434,7 +399,7 @@ class TuxemonClient:
                 del self.client.event_notifies[euuid]
 
             if event_data["type"] == "NOTIFY_PUSH_SELF":
-                if not event_data["cuuid"] in self.client.registry:
+                if event_data["cuuid"] not in self.client.registry:
                     self.client.registry[str(event_data["cuuid"])] = {}
                 sprite = populate_client(
                     event_data["cuuid"],
@@ -566,7 +531,7 @@ class TuxemonClient:
 
     def populate_player(self, event_type: str = "PUSH_SELF") -> None:
         """Sends client character to the server."""
-        if not event_type in self.event_list:
+        if event_type not in self.event_list:
             self.event_list[event_type] = 0
         pd = local_session.player.__dict__
         map_name = self.game.get_map_name()
@@ -600,7 +565,7 @@ class TuxemonClient:
             event_type: Event type sent to server used for event_legal() and event_execute() functions in middleware.
 
         """
-        if not event_type in self.event_list:
+        if event_type not in self.event_list:
             self.event_list[event_type] = 0
         pd = local_session.player.__dict__
         map_name = self.game.get_map_name()
@@ -674,7 +639,7 @@ class TuxemonClient:
         ):
             event_type = "CLIENT_FACING"
 
-        if not event_type in self.event_list:
+        if event_type not in self.event_list:
             assert event_type
             self.event_list[event_type] = 0
 
@@ -733,7 +698,7 @@ class TuxemonClient:
         :returns: None
 
         """
-        if not event_type in self.event_list:
+        if event_type not in self.event_list:
             self.event_list[event_type] = 1
         cuuid = None
 
@@ -766,7 +731,7 @@ class TuxemonClient:
 
         """
         event_type = "PING"
-        if not event_type in self.event_list:
+        if event_type not in self.event_list:
             self.event_list[event_type] = 1
         else:
             self.event_list[event_type] += 1
@@ -782,11 +747,11 @@ class TuxemonClient:
 class DummyNetworking:
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """The dummy networking object is used when networking is not supported."""
-        self.registry: Dict[str, Any] = {}
+        self.registry: dict[str, Any] = {}
         self.registered = False
         # {(ip, port): (client_version_number, server_name)
-        self.discovered_servers: Dict[Tuple[str, int], Tuple[int, str]] = {}
-        self.event_notifies: Dict[str, Any] = {}
+        self.discovered_servers: dict[tuple[str, int], tuple[int, str]] = {}
+        self.event_notifies: dict[str, Any] = {}
 
     def event(self, *args: Any, **kwargs: Any) -> None:
         pass

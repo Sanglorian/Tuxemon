@@ -20,7 +20,7 @@
         },
         {
             "level_learned": 12,
-            "technique": "fire_ball"
+            "technique": "tinder"
         },
         {
             "level_learned": 16,
@@ -58,6 +58,7 @@
             "evo_stage": "basic"
         }
     ],
+    "tags": ["brute"],
     "shape": "brute",
     "stage": "stage1",
     "types": [
@@ -67,7 +68,7 @@
     "txmn_id": 76,
     "height": 169,
     "weight": 16,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

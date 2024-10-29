@@ -1,27 +1,31 @@
 {
   "tech_id": 97,
-  "accuracy": 0.8,
+  "accuracy": 1,
   "animation": "red_circle",
   "effects": [
-    "damage"
+    "give hardshell,user",
+    "enhance",
+    "switch user,wood"
   ],
   "flip_axes": "",
   "is_fast": false,
-  "potency": 0.6,
-  "power": 1,
-  "range": "reach",
-  "recharge": 3,
+  "potency": 1,
+  "power": 0,
+  "range": "special",
+  "recharge": 4,
   "sfx": "sfx_blaster",
   "slug": "chameleon",
   "sort": "damage",
   "target": {
-    "enemy monster": 2,
-    "enemy team": 0,
-    "enemy trainer": 0,
-    "own monster": 0,
-    "own team": 0,
-    "own trainer": 0
+    "enemy_monster": true,
+    "enemy_team": false,
+    "enemy_trainer": false,
+    "own_monster": false,
+    "own_team": false,
+    "own_trainer": false
   },
+  "category": "condition_imposer",
+  "tags": ["Shapeshifter"],
   "types": [
     "wood",
     "fire"

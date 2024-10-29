@@ -24,7 +24,7 @@
         },
         {
             "level_learned": 16,
-            "technique": "chameleon"
+            "technique": "tinder"
         },
         {
             "level_learned": 20,
@@ -53,6 +53,7 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["humanoid", "extraplanar", "ruins"],
     "shape": "humanoid",
     "stage": "standalone",
     "types": [
@@ -61,8 +62,8 @@
     "possible_genders": ["neuter"],
     "txmn_id": 108,
     "height": 160,
-    "weight": 0,
-    "catch_rate": 85.0,
+    "weight": 0.1,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

@@ -42,16 +42,17 @@
             "evo_stage": "basic"
         }
     ],
+    "tags": ["dragon"],
     "shape": "dragon",
     "stage": "stage1",
     "types": [
         "water"
     ],
     "possible_genders": ["male", "female"],
-    "txmn_id": 165,
+    "txmn_id": 349,
     "height": 800,
     "weight": 3000,
-    "catch_rate": 120.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

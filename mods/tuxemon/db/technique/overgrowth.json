@@ -3,7 +3,7 @@
   "accuracy": 0.8,
   "animation": "snake_right",
   "effects": [
-    "give status_grabbed,target",
+    "give grabbed,target",
     "damage"
   ],
   "flip_axes": "",
@@ -11,18 +11,20 @@
   "potency": 1,
   "power": 2.25,
   "range": "ranged",
-  "recharge": 3,
+  "recharge": 2,
   "sfx": "sfx_blaster",
   "slug": "overgrowth",
   "sort": "damage",
   "target": {
-    "enemy monster": 2,
-    "enemy team": 0,
-    "enemy trainer": 0,
-    "own monster": 0,
-    "own team": 0,
-    "own trainer": 0
+    "enemy_monster": true,
+    "enemy_team": false,
+    "enemy_trainer": false,
+    "own_monster": false,
+    "own_team": false,
+    "own_trainer": false
   },
+  "category": "simple",
+  "tags": ["Plant", "Summoner"],
   "types": [
     "wood"
   ],

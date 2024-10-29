@@ -1,25 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 import uuid
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    ClassVar,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Type,
-)
+from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 import pygame
 
 from tuxemon import graphics, plugin, prepare
 from tuxemon.constants import paths
-from tuxemon.db import ItemCategory, ItemType, State, db
+from tuxemon.db import ItemCategory, State, db
 from tuxemon.item.itemcondition import ItemCondition
 from tuxemon.item.itemeffect import ItemEffect, ItemEffectResult
 from tuxemon.locale import T
@@ -27,6 +19,7 @@ from tuxemon.locale import T
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
     from tuxemon.npc import NPC
+    from tuxemon.states.combat.combat import CombatState
 
 logger = logging.getLogger(__name__)
 
@@ -34,36 +27,33 @@ SIMPLE_PERSISTANCE_ATTRIBUTES = (
     "slug",
     "quantity",
 )
-INFINITE_ITEMS = 0
-# eg 5 capture devices, 1 type and 5 items
-MAX_TYPES_BAG = 99
 
 
 class Item:
     """An item object is an item that can be used either in or out of combat."""
 
-    effects_classes: ClassVar[Mapping[str, Type[ItemEffect[Any]]]] = {}
-    conditions_classes: ClassVar[Mapping[str, Type[ItemCondition[Any]]]] = {}
+    effects_classes: ClassVar[Mapping[str, type[ItemEffect]]] = {}
+    conditions_classes: ClassVar[Mapping[str, type[ItemCondition]]] = {}
 
     def __init__(self, save_data: Optional[Mapping[str, Any]] = None) -> None:
-        if save_data is None:
-            save_data = dict()
+        save_data = save_data or {}
 
         self.slug = ""
         self.name = ""
         self.description = ""
         self.instance_id = uuid.uuid4()
         self.quantity = 1
-        self.images: Sequence[str] = []
-        self.type = ItemType.consumable
+        self.animation: Optional[str] = None
+        self.flip_axes = ""
         # The path to the sprite to load.
         self.sprite = ""
         self.category = ItemCategory.none
         self.surface: Optional[pygame.surface.Surface] = None
         self.surface_size_original = (0, 0)
 
-        self.effects: Sequence[ItemEffect[Any]] = []
-        self.conditions: Sequence[ItemCondition[Any]] = []
+        self.effects: Sequence[ItemEffect] = []
+        self.conditions: Sequence[ItemCondition] = []
+        self.combat_state: Optional[CombatState] = None
 
         self.sort = ""
         self.use_item = ""
@@ -87,7 +77,7 @@ class Item:
         self.set_state(save_data)
 
     def load(self, slug: str) -> None:
-        """Loads and sets this items's attributes from the item.db database.
+        """Loads and sets this item's attributes from the item.db database.
 
         The item is looked up in the database by slug.
 
@@ -95,10 +85,10 @@ class Item:
             slug: The item slug to look up in the monster.item database.
 
         """
-        results = db.lookup(slug, table="item")
-
-        if results is None:
-            raise RuntimeError(f"item {slug} is not found")
+        try:
+            results = db.lookup(slug, table="item")
+        except KeyError:
+            raise RuntimeError(f"Item {slug} not found")
 
         self.slug = results.slug
         self.name = T.translate(self.slug)
@@ -111,9 +101,10 @@ class Item:
         self.use_failure = T.translate(results.use_failure)
 
         # misc attributes (not translated!)
+        self.world_menu = results.world_menu
+        self.behaviors = results.behaviors
         self.sort = results.sort
         self.category = results.category or ItemCategory.none
-        self.type = results.type or ItemType.consumable
         self.sprite = results.sprite
         self.usable_in = results.usable_in
         self.effects = self.parse_effects(results.effects)
@@ -121,10 +112,14 @@ class Item:
         self.surface = graphics.load_and_scale(self.sprite)
         self.surface_size_original = self.surface.get_size()
 
+        # Load the animation sprites that will be used for this technique
+        self.animation = results.animation
+        self.flip_axes = results.flip_axes
+
     def parse_effects(
         self,
         raw: Sequence[str],
-    ) -> Sequence[ItemEffect[Any]]:
+    ) -> Sequence[ItemEffect]:
         """
         Convert effect strings to effect objects.
 
@@ -138,27 +133,26 @@ class Item:
             Effects turned into a list of ItemEffect objects.
 
         """
-        ret = list()
+        effects = []
 
         for line in raw:
-            name = line.split()[0]
-            if len(line.split()) > 1:
-                params = line.split()[1].split(",")
-            else:
-                params = []
+            parts = line.split(maxsplit=1)
+            name = parts[0]
+            params = parts[1].split(",") if len(parts) > 1 else []
+
             try:
-                effect = Item.effects_classes[name]
+                effect_class = Item.effects_classes[name]
             except KeyError:
                 logger.error(f'Error: ItemEffect "{name}" not implemented')
             else:
-                ret.append(effect(*params))
+                effects.append(effect_class(*params))
 
-        return ret
+        return effects
 
     def parse_conditions(
         self,
         raw: Sequence[str],
-    ) -> Sequence[ItemCondition[Any]]:
+    ) -> Sequence[ItemCondition]:
         """
         Convert condition strings to condition objects.
 
@@ -172,29 +166,28 @@ class Item:
             Conditions turned into a list of ItemCondition objects.
 
         """
-        ret = list()
+        conditions = []
 
         for line in raw:
-            op = line.split()[0]
-            name = line.split()[1]
-            if len(line.split()) > 2:
-                params = line.split()[2].split(",")
-            else:
-                params = []
+            parts = line.split(maxsplit=2)
+            op = parts[0]
+            name = parts[1]
+            params = parts[2].split(",") if len(parts) > 2 else []
+
             try:
-                condition = Item.conditions_classes[name]
-                if op == "is":
-                    condition._op = True
-                elif op == "not":
-                    condition._op = False
-                else:
-                    raise ValueError(f"{op} must be 'is' or 'not'")
+                condition_class = Item.conditions_classes[name]
             except KeyError:
                 logger.error(f'Error: ItemCondition "{name}" not implemented')
-            else:
-                ret.append(condition(*params))
+                continue
 
-        return ret
+            if op not in ["is", "not"]:
+                raise ValueError(f"{op} must be 'is' or 'not'")
+
+            condition = condition_class(*params)
+            condition._op = op == "is"
+            conditions.append(condition)
+
+        return conditions
 
     def validate(self, target: Optional[Monster]) -> bool:
         """
@@ -212,19 +205,18 @@ class Item:
         if not target:
             return False
 
-        result = True
-
-        for condition in self.conditions:
-            if condition._op is True:
-                event = condition.test(target)
-            else:
-                event = not condition.test(target)
-            result = result and event
-        return result
+        return all(
+            (
+                condition.test(target)
+                if condition._op
+                else not condition.test(target)
+            )
+            for condition in self.conditions
+        )
 
     def use(self, user: NPC, target: Optional[Monster]) -> ItemEffectResult:
         """
-        Applies this items's effects as defined in the "effect" column of
+        Applies this item's effects as defined in the "effect" column of
         the item database.
 
         Parameters:
@@ -232,26 +224,29 @@ class Item:
             target: The monster or object that we are using this item on.
 
         Returns:
-            A dictionary with various effect result properties
+            An ItemEffectResult object containing the result of the item's effect.
 
         """
         # defaults for the return. items can override these values.
-        meta_result: ItemEffectResult = {
-            "name": self.name,
-            "num_shakes": 0,
-            "should_tackle": False,
-            "success": False,
-        }
+        meta_result = ItemEffectResult(
+            name=self.name,
+            success=False,
+            num_shakes=0,
+            extra=[],
+        )
 
         # Loop through all the effects of this technique and execute the effect's function.
         for effect in self.effects:
             result = effect.apply(self, target)
-            meta_result.update(result)
+            meta_result.name = result.name
+            meta_result.success = meta_result.success or result.success
+            meta_result.num_shakes += result.num_shakes
+            meta_result.extra.extend(result.extra)
 
         # If this is a consumable item, remove it from the player's inventory.
         if (
-            prepare.CONFIG.items_consumed_on_failure or meta_result["success"]
-        ) and self.type == "Consumable":
+            prepare.CONFIG.items_consumed_on_failure or meta_result.success
+        ) and self.behaviors.consumable:
             if self.quantity <= 1:
                 user.remove_item(self)
             else:
@@ -293,7 +288,7 @@ class Item:
 
 def decode_items(
     json_data: Optional[Sequence[Mapping[str, Any]]],
-) -> List[Item]:
+) -> list[Item]:
     return [Item(save_data=itm) for itm in json_data or {}]
 
 

@@ -42,7 +42,8 @@
             "evo_stage": "basic"
         }
     ],
-    "shape": "blob",
+    "tags": ["humanoid", "swamp"],
+    "shape": "humanoid",
     "stage": "stage1",
     "types": [
         "fire"
@@ -50,8 +51,8 @@
     "possible_genders": ["neuter"],
     "txmn_id": 163,
     "height": 60,
-    "weight": 0,
-    "catch_rate": 85.0,
+    "weight": 0.1,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

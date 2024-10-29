@@ -21,11 +21,26 @@
         {
             "level_learned": 8,
             "technique": "muddle"
+        },
+        {
+            "level_learned": 12,
+            "technique": "bubble_trap"
+        },
+        {
+            "level_learned": 16,
+            "technique": "beam"
+        },
+        {
+            "level_learned": 20,
+            "technique": "surge"
+        },
+        {
+            "level_learned": 24,
+            "technique": "thunderclap"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 9,
             "monster_slug": "bolt"
         }
@@ -40,6 +55,7 @@
             "evo_stage": "stage2"
         }
     ],
+    "tags": ["blob"],
     "shape": "blob",
     "stage": "basic",
     "types": [
@@ -49,7 +65,7 @@
     "txmn_id": 4,
     "height": 45,
     "weight": 4,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

@@ -4,11 +4,11 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "probiscus"
+            "technique": "proboscis"
         },
         {
             "level_learned": 2,
-            "technique": "spray"
+            "technique": "spit_poison"
         },
         {
             "level_learned": 4,
@@ -21,11 +21,30 @@
         {
             "level_learned": 8,
             "technique": "hibernate"
+        },
+        {
+            "level_learned": 10,
+            "technique": "goad"
+        },
+        {
+            "level_learned": 16,
+            "technique": "geyser"
+        },
+        {
+            "level_learned": 20,
+            "technique": "sleeping_powder"
+        },
+        {
+            "level_learned": 24,
+            "technique": "venomous_tentacle"
+        },
+        {
+            "level_learned": 28,
+            "technique": "icicle_spear"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 9,
             "monster_slug": "dracune"
         }
@@ -40,6 +59,7 @@
             "evo_stage": "stage2"
         }
     ],
+    "tags": ["grub"],
     "shape": "grub",
     "stage": "basic",
     "types": [
@@ -49,7 +69,7 @@
     "txmn_id": 36,
     "height": 17,
     "weight": 1,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

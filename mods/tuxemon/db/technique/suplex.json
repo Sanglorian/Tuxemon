@@ -1,0 +1,36 @@
+{
+  "tech_id": 184,
+  "accuracy": 0.95,
+  "animation": "amethyst_radiate",
+  "effects": [
+    "give diehard,user",
+    "give exhausted,target",
+    "damage"
+  ],
+  "flip_axes": "",
+  "is_fast": true,
+  "potency": 0.5,
+  "power": 2,
+  "randomly": false,
+  "range": "melee",
+  "recharge": 3,
+  "sfx": "sfx_blaster",
+  "slug": "suplex",
+  "sort": "damage",
+  "target": {
+    "enemy_monster": true,
+    "enemy_team": false,
+    "enemy_trainer": false,
+    "own_monster": false,
+    "own_team": false,
+    "own_trainer": false
+  },
+  "category": "reserved",
+  "tags": ["Reserved"],
+  "types": [
+    "earth", "metal"
+  ],
+  "use_failure": "combat_miss",
+  "use_success": null,
+  "use_tech": "combat_used_x"
+}

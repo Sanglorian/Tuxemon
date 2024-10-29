@@ -21,11 +21,22 @@
         {
             "level_learned": 12,
             "technique": "sleeping_powder"
+        },
+        {
+            "level_learned": 24,
+            "technique": "energy_claws"
+        },
+        {
+            "level_learned": 28,
+            "technique": "one_two"
+        },
+        {
+            "level_learned": 32,
+            "technique": "all_in"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 18,
             "monster_slug": "dandylion"
         }
@@ -36,6 +47,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["blob"],
     "shape": "blob",
     "stage": "basic",
     "types": [
@@ -45,7 +57,7 @@
     "txmn_id": 73,
     "height": 46,
     "weight": 2,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

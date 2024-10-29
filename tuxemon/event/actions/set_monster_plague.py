@@ -1,62 +1,62 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import logging
+import uuid
 from dataclasses import dataclass
-from typing import Union, final
+from typing import Optional, final
 
 from tuxemon.db import PlagueType
+from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
+
+logger = logging.getLogger(__name__)
 
 
 @final
 @dataclass
 class SetMonsterPlagueAction(EventAction):
     """
-    Cure or infect a monster.
+    Set a monster's plague to the given condition.
 
     Script usage:
         .. code-block::
 
-            set_monster_plague condition[,slot]
+            set_monster_plague <variable>,<plague_slug>,<condition>
 
     Script parameters:
-        condition: inoculated, healthy or infected
-        slot: Slot of the monster in the party. If no slot is specified, all
-            monsters are touched by the action.
+        variable: Name of the variable where to store the monster id.
+        plague_slug: The slug of the plague to target.
+        condition: Infected, inoculated, or None (removes the plague from the
+            character, indicating a healthy state).
 
     """
 
     name = "set_monster_plague"
-    condition: str
-    slot: Union[int, None] = None
+    variable: str
+    plague_slug: str
+    condition: Optional[str] = None
 
     def start(self) -> None:
         player = self.session.player
-        if not player.monsters:
+        if self.variable not in player.game_variables:
+            logger.error(f"Game variable {self.variable} not found")
             return
 
-        monster_slot = self.slot
+        monster_id = uuid.UUID(player.game_variables[self.variable])
+        monster = get_monster_by_iid(self.session, monster_id)
+        if monster is None:
+            logger.error("Monster not found")
+            return
 
-        if monster_slot is None:
-            for monster in player.monsters:
-                if self.condition == "inoculated":
-                    monster.plague = PlagueType.inoculated
-                elif self.condition == "infected":
-                    monster.plague = PlagueType.infected
-                elif self.condition == "healthy":
-                    monster.plague = PlagueType.healthy
-                else:
-                    raise ValueError(
-                        f"{self.condition} must be infect or heal"
-                    )
+        if self.condition is None:
+            monster.plague = {}
+        elif self.condition == "infected":
+            monster.plague[self.plague_slug] = PlagueType.infected
+        elif self.condition == "inoculated":
+            monster.plague[self.plague_slug] = PlagueType.inoculated
         else:
-            mon = self.session.player.monsters[monster_slot]
-            if self.condition == "inoculated":
-                mon.plague = PlagueType.inoculated
-            elif self.condition == "infected":
-                mon.plague = PlagueType.infected
-            elif self.condition == "healthy":
-                mon.plague = PlagueType.healthy
-            else:
-                raise ValueError(f"{self.condition} must be infect or heal")
+            raise ValueError(
+                f"{self.condition} must be 'infected' or 'inoculated'."
+            )

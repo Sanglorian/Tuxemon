@@ -25,11 +25,22 @@
         {
             "level_learned": 12,
             "technique": "bubble_trap"
+        },
+        {
+            "level_learned": 16,
+            "technique": "beam"
+        },
+        {
+            "level_learned": 20,
+            "technique": "surge"
+        },
+        {
+            "level_learned": 24,
+            "technique": "thunderclap"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 12,
             "monster_slug": "arthrobolt"
         }
@@ -38,8 +49,13 @@
         {
             "mon_slug": "nut",
             "evo_stage": "basic"
+        },
+        {
+            "mon_slug": "arthrobolt",
+            "evo_stage": "stage2"
         }
     ],
+    "tags": ["blob"],
     "shape": "blob",
     "stage": "stage1",
     "types": [
@@ -49,7 +65,7 @@
     "txmn_id": 5,
     "height": 90,
     "weight": 15.6,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

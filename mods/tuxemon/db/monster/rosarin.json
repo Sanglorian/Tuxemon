@@ -4,7 +4,7 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "peregrine"
+            "technique": "solar_synthesis"
         },
         {
             "level_learned": 2,
@@ -44,15 +44,30 @@
         },
         {
             "level_learned": 36,
-            "technique": "hawk"
+            "technique": "assault"
         },
         {
             "level_learned": 40,
             "technique": "ants"
         }
     ],
-    "evolutions": [],
-    "history": [],
+    "evolutions": [
+        {
+            "at_level": 32,
+            "monster_slug": "toxiris"
+        }
+    ],
+    "history": [
+        {
+            "mon_slug": "toxiris",
+            "evo_stage": "stage1"
+        },
+        {
+            "mon_slug": "ninjasmine",
+            "evo_stage": "stage2"
+        }
+    ],
+    "tags": ["humanoid"],
     "shape": "humanoid",
     "stage": "basic",
     "types": [
@@ -62,7 +77,7 @@
     "txmn_id": 204,
     "height": 48,
     "weight": 14,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

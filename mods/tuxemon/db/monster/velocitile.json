@@ -58,6 +58,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["humanoid", "grassland", "jungle", "woodland"],
     "shape": "humanoid",
     "stage": "stage2",
     "types": [
@@ -67,7 +68,7 @@
     "txmn_id": 67,
     "height": 150,
     "weight": 75,
-    "catch_rate": 45.0,
+    "catch_rate": 35.0,
     "lower_catch_resistance": 0.85,
     "upper_catch_resistance": 1.1
 }

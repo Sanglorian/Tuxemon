@@ -53,6 +53,7 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["humanoid"],
     "shape": "humanoid",
     "stage": "standalone",
     "types": [
@@ -60,9 +61,9 @@
     ],
     "possible_genders": ["neuter"],
     "txmn_id": 0,
-    "height": 0,
+    "height": 0.1,
     "weight": 100,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

@@ -24,11 +24,11 @@
         },
         {
             "level_learned": 16,
-            "technique": "gyser"
+            "technique": "geyser"
         },
         {
             "level_learned": 20,
-            "technique": "suck_poison"
+            "technique": "spit_poison"
         },
         {
             "level_learned": 24,
@@ -53,6 +53,7 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["landrace"],
     "shape": "landrace",
     "stage": "standalone",
     "types": [
@@ -62,7 +63,7 @@
     "txmn_id": 151,
     "height": 200,
     "weight": 500,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

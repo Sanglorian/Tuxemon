@@ -25,28 +25,24 @@
     ],
     "evolutions": [
         {
-            "path": "season",
             "at_level": 18,
             "monster_slug": "angrito",
-            "season": "winter"
+            "variables": ["season:winter"]
         },
         {
-            "path": "season",
             "at_level": 18,
             "monster_slug": "happito",
-            "season": "summer"
+            "variables": ["season:summer"]
         },
         {
-            "path": "season",
             "at_level": 18,
             "monster_slug": "neutrito",
-            "season": "spring"
+            "variables": ["season:spring"]
         },
         {
-            "path": "season",
             "at_level": 18,
             "monster_slug": "sadito",
-            "season": "autumn"
+            "variables": ["season:autumn"]
         }
     ],
     "history": [
@@ -67,6 +63,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["blob", "extraplanar", "urban"],
     "shape": "blob",
     "stage": "basic",
     "types": [
@@ -76,7 +73,7 @@
     "txmn_id": 174,
     "height": 38,
     "weight": 3.5,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

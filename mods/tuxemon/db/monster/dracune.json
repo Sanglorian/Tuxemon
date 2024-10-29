@@ -4,11 +4,11 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "probiscus"
+            "technique": "proboscis"
         },
         {
             "level_learned": 2,
-            "technique": "spray"
+            "technique": "spit_poison"
         },
         {
             "level_learned": 4,
@@ -25,11 +25,26 @@
         {
             "level_learned": 10,
             "technique": "goad"
+        },
+        {
+            "level_learned": 16,
+            "technique": "geyser"
+        },
+        {
+            "level_learned": 20,
+            "technique": "sleeping_powder"
+        },
+        {
+            "level_learned": 24,
+            "technique": "venomous_tentacle"
+        },
+        {
+            "level_learned": 28,
+            "technique": "icicle_spear"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 12,
             "monster_slug": "fluttaflap"
         }
@@ -38,8 +53,13 @@
         {
             "mon_slug": "vamporm",
             "evo_stage": "basic"
+        },
+        {
+            "mon_slug": "fluttaflap",
+            "evo_stage": "stage2"
         }
     ],
+    "tags": ["blob"],
     "shape": "blob",
     "stage": "stage1",
     "types": [
@@ -49,7 +69,7 @@
     "txmn_id": 37,
     "height": 35,
     "weight": 3.5,
-    "catch_rate": 120.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

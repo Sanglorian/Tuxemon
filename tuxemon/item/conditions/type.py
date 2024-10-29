@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from tuxemon.item.itemcondition import ItemCondition
 
@@ -25,12 +25,12 @@ class TypeCondition(ItemCondition):
 
     def test(self, target: Monster) -> bool:
         ret: bool = False
-        elements: List[str] = []
+        elements: list[str] = []
         if self.elements.find(":"):
             elements = self.elements.split(":")
         else:
             elements.append(self.elements)
         for ele in target.types:
-            if ele in elements:
+            if ele.slug in elements:
                 ret = True
         return ret

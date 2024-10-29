@@ -1,14 +1,12 @@
 """
 Put platform specific fixes here
 """
+
 from __future__ import annotations
 
 import logging
 import os.path
-import types
-from typing import Optional, Sequence
-
-import pygame
+from collections.abc import Sequence
 
 __all__ = ("android", "init", "mixer", "get_user_storage_dir")
 
@@ -17,23 +15,26 @@ logger = logging.getLogger(__name__)
 _pygame = False
 android = None
 
-# TODO: more graceful handling of android and pygame deps.
 try:
     import android
-    import android.mixer
+    import android.mixer as android_mixer
 
-    mixer = android.mixer
+    mixer = android_mixer
 except ImportError:
     pass
+else:
+    logger.info("Using Android mixer")
 
 if android is None:
     try:
-        import pygame.mixer
+        import pygame.mixer as pygame_mixer
 
-        mixer = pygame.mixer
+        mixer = pygame_mixer
         _pygame = True
     except ImportError:
-        pass
+        logger.error("Neither Android nor Pygame mixer found")
+    else:
+        logger.info("Using Pygame mixer")
 
 
 def init() -> None:
@@ -64,7 +65,7 @@ def get_system_storage_dirs() -> Sequence[str]:
 
     Should be immutable storage for things like system installed code/mods.
 
-    Android storage is still WIP.  should be immutable, but its not...
+    Android storage is still WIP.  should be immutable, but it's not...
 
     The primary user of this storage are packages for operating systems
     that will install the mods into a folder like /usr/share/tuxemon.

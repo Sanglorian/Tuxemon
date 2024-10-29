@@ -4,15 +4,15 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "shadow_boxing"
+            "technique": "solar_synthesis"
         },
         {
             "level_learned": 2,
-            "technique": "headbutt"
+            "technique": "hammerhead"
         },
         {
             "level_learned": 6,
-            "technique": "maori"
+            "technique": "greenstone"
         },
         {
             "level_learned": 8,
@@ -21,12 +21,23 @@
         {
             "level_learned": 12,
             "technique": "fluff_up"
+        },
+        {
+            "level_learned": 32,
+            "technique": "one_two"
+        },
+        {
+            "level_learned": 36,
+            "technique": "all_in"
+        },
+        {
+            "level_learned": 40,
+            "technique": "sting"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
-            "at_level": 30,
+            "at_level": 32,
             "monster_slug": "sapsnap"
         }
     ],
@@ -36,6 +47,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["brute"],
     "shape": "brute",
     "stage": "basic",
     "types": [
@@ -45,7 +57,7 @@
     "txmn_id": 85,
     "height": 120,
     "weight": 60,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import inspect
@@ -8,23 +8,9 @@ import os.path
 import sys
 import warnings
 from abc import ABCMeta
+from collections.abc import Callable, Generator, Mapping, Sequence
 from importlib import import_module
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generator,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-    overload,
-)
+from typing import Any, Optional, TypeVar, Union, overload
 
 import pygame
 from pygame.rect import Rect
@@ -125,7 +111,12 @@ class State:
         self.animations.add(ani)
         return ani
 
-    def task(self, *args: Any, **kwargs: Any) -> Task:
+    def task(
+        self,
+        *args: Any,
+        callback: Optional[Callable[..., Any]] = None,
+        **kwargs: Any,
+    ) -> Task:
         """
         Create a task for this state.
 
@@ -134,14 +125,24 @@ class State:
 
         Parameters:
             args: Function to be called.
+            callback: Function to be called when the task finishes.
             kwargs: Keyword parameters passed to the task.
 
         Returns:
             The created task.
 
         """
+        if not args:
+            raise ValueError("Must provide a function to be called")
+
         task = Task(*args, **kwargs)
         self.animations.add(task)
+
+        if callback is not None:
+            if not callable(callback):
+                raise ValueError("Callback must be a callable function")
+            task.schedule(callback, "on finish")
+
         return task
 
     def remove_animations_of(self, target: Any) -> None:
@@ -202,29 +203,12 @@ class State:
 
         """
 
-    def startup(self, **kwargs: Any) -> None:
-        """
-        DEPRECATED - Use __init__ instead.
-
-        Called when scene is added to the state stack.
-
-        This will be called:
-        * after state is pushed and before next update
-        * just once during the life of a state
-
-        Example uses: loading images, configuration, sounds, etc.
-
-        Parameters:
-            kwargs: Configuration options.
-
-        """
-
     def resume(self) -> None:
         """
         Called before update when state is newly in focus.
 
         This will be called:
-        * after startup and before next update
+        * before next update
         * after a pop operation which causes this state to be in focus
 
         After being called, state will begin to receive player input.
@@ -282,10 +266,10 @@ class StateManager:
         self.package = package
         # TODO: consider API for handling hooks
         self._on_state_change_hook = on_state_change
-        self._state_queue: List[Tuple[str, Mapping[str, Any]]] = list()
-        self._state_stack: List[State] = list()
-        self._state_dict: Dict[str, Type[State]] = dict()
-        self._resume_set: Set[State] = set()
+        self._state_queue: list[tuple[str, Mapping[str, Any]]] = []
+        self._state_stack: list[State] = []
+        self._state_dict: dict[str, type[State]] = {}
+        self._resume_set: set[State] = set()
 
     def auto_state_discovery(self) -> None:
         """
@@ -303,7 +287,7 @@ class StateManager:
             for state in self.collect_states_from_path(folder):
                 self.register_state(state)
 
-    def register_state(self, state: Type[State]) -> None:
+    def register_state(self, state: type[State]) -> None:
         """
         Add a state class.
 
@@ -332,7 +316,7 @@ class StateManager:
     @staticmethod
     def collect_states_from_module(
         import_name: str,
-    ) -> Generator[Type[State], None, None]:
+    ) -> Generator[type[State], None, None]:
         """
         Given a module, return all classes in it that are a game state.
 
@@ -355,7 +339,7 @@ class StateManager:
     def collect_states_from_path(
         self,
         folder: str,
-    ) -> Generator[Type[State], None, None]:
+    ) -> Generator[type[State], None, None]:
         """
         Load states from disk, but do not register it.
 
@@ -410,7 +394,7 @@ class StateManager:
             self._resume_set.remove(state)
             state.resume()
 
-    def query_all_states(self) -> Mapping[str, Type[State]]:
+    def query_all_states(self) -> Mapping[str, type[State]]:
         """
         Return a dictionary of all loaded states.
 
@@ -511,22 +495,50 @@ class StateManager:
             self._state_stack.remove(state)
             state.shutdown()
 
+    def remove_state_by_name(self, state_name: str) -> None:
+        """
+        Remove a state from the stack by its name.
+
+        Parameters:
+            state_name: The name of the state to remove.
+        """
+
+        try:
+            for index, state in enumerate(self._state_stack):
+                if state.name == state_name:
+                    if index == 0:
+                        self.pop_state()
+                    else:
+                        self._state_stack.remove(state)
+                        state.shutdown()
+                    return
+        except IndexError:
+            logger.critical(
+                "Attempted to remove state which is not in the stack",
+            )
+            raise RuntimeError
+
+        # If the state wasn't found, raise an error
+        raise ValueError(f"State with name '{state_name}' not found")
+
     @overload
-    def push_state(self, state_name: str, **kwargs: Any) -> State:
+    def push_state(
+        self, state_name: str, **kwargs: Optional[dict[str, Any]]
+    ) -> State:
         pass
 
     @overload
     def push_state(
         self,
         state_name: StateType,
-        **kwargs: Any,
+        **kwargs: Optional[dict[str, Any]],
     ) -> StateType:
         pass
 
     def push_state(
         self,
         state_name: Union[str, StateType],
-        **kwargs: Any,
+        **kwargs: Optional[dict[str, Any]],
     ) -> State:
         """
         Pause currently running state and start new one.
@@ -557,7 +569,6 @@ class StateManager:
             )
             instance = state_name(**kwargs) if kwargs else state_name()
 
-        instance.startup(**kwargs)
         self._resume_set.add(instance)
         self._state_stack.insert(0, instance)
 
@@ -567,21 +578,23 @@ class StateManager:
         return instance
 
     @overload
-    def replace_state(self, state_name: str, **kwargs: Any) -> State:
+    def replace_state(
+        self, state_name: str, **kwargs: Optional[dict[str, Any]]
+    ) -> State:
         pass
 
     @overload
     def replace_state(
         self,
         state_name: StateType,
-        **kwargs: Any,
+        **kwargs: Optional[dict[str, Any]],
     ) -> StateType:
         pass
 
     def replace_state(
         self,
         state_name: Union[str, State],
-        **kwargs: Any,
+        **kwargs: Optional[dict[str, Any]],
     ) -> State:
         """
         Replace the currently running state with a new one.
@@ -637,7 +650,7 @@ class StateManager:
         return self._state_stack[:]
 
     @property
-    def queued_states(self) -> Sequence[Tuple[str, Mapping[str, Any]]]:
+    def queued_states(self) -> Sequence[tuple[str, Mapping[str, Any]]]:
         """
         Sequence of states that are queued.
 
@@ -654,13 +667,13 @@ class StateManager:
     @overload
     def get_state_by_name(
         self,
-        state_name: Type[StateType],
+        state_name: type[StateType],
     ) -> StateType:
         pass
 
     def get_state_by_name(
         self,
-        state_name: Union[str, Type[State]],
+        state_name: Union[str, type[State]],
     ) -> State:
         """
         Query the state stack for a state by the name supplied.
@@ -684,7 +697,7 @@ class StateManager:
     def get_queued_state_by_name(
         self,
         state_name: str,
-    ) -> Tuple[str, Mapping[str, Any]]:
+    ) -> tuple[str, Mapping[str, Any]]:
         """
         Query the queued state stack for a state by the name supplied.
 
@@ -700,3 +713,7 @@ class StateManager:
                 return queued_state
 
         raise ValueError(f"Missing queued state {state_name}")
+
+    def get_active_state_names(self) -> Sequence[str]:
+        """List of names of active states."""
+        return [state.name for state in self._state_stack]

@@ -28,7 +28,7 @@
         },
         {
             "level_learned": 16,
-            "technique": "oedipus"
+            "technique": "fluff_up"
         },
         {
             "level_learned": 20,
@@ -41,6 +41,10 @@
         {
             "level_learned": 28,
             "technique": "blade"
+        },
+        {
+            "level_learned": 45,
+            "technique": "suplex"
         }
     ],
     "evolutions": [],
@@ -54,6 +58,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["brute", "woodland"],
     "shape": "brute",
     "stage": "stage2",
     "types": [
@@ -64,7 +69,7 @@
     "txmn_id": 59,
     "height": 150,
     "weight": 125,
-    "catch_rate": 85.0,
+    "catch_rate": 35.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

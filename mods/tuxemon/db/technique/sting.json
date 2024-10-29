@@ -3,12 +3,12 @@
   "accuracy": 0.8,
   "animation": "pound",
   "effects": [
-    "give status_poison,target",
+    "give poison,target",
     "damage"
   ],
   "flip_axes": "",
   "is_fast": false,
-  "potency": 0.2,
+  "potency": 0.4,
   "power": 1.25,
   "range": "melee",
   "recharge": 1,
@@ -16,13 +16,15 @@
   "slug": "sting",
   "sort": "damage",
   "target": {
-    "enemy monster": 2,
-    "enemy team": 0,
-    "enemy trainer": 0,
-    "own monster": 0,
-    "own team": 0,
-    "own trainer": 0
+    "enemy_monster": true,
+    "enemy_team": false,
+    "enemy_trainer": false,
+    "own_monster": false,
+    "own_team": false,
+    "own_trainer": false
   },
+  "category": "simple",
+  "tags": ["Bug", "Toxic"],
   "types": [
     "wood"
   ],

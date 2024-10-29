@@ -12,7 +12,7 @@
         },
         {
             "level_learned": 6,
-            "technique": "maori"
+            "technique": "greenstone"
         },
         {
             "level_learned": 8,
@@ -25,12 +25,35 @@
         {
             "level_learned": 16,
             "technique": "hibernate"
+        },
+        {
+            "level_learned": 32,
+            "technique": "sting"
+        },
+        {
+            "level_learned": 36,
+            "technique": "one_two"
+        },
+        {
+            "level_learned": 40,
+            "technique": "fluff_up"
+        },
+        {
+            "level_learned": 56,
+            "technique": "whirlwind"
+        },
+        {
+            "level_learned": 60,
+            "technique": "wing_tip"
+        },
+        {
+            "level_learned": 64,
+            "technique": "shadow_boxing"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
-            "at_level": 30,
+            "at_level": 32,
             "monster_slug": "sapragon"
         }
     ],
@@ -44,6 +67,7 @@
             "evo_stage": "stage2"
         }
     ],
+    "tags": ["dragon", "jungle"],
     "shape": "dragon",
     "stage": "basic",
     "types": [
@@ -53,7 +77,7 @@
     "txmn_id": 140,
     "height": 102,
     "weight": 85,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

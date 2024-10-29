@@ -21,11 +21,22 @@
         {
             "level_learned": 12,
             "technique": "one_two"
+        },
+        {
+            "level_learned": 24,
+            "technique": "stampede"
+        },
+        {
+            "level_learned": 28,
+            "technique": "electrical_storm"
+        },
+        {
+            "level_learned": 32,
+            "technique": "snowstorm"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 18,
             "monster_slug": "rabbitosaur"
         }
@@ -36,6 +47,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["varmint"],
     "shape": "varmint",
     "stage": "basic",
     "types": [
@@ -45,7 +57,7 @@
     "txmn_id": 44,
     "height": 60,
     "weight": 10,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

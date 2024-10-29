@@ -32,7 +32,7 @@
         },
         {
             "level_learned": 24,
-            "technique": "sword"
+            "technique": "slice"
         },
         {
             "level_learned": 28,
@@ -53,16 +53,17 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["varmint", "desert", "extraplanar"],
     "shape": "varmint",
     "stage": "standalone",
     "types": [
         "metal"
     ],
     "possible_genders": ["male", "female"],
-    "txmn_id": 171,
+    "txmn_id": 61,
     "height": 100,
     "weight": 10,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

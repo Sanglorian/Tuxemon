@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.states.pc import KENNEL
+from tuxemon.prepare import KENNEL
 from tuxemon.states.pc_kennel import HIDDEN_LIST
 
 
@@ -47,7 +47,7 @@ class SetKennelVisibleAction(EventAction):
                 f"{kennel} cannot be made invisible.",
             )
         else:
-            if kennel in player.monster_boxes:
+            if player.monster_boxes.has_box(kennel):
                 if visible == "true":
                     if kennel in HIDDEN_LIST:
                         HIDDEN_LIST.remove(kennel)

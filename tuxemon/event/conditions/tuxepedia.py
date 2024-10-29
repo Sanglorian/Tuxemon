@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from operator import eq, ge, gt, le, lt, ne
-
-from tuxemon.db import SeenStatus, db
+from tuxemon.db import MonsterModel, SeenStatus, db
 from tuxemon.event import MapCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
+from tuxemon.tools import compare
+
+lookup_cache: dict[str, MonsterModel] = {}
 
 
 class TuxepediaCondition(EventCondition):
@@ -17,66 +18,45 @@ class TuxepediaCondition(EventCondition):
     Script usage:
         .. code-block::
 
-            is tuxepedia <operator>,<percentage>
+            is tuxepedia <operator>,<percentage>[,total]
 
     Script parameters:
         operator: Numeric comparison operator. Accepted values are "less_than",
             "less_or_equal", "greater_than", "greater_or_equal", "equals"
             and "not_equals".
         percentage: Number between 0.1 and 1.0
+        total: Total, by default the tot number of tuxemon.
 
     """
 
     name = "tuxepedia"
 
     def test(self, session: Session, condition: MapCondition) -> bool:
-        """
-        Check Tuxepedia's progress.
+        if not lookup_cache:
+            _lookup_monsters()
 
-        Parameters:
-            session: The session object
-            condition: The map condition object.
-
-        Returns:
-            Whether the player has seen or caught a monster.
-
-        """
         player = session.player
+        operator, value, *_total = condition.parameters
 
-        # Read the parameters
-        operator = condition.parameters[0]
-        amount: float = 0.0
-        # Tuxepedia data
-        monsters = list(db.database["monster"])
-        filters = []
-        for mon in monsters:
-            results = db.lookup(mon, table="monster")
-            if results.txmn_id > 0:
-                filters.append(results)
+        if _total:
+            total = int(_total[0])
+        else:
+            total = len(lookup_cache)
+
         tuxepedia = list(player.tuxepedia.values())
         caught = tuxepedia.count(SeenStatus.caught)
         seen = tuxepedia.count(SeenStatus.seen) + caught
-        percentage = round((seen / len(filters)), 1)
-        # Check number
-        value = float(condition.parameters[1])
-        if 0.0 <= value <= 1.0:
-            amount = value
-        else:
-            raise ValueError(
-                f"{value} must be between 0.0 and 1.0",
-            )
-        # Check if the condition is true
-        if operator == "less_than":
-            return bool(lt(percentage, amount))
-        elif operator == "less_or_equal":
-            return bool(le(percentage, amount))
-        elif operator == "greater_than":
-            return bool(gt(percentage, amount))
-        elif operator == "greater_or_equal":
-            return bool(ge(percentage, amount))
-        elif operator == "equals":
-            return bool(eq(percentage, amount))
-        elif operator == "not_equals":
-            return bool(ne(percentage, amount))
-        else:
-            raise ValueError(f"{operator} is incorrect.")
+        percentage = round((seen / total) * 100, 1)
+
+        if not 0.0 <= float(value) <= 100.0:
+            raise ValueError(f"{value} must be between 0.0 and 100.0")
+
+        return compare(operator, percentage, float(value))
+
+
+def _lookup_monsters() -> None:
+    monsters = list(db.database["monster"])
+    for mon in monsters:
+        results = db.lookup(mon, table="monster")
+        if results.txmn_id > 0:
+            lookup_cache[mon] = results

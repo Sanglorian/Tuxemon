@@ -1,22 +1,20 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import itertools
 import logging
 import os
+import uuid
+from collections import defaultdict
+from collections.abc import Mapping, MutableMapping, Sequence
+from functools import partial
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
-    List,
-    Literal,
-    Mapping,
-    MutableMapping,
+    DefaultDict,
+    NamedTuple,
     Optional,
-    Sequence,
-    Set,
-    Tuple,
     TypedDict,
     Union,
     no_type_check,
@@ -26,14 +24,16 @@ import pygame
 from pygame.rect import Rect
 
 from tuxemon import networking, prepare, state
+from tuxemon.camera import Camera, project
+from tuxemon.db import Direction
 from tuxemon.entity import Entity
 from tuxemon.graphics import ColorLike
 from tuxemon.map import (
-    Direction,
     PathfindNode,
     RegionProperties,
     TuxemonMap,
     dirs2,
+    get_adjacent_position,
     pairs,
     proj,
 )
@@ -42,10 +42,13 @@ from tuxemon.math import Vector2
 from tuxemon.platform.const import buttons, events, intentions
 from tuxemon.platform.events import PlayerInput
 from tuxemon.session import local_session
+from tuxemon.states.world.world_classes import BoundaryChecker
 from tuxemon.states.world.world_menus import WorldMenuState
 from tuxemon.surfanim import SurfaceAnimation
+from tuxemon.teleporter import Teleporter
 
 if TYPE_CHECKING:
+    from tuxemon.monster import Monster
     from tuxemon.networking import EventData
     from tuxemon.npc import NPC
     from tuxemon.player import Player
@@ -53,40 +56,48 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 direction_map: Mapping[int, Direction] = {
-    intentions.UP: "up",
-    intentions.DOWN: "down",
-    intentions.LEFT: "left",
-    intentions.RIGHT: "right",
+    intentions.UP: Direction.up,
+    intentions.DOWN: Direction.down,
+    intentions.LEFT: Direction.left,
+    intentions.RIGHT: Direction.right,
 }
 
-CinemaState = Literal["off", "on", "turning on", "turning off"]
+SpriteMap = Union[
+    Mapping[str, pygame.surface.Surface],
+    Mapping[str, SurfaceAnimation],
+]
+
+animation_mapping = {
+    "walking": {
+        "up": "back_walk",
+        "down": "front_walk",
+        "left": "left_walk",
+        "right": "right_walk",
+    },
+    "idle": {"up": "back", "down": "front", "left": "left", "right": "right"},
+}
 
 
-class EntityCollision(TypedDict):
-    entity: Entity[Any]
+class WorldSurfaces(NamedTuple):
+    surface: pygame.surface.Surface
+    position3: Vector2
+    layer: int
 
 
 class AnimationInfo(TypedDict):
     animation: SurfaceAnimation
-    position: Tuple[int, int]
+    position: tuple[int, int]
     layer: int
 
 
-class CinemaSurfaceInfo(TypedDict):
-    surface: pygame.surface.Surface
-    on_position: List[int]
-    off_position: List[int]
-    position: List[int]
-
-
-CollisionDict = Dict[
-    Tuple[int, int],
-    Union[EntityCollision, RegionProperties, None],
+CollisionDict = dict[
+    tuple[int, int],
+    Optional[RegionProperties],
 ]
 
 CollisionMap = Mapping[
-    Tuple[int, int],
-    Union[EntityCollision, RegionProperties, None],
+    tuple[int, int],
+    Optional[RegionProperties],
 ]
 
 
@@ -112,20 +123,25 @@ class WorldState(state.State):
 
         from tuxemon.player import Player
 
+        self.boundary_checker = BoundaryChecker()
+        self.teleporter = Teleporter()
         # Provide access to the screen surface
         self.screen = self.client.screen
         self.screen_rect = self.screen.get_rect()
         self.resolution = prepare.SCREEN_SIZE
         self.tile_size = prepare.TILE_SIZE
+        # default variables for layer
+        self.layer = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+        self.layer_color: ColorLike = prepare.TRANSPARENT_COLOR
 
         #####################################################################
         #                           Player Details                           #
         ######################################################################
 
-        self.npcs: Dict[str, NPC] = {}
-        self.npcs_off_map: Dict[str, NPC] = {}
-        self.wants_to_move_player: Optional[Direction] = None
-        self.allow_player_movement = True
+        self.npcs: list[NPC] = []
+        self.npcs_off_map: list[NPC] = []
+        self.wants_to_move_char: dict[str, Direction] = {}
+        self.allow_char_movement: list[str] = []
 
         ######################################################################
         #                              Map                                   #
@@ -142,76 +158,22 @@ class WorldState(state.State):
         self.transition_surface: Optional[pygame.surface.Surface] = None
         self.in_transition = False
 
-        # The delayed teleport variable is used to perform a teleport in the
-        # middle of a transition. For example, fading to black, then
-        # teleporting the player, and fading back in again.
-        self.delayed_teleport = False
-        self.delayed_mapname = ""
-        self.delayed_x = 0
-        self.delayed_y = 0
-
-        # The delayed facing variable used to change the player's facing in
-        # the middle of a transition.
-        self.delayed_facing: Optional[Direction] = None
+        # bubble above the player's head
+        self.bubble: dict[NPC, pygame.surface.Surface] = {}
+        self.cinema_x_ratio: Optional[float] = None
+        self.cinema_y_ratio: Optional[float] = None
 
         ######################################################################
         #                       Fullscreen Animations                        #
         ######################################################################
 
-        # The cinema bars are used for cinematic moments.
-        # The cinema state can be: "off", "on", "turning on" or "turning off"
-        self.cinema_state: CinemaState = "off"
-        # Pixels per second speed of the animation.
-        self.cinema_speed = 15 * prepare.SCALE
-
-        # Create a surface that we'll use as black bars for a cinematic
-        # experience
-        top_surface = pygame.Surface(
-            (self.resolution[0], self.resolution[1] / 6)
-        )
-        bottom_surface = pygame.Surface(
-            (self.resolution[0], self.resolution[1] / 6)
-        )
-
-        # Fill our empty surface with black
-        top_surface.fill((0, 0, 0))
-        bottom_surface.fill((0, 0, 0))
-
-        # When cinema mode is off, this will be the position we'll draw the
-        # black bar.
-        top_off_position = [
-            0,
-            -top_surface.get_height(),
-        ]
-        bottom_off_position = [0, self.resolution[1]]
-        top_position = list(top_off_position)
-        bottom_position = list(bottom_off_position)
-
-        # When cinema mode is ON, this will be the position we'll draw the
-        # black bar.
-        top_on_position = [0, 0]
-        bottom_on_position = [
-            0,
-            self.resolution[1] - bottom_surface.get_height(),
-        ]
-
-        self.cinema_top: CinemaSurfaceInfo = {
-            "surface": top_surface,
-            "on_position": top_on_position,
-            "off_position": top_off_position,
-            "position": top_position,
-        }
-        self.cinema_bottom: CinemaSurfaceInfo = {
-            "surface": bottom_surface,
-            "on_position": bottom_on_position,
-            "off_position": bottom_off_position,
-            "position": bottom_position,
-        }
-        self.map_animations: Dict[str, AnimationInfo] = {}
+        self.map_animations: dict[str, AnimationInfo] = {}
 
         if local_session.player is None:
-            new_player = Player(prepare.CONFIG.player_npc, world=self)
+            new_player = Player(prepare.PLAYER_NPC, world=self)
             local_session.player = new_player
+
+        self.camera = Camera(local_session.player, self.boundary_checker)
 
         if map_name:
             self.change_map(map_name)
@@ -220,19 +182,20 @@ class WorldState(state.State):
 
     def resume(self) -> None:
         """Called after returning focus to this state"""
-        self.unlock_controls()
+        self.unlock_controls(self.player)
 
     def pause(self) -> None:
         """Called before another state gets focus"""
-        self.lock_controls()
-        self.stop_player()
+        self.lock_controls(self.player)
+        self.stop_char(self.player)
 
-    def fade_and_teleport(self, duration: float = 2) -> None:
+    def fade_and_teleport(self, duration: float, color: ColorLike) -> None:
         """
         Fade out, teleport, fade in.
 
         Parameters:
             duration: Duration of the fade out. The fade in is slightly larger.
+            color: Fade's color.
 
         """
 
@@ -240,30 +203,36 @@ class WorldState(state.State):
             self.in_transition = False
 
         def fade_in() -> None:
-            self.trigger_fade_in(duration)
+            self.trigger_fade_in(duration, color)
             self.task(cleanup, duration)
 
         # cancel any fades that may be going one
         self.remove_animations_of(self)
         self.remove_animations_of(cleanup)
 
-        self.stop_and_reset_player()
+        self.stop_and_reset_char(self.player)
 
         self.in_transition = True
-        self.trigger_fade_out(duration)
+        self.trigger_fade_out(duration, color)
 
-        task = self.task(self.handle_delayed_teleport, duration)
+        task = self.task(
+            partial(
+                self.teleporter.handle_delayed_teleport, self, self.player
+            ),
+            duration,
+        )
         task.chain(fade_in, duration + 0.5)
 
-    def trigger_fade_in(self, duration: float = 2) -> None:
+    def trigger_fade_in(self, duration: float, color: ColorLike) -> None:
         """
         World state has own fade code b/c moving maps doesn't change state.
 
         Parameters:
             duration: Duration of the fade in.
+            color: Fade's color.
 
         """
-        self.set_transition_surface()
+        self.set_transition_surface(color)
         self.animate(
             self,
             transition_alpha=0,
@@ -271,9 +240,9 @@ class WorldState(state.State):
             duration=duration,
             round_values=True,
         )
-        self.task(self.unlock_controls, duration - 0.5)
+        self.task(partial(self.unlock_controls, self.player), max(duration, 0))
 
-    def trigger_fade_out(self, duration: float = 2) -> None:
+    def trigger_fade_out(self, duration: float, color: ColorLike) -> None:
         """
         World state has own fade code b/c moving maps doesn't change state.
 
@@ -281,9 +250,10 @@ class WorldState(state.State):
 
         Parameters:
             duration: Duration of the fade out.
+            color: Fade's color.
 
         """
-        self.set_transition_surface()
+        self.set_transition_surface(color)
         self.animate(
             self,
             transition_alpha=255,
@@ -291,38 +261,13 @@ class WorldState(state.State):
             duration=duration,
             round_values=True,
         )
-        self.stop_player()
-        self.lock_controls()
+        self.stop_char(self.player)
+        self.lock_controls(self.player)
 
-    def handle_delayed_teleport(self) -> None:
-        """
-        Call to teleport player if delayed_teleport is set.
-
-        * Load a map
-        * Move player
-        * Send data to network about teleport
-
-        """
-        if self.delayed_teleport:
-            self.stop_player()
-            self.lock_controls()
-
-            # check if map has changed, and if so, change it
-            map_name = prepare.fetch("maps", self.delayed_mapname)
-
-            if map_name != self.current_map.filename:
-                self.change_map(map_name)
-
-            self.player.set_position((self.delayed_x, self.delayed_y))
-
-            if self.delayed_facing:
-                self.player.facing = self.delayed_facing
-                self.delayed_facing = None
-
-            self.delayed_teleport = False
-
-    def set_transition_surface(self, color: ColorLike = (0, 0, 0)) -> None:
-        self.transition_surface = pygame.Surface(self.client.screen.get_size())
+    def set_transition_surface(self, color: ColorLike) -> None:
+        self.transition_surface = pygame.Surface(
+            self.client.screen.get_size(), pygame.SRCALPHA
+        )
         self.transition_surface.fill(color)
 
     def broadcast_player_teleport_change(self) -> None:
@@ -336,11 +281,11 @@ class WorldState(state.State):
             self.client.client.update_player(self.player.facing)
 
         # Update the location of the npcs. Doesn't send network data.
-        for npc in self.npcs.values():
+        for npc in self.npcs:
             char_dict = {"tile_pos": npc.tile_pos}
             networking.update_client(npc, char_dict, self.client)
 
-        for npc in self.npcs_off_map.values():
+        for npc in self.npcs_off_map:
             char_dict = {"tile_pos": npc.tile_pos}
             networking.update_client(npc, char_dict, self.client)
 
@@ -356,6 +301,7 @@ class WorldState(state.State):
         self.update_npcs(time_delta)
         for anim_data in self.map_animations.values():
             anim_data["animation"].update(time_delta)
+        self.camera.update()
 
         logger.debug("*** Game Loop Started ***")
         logger.debug("Player Variables:" + str(self.player.game_variables))
@@ -452,15 +398,18 @@ class WorldState(state.State):
         # moving direction to that direction
         direction = direction_map.get(event.button)
         if direction is not None:
-            if event.held:
-                self.wants_to_move_player = direction
-                if self.allow_player_movement:
-                    self.move_player(direction)
-                return None
-            elif not event.pressed:
-                if direction == self.wants_to_move_player:
-                    self.stop_player()
+            if self.camera.follows_entity:
+                if event.held:
+                    self.wants_to_move_char[self.player.slug] = direction
+                    if self.player.slug in self.allow_char_movement:
+                        self.move_char(self.player, direction)
                     return None
+                elif not event.pressed:
+                    if self.player.slug in self.wants_to_move_char.keys():
+                        self.stop_char(self.player)
+                        return None
+            else:
+                return self.camera.handle_input(event)
 
         if prepare.DEV_TOOLS:
             if event.pressed and event.button == intentions.NOCLIP:
@@ -479,82 +428,192 @@ class WorldState(state.State):
     ####################################################
     #                   Map Drawing                    #
     ####################################################
-    def map_drawing(self, surface: pygame.surface.Surface) -> None:
-        """
-        Draws the map tiles in a layered order.
-
-        Parameters:
-            surface: Surface to draw into.
-
-        """
-        # TODO: move all drawing into a "WorldView" widget
-        # interlace player sprites with tiles surfaces.
-        # eventually, maybe use pygame sprites or something similar
-        world_surfaces: List[
-            Tuple[pygame.surface.Surface, Vector2, int]
-        ] = list()
-
-        # temporary
-        if self.current_map.renderer is None:
-            self.current_map.initialize_renderer()
-
-        # get player coords to center map
-        cx, cy = self.project(self.player.position3)
-
-        # offset center point for player sprite
-        cx += prepare.TILE_SIZE[0] // 2
-        cy += prepare.TILE_SIZE[1] // 2
-
-        # center the map on center of player sprite
-        # must center map before getting sprite coordinates
-        assert self.current_map.renderer
-        self.current_map.renderer.center((cx, cy))
-
-        # get npc surfaces/sprites
+    def get_npc_surfaces(self, current_map: int) -> list[WorldSurfaces]:
+        """Get the NPC surfaces/sprites."""
+        npc_surfaces = []
         for npc in self.npcs:
-            world_surfaces.extend(
-                self.npcs[npc].get_sprites(self.current_map.sprite_layer)
-            )
+            npc_surfaces.extend(self.get_sprites(npc, current_map))
+        return npc_surfaces
 
-        # get map_animations
+    def get_map_animations(self) -> list[WorldSurfaces]:
+        """Get the map animations."""
+        map_animations = []
         for anim_data in self.map_animations.values():
             anim = anim_data["animation"]
             if not anim.is_finished() and anim.visibility:
-                frame = (
-                    anim.get_current_frame(),
-                    Vector2(anim_data["position"]),
-                    anim_data["layer"],
+                surface = anim.get_current_frame()
+                vector = Vector2(anim_data["position"])
+                layer = anim_data["layer"]
+                map_animation = WorldSurfaces(surface, vector, layer)
+                map_animations.append(map_animation)
+        return map_animations
+
+    def position_surfaces(
+        self, surfaces: list[WorldSurfaces]
+    ) -> list[tuple[pygame.surface.Surface, Rect, int]]:
+        """Position the surfaces correctly."""
+        screen_surfaces = []
+        for frame in surfaces:
+            surface = frame.surface
+            position = frame.position3
+            layer = frame.layer
+
+            # Project to pixel/screen coordinates
+            screen_position = self.get_pos_from_tilepos(position)
+
+            # Handle tall sprites
+            height = surface.get_height()
+            if height > prepare.TILE_SIZE[1]:
+                screen_position = (
+                    screen_position[0],
+                    screen_position[1] - height // 2,
                 )
-                world_surfaces.append(frame)
 
-        # position the surfaces correctly
-        # pyscroll expects surfaces in screen coords, so they are
-        # converted from world to screen coords here
-        screen_surfaces = list()
-        for frame in world_surfaces:
-            s, c, l = frame
+            rect = Rect(screen_position, surface.get_size())
+            screen_surfaces.append((surface, rect, layer))
+        return screen_surfaces
 
-            # project to pixel/screen coords
-            c = self.get_pos_from_tilepos(c)
-
-            # TODO: better handling of tall sprites
-            # handle tall sprites
-            h = s.get_height()
-            if h > prepare.TILE_SIZE[1]:
-                # offset for center and image height
-                c = (c[0], c[1] - h // 2)
-
-            r = Rect(c, s.get_size())
-            screen_surfaces.append((s, r, l))
-
-        # draw the map and sprites
+    def draw_map_and_sprites(
+        self,
+        surface: pygame.surface.Surface,
+        screen_surfaces: list[tuple[pygame.surface.Surface, Rect, int]],
+    ) -> None:
+        """Draw the map and sprites."""
+        assert self.current_map.renderer
         self.rect = self.current_map.renderer.draw(
             surface, surface.get_rect(), screen_surfaces
         )
 
-        # If we want to draw the collision map for debug purposes
+    def apply_vertical_bars(
+        self, surface: pygame.surface.Surface, aspect_ratio: float
+    ) -> None:
+        """
+        Add vertical black bars to the top and bottom of the screen
+        to achieve a cinematic aspect ratio.
+        """
+        screen_aspect_ratio = self.resolution[0] / self.resolution[1]
+        if screen_aspect_ratio < aspect_ratio:
+            bar_height = int(
+                self.resolution[1]
+                * (1 - screen_aspect_ratio / aspect_ratio)
+                / 2
+            )
+            bar = pygame.Surface((self.resolution[0], bar_height))
+            bar.fill(prepare.BLACK_COLOR)
+            surface.blit(bar, (0, 0))
+            surface.blit(bar, (0, self.resolution[1] - bar_height))
+
+    def apply_horizontal_bars(
+        self, surface: pygame.surface.Surface, aspect_ratio: float
+    ) -> None:
+        """
+        Add horizontal black bars to the left and right of the screen
+        to achieve a cinematic aspect ratio.
+        """
+        screen_aspect_ratio = self.resolution[1] / self.resolution[0]
+        if screen_aspect_ratio < aspect_ratio:
+            bar_width = int(
+                self.resolution[0]
+                * (1 - screen_aspect_ratio / aspect_ratio)
+                / 2
+            )
+            bar = pygame.Surface((bar_width, self.resolution[1]))
+            bar.fill(prepare.BLACK_COLOR)
+            surface.blit(bar, (0, 0))
+            surface.blit(bar, (self.resolution[0] - bar_width, 0))
+
+    def set_bubble(
+        self, screen_surfaces: list[tuple[pygame.surface.Surface, Rect, int]]
+    ) -> None:
+        if self.bubble:
+            for npc, surface in self.bubble.items():
+                cx, cy = self.get_pos_from_tilepos(Vector2(npc.tile_pos))
+                bubble_rect = surface.get_rect()
+                bubble_rect.centerx = npc.rect.centerx
+                bubble_rect.bottom = npc.rect.top
+                bubble_rect.x = cx
+                bubble_rect.y = cy - (
+                    surface.get_height() + int(npc.rect.height / 10)
+                )
+                bubble = (surface, bubble_rect, 100)
+                screen_surfaces.append(bubble)
+
+    def set_layer(self, surface: pygame.surface.Surface) -> None:
+        self.layer.fill(self.layer_color)
+        surface.blit(self.layer, (0, 0))
+
+    def map_drawing(self, surface: pygame.surface.Surface) -> None:
+        """Draw the map tiles in a layered order."""
+        # Ensure map renderer is initialized
+        if self.current_map.renderer is None:
+            self.current_map.initialize_renderer()
+
+        # Get player coordinates to center map
+        cx, cy = self.camera.position
+        assert self.current_map.renderer
+        self.current_map.renderer.center((cx, cy))
+
+        # Get NPC surfaces/sprites
+        current_map = self.current_map.sprite_layer
+        npc_surfaces = self.get_npc_surfaces(current_map)
+
+        # Get map animations
+        map_animations = self.get_map_animations()
+
+        # Combine NPC surfaces and map animations
+        surfaces = npc_surfaces + map_animations
+
+        # Position surfaces correctly
+        screen_surfaces = self.position_surfaces(surfaces)
+
+        # Add bubble above player's head
+        self.set_bubble(screen_surfaces)
+
+        # Draw the map and sprites
+        self.draw_map_and_sprites(surface, screen_surfaces)
+
+        # Add transparent layer
+        self.set_layer(surface)
+
+        # Draw collision map for debug purposes
         if prepare.CONFIG.collision_map:
             self.debug_drawing(surface)
+
+        # Apply cinema mode
+        if self.cinema_x_ratio is not None:
+            self.apply_horizontal_bars(surface, self.cinema_x_ratio)
+        if self.cinema_y_ratio is not None:
+            self.apply_vertical_bars(surface, self.cinema_y_ratio)
+
+    def get_sprites(self, npc: NPC, layer: int) -> list[WorldSurfaces]:
+        """
+        Get the surfaces and layers for the sprite. Used to render the NPC.
+
+        Parameters:
+            layer: The layer to draw the sprite on.
+
+        Returns:
+            WorldSurfaces containing the surface to plot, the current
+            position of the NPC and the layer.
+
+        """
+
+        def get_frame(d: SpriteMap, ani: str) -> pygame.surface.Surface:
+            frame = d[ani]
+            if isinstance(frame, SurfaceAnimation):
+                surface = frame.get_current_frame()
+                frame.rate = npc.moverate / prepare.CONFIG.player_walkrate
+                return surface
+            else:
+                return frame
+
+        frame_dict: SpriteMap = npc.sprite if npc.moving else npc.standing
+        moving = "walking" if npc.moving else "idle"
+        state = animation_mapping[moving][npc.facing]
+        world = WorldSurfaces(
+            get_frame(frame_dict, state), proj(npc.position3), layer
+        )
+        return [world]
 
     ####################################################
     #            Pathfinding and Collisions            #
@@ -589,7 +648,7 @@ class WorldState(state.State):
 
         # Maybe in the future the world should have a dict of entities instead?
         if isinstance(entity, NPC):
-            self.npcs[entity.slug] = entity
+            self.npcs.append(entity)
 
     def get_entity(self, slug: str) -> Optional[NPC]:
         """
@@ -599,9 +658,19 @@ class WorldState(state.State):
             slug: The entity slug.
 
         """
-        return self.npcs.get(slug)
+        return next((npc for npc in self.npcs if npc.slug == slug), None)
 
-    def get_entity_pos(self, pos: Tuple[int, int]) -> Optional[NPC]:
+    def get_entity_by_iid(self, iid: uuid.UUID) -> Optional[NPC]:
+        """
+        Get an entity from the world.
+
+        Parameters:
+            iid: The entity instance ID.
+
+        """
+        return next((npc for npc in self.npcs if npc.instance_id == iid), None)
+
+    def get_entity_pos(self, pos: tuple[int, int]) -> Optional[NPC]:
         """
         Get an entity from the world by its position.
 
@@ -609,10 +678,7 @@ class WorldState(state.State):
             pos: The entity position.
 
         """
-        for npc in self.npcs.values():
-            if npc.tile_pos == pos:
-                return npc
-        return None
+        return next((npc for npc in self.npcs if npc.tile_pos == pos), None)
 
     def remove_entity(self, slug: str) -> None:
         """
@@ -622,7 +688,10 @@ class WorldState(state.State):
             slug: The entity slug.
 
         """
-        del self.npcs[slug]
+        npc = self.get_entity(slug)
+        if npc:
+            npc.remove_collision()
+            self.npcs.remove(npc)
 
     def get_all_entities(self) -> Sequence[NPC]:
         """
@@ -632,26 +701,101 @@ class WorldState(state.State):
             The list of entities in the map.
 
         """
-        return list(self.npcs.values())
+        return self.npcs
+
+    def get_all_monsters(self) -> list[Monster]:
+        """
+        List of all monsters in the world.
+
+        Returns:
+            The list of monsters in the map.
+
+        """
+        return [monster for npc in self.npcs for monster in npc.monsters]
+
+    def get_monster_by_iid(self, iid: uuid.UUID) -> Optional[Monster]:
+        """
+        Get a monster from the world.
+
+        Parameters:
+            iid: The monster instance ID.
+
+        """
+        return next(
+            (
+                monster
+                for npc in self.npcs
+                for monster in npc.monsters
+                if monster.instance_id == iid
+            ),
+            None,
+        )
+
+    def get_all_tile_properties(
+        self,
+        surface_map: MutableMapping[tuple[int, int], dict[str, float]],
+        label: str,
+    ) -> list[tuple[int, int]]:
+        """
+        Retrieves the coordinates of all tiles with a specific property.
+
+        Parameters:
+            map: The surface map.
+            label: The label (SurfaceKeys).
+
+        Returns:
+            A list of coordinates (tuples) of tiles with the specified label.
+
+        """
+        return [
+            coords for coords, props in surface_map.items() if label in props
+        ]
+
+    def get_tile_moverate(
+        self,
+        surface_map: MutableMapping[tuple[int, int], dict[str, float]],
+        position: tuple[int, int],
+    ) -> float:
+        """
+        Returns moverate of a specific tile from the surface map.
+
+        If the position is not found in the map, or if the tile has no
+        moverate value, returns 1.0 as the default moverate.
+
+        Parameters:
+            surface_map: The surface map.
+            position: The coordinate pf the tile.
+
+        Returns:
+            The moverate of the tile at the specified position.
+
+        """
+        tile_properties = surface_map.get(position, {})
+        return next(iter(tile_properties.values()), 1.0)
 
     def check_collision_zones(
         self,
-        map: MutableMapping[Tuple[int, int], Optional[RegionProperties]],
+        collision_map: MutableMapping[
+            tuple[int, int], Optional[RegionProperties]
+        ],
         label: str,
-    ) -> Optional[Tuple[int, int]]:
+    ) -> list[tuple[int, int]]:
         """
-        Returns coords (tuple) of specific collision zones.
+        Returns coordinates of specific collision zones.
+
+        Parameters:
+            collision_map: The collision map.
+            label: The label to filter collision zones by.
 
         Returns:
-            The coordinates.
+            A list of coordinates of collision zones with the specific label.
 
         """
-        for coords, props in map.items():
-            if isinstance(props, dict):
-                for ele in props.values():
-                    if ele == label:
-                        return coords
-        return None
+        return [
+            coords
+            for coords, props in collision_map.items()
+            if props and props.key == label
+        ]
 
     def get_collision_map(self) -> CollisionMap:
         """
@@ -668,24 +812,60 @@ class WorldState(state.State):
             A dictionary of collision tiles.
 
         """
-        # TODO: overlapping tiles/objects by returning a list
-        collision_dict: CollisionDict = {}
+        collision_dict: DefaultDict[
+            tuple[int, int], Optional[RegionProperties]
+        ] = defaultdict(lambda: RegionProperties([], [], [], None, None))
 
         # Get all the NPCs' tile positions
         for npc in self.get_all_entities():
-            pos = npc.tile_pos
-            collision_dict[pos] = {"entity": npc}
+            collision_dict[npc.tile_pos] = self._get_region_properties(
+                npc.tile_pos, npc
+            )
 
-        # tile layout takes precedence
-        collision_dict.update(self.collision_map)
+        # Add surface map entries to the collision dictionary
+        for coords, surface in self.surface_map.items():
+            for label, value in surface.items():
+                if float(value) == 0:
+                    collision_dict[coords] = self._get_region_properties(
+                        coords, label
+                    )
 
-        return collision_dict
+        collision_dict.update({k: v for k, v in self.collision_map.items()})
+
+        return dict(collision_dict)
+
+    def _get_region_properties(
+        self, coords: tuple[int, int], entity_or_label: Union[NPC, str]
+    ) -> RegionProperties:
+        region = self.collision_map.get(coords)
+        if region:
+            if isinstance(entity_or_label, str):
+                return RegionProperties(
+                    region.enter_from,
+                    region.exit_from,
+                    region.endure,
+                    None,
+                    entity_or_label,
+                )
+            else:
+                return RegionProperties(
+                    region.enter_from,
+                    region.exit_from,
+                    region.endure,
+                    entity_or_label,
+                    region.key,
+                )
+        else:
+            if isinstance(entity_or_label, str):
+                return RegionProperties([], [], [], None, entity_or_label)
+            else:
+                return RegionProperties([], [], [], entity_or_label, None)
 
     def pathfind(
         self,
-        start: Tuple[int, int],
-        dest: Tuple[int, int],
-    ) -> Optional[Sequence[Tuple[int, int]]]:
+        start: tuple[int, int],
+        dest: tuple[int, int],
+    ) -> Optional[Sequence[tuple[int, int]]]:
         """
         Pathfind.
 
@@ -698,11 +878,7 @@ class WorldState(state.State):
             ``None`` otherwise.
 
         """
-        pathnode = self.pathfind_r(
-            dest,
-            [PathfindNode(start)],
-            set(),
-        )
+        pathnode = self.pathfind_r(dest, [PathfindNode(start)], set())
 
         if pathnode:
             # traverse the node to get the path
@@ -714,22 +890,21 @@ class WorldState(state.State):
             return path[:-1]
 
         else:
-            # TODO: get current map name for a more useful error
+            character = self.get_entity_pos(start)
+            assert character
             logger.error(
-                "Pathfinding failed to find a path from "
-                + str(start)
-                + " to "
-                + str(dest)
-                + ". Are you sure that an obstacle-free path exists?"
+                f"{character.name}'s pathfinding failed to find a path from "
+                + f"{str(start)} to {str(dest)} in {self.current_map.filename}. "
+                + "Are you sure that an obstacle-free path exists?"
             )
 
             return None
 
     def pathfind_r(
         self,
-        dest: Tuple[int, int],
-        queue: List[PathfindNode],
-        known_nodes: Set[Tuple[int, int]],
+        dest: tuple[int, int],
+        queue: list[PathfindNode],
+        known_nodes: set[tuple[int, int]],
     ) -> Optional[PathfindNode]:
         """
         Breadth first search algorithm.
@@ -746,6 +921,7 @@ class WorldState(state.State):
         # The collisions shouldn't have changed whilst we were calculating,
         # so it saves time to reuse the map.
         collision_map = self.get_collision_map()
+        known_nodes.add(queue[0].get_value())
         while queue:
             node = queue.pop(0)
             if node.get_value() == dest:
@@ -756,24 +932,24 @@ class WorldState(state.State):
                     collision_map,
                     known_nodes,
                 ):
-                    new_node = PathfindNode(adj_pos, node)
-                    known_nodes.add(new_node.get_value())
-                    queue.append(new_node)
+                    if adj_pos not in known_nodes:
+                        known_nodes.add(adj_pos)
+                        queue.append(PathfindNode(adj_pos, node))
 
         return None
 
     def get_explicit_tile_exits(
         self,
-        position: Tuple[int, int],
-        tile: Union[RegionProperties, EntityCollision],
-        skip_nodes: Optional[Set[Tuple[int, int]]] = None,
-    ) -> Optional[Sequence[Tuple[int, int]]]:
+        position: tuple[int, int],
+        tile: RegionProperties,
+        skip_nodes: Optional[set[tuple[int, int]]] = None,
+    ) -> Optional[list[tuple[float, ...]]]:
         """
         Check for exits from tile which are defined in the map.
 
         This will return exits which were defined by the map creator.
 
-        Checks "continue" and "exits" properties of the tile.
+        Checks "endure" and "exits" properties of the tile.
 
         Parameters:
             position: Original position.
@@ -781,37 +957,38 @@ class WorldState(state.State):
             skip_nodes: Set of nodes to skip.
 
         """
-        # Check if the players current position has any exit limitations.
-        # this check is for tiles which define the only way to exit.
-        # for instance, one-way tiles.
+        skip_nodes = skip_nodes or set()
 
-        # does the tile define continue movements?
         try:
-            return [tuple(dirs2[tile["continue"]] + position)]
-        except KeyError:
-            pass
+            # Check if the players current position has any exit limitations.
+            if tile.endure:
+                direction = (
+                    self.player.facing
+                    if len(tile.endure) > 1 or not tile.endure
+                    else tile.endure[0]
+                )
+                exit_position = tuple(dirs2[direction] + position)
+                if exit_position not in skip_nodes:
+                    return [exit_position]
 
-        # does the tile explicitly define exits?
-        try:
-            adjacent_tiles = list()
-            for direction in tile["exit"]:
-                exit_tile = tuple(dirs2[direction] + position)
-                if exit_tile in skip_nodes:
-                    continue
-
-                adjacent_tiles.append(exit_tile)
-            return adjacent_tiles
-        except KeyError:
-            pass
+            # Check if the tile explicitly defines exits.
+            if tile.exit_from:
+                return [
+                    tuple(dirs2[direction] + position)
+                    for direction in tile.exit_from
+                    if tuple(dirs2[direction] + position) not in skip_nodes
+                ]
+        except (KeyError, TypeError):
+            return None
 
         return None
 
     def get_exits(
         self,
-        position: Tuple[int, int],
+        position: tuple[int, int],
         collision_map: Optional[CollisionMap] = None,
-        skip_nodes: Optional[Set[Tuple[int, int]]] = None,
-    ) -> Sequence[Tuple[int, int]]:
+        skip_nodes: Optional[set[tuple[int, int]]] = None,
+    ) -> Sequence[tuple[int, int]]:
         """
         Return list of tiles which can be moved into.
 
@@ -819,7 +996,7 @@ class WorldState(state.State):
         npcs, and collision lines, one-way tiles, etc.
 
         Parameters:
-            position: Original position.
+            position: The original position.
             collision_map: Mapping of collisions with entities and terrain.
             skip_nodes: Set of nodes to skip.
 
@@ -829,11 +1006,8 @@ class WorldState(state.State):
         """
         # TODO: rename this
         # get tile-level and npc/entity blockers
-        if collision_map is None:
-            collision_map = self.get_collision_map()
-
-        if skip_nodes is None:
-            skip_nodes = set()
+        collision_map = collision_map or self.get_collision_map()
+        skip_nodes = skip_nodes or set()
 
         # if there are explicit way to exit this position use that information,
         # handles 'continue' and 'exits'
@@ -848,13 +1022,14 @@ class WorldState(state.State):
             exits = None
 
         # get exits by checking surrounding tiles
-        adjacent_tiles = list()
-        for direction, neighbor in (
-            ("down", (position[0], position[1] + 1)),
-            ("right", (position[0] + 1, position[1])),
-            ("up", (position[0], position[1] - 1)),
-            ("left", (position[0] - 1, position[1])),
-        ):
+        adjacent_tiles = set()
+        for direction in [
+            Direction.down,
+            Direction.right,
+            Direction.up,
+            Direction.left,
+        ]:
+            neighbor = get_adjacent_position(position, direction)
             # if exits are defined make sure the neighbor is present there
             if exits and neighbor not in exits:
                 continue
@@ -865,9 +1040,7 @@ class WorldState(state.State):
 
             # We only need to check the perimeter,
             # as there is no way to get further out of bounds
-            if not (
-                self.invalid_x[0] < neighbor[0] < self.invalid_x[1]
-            ) or not (self.invalid_y[0] < neighbor[1] < self.invalid_y[1]):
+            if not self.boundary_checker.is_within_boundaries(neighbor):
                 continue
 
             # check to see if this tile is separated by a wall
@@ -888,75 +1061,79 @@ class WorldState(state.State):
                     continue
 
                 try:
-                    if pairs[direction] not in tile_data["enter"]:
+                    if pairs(direction) not in tile_data.enter_from:
                         continue
                 except KeyError:
                     continue
 
             # no tile data, so assume it is free to move into
-            adjacent_tiles.append(neighbor)
+            adjacent_tiles.add(neighbor)
 
-        return adjacent_tiles
+        return list(adjacent_tiles)
 
     ####################################################
-    #                Player Movement                   #
+    #              Character Movement                  #
     ####################################################
-    def lock_controls(self) -> None:
-        """Prevent input from moving the player."""
-        self.allow_player_movement = False
+    def lock_controls(self, char: NPC) -> None:
+        """Prevent input from moving the character."""
+        if char.slug in self.allow_char_movement:
+            self.allow_char_movement.remove(char.slug)
 
-    def unlock_controls(self) -> None:
+    def unlock_controls(self, char: NPC) -> None:
         """
-        Allow the player to move.
+        Allow the character to move.
 
-        If the player was previously holding a direction down,
-        then the player will start moving after this is called.
-
-        """
-        self.allow_player_movement = True
-        if self.wants_to_move_player:
-            self.move_player(self.wants_to_move_player)
-
-    def stop_player(self) -> None:
-        """
-        Reset controls and stop player movement at once. Do not lock controls.
-
-        Movement is gracefully stopped.  If player was in a movement, then
-        complete it before stopping.
+        If the character was previously holding a direction down,
+        then the character will start moving after this is called.
 
         """
-        self.wants_to_move_player = None
+        self.allow_char_movement.append(char.slug)
+        if char.slug in self.wants_to_move_char.keys():
+            _dir = self.wants_to_move_char.get(char.slug, Direction.down)
+            self.move_char(char, _dir)
+
+    def stop_char(self, char: NPC) -> None:
+        """
+        Reset controls and stop character movement at once.
+        Do not lock controls. Movement is gracefully stopped.
+        If character was in a movement, then complete it before stopping.
+
+        """
+        if char.slug in self.wants_to_move_char.keys():
+            del self.wants_to_move_char[char.slug]
         self.client.release_controls()
-        self.player.cancel_movement()
+        char.cancel_movement()
 
-    def stop_and_reset_player(self) -> None:
+    def stop_and_reset_char(self, char: NPC) -> None:
         """
-        Reset controls, stop player and abort movement. Do not lock controls.
+        Reset controls, stop character and abort movement. Do not lock controls.
 
-        Movement is aborted here, so the player will not complete movement
+        Movement is aborted here, so the character will not complete movement
         to a tile.  It will be reset to the tile where movement started.
 
         Use if you don't want to trigger another tile event.
 
         """
-        self.wants_to_move_player = None
+        if char.slug in self.wants_to_move_char.keys():
+            del self.wants_to_move_char[char.slug]
         self.client.release_controls()
-        self.player.abort_movement()
+        char.abort_movement()
 
-    def move_player(self, direction: Direction) -> None:
+    def move_char(self, char: NPC, direction: Direction) -> None:
         """
-        Move player in a direction. Changes facing.
+        Move character in a direction. Changes facing.
 
         Parameters:
-            direction: New direction of the player.
+            char: Character.
+            direction: New direction of the character.
 
         """
-        self.player.move_direction = direction
+        char.move_direction = direction
 
     def get_pos_from_tilepos(
         self,
-        tile_position: Tuple[int, int],
-    ) -> Tuple[int, int]:
+        tile_position: Vector2,
+    ) -> tuple[int, int]:
         """
         Returns the map pixel coordinate based on tile position.
 
@@ -971,19 +1148,10 @@ class WorldState(state.State):
         """
         assert self.current_map.renderer
         cx, cy = self.current_map.renderer.get_center_offset()
-        px, py = self.project(tile_position)
+        px, py = project(tile_position)
         x = px + cx
         y = py + cy
         return x, y
-
-    def project(
-        self,
-        position: Sequence[float],
-    ) -> Tuple[int, int]:
-        return (
-            int(position[0] * self.tile_size[0]),
-            int(position[1] * self.tile_size[1]),
-        )
 
     def update_npcs(self, time_delta: float) -> None:
         """
@@ -1005,16 +1173,16 @@ class WorldState(state.State):
 
         # Move any multiplayer characters that are off map so we know where
         # they should be when we change maps.
-        for entity in self.npcs_off_map.values():
+        for entity in self.npcs_off_map:
             entity.update(time_delta)
 
-    def _collision_box_to_pgrect(self, box: Tuple[int, int]) -> Rect:
+    def _collision_box_to_pgrect(self, box: tuple[int, int]) -> Rect:
         """
         Returns a Rect (in screen-coords) version of a collision box (in world-coords).
         """
 
         # For readability
-        x, y = self.get_pos_from_tilepos(box)
+        x, y = self.get_pos_from_tilepos(Vector2(box))
         tw, th = self.tile_size
 
         return Rect(x, y, tw, th)
@@ -1034,8 +1202,9 @@ class WorldState(state.State):
 
         # draw events
         for event in self.client.events:
-            topleft = self.get_pos_from_tilepos((event.x, event.y))
-            size = self.project((event.w, event.h))
+            vector = Vector2(event.x, event.y)
+            topleft = self.get_pos_from_tilepos(vector)
+            size = project((event.w, event.h))
             rect = topleft, size
             box(surface, rect, (0, 255, 0, 128))
 
@@ -1044,7 +1213,7 @@ class WorldState(state.State):
         box_iter = map(self._collision_box_to_pgrect, self.collision_map)
 
         # Next, deal with solid NPCs.
-        npc_iter = map(self._npc_to_pgrect, self.npcs.values())
+        npc_iter = map(self._npc_to_pgrect, self.npcs)
 
         # draw noc and wall collision tiles
         red = (255, 0, 0, 128)
@@ -1058,84 +1227,6 @@ class WorldState(state.State):
         pygame.draw.line(surface, (255, 50, 50), (0, cy), (w, cy))
 
         surface.unlock()
-
-    def midscreen_animations(self, surface: pygame.surface.Surface) -> None:
-        """
-        Handles midscreen animations that will be drawn UNDER menus and dialog.
-
-        NOTE: BROKEN
-
-        Parameters:
-            surface: Surface to draw on.
-
-        """
-        raise RuntimeError("deprecated.  refactor!")
-
-        if self.cinema_state == "turning on":
-            self.cinema_top["position"][1] += (
-                self.cinema_speed * self.time_passed_seconds
-            )
-            self.cinema_bottom["position"][1] -= (
-                self.cinema_speed * self.time_passed_seconds
-            )
-
-            # If we've reached our target position, stop the animation.
-            if self.cinema_top["position"] >= self.cinema_top["on_position"]:
-                self.cinema_top["position"] = list(
-                    self.cinema_top["on_position"]
-                )
-                self.cinema_bottom["position"] = list(
-                    self.cinema_bottom["on_position"]
-                )
-
-                self.cinema_state = "on"
-
-            # Draw the cinema bars
-            surface.blit(
-                self.cinema_top["surface"], self.cinema_top["position"]
-            )
-            surface.blit(
-                self.cinema_bottom["surface"], self.cinema_bottom["position"]
-            )
-
-        elif self.cinema_state == "on":
-            # Draw the cinema bars
-            surface.blit(
-                self.cinema_top["surface"], self.cinema_top["position"]
-            )
-            surface.blit(
-                self.cinema_bottom["surface"], self.cinema_bottom["position"]
-            )
-
-        elif self.cinema_state == "turning off":
-            self.cinema_top["position"][1] -= (
-                self.cinema_speed * self.time_passed_seconds
-            )
-            self.cinema_bottom["position"][1] += (
-                self.cinema_speed * self.time_passed_seconds
-            )
-
-            # If we've reached our target position, stop the animation.
-            if (
-                self.cinema_top["position"][1]
-                <= self.cinema_top["off_position"][1]
-            ):
-                self.cinema_top["position"] = list(
-                    self.cinema_top["off_position"]
-                )
-                self.cinema_bottom["position"] = list(
-                    self.cinema_bottom["off_position"]
-                )
-
-                self.cinema_state = "off"
-
-            # Draw the cinema bars
-            surface.blit(
-                self.cinema_top["surface"], self.cinema_top["position"]
-            )
-            surface.blit(
-                self.cinema_bottom["surface"], self.cinema_bottom["position"]
-            )
 
     ####################################################
     #         Full Screen Animations Functions         #
@@ -1157,39 +1248,60 @@ class WorldState(state.State):
     #             Map Change/Load Functions            #
     ####################################################
     def change_map(self, map_name: str) -> None:
-        # Set the currently loaded map. This is needed because the event
-        # engine loads event conditions and event actions from the currently
-        # loaded map. If we change maps, we need to update this.
-        logger.debug("Map was not preloaded. Loading from disk.")
-        map_data = self.load_map(map_name)
+        """
+        Changes the current map and updates the player state.
+
+        Parameters:
+            map_name: The name of the map to load.
+        """
+        self.load_and_update_map(map_name)
+        self.update_player_state()
+
+    def load_and_update_map(self, map_name: str) -> None:
+        """
+        Loads a new map and updates the game state accordingly.
+
+        This method loads the map data, updates the game state, and notifies
+        the client and boundary checker. The currently loaded map is updated
+        because the event engine loads event conditions and event actions from
+        the currently loaded map. If we change maps, we need to update this.
+
+        Parameters:
+            map_name: The name of the map to load.
+        """
+        logger.debug(f"Loading map '{map_name}' from disk.")
+        map_data = self.load_map_data(map_name)
 
         self.current_map = map_data
         self.collision_map = map_data.collision_map
-        self.surfable_map = map_data.surfable_map
+        self.surface_map = map_data.surface_map
         self.collision_lines_map = map_data.collision_lines_map
         self.map_size = map_data.size
+        self.map_area = map_data.area
 
-        # The first coordinates that are out of bounds.
-        self.invalid_x = (-1, self.map_size[0])
-        self.invalid_y = (-1, self.map_size[1])
-
+        self.boundary_checker.update_boundaries(self.map_size)
         self.client.load_map(map_data)
+        self.clear_npcs()
 
-        # Clear out any existing NPCs
-        self.npcs = {}
-        self.npcs_off_map = {}
-        self.add_player(local_session.player)
+    def clear_npcs(self) -> None:
+        """
+        Clears all existing NPCs from the game state.
+        """
+        self.npcs = []
+        self.npcs_off_map = []
 
-        # reset controls and stop moving to prevent player from
-        # moving after the teleport and being out of game
-        self.stop_player()
+    def update_player_state(self) -> None:
+        """
+        Updates the player's state after changing maps.
 
-        # move to spawn position, if any
-        for eo in self.client.events:
-            if eo.name.lower() == "player spawn":
-                self.player.set_position((eo.x, eo.y))
+        Parameters:
+            player: The player object to update.
+        """
+        player = local_session.player
+        self.add_player(player)
+        self.stop_char(player)
 
-    def load_map(self, path: str) -> TuxemonMap:
+    def load_map_data(self, path: str) -> TuxemonMap:
         """
         Returns map data as a dictionary to be used for map changing.
 
@@ -1201,12 +1313,29 @@ class WorldState(state.State):
 
         """
         txmn_map = TMXMapLoader().load(path)
-        yaml_path = path[:-4] + ".yaml"
-        # TODO: merge the events from both sources
-        if os.path.exists(yaml_path):
-            new_events = list(txmn_map.events)
-            new_events.extend(YAMLEventLoader().load_events(yaml_path))
-            txmn_map.events = new_events
+        yaml_files = [path.replace(".tmx", ".yaml")]
+
+        if txmn_map.scenario:
+            _scenario = prepare.fetch("maps", f"{txmn_map.scenario}.yaml")
+            yaml_files.append(_scenario)
+
+        _events = list(txmn_map.events)
+        _inits = list(txmn_map.inits)
+        events = {"event": _events, "init": _inits}
+
+        yaml_loader = YAMLEventLoader()
+
+        for yaml_file in yaml_files:
+            if os.path.exists(yaml_file):
+                yaml_data = yaml_loader.load_events(yaml_file, "event")
+                events["event"].extend(yaml_data["event"])
+                yaml_data = yaml_loader.load_events(yaml_file, "init")
+                events["init"].extend(yaml_data["init"])
+            else:
+                logger.warning(f"YAML file {yaml_file} not found")
+
+        txmn_map.events = events["event"]
+        txmn_map.inits = events["init"]
         return txmn_map
 
     @no_type_check  # only used by multiplayer which is disabled
@@ -1232,15 +1361,15 @@ class WorldState(state.State):
         else:
             for direction in collisions:
                 if self.player.facing == direction:
-                    if direction == "up":
+                    if direction == Direction.up:
                         tile = (player_tile_pos[0], player_tile_pos[1] - 1)
-                    elif direction == "down":
+                    elif direction == Direction.down:
                         tile = (player_tile_pos[0], player_tile_pos[1] + 1)
-                    elif direction == "left":
+                    elif direction == Direction.left:
                         tile = (player_tile_pos[0] - 1, player_tile_pos[1])
-                    elif direction == "right":
+                    elif direction == Direction.right:
                         tile = (player_tile_pos[0] + 1, player_tile_pos[1])
-                    for npc in self.npcs.values():
+                    for npc in self.npcs:
                         tile_pos = (
                             int(round(npc.tile_pos[0])),
                             int(round(npc.tile_pos[1])),

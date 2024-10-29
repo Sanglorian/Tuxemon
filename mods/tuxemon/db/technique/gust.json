@@ -1,27 +1,29 @@
 {
   "tech_id": 161,
-  "accuracy": 0.6,
+  "accuracy": 1,
   "animation": "x_attack",
   "effects": [
     "damage"
   ],
   "flip_axes": "",
   "is_fast": false,
-  "potency": 0.9,
-  "power": 1.5,
+  "potency": 0.0,
+  "power": 0.9,
   "range": "ranged",
-  "recharge": 3,
+  "recharge": 1,
   "sfx": "sfx_blaster",
   "slug": "gust",
   "sort": "damage",
   "target": {
-    "enemy monster": 2,
-    "enemy team": 0,
-    "enemy trainer": 0,
-    "own monster": 0,
-    "own team": 0,
-    "own trainer": 0
+    "enemy_monster": true,
+    "enemy_team": false,
+    "enemy_trainer": false,
+    "own_monster": false,
+    "own_team": false,
+    "own_trainer": false
   },
+  "category": "basic",
+  "tags": ["Weather"],
   "types": [
     "fire"
   ],

@@ -33,11 +33,22 @@
         {
             "level_learned": 34,
             "technique": "breathe_fire"
+        },
+        {
+            "level_learned": 44,
+            "technique": "take_cover"
+        },
+        {
+            "level_learned": 48,
+            "technique": "muddle"
+        },
+        {
+            "level_learned": 52,
+            "technique": "supernova"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 36,
             "monster_slug": "agnigon"
         }
@@ -46,8 +57,13 @@
         {
             "mon_slug": "agnite",
             "evo_stage": "basic"
+        },
+        {
+            "mon_slug": "agnigon",
+            "evo_stage": "stage2"
         }
     ],
+    "tags": ["dragon", "coastal", "desert", "mountains"],
     "shape": "dragon",
     "stage": "stage1",
     "types": [
@@ -57,7 +73,7 @@
     "txmn_id": 14,
     "height": 320,
     "weight": 230,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

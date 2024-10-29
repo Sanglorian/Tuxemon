@@ -5,7 +5,7 @@
   <property name="inside" type="bool" value="true"/>
   <property name="scenario" value="xero"/>
   <property name="slug" value="leather_shaft2"/>
-  <property name="types" value="notype"/>
+  <property name="map_type" value="notype"/>
  </properties>
  <tileset firstgid="1" name="core_indoor_walls" tilewidth="16" tileheight="16" tilecount="3864" columns="46">
   <image source="../gfx/tilesets/core_indoor_walls.png" width="736" height="1344"/>
@@ -39,7 +39,7 @@
    eJxjYBgeII+fgSGfn752dgsQp24hkepAAAAUyQJI
   </data>
  </layer>
- <objectgroup color="#ff0000" id="5" name="Collision">
+ <objectgroup color="#ff0000" id="5" name="Collisions">
   <object id="62" type="collision" x="0" y="96" width="64" height="16"/>
   <object id="63" type="collision" x="80" y="48" width="80" height="32"/>
   <object id="64" type="collision" x="0" y="32" width="160" height="16"/>
@@ -50,9 +50,9 @@
   <object id="67" name="Go Outside" type="event" x="64" y="144" width="32" height="16">
    <properties>
     <property name="act1" value="transition_teleport leather_town.tmx,22,4,0.3"/>
-    <property name="act2" value="player_face down"/>
-    <property name="cond1" value="is player_at"/>
-    <property name="cond2" value="is player_facing down"/>
+    <property name="act2" value="char_face player,down"/>
+    <property name="cond1" value="is char_at player"/>
+    <property name="cond2" value="is char_facing player,down"/>
    </properties>
   </object>
  </objectgroup>

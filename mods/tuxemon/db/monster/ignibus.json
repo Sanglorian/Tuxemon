@@ -20,31 +20,23 @@
         },
         {
             "level_learned": 12,
-            "technique": "static_field"
+            "technique": "tinder"
         }
     ],
     "evolutions": [
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "eruptibus",
             "item": "earth_booster"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "eruptibus",
             "item": "tectonic_drill"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "embazook",
             "item": "metal_booster"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "embazook",
             "item": "stovepipe"
         }
@@ -59,6 +51,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["polliwog", "desert", "mountains"],
     "shape": "polliwog",
     "stage": "basic",
     "types": [
@@ -68,7 +61,7 @@
     "txmn_id": 30,
     "height": 68,
     "weight": 27,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

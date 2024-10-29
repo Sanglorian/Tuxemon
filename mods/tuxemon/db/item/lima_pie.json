@@ -1,0 +1,22 @@
+{
+  "conditions": [
+    "is can_evolve",
+    "is has_path lima_pie"
+  ],
+  "effects": [
+    "evolve"
+  ],
+  "slug": "lima_pie",
+  "sort": "utility",
+  "sprite": "gfx/items/lima_pie.png",
+  "category": "morph",
+  "usable_in": [
+    "WorldState"
+  ],
+  "behaviors": {
+    "show_dialog_on_success": false
+  },
+  "use_failure": "generic_failure",
+  "use_item": "combat_used_x",
+  "use_success": "generic_success"
+}

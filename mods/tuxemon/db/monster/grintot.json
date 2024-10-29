@@ -25,26 +25,18 @@
     ],
     "evolutions": [
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "grinflare",
             "item": "earth_booster"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "grinflare",
             "item": "flintstone"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "grintrock",
             "item": "metal_booster"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "grintrock",
             "item": "thunderstone"
         }
@@ -59,6 +51,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["brute"],
     "shape": "brute",
     "stage": "basic",
     "types": [
@@ -68,7 +61,7 @@
     "txmn_id": 16,
     "height": 70,
     "weight": 375,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

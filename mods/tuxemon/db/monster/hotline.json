@@ -40,7 +40,7 @@
         },
         {
             "level_learned": 32,
-            "technique": "wing_tip"
+            "technique": "tinder"
         },
         {
             "level_learned": 36,
@@ -53,6 +53,7 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["sprite", "urban"],
     "shape": "sprite",
     "stage": "standalone",
     "types": [
@@ -63,7 +64,7 @@
     "height": 150,
     "weight": 50,
     "randomly": false,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

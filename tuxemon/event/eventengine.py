@@ -1,22 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
+from collections.abc import Generator, Iterable, Sequence
 from contextlib import contextmanager
 from textwrap import dedent
-from typing import (
-    Any,
-    Dict,
-    Generator,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import Any, Optional, Union
 
 from tuxemon import plugin, prepare
 from tuxemon.constants import paths
@@ -24,8 +14,6 @@ from tuxemon.event import EventObject, MapAction, MapCondition
 from tuxemon.event.eventaction import EventAction
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.map import TuxemonMap
-from tuxemon.platform.const import buttons
-from tuxemon.platform.events import PlayerInput
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -63,9 +51,9 @@ class RunningEvent:
 
     def __init__(self, map_event: EventObject) -> None:
         self.map_event = map_event
-        self.context: Dict[str, Any] = dict()
+        self.context: dict[str, Any] = dict()
         self.action_index = 0
-        self.current_action: Optional[EventAction[Any]] = None
+        self.current_action: Optional[EventAction] = None
         self.current_map_action = None
 
     def get_next_action(self) -> Optional[MapAction]:
@@ -115,7 +103,7 @@ class EventEngine:
     def __init__(self, session: Session) -> None:
         self.session = session
 
-        self.running_events: Dict[int, RunningEvent] = dict()
+        self.running_events: dict[int, RunningEvent] = dict()
         self.name = "Event"
         self.current_map: Optional[TuxemonMap] = None
         self.timer = 0.0
@@ -123,7 +111,7 @@ class EventEngine:
         self.button = None
 
         # debug
-        self.partial_events: List[Sequence[Tuple[bool, MapCondition]]] = list()
+        self.partial_events: list[Sequence[tuple[bool, MapCondition]]] = list()
 
         self.conditions = plugin.load_plugins(
             paths.CONDITIONS_PATH,
@@ -153,7 +141,7 @@ class EventEngine:
         self,
         name: str,
         parameters: Optional[Sequence[Any]] = None,
-    ) -> Optional[EventAction[Any]]:
+    ) -> Optional[EventAction]:
         """
         Get an action that is loaded into the engine.
 
@@ -170,8 +158,7 @@ class EventEngine:
             that action is loaded. ``None`` otherwise.
 
         """
-        if parameters is None:
-            parameters = list()
+        parameters = parameters or []
 
         try:
             action = self.actions[name]
@@ -181,15 +168,23 @@ class EventEngine:
             logger.warning(error)
             return None
 
+        if parameters == [""]:
+            return action()
+
         try:
             return action(*parameters)
-        except Exception as e:
+        except TypeError as e:
             logger.warning(
-                f"Error running {name}. Could not instantiate {action} with parameters {parameters}: {e}"
+                f"Error instantiating {action} with parameters {parameters}: {e}"
+            )
+            return None
+        except Exception as e:
+            logger.error(
+                f"Unexpected error instantiating {action} with parameters {parameters}: {e}"
             )
             return None
 
-    def get_actions(self) -> List[Type[EventAction]]:
+    def get_actions(self) -> list[type[EventAction]]:
         """
         Return list of EventActions.
 
@@ -214,17 +209,12 @@ class EventEngine:
         """
         # TODO: make generic
         try:
-            condition = self.conditions[name]
-
+            return self.conditions[name]()
         except KeyError:
-            error = f'Error: EventCondition "{name}" not implemented'
-            logger.warning(error)
+            logger.warning(f'EventCondition "{name}" not implemented')
             return None
 
-        else:
-            return condition()
-
-    def get_conditions(self) -> List[Type[EventCondition]]:
+    def get_conditions(self) -> list[type[EventCondition]]:
         """
         Return list of EventConditions.
 
@@ -264,6 +254,7 @@ class EventEngine:
         self,
         action_name: str,
         parameters: Optional[Sequence[Any]] = None,
+        skip: bool = False,
     ) -> None:
         """
         Load and execute an action.
@@ -273,10 +264,10 @@ class EventEngine:
         Parameters:
             action_name: Name of the action.
             parameters: Parameters of the action.
+            skip: Boolean for skipping the action.update().
 
         """
-        if parameters is None:
-            parameters = list()
+        parameters = parameters or []
 
         action = self.get_action(action_name, parameters)
         if action is None:
@@ -284,26 +275,37 @@ class EventEngine:
             logger.warning(error_msg)
             raise ValueError(error_msg)
 
-        return action.execute()
+        action._skip = skip
+
+        try:
+            return action.execute()
+        except Exception as e:
+            logger.error(f"Error executing action '{action_name}': {e}")
+            raise
 
     def start_event(self, map_event: EventObject) -> None:
         """
         Begins execution of action list. Conditions are not checked.
 
+        The event ID is used to prevent multiple copies of the same event from being started.
+
         Parameters:
             map_event: Event whose actions will be executed.
 
         """
-        # the event id is used to make sure multiple copies of the same event
-        # are not started.  If not checked, then the game would freeze while
-        # it tries to run unlimited copies of the same event, forever.
+        if map_event.id is None:
+            raise ValueError("Event ID is required")
+
         if map_event.id not in self.running_events:
-            logger.debug(f"starting map event: {map_event}")
+            logger.debug(f"Starting map event: {map_event.id}")
             logger.debug("Executing action list")
             logger.debug(map_event)
+
             token = RunningEvent(map_event)
-            assert map_event.id
             self.running_events[map_event.id] = token
+
+            if map_event in self.session.client.inits:
+                self.session.client.inits.remove(map_event)
 
     def process_map_event(self, map_event: EventObject) -> None:
         """
@@ -315,26 +317,17 @@ class EventEngine:
             map_event: Event to process.
 
         """
-        # debugging mode is slower and will check all conditions
         if prepare.CONFIG.collision_map:
-            # less optimal, debug
-            started = 0
-            conds = list()
-            for cond in map_event.conds:
-                # TODO: wrap with add_error_context
-                if self.check_condition(cond):
-                    conds.append((True, cond))
-                    started += 1
-                else:
-                    conds.append((False, cond))
-
-            if started == len(map_event.conds):
-                self.start_event(map_event)
-
+            # TODO: wrap with add_error_context
+            # Debug mode: check all conditions and store results (slower)
+            conds = [
+                (self.check_condition(cond), cond) for cond in map_event.conds
+            ]
             self.partial_events.append(conds)
-
+            if all(result for result, _ in conds):
+                self.start_event(map_event)
         else:
-            # optimal, less debug
+            # Optimal mode: start event if all conditions are met
             if all(self.check_condition(cond) for cond in map_event.conds):
                 self.start_event(map_event)
 
@@ -372,12 +365,10 @@ class EventEngine:
 
         """
         # do the "init" events.  this will be done just once
-        # TODO: find solution that doesn't nuke the init list
         # TODO: make event engine generic, so can be used in global scope,
         # not just maps
         if self.session.client.inits:
             self.process_map_events(self.session.client.inits)
-            self.session.client.inits = list()
 
         # process any other events
         self.process_map_events(self.session.client.events)
@@ -406,7 +397,7 @@ class EventEngine:
                 assert not self.running_events
                 return
 
-            while 1:
+            while True:
                 """
                 * if RunningEvent is currently running an action, then continue
                     to do so
@@ -484,34 +475,6 @@ class EventEngine:
             except KeyError:
                 # map changes or engine resets may cause this error
                 pass
-
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
-        """
-        Handles player input events.
-
-        This function is only called when the
-        player provides input such as pressing a key or clicking the mouse.
-
-        Since this is part of a chain of event handlers, the return value
-        from this method becomes input for the next one.  Returning ``None``
-        signifies that this method has dealt with an event and wants it
-        exclusively.  Return the event and others can use it as well.
-
-        You should return ``None`` if you have handled input here.
-
-        Parameters:
-            event: The event received.
-
-        Returns:
-            The input event, or ``None`` to prevent others to receive it.
-
-        """
-        # has the player pressed the action key?
-        if event.pressed and event.button == buttons.A:
-            for map_event in self.session.client.interacts:
-                self.process_map_event(map_event)
-
-        return event
 
 
 @contextmanager

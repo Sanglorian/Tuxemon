@@ -21,11 +21,22 @@
         {
             "level_learned": 12,
             "technique": "constrict"
+        },
+        {
+            "level_learned": 24,
+            "technique": "amnesia"
+        },
+        {
+            "level_learned": 28,
+            "technique": "overgrowth"
+        },
+        {
+            "level_learned": 32,
+            "technique": "whirlwind"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 18,
             "monster_slug": "tumblebee"
         }
@@ -36,6 +47,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["grub"],
     "shape": "grub",
     "stage": "basic",
     "types": [
@@ -45,7 +57,7 @@
     "txmn_id": 95,
     "height": 21,
     "weight": 5,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

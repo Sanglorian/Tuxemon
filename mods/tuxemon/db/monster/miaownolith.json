@@ -16,7 +16,7 @@
         },
         {
             "level_learned": 8,
-            "technique": "sword"
+            "technique": "slice"
         },
         {
             "level_learned": 12,
@@ -33,6 +33,10 @@
         {
             "level_learned": 28,
             "technique": "overgrowth"
+        },
+        {
+            "level_learned": 36,
+            "technique": "oedipus"
         }
     ],
     "evolutions": [],
@@ -42,6 +46,7 @@
             "evo_stage": "basic"
         }
     ],
+    "tags": ["hunter"],
     "shape": "hunter",
     "stage": "stage1",
     "types": [
@@ -52,7 +57,7 @@
     "txmn_id": 20,
     "height": 210,
     "weight": 255,
-    "catch_rate": 170.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

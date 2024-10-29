@@ -25,12 +25,23 @@
         {
             "level_learned": 16,
             "technique": "fire_ball"
+        },
+        {
+            "level_learned": 32,
+            "technique": "all_in"
+        },
+        {
+            "level_learned": 36,
+            "technique": "give_all"
+        },
+        {
+            "level_learned": 40,
+            "technique": "breathe_fire"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
-            "at_level": 30,
+            "at_level": 32,
             "monster_slug": "flambear"
         }
     ],
@@ -40,6 +51,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["humanoid", "mountains", "woodland"],
     "shape": "humanoid",
     "stage": "basic",
     "types": [
@@ -49,7 +61,7 @@
     "txmn_id": 83,
     "height": 180,
     "weight": 110,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

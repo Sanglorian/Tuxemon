@@ -4,7 +4,7 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "one_two"
+            "technique": "hibernate"
         },
         {
             "level_learned": 2,
@@ -24,7 +24,7 @@
         },
         {
             "level_learned": 24,
-            "technique": "headbutt"
+            "technique": "hammerhead"
         },
         {
             "level_learned": 28,
@@ -32,7 +32,7 @@
         },
         {
             "level_learned": 32,
-            "technique": "peregrine"
+            "technique": "life_surge"
         }
     ],
     "evolutions": [],
@@ -42,6 +42,7 @@
             "evo_stage": "basic"
         }
     ],
+    "tags": ["brute"],
     "shape": "brute",
     "stage": "stage1",
     "types": [
@@ -51,7 +52,7 @@
     "txmn_id": 218,
     "height": 38,
     "weight": 4,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

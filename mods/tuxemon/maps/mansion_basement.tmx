@@ -5,7 +5,7 @@
   <property name="inside" type="bool" value="true"/>
   <property name="scenario" value="xero"/>
   <property name="slug" value="mansion_basement"/>
-  <property name="types" value="dungeon"/>
+  <property name="map_type" value="dungeon"/>
  </properties>
  <tileset firstgid="1" source="../gfx/tilesets/core_city_and_country.tsx"/>
  <tileset firstgid="1441" name="core_indoor_floors" tilewidth="16" tileheight="16" tilecount="3864" columns="46">
@@ -40,7 +40,7 @@
    eAFjYBgFwyEE5IGeAGGl4eCZUT+MhsBoCIyGwDALgeFYNgMAj/oAgw==
   </data>
  </layer>
- <objectgroup color="#ff0000" id="5" name="Collision">
+ <objectgroup color="#ff0000" id="5" name="Collisions">
   <object id="1" type="collision" x="0" y="0" width="16" height="224"/>
   <object id="2" type="collision" x="16" y="0" width="368" height="32"/>
   <object id="3" type="collision" x="368" y="32" width="16" height="320"/>
@@ -85,17 +85,17 @@
   <object id="35" name="Teleport to Middle" type="event" x="96" y="304" width="16" height="16">
    <properties>
     <property name="act10" value="transition_teleport mansion.tmx,1,15,0.3"/>
-    <property name="act20" value="player_face top"/>
-    <property name="cond10" value="is player_at"/>
-    <property name="cond20" value="is player_facing top"/>
+    <property name="act20" value="char_face player,top"/>
+    <property name="cond10" value="is char_at player"/>
+    <property name="cond20" value="is char_facing player,top"/>
    </properties>
   </object>
   <object id="36" name="Teleport to Middle" type="event" x="112" y="304" width="16" height="16">
    <properties>
     <property name="act10" value="transition_teleport mansion.tmx,2,15,0.3"/>
-    <property name="act20" value="player_face up"/>
-    <property name="cond10" value="is player_at"/>
-    <property name="cond20" value="is player_facing up"/>
+    <property name="act20" value="char_face player,up"/>
+    <property name="cond10" value="is char_at player"/>
+    <property name="cond20" value="is char_facing player,up"/>
    </properties>
   </object>
   <object id="37" name="Play Music" type="event" x="0" y="0" width="16" height="16">
@@ -104,6 +104,5 @@
     <property name="cond10" value="not music_playing music_mansion_theme"/>
    </properties>
   </object>
-  <object id="39" name="Player Spawn" type="event" x="96" y="336" width="16" height="16"/>
  </objectgroup>
 </map>

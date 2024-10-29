@@ -5,7 +5,7 @@
   <property name="inside" type="bool" value="true"/>
   <property name="scenario" value="xero"/>
   <property name="slug" value="dragonscave"/>
-  <property name="types" value="dungeon"/>
+  <property name="map_type" value="dungeon"/>
  </properties>
  <tileset firstgid="1" source="../gfx/tilesets/core_city_and_country.tsx"/>
  <tileset firstgid="1441" source="../gfx/tilesets/core_outdoor.tsx"/>
@@ -34,7 +34,7 @@
    eAHtlNENwjAMRCuxEDANMA0wDWwDG+ETnHocdpoiJH4aKaSJk2f74rBfDcP+D33oaHPiOkQOrbabmePCe1dz0a/9Tm5RX5uib2N9rn6t2kdtVrz3W+ufVTz4Whd5Vfli/R49y6EVe7Z/au2XvEvEfI5+jH4t4p+Kh3ay9Aa+ZWYs3EmlMWLwxrgwQjNtGUvt+IYubK6P87yWsvjJ4qhn8JbwZtCy2OgPNtYg9z9Pfb4PnlE/0IKxuZ/eGJRHFmLQdWoPZvU2GJ/eKdc8NvJaI856DOT5eotDm/M0V2qejTzvo/NU74yDNa87ZToPNuZb8Somc3N/PTFmTMaR3WMvU+8MvIxFPdQf3wdGfSPO0zk40OD06nj7mT/6Qc56Hus6p57Yh5ax/L70vPp5EsbfjDVax69enu6jDvrfB6L7vEW+qu3odVqH6v8gY7pf1cVtrAUdwdR6uMfc7cijh6XnWt9eC773AXz85d8=
   </data>
  </layer>
- <objectgroup color="#ff0000" id="5" name="Collision">
+ <objectgroup color="#ff0000" id="5" name="Collisions">
   <object id="2" type="collision" x="240" y="336">
    <polygon points="0,0 0,16 16,16 16,0"/>
   </object>
@@ -100,19 +100,18 @@
   <object id="56" name="Teleport to Sea Route" type="event" x="208" y="624" width="16" height="16">
    <properties>
     <property name="act10" value="transition_teleport routec.tmx,6,3,0.3"/>
-    <property name="act20" value="player_face down"/>
-    <property name="cond10" value="is player_at"/>
-    <property name="cond20" value="is player_facing down"/>
+    <property name="act20" value="char_face player,down"/>
+    <property name="cond10" value="is char_at player"/>
+    <property name="cond20" value="is char_facing player,down"/>
    </properties>
   </object>
   <object id="57" name="Teleport to Sea Route" type="event" x="192" y="624" width="16" height="16">
    <properties>
     <property name="act10" value="transition_teleport routec.tmx,6,3,0.3"/>
-    <property name="act20" value="player_face down"/>
-    <property name="cond10" value="is player_at"/>
-    <property name="cond20" value="is player_facing down"/>
+    <property name="act20" value="char_face player,down"/>
+    <property name="cond10" value="is char_at player"/>
+    <property name="cond20" value="is char_facing player,down"/>
    </properties>
   </object>
-  <object id="60" name="Player Spawn" type="event" x="208" y="592" width="16" height="16"/>
  </objectgroup>
 </map>

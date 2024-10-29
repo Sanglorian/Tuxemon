@@ -33,11 +33,22 @@
         {
             "level_learned": 34,
             "technique": "surge"
+        },
+        {
+            "level_learned": 44,
+            "technique": "stampede"
+        },
+        {
+            "level_learned": 48,
+            "technique": "earthquake"
+        },
+        {
+            "level_learned": 52,
+            "technique": "biting_winds"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 36,
             "monster_slug": "jemuar"
         }
@@ -46,8 +57,13 @@
         {
             "mon_slug": "rockitten",
             "evo_stage": "basic"
+        },
+        {
+            "mon_slug": "jemuar",
+            "evo_stage": "stage2"
         }
     ],
+    "tags": ["hunter", "mountains", "urban"],
     "shape": "hunter",
     "stage": "stage1",
     "types": [
@@ -57,7 +73,7 @@
     "txmn_id": 2,
     "height": 120,
     "weight": 60,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

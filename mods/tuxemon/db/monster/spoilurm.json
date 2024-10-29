@@ -20,7 +20,7 @@
         },
         {
             "level_learned": 12,
-            "technique": "spray"
+            "technique": "spit_poison"
         },
         {
             "level_learned": 16,
@@ -48,11 +48,12 @@
         },
         {
             "level_learned": 40,
-            "technique": "hawk"
+            "technique": "assault"
         }
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["serpent"],
     "shape": "serpent",
     "stage": "standalone",
     "types": [
@@ -62,7 +63,7 @@
     "txmn_id": 214,
     "height": 41,
     "weight": 4,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

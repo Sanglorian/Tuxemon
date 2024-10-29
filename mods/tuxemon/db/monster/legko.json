@@ -32,12 +32,23 @@
         },
         {
             "level_learned": 34,
-            "technique": "spray"
+            "technique": "spit_poison"
+        },
+        {
+            "level_learned": 44,
+            "technique": "thunderball"
+        },
+        {
+            "level_learned": 48,
+            "technique": "shadow_boxing"
+        },
+        {
+            "level_learned": 52,
+            "technique": "invictus"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 36,
             "monster_slug": "moloch"
         }
@@ -46,8 +57,13 @@
         {
             "mon_slug": "lambert",
             "evo_stage": "basic"
+        },
+        {
+            "mon_slug": "moloch",
+            "evo_stage": "stage2"
         }
     ],
+    "tags": ["serpent"],
     "shape": "serpent",
     "stage": "stage1",
     "types": [
@@ -57,7 +73,7 @@
     "txmn_id": 11,
     "height": 123,
     "weight": 52,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

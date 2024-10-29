@@ -25,11 +25,22 @@
         {
             "level_learned": 16,
             "technique": "assault"
+        },
+	    {
+            "level_learned": 24,
+            "technique": "feint"
+        },
+	    {
+            "level_learned": 28,
+            "technique": "sand_spray"
+        },
+	    {
+            "level_learned": 32,
+            "technique": "mudslide"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 18,
             "monster_slug": "aardart"
         }
@@ -40,6 +51,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["varmint", "grassland", "jungle", "woodland"],
     "shape": "varmint",
     "stage": "basic",
     "types": [
@@ -49,7 +61,7 @@
     "txmn_id": 42,
     "height": 40,
     "weight": 18,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

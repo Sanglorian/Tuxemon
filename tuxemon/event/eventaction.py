@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from types import TracebackType
-from typing import ClassVar, Optional, Type
+from typing import ClassVar, Optional
 
 from tuxemon.session import Session, local_session
 from tuxemon.tools import cast_dataclass_parameters
@@ -60,7 +60,7 @@ class EventAction(ABC):
 
     * the type may be any valid python type, or even a python class or function
     * type may be a single type, or a tuple of types
-    * type, if a tuple, may include None is indicate the parameter is optional
+    * type, if a tuple, may include None to indicate the parameter is optional
     * name must be a valid python string
 
     After parsing the parameters of the MapAction, the parameter's value
@@ -83,6 +83,7 @@ class EventAction(ABC):
     name: ClassVar[str]
     session: Session = field(init=False, repr=False)
     _done: bool = field(default=False, init=False)
+    _skip: bool = field(default=False, init=False)
 
     def __post_init__(self) -> None:
         self.session = local_session
@@ -99,7 +100,7 @@ class EventAction(ABC):
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> None:
@@ -145,7 +146,10 @@ class EventAction(ABC):
 
         """
         while not self.done:
-            self.update()
+            if self._skip:
+                return
+            else:
+                self.update()
 
     @property
     def done(self) -> bool:

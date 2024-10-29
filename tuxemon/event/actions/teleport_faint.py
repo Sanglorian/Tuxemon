@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import final
+from typing import Optional, final
 
 from tuxemon.event.eventaction import EventAction
 
@@ -23,26 +23,30 @@ class TeleportFaintAction(EventAction):
     Script usage:
         .. code-block::
 
-            teleport_faint
+            teleport_faint [trans_time]
+
+    Script parameters:
+        trans_time: Transition time in seconds - default 0.3
 
     """
 
     name = "teleport_faint"
+    trans_time: Optional[float] = None
 
     def start(self) -> None:
         player = self.session.player
+        client = self.session.client
+        current_state = client.current_state
+        if current_state and current_state.name == "DialogState":
+            client.pop_state()
 
-        # If game variable exists, then teleport:
         if "teleport_faint" in player.game_variables:
-            teleport = player.game_variables["teleport_faint"].split(" ")
+            teleport = str(player.game_variables["teleport_faint"]).split(" ")
         else:
-            logger.error(
-                f"Teleport_faint action failed, because the teleport_faint variable has not been set."
-            )
+            logger.error("The teleport_faint variable has not been set.")
             return
 
-        # Start the screen transition
-        # self.game.event_engine.execute_action("screen_transition", [.3])
-
-        # Call the teleport action
-        self.session.client.event_engine.execute_action("teleport", teleport)
+        if self.trans_time is not None:
+            teleport.append(str(self.trans_time))
+        action = client.event_engine
+        action.execute_action("transition_teleport", teleport)

@@ -1,29 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 import os.path
 import time
+from collections.abc import Generator, Iterable, Mapping, Sequence
 from threading import Thread
-from typing import (
-    Any,
-    Dict,
-    Generator,
-    Iterable,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-    overload,
-)
+from typing import Any, Optional, TypeVar, Union, overload
 
 import pygame as pg
 
-from tuxemon import networking, rumble
+from tuxemon import networking, prepare, rumble
+from tuxemon.audio import MusicPlayerState, SoundManager
 from tuxemon.cli.processor import CommandProcessor
 from tuxemon.config import TuxemonConfig
 from tuxemon.db import MapType
@@ -76,8 +65,7 @@ class LocalPygameClient:
 
         # somehow this value is being patched somewhere
         self.events: Sequence[EventObject] = []
-        self.inits: Sequence[EventObject] = []
-        self.interacts: Sequence[EventObject] = []
+        self.inits: list[EventObject] = []
 
         # setup controls
         keyboard = PygameKeyboardInput(config.keyboard_button_map)
@@ -115,14 +103,11 @@ class LocalPygameClient:
         # Set up our game's event engine which executes actions based on
         # conditions defined in map files.
         self.event_engine = EventEngine(local_session)
-        self.event_persist: Dict[str, Dict[str, Any]] = {}
+        self.event_persist: dict[str, dict[str, Any]] = {}
 
         # Set up a variable that will keep track of currently playing music.
-        self.current_music = {
-            "status": "stopped",
-            "song": None,
-            "previoussong": None,
-        }
+        self.current_music = MusicPlayerState()
+        self.sound_manager = SoundManager()
 
         if self.config.cli:
             # TODO: There is no protection for the main thread from the cli
@@ -141,7 +126,7 @@ class LocalPygameClient:
 
         # TODO: phase these out
         self.key_events: Sequence[PlayerInput] = []
-        self.event_data: Dict[str, Any] = {}
+        self.event_data: dict[str, Any] = {}
         self.exit = False
 
     def on_state_change(self) -> None:
@@ -157,8 +142,7 @@ class LocalPygameClient:
 
         """
         self.events = map_data.events
-        self.inits = map_data.inits
-        self.interacts = map_data.interacts
+        self.inits = list(map_data.inits)
         self.event_engine.reset()
         self.event_engine.current_map = map_data
         self.maps = map_data.maps
@@ -168,31 +152,24 @@ class LocalPygameClient:
         self.map_name = map_data.name
         self.map_desc = map_data.description
         self.map_inside = map_data.inside
+        self.map_area = map_data.area
+        self.map_size = map_data.size
 
         # Check if the map type exists
-        types = [maps.value for maps in MapType]
-        if map_data.types in types:
-            self.map_type = map_data.types
+        self.map_type = MapType.notype
+        if map_data.map_type in list(MapType):
+            self.map_type = MapType(map_data.map_type)
         else:
-            logger.error(f"The type '{map_data.types}' doesn't exist.")
+            logger.warning(
+                f"The type '{map_data.map_type}' doesn't exist."
+                f"By default assigned {MapType.notype}!"
+            )
 
         # Cardinal points
-        if map_data.north_trans == "None":
-            self.map_north = "-"
-        else:
-            self.map_north = map_data.north_trans
-        if map_data.south_trans == "None":
-            self.map_south = "-"
-        else:
-            self.map_south = map_data.south_trans
-        if map_data.east_trans == "None":
-            self.map_east = "-"
-        else:
-            self.map_east = map_data.east_trans
-        if map_data.west_trans == "None":
-            self.map_west = "-"
-        else:
-            self.map_west = map_data.west_trans
+        self.map_north = map_data.north_trans
+        self.map_south = map_data.south_trans
+        self.map_east = map_data.east_trans
+        self.map_west = map_data.west_trans
 
     def draw_event_debug(self) -> None:
         """
@@ -212,9 +189,9 @@ class LocalPygameClient:
                 p = " ".join(item.parameters)
                 text = f"{item.operator} {item.type}: {p}"
                 if valid:
-                    color = (0, 255, 0)
+                    color = prepare.GREEN_COLOR
                 else:
-                    color = (255, 0, 0)
+                    color = prepare.RED_COLOR
                 image = font.render(text, True, color)
                 self.screen.blit(image, (xx, yy))
                 ww, hh = image.get_size()
@@ -247,7 +224,7 @@ class LocalPygameClient:
         The event engine also can keep or return the event.
         All unused events will be added to Client.key_events each frame.
 
-        Conditions in the the event system can then check that list.
+        Conditions in the event system can then check that list.
         States can "keep" events by simply returning None from
         State.process_event
 
@@ -288,14 +265,11 @@ class LocalPygameClient:
 
         """
         for state in self.active_states:
-            maybe_game_event = state.process_event(game_event)
-            if maybe_game_event is None:
+            _game_event = state.process_event(game_event)
+            if _game_event is None:
                 break
-            game_event = maybe_game_event
-        else:
-            maybe_game_event = self.event_engine.process_event(game_event)
-
-        return maybe_game_event
+            return _game_event
+        return None
 
     def main(self) -> None:
         """
@@ -444,7 +418,7 @@ class LocalPygameClient:
         clock_tick: float,
         fps_timer: float,
         frames: int,
-    ) -> Tuple[float, int]:
+    ) -> tuple[float, int]:
         """
         Compute and print the frames per second.
 
@@ -463,7 +437,7 @@ class LocalPygameClient:
 
         Returns:
             Updated values of ``fps_timer`` and ``frames``. They will be the
-            same as the valued passed unless the FPS are printed, in wich case
+            same as the valued passed unless the FPS are printed, in which case
             they are reset to 0.
 
         """
@@ -490,8 +464,8 @@ class LocalPygameClient:
 
         """
         world = self.get_state_by_name(WorldState)
-        world.npcs = {}
-        world.npcs_off_map = {}
+        world.npcs = []
+        world.npcs_off_map = []
         for client in registry:
             if "sprite" in registry[client]:
                 sprite = registry[client]["sprite"]
@@ -500,17 +474,17 @@ class LocalPygameClient:
 
                 # Add the player to the screen if they are on the same map.
                 if client_map == current_map:
-                    if sprite.slug not in world.npcs:
-                        world.npcs[sprite.slug] = sprite
-                    if sprite.slug in world.npcs_off_map:
-                        del world.npcs_off_map[sprite.slug]
+                    if sprite not in world.npcs:
+                        world.npcs.append(sprite)
+                    if sprite in world.npcs_off_map:
+                        world.npcs_off_map.remove(sprite)
 
                 # Remove player from the map if they have changed maps.
                 elif client_map != current_map:
-                    if sprite.slug not in world.npcs_off_map:
-                        world.npcs_off_map[sprite.slug] = sprite
-                    if sprite.slug in world.npcs:
-                        del world.npcs[sprite]
+                    if sprite not in world.npcs_off_map:
+                        world.npcs_off_map.append(sprite)
+                    if sprite in world.npcs:
+                        world.npcs.remove(sprite)
 
     def get_map_filepath(self) -> Optional[str]:
         """
@@ -549,13 +523,13 @@ class LocalPygameClient:
     @overload
     def get_state_by_name(
         self,
-        state_name: Type[StateType],
+        state_name: type[StateType],
     ) -> StateType:
         pass
 
     def get_state_by_name(
         self,
-        state_name: Union[str, Type[State]],
+        state_name: Union[str, type[State]],
     ) -> State:
         """
         Query the state stack for a state by the name supplied.
@@ -565,7 +539,7 @@ class LocalPygameClient:
     def get_queued_state_by_name(
         self,
         state_name: str,
-    ) -> Tuple[str, Mapping[str, Any]]:
+    ) -> tuple[str, Mapping[str, Any]]:
         """
         Query the state stack for a state by the name supplied.
         """
@@ -582,6 +556,10 @@ class LocalPygameClient:
     def remove_state(self, state: State) -> None:
         """Remove a state"""
         self.state_manager.remove_state(state)
+
+    def remove_state_by_name(self, state: str) -> None:
+        """Remove a state by name"""
+        self.state_manager.remove_state_by_name(state)
 
     @overload
     def push_state(self, state_name: str, **kwargs: Any) -> State:
@@ -632,3 +610,8 @@ class LocalPygameClient:
     def current_state(self) -> Optional[State]:
         """Current State object, or None"""
         return self.state_manager.current_state
+
+    @property
+    def active_state_names(self) -> Sequence[str]:
+        """List of names of active states"""
+        return self.state_manager.get_active_state_names()

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import logging
 import os.path
 import sys
@@ -61,3 +61,7 @@ ITEM_CONDITION_PATH = os.path.join(LIBDIR, "item/conditions")
 # technique effects/conditions
 TECH_EFFECT_PATH = os.path.join(LIBDIR, "technique/effects")
 TECH_CONDITION_PATH = os.path.join(LIBDIR, "technique/conditions")
+
+# condition effects/conditions
+COND_EFFECT_PATH = os.path.join(LIBDIR, "condition/effects")
+COND_CONDITION_PATH = os.path.join(LIBDIR, "condition/conditions")

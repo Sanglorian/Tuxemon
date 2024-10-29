@@ -29,26 +29,40 @@
     ],
     "evolutions": [
         {
-            "path": "stat",
             "at_level": 12,
             "monster_slug": "bugnin",
-            "stat1": "melee",
-            "stat2": "armour"
+            "stats": "dodge:greater_than:speed"
         },
         {
-            "path": "stat",
             "at_level": 12,
             "monster_slug": "sumchon",
-            "stat1": "armour",
-            "stat2": "melee"
+            "stats": "speed:greater_than:dodge"
+        },
+        {
+            "at_level": 12,
+            "monster_slug": "gladiatorbug",
+            "stats": "speed:equals:dodge"
         }
     ],
     "history": [
         {
             "mon_slug": "katapill",
             "evo_stage": "basic"
+        },
+        {
+            "mon_slug": "bugnin",
+            "evo_stage": "stage2"
+        },
+        {
+            "mon_slug": "sumchon",
+            "evo_stage": "stage2"
+        },
+        {
+            "mon_slug": "gladiatorbug",
+            "evo_stage": "stage2"
         }
     ],
+    "tags": ["grub", "woodland"],
     "shape": "grub",
     "stage": "stage1",
     "types": [
@@ -59,7 +73,7 @@
     "txmn_id": 57,
     "height": 58,
     "weight": 12,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

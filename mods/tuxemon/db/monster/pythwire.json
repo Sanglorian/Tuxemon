@@ -25,14 +25,10 @@
     ],
     "evolutions": [
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "ouroboutlet",
             "item": "fire_booster"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "sockeserp",
             "item": "metal_booster"
         }
@@ -47,6 +43,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["serpent", "urban"],
     "shape": "serpent",
     "stage": "basic",
     "types": [
@@ -56,7 +53,7 @@
     "txmn_id": 89,
     "height": 200,
     "weight": 4,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

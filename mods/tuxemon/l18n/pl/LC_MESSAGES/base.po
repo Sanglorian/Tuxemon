@@ -90,10 +90,10 @@ msgstr "Kwas akumulatorowy"
 msgid "amnesia"
 msgstr "Amnezja"
 
-msgid "status_recover"
+msgid "recover"
 msgstr "Odzyskaj"
 
-msgid "status_lifeleech"
+msgid "lifeleech"
 msgstr "Lifeleech"
 
 msgid "slot"
@@ -182,10 +182,10 @@ msgstr "Lawina"
 msgid "all_in"
 msgstr "Wszystko w"
 
-msgid "status_poison"
+msgid "poison"
 msgstr "Zatruty"
 
-msgid "status_faint"
+msgid "faint"
 msgstr "Pokonany"
 
 msgid "save_keep"
@@ -257,9 +257,6 @@ msgstr "Ten potwór już został pokonany!"
 
 msgid "combat_replacement"
 msgstr "Wybierz zamiennik!"
-
-msgid "combat_recharging"
-msgstr "{name} potrzebuje przerwy przed ponownym użyciem ruchu {move}…"
 
 msgid "combat_capturing_fail"
 msgstr "{name} się wydostał!"
@@ -480,9 +477,6 @@ msgstr "Lodowy Pazur"
 msgid "hibernate"
 msgstr "Hibernacja"
 
-msgid "headbutt"
-msgstr "Headbutt"
-
 msgid "spyder_cotton_tuxepediaintro"
 msgstr ""
 "Obecnie, jedyne wiarygodne informacje o tuxemonach pochodzą z drogiej i "
@@ -525,7 +519,7 @@ msgstr ""
 " ...\n"
 " To nic nie znaczy. Mam swędzący nos."
 
-msgid "professor_dialog2\n"
+msgid "professor_dialog2"
 msgstr ""
 "Skąd się wzięły Tuxemony?\n"
 "Nikt tak naprawdę nie wie, ale zamieszkują naszą planetę co najmniej od "
@@ -550,7 +544,7 @@ msgstr ""
 "pytałem. Proszę kontynuować, miłej podróży."
 
 #, fuzzy
-msgid "mwah\n"
+msgid "mwah"
 msgstr ""
 "???: Czego chcesz? ... ... ... ... Cóż, szkoda. Nie wejdziesz tu, nawet "
 "jeśli spełniasz wymagania co do stroju.\n"
@@ -786,7 +780,7 @@ msgstr "Starfall"
 msgid "stampede"
 msgstr "Popłoch"
 
-msgid "spray"
+msgid "spit_poison"
 msgstr "Spray"
 
 msgid "splinter"
@@ -837,8 +831,8 @@ msgstr "Ruchome piaski"
 msgid "pseudopod"
 msgstr "Pseudopod"
 
-msgid "probiscus"
-msgstr "Probiscus"
+msgid "proboscis"
+msgstr "Proboscis"
 
 msgid "petrify"
 msgstr "Petryfikacja"
@@ -1531,7 +1525,7 @@ msgstr "hp {user} zostało przywrócone"
 msgid "combat_amnesia_get"
 msgstr "{user} dostał amnezji."
 
-msgid "status_overfeed"
+msgid "overfeed"
 msgstr "Przekarmiony"
 
 msgid "take_cover"
@@ -1585,9 +1579,6 @@ msgstr "Conifrost"
 msgid "corvix"
 msgstr "Corvix"
 
-msgid "birb_robo"
-msgstr "Birb Robo"
-
 msgid "mk01_beta"
 msgstr "Mk01 Beta"
 
@@ -1607,8 +1598,8 @@ msgstr "Zunna"
 msgid "araignee"
 msgstr "Araignee"
 
-msgid "axylightl"
-msgstr "Axylightl"
+msgid "axolightl"
+msgstr "Axolightl"
 
 #, fuzzy
 msgid "arthrobolt"

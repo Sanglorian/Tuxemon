@@ -1,0 +1,359 @@
+events:
+  Cathedral:
+    actions:
+    - set_money bill_cathedral
+    - set_variable cathedral_share:0.5
+    - format_variable cathedral_share,float
+    - set_variable cathedral_interest:0.1
+    - format_variable cathedral_interest,float
+    - set_variable cathedral_fee:100
+    - set_variable scoop_coeff:50
+    conditions:
+    - not variable_set cathedral_share
+    - not variable_set cathedral_interest
+    - not variable_set cathedral_fee
+    - not variable_set scoop_coeff
+    type: "event"
+  Cathedral Share:
+    actions:
+    - variable_math battle_last_prize,*,cathedral_share
+    - format_variable battle_last_prize,-int
+    - modify_money player,,battle_last_prize
+    - modify_money bill_cathedral,,battle_last_prize
+    - set_variable battle_last_prize:0
+    conditions:
+    - is variable_set battle_last_result,_won
+    - is variable_set battle_last_winner,player
+    - is money_is bill_cathedral,greater_than,0
+    - is variable_is battle_last_prize,greater_than,0
+    type: "event"
+  Teleport Faint:
+    actions:
+    - teleport_faint
+    conditions:
+    - is char_defeated player
+    - not location_type clinic
+    - not location_name wayfarer_inn1:wayfarer_inn2:scoop3:scoop4:paper_town:bedroom
+    - is current_state WorldState
+    - not variable_set teleport_faint:spyder_leather_town.tmx 4 14
+    - not variable_set teleport_faint:spyder_timber_cafe.tmx 1 10
+    - not variable_set teleport_faint:spyder_candy_cafe.tmx 1 10
+    - not variable_set teleport_faint:spyder_cotton_cafe.tmx 1 10
+    type: "event"
+  Auto healing teleported:
+    actions:
+    - set_monster_health
+    - set_monster_status
+    - set_variable teleport_clinic:none
+    - format_variable cathedral_fee,int
+    - modify_money bill_cathedral,,cathedral_fee
+    conditions:
+    - is char_defeated player
+    - is location_type clinic
+    - is variable_set teleport_clinic:lost
+    - is current_state WorldState
+    type: "event"
+  Teleport Exception 1:
+    actions:
+    - transition_teleport spyder_wayfarer_inn1.tmx,9,6,0.3
+    - set_monster_health
+    - set_monster_status
+    - set_variable teleport_clinic:none
+    conditions:
+    - is char_defeated player
+    - is location_name wayfarer_inn1:wayfarer_inn2
+    - is current_state WorldState
+    type: "event"
+  Teleport Exception 2:
+    actions:
+    - transition_teleport spyder_scoop2.tmx,4,4,0.3
+    - set_monster_health
+    - set_monster_status
+    - set_variable teleport_clinic:none
+    conditions:
+    - is char_defeated player
+    - is location_name scoop3:scoop4
+    - is current_state WorldState
+    type: "event"
+  Teleport Exception 3:
+    actions:
+    - transition_teleport spyder_bedroom.tmx,4,3,0.3
+    - set_monster_health
+    - set_monster_status
+    - set_variable teleport_clinic:none
+    conditions:
+    - is char_defeated player
+    - is location_name paper_town
+    - is current_state WorldState
+    - is variable_set firstfightend:no
+    type: "event"
+  Teleport Exception 4:
+    actions:
+    - teleport_faint
+    - set_monster_health
+    - set_monster_status
+    - set_variable teleport_clinic:none
+    conditions:
+    - is char_defeated player
+    - is current_state WorldState
+    - is variable_set teleport_faint:spyder_leather_town.tmx 4 14
+    type: "event"
+  Teleport Exception 5:
+    actions:
+    - teleport_faint
+    - set_monster_health
+    - set_monster_status
+    - set_variable teleport_clinic:none
+    conditions:
+    - is char_defeated player
+    - is current_state WorldState
+    - is variable_set teleport_faint:spyder_timber_cafe.tmx 1 10
+    type: "event"
+  Teleport Exception 6:
+    actions:
+    - teleport_faint
+    - set_monster_health
+    - set_monster_status
+    - set_variable teleport_clinic:none
+    conditions:
+    - is char_defeated player
+    - is current_state WorldState
+    - is variable_set teleport_faint:spyder_candy_cafe.tmx 1 10
+    type: "event"
+  Teleport Exception 7:
+    actions:
+    - teleport_faint
+    - set_monster_health
+    - set_monster_status
+    - set_variable teleport_clinic:none
+    conditions:
+    - is char_defeated player
+    - is current_state WorldState
+    - is variable_set teleport_faint:spyder_cotton_cafe.tmx 1 10
+    type: "event"
+  Evolution all:
+    actions:
+    - evolution player
+    conditions:
+    - is check_evolution player
+    - is current_state WorldState
+    type: "event"
+  Choice Surf:
+    actions:
+    - translated_dialog itsswimmingtime
+    - translated_dialog_choice yes:no,swimming
+    conditions:
+    - is has_item player,surfboard
+    - is char_facing_tile player,surfable
+    - is button_pressed K_RETURN
+    - not char_in player,surfable
+    type: "event"
+  Surfable:
+    actions:
+    - set_template player,swimmer
+    conditions:
+    - is char_in player,surfable
+    - not char_sprite player,swimmer
+    type: "event"
+  Not surfable:
+    actions:
+    - set_template player,default
+    - set_variable swimming:no
+    conditions:
+    - not char_in player,surfable
+    - is char_sprite player,swimmer
+    type: "event"
+  Allow Swim:
+    actions:
+    - update_tile_properties surfable
+    conditions:
+    - is variable_set swimming:yes
+    - is current_state WorldState
+    type: "event"
+  Forbid Swim:
+    actions:
+    - update_tile_properties surfable,0
+    conditions:
+    - is variable_set swimming:no
+    - is current_state WorldState
+    type: "event"
+  Swim Encounters Day:
+    actions:
+    - random_encounter spyder_routec,0.25
+    conditions:
+    - is char_sprite player,swimmer
+    - is current_state WorldState
+    - is check_char_parameter player,moving,1
+    - is variable_set environment:ocean
+    type: "event"
+  Swim Encounters Night:
+    actions:
+    - random_encounter spyder_routec,0.75
+    conditions:
+    - is char_sprite player,swimmer
+    - is current_state WorldState
+    - is check_char_parameter player,moving,1
+    - is variable_set environment:night_ocean
+    type: "event"
+  Swim Day Environment:
+    actions:
+    - set_variable environment:ocean
+    conditions:
+    - is char_sprite player,swimmer
+    - not variable_set stage_of_day:night
+    - not variable_set environment:ocean
+    type: "event"
+  Swim Night Environment:
+    actions:
+    - set_variable environment:night_ocean
+    conditions:
+    - is char_sprite player,swimmer
+    - is variable_set stage_of_day:night
+    - not variable_set environment:night_ocean
+    type: "event"
+  Night Day Cycle Outside:
+    actions:
+    - set_layer 0:0:128:128
+    conditions:
+    - is variable_set stage_of_day:night
+    - not variable_set flashback:on
+    - not location_inside
+    - not check_world layer,0:0:128:128
+    type: "event"
+  Night Day Cycle Inside:
+    actions:
+    - set_layer
+    conditions:
+    - is variable_set stage_of_day:night
+    - not variable_set flashback:on
+    - is location_inside
+    - not check_world layer,255:255:255:0
+    type: "event"
+  Day Cycle Outside:
+    actions:
+    - set_layer
+    conditions:
+    - not variable_set stage_of_day:night
+    - not variable_set flashback:on
+    - not location_inside
+    - is check_world layer,0:0:128:128
+    type: "event"
+  Phone GPS Leather:
+    actions:
+    - set_variable nu_map_1:leather_town*0.20*0.42
+    conditions:
+    - not variable_set nu_map_1:leather_town*0.20*0.42
+    - is location_name leather_town
+    type: "event"
+  Phone GPS Cotton:
+    actions:
+    - set_variable nu_map_2:cotton_town*0.20*0.52
+    conditions:
+    - not variable_set nu_map_2:cotton_town*0.20*0.52
+    - is location_name cotton_town
+    type: "event"
+  Phone GPS Paper:
+    actions:
+    - set_variable nu_map_3:paper_town*0.20*0.62
+    conditions:
+    - not variable_set nu_map_3:paper_town*0.20*0.62
+    - is location_name paper_town
+    type: "event"
+  Phone GPS Candy:
+    actions:
+    - set_variable nu_map_4:candy_town*-0.15*0.62
+    conditions:
+    - not variable_set nu_map_4:candy_town*-0.15*0.62
+    - is location_name candy_town
+    type: "event"
+  Phone GPS Timber:
+    actions:
+    - set_variable nu_map_5:timber_town*-0.15*0.42
+    conditions:
+    - not variable_set nu_map_5:timber_town*-0.15*0.42
+    - is location_name timber_town
+    type: "event"
+  Phone GPS Flower:
+    actions:
+    - set_variable nu_map_6:flower_city*-0.15*0.32
+    conditions:
+    - not variable_set nu_map_6:flower_city*-0.15*0.32
+    - is location_name flower_city
+    type: "event"
+  Set Bonding Variable:
+    actions:
+    - set_variable steps_bonding:1000
+    conditions:
+    - not variable_set steps_bonding
+    - is has_item player,friendship_scroll
+    type: "event"
+  Bond Up 1000 Steps:
+    actions:
+    - modify_monster_bond
+    - set_variable steps_bonding:1000
+    conditions:
+    - is variable_set steps_bonding
+    - is variable_is steps_bonding,equals,0.0
+    - is has_item player,friendship_scroll
+    type: "event"
+  Bond Down -10 Fainted:
+    actions:
+    - modify_monster_bond combatstate_faint,-10
+    - clear_variable combatstate_faint
+    conditions:
+    - is variable_set combatstate_faint
+    - is has_item player,friendship_scroll
+    type: "event"
+  Set Party Status:
+    actions:
+    - set_party_status player
+    conditions:
+    - is current_state MainCombatMenuState:WorldMenuState
+    - is party_size player,greater_than,0
+    type: "event"
+  Cheat Code ApexPlayer:
+    actions:
+    - get_party_monster
+    - remove_monster iid_slot_0
+    - add_monster rockat,100
+    - add_monster moloch,100
+    - add_monster arthrobolt,100
+    - add_monster eaglace,100
+    - add_monster agnigon,100
+    - char_plague spyderbite,inoculated
+    - set_variable cheat_apex:enabled
+    conditions:
+    - is check_char_parameter player,name,ApexPlayer
+    - is party_size player,equals,1
+    - not variable_set cheat_apex:enabled
+    - is current_state WorldState
+    type: "event"
+  Check Max Moves:
+    actions:
+    - translated_dialog new_tech_delete
+    - get_monster_tech chosen_tech
+    - remove_tech chosen_tech
+    conditions:
+    - is check_max_tech
+    - is current_state MainCombatMenuState:WorldState
+    type: "event"
+  Create Quarantine Kennel:
+    actions:
+    - create_kennel quarantine
+    conditions:
+    - not kennel player,quarantine,exist
+    type: "event"
+  Hide Quarantine Kennel:
+    actions:
+    - set_kennel_visible quarantine,false
+    conditions:
+    - not variable_set hospitalcure:yes
+    - is kennel player,quarantine,visible
+    type: "event"
+  Show Quarantine Kennel:
+    actions:
+    - set_kennel_visible quarantine,true
+    conditions:
+    - is variable_set hospitalcure:yes
+    - is kennel player,quarantine,hidden
+    type: "event"

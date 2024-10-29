@@ -20,7 +20,7 @@
         },
         {
             "level_learned": 12,
-            "technique": "suck_poison"
+            "technique": "spit_poison"
         },
         {
             "level_learned": 16,
@@ -48,22 +48,22 @@
         },
         {
             "level_learned": 40,
-            "technique": "probiscus"
+            "technique": "proboscis"
         }
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["leviathan"],
     "shape": "leviathan",
     "stage": "standalone",
     "types": [
-        "glitch",
         "water"
     ],
     "possible_genders": ["neuter"],
     "txmn_id": 0,
-    "height": 0,
+    "height": 0.1,
     "weight": 25,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

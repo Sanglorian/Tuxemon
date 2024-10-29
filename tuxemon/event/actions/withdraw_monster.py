@@ -1,15 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 import uuid
 from dataclasses import dataclass
-from typing import Optional, Union, final
+from typing import final
 
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
-from tuxemon.npc import NPC
 
 logger = logging.getLogger(__name__)
 
@@ -27,32 +26,36 @@ class WithdrawMonsterAction(EventAction):
     Script usage:
         .. code-block::
 
-            withdraw_monster <monster_id>[,trainer_slug]
+            withdraw_monster <variable>,<character>
 
     Script parameters:
-        monster_id: The id of the monster to pull (variable).
-        trainer_slug: Slug of the trainer that will receive the monster. It
-            defaults to the current player.
+        variable: Name of the variable where to store the monster id.
+        character: Either "player" or npc slug name (e.g. "npc_maple").
+            the one who is going to receive the monster
 
     """
 
     name = "withdraw_monster"
-    monster_id: str
-    trainer: Union[str, None] = None
+    variable: str
+    character: str
 
     def start(self) -> None:
-        trainer: Optional[NPC]
-        if self.trainer is None:
-            trainer = self.session.player
-        else:
-            trainer = get_npc(self.session, self.trainer)
+        player = self.session.player
+        if self.variable not in player.game_variables:
+            logger.error(f"Game variable {self.variable} not found")
+            return
 
-        assert trainer, "No Trainer found with slug '{}'".format(
-            self.trainer or "player"
-        )
-        instance_id = uuid.UUID(trainer.game_variables[self.monster_id])
-        mon = trainer.find_monster_in_storage(instance_id)
-        assert mon
+        monster_id = uuid.UUID(player.game_variables[self.variable])
+        monster = player.monster_boxes.get_monsters_by_iid(monster_id)
+        if monster is None:
+            logger.error("Monster not found")
+            return
+        player.monster_boxes.remove_monster(monster)
 
-        trainer.remove_monster_from_storage(mon)
-        trainer.add_monster(mon, len(trainer.monsters))
+        character = get_npc(self.session, self.character)
+        if character is None:
+            logger.error(f"{self.character} not found")
+            return
+
+        character.add_monster(monster, len(character.monsters))
+        logger.info(f"{character.name} withdrawn {monster.name}!")

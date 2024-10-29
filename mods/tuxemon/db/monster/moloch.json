@@ -32,7 +32,7 @@
         },
         {
             "level_learned": 34,
-            "technique": "spray"
+            "technique": "spit_poison"
         },
         {
             "level_learned": 44,
@@ -58,6 +58,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["brute"],
     "shape": "brute",
     "stage": "stage2",
     "types": [
@@ -67,7 +68,7 @@
     "txmn_id": 12,
     "height": 216,
     "weight": 90,
-    "catch_rate": 45.0,
+    "catch_rate": 35.0,
     "lower_catch_resistance": 0.85,
     "upper_catch_resistance": 1.1
 }

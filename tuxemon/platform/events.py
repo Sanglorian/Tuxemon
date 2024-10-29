@@ -1,18 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import (
-    Any,
-    ClassVar,
-    Generator,
-    Generic,
-    Mapping,
-    Optional,
-    Sequence,
-    TypeVar,
-)
+from collections.abc import Generator, Mapping, Sequence
+from typing import Any, ClassVar, Generic, Optional, TypeVar
 
 _InputEventType = TypeVar("_InputEventType", contravariant=True)
 
@@ -82,7 +74,7 @@ class InputHandler(ABC, Generic[_InputEventType]):
     @abstractmethod
     def process_event(self, input_event: _InputEventType) -> None:
         """
-        Process a input event, such as a Pygame event.
+        Process an input event, such as a Pygame event.
 
         Parameters:
             input_event: Input event to process.
@@ -106,7 +98,7 @@ class InputHandler(ABC, Generic[_InputEventType]):
 
     def get_events(self) -> Generator[PlayerInput, None, None]:
         """
-        Update the input state (holding time, etc) and return player inputs.
+        Update the input state (holding time, etc.) and return player inputs.
 
         Yields:
             Player inputs (before updating their state).

@@ -4,7 +4,7 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "suck_poison"
+            "technique": "spit_poison"
         },
         {
             "level_learned": 2,
@@ -33,11 +33,22 @@
         {
             "level_learned": 32,
             "technique": "starfall"
+        },
+        {
+            "level_learned": 40,
+            "technique": "ice_claw"
+        },
+        {
+            "level_learned": 44,
+            "technique": "chill_mist"
+        },
+        {
+            "level_learned": 48,
+            "technique": "frostbite"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 36,
             "monster_slug": "tobishimi"
         }
@@ -46,8 +57,13 @@
         {
             "mon_slug": "drashimi",
             "evo_stage": "basic"
+        },
+        {
+            "mon_slug": "tobishimi",
+            "evo_stage": "stage2"
         }
     ],
+    "tags": ["dragon", "sea", "urban"],
     "shape": "dragon",
     "stage": "stage1",
     "types": [
@@ -57,7 +73,7 @@
     "txmn_id": 186,
     "height": 136,
     "weight": 85,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

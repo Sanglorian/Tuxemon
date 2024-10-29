@@ -8,7 +8,7 @@
         },
         {
             "level_learned": 2,
-            "technique": "headbutt"
+            "technique": "hammerhead"
         },
         {
             "level_learned": 6,
@@ -16,7 +16,7 @@
         },
         {
             "level_learned": 8,
-            "technique": "sylvan"
+            "technique": "spit_poison"
         },
         {
             "level_learned": 12,
@@ -42,6 +42,7 @@
             "evo_stage": "basic"
         }
     ],
+    "tags": ["serpent", "ruins", "underground", "urban"],
     "shape": "serpent",
     "stage": "stage1",
     "types": [
@@ -51,7 +52,7 @@
     "txmn_id": 133,
     "height": 95,
     "weight": 6,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

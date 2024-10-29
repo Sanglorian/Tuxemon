@@ -1,27 +1,29 @@
 {
   "tech_id": 77,
-  "accuracy": 1,
+  "accuracy": 0.6,
   "animation": "waterspurt",
   "effects": [
-    "splash"
+    "splash 2"
   ],
   "flip_axes": "",
   "is_fast": false,
-  "potency": null,
-  "power": 1.25,
-  "range": "reach",
+  "potency": 0.0,
+  "power": 1.5,
+  "range": "ranged",
   "recharge": 1,
   "sfx": "sfx_tornado",
   "slug": "chill_mist",
   "sort": "damage",
   "target": {
-    "enemy monster": 2,
-    "enemy team": 0,
-    "enemy trainer": 0,
-    "own monster": 0,
-    "own team": 0,
-    "own trainer": 0
+    "enemy_monster": true,
+    "enemy_team": false,
+    "enemy_trainer": false,
+    "own_monster": false,
+    "own_team": false,
+    "own_trainer": false
   },
+  "category": "basic",
+  "tags": ["Weather"],
   "types": [
     "water"
   ],

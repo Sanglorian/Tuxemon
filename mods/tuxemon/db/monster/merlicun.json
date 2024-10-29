@@ -25,11 +25,26 @@
         {
             "level_learned": 16,
             "technique": "fire_claw"
+        },
+        {
+            "level_learned": 28,
+            "technique": "sunburst"
+        },
+        {
+            "level_learned": 32,
+            "technique": "magma"
+        },
+        {
+            "level_learned": 36,
+            "technique": "arcane_eye"
+        },
+        {
+            "level_learned": 40,
+            "technique": "battery_acid"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 20,
             "monster_slug": "firomenis"
         }
@@ -40,6 +55,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["varmint"],
     "shape": "varmint",
     "stage": "basic",
     "types": [
@@ -49,7 +65,7 @@
     "txmn_id": 209,
     "height": 28,
     "weight": 3,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

@@ -3,25 +3,20 @@
     "is facing_tile surfable"
   ],
   "effects": [
-    "fishing"
+    "fishing 0.85,25,35"
   ],
   "slug": "poseidon",
   "sort": "utility",
   "sprite": "gfx/items/poseidon.png",
-  "target": {
-    "enemy monster": 0,
-    "enemy team": 0,
-    "enemy trainer": 0,
-    "own monster": 0,
-    "own team": 0,
-    "own trainer": 0,
-    "item": 0
-  },
   "category": "fish",
-  "type": "KeyItem",
   "usable_in": [
     "WorldState"
   ],
+  "behaviors": {
+    "consumable": false,
+    "requires_monster_menu": false,
+    "show_dialog_on_success": false
+  },
   "use_failure": "fishing_rod_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

@@ -1,38 +1,37 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import random
+from collections.abc import Callable
 from functools import partial
-from typing import Callable
 
 import pygame_menu
 from pygame_menu import locals
-from pygame_menu.locals import POSITION_CENTER
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon import prepare, tools
+from tuxemon import prepare
 from tuxemon.db import MonsterModel, db
 from tuxemon.locale import T
-from tuxemon.menu.menu import BACKGROUND_COLOR, PygameMenuState
-from tuxemon.menu.theme import get_theme
-from tuxemon.monster import Monster
+from tuxemon.menu.menu import PygameMenuState
 from tuxemon.session import local_session
 from tuxemon.tools import open_dialog
 
 MenuGameObj = Callable[[], object]
+lookup_cache: dict[str, MonsterModel] = {}
 
 
-def fix_width(screen_x: int, pos_x: float) -> int:
-    """it returns the correct width based on percentage"""
-    value = round(screen_x * pos_x)
-    return value
+def fix_measure(measure: int, percentage: float) -> int:
+    """it returns the correct measure based on percentage"""
+    return round(measure * percentage)
 
 
-def fix_height(screen_y: int, pos_y: float) -> int:
-    """it returns the correct height based on percentage"""
-    value = round(screen_y * pos_y)
-    return value
+def _lookup_monsters() -> None:
+    monsters = list(db.database["monster"])
+    for mon in monsters:
+        results = db.lookup(mon, table="monster")
+        if results.txmn_id > 0:
+            lookup_cache[mon] = results
 
 
 class MinigameState(PygameMenuState):
@@ -44,31 +43,23 @@ class MinigameState(PygameMenuState):
         self,
         menu: pygame_menu.Menu,
     ) -> None:
-        # data
-        monsters = list(db.database["monster"])
-        data = []
-        for mon in monsters:
-            results = db.lookup(mon, table="monster")
-            if results.txmn_id > 0:
-                data.append(results)
-
+        width, height = prepare.SCREEN_SIZE
         # name
         name = T.translate("who_is_that")
         menu.add.label(
             title=f"{name}",
             label_id="question",
-            font_size=30,
+            font_size=self.font_size_big,
             align=locals.ALIGN_CENTER,
             underline=True,
         )
         # image
+        data = list(lookup_cache.values())
         tuxemon: MonsterModel
         tuxemon = random.choice(data)
         self.tuxemon = tuxemon
-        new_image = pygame_menu.BaseImage(
-            tools.transform_resource_filename(
-                "gfx/sprites/battle/" + tuxemon.slug + "-front.png"
-            ),
+        new_image = self._create_image(
+            f"gfx/sprites/battle/{tuxemon.slug}-front.png"
         )
         new_image.scale(prepare.SCALE, prepare.SCALE)
         menu.add.image(image_path=new_image.copy())
@@ -78,7 +69,7 @@ class MinigameState(PygameMenuState):
             choice.pop()
             choice.insert(pos, tuxemon)
 
-        def checking(mon: Monster) -> None:
+        def checking(mon: MonsterModel) -> None:
             if mon.slug == self.tuxemon.slug:
                 self.client.replace_state("MinigameState")
             else:
@@ -87,8 +78,8 @@ class MinigameState(PygameMenuState):
         # replies
         width = menu._width
         f = menu.add.frame_h(
-            width=fix_width(width, 0.95),
-            height=fix_width(width, 0.05),
+            width=fix_measure(width, 0.95),
+            height=fix_measure(width, 0.05),
             frame_id="evolutions",
             align=locals.ALIGN_CENTER,
         )
@@ -97,7 +88,7 @@ class MinigameState(PygameMenuState):
             menu.add.button(
                 T.translate(txmn.slug),
                 partial(checking, txmn),
-                font_size=20,
+                font_size=self.font_size_small,
                 button_id=txmn.slug,
                 selection_effect=HighlightSelection(),
             )
@@ -107,27 +98,15 @@ class MinigameState(PygameMenuState):
             f.pack(choice, align=locals.ALIGN_CENTER)
 
     def __init__(self) -> None:
+        if not lookup_cache:
+            _lookup_monsters()
         width, height = prepare.SCREEN_SIZE
 
-        background = pygame_menu.BaseImage(
-            image_path=tools.transform_resource_filename(
-                "gfx/ui/item/bg_pcstate.png"
-            ),
-            drawing_position=POSITION_CENTER,
-        )
-        theme = get_theme()
+        theme = self._setup_theme(prepare.BG_MINIGAME)
         theme.scrollarea_position = locals.POSITION_EAST
-        theme.background_color = background
         theme.widget_alignment = locals.ALIGN_CENTER
 
         super().__init__(height=height, width=width)
 
         self.add_menu_items(self.menu)
-        self.repristinate()
-
-    def repristinate(self) -> None:
-        """Repristinate original theme (color, alignment, etc.)"""
-        theme = get_theme()
-        theme.scrollarea_position = locals.SCROLLAREA_POSITION_NONE
-        theme.background_color = BACKGROUND_COLOR
-        theme.widget_alignment = locals.ALIGN_LEFT
+        self.reset_theme()

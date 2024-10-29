@@ -1,29 +1,34 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 
-from tuxemon.combat import pre_checking
+from tuxemon.combat import pre_checking, recharging
 from tuxemon.db import ItemCategory
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
     from tuxemon.monster import Monster
+    from tuxemon.npc import NPC
     from tuxemon.states.combat.combat import CombatState
 
 
 # Class definition for an AI model.
 class AI:
-    def __init__(self, combat: CombatState, monster: Monster) -> None:
+    def __init__(
+        self, combat: CombatState, monster: Monster, character: NPC
+    ) -> None:
         super().__init__()
         self.combat = combat
-        self.human = combat.players[0]  # human
-        self.user = combat.players[1]  # ai
+        self.character = character
         self.monster = monster
-        self.opponents = combat.monsters_in_play[self.human]
+        if character == combat.players[0]:
+            self.opponents = combat.monsters_in_play[combat.players[1]]
+        if character == combat.players[1]:
+            self.opponents = combat.monsters_in_play[combat.players[0]]
 
         if self.combat.is_trainer_battle:
             self.make_decision_trainer()
@@ -34,12 +39,11 @@ class AI:
         """
         Trainer battles.
         """
-        if self.check_strongest():
-            if len(self.user.items) > 0:
-                for itm in self.user.items:
-                    if itm.category == ItemCategory.potion:
-                        if self.need_potion():
-                            self.action_item(itm)
+        if len(self.character.items) > 0:
+            for itm in self.character.items:
+                if itm.category == ItemCategory.potion:
+                    if self.need_potion():
+                        self.action_item(itm)
         technique, target = self.track_next_use()
         # send data
         self.action_tech(technique, target)
@@ -52,54 +56,27 @@ class AI:
         # send data
         self.action_tech(technique, target)
 
-    def track_next_use(self) -> Tuple[Technique, Monster]:
+    def track_next_use(self) -> tuple[Technique, Monster]:
         """
         Tracks next_use and recharge, if both unusable, skip.
         """
-        actions = []
-        # it chooses among the last 4 moves
-        for mov in self.monster.moves[-self.monster.max_moves :]:
-            if mov.next_use <= 0:
-                for opponent in self.opponents:
-                    # it checks technique conditions
-                    if mov.validate(opponent):
-                        actions.append((mov, opponent))
-        if not actions:
+        # Filter out recharging moves and validate techniques against opponents
+        valid_actions = [
+            (mov, opponent)
+            for mov in self.monster.moves[-self.monster.max_moves :]
+            if not recharging(mov)
+            for opponent in self.opponents
+            if mov.validate(opponent)
+        ]
+
+        # If no valid actions, return a skip technique and a random opponent
+        if not valid_actions:
             skip = Technique()
             skip.load("skip")
             return skip, random.choice(self.opponents)
-        else:
-            return random.choice(actions)
 
-    def check_weakest(self) -> bool:
-        """
-        Is it the weakest monster in the NPC's party?
-        """
-        weakest = [
-            m
-            for m in self.user.monsters
-            if m.level == min([m.level for m in self.user.monsters])
-        ]
-        weak = weakest[0]
-        if weak.level == self.monster.level:
-            return True
-        else:
-            return False
-
-    def check_strongest(self) -> bool:
-        """
-        Is it the strongest monster in the NPC's party?
-        """
-        strongest = [
-            m
-            for m in self.user.monsters
-            if m.level == max([m.level for m in self.user.monsters])
-        ]
-        strong = strongest[0]
-        if strong.level == self.monster.level:
-            return True
-        else:
-            return False
+        # Otherwise, return a random valid action
+        return random.choice(valid_actions)
 
     def need_potion(self) -> bool:
         """
@@ -116,18 +93,12 @@ class AI:
         """
         Send action tech.
         """
-        technique = pre_checking(
-            self.monster, technique, target, self.user, self.human
-        )
-        # check status response
-        if self.combat.status_response_technique(self.monster, technique):
-            self._lost_monster = self.monster
+        self.character.game_variables["action_tech"] = technique.slug
+        technique = pre_checking(self.monster, technique, target, self.combat)
         self.combat.enqueue_action(self.monster, technique, target)
 
     def action_item(self, item: Item) -> None:
         """
         Send action item.
         """
-        if self.combat.status_response_item(self.monster):
-            self._lost_monster = self.monster
-        self.combat.enqueue_action(self.user, item, self.monster)
+        self.combat.enqueue_action(self.character, item, self.monster)

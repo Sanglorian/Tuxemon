@@ -4,7 +4,7 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "headbutt"
+            "technique": "hammerhead"
         },
         {
             "level_learned": 2,
@@ -36,11 +36,11 @@
         },
         {
             "level_learned": 28,
-            "technique": "maori"
+            "technique": "greenstone"
         },
         {
             "level_learned": 32,
-            "technique": "ring"
+            "technique": "altitude"
         },
         {
             "level_learned": 36,
@@ -53,6 +53,7 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["flier"],
     "shape": "flier",
     "stage": "standalone",
     "types": [
@@ -62,7 +63,7 @@
     "txmn_id": 143,
     "height": 92,
     "weight": 17,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

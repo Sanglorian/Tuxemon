@@ -1,9 +1,9 @@
 {
   "tech_id": 16,
-  "accuracy": 0.75,
+  "accuracy": 0.8,
   "animation": "explosion_small",
   "effects": [
-    "give status_diehard,user",
+    "give diehard,user",
     "damage"
   ],
   "flip_axes": "",
@@ -16,13 +16,15 @@
   "slug": "shuriken",
   "sort": "damage",
   "target": {
-    "enemy monster": 2,
-    "enemy team": 0,
-    "enemy trainer": 0,
-    "own monster": 0,
-    "own team": 0,
-    "own trainer": 0
+    "enemy_monster": true,
+    "enemy_team": false,
+    "enemy_trainer": false,
+    "own_monster": false,
+    "own_team": false,
+    "own_trainer": false
   },
+  "category": "simple",
+  "tags": ["Soldier", "Steel"],
   "types": [
     "metal"
   ],

@@ -4,7 +4,7 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "fester"
+            "technique": "ring"
         },
         {
             "level_learned": 2,
@@ -53,6 +53,7 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["humanoid"],
     "shape": "humanoid",
     "stage": "standalone",
     "types": [
@@ -62,7 +63,7 @@
     "txmn_id": 123,
     "height": 42,
     "weight": 14,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

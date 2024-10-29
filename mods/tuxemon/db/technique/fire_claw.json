@@ -1,28 +1,30 @@
 {
   "tech_id": 3,
-  "accuracy": 0.7,
+  "accuracy": 0.75,
   "animation": "slash_power",
   "effects": [
-    "give status_burn,target",
+    "give burn,target",
     "damage"
   ],
   "flip_axes": "x",
   "is_fast": false,
   "potency": 0.2,
   "power": 1.75,
-  "range": "melee",
+  "range": "reach",
   "recharge": 2,
   "sfx": "sfx_flames1",
   "slug": "fire_claw",
   "sort": "damage",
   "target": {
-    "enemy monster": 2,
-    "enemy team": 0,
-    "enemy trainer": 0,
-    "own monster": 0,
-    "own team": 0,
-    "own trainer": 0
+    "enemy_monster": true,
+    "enemy_team": false,
+    "enemy_trainer": false,
+    "own_monster": false,
+    "own_team": false,
+    "own_trainer": false
   },
+  "category": "simple",
+  "tags": ["Flame", "Claws"],
   "types": [
     "fire"
   ],

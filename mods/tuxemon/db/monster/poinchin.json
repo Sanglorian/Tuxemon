@@ -25,7 +25,6 @@
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 18,
             "monster_slug": "saurchin"
         }
@@ -36,16 +35,17 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["grub", "coastal"],
     "shape": "grub",
     "stage": "basic",
     "types": [
         "water"
     ],
     "possible_genders": ["male", "female"],
-    "txmn_id": 164,
+    "txmn_id": 348,
     "height": 30,
     "weight": 6,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

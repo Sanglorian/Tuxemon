@@ -4,7 +4,7 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "mudslide"
+            "technique": "boulder"
         },
         {
             "level_learned": 2,
@@ -20,11 +20,11 @@
         },
         {
             "level_learned": 12,
-            "technique": "cavity"
+            "technique": "mudslide"
         },
         {
             "level_learned": 16,
-            "technique": "fledgling"
+            "technique": "fume"
         },
         {
             "level_learned": 20,
@@ -36,7 +36,7 @@
         },
         {
             "level_learned": 28,
-            "technique": "sylvan"
+            "technique": "clamp_on"
         },
         {
             "level_learned": 32,
@@ -44,15 +44,16 @@
         },
         {
             "level_learned": 36,
-            "technique": "ring"
+            "technique": "breathe_fire"
         },
         {
             "level_learned": 40,
-            "technique": "mystic_blending"
+            "technique": "stonehenge"
         }
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["dragon"],
     "shape": "dragon",
     "stage": "standalone",
     "types": [
@@ -62,7 +63,7 @@
     "txmn_id": 166,
     "height": 120,
     "weight": 120,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

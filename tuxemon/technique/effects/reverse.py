@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -32,15 +32,20 @@ class ReverseEffect(TechEffect):
     def apply(
         self, tech: Technique, user: Monster, target: Monster
     ) -> ReverseEffectResult:
-        done: bool = False
-        if self.objective == "user":
-            user.return_types()
-            done = True
-        elif self.objective == "target":
-            target.return_types()
-            done = True
-        elif self.objective == "both":
-            user.return_types()
-            target.return_types()
-            done = True
-        return {"success": done}
+        if self.objective not in ("user", "target", "both"):
+            raise ValueError(
+                f"{self.objective} must be 'user', 'target' or 'both'"
+            )
+
+        if self.objective in ["user", "both"]:
+            user.reset_types()
+        if self.objective in ["target", "both"]:
+            target.reset_types()
+
+        return {
+            "success": True,
+            "damage": 0,
+            "element_multiplier": 0.0,
+            "should_tackle": False,
+            "extra": None,
+        }

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -19,9 +19,9 @@ class StatusCondition(TechCondition):
     """
 
     name = "status"
-    status: str
+    expected: str
 
     def test(self, target: Monster) -> bool:
-        return self.status in [
+        return self.expected in [
             x.slug for x in target.status if hasattr(x, "slug")
         ]

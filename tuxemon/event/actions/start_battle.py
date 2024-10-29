@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import final
+from typing import Optional, final
 
-from tuxemon.combat import alive_party, check_battle_legal
+from tuxemon.combat import check_battle_legal
 from tuxemon.db import db
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
@@ -19,63 +19,81 @@ logger = logging.getLogger(__name__)
 @dataclass
 class StartBattleAction(EventAction):
     """
-    Start a battle with the given npc and switch to the combat module.
+    Start a battle between two characters and switch to the combat module.
 
     Script usage:
         .. code-block::
 
-            start_battle <npc_slug>
+            start_battle <character1>,<character2>[,]
 
     Script parameters:
-        npc_slug: Either "player" or npc slug name (e.g. "npc_maple").
+        character1: Either "player" or character slug name (e.g. "npc_maple").
+        character2: Either "player" or character slug name (e.g. "npc_maple").
 
     """
 
     name = "start_battle"
-    npc_slug: str
+    character1: str
+    character2: Optional[str] = None
+    music: Optional[str] = None
 
     def start(self) -> None:
-        player = self.session.player
+        self.character2 = self.character2 or "player"
 
-        # Don't start a battle if we don't even have monsters in our party yet.
-        if not check_battle_legal(player):
-            logger.warning("battle is not legal, won't start")
+        character1 = get_npc(self.session, self.character1)
+        character2 = get_npc(self.session, self.character2)
+
+        if not character1 or not character2:
+            _char = self.character1 if not character1 else self.character2
+            logger.error(f"Character not found in map: {_char}")
             return
 
-        npc = get_npc(self.session, self.npc_slug)
-        assert npc
-        if not npc.monsters:
-            logger.warning(
-                f"npc '{self.npc_slug}' has no monsters, won't start trainer battle."
-            )
+        if not (
+            check_battle_legal(character1) and check_battle_legal(character2)
+        ):
+            logger.warning("Battle is not legal, won't start")
             return
 
-        # Lookup the environment
-        env_slug = player.game_variables.get("environment", "grass")
+        # double (2 vs 2)
+        template1 = db.lookup(character1.template.slug, table="template")
+        template2 = db.lookup(character2.template.slug, table="template")
+
+        if (template1 and template1.double) or (
+            template2 and template2.double
+        ):
+            character1.max_position = 2
+            character2.max_position = 2
+
+        # environment
+        env_slug = "grass"
+        for fighter in [character1, character2]:
+            if fighter.isplayer:
+                env_slug = fighter.game_variables.get("environment", "grass")
+            else:
+                env_slug = self.session.player.game_variables.get(
+                    "environment", "grass"
+                )
+
         env = db.lookup(env_slug, table="environment")
 
-        # trigger 2 vs 2
-        if npc.template[0].double:
-            npc.max_position = 2
-            if len(alive_party(player)) > 1:
-                player.max_position = 2
-
-        # Add our players and setup combat
-        logger.info("Starting battle with '{self.npc_slug}'!")
+        # sort fighters
+        fighters = sorted(
+            [character1, character2], key=lambda x: not x.isplayer
+        )
+        # start the battle
+        logger.info(
+            f"Starting battle between {fighters[0].name} and {fighters[1].name}!"
+        )
         self.session.client.push_state(
             CombatState(
-                players=(player, npc),
+                players=(fighters[0], fighters[1]),
                 combat_type="trainer",
                 graphics=env.battle_graphics,
             )
         )
-
-        # Start some music!
-        filename = env.battle_music
-        self.session.client.event_engine.execute_action(
-            "play_music",
-            [filename],
-        )
+        # music
+        filename = env.battle_music if not self.music else self.music
+        self.session.client.current_music.play(filename)
 
     def update(self) -> None:
         try:

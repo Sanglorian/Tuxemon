@@ -44,17 +44,32 @@
         },
         {
             "level_learned": 36,
-            "technique": "maori"
+            "technique": "greenstone"
         },
         {
             "level_learned": 40,
             "technique": "venom"
         }
     ],
-    "evolutions": [],
-    "history": [],
+    "evolutions": [
+        {
+            "at_level": 32,
+            "monster_slug": "stegofor"
+        }
+    ],
+    "history": [
+        {
+            "mon_slug": "stegofor",
+            "evo_stage": "stage1"
+        },
+        {
+            "mon_slug": "brachifor",
+            "evo_stage": "stage2"
+        }
+    ],
+    "tags": ["leviathan", "jungle", "woodland"],
     "shape": "leviathan",
-    "stage": "standalone",
+    "stage": "basic",
     "types": [
         "wood"
     ],
@@ -62,7 +77,7 @@
     "txmn_id": 211,
     "height": 56,
     "weight": 19,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

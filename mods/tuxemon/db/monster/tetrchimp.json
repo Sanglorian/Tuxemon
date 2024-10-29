@@ -21,11 +21,22 @@
         {
             "level_learned": 12,
             "technique": "bubble_trap"
+        },
+        {
+            "level_learned": 20,
+            "technique": "strike"
+        },
+        {
+            "level_learned": 24,
+            "technique": "constrict"
+        },
+        {
+            "level_learned": 28,
+            "technique": "wall_of_steel"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 18,
             "monster_slug": "apeoro"
         }
@@ -36,6 +47,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["humanoid"],
     "shape": "humanoid",
     "stage": "basic",
     "types": [
@@ -45,7 +57,7 @@
     "txmn_id": 196,
     "height": 45,
     "weight": 4,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

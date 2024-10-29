@@ -35,7 +35,7 @@
    eAHtWMFtwzAM9L/JLk0nawdKt+mnnaK/jFEeigMMArTJgFTEwAIEmhJ1dzpLcJDLeVku0m+n//gmz+hfkp8lztpeRRs6dCNiD9CNfOYGnfSWPp9kbGav4Sc1Qj99n9lnaoNW+IxI3zk3c4Rm9tnP9NpHnI9uZwT6O91F7Xen80Htne4iNSN29Bq6Z/++QOPM7f1lWT6kH22MA4ffY3wmy+E3nThixIFf+b3XqXU951f59nw2/P58i+afhro7neln09r1jnZ8D/Taih33tKeZe92rq5gntxUrOB+NqfdarUfzbeURLRonsnZk7Widmm8rj/qgsaLrq+u1PuYVvMSOxKgOC9vCYb01nz1OPh2zeYCnOTx5VIeFGcWpqB+tzeLbGo/s28KJYGTVUgvxmOvI+YqouTy5V8celhenos7SVsG1xrR4t8bX663nrfX4z5rz1vrqcfLrmMmrse/NPZq82B6srJr1e7b0ZXBZ2PeOezR5sT1YWTUj/PbuO1Ln2b8Xz4OVVfPMfmd5lInzBy03vY0=
   </data>
  </layer>
- <objectgroup color="#ff0000" id="6" name="Collision">
+ <objectgroup color="#ff0000" id="6" name="Collisions">
   <object id="1" type="collision" x="128" y="640" width="176" height="208"/>
   <object id="4" type="collision" x="608" y="208" width="96" height="640"/>
   <object id="5" type="collision" x="64" y="240" width="80" height="400"/>
@@ -121,58 +121,58 @@
   </object>
   <object id="93" type="collision" x="288" y="480" width="16" height="16">
    <properties>
-    <property name="continue" value="down"/>
-    <property name="enter" value="up"/>
-    <property name="exit" value="down"/>
+    <property name="endure" value="down"/>
+    <property name="enter_from" value="up"/>
+    <property name="exit_from" value="down"/>
    </properties>
   </object>
   <object id="94" type="collision" x="256" y="480" width="16" height="16">
    <properties>
-    <property name="continue" value="down"/>
-    <property name="enter" value="up"/>
-    <property name="exit" value="down"/>
+    <property name="endure" value="down"/>
+    <property name="enter_from" value="up"/>
+    <property name="exit_from" value="down"/>
    </properties>
   </object>
   <object id="95" type="collision" x="240" y="496" width="16" height="48">
    <properties>
-    <property name="continue" value="right"/>
-    <property name="enter" value="left"/>
-    <property name="exit" value="right"/>
+    <property name="endure" value="right"/>
+    <property name="enter_from" value="left"/>
+    <property name="exit_from" value="right"/>
    </properties>
   </object>
   <object id="96" type="collision" x="208" y="192" width="16" height="16">
    <properties>
-    <property name="continue" value="down"/>
-    <property name="enter" value="up"/>
-    <property name="exit" value="down"/>
+    <property name="endure" value="down"/>
+    <property name="enter_from" value="up"/>
+    <property name="exit_from" value="down"/>
    </properties>
   </object>
   <object id="97" type="collision" x="240" y="192" width="16" height="16">
    <properties>
-    <property name="continue" value="down"/>
-    <property name="enter" value="up"/>
-    <property name="exit" value="down"/>
+    <property name="endure" value="down"/>
+    <property name="enter_from" value="up"/>
+    <property name="exit_from" value="down"/>
    </properties>
   </object>
   <object id="98" type="collision" x="304" y="256" width="16" height="32">
    <properties>
-    <property name="continue" value="left"/>
-    <property name="enter" value="right"/>
-    <property name="exit" value="left"/>
+    <property name="endure" value="left"/>
+    <property name="enter_from" value="right"/>
+    <property name="exit_from" value="left"/>
    </properties>
   </object>
   <object id="103" type="collision" x="416" y="592" width="112" height="16">
    <properties>
-    <property name="continue" value="down"/>
-    <property name="enter" value="up"/>
-    <property name="exit" value="down"/>
+    <property name="endure" value="down"/>
+    <property name="enter_from" value="up"/>
+    <property name="exit_from" value="down"/>
    </properties>
   </object>
   <object id="104" type="collision" x="304" y="672" width="144" height="16">
    <properties>
-    <property name="continue" value="down"/>
-    <property name="enter" value="up"/>
-    <property name="exit" value="down"/>
+    <property name="endure" value="down"/>
+    <property name="enter_from" value="up"/>
+    <property name="exit_from" value="down"/>
    </properties>
   </object>
   <object id="105" type="collision-line" x="432" y="176">
@@ -191,104 +191,104 @@
   </object>
   <object id="8" name="Teleport to map1 (lower)" type="event" x="608" y="128" width="16" height="80">
    <properties>
-    <property name="act10" value="teleport map1.tmx,12,12"/>
-    <property name="cond10" value="is player_at"/>
-    <property name="cond20" value="is player_facing right"/>
+    <property name="act10" value="transition_teleport rubberduck_route_01.tmx,12,12"/>
+    <property name="cond10" value="is char_at player"/>
+    <property name="cond20" value="is char_facing player,right"/>
    </properties>
   </object>
   <object id="9" name="Random Battle 3" type="event" x="448" y="608" width="80" height="32">
    <properties>
     <property name="act10" value="random_encounter default_encounter"/>
     <property name="act20" value="play_map_animation grass,0.1,noloop,player"/>
-    <property name="cond10" value="is player_moved"/>
-    <property name="cond20" value="is player_at"/>
-    <property name="cond30" value="is party_size greater_than,0"/>
+    <property name="cond10" value="is char_moved player"/>
+    <property name="cond20" value="is char_at player"/>
+    <property name="cond30" value="is party_size player,greater_than,0"/>
    </properties>
   </object>
   <object id="10" name="Random Battle 3" type="event" x="384" y="544" width="96" height="48">
    <properties>
     <property name="act10" value="random_encounter default_encounter"/>
     <property name="act20" value="play_map_animation grass,0.1,noloop,player"/>
-    <property name="cond10" value="is player_moved"/>
-    <property name="cond20" value="is player_at"/>
-    <property name="cond30" value="is party_size greater_than,0"/>
+    <property name="cond10" value="is char_moved player"/>
+    <property name="cond20" value="is char_at player"/>
+    <property name="cond30" value="is party_size player,greater_than,0"/>
    </properties>
   </object>
   <object id="11" name="Random Battle 3" type="event" x="304" y="688" width="144" height="80">
    <properties>
     <property name="act10" value="random_encounter default_encounter"/>
     <property name="act20" value="play_map_animation grass,0.1,noloop,player"/>
-    <property name="cond10" value="is player_moved"/>
-    <property name="cond20" value="is player_at"/>
-    <property name="cond30" value="is party_size greater_than,0"/>
+    <property name="cond10" value="is char_moved player"/>
+    <property name="cond20" value="is char_at player"/>
+    <property name="cond30" value="is party_size player,greater_than,0"/>
    </properties>
   </object>
   <object id="12" name="Random Battle 3" type="event" x="144" y="480" width="80" height="32">
    <properties>
     <property name="act10" value="random_encounter default_encounter"/>
     <property name="act20" value="play_map_animation grass,0.1,noloop,player"/>
-    <property name="cond10" value="is player_moved"/>
-    <property name="cond20" value="is player_at"/>
-    <property name="cond30" value="is party_size greater_than,0"/>
+    <property name="cond10" value="is char_moved player"/>
+    <property name="cond20" value="is char_at player"/>
+    <property name="cond30" value="is party_size player,greater_than,0"/>
    </properties>
   </object>
   <object id="13" name="Random Battle 3" type="event" x="176" y="512" width="48" height="16">
    <properties>
     <property name="act10" value="random_encounter default_encounter"/>
     <property name="act20" value="play_map_animation grass,0.1,noloop,player"/>
-    <property name="cond10" value="is player_moved"/>
-    <property name="cond20" value="is player_at"/>
-    <property name="cond30" value="is party_size greater_than,0"/>
+    <property name="cond10" value="is char_moved player"/>
+    <property name="cond20" value="is char_at player"/>
+    <property name="cond30" value="is party_size player,greater_than,0"/>
    </properties>
   </object>
   <object id="15" name="Random Battle 3" type="event" x="432" y="144" width="128" height="32">
    <properties>
     <property name="act10" value="random_encounter default_encounter"/>
     <property name="act20" value="play_map_animation grass,0.1,noloop,player"/>
-    <property name="cond10" value="is player_moved"/>
-    <property name="cond20" value="is player_at"/>
-    <property name="cond30" value="is party_size greater_than,0"/>
+    <property name="cond10" value="is char_moved player"/>
+    <property name="cond20" value="is char_at player"/>
+    <property name="cond30" value="is party_size player,greater_than,0"/>
    </properties>
   </object>
   <object id="16" name="Random Battle 3" type="event" x="464" y="176" width="48" height="32">
    <properties>
     <property name="act10" value="random_encounter default_encounter"/>
     <property name="act20" value="play_map_animation grass,0.1,noloop,player"/>
-    <property name="cond10" value="is player_moved"/>
-    <property name="cond20" value="is player_at"/>
-    <property name="cond30" value="is party_size greater_than,0"/>
+    <property name="cond10" value="is char_moved player"/>
+    <property name="cond20" value="is char_at player"/>
+    <property name="cond30" value="is party_size player,greater_than,0"/>
    </properties>
   </object>
   <object id="17" name="Random Battle 3" type="event" x="480" y="128" width="80" height="16">
    <properties>
     <property name="act10" value="random_encounter default_encounter"/>
     <property name="act20" value="play_map_animation grass,0.1,noloop,player"/>
-    <property name="cond10" value="is player_moved"/>
-    <property name="cond20" value="is player_at"/>
-    <property name="cond30" value="is party_size greater_than,0"/>
+    <property name="cond10" value="is char_moved player"/>
+    <property name="cond20" value="is char_at player"/>
+    <property name="cond30" value="is party_size player,greater_than,0"/>
    </properties>
   </object>
   <object id="18" name="Random Battle 3" type="event" x="160" y="224" width="48" height="64">
    <properties>
     <property name="act10" value="random_encounter default_encounter"/>
     <property name="act20" value="play_map_animation grass,0.1,noloop,player"/>
-    <property name="cond10" value="is player_moved"/>
-    <property name="cond20" value="is player_at"/>
-    <property name="cond30" value="is party_size greater_than,0"/>
+    <property name="cond10" value="is char_moved player"/>
+    <property name="cond20" value="is char_at player"/>
+    <property name="cond30" value="is party_size player,greater_than,0"/>
    </properties>
   </object>
   <object id="46" name="Teleport to map1 (lower)" type="event" x="304" y="800" width="96" height="16">
    <properties>
-    <property name="act10" value="teleport map1.tmx,12,12"/>
-    <property name="cond10" value="is player_at"/>
-    <property name="cond20" value="is player_facing down"/>
+    <property name="act10" value="transition_teleport rubberduck_route_01.tmx,12,12"/>
+    <property name="cond10" value="is char_at player"/>
+    <property name="cond20" value="is char_facing player,down"/>
    </properties>
   </object>
   <object id="55" name="Teleport to map1 (lower)" type="event" x="528" y="496" width="16" height="16">
    <properties>
-    <property name="act10" value="teleport map1.tmx,12,12"/>
-    <property name="cond10" value="is player_at"/>
-    <property name="cond20" value="is player_facing up"/>
+    <property name="act10" value="transition_teleport rubberduck_route_01.tmx,12,12"/>
+    <property name="cond10" value="is char_at player"/>
+    <property name="cond20" value="is char_facing player,up"/>
    </properties>
   </object>
  </objectgroup>

@@ -4,11 +4,11 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "mudslide"
+            "technique": "riposte"
         },
         {
             "level_learned": 2,
-            "technique": "ram"
+            "technique": "punch"
         },
         {
             "level_learned": 6,
@@ -32,15 +32,15 @@
         },
         {
             "level_learned": 24,
-            "technique": "sylvan"
+            "technique": "ram"
         },
         {
             "level_learned": 28,
-            "technique": "hawk"
+            "technique": "assault"
         },
         {
             "level_learned": 32,
-            "technique": "cavity"
+            "technique": "pit"
         },
         {
             "level_learned": 36,
@@ -48,11 +48,12 @@
         },
         {
             "level_learned": 40,
-            "technique": "webs_wind"
+            "technique": "beam"
         }
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["brute"],
     "shape": "brute",
     "stage": "standalone",
     "types": [
@@ -62,7 +63,7 @@
     "txmn_id": 167,
     "height": 170,
     "weight": 65,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

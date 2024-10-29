@@ -16,16 +16,27 @@
         },
         {
             "level_learned": 8,
-            "technique": "ring"
+            "technique": "petrify"
         },
         {
             "level_learned": 12,
             "technique": "take_cover"
+        },
+        {
+            "level_learned": 24,
+            "technique": "quicksand"
+        },
+        {
+            "level_learned": 28,
+            "technique": "fester"
+        },
+        {
+            "level_learned": 32,
+            "technique": "avalanche"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 18,
             "monster_slug": "selmatek"
         }
@@ -36,6 +47,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["grub"],
     "shape": "grub",
     "stage": "basic",
     "types": [
@@ -45,7 +57,7 @@
     "txmn_id": 188,
     "height": 17,
     "weight": 10,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

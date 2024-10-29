@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from tuxemon.cli.clicommand import CLICommand
@@ -34,11 +34,11 @@ class HelpCommand(CLICommand):
             print("Example:")
             print(f"  > {command.example}")
             print()
-        names = [p.name for p in command.get_parameters(ctx)]
-        if names:
-            names.sort()
+        parameters = command.get_parameters(ctx)
+        if parameters:
+            names = sorted([p.name for p in parameters])
             if isinstance(command, MetaCommand):
-                footer = f"Enter 'help [command]' for more info."
+                footer = "Enter 'help [command]' for more info."
             else:
                 footer = f"Enter 'help {command.name} [option]' for more info."
             ctx.formatter.print_table("Available Options", names, footer)

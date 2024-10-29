@@ -12,7 +12,7 @@
         },
         {
             "level_learned": 6,
-            "technique": "maori"
+            "technique": "greenstone"
         },
         {
             "level_learned": 8,
@@ -37,11 +37,22 @@
         {
             "level_learned": 40,
             "technique": "fluff_up"
+        },
+        {
+            "level_learned": 56,
+            "technique": "whirlwind"
+        },
+        {
+            "level_learned": 60,
+            "technique": "wing_tip"
+        },
+        {
+            "level_learned": 64,
+            "technique": "shadow_boxing"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 54,
             "monster_slug": "dragarbor"
         }
@@ -50,8 +61,13 @@
         {
             "mon_slug": "chloragon",
             "evo_stage": "basic"
+        },
+        {
+            "mon_slug": "dragarbor",
+            "evo_stage": "stage2"
         }
     ],
+    "tags": ["dragon", "jungle"],
     "shape": "dragon",
     "stage": "stage1",
     "types": [
@@ -61,7 +77,7 @@
     "txmn_id": 141,
     "height": 122,
     "weight": 115,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

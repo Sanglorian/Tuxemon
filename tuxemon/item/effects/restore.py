@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -13,18 +13,18 @@ if TYPE_CHECKING:
     from tuxemon.monster import Monster
 
 
-class RestoreEffectResult(ItemEffectResult):
-    pass
-
-
 @dataclass
 class RestoreEffect(ItemEffect):
     """
     Remove status/statuses.
 
-    restore -> removes all statuses
-    restore positive -> removes all positive statuses
-    restore negative -> removes all negative statuses
+    Parameters:
+        category: status's category (positive or negative)
+
+    Examples:
+        restore -> removes all statuses
+        restore positive -> removes all positive statuses
+        restore negative -> removes all negative statuses
 
     """
 
@@ -33,7 +33,7 @@ class RestoreEffect(ItemEffect):
 
     def apply(
         self, item: Item, target: Union[Monster, None]
-    ) -> RestoreEffectResult:
+    ) -> ItemEffectResult:
         assert target
         if self.category:
             if (
@@ -57,4 +57,6 @@ class RestoreEffect(ItemEffect):
         else:
             target.status.clear()
 
-        return {"success": True}
+        return ItemEffectResult(
+            name=item.name, success=True, num_shakes=0, extra=[]
+        )

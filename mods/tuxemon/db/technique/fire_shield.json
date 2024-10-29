@@ -3,27 +3,31 @@
   "accuracy": 0.6,
   "animation": "shield_fire",
   "effects": [
-    "damage"
+    "give elementalshield,user",
+    "give burn,target",
+    "enhance"
   ],
   "flip_axes": "",
   "is_fast": false,
   "potency": 0.3,
   "power": 1.5,
-  "range": "reliable",
+  "range": "special",
   "recharge": 2,
   "sfx": "sfx_blaster",
   "slug": "fire_shield",
   "sort": "damage",
   "target": {
-    "enemy monster": 2,
-    "enemy team": 0,
-    "enemy trainer": 0,
-    "own monster": 0,
-    "own team": 0,
-    "own trainer": 0
+    "enemy_monster": true,
+    "enemy_team": false,
+    "enemy_trainer": false,
+    "own_monster": false,
+    "own_team": false,
+    "own_trainer": false
   },
+  "category": "exotic",
+  "tags": ["Soldier", "Shielded"],
   "types": [
-    "fire"
+    "aether"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

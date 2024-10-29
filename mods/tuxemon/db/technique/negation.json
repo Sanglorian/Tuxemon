@@ -3,7 +3,7 @@
   "accuracy": 1,
   "animation": "skull_fire",
   "effects": [
-    "give status_confused,target",
+    "give festering,target",
     "enhance"
   ],
   "flip_axes": "",
@@ -11,18 +11,20 @@
   "potency": 1,
   "power": 0,
   "range": "special",
-  "recharge": 3,
+  "recharge": 2,
   "sfx": "sfx_blaster",
   "slug": "negation",
   "sort": "damage",
   "target": {
-    "enemy monster": 2,
-    "enemy team": 0,
-    "enemy trainer": 0,
-    "own monster": 0,
-    "own team": 0,
-    "own trainer": 0
+    "enemy_monster": true,
+    "enemy_team": false,
+    "enemy_trainer": false,
+    "own_monster": false,
+    "own_team": false,
+    "own_trainer": false
   },
+  "category": "condition_imposer",
+  "tags": ["Toxic", "Healing", "Mental"],
   "types": [
     "aether"
   ],

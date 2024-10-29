@@ -1,13 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import logging
+import uuid
 from dataclasses import dataclass
-from typing import Union, final
+from typing import Optional, final
 
+from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
-from tuxemon.monster import Monster
-from tuxemon.technique.technique import Technique
+
+logger = logging.getLogger(__name__)
 
 
 @final
@@ -19,46 +22,41 @@ class SetMonsterLevelAction(EventAction):
     Script usage:
         .. code-block::
 
-            set_monster_level [level][,slot]
+            set_monster_level [variable][,levels_added]
 
     Script parameters:
-        level: Number of levels to add. Negative numbers are allowed.
-        slot: Slot of the monster in the party. If no slot is specified, all
-            monsters are leveled.
+        variable: Name of the variable where to store the monster id. If no
+            variable is specified, all monsters level up.
+        levels_added: Number of levels to add. Negative numbers are allowed.
+            Default 1.
 
     """
 
     name = "set_monster_level"
-    level: int
-    slot: Union[int, None] = None
+    variable: Optional[str] = None
+    levels_added: Optional[int] = None
 
     def start(self) -> None:
-        if not self.session.player.monsters:
+        player = self.session.player
+        if not player.monsters:
             return
+        if self.levels_added is None:
+            self.levels_added = 1
 
-        def update_move(mon: Monster, level: int) -> None:
-            for move in mon.moveset:
-                if (
-                    move.technique not in (m.slug for m in mon.moves)
-                    and move.level_learned <= level
-                ):
-                    technique = Technique()
-                    technique.load(move.technique)
-                    mon.learn(technique)
-
-        monster_slot = self.slot
-        monster_level = self.level
-
-        if monster_slot:
-            if len(self.session.player.monsters) < int(monster_slot):
+        if self.variable is not None:
+            if self.variable not in player.game_variables:
+                logger.error(f"Game variable {self.variable} not found")
                 return
-
-            monster = self.session.player.monsters[int(monster_slot)]
-            new_level = monster.level + int(monster_level)
+            monster_id = uuid.UUID(player.game_variables[self.variable])
+            monster = get_monster_by_iid(self.session, monster_id)
+            if monster is None:
+                logger.error("Monster not found")
+                return
+            new_level = monster.level + self.levels_added
             monster.set_level(new_level)
-            update_move(monster, new_level)
+            monster.update_moves(self.levels_added)
         else:
-            for monster in self.session.player.monsters:
-                new_level = monster.level + int(monster_level)
+            for monster in player.monsters:
+                new_level = monster.level + self.levels_added
                 monster.set_level(new_level)
-                update_move(monster, new_level)
+                monster.update_moves(self.levels_added)

@@ -21,12 +21,19 @@
         {
             "level_learned": 12,
             "technique": "wall_of_steel"
+        },
+        {
+            "level_learned": 20,
+            "technique": "bubble_trap"
+        },
+        {
+            "level_learned": 28,
+            "technique": "constrict"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
-            "at_level": 18,
+            "at_level": 24,
             "monster_slug": "windeye"
         }
     ],
@@ -36,6 +43,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["sprite"],
     "shape": "sprite",
     "stage": "basic",
     "types": [
@@ -45,7 +53,7 @@
     "txmn_id": 179,
     "height": 45,
     "weight": 18,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

@@ -3,12 +3,12 @@
   "accuracy": 1,
   "animation": "snake_right",
   "effects": [
-    "give status_festering,target",
+    "give festering,target",
     "damage"
   ],
   "flip_axes": "x",
   "is_fast": false,
-  "potency": null,
+  "potency": 0.7,
   "power": 1.25,
   "range": "reach",
   "recharge": 1,
@@ -16,13 +16,15 @@
   "slug": "pseudopod",
   "sort": "damage",
   "target": {
-    "enemy monster": 2,
-    "enemy team": 0,
-    "enemy trainer": 0,
-    "own monster": 0,
-    "own team": 0,
-    "own trainer": 0
+    "enemy_monster": true,
+    "enemy_team": false,
+    "enemy_trainer": false,
+    "own_monster": false,
+    "own_team": false,
+    "own_trainer": false
   },
+  "category": "simple",
+  "tags": ["Pseudopod"],
   "types": [
     "wood"
   ],

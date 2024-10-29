@@ -37,12 +37,23 @@
         {
             "level_learned": 28,
             "technique": "mending"
+        },
+        {
+            "level_learned": 32,
+            "technique": "quicksand"
+        },
+        {
+            "level_learned": 36,
+            "technique": "electroplate"
+        },
+        {
+            "level_learned": 40,
+            "technique": "cloud_aether"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
-            "at_level": 30,
+            "at_level": 32,
             "monster_slug": "tumbledillo"
         }
     ],
@@ -52,6 +63,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["varmint"],
     "shape": "varmint",
     "stage": "basic",
     "types": [
@@ -61,7 +73,7 @@
     "txmn_id": 220,
     "height": 27,
     "weight": 2,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import datetime as dt
 import logging
 
+from tuxemon import prepare, time_handler
 from tuxemon.map import proj
 from tuxemon.npc import NPC
 from tuxemon.states.world.worldstate import WorldState
@@ -23,9 +23,6 @@ class Player(NPC):
     ) -> None:
         super().__init__(npc_slug, world=world)
         self.isplayer = True
-
-        # Game variables for use with events
-        self.game_variables = {"steps": 0}
 
     def update(self, time_delta: float) -> None:
         """
@@ -49,66 +46,41 @@ class Player(NPC):
         diff_x = abs(after.x - before.x)
         diff_y = abs(after.y - before.y)
 
-        self.game_variables["steps"] += diff_x + diff_y
-        """
-        %H - Hour 00-23
-        %j - Day number of year 001-366
-        """
-        var = self.game_variables
-        var["hour"] = dt.datetime.now().strftime("%H")
-        var["day_of_year"] = str(dt.datetime.now().timetuple().tm_yday)
-        var["year"] = dt.datetime.now().strftime("%Y")
+        # increases steps player
+        self.steps += diff_x + diff_y
 
-        # Leap year
-        if (int(var["year"]) % 400 == 0) and (int(var["year"]) % 100 == 0):
-            var["leap_year"] = "true"
-        elif (int(var["year"]) % 4 == 0) and (int(var["year"]) % 100 != 0):
-            var["leap_year"] = "true"
-        else:
-            var["leap_year"] = "false"
+        # increases steps party monsters
+        for monster in self.monsters:
+            monster.steps += diff_x + diff_y
 
-        # Day and night basic cycle (12h cycle)
-        if int(var["hour"]) < 6:
-            var["daytime"] = "false"
-        elif 6 <= int(var["hour"]) < 18:
-            var["daytime"] = "true"
-        else:
-            var["daytime"] = "false"
+        # checks variables starting with steps_
+        for key, value in self.game_variables.items():
+            if key.startswith("steps_"):
+                if float(value) > 0.0:
+                    self.game_variables[key] = float(value) - (diff_x + diff_y)
+                else:
+                    self.game_variables[key] = 0.0
 
-        # Day and night complex cycle (4h cycle)
-        if int(var["hour"]) < 4:
-            var["stage_of_day"] = "night"
-        elif 4 <= int(var["hour"]) < 8:
-            var["stage_of_day"] = "dawn"
-        elif 8 <= int(var["hour"]) < 12:
-            var["stage_of_day"] = "morning"
-        elif 12 <= int(var["hour"]) < 16:
-            var["stage_of_day"] = "afternoon"
-        elif 16 <= int(var["hour"]) < 20:
-            var["stage_of_day"] = "dusk"
-        else:
-            var["stage_of_day"] = "night"
+        # Get current time
+        current_time = time_handler.get_current_time()
 
-        # Seasons
-        if var["hemisphere"] == "Northern":
-            if int(var["day_of_year"]) < 81:
-                var["season"] = "winter"
-            elif 81 <= int(var["day_of_year"]) < 173:
-                var["season"] = "spring"
-            elif 173 <= int(var["day_of_year"]) < 265:
-                var["season"] = "summer"
-            elif 265 <= int(var["day_of_year"]) < 356:
-                var["season"] = "autumn"
-            else:
-                var["season"] = "winter"
-        else:
-            if int(var["day_of_year"]) < 81:
-                var["season"] = "summer"
-            elif 81 <= int(var["day_of_year"]) < 173:
-                var["season"] = "autumn"
-            elif 173 <= int(var["day_of_year"]) < 265:
-                var["season"] = "winter"
-            elif 265 <= int(var["day_of_year"]) < 356:
-                var["season"] = "spring"
-            else:
-                var["season"] = "summer"
+        # Update time-related variables
+        self.game_variables["hour"] = current_time.strftime("%H")
+        self.game_variables["day_of_year"] = str(
+            current_time.timetuple().tm_yday
+        )
+        self.game_variables["year"] = current_time.strftime("%Y")
+        self.game_variables["weekday"] = current_time.strftime("%A")
+        self.game_variables["leap_year"] = (
+            "true" if time_handler.is_leap_year(current_time.year) else "false"
+        )
+        self.game_variables["daytime"] = (
+            time_handler.calculate_day_night_cycle(current_time)
+        )
+        self.game_variables["stage_of_day"] = (
+            time_handler.calculate_day_stage_of_day(current_time)
+        )
+        self.game_variables["season"] = time_handler.determine_season(
+            current_time,
+            self.game_variables.get("hemisphere", prepare.NORTHERN),
+        )

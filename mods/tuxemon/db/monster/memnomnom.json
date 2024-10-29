@@ -16,7 +16,7 @@
         },
         {
             "level_learned": 8,
-            "technique": "sword"
+            "technique": "slice"
         },
         {
             "level_learned": 12,
@@ -25,38 +25,26 @@
     ],
     "evolutions": [
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "miaownolith",
             "item": "earth_booster"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "miaownolith",
             "item": "miaow_milk"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "pyraminx",
             "item": "metal_booster"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "pyraminx",
             "item": "pyramidion"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "mauai",
             "item": "fire_booster"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "mauai",
             "item": "pyramidion"
         }
@@ -75,6 +63,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["hunter"],
     "shape": "hunter",
     "stage": "basic",
     "types": [
@@ -84,7 +73,7 @@
     "txmn_id": 19,
     "height": 70,
     "weight": 7,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

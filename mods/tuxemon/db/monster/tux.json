@@ -4,7 +4,7 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "goad"
+            "technique": "tux_attack"
         },
         {
             "level_learned": 2,
@@ -12,7 +12,7 @@
         },
         {
             "level_learned": 6,
-            "technique": "venomous_tentacle"
+            "technique": "peck"
         },
         {
             "level_learned": 8,
@@ -53,6 +53,7 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["flier", "boreal/snow", "coastal"],
     "shape": "flier",
     "stage": "standalone",
     "types": [
@@ -62,7 +63,7 @@
     "txmn_id": 254,
     "height": 115,
     "weight": 55,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

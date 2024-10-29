@@ -32,7 +32,7 @@
         },
         {
             "level_learned": 32,
-            "technique": "headbutt"
+            "technique": "hammerhead"
         }
     ],
     "evolutions": [],
@@ -42,16 +42,17 @@
             "evo_stage": "basic"
         }
     ],
+    "tags": ["grub"],
     "shape": "grub",
     "stage": "stage1",
     "types": [
         "earth"
     ],
     "possible_genders": ["male", "female"],
-    "txmn_id": 61,
+    "txmn_id": 347,
     "height": 44,
     "weight": 5,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

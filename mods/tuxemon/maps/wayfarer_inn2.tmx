@@ -5,7 +5,7 @@
   <property name="inside" type="bool" value="true"/>
   <property name="scenario" value="xero"/>
   <property name="slug" value="wayfarer_inn2"/>
-  <property name="types" value="dungeon"/>
+  <property name="map_type" value="dungeon"/>
  </properties>
  <tileset firstgid="1" name="core_indoor_walls" tilewidth="16" tileheight="16" tilecount="3864" columns="46">
   <image source="../gfx/tilesets/core_indoor_walls.png" width="736" height="1344"/>
@@ -48,17 +48,17 @@
   <object id="17" name="Go downstairs" type="event" x="64" y="32" width="16" height="16">
    <properties>
     <property name="act10" value="transition_teleport wayfarer_inn1.tmx,3,2,0.3"/>
-    <property name="act20" value="player_face left"/>
-    <property name="cond10" value="is player_at"/>
-    <property name="cond20" value="is player_facing left"/>
+    <property name="act20" value="char_face player,left"/>
+    <property name="cond10" value="is char_at player"/>
+    <property name="cond20" value="is char_facing player,left"/>
    </properties>
   </object>
   <object id="23" name="Go to the other downstairs" type="event" x="160" y="48" width="16" height="16">
    <properties>
     <property name="act10" value="transition_teleport wayfarer_inn1.tmx,11,3,0.3"/>
-    <property name="act20" value="player_face right"/>
-    <property name="cond10" value="is player_at"/>
-    <property name="cond20" value="is player_facing right"/>
+    <property name="act20" value="char_face player,right"/>
+    <property name="cond10" value="is char_at player"/>
+    <property name="cond20" value="is char_facing player,right"/>
    </properties>
   </object>
   <object id="31" name="Play Music" type="event" x="0" y="0" width="16" height="16">
@@ -67,7 +67,6 @@
     <property name="cond10" value="not music_playing music_cathedral_theme"/>
    </properties>
   </object>
-  <object id="32" name="Player Spawn" type="event" x="80" y="32" width="16" height="16"/>
  </objectgroup>
  <objectgroup color="#ff0000" id="7" name="Collisions">
   <object id="2" type="collision" x="0" y="0" width="16" height="256"/>

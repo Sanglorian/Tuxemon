@@ -48,11 +48,12 @@
         },
         {
             "level_learned": 40,
-            "technique": "adamantine"
+            "technique": "supernova"
         }
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["sprite", "extraplanar", "ruins"],
     "shape": "sprite",
     "stage": "standalone",
     "types": [
@@ -63,7 +64,7 @@
     "txmn_id": 230,
     "height": 55,
     "weight": 17,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

@@ -28,7 +28,7 @@
         },
         {
             "level_learned": 20,
-            "technique": "sword"
+            "technique": "slice"
         },
         {
             "level_learned": 24,
@@ -53,6 +53,7 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["sprite", "extraplanar"],
     "shape": "sprite",
     "stage": "standalone",
     "types": [
@@ -61,8 +62,8 @@
     "possible_genders": ["neuter"],
     "txmn_id": 253,
     "height": 30,
-    "weight": 0,
-    "catch_rate": 120.0,
+    "weight": 0.1,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

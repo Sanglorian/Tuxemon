@@ -32,7 +32,7 @@
         },
         {
             "level_learned": 24,
-            "technique": "sword"
+            "technique": "slice"
         },
         {
             "level_learned": 28,
@@ -53,6 +53,7 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["flier", "urban", "woodland"],
     "shape": "flier",
     "stage": "standalone",
     "types": [
@@ -62,7 +63,7 @@
     "txmn_id": 248,
     "height": 30,
     "weight": 0.5,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

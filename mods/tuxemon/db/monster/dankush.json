@@ -4,7 +4,7 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "assault"
+            "technique": "solar_synthesis"
         },
         {
             "level_learned": 2,
@@ -44,15 +44,16 @@
         },
         {
             "level_learned": 36,
-            "technique": "adamantine"
+            "technique": "sleeping_powder"
         },
         {
             "level_learned": 40,
-            "technique": "sting"
+            "technique": "tinder"
         }
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["sprite", "grassland"],
     "shape": "sprite",
     "stage": "standalone",
     "types": [
@@ -64,7 +65,7 @@
     "height": 40,
     "weight": 0.5,
     "randomly": false,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

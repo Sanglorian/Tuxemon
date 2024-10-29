@@ -36,7 +36,7 @@
         },
         {
             "level_learned": 28,
-            "technique": "oedipus"
+            "technique": "phantasmal_force"
         },
         {
             "level_learned": 32,
@@ -50,6 +50,7 @@
             "evo_stage": "basic"
         }
     ],
+    "tags": ["blob"],
     "shape": "blob",
     "stage": "stage1",
     "types": [
@@ -59,7 +60,7 @@
     "txmn_id": 258,
     "height": 45,
     "weight": 6,
-    "catch_rate": 120.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

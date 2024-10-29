@@ -21,11 +21,22 @@
         {
             "level_learned": 12,
             "technique": "flood"
+        },
+        {
+            "level_learned": 20,
+            "technique": "sleep_bomb"
+        },
+        {
+            "level_learned": 24,
+            "technique": "bubble_trap"
+        },
+        {
+            "level_learned": 28,
+            "technique": "biting_winds"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 18,
             "monster_slug": "nudimind"
         }
@@ -36,6 +47,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["polliwog", "freshwater"],
     "shape": "polliwog",
     "stage": "basic",
     "types": [
@@ -45,7 +57,7 @@
     "txmn_id": 54,
     "height": 29,
     "weight": 3,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

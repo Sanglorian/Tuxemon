@@ -21,11 +21,22 @@
         {
             "level_learned": 12,
             "technique": "flamethrower"
+        },
+        {
+            "level_learned": 24,
+            "technique": "give_all"
+        },
+        {
+            "level_learned": 28,
+            "technique": "supernova"
+        },
+        {
+            "level_learned": 32,
+            "technique": "tinder"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 18,
             "monster_slug": "statursus"
         }
@@ -34,8 +45,13 @@
         {
             "mon_slug": "statursus",
             "evo_stage": "stage1"
+        },
+        {
+            "mon_slug": "coaldiak",
+            "evo_stage": "stage2"
         }
     ],
+    "tags": ["humanoid"],
     "shape": "humanoid",
     "stage": "basic",
     "types": [
@@ -45,7 +61,7 @@
     "txmn_id": 190,
     "height": 110,
     "weight": 47,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

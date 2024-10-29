@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import random as rd
+from collections.abc import Callable, Generator
 from functools import partial
-from typing import Any, Callable, Generator, Optional
+from typing import Any, Optional
 
 from pygame.rect import Rect
 
@@ -15,7 +16,7 @@ from tuxemon.menu.menu import Menu
 from tuxemon.platform.const import buttons, events, intentions
 from tuxemon.platform.events import PlayerInput
 from tuxemon.session import local_session
-from tuxemon.states.choice import ChoiceState
+from tuxemon.states.choice.choice_state import ChoiceState
 from tuxemon.ui.text import TextArea
 
 
@@ -59,6 +60,7 @@ class InputMenu(Menu[InputMenuObj]):
 
         """
         super().__init__(**kwargs)
+        self.is_first_input = True
         self.input_string = initial
         self.chars = T.translate("menu_alphabet").replace(r"\0", "\0")
         self.n_columns = int(T.translate("menu_alphabet_n_columns"))
@@ -68,7 +70,7 @@ class InputMenu(Menu[InputMenuObj]):
         self.all_chars = self.chars + "".join(
             v for v in self.char_variants.values()
         )
-        # The following is necessary to prevent writting a char immediately
+        # The following is necessary to prevent writing a char immediately
         # after leaving the char variant dialog.
         self.leaving_char_variant_dialog = False
 
@@ -204,7 +206,9 @@ class InputMenu(Menu[InputMenuObj]):
             self.char_limit is None
             or len(self.input_string) <= self.char_limit
         ):
-            self.input_string += char
+            # removes A at the end of the name
+            self.input_string += char if not self.is_first_input else ""
+            self.is_first_input = False
             self.update_text_area()
         else:
             self.text_area.text = T.translate("alert_text")

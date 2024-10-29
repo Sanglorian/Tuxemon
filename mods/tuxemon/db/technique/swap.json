@@ -1,28 +1,31 @@
 {
 	"animation": null,
+	"accuracy": 0.0,
 	"conditions": [
-	  	"not status status_grabbed",
-	  	"not status status_stuck"
+	  	"not status grabbed",
+	  	"not status stuck"
 	],
 	"effects": [
 		"swap"
 	],
 	"flip_axes": "",
-	"icon": "",
+	"potency": 0.0,
 	"power": 0,
 	"range": "special",
 	"sfx": "sfx_blaster",
 	"slug": "swap",
 	"sort": "meta",
 	"target": {
-		"enemy monster": 0,
-		"enemy team": 0,
-		"enemy trainer": 0,
-		"own monster": 2,
-		"own team": 0,
-		"own trainer": 0
+		"enemy_monster": false,
+		"enemy_team": false,
+		"enemy_trainer": false,
+		"own_monster": true,
+		"own_team": false,
+		"own_trainer": false
 	},
 	"tech_id": 0,
+	"category": "notype",
+	"tags": ["NoType"],
 	"types": [],
 	"use_failure": null,
 	"use_success": null,

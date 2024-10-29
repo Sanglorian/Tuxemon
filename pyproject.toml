@@ -18,13 +18,14 @@ classifiers = [
         "Intended Audience :: End Users/Desktop",
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Games/Entertainment",
         "Topic :: Games/Entertainment :: Role-Playing"
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dynamic = ["dependencies"]
 
 [project.urls]
@@ -46,9 +47,60 @@ dependencies = {file = "requirements.txt"}
 
 [tool.black]
 line-length = 79
-target-version = ["py38"]
+target-version = ["py39"]
 
 [tool.isort]
 line_length = 79
 profile = "black"
 skip_gitignore = true
+
+[tool.mypy]
+enable_error_code = "ignore-without-code"
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[tool.pylint.main]
+ignore = ["CVS"]
+load-plugins = ["pylint.extensions.bad_builtin"]
+persistent = true
+
+[tool.pylint."messages control"]
+disable = ["locally-disabled"]
+
+[tool.pylint.basic]
+argument-rgx = "[a-z_][a-z0-9_]{2,30}$"
+attr-rgx = "[a-z_][a-z0-9_]{2,30}$"
+class-rgx = "[A-Z_][a-zA-Z0-9]+$"
+const-rgx = "(([A-Z_][A-Z0-9_]*)|(__.*__))$"
+function-rgx = "[a-z_][a-z0-9_]{2,30}$"
+inlinevar-rgx = "[A-Za-z_][A-Za-z0-9_]*$"
+method-rgx = "[a-z_][a-z0-9_]{2,30}$"
+module-rgx = "(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$"
+no-docstring-rgx = "__.*__"
+variable-rgx = "[a-z_][a-z0-9_]{2,30}$"
+bad-names = ["foo", "bar", "baz", "toto", "tutu", "tata", "data", "data2"]
+good-names = ["f", "i", "j", "k", "ex", "Run", "_"]
+
+[tool.pylint.exceptions]
+overgeneral-exceptions = ["builtins.Exception"]
+
+[tool.pylint.imports]
+deprecated-modules = ["regsub", "string", "TERMIOS", "Bastion", "rexec"]
+
+[tool.pylint.reports]
+reports = true
+
+[tool.pylint.similarities]
+ignore-imports = false
+
+[tool.pylint.typecheck]
+generated-members = ["REQUEST", "acl_users", "aq_parent"]
+ignored-classes = ["SQLObject"]
+
+[tool.pylint.variables]
+dummy-variables-rgx = "_|dummy"
+ignored-argument-names = "_.*"
+
+[tool.pylint.deprecated_builtins]
+bad-functions = ["map", "filter", "apply", "input"]

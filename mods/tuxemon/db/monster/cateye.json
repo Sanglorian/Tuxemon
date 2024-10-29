@@ -12,7 +12,7 @@
         },
         {
             "level_learned": 6,
-            "technique": "flow"
+            "technique": "mind_vise"
         },
         {
             "level_learned": 8,
@@ -32,7 +32,7 @@
         },
         {
             "level_learned": 24,
-            "technique": "sword"
+            "technique": "slice"
         },
         {
             "level_learned": 28,
@@ -53,16 +53,17 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["hunter"],
     "shape": "hunter",
     "stage": "standalone",
     "types": [
         "metal"
     ],
     "possible_genders": ["male", "female"],
-    "txmn_id": 103,
+    "txmn_id": 235,
     "height": 45,
     "weight": 19,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

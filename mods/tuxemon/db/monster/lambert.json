@@ -21,11 +21,34 @@
         {
             "level_learned": 12,
             "technique": "boulder"
+        },
+        {
+            "level_learned": 28,
+            "technique": "overgrowth"
+        },
+        {
+            "level_learned": 32,
+            "technique": "peregrine"
+        },
+        {
+            "level_learned": 34,
+            "technique": "spit_poison"
+        },
+        {
+            "level_learned": 44,
+            "technique": "thunderball"
+        },
+        {
+            "level_learned": 48,
+            "technique": "shadow_boxing"
+        },
+        {
+            "level_learned": 52,
+            "technique": "invictus"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 24,
             "monster_slug": "legko"
         }
@@ -40,6 +63,7 @@
             "evo_stage": "stage2"
         }
     ],
+    "tags": ["sprite"],
     "shape": "sprite",
     "stage": "basic",
     "types": [
@@ -49,7 +73,7 @@
     "txmn_id": 10,
     "height": 69,
     "weight": 37,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

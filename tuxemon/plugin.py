@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import importlib
@@ -7,17 +7,12 @@ import inspect
 import logging
 import os
 import sys
+from collections.abc import Iterable, Mapping, Sequence
 from types import ModuleType
 from typing import (
     ClassVar,
     Generic,
-    Iterable,
-    List,
-    Mapping,
     Protocol,
-    Sequence,
-    Tuple,
-    Type,
     TypeVar,
     Union,
     overload,
@@ -41,7 +36,7 @@ class PluginObject(Protocol):
 
 T = TypeVar("T")
 InterfaceValue = TypeVar("InterfaceValue", bound=PluginObject)
-Interface = Type[InterfaceValue]
+Interface = type[InterfaceValue]
 
 
 class Plugin(Generic[T]):
@@ -59,7 +54,7 @@ class PluginManager:
         self,
     ) -> None:
         self.folders: Sequence[str] = []
-        self.modules: List[str] = []
+        self.modules: list[str] = []
         self.file_extension = (".py", ".pyc")
         self.exclude_classes = ["IPlugin"]
         self.include_patterns = [
@@ -69,6 +64,8 @@ class PluginManager:
             "item.conditions",
             "technique.effects",
             "technique.conditions",
+            "condition.effects",
+            "condition.conditions",
         ]
 
     def setPluginPlaces(self, plugin_folders: Sequence[str]) -> None:
@@ -90,7 +87,7 @@ class PluginManager:
             match = folder[folder.rfind("tuxemon") :]
             if len(match) == 0:
                 raise RuntimeError(
-                    f"Unable to determine plugin module path for: %s", folder
+                    "Unable to determine plugin module path for: %s", folder
                 )
             module_path = match.replace("/", ".")
             # Look for a ".plugin" in the plugin folder to create a list
@@ -105,8 +102,8 @@ class PluginManager:
     def getAllPlugins(
         self,
         *,
-        interface: Type[InterfaceValue],
-    ) -> Sequence[Plugin[Type[InterfaceValue]]]:
+        interface: type[InterfaceValue],
+    ) -> Sequence[Plugin[type[InterfaceValue]]]:
         """
         Get a sequence of loaded plugins.
 
@@ -141,8 +138,8 @@ class PluginManager:
     def _getClassesFromModule(
         self,
         module: ModuleType,
-        interface: Type[InterfaceValue],
-    ) -> Iterable[Tuple[str, Type[InterfaceValue]]]:
+        interface: type[InterfaceValue],
+    ) -> Iterable[tuple[str, type[InterfaceValue]]]:
         # This is required because of
         # https://github.com/python/typing/issues/822
         #
@@ -179,8 +176,8 @@ def load_directory(plugin_folder: str) -> PluginManager:
 def get_available_classes(
     plugin_manager: PluginManager,
     *,
-    interface: Type[InterfaceValue],
-) -> Sequence[Type[InterfaceValue]]:
+    interface: type[InterfaceValue],
+) -> Sequence[type[InterfaceValue]]:
     """
     Gets the available classes in a plugin manager.
 
@@ -206,14 +203,14 @@ def get_available_classes(
 def load_plugins(
     path: str,
     category: str = "plugins",
-) -> Mapping[str, Type[PluginObject]]:
+) -> Mapping[str, type[PluginObject]]:
     pass
 
 
 @overload
 def load_plugins(
-    path: str, category: str = "plugins", *, interface: Type[InterfaceValue]
-) -> Mapping[str, Type[InterfaceValue]]:
+    path: str, category: str = "plugins", *, interface: type[InterfaceValue]
+) -> Mapping[str, type[InterfaceValue]]:
     pass
 
 
@@ -221,8 +218,8 @@ def load_plugins(
     path: str,
     category: str = "plugins",
     *,
-    interface: Union[Type[InterfaceValue], Type[PluginObject]] = PluginObject,
-) -> Mapping[str, Union[Type[InterfaceValue], Type[PluginObject]]]:
+    interface: Union[type[InterfaceValue], type[PluginObject]] = PluginObject,
+) -> Mapping[str, Union[type[InterfaceValue], type[PluginObject]]]:
     """
     Load classes using plugin system.
 

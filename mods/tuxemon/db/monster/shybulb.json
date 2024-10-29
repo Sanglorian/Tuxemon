@@ -21,11 +21,22 @@
         {
             "level_learned": 12,
             "technique": "sting"
+        },
+        {
+            "level_learned": 24,
+            "technique": "sleeping_powder"
+        },
+        {
+            "level_learned": 28,
+            "technique": "fester"
+        },
+        {
+            "level_learned": 32,
+            "technique": "solar_synthesis"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 18,
             "monster_slug": "narcileaf"
         }
@@ -36,6 +47,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["sprite"],
     "shape": "sprite",
     "stage": "basic",
     "types": [
@@ -45,7 +57,7 @@
     "txmn_id": 77,
     "height": 29,
     "weight": 2,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

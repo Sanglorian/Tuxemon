@@ -4,7 +4,7 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "ice_claw"
+            "technique": "constrict"
         },
         {
             "level_learned": 2,
@@ -20,7 +20,7 @@
         },
         {
             "level_learned": 12,
-            "technique": "frostbite"
+            "technique": "clamp_on"
         },
         {
             "level_learned": 16,
@@ -36,23 +36,24 @@
         },
         {
             "level_learned": 28,
-            "technique": "cavity"
+            "technique": "invictus"
         },
         {
             "level_learned": 32,
-            "technique": "sylvan"
+            "technique": "venomous_tentacle"
         },
         {
             "level_learned": 36,
-            "technique": "ring"
+            "technique": "pit"
         },
         {
             "level_learned": 40,
-            "technique": "maori"
+            "technique": "greenstone"
         }
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["brute"],
     "shape": "brute",
     "stage": "standalone",
     "types": [
@@ -60,10 +61,10 @@
         "water"
     ],
     "possible_genders": ["male", "female"],
-    "txmn_id": 206,
+    "txmn_id": 354,
     "height": 150,
     "weight": 160,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

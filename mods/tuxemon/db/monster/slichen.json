@@ -28,13 +28,36 @@
         },
         {
             "level_learned": 20,
-            "technique": "maori"
+            "technique": "greenstone"
+        },
+        {
+            "level_learned": 28,
+            "technique": "breath"
+        },
+        {
+            "level_learned": 32,
+            "technique": "lantern"
+        },
+        {
+            "level_learned": 34,
+            "technique": "surge"
+        },
+        {
+            "level_learned": 38,
+            "technique": "mudslide"
+        },
+        {
+            "level_learned": 52,
+            "technique": "earthquake"
+        },
+        {
+            "level_learned": 56,
+            "technique": "thunderball"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
-            "at_level": 25,
+            "at_level": 26,
             "monster_slug": "glombroc"
         }
     ],
@@ -48,6 +71,7 @@
             "evo_stage": "stage2"
         }
     ],
+    "tags": ["blob"],
     "shape": "blob",
     "stage": "basic",
     "types": [
@@ -57,7 +81,7 @@
     "txmn_id": 272,
     "height": 37,
     "weight": 1,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

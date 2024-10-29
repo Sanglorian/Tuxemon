@@ -4,7 +4,7 @@
     "moveset": [
         {
             "level_learned": 2,
-            "technique": "headbutt"
+            "technique": "hammerhead"
         },
         {
             "level_learned": 2,
@@ -24,7 +24,7 @@
         },
         {
             "level_learned": 16,
-            "technique": "ring"
+            "technique": "avalanche"
         },
         {
             "level_learned": 20,
@@ -36,7 +36,7 @@
         },
         {
             "level_learned": 28,
-            "technique": "webs_wind"
+            "technique": "electroplate"
         },
         {
             "level_learned": 32,
@@ -53,6 +53,7 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["hunter"],
     "shape": "hunter",
     "stage": "standalone",
     "types": [
@@ -62,7 +63,7 @@
     "txmn_id": 144,
     "height": 80,
     "weight": 40,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

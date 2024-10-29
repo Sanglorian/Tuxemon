@@ -25,11 +25,26 @@
         {
             "level_learned": 16,
             "technique": "lineage"
+        },
+        {
+            "level_learned": 20,
+            "technique": "ruby"
+        },
+        {
+            "level_learned": 24,
+            "technique": "terror"
+        },
+        {
+            "level_learned": 28,
+            "technique": "phantasmal_force"
+        },
+        {
+            "level_learned": 32,
+            "technique": "crystal"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 18,
             "monster_slug": "potturney"
         }
@@ -40,6 +55,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["blob"],
     "shape": "blob",
     "stage": "basic",
     "types": [
@@ -49,7 +65,7 @@
     "txmn_id": 257,
     "height": 48,
     "weight": 2.5,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

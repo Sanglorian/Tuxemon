@@ -16,11 +16,11 @@
         },
         {
             "level_learned": 8,
-            "technique": "ring"
+            "technique": "peck"
         },
         {
             "level_learned": 12,
-            "technique": "maori"
+            "technique": "greenstone"
         },
         {
             "level_learned": 16,
@@ -53,16 +53,17 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["flier"],
     "shape": "flier",
     "stage": "standalone",
     "types": [
         "earth"
     ],
     "possible_genders": ["male", "female"],
-    "txmn_id": 235,
+    "txmn_id": 234,
     "height": 63,
     "weight": 2.5,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

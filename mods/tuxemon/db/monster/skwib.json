@@ -20,16 +20,27 @@
         },
         {
             "level_learned": 12,
-            "technique": "suck_poison"
+            "technique": "spit_poison"
         },
         {
             "level_learned": 16,
             "technique": "font"
+        },
+        {
+            "level_learned": 20,
+            "technique": "goad"
+        },
+        {
+            "level_learned": 24,
+            "technique": "feint"
+        },
+        {
+            "level_learned": 28,
+            "technique": "venomous_tentacle"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 18,
             "monster_slug": "octabode"
         }
@@ -40,6 +51,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["polliwog"],
     "shape": "polliwog",
     "stage": "basic",
     "types": [
@@ -49,7 +61,7 @@
     "txmn_id": 183,
     "height": 30,
     "weight": 9,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

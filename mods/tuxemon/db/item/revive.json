@@ -1,21 +1,21 @@
 {
   "conditions": [
     "is current_hp ==,0",
-    "is status status_faint"
+    "is status faint"
   ],
   "effects": [
-    "revive 1",
-    "heal 20"
+    "restore",
+    "heal 20,fixed"
   ],
   "slug": "revive",
-  "sort": "food",
+  "sort": "potion",
   "sprite": "gfx/items/revive.png",
-  "category": "revive",
-  "type": "Consumable",
+  "category": "potion",
   "usable_in": [
     "MainCombatMenuState",
     "WorldState"
   ],
+  "behaviors": {},
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

@@ -35,13 +35,23 @@
             "technique": "electrical_storm"
         }
     ],
-    "evolutions": [],
+    "evolutions": [
+        {
+            "at_level": 36,
+            "monster_slug": "coaldiak"
+        }
+    ],
     "history": [
         {
             "mon_slug": "furnursus",
             "evo_stage": "basic"
+        },
+        {
+            "mon_slug": "coaldiak",
+            "evo_stage": "stage2"
         }
     ],
+    "tags": ["humanoid"],
     "shape": "humanoid",
     "stage": "stage1",
     "types": [
@@ -51,7 +61,7 @@
     "txmn_id": 191,
     "height": 190,
     "weight": 160,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

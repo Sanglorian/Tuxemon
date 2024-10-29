@@ -1,16 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import random as rd
 from dataclasses import dataclass
-from typing import Optional, Union, final
+from typing import Union, final
 
-from tuxemon import formula, monster
-from tuxemon.db import EvolutionStage, MonsterShape, SeenStatus, db
-from tuxemon.event import get_npc
+from tuxemon.db import EvolutionStage, MonsterModel, MonsterShape, db
 from tuxemon.event.eventaction import EventAction
-from tuxemon.npc import NPC
+
+lookup_cache: dict[str, MonsterModel] = {}
 
 
 @final
@@ -44,72 +43,57 @@ class RandomMonsterAction(EventAction):
     evo: Union[str, None] = None
 
     def start(self) -> None:
-        trainer: Optional[NPC]
-        if self.trainer_slug is None:
-            trainer = self.session.player
-        else:
-            trainer = get_npc(self.session, self.trainer_slug)
+        if not lookup_cache:
+            _lookup_monsters()
 
-        assert trainer, "No Trainer found with slug '{}'".format(
-            self.trainer_slug or "player"
-        )
+        valid_shapes = list(MonsterShape)
+        valid_evos = list(EvolutionStage)
 
-        # check if shape is valid
-        if self.shape:
-            shapes = list(MonsterShape)
-            if self.shape not in shapes:
-                raise ValueError("{self.shape} isn't valid.")
-        # check if evolution stage is valid
-        if self.evo:
-            evos = list(EvolutionStage)
-            if self.evo not in evos:
-                raise ValueError("{self.evo} isn't valid.")
+        if self.shape and self.shape not in valid_shapes:
+            raise ValueError(f"{self.shape} is not a valid shape.")
+        if self.evo and self.evo not in valid_evos:
+            raise ValueError(f"{self.evo} is not a valid evolution stage.")
 
-        # list is required as choice expects a sequence
-        filters = []
-        monsters = list(db.database["monster"])
-        for mon in monsters:
-            results = db.lookup(mon, table="monster")
-            if results.txmn_id > 0 and results.randomly:
-                if not self.shape and not self.evo:
-                    filters.append(results.slug)
-                if self.shape and not self.evo:
-                    if results.shape == self.shape:
-                        filters.append(results.slug)
-                if self.evo and not self.shape:
-                    if results.stage == self.evo:
-                        filters.append(results.slug)
-                if self.evo and self.shape:
-                    if (
-                        results.stage == self.evo
-                        and results.shape == self.shape
-                    ):
-                        filters.append(results.slug)
+        filters = [
+            monster.slug
+            for monster in lookup_cache.values()
+            if monster.txmn_id > 0
+            and monster.randomly
+            and (not self.shape or monster.shape == self.shape)
+            and (not self.evo or monster.stage == self.evo)
+        ]
 
         if not filters:
             if self.shape and not self.evo:
-                raise ValueError("There are no monsters shape: {self.shape}")
-            if self.evo and not self.shape:
-                raise ValueError("There are no monsters stage: {self.evo}")
-            if self.evo and self.shape:
+                raise ValueError(f"No monsters found with shape: {self.shape}")
+            elif self.evo and not self.shape:
                 raise ValueError(
-                    "There are no monsters {self.evo} ({self.shape}).\n"
-                    "Open an issue on Github, this will help us to create\n"
-                    "new monsters with above-mentioned characteristics."
+                    f"No monsters found with evolution stage: {self.evo}"
+                )
+            else:
+                raise ValueError(
+                    f"No monsters found with evolution stage: {self.evo} and shape: {self.shape}.\n"
+                    "Please open an issue on Github to request new monsters with these characteristics."
                 )
 
         monster_slug = rd.choice(filters)
 
-        current_monster = monster.Monster()
-        current_monster.load_from_db(monster_slug)
-        current_monster.set_level(self.monster_level)
-        current_monster.set_moves(self.monster_level)
-        current_monster.set_capture(formula.today_ordinal())
-        current_monster.current_hp = current_monster.hp
-        if self.exp is not None:
-            current_monster.experience_modifier = self.exp
-        if self.money is not None:
-            current_monster.money_modifier = self.money
+        self.session.client.event_engine.execute_action(
+            "add_monster",
+            [
+                monster_slug,
+                self.monster_level,
+                self.trainer_slug,
+                self.exp,
+                self.money,
+            ],
+            True,
+        )
 
-        trainer.add_monster(current_monster, len(trainer.monsters))
-        trainer.tuxepedia[monster_slug] = SeenStatus.caught
+
+def _lookup_monsters() -> None:
+    monsters = list(db.database["monster"])
+    for mon in monsters:
+        results = db.lookup(mon, table="monster")
+        if results.txmn_id > 0:
+            lookup_cache[mon] = results

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -12,25 +12,25 @@ from tuxemon.event.eventaction import EventAction
 @dataclass
 class CallEventAction(EventAction):
     """
-    Execute the specified event's actions by id.
+    Execute the specified event's actions by name.
 
     Script usage:
         .. code-block::
 
-            call_event <event_id>
+            call_event <event_name>
 
     Script parameters:
-        event_id: The id of the event whose actions will be executed.
+        event_name: The name of the event whose actions will be executed.
 
     """
 
     name = "call_event"
-    event_id: int
+    event_name: str
 
     def start(self) -> None:
         event_engine = self.session.client.event_engine
         events = self.session.client.events
 
         for e in events:
-            if e.id == self.event_id:
+            if e.name == self.event_name:
                 event_engine.start_event(e)

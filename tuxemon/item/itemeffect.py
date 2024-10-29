@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, ClassVar, TypedDict, Union
+from typing import TYPE_CHECKING, ClassVar, Union
 
 from tuxemon.session import Session, local_session
 from tuxemon.tools import cast_dataclass_parameters
@@ -16,8 +16,12 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class ItemEffectResult(TypedDict):
+@dataclass
+class ItemEffectResult:
+    name: str
     success: bool
+    num_shakes: int
+    extra: list[str]
 
 
 @dataclass
@@ -47,7 +51,7 @@ class ItemEffect:
 
     * the type may be any valid python type, or even a python class or function
     * type may be a single type, or a tuple of types
-    * type, if a tuple, may include None is indicate the parameter is optional
+    * type, if a tuple, may include None to indicate the parameter is optional
     * name must be a valid python string
 
     After parsing the parameters of the Item, the parameter's value
@@ -73,4 +77,6 @@ class ItemEffect:
     def apply(
         self, item: Item, target: Union[Monster, None]
     ) -> ItemEffectResult:
-        return {"success": True}
+        return ItemEffectResult(
+            name=item.name, success=True, num_shakes=0, extra=[]
+        )

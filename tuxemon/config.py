@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import configparser
 from collections import OrderedDict
-from typing import Any, Dict, Mapping, Optional
+from collections.abc import Mapping
+from typing import Any, Optional
 
 from tuxemon.animation import Animation
 from tuxemon.platform.const import buttons, events
@@ -26,8 +27,7 @@ class TuxemonConfig:
 
         # update with customized values
         if config_path:
-            temp = configparser.ConfigParser()
-            temp.read(config_path)
+            cfg.read(config_path)
 
         # [display]
         resolution_x = cfg.getint("display", "resolution_x")
@@ -78,18 +78,6 @@ class TuxemonConfig:
             "gameplay",
             "encounter_rate_modifier",
         )
-        self.default_monster_catch_rate = cfg.getfloat(
-            "gameplay",
-            "default_monster_catch_rate",
-        )
-        self.default_upper_monster_catch_resistance = cfg.getfloat(
-            "gameplay",
-            "default_upper_monster_catch_resistance",
-        )
-        self.default_lower_monster_catch_resistance = cfg.getfloat(
-            "gameplay",
-            "default_lower_monster_catch_resistance",
-        )
         self.dialog_speed = cfg.get(
             "gameplay",
             "dialog_speed",
@@ -108,7 +96,7 @@ class TuxemonConfig:
         #   Some available loggers:
         #     states.combat, states.world, event,
         #     neteria.server, neteria.client, neteria.core
-        # Comma-seperated list of which modules to enable logging on
+        # Comma-separated list of which modules to enable logging on
         loggers_str = cfg.get("logging", "loggers")
         self.loggers = loggers_str.replace(" ", "").split(",")
         self.debug_logging = cfg.getboolean("logging", "debug_logging")
@@ -135,13 +123,13 @@ def get_custom_pygame_keyboard_controls(
     """
     import pygame.locals
 
-    custom_controls: Dict[Optional[int], int] = {None: events.UNICODE}
+    custom_controls: dict[Optional[int], int] = {None: events.UNICODE}
     for key, values in cfg.items("controls"):
         key = key.upper()
         button_value: Optional[int] = getattr(buttons, key, None)
         event_value: Optional[int] = getattr(events, key, None)
         for each in values.split(", "):
-            # used incase of multiple keys assigned to 1 method
+            # used in case of multiple keys assigned to 1 method
             # pygame.locals uses all caps for constants except for letters
             each = each.lower() if len(each) == 1 else each.upper()
             pygame_value: Optional[int] = getattr(
@@ -166,7 +154,7 @@ def get_custom_pygame_keyboard_controls_names(
         cfg: Config parser.
 
     """
-    custom_controls: Dict[Optional[str], int] = {None: events.UNICODE}
+    custom_controls: dict[Optional[str], int] = {None: events.UNICODE}
     for key, values in cfg.items("controls"):
         key = key.upper()
         button_value: Optional[int] = getattr(buttons, key, None)
@@ -236,9 +224,6 @@ def get_defaults() -> Mapping[str, Any]:
                     (
                         ("items_consumed_on_failure", "True"),
                         ("encounter_rate_modifier", "1.0"),
-                        ("default_monster_catch_rate", "125"),
-                        ("default_upper_monster_catch_resistance", "1"),
-                        ("default_lower_monster_catch_resistance", "1"),
                         ("dialog_speed", "slow"),
                     )
                 ),

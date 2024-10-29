@@ -33,12 +33,19 @@
         {
             "level_learned": 24,
             "technique": "terror"
+        },
+        {
+            "level_learned": 28,
+            "technique": "rust_bomb"
+        },
+        {
+            "level_learned": 32,
+            "technique": "crystal"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
-            "at_level": 25,
+            "at_level": 26,
             "monster_slug": "blasdoor"
         }
     ],
@@ -48,6 +55,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["sprite", "ruins", "urban"],
     "shape": "sprite",
     "stage": "basic",
     "types": [
@@ -57,7 +65,7 @@
     "txmn_id": 250,
     "height": 2040,
     "weight": 46,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

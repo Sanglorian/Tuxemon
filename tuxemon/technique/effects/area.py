@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 from tuxemon import formula
 from tuxemon.technique.techeffect import TechEffect, TechEffectResult
@@ -14,9 +14,7 @@ if TYPE_CHECKING:
 
 
 class AreaEffectResult(TechEffectResult):
-    damage: int
-    element_multiplier: float
-    should_tackle: bool
+    pass
 
 
 @dataclass
@@ -31,26 +29,22 @@ class AreaEffect(TechEffect):
     def apply(
         self, tech: Technique, user: Monster, target: Monster
     ) -> AreaEffectResult:
-        player = self.session.player
-        value = float(player.game_variables["random_tech_hit"])
-        hit = tech.accuracy >= value
+        combat = tech.combat_state
+        player = user.owner
+        assert combat and player
+        hit = tech.accuracy >= combat._random_tech_hit.get(user, 0.0)
         if hit:
-            tech.advance_counter_success()
             damage, mult = formula.simple_damage_calculate(tech, user, target)
-            # 2 vs 2, damage both monsters
+            # Apply the damage to all the monsters on the opposite side
             if player.max_position > 1:
-                monsters: Sequence[Monster] = []
-                assert tech.combat_state
-                combat = tech.combat_state
-                human = combat.monsters_in_play_human
-                opponent = combat.monsters_in_play_ai
-                if player.isplayer:
-                    monsters = opponent
-                else:
-                    monsters = human
-                for mon in monsters:
+                monsters_to_damage = (
+                    combat.monsters_in_play_left
+                    if user in combat.monsters_in_play_right
+                    else combat.monsters_in_play_right
+                )
+                for mon in monsters_to_damage:
                     mon.current_hp -= damage
-                    combat._damage_map[mon].add(user)
+                    combat.enqueue_damage(user, mon, damage)
             else:
                 target.current_hp -= damage
         else:
@@ -62,4 +56,5 @@ class AreaEffect(TechEffect):
             "element_multiplier": mult,
             "should_tackle": bool(damage),
             "success": bool(damage),
+            "extra": None,
         }

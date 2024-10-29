@@ -21,21 +21,45 @@
         {
             "level_learned": 12,
             "technique": "midnight_mantle"
+        },
+        {
+            "level_learned": 24,
+            "technique": "flamethrower"
+        },
+        {
+            "level_learned": 28,
+            "technique": "rock"
+        },
+        {
+            "level_learned": 32,
+            "technique": "fire_ball"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
-            "at_level": 18,
-            "monster_slug": "loliferno"
+            "monster_slug": "loliferno",
+            "item": "flintstone"
+        },
+        {
+            "at_level": 20,
+            "monster_slug": "spirain"
         }
     ],
     "history": [
         {
             "mon_slug": "loliferno",
             "evo_stage": "stage1"
+        },
+        {
+            "mon_slug": "spirain",
+            "evo_stage": "stage1"
+        },
+        {
+            "mon_slug": "tornicane",
+            "evo_stage": "stage2"
         }
     ],
+    "tags": ["blob", "swamp"],
     "shape": "blob",
     "stage": "basic",
     "types": [
@@ -45,8 +69,8 @@
     "possible_genders": ["neuter"],
     "txmn_id": 162,
     "height": 30,
-    "weight": 0,
-    "catch_rate": 45.0,
+    "weight": 0.1,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.85,
     "upper_catch_resistance": 1.1
 }

@@ -12,7 +12,7 @@
         },
         {
             "level_learned": 6,
-            "technique": "torch"
+            "technique": "beam"
         },
         {
             "level_learned": 8,
@@ -20,21 +20,19 @@
         },
         {
             "level_learned": 12,
-            "technique": "muck"
+            "technique": "neutralize"
         }
     ],
     "evolutions": [
         {
-            "path": "daytime",
-            "at_level": 16,
+            "at_level": 14,
             "monster_slug": "angesnow",
-            "daytime": "true"
+            "variables": ["daytime:true"]
         },
         {
-            "path": "daytime",
-            "at_level": 16,
+            "at_level": 14,
             "monster_slug": "demosnow",
-            "daytime": "false"
+            "variables": ["daytime:false"]
         }
     ],
     "history": [
@@ -55,6 +53,7 @@
             "evo_stage": "stage2"
         }
     ],
+    "tags": ["sprite", "extraplanar"],
     "shape": "sprite",
     "stage": "basic",
     "types": [
@@ -64,7 +63,7 @@
     "txmn_id": 262,
     "height": 15,
     "weight": 1,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

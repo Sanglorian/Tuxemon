@@ -12,7 +12,7 @@
         },
         {
             "level_learned": 6,
-            "technique": "gyser"
+            "technique": "geyser"
         },
         {
             "level_learned": 8,
@@ -25,28 +25,24 @@
     ],
     "evolutions": [
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "bigfin",
             "item": "water_booster"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "bigfin",
             "item": "sweet_sand"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "sharpfin",
             "item": "metal_booster"
         },
         {
-            "path": "item",
-            "at_level": 0,
             "monster_slug": "sharpfin",
             "item": "sea_girdle"
+        },
+        {
+            "monster_slug": "delfeco",
+            "bond": "equals:100"
         }
     ],
     "history": [
@@ -57,18 +53,23 @@
         {
             "mon_slug": "sharpfin",
             "evo_stage": "stage1"
+        },
+        {
+            "mon_slug": "delfeco",
+            "evo_stage": "stage1"
         }
     ],
+    "tags": ["leviathan", "coastal", "freshwater", "sea"],
     "shape": "leviathan",
     "stage": "basic",
     "types": [
         "water"
     ],
     "possible_genders": ["male", "female"],
-    "txmn_id": 24,	
+    "txmn_id": 23,
     "height": 250,
     "weight": 190,
-    "catch_rate": 170.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.25
 }

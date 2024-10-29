@@ -146,10 +146,10 @@ msgid "combat_status_damage"
 msgstr "{name} ha subito danno da {status}!"
 
 msgid "combat_victory"
-msgstr "Hai vinto!"
+msgstr "{name} ha vinto!"
 
 msgid "combat_defeat"
-msgstr "Sei stato sconfitto!"
+msgstr "{name} è stato sconfitto!"
 
 msgid "combat_draw"
 msgstr "Tutti sono K.O.!"
@@ -159,9 +159,6 @@ msgstr "Hai catturato {name}!"
 
 msgid "combat_capturing_fail"
 msgstr "{name} si è liberato!"
-
-msgid "combat_recharging"
-msgstr "{name} ha bisogno di riposare prima di usare ancora {move}..."
 
 msgid "combat_replacement"
 msgstr "Fai una sostituzione!"
@@ -243,10 +240,10 @@ msgstr "C'è stato un problema durante il salvataggio!"
 msgid "slot"
 msgstr "Spazio"
 
-msgid "status_faint"
+msgid "faint"
 msgstr "K.O."
 
-msgid "status_poison"
+msgid "poison"
 msgstr "Avvelenamento"
 
 ## TECHNIQUE TRANSLATIONS ##
@@ -358,9 +355,6 @@ msgstr "Occhiata"
 msgid "goad"
 msgstr "Pungolo"
 
-msgid "headbutt"
-msgstr "Testata"
-
 msgid "hibernate"
 msgstr "Ibernazione"
 
@@ -406,7 +400,7 @@ msgstr "Taglionetto"
 msgid "petrify"
 msgstr "Petrificazione"
 
-msgid "probiscus"
+msgid "proboscis"
 msgstr "Proboscide"
 
 msgid "pseudopod"
@@ -457,8 +451,8 @@ msgstr "Tormenta"
 msgid "splinter"
 msgstr "Scheggia"
 
-msgid "spray"
-msgstr "Spray"
+msgid "spit_poison"
+msgstr "Sputa Veleno"
 
 msgid "stampede"
 msgstr "Fuga"
@@ -654,13 +648,13 @@ msgstr "Considera le piante che crescono attorno a lui come i suoi fratelli e so
 msgid "anoleaf"
 msgstr "Anoleaf"
 
-msgid "axylightl_description"
+msgid "axolightl_description"
 msgstr ""
 "Illumina le profondità del mare con la sua coda, mostrando un sicuro riparo "
 "per i pesci."
 
-msgid "axylightl"
-msgstr "Axylightl"
+msgid "axolightl"
+msgstr "Axolightl"
 
 msgid "bamboon_description"
 msgstr "Combatte con il suo bastone di bambù, che usa anche per bilanciarsi."
@@ -1339,7 +1333,7 @@ msgid "not_really"
 msgstr "Non proprio."
 
 # NPC dialogs
-msgid "professor_dialog\n"
+msgid "professor_dialog"
 msgstr "Professore:\n"
 "Oh sì. Ecco la persona che cercavo!\n"
 "Ho sentito che vuoi imparare di più sui Tuxemon.\n"
@@ -1392,7 +1386,7 @@ msgstr "Le porte sono chiuse dall'esterno... C'è una chiave da qualche parte?"
 msgid "discovered_a_person"
 msgstr "Mi hai trovato! Ahah!"
 
-msgid "a_serious_discussion\n"
+msgid "a_serious_discussion"
 msgstr ""
 "Ti sto osservando da un po'. Sono contento che i miei seguiti ti hanno "
 "scortato senza farti male.\n"
@@ -1404,11 +1398,11 @@ msgstr ""
 "${{name}}?\n"
 "Non male come nome per qualcuno che possiede illegalmente un Tuxemon.\n"
 
-msgid "oops\n"
+msgid "oops"
 msgstr "Oh. Immagino che non lo sapevi...\n"
 "Non dovresti avere paura. Avere un Tuxemon al tuo fianco è la miglior cosa che poteva capitarti.\n"
 
-msgid "backstory\n"
+msgid "backstory"
 msgstr ""
 "Circa trent'anni fa, un gruppo chiamato Omnichannel iniziò a controllare i "
 "media.\n"
@@ -1436,7 +1430,7 @@ msgstr "Cosa dici? Ci vuoi aiutare?"
 msgid "sorryfurthis"
 msgstr "Ottima scelta. Scusa ma questo pungerà un po'."
 
-msgid "mwah\n"
+msgid "mwah"
 msgstr ""
 "???: Che cosa vuoi? ... ... ... Beh, peccato. Bene, peccato Non entrerai qui "
 "anche se i tuoi vestiti sono fatti con gusto.\n"
@@ -1461,7 +1455,7 @@ msgstr "???: Benvenuto!"
 msgid "kmere"
 msgstr "Perché non vieni qui e parli con me?"
 
-msgid "theinfo\n"
+msgid "theinfo"
 msgstr ""
 "Ti chiedo scusa per quella scena, a volte Allie è difficile da gestire, al "
 "contrario di mia figlia Jess.\n"
@@ -1507,7 +1501,7 @@ msgstr "Centro della cattedrale: viviamo per servire."
 msgid "Cotton_Mart"
 msgstr "Ottieni lo scoop presso lo Scoop Store!"
 
-msgid "Cotton_Town_Sign\n"
+msgid "Cotton_Town_Sign"
 msgstr ""
 "Benvenuto a Cotonopoli: una forza crescente\n"
 "↑ Cotonopoli --- Strada 1 ↓\n"
@@ -1520,7 +1514,7 @@ msgstr ""
 "Una colonna rara e antica. Lungo la strada 3 si possono trovare altre rovine "
 "dalla stessa cultura. "
 
-msgid "cityparksign\n"
+msgid "cityparksign"
 msgstr ""
 "Benvenuto nel parco cittadino: un assaggio di selvaggio\n"
 "↑ Parco cittadino --- Strada 2 ↓\n"
@@ -1528,13 +1522,13 @@ msgstr ""
 msgid "route2speech"
 msgstr "AHHH!!!"
 
-msgid "route2speech2\n"
+msgid "route2speech2"
 msgstr ""
 "Oh. Sei tu, ${{name}}...\n"
 "Stai più attento la prossima volta che urti una persona. La scogliera è più "
 "ripida di quanto sembri...\n"
 
-msgid "route2speech3\n"
+msgid "route2speech3"
 msgstr "Sebbene possa non essere una cattiva idea...\n"
 "Lo so, ognuno ha bisogno di me per condurre ma con tutto che va avanti...\n"
 "Ma tu non vuoi sentire di me... o no?\n"
@@ -1545,7 +1539,7 @@ msgstr "Veramente? Grazie..."
 msgid "notalk"
 msgstr "Che persona insensibile! Mi dispiace, dovrai ascoltarmi comunque!"
 
-msgid "spillit\n"
+msgid "spillit"
 msgstr "Tu sai che sono il capo dell'Istituto Xero per la Ricerca e il Progresso sui Tuxemon e che ti ho reclutato per combatterli. Ma non sai nient'altro.\n"
 "Allie, che hai incontrato prima... Cosa? Ti ho detto che ti osserviamo, non devi esserne sorpreso!\n"
 
@@ -1573,7 +1567,7 @@ msgstr ""
 msgid "leavemealone"
 msgstr "Un tempo giocavamo qui tutto il tempo quando eravamo più giovani..."
 
-msgid "iamknight\n"
+msgid "iamknight3"
 msgstr "Che cosa stai facendo qui? Sai che solo i cavalieri sono permessi nel parco cittadino.\n"
 "... ... ... Hmm... Quindi stai cercando di andare a Leather Town...\n"
 "Beh, penso che potresti partecipare alla sfida se vuoi. L'unico problema è che avrai bisogno di un Tuxemon...\n"
@@ -1582,14 +1576,14 @@ msgstr "Che cosa stai facendo qui? Sai che solo i cavalieri sono permessi nel pa
 msgid "sorry"
 msgstr "Ok... quando sarai pronto sarò ancora qui..."
 
-msgid "splendid\n"
+msgid "splendid"
 msgstr "Veramente? Splendido! Ora dobbiamo trovare un Tuxemon adatto a te...\n"
 "... Ne hai già uno? Ottimo, sono sicuro che sarai in grado di usarlo bene...\n"
 
 msgid "cottonnurse_dialog"
 msgstr "Benvenuto al Tuxcentro di Cotonopoli!"
 
-msgid "tabanurse_dialog\n"
+msgid "tabanurse_dialog"
 msgstr ""
 "Benvenuto al Tuxcentro di ${{map_name}}!\n"
 "Vuoi che guarisca i tuoi Tuxemon?\n"
@@ -1632,10 +1626,10 @@ msgstr "Riporta in vita un Tuxemon dandogli 20 PV."
 msgid "revive"
 msgstr "Revitalizzatore"
 
-msgid "status_recover"
+msgid "recover"
 msgstr "Ripresa"
 
-msgid "status_lifeleech"
+msgid "lifeleech"
 msgstr "Succhiavita"
 
 msgid "save_keep"
@@ -1785,7 +1779,7 @@ msgstr ""
 msgid "darnitjohn4"
 msgstr "S-Sissignora?"
 
-msgid "status_overfeed"
+msgid "overfeed"
 msgstr "Sovralimentazione"
 
 ## MENU TRANSLATIONS ##
@@ -1823,9 +1817,6 @@ msgstr "Roboscuro"
 
 msgid "xeon_2"
 msgstr "Xeon-2"
-
-msgid "birb_robo"
-msgstr "Roboccellino"
 
 msgid "xeon"
 msgstr "Xeon"
@@ -2246,9 +2237,6 @@ msgid "goodbye"
 msgstr ""
 "Non permettere che il Trial ti impedisca di vedermi. Infatti... Forse ti "
 "troverò prima."
-
-msgid "spyder_route2_billie"
-msgstr "Billie"
 
 msgid "spyder_route3_twig"
 msgstr "Rametto"
@@ -2850,10 +2838,10 @@ msgstr ""
 "Sta andando molto bene! Sono praticamente inseparabili!\n"
 "Non dovrebbe passare molto tempo prima di avere un cucciolo."
 
-msgid "status_softened"
+msgid "softened"
 msgstr "Rammollito"
 
-msgid "status_exhausted"
+msgid "exhausted"
 msgstr "Esausto"
 
 msgid "menu_storage_empty_kennel"
@@ -3280,11 +3268,6 @@ msgstr ""
 "Non puoi scappare.\n"
 "{monster} è {status}!"
 
-msgid "combat_player_forfeit_status"
-msgstr ""
-"Non puoi dare forfait.\n"
-"{monster} è {status}!"
-
 msgid "cannot_use_tech_monster"
 msgstr "{name} non può essere usato."
 
@@ -3292,9 +3275,7 @@ msgid "combat_skip"
 msgstr "{user} salta il turno!"
 
 msgid "combat_victory_trainer"
-msgstr ""
-"Hai vinto contro {npc}!\n"
-"Ottieni {currency}{prize}!"
+msgstr "{name} ha vinto e ha ottenuto {currency}{prize}!"
 
 ## COMBAT STATE STATUSES
 msgid "combat_state_blinded_get"
@@ -3348,29 +3329,29 @@ msgstr "Testo troppo lungo!"
 msgid "spyderbite"
 msgstr "Morso Spyder"
 
-msgid "status_tired"
+msgid "tired"
 msgstr "Affaticato"
 
-msgid "status_stuck"
+msgid "stuck"
 msgstr "Bloccato"
 
-msgid "status_hardshell"
+msgid "hardshell"
 msgstr "Guscio"
 
-msgid "status_grabbed"
+msgid "grabbed"
 msgstr "Afferrato"
 
-msgid "status_focused"
+msgid "focused"
 msgstr "Concentrato"
 
-msgid "status_confused"
+msgid "confused"
 msgstr "Confuso"
 
-msgid "status_enraged"
+msgid "enraged"
 msgstr "Furioso"
 
 ## STATUSES
-msgid "status_blinded"
+msgid "blinded"
 msgstr "Accecato"
 
 msgid "taba_town"
@@ -4156,7 +4137,7 @@ msgstr "Dippel"
 msgid "spyder_greenwash_moreau"
 msgstr "Moreau"
 
-msgid "omnichannel_sign"
+msgid "spyder_omnichannel_sign"
 msgstr "Omnichannel HQ: Facciamo notizia"
 
 msgid "taba_town_homeplace"
@@ -4329,10 +4310,10 @@ msgstr "Eyesore"
 msgid "hampotamos"
 msgstr "Hampotamos"
 
-msgid "status_diehard"
+msgid "diehard"
 msgstr "Duro a Morire"
 
-msgid "status_eliminated"
+msgid "eliminated"
 msgstr "Eliminato"
 
 msgid "acid"
@@ -4774,9 +4755,6 @@ msgstr "Lava"
 
 msgid "lineage"
 msgstr "Lignaggio"
-
-msgid "maori"
-msgstr "Maori"
 
 msgid "meltdown"
 msgstr "Fusione"

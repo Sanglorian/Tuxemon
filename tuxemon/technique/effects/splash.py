@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2023 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -14,9 +14,7 @@ if TYPE_CHECKING:
 
 
 class SplashEffectResult(TechEffectResult):
-    damage: int
-    element_multiplier: float
-    should_tackle: bool
+    pass
 
 
 @dataclass
@@ -27,25 +25,25 @@ class SplashEffect(TechEffect):
     """
 
     name = "splash"
+    divisor: int
 
     def apply(
         self, tech: Technique, user: Monster, target: Monster
     ) -> SplashEffectResult:
-        player = self.session.player
-        value = float(player.game_variables["random_tech_hit"])
+        combat = tech.combat_state
+        value = combat._random_tech_hit.get(user, 0.0) if combat else 0.0
         hit = tech.accuracy >= value
+        tech.hit = hit
         damage, mult = formula.simple_damage_calculate(tech, user, target)
-        tech.advance_counter_success()
         if hit:
-            tech.hit = True
             target.current_hp -= damage
         else:
-            tech.hit = True
-            damage //= 2
+            damage //= self.divisor
             target.current_hp -= damage
         return {
             "success": bool(damage),
             "damage": damage,
             "should_tackle": bool(damage),
             "element_multiplier": mult,
+            "extra": None,
         }

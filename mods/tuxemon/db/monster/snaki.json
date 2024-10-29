@@ -21,11 +21,22 @@
         {
             "level_learned": 12,
             "technique": "midnight_mantle"
+        },
+        {
+            "level_learned": 24,
+            "technique": "tonguespear"
+        },
+        {
+            "level_learned": 28,
+            "technique": "icicle_spear"
+        },
+        {
+            "level_learned": 32,
+            "technique": "chill_mist"
         }
     ],
     "evolutions": [
         {
-            "path": "standard",
             "at_level": 18,
             "monster_slug": "snokari"
         }
@@ -36,6 +47,7 @@
             "evo_stage": "stage1"
         }
     ],
+    "tags": ["serpent"],
     "shape": "serpent",
     "stage": "basic",
     "types": [
@@ -45,7 +57,7 @@
     "txmn_id": 227,
     "height": 70,
     "weight": 15,
-    "catch_rate": 85.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

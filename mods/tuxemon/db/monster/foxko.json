@@ -44,7 +44,7 @@
         },
         {
             "level_learned": 36,
-            "technique": "adamantine"
+            "technique": "torch"
         },
         {
             "level_learned": 40,
@@ -53,6 +53,7 @@
     ],
     "evolutions": [],
     "history": [],
+    "tags": ["serpent"],
     "shape": "serpent",
     "stage": "standalone",
     "types": [
@@ -63,7 +64,7 @@
     "txmn_id": 0,
     "height": 71,
     "weight": 10,
-    "catch_rate": 120.0,
+    "catch_rate": 100.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

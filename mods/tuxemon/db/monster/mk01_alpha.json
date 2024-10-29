@@ -41,13 +41,11 @@
     ],
     "evolutions": [
         {
-            "path": "standard",
-            "at_level": 30,
+            "at_level": 32,
             "monster_slug": "mk01_delta"
         },
         {
-            "path": "standard",
-            "at_level": 30,
+            "at_level": 32,
             "monster_slug": "mk01_gamma"
         }
     ],
@@ -55,8 +53,17 @@
         {
             "mon_slug": "mk01_proto",
             "evo_stage": "basic"
+        },
+        {
+            "mon_slug": "mk01_gamma",
+            "evo_stage": "stage2"
+        },
+        {
+            "mon_slug": "mk01_delta",
+            "evo_stage": "stage2"
         }
     ],
+    "tags": ["dragon"],
     "shape": "dragon",
     "stage": "stage1",
     "types": [
@@ -64,9 +71,9 @@
     ],
     "possible_genders": ["neuter"],
     "txmn_id": 0,
-    "height": 0,
+    "height": 0.1,
     "weight": 100,
-    "catch_rate": 120.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.95,
     "upper_catch_resistance": 1.05
 }

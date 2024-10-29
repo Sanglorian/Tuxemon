@@ -1,11 +1,10 @@
 {
   "slug": "professor",
-  "forfeit": false,
-  "template": [
+  "template": 
     {
       "sprite_name": "professor",
       "combat_front": "professor",
       "slug": "professor"
     }
-  ]
+
 }

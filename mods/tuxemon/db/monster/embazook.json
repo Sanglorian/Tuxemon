@@ -20,11 +20,11 @@
         },
         {
             "level_learned": 12,
-            "technique": "static_field"
+            "technique": "tinder"
         },
         {
             "level_learned": 16,
-            "technique": "shuriken"
+            "technique": "static_field"
         },
         {
             "level_learned": 20,
@@ -42,6 +42,7 @@
             "evo_stage": "basic"
         }
     ],
+    "tags": ["polliwog", "desert", "mountains"],
     "shape": "polliwog",
     "stage": "stage1",
     "types": [
@@ -52,7 +53,7 @@
     "txmn_id": 31,
     "height": 137,
     "weight": 502,
-    "catch_rate": 85.0,
+    "catch_rate": 70.0,
     "lower_catch_resistance": 0.9,
     "upper_catch_resistance": 1.15
 }

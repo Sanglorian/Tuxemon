@@ -5,7 +5,7 @@
   <property name="inside" type="bool" value="true"/>
   <property name="scenario" value="xero"/>
   <property name="slug" value="scoop1"/>
-  <property name="types" value="dungeon"/>
+  <property name="map_type" value="dungeon"/>
  </properties>
  <tileset firstgid="1" name="Superpowers_Tilesheet" tilewidth="16" tileheight="16" tilecount="1600" columns="40">
   <image source="../gfx/tilesets/Superpowers_Tilesheet.png" width="640" height="640"/>
@@ -66,19 +66,18 @@
   <object id="11" name="Teleport to Timber Town" type="event" x="0" y="64" width="16" height="16">
    <properties>
     <property name="act10" value="transition_teleport timber_town.tmx,10,23,0.3"/>
-    <property name="act20" value="player_face left"/>
-    <property name="cond10" value="is player_at"/>
-    <property name="cond20" value="is player_facing left"/>
+    <property name="act20" value="char_face player,left"/>
+    <property name="cond10" value="is char_at player"/>
+    <property name="cond20" value="is char_facing player,left"/>
    </properties>
   </object>
   <object id="12" name="Teleport to Scoop 2" type="event" x="304" y="32" width="16" height="16">
    <properties>
     <property name="act10" value="transition_teleport scoop2.tmx,0,4,0.3"/>
-    <property name="act20" value="player_face up"/>
-    <property name="cond10" value="is player_at"/>
-    <property name="cond20" value="is player_facing up"/>
+    <property name="act20" value="char_face player,up"/>
+    <property name="cond10" value="is char_at player"/>
+    <property name="cond20" value="is char_facing player,up"/>
    </properties>
   </object>
-  <object id="16" name="Player Spawn" type="event" x="304" y="64" width="16" height="16"/>
  </objectgroup>
 </map>

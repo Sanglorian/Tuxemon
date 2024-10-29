@@ -1,7 +1,6 @@
 {
     "slug": "grintot",
     "category": "pebble",
-    "ai": "RandomAI",
     "moveset": [
         {
             "level_learned": 2,
@@ -13,7 +12,7 @@
         },
         {
             "level_learned": 6,
-            "technique": "touch"
+            "technique": "electroplate"
         },
         {
             "level_learned": 8,

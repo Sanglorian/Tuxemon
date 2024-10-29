@@ -1,7 +1,6 @@
 {
     "slug": "coproblight",
     "category": "skull_poo",
-    "ai": "RandomAI",
     "moveset": [
         {
             "level_learned": 2,
@@ -17,7 +16,7 @@
         },
         {
             "level_learned": 8,
-            "technique": "touch"
+            "technique": "electroplate"
         },
         {
             "level_learned": 12,

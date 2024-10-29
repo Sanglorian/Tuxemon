@@ -1,7 +1,6 @@
 {
     "slug": "dinoflop",
     "category": "volte-face",
-    "ai": "RandomAI",
     "moveset": [
         {
             "level_learned": 2,
@@ -41,7 +40,7 @@
         },
         {
             "level_learned": 32,
-            "technique": "touch"
+            "technique": "electroplate"
         },
         {
             "level_learned": 36,

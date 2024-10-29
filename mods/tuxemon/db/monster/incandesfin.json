@@ -1,7 +1,6 @@
 {
     "slug": "incandesfin",
     "category": "light_fin",
-    "ai": "RandomAI",
     "moveset": [
         {
             "level_learned": 2,
@@ -49,7 +48,7 @@
             "evo_stage": "basic"
         }
     ],
-    "shape": "aquatic",
+    "shape": "piscine",
     "stage": "stage1",
     "types": [
         "water"

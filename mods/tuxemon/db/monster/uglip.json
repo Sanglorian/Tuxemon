@@ -1,7 +1,6 @@
 {
     "slug": "uglip",
     "category": "deepsea",
-    "ai": "RandomAI",
     "moveset": [
         {
             "level_learned": 2,
@@ -54,7 +53,7 @@
     ],  
     "evolutions": [],
     "history": [],
-    "shape": "aquatic",
+    "shape": "piscine",
     "stage": "standalone",
     "types": [
         "water"

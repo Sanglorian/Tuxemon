@@ -7,7 +7,7 @@ import random
 import uuid
 from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Sequence
 
-from tuxemon import ai, formula, fusion, graphics, tools
+from tuxemon import formula, fusion, graphics, tools
 from tuxemon.config import TuxemonConfig
 from tuxemon.db import (
     CategoryCondition,
@@ -62,14 +62,6 @@ SIMPLE_PERSISTANCE_ATTRIBUTES = (
 )
 
 SHAPES = {
-    MonsterShape.aquatic: {
-        "armour": 8,
-        "dodge": 4,
-        "hp": 8,
-        "melee": 6,
-        "ranged": 6,
-        "speed": 4,
-    },
     MonsterShape.blob: {
         "armour": 8,
         "dodge": 4,
@@ -137,6 +129,14 @@ SHAPES = {
     MonsterShape.leviathan: {
         "armour": 8,
         "dodge": 4,
+        "hp": 8,
+        "melee": 6,
+        "ranged": 6,
+        "speed": 4,
+    },
+    MonsterShape.piscine: {
+        "armour": 6,
+        "dodge": 6,
         "hp": 8,
         "melee": 6,
         "ranged": 6,
@@ -233,7 +233,6 @@ class Monster:
         self.flairs: Dict[str, Flair] = {}
         self.battle_cry = ""
         self.faint_cry = ""
-        self.ai: Optional[ai.AI] = None
         self.owner: Optional[NPC] = None
         self.possible_genders: List[GenderType] = []
 
@@ -242,7 +241,9 @@ class Monster:
         self.total_experience = 0
 
         self.types: List[ElementType] = []
+        self._types: List[ElementType] = []
         self.shape = MonsterShape.landrace
+        self.randomly = True
 
         self.status: List[Technique] = []
         self.plague = PlagueType.healthy
@@ -319,6 +320,10 @@ class Monster:
         self.taste_cold = self.set_taste_cold(self.taste_cold)
         self.taste_warm = self.set_taste_warm(self.taste_warm)
         self.types = list(results.types)
+        # backup types
+        self._types = list(results.types)
+
+        self.randomly = results.randomly or self.randomly
 
         self.txmn_id = results.txmn_id
         self.capture = self.set_capture(self.capture)
@@ -375,14 +380,6 @@ class Monster:
             self.combat_call = f"sound_{self.types[0]}_call"
             self.faint_call = f"sound_{self.types[0]}_faint"
 
-        # Load the monster AI
-        # TODO: clean up AI 'core' loading and what not
-        ai_result = results.ai
-        if ai_result == "SimpleAI":
-            self.ai = ai.SimpleAI()
-        elif ai_result == "RandomAI":
-            self.ai = ai.RandomAI()
-
     def learn(
         self,
         technique: Technique,
@@ -401,6 +398,12 @@ class Monster:
         """
 
         self.moves.append(technique)
+
+    def return_types(self) -> None:
+        """
+        Returns a monster types.
+        """
+        self.types = self._types
 
     def return_stat(
         self,
@@ -467,6 +470,8 @@ class Monster:
                 return
             # if the status doesn't exist.
             else:
+                # start counting nr turns
+                status.nr_turn = 1
                 if self.status[0].category == CategoryCondition.positive:
                     if status.repl_pos == ResponseCondition.replaced:
                         self.status.clear()

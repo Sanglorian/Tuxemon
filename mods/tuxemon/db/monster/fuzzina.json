@@ -1,7 +1,6 @@
 {
     "slug": "fuzzina",
     "category": "toy",
-    "ai": "RandomAI",
     "moveset": [
         {
             "level_learned": 2,
@@ -37,7 +36,7 @@
         },
         {
             "level_learned": 28,
-            "technique": "touch"
+            "technique": "electroplate"
         },
         {
             "level_learned": 32,

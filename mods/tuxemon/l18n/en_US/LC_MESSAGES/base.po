@@ -1216,6 +1216,9 @@ msgstr "{target} is wasting away."
 msgid "combat_state_flinching_get"
 msgstr "{target} flinches and may not act."
 
+msgid "combat_state_charmed_get"
+msgstr "{target} is charmed and might hesitate to act."
+
 msgid "combat_state_wild_get"
 msgstr "{target} has gone wild."
 
@@ -1340,6 +1343,9 @@ msgstr "Charged Up"
 
 msgid "charging"
 msgstr "Charging"
+
+msgid "charmed"
+msgstr "Charmed"
 
 msgid "confused"
 msgstr "Confused"

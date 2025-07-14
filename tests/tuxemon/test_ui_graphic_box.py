@@ -6,7 +6,7 @@ import pygame
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon.ui.draw import GraphicBox, TileLayout
+from tuxemon.ui.graphic_box import GraphicBox, TileLayout
 
 
 class TestTileLayout(unittest.TestCase):

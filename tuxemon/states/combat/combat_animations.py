@@ -33,7 +33,7 @@ from tuxemon.ui.combat_layout import (
 from tuxemon.ui.combat_monsters import FieldMonsters, MonsterSpriteMap
 from tuxemon.ui.combat_status import StatusIconManager
 from tuxemon.ui.combat_zone import CombatZone
-from tuxemon.ui.text import HorizontalAlignment
+from tuxemon.ui.text_alignment import HorizontalAlignment
 
 if TYPE_CHECKING:
     from tuxemon.animation import Animation

@@ -959,10 +959,13 @@ class TechniqueModel(BaseModel, BaseLookupModel):
         "item_confirm_use",
         description="Translation key for the label used when confirming tech usage.",
     )
-
     cancel_text: str = Field(
         "item_confirm_cancel",
         description="Translation key for the label used when canceling tech usage.",
+    )
+    menu_actions: Sequence[dict[str, str]] = Field(
+        [],
+        description="Custom list of menu actions (key, display_text) for this technique.",
     )
     types: Sequence[str] = Field([], description="Type(s) of the technique")
     usable_on: bool = Field(

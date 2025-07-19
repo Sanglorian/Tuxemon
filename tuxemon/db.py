@@ -286,10 +286,13 @@ class ItemModel(BaseModel, BaseLookupModel):
         "item_confirm_use",
         description="Translation key for the label used when confirming item usage.",
     )
-
     cancel_text: str = Field(
         "item_confirm_cancel",
         description="Translation key for the label used when canceling item usage.",
+    )
+    menu_actions: Sequence[dict[str, str]] = Field(
+        [],
+        description="Custom list of menu actions (key, display_text) for this item.",
     )
     use_failure: str = Field(
         "generic_failure",
@@ -959,7 +962,6 @@ class TechniqueModel(BaseModel, BaseLookupModel):
         "item_confirm_use",
         description="Translation key for the label used when confirming tech usage.",
     )
-
     cancel_text: str = Field(
         "item_confirm_cancel",
         description="Translation key for the label used when canceling tech usage.",

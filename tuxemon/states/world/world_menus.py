@@ -12,6 +12,7 @@ import pygame_menu
 
 from tuxemon import prepare
 from tuxemon.animation import ScheduleType
+from tuxemon.item.filter import ItemFilter
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.states.monster import MonsterMenuHandler
@@ -229,12 +230,15 @@ class WorldMenuManager:
             )
 
         if player.items.get_items() and player.menu_bag:
+            items_filtered = ItemFilter(player)
+            items_filtered.set_filter_all_visible()
             current_menu.append(
                 self._menu_item(
                     "menu_bag",
                     "ItemMenuState",
                     character=player,
                     source="WorldMenuState",
+                    item_filter=items_filtered,
                 )
             )
 

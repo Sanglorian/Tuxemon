@@ -14,7 +14,7 @@ from tuxemon.states.pc_locker import HIDDEN_LIST_LOCKER
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
     from tuxemon.monster import Monster
-    from tuxemon.npc import NPCState
+    from tuxemon.npc import NPC, NPCState
 
 
 class BoxCollection:
@@ -342,19 +342,27 @@ class BoxCollection:
         for box_id, monsters in self.monster_boxes.items():
             state["monster_boxes"][box_id] = encode_monsters(monsters)
 
-    def load(self, save_data: NPCState) -> None:
+    def load(self, char: NPC, save_data: NPCState) -> None:
         """
         Loads the box collection from a saved state.
 
         Parameters:
             save_data: The saved state to load the box collection from.
         """
-        self.item_boxes = {}
+        self.item_boxes = {
+            box_id: decode_items(items)
+            for box_id, items in save_data.get("item_boxes", {}).items()
+        }
+
         self.monster_boxes = {}
-        for box_id, encoded_items in save_data["item_boxes"].items():
-            self.item_boxes[box_id] = decode_items(encoded_items)
-        for box_id, encoded_monsters in save_data["monster_boxes"].items():
-            self.monster_boxes[box_id] = decode_monsters(encoded_monsters)
+
+        for box_id, encoded_monsters in save_data.get(
+            "monster_boxes", {}
+        ).items():
+            monsters = decode_monsters(encoded_monsters)
+            for monster in monsters:
+                monster.set_owner(char)
+            self.monster_boxes[box_id] = monsters
 
 
 class ItemBoxes(BoxCollection):
@@ -373,14 +381,14 @@ class ItemBoxes(BoxCollection):
         """
         super().save(state)
 
-    def load(self, save_data: NPCState) -> None:
+    def load(self, char: NPC, save_data: NPCState) -> None:
         """
         Loads the item boxes from a saved state.
 
         Parameters:
             save_data: The saved state to load the item boxes from.
         """
-        super().load(save_data)
+        super().load(char, save_data)
 
 
 class MonsterBoxes(BoxCollection):
@@ -543,11 +551,11 @@ class MonsterBoxes(BoxCollection):
         """
         super().save(state)
 
-    def load(self, save_data: NPCState) -> None:
+    def load(self, char: NPC, save_data: NPCState) -> None:
         """
         Loads the monster boxes from a saved state.
 
         Parameters:
             save_data: The saved state to load the monster boxes from.
         """
-        super().load(save_data)
+        super().load(char, save_data)

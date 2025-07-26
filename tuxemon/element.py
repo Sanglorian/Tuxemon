@@ -6,13 +6,16 @@ import logging
 from collections.abc import Sequence
 from typing import Optional
 
-from tuxemon.db import ElementItemModel, ElementType, db
+from tuxemon.db import ElementItemModel, ElementModel, db
+from tuxemon.locale import T
 
 logger = logging.getLogger(__name__)
 
 
 class Element:
     """An Element holds a list of types and multipliers."""
+
+    _elements: dict[str, Element] = {}
 
     def __init__(self, slug: Optional[str] = None) -> None:
         self.name: str = ""
@@ -24,26 +27,74 @@ class Element:
 
     def load(self, slug: str) -> None:
         """Loads an element."""
-        try:
-            results = db.lookup(slug, table="element")
-        except KeyError:
-            raise RuntimeError(f"Element {slug} not found")
 
-        self.slug = results.slug
-        self.name = results.slug.name
+        if slug in Element._elements:
+            cached_element = Element._elements[slug]
+            self.slug = slug
+            self.name = cached_element.name
+            self.types = cached_element.types
+            self.icon = cached_element.icon
+            return
+
+        results = ElementModel.lookup(slug, db)
+        self.slug = slug
+        self.name = T.translate(self.slug)
         self.types = results.types
         self.icon = results.icon
 
-    def lookup_field(
-        self, element: ElementType, field: str
-    ) -> Optional[float]:
+        Element._elements[slug] = self
+
+    @classmethod
+    def get_element(cls, slug: str) -> Optional[Element]:
+        """
+        Retrieves a Element object by its slug.
+
+        Parameters:
+            slug: The unique identifier for the element.
+
+        Returns:
+            The Element object if found, otherwise None.
+        """
+        return cls._elements.get(slug)
+
+    @classmethod
+    def load_all_elements(cls) -> None:
+        """Loads all elements from the database into the cache."""
+        try:
+            all_element_slugs = list(db.database["element"])
+            for slug in all_element_slugs:
+                cls(slug)
+        except Exception as e:
+            logger.error(f"Failed to load all elements: {e}")
+
+    @classmethod
+    def get_all_elements(cls) -> dict[str, Element]:
+        """
+        Returns all loaded elements.
+
+        Returns:
+            A dictionary of all loaded Element objects.
+        """
+        if not cls._elements:
+            cls.load_all_elements()
+        return cls._elements
+
+    @classmethod
+    def clear_cache(cls) -> None:
+        """Clears the element cache."""
+        cls._elements.clear()
+
+    def __repr__(self) -> str:
+        return f"Element(slug={self.slug}, name={self.name}, types={self.types}, icon={self.icon})"
+
+    def lookup_field(self, element: str, field: str) -> Optional[float]:
         """Looks up the element against for this element."""
         for item in self.types:
             if item.against == element and hasattr(item, field):
                 return float(getattr(item, field))
         return None
 
-    def lookup_multiplier(self, element: ElementType) -> float:
+    def lookup_multiplier(self, element: str) -> float:
         """Looks up the element multiplier for this element."""
         mult = self.lookup_field(element, "multiplier")
         if mult is None:
@@ -53,3 +104,43 @@ class Element:
             )
             return 1.0
         return mult
+
+
+class ElementTypesHandler:
+
+    def __init__(self, initial_types: Optional[Sequence[str]] = None):
+        pre_types = (
+            []
+            if initial_types is None
+            else [Element(ele) for ele in initial_types]
+        )
+        self._current_types = pre_types
+        self._default_types = list(pre_types)
+
+    def set_types(self, new_types: list[Element]) -> None:
+        self._current_types = new_types
+
+    def reset_to_default(self) -> None:
+        self._current_types = list(self._default_types)
+
+    def get_type_slugs(self) -> list[str]:
+        return [element.slug for element in self._current_types]
+
+    def has_type(self, type_slug: str) -> bool:
+        return type_slug in {type_obj.slug for type_obj in self._current_types}
+
+    @property
+    def current(self) -> list[Element]:
+        return list(self._current_types)
+
+    @property
+    def default(self) -> list[Element]:
+        return list(self._default_types)
+
+    @property
+    def primary(self) -> Element:
+        if not self._current_types:
+            raise ValueError(
+                "No types available, cannot determine primary type."
+            )
+        return self._current_types[0]

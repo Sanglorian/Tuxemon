@@ -13,7 +13,7 @@ events:
     - create_npc test_npc047,12,4
     - create_npc test_npc048,1,8
     - create_npc test_npc049,1,9
-    - create_npc test_npc050,1,10    
+    - create_npc test_npc050,1,10
     - char_wander test_npc038
     - char_wander test_npc039
     - char_wander test_npc040
@@ -41,4 +41,4 @@ events:
     - not char_exists test_npc048
     - not char_exists test_npc049
     - not char_exists test_npc050
-    type: "event"
+    type: event

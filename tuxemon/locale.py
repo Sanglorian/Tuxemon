@@ -2,37 +2,34 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import dataclasses
 import gettext
 import logging
-import os
-import os.path
-from collections.abc import Callable, Generator, Iterable, Mapping, Sequence
-from gettext import GNUTranslations
-from typing import Any, Optional
+from collections.abc import Callable, Generator, Mapping
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Optional, Union
 
 from babel.messages.mofile import write_mo
 from babel.messages.pofile import read_po
 
-from tuxemon import db, prepare
+from tuxemon import prepare
 from tuxemon.constants import paths
-from tuxemon.formula import convert_ft, convert_km, convert_lbs, convert_mi
-from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
 FALLBACK_LOCALE = "en_US"
 LOCALE_DIR = "l18n"
+LOCALE_CONFIG = prepare.CONFIG.locale
 
 
-@dataclasses.dataclass(frozen=True, order=True)
+@dataclass(frozen=True, order=True)
 class LocaleInfo:
     """Information about a locale."""
 
     locale: str
     category: str
     domain: str
-    path: str
+    path: Path
 
 
 class LocaleFinder:
@@ -43,7 +40,7 @@ class LocaleFinder:
     and providing information about the found locales.
     """
 
-    def __init__(self, root_dir: str) -> None:
+    def __init__(self, root_dir: Path) -> None:
         self.root_dir = root_dir
         self.locale_names: set[str] = set()
 
@@ -55,21 +52,24 @@ class LocaleFinder:
             LocaleInfo: Information about each found locale.
         """
         logger.debug("searching locales...")
-        for locale in os.listdir(self.root_dir):
-            self.locale_names.add(locale)
-            locale_path = os.path.join(self.root_dir, locale)
-            if os.path.isdir(locale_path):
-                for category in os.listdir(locale_path):
-                    category_path = os.path.join(locale_path, category)
-                    if os.path.isdir(category_path):
-                        for name in os.listdir(category_path):
-                            path = os.path.join(category_path, name)
-                            if os.path.isfile(path) and name.endswith(".po"):
-                                domain = name[:-3]
+        for locale_path in self.root_dir.iterdir():
+            if locale_path.is_dir():
+                self.locale_names.add(locale_path.name)
+                for category_path in locale_path.iterdir():
+                    if category_path.is_dir():
+                        for file_path in category_path.iterdir():
+                            if (
+                                file_path.is_file()
+                                and file_path.suffix == ".po"
+                            ):
+                                domain = file_path.stem
                                 info = LocaleInfo(
-                                    locale, category, domain, path
+                                    locale_path.name,
+                                    category_path.name,
+                                    domain,
+                                    file_path,
                                 )
-                                logger.debug("found: %s", info)
+                                logger.debug(f"Found: {info}")
                                 yield info
 
     def has_locale(self, locale_name: str) -> bool:
@@ -93,10 +93,10 @@ class GettextCompiler:
     into binary format (.mo) that can be used by gettext.
     """
 
-    def __init__(self, cache_dir: str) -> None:
+    def __init__(self, cache_dir: Path) -> None:
         self.cache_dir = cache_dir
 
-    def compile_gettext(self, po_path: str, mo_path: str) -> None:
+    def compile_gettext(self, po_path: Path, mo_path: Path) -> None:
         """
         Compiles a gettext translation file.
 
@@ -104,15 +104,17 @@ class GettextCompiler:
             po_path: The path to the gettext translation file (.po) to compile.
             mo_path: The path to store the compiled translation file (.mo).
         """
-        mofolder = os.path.dirname(mo_path)
-        os.makedirs(mofolder, exist_ok=True)
-        with open(po_path, encoding="UTF8") as po_file:
-            catalog = read_po(po_file)
-        with open(mo_path, "wb") as mo_file:
-            write_mo(mo_file, catalog)
-            logger.debug("writing l18n mo: %s", mo_path)
+        mofolder = mo_path.parent
+        mofolder.mkdir(parents=True, exist_ok=True)
 
-    def get_mo_path(self, locale: str, category: str, domain: str) -> str:
+        with po_path.open(encoding="UTF8") as po_file:
+            catalog = read_po(po_file)
+
+        with mo_path.open("wb") as mo_file:
+            write_mo(mo_file, catalog)
+            logger.debug(f"writing l18n mo: {mo_path}")
+
+    def get_mo_path(self, locale: str, category: str, domain: str) -> Path:
         """
         Returns the path to the MO file.
 
@@ -125,17 +127,14 @@ class GettextCompiler:
             The path to the MO file.
             l18n/locale/LC_category/domain_name.mo
         """
-        return os.path.join(
-            self.cache_dir, LOCALE_DIR, locale, category, domain + ".mo"
-        )
+        return self.cache_dir / LOCALE_DIR / locale / category / f"{domain}.mo"
 
 
-class TranslatorPo:
+class TranslatorManager:
     """
-    A class used to translate text using gettext.
-
-    This class is responsible for loading and managing translations, as well as
-    providing methods for translating text.
+    Manages multiple Translator instances, allowing for different translation
+    contexts (e.g., base game, mods). It handles compilation of PO files
+    and provides an interface for dynamic language switching and domain management.
     """
 
     def __init__(
@@ -143,127 +142,446 @@ class TranslatorPo:
     ) -> None:
         self.locale_finder = locale_finder
         self.gettext_compiler = gettext_compiler
-        self.locale_name: str = prepare.CONFIG.locale
-        self.translate: Callable[[str], str] = lambda x: x
+        self.localedir = paths.L18N_MO_FILES
+        self._translators: dict[str, TranslatorPo] = {}
+        self._current_translator_key: str = "base"
         self.language_changed_callbacks: list[Callable[[str], None]] = []
+        self.collect_and_compile_translations()
+        self.load_translator_for_domain(
+            self._current_translator_key, LOCALE_CONFIG.slug
+        )
 
-    def collect_languages(self, recompile_translations: bool = False) -> None:
+    def collect_and_compile_translations(
+        self, recompile_translations: bool = False
+    ) -> None:
         """
-        Collect languages/locales with available translation files.
+        Collects available translation files using the LocaleFinder and
+        compiles them into MO files using the GettextCompiler.
 
         Parameters:
-            recompile_translations: ``True`` if the translations should be
-                recompiled (useful for testing local changes to the
-                translations).
-
+            recompile_translations: If True, recompiles MO files even
+                if they exist.
         """
-        self.build_translations(recompile_translations)
-        self.load_translator(self.locale_name)
-
-    def build_translations(self, recompile_translations: bool = False) -> None:
-        """
-        Create MO files for existing PO translation files.
-
-        Parameters:
-            recompile_translations: ``True`` if the translations should be
-                recompiled (useful for testing local changes to the
-                translations).
-
-        """
+        logger.debug("Collecting and compiling translations...")
         for info in self.locale_finder.search_locales():
             mo_path = self.gettext_compiler.get_mo_path(
                 info.locale, info.category, info.domain
             )
-            if recompile_translations or not os.path.exists(mo_path):
+            if recompile_translations or not mo_path.exists():
                 self.gettext_compiler.compile_gettext(info.path, mo_path)
                 logger.info(f"Built translation file: {mo_path}")
-        logger.info("Translation files built successfully")
+        logger.info("Translation files compilation complete.")
 
-    def _get_translation(
-        self, locale_name: str, domain: str, localedir: str
-    ) -> Optional[GNUTranslations]:
-        """
-        Gets all translators for the given locale and domain.
-        """
-        for info in self.locale_finder.search_locales():
-            if info.locale == locale_name and info.domain == domain:
-                return gettext.translation(
-                    info.domain, localedir, [locale_name]
-                )
-        return None
-
-    def load_translator(
-        self, locale_name: str = prepare.CONFIG.locale, domain: str = "base"
+    def load_translator_for_domain(
+        self, domain: str, locale_name: str
     ) -> None:
         """
-        Load a selected locale for translation.
+        Loads or reloads a Translator instance for a specific domain and locale.
+        This method ensures that a Translator exists for the given domain.
 
         Parameters:
-            locale_name: Name of the locale.
-            domain: Name of the domain.
-
+            domain: The translation domain (e.g., "base", "my_mod_id").
+            locale_name: The locale to load for this domain.
         """
-        logger.debug("loading translator for: %s", locale_name)
-        localedir = os.path.join(paths.CACHE_DIR, LOCALE_DIR)
-        fallback = gettext.translation("base", localedir, [FALLBACK_LOCALE])
-        trans = (
-            self._get_translation(locale_name, domain, localedir) or fallback
+        if not self.locale_finder.has_locale(locale_name):
+            logger.warning(
+                f"Requested locale '{locale_name}' not found for domain '{domain}'. Using fallback '{FALLBACK_LOCALE}'."
+            )
+            actual_locale_name = FALLBACK_LOCALE
+        else:
+            actual_locale_name = locale_name
+
+        self._translators[domain] = TranslatorPo(
+            locale_name=actual_locale_name,
+            domain=domain,
+            localedir=self.localedir,
+            fallback_locale=FALLBACK_LOCALE,
+        )
+        logger.debug(
+            f"Translator for domain '{domain}' loaded/reloaded with locale '{actual_locale_name}'."
         )
 
-        if trans is fallback:
-            logger.warning("Locale %s not found. Using fallback.", locale_name)
+    def set_current_translator(self, domain: str) -> None:
+        """
+        Sets the active translator based on the provided domain.
+        Subsequent calls to `translate()` (without a domain override)
+        will use this translator.
 
-        trans.add_fallback(fallback)
-        trans.install()
-        self.translate = trans.gettext
-        self.locale_name = locale_name
+        Parameters:
+            domain: The domain of the translator to make active.
+        """
+        if domain not in self._translators:
+            logger.warning(
+                f"Translator for domain '{domain}' is not loaded. "
+                f"Falling back to the 'base' domain translator."
+            )
+            self._current_translator_key = "base"
+            if "base" not in self._translators:
+                self.load_translator_for_domain("base", LOCALE_CONFIG.slug)
+        else:
+            self._current_translator_key = domain
+        logger.debug(
+            f"Current translator set to domain: '{self._current_translator_key}'"
+        )
+
+    @property
+    def current_translator(self) -> TranslatorPo:
+        """
+        Returns the currently active Translator instance.
+        """
+        return self._translators[self._current_translator_key]
+
+    def translate(self, message: str) -> str:
+        """
+        Translates a message using the currently active translator.
+        This is the primary method for simple text translation.
+
+        Parameters:
+            message: The message string to translate.
+
+        Returns:
+            The translated string.
+        """
+        return self.current_translator.translate(message)
+
+    def format(
+        self,
+        text: str,
+        parameters: Optional[Mapping[str, Any]] = None,
+        domain: Optional[str] = None,
+    ) -> str:
+        """
+        Replaces variables in a translation string with the given parameters,
+        using either the current translator or a specified domain's translator.
+
+        Parameters:
+            text: String to format.
+            parameters: Parameters to format into the string.
+            domain: Optional domain to use for translation.
+                If None, uses the current translator.
+
+        Returns:
+            The formatted string.
+        """
+        target_translator = self.current_translator
+        if domain and domain in self._translators:
+            target_translator = self._translators[domain]
+        elif domain:
+            logger.warning(
+                f"Requested domain '{domain}' not found for formatting. Using current translator."
+            )
+
+        return target_translator.format(text, parameters)
+
+    def maybe_translate(
+        self, text: Optional[str], domain: Optional[str] = None
+    ) -> str:
+        """
+        Try to translate the text. If ``None``, return empty string.
+        Allows specifying a domain for translation.
+
+        Parameters:
+            text: String to translate.
+            domain: Optional domain to use for translation.
+                If None, uses the current translator.
+
+        Returns:
+            Translated string.
+        """
+        if text is None:
+            return ""
+
+        target_translator = self.current_translator
+        if domain and domain in self._translators:
+            target_translator = self._translators[domain]
+        elif domain:
+            logger.warning(
+                f"Requested domain '{domain}' not found for maybe_translate."
+                " Using current translator."
+            )
+
+        return target_translator.maybe_translate(text)
 
     def get_current_language(self) -> str:
         """
-        Returns the current language.
+        Returns the locale of the currently active translator.
+
+        Returns:
+            The current language slug (e.g., "en_US").
+        """
+        return self.current_translator.locale_name
+
+    def is_language_supported(self, locale_name: str) -> bool:
+        """
+        Checks if a language (locale) is supported by checking with
+        the LocaleFinder.
+
+        Parameters:
+            locale_name: The name of the locale to check.
+
+        Returns:
+            True if the locale exists in the discovered paths, False
+            otherwise.
+        """
+        return self.locale_finder.has_locale(locale_name)
+
+    def change_language(self, new_locale_name: str) -> None:
+        """
+        Changes the language for all currently loaded translator domains.
+        This reloads each active translator with the new locale.
+
+        Parameters:
+            new_locale_name: The name of the locale to switch to (e.g., "fr_FR").
+        """
+        if self.is_language_supported(new_locale_name):
+            domains_to_reload = list(self._translators.keys())
+            for domain in domains_to_reload:
+                self.load_translator_for_domain(domain, new_locale_name)
+
+            LOCALE_CONFIG.slug = new_locale_name
+            logger.info(f"Language changed globally to: {new_locale_name}")
+            self.invoke_language_changed_callbacks(new_locale_name)
+        else:
+            logger.warning(
+                f"Language '{new_locale_name}' is not supported. Language not changed."
+            )
+
+    def get_available_languages(self) -> list[str]:
+        """
+        Returns a sorted list of all available language slugs found by
+        the LocaleFinder.
+        """
+        return sorted(list(self.locale_finder.locale_names))
+
+    def invoke_language_changed_callbacks(self, locale_name: str) -> None:
+        """
+        Notifies all registered callbacks that the language has changed.
+        This method is called internally by `change_language`.
+
+        Parameters:
+            locale_name: The new language slug.
+        """
+        for callback in self.language_changed_callbacks:
+            try:
+                callback(locale_name)
+            except Exception as e:
+                logger.error(
+                    f"Error in language change callback for locale '{locale_name}': {e}",
+                    exc_info=True,
+                )
+
+    def has_translation(
+        self, locale_name: str, msgid: str, domain: str = "base"
+    ) -> bool:
+        """
+        Checks if a translation exists for a certain language and message ID
+        within a specific domain. This method is useful for development checks.
+
+        Parameters:
+            locale_name: The name of the language (locale) to check.
+            msgid: The msgid (original string) of the translation to check.
+            domain: The domain (e.g., "base", "my_mod") to check for the
+                translation.
+
+        Returns:
+            True if the translation exists, False otherwise.
+        """
+        if (
+            domain in self._translators
+            and self._translators[domain].locale_name == locale_name
+        ):
+            return self._translators[domain].has_translation(msgid)
+        else:
+            try:
+                temp_translator = TranslatorPo(
+                    locale_name, domain, self.localedir, FALLBACK_LOCALE
+                )
+                return temp_translator.has_translation(msgid)
+            except Exception as e:
+                logger.debug(
+                    f"Could not create temporary translator for check"
+                    f"(locale='{locale_name}', domain='{domain}'): {e}"
+                )
+                return False
+
+    def _log_missing_translation(
+        self, locale_name: str, msgid: str, domain: str = "base"
+    ) -> None:
+        """
+        Logs an error when a translation for the given msgid is missing
+        for a specific locale and domain.
+        """
+        logger.error(
+            f"Missing translation in domain '{domain}' for locale '{locale_name}': '{msgid}'"
+        )
+
+    def check_translation(self, message_id: str, domain: str = "base") -> None:
+        """
+        Checks if a translation exists for a certain message_id in the
+        specified locale(s) for a given domain, based on the global
+        `translation_mode` configuration.
+
+        Parameters:
+            message_id: The message_id of the translation to check.
+            domain: The domain to check for the translation
+                (e.g., "base", "my_mod").
+        """
+        _locale_mode = prepare.CONFIG.locale.translation_mode
+        if _locale_mode == "none":
+            return
+        elif _locale_mode == "all":
+            locale_names = self.locale_finder.locale_names.copy()
+            if "README.md" in locale_names:
+                locale_names.remove("README.md")
+
+            for locale_name in locale_names:
+                if (
+                    locale_name
+                    and message_id
+                    and not self.has_translation(
+                        locale_name, message_id, domain
+                    )
+                ):
+                    self._log_missing_translation(
+                        locale_name, message_id, domain
+                    )
+        else:
+            if self.is_language_supported(_locale_mode):
+                if not self.has_translation(_locale_mode, message_id, domain):
+                    self._log_missing_translation(
+                        _locale_mode, message_id, domain
+                    )
+            else:
+                raise ValueError(
+                    f"Configured locale mode '{_locale_mode}' doesn't exist as a supported language."
+                )
+
+    def initialize_translations(
+        self,
+        locale_name: str = LOCALE_CONFIG.slug,
+        domain: str = "base",
+        recompile: bool = False,
+    ) -> None:
+        """
+        Compiles translation files and loads the translator for the
+        specified domain and locale.
+
+        Parameters:
+            locale_name: The target locale (e.g., "de_DE", "fr_FR").
+            domain: The domain to load (e.g., "base", "ui").
+            recompile: Whether to force recompilation of translation files.
+        """
+        self.collect_and_compile_translations(recompile_translations=recompile)
+        self.load_translator_for_domain(domain, locale_name)
+        logger.info(
+            f"Initialized translator for domain '{domain}', locale '{locale_name}'"
+        )
+
+
+class TranslatorPo:
+    """
+    A class used to translate text using a specific gettext translation
+    instance. This class handles the core logic of text translation and
+    caching for a given locale and domain.
+    """
+
+    def __init__(
+        self,
+        locale_name: str,
+        domain: str,
+        localedir: Path,
+        fallback_locale: str = FALLBACK_LOCALE,
+    ) -> None:
+        self.locale_name = locale_name
+        self.domain = domain
+        self.localedir = localedir
+        self.fallback_locale = fallback_locale
+        self._translation_cache: dict[str, str] = {}
+        self._real_translate: Callable[[str], str] = (
+            self._load_gettext_translation()
+        )
+        self.translate: Callable[[str], str] = self._translate_with_cache
+
+    def _load_gettext_translation(self) -> Callable[[str], str]:
+        """
+        Loads and returns the gettext translation function for this translator.
+        Handles fallback if the specific translation is not found.
+        """
+        trans: Union[gettext.GNUTranslations, gettext.NullTranslations]
+        try:
+            trans = gettext.translation(
+                self.domain, self.localedir, [self.locale_name]
+            )
+            logger.debug(
+                f"Loaded translation for domain '{self.domain}', locale '{self.locale_name}'"
+            )
+        except FileNotFoundError:
+            logger.warning(
+                f"Translation file not found for domain '{self.domain}',"
+                f"locale '{self.locale_name}'. "
+                f"Attempting to use fallback '{self.fallback_locale}'."
+            )
+            try:
+                trans = gettext.translation(
+                    self.domain, self.localedir, [self.fallback_locale]
+                )
+                logger.debug(
+                    f"Loaded fallback translation for domain '{self.domain}',"
+                    f"locale '{self.fallback_locale}'"
+                )
+            except FileNotFoundError:
+                logger.error(
+                    f"No translation found for domain '{self.domain}' in any locale."
+                    " Using NullTranslations."
+                )
+                trans = gettext.NullTranslations()
+
+        try:
+            fallback_base_trans = gettext.translation(
+                "base", self.localedir, [self.fallback_locale]
+            )
+            trans.add_fallback(fallback_base_trans)
+            logger.debug(
+                f"Added 'base' domain fallback translation for locale '{self.fallback_locale}'"
+            )
+        except FileNotFoundError:
+            logger.error(
+                f"Base fallback translation 'base' for locale '{self.fallback_locale}' not found."
+                "Translations might be very incomplete."
+            )
+
+        return trans.gettext
+
+    def _translate_with_cache(self, message: str) -> str:
+        """Translates a message, caching the result."""
+        if message in self._translation_cache:
+            return self._translation_cache[message]
+
+        translated_message = self._real_translate(message)
+        self._translation_cache[message] = translated_message
+        return translated_message
+
+    def get_current_language(self) -> str:
+        """
+        Returns the locale name this translator is configured for.
 
         Returns:
             The current language.
         """
         return self.locale_name
 
-    def is_language_supported(self, locale_name: str) -> bool:
+    def has_translation(self, msgid: str) -> bool:
         """
-        Checks if a language is supported.
+        Checks if a translation exists for a given message ID within this
+        translator's context.
 
         Parameters:
-            locale_name: The name of the language to check.
+            msgid: The msgid of the translation to check.
 
         Returns:
-            True if the language is supported, False otherwise.
+            True if the translation exists, False otherwise.
         """
-        return self.locale_finder.has_locale(locale_name)
-
-    def change_language(self, locale_name: str) -> None:
-        """
-        Changes the current language to the specified locale.
-
-        Parameters:
-            locale_name: The name of the locale to switch to.
-        """
-        if self.is_language_supported(locale_name):
-            self.load_translator(locale_name)
-            self.language_changed(locale_name)
-        else:
-            logger.warning(f"Language {locale_name} is not supported")
-
-    def language_changed(self, locale_name: str) -> None:
-        """
-        Notifies all registered callbacks that the language has changed.
-
-        Parameters:
-            locale_name: The new language.
-        """
-        if self.is_language_supported(locale_name):
-            for callback in self.language_changed_callbacks:
-                callback(locale_name)
-        else:
-            logger.warning(f"Language {locale_name} is not supported")
+        return self._real_translate(msgid) != msgid
 
     def format(
         self,
@@ -279,7 +597,6 @@ class TranslatorPo:
 
         Returns:
             The formatted string.
-
         """
         text = text.replace(r"\n", "\n")
         text = self.translate(text)
@@ -303,202 +620,7 @@ class TranslatorPo:
             return self.translate(text)
 
 
-def replace_text(session: Session, text: str) -> str:
-    """
-    Replaces ``${{var}}`` tiled variables with their in-session value.
-
-    Parameters:
-        session: Session containing the information to fill the variables.
-        text: Text whose references to variables should be substituted.
-
-    Examples:
-        >>> replace_text(session, "${{name}} is running away!")
-        'Red is running away!'
-
-    """
-    player = session.player
-    client = session.client
-    unit_measure = player.game_variables.get("unit_measure", prepare.METRIC)
-
-    replacements = {
-        "${{name}}": player.name,
-        "${{NAME}}": player.name.upper(),
-        "${{currency}}": "$",
-        "${{money}}": str(player.money.get("player", 0)),
-        "${{tuxepedia_seen}}": str(
-            sum(
-                1
-                for status in player.tuxepedia.values()
-                if status in (db.SeenStatus.caught, db.SeenStatus.seen)
-            )
-        ),
-        "${{tuxepedia_caught}}": str(
-            sum(
-                1
-                for status in player.tuxepedia.values()
-                if status == db.SeenStatus.caught
-            )
-        ),
-        "${{map_name}}": client.map_name,
-        "${{map_desc}}": client.map_desc,
-        "${{north}}": client.map_north,
-        "${{south}}": client.map_south,
-        "${{east}}": client.map_east,
-        "${{west}}": client.map_west,
-    }
-
-    # Add unit-specific replacements
-    if unit_measure == prepare.METRIC:
-        replacements.update(
-            {
-                "${{length}}": prepare.U_KM,
-                "${{weight}}": prepare.U_KG,
-                "${{height}}": prepare.U_CM,
-                "${{steps}}": str(convert_km(player.steps)),
-            }
-        )
-    else:
-        replacements.update(
-            {
-                "${{length}}": prepare.U_MI,
-                "${{weight}}": prepare.U_LB,
-                "${{height}}": prepare.U_FT,
-                "${{steps}}": str(convert_mi(player.steps)),
-            }
-        )
-
-    # Add monster-specific replacements
-    for i, monster in enumerate(player.monsters):
-        monster_replacements = {
-            "${{monster_" + str(i) + "_name}}": monster.name,
-            "${{monster_" + str(i) + "_desc}}": monster.description,
-            "${{monster_"
-            + str(i)
-            + "_types}}": " - ".join(
-                T.translate(_type.name) for _type in monster.types
-            ),
-            "${{monster_" + str(i) + "_category}}": monster.category,
-            "${{monster_" + str(i) + "_shape}}": T.translate(monster.shape),
-            "${{monster_" + str(i) + "_hp}}": str(monster.current_hp),
-            "${{monster_" + str(i) + "_hp_max}}": str(monster.hp),
-            "${{monster_" + str(i) + "_level}}": str(monster.level),
-            "${{monster_"
-            + str(i)
-            + "_gender}}": T.translate(f"gender_{monster.gender}"),
-            "${{monster_" + str(i) + "_bond}}": str(monster.bond),
-            "${{monster_" + str(i) + "_txmn_id}}": str(monster.txmn_id),
-            "${{monster_"
-            + str(i)
-            + "_warm}}": T.translate(f"taste_{monster.taste_warm}"),
-            "${{monster_"
-            + str(i)
-            + "_cold}}": T.translate(f"taste_{monster.taste_cold}"),
-            "${{monster_"
-            + str(i)
-            + "_moves}}": " - ".join(_move.name for _move in monster.moves),
-        }
-
-        # Add unit-specific monster replacements
-        if unit_measure == prepare.METRIC:
-            monster_replacements.update(
-                {
-                    "${{monster_"
-                    + str(i)
-                    + "_steps}}": str(convert_km(monster.steps)),
-                    "${{monster_" + str(i) + "_weight}}": str(monster.weight),
-                    "${{monster_" + str(i) + "_height}}": str(monster.height),
-                }
-            )
-        else:
-            monster_replacements.update(
-                {
-                    "${{monster_"
-                    + str(i)
-                    + "_steps}}": str(convert_mi(monster.steps)),
-                    "${{monster_"
-                    + str(i)
-                    + "_weight}}": str(convert_lbs(monster.weight)),
-                    "${{monster_"
-                    + str(i)
-                    + "_height}}": str(convert_ft(monster.height)),
-                }
-            )
-
-        monster_replacements.update(
-            {
-                "${{monster_" + str(i) + "_armour}}": str(monster.armour),
-                "${{monster_" + str(i) + "_dodge}}": str(monster.dodge),
-                "${{monster_" + str(i) + "_melee}}": str(monster.melee),
-                "${{monster_" + str(i) + "_ranged}}": str(monster.ranged),
-                "${{monster_" + str(i) + "_speed}}": str(monster.speed),
-            }
-        )
-
-        replacements.update(monster_replacements)
-
-    # Add game variable replacements
-    for key, value in player.game_variables.items():
-        replacements.update(
-            {
-                "${{var:" + str(key) + "}}": str(value),
-                "${{msgid:" + str(key) + "}}": T.translate(str(value)),
-            }
-        )
-
-    # Replace placeholders in the text
-    for placeholder, replacement in replacements.items():
-        text = text.replace(placeholder, replacement)
-
-    # Replace newline characters
-    text = text.replace(r"\n", "\n")
-
-    return text
-
-
-def process_translate_text(
-    session: Session,
-    text_slug: str,
-    parameters: Iterable[str],
-) -> Sequence[str]:
-    """
-    Translate a dialog to a sequence of pages of text.
-
-    Parameters:
-        session: Session containing the information to fill the variables.
-        text_slug: Text to translate.
-        parameters: A sequence of parameters in the format ``"key=value"`` used
-            to format the string.
-
-    """
-    replace_values = {}
-
-    # extract INI-style params
-    for param in parameters:
-        key, value = param.split("=")
-
-        # TODO: is this code still valid? Translator class is NOT iterable
-        """
-        # Check to see if param_value is translatable
-        if value in translator:
-            value = trans(value)
-        """
-        # match special placeholders like ${{name}}
-        replace_values[key] = replace_text(session, value)
-
-    # generate translation
-    text = T.format(text_slug, replace_values)
-
-    # clear the terminal end-line symbol (multi-line translation records)
-    text = text.rstrip("\n")
-
-    # split text into pages for scrolling
-    pages = text.split("\n")
-
-    # generate scrollable text
-    return [replace_text(session, page) for page in pages]
-
-
-locale_finder = LocaleFinder(prepare.fetch("l18n"))
+locale_finder = LocaleFinder(Path(prepare.fetch("l18n")))
 gettext_compiler = GettextCompiler(paths.CACHE_DIR)
-T = TranslatorPo(locale_finder, gettext_compiler)
-T.collect_languages()
+T = TranslatorManager(locale_finder, gettext_compiler)
+T.initialize_translations()

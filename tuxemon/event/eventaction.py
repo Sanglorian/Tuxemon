@@ -4,14 +4,56 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from types import TracebackType
-from typing import ClassVar, Optional
+from typing import Any, ClassVar, Optional
 
-from tuxemon.session import Session, local_session
+from tuxemon.constants.paths import ACTIONS_PATH
+from tuxemon.plugin import load_plugins
+from tuxemon.session import Session
 from tuxemon.tools import cast_dataclass_parameters
 
 logger = logging.getLogger(__name__)
+
+
+class ActionContextManager:
+    def __init__(self, action: EventAction, session: Session) -> None:
+        self.action = action
+        self.session = session
+
+    def __enter__(self) -> EventAction:
+        """
+        Called once when entering the context.
+
+        Ensures the action is started, unless it is marked as cancelled.
+        Logs a warning if the action is cancelled.
+
+        Returns:
+            EventAction: The managed action.
+        """
+        if self.action.cancelled:
+            logger.warning("Event is cancelled, not starting")
+        else:
+            self.action.start(self.session)
+        return self.action
+
+    def __exit__(
+        self,
+        exc_type: Optional[type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
+        """
+        Called once when exiting the context.
+
+        Ensures the action is properly cleaned up, unless it is marked as cancelled.
+        Logs a warning if the action is cancelled.
+        """
+        if self.action.cancelled:
+            logger.warning("Event is cancelled, not cleaning up")
+            return
+        self.action.cleanup(self.session)
 
 
 @dataclass
@@ -77,40 +119,15 @@ class EventAction(ABC):
     Parameters:
         session: Object containing the session information.
         parameters: Parameters of the action.
-
     """
 
     name: ClassVar[str]
-    session: Session = field(init=False, repr=False)
     _done: bool = field(default=False, init=False)
     _skip: bool = field(default=False, init=False)
+    cancelled: bool = field(default=False, init=False)
 
     def __post_init__(self) -> None:
-        self.session = local_session
         cast_dataclass_parameters(self)
-
-    def __enter__(self) -> None:
-        """
-        Called only once, when the action is started.
-
-        Context Protocol.
-
-        """
-        self.start()
-
-    def __exit__(
-        self,
-        exc_type: Optional[type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
-    ) -> None:
-        """
-        Called only once, when action is stopped and needs to close.
-
-        Context Protocol.
-
-        """
-        self.cleanup()
 
     def stop(self) -> None:
         """
@@ -120,22 +137,27 @@ class EventAction(ABC):
 
         If an EventAction overrides update, it must eventually call this
         method.
-
         """
         self._done = True
 
-    def execute(self) -> None:
+    def execute(self, session: Session) -> None:
         """
         Blocking call to run the action. Will setup and cleanup action.
 
         This may cause the game to hang if an action is waiting on game
         changes.
-
         """
-        with self:
-            self.run()
+        if self.cancelled:
+            logger.debug("Action is cancelled, not executing")
+            return
+        try:
+            with ActionContextManager(self, session):
+                self.run(session)
+        except Exception as e:
+            logger.error(f"Error executing action: {e}")
+            raise
 
-    def run(self) -> None:
+    def run(self, session: Session) -> None:
         """
         Blocking call to run the action, without start or cleanup.
 
@@ -143,13 +165,19 @@ class EventAction(ABC):
 
         This may cause the game to hang if an action is waiting on game
         changes.
-
         """
-        while not self.done:
-            if self._skip:
-                return
-            else:
-                self.update()
+        if self.cancelled:
+            logger.debug("Action is cancelled, not running")
+            return
+        try:
+            while not self.done and not self.cancelled:
+                if self._skip:
+                    return
+                else:
+                    self.update(session)
+        except Exception as e:
+            logger.error(f"Error running action: {e}")
+            raise
 
     @property
     def done(self) -> bool:
@@ -157,12 +185,11 @@ class EventAction(ABC):
         Will be true when action is finished.
 
         If you need the action to stop, call EventAction.stop().
-
         """
         return self._done
 
     @abstractmethod
-    def start(self) -> None:
+    def start(self, session: Session) -> None:
         """
         Called only once, when the action is started.
 
@@ -172,11 +199,19 @@ class EventAction(ABC):
         put all the code here.  If the action will need to run over
         several frames, you can init your action here, then override
         the update method.
-
         """
-        raise NotImplementedError
+        if self.cancelled:
+            logger.debug("Action is cancelled, not starting")
+            self.stop()
+            return
+        try:
+            # start the action
+            pass
+        except Exception as e:
+            logger.error(f"Error starting action: {e}")
+            raise
 
-    def update(self) -> None:
+    def update(self, session: Session) -> None:
         """
         Called once per frame while action is running.
 
@@ -189,15 +224,97 @@ class EventAction(ABC):
         until EventAction.stop() is called.  If you do not ever call stop(),
         then this action will block all others in the list and will continue
         to run until the parent EventEngine is stopped.
-
         """
-        self.stop()
+        if self.cancelled:
+            logger.debug("Action is cancelled, not updating")
+            return
+        try:
+            self.stop()
+        except Exception as e:
+            logger.error(f"Error updating action: {e}")
+            raise
 
-    def cleanup(self) -> None:
+    def cancel(self) -> None:
+        """
+        Cancels the action.
+
+        This method sets the `cancelled` attribute to `True`, which will prevent
+        the action from being executed.
+        """
+        self.cancelled = True
+
+    def cleanup(self, session: Session) -> None:
         """
         Called only once, when action is stopped and needs to close.
 
         You do not need to override this, but it may be useful for some
         actions which require special handling before they are closed.
-
         """
+        if self.cancelled:
+            logger.debug("Action is cancelled, not cleaning up")
+            return
+        try:
+            # clean up the action
+            pass
+        except Exception as e:
+            logger.error(f"Error cleaning up action: {e}")
+            raise
+
+
+class ActionManager:
+    def __init__(self) -> None:
+        self.actions = load_plugins(
+            ACTIONS_PATH,
+            "actions",
+            interface=EventAction,  # type: ignore[type-abstract]
+        )
+
+    def get_action(
+        self,
+        name: str,
+        parameters: Optional[Sequence[Any]] = None,
+    ) -> Optional[EventAction]:
+        """
+        Get an action that is loaded into the engine.
+
+        A new instance will be returned each time.
+
+        Return ``None`` if action is not loaded.
+
+        Parameters:
+            name: Name of the action.
+            parameters: List of parameters that the action accepts.
+
+        Returns:
+            New instance of the action with the appropriate parameters if
+            that action is loaded. ``None`` otherwise.
+        """
+        parameters = parameters or []
+
+        try:
+            action = self.actions[name]
+
+        except KeyError:
+            error = f'Error: EventAction "{name}" not implemented'
+            logger.warning(error)
+            return None
+
+        if parameters == [""]:
+            return action()
+
+        try:
+            return action(*parameters)
+        except TypeError as e:
+            logger.warning(
+                f"Error instantiating {action} with parameters {parameters}: {e}"
+            )
+            return None
+        except Exception as e:
+            logger.error(
+                f"Unexpected error instantiating {action} with parameters {parameters}: {e}"
+            )
+            return None
+
+    def get_actions(self) -> list[type[EventAction]]:
+        """Return list of EventActions."""
+        return list(self.actions.values())

@@ -2,11 +2,14 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from tuxemon.event import MapCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
 
+@dataclass
 class MonsterFlairCondition(EventCondition):
     """
     Check to see if the given monster flair matches the expected value.
@@ -20,23 +23,11 @@ class MonsterFlairCondition(EventCondition):
         slot: Position of the monster in the player monster list.
         category: Category of the flair.
         name: Name of the flair.
-
     """
 
     name = "monster_flair"
 
     def test(self, session: Session, condition: MapCondition) -> bool:
-        """
-        Check to see if the given monster flair matches the expected value.
-
-        Parameters:
-            session: The session object
-            condition: The map condition object.
-
-        Returns:
-            Whether the monster flair matches the expected value.
-
-        """
         slot = int(condition.parameters[0])
         category = condition.parameters[1]
         name = condition.parameters[2]

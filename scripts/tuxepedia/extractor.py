@@ -215,22 +215,22 @@ class TuxepediaWebExtractor:
 
         # sprites JSON template
         sprites = {
-            "battle1": None,
-            "battle2": None,
+            "front": None,
+            "back": None,
             "menu1": None,
             "menu2": None,
         }
 
         full_path = {
-            "battle1": "gfx/sprites/battle/{}-front.png",
-            "battle2": "gfx/sprites/battle/{}-back.png",
+            "front": "gfx/sprites/battle/{}-front.png",
+            "back": "gfx/sprites/battle/{}-back.png",
             "menu1": "gfx/sprites/battle/{}-menu01.png",
             "menu2": "gfx/sprites/battle/{}-menu02.png"
         }
 
         name = {
-            "battle1": "{}-front.png",
-            "battle2": "{}-back.png",
+            "front": "{}-front.png",
+            "back": "{}-back.png",
             "menu1": "{}-menu01.png",
             "menu2": "{}-menu02.png"
         }
@@ -282,8 +282,8 @@ class TuxepediaWebExtractor:
         txmn_name = self.get_monster_name(monster_row)
 
         # sprites JSON template
-        sprites = {"battle1": None,
-                   "battle2": None,
+        sprites = {"front": None,
+                   "back": None,
                    "menu1": None,
                    "menu2": None}
 

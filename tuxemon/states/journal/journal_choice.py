@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable
 from functools import partial
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pygame_menu
 from pygame_menu import locals
@@ -14,7 +14,10 @@ from tuxemon import prepare
 from tuxemon.db import MonsterModel, db
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.session import local_session
+from tuxemon.tools import fix_measure
+
+if TYPE_CHECKING:
+    from tuxemon.npc import NPC
 
 MAX_PAGE = 20
 
@@ -23,15 +26,10 @@ MenuGameObj = Callable[[], object]
 lookup_cache: dict[str, MonsterModel] = {}
 
 
-def fix_measure(measure: int, percentage: float) -> int:
-    """it returns the correct measure based on percentage"""
-    return round(measure * percentage)
-
-
 def _lookup_monsters() -> None:
     monsters = list(db.database["monster"])
     for mon in monsters:
-        results = db.lookup(mon, table="monster")
+        results = MonsterModel.lookup(mon, db)
         if results.txmn_id > 0:
             lookup_cache[mon] = results
 
@@ -44,9 +42,6 @@ class JournalChoice(PygameMenuState):
         menu: pygame_menu.Menu,
         monsters: list[MonsterModel],
     ) -> None:
-        player = local_session.player
-        width = menu._width
-        height = menu._height
 
         def change_state(state: str, **kwargs: Any) -> MenuGameObj:
             return partial(self.client.push_state, state, **kwargs)
@@ -54,10 +49,10 @@ class JournalChoice(PygameMenuState):
         total_monster = len(monsters)
         pages = math.ceil(total_monster / MAX_PAGE)
 
-        menu._column_max_width = [
-            fix_measure(width, 0.40),
-            fix_measure(width, 0.40),
-        ]
+        column_width = fix_measure(menu._width, 0.40)
+        btn_x_offset = fix_measure(menu._width, 0.18)
+        btn_y_offset = fix_measure(menu._height, 0.01)
+        menu._column_max_width = [column_width, column_width]
 
         for page in range(pages):
             start = page * MAX_PAGE
@@ -65,32 +60,33 @@ class JournalChoice(PygameMenuState):
             tuxepedia = [
                 mon
                 for mon in monsters
-                if start < mon.txmn_id <= end and mon.slug in player.tuxepedia
+                if start < mon.txmn_id <= end
+                and self.char.tuxepedia.is_registered(mon.slug)
             ]
             label = T.format(
                 "page_tuxepedia", {"a": str(start), "b": str(end)}
             ).upper()
 
             if tuxepedia:
-                param = {"monsters": monsters, "page": page}
                 menu.add.button(
                     label,
-                    change_state("JournalState", kwargs=param),
-                    font_size=self.font_size_small,
-                ).translate(
-                    fix_measure(width, 0.18), fix_measure(height, 0.01)
-                )
+                    change_state(
+                        "JournalState",
+                        character=self.char,
+                        monsters=monsters,
+                        page=page,
+                    ),
+                    font_size=self.font_type.small,
+                ).translate(btn_x_offset, btn_y_offset)
             else:
                 lab1: Any = menu.add.label(
                     label,
                     font_color=prepare.DIMGRAY_COLOR,
-                    font_size=self.font_size_small,
+                    font_size=self.font_type.small,
                 )
-                lab1.translate(
-                    fix_measure(width, 0.18), fix_measure(height, 0.01)
-                )
+                lab1.translate(btn_x_offset, btn_y_offset)
 
-    def __init__(self) -> None:
+    def __init__(self, character: NPC) -> None:
         if not lookup_cache:
             _lookup_monsters()
         width, height = prepare.SCREEN_SIZE
@@ -98,6 +94,8 @@ class JournalChoice(PygameMenuState):
         theme = self._setup_theme(prepare.BG_JOURNAL_CHOICE)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_LEFT
+
+        self.char = character
 
         columns = 2
 

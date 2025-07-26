@@ -3,10 +3,10 @@
  <properties>
   <property name="east" value="brideswood"/>
   <property name="edges" value="clamped"/>
+  <property name="map_type" value="town"/>
   <property name="north" value="route1"/>
   <property name="scenario" value="spyder"/>
   <property name="slug" value="paper_town"/>
-  <property name="map_type" value="town"/>
   <property name="west" value="routec"/>
  </properties>
  <tileset firstgid="1" source="../gfx/tilesets/core_city_and_country.tsx"/>
@@ -32,7 +32,7 @@
  </layer>
  <layer id="4" name="Above Player" width="40" height="20">
   <data encoding="base64" compression="zlib">
-   eAFjYBg+QFhq+Phl1Ce0CQEFQdqYSy1T7Qe5+6jlz1FzRkOAHiGwkJOBYREQj4LREBgMIeAqRJorYOmXXJo020ZVj4YAfUMAAKV8DQM=
+   eAFjYBg+QFhq+Phl1Ce0CQEFQdqYSy1T7Qe5+6jlz1FzRkOAHiGwkJOBYREQj4LREBiKIQBLv+TSQ9HPo24eOSEAAJsPDKw=
   </data>
  </layer>
  <layer id="5" name="Above Player" width="40" height="20">
@@ -61,7 +61,6 @@
   <object id="193" type="collision" x="0" y="96" width="64" height="32"/>
   <object id="194" type="collision" x="0" y="128" width="32" height="96"/>
   <object id="195" type="collision" x="96" y="160" width="96" height="32"/>
-  <object id="197" type="collision" x="64" y="240" width="16" height="16"/>
   <object id="202" type="collision" x="176" y="192" width="32" height="16"/>
   <object id="247" type="collision" x="336" y="64" width="16" height="16"/>
   <object id="249" type="collision" x="464" y="0" width="64" height="80"/>
@@ -91,11 +90,19 @@
     <property name="cond2" value="is button_pressed K_RETURN"/>
    </properties>
   </object>
+  <object id="134" name="Sign Repairs" type="event" x="64" y="240" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_sign,4,15"/>
+    <property name="cond1" value="not char_exists spyder_sign"/>
+    <property name="cond2" value="not variable_set captainreturns:yes"/>
+   </properties>
+  </object>
   <object id="138" name="Under Repairs" type="event" x="64" y="240" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog spyder_multi_underrepairs"/>
     <property name="cond1" value="is char_facing_tile player"/>
     <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond3" value="not variable_set captainreturns:yes"/>
    </properties>
   </object>
   <object id="139" name="Paper Town Sign" type="event" x="192" y="16" width="16" height="16">
@@ -150,7 +157,7 @@
     <property name="act1" value="lock_controls"/>
     <property name="act10" value="char_stop player"/>
     <property name="act20" value="create_npc spyder_dante,15,8"/>
-    <property name="act30" value="pathfind_to_player spyder_dante,right"/>
+    <property name="act30" value="pathfind_to_char player,spyder_dante,right"/>
     <property name="act35" value="char_face spyder_dante,left"/>
     <property name="act40" value="translated_dialog spyder_papertown_stopthere"/>
     <property name="act50" value="pathfind player,13,3"/>
@@ -211,7 +218,7 @@
     <property name="act10" value="char_stop player"/>
     <property name="act11" value="lock_controls"/>
     <property name="act20" value="create_npc spyder_dante,19,13"/>
-    <property name="act30" value="pathfind_to_player spyder_dante,down"/>
+    <property name="act30" value="pathfind_to_char player,spyder_dante,down"/>
     <property name="act31" value="char_face spyder_dante,up"/>
     <property name="act32" value="char_face player,down"/>
     <property name="act40" value="translated_dialog spyder_papertown_myfirstmon"/>
@@ -234,6 +241,7 @@
   <object id="219" name="Chosen - Rockitten" type="event" x="512" y="128" width="16" height="16">
    <properties>
     <property name="act1" value="add_monster rockitten,5"/>
+    <property name="act2" value="translated_dialog rockitten,,center,center,middle"/>
     <property name="act3" value="set_variable firstfightdue:yes"/>
     <property name="act4" value="set_variable mymonchoice:rockitten"/>
     <property name="cond1" value="is variable_set rockittenchosen:yes"/>
@@ -243,6 +251,7 @@
   <object id="220" name="Chosen - Lambert" type="event" x="512" y="160" width="16" height="16">
    <properties>
     <property name="act1" value="add_monster lambert,5"/>
+    <property name="act2" value="translated_dialog lambert,,center,center,middle"/>
     <property name="act3" value="set_variable firstfightdue:yes"/>
     <property name="act4" value="set_variable mymonchoice:lambert"/>
     <property name="cond1" value="is variable_set lambertchosen:yes"/>
@@ -252,6 +261,7 @@
   <object id="221" name="Chosen - Nut" type="event" x="512" y="192" width="16" height="16">
    <properties>
     <property name="act1" value="add_monster nut,5"/>
+    <property name="act2" value="translated_dialog nut,,center,center,middle"/>
     <property name="act3" value="set_variable firstfightdue:yes"/>
     <property name="act4" value="set_variable mymonchoice:nut"/>
     <property name="cond1" value="is variable_set nutchosen:yes"/>
@@ -261,6 +271,7 @@
   <object id="222" name="Chosen - Tweesher" type="event" x="512" y="224" width="16" height="16">
    <properties>
     <property name="act1" value="add_monster tweesher,5"/>
+    <property name="act2" value="translated_dialog tweesher,,center,center,middle"/>
     <property name="act3" value="set_variable firstfightdue:yes"/>
     <property name="act4" value="set_variable mymonchoice:tweesher"/>
     <property name="cond1" value="is variable_set tweesherchosen:yes"/>
@@ -270,6 +281,7 @@
   <object id="223" name="Chosen - Agnite" type="event" x="512" y="256" width="16" height="16">
    <properties>
     <property name="act1" value="add_monster agnite,5"/>
+    <property name="act2" value="translated_dialog agnite,,center,center,middle"/>
     <property name="act3" value="set_variable firstfightdue:yes"/>
     <property name="act4" value="set_variable mymonchoice:agnite"/>
     <property name="cond1" value="is variable_set agnitechosen:yes"/>
@@ -279,11 +291,11 @@
   <object id="224" name="First Fight - Start" type="event" x="400" y="128" width="16" height="16">
    <properties>
     <property name="act10" value="lock_controls"/>
-    <property name="act11" value="set_variable teleport_faint:spyder_bedroom.tmx 3 4"/>
+    <property name="act11" value="set_teleport_faint player,spyder_bedroom.tmx,3,4"/>
     <property name="act20" value="create_npc spyder_billie,13,14"/>
     <property name="act30" value="pathfind spyder_billie,25,13"/>
     <property name="act40" value="wait 1.0"/>
-    <property name="act50" value="pathfind_to_player spyder_billie"/>
+    <property name="act50" value="pathfind_to_char player,spyder_billie"/>
     <property name="act51" value="char_face spyder_billie,player"/>
     <property name="act60" value="translated_dialog spyder_papertown_firstfight"/>
     <property name="act61" value="add_monster billie_choice,5,spyder_billie,5,10"/>
@@ -299,7 +311,7 @@
     <property name="act10" value="translated_dialog spyder_papertown_firstfight_win"/>
     <property name="act11" value="pathfind spyder_billie,25,14"/>
     <property name="act12" value="wait 1.0"/>
-    <property name="act13" value="pathfind_to_player spyder_billie,down"/>
+    <property name="act13" value="pathfind_to_char player,spyder_billie,down"/>
     <property name="act15" value="translated_dialog spyder_papertown_firstfight_after"/>
     <property name="act20" value="pathfind spyder_billie,15,14"/>
     <property name="act30" value="remove_npc spyder_billie"/>
@@ -316,7 +328,7 @@
     <property name="act10" value="translated_dialog spyder_papertown_firstfight_lose"/>
     <property name="act11" value="pathfind spyder_billie,25,14"/>
     <property name="act12" value="wait 1.0"/>
-    <property name="act13" value="pathfind_to_player spyder_billie,down"/>
+    <property name="act13" value="pathfind_to_char player,spyder_billie,down"/>
     <property name="act15" value="translated_dialog spyder_papertown_firstfight_after"/>
     <property name="act20" value="pathfind spyder_billie,15,14"/>
     <property name="act30" value="remove_npc spyder_billie"/>
@@ -324,7 +336,7 @@
     <property name="act50" value="set_monster_health"/>
     <property name="act60" value="set_monster_status"/>
     <property name="act70" value="set_variable firstfightend:no"/>
-    <property name="cond1" value="is variable_set battle_last_result:lost"/>
+    <property name="cond1" value="not variable_set battle_last_result:won"/>
     <property name="cond2" value="is variable_set firstfightend:yes"/>
    </properties>
   </object>
@@ -341,7 +353,7 @@
     <property name="cond2" value="is button_pressed K_RETURN"/>
    </properties>
   </object>
-  <object id="200" name="Create Captain" type="event" x="64" y="224" width="16" height="16">
+  <object id="200" name="Create Captain" type="event" x="64" y="256" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_captain,4,14"/>
     <property name="act2" value="char_face spyder_captain,up"/>
@@ -479,7 +491,7 @@
     <property name="act10" value="char_stop player"/>
     <property name="act11" value="lock_controls"/>
     <property name="act20" value="create_npc spyder_dante,19,13"/>
-    <property name="act30" value="pathfind_to_player spyder_dante,down"/>
+    <property name="act30" value="pathfind_to_char player,spyder_dante,down"/>
     <property name="act31" value="char_face spyder_dante,up"/>
     <property name="act32" value="char_face player,down"/>
     <property name="act40" value="translated_dialog spyder_papertown_myfirstmon_notmet"/>
@@ -503,7 +515,7 @@
   <object id="241" name="Rockitten" type="event" x="352" y="144" width="16" height="32">
    <properties>
     <property name="act05" value="translated_dialog spyder_papertown_thereis"/>
-    <property name="act10" value="change_state JournalInfoState,rockitten"/>
+    <property name="act10" value="open_journal rockitten"/>
     <property name="act25" value="translated_dialog spyder_papertown_rockitten"/>
     <property name="act30" value="translated_dialog_choice yes:no,rockittenchosen"/>
     <property name="cond1" value="is char_facing_tile player"/>
@@ -514,7 +526,7 @@
   <object id="242" name="Lambert" type="event" x="352" y="176" width="16" height="32">
    <properties>
     <property name="act05" value="translated_dialog spyder_papertown_thereis"/>
-    <property name="act10" value="change_state JournalInfoState,lambert"/>
+    <property name="act10" value="open_journal lambert"/>
     <property name="act25" value="translated_dialog spyder_papertown_lambert"/>
     <property name="act30" value="translated_dialog_choice yes:no,lambertchosen"/>
     <property name="cond1" value="is char_facing_tile player"/>
@@ -525,7 +537,7 @@
   <object id="243" name="Nut" type="event" x="432" y="144" width="32" height="16">
    <properties>
     <property name="act05" value="translated_dialog spyder_papertown_thereis"/>
-    <property name="act10" value="change_state JournalInfoState,nut"/>
+    <property name="act10" value="open_journal nut"/>
     <property name="act25" value="translated_dialog spyder_papertown_nut"/>
     <property name="act30" value="translated_dialog_choice yes:no,nutchosen"/>
     <property name="cond1" value="is char_facing_tile player"/>
@@ -536,7 +548,7 @@
   <object id="245" name="Tweesher" type="event" x="464" y="144" width="32" height="16">
    <properties>
     <property name="act05" value="translated_dialog spyder_papertown_thereis"/>
-    <property name="act10" value="change_state JournalInfoState,tweesher"/>
+    <property name="act10" value="open_journal tweesher"/>
     <property name="act25" value="translated_dialog spyder_papertown_tweesher"/>
     <property name="act30" value="translated_dialog_choice yes:no,tweesherchosen"/>
     <property name="cond1" value="is char_facing_tile player"/>
@@ -547,7 +559,7 @@
   <object id="246" name="Agnite" type="event" x="480" y="176" width="16" height="32">
    <properties>
     <property name="act05" value="translated_dialog spyder_papertown_thereis"/>
-    <property name="act10" value="change_state JournalInfoState,agnite"/>
+    <property name="act10" value="open_journal agnite"/>
     <property name="act25" value="translated_dialog spyder_papertown_agnite"/>
     <property name="act30" value="translated_dialog_choice yes:no,agnitechosen"/>
     <property name="cond1" value="is char_facing_tile player"/>

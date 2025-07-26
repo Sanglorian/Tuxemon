@@ -14,22 +14,16 @@ from tuxemon import prepare
 from tuxemon.db import MonsterModel, db
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.session import local_session
-from tuxemon.tools import open_dialog
+from tuxemon.tools import fix_measure, open_dialog
 
 MenuGameObj = Callable[[], object]
 lookup_cache: dict[str, MonsterModel] = {}
 
 
-def fix_measure(measure: int, percentage: float) -> int:
-    """it returns the correct measure based on percentage"""
-    return round(measure * percentage)
-
-
 def _lookup_monsters() -> None:
     monsters = list(db.database["monster"])
     for mon in monsters:
-        results = db.lookup(mon, table="monster")
+        results = MonsterModel.lookup(mon, db)
         if results.txmn_id > 0:
             lookup_cache[mon] = results
 
@@ -49,7 +43,7 @@ class MinigameState(PygameMenuState):
         menu.add.label(
             title=f"{name}",
             label_id="question",
-            font_size=self.font_size_big,
+            font_size=self.font_type.big,
             align=locals.ALIGN_CENTER,
             underline=True,
         )
@@ -63,23 +57,22 @@ class MinigameState(PygameMenuState):
         )
         new_image.scale(prepare.SCALE, prepare.SCALE)
         menu.add.image(image_path=new_image.copy())
+
         choice = random.sample(data, 5)
-        pos = random.choice(range(len(choice)))
         if tuxemon not in choice:
-            choice.pop()
-            choice.insert(pos, tuxemon)
+            pos = random.randint(0, len(choice) - 1)
+            choice[pos] = tuxemon
 
         def checking(mon: MonsterModel) -> None:
             if mon.slug == self.tuxemon.slug:
                 self.client.replace_state("MinigameState")
             else:
-                open_dialog(local_session, [T.translate("generic_wrong")])
+                open_dialog(self.client, [T.translate("generic_wrong")])
 
         # replies
-        width = menu._width
         f = menu.add.frame_h(
-            width=fix_measure(width, 0.95),
-            height=fix_measure(width, 0.05),
+            width=fix_measure(menu._width, 0.95),
+            height=fix_measure(menu._width, 0.05),
             frame_id="evolutions",
             align=locals.ALIGN_CENTER,
         )
@@ -88,7 +81,7 @@ class MinigameState(PygameMenuState):
             menu.add.button(
                 T.translate(txmn.slug),
                 partial(checking, txmn),
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 button_id=txmn.slug,
                 selection_effect=HighlightSelection(),
             )

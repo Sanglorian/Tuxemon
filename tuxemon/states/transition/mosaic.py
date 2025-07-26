@@ -6,7 +6,9 @@ import logging
 import random
 from typing import Optional
 
-import pygame
+from pygame import draw as pg_draw
+from pygame.rect import Rect
+from pygame.surface import Surface
 
 from tuxemon import prepare
 from tuxemon.platform.events import PlayerInput
@@ -32,15 +34,15 @@ class MosaicTransition(State):
         self.start_time = 0.0
         self.elapsed_time = 0.0
         self.tile_size = tile_size
-        self.tiles: list[pygame.Rect] = []
-        self.tile_surfaces: list[pygame.Surface] = []
+        self.tiles: list[Rect] = []
+        self.tile_surfaces: list[Surface] = []
         self.resume()
 
     def resume(self) -> None:
-        self.screenshot = pygame.Surface.copy(prepare.SCREEN)
+        self.screenshot = Surface.copy(prepare.SCREEN)
         for x in range(0, self.screenshot.get_width(), self.tile_size):
             for y in range(0, self.screenshot.get_height(), self.tile_size):
-                rect = pygame.Rect(x, y, self.tile_size, self.tile_size)
+                rect = Rect(x, y, self.tile_size, self.tile_size)
                 self.tiles.append(rect)
                 self.tile_surfaces.append(self.screenshot.subsurface(rect))
 
@@ -57,12 +59,12 @@ class MosaicTransition(State):
             logger.info("Mosaic transition finished.")
             self.client.pop_state()
 
-    def draw(self, surface: pygame.surface.Surface) -> None:
+    def draw(self, surface: Surface) -> None:
         for i, tile in enumerate(self.tiles):
             if random.random() < self.elapsed_time / self.duration:
                 surface.blit(self.tile_surfaces[i], tile)
             else:
-                pygame.draw.rect(surface, (0, 0, 0), tile)
+                pg_draw.rect(surface, (0, 0, 0), tile)
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
         # prevent other states from getting input

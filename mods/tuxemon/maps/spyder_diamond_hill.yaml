@@ -4,7 +4,7 @@ events:
     - play_music music_the_wild_places
     conditions:
     - not music_playing music_the_wild_places
-    type: "event"
+    type: event
   Teleport to Candy Port1:
     actions:
     - transition_teleport spyder_candy_port.tmx,0,11,0.3
@@ -12,9 +12,9 @@ events:
     conditions:
     - is char_at player
     - is char_facing player,right
+    type: event
     x: 19
     y: 51
-    type: "event"
   Teleport to Candy Port2:
     actions:
     - transition_teleport spyder_candy_port.tmx,0,12,0.3
@@ -22,9 +22,9 @@ events:
     conditions:
     - is char_at player
     - is char_facing player,right
+    type: event
     x: 19
     y: 52
-    type: "event"
   Teleport to Candy Port3:
     actions:
     - transition_teleport spyder_candy_port.tmx,0,15,0.3
@@ -32,8 +32,8 @@ events:
     conditions:
     - is char_at player
     - is char_facing player,right
+    height: 5
+    type: event
+    width: 1
     x: 19
     y: 53
-    width: 1
-    height: 5
-    type: "event"

@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import logging
-import uuid
 from dataclasses import dataclass
 from typing import Optional, final
+from uuid import UUID
 
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 from tuxemon.prepare import KENNEL
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -31,28 +32,24 @@ class StoreMonsterAction(EventAction):
     Script parameters:
         variable: Name of the variable where to store the monster id.
         box: An existing box where the monster will be stored.
-
     """
 
     name = "store_monster"
     variable: str
     box: Optional[str] = None
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
         if self.variable not in player.game_variables:
             logger.error(f"Game variable {self.variable} not found")
             return
 
-        monster_id = uuid.UUID(player.game_variables[self.variable])
-        monster = get_monster_by_iid(self.session, monster_id)
+        monster_id = UUID(player.game_variables[self.variable])
+        monster = get_monster_by_iid(session, monster_id)
         if monster is None:
             logger.error("Monster not found")
             return
-        character = monster.owner
-        if character is None:
-            logger.error(f"{monster.name}'s owner not found!")
-            return
+        character = monster.get_owner()
 
         box = self.box
         if box is None:
@@ -69,4 +66,4 @@ class StoreMonsterAction(EventAction):
             return
         else:
             character.monster_boxes.add_monster(store, monster)
-            character.remove_monster(monster)
+            character.party.remove_monster(monster)

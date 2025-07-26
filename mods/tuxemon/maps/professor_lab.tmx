@@ -3,9 +3,9 @@
  <properties>
   <property name="edges" value="clamped"/>
   <property name="inside" type="bool" value="true"/>
+  <property name="map_type" value="notype"/>
   <property name="scenario" value="xero"/>
   <property name="slug" value="professor_lab"/>
-  <property name="map_type" value="notype"/>
  </properties>
  <tileset firstgid="1" source="../gfx/tilesets/core_indoor_floors.tsx"/>
  <tileset firstgid="3865" source="../gfx/tilesets/core_indoor_walls.tsx"/>
@@ -60,7 +60,7 @@
    <properties>
     <property name="act1" value="pathfind professor,9,9"/>
     <property name="act2" value="char_face professor,up"/>
-    <property name="act3" value="change_state JournalInfoState,rockitten"/>
+    <property name="act3" value="open_journal rockitten"/>
     <property name="act5" value="translated_dialog chooseyerfateRockitten"/>
     <property name="act6" value="translated_dialog_choice yes:no,rockittenchoice"/>
     <property name="cond1" value="not variable_set havetuxemon:yes"/>
@@ -73,7 +73,7 @@
    <properties>
     <property name="act1" value="pathfind professor,10,9"/>
     <property name="act2" value="char_face professor,up"/>
-    <property name="act3" value="change_state JournalInfoState,cardiling"/>
+    <property name="act3" value="open_journal cardiling"/>
     <property name="act5" value="translated_dialog chooseyerfateCardiling"/>
     <property name="act6" value="translated_dialog_choice yes:no,cardilingchoice"/>
     <property name="cond1" value="not variable_set havetuxemon:yes"/>
@@ -86,7 +86,7 @@
    <properties>
     <property name="act1" value="pathfind professor,11,9"/>
     <property name="act2" value="char_face professor,up"/>
-    <property name="act3" value="change_state JournalInfoState,tweesher"/>
+    <property name="act3" value="open_journal tweesher"/>
     <property name="act5" value="translated_dialog chooseyerfateTweesher"/>
     <property name="act6" value="translated_dialog_choice yes:no,tweesherchoice"/>
     <property name="cond1" value="not variable_set havetuxemon:yes"/>
@@ -335,7 +335,7 @@
     <property name="cond3" value="not variable_set endbattleprof:yes"/>
    </properties>
   </object>
-  <object id="116" name="first battle lost" type="event" x="144" y="0" width="16" height="16">
+  <object id="116" name="first battle lost or draw" type="event" x="144" y="0" width="16" height="16">
    <properties>
     <property name="act2" value="modify_money player,120"/>
     <property name="act3" value="set_variable firstbattledone:yes"/>
@@ -343,7 +343,7 @@
     <property name="act5" value="set_variable ohnotyou:itsme"/>
     <property name="act6" value="set_variable endbattleprof:yes"/>
     <property name="cond1" value="is variable_set finishedbattle:yes"/>
-    <property name="cond2" value="is variable_set battle_last_result:lost"/>
+    <property name="cond2" value="not variable_set battle_last_result:won"/>
     <property name="cond3" value="not variable_set endbattleprof:yes"/>
    </properties>
   </object>
@@ -356,7 +356,7 @@
     <property name="act10" value="translated_dialog yahaha"/>
     <property name="act20" value="create_npc allie,6,15,stand"/>
     <property name="act30" value="pathfind allie,4,8"/>
-    <property name="act40" value="char_face allie, right"/>
+    <property name="act40" value="char_face allie,right"/>
     <property name="act50" value="wait 0.7"/>
     <property name="act60" value="translated_dialog gasp"/>
     <property name="act70" value="pathfind allie,5,9"/>

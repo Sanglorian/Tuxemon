@@ -1,6 +1,6 @@
 {
-  "slug": "water",
   "icon": "gfx/ui/icons/element/water_type.png",
+  "slug": "water",
   "types": [
     {
       "against": "aether",

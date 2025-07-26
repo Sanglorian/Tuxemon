@@ -1,29 +1,38 @@
 {
-  "slug": "taba_ba_passageway_2",
   "monsters": [
     {
+      "encounter_rate": 3,
+      "exp_req_mod": 15,
+      "held_items": [],
+      "level_range": [
+        4,
+        6
+      ],
       "monster": "mystikapi",
-      "encounter_rate": 3.0,
+      "variables": []
+    },
+    {
+      "encounter_rate": 3,
+      "exp_req_mod": 15,
+      "held_items": [],
       "level_range": [
         4,
         6
-      ]
-    },
-    {
+      ],
       "monster": "aardorn",
-      "encounter_rate": 3.0,
-      "level_range": [
-        4,
-        6
-      ]
+      "variables": []
     },
     {
-      "monster": "nut",
       "encounter_rate": 1.6,
+      "exp_req_mod": 15,
+      "held_items": [],
       "level_range": [
         5,
         8
-      ]
+      ],
+      "monster": "nut",
+      "variables": []
     }
-  ]
+  ],
+  "slug": "taba_ba_passageway_2"
 }

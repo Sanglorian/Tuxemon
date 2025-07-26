@@ -3,11 +3,10 @@
 import unittest
 
 import pygame
+from pygame.surface import Surface
 
 from tuxemon.surfanim import (
-    PAUSED,
-    PLAYING,
-    STOPPED,
+    State,
     SurfaceAnimation,
     SurfaceAnimationCollection,
     clip,
@@ -15,153 +14,101 @@ from tuxemon.surfanim import (
 
 
 class TestSurfaceAnimation(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        pygame.init()
+
+    @classmethod
+    def tearDownClass(cls):
+        pygame.quit()
+
+    def setUp(self):
+        self.frames = [(Surface((10, 10)), 1.0), (Surface((20, 20)), 2.0)]
+        self.animation = SurfaceAnimation(self.frames)
+
     def test_init(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
-        animation = SurfaceAnimation(frames)
-        self.assertEqual(animation.loop, True)
-        self.assertEqual(animation.state, STOPPED)
+        self.assertEqual(self.animation.loop, True)
+        self.assertEqual(self.animation.state, State.STOPPED)
 
     def test_get_frame(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
-        animation = SurfaceAnimation(frames)
-        self.assertEqual(animation.get_frame(0).get_size(), (10, 10))
-        self.assertEqual(animation.get_frame(1).get_size(), (20, 20))
-        self.assertEqual(animation.get_frame(2).get_size(), (0, 0))
-        self.assertEqual(animation.duration, 3.0)
+        self.assertEqual(self.animation.get_frame(0).get_size(), (10, 10))
+        self.assertEqual(self.animation.get_frame(1).get_size(), (20, 20))
+        self.assertEqual(self.animation.get_frame(2).get_size(), (0, 0))
+        self.assertEqual(self.animation.duration, 3.0)
 
     def test_get_current_frame(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
-        animation = SurfaceAnimation(frames)
-        animation.play()
-        self.assertEqual(animation.get_current_frame().get_size(), (10, 10))
-        animation.update(1.5)
-        self.assertEqual(animation.get_current_frame().get_size(), (20, 20))
+        self.animation.play()
+        self.assertEqual(
+            self.animation.get_current_frame().get_size(), (10, 10)
+        )
+        self.animation.update(1.5)
+        self.assertEqual(
+            self.animation.get_current_frame().get_size(), (20, 20)
+        )
 
     def test_is_finished(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
-        animation = SurfaceAnimation(frames, loop=False)
+        animation = SurfaceAnimation(self.frames, loop=False)
         self.assertFalse(animation.is_finished())
         animation.play()
         animation.update(3.0)
         self.assertTrue(animation.is_finished())
 
     def test_play(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
-        animation = SurfaceAnimation(frames)
-        animation.play()
-        self.assertEqual(animation.state, PLAYING)
+        self.animation.play()
+        self.assertEqual(self.animation.state, State.PLAYING)
 
     def test_pause(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
-        animation = SurfaceAnimation(frames)
-        animation.play()
-        animation.pause()
-        self.assertEqual(animation.state, PAUSED)
+        self.animation.play()
+        self.animation.pause()
+        self.assertEqual(self.animation.state, State.PAUSED)
 
     def test_stop(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
-        animation = SurfaceAnimation(frames)
-        animation.play()
-        animation.stop()
-        self.assertEqual(animation.state, STOPPED)
+        self.animation.play()
+        self.animation.stop()
+        self.assertEqual(self.animation.state, State.STOPPED)
 
     def test_update(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
-        animation = SurfaceAnimation(frames)
-        animation.play()
-        animation.update(1.5)
-        self.assertGreaterEqual(animation.elapsed, 1.5 - 0.001)
-        self.assertLessEqual(animation.elapsed, 1.5 + 0.001)
+        self.animation.play()
+        self.animation.update(1.5)
+        self.assertGreaterEqual(self.animation.elapsed, 1.5 - 0.001)
+        self.assertLessEqual(self.animation.elapsed, 1.5 + 0.001)
 
     def test_elapsed(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
-        animation = SurfaceAnimation(frames)
-        animation.play()
-        animation.update(1.5)
-        self.assertGreaterEqual(animation.elapsed, 1.5 - 0.001)
-        self.assertLessEqual(animation.elapsed, 1.5 + 0.001)
-        animation.elapsed = 2.5
-        self.assertGreaterEqual(animation.elapsed, 2.5 - 0.001)
-        self.assertLessEqual(animation.elapsed, 2.5 + 0.001)
+        self.animation.play()
+        self.animation.update(1.5)
+        self.assertGreaterEqual(self.animation.elapsed, 1.5 - 0.001)
+        self.assertLessEqual(self.animation.elapsed, 1.5 + 0.001)
+        self.animation.elapsed = 2.5
+        self.assertGreaterEqual(self.animation.elapsed, 2.5 - 0.001)
+        self.assertLessEqual(self.animation.elapsed, 2.5 + 0.001)
 
     def test_frames_played(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
-        animation = SurfaceAnimation(frames)
-        animation.play()
-        animation.update(1.5)
-        self.assertEqual(animation.frames_played, 1)
-        animation.frames_played = 0
-        self.assertEqual(animation.frames_played, 0)
+        self.animation.play()
+        self.animation.update(1.5)
+        self.assertEqual(self.animation.frames_played, 1)
+        self.animation.frames_played = 0
+        self.assertEqual(self.animation.frames_played, 0)
 
     def test_rate(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
-        animation = SurfaceAnimation(frames)
-        self.assertEqual(animation.rate, 1.0)
-        animation.rate = 2.0
-        self.assertEqual(animation.rate, 2.0)
+        self.assertEqual(self.animation.rate, 1.0)
+        self.animation.rate = 2.0
+        self.assertEqual(self.animation.rate, 2.0)
 
     def test_visibility(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
-        animation = SurfaceAnimation(frames)
-        self.assertTrue(animation.visibility)
-        animation.visibility = False
-        self.assertFalse(animation.visibility)
+        self.assertTrue(self.animation.visibility)
+        self.animation.visibility = False
+        self.assertFalse(self.animation.visibility)
 
     def test_get_rect(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
-        animation = SurfaceAnimation(frames)
-        rect = animation.get_rect()
+        rect = self.animation.get_rect()
         self.assertEqual(rect.width, 20)
         self.assertEqual(rect.height, 20)
 
     def test_flip(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
-        animation = SurfaceAnimation(frames)
-        animation.flip("x")
-        self.assertEqual(animation.get_frame(0).get_size(), (10, 10))
-        self.assertEqual(animation.get_frame(1).get_size(), (20, 20))
+        self.animation.flip("x")
+        self.assertEqual(self.animation.get_frame(0).get_size(), (10, 10))
+        self.assertEqual(self.animation.get_frame(1).get_size(), (20, 20))
 
     def test_clip(self):
         self.assertEqual(clip(5, 2, 10), 5)
@@ -171,16 +118,13 @@ class TestSurfaceAnimation(unittest.TestCase):
 
 class TestSurfaceAnimationCollection(unittest.TestCase):
     def setUp(self):
-        frames = [
-            (pygame.Surface((10, 10)), 1.0),
-            (pygame.Surface((20, 20)), 2.0),
-        ]
+        frames = [(Surface((10, 10)), 1.0), (Surface((20, 20)), 2.0)]
         self.animation = SurfaceAnimation(frames)
 
     def test_init(self):
         collection = SurfaceAnimationCollection()
         self.assertEqual(collection._animations, [])
-        self.assertEqual(collection._state, STOPPED)
+        self.assertEqual(collection._state, State.STOPPED)
 
     def test_add_single_animation(self):
         collection = SurfaceAnimationCollection(self.animation)
@@ -205,21 +149,21 @@ class TestSurfaceAnimationCollection(unittest.TestCase):
     def test_play(self):
         collection = SurfaceAnimationCollection(self.animation)
         collection.play()
-        self.assertEqual(collection._state, PLAYING)
+        self.assertEqual(collection._state, State.PLAYING)
 
     def test_pause(self):
         collection = SurfaceAnimationCollection(self.animation)
         collection.pause()
-        self.assertEqual(collection._state, PAUSED)
+        self.assertEqual(collection._state, State.PAUSED)
 
     def test_stop(self):
         collection = SurfaceAnimationCollection(self.animation)
         collection.stop()
-        self.assertEqual(collection._state, STOPPED)
+        self.assertEqual(collection._state, State.STOPPED)
 
     def test_state_property(self):
         collection = SurfaceAnimationCollection(self.animation)
-        self.assertEqual(collection.state, STOPPED)
+        self.assertEqual(collection.state, State.STOPPED)
 
     def test_remove(self):
         animations = [self.animation for _ in range(3)]

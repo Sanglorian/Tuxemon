@@ -6,9 +6,9 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon.db import PlagueType
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,6 @@ class CharPlagueAction(EventAction):
         condition: Infected, inoculated, or None (removes the plague from the
             character, indicating a healthy state).
         character: Either "player" or character slug name (e.g. "npc_maple").
-
     """
 
     name = "char_plague"
@@ -37,20 +36,20 @@ class CharPlagueAction(EventAction):
     condition: Optional[str] = None
     character: Optional[str] = None
 
-    def start(self) -> None:
+    def start(self, session: Session) -> None:
         self.character = "player" if self.character is None else self.character
-        character = get_npc(self.session, self.character)
+        character = get_npc(session, self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return
 
         for monster in character.monsters:
             if self.condition is None:
-                monster.plague = {}
+                monster.plague.clear_plagues()
             elif self.condition == "infected":
-                monster.plague[self.plague_slug] = PlagueType.infected
+                monster.plague.infect(self.plague_slug)
             elif self.condition == "inoculated":
-                monster.plague[self.plague_slug] = PlagueType.inoculated
+                monster.plague.inoculate(self.plague_slug)
             else:
                 raise ValueError(
                     f"{self.condition} must be 'infected' or 'inoculated'."

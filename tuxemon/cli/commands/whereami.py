@@ -9,10 +9,7 @@ from tuxemon.cli.context import InvokeContext
 
 
 class WhereAmICommand(CLICommand):
-    """
-    Display player map name.
-
-    """
+    """Display player map name."""
 
     name = "whereami"
     description = "Print the filename of map where player is."
@@ -25,9 +22,8 @@ class WhereAmICommand(CLICommand):
         Parameters:
             ctx: Contains references to parts of the game and CLI interface.
             line: Input text after the command name.
-
         """
-        current_map = ctx.session.client.event_engine.current_map
+        current_map = ctx.client.event_engine.current_map
         if current_map:
             name = current_map.data.filename
             print(name)

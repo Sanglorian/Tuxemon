@@ -1,10 +1,27 @@
 {
   "conditions": [
-    "is type wood",
-    "not has_tech blossom"
+    {
+      "type": "type",
+      "parameters": [
+        "wood"
+      ],
+      "operator": "is"
+    },
+    {
+      "type": "has_tech",
+      "parameters": [
+        "blossom"
+      ],
+      "operator": "not"
+    }
   ],
   "effects": [
-    "learn_tm blossom"
+    {
+      "type": "learn_tm",
+      "parameters": [
+        "blossom"
+      ]
+    }
   ],
   "slug": "tm_blossom",
   "sort": "utility",
@@ -14,7 +31,10 @@
   "usable_in": [
     "WorldState"
   ],
-  "behaviors": {},
+  "modifiers": [],
+  "behaviors": {
+    "resellable": true
+  },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

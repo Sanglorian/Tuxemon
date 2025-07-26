@@ -3,11 +3,19 @@
   "accuracy": 1,
   "animation": "sparks_white",
   "effects": [
-    "give focused,own_team:enemy_team",
-    "damage"
+    {
+      "type": "give",
+      "parameters": [
+        "focused",
+        "own_team:enemy_team"
+      ]
+    },
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 1,
   "range": "reach",
@@ -15,6 +23,7 @@
   "sfx": "sfx_blaster",
   "slug": "muddle",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -24,7 +33,10 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["Ghost", "Mental"],
+  "tags": [
+    "ghost",
+    "mental"
+  ],
   "types": [
     "fire",
     "metal"

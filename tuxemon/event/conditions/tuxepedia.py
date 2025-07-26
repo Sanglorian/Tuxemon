@@ -2,7 +2,9 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from tuxemon.db import MonsterModel, SeenStatus, db
+from dataclasses import dataclass
+
+from tuxemon.db import MonsterModel, db
 from tuxemon.event import MapCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
@@ -11,6 +13,7 @@ from tuxemon.tools import compare
 lookup_cache: dict[str, MonsterModel] = {}
 
 
+@dataclass
 class TuxepediaCondition(EventCondition):
     """
     Check Tuxepedia's progress.
@@ -26,7 +29,6 @@ class TuxepediaCondition(EventCondition):
             and "not_equals".
         percentage: Number between 0.1 and 1.0
         total: Total, by default the tot number of tuxemon.
-
     """
 
     name = "tuxepedia"
@@ -43,20 +45,17 @@ class TuxepediaCondition(EventCondition):
         else:
             total = len(lookup_cache)
 
-        tuxepedia = list(player.tuxepedia.values())
-        caught = tuxepedia.count(SeenStatus.caught)
-        seen = tuxepedia.count(SeenStatus.seen) + caught
-        percentage = round((seen / total) * 100, 1)
+        completeness = player.tuxepedia.get_completeness(total)
 
-        if not 0.0 <= float(value) <= 100.0:
+        if not 0.0 <= float(value) <= 1.0:
             raise ValueError(f"{value} must be between 0.0 and 100.0")
 
-        return compare(operator, percentage, float(value))
+        return compare(operator, completeness, float(value))
 
 
 def _lookup_monsters() -> None:
     monsters = list(db.database["monster"])
     for mon in monsters:
-        results = db.lookup(mon, table="monster")
+        results = MonsterModel.lookup(mon, db)
         if results.txmn_id > 0:
             lookup_cache[mon] = results

@@ -10,6 +10,7 @@ from tuxemon.db import Direction
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.map import get_direction
+from tuxemon.session import Session
 from tuxemon.states.world.worldstate import WorldState
 
 logger = logging.getLogger(__name__)
@@ -30,22 +31,21 @@ class CharFaceAction(EventAction):
         character: Either "player" or character slug name (e.g. "npc_maple").
         direction: Direction to face. It can be: "left", "right", "up", "down",
              "player" or a character slug.
-
     """
 
     name = "char_face"
     character: str
     direction: str
 
-    def start(self) -> None:
-        character = get_npc(self.session, self.character)
+    def start(self, session: Session) -> None:
+        character = get_npc(session, self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return
 
         # "player" isn't among the Directions (map_loader.py)
         if self.direction not in list(Direction):
-            target = get_npc(self.session, self.direction)
+            target = get_npc(session, self.direction)
             if target is None:
                 logger.error(f"{self.direction} not found")
                 return
@@ -56,10 +56,10 @@ class CharFaceAction(EventAction):
         # If we're doing a transition, only change the player's facing when
         # we've reached the apex of the transition.
         if character.isplayer:
-            world_state = self.session.client.get_state_by_name(WorldState)
-            if world_state.in_transition:
-                world_state.teleporter.delayed_facing = direction
+            world_state = session.client.get_state_by_name(WorldState)
+            if world_state.transition_manager.in_transition:
+                world_state.teleporter.delayed_teleport.facing = direction
             else:
-                character.facing = direction
+                character.set_facing(direction)
         else:
-            character.facing = direction
+            character.set_facing(direction)

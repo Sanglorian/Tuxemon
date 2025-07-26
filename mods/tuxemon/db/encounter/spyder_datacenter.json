@@ -1,41 +1,50 @@
 {
-  "slug": "spyder_datacenter",
   "monsters": [
     {
+      "encounter_rate": 0.5,
+      "exp_req_mod": 3,
+      "held_items": [],
+      "level_range": [
+        45,
+        50
+      ],
       "monster": "pythwire",
-      "encounter_rate": 0.5,
       "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
-      "level_range": [
-        45,
-        50
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
+      "encounter_rate": 0.5,
+      "exp_req_mod": 3,
+      "held_items": [],
+      "level_range": [
+        45,
+        50
+      ],
       "monster": "ouroboutlet",
-      "encounter_rate": 0.5,
       "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
-      "level_range": [
-        45,
-        50
+        {
+          "daytime": "false"
+        }
       ]
     },
     {
-      "monster": "sockeserp",
       "encounter_rate": 0.5,
-      "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         40,
         45
+      ],
+      "monster": "sockeserp",
+      "variables": [
+        {
+          "daytime": "true"
+        }
       ]
     }
-  ]
+  ],
+  "slug": "spyder_datacenter"
 }

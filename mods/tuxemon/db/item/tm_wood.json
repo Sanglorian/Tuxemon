@@ -1,6 +1,12 @@
 {
   "conditions": [
-    "is type wood"
+    {
+      "type": "type",
+      "parameters": [
+        "wood"
+      ],
+      "operator": "is"
+    }
   ],
   "effects": [],
   "slug": "tm_wood",
@@ -11,7 +17,10 @@
   "usable_in": [
     "WorldState"
   ],
-  "behaviors": {},
+  "modifiers": [],
+  "behaviors": {
+    "resellable": true
+  },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

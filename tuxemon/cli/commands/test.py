@@ -17,10 +17,7 @@ if TYPE_CHECKING:
 
 
 class TestConditionParentCommand(CLICommand):
-    """
-    Command that will test a condition.
-
-    """
+    """Command that will test a condition."""
 
     name = "test"
     description = "Evaluate condition and print the result."
@@ -33,7 +30,6 @@ class TestConditionParentCommand(CLICommand):
         Parameters:
             ctx: Contains references to parts of the game and CLI interface.
             line: Input text after the command name.
-
         """
         print("need more arguments or syntax error", file=sys.stderr)
 
@@ -43,9 +39,8 @@ class TestConditionParentCommand(CLICommand):
 
         Parameters:
             ctx: Contains references to parts of the game and CLI interface.
-
         """
-        conditions = ctx.session.client.event_engine.get_conditions()
+        conditions = ctx.client.event_engine.condition_manager.get_conditions()
         for condition in conditions:
             command = TestConditionCommand()
             command.name = condition.name
@@ -58,7 +53,6 @@ class TestConditionCommand(CLICommand):
     Subcommand used by ``test`` to evaluate EventConditions.
 
     * "is" prefix is implied; do not include "is" or "not".
-
     """
 
     usable_from_root = False
@@ -72,7 +66,6 @@ class TestConditionCommand(CLICommand):
         Parameters:
             ctx: Contains references to parts of the game and CLI interface.
             line: Input text after the command name.
-
         """
         line = f"is {self.name} {line}"
         try:
@@ -81,7 +74,7 @@ class TestConditionCommand(CLICommand):
         except ValueError:
             raise ParseError
         try:
-            result = ctx.session.client.event_engine.check_condition(cond)
+            result = ctx.client.event_engine.check_condition(cond)
             print(result)
         except Exception:
             traceback.print_exc()

@@ -5,14 +5,17 @@ from __future__ import annotations
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Optional, final
+from typing import TYPE_CHECKING, Any, Optional, final
 
-from tuxemon.db import NpcModel, PartyMemberModel, db
+from tuxemon.db import NpcModel, db
 from tuxemon.event.eventaction import EventAction
 from tuxemon.item.item import Item
 from tuxemon.monster import Monster
 from tuxemon.npc import NPC
-from tuxemon.states.world.worldstate import WorldState
+
+if TYPE_CHECKING:
+    from tuxemon.db import PartyMemberModel
+    from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +36,6 @@ class CreateNpcAction(EventAction):
         tile_pos_x: X position to place the NPC on.
         tile_pos_y: Y position to place the NPC on.
         behavior: Behavior of the NPC (e.g. "wander"). Unused for now.
-
     """
 
     name = "create_npc"
@@ -42,20 +44,16 @@ class CreateNpcAction(EventAction):
     tile_pos_y: int
     behavior: Optional[str] = None
 
-    def start(self) -> None:
-        world = self.session.client.get_state_by_name(WorldState)
-
+    def start(self, session: Session) -> None:
         slug = self.npc_slug
 
-        for element in world.npcs:
-            if element.slug == slug:
-                logger.error(
-                    f"'{slug}' already exists on the map. Skipping creation."
-                )
-                return
+        if session.client.npc_manager.npc_exists(slug):
+            return
 
-        npc = NPC(slug, world=world)
-        client = self.session.client.event_engine
+        npc = NPC(slug, session=session)
+        session.client.npc_manager.add_npc(npc)
+
+        client = session.client.event_engine
         client.execute_action(
             "char_position", [slug, self.tile_pos_x, self.tile_pos_y], True
         )
@@ -63,12 +61,12 @@ class CreateNpcAction(EventAction):
         npc_details = load_party(slug)
         npc.template = npc_details.template
         npc.forfeit = npc_details.forfeit
-        game_variables = self.session.player.game_variables
+        game_variables = session.player.game_variables
         if npc_details.monsters:
             load_party_monsters(npc, npc_details, game_variables)
         if npc_details.items:
             load_party_items(npc, npc_details, game_variables)
-        npc.load_sprites()
+        npc.sprite_controller.load_sprites(npc.template)
 
 
 lookup_cache: dict[str, NpcModel] = {}
@@ -78,7 +76,7 @@ def load_party(slug: str) -> NpcModel:
     if slug in lookup_cache:
         return lookup_cache[slug]
     else:
-        npc_details = db.lookup(slug, "npc")
+        npc_details = NpcModel.lookup(slug, db)
         lookup_cache[slug] = npc_details
         return npc_details
 
@@ -87,24 +85,20 @@ def load_party_monsters(
     npc: NPC, party: NpcModel, game_variables: dict[str, Any]
 ) -> None:
     """Loads the NPC's party monsters from the database."""
-    npc.monsters = []
+    npc.party.clear_party()
     for npc_monster in party.monsters:
         if npc_monster.variables and check_variables(
             npc_monster.variables, game_variables
         ):
             monster = party_monster(npc_monster)
-            npc.add_monster(monster, len(npc.monsters))
+            npc.party.add_monster(monster, len(npc.monsters))
 
 
 def party_monster(npc_monster: PartyMemberModel) -> Monster:
     """Creates a new monster object from the database details."""
-    monster = Monster()
-    monster.load_from_db(npc_monster.slug)
+    monster = Monster.spawn_base(npc_monster.slug, npc_monster.level)
     monster.money_modifier = npc_monster.money_mod
     monster.experience_modifier = npc_monster.exp_req_mod
-    monster.set_level(npc_monster.level)
-    monster.set_moves(npc_monster.level)
-    monster.current_hp = monster.hp
     monster.gender = npc_monster.gender
     return monster
 
@@ -113,21 +107,22 @@ def load_party_items(
     npc: NPC, bag: NpcModel, game_variables: dict[str, Any]
 ) -> None:
     """Loads the NPC's items from the database."""
-    npc.items = []
+    npc.items.clear_items()
     for npc_item in bag.items:
         if npc_item.variables and check_variables(
             npc_item.variables, game_variables
         ):
-            item = Item(save_data=npc_item.model_dump())
-            item.quantity = npc_item.quantity
-            npc.add_item(item)
+            item = Item.create(npc_item.slug, npc_item.model_dump())
+            npc.items.add_item(item, npc_item.quantity)
 
 
 def check_variables(
-    npc_vars: Sequence[str], game_variables: dict[str, Any]
+    npc_vars: Sequence[dict[str, str]], game_variables: dict[str, Any]
 ) -> bool:
     return all(
-        key in game_variables and game_variables[key] == value
+        all(
+            key in game_variables and game_variables[key] == value
+            for key, value in variable.items()
+        )
         for variable in npc_vars
-        for key, value in [variable.split(":")]
     )

@@ -5,11 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon import formula
 from tuxemon.db import SeenStatus, db
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster import Monster
+from tuxemon.session import Session
+from tuxemon.time_handler import today_ordinal
 
 
 @final
@@ -31,20 +32,19 @@ class AddMonsterAction(EventAction):
             defaults to the current player.
         exp_mod: Experience modifier
         money_mod: Money modifier
-
     """
 
     name = "add_monster"
     monster_slug: str
     monster_level: int
     npc_slug: Optional[str] = None
-    exp: Optional[int] = None
-    money: Optional[int] = None
+    exp: Optional[float] = None
+    money: Optional[float] = None
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
         self.npc_slug = self.npc_slug or "player"
-        trainer = get_npc(self.session, self.npc_slug)
+        trainer = get_npc(session, self.npc_slug)
         if not trainer:
             raise ValueError(f"NPC '{self.npc_slug}' not found")
 
@@ -58,18 +58,14 @@ class AddMonsterAction(EventAction):
         else:
             monster_slug = self.monster_slug
 
-        monster = Monster()
-        monster.load_from_db(monster_slug)
-        monster.set_level(self.monster_level)
-        monster.set_moves(self.monster_level)
-        monster.set_capture(formula.today_ordinal())
-        monster.current_hp = monster.hp
+        monster = Monster.spawn_base(monster_slug, self.monster_level)
+        monster.set_capture(today_ordinal())
 
         if self.exp is not None:
             monster.experience_modifier = self.exp
         if self.money is not None:
             monster.money_modifier = self.money
 
-        trainer.add_monster(monster, len(trainer.monsters))
-        trainer.tuxepedia[monster.slug] = SeenStatus.caught
+        trainer.party.add_monster(monster, len(trainer.monsters))
+        trainer.tuxepedia.add_entry(monster.slug, SeenStatus.caught)
         player.game_variables[self.name] = str(monster.instance_id.hex)

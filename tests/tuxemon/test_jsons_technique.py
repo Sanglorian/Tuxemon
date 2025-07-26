@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import json
-import os
 import unittest
+from pathlib import Path
 from typing import Any
 
 from tuxemon import prepare
 
-ALL_TECHNIQUES: int = 196
-MAX_TECH_ID: int = 190
+ALL_TECHNIQUES: int = 247
+MAX_TECH_ID: int = 241
 # effects with simple_damage_calculate()
 SIMPLE_DAMAGE_EFFECT = ("damage", "retaliate", "revenge", "money", "splash")
 # effects with simple_heal()
@@ -17,11 +17,10 @@ SIMPLE_HEAL_EFFECT = ("healing", "photogenesis")
 
 def process_json_data(directory: str) -> list[dict[str, Any]]:
     data_list = []
-    directory = f"{prepare.fetch('db')}/{directory}/"
-    for filename in os.listdir(directory):
-        if filename.endswith(".json"):
-            filepath = os.path.join(directory, filename)
-            with open(filepath, "r") as f:
+    directory_path = Path(prepare.fetch("db")) / directory
+    for file in directory_path.iterdir():
+        if file.suffix == ".json" and file.is_file():
+            with file.open("r") as f:
                 data_list.append(json.load(f))
     return data_list
 
@@ -149,7 +148,8 @@ class TestTechniqueJSON(unittest.TestCase):
             potency = data["potency"]
             if effects:
                 for effect in effects:
-                    if effect.startswith("give") and potency == 0.0:
+                    root = effect.get("type", "")
+                    if root == "give" and potency == 0.0:
                         techniques.append(f"{slug}'s potency is {potency}")
         if techniques:
             print("The following techniques:")

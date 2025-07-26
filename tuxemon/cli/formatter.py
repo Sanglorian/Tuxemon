@@ -12,7 +12,6 @@ class Formatter:
     Print formatted text things.
 
     Currently just supports printing things in a table.
-
     """
 
     def print_table(
@@ -32,7 +31,6 @@ class Formatter:
             footer: Text to display after table.
             ruler: Character to use to underline the header.
             maxcol: Width of table in characters.
-
         """
         print(header)
         print(ruler * len(header))

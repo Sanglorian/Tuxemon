@@ -9,6 +9,7 @@ from typing import Optional, final
 
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +37,8 @@ class SetMonsterLevelAction(EventAction):
     variable: Optional[str] = None
     levels_added: Optional[int] = None
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
         if not player.monsters:
             return
         if self.levels_added is None:
@@ -48,15 +49,15 @@ class SetMonsterLevelAction(EventAction):
                 logger.error(f"Game variable {self.variable} not found")
                 return
             monster_id = uuid.UUID(player.game_variables[self.variable])
-            monster = get_monster_by_iid(self.session, monster_id)
+            monster = get_monster_by_iid(session, monster_id)
             if monster is None:
                 logger.error("Monster not found")
                 return
             new_level = monster.level + self.levels_added
             monster.set_level(new_level)
-            monster.update_moves(self.levels_added)
+            monster.moves.update_moves(monster.level, self.levels_added)
         else:
             for monster in player.monsters:
                 new_level = monster.level + self.levels_added
                 monster.set_level(new_level)
-                monster.update_moves(self.levels_added)
+                monster.moves.update_moves(monster.level, self.levels_added)

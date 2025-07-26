@@ -1,125 +1,155 @@
 {
-  "slug": "spyder_route2",
   "monsters": [
     {
+      "encounter_rate": 2.5,
+      "exp_req_mod": 3,
+      "held_items": [],
+      "level_range": [
+        3,
+        6
+      ],
       "monster": "cardiling",
-      "encounter_rate": 2.5,
       "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
-      "level_range": [
-        3,
-        6
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
+      "encounter_rate": 2.5,
+      "exp_req_mod": 3,
+      "held_items": [],
+      "level_range": [
+        3,
+        6
+      ],
       "monster": "aardorn",
-      "encounter_rate": 2.5,
       "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
-      "level_range": [
-        3,
-        6
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
+      "encounter_rate": 2.5,
+      "exp_req_mod": 3,
+      "held_items": [],
+      "level_range": [
+        3,
+        6
+      ],
       "monster": "eyenemy",
-      "encounter_rate": 2.5,
       "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
-      "level_range": [
-        3,
-        6
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
-      "monster": "axolightl",
       "encounter_rate": 1,
-      "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         4,
         7
-      ]
-    },
-    {
-      "monster": "cataspike",
-      "encounter_rate": 2.5,
-      "variables": [
-        "daytime:true"
       ],
-      "exp_req_mod": 1,
-      "level_range": [
-        3,
-        6
-      ]
-    },
-    {
-      "monster": "cardiling",
-      "encounter_rate": 2.5,
-      "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
-      "level_range": [
-        3,
-        6
-      ]
-    },
-    {
-      "monster": "aardorn",
-      "encounter_rate": 2.5,
-      "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
-      "level_range": [
-        4,
-        8
-      ]
-    },
-    {
-      "monster": "eyenemy",
-      "encounter_rate": 2.5,
-      "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
-      "level_range": [
-        4,
-        8
-      ]
-    },
-    {
       "monster": "axolightl",
-      "encounter_rate": 1,
       "variables": [
-        "daytime:false"
+        {
+          "daytime": "true"
+        }
+      ]
+    },
+    {
+      "encounter_rate": 2.5,
+      "exp_req_mod": 3,
+      "held_items": [],
+      "level_range": [
+        3,
+        6
       ],
-      "exp_req_mod": 1,
+      "monster": "cataspike",
+      "variables": [
+        {
+          "daytime": "true"
+        }
+      ]
+    },
+    {
+      "encounter_rate": 2.5,
+      "exp_req_mod": 3,
+      "held_items": [],
+      "level_range": [
+        3,
+        6
+      ],
+      "monster": "cardiling",
+      "variables": [
+        {
+          "daytime": "false"
+        }
+      ]
+    },
+    {
+      "encounter_rate": 2.5,
+      "exp_req_mod": 3,
+      "held_items": [],
+      "level_range": [
+        4,
+        8
+      ],
+      "monster": "aardorn",
+      "variables": [
+        {
+          "daytime": "false"
+        }
+      ]
+    },
+    {
+      "encounter_rate": 2.5,
+      "exp_req_mod": 3,
+      "held_items": [],
+      "level_range": [
+        4,
+        8
+      ],
+      "monster": "eyenemy",
+      "variables": [
+        {
+          "daytime": "false"
+        }
+      ]
+    },
+    {
+      "encounter_rate": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         5,
         8
+      ],
+      "monster": "axolightl",
+      "variables": [
+        {
+          "daytime": "false"
+        }
       ]
     },
     {
-      "monster": "cataspike",
       "encounter_rate": 2.5,
-      "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         4,
         8
+      ],
+      "monster": "cataspike",
+      "variables": [
+        {
+          "daytime": "false"
+        }
       ]
     }
-  ]
+  ],
+  "slug": "spyder_route2"
 }

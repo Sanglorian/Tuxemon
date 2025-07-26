@@ -5,11 +5,14 @@ from __future__ import annotations
 import logging
 import uuid
 from dataclasses import dataclass
-from typing import final
+from typing import TYPE_CHECKING, final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.monster import Monster
 from tuxemon.technique.technique import Technique
+
+if TYPE_CHECKING:
+    from tuxemon.monster import Monster
+    from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -38,21 +41,19 @@ class OverwriteTechAction(EventAction):
     added: str
 
     def overwrite(self, monster: Monster, removed: Technique) -> None:
-        slot = monster.moves.index(removed)
-        added = Technique()
-        added.load(self.added)
-        monster.moves.remove(removed)
-        monster.moves.insert(slot, added)
+        slot = monster.moves.current_moves.index(removed)
+        added = Technique.create(self.added)
+        monster.moves.replace_move(slot, added)
         logger.info(f"{removed.name} replaced by {added.name}")
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
         if self.removed not in player.game_variables:
             logger.error(f"Game variable {self.removed} not found")
             return
         tech_id = uuid.UUID(player.game_variables[self.removed])
         for monster in player.monsters:
-            technique = monster.find_tech_by_id(tech_id)
+            technique = monster.moves.find_tech_by_id(tech_id)
             if technique is None:
                 logger.error(f"Technique not found in {monster.name}")
                 return

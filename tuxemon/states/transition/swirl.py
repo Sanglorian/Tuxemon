@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-import pygame
+from pygame.surface import Surface
+from pygame.transform import rotate, scale
 
 from tuxemon import prepare
 from tuxemon.platform.events import PlayerInput
@@ -20,7 +21,7 @@ class SwirlTransition(State):
     force_draw = True
 
     def __init__(
-        self, image: pygame.Surface, scale: float = 1.2, speed: float = 50.0
+        self, image: Surface, scale: float = 1.2, speed: float = 50.0
     ) -> None:
         """
         Parameters:
@@ -45,10 +46,10 @@ class SwirlTransition(State):
             logger.info("Swirl transition finished.")
             self.client.pop_state()
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Surface) -> None:
         surface.fill((0, 0, 0))
-        rotated_image = pygame.transform.rotate(self.image, self.angle)
-        scaled_image = pygame.transform.scale(
+        rotated_image = rotate(self.image, self.angle)
+        scaled_image = scale(
             rotated_image,
             (
                 int(rotated_image.get_width() * self.scale),

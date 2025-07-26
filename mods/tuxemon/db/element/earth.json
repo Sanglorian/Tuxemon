@@ -1,6 +1,6 @@
 {
-  "slug": "earth",
   "icon": "gfx/ui/icons/element/earth_type.png",
+  "slug": "earth",
   "types": [
     {
       "against": "aether",

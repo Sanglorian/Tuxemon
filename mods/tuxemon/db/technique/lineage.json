@@ -3,10 +3,12 @@
   "accuracy": 1.0,
   "animation": "yellow_circle",
   "effects": [
-    "damage"
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.0,
   "power": 1.5,
   "range": "reach",
@@ -14,6 +16,7 @@
   "sfx": "sfx_blaster",
   "slug": "lineage",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -23,7 +26,10 @@
     "own_trainer": false
   },
   "category": "basic",
-  "tags": ["Ghost", "Leadership"],
+  "tags": [
+    "ghost",
+    "leadership"
+  ],
   "types": [
     "metal"
   ],

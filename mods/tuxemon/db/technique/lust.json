@@ -3,10 +3,16 @@
   "accuracy": 1.0,
   "animation": "drip_red",
   "effects": [
-    "give exhausted,enemy_monster"
+    {
+      "type": "give",
+      "parameters": [
+        "exhausted",
+        "enemy_monster"
+      ]
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.8,
   "power": 2.8,
   "range": "special",
@@ -14,6 +20,7 @@
   "sfx": "sfx_blaster",
   "slug": "lust",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -23,7 +30,9 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["Love"],
+  "tags": [
+    "love"
+  ],
   "types": [
     "earth"
   ],

@@ -136,7 +136,7 @@
    <properties>
     <property name="act1" value="create_npc spyder_log,13,13"/>
     <property name="cond1" value="not char_exists spyder_log"/>
-    <property name="cond2" value="not variable_set spyder_log:remove"/>
+    <property name="cond2" value="not variable_set spyder_log:remove_entity"/>
    </properties>
   </object>
   <object id="179" name="encounter 3" type="event" x="224" y="112" width="16" height="16">
@@ -424,7 +424,7 @@
   <object id="213" name="Talk Maxwell" type="event" x="64" y="80" width="96" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_route6_maxwell"/>
+    <property name="act2" value="pathfind_to_char player,spyder_route6_maxwell"/>
     <property name="act3" value="translated_dialog spyder_route6_maxwell1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster propellercat,30,spyder_route6_maxwell,5,10"/>
@@ -439,7 +439,7 @@
   <object id="214" name="Talk Orion" type="event" x="336" y="32" width="16" height="64">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_route6_orion"/>
+    <property name="act2" value="pathfind_to_char player,spyder_route6_orion"/>
     <property name="act3" value="translated_dialog spyder_route6_orion1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster spighter,20,spyder_route6_orion,5,10"/>
@@ -454,7 +454,7 @@
   <object id="215" name="Talk Richard" type="event" x="432" y="176" width="96" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_route6_richard"/>
+    <property name="act2" value="pathfind_to_char player,spyder_route6_richard"/>
     <property name="act3" value="translated_dialog spyder_route6_richard1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster hydrone,30,spyder_route6_richard,5,10"/>
@@ -469,7 +469,7 @@
   <object id="216" name="Talk Blair" type="event" x="432" y="144" width="128" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_route6_blair"/>
+    <property name="act2" value="pathfind_to_char player,spyder_route6_blair"/>
     <property name="act3" value="translated_dialog spyder_route6_blair1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster grintrock,30,spyder_route6_blair,5,10"/>
@@ -484,7 +484,7 @@
   <object id="217" name="Talk Mungo" type="event" x="464" y="48" width="48" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_route6_mungo"/>
+    <property name="act2" value="pathfind_to_char player,spyder_route6_mungo"/>
     <property name="act3" value="translated_dialog spyder_route6_mungo1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster noctula,20,spyder_route6_mungo,5,10"/>
@@ -500,7 +500,7 @@
     <property name="act01" value="char_stop player"/>
     <property name="act02" value="lock_controls"/>
     <property name="act03" value="create_npc spyder_billie,0,14"/>
-    <property name="act04" value="pathfind_to_player spyder_billie"/>
+    <property name="act04" value="pathfind_to_char player,spyder_billie"/>
     <property name="act05" value="unlock_controls"/>
     <property name="act08" value="translated_dialog spyder_route6_billie1"/>
     <property name="act20" value="add_monster billie_choice,34,spyder_billie,5,10"/>

@@ -5,27 +5,27 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-import pygame
+from pygame.surface import Surface
 
-from tuxemon import prepare, state
+from tuxemon import prepare
 from tuxemon.platform.events import PlayerInput
-from tuxemon.states.transition.fade import FadeOutTransition
+from tuxemon.state import State, StateManager
 
 logger = logging.getLogger(__name__)
 
 
-class SplashState(state.State):
+class SplashState(State):
     """The state responsible for the splash screen."""
 
     default_duration = 3
 
-    def __init__(self, parent: state.StateManager) -> None:
+    def __init__(self, parent: StateManager) -> None:
         super().__init__()
 
         self.parent = parent
 
         # this task will skip the splash screen after some time
-        self.task(self.fade_out, self.default_duration)
+        self.task(self.fade_out, interval=self.default_duration)
         self.triggered = False
 
         width, height = prepare.SCREEN_SIZE
@@ -58,11 +58,11 @@ class SplashState(state.State):
             self.fade_out()
         return None
 
-    def draw(self, surface: pygame.surface.Surface) -> None:
+    def draw(self, surface: Surface) -> None:
         if not self.triggered:
             surface.fill(prepare.BLACK_COLOR)
             self.sprites.draw(surface)
 
     def fade_out(self) -> None:
         self.triggered = True
-        self.parent.push_state(FadeOutTransition())
+        self.parent.push_state("FadeOutTransition")

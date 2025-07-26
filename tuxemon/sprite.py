@@ -17,7 +17,7 @@ from typing import (
     overload,
 )
 
-from pygame.rect import Rect
+from pygame.rect import FRect, Rect
 from pygame.sprite import DirtySprite, Group, LayeredUpdates
 from pygame.sprite import Sprite as PySprite
 from pygame.surface import Surface
@@ -37,10 +37,8 @@ if TYPE_CHECKING:
 logger = logging.getLogger()
 
 
-dummy_image: Final = Surface((0, 0))
-
-
 class Sprite(DirtySprite):
+    _dummy_image: Surface = Surface((0, 0))
     _original_image: Optional[Surface]
     _image: Optional[Surface]
     _rect: Rect
@@ -77,11 +75,7 @@ class Sprite(DirtySprite):
         if self.animation is not None:
             self.animation.update(time_delta)
 
-    def draw(
-        self,
-        surface: Surface,
-        rect: Optional[Rect] = None,
-    ) -> Rect:
+    def draw(self, surface: Surface, rect: Optional[Rect] = None) -> Rect:
         """
         Draw the sprite to the surface.
 
@@ -128,7 +122,7 @@ class Sprite(DirtySprite):
         return self._rect
 
     @rect.setter
-    def rect(self, rect: Optional[Rect]) -> None:
+    def rect(self, rect: Optional[Union[FRect, Rect]]) -> None:
         """
         Set the rectangle of the sprite.
 
@@ -139,6 +133,8 @@ class Sprite(DirtySprite):
             rect = Rect(0, 0, 0, 0)
 
         if rect != self._rect:
+            if isinstance(rect, FRect):
+                rect = Rect(rect.x, rect.y, rect.width, rect.height)
             self._rect = rect
             self._needs_update = True
 
@@ -158,7 +154,11 @@ class Sprite(DirtySprite):
             self.update_image()
             self._needs_update = False
             self._needs_rescale = False
-        return self._image if self._image and self.visible else dummy_image
+        return (
+            self._image
+            if self._image and self.visible
+            else Sprite._dummy_image
+        )
 
     @image.setter
     def image(self, image: Optional[Surface]) -> None:
@@ -204,11 +204,12 @@ class Sprite(DirtySprite):
         """
         Update the image of the sprite.
         """
-        image: Optional[Surface]
+        image: Optional[Surface] = None
         if self._original_image is not None and self._needs_rescale:
             w = self.rect.width if self._width is None else self._width
             h = self.rect.height if self._height is None else self._height
-            image = scale(self._original_image, (w, h))
+            if (w, h) != self._original_image.get_size():
+                image = scale(self._original_image, (w, h))
             center = self.rect.center
             self.rect.size = w, h
             self.rect.center = center
@@ -216,7 +217,11 @@ class Sprite(DirtySprite):
             image = self._original_image
 
         if image is not None and self._rotation:
-            image = rotozoom(image, self._rotation, 1)
+            image = (
+                rotozoom(image, self._rotation, 1)
+                if self._rotation != 0
+                else image
+            )
             rect = image.get_rect(center=self.rect.center)
             self.rect.size = rect.size
             self.rect.center = rect.center
@@ -242,7 +247,7 @@ class Sprite(DirtySprite):
         Parameters:
             width: The new width of the sprite.
         """
-        width = int(round(width, 0))
+        width = round(width)
         if not width == self._width:
             self._width = width
             self._needs_rescale = True
@@ -266,7 +271,7 @@ class Sprite(DirtySprite):
         Parameters:
             height: The new height of the sprite.
         """
-        height = int(round(height, 0))
+        height = round(height)
         if not height == self._height:
             self._height = height
             self._needs_rescale = True
@@ -290,7 +295,7 @@ class Sprite(DirtySprite):
         Parameters:
             value: The new rotation of the sprite.
         """
-        value = int(round(value, 0)) % 360
+        value = round(value) % 360
         if not value == self._rotation:
             self._rotation = value
             self._needs_update = True
@@ -312,8 +317,7 @@ class Sprite(DirtySprite):
             x: The new x-coordinate of the sprite.
             y: The new y-coordinate of the sprite.
         """
-        self.rect.x = x
-        self.rect.y = y
+        self.rect.topleft = (x, y)
 
     def get_position(self) -> tuple[int, int]:
         """
@@ -333,14 +337,9 @@ class Sprite(DirtySprite):
         """
         return self.visible
 
-    def toggle_visible(sprite: Sprite) -> None:
-        """
-        Toggles the visibility of a sprite.
-
-        Parameters:
-            sprite: The sprite to toggle visibility for.
-        """
-        sprite.visible = not sprite.visible
+    def toggle_visible(self) -> None:
+        """Toggles the visibility of a sprite."""
+        self.visible = not self.visible
 
 
 class CaptureDeviceSprite(Sprite):
@@ -350,56 +349,44 @@ class CaptureDeviceSprite(Sprite):
         tray: Sprite,
         monster: Optional[Monster],
         sprite: Sprite,
-        state: str,
         icon: BattleIconsModel,
     ) -> None:
+        super().__init__()
         self.tray = tray
         self.monster = monster
         self.sprite = sprite
-        self.state = state
-        self.empty_img = graphics.load_and_scale(icon.icon_empty)
-        self.faint_img = graphics.load_and_scale(icon.icon_faint)
-        self.alive_img = graphics.load_and_scale(icon.icon_alive)
-        self.effected_img = graphics.load_and_scale(icon.icon_status)
-        super().__init__()
+        self.icon = icon
+        self.state = self.resolve_status()
+        self.update_image()
+
+    def resolve_status(self) -> str:
+        if self.monster is None:
+            return "empty"
+        if self.monster.status.is_fainted:
+            return "faint"
+        if self.monster.status.status_exists():
+            return "effected"
+        return "alive"
+
+    def update_image(self) -> None:
+        mapping = {
+            "empty": graphics.load_and_scale(self.icon.icon_empty),
+            "faint": graphics.load_and_scale(self.icon.icon_faint),
+            "effected": graphics.load_and_scale(self.icon.icon_status),
+            "alive": graphics.load_and_scale(self.icon.icon_alive),
+        }
+        self.sprite.image = mapping[self.state]
 
     def update_state(self) -> str:
-        """
-        Updates the state of the capture device.
-
-        Returns:
-            The new state.
-
-        """
-        if self.state == "empty":
-            self.sprite.image = self.empty_img
-            return "empty"
-
-        assert self.monster
-
-        if any(t.slug == "faint" for t in self.monster.status):
-            self.state = "faint"
-            self.sprite.image = self.faint_img
-        elif self.monster.status:
-            self.state = "effected"
-            self.sprite.image = self.effected_img
-        else:
-            self.state = "alive"
-            self.sprite.image = self.alive_img
-
+        """Check for state changes and update the image if needed."""
+        new_state = self.resolve_status()
+        if new_state != self.state:
+            self.state = new_state
+            self.update_image()
         return self.state
 
-    def animate_capture(
-        self,
-        animate: Callable[..., object],
-    ) -> None:
-        """
-        Animates the capture device in game.
-
-        Parameters:
-            animate: The animation function.
-
-        """
+    def animate_capture(self, animate: Callable[..., object]) -> None:
+        """Fade in + slide up animation for the sprite."""
         sprite = self.sprite
         sprite.image = graphics.convert_alpha_to_colorkey(sprite.image)
         sprite.image.set_alpha(0)
@@ -420,7 +407,6 @@ class SpriteGroup(LayeredUpdates, Generic[_GroupElement]):
     * Supports skipping sprites without an image
     * Supports sprites with visible flag
     * Get bounding rect of all children
-
     """
 
     def __init__(self, *, default_layer: int = 0) -> None:
@@ -468,6 +454,15 @@ class SpriteGroup(LayeredUpdates, Generic[_GroupElement]):
         else:
             return sprites[0].rect.unionall([s.rect for s in sprites[1:]])
 
+    def swap(
+        self, original_sprite: _GroupElement, new_sprite: _GroupElement
+    ) -> None:
+        """
+        Swap the positions of two sprites in the group.
+        """
+        self.remove(original_sprite)
+        self.add(new_sprite)
+
 
 _MenuElement = TypeVar("_MenuElement", bound="MenuItem[Any]")
 
@@ -477,7 +472,6 @@ class MenuSpriteGroup(SpriteGroup[_MenuElement]):
     Sprite Group to be used for menus.
 
     Includes functions for moving a cursor around the screen.
-
     """
 
     _simple_movement_dict: Final = {
@@ -512,7 +506,6 @@ class MenuSpriteGroup(SpriteGroup[_MenuElement]):
 
         Returns:
             New menu item offset.
-
         """
         # TODO: some sort of smart way to pick items based on location on
         # screen
@@ -558,10 +551,7 @@ class RelativeGroup(MenuSpriteGroup[_MenuElement]):
         else:
             self.rect = Rect(self.parent.rect)
 
-    def draw(
-        self,
-        surface: Surface,
-    ) -> list[Rect]:
+    def draw(self, surface: Surface) -> list[Union[FRect, Rect]]:
         self.update_rect_from_parent()
         topleft = self.rect.topleft
 
@@ -599,6 +589,7 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
         self._needs_arrange = False
         self._columns = 1
         self.line_spacing: Optional[int] = None
+        self.max_width_per_column: Optional[int] = None
 
     @property
     def columns(self) -> int:
@@ -614,11 +605,7 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
             self.arrange_menu_items()
         return super().calc_bounding_rect()
 
-    def add(
-        self,
-        *sprites: Union[PySprite, Any],
-        **kwargs: Any,
-    ) -> None:
+    def add(self, *sprites: Union[PySprite, Any], **kwargs: Any) -> None:
         """
         Add something to the stacker.
 
@@ -630,10 +617,7 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
         super().add(*sprites, **kwargs)
         self._needs_arrange = True
 
-    def remove(
-        self,
-        *items: Union[PySprite, Any],
-    ) -> None:
+    def remove(self, *items: Union[PySprite, Any]) -> None:
         super().remove(*items)
         self._needs_arrange = True
 
@@ -644,10 +628,7 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
             super().remove(i)
         self._needs_arrange = True
 
-    def draw(
-        self,
-        surface: Surface,
-    ) -> list[Rect]:
+    def draw(self, surface: Surface) -> list[Union[FRect, Rect]]:
         if self._needs_arrange:
             self.arrange_menu_items()
         dirty = super().draw(surface)
@@ -657,7 +638,6 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
         """
         Iterate through menu items and position them in the menu.
         Defaults to a multi-column layout with items placed horizontally first.
-
         """
         if not len(self):
             return
@@ -671,7 +651,10 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
         self.update_rect_from_parent()
         width, height = self.rect.size
 
-        items_per_column = math.ceil(len(self) / self.columns)
+        if self.max_width_per_column is not None:
+            self._columns = max(1, width // max(1, self.max_width_per_column))
+
+        items_per_column = math.ceil(len(self) / self._columns)
 
         if self.expand:
             logger.debug("expanding menu...")
@@ -680,12 +663,12 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
         else:
             line_spacing = int(max_height * 1.2)
 
-        column_spacing = width // self.columns
+        column_spacing = width // self._columns
 
         # TODO: pagination API
 
         for index, item in enumerate(self.sprites()):
-            oy, ox = divmod(index, self.columns)
+            oy, ox = divmod(index, self._columns)
             item.rect.topleft = ox * column_spacing, oy * line_spacing
 
         self._needs_arrange = False

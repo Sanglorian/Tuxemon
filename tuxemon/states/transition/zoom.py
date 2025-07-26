@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-import pygame
+from pygame.surface import Surface
+from pygame.transform import scale
 
 from tuxemon import prepare
 from tuxemon.platform.events import PlayerInput
@@ -20,7 +21,7 @@ class ZoomOutTransition(State):
     force_draw = True
 
     def __init__(
-        self, image: pygame.Surface, scale: float = 0.1, speed: float = 0.5
+        self, image: Surface, scale: float = 0.1, speed: float = 0.5
     ) -> None:
         """
         Parameters:
@@ -47,8 +48,8 @@ class ZoomOutTransition(State):
             logger.info("Zoom Out transition finished.")
             self.client.pop_state()
 
-    def draw(self, surface: pygame.Surface) -> None:
-        scaled_image = pygame.transform.scale(
+    def draw(self, surface: Surface) -> None:
+        scaled_image = scale(
             self.image,
             (
                 int(self.image.get_width() * self.scale),
@@ -73,7 +74,7 @@ class ZoomInTransition(State):
     force_draw = True
 
     def __init__(
-        self, image: pygame.Surface, scale: float = 1.0, speed: float = 0.5
+        self, image: Surface, scale: float = 1.0, speed: float = 0.5
     ) -> None:
         """
         Parameters:
@@ -100,8 +101,8 @@ class ZoomInTransition(State):
             logger.info("Zoom In transition finished.")
             self.client.pop_state()
 
-    def draw(self, surface: pygame.Surface) -> None:
-        scaled_image = pygame.transform.scale(
+    def draw(self, surface: Surface) -> None:
+        scaled_image = scale(
             self.image,
             (
                 int(self.image.get_width() * self.scale),

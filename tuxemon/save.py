@@ -2,24 +2,27 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import base64
-import datetime
 import importlib
 import json
 import logging
 import os
+from base64 import b64encode
 from collections.abc import Callable, Mapping
+from datetime import datetime
+from enum import Enum
 from operator import itemgetter
-from typing import Any, Literal, NewType, Optional, TextIO, TypeVar
+from pathlib import Path
+from typing import Any, Optional, TypedDict, TypeVar
 
-import pygame
+from pygame.image import tobytes
+from pygame.surface import Surface
 
 from tuxemon import prepare
 from tuxemon.client import LocalPygameClient
 from tuxemon.npc import NPCState
 from tuxemon.save_upgrader import SAVE_VERSION, upgrade_save
 from tuxemon.session import Session
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.states.world.worldstate import WorldSave, WorldState
 
 try:
     import cbor
@@ -36,18 +39,31 @@ slot_number: Optional[int] = None
 TIME_FORMAT = "%Y-%m-%d %H:%M"
 config = prepare.CONFIG
 
-EncodedScreenshot = NewType("EncodedScreenshot", str)
+
+class SaveMethod(Enum):
+    JSON = "JSON"
+    CBOR = "CBOR"
+
+    @classmethod
+    def from_string(cls, method_str: str) -> SaveMethod:
+        try:
+            return cls[method_str.upper()]
+        except KeyError:
+            # Fallback to JSON if an unknown method is encountered or cbor not available
+            return cls.JSON
 
 
-class SaveData(NPCState):
-    screenshot: EncodedScreenshot
+class SaveData(TypedDict, total=False):
+    screenshot: str
     screenshot_width: int
     screenshot_height: int
     time: str
     version: int
+    npc_state: NPCState
+    world_state: WorldSave
 
 
-def capture_screenshot(client: LocalPygameClient) -> pygame.surface.Surface:
+def capture_screenshot(client: LocalPygameClient) -> Surface:
     """
     Capture a screenshot.
 
@@ -56,9 +72,8 @@ def capture_screenshot(client: LocalPygameClient) -> pygame.surface.Surface:
 
     Returns:
         Captured image.
-
     """
-    screenshot = pygame.Surface(client.screen.get_size())
+    screenshot = Surface(client.screen.get_size())
     world = client.get_state_by_name(WorldState)
     world.draw(screenshot)
     return screenshot
@@ -73,152 +88,188 @@ def get_save_data(session: Session) -> SaveData:
 
     Returns:
         Game data to save, must be JSON encodable.
-
     """
     screenshot = capture_screenshot(session.client)
     npc_state = session.player.get_state(session)
-    save_data: SaveData = {
-        "screenshot": base64.b64encode(
-            pygame.image.tobytes(screenshot, "RGB")
-        ).decode(),
+    world_state = session.world.get_state(session)
+
+    return {
+        "screenshot": b64encode(tobytes(screenshot, "RGB")).decode(),
         "screenshot_width": screenshot.get_width(),
         "screenshot_height": screenshot.get_height(),
-        "time": datetime.datetime.now().strftime(TIME_FORMAT),
+        "time": datetime.now().strftime(TIME_FORMAT),
         "version": SAVE_VERSION,
-        **npc_state,  # type: ignore[misc]
+        "npc_state": npc_state,
+        "world_state": world_state,
     }
-    return save_data
 
 
 def _get_save_extension() -> str:
     save_format = config.compress_save
-
     return "save" if save_format is None else f"csave.{save_format}"
 
 
-def get_save_path(slot: int) -> str:
+def get_save_path(slot: int) -> Path:
     extension = _get_save_extension()
-    return f"{prepare.SAVE_PATH}{slot}.{extension}"
+    return prepare.SAVE_PATH.parent / f"slot{slot}.{extension}"
 
 
-def json_action(
-    path: str,
-    mode: Literal["wt", "rt"],
-    action_function: Callable[[TextIO, Mapping[str, Any]], T],
+def save_action(
+    path: Path,
+    mode: str,
+    action_function: Callable[[Any, Any], T],
+    save_method: SaveMethod,
+    compress_save: Optional[str] = None,
     compression_kwargs: Optional[Mapping[str, Any]] = None,
-    json_kwargs: Optional[Mapping[str, Any]] = None,
+    serializer_kwargs: Optional[Mapping[str, Any]] = None,
 ) -> T:
     if compression_kwargs is None:
         compression_kwargs = {}
 
-    if json_kwargs is None:
-        json_kwargs = {}
+    if serializer_kwargs is None:
+        serializer_kwargs = {}
 
-    if config.compress_save is None:
-        open_function = open
-    else:
-        compression_tool = importlib.import_module(config.compress_save)
+    open_function = open
+    if compress_save is not None:
+        compression_tool = importlib.import_module(compress_save)
         open_function = compression_tool.open
+
+    is_binary_mode = save_method == SaveMethod.CBOR
+
+    actual_mode = mode
+    if is_binary_mode and "t" in mode:
+        actual_mode = mode.replace("t", "b")
+    elif not is_binary_mode and "b" in mode:
+        actual_mode = mode.replace("b", "t")
+
+    with open_function(
+        path,
+        mode=actual_mode,
+        encoding="utf-8" if not is_binary_mode else None,
+        **compression_kwargs,
+    ) as file:
+        return action_function(file, serializer_kwargs)
+
+
+def dump_data(
+    obj: Any,
+    path: Path,
+    save_method: SaveMethod,
+    compress_save: Optional[str] = None,
+    compression_kwargs: Optional[Mapping[str, Any]] = None,
+    serializer_kwargs: Optional[Mapping[str, Any]] = None,
+) -> None:
+    def action_function(
+        file: Any,
+        serializer_kwargs: Mapping[str, Any],
+    ) -> None:
+        if save_method == SaveMethod.JSON:
+            json.dump(obj, file, **serializer_kwargs)
+        elif save_method == SaveMethod.CBOR:
+            cbor.dump(obj, file, **serializer_kwargs)
+        else:
+            raise ValueError(f"Unsupported save method: {save_method}")
+
+    mode = "wt" if save_method == SaveMethod.JSON else "wb"
+
+    return save_action(
+        path=path,
+        mode=mode,
+        action_function=action_function,
+        save_method=save_method,
+        compress_save=compress_save,
+        compression_kwargs=compression_kwargs,
+        serializer_kwargs=serializer_kwargs,
+    )
+
+
+def load_data(
+    path: Path,
+    save_method: SaveMethod,
+    compress_save: Optional[str] = None,
+    compression_kwargs: Optional[Mapping[str, Any]] = None,
+    serializer_kwargs: Optional[Mapping[str, Any]] = None,
+) -> Any:
+    if compression_kwargs is None:
+        compression_kwargs = {}
+
+    if serializer_kwargs is None:
+        serializer_kwargs = {}
+
+    open_function = open
+    if compress_save is not None:
+        compression_tool = importlib.import_module(compress_save)
+        open_function = compression_tool.open
+
+    mode = "rt" if save_method == SaveMethod.JSON else "rb"
 
     with open_function(
         path,
         mode=mode,
-        encoding="utf-8",
+        encoding="utf-8" if save_method == SaveMethod.JSON else None,
         **compression_kwargs,
     ) as file:
-        return action_function(file, json_kwargs)
+        if save_method == SaveMethod.JSON:
+            return json.load(file, **serializer_kwargs)
+        elif save_method == SaveMethod.CBOR:
+            return cbor.load(file, **serializer_kwargs)
+        else:
+            raise ValueError(f"Unsupported save method: {save_method}")
 
 
-def json_dump(
-    obj: Any,
-    path: str,
-    compression_kwargs: Optional[Mapping[str, Any]] = None,
-    json_kwargs: Optional[Mapping[str, Any]] = None,
-) -> None:
-    def action_function(
-        file: TextIO,
-        json_kwargs: Mapping[str, Any],
-    ) -> None:
-        json.dump(obj, file, **json_kwargs)
+def open_save_file(save_path: Path) -> Optional[dict[str, Any]]:
+    current_save_method = SaveMethod.from_string(prepare.SAVE_METHOD)
 
-    return json_action(
-        path=path,
-        mode="wt",
-        action_function=action_function,
-        compression_kwargs=compression_kwargs,
-        json_kwargs=json_kwargs,
-    )
-
-
-def json_load(
-    path: str,
-    compression_kwargs: Optional[Mapping[str, Any]] = None,
-    json_kwargs: Optional[Mapping[str, Any]] = None,
-) -> Any:
-    def action_function(
-        file: TextIO,
-        json_kwargs: Mapping[str, Any],
-    ) -> Any:
-        return json.load(file, **json_kwargs)
-
-    return json_action(
-        path=path,
-        mode="rt",
-        action_function=action_function,
-        compression_kwargs=compression_kwargs,
-        json_kwargs=json_kwargs,
-    )
-
-
-def open_save_file(save_path: str) -> Optional[dict[str, Any]]:
     package: dict[str, Any] = {}
+
     try:
         try:
-            if config.compress_save is None and prepare.SAVE_METHOD == "CBOR":
-                package = cbor.load(save_path)
-                return package
-            else:
-                package = json_load(save_path)
-                return package
+            package = load_data(
+                save_path,
+                save_method=current_save_method,
+                compress_save=config.compress_save,
+            )
+            return package
         except ValueError as e:
-            logger.error("Cannot decode save: %s", save_path)
+            logger.error(f"Cannot decode save: {save_path}", exc_info=True)
             return None
     except OSError as e:
-        logger.info(e)
+        logger.info(f"OS Error when opening save file {save_path}: {e}")
         return None
 
 
-def save(
-    save_data: SaveData,
-    slot: int,
-) -> None:
+def save(save_data: SaveData, slot: int) -> None:
     """
     Saves the current game state to a file using gzip compressed JSON.
 
     Parameters:
         save_data: The data to save.
         slot: The save slot to save the data to.
-
     """
-    # Save a screenshot of the current frame
-
     save_path = get_save_path(slot)
-    save_path_tmp = save_path + ".tmp"
+    save_path_tmp = save_path.with_suffix(save_path.suffix + ".tmp")
     json_kwargs = {
         "indent": 4,
         "separators": (",", ": "),
     }
 
-    logger.info("Saving data to save file: %s", save_path)
-    if config.compress_save is None and prepare.SAVE_METHOD == "CBOR":
-        cbor.dump(save_data, save_path_tmp)
-    else:
-        json_dump(save_data, save_path_tmp, json_kwargs=json_kwargs)
+    current_save_method = SaveMethod.from_string(prepare.SAVE_METHOD)
+    logger.info(f"Saving data to save file: {save_path}")
+
+    dump_data(
+        save_data,
+        save_path_tmp,
+        save_method=current_save_method,
+        compress_save=config.compress_save,
+        serializer_kwargs=(
+            json_kwargs if current_save_method == SaveMethod.JSON else {}
+        ),
+    )
 
     # Don't dump straight to the file: if we crash it would corrupt
     # the save_data
     # We use a temporal file plus atomic replacement instead
-    os.replace(save_path_tmp, save_path)
+    os.replace(save_path_tmp.as_posix(), save_path.as_posix())
 
 
 def load(slot: int) -> Optional[SaveData]:
@@ -230,21 +281,14 @@ def load(slot: int) -> Optional[SaveData]:
 
     Returns:
         Dictionary containing game data to load.
-
     """
     save_path = get_save_path(slot)
     save_data = open_save_file(save_path)
 
-    if save_data:
-        return upgrade_save(save_data)
-    elif save_data is None:
+    if save_data is None:
         # File not found; it probably wasn't ever created, so don't panic
         return None
-    else:
-        save_data["error"] = "Save file corrupted"
-        save_data["player_name"] = "BROKEN SAVE!"
-        logger.error("Failed loading save file.")
-        return save_data  # type: ignore[return-value]
+    return upgrade_save(save_data)
 
 
 def get_index_of_latest_save() -> Optional[int]:
@@ -253,7 +297,7 @@ def get_index_of_latest_save() -> Optional[int]:
         save_path = get_save_path(slot_index + 1)
         save_data = open_save_file(save_path)
         if save_data is not None:
-            time_of_save = datetime.datetime.strptime(
+            time_of_save = datetime.strptime(
                 save_data["time"],
                 TIME_FORMAT,
             )

@@ -1,283 +1,307 @@
 [
   {
-    "slug": "spyder_paper_mart",
-    "monsters": [],
+    "background": "gfx/ui/item/item_menu_bg.png",
     "items": [
       {
+        "cost": 5,
         "name": "potion",
-        "price": 20,
-        "cost": 5
+        "price": 20
       },
       {
+        "cost": 20,
         "name": "revive",
-        "price": 100,
-        "cost": 20
+        "price": 100
       },
       {
+        "cost": 10,
         "name": "tuxeball",
-        "price": 50,
-        "cost": 10
+        "price": 50
       }
-    ]
+    ],
+    "monsters": [],
+    "resale_multiplier": 0.5,
+    "slug": "spyder_paper_scoop"
   },
   {
-    "slug": "spyder_cotton_scoop",
-    "monsters": [],
+    "background": "gfx/ui/item/item_menu_bg.png",
     "items": [
       {
+        "cost": 5,
         "name": "potion",
-        "price": 20,
-        "cost": 5
+        "price": 20
       },
       {
+        "cost": 20,
         "name": "revive",
-        "price": 100,
-        "cost": 20
+        "price": 100
       },
       {
+        "cost": 10,
         "name": "tuxeball",
-        "price": 50,
-        "cost": 10
+        "price": 50
       }
-    ]
+    ],
+    "monsters": [],
+    "resale_multiplier": 0.5,
+    "slug": "spyder_cotton_scoop"
   },
   {
-    "slug": "spyder_cotton_tech",
-    "monsters": [],
+    "background": "gfx/ui/item/item_menu_bg.png",
     "items": [
       {
+        "cost": 400,
         "name": "miaow_milk",
-        "price": 2000,
-        "cost": 400
+        "price": 2000
       },
       {
+        "cost": 400,
         "name": "pyramidion",
-        "price": 2000,
-        "cost": 400
+        "price": 2000
       },
       {
+        "cost": 400,
         "name": "ox_stick",
-        "price": 2000,
-        "cost": 400
+        "price": 2000
       },
       {
+        "cost": 400,
+        "inventory": 1,
         "name": "tm_avalanche",
-        "price": 2000,
-        "cost": 400,
-        "inventory": 1
+        "price": 2000
       },
       {
-        "name": "tm_blossom",
-        "price": 1000,
         "cost": 200,
-        "inventory": 1
+        "inventory": 1,
+        "name": "tm_blossom",
+        "price": 1000
       }
-    ]
+    ],
+    "monsters": [],
+    "resale_multiplier": 0.5,
+    "slug": "spyder_cotton_tech"
   },
   {
-    "slug": "spyder_leather_scoop",
-    "monsters": [],
+    "background": "gfx/ui/item/item_menu_bg.png",
     "items": [
       {
+        "cost": 10,
         "name": "super_potion",
-        "price": 50,
-        "cost": 10
+        "price": 50
       },
       {
+        "cost": 20,
         "name": "revive",
-        "price": 100,
-        "cost": 20
+        "price": 100
       },
       {
+        "cost": 50,
         "name": "cureall",
-        "price": 250,
-        "cost": 50
+        "price": 250
       },
       {
+        "cost": 30,
         "name": "tuxeball_noble",
-        "price": 150,
-        "cost": 30
+        "price": 150
       },
       {
+        "cost": 40,
         "name": "tuxeball_lavish",
-        "price": 200,
-        "cost": 40
+        "price": 200
       }
-    ]
+    ],
+    "monsters": [],
+    "resale_multiplier": 0.5,
+    "slug": "spyder_leather_scoop"
   },
   {
-    "slug": "spyder_flower_scoop",
-    "monsters": [],
+    "background": "gfx/ui/item/item_menu_bg.png",
     "items": [
       {
+        "cost": 10,
         "name": "super_potion",
-        "price": 50,
-        "cost": 10
+        "price": 50
       },
       {
+        "cost": 50,
         "name": "mega_potion",
-        "price": 200,
-        "cost": 50
+        "price": 200
       },
       {
+        "cost": 20,
         "name": "revive",
-        "price": 100,
-        "cost": 20
+        "price": 100
       },
       {
+        "cost": 50,
         "name": "cureall",
-        "price": 250,
-        "cost": 50
+        "price": 250
       },
       {
+        "cost": 40,
         "name": "tuxeball_lavish",
-        "price": 200,
-        "cost": 40
+        "price": 200
       },
       {
+        "cost": 50,
         "name": "tuxeball_grand",
-        "price": 250,
-        "cost": 50
+        "price": 250
       }
-    ]
+    ],
+    "monsters": [],
+    "resale_multiplier": 0.5,
+    "slug": "spyder_flower_scoop"
   },
   {
-    "slug": "spyder_timber_scoop",
-    "monsters": [],
+    "background": "gfx/ui/item/item_menu_bg.png",
     "items": [
       {
+        "cost": 10,
         "name": "super_potion",
-        "price": 50,
-        "cost": 10
+        "price": 50
       },
       {
+        "cost": 50,
         "name": "mega_potion",
-        "price": 200,
-        "cost": 50
+        "price": 200
       },
       {
+        "cost": 20,
         "name": "revive",
-        "price": 100,
-        "cost": 20
+        "price": 100
       },
       {
+        "cost": 50,
         "name": "cureall",
-        "price": 250,
-        "cost": 50
+        "price": 250
       },
       {
+        "cost": 50,
         "name": "tuxeball_grand",
-        "price": 250,
-        "cost": 50
+        "price": 250
       },
       {
+        "cost": 80,
         "name": "tuxeball_majestic",
-        "price": 400,
-        "cost": 80
+        "price": 400
       },
       {
+        "cost": 60,
         "name": "tuxeball_diurnal",
         "price": 300,
-        "cost": 60,
         "variables": [
-          "daytime:true"
+          {
+            "daytime": "true"
+          }
         ]
       },
       {
+        "cost": 60,
         "name": "tuxeball_nocturnal",
         "price": 300,
-        "cost": 60,
         "variables": [
-          "daytime:false"
+          {
+            "daytime": "false"
+          }
         ]
       }
-    ]
+    ],
+    "monsters": [],
+    "resale_multiplier": 0.5,
+    "slug": "spyder_timber_scoop"
   },
   {
-    "slug": "spyder_candy_scoop",
-    "monsters": [],
+    "background": "gfx/ui/item/item_menu_bg.png",
     "items": [
       {
+        "cost": 50,
         "name": "mega_potion",
-        "price": 200,
-        "cost": 50
+        "price": 200
       },
       {
+        "cost": 100,
         "name": "imperial_potion",
-        "price": 500,
-        "cost": 100
+        "price": 500
       },
       {
+        "cost": 20,
         "name": "revive",
-        "price": 100,
-        "cost": 20
+        "price": 100
       },
       {
+        "cost": 50,
         "name": "cureall",
-        "price": 250,
-        "cost": 50
+        "price": 250
       },
       {
+        "cost": 80,
         "name": "tuxeball_majestic",
-        "price": 400,
-        "cost": 80
+        "price": 400
       },
       {
+        "cost": 60,
         "name": "tuxeball_diurnal",
         "price": 300,
-        "cost": 60,
         "variables": [
-          "daytime:true"
+          {
+            "daytime": "true"
+          }
         ]
       },
       {
+        "cost": 60,
         "name": "tuxeball_nocturnal",
         "price": 300,
-        "cost": 60,
         "variables": [
-          "daytime:false"
+          {
+            "daytime": "false"
+          }
         ]
       }
-    ]
+    ],
+    "monsters": [],
+    "resale_multiplier": 0.5,
+    "slug": "spyder_candy_scoop"
   },
   {
-    "slug": "spyder_candy_tech",
-    "monsters": [],
+    "background": "gfx/ui/item/item_menu_bg.png",
     "items": [
       {
+        "cost": 400,
         "name": "peace_lily",
-        "price": 2000,
-        "cost": 400
+        "price": 2000
       },
       {
+        "cost": 400,
         "name": "lucky_bamboo",
-        "price": 2000,
-        "cost": 400
+        "price": 2000
       },
       {
+        "cost": 400,
+        "inventory": 1,
         "name": "tm_frostbite",
-        "price": 2000,
-        "cost": 400,
-        "inventory": 1
+        "price": 2000
       },
       {
+        "cost": 400,
+        "inventory": 1,
         "name": "tm_supernova",
-        "price": 2000,
-        "cost": 400,
-        "inventory": 1
+        "price": 2000
       },
       {
+        "cost": 400,
+        "inventory": 1,
         "name": "tm_vorpal",
-        "price": 2000,
-        "cost": 400,
-        "inventory": 1
+        "price": 2000
       },
       {
-        "name": "tm_cavity",
-        "price": 2000,
         "cost": 400,
-        "inventory": 1
+        "inventory": 1,
+        "name": "tm_cavity",
+        "price": 2000
       }
-    ]
+    ],
+    "monsters": [],
+    "resale_multiplier": 0.5,
+    "slug": "spyder_candy_tech"
   }
 ]

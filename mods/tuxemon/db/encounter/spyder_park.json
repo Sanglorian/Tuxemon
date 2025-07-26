@@ -1,15 +1,18 @@
 [
   {
-    "slug": "spyder_park",
     "monsters": [
       {
-        "monster": "pairagrim",
         "encounter_rate": 3.5,
+        "exp_req_mod": 3,
+        "held_items": [],
         "level_range": [
           5,
           6
-        ]
+        ],
+        "monster": "pairagrim",
+        "variables": []
       }
-    ]
+    ],
+    "slug": "spyder_park"
   }
 ]

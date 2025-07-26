@@ -1,9 +1,20 @@
 {
   "conditions": [
-    "not has_tech blade"
+    {
+      "type": "has_tech",
+      "parameters": [
+        "blade"
+      ],
+      "operator": "not"
+    }
   ],
   "effects": [
-    "learn_tm blade"
+    {
+      "type": "learn_tm",
+      "parameters": [
+        "blade"
+      ]
+    }
   ],
   "slug": "tm_blade",
   "sort": "utility",
@@ -13,7 +24,10 @@
   "usable_in": [
     "WorldState"
   ],
-  "behaviors": {},
+  "modifiers": [],
+  "behaviors": {
+    "resellable": true
+  },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

@@ -8,7 +8,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Optional
 
 from tuxemon import prepare
-from tuxemon.db import EncounterItemModel, db
+from tuxemon.db import EncounterItemModel, EncounterModel, db
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
@@ -23,11 +23,7 @@ class EncounterData:
 
     def load_encounters(self, slug: str) -> Sequence[EncounterItemModel]:
         """Loads encounter data from the db."""
-        try:
-            results = db.lookup(slug, table="encounter")
-        except KeyError:
-            raise RuntimeError(f"Encounter {slug} not found")
-
+        results = EncounterModel.lookup(slug, db)
         return results.monsters
 
     def get_encounters(self) -> Sequence[EncounterItemModel]:
@@ -51,9 +47,11 @@ class Encounter:
             for _enc in self.encounter_cache[self.encounter_data.slug]
             if not _enc.variables
             or all(
-                character.game_variables.get(var.split(":")[0])
-                == var.split(":")[1]
-                for var in _enc.variables
+                all(
+                    character.game_variables.get(key) == value
+                    for key, value in variable.items()
+                )
+                for variable in _enc.variables
             )
         ]
 
@@ -90,3 +88,9 @@ class Encounter:
             )
         else:
             return encounter.level_range[0]
+
+    def get_held_item(self, encounter: EncounterItemModel) -> Optional[str]:
+        """Returns a random held item for the encounter."""
+        if not encounter.held_items:
+            return None
+        return random.choice(encounter.held_items)

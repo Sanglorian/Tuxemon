@@ -3,11 +3,19 @@
   "accuracy": 0.8,
   "animation": "lance_ice",
   "effects": [
-    "give lifeleech,enemy_monster",
-    "damage"
+    {
+      "type": "give",
+      "parameters": [
+        "lifeleech",
+        "enemy_monster"
+      ]
+    },
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "xy",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 2.5,
   "range": "melee",
@@ -15,6 +23,7 @@
   "sfx": "sfx_blaster",
   "slug": "tonguespear",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -24,7 +33,10 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["Bug"],
+  "tags": [
+    "bug",
+    "tongue"
+  ],
   "types": [
     "water"
   ],

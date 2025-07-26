@@ -118,7 +118,7 @@
   <object id="35" name="Talk Strauss" type="event" x="96" y="80" width="16" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_omnichannel_strauss"/>
+    <property name="act2" value="pathfind_to_char player,spyder_omnichannel_strauss"/>
     <property name="act3" value="translated_dialog spyder_omnichannel_strauss1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster budaye,36,spyder_omnichannel_strauss,5,10"/>
@@ -133,7 +133,7 @@
   <object id="36" name="Talk Carnegie" type="event" x="160" y="192" width="16" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_omnichannel_carnegie"/>
+    <property name="act2" value="pathfind_to_char player,spyder_omnichannel_carnegie"/>
     <property name="act3" value="translated_dialog spyder_omnichannel_carnegie1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster elofly,38,spyder_omnichannel_carnegie,5,10"/>
@@ -148,7 +148,7 @@
   <object id="37" name="Talk Byrne" type="event" x="144" y="320" width="16" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_omnichannel_byrne"/>
+    <property name="act2" value="pathfind_to_char player,spyder_omnichannel_byrne"/>
     <property name="act3" value="translated_dialog spyder_omnichannel_byrne1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster rockat,36,spyder_omnichannel_byrne,5,10"/>

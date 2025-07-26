@@ -8,6 +8,7 @@ from typing import final
 
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -32,14 +33,14 @@ class CharPositionAction(EventAction):
     tile_pos_x: int
     tile_pos_y: int
 
-    def start(self) -> None:
-        character = get_npc(self.session, self.character)
+    def start(self, session: Session) -> None:
+        character = get_npc(session, self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return
 
         position = (self.tile_pos_x, self.tile_pos_y)
-        if not character.world.boundary_checker.is_within_boundaries(position):
+        if not session.client.boundary.is_within_boundaries(position):
             raise ValueError(
                 f"Character is outside the boundaries of the map at ({position[0]}, {position[1]})"
             )

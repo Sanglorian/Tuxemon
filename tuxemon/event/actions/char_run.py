@@ -8,6 +8,7 @@ from typing import final
 
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -25,15 +26,14 @@ class CharRunAction(EventAction):
 
     Script parameters:
         character: Either "player" or character slug name (e.g. "npc_maple").
-
     """
 
     name = "char_run"
     character: str
 
-    def start(self) -> None:
-        character = get_npc(self.session, self.character)
+    def start(self, session: Session) -> None:
+        character = get_npc(session, self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return
-        character.moverate = self.session.client.config.player_runrate
+        character.mover.running()

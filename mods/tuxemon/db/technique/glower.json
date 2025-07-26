@@ -3,10 +3,16 @@
   "accuracy": 1,
   "animation": "green_circle",
   "effects": [
-    "give softened,enemy_monster"
+    {
+      "type": "give",
+      "parameters": [
+        "softened",
+        "enemy_monster"
+      ]
+    }
   ],
   "flip_axes": "",
-  "is_fast": true,
+  "speed": "fast",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -14,6 +20,7 @@
   "sfx": "sfx_blaster",
   "slug": "glower",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -23,7 +30,10 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["Gaze", "Fury"],
+  "tags": [
+    "gaze",
+    "fury"
+  ],
   "types": [
     "aether"
   ],

@@ -10,6 +10,7 @@ from tuxemon.db import SeenStatus, db
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -37,13 +38,12 @@ class SetTuxepediaAction(EventAction):
     monster_slug: str
     label: str
 
-    def start(self) -> None:
-        character = get_npc(self.session, self.character)
+    def start(self, session: Session) -> None:
+        character = get_npc(session, self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return
         # start tuxepedia operations
-        tuxepedia = character.tuxepedia
         if self.label not in list(SeenStatus):
             raise ValueError(f"{self.label} isn't among {list(SeenStatus)}")
         label = SeenStatus(self.label)
@@ -52,17 +52,5 @@ class SetTuxepediaAction(EventAction):
             raise ValueError(f"{self.monster_slug} isn't a monster")
 
         monster_name = T.translate(self.monster_slug)
-
-        if label == SeenStatus.caught:
-            if self.monster_slug not in [
-                key
-                for key, value in tuxepedia.items()
-                if value == SeenStatus.caught
-            ]:
-                logger.info(
-                    f"Tuxepedia: {monster_name} is registered as {label}!"
-                )
-                tuxepedia[self.monster_slug] = label
-        elif label == SeenStatus.seen and self.monster_slug not in tuxepedia:
-            logger.info(f"Tuxepedia: {monster_name} is registered as {label}!")
-            tuxepedia[self.monster_slug] = label
+        character.tuxepedia.add_entry(self.monster_slug, label)
+        logger.info(f"Tuxepedia: {monster_name} is registered as {label}!")

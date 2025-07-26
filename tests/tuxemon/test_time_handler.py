@@ -3,7 +3,6 @@
 import unittest
 from datetime import datetime
 
-from tuxemon import prepare
 from tuxemon.time_handler import (
     calculate_day_night_cycle,
     calculate_day_stage_of_day,
@@ -61,12 +60,14 @@ class TestTimeFunctions(unittest.TestCase):
 
         for time, expected in test_cases:
             self.assertEqual(
-                determine_season(time, hemisphere=prepare.NORTHERN), expected
+                determine_season(time, hemisphere="northern"),
+                expected,
             )
 
         for time, expected in test_cases_southern_hemisphere:
             self.assertEqual(
-                determine_season(time, hemisphere=prepare.SOUTHERN), expected
+                determine_season(time, hemisphere="southern"),
+                expected,
             )
 
     def test_is_leap_year(self):

@@ -1,9 +1,20 @@
 {
   "conditions": [
-    "not has_tech vorpal"
+    {
+      "type": "has_tech",
+      "parameters": [
+        "vorpal"
+      ],
+      "operator": "not"
+    }
   ],
   "effects": [
-    "learn_tm vorpal"
+    {
+      "type": "learn_tm",
+      "parameters": [
+        "vorpal"
+      ]
+    }
   ],
   "slug": "tm_vorpal",
   "sort": "utility",
@@ -13,7 +24,10 @@
   "usable_in": [
     "WorldState"
   ],
-  "behaviors": {},
+  "modifiers": [],
+  "behaviors": {
+    "resellable": true
+  },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

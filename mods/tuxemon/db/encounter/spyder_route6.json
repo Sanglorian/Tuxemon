@@ -1,77 +1,95 @@
 {
-  "slug": "spyder_route6",
   "monsters": [
     {
-      "monster": "dandicub",
       "encounter_rate": 10,
-      "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         19,
         20
+      ],
+      "monster": "dandicub",
+      "variables": [
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
-      "monster": "dandylion",
       "encounter_rate": 5,
-      "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         21,
         23
+      ],
+      "monster": "dandylion",
+      "variables": [
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
-      "monster": "capiti",
       "encounter_rate": 10,
-      "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         19,
         22
+      ],
+      "monster": "capiti",
+      "variables": [
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
-      "monster": "dandicub",
       "encounter_rate": 10,
-      "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         20,
         24
+      ],
+      "monster": "dandicub",
+      "variables": [
+        {
+          "daytime": "false"
+        }
       ]
     },
     {
-      "monster": "dandylion",
       "encounter_rate": 5,
-      "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         22,
         24
+      ],
+      "monster": "dandylion",
+      "variables": [
+        {
+          "daytime": "false"
+        }
       ]
     },
     {
-      "monster": "capiti",
       "encounter_rate": 10,
-      "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         20,
         24
+      ],
+      "monster": "capiti",
+      "variables": [
+        {
+          "daytime": "false"
+        }
       ]
     }
-  ]
+  ],
+  "slug": "spyder_route6"
 }

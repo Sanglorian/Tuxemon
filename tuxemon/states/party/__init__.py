@@ -14,13 +14,9 @@ from tuxemon.menu.menu import PygameMenuState
 from tuxemon.monster import Monster
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
+from tuxemon.tools import fix_measure
 
 MenuGameObj = Callable[[], object]
-
-
-def fix_measure(measure: int, percentage: float) -> int:
-    """it returns the correct measure based on percentage"""
-    return round(measure * percentage)
 
 
 class PartyState(PygameMenuState):
@@ -55,64 +51,63 @@ class PartyState(PygameMenuState):
         menu: pygame_menu.Menu,
         monsters: list[Monster],
     ) -> None:
-        width = menu._width
-        height = menu._height
-        self.char = monsters[0].owner
-        if self.char is None:
-            raise ValueError(f"{monsters[0].name}'s owner not found")
-        game_variables = self.char.game_variables
+        fxw: Callable[[float], int] = lambda r: fix_measure(menu._width, r)
+        fxh: Callable[[float], int] = lambda r: fix_measure(menu._height, r)
+        self.char = monsters[0].get_owner()
         menu._auto_centering = False
         # party
         lab1: Any = menu.add.label(
             title=T.translate("menu_party"),
-            font_size=self.font_size_big,
+            font_size=self.font_type.big,
             align=locals.ALIGN_LEFT,
             underline=True,
             float=True,
         )
-        lab1.translate(fix_measure(width, 0.05), fix_measure(height, 0.15))
+        lab1.translate(fxw(0.05), fxh(0.15))
+        # levels
+        levels = [monster.level for monster in self.char.monsters]
+        level_lowest = min(levels)
+        level_highest = max(levels)
+        level_average = round(sum(levels) / len(levels))
         # highest
-        highest_level = game_variables.get("party_level_highest", 0)
         highest = T.translate("menu_party_level_highest")
         lab2: Any = menu.add.label(
-            title=f"{highest}: {highest_level}",
-            font_size=self.font_size_smaller,
+            title=f"{highest}: {level_highest}",
+            font_size=self.font_type.smaller,
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab2.translate(fix_measure(width, 0.05), fix_measure(height, 0.25))
+        lab2.translate(fxw(0.05), fxh(0.25))
         # average
-        average_level = game_variables.get("party_level_average", 0)
         average = T.translate("menu_party_level_average")
         lab3: Any = menu.add.label(
-            title=f"{average}: {average_level}",
-            font_size=self.font_size_smaller,
+            title=f"{average}: {level_average}",
+            font_size=self.font_type.smaller,
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab3.translate(fix_measure(width, 0.05), fix_measure(height, 0.30))
+        lab3.translate(fxw(0.05), fxh(0.30))
         # lowest
-        lowest_level = game_variables.get("party_level_lowest", 0)
         lowest = T.translate("menu_party_level_lowest")
         lab4: Any = menu.add.label(
-            title=f"{lowest}: {lowest_level}",
-            font_size=self.font_size_smaller,
+            title=f"{lowest}: {level_lowest}",
+            font_size=self.font_type.smaller,
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab4.translate(fix_measure(width, 0.05), fix_measure(height, 0.35))
+        lab4.translate(fxw(0.05), fxh(0.35))
 
         total = sum(monster.steps for monster in monsters)
         # bond
-        if self.char.find_item("friendship_scroll"):
+        if self.char.items.find_item("friendship_scroll"):
             lab5: Any = menu.add.label(
                 title=T.translate("menu_bond"),
-                font_size=self.font_size_big,
+                font_size=self.font_type.big,
                 align=locals.ALIGN_LEFT,
                 underline=True,
                 float=True,
             )
-            lab5.translate(fix_measure(width, 0.05), fix_measure(height, 0.45))
+            lab5.translate(fxw(0.05), fxh(0.45))
             if total > 0:
                 _sorted = sorted(monsters, key=lambda x: x.steps, reverse=True)
                 _bond = 0.50
@@ -122,21 +117,19 @@ class PartyState(PygameMenuState):
                     bar: Any = menu.add.progress_bar(
                         f"{_label:<10}",
                         default=monster.bond,
-                        font_size=self.font_size_smaller,
+                        font_size=self.font_type.smaller,
                         align=locals.ALIGN_LEFT,
                         progress_text_enabled=False,
                         float=True,
                     )
-                    bar.translate(
-                        fix_measure(width, 0.05), fix_measure(height, _bond)
-                    )
+                    bar.translate(fxw(0.05), fxh(_bond))
         # steps
         if total > 0:
             _sorted = sorted(monsters, key=lambda x: x.steps, reverse=True)
             for monster in _sorted:
                 steps = monster.steps
-                unit = game_variables.get("unit_measure", prepare.METRIC)
-                if unit == prepare.METRIC:
+                unit = self.client.config.unit_measure
+                if unit == "metric":
                     walked = formula.convert_km(steps)
                     unit_walked = prepare.U_KM
                 else:
@@ -150,12 +143,10 @@ class PartyState(PygameMenuState):
                 }
                 lab6: Any = menu.add.label(
                     title=T.format("menu_party_traveled", params),
-                    font_size=self.font_size_smaller,
+                    font_size=self.font_type.smaller,
                     align=locals.ALIGN_LEFT,
                 )
-                lab6.translate(
-                    fix_measure(width, 0.35), fix_measure(height, 0.25)
-                )
+                lab6.translate(fxw(0.35), fxh(0.25))
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
         params = {"character": self.char}
@@ -165,5 +156,5 @@ class PartyState(PygameMenuState):
             event.button in (buttons.BACK, buttons.B, buttons.A)
             and event.pressed
         ):
-            self.client.pop_state()
+            self.client.remove_state_by_name("PartyState")
         return None

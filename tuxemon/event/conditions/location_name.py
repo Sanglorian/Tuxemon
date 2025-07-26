@@ -2,11 +2,14 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from tuxemon.event import MapCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
 
+@dataclass
 class LocationNameCondition(EventCondition):
     """
     Check to see if the player is in a certain location name.
@@ -38,6 +41,6 @@ class LocationNameCondition(EventCondition):
         else:
             names.append(name)
 
-        if client.map_slug in names:
+        if client.map_manager.map_slug in names:
             ret = True
         return ret

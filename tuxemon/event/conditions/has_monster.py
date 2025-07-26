@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 
 from tuxemon.event import MapCondition, get_npc
 from tuxemon.event.eventcondition import EventCondition
@@ -11,6 +12,7 @@ from tuxemon.session import Session
 logger = logging.getLogger(__name__)
 
 
+@dataclass
 class HasMonsterCondition(EventCondition):
     """
     Check to see if a character has a monster in its party.
@@ -34,6 +36,6 @@ class HasMonsterCondition(EventCondition):
         if character is None:
             logger.error(f"{_character} not found")
             return False
-        if character.find_monster(_monster):
+        if character.party.find_monster(_monster):
             return True
         return False

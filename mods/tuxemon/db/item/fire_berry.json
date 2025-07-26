@@ -1,9 +1,20 @@
 {
   "conditions": [
-    "not type fire"
+    {
+      "type": "type",
+      "parameters": [
+        "fire"
+      ],
+      "operator": "not"
+    }
   ],
   "effects": [
-    "switch fire"
+    {
+      "type": "switch_type",
+      "parameters": [
+        "fire"
+      ]
+    }
   ],
   "slug": "fire_berry",
   "sort": "utility",
@@ -13,7 +24,10 @@
   "usable_in": [
     "MainCombatMenuState"
   ],
-  "behaviors": {},
+  "modifiers": [],
+  "behaviors": {
+    "resellable": true
+  },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

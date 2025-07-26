@@ -20,7 +20,6 @@ class ActionParentCommand(CLICommand):
 
     Actions are listed as options, but when invoked, return
     subcommands that will execute the action.
-
     """
 
     name = "action"
@@ -34,7 +33,6 @@ class ActionParentCommand(CLICommand):
         Parameters:
             ctx: Contains references to parts of the game and CLI interface.
             line: Input text after the command name.
-
         """
         if not line:
             print(
@@ -53,9 +51,8 @@ class ActionParentCommand(CLICommand):
 
         Parameters:
             ctx: Contains references to parts of the game and CLI interface.
-
         """
-        actions = ctx.session.client.event_engine.get_actions()
+        actions = ctx.client.event_engine.action_manager.get_actions()
         for action in actions:
             command = ActionCommand()
             command.name = action.name
@@ -64,10 +61,7 @@ class ActionParentCommand(CLICommand):
 
 
 class ActionCommand(CLICommand):
-    """
-    Subcommand used by ``action`` to invoke EventActions.
-
-    """
+    """Subcommand used by ``action`` to invoke EventActions."""
 
     usable_from_root = False
 
@@ -78,12 +72,11 @@ class ActionCommand(CLICommand):
         Parameters:
             ctx: Contains references to parts of the game and CLI interface.
             line: Input text after the command name.
-
         """
         line = f"{self.name} {line}"
         name, args = parse_action_string(line)
         try:
-            ctx.session.client.event_engine.execute_action(name, args)
+            ctx.client.event_engine.execute_action(name, args)
         except Exception as e:
             print(f"Error executing action {e}", file=sys.stderr)
             traceback.print_exc()

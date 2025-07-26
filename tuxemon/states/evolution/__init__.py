@@ -6,14 +6,13 @@ import logging
 from typing import TYPE_CHECKING, Optional
 
 import pygame
-from pygame import Surface
+from pygame.surface import Surface
 
 from tuxemon import prepare, tools
 from tuxemon.db import MonsterModel, db
 from tuxemon.graphics import load_sprite
 from tuxemon.locale import T
 from tuxemon.platform.const import buttons
-from tuxemon.session import local_session
 from tuxemon.state import State
 
 if TYPE_CHECKING:
@@ -138,7 +137,7 @@ class EvolutionTransition(State):
             self.client.sound_manager.play_sound("sound_confirm")
             self.on_animation_complete()
 
-    def draw(self, surface: pygame.surface.Surface) -> None:
+    def draw(self, surface: Surface) -> None:
         surface.fill(prepare.BLACK_COLOR)
         if self.phase == 3:
             sprite = self._get_phase_3_sprite()
@@ -154,7 +153,8 @@ class EvolutionTransition(State):
         if slug not in db.database["monster"]:
             logger.error(f"{slug} doesn't exist.")
             return None
-        return db.lookup(slug, table="monster")
+        results = MonsterModel.lookup(slug, db)
+        return results
 
     def _load_sprite(self, slug: str) -> Sprite:
         path = tools.transform_resource_filename(
@@ -175,7 +175,7 @@ class EvolutionTransition(State):
             "evolve": T.format(self.evolved),
         }
         msg = T.format("evolution_ended", param)
-        tools.open_dialog(local_session, [msg])
+        tools.open_dialog(self.client, [msg])
         self.dialog_opened = True
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:

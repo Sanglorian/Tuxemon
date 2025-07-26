@@ -1,34 +1,53 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
-from unittest import mock
+from unittest.mock import MagicMock, patch
 
 from tuxemon import prepare
-from tuxemon.client import LocalPygameClient
-from tuxemon.db import Direction, MissionModel, MissionStatus, db
-from tuxemon.event.actions.char_move import parse_path_parameters
+from tuxemon.battle import BattlesHandler
+from tuxemon.db import Direction
+from tuxemon.entity import Body, Mover
+from tuxemon.event.eventaction import ActionManager
+from tuxemon.event.eventcondition import ConditionManager
+from tuxemon.event.eventengine import EventEngine
+from tuxemon.math import Point3, Vector3
 from tuxemon.player import Player
 from tuxemon.session import local_session
+from tuxemon.tuxepedia import Tuxepedia
 
 
 def mockPlayer(self) -> None:
     self.name = "Jeff"
-    self.money = {}
     self.game_variables = {}
-    self.tuxepedia = {}
+    self.tuxepedia = Tuxepedia()
+    self.body = Body(Point3(0, 0, 0))
+    self.mover = Mover(self.body)
 
 
 class TestVariableActions(unittest.TestCase):
     def setUp(self):
-        with mock.patch.object(Player, "__init__", mockPlayer):
-            local_session.client = LocalPygameClient(prepare.CONFIG)
-            self.action = local_session.client.event_engine
-            local_session.player = Player()
+        action = ActionManager()
+        condition = ConditionManager()
+        self.mock_screen = MagicMock()
+        with patch.object(Player, "__init__", mockPlayer):
+            self.action = EventEngine(local_session, action, condition)
+            local_session.set_player(Player())
             self.player = local_session.player
 
     def test_set_variable(self):
         self.action.execute_action("set_variable", ["name:jimmy"])
         self.assertEqual(self.player.game_variables["name"], "jimmy")
+
+    def test_set_variables_same_key(self):
+        self.action.execute_action("set_variable", ["name:jimmy", "name:saul"])
+        self.assertEqual(self.player.game_variables["name"], "saul")
+
+    def test_set_variables_different_key(self):
+        self.action.execute_action(
+            "set_variable", ["first:jimmy", "last:saul"]
+        )
+        self.assertEqual(self.player.game_variables["first"], "jimmy")
+        self.assertEqual(self.player.game_variables["last"], "saul")
 
     def test_clear_variable_not_exist(self):
         self.action.execute_action("clear_variable", ["name"])
@@ -39,6 +58,20 @@ class TestVariableActions(unittest.TestCase):
         self.action.execute_action("set_variable", ["name:jimmy"])
         self.action.execute_action("clear_variable", ["name"])
         self.assertIsNone(self.player.game_variables.get("name"))
+
+    def test_clear_multiple_variables_exist(self):
+        self.action.execute_action(
+            "set_variable", ["first:jimmy", "last:saul"]
+        )
+        self.action.execute_action("clear_variable", ["first", "last"])
+        self.assertIsNone(self.player.game_variables.get("first"))
+        self.assertIsNone(self.player.game_variables.get("last"))
+
+    def test_clear_multiple_variables_exist_and_not(self):
+        self.action.execute_action("set_variable", ["last:saul"])
+        self.action.execute_action("clear_variable", ["first", "last"])
+        self.assertIsNone(self.player.game_variables.get("first"))
+        self.assertIsNone(self.player.game_variables.get("last"))
 
     def test_copy_variable(self):
         self.action.execute_action("set_variable", ["name:jeff"])
@@ -124,10 +157,12 @@ class TestVariableActions(unittest.TestCase):
 
 class TestActionsSetPlayer(unittest.TestCase):
     def setUp(self):
-        with mock.patch.object(Player, "__init__", mockPlayer):
-            local_session.client = LocalPygameClient(prepare.CONFIG)
-            self.action = local_session.client.event_engine
-            local_session.player = Player()
+        action = ActionManager()
+        condition = ConditionManager()
+        self.mock_screen = MagicMock()
+        with patch.object(Player, "__init__", mockPlayer):
+            self.action = EventEngine(local_session, action, condition)
+            local_session.set_player(Player())
             self.player = local_session.player
 
     def test_set_player_name(self):
@@ -139,87 +174,50 @@ class TestActionsSetPlayer(unittest.TestCase):
         self.assertIn(self.player.name, ["maple123", "maple321"])
 
 
-class TestTuxepediaActions(unittest.TestCase):
-    def setUp(self):
-        with mock.patch.object(Player, "__init__", mockPlayer):
-            local_session.client = LocalPygameClient(prepare.CONFIG)
-            self.action = local_session.client.event_engine
-            local_session.player = Player()
-            self.player = local_session.player
-            _model = {"rockitten": 1}
-            db.database["monster"] = _model
-
-    def test_set_tuxepedia_seen(self):
-        _params = ["player", "rockitten", "seen"]
-        self.action.execute_action("set_tuxepedia", _params)
-        self.assertEqual(self.player.tuxepedia["rockitten"], "seen")
-
-    def test_set_tuxepedia_caught(self):
-        _params = ["player", "rockitten", "caught"]
-        self.action.execute_action("set_tuxepedia", _params)
-        self.assertEqual(self.player.tuxepedia["rockitten"], "caught")
-
-    def test_set_tuxepedia_wrong_seen_status(self):
-        _params = ["player", "rockitten", "jimmy"]
-        with self.assertRaises(ValueError):
-            self.action.execute_action("set_tuxepedia", _params)
-
-    def test_set_tuxepedia_wrong_monster(self):
-        _params = ["player", "jimmy", "seen"]
-        with self.assertRaises(ValueError):
-            self.action.execute_action("set_tuxepedia", _params)
-
-    def test_clear_tuxepedia_not_exist(self):
-        with self.assertRaises(KeyError):
-            self.action.execute_action("clear_tuxepedia", ["rockitten"])
-
-    def test_clear_tuxepedia_exist(self):
-        _params = ["player", "rockitten", "caught"]
-        self.action.execute_action("set_tuxepedia", _params)
-        self.action.execute_action("clear_tuxepedia", ["rockitten"])
-        self.assertIsNone(self.player.tuxepedia.get("rockitten"))
-
-
 class TestBattleActions(unittest.TestCase):
     def setUp(self):
-        with mock.patch.object(Player, "__init__", mockPlayer):
-            local_session.client = LocalPygameClient(prepare.CONFIG)
-            self.action = local_session.client.event_engine
-            local_session.player = Player()
+        action = ActionManager()
+        condition = ConditionManager()
+        self.mock_screen = MagicMock()
+        with patch.object(Player, "__init__", mockPlayer):
+            self.action = EventEngine(local_session, action, condition)
+            local_session.set_player(Player())
             self.player = local_session.player
+            self.player.steps = 0.0
+            self.player.battle_handler = BattlesHandler()
 
     def test_set_battle_won(self):
-        self.player.battles = []
-        self.player.steps = 0.0
         _params = ["figher", "won", "opponent"]
         self.action.execute_action("set_battle", _params)
-        self.assertEqual(len(self.player.battles), 1)
-        self.assertEqual(self.player.battles[0].fighter, "figher")
-        self.assertEqual(self.player.battles[0].outcome, "won")
-        self.assertEqual(self.player.battles[0].opponent, "opponent")
-        self.assertEqual(self.player.battles[0].steps, 0)
+        self.assertEqual(len(self.player.battle_handler.get_battles()), 1)
+        battle = self.player.battle_handler.get_last_battle()
+        self.assertIsNotNone(battle)
+        self.assertEqual(battle.fighter, "figher")
+        self.assertEqual(battle.outcome, "won")
+        self.assertEqual(battle.opponent, "opponent")
+        self.assertEqual(battle.steps, 0)
 
     def test_set_battle_lost(self):
-        self.player.battles = []
-        self.player.steps = 0.0
         _params = ["figher", "lost", "opponent"]
         self.action.execute_action("set_battle", _params)
-        self.assertEqual(len(self.player.battles), 1)
-        self.assertEqual(self.player.battles[0].fighter, "figher")
-        self.assertEqual(self.player.battles[0].outcome, "lost")
-        self.assertEqual(self.player.battles[0].opponent, "opponent")
-        self.assertEqual(self.player.battles[0].steps, 0)
+        self.assertEqual(len(self.player.battle_handler.get_battles()), 1)
+        battle = self.player.battle_handler.get_last_battle()
+        self.assertIsNotNone(battle)
+        self.assertEqual(battle.fighter, "figher")
+        self.assertEqual(battle.outcome, "lost")
+        self.assertEqual(battle.opponent, "opponent")
+        self.assertEqual(battle.steps, 0)
 
     def test_set_battle_draw(self):
-        self.player.battles = []
-        self.player.steps = 0.0
         _params = ["figher", "draw", "opponent"]
         self.action.execute_action("set_battle", _params)
-        self.assertEqual(len(self.player.battles), 1)
-        self.assertEqual(self.player.battles[0].fighter, "figher")
-        self.assertEqual(self.player.battles[0].outcome, "draw")
-        self.assertEqual(self.player.battles[0].opponent, "opponent")
-        self.assertEqual(self.player.battles[0].steps, 0)
+        self.assertEqual(len(self.player.battle_handler.get_battles()), 1)
+        battle = self.player.battle_handler.get_last_battle()
+        self.assertIsNotNone(battle)
+        self.assertEqual(battle.fighter, "figher")
+        self.assertEqual(battle.outcome, "draw")
+        self.assertEqual(battle.opponent, "opponent")
+        self.assertEqual(battle.steps, 0)
 
     def test_set_battle_wrong(self):
         _params = ["figher", "jimmy", "opponent"]
@@ -227,93 +225,24 @@ class TestBattleActions(unittest.TestCase):
             self.action.execute_action("set_battle", _params)
 
 
-class TestMissionActions(unittest.TestCase):
-    _mission = MissionModel(slug="no_type")
-    _pending = MissionStatus.pending
-    _failed = MissionStatus.failed
-    _completed = MissionStatus.completed
-
-    def setUp(self):
-        with mock.patch.object(Player, "__init__", mockPlayer):
-            local_session.client = LocalPygameClient(prepare.CONFIG)
-            self.action = local_session.client.event_engine
-            local_session.player = Player()
-            self.player = local_session.player
-            self.player.missions = []
-            self._mission_model = {"no_type": self._mission}
-            db.database["mission"] = self._mission_model
-
-    def test_set_mission_add_success(self):
-        _params = ["player", "no_type", "add"]
-        self.action.execute_action("set_mission", _params)
-        self.assertEqual(len(self.player.missions), 1)
-        self.assertEqual(self.player.missions[0].slug, "no_type")
-        self.assertEqual(self.player.missions[0].status, self._pending)
-
-    def test_set_mission_add_fail(self):
-        _params = ["player", "no_type", "jimmy"]
-        with self.assertRaises(ValueError):
-            self.action.execute_action("set_mission", _params)
-        self.assertEqual(len(self.player.missions), 0)
-
-    def test_set_mission_add_multiple(self):
-        self._mission_model["town"] = MissionModel(slug="town")
-        self._mission_model["route"] = MissionModel(slug="route")
-        for slug in self._mission_model.keys():
-            _params = ["player", slug, "add"]
-            self.action.execute_action("set_mission", _params)
-        self.assertEqual(len(self.player.missions), 3)
-
-    def test_set_mission_add_status_success(self):
-        _params = ["player", "no_type", "add", "completed"]
-        self.action.execute_action("set_mission", _params)
-        self.assertEqual(len(self.player.missions), 1)
-        self.assertEqual(self.player.missions[0].status, self._completed)
-
-    def test_set_mission_add_status_fail(self):
-        _params = ["player", "no_type", "add", "jimmy"]
-        with self.assertRaises(ValueError):
-            self.action.execute_action("set_mission", _params)
-        self.assertEqual(len(self.player.missions), 0)
-
-    def test_set_mission_change_success(self):
-        _params = ["player", "no_type", "add"]
-        self.action.execute_action("set_mission", _params)
-        _params = ["player", "no_type", "change", "failed"]
-        self.action.execute_action("set_mission", _params)
-        self.assertEqual(self.player.missions[0].status, self._failed)
-
-    def test_set_mission_change_fail(self):
-        _params = ["player", "no_type", "add"]
-        self.action.execute_action("set_mission", _params)
-        _params = ["player", "no_type", "change", "jimmy"]
-        with self.assertRaises(ValueError):
-            self.action.execute_action("set_mission", _params)
-        self.assertEqual(len(self.player.missions), 1)
-
-    def test_set_mission_remove_success(self):
-        _params = ["player", "no_type", "add"]
-        self.action.execute_action("set_mission", _params)
-        _params = ["player", "no_type", "remove"]
-        self.action.execute_action("set_mission", _params)
-        self.assertEqual(len(self.player.missions), 0)
-
-
 class TestCharacterActions(unittest.TestCase):
     def setUp(self):
-        with mock.patch.object(Player, "__init__", mockPlayer):
-            local_session.client = LocalPygameClient(prepare.CONFIG)
-            self.action = local_session.client.event_engine
-            local_session.player = Player()
+        action = ActionManager()
+        condition = ConditionManager()
+        self.mock_screen = MagicMock()
+        local_session.set_client(MagicMock())
+        with patch.object(Player, "__init__", mockPlayer):
+            self.action = EventEngine(local_session, action, condition)
+            local_session.set_player(Player())
             self.player = local_session.player
 
     def test_char_speed_between_limits(self):
-        self.player.moverate = prepare.CONFIG.player_walkrate
+        self.player.mover.walking()
         self.action.execute_action("char_speed", ["player", 6.9])
         self.assertEqual(self.player.moverate, 6.9)
 
     def test_char_speed_outside_limits(self):
-        self.player.moverate = prepare.CONFIG.player_walkrate
+        self.player.mover.walking()
         lower, upper = prepare.MOVERATE_RANGE
         with self.assertRaises(ValueError):
             self.action.execute_action("char_speed", ["player", lower - 1])
@@ -321,79 +250,19 @@ class TestCharacterActions(unittest.TestCase):
             self.action.execute_action("char_speed", ["player", upper + 1])
 
     def test_char_walk(self):
-        self.player.moverate = 6.9
+        self.player.set_moverate(6.9)
+        self.player.body.velocity = Vector3(1, 0, 0)
         self.action.execute_action("char_walk", ["player"])
         self.assertEqual(self.player.moverate, prepare.CONFIG.player_walkrate)
 
     def test_char_run(self):
-        self.player.moverate = 6.9
+        self.player.set_moverate(6.9)
+        self.player.body.velocity = Vector3(1, 0, 0)
         self.action.execute_action("char_run", ["player"])
         self.assertEqual(self.player.moverate, prepare.CONFIG.player_runrate)
 
     def test_char_face(self):
         self.player.isplayer = False
-        self.player.facing = Direction.down
+        self.player.set_facing(Direction.down)
         self.action.execute_action("char_face", ["player", "up"])
         self.assertEqual(self.player.facing, Direction.up)
-
-
-class TestParsePathParameters(unittest.TestCase):
-    def test_single_move(self):
-        origin = (0, 0)
-        move_list = ["up"]
-        expected_path = [(0, -1)]
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_multiple_moves(self):
-        origin = (0, 0)
-        move_list = ["up", "right", "down"]
-        expected_path = [(0, -1), (1, -1), (1, 0)]
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_move_with_tiles(self):
-        origin = (0, 0)
-        move_list = ["up 2", "right 3"]
-        expected_path = [(0, -1), (0, -2), (1, -2), (2, -2), (3, -2)]
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_invalid_direction(self):
-        origin = (0, 0)
-        move_list = [" invalid"]
-        with self.assertRaises(ValueError):
-            list(parse_path_parameters(origin, move_list))
-
-    def test_empty_move_list(self):
-        origin = (0, 0)
-        move_list = []
-        expected_path = []
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_invalid_tiles(self):
-        origin = (0, 0)
-        move_list = ["up abc"]
-        with self.assertRaises(ValueError):
-            list(parse_path_parameters(origin, move_list))
-
-    def test_move_list_with_spaces(self):
-        origin = (0, 0)
-        move_list = ["up  ", " right 2"]
-        expected_path = [(0, -1), (1, -1), (2, -1)]
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_move_list_with_trailing_spaces(self):
-        origin = (0, 0)
-        move_list = ["up  ", " right 2  "]
-        expected_path = [(0, -1), (1, -1), (2, -1)]
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )

@@ -1,101 +1,125 @@
 {
-  "slug": "spyder_citypark",
   "monsters": [
     {
-      "monster": "cardiling",
       "encounter_rate": 3,
-      "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         5,
         8
+      ],
+      "monster": "cardiling",
+      "variables": [
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
-      "monster": "cardiwing",
       "encounter_rate": 1,
-      "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         8,
         11
+      ],
+      "monster": "cardiwing",
+      "variables": [
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
-      "monster": "cataspike",
       "encounter_rate": 3,
-      "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         6,
         9
+      ],
+      "monster": "cataspike",
+      "variables": [
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
-      "monster": "eyenemy",
       "encounter_rate": 3,
-      "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         5,
         8
+      ],
+      "monster": "eyenemy",
+      "variables": [
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
+      "encounter_rate": 3,
+      "exp_req_mod": 3,
+      "held_items": [],
+      "level_range": [
+        8,
+        12
+      ],
       "monster": "axolightl",
-      "encounter_rate": 3,
       "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
-      "level_range": [
-        8,
-        12
+        {
+          "daytime": "false"
+        }
       ]
     },
     {
+      "encounter_rate": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
+      "level_range": [
+        8,
+        12
+      ],
       "monster": "tourbidi",
-      "encounter_rate": 1,
       "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
-      "level_range": [
-        8,
-        12
+        {
+          "daytime": "false"
+        }
       ]
     },
     {
-      "monster": "squabbit",
       "encounter_rate": 3,
-      "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         8,
         12
+      ],
+      "monster": "squabbit",
+      "variables": [
+        {
+          "daytime": "false"
+        }
       ]
     },
     {
-      "monster": "puparmor",
       "encounter_rate": 1,
-      "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         9,
         14
+      ],
+      "monster": "puparmor",
+      "variables": [
+        {
+          "daytime": "false"
+        }
       ]
     }
-  ]
+  ],
+  "slug": "spyder_citypark"
 }

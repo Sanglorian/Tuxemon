@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-import pygame
+from pygame.surface import Surface
 
 from tuxemon.platform.events import PlayerInput
 from tuxemon.state import State
@@ -42,7 +42,7 @@ class NegativeTransition(State):
             logger.info("Negative colors transition finished.")
             self.client.pop_state()
 
-    def draw(self, surface: pygame.surface.Surface) -> None:
+    def draw(self, surface: Surface) -> None:
         for x in range(surface.get_width()):
             for y in range(surface.get_height()):
                 r, g, b, a = surface.get_at((x, y))

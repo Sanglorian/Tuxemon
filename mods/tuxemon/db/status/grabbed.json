@@ -1,0 +1,30 @@
+{
+  "animation": null,
+  "modifiers": [],
+  "category": "negative",
+	"conditions": [
+    {
+      "type": "current_hp",
+      "parameters": [">", "0"],
+      "operator": "is"
+    }
+	],
+  "effects": [
+    {
+      "type": "grabbed",
+      "parameters": ["2", "ranged:reach"]
+    }
+  ],
+  "flip_axes": "",
+  "icon": "gfx/ui/icons/status/icon_grabbed.png",
+  "on_positive_status": "replaced",
+  "on_negative_status": "replaced",
+  "bond": true,
+  "sfx": "sfx_pulse",
+  "slug": "grabbed",
+  "sort": "meta",
+  "cond_id": 5,
+  "use_failure": null,
+  "use_success": "combat_state_grabbed_get",
+  "gain_cond": null
+}

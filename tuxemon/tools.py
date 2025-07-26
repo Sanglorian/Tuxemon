@@ -1,15 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """
-
 Do not import platform-specific libraries such as pygame.
 Graphics/audio operations should go to their own modules.
 
 As the game library is developed and matures, move these into larger modules
 if more appropriate.  Ideally this should be kept small.
-
 """
-
 from __future__ import annotations
 
 import logging
@@ -30,16 +27,22 @@ from typing import (
 from tuxemon import prepare
 from tuxemon.compat.rect import ReadOnlyRect
 from tuxemon.db import Comparison
-from tuxemon.locale import T, replace_text
+from tuxemon.locale import T
 from tuxemon.math import Vector2
+from tuxemon.ui.dialogue import calc_dialog_rect
+from tuxemon.ui.text_formatter import TextFormatter
 
 if TYPE_CHECKING:
-    import pygame
+    from pygame.rect import Rect
 
+    from tuxemon.client import LocalPygameClient
     from tuxemon.item.item import Item
     from tuxemon.session import Session
     from tuxemon.sprite import Sprite
     from tuxemon.state import State
+    from tuxemon.states.choice.choice_state import MenuStateConfig
+    from tuxemon.technique.technique import Technique
+    from tuxemon.ui.menu_options import MenuOptions
 
 
 logger = logging.getLogger(__name__)
@@ -97,9 +100,22 @@ def transform_resource_filename(*filename: str) -> str:
 
     Returns:
         The absolute path of the resource.
-
     """
     return prepare.fetch(*filename)
+
+
+def get_screen_rect(sprite: Sprite, internal_rect: Rect) -> Rect:
+    """
+    Converts a rectangle from HUD local coordinates to screen coordinates.
+
+    Parameters:
+        sprite: The HUD sprite whose position on screen defines the base.
+        internal_rect: The Rect relative to sprite.image.
+
+    Returns:
+        A Rect object in screen coordinates.
+    """
+    return internal_rect.move(sprite.rect.topleft)
 
 
 def scale_sequence(sequence: TVarSequence) -> TVarSequence:
@@ -111,7 +127,6 @@ def scale_sequence(sequence: TVarSequence) -> TVarSequence:
 
     Returns:
         Scaled sequence.
-
     """
     return type(sequence)(i * prepare.SCALE for i in sequence)
 
@@ -125,121 +140,88 @@ def scale(number: int) -> int:
 
     Returns:
         Scaled integer.
-
     """
     return prepare.SCALE * number
 
 
-def calc_dialog_rect(
-    screen_rect: pygame.rect.Rect, position: str
-) -> pygame.rect.Rect:
-    """
-    Return a rect that is the area for a dialog box on the screen.
-
-    Note:
-        This only works with Pygame rects, as it modifies the attributes.
-
-    Parameters:
-        screen_rect: Rectangle of the screen.
-        position: Position of the dialog box. Can be 'top', 'bottom', 'center',
-            'topleft', 'topright', 'bottomleft', 'bottomright', 'right', 'left'.
-
-    Returns:
-        Rectangle for a dialog.
-    """
-    rect = screen_rect.copy()
-    if prepare.CONFIG.large_gui:
-        rect.height = int(rect.height * 0.4)
-    else:
-        rect.height = int(rect.height * 0.25)
-        rect.width = int(rect.width * 0.8)
-
-    if position == "top":
-        rect.top = screen_rect.top
-        rect.centerx = screen_rect.centerx
-    elif position == "bottom":
-        rect.bottom = screen_rect.bottom
-        rect.centerx = screen_rect.centerx
-    elif position == "center":
-        rect.center = screen_rect.center
-    elif position == "topleft":
-        rect.topleft = screen_rect.topleft
-    elif position == "topright":
-        rect.topright = screen_rect.topright
-    elif position == "bottomleft":
-        rect.bottomleft = screen_rect.bottomleft
-    elif position == "bottomright":
-        rect.bottomright = screen_rect.bottomright
-    elif position == "left":
-        rect.left = screen_rect.left
-        rect.centery = screen_rect.centery
-    elif position == "right":
-        rect.right = screen_rect.right
-        rect.centery = screen_rect.centery
-    else:
-        raise ValueError("Invalid position.")
-
-    return rect
+def fix_measure(measure: int, percentage: float) -> int:
+    """it returns the correct measure based on percentage"""
+    return round(measure * percentage)
 
 
 def open_dialog(
-    session: Session,
+    client: LocalPygameClient,
     text: Sequence[str],
     avatar: Optional[Sprite] = None,
-    colors: dict[str, Any] = {},
+    box_style: Optional[dict[str, Any]] = None,
     position: str = "bottom",
+    target_coords: Optional[Union[tuple[int, int], Rect]] = None,
+    custom_rect: Optional[Rect] = None,
 ) -> State:
     """
-    Open a dialog with the standard window size.
+    Open a dialog with the standard window size or a custom size/position.
 
     Parameters:
-        session: Game session.
-        text: List of strings.
-        avatar: Optional avatar sprite.
-        colors: Dictionary containing background color, font color, etc.
+        client: Game client.
+        text: List of strings for the dialog content.
+        avatar: Optional avatar sprite to display in the dialog.
+        box_style: Dictionary containing background color, font color, etc.
         position: Position of the dialog box. Can be 'top', 'bottom', 'center',
-            'topleft', 'topright', 'bottomleft', 'bottomright'.
+            'topleft', 'topright', 'bottomleft', 'bottomright', 'right', 'left',
+            or 'at_target' (if target_coords is a point).
+            If target_coords is provided, this position will be relative to the target.
+            Otherwise, it will be relative to the screen.
+            This parameter is ignored if custom_rect is provided.
+        target_coords: Optional. A tuple (x, y) representing a point, or a Pygame Rect.
+                       If provided, the 'position' will be relative to this point/rect.
+                       Ignored if custom_rect is provided.
+        custom_rect: Optional. A Pygame Rect object specifying the exact area for the dialog.
+                     If provided, 'position' and 'target_coords' will be ignored.
 
     Returns:
         The pushed dialog state.
-
     """
-    from tuxemon.states.dialog import DialogState
-
-    rect = calc_dialog_rect(session.client.screen.get_rect(), position)
-    return session.client.push_state(
-        DialogState(
-            text=text,
-            avatar=avatar,
-            rect=rect,
-            colors=colors,
+    box_style = box_style or {}
+    if custom_rect is not None:
+        dialog_rect = custom_rect
+    else:
+        dialog_rect = calc_dialog_rect(
+            client.screen.get_rect(), position, target_coords=target_coords
         )
+
+    return client.push_state(
+        "DialogState",
+        text=text,
+        avatar=avatar,
+        rect=dialog_rect,
+        box_style=box_style,
     )
 
 
 def open_choice_dialog(
-    session: Session,
-    menu: Sequence[tuple[str, str, Callable[[], None]]],
+    client: LocalPygameClient,
+    menu: MenuOptions,
     escape_key_exits: bool = False,
+    config: Optional[MenuStateConfig] = None,
 ) -> State:
     """
-    Open a dialog choice with the standard window size.
+    Opens a dialog choice using the standard window size.
 
     Parameters:
-        session: Game session.
-        menu: Optional menu object.
+        client: The LocalPygameClient instance.
+        menu: A MenuOptions instance.
+        escape_key_exits: Whether pressing the escape key will close the
+            dialog (default: False).
+        config: Configuration for the menu.
 
     Returns:
-        The pushed dialog choice state.
-
+        The newly pushed dialog choice state.
     """
-    from tuxemon.states.choice.choice_state import ChoiceState
-
-    return session.client.push_state(
-        ChoiceState(
-            menu=menu,
-            escape_key_exits=escape_key_exits,
-        )
+    return client.push_state(
+        "ChoiceState",
+        menu=menu,
+        escape_key_exits=escape_key_exits,
+        config=config,
     )
 
 
@@ -247,39 +229,39 @@ def vector2_to_tile_pos(vector: Vector2) -> tuple[int, int]:
     return (int(vector[0]), int(vector[1]))
 
 
-def number_or_variable(
-    session: Session,
-    value: str,
-) -> float:
+def number_or_variable(variables: dict[str, Any], value: str) -> float:
     """
-    Returns a numeric game variable by its name.
+    Converts a string to a numeric value or retrieves a numeric variable by
+    name.
 
-    If ``value`` is already a number, convert from string to float and
-    return that.
+    This function attempts to convert the input string `value` into a float.
+    If that fails, it then tries to retrieve a variable by its name from the
+    `variables` dictionary and convert its value to a float.
 
     Parameters:
-        session: Session object, that contains the requested variable.
-        value: Name of the requested variable or string with numerical value.
+        variables: A dictionary containing variable names and their
+            corresponding values.
+        value: Either a string containing a numeric value or the name of a
+            variable.
 
     Returns:
-        Numerical value contained in the string or in the variable referenced
-        by that name.
+        The numeric value obtained by converting the string or retrieving
+        the variable.
 
     Raises:
-        ValueError: If ``value`` is not a number but no numeric variable with
-        that name can be retrieved.
-
+        ValueError: If `value` is neither a valid numeric string nor a valid
+        variable name, or the retrieved variable value cannot be converted to
+        a float.
     """
-    player = session.player
-    if value.isdigit():
+    try:
         return float(value)
-    elif value.replace(".", "", 1).isdigit():
-        return float(value)
-    else:
+    except ValueError:
         try:
-            return float(player.game_variables[value])
+            return float(variables[value])
         except (KeyError, ValueError, TypeError):
-            raise ValueError(f"invalid number or game variable {value}")
+            raise ValueError(
+                f"Unable to retrieve numeric variable or convert value '{value}'."
+            )
 
 
 # TODO: stability/testing
@@ -369,9 +351,9 @@ def cast_dataclass_parameters(self: Any) -> None:
             setattr(self, field_name, new_value)
 
 
-def show_item_result_as_dialog(
+def show_result_as_dialog(
     session: Session,
-    item: Item,
+    entity: Union[Item, Technique],
     result: bool,
 ) -> None:
     """
@@ -379,15 +361,14 @@ def show_item_result_as_dialog(
 
     Parameters:
         session: Game session.
-        item: Item object.
+        entity: Object (Item or Technique).
         result: Boolean indicating success or failure.
-
     """
     msg_type = "use_success" if result else "use_failure"
-    template = getattr(item, msg_type)
+    template = getattr(entity, msg_type)
     if template:
-        message = T.translate(replace_text(session, template))
-        open_dialog(session, [message])
+        message = T.translate(TextFormatter.replace_text(session, template, T))
+        open_dialog(session.client, [message])
 
 
 def round_to_divisible(x: float, base: int = 16) -> int:
@@ -405,7 +386,6 @@ def round_to_divisible(x: float, base: int = 16) -> int:
 
     Returns:
         Rounded number that is divisible by ``base``.
-
     """
     return int(base * round(float(x) / base))
 
@@ -425,7 +405,6 @@ def copy_dict_with_keys(
 
     Returns:
         New mapping with the keys restricted to those in ``keys``.
-
     """
     return {k: source[k] for k in keys if k in source}
 
@@ -436,7 +415,6 @@ def assert_never(value: Never) -> NoReturn:
 
     Parameters:
         value: The value that will be checked for exhaustiveness.
-
     """
     assert False, f"Unhandled value: {value} ({type(value).__name__})"
 
@@ -461,7 +439,6 @@ def compare(
 
     Returns:
         boolean: true / false
-
     """
     if key == Comparison.less_than or key == "<":
         return bool(lt(value1, value2))

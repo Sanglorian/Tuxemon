@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 
 from tuxemon.event import MapCondition, get_npc
 from tuxemon.event.eventcondition import EventCondition
@@ -12,6 +13,7 @@ from tuxemon.tools import compare
 logger = logging.getLogger(__name__)
 
 
+@dataclass
 class HasBagCondition(EventCondition):
     """
     Check to see how many items are in the character's bag.
@@ -40,7 +42,9 @@ class HasBagCondition(EventCondition):
             return False
 
         visible_items = [
-            item for item in character.items if item.behaviors.visible
+            item
+            for item in character.items.get_items()
+            if item.behaviors.visible
         ]
         bag_size = sum(item.quantity for item in visible_items)
         return compare(check, bag_size, int(number))

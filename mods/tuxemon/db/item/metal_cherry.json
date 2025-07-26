@@ -1,9 +1,20 @@
 {
   "conditions": [
-    "not type metal"
+    {
+      "type": "type",
+      "parameters": [
+        "metal"
+      ],
+      "operator": "not"
+    }
   ],
   "effects": [
-    "switch metal"
+    {
+      "type": "switch_type",
+      "parameters": [
+        "metal"
+      ]
+    }
   ],
   "slug": "metal_cherry",
   "sort": "utility",
@@ -13,7 +24,10 @@
   "usable_in": [
     "MainCombatMenuState"
   ],
-  "behaviors": {},
+  "modifiers": [],
+  "behaviors": {
+    "resellable": true
+  },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

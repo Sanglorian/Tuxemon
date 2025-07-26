@@ -6,12 +6,11 @@ from collections.abc import Callable, Generator
 
 import pygame_menu
 
-from tuxemon.animation import Animation
+from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale import T
-from tuxemon.menu.input import InputMenu
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu, PygameMenuState
-from tuxemon.session import local_session
+from tuxemon.networking import ConnectionState
 from tuxemon.tools import open_dialog
 
 MenuGameObj = Callable[[], object]
@@ -36,6 +35,7 @@ class MultiplayerMenu(PygameMenuState):
 
     def __init__(self) -> None:
         super().__init__()
+        self.network = self.client.network_manager
 
         menu: list[tuple[str, MenuGameObj]] = []
         menu.append(("multiplayer_host_game", self.host_game))
@@ -62,66 +62,70 @@ class MultiplayerMenu(PygameMenuState):
         self.animation_size = 0.0
 
         ani = self.animate(self, animation_size=1.0, duration=0.2)
-        ani.update_callback = self.update_animation_size
+        ani.schedule(self.update_animation_size, ScheduleType.ON_UPDATE)
 
         return ani
 
     def host_game(self) -> None:
         # check if server is already hosting a game
-        if self.client.server.listening:
+        assert self.network.client
+        assert self.network.server
+        if self.network.server.listening:
             self.client.pop_state(self)
             open_dialog(
-                local_session, [T.translate("multiplayer_already_hosting")]
+                self.client, [T.translate("multiplayer_already_hosting")]
             )
 
         # not hosting, so start the process
-        elif not self.client.isclient:
+        elif not self.network.is_client():
             # Configure this game to host
-            self.client.ishost = True
-            self.client.server.server.listen()
-            self.client.server.listening = True
+            self.network.connection_state = ConnectionState.HOST
+            self.network.server.server.listen()
+            self.network.server.listening = True
 
             # Enable the game, so we can connect to self
-            self.client.client.enable_join_multiplayer = True
-            self.client.client.client.listen()
-            self.client.client.listening = True
+            self.network.client.enable_join_multiplayer = True
+            self.network.client.client.listen()
+            self.network.client.listening = True
 
             # connect to self
-            while not self.client.client.client.registered:
-                self.client.client.client.autodiscover(autoregister=False)
-                for game in self.client.client.client.discovered_servers:
-                    self.client.client.client.register(game)
+            while not self.network.client.client.registered:
+                self.network.client.client.autodiscover(autoregister=False)
+                for game in self.network.client.client.discovered_servers:
+                    self.network.client.client.register(game)
 
             # close this menu
             self.client.pop_state(self)
 
             # inform player that hosting is ready
             open_dialog(
-                local_session, [T.translate("multiplayer_hosting_ready")]
+                self.client, [T.translate("multiplayer_hosting_ready")]
             )
 
     def scan_for_games(self) -> None:
         # start the game scanner
-        if not self.client.ishost:
-            self.client.client.enable_join_multiplayer = True
-            self.client.client.listening = True
-            self.client.client.client.listen()
+        assert self.network.client
+        if not self.network.is_host():
+            self.network.client.enable_join_multiplayer = True
+            self.network.client.listening = True
+            self.network.client.client.listen()
 
         # open menu to select games
-        self.client.push_state(MultiplayerSelect())
+        self.client.push_state("MultiplayerSelect")
 
     def join_by_ip(self) -> None:
         self.client.push_state(
-            InputMenu(prompt=T.translate("multiplayer_join_prompt"))
+            "InputMenu", prompt=T.translate("multiplayer_join_prompt")
         )
 
     def join(self) -> None:
-        if self.client.ishost:
+        assert self.network.client
+        if self.network.is_host():
             return
         else:
-            self.client.client.enable_join_multiplayer = True
-            self.client.client.listening = True
-            # self.client.client.game.listen()  # "LocalPygameClient" has no attribute "listen"
+            self.network.client.enable_join_multiplayer = True
+            self.network.client.listening = True
+            # network.client.game.listen()  # "LocalPygameClient" has no attribute "listen"
 
 
 class MultiplayerSelect(PopUpMenu[None]):
@@ -131,12 +135,14 @@ class MultiplayerSelect(PopUpMenu[None]):
 
     def __init__(self) -> None:
         super().__init__()
+        self.network = self.client.network_manager
 
         # make a timer to refresh the menu items every second
-        self.task(self.reload_items, 1, -1)
+        self.task(self.reload_items, interval=1, times=-1)
 
     def initialize_items(self) -> Generator[MenuItem[None], None, None]:
-        servers = self.client.client.server_list
+        assert self.network.client
+        servers = self.network.client.server_list
         if servers:
             for server in servers:
                 label = self.shadow_text(server)

@@ -3,15 +3,16 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T, replace_text
+from tuxemon.locale import T
 from tuxemon.npc import NPC
-from tuxemon.states.choice.choice_monster import ChoiceMonster
+from tuxemon.session import Session
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.text_formatter import TextFormatter
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,6 @@ class ChoiceMonsterAction(EventAction):
             (monster slugs eg: rockitten:apeoro),
             separated by a colon ":".
         variable: Variable to store the result of the choice.
-
     """
 
     name = "choice_monster"
@@ -40,27 +40,30 @@ class ChoiceMonsterAction(EventAction):
     choices: str
     variable: str
 
-    def start(self) -> None:
+    def start(self, session: Session) -> None:
         def _set_variable(var_value: str, player: NPC) -> None:
             player.game_variables[self.variable] = var_value
-            self.session.client.pop_state()
+            session.client.pop_state()
 
         # perform text substitutions
-        choices = replace_text(self.session, self.choices)
-        player = self.session.player
+        choices = TextFormatter.replace_text(session, self.choices, T)
+        player = session.player
 
         # make menu options for each string between the colons
         var_list: list[str] = choices.split(":")
-        var_menu: list[tuple[str, str, Callable[[], None]]] = []
+        options: list[ChoiceOption] = []
 
         for val in var_list:
             text = T.translate(val)
-            var_menu.append((text, val, partial(_set_variable, val, player)))
+            action = partial(_set_variable, val, player)
+            options.append(
+                ChoiceOption(key=val, display_text=text, action=action)
+            )
 
-        self.session.client.push_state(ChoiceMonster(menu=var_menu))
+        session.client.push_state("ChoiceMonster", menu=MenuOptions(options))
 
-    def update(self) -> None:
+    def update(self, session: Session) -> None:
         try:
-            self.session.client.get_state_by_name(ChoiceMonster)
+            session.client.get_state_by_name("ChoiceMonster")
         except ValueError:
             self.stop()

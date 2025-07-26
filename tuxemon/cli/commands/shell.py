@@ -9,10 +9,7 @@ from tuxemon.cli.context import InvokeContext
 
 
 class ShellCommand(CLICommand):
-    """
-    Open python shell.
-
-    """
+    """Open python shell."""
 
     name = "shell"
     description = "Start interactive python shell."
@@ -25,7 +22,6 @@ class ShellCommand(CLICommand):
         Parameters:
             ctx: Contains references to parts of the game and CLI interface.
             line: Input text after the command name.
-
         """
         print("Use the `ctx` object to interact with the game. CTRL-D exits.")
         code.interact(local=locals())

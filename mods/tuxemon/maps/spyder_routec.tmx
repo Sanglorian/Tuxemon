@@ -217,7 +217,7 @@
   <object id="222" name="Talk Rutherford" type="event" x="544" y="144" width="16" height="48">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_searoutec_rutherford"/>
+    <property name="act2" value="pathfind_to_char player,spyder_searoutec_rutherford"/>
     <property name="act3" value="translated_dialog spyder_searoutec_rutherford1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster incandesfin,26,spyder_searoutec_rutherford,5,10"/>
@@ -231,7 +231,7 @@
   <object id="223" name="Talk Gil" type="event" x="384" y="256" width="16" height="32">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_searoutec_gil"/>
+    <property name="act02" value="pathfind_to_char player,spyder_searoutec_gil"/>
     <property name="act03" value="translated_dialog spyder_searoutec_gil1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster nudiflot_female,22,spyder_searoutec_gil,5,10"/>
@@ -247,7 +247,7 @@
   <object id="226" name="Talk Sandy" type="event" x="80" y="240" width="16" height="48">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_searoutec_sandy"/>
+    <property name="act02" value="pathfind_to_char player,spyder_searoutec_sandy"/>
     <property name="act03" value="translated_dialog spyder_searoutec_sandy1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster sharpfin,22,spyder_searoutec_sandy,5,10"/>
@@ -278,7 +278,7 @@
   <object id="230" name="Talk More" type="event" x="544" y="480" width="64" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_searoutec_more"/>
+    <property name="act02" value="pathfind_to_char player,spyder_searoutec_more"/>
     <property name="act03" value="translated_dialog spyder_searoutec_more1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster picc,26,spyder_searoutec_more,5,10"/>

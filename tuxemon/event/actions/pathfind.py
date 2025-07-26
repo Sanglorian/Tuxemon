@@ -7,6 +7,7 @@ from typing import final
 
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 
 @final
@@ -24,7 +25,6 @@ class PathfindAction(EventAction):
 
     Script parameters:
         npc_slug: Either "player" or npc slug name (e.g. "npc_maple").
-
     """
 
     name = "pathfind"
@@ -32,12 +32,13 @@ class PathfindAction(EventAction):
     tile_pos_x: int
     tile_pos_y: int
 
-    def start(self) -> None:
-        self.npc = get_npc(self.session, self.npc_slug)
-        assert self.npc
-        self.npc.pathfind((self.tile_pos_x, self.tile_pos_y))
+    def start(self, session: Session) -> None:
+        self.moving_entity = get_npc(session, self.npc_slug)
+        assert self.moving_entity
+        destination = (self.tile_pos_x, self.tile_pos_y)
+        self.moving_entity.pathfind(destination)
 
-    def update(self) -> None:
-        assert self.npc
-        if not self.npc.moving and not self.npc.path:
+    def update(self, session: Session) -> None:
+        assert self.moving_entity
+        if not (self.moving_entity.moving or self.moving_entity.path):
             self.stop()

@@ -115,7 +115,7 @@
   <object id="84" name="Battle Calliope" type="event" x="96" y="208" width="32" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routee_calliope,down"/>
+    <property name="act2" value="pathfind_to_char player,spyder_routee_calliope,down"/>
     <property name="act3" value="translated_dialog spyder_routee_calliope1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster tumblebee,40,spyder_routee_calliope,5,10"/>
@@ -153,7 +153,7 @@
   <object id="86" name="Talk Aiolos" type="event" x="96" y="256" width="32" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routee_aiolos"/>
+    <property name="act2" value="pathfind_to_char player,spyder_routee_aiolos"/>
     <property name="act3" value="translated_dialog spyder_routee_aiolos1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster dune_pincher,35,spyder_routee_aiolos,5,10"/>

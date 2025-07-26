@@ -3,10 +3,15 @@
   "accuracy": 0.6,
   "animation": "watershot",
   "effects": [
-    "splash 2"
+    {
+      "type": "splash",
+      "parameters": [
+        "2"
+      ]
+    }
   ],
   "flip_axes": "x",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.0,
   "power": 1.5,
   "range": "ranged",
@@ -14,6 +19,7 @@
   "sfx": "sfx_bubbles",
   "slug": "flood",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": true,
@@ -23,7 +29,9 @@
     "own_trainer": false
   },
   "category": "basic",
-  "tags": ["Water"],
+  "tags": [
+    "water"
+  ],
   "types": [
     "water"
   ],

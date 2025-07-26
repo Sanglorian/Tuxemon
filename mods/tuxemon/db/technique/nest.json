@@ -3,11 +3,19 @@
   "accuracy": 0.8,
   "animation": "ruby_absorb",
   "effects": [
-    "give sniping,own_monster",
-    "healing"
+    {
+      "type": "give",
+      "parameters": [
+        "sniping",
+        "own_monster"
+      ]
+    },
+    {
+      "type": "healing"
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.9,
   "power": 0.0,
   "healing_power": 2.0,
@@ -16,6 +24,7 @@
   "sfx": "sfx_blaster",
   "slug": "nest",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": false,
     "enemy_team": false,
@@ -25,7 +34,10 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["Bird", "Healing"],
+  "tags": [
+    "bird",
+    "healing"
+  ],
   "types": [
     "fire"
   ],

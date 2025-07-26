@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from functools import partial
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pygame_menu
 from pygame_menu import locals
@@ -13,15 +13,14 @@ from pygame_menu.widgets.selection.highlight import HighlightSelection
 from tuxemon import prepare
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.session import local_session
+from tuxemon.relationship import RELATIONSHIP_STRENGTH
 from tuxemon.tools import open_choice_dialog, open_dialog
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+
+if TYPE_CHECKING:
+    from tuxemon.npc import NPC
 
 MenuGameObj = Callable[[], Any]
-
-
-def fix_measure(measure: int, percentage: float) -> int:
-    """it returns the correct measure based on percentage"""
-    return round(measure * percentage)
 
 
 class NuPhoneContacts(PygameMenuState):
@@ -29,52 +28,60 @@ class NuPhoneContacts(PygameMenuState):
         self,
         menu: pygame_menu.Menu,
     ) -> None:
-        def choice(slug: str, phone: str) -> None:
-            label = (
-                T.translate("action_call") + " " + T.translate(slug).upper()
-            )
-            var_menu = []
-            var_menu.append((label, label, partial(call, phone)))
+        def choice(slug: str) -> None:
+            label = f"{T.translate('action_call')} {T.translate(slug).upper()}"
+
+            option = ChoiceOption(key=slug, display_text=label, action=call)
+
             open_choice_dialog(
-                local_session,
-                menu=(var_menu),
+                self.client,
+                menu=MenuOptions([option]),
                 escape_key_exits=True,
             )
 
-        def call(phone: str) -> None:
-            self.client.pop_state()
-            self.client.pop_state()
+        def call() -> None:
+            self.client.remove_state_by_name("ChoiceState")
+            self.client.remove_state_by_name("NuPhoneContacts")
             # from spyder_cotton_town.tmx to spyder_cotton_town
             map = self.client.get_map_name()
             map_name = map.split(".")[0]
-            # new string map + phone
-            new_label = f"{map_name}_{phone}"
-            if T.translate(new_label) != new_label:
+            if T.translate(map_name) != map_name:
                 open_dialog(
-                    local_session,
-                    [T.translate(new_label)],
+                    self.client,
+                    [T.translate(map_name)],
                 )
             else:
                 open_dialog(
-                    local_session,
+                    self.client,
                     [T.translate("phone_no_answer")],
                 )
 
         # slug and phone number from the tuple
-        for slug, phone in self.player.contacts.items():
+        connections = self.char.relationships.get_all_connections()
+        for slug, contact in connections.items():
             menu.add.button(
-                title=f"{T.translate(slug)} {phone}",
-                action=partial(choice, slug, phone),
-                button_id=slug,
-                font_size=self.font_size_small,
+                title=T.translate(slug),
+                action=partial(choice, slug),
+                font_size=self.font_type.small,
                 selection_effect=HighlightSelection(),
+            )
+            relationship = T.translate(f"relation_relationship")
+            relation = T.translate(f"relation_{contact.relationship_type}")
+            menu.add.label(
+                title=f"{relationship}: {relation}",
+                font_size=self.font_type.small,
+            )
+            relation_strength = T.translate(f"relation_strength")
+            menu.add.label(
+                title=f"{relation_strength}: {contact.strength}/{RELATIONSHIP_STRENGTH[1]}",
+                font_size=self.font_type.small,
             )
             menu.add.vertical_margin(25)
 
         # menu
         menu.set_title(T.translate("app_contacts")).center_content()
 
-    def __init__(self) -> None:
+    def __init__(self, character: NPC) -> None:
         width, height = prepare.SCREEN_SIZE
 
         theme = self._setup_theme(prepare.BG_PHONE_CONTACTS)
@@ -84,12 +91,15 @@ class NuPhoneContacts(PygameMenuState):
         # menu
         theme.title = True
 
-        self.player = local_session.player
+        self.char = character
 
         super().__init__(
             height=height,
             width=width,
         )
+
+        for relation in self.char.relationships.connections.values():
+            relation.apply_decay(self.char)
 
         self.add_menu_items(self.menu)
         self.reset_theme()

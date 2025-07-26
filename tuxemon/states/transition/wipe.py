@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-import pygame
+from pygame import draw as pg_draw
+from pygame.surface import Surface
 
 from tuxemon import prepare
 from tuxemon.graphics import ColorLike
@@ -22,7 +23,7 @@ class WipeTransition(State):
 
     def __init__(
         self,
-        image: pygame.Surface,
+        image: Surface,
         direction: str,
         speed: int = 250,
         color: ColorLike = prepare.BLACK_COLOR,
@@ -72,14 +73,14 @@ class WipeTransition(State):
             logger.info("Wipe transition finished.")
             self.client.pop_state()
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: Surface) -> None:
         surface.blit(self.image, (0, 0))
         if self.direction in ["left", "right"]:
-            pygame.draw.rect(
+            pg_draw.rect(
                 surface, self.color, (self.wipe_x, 0, self.width, self.height)
             )
         else:
-            pygame.draw.rect(
+            pg_draw.rect(
                 surface, self.color, (0, self.wipe_y, self.width, self.height)
             )
 

@@ -1,5 +1,41 @@
 [
   {
+    "connected_missions": [],
+    "description": "spyder_maniac_achievement2",
+    "prerequisites": [
+      {
+        "maniac_achievements": "yes"
+      }
+    ],
+    "progress": [
+      {
+        "completion_percentage": 5.0,
+        "game_variables": {
+          "maniac_achievements": "yes"
+        }
+      },
+      {
+        "completion_percentage": 50.0,
+        "game_variables": {
+          "got_both_fossils": "yes"
+        }
+      },
+      {
+        "completion_percentage": 50.0,
+        "game_variables": {
+          "got_shammer": "yes"
+        }
+      },
+      {
+        "completion_percentage": 100.0,
+        "game_variables": {
+          "catgirl_candy_hastraded": "yes"
+        }
+      }
+    ],
+    "required_items": [],
+    "required_missions": [],
+    "required_monsters": [],
     "slug": "spyder_maniac_achievement1"
   }
 ]

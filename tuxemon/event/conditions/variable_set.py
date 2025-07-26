@@ -2,56 +2,43 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import Optional
+from dataclasses import dataclass
 
 from tuxemon.event import MapCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
 
+@dataclass
 class VariableSetCondition(EventCondition):
     """
-    Check to see if a player game variable exists and has a particular value.
+    Checks if one or more player game variables exist and optionally match
+    specified values.
 
-    If the variable does not exist it will return ``False``.
+    If a variable does not exist, the condition returns `False`.
 
     Script usage:
         .. code-block::
 
-            is variable_set <variable>[:value]
+            is variable_set <variable>[:value],[<variable>[:value] ...]
 
     Script parameters:
         variable: The variable to check.
-        value: Optional value to check for.
+        value: Optional value to check against. If omitted, the condition
+            only checks for the variable's existence.
 
+    The condition returns `True` if all specified variables exist and
+    match their given values (if provided). Otherwise, it returns `False`.
     """
 
     name = "variable_set"
 
     def test(self, session: Session, condition: MapCondition) -> bool:
-        """
-        Check to see if a player game variable has a particular value.
-
-        Parameters:
-            session: The session object
-            condition: The map condition object.
-
-        Returns:
-            Whether the variable exists and has that value.
-
-        """
         player = session.player
 
-        parts = condition.parameters[0].split(":")
-        key = parts[0]
-        if len(parts) > 1:
-            value: Optional[str] = parts[1]
-        else:
-            value = None
-
-        exists = key in player.game_variables
-
-        if value is None:
-            return exists
-        else:
-            return exists and player.game_variables[key] == value
+        return all(
+            key in player.game_variables
+            and (not value or player.game_variables[key] == value)
+            for part in condition.parameters
+            for key, _, value in [part.partition(":")]
+        )

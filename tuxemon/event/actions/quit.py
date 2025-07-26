@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 
 @final
@@ -18,12 +19,9 @@ class QuitAction(EventAction):
         .. code-block::
 
             quit
-
     """
 
     name = "quit"
 
-    def start(self) -> None:
-        # TODO: API
-        self.session.client.exit = True
-        self.session.client.done = True
+    def start(self, session: Session) -> None:
+        session.client.quit()

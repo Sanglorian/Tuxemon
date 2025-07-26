@@ -117,7 +117,7 @@
   <object id="26" name="Talk Alyssa" type="event" x="64" y="144" width="16" height="48">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_scoop_alyssa"/>
+    <property name="act2" value="pathfind_to_char player,spyder_scoop_alyssa"/>
     <property name="act3" value="translated_dialog spyder_scoop_alyssa1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster possessun,40,spyder_scoop_alyssa,5,10"/>
@@ -131,7 +131,7 @@
   <object id="27" name="Talk Taggart" type="event" x="96" y="144" width="16" height="48">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_scoop_taggart"/>
+    <property name="act02" value="pathfind_to_char player,spyder_scoop_taggart"/>
     <property name="act03" value="translated_dialog spyder_scoop_taggart1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster elofly,30,spyder_scoop_taggart,5,10"/>
@@ -147,7 +147,7 @@
   <object id="28" name="Talk Donald" type="event" x="160" y="160" width="32" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_scoop_donald"/>
+    <property name="act02" value="pathfind_to_char player,spyder_scoop_donald"/>
     <property name="act03" value="translated_dialog spyder_scoop_donald1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster birdling,35,spyder_scoop_donald,5,10"/>
@@ -178,17 +178,17 @@
     <property name="act14" value="char_face spyder_scoop_nash,right"/>
     <property name="act15" value="create_npc spyder_scoop_reese,6,4"/>
     <property name="act16" value="char_face spyder_scoop_reese,left"/>
-    <property name="act20" value="translated_dialog spyder_scoop_arachne_flashback1"/>
-    <property name="act21" value="translated_dialog spyder_scoop_arachne_flashback2"/>
-    <property name="act22" value="translated_dialog spyder_scoop_arachne_flashback3"/>
+    <property name="act20" value="translated_dialog spyder_scoop_arachne_flashback1,,bottomleft"/>
+    <property name="act21" value="translated_dialog spyder_scoop_arachne_flashback2,,bottomright"/>
+    <property name="act22" value="translated_dialog spyder_scoop_arachne_flashback3,,bottomleft"/>
     <property name="act23" value="create_npc spyder_scoop_arachne,6,3"/>
     <property name="act24" value="char_face spyder_scoop_arachne,down"/>
     <property name="act25" value="translated_dialog spyder_scoop_arachne_flashback4"/>
     <property name="act26" value="char_face spyder_scoop_reese,up"/>
     <property name="act27" value="char_face spyder_scoop_nash,up"/>
-    <property name="act28" value="translated_dialog spyder_scoop_arachne_flashback5"/>
+    <property name="act28" value="translated_dialog spyder_scoop_arachne_flashback5,,bottomleft"/>
     <property name="act29" value="translated_dialog spyder_scoop_arachne_flashback6"/>
-    <property name="act30" value="translated_dialog spyder_scoop_arachne_flashback7"/>
+    <property name="act30" value="translated_dialog spyder_scoop_arachne_flashback7,,bottomright"/>
     <property name="act31" value="translated_dialog spyder_scoop_arachne_flashback8"/>
     <property name="act32" value="add_monster cardiwing,35,spyder_scoop_arachne,5,10"/>
     <property name="act33" value="add_monster spighter,35,spyder_scoop_arachne,5,10"/>
@@ -197,8 +197,8 @@
     <property name="act37" value="start_battle spyder_scoop_reese,spyder_scoop_arachne"/>
     <property name="act38" value="char_face spyder_scoop_arachne,up"/>
     <property name="act39" value="remove_npc spyder_scoop_arachne"/>
-    <property name="act40" value="translated_dialog spyder_scoop_arachne_flashback9"/>
-    <property name="act41" value="translated_dialog spyder_scoop_arachne_flashback10"/>
+    <property name="act40" value="translated_dialog spyder_scoop_arachne_flashback9,,bottomleft"/>
+    <property name="act41" value="translated_dialog spyder_scoop_arachne_flashback10,,bottomright"/>
     <property name="act42" value="pathfind spyder_scoop_reese,6,3"/>
     <property name="act43" value="pathfind spyder_scoop_nash,5,3"/>
     <property name="act44" value="remove_npc spyder_scoop_reese"/>

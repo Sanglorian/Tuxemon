@@ -6,7 +6,8 @@ import logging
 from abc import abstractmethod
 from typing import Optional
 
-import pygame
+from pygame import SRCALPHA
+from pygame.surface import Surface
 
 from tuxemon import prepare
 from tuxemon.graphics import ColorLike
@@ -52,9 +53,9 @@ class FadeTransitionBase(State):
 
         self.caller = caller
         size = self.client.screen.get_size()
-        self.transition_surface = pygame.Surface(size, pygame.SRCALPHA)
+        self.transition_surface = Surface(size, SRCALPHA)
         self.transition_surface.fill(color)
-        self.task(self.client.pop_state, self.state_duration)
+        self.task(self.client.pop_state, interval=self.state_duration)
         self.create_fade_animation()
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
@@ -67,7 +68,7 @@ class FadeTransitionBase(State):
     def create_fade_animation(self) -> None:
         pass
 
-    def draw(self, surface: pygame.surface.Surface) -> None:
+    def draw(self, surface: Surface) -> None:
         # Cover the screen with our faded surface
         surface.blit(self.transition_surface, (0, 0))
 
@@ -83,8 +84,8 @@ class FadeOutTransition(FadeTransitionBase):
 
     def shutdown(self) -> None:
         if self.client.current_music.previous_song:
-            self.client.current_music.play(
-                self.client.current_music.previous_song
+            self.client.event_engine.execute_action(
+                "play_music", [self.client.current_music.previous_song], True
             )
             self.client.current_music.previous_song = None
         self.client.pop_state(self.caller)

@@ -131,7 +131,7 @@ make BACKEND=LINUX; sudo make install BACKEND=LINUX
 ### Fedora Linux
 
 ```shell
-sudo dnf install SDL*-devel freetype-devel libjpeg-devel portmidi-devel python3-devel virtualenv venv
+sudo dnf install SDL2*-devel freetype-devel libjpeg-devel portmidi-devel python3-devel
 git clone https://github.com/Tuxemon/Tuxemon.git
 python3 -m venv venv
 source venv/bin/activate
@@ -180,6 +180,18 @@ git clone https://github.com/Tuxemon/Tuxemon.git
 ulimit -n 10000; python run_tuxemon.py
 ```
 
+### macOS Sequoia with [uv](https://github.com/astral-sh/uv)
+
+```shell
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew update
+brew install uv python git sdl sdl2_image sdl2_ttf sdl2_mixer portmidi libvorbis
+git clone https://github.com/Tuxemon/Tuxemon.git
+cd Tuxemon
+uv sync
+uv run python run_tuxemon.py
+```
+
 Controls
 --------
 
@@ -193,7 +205,7 @@ Controls
 ##### Debugging
 
 You can enable dev_tools by changing `dev_tools` to `True` in the
-`tuxemon.cfg` file:
+`tuxemon.yaml` file:
 
 ```
 [game]
@@ -222,7 +234,7 @@ is usable in the map can be used with the CLI interface.
 ### Setting up
 
 You can enable cli by changing `cli_enabled` to `True` in the
-`tuxemon.cfg` file:
+`tuxemon.yaml` file:
 
 ```
 [game]
@@ -317,7 +329,7 @@ code in this project is licenced under [the GPLv3](https://www.gnu.org/licenses/
 
 GPL v3+
 
-Copyright (C) 2014-2024 William Edwards <shadowapex@gmail.com>,
+Copyright (C) 2014-2025 William Edwards <shadowapex@gmail.com>,
 Benjamin Bean <superman2k5@gmail.com>
 
 This software is distributed under the GNU General Public Licence as

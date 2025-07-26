@@ -1,42 +1,30 @@
 events:
-  Route Music:
-    actions:
-    - play_music music_cathedral_theme
-    conditions:
-    - not music_playing music_cathedral_theme
-    type: "event"
-  Teleport to Flower City:
-    actions:
-    - transition_teleport spyder_flower_city.tmx,23,18,0.3
-    - char_face player,down
-    conditions:
-    - is char_at player
-    - is char_facing player,down
-    x: 6
-    y: 7
-    height: 1
-    width: 2
-    type: "event"
-  Create Soldier:
-    actions:
-    - create_npc spyder_flowerhouse2_pip,4,5
-    conditions:
-    - not char_exists spyder_flowerhouse2_pip
-    - not variable_set soldier_on_mission:on
-    type: "event"
   Create Scientist:
     actions:
     - create_npc spyder_flowerhouse2_bruce,1,2
     - char_face spyder_flowerhouse2_bruce,up
     conditions:
     - not char_exists spyder_flowerhouse2_bruce
-    type: "event"
+    type: event
+  Create Soldier:
+    actions:
+    - create_npc spyder_flowerhouse2_pip,4,5
+    conditions:
+    - not char_exists spyder_flowerhouse2_pip
+    - not variable_set soldier_on_mission:on
+    type: event
+  Route Music:
+    actions:
+    - play_music music_cathedral_theme
+    conditions:
+    - not music_playing music_cathedral_theme
+    type: event
   Talk Scientist:
     actions:
     - translated_dialog spyder_flowerhouse2_scientist
     behav:
     - talk spyder_flowerhouse2_bruce
-    type: "event"
+    type: event
   Talk Soldier 1:
     actions:
     - translated_dialog spyder_flowerhouse2_soldier
@@ -48,7 +36,7 @@ events:
     - talk spyder_flowerhouse2_pip
     conditions:
     - not variable_set xeon_creation:done
-    type: "event"
+    type: event
   Talk Soldier 2:
     actions:
     - translated_dialog spyder_flowerhouse2_soldier5
@@ -57,4 +45,16 @@ events:
     - talk spyder_flowerhouse2_pip
     conditions:
     - is variable_set xeon_creation:done
-    type: "event"
+    type: event
+  Teleport to Flower City:
+    actions:
+    - transition_teleport spyder_flower_city.tmx,23,18,0.3
+    - char_face player,down
+    conditions:
+    - is char_at player
+    - is char_facing player,down
+    height: 1
+    type: event
+    width: 2
+    x: 6
+    y: 7

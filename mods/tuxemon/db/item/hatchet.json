@@ -1,9 +1,17 @@
 {
   "conditions": [
-    "is facing_sprite log"
+    {
+      "type": "facing_sprite",
+      "parameters": [
+        "log"
+      ],
+      "operator": "is"
+    }
   ],
   "effects": [
-    "remove"
+    {
+      "type": "remove_entity"
+    }
   ],
   "slug": "hatchet",
   "sort": "utility",
@@ -12,6 +20,7 @@
   "usable_in": [
     "WorldState"
   ],
+  "modifiers": [],
   "behaviors": {
     "consumable": false,
     "requires_monster_menu": false

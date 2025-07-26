@@ -1,77 +1,95 @@
 {
-  "slug": "spyder_routea",
   "monsters": [
     {
+      "encounter_rate": 3.5,
+      "exp_req_mod": 3,
+      "held_items": [],
+      "level_range": [
+        12,
+        15
+      ],
       "monster": "shybulb",
-      "encounter_rate": 3.5,
       "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
-      "level_range": [
-        12,
-        15
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
+      "encounter_rate": 3.5,
+      "exp_req_mod": 3,
+      "held_items": [],
+      "level_range": [
+        12,
+        15
+      ],
       "monster": "katapill",
-      "encounter_rate": 3.5,
       "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
-      "level_range": [
-        12,
-        15
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
-      "monster": "anoleaf",
       "encounter_rate": 1.5,
-      "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         12,
         15
+      ],
+      "monster": "anoleaf",
+      "variables": [
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
-      "monster": "katapill",
       "encounter_rate": 3.5,
-      "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         14,
         18
+      ],
+      "monster": "katapill",
+      "variables": [
+        {
+          "daytime": "false"
+        }
       ]
     },
     {
+      "encounter_rate": 1.5,
+      "exp_req_mod": 3,
+      "held_items": [],
+      "level_range": [
+        14,
+        18
+      ],
       "monster": "vamporm",
-      "encounter_rate": 1.5,
       "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
-      "level_range": [
-        14,
-        18
+        {
+          "daytime": "false"
+        }
       ]
     },
     {
-      "monster": "anoleaf",
       "encounter_rate": 1.5,
-      "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         14,
         18
+      ],
+      "monster": "anoleaf",
+      "variables": [
+        {
+          "daytime": "false"
+        }
       ]
     }
-  ]
+  ],
+  "slug": "spyder_routea"
 }

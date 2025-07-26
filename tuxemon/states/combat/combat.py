@@ -15,7 +15,7 @@ example, is (pseudo code):
 
 if monster.status == "confused":
     message("Monster is confused!")
-    
+
 Interactions like this should be handled in an abstract way.  If we keep
 adding highly specific behaviours in this class, then it will be really
 hard to modify and will conflict with the JSON files.
@@ -28,105 +28,94 @@ the class with hardcoded references to techniques/statuses.
 
 There is already existing code like this, but it is not a validation to
 add new code like it.  Consider it a priority to remove it when you are
-able to. 
+able to.
 
 """
 from __future__ import annotations
 
 import logging
 import random
-from collections.abc import Iterable, MutableMapping, Sequence
+from collections.abc import Iterable, Sequence
+from enum import Enum
 from functools import partial
-from itertools import chain
-from typing import Any, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
-import pygame
 from pygame.rect import Rect
+from pygame.surface import Surface
 
-from tuxemon import graphics, prepare, state, tools
-from tuxemon.ai import AI
+from tuxemon import graphics
+from tuxemon.ai import AIManager
 from tuxemon.animation import Animation, Task
 from tuxemon.combat import (
     alive_party,
-    award_experience,
-    award_money,
     battlefield,
     defeated,
-    fainted,
     get_awake_monsters,
-    get_winners,
     set_var,
     track_battles,
 )
-from tuxemon.condition.condition import Condition
 from tuxemon.db import (
-    BattleGraphicsModel,
+    EffectPhase,
     ItemCategory,
-    PlagueType,
     TargetType,
 )
+from tuxemon.formula import config_combat
 from tuxemon.item.item import Item
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.monster import Monster
 from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
-from tuxemon.platform.events import PlayerInput
-from tuxemon.session import local_session
-from tuxemon.sprite import Sprite
+from tuxemon.state import State
 from tuxemon.states.monster import MonsterMenuState
-from tuxemon.states.transition.fade import FadeOutTransition
+from tuxemon.status.status import Status
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import assert_never
+from tuxemon.ui.combat_swap import SwapTracker
 from tuxemon.ui.draw import GraphicBox
 from tuxemon.ui.text import TextArea
 
 from .combat_animations import CombatAnimations
 from .combat_classes import (
     ActionQueue,
-    DamageReport,
+    DamageTracker,
     EnqueuedAction,
+    MenuVisibility,
     MethodAnimationCache,
+    TextAnimationManager,
+    compute_text_anim_time,
 )
+from .combat_context import CombatContext
+from .reward_system import RewardSystem
+
+if TYPE_CHECKING:
+    from tuxemon.platform.events import PlayerInput
+    from tuxemon.sprite import Sprite
 
 logger = logging.getLogger(__name__)
 
-CombatPhase = Literal[
-    "begin",
-    "ready",
-    "housekeeping phase",
-    "decision phase",
-    "pre action phase",
-    "action phase",
-    "post action phase",
-    "resolve match",
-    "ran away",
-    "draw match",
-    "has winner",
-    "end combat",
-]
+
+class CombatPhase(Enum):
+    BEGIN = "begin"
+    READY = "ready"
+    HOUSEKEEPING = "housekeeping"
+    DECISION = "decision"
+    PRE_ACTION = "pre_action"
+    ACTION = "action"
+    POST_ACTION = "post_action"
+    RESOLVE_MATCH = "resolve_match"
+    RAN_AWAY = "ran_away"
+    DRAW_MATCH = "draw_match"
+    HAS_WINNER = "has_winner"
+    END_COMBAT = "end_combat"
 
 
-def compute_text_animation_time(message: str) -> float:
-    """
-    Compute required time for a text animation.
-
-    Parameters:
-        message: The given text to be animated.
-
-    Returns:
-        The time in seconds expected to be taken by the animation.
-    """
-    return prepare.ACTION_TIME + prepare.LETTER_TIME * len(message)
-
-
-class WaitForInputState(state.State):
+class WaitForInputState(State):
     """Just wait for input blocking everything"""
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
         if event.pressed and event.button == buttons.A:
             self.client.pop_state(self)
-
         return None
 
 
@@ -150,38 +139,35 @@ class CombatState(CombatAnimations):
     draw_borders = False
     escape_key_exits = False
 
-    def __init__(
-        self,
-        players: tuple[NPC, NPC],
-        graphics: BattleGraphicsModel,
-        combat_type: Literal["monster", "trainer"],
-    ) -> None:
+    def __init__(self, context: CombatContext) -> None:
         self.phase: Optional[CombatPhase] = None
-        self._damage_map: list[DamageReport] = []
+        self._damage_map = DamageTracker()
         self._method_cache = MethodAnimationCache()
         self._action_queue = ActionQueue()
+        self.text_anim = TextAnimationManager()
         self._decision_queue: list[Monster] = []
-        self._pending_queue: list[EnqueuedAction] = []
-        self._monster_sprite_map: MutableMapping[Monster, Sprite] = {}
-        self._layout = dict()  # player => home areas on screen
+        # player => home areas on screen
         self._turn: int = 0
         self._prize: int = 0
         self._captured_mon: Optional[Monster] = None
         self._new_tuxepedia: bool = False
         self._run: bool = False
         self._post_animation_task: Optional[Task] = None
-        self._xp_message: Optional[str] = None
-        self._status_icon_cache: dict[
-            tuple[str, tuple[float, float]], Sprite
-        ] = {}
+        self._max_positions: dict[NPC, int] = {}
         self._random_tech_hit: dict[Monster, float] = {}
         self._combat_variables: dict[str, Any] = {}
+        self._menu_visibility = MenuVisibility()
 
-        super().__init__(players, graphics)
-        self.is_trainer_battle = combat_type == "trainer"
+        super().__init__(context=context)
+        self._lock_update = self.client.config.combat_click_to_continue
+        self.is_trainer_battle = context.combat_type == "trainer"
         self.show_combat_dialog()
-        self.transition_phase("begin")
-        self.task(partial(setattr, self, "phase", "ready"), 3)
+        self.transition_phase(CombatPhase.BEGIN)
+        self.task(
+            partial(setattr, self, "phase", CombatPhase.READY), interval=3
+        )
+        self.ai_manager = AIManager(self.session, self)
+        self.swap_tracker = SwapTracker()
 
     @staticmethod
     def is_task_finished(task: Union[Task, Animation]) -> bool:
@@ -200,24 +186,15 @@ class CombatState(CombatAnimations):
             return task.is_finish()
         return True
 
-    def update_text_animation(self) -> None:
-        """
-        Update the text animation.
-        """
-        if self._text_animation_time_left <= 0 and self.text_animations_queue:
-            (
-                next_animation,
-                self._text_animation_time_left,
-            ) = self.text_animations_queue.pop(0)
-            next_animation()
-
     def update_combat_phase(self) -> None:
         """
         Update the combat phase.
         """
-        if self._text_animation_time_left <= 0 and all(
-            map(self.is_task_finished, self.animations)
-        ):
+        if self.client.current_state:
+            if self.client.current_state.name == "WaitForInputState":
+                return
+        time_left = self.text_anim.get_text_animation_time_left()
+        if time_left <= 0 and all(map(self.is_task_finished, self.animations)):
             new_phase = self.determine_phase(self.phase)
             if new_phase:
                 self.phase = new_phase
@@ -231,68 +208,21 @@ class CombatState(CombatAnimations):
         This method is responsible for updating the text animation and the combat phase.
         """
         super().update(time_delta)
-        self._text_animation_time_left -= time_delta
-        self.update_text_animation()
+        self.text_anim.update_text_animation(time_delta)
         self.update_combat_phase()
 
-    def draw(self, surface: pygame.surface.Surface) -> None:
+    def draw(self, surface: Surface) -> None:
         """
         Draw combat state.
 
         Parameters:
             surface: Surface where to draw.
-
         """
         super().draw(surface)
-        self.draw_hp_bars()
-        self.draw_exp_bars()
-
-    def create_rect_for_bar(
-        self, hud: Sprite, width: int, height: int, top_offset: int = 0
-    ) -> Rect:
-        """
-        Creates a Rect object for a bar.
-
-        Parameters:
-            hud: The HUD sprite.
-            width: The width of the bar.
-            height: The height of the bar.
-            top_offset: The top offset of the bar.
-
-        Returns:
-            A Rect object representing the bar.
-        """
-        rect = Rect(0, 0, tools.scale(width), tools.scale(height))
-        rect.right = hud.image.get_width() - tools.scale(8)
-        rect.top += tools.scale(top_offset)
-        return rect
-
-    def draw_hp_bars(self) -> None:
-        """Go through the HP bars and redraw them."""
-        show_player_hp = self.graphics.hud.hp_bar_player
-        show_opponent_hp = self.graphics.hud.hp_bar_opponent
-
-        for monster, hud in self.hud.items():
-            if hud.player and show_player_hp:
-                rect = self.create_rect_for_bar(hud, 70, 8, 18)
-            elif not hud.player and show_opponent_hp:
-                rect = self.create_rect_for_bar(hud, 70, 8, 12)
-            else:
-                continue
-            self._hp_bars[monster].draw(hud.image, rect)
-
-    def draw_exp_bars(self) -> None:
-        """Go through the EXP bars and redraw them."""
-        show_player_exp = self.graphics.hud.exp_bar_player
-
-        for monster, hud in self.hud.items():
-            if hud.player and show_player_exp:
-                rect = self.create_rect_for_bar(hud, 70, 6, 31)
-                self._exp_bars[monster].draw(hud.image, rect)
+        self.bars.draw_bars(self.hud_manager.hud_map)
 
     def determine_phase(
-        self,
-        phase: Optional[CombatPhase],
+        self, phase: Optional[CombatPhase]
     ) -> Optional[CombatPhase]:
         """
         Determine the next phase and set it.
@@ -310,76 +240,71 @@ class CombatState(CombatAnimations):
 
         Returns:
             Next phase of the combat.
-
         """
-        if phase is None or phase == "begin":
+        if phase is None or phase == CombatPhase.BEGIN:
             return None
 
-        elif phase == "ready":
-            return "housekeeping phase"
+        elif phase == CombatPhase.READY:
+            return CombatPhase.HOUSEKEEPING
 
-        elif phase == "housekeeping phase":
+        elif phase == CombatPhase.HOUSEKEEPING:
             # this will wait for players to fill battleground positions
             for player in self.active_players:
-                if len(alive_party(player)) == 1:
-                    player.max_position = 1
-                positions_available = player.max_position - len(
-                    self.monsters_in_play[player]
-                )
+                positions_available = self.get_available_positions(player)
                 if positions_available:
                     return None
-            return "decision phase"
+            return CombatPhase.DECISION
 
-        elif phase == "decision phase":
+        elif phase == CombatPhase.DECISION:
             # TODO: only works for single player and if player runs
             if len(self.remaining_players) == 1:
-                return "ran away"
+                return CombatPhase.RAN_AWAY
 
             # assume each monster executes one action
             # if number of actions == monsters, then all monsters are ready
             elif len(self._action_queue.queue) == len(self.active_monsters):
-                return "pre action phase"
+                return CombatPhase.PRE_ACTION
 
             return None
 
-        elif phase == "pre action phase":
-            return "action phase"
+        elif phase == CombatPhase.PRE_ACTION:
+            return CombatPhase.ACTION
 
-        elif phase == "action phase":
+        elif phase == CombatPhase.ACTION:
             if self._action_queue.is_empty():
-                return "post action phase"
+                return CombatPhase.POST_ACTION
 
             return None
 
-        elif phase == "post action phase":
+        elif phase == CombatPhase.POST_ACTION:
             if self._action_queue.is_empty():
-                return "resolve match"
+                return CombatPhase.RESOLVE_MATCH
 
             return None
 
-        elif phase == "resolve match":
+        elif phase == CombatPhase.RESOLVE_MATCH:
             remaining = len(self.remaining_players)
 
             if remaining == 0:
-                return "draw match"
+                return CombatPhase.DRAW_MATCH
             elif remaining == 1:
                 if self._run:
-                    return "ran away"
+                    return CombatPhase.RAN_AWAY
                 else:
-                    return "has winner"
+                    return CombatPhase.HAS_WINNER
             else:
-                return "housekeeping phase"
+                return CombatPhase.HOUSEKEEPING
 
-        elif phase == "ran away":
-            return "end combat"
+        elif phase == CombatPhase.RAN_AWAY:
+            return CombatPhase.END_COMBAT
 
-        elif phase == "draw match":
-            return "end combat"
+        elif phase == CombatPhase.DRAW_MATCH:
+            return CombatPhase.END_COMBAT
 
-        elif phase == "has winner":
-            return "end combat"
+        elif phase == CombatPhase.HAS_WINNER:
+            return CombatPhase.END_COMBAT
 
-        elif phase == "end combat":
+        elif phase == CombatPhase.END_COMBAT:
             return None
 
         else:
@@ -397,120 +322,61 @@ class CombatState(CombatAnimations):
 
         Parameters:
             phase: Name of phase to transition to.
-
         """
-        message = None
-        if phase == "begin" or phase == "ready" or phase == "pre action phase":
+        if (
+            phase == CombatPhase.BEGIN
+            or phase == CombatPhase.READY
+            or phase == CombatPhase.PRE_ACTION
+        ):
             pass
 
-        elif phase == "housekeeping phase":
+        elif phase == CombatPhase.HOUSEKEEPING:
             self._turn += 1
             # fill all battlefield positions, but on round 1, don't ask
             self.fill_battlefield_positions(ask=self._turn > 1)
+            self.track_enemy_monsters()
 
-            # record the useful properties of the last monster we fought
-            for player in self.remaining_players:
-                if self.monsters_in_play[player]:
-                    mon = self.monsters_in_play[player][0]
-                    battlefield(local_session, mon, self.remaining_players)
-
-        elif phase == "decision phase":
-            self.reset_status_icons()
+        elif phase == CombatPhase.DECISION:
+            self.update_icons_for_monsters()
+            self.animate_update_party_hud()
             if not self._decision_queue:
-                for player in list(self.human_players) + list(self.ai_players):
-                    for monster in self.monsters_in_play[player]:
-                        value = random.random()
-                        self._random_tech_hit[monster] = value
-                        if player in self.human_players:
-                            self._decision_queue.append(monster)
-                        else:
-                            for tech in monster.moves:
-                                tech.recharge()
-                            AI(self, monster, player)
+                self.initialize_hit_chances()
+                self.process_player_decisions()
 
-        elif phase == "action phase":
+        elif phase == CombatPhase.ACTION:
             self._action_queue.sort()
 
-        elif phase == "post action phase":
-            # remove actions from fainted users from the pending queue
-            self._pending_queue = [
-                pend
-                for pend in self._pending_queue
-                if pend.user
-                and isinstance(pend.user, Monster)
-                and not (fainted(pend.user) or fainted(pend.target))
-            ]
+        elif phase == CombatPhase.POST_ACTION:
+            if self._action_queue.pending:
+                self._action_queue.autoclean_pending()
+                self._action_queue.from_pending_to_action(self._turn)
+            self.apply_statuses()
 
-            # apply condition effects to the monsters
-            for monster in self.active_monsters:
-                # Check if there are pending actions (e.g. counterattacks)
-                while self._pending_queue:
-                    pend = self._pending_queue.pop(0)
-                    self.enqueue_action(pend.user, pend.method, pend.target)
-
-                for condition in monster.status:
-                    # validate condition
-                    if condition.validate(monster):
-                        condition.combat_state = self
-                        # update counter nr turns
-                        condition.nr_turn += 1
-                        self.enqueue_action(None, condition, monster)
-                    # avoid multiple effect condition
-                    monster.set_stats()
-
-        elif phase == "resolve match" or phase == "ran away":
+        elif (
+            phase == CombatPhase.RESOLVE_MATCH or phase == CombatPhase.RAN_AWAY
+        ):
             pass
 
-        elif phase == "draw match":
-            # it is a draw match; both players were defeated in same round
-            draws = self.defeated_players
-            for draw in draws:
-                message = track_battles(
-                    session=local_session,
-                    output="draw",
-                    player=draw,
-                    players=draws,
-                )
+        elif phase == CombatPhase.DRAW_MATCH:
+            message = self.track_battle_results("draw", self.defeated_players)
+            if message:
+                self.process_combat_message(message)
 
-        elif phase == "has winner":
-            winners = self.remaining_players
-            losers = self.defeated_players
-            message = ""
-            for winner in winners:
-                message = track_battles(
-                    session=local_session,
-                    output="won",
-                    player=winner,
-                    players=losers,
-                    prize=self._prize,
-                    trainer_battle=self.is_trainer_battle,
-                )
-            for loser in losers:
-                message += "\n" + track_battles(
-                    session=local_session,
-                    output="lost",
-                    player=loser,
-                    players=winners,
-                    trainer_battle=self.is_trainer_battle,
-                )
+        elif phase == CombatPhase.HAS_WINNER:
+            message = self.track_battle_results(
+                "won", self.remaining_players, self.defeated_players
+            )
+            message += "\n" + self.track_battle_results(
+                "lost", self.defeated_players, self.remaining_players
+            )
+            if message:
+                self.process_combat_message(message)
 
-        elif phase == "end combat":
+        elif phase == CombatPhase.END_COMBAT:
             self.end_combat()
 
         else:
             assert_never(phase)
-
-        if message:
-            # push a state that blocks until enter is pressed
-            # after the state is popped, the combat state will clean up and close
-            action_time = compute_text_animation_time(message)
-            self.text_animations_queue.append(
-                (partial(self.alert, message), action_time)
-            )
-            self.task(
-                partial(self.client.push_state, WaitForInputState()),
-                action_time,
-            )
 
     def update_phase(self) -> None:
         """
@@ -520,30 +386,49 @@ class CombatState(CombatAnimations):
         * Do not change phase
         * Will be run each iteration phase is active
         * Do not test conditions to change phase
-
         """
-        if self.phase == "decision phase":
+        if self.phase == CombatPhase.DECISION:
             # show monster action menu for human players
             if self._decision_queue:
-                monster = self._decision_queue.pop()
-                for tech in monster.moves:
-                    tech.recharge()
-                self.show_monster_action_menu(monster)
+                if self.is_double:
+                    self.handle_double_action(self._decision_queue)
+                else:
+                    self.handle_single_action(self._decision_queue)
 
-        elif self.phase == "action phase":
+        elif self.phase == CombatPhase.ACTION:
             self.handle_action_queue()
 
-        elif self.phase == "post action phase":
+        elif self.phase == CombatPhase.POST_ACTION:
             self.handle_action_queue()
+
+    def handle_single_action(self, pending_monsters: list[Monster]) -> None:
+        if pending_monsters:
+            monster = pending_monsters.pop(0)
+            monster.moves.recharge_moves()
+            self.show_monster_action_menu(monster)
+
+    def handle_double_action(self, pending_monsters: list[Monster]) -> None:
+        if len(pending_monsters) >= 2:
+            monster1 = pending_monsters.pop(0)
+            monster1.moves.recharge_moves()
+            self.show_monster_action_menu(monster1)
+            monster2 = pending_monsters.pop(0)
+            monster2.moves.recharge_moves()
+            self.show_monster_action_menu(monster2)
+        elif pending_monsters:
+            self.handle_single_action(pending_monsters)
 
     def handle_action_queue(self) -> None:
         """Take one action from the queue and do it."""
         if not self._action_queue.is_empty():
             action = self._action_queue.pop()
-            self.perform_action(*action)
-            self.task(self.check_party_hp, 1)
-            self.task(self.animate_party_status, 3)
-            self.task(self.animate_xp_message, 3)
+            self.perform_action(action.user, action.method, action.target)
+            self.task(self.check_party_hp, interval=1)
+            self.task(self.animate_party_status, interval=3)
+            self.task(
+                partial(self.text_anim.trigger_xp_animation, self.alert),
+                interval=3,
+            )
 
     def ask_player_for_monster(self, player: NPC) -> None:
         """
@@ -551,28 +436,48 @@ class CombatState(CombatAnimations):
 
         Parameters:
             player: Player who has to select a Tuxemon.
-
         """
 
         def add(menuitem: MenuItem[Monster]) -> None:
             monster = menuitem.game_object
-            params = {"name": monster.name.upper()}
-            if fainted(monster):
-                dialog = T.format("combat_fainted", params)
-                tools.open_dialog(local_session, [dialog])
-            elif monster in self.active_monsters:
-                dialog = T.format("combat_isactive", params)
-                tools.open_dialog(local_session, [dialog])
-            else:
-                self.add_monster_into_play(player, monster)
-                self.client.pop_state()
+            self.add_monster_into_play(player, monster)
+            self.client.remove_state_by_name("MonsterMenuState")
 
-        state = self.client.push_state(MonsterMenuState())
+        def validate(menu_item: MenuItem[Monster]) -> bool:
+            if isinstance(menu_item, Monster):
+                if menu_item.is_fainted:
+                    return False
+                if menu_item in self.active_monsters:
+                    return False
+                return True
+            return False
+
+        state = self.client.push_state(MonsterMenuState(player))
         # must use a partial because alert relies on a text box that may not
         # exist until after the state hs been startup
-        state.task(partial(state.alert, T.translate("combat_replacement")), 0)
+        state.task(
+            partial(state.alert, T.translate("combat_replacement")), interval=0
+        )
+        state.is_valid_entry = validate  # type: ignore[assignment]
         state.on_menu_selection = add  # type: ignore[assignment]
         state.escape_key_exits = False
+
+    def get_max_positions(self, player: NPC) -> int:
+        """
+        Calculates the maximum number of positions for a player based on
+        their party size and battle mode.
+        """
+        if len(alive_party(player)) == 1:
+            return 1
+        return 2 if self.is_double else 1
+
+    def get_available_positions(self, player: NPC) -> int:
+        """
+        Returns the number of available positions for a player on the battlefield.
+        """
+        max_positions = self.get_max_positions(player)
+        on_the_field = len(self.field_monsters.get_monsters(player))
+        return max_positions - on_the_field
 
     def fill_battlefield_positions(self, ask: bool = False) -> None:
         """
@@ -580,27 +485,50 @@ class CombatState(CombatAnimations):
 
         Parameters:
             ask: If True, then open dialog for human players.
-
         """
         # TODO: let work for trainer battles
         humans = list(self.human_players)
 
         # TODO: integrate some values for different match types
         for player in self.active_players:
-            if len(alive_party(player)) == 1:
-                player.max_position = 1
-            positions_available = player.max_position - len(
-                self.monsters_in_play[player]
-            )
+
+            max_positions = self.get_max_positions(player)
+            self._max_positions[player] = max_positions
+
+            if max_positions == 1 and self.is_double:
+                on_the_field = self.field_monsters.get_monsters(player)
+                if on_the_field:
+                    monster = on_the_field[0]
+                    new_feet = self.hud_manager.get_feet_position(
+                        player, monster
+                    )
+                    self.sprite_map.update_sprite_position(monster, new_feet)
+
+            positions_available = self.get_available_positions(player)
             if positions_available:
-                available = get_awake_monsters(
-                    player, self.monsters_in_play[player], self._turn
-                )
+                monsters = self.field_monsters.get_monsters(player)
+                available = get_awake_monsters(player, monsters, self._turn)
                 for _ in range(positions_available):
                     if player in humans and ask:
                         self.ask_player_for_monster(player)
                     else:
-                        self.add_monster_into_play(player, next(available))
+                        monster = next(available)
+                        self.add_monster_into_play(player, monster)
+                        self.update_tuxepedia(player, monster)
+
+    def update_tuxepedia(self, player: NPC, monster: Monster) -> None:
+        """
+        Updates the tuxepedia for human players when a monster is encountered.
+
+        Parameters:
+            player: The player who encountered the monster.
+            monster: The monster that was encountered.
+        """
+        for other_player in self.players:
+            if other_player.isplayer and other_player != player:
+                if monster.slug not in self._combat_variables:
+                    other_player.tuxepedia.add_entry(monster.slug)
+                    self._combat_variables[monster.slug] = True
 
     def add_monster_into_play(
         self,
@@ -615,27 +543,31 @@ class CombatState(CombatAnimations):
             player: Player who adds the monster, if any.
             monster: Added monster.
             removed: Monster that was previously in play, if any.
-
         """
-        capture_device = Item()
-        capture_device.load(monster.capture_device)
+        capture_device = Item.create(monster.capture_device)
         sprite = self._method_cache.get(capture_device, False)
         if not sprite:
             raise ValueError(f"Sprite not found for item {capture_device}")
 
-        self.monsters_in_play[player].append(monster)
+        self.field_monsters.add_monster(player, monster)
         self.animate_monster_release(player, monster, sprite)
-        self.update_hud(player)
+        self.update_hud(player, True, True)
 
         # Remove "bond" status from all active monsters
         for mon in self.active_monsters:
-            mon.status = [sta for sta in mon.status if not sta.bond]
+            mon.status.remove_bonded_statuses()
 
-        # Handle removed monster's status effects
-        if removed is not None and removed.status:
-            removed.status[0].combat_state = self
-            removed.status[0].phase = "add_monster_into_play"
-            removed.status[0].use(removed)
+        # Handle new entry and removed monster's status effects
+        phase = EffectPhase.SWAP_MONSTER
+        status = monster.status.get_current_status()
+        if status:
+            status.execute_status_action(self.session, self, monster, phase)
+        if removed is not None:
+            r_status = removed.status.get_current_status()
+            if r_status:
+                r_status.execute_status_action(
+                    self.session, self, removed, phase
+                )
 
         # Create message for combat swap
         format_params = {
@@ -644,64 +576,13 @@ class CombatState(CombatAnimations):
         }
         if self._turn > 1:
             message = T.format("combat_swap", format_params)
-            self.text_animations_queue.append(
-                (partial(self.alert, message), 0)
-            )
+            self.text_anim.add_text_animation(partial(self.alert, message), 0)
 
-    def get_status_icon_position(
-        self, monster: Monster, monsters_in_play: Sequence[Monster]
-    ) -> tuple[float, float]:
-        icon_positions = {
-            (True, 1): prepare.ICON_OPPONENT_SLOT,
-            (True, 0): prepare.ICON_OPPONENT_DEFAULT,
-            (False, 1): prepare.ICON_PLAYER_SLOT,
-            (False, 0): prepare.ICON_PLAYER_DEFAULT,
-        }
-        return icon_positions[
-            (
-                monsters_in_play == self.monsters_in_play_left,
-                monsters_in_play.index(monster),
-            )
-        ]
-
-    def reset_status_icons(self) -> None:
-        """
-        Update/reset status icons for monsters.
-
-        """
-        # update huds
-        for player in self.active_players:
-            self.update_hud(player, False)
-        # remove all status icons
-        self.sprites.remove(*self._status_icons.values())
-        self._status_icons.clear()
-
-        # add status icons
-        for monster in self.active_monsters:
-            self._status_icons[monster] = []
-            for status in monster.status:
-                if status.icon:
-                    icon_position = (
-                        self.get_status_icon_position(
-                            monster, self.monsters_in_play_left
-                        )
-                        if monster in self.monsters_in_play_left
-                        else self.get_status_icon_position(
-                            monster, self.monsters_in_play_right
-                        )
-                    )
-                    cache_key = (status.icon, icon_position)
-                    if cache_key not in self._status_icon_cache:
-                        self._status_icon_cache[cache_key] = self.load_sprite(
-                            status.icon, layer=200, center=icon_position
-                        )
-
-                    icon = self._status_icon_cache[cache_key]
-                    self.sprites.add(icon, layer=200)
-                    self._status_icons[monster].append(icon)
-
-        # update tuxemon balls to reflect status
-        self.animate_update_party_hud()
+    def update_icons_for_monsters(self) -> None:
+        """Update/reset status icons for monsters."""
+        self.status_icons.update_icons_for_monsters(
+            self.active_monsters,
+        )
 
     def show_combat_dialog(self) -> None:
         """Create and show the area where battle messages are displayed."""
@@ -727,24 +608,95 @@ class CombatState(CombatAnimations):
 
         Parameters:
             monster: Monster to choose an action for.
-
         """
-        name = "" if monster.owner is None else monster.owner.name
-        params = {"name": monster.name, "player": name}
-        message = T.format(self.graphics.msgid, params)
-        self.text_animations_queue.append((partial(self.alert, message), 0))
-        state = self.client.push_state(
-            self.graphics.menu, cmb=self, monster=monster
+        self.client.push_state(
+            self.graphics.menu, session=self.session, cmb=self, monster=monster
         )
-        state.rect = self.calculate_menu_rectangle()
 
-    def calculate_menu_rectangle(self) -> Rect:
-        rect_screen = self.client.screen.get_rect()
-        menu_width = rect_screen.w // 2.5
-        menu_height = rect_screen.h // 4
-        rect = Rect(0, 0, menu_width, menu_height)
-        rect.bottomright = rect_screen.w, rect_screen.h
-        return rect
+    def process_combat_message(self, message: str) -> None:
+        """
+        Handles combat messages by triggering text animation and blocking input
+        until the message has been processed.
+        """
+        if message:
+            action_time = compute_text_anim_time(message)
+            self.lock_and_wait(delay=action_time, message=message)
+
+    def lock_and_wait(
+        self, delay: float, message: Optional[str] = None
+    ) -> None:
+        if message:
+            self.text_anim.add_text_animation(
+                partial(self.alert, message), delay
+            )
+        if self._lock_update:
+            self.task(
+                partial(self.client.push_state, "WaitForInputState"),
+                interval=delay,
+            )
+
+    def track_battle_results(
+        self,
+        result_type: str,
+        players: Sequence[NPC],
+        opponents: Optional[Sequence[NPC]] = None,
+    ) -> str:
+        """
+        Tracks battle results based on the given type (draw, won, lost).
+
+        If `result_type` is "draw", all players are recorded as tied.
+        If `result_type` is "won" or "lost", winners and losers are recorded accordingly.
+        """
+        message = ""
+        for player in players:
+            message += ("\n" if message else "") + track_battles(
+                session=self.session,
+                output=result_type,
+                player=player,
+                players=opponents if opponents else players,
+                prize=self._prize if result_type == "won" else 0,
+                trainer_battle=self.is_trainer_battle,
+            )
+        return message
+
+    def track_enemy_monsters(self) -> None:
+        """
+        Records properties of enemy monsters that participated in battle.
+        """
+        for player in self.remaining_players:
+            monsters = self.field_monsters.get_monsters(player)
+            if monsters and not player.isplayer:
+                for mon in monsters:
+                    battlefield(self.session, mon)
+
+    def process_player_decisions(self) -> None:
+        """
+        Updates HUD and assigns monsters to the decision queue for players,
+        while recharging moves and triggering AI actions for NPCs.
+        """
+        for player in list(self.active_players):
+            self.update_hud(player, False, False)
+            monsters = self.field_monsters.get_monsters(player)
+            for monster in monsters:
+                if player in self.human_players:
+                    self._decision_queue.append(monster)
+                else:
+                    monster.moves.recharge_moves()
+                    self.ai_manager.process_ai_turn(monster, player)
+
+    def apply_statuses(self) -> None:
+        """
+        Applies and updates status effects for all active monsters.
+        """
+        for monster in self.active_monsters:
+            for status in monster.status.get_statuses():
+                if len(self.remaining_players) > 1:
+                    if status.validate_monster(self.session, monster):
+                        status.set_combat_state(self)
+                        status.nr_turn += 1
+                        self.enqueue_action(None, status, monster)
+            # avoid multiple effect status
+            monster.set_stats()
 
     def enqueue_damage(
         self, attacker: Monster, defender: Monster, damage: int
@@ -756,15 +708,13 @@ class CombatState(CombatAnimations):
             attacker: Monster.
             defender: Monster.
             damage: Quantity of damage.
-
         """
-        damage_map = DamageReport(attacker, defender, damage)
-        self._damage_map.append(damage_map)
+        self._damage_map.log_damage(attacker, defender, damage, self._turn)
 
     def enqueue_action(
         self,
         user: Union[NPC, Monster, None],
-        technique: Union[Item, Technique, Condition, None],
+        technique: Union[Item, Technique, Status, None],
         target: Monster,
     ) -> None:
         """
@@ -774,23 +724,19 @@ class CombatState(CombatAnimations):
             user: The user of the technique.
             technique: The technique used.
             target: The target of the action.
-
         """
         action = EnqueuedAction(user, technique, target)
         self._action_queue.enqueue(action, self._turn)
 
-    def remove_monster_from_play(
-        self,
-        monster: Monster,
-    ) -> None:
+    def remove_monster_from_play(self, monster: Monster) -> None:
         """
         Remove monster from play without fainting it.
 
         * If another monster has targeted this monster, it can change action
         * Will remove actions as well
         * currently for 'swap' technique
-
         """
+        self.swap_tracker.clear()
         self.remove_monster_actions_from_queue(monster)
         self.animate_monster_faint(monster)
 
@@ -802,19 +748,21 @@ class CombatState(CombatAnimations):
 
         Parameters:
             monster: Monster whose actions will be removed.
-
         """
+        self.hud_manager.unassign(monster.get_owner(), monster)
+        self.status_icons.recalculate_icon_positions()
         action_queue = self._action_queue.queue
         action_queue[:] = [
             action
             for action in action_queue
             if action.user is not monster and action.target is not monster
         ]
+        self.ai_manager.remove_ai(monster)
 
     def perform_action(
         self,
         user: Union[Monster, NPC, None],
-        method: Union[Technique, Item, Condition, None],
+        method: Union[Technique, Item, Status, None],
         target: Monster,
     ) -> None:
         """
@@ -822,15 +770,15 @@ class CombatState(CombatAnimations):
 
         Parameters:
             user: Monster or NPC that does the action.
-            method: Technique or item or condition used.
+            method: Technique or item or status used.
             target: Monster that receives the action.
         """
         if isinstance(method, Technique) and isinstance(user, Monster):
             self._handle_monster_technique(user, method, target)
         if isinstance(method, Item) and isinstance(user, NPC):
             self._handle_npc_item(user, method, target)
-        if isinstance(method, Condition):
-            self._handle_condition(method, target)
+        if isinstance(method, Status):
+            self._handle_status(method, target)
 
     def _handle_monster_technique(
         self,
@@ -839,16 +787,16 @@ class CombatState(CombatAnimations):
         target: Monster,
     ) -> None:
         action_time = 0.0
-        # action is performed, so now use sprites to animate it
-        # this value will be None if the target is off screen
-        target_sprite = self._monster_sprite_map.get(target, None)
+        # animate action; target sprite is None if off-screen
+        target_sprite = self.sprite_map.get_sprite(target)
         # slightly delay the monster shake, so technique animation
         # is synchronized with the damage shake motion
         hit_delay = 0.0
         # monster uses move
         method.advance_round()
-        method.combat_state = self
-        result_tech = method.use(user, target)
+        result_tech = method.execute_tech_action(
+            self.session, self, user, target
+        )
         context = {
             "user": user.name,
             "name": method.name,
@@ -861,48 +809,48 @@ class CombatState(CombatAnimations):
             params = {"name": target.name.upper()}
             message = T.format("combat_call_tuxemon", params)
         # check statuses
-        if user.status:
-            user.status[0].combat_state = self
-            user.status[0].phase = "perform_action_tech"
-            result_status = user.status[0].use(user)
+        status = user.status.get_current_status()
+        if status:
+            result_status = status.execute_status_action(
+                self.session, self, user, EffectPhase.PERFORM_TECH
+            )
             if result_status.extras:
                 templates = [
                     T.translate(extra) for extra in result_status.extras
                 ]
                 template = "\n".join(templates)
                 message += "\n" + template
-            if result_status.conditions:
-                status = random.choice(result_status.conditions)
-                user.apply_status(status)
+            if result_status.statuses:
+                status = random.choice(result_status.statuses)
+                user.status.apply_status(self.session, status)
 
-        if result_tech["success"] and method.use_success:
+        if result_tech.success and method.use_success:
             template = getattr(method, "use_success")
             m = T.format(template, context)
-        elif not result_tech["success"] and method.use_failure:
+        elif not result_tech.success and method.use_failure:
             template = getattr(method, "use_failure")
             m = T.format(template, context)
         else:
             m = None
 
-        if result_tech["extra"]:
-            m = (
-                (m or "")
-                + ("\n" if m else "")
-                + T.translate(result_tech["extra"])
-            )
+        if result_tech.extras:
+            extra_tmpls = [T.translate(extra) for extra in result_tech.extras]
+            tmpl = "\n".join(extra_tmpls)
+            m = (m or "") + ("\n" + tmpl if m else tmpl)
 
         if m:
             message += "\n" + m
-            action_time += compute_text_animation_time(message)
+            action_time += compute_text_anim_time(message)
 
         self.play_sound_effect(method.sfx)
         # animation own_monster, technique doesn't tackle
         hit_delay += 0.5
         if method.target["own_monster"]:
-            target_sprite = self._monster_sprite_map.get(user, None)
+            target_sprite = self.sprite_map.get_sprite(user)
 
-        if result_tech["should_tackle"]:
-            user_sprite = self._monster_sprite_map.get(user, None)
+        if result_tech.should_tackle:
+            user_sprite = self.sprite_map.get_sprite(user)
+
             if user_sprite:
                 self.animate_sprite_tackle(user_sprite)
 
@@ -912,40 +860,40 @@ class CombatState(CombatAnimations):
                         self.animate_sprite_take_damage,
                         target_sprite,
                     ),
-                    hit_delay + 0.2,
+                    interval=hit_delay + 0.2,
                 )
                 self.task(
                     partial(self.blink, target_sprite),
-                    hit_delay + 0.6,
+                    interval=hit_delay + 0.6,
                 )
 
-            self.enqueue_damage(user, target, result_tech["damage"])
+            self.enqueue_damage(user, target, result_tech.damage)
 
-            if PlagueType.infected in user.plague.values():
+            if user.plague.is_infected():
                 params = {"target": user.name.upper()}
                 m = T.format("combat_state_plague1", params)
                 message += "\n" + m
 
             if method.range != "special":
-                element_damage_key = prepare.MULT_MAP.get(
-                    result_tech["element_multiplier"]
+                element_damage_key = config_combat.multiplier_map.get(
+                    result_tech.element_multiplier
                 )
                 if element_damage_key:
                     m = T.translate(element_damage_key)
                     message += "\n" + m
-                    action_time += compute_text_animation_time(message)
+                    action_time += compute_text_anim_time(message)
 
-        self.text_animations_queue.append(
-            (partial(self.alert, message), action_time)
+        self.text_anim.add_text_animation(
+            partial(self.alert, message), action_time
         )
 
         is_flipped = False
         for trainer in self.ai_players:
-            if user in self.monsters_in_play[trainer]:
+            if user in self.field_monsters.get_monsters(trainer):
                 is_flipped = True
                 break
 
-        if result_tech["success"]:
+        if result_tech.success:
             self.play_animation(
                 method, target, target_sprite, action_time, is_flipped
             )
@@ -957,8 +905,9 @@ class CombatState(CombatAnimations):
         target: Monster,
     ) -> None:
         action_time = 0.0
-        item.combat_state = self
-        result_item = item.use(user, target)
+        result_item = item.execute_item_action(
+            self.session, self, user, target
+        )
         context = {
             "user": user.name,
             "name": item.name,
@@ -967,6 +916,11 @@ class CombatState(CombatAnimations):
         message = T.format(item.use_item, context)
         # animation sprite
         item_sprite = self._method_cache.get(item, False)
+        status = target.status.get_current_status()
+        if result_item.success and status:
+            status.execute_status_action(
+                self.session, self, target, EffectPhase.PERFORM_ITEM
+            )
         # handle the capture device
         if item.category == ItemCategory.capture and item_sprite:
             # retrieve tuxeball
@@ -982,7 +936,7 @@ class CombatState(CombatAnimations):
         else:
             if item.behaviors.throwable:
                 sprite = self.animate_throwing(target, item)
-                self.task(sprite.kill, 1.5)
+                self.task(sprite.kill, interval=1.5)
             msg_type = "use_success" if result_item.success else "use_failure"
             template = getattr(item, msg_type)
             tmpl = T.format(template, context)
@@ -994,48 +948,52 @@ class CombatState(CombatAnimations):
                 tmpl = "\n".join(extra_tmpls)
             if template:
                 message += "\n" + tmpl
-                action_time += compute_text_animation_time(message)
+                action_time += compute_text_anim_time(message)
             self.play_animation(item, target, None, action_time)
 
-        self.text_animations_queue.append(
-            (partial(self.alert, message), action_time)
+        self.text_anim.add_text_animation(
+            partial(self.alert, message), action_time
         )
 
-    def _handle_condition(self, condition: Condition, target: Monster) -> None:
+    def _handle_status(self, status: Status, target: Monster) -> None:
         action_time = 0.0
-        condition.combat_state = self
-        condition.phase = "perform_action_status"
-        condition.advance_round()
-        result = condition.use(target)
+        result = status.execute_status_action(
+            self.session, self, target, EffectPhase.PERFORM_STATUS
+        )
+        status.advance_round()
         context = {
-            "name": condition.name,
+            "name": status.name,
             "target": target.name,
         }
         message: str = ""
-        # successful conditions
+        # successful statuses
         if result.success:
-            if condition.use_success:
-                template = getattr(condition, "use_success")
+            if status.use_success:
+                template = getattr(status, "use_success")
                 message = T.format(template, context)
             # first turn status
-            if condition.nr_turn == 1 and condition.gain_cond:
-                first_turn = getattr(condition, "gain_cond")
+            if status.nr_turn == 1 and status.gain_cond:
+                first_turn = getattr(status, "gain_cond")
                 first = T.format(first_turn, context)
                 message = first + "\n" + message
-        # not successful conditions
+        # not successful statuses
         if not result.success:
-            if condition.use_failure:
-                template = getattr(condition, "use_failure")
+            if status.use_failure:
+                template = getattr(status, "use_failure")
                 message = T.format(template, context)
-        action_time += compute_text_animation_time(message)
-        self.text_animations_queue.append(
-            (partial(self.alert, message), action_time)
-        )
-        self.play_animation(condition, target, None, action_time)
+        if result.extras:
+            templates = [T.translate(extra) for extra in result.extras]
+            message = message + "\n" + "\n".join(templates)
+        if message:
+            action_time += compute_text_anim_time(message)
+            self.text_anim.add_text_animation(
+                partial(self.alert, message), action_time
+            )
+        self.play_animation(status, target, None, action_time)
 
     def play_animation(
         self,
-        method: Union[Technique, Condition, Item],
+        method: Union[Technique, Status, Item],
         target: Monster,
         target_sprite: Optional[Sprite],
         action_time: float,
@@ -1052,16 +1010,18 @@ class CombatState(CombatAnimations):
             is_flipped: Whether the animation should be flipped.
         """
         if target_sprite is None:
-            target_sprite = self._monster_sprite_map.get(target, None)
+            target_sprite = self.sprite_map.get_sprite(target)
 
         animation = self._method_cache.get(method, is_flipped)
 
         if target_sprite and animation:
             animation.rect.center = target_sprite.rect.center
             assert animation.animation
-            self.task(animation.animation.play, 0.6)
-            self.task(partial(self.sprites.add, animation, layer=50), 0.6)
-            self.task(animation.kill, action_time)
+            self.task(animation.animation.play, interval=0.6)
+            self.task(
+                partial(self.sprites.add, animation, layer=50), interval=0.6
+            )
+            self.task(animation.kill, interval=action_time)
 
     def faint_monster(self, monster: Monster) -> None:
         """
@@ -1069,12 +1029,11 @@ class CombatState(CombatAnimations):
 
         Parameters:
             monster: Monster that will faint.
-
         """
-        monster.faint()
+        monster.current_hp = 0
         iid = str(monster.instance_id.hex)
         label = f"{self.name.lower()}_faint"
-        set_var(local_session, label, iid)
+        set_var(self.session, label, iid)
 
     def award_experience_and_money(self, monster: Monster) -> None:
         """
@@ -1082,36 +1041,19 @@ class CombatState(CombatAnimations):
 
         Parameters:
             monster: Monster that was fainted.
-
         """
-        winners = get_winners(monster, self._damage_map)
-        if winners:
-            new_techniques = []
-            for winner in winners:
-                # Award money and experience
-                awarded_mon = award_money(monster, winner)
-                awarded_exp = award_experience(
-                    monster, winner, self._damage_map
-                )
+        reward_system = RewardSystem(self._damage_map, self.is_trainer_battle)
+        rewards = reward_system.award_rewards(monster)
 
-                if winner.owner and winner.owner.isplayer:
-                    levels = winner.give_experience(awarded_exp)
-                    new_techniques = winner.update_moves(levels)
-                    if self.is_trainer_battle:
-                        self._prize += awarded_mon
+        # Update combat state with rewards
+        self._prize += rewards.prize
+        for message in rewards.messages:
+            self.text_anim.add_xp_message(message)
 
-                # Log experience gain
-                if winner.owner and winner.owner.isplayer:
-                    params = {"name": winner.name.upper(), "xp": awarded_exp}
-                    if self._xp_message is not None:
-                        self._xp_message += "\n" + T.format(
-                            "combat_gain_exp", params
-                        )
-                    else:
-                        self._xp_message = T.format("combat_gain_exp", params)
-
-                # Update HUD and handle level up
-                self.update_hud_and_level_up(winner, new_techniques)
+        if rewards.update:
+            self.update_hud_and_level_up(
+                rewards.winners[0].winner, rewards.moves
+            )
 
     def update_hud_and_level_up(
         self, winner: Monster, techniques: list[Technique]
@@ -1122,21 +1064,19 @@ class CombatState(CombatAnimations):
         Parameters:
             winner: Monster that won the battle.
             techniques: List of learned techniques.
-
         """
         if winner in self.monsters_in_play_right:
             if techniques:
                 tech_list = ", ".join(tech.name.upper() for tech in techniques)
                 params = {"name": winner.name.upper(), "tech": tech_list}
                 mex = T.format("tuxemon_new_tech", params)
-                if self._xp_message is not None:
-                    self._xp_message += "\n" + mex
-                else:
-                    self._xp_message = mex
-            if winner.owner and winner.owner.isplayer:
-                self.task(partial(self.animate_exp, winner), 2.5)
-                self.task(partial(self.delete_hud, winner), 3.2)
-                self.task(partial(self.update_hud, winner.owner, False), 3.2)
+                self.text_anim.add_xp_message(mex)
+            owner = winner.get_owner()
+            if owner.isplayer:
+                self.task(partial(self.animate_exp, winner), interval=2.5)
+                self.task(
+                    partial(self.update_hud, owner, False, True), interval=3.2
+                )
 
     def animate_party_status(self) -> None:
         """
@@ -1144,26 +1084,16 @@ class CombatState(CombatAnimations):
 
         * Animation to remove monster is handled here
         TODO: check for faint status, not HP
-
         """
-        for _, party in self.monsters_in_play.items():
+        for _, party in self.field_monsters.get_all_monsters().items():
             for monster in party:
-                if fainted(monster):
+                if monster.is_fainted:
                     params = {"name": monster.name.upper()}
                     msg = T.format("combat_fainted", params)
-                    self.text_animations_queue.append(
-                        (partial(self.alert, msg), prepare.ACTION_TIME)
+                    self.text_anim.add_text_animation(
+                        partial(self.alert, msg), config_combat.action_time
                     )
                     self.animate_monster_faint(monster)
-
-    def animate_xp_message(self) -> None:
-        if self._xp_message is not None:
-            timed_text_animation = (
-                partial(self.alert, self._xp_message),
-                compute_text_animation_time(self._xp_message),
-            )
-            self.text_animations_queue.append(timed_text_animation)
-            self._xp_message = None
 
     def check_party_hp(self) -> None:
         """
@@ -1180,11 +1110,11 @@ class CombatState(CombatAnimations):
 
         * Monsters will be removed from play here
         """
-        for monster_party in self.monsters_in_play.values():
+        for monster_party in self.field_monsters.get_all_monsters().values():
             for monster in monster_party:
                 self.animate_hp(monster)
                 self.apply_status_effects(monster)
-                if fainted(monster):
+                if monster.is_fainted:
                     self.handle_monster_defeat(monster)
 
     def apply_status_effects(self, monster: Monster) -> None:
@@ -1194,18 +1124,19 @@ class CombatState(CombatAnimations):
         Parameters:
             monster: Monster that was defeated.
         """
-        if monster.status:
-            monster.status[0].combat_state = self
-            monster.status[0].phase = "check_party_hp"
-            result_status = monster.status[0].use(monster)
+        status = monster.status.get_current_status()
+        if status:
+            result_status = status.execute_status_action(
+                self.session, self, monster, EffectPhase.CHECK_PARTY_HP
+            )
             if result_status.extras:
                 templates = [
                     T.translate(extra) for extra in result_status.extras
                 ]
                 extra = "\n".join(templates)
-                action_time = compute_text_animation_time(extra)
-                self.text_animations_queue.append(
-                    (partial(self.alert, extra), action_time)
+                action_time = compute_text_anim_time(extra)
+                self.text_anim.add_text_animation(
+                    partial(self.alert, extra), action_time
                 )
 
     def handle_monster_defeat(self, monster: Monster) -> None:
@@ -1220,106 +1151,102 @@ class CombatState(CombatAnimations):
         self.faint_monster(monster)
         self.award_experience_and_money(monster)
         # Remove monster from damage map
-        self._damage_map = [
-            element
-            for element in self._damage_map
-            if element.defense != monster and element.attack != monster
-        ]
+        self._damage_map.remove_monster(monster)
+
+    def initialize_hit_chances(self) -> None:
+        """Initializes random hit chance values for all active monsters."""
+        for monster in self.active_monsters:
+            self.set_tech_hit(monster)
+
+    def set_tech_hit(
+        self, monster: Monster, value: Optional[float] = None
+    ) -> None:
+        """Assigns a random hit chance to the given monster."""
+        if value is None:
+            value = random.random()
+        self._random_tech_hit[monster] = value
+
+    def get_tech_hit(self, monster: Monster) -> float:
+        """Retrieves the stored hit chance, defaulting to 0.0 if not found."""
+        return self._random_tech_hit.get(monster, 0.0)
 
     @property
     def active_players(self) -> Iterable[NPC]:
-        """
-        Generator of any non-defeated players/trainers.
-
-        Returns:
-            Iterable with active players.
-
-        """
+        """All trainers still active in the battle."""
         for player in self.players:
             if not defeated(player):
                 yield player
 
     @property
     def human_players(self) -> Iterable[NPC]:
+        """Players controlled by humans."""
         for player in self.players:
             if player.isplayer:
                 yield player
 
     @property
     def ai_players(self) -> Iterable[NPC]:
+        """Players controlled by AI."""
         yield from set(self.active_players) - set(self.human_players)
 
     @property
     def active_monsters(self) -> Sequence[Monster]:
-        """
-        List of any non-defeated monsters on battlefield.
-
-        Returns:
-            Sequence of active monsters.
-        """
-        return list(chain.from_iterable(self.monsters_in_play.values()))
+        """All non-fainted monsters currently in play."""
+        return self.field_monsters.active_monsters
 
     @property
     def monsters_in_play_right(self) -> Sequence[Monster]:
-        """
-        List of any monsters in battle (right side).
-        """
-        return self.monsters_in_play[self.players[0]]
+        """Active monsters on the right side of the battlefield."""
+        return self.field_monsters.get_monsters(self.players[0])
 
     @property
     def monsters_in_play_left(self) -> Sequence[Monster]:
-        """
-        List of any monsters in battle (left side).
-        """
-        return self.monsters_in_play[self.players[1]]
+        """Active monsters on the left side of the battlefield."""
+        return self.field_monsters.get_monsters(self.players[1])
 
     @property
     def all_monsters_right(self) -> Sequence[Monster]:
-        """
-        List of all monsters on the right side of the battle that have not fainted.
-        """
-        return [
-            monster
-            for monster in self.players[0].monsters
-            if not fainted(monster)
-        ]
+        """All non-fainted monsters belonging to the right-side player."""
+        return [m for m in self.players[0].monsters if not m.is_fainted]
 
     @property
     def all_monsters_left(self) -> Sequence[Monster]:
-        """
-        List of all monsters on the left side of the battle that have not fainted.
-        """
-        return [
-            monster
-            for monster in self.players[1].monsters
-            if not fainted(monster)
-        ]
+        """All non-fainted monsters belonging to the left-side player."""
+        return [m for m in self.players[1].monsters if not m.is_fainted]
 
     @property
     def defeated_players(self) -> Sequence[NPC]:
-        """
-        List of defeated players/trainers.
-        """
+        """All trainers who have lost (party fully fainted)."""
         return [p for p in self.players if defeated(p)]
 
     @property
     def remaining_players(self) -> Sequence[NPC]:
-        """
-        List of non-defeated players/trainers. WIP.
-
-        Right now, this is similar to Combat.active_players, but it may change
-        in the future.
-        For implementing teams, this would need to be different than
-        active_players.
-
-        Use to check for match winner.
-
-        Returns:
-            Sequence of remaining players.
-        """
-        # TODO: perhaps change this to remaining "parties", or "teams",
-        # instead of player/trainer
+        """Alias for non-defeated players. WIP: subject to future team logic."""
         return [p for p in self.players if not defeated(p)]
+
+    def get_bench(self, player: NPC) -> Sequence[Monster]:
+        """Returns non-fainted, off-field monsters for the given player."""
+        monsters_in_play = self.field_monsters.get_monsters(player)
+        all_monsters = [m for m in player.monsters if not m.is_fainted]
+        return [m for m in all_monsters if m not in monsters_in_play]
+
+    def get_opponent_monsters(self, monster: Monster) -> Sequence[Monster]:
+        """Returns all active enemy monsters on the opponent's field."""
+        if monster in self.monsters_in_play_right:
+            return self.monsters_in_play_left
+        return self.monsters_in_play_right
+
+    def get_own_monsters(self, monster: Monster) -> Sequence[Monster]:
+        """Returns active allies on the same team."""
+        if monster in self.monsters_in_play_right:
+            return self.monsters_in_play_right
+        return self.monsters_in_play_left
+
+    def get_party(self, monster: Monster) -> Sequence[Monster]:
+        """Returns all non-fainted monsters in the party that owns this monster."""
+        if monster in self.monsters_in_play_right:
+            return self.all_monsters_right
+        return self.all_monsters_left
 
     def get_targets_from_map(
         self, target_type: str, user: Monster, target: Monster
@@ -1371,88 +1298,44 @@ class CombatState(CombatAnimations):
 
         return list(targets)
 
-    def get_opponent_monsters(self, monster: Monster) -> Sequence[Monster]:
-        """
-        Get the sequence of the monster's opponent side.
-
-        Parameters:
-            monster: The Monster object.
-
-        Returns:
-            A sequence of Monster objects.
-        """
-        if monster in self.monsters_in_play_right:
-            return self.monsters_in_play_left
-        else:
-            return self.monsters_in_play_right
-
-    def get_own_monsters(self, monster: Monster) -> Sequence[Monster]:
-        """
-        Get the sequence of the monster's own side.
-
-        Parameters:
-            monster: The Monster object.
-
-        Returns:
-            A sequence of Monster objects.
-        """
-        if monster in self.monsters_in_play_right:
-            return self.monsters_in_play_right
-        else:
-            return self.monsters_in_play_left
-
-    def get_party(self, monster: Monster) -> Sequence[Monster]:
-        """
-        Get the sequence of the not fainted monster's own party.
-
-        Parameters:
-            monster: The Monster object.
-
-        Returns:
-            A sequence of Monster objects.
-        """
-        if monster in self.monsters_in_play_right:
-            return self.all_monsters_right
-        else:
-            return self.all_monsters_left
-
     def clean_combat(self) -> None:
         """Clean combat."""
         for player in self.players:
-            player.max_position = 1
             for mon in player.monsters:
                 # reset status stats
                 mon.set_stats()
-                mon.end_combat()
+                mon.end_combat(self.session)
                 # reset type
-                mon.reset_types()
+                mon.types.reset_to_default()
                 # reset technique stats
-                for tech in mon.moves:
-                    tech.set_stats()
+                mon.moves.set_stats()
 
-        # clear action queue
+        self._menu_visibility.reset_to_default()
         self._action_queue.clear_queue()
         self._action_queue.clear_history()
-        self._pending_queue = []
-        self._damage_map = []
+        self._action_queue.clear_pending()
+        self._damage_map.clear_damage()
         self._combat_variables = {}
+        self.ai_manager.clear_ai()
+
+    def clear_combat_states(self) -> None:
+        """
+        Removes any states stacked on top of the combat state
+        """
+        while not isinstance(self.client.current_state, CombatState):
+            self.client.pop_state()
 
     def end_combat(self) -> None:
         """End the combat."""
         self.clean_combat()
-
-        # fade music out
         self.client.current_music.stop()
-
-        # remove any menus that may be on top of the combat state
-        while self.client.current_state is not self:
-            self.client.pop_state()
-
+        self.clear_combat_states()
         self.phase = None
+
         # open Tuxepedia if monster is captured
         if self._captured_mon and self._new_tuxepedia:
-            self.client.pop_state()
+            self.client.remove_state_by_name("CombatState")
             params = {"monster": self._captured_mon, "source": self.name}
             self.client.push_state("MonsterInfoState", kwargs=params)
         else:
-            self.client.push_state(FadeOutTransition(caller=self))
+            self.client.push_state("FadeOutTransition", caller=self)

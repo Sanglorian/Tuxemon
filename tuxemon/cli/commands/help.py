@@ -8,10 +8,7 @@ from tuxemon.cli.processor import MetaCommand
 
 
 class HelpCommand(CLICommand):
-    """
-    Command to get list available commands and display help for them.
-
-    """
+    """Command to get list available commands and display help for them."""
 
     name = "help"
     description = "Get help"
@@ -24,7 +21,6 @@ class HelpCommand(CLICommand):
         Parameters:
             ctx: Contains references to parts of the game and CLI interface.
             line: Input text after the command name.
-
         """
         command, tail = ctx.root_command.resolve(ctx, line)
         if command is not ctx.root_command:

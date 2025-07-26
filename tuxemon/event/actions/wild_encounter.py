@@ -6,15 +6,16 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon import monster, prepare
+from tuxemon import prepare
 from tuxemon.combat import check_battle_legal
-from tuxemon.db import db
+from tuxemon.db import EnvironmentModel, db
+from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import ColorLike, string_to_colorlike
-from tuxemon.npc import NPC
-from tuxemon.states.combat.combat import CombatState
-from tuxemon.states.transition.flash import FlashTransition
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.item.item import Item
+from tuxemon.monster import Monster
+from tuxemon.session import Session
+from tuxemon.states.combat.combat_context import CombatContext
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,8 @@ class WildEncounterAction(EventAction):
     Script usage:
         .. code-block::
 
-            wild_encounter <monster_slug>,<monster_level>[,exp_mod][,mon_mod][,env][,rgb]
+            wild_encounter <monster_slug>,<monster_level>[,exp_mod]
+                            [,mon_mod][,env][,rgb][,held_item]
 
     Script parameters:
         monster_slug: Monster slug.
@@ -37,19 +39,20 @@ class WildEncounterAction(EventAction):
         mon_mod: Money modifier.
         env: Environment (grass default)
         rgb: color (eg red > 255,0,0 > 255:0:0) - default rgb(255,255,255)
-
+        held_item: item held by the monster
     """
 
     name = "wild_encounter"
     monster_slug: str
     monster_level: int
-    exp: Optional[int] = None
-    money: Optional[int] = None
+    exp: Optional[float] = None
+    money: Optional[float] = None
     env: Optional[str] = None
     rgb: Optional[str] = None
+    held_item: Optional[str] = None
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
 
         if not check_battle_legal(player):
             logger.warning("battle is not legal, won't start")
@@ -57,54 +60,69 @@ class WildEncounterAction(EventAction):
 
         logger.info("Starting wild encounter!")
 
-        current_monster = monster.Monster()
-        current_monster.load_from_db(self.monster_slug)
-        current_monster.level = self.monster_level
-        current_monster.set_level(self.monster_level)
-        current_monster.set_moves(self.monster_level)
-        current_monster.current_hp = current_monster.hp
+        current_monster = Monster.spawn_base(
+            self.monster_slug, self.monster_level
+        )
         if self.exp is not None:
             current_monster.experience_modifier = self.exp
         if self.money is not None:
             current_monster.money_modifier = self.money
+        if self.held_item is not None:
+            item = Item.create(self.held_item)
+            if item.behaviors.holdable:
+                current_monster.held_item.set_item(item)
+            else:
+                logger.error(f"{item.name} isn't 'holdable'")
         current_monster.wild = True
 
-        self.world = self.session.client.get_state_by_name(WorldState)
-        npc = NPC("random_encounter_dummy", world=self.world)
-        npc.add_monster(current_monster, len(npc.monsters))
+        event_engine = session.client.event_engine
+        event_engine.execute_action("create_npc", [self.name, 0, 0], True)
+
+        npc = get_npc(session, self.name)
+        if npc is None:
+            logger.error(f"{self.name} not found")
+            return
+
+        npc.party.add_monster(current_monster, len(npc.monsters))
         # NOTE: random battles are implemented as trainer battles.
         #       this is a hack. remove this once trainer/random battlers are fixed
 
         env_var = player.game_variables.get("environment", "grass")
         env = env_var if self.env is None else self.env
-        environment = db.lookup(env, table="environment")
+        environment = EnvironmentModel.lookup(env, db)
 
-        self.session.client.queue_state(
-            "CombatState",
-            players=(player, npc),
+        player.tuxepedia.add_entry(current_monster.slug)
+
+        context = CombatContext(
+            session=session,
+            teams=[player, npc],
             combat_type="monster",
             graphics=environment.battle_graphics,
+            battle_mode="single",
         )
+        session.client.queue_state("CombatState", context=context)
 
-        self.world.lock_controls(player)
-        self.world.stop_char(player)
+        session.client.movement_manager.lock_controls(player)
+        session.client.movement_manager.stop_char(player)
 
         rgb: ColorLike = prepare.WHITE_COLOR
         if self.rgb:
             rgb = string_to_colorlike(self.rgb)
-        self.session.client.push_state(FlashTransition(color=rgb))
-        self.session.client.current_music.play(environment.battle_music)
+        session.client.push_state("FlashTransition", color=rgb)
 
-    def update(self) -> None:
+        session.client.event_engine.execute_action(
+            "play_music", [environment.battle_music], True
+        )
+
+    def update(self, session: Session) -> None:
         try:
-            self.session.client.get_queued_state_by_name("CombatState")
+            session.client.get_queued_state_by_name("CombatState")
         except ValueError:
             try:
-                self.session.client.get_state_by_name(CombatState)
+                session.client.get_state_by_name("CombatState")
             except ValueError:
                 self.stop()
 
-    def cleanup(self) -> None:
+    def cleanup(self, session: Session) -> None:
         npc = None
-        if self.world:
-            self.world.remove_entity("random_encounter_dummy")
+        session.client.npc_manager.remove_npc(self.name)

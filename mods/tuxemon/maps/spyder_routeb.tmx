@@ -87,7 +87,7 @@
   <object id="71" name="Talk Electra" type="event" x="256" y="576" width="16" height="32">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_routeb_electra"/>
+    <property name="act02" value="pathfind_to_char player,spyder_routeb_electra"/>
     <property name="act03" value="translated_dialog spyder_routeb_electra1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster dracune,35,spyder_routeb_electra,5,10"/>
@@ -110,7 +110,7 @@
   <object id="73" name="Talk Cytherea" type="event" x="256" y="400" width="32" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_routeb_cytherea"/>
+    <property name="act02" value="pathfind_to_char player,spyder_routeb_cytherea"/>
     <property name="act03" value="translated_dialog spyder_routeb_cytherea1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster fluttaflap,35,spyder_routeb_cytherea,5,10"/>
@@ -132,7 +132,7 @@
   <object id="75" name="Talk Nephthys" type="event" x="80" y="384" width="16" height="32">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routeb_nephthys"/>
+    <property name="act2" value="pathfind_to_char player,spyder_routeb_nephthys"/>
     <property name="act3" value="translated_dialog spyder_routeb_nephthys1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster conifrost,45,spyder_routeb_nephthys,5,10"/>
@@ -153,7 +153,7 @@
   <object id="77" name="Talk Sedna" type="event" x="256" y="288" width="16" height="32">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routeb_sedna"/>
+    <property name="act2" value="pathfind_to_char player,spyder_routeb_sedna"/>
     <property name="act3" value="translated_dialog spyder_routeb_sedna1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster squabbit,40,spyder_routeb_sedna,5,10"/>
@@ -174,7 +174,7 @@
   <object id="79" name="Talk Calypso" type="event" x="96" y="112" width="16" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_routeb_calypso"/>
+    <property name="act02" value="pathfind_to_char player,spyder_routeb_calypso"/>
     <property name="act03" value="translated_dialog spyder_routeb_calypso1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster ruption,40,spyder_routeb_calypso,5,10"/>
@@ -212,7 +212,7 @@
     <property name="act01" value="char_stop player"/>
     <property name="act02" value="lock_controls"/>
     <property name="act03" value="create_npc spyder_billie,17,37"/>
-    <property name="act04" value="pathfind_to_player spyder_billie,right"/>
+    <property name="act04" value="pathfind_to_char player,spyder_billie,right"/>
     <property name="act10" value="translated_dialog spyder_routeb_billie1"/>
     <property name="act75" value="pathfind spyder_billie,0,37"/>
     <property name="act80" value="remove_npc spyder_billie"/>

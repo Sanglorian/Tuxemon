@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 
-from tuxemon.combat import has_status
 from tuxemon.event import MapCondition, get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
@@ -12,6 +12,7 @@ from tuxemon.session import Session
 logger = logging.getLogger(__name__)
 
 
+@dataclass
 class CharDefeatedCondition(EventCondition):
     """
     Check to see the character has at least one tuxemon, and all tuxemon in their
@@ -24,7 +25,6 @@ class CharDefeatedCondition(EventCondition):
 
     Script parameters:
         character: Either "player" or character slug name (e.g. "npc_maple")
-
     """
 
     name = "char_defeated"
@@ -37,10 +37,8 @@ class CharDefeatedCondition(EventCondition):
 
         if character.monsters:
             for mon in character.monsters:
-                if mon.current_hp <= 0 and not has_status(mon, "faint"):
-                    mon.faint()
-            return all(
-                "faint" in (s.slug for s in mon.status)
-                for mon in character.monsters
-            )
+                if mon.is_fainted and not mon.status.is_fainted:
+                    mon.current_hp = 0
+                    mon.status.apply_faint(mon)
+            return all(mon.status.is_fainted for mon in character.monsters)
         return False

@@ -5,266 +5,259 @@ events:
     - char_wander test_npc001
     conditions:
     - not char_exists test_npc001
-    type: "event"
+    type: event
   test_npc002:
     actions:
     - create_npc test_npc002,8,21
     - char_wander test_npc002
     conditions:
     - not char_exists test_npc002
-    type: "event"
+    type: event
   test_npc003:
     actions:
     - create_npc test_npc003,9,21
     - char_wander test_npc003
     conditions:
     - not char_exists test_npc003
-    type: "event"
+    type: event
   test_npc004:
     actions:
     - create_npc test_npc004,10,21
     - char_wander test_npc004
     conditions:
     - not char_exists test_npc004
-    type: "event"
+    type: event
   test_npc005:
     actions:
     - create_npc test_npc005,11,21
     - char_wander test_npc005
     conditions:
     - not char_exists test_npc005
-    type: "event"
+    type: event
   test_npc006:
     actions:
     - create_npc test_npc006,5,23
     - char_wander test_npc006
     conditions:
     - not char_exists test_npc006
-    type: "event"
+    type: event
   test_npc007:
     actions:
     - create_npc test_npc007,5,24
     - char_wander test_npc007
     conditions:
     - not char_exists test_npc007
-    type: "event"
+    type: event
   test_npc008:
     actions:
     - create_npc test_npc008,5,25
     - char_wander test_npc008
     conditions:
     - not char_exists test_npc008
-    type: "event"
+    type: event
   test_npc009:
     actions:
     - create_npc test_npc009,5,26
     - char_wander test_npc009
     conditions:
     - not char_exists test_npc009
-    type: "event"
+    type: event
   test_npc010:
     actions:
     - create_npc test_npc010,5,27
     - char_wander test_npc010
     conditions:
     - not char_exists test_npc010
-    type: "event"
+    type: event
   test_npc011:
     actions:
     - create_npc test_npc011,5,28
     - char_wander test_npc011
     conditions:
     - not char_exists test_npc011
-    type: "event"
+    type: event
   test_npc012:
     actions:
     - create_npc test_npc012,13,23
     - char_wander test_npc012
     conditions:
     - not char_exists test_npc012
-    type: "event"
+    type: event
   test_npc013:
     actions:
     - create_npc test_npc013,13,24
     - char_wander test_npc013
     conditions:
     - not char_exists test_npc013
-    type: "event"
+    type: event
   test_npc014:
     actions:
     - create_npc test_npc014,13,25
     - char_wander test_npc014
     conditions:
     - not char_exists test_npc014
-    type: "event"
+    type: event
   test_npc015:
     actions:
     - create_npc test_npc015,13,26
     - char_wander test_npc015
     conditions:
     - not char_exists test_npc015
-    type: "event"
+    type: event
   test_npc016:
     actions:
     - create_npc test_npc016,13,27
     - char_wander test_npc016
     conditions:
     - not char_exists test_npc016
-    type: "event"
+    type: event
   test_npc017:
     actions:
     - create_npc test_npc017,13,28
     - char_wander test_npc017
     conditions:
     - not char_exists test_npc017
-    type: "event"
+    type: event
   test_npc018:
     actions:
     - create_npc test_npc018,4,36
     - char_wander test_npc018
     conditions:
     - not char_exists test_npc018
-    type: "event"
+    type: event
   test_npc019:
     actions:
     - create_npc test_npc019,5,36
     - char_wander test_npc019
     conditions:
     - not char_exists test_npc019
-    type: "event"
+    type: event
   test_npc020:
     actions:
     - create_npc test_npc020,6,36
     - char_wander test_npc020
     conditions:
     - not char_exists test_npc020
-    type: "event"
+    type: event
   test_npc021:
     actions:
     - create_npc test_npc021,7,36
     - char_wander test_npc021
     conditions:
     - not char_exists test_npc021
-    type: "event"
+    type: event
   test_npc022:
     actions:
     - create_npc test_npc022,8,36
     - char_wander test_npc022
     conditions:
     - not char_exists test_npc022
-    type: "event"
+    type: event
   test_npc023:
     actions:
     - create_npc test_npc023,9,36
     - char_wander test_npc023
     conditions:
     - not char_exists test_npc023
-    type: "event"
+    type: event
   test_npc024:
     actions:
     - create_npc test_npc024,10,36
     - char_wander test_npc024
     conditions:
     - not char_exists test_npc024
-    type: "event"
+    type: event
   test_npc025:
     actions:
     - create_npc test_npc025,11,36
     - char_wander test_npc025
     conditions:
     - not char_exists test_npc025
-    type: "event"
+    type: event
   test_npc026:
     actions:
     - create_npc test_npc026,12,36
     - char_wander test_npc026
     conditions:
     - not char_exists test_npc026
-    type: "event"
+    type: event
   test_npc027:
     actions:
     - create_npc test_npc027,13,36
     - char_wander test_npc027
     conditions:
     - not char_exists test_npc027
-    type: "event"
+    type: event
   test_npc028:
     actions:
     - create_npc test_npc028,14,36
     - char_wander test_npc028
     conditions:
     - not char_exists test_npc028
-    type: "event"
+    type: event
   test_npc029:
     actions:
     - create_npc test_npc029,15,36
     - char_wander test_npc029
     conditions:
     - not char_exists test_npc029
-    type: "event"
+    type: event
   test_npc030:
     actions:
     - create_npc test_npc030,16,36
     - char_wander test_npc030
     conditions:
     - not char_exists test_npc030
-    type: "event"
+    type: event
   test_npc031:
     actions:
     - create_npc test_npc031,17,36
     - char_wander test_npc031
     conditions:
     - not char_exists test_npc031
-    type: "event"
+    type: event
   test_npc032:
     actions:
     - create_npc test_npc032,18,36
     - char_wander test_npc032
     conditions:
     - not char_exists test_npc032
-    type: "event"
+    type: event
   test_npc033:
     actions:
     - create_npc test_npc033,19,36
     - char_wander test_npc033
     conditions:
     - not char_exists test_npc033
-    type: "event"
+    type: event
   test_npc034:
     actions:
     - create_npc test_npc034,20,36
     - char_wander test_npc034
     conditions:
     - not char_exists test_npc034
-    type: "event"
+    type: event
   test_npc035:
     actions:
     - create_npc test_npc035,21,36
     - char_wander test_npc035
     conditions:
     - not char_exists test_npc035
-    type: "event"
+    type: event
   test_npc036:
     actions:
     - create_npc test_npc036,22,36
     - char_wander test_npc036
     conditions:
     - not char_exists test_npc036
-    type: "event"
+    type: event
   test_npc037:
     actions:
     - create_npc test_npc037,23,36
     - char_wander test_npc037
     conditions:
     - not char_exists test_npc037
-    type: "event"
-  test_npc038:
-    actions:
-    - create_npc test_npc038,24,36
-    - char_wander test_npc038
-    conditions:
-    - not char_exists test_npc038
-    type: "event"
+    type: event
   test_npc038:
     actions:
     - create_npc test_npc038,2,17
@@ -639,4 +632,4 @@ events:
     - not char_exists test_npc158
     - not char_exists test_npc159
     - not char_exists test_npc160
-    type: "event"
+    type: event

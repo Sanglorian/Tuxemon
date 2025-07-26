@@ -2,27 +2,25 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import uuid
-from typing import Any, Optional
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Optional
 
 import pygame_menu
-import pygame_menu.widgets
-import pygame_menu.widgets.core
-import pygame_menu.widgets.core.widget
-import pygame_menu.widgets.widget
-import pygame_menu.widgets.widget.label
-import pygame_menu.widgets.widget.progressbar
 from pygame_menu import locals
+from pygame_menu.widgets.widget.label import Label
+from pygame_menu.widgets.widget.progressbar import ProgressBar
 
 from tuxemon import prepare
 from tuxemon.db import MonsterModel, db
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.monster import Monster
 from tuxemon.platform.const import buttons
-from tuxemon.platform.events import PlayerInput
-from tuxemon.session import local_session
 from tuxemon.technique.technique import Technique
+from tuxemon.tools import fix_measure
+
+if TYPE_CHECKING:
+    from tuxemon.monster import Monster
+    from tuxemon.platform.events import PlayerInput
 
 lookup_cache: dict[str, MonsterModel] = {}
 
@@ -30,14 +28,9 @@ lookup_cache: dict[str, MonsterModel] = {}
 def _lookup_monsters() -> None:
     monsters = list(db.database["monster"])
     for mon in monsters:
-        results = db.lookup(mon, table="monster")
+        results = MonsterModel.lookup(mon, db)
         if results.txmn_id > 0:
             lookup_cache[mon] = results
-
-
-def fix_measure(measure: int, percentage: float) -> int:
-    """it returns the correct measure based on percentage"""
-    return round(measure * percentage)
 
 
 class MonsterMovesState(PygameMenuState):
@@ -51,23 +44,23 @@ class MonsterMovesState(PygameMenuState):
         menu: pygame_menu.Menu,
         monster: Monster,
     ) -> None:
-        width = menu._width
-        height = menu._height
-        menu._width = fix_measure(menu._width, 0.97)
+        fxw: Callable[[float], int] = lambda r: fix_measure(menu._width, r)
+        fxh: Callable[[float], int] = lambda r: fix_measure(menu._height, r)
+        menu._width = fxw(0.97)
 
         # name
         menu._auto_centering = False
         lab1: Any = menu.add.label(
             title=f"{monster.txmn_id}. {monster.name.upper()}",
             label_id=monster.slug,
-            font_size=self.font_size_small,
+            font_size=self.font_type.small,
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab1.translate(fix_measure(width, 0.50), fix_measure(height, 0.10))
+        lab1.translate(fxw(0.50), fxh(0.10))
         # moves
         moveset: list[Technique] = []
-        moveset = monster.moves
+        moveset = monster.moves.get_moves()
         output = sorted(moveset, key=lambda x: x.tech_id)
 
         _height = 0.10
@@ -77,26 +70,22 @@ class MonsterMovesState(PygameMenuState):
                 title=tech.name,
                 action=None,
                 button_id=tech.slug,
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 align=locals.ALIGN_LEFT,
                 float=True,
-            ).translate(fix_measure(width, 0.50), fix_measure(height, _height))
+            ).translate(fxw(0.50), fxh(_height))
 
         # image
-        new_image = self._create_image(monster.front_battle_sprite)
+        new_image = self._create_image(monster.sprite_handler.front_path)
         new_image.scale(prepare.SCALE, prepare.SCALE)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
-        image_widget.translate(
-            fix_measure(width, 0.20), fix_measure(height, 0.05)
-        )
+        image_widget.translate(fxw(0.20), fxh(0.05))
 
     def add_menu_technique(self, menu: pygame_menu.Menu, slug: str) -> None:
-        width, height = prepare.SCREEN_SIZE
-        menu._width = fix_measure(width, 0.97)
+        menu._width = fix_measure(prepare.SCREEN_SIZE[0], 0.97)
 
-        technique = Technique()
-        technique.load(slug)
+        technique = Technique.create(slug)
 
         self._add_description_label(menu, technique)
         self._add_info_label(menu, technique)
@@ -108,21 +97,19 @@ class MonsterMovesState(PygameMenuState):
         width, height = prepare.SCREEN_SIZE
         description_label = None
         for widget in menu.get_widgets():
-            if (
-                isinstance(widget, pygame_menu.widgets.widget.label.Label)
-                and widget.get_id() == "description"
-            ):
+            if isinstance(widget, Label) and widget.get_id() == "description":
                 description_label = widget
                 break
         if description_label is None:
             self.description_label: Any = menu.add.label(
                 title=technique.description,
                 label_id="description",
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 wordwrap=True,
                 align=locals.ALIGN_LEFT,
                 float=True,
             )
+            assert isinstance(self.description_label, Label)
             self.description_label.translate(
                 fix_measure(width, 0.01), fix_measure(height, 0.56)
             )
@@ -135,13 +122,12 @@ class MonsterMovesState(PygameMenuState):
         width, height = prepare.SCREEN_SIZE
         info_label = None
         for widget in menu.get_widgets():
-            if (
-                isinstance(widget, pygame_menu.widgets.widget.label.Label)
-                and widget.get_id() == "label"
-            ):
+            if isinstance(widget, Label) and widget.get_id() == "label":
                 info_label = widget
                 break
-        types = " ".join(map(lambda s: T.translate(s.slug), technique.types))
+        types = " ".join(
+            map(lambda s: T.translate(s.slug), technique.types.current)
+        )
         label = T.format(
             "technique_id_types_recharge",
             {
@@ -154,11 +140,12 @@ class MonsterMovesState(PygameMenuState):
             self.info_label: Any = menu.add.label(
                 title=label,
                 label_id="label",
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 wordwrap=True,
                 align=locals.ALIGN_LEFT,
                 float=True,
             )
+            assert isinstance(self.info_label, Label)
             self.info_label.translate(
                 fix_measure(width, 0.01), fix_measure(height, 0.70)
             )
@@ -173,9 +160,7 @@ class MonsterMovesState(PygameMenuState):
         bar_accuracy = None
         bar_potency = None
         for widget in menu.get_widgets():
-            if isinstance(
-                widget, pygame_menu.widgets.widget.progressbar.ProgressBar
-            ):
+            if isinstance(widget, ProgressBar):
                 if widget.get_title() == T.translate("technique_power"):
                     bar_power = widget
                 elif widget.get_title() == T.translate("technique_accuracy"):
@@ -195,7 +180,7 @@ class MonsterMovesState(PygameMenuState):
             self.bar_power: Any = menu.add.progress_bar(
                 T.translate("technique_power"),
                 default=diff_power,
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 align=locals.ALIGN_LEFT,
                 float=True,
             )
@@ -209,7 +194,7 @@ class MonsterMovesState(PygameMenuState):
             self.bar_accuracy: Any = menu.add.progress_bar(
                 T.translate("technique_accuracy"),
                 default=diff_accuracy,
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 align=locals.ALIGN_LEFT,
                 float=True,
             )
@@ -223,7 +208,7 @@ class MonsterMovesState(PygameMenuState):
             self.bar_potency: Any = menu.add.progress_bar(
                 T.translate("technique_potency"),
                 default=diff_potency,
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 align=locals.ALIGN_LEFT,
                 float=True,
             )
@@ -265,7 +250,7 @@ class MonsterMovesState(PygameMenuState):
             "MonsterMenuState",
             "MonsterTakeState",
         ]:
-            monsters = self._get_monsters()
+            monsters = _get_monsters(self._monster, self._source)
             slot = monsters.index(self._monster)
 
             if event.button == buttons.RIGHT and event.pressed:
@@ -287,13 +272,13 @@ class MonsterMovesState(PygameMenuState):
 
         return None
 
-    def _get_monsters(self) -> list[Monster]:
-        if self._source == "MonsterTakeState":
-            box = local_session.player.monster_boxes.get_box_name(
-                self._monster.instance_id
-            )
-            if box is None:
-                raise ValueError("Box doesn't exist")
-            return local_session.player.monster_boxes.get_monsters(box)
-        else:
-            return local_session.player.monsters
+
+def _get_monsters(monster: Monster, source: str) -> list[Monster]:
+    owner = monster.get_owner()
+    if source == "MonsterTakeState":
+        box = owner.monster_boxes.get_box_name(monster.instance_id)
+        if box is None:
+            raise ValueError("Box doesn't exist")
+        return owner.monster_boxes.get_monsters(box)
+    else:
+        return owner.monsters

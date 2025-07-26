@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["enraged", "enemy_monster"]
+      "parameters": [
+        "enraged",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": true,
+  "speed": "fast",
   "potency": 0.8,
   "power": 1.75,
   "range": "melee",
@@ -30,7 +33,10 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["speed", "shielded"],
+  "tags": [
+    "speed",
+    "shielded"
+  ],
   "types": [
     "water"
   ],

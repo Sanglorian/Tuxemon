@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["flinching", "enemy_monster"]
+      "parameters": [
+        "flinching",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.2,
   "power": 1.2,
   "range": "melee",
@@ -30,9 +33,12 @@
     "own_trainer": false
   },
   "category": "animal",
-  "tags": ["tail"],
+  "tags": [
+    "tail"
+  ],
   "types": [
-    "water", "fire"
+    "water",
+    "fire"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

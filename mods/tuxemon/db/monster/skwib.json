@@ -1,68 +1,73 @@
 {
-    "slug": "skwib",
-    "category": "naive",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "flood"
-        },
-        {
-            "level_learned": 1,
-            "technique": "flow"
-        },
-        {
-            "level_learned": 4,
-            "technique": "mobbing"
-        },
-        {
-            "level_learned": 7,
-            "technique": "orbs"
-        },
-        {
-            "level_learned": 13,
-            "technique": "spit_poison"
-        },
-        {
-            "level_learned": 16,
-            "technique": "font"
-        },
-        {
-            "level_learned": 19,
-            "technique": "goad"
-        },
-        {
-            "level_learned": 25,
-            "technique": "feint"
-        },
-        {
-            "level_learned": 28,
-            "technique": "venomous_tentacle"
-        }
-    ],
-    "evolutions": [
-        {
-            "at_level": 18,
-            "monster_slug": "octabode"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "octabode",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": [],
-    "tags": ["pseudopod"],
-    "shape": "polliwog",
-    "stage": "basic",
-    "types": [
-        "water"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 183,
-    "height": 30,
-    "weight": 9,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "skwib",
+  "category": "naive",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "flood"
+    },
+    {
+      "level_learned": 1,
+      "technique": "flow"
+    },
+    {
+      "level_learned": 4,
+      "technique": "mobbing"
+    },
+    {
+      "level_learned": 7,
+      "technique": "orbs"
+    },
+    {
+      "level_learned": 13,
+      "technique": "spit_poison"
+    },
+    {
+      "level_learned": 16,
+      "technique": "font"
+    },
+    {
+      "level_learned": 19,
+      "technique": "goad"
+    },
+    {
+      "level_learned": 25,
+      "technique": "feint"
+    },
+    {
+      "level_learned": 28,
+      "technique": "venomous_tentacle"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 18,
+      "monster_slug": "octabode"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "octabode",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [],
+  "tags": [
+    "pseudopod"
+  ],
+  "shape": "polliwog",
+  "stage": "basic",
+  "types": [
+    "water"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 183,
+  "height": 30,
+  "weight": 9,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["omnichannel_badge"],
+      "parameters": [
+        "omnichannel_badge"
+      ],
       "operator": "is"
     }
   ],

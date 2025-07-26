@@ -1,71 +1,82 @@
 {
-    "slug": "seraphice",
-    "category": "carol",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "ice_claw"
-        },
-        {
-            "level_learned": 1,
-            "technique": "goad"
-        },
-        {
-            "level_learned": 4,
-            "technique": "beam"
-        },
-        {
-            "level_learned": 7,
-            "technique": "orbs"
-        },
-        {
-            "level_learned": 13,
-            "technique": "neutralize"
-        },
-        {
-            "level_learned": 28,
-            "technique": "fiery"
-        },
-        {
-            "level_learned": 34,
-            "technique": "sudden_glow"
-        },
-        {
-            "level_learned": 43,
-            "technique": "icicle_spear"
-        },
-        {
-            "level_learned": 46,
-            "technique": "snowstorm"
-        },
-        {
-            "level_learned": 52,
-            "technique": "divinity_beam"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "waysprite",
-            "evo_stage": "basic"
-        },
-        {
-            "mon_slug": "angesnow",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": ["extraplanar"],
-    "tags": ["ice", "leadership", "weather", "light", "healing", "calamity"],
-    "shape": "humanoid",
-    "stage": "stage2",
-    "types": [
-        "water"
-    ],
-    "possible_genders": ["neuter"],
-    "txmn_id": 266,
-    "height": 180,
-    "weight": 85,
-    "catch_rate": 35.0,
-    "lower_catch_resistance": 0.85,
-    "upper_catch_resistance": 1.1
+  "slug": "seraphice",
+  "category": "carol",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "ice_claw"
+    },
+    {
+      "level_learned": 1,
+      "technique": "goad"
+    },
+    {
+      "level_learned": 4,
+      "technique": "beam"
+    },
+    {
+      "level_learned": 7,
+      "technique": "orbs"
+    },
+    {
+      "level_learned": 13,
+      "technique": "neutralize"
+    },
+    {
+      "level_learned": 28,
+      "technique": "fiery"
+    },
+    {
+      "level_learned": 34,
+      "technique": "sudden_glow"
+    },
+    {
+      "level_learned": 43,
+      "technique": "icicle_spear"
+    },
+    {
+      "level_learned": 46,
+      "technique": "snowstorm"
+    },
+    {
+      "level_learned": 52,
+      "technique": "divinity_beam"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "waysprite",
+      "evo_stage": "basic"
+    },
+    {
+      "mon_slug": "angesnow",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [
+    "extraplanar"
+  ],
+  "tags": [
+    "ice",
+    "leadership",
+    "weather",
+    "light",
+    "healing",
+    "calamity"
+  ],
+  "shape": "humanoid",
+  "stage": "stage2",
+  "types": [
+    "water"
+  ],
+  "possible_genders": [
+    "neuter"
+  ],
+  "txmn_id": 266,
+  "height": 180,
+  "weight": 85,
+  "catch_rate": 35.0,
+  "lower_catch_resistance": 0.85,
+  "upper_catch_resistance": 1.1
 }

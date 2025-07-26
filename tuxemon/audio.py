@@ -167,7 +167,10 @@ class SoundManager:
         path = Path(filename)
 
         if not path.exists():
-            logger.error(f"audio file does not exist: {filename}")
+            logger.error(f"Audio file does not exist: {filename}")
+            logger.debug(
+                f"Sound '{slug}' failed to resolve to a valid file path."
+            )
             return None
 
         return path
@@ -176,6 +179,7 @@ class SoundManager:
         self, slug: str, value: float = prepare.CONFIG.sound_volume
     ) -> SoundProtocol:
         if slug in self.sounds:
+            logger.debug(f"Sound '{slug}' loaded from cache.")
             return self.sounds[slug]
 
         filename = self.get_sound_filename(slug)
@@ -186,6 +190,7 @@ class SoundManager:
             sound = pygame.mixer.Sound(filename)
             sound.set_volume(value)
             self.sounds[slug] = SoundWrapper(sound)
+            logger.debug(f"Sound '{slug}' loaded and cached successfully.")
             return self.sounds[slug]
         except (MemoryError, pygame.error) as e:
             logger.error(f"Failed to load sound '{slug}': {e}")
@@ -196,3 +201,14 @@ class SoundManager:
     ) -> None:
         sound = self.load_sound(slug, value)
         sound.play()
+
+    def unload_sound(self, slug: str) -> None:
+        if slug in self.sounds:
+            del self.sounds[slug]
+            logger.debug(f"Unloaded sound '{slug}' from cache.")
+        else:
+            logger.debug(f"Attempted to unload non-existent sound '{slug}'.")
+
+    def unload_all_sounds(self) -> None:
+        self.sounds.clear()
+        logger.debug("All sounds unloaded from SoundManager cache.")

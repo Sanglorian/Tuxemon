@@ -2,8 +2,9 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from collections.abc import Generator
-from typing import TYPE_CHECKING, Optional
+from collections.abc import Callable, Generator, Sequence
+from functools import partial
+from typing import TYPE_CHECKING, Any, Optional
 
 from pygame import SRCALPHA
 from pygame.font import Font
@@ -11,17 +12,21 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 
 from tuxemon import prepare, tools
+from tuxemon.animation import ScheduleType
 from tuxemon.graphics import ColorLike, load_and_scale, load_image
 from tuxemon.locale import T
 from tuxemon.menu.interface import ExpBar, HpBar, MenuItem
 from tuxemon.menu.menu import Menu
 from tuxemon.monster import Monster
-from tuxemon.session import local_session
 from tuxemon.sprite import Sprite
+from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.draw import GraphicBox
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 from tuxemon.ui.text import TextArea, draw_text
 
 if TYPE_CHECKING:
+    from tuxemon.client import LocalPygameClient
+    from tuxemon.monster import Monster
     from tuxemon.npc import NPC
 
 
@@ -83,12 +88,10 @@ class MonsterMenuState(Menu[Optional[Monster]]):
 
         # position and animate the monster portrait
         width = prepare.SCREEN_SIZE[0] // 2
-        height = prepare.SCREEN_SIZE[1] // int(
-            self.char.party_limit * 1.5,
-        )
+        height = prepare.SCREEN_SIZE[1] // int(prepare.PARTY_LIMIT * 1.5)
 
         # make 6 slots
-        for _ in range(self.char.party_limit):
+        for _ in range(prepare.PARTY_LIMIT):
             rect = Rect(0, 0, width, height)
             surface = Surface(rect.size, SRCALPHA)
             item = MenuItem(surface, None, None, None)
@@ -180,6 +183,151 @@ class MonsterMenuState(Menu[Optional[Monster]]):
                     self.sprites.remove(sprite_display.sprite)
                 self.monster_sprite_displays.remove(sprite_display)
                 break
+
+
+class MonsterMenuHandler:
+    """Handles interactions within the monster menu."""
+
+    def __init__(self, client: LocalPygameClient, character: NPC) -> None:
+        """Initialize with client and character."""
+        self.name = "WorldMenuState"
+        self.client = client
+        self.char = character
+        self.context: dict[str, Any] = {}
+
+    def monster_menu_hook(self, monster_menu: MonsterMenuState) -> None:
+        """Handles monster reordering."""
+        monster = self.context.get("monster")
+        if monster:
+            monster_list = self.char.monsters
+            original = monster_menu.get_selected_item()
+            if original and original.game_object:
+                original_monster = original.game_object
+                index = monster_list.index(original_monster)
+                monster_list[self.context["old_index"]] = original_monster
+                monster_list[index] = self.context["monster"]
+                self.context["old_index"] = index
+
+        MonsterMenuState.on_menu_selection_change(monster_menu)
+
+    def select_monster(self, monster: Monster) -> None:
+        """Selects a monster for movement."""
+        self.context["monster"] = monster
+        self.context["old_index"] = self.char.monsters.index(monster)
+        self.client.remove_state_by_name("ChoiceState")
+
+    def monster_stats(self, monster: Monster) -> None:
+        """Displays monster statistics."""
+        self.client.remove_state_by_name("ChoiceState")
+        params = {"monster": monster, "source": self.name}
+        self.client.push_state("MonsterInfoState", kwargs=params)
+
+    def monster_item(self, monster: Monster) -> None:
+        """Displays monster item menu."""
+        self.client.remove_state_by_name("ChoiceState")
+        params = {"monster": monster, "source": self.name}
+        self.client.push_state("MonsterItemState", kwargs=params)
+
+    def monster_techs(self, monster: Monster) -> None:
+        """Displays monster techniques."""
+        self.client.remove_state_by_name("ChoiceState")
+        params = {"monster": monster, "source": self.name}
+        self.client.push_state("MonsterMovesState", kwargs=params)
+
+    def release_monster(self, monster: Monster) -> None:
+        """Shows confirmation for releasing a monster."""
+        self.client.remove_state_by_name("ChoiceState")
+        params = {"name": monster.name.upper()}
+        msg = T.format("release_confirmation", params)
+        open_dialog(self.client, [msg])
+        options = [
+            ChoiceOption(
+                key="no",
+                display_text=T.translate("no"),
+                action=self.negative_answer,
+            ),
+            ChoiceOption(
+                key="yes",
+                display_text=T.translate("yes"),
+                action=partial(self.positive_answer, monster),
+            ),
+        ]
+        menu = MenuOptions(options)
+        open_choice_dialog(self.client, menu, escape_key_exits=False)
+
+    def positive_answer(self, monster: Monster) -> None:
+        """Handles monster release."""
+        success = self.char.party.release_monster(monster)
+        if success:
+            self.client.remove_state_by_name("ChoiceState")
+            self.client.remove_state_by_name("DialogState")
+            params = {"name": monster.name.upper()}
+            msg = T.format("tuxemon_released", params)
+            open_dialog(self.client, [msg])
+            self.monster_menu.remove_monster_sprite_display(monster)
+            self.monster_menu.refresh_menu_items()
+            self.monster_menu.on_menu_selection_change()
+        else:
+            open_dialog(self.client, [T.translate("cant_release")])
+
+    def negative_answer(self) -> None:
+        """Handles rejection for releasing a monster."""
+        self.client.remove_state_by_name("ChoiceState")
+        self.client.remove_state_by_name("DialogState")
+
+    def open_monster_submenu(self, monster_menu: MonsterMenuState) -> None:
+        """Opens a submenu for the selected monster."""
+        original = monster_menu.get_selected_item()
+        if original and original.game_object:
+            mon = original.game_object
+
+            options = [
+                ChoiceOption(
+                    key="info",
+                    display_text=T.translate("monster_menu_info").upper(),
+                    action=partial(self.monster_stats, mon),
+                ),
+                ChoiceOption(
+                    key="tech",
+                    display_text=T.translate("monster_menu_tech").upper(),
+                    action=partial(self.monster_techs, mon),
+                ),
+                ChoiceOption(
+                    key="item",
+                    display_text=T.translate("monster_menu_item").upper(),
+                    action=partial(self.monster_item, mon),
+                ),
+                ChoiceOption(
+                    key="move",
+                    display_text=T.translate("monster_menu_move").upper(),
+                    action=partial(self.select_monster, mon),
+                ),
+                ChoiceOption(
+                    key="release",
+                    display_text=T.translate("monster_menu_release").upper(),
+                    action=partial(self.release_monster, mon),
+                ),
+            ]
+
+            menu = MenuOptions(options)
+            open_choice_dialog(self.client, menu, escape_key_exits=True)
+
+    def handle_selection(
+        self,
+        menu_item: MenuItem[Optional[Monster]],
+        monster_menu: MonsterMenuState,
+    ) -> None:
+        """Handles selection interaction for monsters."""
+        if "monster" in self.context:
+            del self.context["monster"]
+        else:
+            self.open_monster_submenu(monster_menu)
+
+    def open_monster_menu(self) -> None:
+        """Pushes the monster menu state."""
+        self.monster_menu = self.client.push_state(MonsterMenuState(self.char))
+        self.monster_menu.on_menu_selection = lambda item: self.handle_selection(item, self.monster_menu)  # type: ignore[assignment]
+        self.monster_menu.on_menu_selection_change = partial(self.monster_menu_hook, self.monster_menu)  # type: ignore[method-assign]
 
 
 class HeldItemDisplay:
@@ -274,7 +422,7 @@ class MonsterPortraitDisplay:
             transition="in_out_quad",
             relative=True,
         )
-        ani.callback = self.animate_up
+        ani.schedule(self.animate_up, ScheduleType.ON_FINISH)
 
     def animate_up(self) -> None:
         ani = self.menu_state.animate(
@@ -284,7 +432,7 @@ class MonsterPortraitDisplay:
             transition="in_out_quad",
             relative=True,
         )
-        ani.callback = self.animate_down
+        ani.schedule(self.animate_down, ScheduleType.ON_FINISH)
 
 
 class MonsterInfoRenderer:

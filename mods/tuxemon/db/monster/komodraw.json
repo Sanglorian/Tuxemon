@@ -1,84 +1,95 @@
 {
-    "slug": "komodraw",
-    "category": "quickdraw",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "riposte"
-        },
-        {
-            "level_learned": 1,
-            "technique": "bullet"
-        },
-        {
-            "level_learned": 4,
-            "technique": "sudden_glow"
-        },
-        {
-            "level_learned": 7,
-            "technique": "flamethrower"
-        },
-        {
-            "level_learned": 13,
-            "technique": "shrapnel"
-        },
-        {
-            "level_learned": 16,
-            "technique": "beam"
-        },
-        {
-            "level_learned": 19,
-            "technique": "supernova"
-        },
-        {
-            "level_learned": 25,
-            "technique": "breathe_fire"
-        },
-        {
-            "level_learned": 28,
-            "technique": "chameleon"
-        },
-        {
-            "level_learned": 31,
-            "technique": "wall_fire"
-        },
-        {
-            "level_learned": 37,
-            "technique": "fire_shield"
-        },
-        {
-            "level_learned": 40,
-            "technique": "energy_claws"
-        },
-        {
-            "level_learned": 55,
-            "technique": "energy_beam"
-        }
-    ],
-    "evolutions": [
-        {
-            "at_level": 32,
-            "monster_slug": "komoduel"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "komoduel",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": ["desert", "grassland", "urban"],
-    "tags": ["bomber", "soldier", "gadgets"],
-    "shape": "humanoid",
-    "stage": "basic",
-    "types": [
-        "fire"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 92,
-    "height": 155,
-    "weight": 55,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "komodraw",
+  "category": "quickdraw",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "riposte"
+    },
+    {
+      "level_learned": 1,
+      "technique": "bullet"
+    },
+    {
+      "level_learned": 4,
+      "technique": "sudden_glow"
+    },
+    {
+      "level_learned": 7,
+      "technique": "flamethrower"
+    },
+    {
+      "level_learned": 13,
+      "technique": "shrapnel"
+    },
+    {
+      "level_learned": 16,
+      "technique": "beam"
+    },
+    {
+      "level_learned": 19,
+      "technique": "supernova"
+    },
+    {
+      "level_learned": 25,
+      "technique": "breathe_fire"
+    },
+    {
+      "level_learned": 28,
+      "technique": "chameleon"
+    },
+    {
+      "level_learned": 31,
+      "technique": "wall_fire"
+    },
+    {
+      "level_learned": 37,
+      "technique": "fire_shield"
+    },
+    {
+      "level_learned": 40,
+      "technique": "energy_claws"
+    },
+    {
+      "level_learned": 55,
+      "technique": "energy_beam"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 32,
+      "monster_slug": "komoduel"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "komoduel",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [
+    "desert",
+    "grassland",
+    "urban"
+  ],
+  "tags": [
+    "bomber",
+    "soldier",
+    "gadgets"
+  ],
+  "shape": "humanoid",
+  "stage": "basic",
+  "types": [
+    "fire"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 92,
+  "height": 155,
+  "weight": 55,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

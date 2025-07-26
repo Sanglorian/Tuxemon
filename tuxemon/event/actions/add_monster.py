@@ -32,7 +32,6 @@ class AddMonsterAction(EventAction):
             defaults to the current player.
         exp_mod: Experience modifier
         money_mod: Money modifier
-
     """
 
     name = "add_monster"
@@ -59,17 +58,14 @@ class AddMonsterAction(EventAction):
         else:
             monster_slug = self.monster_slug
 
-        monster = Monster.create(monster_slug)
-        monster.set_level(self.monster_level)
-        monster.moves.set_moves(self.monster_level)
+        monster = Monster.spawn_base(monster_slug, self.monster_level)
         monster.set_capture(today_ordinal())
-        monster.current_hp = monster.hp
 
         if self.exp is not None:
             monster.experience_modifier = self.exp
         if self.money is not None:
             monster.money_modifier = self.money
 
-        trainer.add_monster(monster, len(trainer.monsters))
+        trainer.party.add_monster(monster, len(trainer.monsters))
         trainer.tuxepedia.add_entry(monster.slug, SeenStatus.caught)
         player.game_variables[self.name] = str(monster.instance_id.hex)

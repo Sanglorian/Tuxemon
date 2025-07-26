@@ -5,11 +5,14 @@
   "effects": [
     {
       "type": "switch",
-      "parameters": ["enemy_monster", "fire"]
+      "parameters": [
+        "enemy_monster",
+        "fire"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -27,7 +30,9 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["shapeshifter"],
+  "tags": [
+    "shapeshifter"
+  ],
   "types": [
     "aether"
   ],

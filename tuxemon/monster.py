@@ -5,12 +5,13 @@ from __future__ import annotations
 import logging
 import random
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID, uuid4
 
 from tuxemon import formula, graphics, prepare, tools
 from tuxemon.db import (
+    Acquisition,
     CategoryStatus,
     EffectPhase,
     EvolutionStage,
@@ -31,7 +32,7 @@ from tuxemon.evolution import Evolution
 from tuxemon.fusion import Body
 from tuxemon.item.item import Item
 from tuxemon.locale import T
-from tuxemon.shape import Shape
+from tuxemon.shape import ShapeHandler
 from tuxemon.sprite import Sprite
 from tuxemon.status.status import Status, decode_status, encode_status
 from tuxemon.taste import Taste
@@ -54,21 +55,21 @@ SIMPLE_PERSISTANCE_ATTRIBUTES = (
     "slug",
     "total_experience",
     "flairs",
-    "gender",
     "capture",
     "capture_device",
     "height",
     "weight",
     "taste_cold",
     "taste_warm",
-    "traded",
     "steps",
     "bond",
 )
 
 
 @dataclass
-class ModifierStats:
+class BasicStats:
+    """The fundamental statistical attributes of a monster."""
+
     armour: int = 0
     dodge: int = 0
     hp: int = 0
@@ -76,12 +77,25 @@ class ModifierStats:
     ranged: int = 0
     speed: int = 0
 
+    def sum(self) -> int:
+        total = sum(int(getattr(self, field.name)) for field in fields(self))
+        return total
+
+
+@dataclass
+class TemporaryStatBoosts(BasicStats):
+    """Temporary additive boosts to a monster's base stats."""
+
     def to_dict(self) -> dict[str, int]:
-        return self.__dict__
+        return {
+            field.name: getattr(self, field.name) for field in fields(self)
+        }
 
     @classmethod
-    def from_dict(cls, data: dict[str, int]) -> ModifierStats:
-        return cls(**data)
+    def from_dict(cls, data: dict[str, int]) -> TemporaryStatBoosts:
+        valid_fields = {field.name for field in fields(cls)}
+        filtered_data = {k: v for k, v in data.items() if k in valid_fields}
+        return cls(**filtered_data)
 
 
 # class definition for tuxemon flairs:
@@ -108,18 +122,14 @@ class Monster:
         self.description: str = ""
         self.instance_id: UUID = uuid4()
 
-        self.armour: int = 0
-        self.dodge: int = 0
-        self.melee: int = 0
-        self.ranged: int = 0
-        self.speed: int = 0
+        self.base_stats: BasicStats = BasicStats()
         self.current_hp: int = 0
-        self.hp: int = 0
+
         self.level: int = 0
         self.steps: float = 0.0
         self.bond: int = prepare.BOND
 
-        self.modifiers = ModifierStats()
+        self.modifiers = TemporaryStatBoosts()
 
         self.moves = MonsterMovesHandler()
         self.evolutions: list[MonsterEvolutionItemModel] = []
@@ -136,12 +146,12 @@ class Monster:
         self.total_experience: int = 0
 
         self.types = ElementTypesHandler()
-        self.shape: str = ""
+        self.shape: ShapeHandler = ShapeHandler()
         self.randomly: bool = True
         self.out_of_range: bool = False
         self.got_experience: bool = False
         self.levelling_up: bool = False
-        self.traded: bool = False
+        self.acquisition: Acquisition = Acquisition.UNKNOWN
         self.wild: bool = False
 
         self.status = MonsterStatusHandler()
@@ -190,6 +200,38 @@ class Monster:
         method.load(slug)
         return method
 
+    @classmethod
+    def spawn_base(cls, slug: str, level: int) -> Monster:
+        monster = cls.create(slug)
+        monster.set_level(level)
+        monster.moves.set_moves(level)
+        monster.current_hp = monster.hp
+        return monster
+
+    @property
+    def armour(self) -> int:
+        return self.base_stats.armour
+
+    @property
+    def dodge(self) -> int:
+        return self.base_stats.dodge
+
+    @property
+    def hp(self) -> int:
+        return self.base_stats.hp
+
+    @property
+    def melee(self) -> int:
+        return self.base_stats.melee
+
+    @property
+    def ranged(self) -> int:
+        return self.base_stats.ranged
+
+    @property
+    def speed(self) -> int:
+        return self.base_stats.speed
+
     @property
     def hp_ratio(self) -> float:
         return min(self.current_hp / self.hp if self.hp > 0 else 0.0, 1.0)
@@ -218,34 +260,25 @@ class Monster:
         self.description = T.translate(f"{results.slug}_description")
         self.cat = results.category
         self.category = T.translate(f"cat_{self.cat}")
-        self.shape = results.shape
+        self.shape = ShapeHandler(results.shape)
         self.stage = results.stage
         self.tags = results.tags
         self.taste_cold, self.taste_warm = Taste.generate(
             self.taste_cold, self.taste_warm
         )
 
-        # types
         self.types = ElementTypesHandler(results.types)
 
-        self.randomly = results.randomly or self.randomly
-        self.got_experience = self.got_experience
-        self.levelling_up = self.levelling_up
-        self.traded = self.traded
+        self.randomly = results.randomly
 
         self.txmn_id = results.txmn_id
         self.set_capture(self.capture)
-        self.capture_device = self.capture_device
         self.height = formula.set_height(self, results.height)
         self.weight = formula.set_weight(self, results.weight)
         self.gender = random.choice(list(results.possible_genders))
-        self.catch_rate = results.catch_rate or self.catch_rate
-        self.upper_catch_resistance = (
-            results.upper_catch_resistance or self.upper_catch_resistance
-        )
-        self.lower_catch_resistance = (
-            results.lower_catch_resistance or self.lower_catch_resistance
-        )
+        self.catch_rate = results.catch_rate
+        self.upper_catch_resistance = results.upper_catch_resistance
+        self.lower_catch_resistance = results.lower_catch_resistance
 
         self.moves.set_moveset(results.moveset or [])
         self.evolutions.extend(results.evolutions or [])
@@ -300,6 +333,14 @@ class Monster:
     def set_owner(self, character: Optional[NPC]) -> None:
         """Sets the NPC associated with this monster."""
         self.owner = character
+
+    def set_acquisition(self, acquisition: Acquisition) -> None:
+        """Sets the acquisition method of this monster."""
+        self.acquisition = Acquisition(acquisition)
+
+    def has_acquisition(self, method: Acquisition) -> bool:
+        """Returns True if the monster was acquired via the specified method."""
+        return self.acquisition == method
 
     def get_sprite(
         self,
@@ -390,8 +431,7 @@ class Monster:
         Calculate the base stats of the monster dynamically.
         """
         multiplier = self.level + prepare.COEFF_STATS
-        shape = Shape(self.shape).attributes
-        formula.calculate_base_stats(self, shape, multiplier)
+        self.shape.apply_base_stat_calculation(self, multiplier)
 
     def apply_stat_updates(self) -> None:
         """
@@ -481,6 +521,8 @@ class Monster:
         }
 
         save_data["instance_id"] = str(self.instance_id.hex)
+        save_data["gender"] = self.gender
+        save_data["acquisition"] = self.acquisition
         save_data["plague"] = self.plague.encode_plagues()
 
         body = self.body.get_state()
@@ -516,6 +558,10 @@ class Monster:
                 self.body.set_state(value)
             elif key == "instance_id" and value:
                 self.instance_id = UUID(value)
+            elif key == "gender" and value:
+                self.gender = GenderType(value)
+            elif key == "acquisition" and value:
+                self.acquisition = Acquisition(value)
             elif key in SIMPLE_PERSISTANCE_ATTRIBUTES:
                 setattr(self, key, value)
             elif key == "held_item" and value:
@@ -540,9 +586,9 @@ class Monster:
         if self.is_fainted:
             self.current_hp = 0
             self.status.apply_faint(self)
-            self.status.current_status.apply_phase_and_use(
-                session, EffectPhase.ON_FAINT
-            )
+            current = self.status.get_current_status()
+            if current:
+                current.apply_phase_and_use(session, EffectPhase.ON_FAINT)
 
 
 class SpriteLoader:
@@ -696,14 +742,13 @@ class MonsterStatusHandler:
         self.status = status if status is not None else []
 
     @property
-    def current_status(self) -> Status:
-        if not self.status:
-            raise ValueError("Monster has no status to retrieve.")
-        return self.status[0]
-
-    @property
     def is_fainted(self) -> bool:
         return self.has_status("faint")
+
+    def get_current_status(self) -> Optional[Status]:
+        if not self.status:
+            return None
+        return self.status[0]
 
     def apply_status(self, session: Session, new_status: Status) -> None:
         """
@@ -714,7 +759,8 @@ class MonsterStatusHandler:
         ensuring proper transitions between statuses based on their category and
         interaction rules.
         """
-        if not self.status:
+        current_status = self.get_current_status()
+        if current_status is None:
             self.add_status(new_status)
             new_status.nr_turn = 1
             new_status.apply_phase_and_use(session, EffectPhase.ON_START)
@@ -723,7 +769,6 @@ class MonsterStatusHandler:
         if self.has_status(new_status.slug):
             return
 
-        current_status = self.current_status
         current_status.apply_phase_and_use(session, EffectPhase.ON_END)
 
         new_status.nr_turn = 1
@@ -753,8 +798,8 @@ class MonsterStatusHandler:
 
     def clear_status(self, session: Session) -> None:
         """Clears the current status effect for monsters in combat."""
-        if self.status:
-            current_status = self.current_status
+        current_status = self.get_current_status()
+        if current_status:
             current_status.apply_phase_and_use(session, EffectPhase.ON_END)
             self.status.clear()
 

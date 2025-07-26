@@ -21,13 +21,6 @@ class TestMonsterStatusHandler(unittest.TestCase):
     def test_init_with_status(self):
         self.assertEqual(self.handler.status, [self.status])
 
-    def test_current_status(self):
-        self.assertEqual(self.handler.current_status, self.status)
-
-    def test_current_status_empty(self):
-        with self.assertRaises(ValueError):
-            self.basic.current_status
-
     def test_apply_status(self):
         self.basic.apply_status(self.session, self.status)
         self.assertEqual(self.basic.status, [self.status])

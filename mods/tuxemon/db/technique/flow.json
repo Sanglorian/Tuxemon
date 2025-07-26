@@ -5,11 +5,13 @@
   "effects": [
     {
       "type": "splash",
-      "parameters": ["2"]
+      "parameters": [
+        "2"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.0,
   "power": 1.5,
   "range": "melee",
@@ -27,7 +29,9 @@
     "own_trainer": false
   },
   "category": "basic",
-  "tags": ["water"],
+  "tags": [
+    "water"
+  ],
   "types": [
     "water"
   ],

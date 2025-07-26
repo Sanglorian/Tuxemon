@@ -14,7 +14,7 @@ from tuxemon.session import Session
 @dataclass
 class PlaySoundAction(EventAction):
     """
-    Play a sound from "resources/sounds/".
+    Plays a short sound effect from the "resources/sounds/" folder.
 
     Script usage:
         .. code-block::
@@ -22,16 +22,17 @@ class PlaySoundAction(EventAction):
             play_sound <filename>[,volume]
 
     Script parameters:
-        filename: Sound file to load.
-        volume: Number between 0.0 and 1.0.
+        filename: The sound file to load (must exist in the sounds database).
+        volume: A float between 0.0 and 1.0 representing the relative volume level.
+            This value is multiplied by the user's configured sound volume.
 
-        Attention!
-        The volume will be based on the main value
-        in the options menu.
-        e.g. if you set volume = 0.5 here, but the
-        player has 0.5 among its options, then it'll
-        result into 0.25 (0.5*0.5)
+    Example:
+        If volume=0.5 and the player's sound setting is also 0.5,
+        the resulting effective playback volume will be 0.25.
 
+    Note:
+        This is intended for short non-looping sound effects (e.g., cues, UI feedback),
+        not for ambient or background music.
     """
 
     name = "play_sound"

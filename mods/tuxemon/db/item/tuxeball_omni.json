@@ -6,14 +6,21 @@
     },
     {
       "type": "category",
-      "parameters": ["threat"],
+      "parameters": [
+        "threat"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "capture_combined",
-      "parameters": ["monster","omni","0.3","1.4"]
+      "parameters": [
+        "monster",
+        "omni",
+        "0.3",
+        "1.4"
+      ]
     }
   ],
   "animation": "capture_1",

@@ -16,10 +16,14 @@ from tuxemon.map import (
 from tuxemon.prepare import CONFIG
 
 if TYPE_CHECKING:
-    from tuxemon.client import LocalPygameClient
-    from tuxemon.collision_manager import CollisionMap
+    from tuxemon.boundary import BoundaryChecker
+    from tuxemon.collision_manager import CollisionManager, CollisionMap
     from tuxemon.db import Direction
+    from tuxemon.event.eventmanager import EventManager
+    from tuxemon.map_manager import MapManager
     from tuxemon.npc import NPC
+    from tuxemon.npc_manager import NPCManager
+    from tuxemon.platform.input_manager import InputManager
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +75,11 @@ class PathfindNode:
 
 
 class MovementManager:
-    def __init__(self, client: LocalPygameClient) -> None:
-        self.client = client
+    def __init__(
+        self, event_manager: EventManager, input_manager: InputManager
+    ) -> None:
+        self.event_manager = event_manager
+        self.input_manager = input_manager
         self.wants_to_move_char: dict[str, Direction] = {}
         self.allow_char_movement: set[str] = set()
 
@@ -88,7 +95,7 @@ class MovementManager:
         """Stops the character and releases movement controls."""
         if self.has_pending_movement(character):
             del self.wants_to_move_char[character.slug]
-        self.client.event_manager.release_controls(self.client.input_manager)
+        self.event_manager.release_controls(self.input_manager)
         character.cancel_movement()
 
     def unlock_controls(self, character: NPC) -> None:
@@ -105,7 +112,7 @@ class MovementManager:
         """Stops the character and aborts all ongoing movement actions."""
         if self.has_pending_movement(character):
             del self.wants_to_move_char[character.slug]
-        self.client.event_manager.release_controls(self.client.input_manager)
+        self.event_manager.release_controls(self.input_manager)
         character.abort_movement()
 
     def is_movement_allowed(self, character: NPC) -> bool:
@@ -122,8 +129,17 @@ class MovementManager:
 
 
 class Pathfinder:
-    def __init__(self, client: LocalPygameClient) -> None:
-        self.client = client
+    def __init__(
+        self,
+        npc_manager: NPCManager,
+        map_manager: MapManager,
+        collision_manager: CollisionManager,
+        boundary: BoundaryChecker,
+    ) -> None:
+        self.npc_manager = npc_manager
+        self.map_manager = map_manager
+        self.collision_manager = collision_manager
+        self.boundary = boundary
 
     def pathfind(
         self, start: tuple[int, int], dest: tuple[int, int], facing: Direction
@@ -152,9 +168,9 @@ class Pathfinder:
             path = pathnode.reconstruct_path()
             return path
         else:
-            character = self.client.npc_manager.get_entity_pos(start)
-            if character and self.client.map_manager.current_map:
-                filename = self.client.map_manager.current_map.filename
+            character = self.npc_manager.get_entity_pos(start)
+            if character and self.map_manager.current_map:
+                filename = self.map_manager.current_map.filename
                 logger.error(
                     f"{character.name}'s pathfinding failed in {filename}."
                 )
@@ -185,7 +201,7 @@ class Pathfinder:
         """
         if not queue:
             return None
-        collision_map = self.client.collision_manager.get_collision_map()
+        collision_map = self.collision_manager.get_collision_map()
         while queue:
             node = queue.pop(0)
             logger.debug(f"Checking node {node.get_value()}.")
@@ -227,7 +243,7 @@ class Pathfinder:
         """
         return (
             position not in skip_nodes
-            and self.client.boundary.is_within_boundaries(position)
+            and self.boundary.is_within_boundaries(position)
         )
 
     def get_exits(
@@ -252,7 +268,7 @@ class Pathfinder:
         """
         # get tile-level and npc/entity blockers
         collision_map = (
-            collision_map or self.client.collision_manager.get_collision_map()
+            collision_map or self.collision_manager.get_collision_map()
         )
         skip_nodes = skip_nodes or set()
         logger.debug(f"Getting exits for position {position}.")
@@ -289,7 +305,7 @@ class Pathfinder:
             if (
                 position,
                 direction,
-            ) in self.client.map_manager.collision_lines_map:
+            ) in self.map_manager.collision_lines_map:
                 logger.debug(
                     f"Wall detected between {position} and {neighbor}."
                 )
@@ -328,9 +344,9 @@ class Pathfinder:
             return False
 
         # Check for collisions with moving entities
-        _map_size = self.client.map_manager.map_size
+        _map_size = self.map_manager.map_size
         for neighbor in get_coords_ext(tile, _map_size):
-            char = self.client.npc_manager.get_entity_pos(neighbor)
+            char = self.npc_manager.get_entity_pos(neighbor)
             if (
                 char
                 and char.moving

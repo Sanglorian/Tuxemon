@@ -1,74 +1,81 @@
 {
-    "slug": "drokoro",
-    "category": "dragon",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "tinder"
-        },
-        {
-            "level_learned": 1,
-            "technique": "gnaw"
-        },
-        {
-            "level_learned": 4,
-            "technique": "breathe_fire"
-        },
-        {
-            "level_learned": 7,
-            "technique": "fire_shield"
-        },
-        {
-            "level_learned": 13,
-            "technique": "firestorm"
-        },
-        {
-            "level_learned": 16,
-            "technique": "give_all"
-        },
-        {
-            "level_learned": 19,
-            "technique": "one_two"
-        },
-        {
-            "level_learned": 25,
-            "technique": "all_in"
-        },
-        {
-            "level_learned": 28,
-            "technique": "chameleon"
-        },
-        {
-            "level_learned": 31,
-            "technique": "muddle"
-        },
-        {
-            "level_learned": 37,
-            "technique": "supernova"
-        },
-        {
-            "level_learned": 40,
-            "technique": "bubble_trap"
-        },
-        {
-            "level_learned": 55,
-            "technique": "energy_beam"
-        }
-    ],
-    "evolutions": [],
-    "history": [],
-    "terrains": [],
-    "tags": ["flame", "bite", "fury"],
-    "shape": "dragon",
-    "stage": "standalone",
-    "types": [
-        "fire"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 145,
-    "height": 1200,
-    "weight": 10000,
-    "catch_rate": 5.0,
-    "lower_catch_resistance": 0.8,
-    "upper_catch_resistance": 1.05
+  "slug": "drokoro",
+  "category": "dragon",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "tinder"
+    },
+    {
+      "level_learned": 1,
+      "technique": "gnaw"
+    },
+    {
+      "level_learned": 4,
+      "technique": "breathe_fire"
+    },
+    {
+      "level_learned": 7,
+      "technique": "fire_shield"
+    },
+    {
+      "level_learned": 13,
+      "technique": "firestorm"
+    },
+    {
+      "level_learned": 16,
+      "technique": "give_all"
+    },
+    {
+      "level_learned": 19,
+      "technique": "one_two"
+    },
+    {
+      "level_learned": 25,
+      "technique": "all_in"
+    },
+    {
+      "level_learned": 28,
+      "technique": "chameleon"
+    },
+    {
+      "level_learned": 31,
+      "technique": "muddle"
+    },
+    {
+      "level_learned": 37,
+      "technique": "supernova"
+    },
+    {
+      "level_learned": 40,
+      "technique": "bubble_trap"
+    },
+    {
+      "level_learned": 55,
+      "technique": "energy_beam"
+    }
+  ],
+  "evolutions": [],
+  "history": [],
+  "terrains": [],
+  "tags": [
+    "flame",
+    "bite",
+    "fury"
+  ],
+  "shape": "dragon",
+  "stage": "standalone",
+  "types": [
+    "fire"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 145,
+  "height": 1200,
+  "weight": 10000,
+  "catch_rate": 5.0,
+  "lower_catch_resistance": 0.8,
+  "upper_catch_resistance": 1.05
 }

@@ -3,7 +3,10 @@
   "effects": [
     {
       "type": "buff",
-      "parameters": ["speed","0.2"]
+      "parameters": [
+        "speed",
+        "0.2"
+      ]
     }
   ],
   "slug": "boost_speed",

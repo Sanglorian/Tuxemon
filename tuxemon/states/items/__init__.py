@@ -6,5 +6,6 @@ from collections.abc import Sequence
 
 from tuxemon.item.item import Item
 
+from .craft_menu import CraftMenuState
 from .item_menu import ItemMenuState
 from .shop_menu import ShopBuyMenuState, ShopMenuState, ShopSellMenuState

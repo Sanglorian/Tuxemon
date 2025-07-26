@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["pyramidion"],
+      "parameters": [
+        "pyramidion"
+      ],
       "operator": "is"
     }
   ],

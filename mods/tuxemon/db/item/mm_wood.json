@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["wood"],
+      "parameters": [
+        "wood"
+      ],
       "operator": "is"
     }
   ],
   "effects": [
     {
       "type": "learn_mm",
-      "parameters": ["wood"]
+      "parameters": [
+        "wood"
+      ]
     }
   ],
   "slug": "mm_wood",

@@ -5,11 +5,14 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["wild", "enemy_monster"]
+      "parameters": [
+        "wild",
+        "enemy_monster"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -27,7 +30,10 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["shapeshifter", "fury"],
+  "tags": [
+    "shapeshifter",
+    "fury"
+  ],
   "types": [
     "aether"
   ],

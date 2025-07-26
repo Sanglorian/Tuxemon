@@ -36,6 +36,6 @@ class HasMonsterCondition(EventCondition):
         if character is None:
             logger.error(f"{_character} not found")
             return False
-        if character.find_monster(_monster):
+        if character.party.find_monster(_monster):
             return True
         return False

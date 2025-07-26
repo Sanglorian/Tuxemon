@@ -22,6 +22,7 @@ class Taste:
         self.name: str = ""
         self.taste_type: str = ""
         self.description: str = ""
+        self.rarity_score: float = 1.0
         self.modifiers: Sequence[Modifier] = []
 
         if slug:
@@ -37,6 +38,7 @@ class Taste:
             self.description = cached_taste.description
             self.modifiers = cached_taste.modifiers
             self.taste_type = cached_taste.taste_type
+            self.rarity_score = cached_taste.rarity_score
             return
 
         results = TasteModel.lookup(slug, db)
@@ -45,6 +47,7 @@ class Taste:
         self.description = T.translate(f"{results.slug}_description")
         self.modifiers = results.modifiers
         self.taste_type = results.taste_type
+        self.rarity_score = results.rarity_score
 
         Taste._tastes[slug] = self
 
@@ -87,6 +90,49 @@ class Taste:
         cls._tastes.clear()
 
     @classmethod
+    def weighted_choice(cls, tastes: list[Taste]) -> str:
+        """Selects a taste slug based on rarity weights."""
+        if not tastes:
+            return "tasteless"
+        weights = [taste.rarity_score for taste in tastes]
+        return random.choices(tastes, weights=weights, k=1)[0].slug
+
+    @classmethod
+    def get_random_taste_excluding(
+        cls,
+        taste_type: str,
+        exclude_slugs: Sequence[str],
+        use_rarity: bool = True,
+    ) -> Optional[str]:
+        """
+        Returns a random taste slug of a given type, excluding specified slugs.
+        Optionally weights the selection based on rarity_score.
+
+        Notes:
+            - If use_rarity=True, selection is weighted by rarity_score (0.0 to 1.0).
+            - Tastes with rarity_score=0.0 will never be selected.
+            - If no eligible tastes are found (or all rarity_scores are 0.0),
+                the method returns None.
+        """
+        eligible_tastes = [
+            taste
+            for taste in cls.get_all_tastes().values()
+            if taste.taste_type == taste_type
+            and taste.slug not in exclude_slugs
+        ]
+
+        if not eligible_tastes:
+            return None
+
+        if use_rarity:
+            weights = [taste.rarity_score for taste in eligible_tastes]
+            return random.choices(eligible_tastes, weights=weights, k=1)[
+                0
+            ].slug
+        else:
+            return random.choice(eligible_tastes).slug
+
+    @classmethod
     def generate(
         cls, cold_slug: str = "tasteless", warm_slug: str = "tasteless"
     ) -> tuple[str, str]:
@@ -94,27 +140,23 @@ class Taste:
         Generates initial cold and warm tastes.
         If 'tasteless', a random taste of that type is chosen.
         """
-        cold_taste = cold_slug
-        if cold_taste == "tasteless":
-            cold_tastes = [
-                taste.slug
-                for taste in cls.get_all_tastes().values()
-                if taste.taste_type == "cold" and taste.slug != "tasteless"
-            ]
-            if cold_tastes:
-                cold_taste = random.choice(cold_tastes)
+        if cold_slug == "tasteless":
+            cold_slug = (
+                cls.get_random_taste_excluding(
+                    "cold", exclude_slugs=["tasteless"], use_rarity=True
+                )
+                or "tasteless"
+            )
 
-        warm_taste = warm_slug
-        if warm_taste == "tasteless":
-            warm_tastes = [
-                taste.slug
-                for taste in cls.get_all_tastes().values()
-                if taste.taste_type == "warm" and taste.slug != "tasteless"
-            ]
-            if warm_tastes:
-                warm_taste = random.choice(warm_tastes)
+        if warm_slug == "tasteless":
+            warm_slug = (
+                cls.get_random_taste_excluding(
+                    "warm", exclude_slugs=["tasteless"], use_rarity=True
+                )
+                or "tasteless"
+            )
 
-        return cold_taste, warm_taste
+        return cold_slug, warm_slug
 
     def __repr__(self) -> str:
         return (

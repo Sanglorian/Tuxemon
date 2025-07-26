@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import math
 import unittest
 
 import pygame
@@ -9,79 +8,14 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 
 from tuxemon.ui.draw import (
-    GraphicBox,
     blit_alpha,
     build_line,
     constrain_width,
     guess_rendered_text_size,
     guest_font_height,
     iter_render_text,
-    layout,
-    shadow_text,
 )
 from tuxemon.ui.text import draw_text
-
-
-class TestGraphicBox(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        pygame.init()
-
-    @classmethod
-    def tearDownClass(cls):
-        pygame.quit()
-
-    def setUp(self):
-        self.surface = pygame.display.set_mode((800, 600))
-
-    def test_init(self):
-        box = GraphicBox()
-        self.assertIsNone(box._background)
-        self.assertIsNone(box._color)
-        self.assertFalse(box._fill_tiles)
-        self.assertEqual(box._tiles, [])
-        self.assertEqual(box._tile_size, (0, 0))
-
-    def test_set_border(self):
-        image = Surface((12, 12))
-        box = GraphicBox()
-        box._set_border(image)
-        self.assertEqual(box._tile_size, (4, 4))
-
-    def test_set_border_invalid_size(self):
-        image = Surface((10, 12))
-        box = GraphicBox()
-        with self.assertRaises(ValueError):
-            box._set_border(image)
-
-    def test_calc_inner_rect(self):
-        box = GraphicBox()
-        rect = Rect(0, 0, 100, 100)
-        inner_rect = box.calc_inner_rect(rect)
-        self.assertEqual(inner_rect, rect)
-
-        box._tiles = [Surface((10, 10))]
-        box._tile_size = (10, 10)
-        inner_rect = box.calc_inner_rect(rect)
-        self.assertEqual(inner_rect, Rect(10, 10, 80, 80))
-
-    def test_draw(self):
-        box = GraphicBox()
-        rect = Rect(0, 0, 100, 100)
-        box._draw(self.surface, rect)
-
-        box._background = Surface((100, 100))
-        box._draw(self.surface, rect)
-
-        box._color = (255, 0, 0)
-        box._draw(self.surface, rect)
-
-    def test_update_image(self):
-        box = GraphicBox()
-        box._rect = Rect(0, 0, 100, 100)
-        box.update_image()
-        self.assertIsNotNone(box.image)
 
 
 class TestIterRenderText(unittest.TestCase):
@@ -228,45 +162,6 @@ class TestIterRenderText(unittest.TestCase):
         total_text_height = self.font.size(text)[1]
         expected_top = self.rect.top + self.rect.height - total_text_height
         self.assertEqual(renders[0][0].top, expected_top)
-
-
-class TestShadowText(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        pygame.init()
-
-    @classmethod
-    def tearDownClass(cls):
-        pygame.quit()
-
-    def setUp(self):
-        self.font = SysFont("Arial", 24)
-        self.fg = (0, 0, 0)  # Black
-        self.bg = (255, 255, 255)  # White
-
-    def test_shadow_text(self):
-        text = "Test"
-        image = shadow_text(self.font, self.fg, self.bg, text)
-        self.assertIsNotNone(image)
-
-    def test_shadow_text_size(self):
-        text = "Test"
-        image = shadow_text(self.font, self.fg, self.bg, text)
-        top = self.font.render(text, True, self.fg)
-        offset = layout((0.5, 0.5))
-        size = [int(math.ceil(a + b)) for a, b in zip(offset, top.get_size())]
-        self.assertEqual(image.get_size(), tuple(size))
-
-    def test_shadow_text_empty_string(self):
-        text = ""
-        image = shadow_text(self.font, self.fg, self.bg, text)
-        self.assertIsNotNone(image)
-
-    def test_shadow_text_single_character(self):
-        text = "A"
-        image = shadow_text(self.font, self.fg, self.bg, text)
-        self.assertIsNotNone(image)
 
 
 class TestFontHeight(unittest.TestCase):

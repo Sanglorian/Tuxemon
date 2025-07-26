@@ -2,6 +2,7 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+from enum import Enum
 from typing import Literal, Optional, Union
 
 from pygame import SRCALPHA
@@ -12,9 +13,25 @@ from pygame.surface import Surface
 from tuxemon import prepare
 from tuxemon.graphics import ColorLike
 from tuxemon.sprite import Sprite
-from tuxemon.ui import draw
+from tuxemon.ui.draw import (
+    MultilineTextRenderer,
+    TextRenderer,
+    iter_render_text,
+)
 
 min_font_size = 7
+
+
+class VerticalAlignment(Enum):
+    TOP = "top"
+    CENTER = "center"
+    BOTTOM = "bottom"
+
+
+class HorizontalAlignment(Enum):
+    LEFT = "left"
+    CENTER = "center"
+    RIGHT = "right"
 
 
 class TextArea(Sprite):
@@ -38,6 +55,11 @@ class TextArea(Sprite):
         self.font = font
         self.font_color = font_color
         self.font_shadow = font_shadow
+        self._text_renderer = TextRenderer(
+            font=self.font,
+            font_color=self.font_color,
+            font_shadow_color=self.font_shadow,
+        )
         self.background_color = background_color
         self.background_image = background_image
         self.alignment = alignment
@@ -64,12 +86,7 @@ class TextArea(Sprite):
         if self.animated:
             self._start_text_animation()
         else:
-            self.image = draw.shadow_text(
-                self.font,
-                self.font_color,
-                self.font_shadow,
-                self._text,
-            )
+            self.image = self._text_renderer.shadow_text(self._text)
 
     def __next__(self) -> None:
         if self.animated:
@@ -105,7 +122,7 @@ class TextArea(Sprite):
         if self.background_image:
             self.image.blit(self.background_image, (0, 0))
 
-        self._iter = draw.iter_render_text(
+        self._iter = iter_render_text(
             text=self._text,
             font=self.font,
             fg=self.font_color,
@@ -126,6 +143,7 @@ def draw_text(
     font: Font,
     font_size: Optional[int] = None,
     font_color: Optional[ColorLike] = None,
+    text_renderer: Optional[TextRenderer] = None,
 ) -> None:
     """
     Draws text to a surface.
@@ -145,58 +163,48 @@ def draw_text(
     .. image:: images/menu/justify_center.png
     """
     left, top, width, height = rect
+
+    if width <= 0 or height <= 0:
+        return
+
     _left: float = left
     _top: float = top
 
     if not font_color:
         font_color = prepare.FONT_COLOR
 
+    if text_renderer is None:
+        text_renderer = TextRenderer(font_color=font_color, font=font)
+
     if not text:
         return
 
-    # Create a list of lines of text
-    lines: list[str] = []
-    wordlist: list[str] = []
-    text_surface = font.render(text, True, font_color)
-    pixels_per_letter = text_surface.get_width() / len(text)
+    ml_renderer = MultilineTextRenderer(text_renderer)
+    line_surfaces = ml_renderer.render_lines(text, width)
 
-    # Word wrapping logic
-    for word in text.split():
-        if "\\n" in word:
-            w = word.split("\\n")
-            for item in w:
-                if item == "":
-                    lines.append(" ".join(wordlist))
-                    wordlist = []
-                else:
-                    wordlist.append(item)
-        else:
-            wordlist.append(word)
-            if len(" ".join(wordlist)) * pixels_per_letter > width:
-                lines.append(" ".join(wordlist[:-1]))
-                wordlist = [word]
-    if " ".join(wordlist) != "":
-        lines.append(" ".join(wordlist))
+    total_text_height = sum(height for _, height in line_surfaces)
 
-    # Calculate vertical alignment (align)
-    total_text_height = len(lines) * text_surface.get_height()
     if align == "middle":
         _top = top + (height - total_text_height) / 2
     elif align == "bottom":
         _top = top + height - total_text_height
 
-    # Set a spacing variable that we will add to space each line.
-    spacing = 0
-    for line in lines:
-        line_surface = font.render(line, True, font_color)
-        line_width = line_surface.get_width()
+    if justify == "center":
+        _left = (
+            left
+            + (
+                width
+                - max(surface.get_width() for surface, _ in line_surfaces)
+            )
+            / 2
+        )
+    elif justify == "right":
+        _left = (
+            left
+            + width
+            - max(surface.get_width() for surface, _ in line_surfaces)
+        )
 
-        if justify == "center":
-            _left = left + (width - line_width) / 2
-        elif justify == "right":
-            _left = left + width - line_width
-        else:
-            _left = left
-
-        surface.blit(line_surface, (_left, _top + spacing))
-        spacing += line_surface.get_height()
+    for text_surface, line_height in line_surfaces:
+        surface.blit(text_surface, (_left, _top))
+        _top += line_height + ml_renderer.line_spacing

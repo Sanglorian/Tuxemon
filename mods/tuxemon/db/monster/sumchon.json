@@ -1,76 +1,84 @@
 {
-    "slug": "sumchon",
-    "category": "wrestling",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "clamp_on"
-        },
-        {
-            "level_learned": 1,
-            "technique": "buzz"
-        },
-        {
-            "level_learned": 4,
-            "technique": "splinter"
-        },
-        {
-            "level_learned": 7,
-            "technique": "font"
-        },
-        {
-            "level_learned": 10,
-            "technique": "evasion"
-        },
-        {
-            "level_learned": 13,
-            "technique": "sting"
-        },
-        {
-            "level_learned": 16,
-            "technique": "fluff_up"
-        },
-        {
-            "level_learned": 19,
-            "technique": "wall_of_steel"
-        },
-        {
-            "level_learned": 25,
-            "technique": "invictus"
-        },
-        {
-            "level_learned": 28,
-            "technique": "blade"
-        },
-        {
-            "level_learned": 46,
-            "technique": "suplex"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "katapill",
-            "evo_stage": "basic"
-        },
-        {
-            "mon_slug": "katacoon",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": ["woodland"],
-    "tags": ["fists", "bug"],
-    "shape": "brute",
-    "stage": "stage2",
-    "types": [
-        "metal",
-        "wood"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 59,
-    "height": 150,
-    "weight": 125,
-    "catch_rate": 35.0,
-    "lower_catch_resistance": 0.9,
-    "upper_catch_resistance": 1.15
+  "slug": "sumchon",
+  "category": "wrestling",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "clamp_on"
+    },
+    {
+      "level_learned": 1,
+      "technique": "buzz"
+    },
+    {
+      "level_learned": 4,
+      "technique": "splinter"
+    },
+    {
+      "level_learned": 7,
+      "technique": "font"
+    },
+    {
+      "level_learned": 10,
+      "technique": "evasion"
+    },
+    {
+      "level_learned": 13,
+      "technique": "sting"
+    },
+    {
+      "level_learned": 16,
+      "technique": "fluff_up"
+    },
+    {
+      "level_learned": 19,
+      "technique": "wall_of_steel"
+    },
+    {
+      "level_learned": 25,
+      "technique": "invictus"
+    },
+    {
+      "level_learned": 28,
+      "technique": "blade"
+    },
+    {
+      "level_learned": 46,
+      "technique": "suplex"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "katapill",
+      "evo_stage": "basic"
+    },
+    {
+      "mon_slug": "katacoon",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [
+    "woodland"
+  ],
+  "tags": [
+    "fists",
+    "bug"
+  ],
+  "shape": "brute",
+  "stage": "stage2",
+  "types": [
+    "metal",
+    "wood"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 59,
+  "height": 150,
+  "weight": 125,
+  "catch_rate": 35.0,
+  "lower_catch_resistance": 0.9,
+  "upper_catch_resistance": 1.15
 }

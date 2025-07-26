@@ -1,72 +1,77 @@
 {
-    "slug": "tadcool",
-    "category": "alarm",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "goad"
-        },
-        {
-            "level_learned": 1,
-            "technique": "flood"
-        },
-        {
-            "level_learned": 4,
-            "technique": "geyser"
-        },
-        {
-            "level_learned": 7,
-            "technique": "grinding"
-        },
-        {
-            "level_learned": 13,
-            "technique": "flow"
-        },
-        {
-            "level_learned": 16,
-            "technique": "icicle_spear"
-        },
-        {
-            "level_learned": 19,
-            "technique": "font"
-        },
-        {
-            "level_learned": 25,
-            "technique": "starfall"
-        },
-        {
-            "level_learned": 31,
-            "technique": "tsunami"
-        },
-        {
-            "level_learned": 37,
-            "technique": "ice_storm"
-        }
-    ],
-    "evolutions": [
-        {
-            "at_level": 32,
-            "monster_slug": "fribbit"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "fribbit",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": [],
-    "tags": ["ice"],
-    "shape": "polliwog",
-    "stage": "basic",
-    "types": [
-        "water"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 268,
-    "height": 25,
-    "weight": 1,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "tadcool",
+  "category": "alarm",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "goad"
+    },
+    {
+      "level_learned": 1,
+      "technique": "flood"
+    },
+    {
+      "level_learned": 4,
+      "technique": "geyser"
+    },
+    {
+      "level_learned": 7,
+      "technique": "grinding"
+    },
+    {
+      "level_learned": 13,
+      "technique": "flow"
+    },
+    {
+      "level_learned": 16,
+      "technique": "icicle_spear"
+    },
+    {
+      "level_learned": 19,
+      "technique": "font"
+    },
+    {
+      "level_learned": 25,
+      "technique": "starfall"
+    },
+    {
+      "level_learned": 31,
+      "technique": "tsunami"
+    },
+    {
+      "level_learned": 37,
+      "technique": "ice_storm"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 32,
+      "monster_slug": "fribbit"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "fribbit",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [],
+  "tags": [
+    "ice"
+  ],
+  "shape": "polliwog",
+  "stage": "basic",
+  "types": [
+    "water"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 268,
+  "height": 25,
+  "weight": 1,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

@@ -5,15 +5,18 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["recover", "own_monster"]
+      "parameters": [
+        "recover",
+        "own_monster"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
-  "recharge":4,
+  "recharge": 4,
   "sfx": "sfx_blaster",
   "slug": "changeling",
   "sort": "damage",
@@ -27,7 +30,9 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["shapeshifter"],
+  "tags": [
+    "shapeshifter"
+  ],
   "types": [
     "wood"
   ],

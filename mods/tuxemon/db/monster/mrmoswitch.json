@@ -1,59 +1,66 @@
 {
-    "slug": "mrmoswitch",
-    "category": "gremlin",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "beam"
-        },
-        {
-            "level_learned": 1,
-            "technique": "levitate"
-        },
-        {
-            "level_learned": 4,
-            "technique": "strike"
-        },
-        {
-            "level_learned": 7,
-            "technique": "radiance"
-        },
-        {
-            "level_learned": 13,
-            "technique": "battery_discharge"
-        },
-        {
-            "level_learned": 16,
-            "technique": "wall_of_steel"
-        },
-        {
-            "level_learned": 19,
-            "technique": "shrapnel"
-        },
-        {
-            "level_learned": 25,
-            "technique": "glower"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "botbot",
-            "evo_stage": "basic"
-        }
-    ],
-    "terrains": ["urban"],
-    "tags": ["machine", "light"],
-    "shape": "sprite",
-    "stage": "stage1",
-    "types": [
-        "metal"
-    ],
-    "possible_genders": ["neuter"],
-    "txmn_id": 128,
-    "height": 56,
-    "weight": 4,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.25
+  "slug": "mrmoswitch",
+  "category": "gremlin",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "beam"
+    },
+    {
+      "level_learned": 1,
+      "technique": "levitate"
+    },
+    {
+      "level_learned": 4,
+      "technique": "strike"
+    },
+    {
+      "level_learned": 7,
+      "technique": "radiance"
+    },
+    {
+      "level_learned": 13,
+      "technique": "battery_discharge"
+    },
+    {
+      "level_learned": 16,
+      "technique": "wall_of_steel"
+    },
+    {
+      "level_learned": 19,
+      "technique": "shrapnel"
+    },
+    {
+      "level_learned": 25,
+      "technique": "glower"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "botbot",
+      "evo_stage": "basic"
+    }
+  ],
+  "terrains": [
+    "urban"
+  ],
+  "tags": [
+    "machine",
+    "light"
+  ],
+  "shape": "sprite",
+  "stage": "stage1",
+  "types": [
+    "metal"
+  ],
+  "possible_genders": [
+    "neuter"
+  ],
+  "txmn_id": 128,
+  "height": 56,
+  "weight": 4,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.25
 }

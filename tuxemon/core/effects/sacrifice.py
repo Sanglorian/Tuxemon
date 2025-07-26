@@ -40,7 +40,7 @@ class SacrificeEffect(CoreEffect):
             raise ValueError("Multiplier must be a float between 0 and 1")
 
         combat = tech.get_combat_state()
-        tech.hit = tech.accuracy >= combat._random_tech_hit.get(user, 0.0)
+        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
 
         if tech.hit:
             damage = int(user.current_hp * self.multiplier)

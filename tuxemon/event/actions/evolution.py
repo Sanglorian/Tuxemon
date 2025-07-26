@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import uuid
-from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
 from typing import TYPE_CHECKING, Optional, final
@@ -14,6 +13,7 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.monster import Monster
 from tuxemon.tools import open_choice_dialog, open_dialog
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
@@ -111,14 +111,21 @@ class EvolutionAction(EventAction):
         }
         msg = T.format("evolution_confirmation", params)
         open_dialog(self.session.client, [msg])
-        _no = T.translate("no")
-        _yes = T.translate("yes")
-        menu: list[tuple[str, str, Callable[[], None]]] = []
-        menu.append(
-            ("yes", _yes, partial(self.confirm_evolution, monster, evolved))
-        )
-        menu.append(("no", _no, partial(self.deny_evolution, monster)))
-        open_choice_dialog(self.session.client, menu)
+
+        options = [
+            ChoiceOption(
+                key="yes",
+                display_text=T.translate("yes"),
+                action=partial(self.confirm_evolution, monster, evolved),
+            ),
+            ChoiceOption(
+                key="no",
+                display_text=T.translate("no"),
+                action=partial(self.deny_evolution, monster),
+            ),
+        ]
+
+        open_choice_dialog(self.session.client, MenuOptions(options))
 
     def confirm_evolution(self, monster: Monster, evolved: Monster) -> None:
         """Confirm the evolution"""

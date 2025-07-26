@@ -43,41 +43,26 @@ class AddItemAction(EventAction):
             raise ValueError(f"NPC '{self.npc_slug}' not found")
 
         # check item existence
-        _item: str = ""
+        item_id: str = ""
         if self.item_slug not in db.database["item"]:
             if self.item_slug in player.game_variables:
-                _item = player.game_variables[self.item_slug]
+                item_id = player.game_variables[self.item_slug]
             else:
                 raise ValueError(
                     f"{self.item_slug} doesn't exist (item or variable)."
                 )
         else:
-            _item = self.item_slug
+            item_id = self.item_slug
 
-        itm = Item.create(_item)
-        existing = trainer.items.find_item(_item)
+        existing = trainer.items.find_item(item_id)
+
         if existing:
-            if self.quantity is None:
+            if self.quantity is None or self.quantity == 0:
                 existing.increase_quantity()
-            elif self.quantity < 0:
-                diff = existing.quantity + self.quantity
-                if diff <= 0:
-                    trainer.items.remove_item(existing)
-                else:
-                    existing.set_quantity(diff)
             elif self.quantity > 0:
                 existing.increase_quantity(self.quantity)
-            else:
-                existing.increase_quantity()
-        else:
-            if self.quantity is None:
-                itm.set_quantity()
-                trainer.items.add_item(itm)
-            elif self.quantity > 0:
-                itm.set_quantity(self.quantity)
-                trainer.items.add_item(itm)
             elif self.quantity < 0:
-                return
-            else:
-                itm.set_quantity()
-                trainer.items.add_item(itm)
+                trainer.items.remove_item(existing, abs(self.quantity))
+        elif self.quantity is None or self.quantity > 0:
+            itm = Item.create(item_id)
+            trainer.items.add_item(itm, self.quantity or 1)

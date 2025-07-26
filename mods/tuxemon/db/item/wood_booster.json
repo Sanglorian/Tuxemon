@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["wood_booster"],
+      "parameters": [
+        "wood_booster"
+      ],
       "operator": "is"
     }
   ],

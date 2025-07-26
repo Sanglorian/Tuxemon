@@ -56,5 +56,5 @@ class CheckWorldCondition(EventCondition):
             if char is None:
                 logger.error(f"{params[1]} not found")
                 return False
-            return char in world.map_renderer.bubble
+            return world.map_renderer.bubble_manager.has_bubble(char)
         return False

@@ -17,6 +17,24 @@ from tuxemon.technique.technique import Technique
 
 
 @dataclass
+class MenuVisibility:
+    menu_fight: bool = True
+    menu_monster: bool = True
+    menu_item: bool = True
+    menu_forfeit: bool = False
+    menu_run: bool = True
+
+    def update_visibility(self, key: str, visible: bool) -> None:
+        if hasattr(self, key):
+            setattr(self, key, visible)
+        else:
+            raise ValueError(f"Invalid menu item key: {key}")
+
+    def reset_to_default(self) -> None:
+        self.__dict__.update(MenuVisibility().__dict__)
+
+
+@dataclass
 class EnqueuedAction:
     user: Union[Monster, NPC, None]
     method: Union[Technique, Item, Status, None]

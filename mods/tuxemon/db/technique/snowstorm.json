@@ -5,15 +5,20 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["exhausted", "enemy_monster"]
+      "parameters": [
+        "exhausted",
+        "enemy_monster"
+      ]
     },
     {
       "type": "splash",
-      "parameters": ["2"]
+      "parameters": [
+        "2"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 3,
   "range": "melee",
@@ -31,7 +36,10 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["calamity", "weather"],
+  "tags": [
+    "calamity",
+    "weather"
+  ],
   "types": [
     "earth",
     "water"

@@ -5,11 +5,14 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["festering", "enemy_monster"]
+      "parameters": [
+        "festering",
+        "enemy_monster"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -27,7 +30,11 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["toxic", "healing", "mental"],
+  "tags": [
+    "toxic",
+    "healing",
+    "mental"
+  ],
   "types": [
     "aether"
   ],

@@ -294,11 +294,11 @@ class MapRenderer:
         self.camera = self.camera_manager.get_active_camera()
         self.layer = Surface(self.screen.get_size(), pygame.SRCALPHA)
         self.layer_color: Optional[ColorLike] = None
-        self.bubble: dict[NPC, Surface] = {}
         self.cinema_x_ratio: Optional[float] = None
         self.cinema_y_ratio: Optional[float] = None
         self.map_animations: dict[str, AnimationInfo] = {}
         self.debug_renderer = DebugRenderer(client)
+        self.bubble_manager = BubbleManager()
 
     def draw(self, surface: Surface, current_map: TuxemonMap) -> None:
         """Draws the map, sprites, and animations onto the given surface."""
@@ -334,7 +334,9 @@ class MapRenderer:
         map_animations = self._get_map_animations()
         surfaces = npc_surfaces + map_animations
         screen_surfaces = self._position_surfaces(current_map, surfaces)
-        screen_surfaces = self._set_bubble(current_map, screen_surfaces)
+        screen_surfaces.extend(
+            self.bubble_manager.get_rendered_bubbles(current_map)
+        )
         return screen_surfaces
 
     def _draw_map_and_sprites(
@@ -395,40 +397,6 @@ class MapRenderer:
             screen_surfaces.append((surface, rect, layer))
         return screen_surfaces
 
-    def _set_bubble(
-        self,
-        current_map: TuxemonMap,
-        screen_surfaces: list[tuple[Surface, Rect, int]],
-        layer: int = 100,
-        offset_divisor: int = 10,
-    ) -> list[tuple[Surface, Rect, int]]:
-        """
-        Adds speech bubbles to the screen surfaces.
-
-        This method calculates the appropriate position for each speech bubble
-        relative to the associated NPC's sprite and places it on the screen.
-        The bubbles are layered according to the specified rendering layer,
-        with options for vertical offset adjustment to fine-tune their placement.
-        """
-        if not self.bubble:
-            return screen_surfaces
-
-        for npc, surface in self.bubble.items():
-            sprite_renderer = npc.sprite_controller.get_sprite_renderer()
-            center_x, center_y = get_pos_from_tilepos(
-                current_map, Vector2(npc.tile_pos)
-            )
-            bubble_rect = surface.get_rect()
-            bubble_rect.centerx = sprite_renderer.rect.centerx
-            bubble_rect.bottom = sprite_renderer.rect.top
-            bubble_rect.x = center_x
-            bubble_rect.y = center_y - (
-                surface.get_height()
-                + int(sprite_renderer.rect.height / offset_divisor)
-            )
-            screen_surfaces.append((surface, bubble_rect, layer))
-        return screen_surfaces
-
     def _get_sprites(self, npc: NPC, layer: int) -> list[WorldSurfaces]:
         """Retrieves sprite surfaces for an NPC."""
         sprite_renderer = npc.sprite_controller.get_sprite_renderer()
@@ -436,6 +404,55 @@ class MapRenderer:
         state = sprite_renderer.ANIMATION_MAPPING[moving][npc.facing.value]
         frame = sprite_renderer.get_frame(state, npc)
         return [WorldSurfaces(frame, proj(npc.position), layer)]
+
+
+class BubbleManager:
+    """Manages the creation, updating, and rendering of speech bubbles."""
+
+    def __init__(self, layer: int = 100, offset_divisor: int = 10):
+        self._bubbles: dict[NPC, Surface] = {}
+        self.layer = layer
+        self.offset_divisor = offset_divisor
+
+    def add_bubble(self, entity: NPC, surface: Surface) -> None:
+        self._bubbles[entity] = surface
+
+    def remove_bubble(self, entity: NPC) -> None:
+        if self.has_bubble(entity):
+            del self._bubbles[entity]
+
+    def has_bubble(self, entity: NPC) -> bool:
+        return entity in self._bubbles
+
+    def clear_all_bubbles(self) -> None:
+        self._bubbles.clear()
+
+    def get_rendered_bubbles(
+        self, current_map: TuxemonMap
+    ) -> list[tuple[Surface, Rect, int]]:
+        """
+        Calculates and returns a list of surfaces, their screen positions,
+        and layers for all active bubbles.
+        """
+        rendered_bubbles: list[tuple[Surface, Rect, int]] = []
+        if not self._bubbles:
+            return rendered_bubbles
+
+        for entity, surface in self._bubbles.items():
+            sprite_renderer = entity.sprite_controller.get_sprite_renderer()
+            entity_pos_vector = Vector2(entity.tile_pos)
+            center_x, center_y = get_pos_from_tilepos(
+                current_map, entity_pos_vector
+            )
+            bubble_rect = surface.get_rect()
+
+            # Position bubble relative to the entity's sprite rect
+            bubble_rect.centerx = center_x + (sprite_renderer.rect.width // 2)
+            bubble_rect.bottom = center_y - int(
+                sprite_renderer.rect.height / self.offset_divisor
+            )
+            rendered_bubbles.append((surface, bubble_rect, self.layer))
+        return rendered_bubbles
 
 
 class DebugRenderer:

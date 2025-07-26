@@ -1,59 +1,71 @@
 {
-    "slug": "eruptibus",
-    "category": "hot_rock",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "fire_ball"
-        },
-        {
-            "level_learned": 1,
-            "technique": "boulder"
-        },
-        {
-            "level_learned": 4,
-            "technique": "one_two"
-        },
-        {
-            "level_learned": 7,
-            "technique": "fire_claw"
-        },
-        {
-            "level_learned": 13,
-            "technique": "tinder"
-        },
-        {
-            "level_learned": 16,
-            "technique": "berserk"
-        },
-        {
-            "level_learned": 19,
-            "technique": "hibernate"
-        },
-        {
-            "level_learned": 25,
-            "technique": "energy_field"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "ignibus",
-            "evo_stage": "basic"
-        }
-    ],
-    "terrains": ["desert", "mountains"],
-    "tags": ["flame", "bite", "rock", "bomber", "calamity"],
-    "shape": "landrace",
-    "stage": "stage1",
-    "types": [
-        "fire"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 32,
-    "height": 600,
-    "weight": 12000,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.85,
-    "upper_catch_resistance": 1.1
+  "slug": "eruptibus",
+  "category": "hot_rock",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "fire_ball"
+    },
+    {
+      "level_learned": 1,
+      "technique": "boulder"
+    },
+    {
+      "level_learned": 4,
+      "technique": "one_two"
+    },
+    {
+      "level_learned": 7,
+      "technique": "fire_claw"
+    },
+    {
+      "level_learned": 13,
+      "technique": "tinder"
+    },
+    {
+      "level_learned": 16,
+      "technique": "berserk"
+    },
+    {
+      "level_learned": 19,
+      "technique": "hibernate"
+    },
+    {
+      "level_learned": 25,
+      "technique": "energy_field"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "ignibus",
+      "evo_stage": "basic"
+    }
+  ],
+  "terrains": [
+    "desert",
+    "mountains"
+  ],
+  "tags": [
+    "flame",
+    "bite",
+    "rock",
+    "bomber",
+    "calamity"
+  ],
+  "shape": "landrace",
+  "stage": "stage1",
+  "types": [
+    "fire"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 32,
+  "height": 600,
+  "weight": 12000,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.85,
+  "upper_catch_resistance": 1.1
 }

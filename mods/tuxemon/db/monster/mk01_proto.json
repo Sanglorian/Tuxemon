@@ -1,68 +1,70 @@
 {
-    "slug": "mk01_proto",
-    "category": "threat",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "electrical_storm"
-        },
-        {
-            "level_learned": 1,
-            "technique": "wall_of_steel"
-        },
-        {
-            "level_learned": 4,
-            "technique": "shrapnel"
-        },
-        {
-            "level_learned": 7,
-            "technique": "amnesia"
-        }
-    ],
-    "evolutions": [
-        {
-            "at_level": 10,
-            "monster_slug": "mk01_alpha"
-        },
-        {
-            "at_level": 10,
-            "monster_slug": "mk01_beta"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "mk01_alpha",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "mk01_beta",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "mk01_gamma",
-            "evo_stage": "stage2"
-        },
-        {
-            "mon_slug": "mk01_omega",
-            "evo_stage": "stage2"
-        },
-        {
-            "mon_slug": "mk01_delta",
-            "evo_stage": "stage2"
-        }
-    ],
-    "terrains": [],
-    "tags": [],
-    "shape": "dragon",
-    "stage": "basic",
-    "types": [
-        "metal"
-    ],
-    "possible_genders": ["neuter"],
-    "txmn_id": 0,
-    "height": 0.1,
-    "weight": 100,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "mk01_proto",
+  "category": "threat",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "electrical_storm"
+    },
+    {
+      "level_learned": 1,
+      "technique": "wall_of_steel"
+    },
+    {
+      "level_learned": 4,
+      "technique": "shrapnel"
+    },
+    {
+      "level_learned": 7,
+      "technique": "amnesia"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 10,
+      "monster_slug": "mk01_alpha"
+    },
+    {
+      "at_level": 10,
+      "monster_slug": "mk01_beta"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "mk01_alpha",
+      "evo_stage": "stage1"
+    },
+    {
+      "mon_slug": "mk01_beta",
+      "evo_stage": "stage1"
+    },
+    {
+      "mon_slug": "mk01_gamma",
+      "evo_stage": "stage2"
+    },
+    {
+      "mon_slug": "mk01_omega",
+      "evo_stage": "stage2"
+    },
+    {
+      "mon_slug": "mk01_delta",
+      "evo_stage": "stage2"
+    }
+  ],
+  "terrains": [],
+  "tags": [],
+  "shape": "dragon",
+  "stage": "basic",
+  "types": [
+    "metal"
+  ],
+  "possible_genders": [
+    "neuter"
+  ],
+  "txmn_id": 0,
+  "height": 0.1,
+  "weight": 100,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

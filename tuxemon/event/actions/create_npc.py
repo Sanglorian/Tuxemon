@@ -12,7 +12,6 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.item.item import Item
 from tuxemon.monster import Monster
 from tuxemon.npc import NPC
-from tuxemon.states.world.worldstate import WorldState
 
 if TYPE_CHECKING:
     from tuxemon.db import PartyMemberModel
@@ -46,14 +45,12 @@ class CreateNpcAction(EventAction):
     behavior: Optional[str] = None
 
     def start(self, session: Session) -> None:
-        world = session.client.get_state_by_name(WorldState)
-
         slug = self.npc_slug
 
         if session.client.npc_manager.npc_exists(slug):
             return
 
-        npc = NPC(slug, world=world)
+        npc = NPC(slug, session=session)
         session.client.npc_manager.add_npc(npc)
 
         client = session.client.event_engine
@@ -88,23 +85,20 @@ def load_party_monsters(
     npc: NPC, party: NpcModel, game_variables: dict[str, Any]
 ) -> None:
     """Loads the NPC's party monsters from the database."""
-    npc.monsters = []
+    npc.party.clear_party()
     for npc_monster in party.monsters:
         if npc_monster.variables and check_variables(
             npc_monster.variables, game_variables
         ):
             monster = party_monster(npc_monster)
-            npc.add_monster(monster, len(npc.monsters))
+            npc.party.add_monster(monster, len(npc.monsters))
 
 
 def party_monster(npc_monster: PartyMemberModel) -> Monster:
     """Creates a new monster object from the database details."""
-    monster = Monster.create(npc_monster.slug)
+    monster = Monster.spawn_base(npc_monster.slug, npc_monster.level)
     monster.money_modifier = npc_monster.money_mod
     monster.experience_modifier = npc_monster.exp_req_mod
-    monster.set_level(npc_monster.level)
-    monster.moves.set_moves(npc_monster.level)
-    monster.current_hp = monster.hp
     monster.gender = npc_monster.gender
     return monster
 
@@ -119,8 +113,7 @@ def load_party_items(
             npc_item.variables, game_variables
         ):
             item = Item.create(npc_item.slug, npc_item.model_dump())
-            item.set_quantity(npc_item.quantity)
-            npc.items.add_item(item)
+            npc.items.add_item(item, npc_item.quantity)
 
 
 def check_variables(

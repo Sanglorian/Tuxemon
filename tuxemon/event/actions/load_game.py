@@ -10,7 +10,7 @@ from tuxemon import prepare, save
 from tuxemon.event.eventaction import EventAction
 from tuxemon.npc import NPCState
 from tuxemon.session import Session
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.states.world.worldstate import WorldSave, WorldState
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +72,9 @@ class LoadGameAction(EventAction):
             # order to build a Session
             session.player.set_state(
                 session, save_data.get("npc_state", NPCState())
+            )
+            session.world.set_state(
+                session, save_data.get("world_state", WorldSave())
             )
 
             # teleport the player to the correct position using an event

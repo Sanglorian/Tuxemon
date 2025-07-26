@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["exhausted", "own_monster"]
+      "parameters": [
+        "exhausted",
+        "own_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 3,
   "range": "melee",
@@ -30,7 +33,10 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["leadership", "fury"],
+  "tags": [
+    "leadership",
+    "fury"
+  ],
   "types": [
     "fire"
   ],

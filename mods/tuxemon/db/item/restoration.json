@@ -6,12 +6,18 @@
     },
     {
       "type": "current_hp",
-      "parameters": ["<", "1.0"],
+      "parameters": [
+        "<",
+        "1.0"
+      ],
       "operator": "is"
     },
     {
       "type": "current_hp",
-      "parameters": [">", "0"],
+      "parameters": [
+        ">",
+        "0"
+      ],
       "operator": "is"
     }
   ],

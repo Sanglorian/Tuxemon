@@ -5,11 +5,14 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["diehard", "own_monster"]
+      "parameters": [
+        "diehard",
+        "own_monster"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1.0,
   "power": 0.0,
   "range": "special",
@@ -27,7 +30,10 @@
     "own_trainer": false
   },
   "category": "animal",
-  "tags": ["food", "soldier"],
+  "tags": [
+    "food",
+    "soldier"
+  ],
   "types": [
     "aether"
   ],

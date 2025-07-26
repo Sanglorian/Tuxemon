@@ -1,70 +1,75 @@
 {
-    "slug": "volcoli",
-    "category": "seasonal",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "fire_claw"
-        },
-        {
-            "level_learned": 1,
-            "technique": "fire_shield"
-        },
-        {
-            "level_learned": 4,
-            "technique": "sudden_glow"
-        },
-        {
-            "level_learned": 7,
-            "technique": "sleep_bomb"
-        },
-        {
-            "level_learned": 13,
-            "technique": "arcane_eye"
-        },
-        {
-            "level_learned": 16,
-            "technique": "conjurer"
-        },
-        {
-            "level_learned": 19,
-            "technique": "shadow_boxing"
-        },
-        {
-            "level_learned": 25,
-            "technique": "lava"
-        },
-        {
-            "level_learned": 28,
-            "technique": "thunderclap"
-        },
-        {
-            "level_learned": 31,
-            "technique": "give_all"
-        },
-        {
-            "level_learned": 37,
-            "technique": "flamethrower"
-        },
-        {
-            "level_learned": 40,
-            "technique": "supernova"
-        }
-    ],
-    "evolutions": [],
-    "history": [],
-    "terrains": [],
-    "tags": ["plant", "shapeshifter"],
-    "shape": "humanoid",
-    "stage": "standalone",
-    "types": [
-        "fire"
-    ],
-    "possible_genders": ["neuter"],
-    "txmn_id": 124,
-    "height": 53,
-    "weight": 18,
-    "catch_rate": 5.0,
-    "lower_catch_resistance": 0.9,
-    "upper_catch_resistance": 1.15
+  "slug": "volcoli",
+  "category": "seasonal",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "fire_claw"
+    },
+    {
+      "level_learned": 1,
+      "technique": "fire_shield"
+    },
+    {
+      "level_learned": 4,
+      "technique": "sudden_glow"
+    },
+    {
+      "level_learned": 7,
+      "technique": "sleep_bomb"
+    },
+    {
+      "level_learned": 13,
+      "technique": "arcane_eye"
+    },
+    {
+      "level_learned": 16,
+      "technique": "conjurer"
+    },
+    {
+      "level_learned": 19,
+      "technique": "shadow_boxing"
+    },
+    {
+      "level_learned": 25,
+      "technique": "lava"
+    },
+    {
+      "level_learned": 28,
+      "technique": "thunderclap"
+    },
+    {
+      "level_learned": 31,
+      "technique": "give_all"
+    },
+    {
+      "level_learned": 37,
+      "technique": "flamethrower"
+    },
+    {
+      "level_learned": 40,
+      "technique": "supernova"
+    }
+  ],
+  "evolutions": [],
+  "history": [],
+  "terrains": [],
+  "tags": [
+    "plant",
+    "shapeshifter"
+  ],
+  "shape": "humanoid",
+  "stage": "standalone",
+  "types": [
+    "fire"
+  ],
+  "possible_genders": [
+    "neuter"
+  ],
+  "txmn_id": 124,
+  "height": 53,
+  "weight": 18,
+  "catch_rate": 5.0,
+  "lower_catch_resistance": 0.9,
+  "upper_catch_resistance": 1.15
 }

@@ -99,7 +99,7 @@ class CombatConfig:
     multiplier_map: dict[float, str]
     multiplier_range: tuple[float, float]
     # speed test
-    multiplier_speed: float
+    speed_factor: float
     speed_offset: float
     dodge_modifier: float
     base_speed_bonus: float
@@ -643,7 +643,7 @@ def calculate_base_stats(
             modifier = 0
 
         final_value = base_value + modifier
-        setattr(monster, stat, final_value)
+        setattr(monster.base_stats, stat, final_value)
 
 
 def apply_stat_updates(
@@ -654,7 +654,7 @@ def apply_stat_updates(
 
     for attr in attributes:
         setattr(
-            monster,
+            monster.base_stats,
             attr,
             update_stat(attr, getattr(monster, attr), taste_cold, taste_warm),
         )
@@ -879,7 +879,8 @@ def calculate_status_modifier(item: Item, target: Monster) -> float:
     config = config_capdev.items.get(item.slug)
     status_modifier = config_capdev.status_modifier
 
-    if config is None or not target.status.status_exists():
+    status = target.status.get_current_status()
+    if config is None or status is None:
         return status_modifier
 
     logger.debug(f"Base status_modifier: {status_modifier}")
@@ -1111,14 +1112,18 @@ def speed_monster(monster: Monster, technique: Technique) -> int:
     """
     Calculate the speed modifier for the given monster / technique.
     """
-    multiplier_speed = config_combat.multiplier_speed
-    base_speed = float(monster.speed)
-    base_speed_bonus = (
-        multiplier_speed
-        if technique.is_fast
-        else config_combat.base_speed_bonus
-    )
-    speed_modifier = base_speed * base_speed_bonus
+    # Ensure min_speed_modifier is greater than 0
+    if config_combat.min_speed_modifier <= 0:
+        config_combat.min_speed_modifier = 1
+
+    base_speed = float(
+        max(monster.speed, 0)
+    )  # Ensure base_speed is not negative
+
+    # Calculate speed bonus based on technique speed
+    speed_adjustment = technique.speed * config_combat.speed_factor
+    speed_bonus = config_combat.base_speed_bonus + speed_adjustment
+    speed_modifier = base_speed * speed_bonus
 
     # Add a controlled random element
     speed_offset = config_combat.speed_offset
@@ -1127,8 +1132,10 @@ def speed_monster(monster: Monster, technique: Technique) -> int:
 
     # Ensure the speed modifier is not negative
     speed_modifier = max(speed_modifier, config_combat.min_speed_modifier)
-    # Use dodge as a tiebreaker
-    speed_modifier += float(monster.dodge) * config_combat.dodge_modifier
+    # Use dodge as a tiebreaker, ensure dodge is not negative
+    speed_modifier += (
+        max(float(monster.dodge), 0) * config_combat.dodge_modifier
+    )
 
     return int(speed_modifier)
 

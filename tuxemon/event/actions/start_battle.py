@@ -11,6 +11,7 @@ from tuxemon.db import EnvironmentModel, db
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
+from tuxemon.states.combat.combat_context import CombatContext
 
 logger = logging.getLogger(__name__)
 
@@ -72,14 +73,14 @@ class StartBattleAction(EventAction):
         logger.info(
             f"Starting battle between {fighters[0].name} and {fighters[1].name}!"
         )
-        session.client.push_state(
-            "CombatState",
+        context = CombatContext(
             session=session,
-            players=(fighters[0], fighters[1]),
+            teams=fighters,
             combat_type="trainer",
             graphics=env.battle_graphics,
             battle_mode="single",
         )
+        session.client.push_state("CombatState", context=context)
 
         filename = env.battle_music if not self.music else self.music
         session.client.event_engine.execute_action(

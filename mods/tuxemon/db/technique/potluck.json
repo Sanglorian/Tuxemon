@@ -5,11 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["exhausted", "own_monster"]
+      "parameters": [
+        "exhausted",
+        "own_monster"
+      ]
     },
     {
       "type": "give",
-      "parameters": ["noddingoff", "enemy_monster"]
+      "parameters": [
+        "noddingoff",
+        "enemy_monster"
+      ]
     },
     {
       "type": "healing"
@@ -17,7 +23,7 @@
   ],
   "flip_axes": "",
   "healing_power": 1.0,
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.9,
   "power": 0.0,
   "range": "special",
@@ -35,7 +41,9 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["food"],
+  "tags": [
+    "food"
+  ],
   "types": [
     "aether"
   ],

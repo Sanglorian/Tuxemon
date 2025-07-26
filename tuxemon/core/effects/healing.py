@@ -34,7 +34,7 @@ class HealingEffect(CoreEffect):
         done: bool = False
 
         combat = tech.get_combat_state()
-        tech.hit = tech.accuracy >= combat._random_tech_hit.get(user, 0.0)
+        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
 
         if tech.hit:
             targets = combat.get_targets(tech, user, target)

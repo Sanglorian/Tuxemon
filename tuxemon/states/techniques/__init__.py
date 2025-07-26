@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING
 
 from pygame.rect import Rect
 
-from tuxemon import prepare, tools
+from tuxemon import prepare
+from tuxemon.core.core_effect import TechEffectResult
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu
@@ -17,6 +18,13 @@ from tuxemon.session import local_session
 from tuxemon.sprite import Sprite
 from tuxemon.states.monster import MonsterMenuState
 from tuxemon.technique.technique import Technique
+from tuxemon.tools import (
+    open_choice_dialog,
+    open_dialog,
+    scale,
+    show_result_as_dialog,
+)
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
@@ -38,14 +46,14 @@ class TechniqueMenuState(Menu[Technique]):
         self.item_center = self.rect.width * 0.164, self.rect.height * 0.13
         self.technique_sprite = Sprite()
         self.sprites.add(self.technique_sprite)
-        self.menu_items.line_spacing = tools.scale(7)
+        self.menu_items.line_spacing = scale(7)
 
         # this is the area where the technique description is displayed
         rect = self.client.screen.get_rect()
-        rect.top = tools.scale(106)
-        rect.left = tools.scale(3)
-        rect.width = tools.scale(250)
-        rect.height = tools.scale(32)
+        rect.top = scale(106)
+        rect.left = scale(3)
+        rect.width = scale(250)
+        rect.height = scale(32)
         self.text_area = TextArea(self.font, self.font_color, (96, 96, 128))
         self.text_area.rect = rect
         self.sprites.add(self.text_area, layer=100)
@@ -75,10 +83,10 @@ class TechniqueMenuState(Menu[Technique]):
             for m in self.char.monsters
         ):
             msg = T.format("item_no_available_target", {"name": tech.name})
-            tools.open_dialog(self.client, [msg])
+            open_dialog(self.client, [msg])
         elif tech.usable_on is False:
             msg = T.format("item_cannot_use_here", {"name": tech.name})
-            tools.open_dialog(self.client, [msg])
+            open_dialog(self.client, [msg])
         else:
             self.open_confirm_use_menu(tech)
 
@@ -90,31 +98,45 @@ class TechniqueMenuState(Menu[Technique]):
             technique: Selected technique.
         """
 
-        def use_technique(menu_technique: MenuItem[Monster]) -> None:
-            monster = menu_technique.game_object
+        def show_item_result(
+            technique: Technique, result: TechEffectResult
+        ) -> None:
+            show_result_as_dialog(local_session, technique, result.success)
 
-            result = technique.use(local_session, monster, monster)
-            self.client.pop_state()  # pop the monster screen
-            self.client.pop_state()  # pop the technique screen
+        def use_technique(menu_technique: MenuItem[Monster]) -> None:
+            """Use the item with a monster."""
+            monster = menu_technique.game_object
+            # result = technique.use(local_session, monster, monster)
+            self.client.remove_state_by_name("MonsterMenuState")
+            self.client.remove_state_by_name("ItemMenuState")
+            self.client.remove_state_by_name("WorldMenuState")
+            # show_item_result(technique, result)
 
         def confirm() -> None:
-            self.client.pop_state()  # close the confirm dialog
-
+            self.client.remove_state_by_name("ChoiceState")
             menu = self.client.push_state(MonsterMenuState(self.char))
             menu.is_valid_entry = partial(technique.validate_monster, local_session)  # type: ignore[method-assign]
             menu.on_menu_selection = use_technique  # type: ignore[assignment]
 
         def cancel() -> None:
-            self.client.pop_state()  # close the use/cancel menu
+            self.client.remove_state_by_name("ChoiceState")
 
         def open_choice_menu() -> None:
-            # open the menu for use/cancel
-            var_menu = []
-            _use = T.translate("item_confirm_use").upper()
-            var_menu.append(("use", _use, confirm))
-            _cancel = T.translate("item_confirm_cancel").upper()
-            var_menu.append(("cancel", _cancel, cancel))
-            tools.open_choice_dialog(self.client, var_menu, True)
+            """Open the use/cancel menu."""
+            options = [
+                ChoiceOption(
+                    key="use",
+                    display_text=technique.confirm_text.upper(),
+                    action=confirm,
+                ),
+                ChoiceOption(
+                    key="cancel",
+                    display_text=technique.cancel_text.upper(),
+                    action=cancel,
+                ),
+            ]
+            menu = MenuOptions(options)
+            open_choice_dialog(self.client, menu, escape_key_exits=True)
 
         open_choice_menu()
 

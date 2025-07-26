@@ -42,7 +42,7 @@ class GiveEffect(CoreEffect):
 
         objectives = self.objectives.split(":")
         potency = random.random()
-        value = combat._random_tech_hit.get(user, 0.0)
+        value = combat.get_tech_hit(user)
         success = tech.potency >= potency and tech.accuracy >= value
 
         if success:
@@ -52,8 +52,9 @@ class GiveEffect(CoreEffect):
             monsters = get_target_monsters(objectives, tech, user, target)
             if monsters:
                 for monster in monsters:
-                    if monster.status.status_exists():
-                        monster.status.current_status.set_combat_state(combat)
+                    current = monster.status.get_current_status()
+                    if current:
+                        current.set_combat_state(combat)
                     monster.status.apply_status(session, status)
                 combat.update_icons_for_monsters()
                 combat.animate_update_party_hud()

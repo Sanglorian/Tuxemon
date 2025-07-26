@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["festering", "enemy_monster"]
+      "parameters": [
+        "festering",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": true,
+  "speed": "fast",
   "potency": 0.3,
   "power": 1.0,
   "range": "touch",
@@ -30,7 +33,9 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["bite"],
+  "tags": [
+    "bite"
+  ],
   "types": [
     "wood"
   ],

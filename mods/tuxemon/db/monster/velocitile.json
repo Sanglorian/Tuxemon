@@ -1,75 +1,85 @@
 {
-    "slug": "velocitile",
-    "category": "restless",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "leaf_stab"
-        },
-        {
-            "level_learned": 1,
-            "technique": "feint"
-        },
-        {
-            "level_learned": 4,
-            "technique": "assault"
-        },
-        {
-            "level_learned": 7,
-            "technique": "chameleon"
-        },
-        {
-            "level_learned": 13,
-            "technique": "whirlwind"
-        },
-        {
-            "level_learned": 25,
-            "technique": "splinter"
-        },
-        {
-            "level_learned": 28,
-            "technique": "revenge_stance"
-        },
-        {
-            "level_learned": 31,
-            "technique": "leaf_barrage"
-        },
-        {
-            "level_learned": 40,
-            "technique": "needle"
-        },
-        {
-            "level_learned": 43,
-            "technique": "all_in"
-        },
-        {
-            "level_learned": 46,
-            "technique": "thorn_burst"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "anoleaf",
-            "evo_stage": "basic"
-        },
-        {
-            "mon_slug": "gectile",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": ["grassland", "jungle", "woodland"],
-    "tags": ["plant", "speed"],
-    "shape": "humanoid",
-    "stage": "stage2",
-    "types": [
-        "wood"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 67,
-    "height": 150,
-    "weight": 75,
-    "catch_rate": 35.0,
-    "lower_catch_resistance": 0.85,
-    "upper_catch_resistance": 1.1
+  "slug": "velocitile",
+  "category": "restless",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "leaf_stab"
+    },
+    {
+      "level_learned": 1,
+      "technique": "feint"
+    },
+    {
+      "level_learned": 4,
+      "technique": "assault"
+    },
+    {
+      "level_learned": 7,
+      "technique": "chameleon"
+    },
+    {
+      "level_learned": 13,
+      "technique": "whirlwind"
+    },
+    {
+      "level_learned": 25,
+      "technique": "splinter"
+    },
+    {
+      "level_learned": 28,
+      "technique": "revenge_stance"
+    },
+    {
+      "level_learned": 31,
+      "technique": "leaf_barrage"
+    },
+    {
+      "level_learned": 40,
+      "technique": "needle"
+    },
+    {
+      "level_learned": 43,
+      "technique": "all_in"
+    },
+    {
+      "level_learned": 46,
+      "technique": "thorn_burst"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "anoleaf",
+      "evo_stage": "basic"
+    },
+    {
+      "mon_slug": "gectile",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [
+    "grassland",
+    "jungle",
+    "woodland"
+  ],
+  "tags": [
+    "plant",
+    "speed"
+  ],
+  "shape": "humanoid",
+  "stage": "stage2",
+  "types": [
+    "wood"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 67,
+  "height": 150,
+  "weight": 75,
+  "catch_rate": 35.0,
+  "lower_catch_resistance": 0.85,
+  "upper_catch_resistance": 1.1
 }

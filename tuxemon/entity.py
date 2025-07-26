@@ -11,11 +11,10 @@ from tuxemon.db import Direction
 from tuxemon.map import dirs3, proj
 from tuxemon.math import Point3, Vector3
 from tuxemon.prepare import CONFIG
-from tuxemon.session import Session
 from tuxemon.tools import vector2_to_tile_pos
 
 if TYPE_CHECKING:
-    from tuxemon.states.world.worldstate import WorldState
+    from tuxemon.session import Session
 
 
 SaveDict = TypeVar("SaveDict", bound=Mapping[str, Any])
@@ -157,10 +156,11 @@ class Entity(Generic[SaveDict]):
         self,
         *,
         slug: str = "",
-        world: WorldState,
+        session: Session,
     ) -> None:
         self.slug = slug
-        self.world = world
+        self.client = session.client
+        self.world = session.world
         self.instance_id = uuid.uuid4()
         self.body = Body(position=Point3(0, 0, 0))
         self.mover = Mover(self.body, moverate=CONFIG.player_walkrate)

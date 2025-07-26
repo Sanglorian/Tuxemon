@@ -1,3 +1,4 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Tuxemon\n"
@@ -5,8 +6,7 @@ msgstr ""
 "POT-Creation-Date: 2021-01-11 00:00+0000\n"
 "PO-Revision-Date: 2023-02-03 04:41+0000\n"
 "Last-Translator: Betsy <betsymaxx@gmailvn.net>\n"
-"Language-Team: Finnish <https://hosted.weblate.org/projects/tuxemon/tuxemon/"
-"fi/>\n"
+"Language-Team: Finnish <https://hosted.weblate.org/projects/tuxemon/tuxemon/fi/>\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 4.16-dev\n"
 
-## ITEM TRANSLATIONS ##
+# ITEM TRANSLATIONS ##
 # Apple
 msgid "apple"
 msgstr "Omena"
@@ -53,7 +53,7 @@ msgstr "Rohdos"
 msgid "imperial_potion"
 msgstr "Keisarillinen rohdos"
 
-## NOTIFICATION TRANSLATIONS ##
+# NOTIFICATION TRANSLATIONS ##
 # Combat notifications
 msgid "combat_run"
 msgstr "{user} juoksi livohkaan!"
@@ -370,7 +370,7 @@ msgstr "Ylisyötä"
 msgid "recover"
 msgstr "Pelasta"
 
-## TECHNIQUE TRANSLATIONS ##
+# TECHNIQUE TRANSLATIONS ##
 msgid "all_in"
 msgstr "Kaikki vaan"
 
@@ -602,7 +602,7 @@ msgstr "Pyörre"
 msgid "wing_tip"
 msgstr "Siivekäs"
 
-## MENU TRANSLATIONS ##
+# MENU TRANSLATIONS ##
 msgid "menu_alphabet"
 msgstr "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzåäö1234567890.-!"
 
@@ -1425,4 +1425,4 @@ msgstr "Tuxemon: Xero"
 
 # Money notification
 msgid "player_wallet"
-msgstr "${{name}}:n lompakko: ${{currency}}${{money}}"
+msgstr "${{name}}:n lompakko: ${{money_formatted}}"

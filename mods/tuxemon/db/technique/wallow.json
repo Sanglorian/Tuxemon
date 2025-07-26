@@ -5,7 +5,10 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["focused", "own_monster"]
+      "parameters": [
+        "focused",
+        "own_monster"
+      ]
     },
     {
       "type": "healing"
@@ -13,7 +16,7 @@
   ],
   "flip_axes": "",
   "healing_power": 2.0,
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.9,
   "power": 0,
   "range": "special",
@@ -31,7 +34,9 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["megafauna"],
+  "tags": [
+    "megafauna"
+  ],
   "types": [
     "aether"
   ],

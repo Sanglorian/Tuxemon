@@ -16,6 +16,7 @@ from tuxemon import prepare
 from tuxemon.constants import paths
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
@@ -71,11 +72,6 @@ class Loader:
 data = Loader.get_config_nuphone_map("nu_phone_map.yaml")
 
 
-def fix_measure(measure: int, percentage: float) -> int:
-    """it returns the correct measure based on percentage"""
-    return round(measure * percentage)
-
-
 class NuPhoneMap(PygameMenuState):
     """
     If there is no variable, then it'll be shown the Spyder map.
@@ -114,7 +110,7 @@ class NuPhoneMap(PygameMenuState):
                         selectable=selectable,
                         float=True,
                         underline=underline,
-                        font_size=self.font_size_small,
+                        font_size=self.font_type.small,
                     )
                     lab.translate(
                         fix_measure(menu._width, x),

@@ -8,7 +8,7 @@
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.0,
   "power": 1.25,
   "range": "touch",
@@ -26,7 +26,10 @@
     "own_trainer": false
   },
   "category": "animal",
-  "tags": ["fists", "darkness"],
+  "tags": [
+    "fists",
+    "darkness"
+  ],
   "types": [
     "fire",
     "wood"

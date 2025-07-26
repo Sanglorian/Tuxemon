@@ -58,5 +58,5 @@ class WithdrawMonsterAction(EventAction):
             logger.error(f"{self.character} not found")
             return
 
-        character.add_monster(monster, len(character.monsters))
+        character.party.add_monster(monster, len(character.monsters))
         logger.info(f"{character.name} withdrawn {monster.name}!")

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
+from tuxemon.ui.text import HorizontalAlignment
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
@@ -53,11 +54,9 @@ class MirrorEffect(CoreEffect):
             combat.sprites.remove(target_sprite)
 
         elif self.direction == "user_to_target":
-            side = (
-                "front"
-                if "left" == combat.get_side(user_sprite.rect)
-                else "back"
-            )
+            _, h_align = combat.combat_zone.get_zone(user_sprite.rect)
+            side = "front" if h_align is HorizontalAlignment.LEFT else "back"
+
             front_user = user.get_sprite(
                 side, midbottom=target_sprite.rect.midbottom
             )
@@ -66,11 +65,9 @@ class MirrorEffect(CoreEffect):
             combat.sprites.remove(target_sprite)
 
         elif self.direction == "target_to_user":
-            side = (
-                "back"
-                if "left" == combat.get_side(user_sprite.rect)
-                else "front"
-            )
+            _, h_align = combat.combat_zone.get_zone(user_sprite.rect)
+            side = "back" if h_align is HorizontalAlignment.LEFT else "front"
+
             back_target = target.get_sprite(
                 side, midbottom=user_sprite.rect.midbottom
             )

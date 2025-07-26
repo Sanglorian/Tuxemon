@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["fire_booster"],
+      "parameters": [
+        "fire_booster"
+      ],
       "operator": "is"
     }
   ],

@@ -14,15 +14,10 @@ from tuxemon import prepare
 from tuxemon.db import MonsterModel, db
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.tools import open_dialog
+from tuxemon.tools import fix_measure, open_dialog
 
 MenuGameObj = Callable[[], object]
 lookup_cache: dict[str, MonsterModel] = {}
-
-
-def fix_measure(measure: int, percentage: float) -> int:
-    """it returns the correct measure based on percentage"""
-    return round(measure * percentage)
 
 
 def _lookup_monsters() -> None:
@@ -48,7 +43,7 @@ class MinigameState(PygameMenuState):
         menu.add.label(
             title=f"{name}",
             label_id="question",
-            font_size=self.font_size_big,
+            font_size=self.font_type.big,
             align=locals.ALIGN_CENTER,
             underline=True,
         )
@@ -75,10 +70,9 @@ class MinigameState(PygameMenuState):
                 open_dialog(self.client, [T.translate("generic_wrong")])
 
         # replies
-        width = menu._width
         f = menu.add.frame_h(
-            width=fix_measure(width, 0.95),
-            height=fix_measure(width, 0.05),
+            width=fix_measure(menu._width, 0.95),
+            height=fix_measure(menu._width, 0.05),
             frame_id="evolutions",
             align=locals.ALIGN_CENTER,
         )
@@ -87,7 +81,7 @@ class MinigameState(PygameMenuState):
             menu.add.button(
                 T.translate(txmn.slug),
                 partial(checking, txmn),
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 button_id=txmn.slug,
                 selection_effect=HighlightSelection(),
             )

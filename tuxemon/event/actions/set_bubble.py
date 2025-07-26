@@ -28,11 +28,11 @@ class SetBubbleAction(EventAction):
         bubble: dots, drop, exclamation, heart, note, question, sleep,
             angry, confused, fireworks
 
-    eg. "set_bubble spyder_shopassistant" (remove bubble NPC)
-    eg. "set_bubble spyder_shopassistant,note" (set bubble NPC)
-    eg. "set_bubble player,note" (set bubble player)
-    eg. "set_bubble player" (remove bubble player)
-
+    Example usage:
+        "set_bubble spyder_shopassistant" (remove bubble from NPC)
+        "set_bubble spyder_shopassistant,note" (set bubble for NPC)
+        "set_bubble player,note" (set bubble for player)
+        "set_bubble player" (remove bubble from player)
     """
 
     name = "set_bubble"
@@ -42,18 +42,20 @@ class SetBubbleAction(EventAction):
     def start(self, session: Session) -> None:
         client = session.client
         npc = get_npc(session, self.npc_slug)
-        assert npc
+
+        if npc is None:
+            raise ValueError(f"NPC '{self.npc_slug}' not found.")
 
         world = client.get_state_by_name(WorldState)
         filename = f"gfx/bubbles/{self.bubble}.png"
 
         if self.bubble is None:
-            if npc in world.map_renderer.bubble:
-                del world.map_renderer.bubble[npc]
+            if world.map_renderer.bubble_manager.has_bubble(npc):
+                world.map_renderer.bubble_manager.remove_bubble(npc)
         else:
             try:
                 surface = load_and_scale(filename)
-            except:
-                raise ValueError(f"gfx/bubbles/{self.bubble}.png not found")
+            except FileNotFoundError:
+                raise ValueError(f"Bubble image '{filename}' not found.")
             else:
-                world.map_renderer.bubble[npc] = surface
+                world.map_renderer.bubble_manager.add_bubble(npc, surface)

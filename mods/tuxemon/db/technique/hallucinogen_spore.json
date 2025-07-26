@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["confused", "enemy_monster"]
+      "parameters": [
+        "confused",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.9,
   "power": 2.0,
   "range": "ranged",
@@ -30,7 +33,9 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["spore"],
+  "tags": [
+    "spore"
+  ],
   "types": [
     "wood"
   ],

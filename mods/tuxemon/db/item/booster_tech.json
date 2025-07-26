@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["booster_tech"],
+      "parameters": [
+        "booster_tech"
+      ],
       "operator": "is"
     }
   ],

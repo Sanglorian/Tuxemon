@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Optional
 
 from pygame.rect import Rect
 
-from tuxemon import prepare, tools
+from tuxemon import prepare
 from tuxemon.core.core_effect import ItemEffectResult
 from tuxemon.db import State
 from tuxemon.item.item import Item
@@ -21,6 +21,13 @@ from tuxemon.platform.events import PlayerInput
 from tuxemon.session import local_session
 from tuxemon.sprite import Sprite
 from tuxemon.states.monster import MonsterMenuState
+from tuxemon.tools import (
+    open_choice_dialog,
+    open_dialog,
+    scale,
+    show_result_as_dialog,
+)
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 from tuxemon.ui.paginator import Paginator
 from tuxemon.ui.text import TextArea
 
@@ -72,17 +79,17 @@ class ItemMenuState(Menu[Item]):
         self.item_sprite = Sprite()
         self.sprites.add(self.item_sprite)
 
-        self.menu_items.line_spacing = tools.scale(7)
+        self.menu_items.line_spacing = scale(7)
         self.current_page = 0
         self.total_pages = 0
         self.inventory: list[Item] = []
 
         # this is the area where the item description is displayed
         rect = self.client.screen.get_rect()
-        rect.top = tools.scale(106)
-        rect.left = tools.scale(3)
-        rect.width = tools.scale(250)
-        rect.height = tools.scale(32)
+        rect.top = scale(106)
+        rect.left = scale(3)
+        rect.width = scale(250)
+        rect.height = scale(32)
         self.text_area = TextArea(self.font, self.font_color, (96, 96, 128))
         self.text_area.rect = rect
         self.sprites.add(self.text_area, layer=100)
@@ -95,6 +102,9 @@ class ItemMenuState(Menu[Item]):
             prepare.BG_ITEMS_BACKPACK,
             center=self.backpack_center,
             layer=100,
+        )
+        self.paginator = Paginator(
+            self.get_inventory(), prepare.MAX_MENU_ITEMS
         )
 
     def calc_internal_rect(self) -> Rect:
@@ -123,7 +133,7 @@ class ItemMenuState(Menu[Item]):
         ):
             self.on_menu_selection_change()
             error_message = self.get_error_message(item)
-            tools.open_dialog(self.client, [error_message])
+            open_dialog(self.client, [error_message])
         # Check if the item can be used in the current state
         elif not any(
             s.name in self.client.active_state_names for s in item.usable_in
@@ -131,7 +141,7 @@ class ItemMenuState(Menu[Item]):
             error_message = T.format(
                 "item_cannot_use_here", {"name": item.name}
             )
-            tools.open_dialog(self.client, [error_message])
+            open_dialog(self.client, [error_message])
         else:
             self.open_confirm_use_menu(item)
 
@@ -181,9 +191,7 @@ class ItemMenuState(Menu[Item]):
             if (
                 item.behaviors.show_dialog_on_failure and not result.success
             ) or (item.behaviors.show_dialog_on_success and result.success):
-                tools.show_result_as_dialog(
-                    local_session, item, result.success
-                )
+                show_result_as_dialog(local_session, item, result.success)
 
         def use_item_with_monster(menu_item: MenuItem[Monster]) -> None:
             """Use the item with a monster."""
@@ -202,7 +210,6 @@ class ItemMenuState(Menu[Item]):
             show_item_result(item, result)
 
         def confirm() -> None:
-            """Confirm the use of the item."""
             self.client.remove_state_by_name("ChoiceState")
             if item.behaviors.requires_monster_menu:
                 menu = self.client.push_state(MonsterMenuState(self.char))
@@ -212,16 +219,23 @@ class ItemMenuState(Menu[Item]):
                 use_item_without_monster()
 
         def cancel() -> None:
-            """Cancel the use of the item."""
             self.client.remove_state_by_name("ChoiceState")
 
         def open_choice_menu() -> None:
-            """Open the use/cancel menu."""
-            menu_options = [
-                ("use", T.translate("item_confirm_use").upper(), confirm),
-                ("cancel", T.translate("item_confirm_cancel").upper(), cancel),
+            options = [
+                ChoiceOption(
+                    key="use",
+                    display_text=item.confirm_text.upper(),
+                    action=confirm,
+                ),
+                ChoiceOption(
+                    key="cancel",
+                    display_text=item.cancel_text.upper(),
+                    action=cancel,
+                ),
             ]
-            tools.open_choice_dialog(self.client, menu_options, True)
+            menu = MenuOptions(options)
+            open_choice_dialog(self.client, menu, escape_key_exits=True)
 
         open_choice_menu()
 
@@ -233,7 +247,7 @@ class ItemMenuState(Menu[Item]):
             return
 
         page_size = prepare.MAX_MENU_ITEMS
-        self.total_pages = Paginator.total_pages(self.inventory, page_size)
+        self.total_pages = self.paginator.total_pages()
 
         self.current_page = max(
             0, min(self.current_page, self.total_pages - 1)
@@ -295,8 +309,8 @@ class ItemMenuState(Menu[Item]):
         self.clear()
         self.inventory = self.get_inventory()
 
-        total_pages, page_items = Paginator.calculate_page_data(
-            self.inventory, self.current_page, prepare.MAX_MENU_ITEMS
+        total_pages, page_items = self.paginator.calculate_page_data(
+            self.current_page
         )
 
         for obj in sort_inventory(page_items):
@@ -326,7 +340,7 @@ class ItemMenuState(Menu[Item]):
             Optional[PlayerInput]: The processed event or None if it's not handled.
         """
         page_size = prepare.MAX_MENU_ITEMS
-        total_pages = Paginator.total_pages(self.inventory, page_size)
+        total_pages = self.paginator.total_pages()
         if event.button == buttons.RIGHT and event.pressed:
             # Move to the next page if possible
             if self.current_page < total_pages - 1:
@@ -343,9 +357,7 @@ class ItemMenuState(Menu[Item]):
 
     def update_page_number_display(self, total_items: int) -> None:
         internal_rect = self.calc_internal_rect()
-        total_pages, _ = Paginator.calculate_page_data(
-            self.inventory, self.current_page, prepare.MAX_MENU_ITEMS
-        )
+        total_pages, _ = self.paginator.calculate_page_data(self.current_page)
         page_text = f"{self.current_page + 1}/{total_pages}"
         image = self.shadow_text(page_text)
         self.page_number_display.image = image

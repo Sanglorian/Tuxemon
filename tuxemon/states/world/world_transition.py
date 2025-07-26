@@ -11,13 +11,15 @@ from pygame.surface import Surface
 from tuxemon.graphics import ColorLike
 
 if TYPE_CHECKING:
+    from tuxemon.movement import MovementManager
     from tuxemon.npc import NPC
     from tuxemon.states.world.worldstate import WorldState
 
 
 class WorldTransition:
-    def __init__(self, world: WorldState) -> None:
+    def __init__(self, world: WorldState, movement: MovementManager) -> None:
         self.world = world
+        self.movement = movement
         self.transition_alpha = 0
         self.transition_surface: Optional[Surface] = None
         self.in_transition = False
@@ -73,7 +75,7 @@ class WorldTransition:
         def cleanup() -> None:
             self.set_transition_state(False)
 
-        self.world.task(cleanup, duration)
+        self.world.task(cleanup, interval=duration)
 
     def fade_and_teleport(
         self,
@@ -85,13 +87,13 @@ class WorldTransition:
         def fade_in() -> None:
             self.fade_in(duration, color, character)
 
-        self.world.movement.lock_controls(character)
+        self.movement.lock_controls(character)
         self.world.remove_animations_of(self.world)
         self.world.stop_scheduled_callbacks()
-        self.world.movement.stop_and_reset_char(character)
+        self.movement.stop_and_reset_char(character)
 
         self.fade_out(duration, color, character)
-        task = self.world.task(teleport_function, duration)
+        task = self.world.task(teleport_function, interval=duration)
         task.chain(fade_in, duration + 0.5)
 
     def draw(self, surface: Surface) -> None:
@@ -103,14 +105,14 @@ class WorldTransition:
 
     def lock_character_controls(self, character: Optional[NPC]) -> None:
         if character:
-            self.world.movement.stop_char(character)
-            self.world.movement.lock_controls(character)
+            self.movement.stop_char(character)
+            self.movement.lock_controls(character)
 
     def unlock_character_controls(
         self, character: Optional[NPC], duration: float
     ) -> None:
         if character:
             self.world.task(
-                lambda: self.world.movement.unlock_controls(character),
-                max(duration, 0),
+                lambda: self.movement.unlock_controls(character),
+                interval=max(duration, 0),
             )

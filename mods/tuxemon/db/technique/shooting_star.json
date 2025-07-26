@@ -5,12 +5,16 @@
   "effects": [
     {
       "type": "photogenesis",
-      "parameters": ["18", "0", "6"]
+      "parameters": [
+        "18",
+        "0",
+        "6"
+      ]
     }
   ],
   "flip_axes": "",
   "healing_power": 2,
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -28,7 +32,11 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["celestial", "light", "darkness"],
+  "tags": [
+    "celestial",
+    "light",
+    "darkness"
+  ],
   "types": [
     "aether"
   ],

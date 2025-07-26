@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["fire"],
+      "parameters": [
+        "fire"
+      ],
       "operator": "is"
     }
   ],
   "effects": [
     {
       "type": "learn_mm",
-      "parameters": ["fire"]
+      "parameters": [
+        "fire"
+      ]
     }
   ],
   "slug": "mm_fire",

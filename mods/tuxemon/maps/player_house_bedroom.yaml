@@ -82,7 +82,7 @@ events:
     y: 2
   Use Computer:
     actions:
-    - change_state PCState,player
+    - access_pc player
     conditions:
     - is char_facing_tile player
     - is button_pressed K_RETURN

@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["peace_lily"],
+      "parameters": [
+        "peace_lily"
+      ],
       "operator": "is"
     }
   ],

@@ -2,7 +2,9 @@
   "conditions": [
     {
       "type": "facing_tile",
-      "parameters": ["surfable"],
+      "parameters": [
+        "surfable"
+      ],
       "operator": "is"
     }
   ],

@@ -18,8 +18,7 @@
     },
     "island_back": "gfx/ui/combat/grass_island.png",
     "island_front": "gfx/ui/combat/grass_island.png",
-    "menu": "MainParkMenuState",
-    "msgid": "combat_player_choice"
+    "menu": "MainParkMenuState"
   },
   "battle_music": "music_battle_loop",
   "slug": "night_park"

@@ -1,64 +1,69 @@
 {
-    "slug": "chenipode",
-    "category": "travel_bug",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "rock"
-        },
-        {
-            "level_learned": 1,
-            "technique": "clamp_on"
-        },
-        {
-            "level_learned": 4,
-            "technique": "quicksand"
-        },
-        {
-            "level_learned": 7,
-            "technique": "hammerhead"
-        },
-        {
-            "level_learned": 13,
-            "technique": "take_cover"
-        },
-        {
-            "level_learned": 25,
-            "technique": "tonguespear"
-        },
-        {
-            "level_learned": 28,
-            "technique": "sand_spray"
-        },
-        {
-            "level_learned": 31,
-            "technique": "rocky_barrage"
-        }
-    ],
-    "evolutions": [
-        {
-            "monster_slug": "exapode",
-            "steps": "2500"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "exapode",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": [],
-    "tags": ["bug"],
-    "shape": "grub",
-    "stage": "basic",
-    "types": [
-        "earth"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 346,
-    "height": 15,
-    "weight": 0.5,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.25
+  "slug": "chenipode",
+  "category": "travel_bug",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "rock"
+    },
+    {
+      "level_learned": 1,
+      "technique": "clamp_on"
+    },
+    {
+      "level_learned": 4,
+      "technique": "quicksand"
+    },
+    {
+      "level_learned": 7,
+      "technique": "hammerhead"
+    },
+    {
+      "level_learned": 13,
+      "technique": "take_cover"
+    },
+    {
+      "level_learned": 25,
+      "technique": "tonguespear"
+    },
+    {
+      "level_learned": 28,
+      "technique": "sand_spray"
+    },
+    {
+      "level_learned": 31,
+      "technique": "rocky_barrage"
+    }
+  ],
+  "evolutions": [
+    {
+      "monster_slug": "exapode",
+      "steps": "2500"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "exapode",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [],
+  "tags": [
+    "bug"
+  ],
+  "shape": "grub",
+  "stage": "basic",
+  "types": [
+    "earth"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 346,
+  "height": 15,
+  "weight": 0.5,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.25
 }

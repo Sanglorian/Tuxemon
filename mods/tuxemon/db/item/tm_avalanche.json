@@ -2,19 +2,25 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["earth:water"],
+      "parameters": [
+        "earth:water"
+      ],
       "operator": "is"
     },
     {
       "type": "has_tech",
-      "parameters": ["avalanche"],
+      "parameters": [
+        "avalanche"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["avalanche"]
+      "parameters": [
+        "avalanche"
+      ]
     }
   ],
   "slug": "tm_avalanche",

@@ -16,17 +16,12 @@ from tuxemon.item.item import Item
 from tuxemon.locale import T
 from tuxemon.map_manager import MAP_TYPES
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.tools import open_dialog
+from tuxemon.tools import fix_measure, open_dialog
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
 
 MenuGameObj = Callable[[], Any]
-
-
-def fix_measure(measure: int, percentage: float) -> int:
-    """it returns the correct measure based on percentage"""
-    return round(measure * percentage)
 
 
 class NuPhone(PygameMenuState):
@@ -51,21 +46,17 @@ class NuPhone(PygameMenuState):
             open_dialog(self.client, [no_signal])
 
         def _uninstall(itm: Item) -> None:
-            count = self.char.items.count_item(itm.slug)
-            if count > 1:
-                self.char.items.remove_item(itm)
-                self.client.replace_state("NuPhone", character=self.char)
-            else:
-                open_dialog(
-                    self.client,
-                    [T.translate("uninstall_app")],
-                )
+            open_dialog(
+                self.client,
+                [T.translate("uninstall_app")],
+            )
 
+        column_width = fix_measure(menu._width, 0.25)
         menu._column_max_width = [
-            fix_measure(menu._width, 0.25),
-            fix_measure(menu._width, 0.25),
-            fix_measure(menu._width, 0.25),
-            fix_measure(menu._width, 0.25),
+            column_width,
+            column_width,
+            column_width,
+            column_width,
         ]
 
         # menu
@@ -112,12 +103,12 @@ class NuPhone(PygameMenuState):
             menu.add.button(
                 label,
                 action=partial(_uninstall, item),
-                font_size=self.font_size_smaller,
+                font_size=self.font_type.smaller,
             )
             # description of the app
             menu.add.label(
                 item.description,
-                font_size=self.font_size_smaller,
+                font_size=self.font_type.smaller,
                 wordwrap=True,
             )
 

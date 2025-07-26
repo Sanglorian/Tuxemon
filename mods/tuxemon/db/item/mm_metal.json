@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["metal"],
+      "parameters": [
+        "metal"
+      ],
       "operator": "is"
     }
   ],
   "effects": [
     {
       "type": "learn_mm",
-      "parameters": ["metal"]
+      "parameters": [
+        "metal"
+      ]
     }
   ],
   "slug": "mm_metal",

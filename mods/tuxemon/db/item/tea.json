@@ -3,7 +3,9 @@
   "effects": [
     {
       "type": "gain_xp",
-      "parameters": ["107"]
+      "parameters": [
+        "107"
+      ]
     }
   ],
   "slug": "tea",

@@ -51,7 +51,7 @@ class Technique:
         self.description: str = ""
         self.flip_axes: FlipAxes = FlipAxes.NONE
         self.hit: bool = False
-        self.is_fast: bool = False
+        self.speed: int = 0
         self.randomly: bool = True
         self.name: str = ""
         self.next_use: int = 0
@@ -70,6 +70,8 @@ class Technique:
         self.use_success: str = ""
         self.use_failure: str = ""
         self.use_tech: str = ""
+        self.confirm_text: str = ""
+        self.cancel_text: str = ""
 
         if Technique.effect_manager is None:
             Technique.effect_manager = EffectManager(
@@ -117,6 +119,8 @@ class Technique:
         self.use_tech = T.maybe_translate(results.use_tech)
         self.use_success = T.maybe_translate(results.use_success)
         self.use_failure = T.maybe_translate(results.use_failure)
+        self.confirm_text = T.translate(results.confirm_text)
+        self.cancel_text = T.translate(results.cancel_text)
 
         # types
         self.types = ElementTypesHandler(results.types)
@@ -128,7 +132,7 @@ class Technique:
         self.default_potency = results.potency
         self.default_power = results.power
 
-        self.is_fast = results.is_fast
+        self.speed = results.speed.numeric_value
         self.randomly = results.randomly
         self.healing_power = results.healing_power
         self.recharge_length = results.recharge

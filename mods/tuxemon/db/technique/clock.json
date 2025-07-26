@@ -5,11 +5,14 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["confused", "enemy_monster"]
+      "parameters": [
+        "confused",
+        "enemy_monster"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -27,7 +30,11 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["gadgets", "leadership", "mental"],
+  "tags": [
+    "gadgets",
+    "leadership",
+    "mental"
+  ],
   "types": [
     "aether"
   ],

@@ -5,11 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["recover", "own_monster"]
+      "parameters": [
+        "recover",
+        "own_monster"
+      ]
     },
     {
       "type": "give",
-      "parameters": ["focused", "enemy_monster"]
+      "parameters": [
+        "focused",
+        "enemy_monster"
+      ]
     },
     {
       "type": "healing"
@@ -17,7 +23,7 @@
   ],
   "flip_axes": "",
   "healing_power": 3.0,
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -35,7 +41,10 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["healing", "mental"],
+  "tags": [
+    "healing",
+    "mental"
+  ],
   "types": [
     "earth"
   ],

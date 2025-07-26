@@ -2,7 +2,9 @@
   "conditions": [
     {
       "type": "facing_sprite",
-      "parameters": ["log"],
+      "parameters": [
+        "log"
+      ],
       "operator": "is"
     }
   ],

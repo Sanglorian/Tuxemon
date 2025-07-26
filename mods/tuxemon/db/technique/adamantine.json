@@ -8,7 +8,7 @@
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.6,
   "power": 3,
   "randomly": false,
@@ -27,7 +27,9 @@
     "own_trainer": false
   },
   "category": "reserved",
-  "tags": ["reserved"],
+  "tags": [
+    "reserved"
+  ],
   "types": [
     "fire"
   ],

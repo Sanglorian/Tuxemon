@@ -1,59 +1,66 @@
 {
-    "slug": "sapsnap",
-    "category": "barbed",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "solar_synthesis"
-        },
-        {
-            "level_learned": 1,
-            "technique": "hammerhead"
-        },
-        {
-            "level_learned": 4,
-            "technique": "greenstone"
-        },
-        {
-            "level_learned": 7,
-            "technique": "assault"
-        },
-        {
-            "level_learned": 13,
-            "technique": "fluff_up"
-        },
-        {
-            "level_learned": 31,
-            "technique": "one_two"
-        },
-        {
-            "level_learned": 37,
-            "technique": "all_in"
-        },
-        {
-            "level_learned": 40,
-            "technique": "cutting_leaves"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "trapsnap",
-            "evo_stage": "basic"
-        }
-    ],
-    "terrains": [],
-    "tags": ["plant", "sharp", "fury"],
-    "shape": "brute",
-    "stage": "stage1",
-    "types": [
-        "wood"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 86,
-    "height": 210,
-    "weight": 125,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.9,
-    "upper_catch_resistance": 1.15
+  "slug": "sapsnap",
+  "category": "barbed",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "solar_synthesis"
+    },
+    {
+      "level_learned": 1,
+      "technique": "hammerhead"
+    },
+    {
+      "level_learned": 4,
+      "technique": "greenstone"
+    },
+    {
+      "level_learned": 7,
+      "technique": "assault"
+    },
+    {
+      "level_learned": 13,
+      "technique": "fluff_up"
+    },
+    {
+      "level_learned": 31,
+      "technique": "one_two"
+    },
+    {
+      "level_learned": 37,
+      "technique": "all_in"
+    },
+    {
+      "level_learned": 40,
+      "technique": "cutting_leaves"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "trapsnap",
+      "evo_stage": "basic"
+    }
+  ],
+  "terrains": [],
+  "tags": [
+    "plant",
+    "sharp",
+    "fury"
+  ],
+  "shape": "brute",
+  "stage": "stage1",
+  "types": [
+    "wood"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 86,
+  "height": 210,
+  "weight": 125,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.9,
+  "upper_catch_resistance": 1.15
 }

@@ -216,7 +216,7 @@ class Mission:
 
     def check_required_monsters(self, character: NPC) -> bool:
         return all(
-            character.find_monster(monster)
+            character.party.find_monster(monster)
             for monster in self.required_monsters
         )
 

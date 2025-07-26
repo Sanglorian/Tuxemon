@@ -29,10 +29,9 @@ class RunEffect(CoreEffect):
         extra: list[str] = []
         ran: bool = False
         combat = tech.get_combat_state()
-        self.player = user.get_owner()
         self.session = session
 
-        game_variables = self.player.game_variables
+        game_variables = session.player.game_variables
         attempts = game_variables.get("run_attempts", 0)
 
         method = self._determine_escape_method(combat, user, game_variables)

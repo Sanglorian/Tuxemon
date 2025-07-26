@@ -57,7 +57,7 @@ class QuarantineAction(EventAction):
             for _monster in plague:
                 _monster.plague.inoculate(self.plague_slug)
                 character.monster_boxes.add_monster(self.name, _monster)
-                character.remove_monster(_monster)
+                character.party.remove_monster(_monster)
                 logger.info(f"{_monster} has been quarantined")
         elif self.value == "out":
             if not character.monster_boxes.has_box(self.name, "monster"):
@@ -74,7 +74,9 @@ class QuarantineAction(EventAction):
             if self.amount is None or self.amount >= len(box):
                 for _monster in box:
                     _monster.plague.inoculate(self.plague_slug)
-                    character.add_monster(_monster, len(character.monsters))
+                    character.party.add_monster(
+                        _monster, len(character.monsters)
+                    )
                     character.monster_boxes.remove_monster_from(
                         self.name, _monster
                     )
@@ -83,7 +85,9 @@ class QuarantineAction(EventAction):
                 sample = random.sample(box, self.amount)
                 for _monster in sample:
                     _monster.plague.inoculate(self.plague_slug)
-                    character.add_monster(_monster, len(character.monsters))
+                    character.party.add_monster(
+                        _monster, len(character.monsters)
+                    )
                     character.monster_boxes.remove_monster_from(
                         self.name, _monster
                     )

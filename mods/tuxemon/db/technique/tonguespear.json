@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["lifeleech", "enemy_monster"]
+      "parameters": [
+        "lifeleech",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "xy",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 2.5,
   "range": "melee",
@@ -30,7 +33,10 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["bug", "tongue"],
+  "tags": [
+    "bug",
+    "tongue"
+  ],
   "types": [
     "water"
   ],

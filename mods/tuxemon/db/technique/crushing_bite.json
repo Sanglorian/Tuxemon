@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["stuck", "enemy_monster"]
+      "parameters": [
+        "stuck",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.2,
   "power": 1.8,
   "range": "touch",
@@ -30,7 +33,9 @@
     "own_trainer": false
   },
   "category": "animal",
-  "tags": ["bite"],
+  "tags": [
+    "bite"
+  ],
   "types": [
     "earth"
   ],

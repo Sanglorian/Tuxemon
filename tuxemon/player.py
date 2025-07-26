@@ -11,7 +11,6 @@ from tuxemon.prepare import PLAYER_NPC
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
-    from tuxemon.states.world.worldstate import WorldState
 
 logger = logging.getLogger(__name__)
 
@@ -23,18 +22,16 @@ class Player(NPC):
     def __init__(
         self,
         npc_slug: str,
-        world: WorldState,
+        session: Session,
     ) -> None:
-        super().__init__(npc_slug, world=world)
+        super().__init__(npc_slug, session=session)
         self.isplayer = True
 
     @classmethod
-    def create(
-        cls, session: Session, world: WorldState, slug: str = PLAYER_NPC
-    ) -> Player:
+    def create(cls, session: Session, slug: str = PLAYER_NPC) -> Player:
         """Creates a player instance only if one doesn't already exist."""
         if not session.has_player():
-            session.set_player(cls(slug, world))
+            session.set_player(cls(slug, session))
         return session.player
 
     def update(self, time_delta: float) -> None:

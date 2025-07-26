@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["rhincus_fossil"],
+      "parameters": [
+        "rhincus_fossil"
+      ],
       "operator": "is"
     }
   ],

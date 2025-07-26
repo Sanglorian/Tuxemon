@@ -1,80 +1,82 @@
 {
-    "slug": "mk01_alpha",
-    "category": "threat",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "electrical_storm"
-        },
-        {
-            "level_learned": 1,
-            "technique": "wall_of_steel"
-        },
-        {
-            "level_learned": 4,
-            "technique": "shrapnel"
-        },
-        {
-            "level_learned": 7,
-            "technique": "beam"
-        },
-        {
-            "level_learned": 13,
-            "technique": "blade"
-        },
-        {
-            "level_learned": 16,
-            "technique": "acid"
-        },
-        {
-            "level_learned": 19,
-            "technique": "platinum"
-        },
-        {
-            "level_learned": 25,
-            "technique": "crystal"
-        },
-        {
-            "level_learned": 28,
-            "technique": "lineage"
-        }
-    ],
-    "evolutions": [
-        {
-            "at_level": 32,
-            "monster_slug": "mk01_delta"
-        },
-        {
-            "at_level": 32,
-            "monster_slug": "mk01_gamma"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "mk01_proto",
-            "evo_stage": "basic"
-        },
-        {
-            "mon_slug": "mk01_gamma",
-            "evo_stage": "stage2"
-        },
-        {
-            "mon_slug": "mk01_delta",
-            "evo_stage": "stage2"
-        }
-    ],
-    "terrains": [],
-    "tags": [],
-    "shape": "dragon",
-    "stage": "stage1",
-    "types": [
-        "metal"
-    ],
-    "possible_genders": ["neuter"],
-    "txmn_id": 0,
-    "height": 0.1,
-    "weight": 100,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "mk01_alpha",
+  "category": "threat",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "electrical_storm"
+    },
+    {
+      "level_learned": 1,
+      "technique": "wall_of_steel"
+    },
+    {
+      "level_learned": 4,
+      "technique": "shrapnel"
+    },
+    {
+      "level_learned": 7,
+      "technique": "beam"
+    },
+    {
+      "level_learned": 13,
+      "technique": "blade"
+    },
+    {
+      "level_learned": 16,
+      "technique": "acid"
+    },
+    {
+      "level_learned": 19,
+      "technique": "platinum"
+    },
+    {
+      "level_learned": 25,
+      "technique": "crystal"
+    },
+    {
+      "level_learned": 28,
+      "technique": "lineage"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 32,
+      "monster_slug": "mk01_delta"
+    },
+    {
+      "at_level": 32,
+      "monster_slug": "mk01_gamma"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "mk01_proto",
+      "evo_stage": "basic"
+    },
+    {
+      "mon_slug": "mk01_gamma",
+      "evo_stage": "stage2"
+    },
+    {
+      "mon_slug": "mk01_delta",
+      "evo_stage": "stage2"
+    }
+  ],
+  "terrains": [],
+  "tags": [],
+  "shape": "dragon",
+  "stage": "stage1",
+  "types": [
+    "metal"
+  ],
+  "possible_genders": [
+    "neuter"
+  ],
+  "txmn_id": 0,
+  "height": 0.1,
+  "weight": 100,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

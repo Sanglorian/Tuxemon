@@ -45,7 +45,7 @@ class PropDamageEffect(CoreEffect):
         combat = tech.get_combat_state()
 
         objectives = self.objectives.split(":")
-        tech.hit = tech.accuracy >= combat._random_tech_hit.get(user, 0.0)
+        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
         reference_hp = target.hp
 
         if tech.hit:

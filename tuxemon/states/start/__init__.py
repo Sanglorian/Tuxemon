@@ -62,7 +62,7 @@ class StartState(PygameMenuState):
             )
             game_var = local_session.player.game_variables
             game_var["date_start_game"] = today_ordinal()
-            self.client.pop_state(self)
+            self.client.remove_state_by_name("StartState")
 
         def change_state(
             state: Union[State, str],
@@ -81,39 +81,39 @@ class StartState(PygameMenuState):
             menu.add.button(
                 title=T.translate("menu_load"),
                 action=change_state("LoadMenuState"),
-                font_size=self.font_size_big,
+                font_size=self.font_type.big,
                 button_id="menu_load",
             )
         if len(config.mods) == 1:
             menu.add.button(
                 title=T.translate("menu_new_game"),
                 action=new_game,
-                font_size=self.font_size_big,
+                font_size=self.font_type.big,
                 button_id="menu_new_game",
             )
         else:
             menu.add.button(
                 title=T.translate("menu_new_game"),
                 action=change_state("ModsChoice", mods=config.mods),
-                font_size=self.font_size_big,
+                font_size=self.font_type.big,
                 button_id="menu_mod_choice",
             )
         menu.add.button(
             title=T.translate("menu_minigame"),
             action=change_state("MinigameState"),
-            font_size=self.font_size_big,
+            font_size=self.font_type.big,
             button_id="menu_minigame",
         )
         menu.add.button(
             title=T.translate("menu_options"),
             action=change_state("ControlState", main_menu=True),
-            font_size=self.font_size_big,
+            font_size=self.font_type.big,
             button_id="menu_options",
         )
         menu.add.button(
             title=T.translate("exit"),
             action=exit_game,
-            font_size=self.font_size_big,
+            font_size=self.font_type.big,
             button_id="exit",
         )
 
@@ -155,13 +155,14 @@ class ModsChoice(PygameMenuState):
             )
             game_var = local_session.player.game_variables
             game_var["date_start_game"] = today_ordinal()
-            self.client.pop_state(self)
+            self.client.remove_state_by_name("StartState")
+            self.client.remove_state_by_name("ModsChoice")
 
         for mod_name in self.mods:
             menu.add.button(
                 title=T.translate(f"{mod_name}_campaign"),
                 action=partial(new_game, mod_name),
-                font_size=self.font_size_big,
+                font_size=self.font_type.big,
                 button_id=mod_name,
             )
 

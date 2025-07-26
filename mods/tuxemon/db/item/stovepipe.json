@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["stovepipe"],
+      "parameters": [
+        "stovepipe"
+      ],
       "operator": "is"
     }
   ],

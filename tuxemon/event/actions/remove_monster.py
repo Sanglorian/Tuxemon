@@ -49,4 +49,4 @@ class RemoveMonsterAction(EventAction):
             return
         character = monster.get_owner()
         logger.info(f"{monster.name} removed from {character.name} party!")
-        character.remove_monster(monster)
+        character.party.remove_monster(monster)

@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["metal_booster"],
+      "parameters": [
+        "metal_booster"
+      ],
       "operator": "is"
     }
   ],

@@ -5,15 +5,21 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["elementalshield", "own_monster"]
+      "parameters": [
+        "elementalshield",
+        "own_monster"
+      ]
     },
     {
       "type": "give",
-      "parameters": ["slow", "enemy_monster"]
+      "parameters": [
+        "slow",
+        "enemy_monster"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -31,7 +37,11 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["soldier", "ice", "shielded"],
+  "tags": [
+    "soldier",
+    "ice",
+    "shielded"
+  ],
   "types": [
     "water"
   ],

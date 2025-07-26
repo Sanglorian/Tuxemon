@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "has_tech",
-      "parameters": ["blade"],
+      "parameters": [
+        "blade"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["blade"]
+      "parameters": [
+        "blade"
+      ]
     }
   ],
   "slug": "tm_blade",

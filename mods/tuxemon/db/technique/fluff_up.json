@@ -5,11 +5,14 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["recover", "own_monster"]
+      "parameters": [
+        "recover",
+        "own_monster"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.5,
   "power": 0,
   "range": "special",
@@ -27,7 +30,9 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["shielded"],
+  "tags": [
+    "shielded"
+  ],
   "types": [
     "aether"
   ],

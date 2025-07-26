@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["earth"],
+      "parameters": [
+        "earth"
+      ],
       "operator": "is"
     }
   ],
   "effects": [
     {
       "type": "learn_mm",
-      "parameters": ["earth"]
+      "parameters": [
+        "earth"
+      ]
     }
   ],
   "slug": "mm_earth",

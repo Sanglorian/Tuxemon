@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "has_tech",
-      "parameters": ["all_in"],
+      "parameters": [
+        "all_in"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["all_in"]
+      "parameters": [
+        "all_in"
+      ]
     }
   ],
   "slug": "tm_all_in",

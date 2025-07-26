@@ -18,19 +18,13 @@ class ShapeCondition(CoreCondition):
     Compares the target Monster's shape against the given types.
 
     Returns true if its equal to any of the listed types.
-
     """
 
     name = "shape"
     shapes: str
 
     def test_with_monster(self, session: Session, target: Monster) -> bool:
-        shapes: list[str] = []
-        if self.shapes.find(":"):
-            shapes = self.shapes.split(":")
-        else:
-            shapes.append(self.shapes)
-        if target.shape in shapes:
-            return True
-        else:
-            return False
+        shape_list = (
+            self.shapes.split(":") if ":" in self.shapes else [self.shapes]
+        )
+        return target.shape.slug in shape_list

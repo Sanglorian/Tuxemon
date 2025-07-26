@@ -59,8 +59,7 @@ events:
     - char_face player,down
     - set_variable paypark:null
     - add_step_tracker player,steps_park,500,100:0
-    - set_variable menu_park_captured:0
-    - set_variable menu_park_seen:0
+    - park_experience start
     - unlock_controls
     conditions:
     - is variable_set paypark:yes

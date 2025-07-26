@@ -5,15 +5,20 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["lifeleech", "enemy_monster"]
+      "parameters": [
+        "lifeleech",
+        "enemy_monster"
+      ]
     },
     {
       "type": "splash",
-      "parameters": ["2"]
+      "parameters": [
+        "2"
+      ]
     }
   ],
   "flip_axes": "xy",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.5,
   "power": 1,
   "range": "reach",
@@ -31,7 +36,9 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["bug"],
+  "tags": [
+    "bug"
+  ],
   "types": [
     "water"
   ],

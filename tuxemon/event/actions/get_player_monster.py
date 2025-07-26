@@ -101,7 +101,7 @@ class GetPlayerMonsterAction(EventAction):
                 self.result = True
                 return self.result
             # filter shape
-            if filter_name == "shape" and target.shape == value_name:
+            if filter_name == "shape" and target.shape.slug == value_name:
                 self.result = True
                 return self.result
             # filter taste warm

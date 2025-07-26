@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "has_tech",
-      "parameters": ["scope"],
+      "parameters": [
+        "scope"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["scope"]
+      "parameters": [
+        "scope"
+      ]
     }
   ],
   "slug": "tm_scope",

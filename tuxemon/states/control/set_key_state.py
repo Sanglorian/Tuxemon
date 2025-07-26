@@ -7,7 +7,7 @@ from typing import Any, Optional
 import pygame
 from pygame_menu import locals
 
-from tuxemon.animation import Animation
+from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
@@ -86,5 +86,5 @@ class SetKeyState(PygameMenuState):
         """
         self.animation_size = 0.0
         ani = self.animate(self, animation_size=1.0, duration=0.2)
-        ani.update_callback = self.update_animation_size
+        ani.schedule(self.update_animation_size, ScheduleType.ON_UPDATE)
         return ani

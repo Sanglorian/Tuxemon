@@ -304,7 +304,7 @@ class TrainerAIDecisionStrategy(AIDecisionStrategy):
         config = self.ai_trainers.trainers.get(character_slug)
 
         items = ai.character.items.get_items()
-        if len(items) > 0:
+        if items:
             for item in items:
                 if self.need_healing(ai, item):
                     ai.action_item(item)
@@ -429,6 +429,39 @@ class WildAIDecisionStrategy(AIDecisionStrategy):
         return best_action or random.choice(valid_actions)
 
 
+class AIManager:
+    def __init__(self, session: Session, combat: CombatState) -> None:
+        self.session = session
+        self.combat = combat
+        self.active_ais: dict[Monster, AI] = {}
+
+    def process_ai_turn(self, monster: Monster, character: NPC) -> None:
+        """
+        Processes a single AI monster's turn.
+        Retrieves or creates the AI instance and tells it to take its turn.
+        """
+        if monster not in self.active_ais:
+            logger.debug(f"New AI instance for monster: {monster}")
+            self.active_ais[monster] = AI(
+                self.session, self.combat, monster, character
+            )
+
+        ai_instance = self.active_ais[monster]
+        logger.debug(f"AI turn for monster: {monster}")
+        ai_instance.take_turn()
+
+    def remove_ai(self, monster: Monster) -> None:
+        """Removes the AI instance associated with the given monster."""
+        if monster in self.active_ais:
+            logger.debug(f"Removing AI for monster: {monster}")
+            del self.active_ais[monster]
+
+    def clear_ai(self) -> None:
+        """Removes all tracked AI instances from the manager."""
+        logger.debug("Clearing all AI instances.")
+        self.active_ais.clear()
+
+
 class AI:
     def __init__(
         self,
@@ -460,6 +493,10 @@ class AI:
             else WildAIDecisionStrategy(self.evaluator, self.tracker)
         )
 
+    def take_turn(self) -> None:
+        """
+        Causes this AI monster to make and execute its decision for the current turn.
+        """
         self.decision_strategy.make_decision(self)
 
     def get_available_moves(self) -> list[tuple[Technique, Monster]]:

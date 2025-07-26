@@ -37,10 +37,8 @@ if TYPE_CHECKING:
 logger = logging.getLogger()
 
 
-dummy_image: Final = Surface((0, 0))
-
-
 class Sprite(DirtySprite):
+    _dummy_image: Surface = Surface((0, 0))
     _original_image: Optional[Surface]
     _image: Optional[Surface]
     _rect: Rect
@@ -156,7 +154,11 @@ class Sprite(DirtySprite):
             self.update_image()
             self._needs_update = False
             self._needs_rescale = False
-        return self._image if self._image and self.visible else dummy_image
+        return (
+            self._image
+            if self._image and self.visible
+            else Sprite._dummy_image
+        )
 
     @image.setter
     def image(self, image: Optional[Surface]) -> None:
@@ -347,54 +349,44 @@ class CaptureDeviceSprite(Sprite):
         tray: Sprite,
         monster: Optional[Monster],
         sprite: Sprite,
-        state: str,
         icon: BattleIconsModel,
     ) -> None:
+        super().__init__()
         self.tray = tray
         self.monster = monster
         self.sprite = sprite
-        self.state = state
-        self.empty_img = graphics.load_and_scale(icon.icon_empty)
-        self.faint_img = graphics.load_and_scale(icon.icon_faint)
-        self.alive_img = graphics.load_and_scale(icon.icon_alive)
-        self.effected_img = graphics.load_and_scale(icon.icon_status)
-        super().__init__()
+        self.icon = icon
+        self.state = self.resolve_status()
+        self.update_image()
+
+    def resolve_status(self) -> str:
+        if self.monster is None:
+            return "empty"
+        if self.monster.status.is_fainted:
+            return "faint"
+        if self.monster.status.status_exists():
+            return "effected"
+        return "alive"
+
+    def update_image(self) -> None:
+        mapping = {
+            "empty": graphics.load_and_scale(self.icon.icon_empty),
+            "faint": graphics.load_and_scale(self.icon.icon_faint),
+            "effected": graphics.load_and_scale(self.icon.icon_status),
+            "alive": graphics.load_and_scale(self.icon.icon_alive),
+        }
+        self.sprite.image = mapping[self.state]
 
     def update_state(self) -> str:
-        """
-        Updates the state of the capture device.
-
-        Returns:
-            The new state.
-        """
-        if self.state == "empty":
-            self.sprite.image = self.empty_img
-            return "empty"
-
-        assert self.monster
-
-        if self.monster.status.is_fainted:
-            self.state = "faint"
-            self.sprite.image = self.faint_img
-        elif self.monster.status.status_exists():
-            self.state = "effected"
-            self.sprite.image = self.effected_img
-        else:
-            self.state = "alive"
-            self.sprite.image = self.alive_img
-
+        """Check for state changes and update the image if needed."""
+        new_state = self.resolve_status()
+        if new_state != self.state:
+            self.state = new_state
+            self.update_image()
         return self.state
 
-    def animate_capture(
-        self,
-        animate: Callable[..., object],
-    ) -> None:
-        """
-        Animates the capture device in game.
-
-        Parameters:
-            animate: The animation function.
-        """
+    def animate_capture(self, animate: Callable[..., object]) -> None:
+        """Fade in + slide up animation for the sprite."""
         sprite = self.sprite
         sprite.image = graphics.convert_alpha_to_colorkey(sprite.image)
         sprite.image.set_alpha(0)

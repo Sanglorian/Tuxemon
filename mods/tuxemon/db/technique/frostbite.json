@@ -5,15 +5,20 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["poison","enemy_monster"]
+      "parameters": [
+        "poison",
+        "enemy_monster"
+      ]
     },
     {
       "type": "splash",
-      "parameters": ["2"]
+      "parameters": [
+        "2"
+      ]
     }
   ],
   "flip_axes": "xy",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.5,
   "power": 3,
   "range": "reach",
@@ -31,7 +36,10 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["ice", "bite"],
+  "tags": [
+    "ice",
+    "bite"
+  ],
   "types": [
     "earth",
     "water"

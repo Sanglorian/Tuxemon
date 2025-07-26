@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, final
 from uuid import UUID
 
-from tuxemon.db import SeenStatus, db
+from tuxemon.db import Acquisition, SeenStatus, db
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster import Monster
@@ -56,8 +56,8 @@ class TradingAction(EventAction):
             new = _create_traded_monster(monster_id, self.added)
             owner = monster_id.get_owner()
             slot = owner.monsters.index(monster_id)
-            owner.remove_monster(monster_id)
-            owner.add_monster(new, slot)
+            owner.party.remove_monster(monster_id)
+            owner.party.add_monster(new, slot)
             owner.tuxepedia.add_entry(new.slug, SeenStatus.caught)
         else:
             _added_id = UUID(player.game_variables[self.added])
@@ -70,12 +70,9 @@ class TradingAction(EventAction):
 
 def _create_traded_monster(removed: Monster, added: str) -> Monster:
     """Create a new monster with the same level and moves as the removed monster."""
-    new = Monster.create(added)
-    new.set_level(removed.level)
-    new.moves.set_moves(removed.level)
+    new = Monster.spawn_base(added, removed.level)
     new.set_capture(today_ordinal())
-    new.current_hp = new.hp
-    new.traded = True
+    new.set_acquisition(Acquisition.TRADED)
     return new
 
 
@@ -87,18 +84,18 @@ def _switch_monsters(removed: Monster, added: Monster) -> None:
     slot_removed = receiver.monsters.index(removed)
     slot_added = giver.monsters.index(added)
 
-    removed.traded = True
-    added.traded = True
+    removed.set_acquisition(Acquisition.TRADED)
+    added.set_acquisition(Acquisition.TRADED)
 
     logger.info(f"{removed.name} traded for {added.name}!")
     logger.info(f"{added.name} traded for {removed.name}!")
     logger.info(f"{receiver.name} welcomes {added.name}!")
     logger.info(f"{giver.name} welcomes {removed.name}!")
 
-    giver.remove_monster(removed)
-    receiver.add_monster(added, slot_removed)
+    giver.party.remove_monster(removed)
+    receiver.party.add_monster(added, slot_removed)
     receiver.tuxepedia.add_entry(added.slug, SeenStatus.caught)
 
-    receiver.remove_monster(added)
-    giver.add_monster(removed, slot_added)
+    receiver.party.remove_monster(added)
+    giver.party.add_monster(removed, slot_added)
     giver.tuxepedia.add_entry(removed.slug, SeenStatus.caught)

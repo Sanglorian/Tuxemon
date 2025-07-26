@@ -14,7 +14,7 @@ from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster import Monster
 from tuxemon.session import Session
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.states.combat.combat_context import CombatContext
 from tuxemon.time_handler import today_ordinal
 
 logger = logging.getLogger(__name__)
@@ -79,14 +79,11 @@ class RandomBattleAction(EventAction):
         monsters = random.sample(monster_filters, self.nr_txmns)
         for monster in monsters:
             level = random.randint(self.min_level, self.max_level)
-            current_monster = Monster.create(monster.slug)
-            current_monster.set_level(level)
-            current_monster.moves.set_moves(level)
+            current_monster = Monster.spawn_base(monster.slug, level)
             current_monster.set_capture(today_ordinal())
-            current_monster.current_hp = current_monster.hp
             current_monster.money_modifier = level
             current_monster.experience_modifier = level
-            npc.add_monster(current_monster, len(npc.monsters))
+            npc.party.add_monster(current_monster, len(npc.monsters))
 
         player = session.player
         env_slug = player.game_variables.get("environment", "grass")
@@ -96,14 +93,14 @@ class RandomBattleAction(EventAction):
             return
 
         logger.info(f"Starting battle with '{npc.name}'!")
-        session.client.push_state(
-            "CombatState",
+        context = CombatContext(
             session=session,
-            players=(player, npc),
+            teams=[player, npc],
             combat_type="trainer",
             graphics=env.battle_graphics,
             battle_mode="single",
         )
+        session.client.push_state("CombatState", context=context)
 
         session.client.event_engine.execute_action(
             "play_music", [env.battle_music], True
@@ -117,7 +114,6 @@ class RandomBattleAction(EventAction):
 
     def cleanup(self, session: Session) -> None:
         npc = None
-        world = session.client.get_state_by_name(WorldState)
         session.client.npc_manager.remove_npc(self.opponent.slug)
 
 

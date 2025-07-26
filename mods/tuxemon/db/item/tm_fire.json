@@ -2,7 +2,9 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["fire"],
+      "parameters": [
+        "fire"
+      ],
       "operator": "is"
     }
   ],

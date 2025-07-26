@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["grabbed", "own_monster:enemy_monster"]
+      "parameters": [
+        "grabbed",
+        "own_monster:enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.8,
   "power": 3.0,
   "range": "melee",
@@ -30,7 +33,11 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["machine", "steel", "electricity"],
+  "tags": [
+    "machine",
+    "steel",
+    "electricity"
+  ],
   "types": [
     "metal"
   ],

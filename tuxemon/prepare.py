@@ -268,69 +268,11 @@ HEALING_POWER_RANGE: tuple[float, float] = (0.0, 3.0)
 
 # Combat
 MONSTERS_DOUBLE: int = 3  # 3 monsters to trigger 1vs2 or viceversa
-# Hud right/left lines
-HUD_RT_LINE1: tuple[int, int] = (12, 11)  # monster, lv, etc.
-HUD_RT_LINE2: tuple[int, int] = (12, 19)  # position hp_bar
-HUD_LT_LINE1: tuple[int, int] = (5, 5)  # monster, lv, etc.
-HUD_LT_LINE2: tuple[int, int] = (5, 13)  # position hp_bar
-# position coordinates hud
-# right side
-RIGHT_COMBAT: dict[str, tuple[int, int, int, int]] = {}
-# where appears the monster (character right side)
-RIGHT_COMBAT["home"] = (0, 62, 95, 70)
-# 1st spot 2 vs 2
-RIGHT_COMBAT["home0"] = (15, 62, 95, 70)
-# 2nd spot 2 vs 2
-RIGHT_COMBAT["home1"] = (-15, 62, 95, 70)
-# name, level, etc.
-RIGHT_COMBAT["hud"] = (145, 45, 110, 50)
-# 1st spot 2 vs 2
-RIGHT_COMBAT["hud0"] = (145, 25, 110, 50)
-# 2nd spot 2 vs 2
-RIGHT_COMBAT["hud1"] = (145, 45, 110, 50)
-# tuxeball icons
-RIGHT_COMBAT["party"] = (145, 57, 110, 50)
-# left side
-LEFT_COMBAT: dict[str, tuple[int, int, int, int]] = {}
-# where appears the monster (character left side)
-LEFT_COMBAT["home"] = (140, 18, 95, 70)
-# 1st spot 2 vs 2
-LEFT_COMBAT["home0"] = (125, 18, 95, 70)
-# 2nd spot 2 vs 2
-LEFT_COMBAT["home1"] = (155, 18, 95, 70)
-# name, level, etc.
-LEFT_COMBAT["hud"] = (18, 0, 85, 30)
-# 1st spot 2 vs 2
-LEFT_COMBAT["hud0"] = (18, 0, 85, 30)
-# 2nd spot 2 vs 2
-LEFT_COMBAT["hud1"] = (18, 20, 85, 30)
-# tuxeball icons
-LEFT_COMBAT["party"] = (18, 12, 85, 30)
 
 # This is the coefficient that can be found in formula.py and
 # it calculates the user strength
 # eg: user_strength = user.melee * (COEFF_DAMAGE + user.level)
 COEFF_DAMAGE: int = 7
-
-# Status icon positions
-# 1 vs 1
-ICON_PLAYER_DEFAULT: tuple[float, float] = (
-    SCREEN_SIZE[0] * 0.64,
-    SCREEN_SIZE[1] * 0.56,
-)
-ICON_OPPONENT_DEFAULT: tuple[float, float] = (
-    SCREEN_SIZE[0] * 0.06,
-    SCREEN_SIZE[1] * 0.12,
-)
-# 2 vs 2
-ICON_PLAYER_SLOT: tuple[float, float] = (
-    SCREEN_SIZE[0] * 0.64,
-    SCREEN_SIZE[1] * 0.42,
-)
-ICON_OPPONENT_SLOT: tuple[float, float] = (
-    SCREEN_SIZE[0] * 0.06,
-    SCREEN_SIZE[1] * 0.26,
-)
 
 # If scaling is enabled, scale the tiles based on the resolution
 if CONFIG.large_gui:
@@ -369,7 +311,7 @@ def pygame_init() -> None:
     # Configure databases and locale
     from tuxemon.locale import T
 
-    T.collect_languages(CONFIG.recompile_translations)
+    T.initialize_translations()
     from tuxemon.db import db
 
     db.load()
@@ -415,7 +357,7 @@ def headless_init() -> None:
     """Initializes game components for a headless environment."""
     from tuxemon.locale import T
 
-    T.collect_languages(CONFIG.recompile_translations)
+    T.initialize_translations()
     from tuxemon.db import db
 
     db.load()

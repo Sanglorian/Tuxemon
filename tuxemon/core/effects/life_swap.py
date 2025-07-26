@@ -29,7 +29,7 @@ class LifeSwapEffect(CoreEffect):
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
         combat = tech.get_combat_state()
-        tech.hit = tech.accuracy >= combat._random_tech_hit.get(user, 0.0)
+        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
         done = False
         if tech.hit:
             if not user.is_fainted and not target.is_fainted:

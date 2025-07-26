@@ -36,7 +36,7 @@ class DialogState(PopUpMenu[None]):
         self,
         text: Sequence[str] = (),
         avatar: Optional[Sprite] = None,
-        box_style: dict[str, Any] = {},
+        box_style: Optional[dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -54,6 +54,7 @@ class DialogState(PopUpMenu[None]):
         }
 
         final_box_style = default_box_style.copy()
+        box_style = box_style or {}
         final_box_style.update(box_style)
 
         _border = load_and_scale(final_box_style["border"])

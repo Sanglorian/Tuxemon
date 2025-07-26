@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "has_tech",
-      "parameters": ["cavity"],
+      "parameters": [
+        "cavity"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["cavity"]
+      "parameters": [
+        "cavity"
+      ]
     }
   ],
   "slug": "tm_cavity",

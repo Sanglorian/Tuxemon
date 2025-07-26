@@ -8,7 +8,7 @@
     }
   ],
   "flip_axes": "x",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.0,
   "power": 2,
   "range": "reliable",
@@ -26,7 +26,9 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["sharp"],
+  "tags": [
+    "sharp"
+  ],
   "types": [
     "metal"
   ],

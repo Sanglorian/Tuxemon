@@ -8,7 +8,7 @@
     }
   ],
   "flip_axes": "",
-  "is_fast": true,
+  "speed": "fast",
   "potency": 0.1,
   "power": 2,
   "randomly": false,
@@ -27,7 +27,9 @@
     "own_trainer": false
   },
   "category": "reserved",
-  "tags": ["reserved"],
+  "tags": [
+    "reserved"
+  ],
   "types": [
     "wood"
   ],

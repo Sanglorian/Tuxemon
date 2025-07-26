@@ -1,59 +1,72 @@
 {
-    "slug": "bamboon",
-    "category": "prehensile",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "tail_lash"
-        },
-        {
-            "level_learned": 1,
-            "technique": "clamp_on"
-        },
-        {
-            "level_learned": 4,
-            "technique": "poison_courtship"
-        },
-        {
-            "level_learned": 7,
-            "technique": "stabilo"
-        },
-        {
-            "level_learned": 13,
-            "technique": "ram"
-        },
-        {
-            "level_learned": 19,
-            "technique": "blade"
-        },
-        {
-            "level_learned": 25,
-            "technique": "staff_smash"
-        },
-        {
-            "level_learned": 28,
-            "technique": "woodsmash"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "budaye",
-            "evo_stage": "basic"
-        }
-    ],
-    "terrains": ["grassland", "jungle"],
-    "tags": ["plant", "leadership", "food", "soldier", "tail", "staff"],
-    "shape": "sprite",
-    "stage": "stage1",
-    "types": [
-        "wood"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 28,
-    "height": 120,
-    "weight": 40,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "bamboon",
+  "category": "prehensile",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "tail_lash"
+    },
+    {
+      "level_learned": 1,
+      "technique": "clamp_on"
+    },
+    {
+      "level_learned": 4,
+      "technique": "poison_courtship"
+    },
+    {
+      "level_learned": 7,
+      "technique": "stabilo"
+    },
+    {
+      "level_learned": 13,
+      "technique": "ram"
+    },
+    {
+      "level_learned": 19,
+      "technique": "blade"
+    },
+    {
+      "level_learned": 25,
+      "technique": "staff_smash"
+    },
+    {
+      "level_learned": 28,
+      "technique": "woodsmash"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "budaye",
+      "evo_stage": "basic"
+    }
+  ],
+  "terrains": [
+    "grassland",
+    "jungle"
+  ],
+  "tags": [
+    "plant",
+    "leadership",
+    "food",
+    "soldier",
+    "tail",
+    "staff"
+  ],
+  "shape": "sprite",
+  "stage": "stage1",
+  "types": [
+    "wood"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 28,
+  "height": 120,
+  "weight": 40,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

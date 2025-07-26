@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "has_tech",
-      "parameters": ["panjandrum"],
+      "parameters": [
+        "panjandrum"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["panjandrum"]
+      "parameters": [
+        "panjandrum"
+      ]
     }
   ],
   "slug": "tm_panjandrum",

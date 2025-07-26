@@ -1,71 +1,81 @@
 {
-    "slug": "saurchin",
-    "category": "spiny",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "flood"
-        },
-        {
-            "level_learned": 1,
-            "technique": "flow"
-        },
-        {
-            "level_learned": 4,
-            "technique": "goad"
-        },
-        {
-            "level_learned": 7,
-            "technique": "muck"
-        },
-        {
-            "level_learned": 13,
-            "technique": "font"
-        },
-        {
-            "level_learned": 22,
-            "technique": "midnight_mantle"
-        },
-        {
-            "level_learned": 25,
-            "technique": "needle"
-        },
-        {
-            "level_learned": 28,
-            "technique": "chill_mist"
-        },
-        {
-            "level_learned": 40,
-            "technique": "viper"
-        },
-        {
-            "level_learned": 46,
-            "technique": "thorn_burst"
-        },
-        {
-            "level_learned": 55,
-            "technique": "energy_beam"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "poinchin",
-            "evo_stage": "basic"
-        }
-    ],
-    "terrains": ["coastal"],
-    "tags": ["sharp", "toxic", "bite", "megafauna"],
-    "shape": "dragon",
-    "stage": "stage1",
-    "types": [
-        "water"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 349,
-    "height": 800,
-    "weight": 3000,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "saurchin",
+  "category": "spiny",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "flood"
+    },
+    {
+      "level_learned": 1,
+      "technique": "flow"
+    },
+    {
+      "level_learned": 4,
+      "technique": "goad"
+    },
+    {
+      "level_learned": 7,
+      "technique": "muck"
+    },
+    {
+      "level_learned": 13,
+      "technique": "font"
+    },
+    {
+      "level_learned": 22,
+      "technique": "midnight_mantle"
+    },
+    {
+      "level_learned": 25,
+      "technique": "needle"
+    },
+    {
+      "level_learned": 28,
+      "technique": "chill_mist"
+    },
+    {
+      "level_learned": 40,
+      "technique": "viper"
+    },
+    {
+      "level_learned": 46,
+      "technique": "thorn_burst"
+    },
+    {
+      "level_learned": 55,
+      "technique": "energy_beam"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "poinchin",
+      "evo_stage": "basic"
+    }
+  ],
+  "terrains": [
+    "coastal"
+  ],
+  "tags": [
+    "sharp",
+    "toxic",
+    "bite",
+    "megafauna"
+  ],
+  "shape": "dragon",
+  "stage": "stage1",
+  "types": [
+    "water"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 349,
+  "height": 800,
+  "weight": 3000,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

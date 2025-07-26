@@ -5,15 +5,21 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["exhausted", "enemy_monster"]
+      "parameters": [
+        "exhausted",
+        "enemy_monster"
+      ]
     },
     {
       "type": "give",
-      "parameters": ["hardshell", "own_monster"]
+      "parameters": [
+        "hardshell",
+        "own_monster"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -31,7 +37,9 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["shielded"],
+  "tags": [
+    "shielded"
+  ],
   "types": [
     "aether"
   ],

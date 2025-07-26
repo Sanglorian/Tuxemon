@@ -8,11 +8,14 @@
     },
     {
       "type": "switch",
-      "parameters": ["own_monster", "random"]
+      "parameters": [
+        "own_monster",
+        "random"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.7,
   "power": 2.2,
   "range": "melee",
@@ -30,7 +33,9 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["shapeshifter"],
+  "tags": [
+    "shapeshifter"
+  ],
   "types": [
     "water"
   ],

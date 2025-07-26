@@ -5,15 +5,21 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["hardshell", "own_monster"]
+      "parameters": [
+        "hardshell",
+        "own_monster"
+      ]
     },
     {
       "type": "switch",
-      "parameters": ["own_monster", "wood"]
+      "parameters": [
+        "own_monster",
+        "wood"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -31,7 +37,9 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["shapeshifter"],
+  "tags": [
+    "shapeshifter"
+  ],
   "types": [
     "wood",
     "fire"

@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from tuxemon.db import AttributesModel, ShapeModel, db
+from tuxemon.formula import calculate_base_stats
+
+if TYPE_CHECKING:
+    from tuxemon.monster import Monster
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +20,12 @@ class Shape:
     _shapes: dict[str, Shape] = {}
 
     def __init__(self, slug: Optional[str] = None) -> None:
-        self.slug = slug
+        self.slug = slug or "default"
         self.attributes = AttributesModel(
             armour=1, dodge=1, hp=1, melee=1, ranged=1, speed=1
         )
-
-        if self.slug:
-            self.load(self.slug)
+        if slug:
+            self.load(slug)
 
     def load(self, slug: str) -> None:
         """Loads shape."""
@@ -80,3 +83,32 @@ class Shape:
 
     def __repr__(self) -> str:
         return f"Shape(slug={self.slug}, attributes={self.attributes})"
+
+
+class ShapeHandler:
+    """
+    Handles the shape-related attributes and calculations.
+    """
+
+    def __init__(self, shape_slug: Optional[str] = None):
+        self._shape = Shape(shape_slug)
+
+    @property
+    def slug(self) -> str:
+        return self._shape.slug
+
+    @property
+    def attributes(self) -> AttributesModel:
+        return self._shape.attributes
+
+    def apply_base_stat_calculation(
+        self, monster: Monster, multiplier: int
+    ) -> None:
+        """
+        Applies base stat calculations to the monster based on its shape.
+        """
+        calculate_base_stats(monster, self.attributes, multiplier)
+
+    def update_shape_attributes(self, new_attributes: AttributesModel) -> None:
+        """Updates the shape attributes."""
+        self._shape.attributes = new_attributes

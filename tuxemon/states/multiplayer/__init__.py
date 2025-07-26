@@ -6,7 +6,7 @@ from collections.abc import Callable, Generator
 
 import pygame_menu
 
-from tuxemon.animation import Animation
+from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu, PygameMenuState
@@ -62,7 +62,7 @@ class MultiplayerMenu(PygameMenuState):
         self.animation_size = 0.0
 
         ani = self.animate(self, animation_size=1.0, duration=0.2)
-        ani.update_callback = self.update_animation_size
+        ani.schedule(self.update_animation_size, ScheduleType.ON_UPDATE)
 
         return ani
 
@@ -138,7 +138,7 @@ class MultiplayerSelect(PopUpMenu[None]):
         self.network = self.client.network_manager
 
         # make a timer to refresh the menu items every second
-        self.task(self.reload_items, 1, -1)
+        self.task(self.reload_items, interval=1, times=-1)
 
     def initialize_items(self) -> Generator[MenuItem[None], None, None]:
         assert self.network.client

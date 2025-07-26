@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["grabbed", "enemy_monster:own_monster"]
+      "parameters": [
+        "grabbed",
+        "enemy_monster:own_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 2.25,
   "range": "reach",
@@ -30,7 +33,10 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["summoner", "mental"],
+  "tags": [
+    "summoner",
+    "mental"
+  ],
   "types": [
     "fire",
     "metal"

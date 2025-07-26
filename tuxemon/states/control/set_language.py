@@ -8,7 +8,7 @@ from typing import Any
 import pygame_menu
 from pygame_menu import locals
 
-from tuxemon.animation import Animation
+from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
@@ -43,7 +43,9 @@ class SetLanguage(PygameMenuState):
         else:
             self.client.remove_state_by_name("ControlState")
             self.client.replace_state(
-                "WorldMenuState", character=local_session.player
+                "WorldMenuState",
+                menu_manager=local_session.world.menu_manager,
+                character=local_session.player,
             )
 
     def initialize_items(
@@ -57,7 +59,7 @@ class SetLanguage(PygameMenuState):
                 menu.add.button(
                     title=T.translate(f"language_{language.lower()}"),
                     action=partial(self.change_language, language),
-                    font_size=self.font_size_small,
+                    font_size=self.font_type.small,
                 )
 
     def update_animation_size(self) -> None:
@@ -77,5 +79,5 @@ class SetLanguage(PygameMenuState):
         """
         self.animation_size = 0.0
         ani = self.animate(self, animation_size=1.0, duration=0.2)
-        ani.update_callback = self.update_animation_size
+        ani.schedule(self.update_animation_size, ScheduleType.ON_UPDATE)
         return ani

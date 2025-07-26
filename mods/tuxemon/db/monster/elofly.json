@@ -1,80 +1,89 @@
 {
-    "slug": "elofly",
-    "category": "cloudburst",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "goad"
-        },
-        {
-            "level_learned": 1,
-            "technique": "biting_winds"
-        },
-        {
-            "level_learned": 4,
-            "technique": "shapechange"
-        },
-        {
-            "level_learned": 7,
-            "technique": "chill_mist"
-        },
-        {
-            "level_learned": 13,
-            "technique": "fume"
-        },
-        {
-            "level_learned": 25,
-            "technique": "altitude"
-        },
-        {
-            "level_learned": 28,
-            "technique": "flood"
-        },
-        {
-            "level_learned": 31,
-            "technique": "flow"
-        },
-        {
-            "level_learned": 43,
-            "technique": "ten_thousand_feathers"
-        },
-        {
-            "level_learned": 46,
-            "technique": "thunderclap"
-        },
-        {
-            "level_learned": 52,
-            "technique": "one_million_talons"
-        }
-    ],
-    "evolutions": [
-        {
-            "at_level": 18,
-            "monster_slug": "elowind"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "elowind",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "elostorm",
-            "evo_stage": "stage2"
-        }
-    ],
-    "terrains": ["grassland", "jungle", "woodland"],
-    "tags": ["bird"],
-    "shape": "flier",
-    "stage": "basic",
-    "types": [
-        "water"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 39,
-    "height": 75,
-    "weight": 3,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.25
+  "slug": "elofly",
+  "category": "cloudburst",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "goad"
+    },
+    {
+      "level_learned": 1,
+      "technique": "biting_winds"
+    },
+    {
+      "level_learned": 4,
+      "technique": "shapechange"
+    },
+    {
+      "level_learned": 7,
+      "technique": "chill_mist"
+    },
+    {
+      "level_learned": 13,
+      "technique": "fume"
+    },
+    {
+      "level_learned": 25,
+      "technique": "altitude"
+    },
+    {
+      "level_learned": 28,
+      "technique": "flood"
+    },
+    {
+      "level_learned": 31,
+      "technique": "flow"
+    },
+    {
+      "level_learned": 43,
+      "technique": "ten_thousand_feathers"
+    },
+    {
+      "level_learned": 46,
+      "technique": "thunderclap"
+    },
+    {
+      "level_learned": 52,
+      "technique": "one_million_talons"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 18,
+      "monster_slug": "elowind"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "elowind",
+      "evo_stage": "stage1"
+    },
+    {
+      "mon_slug": "elostorm",
+      "evo_stage": "stage2"
+    }
+  ],
+  "terrains": [
+    "grassland",
+    "jungle",
+    "woodland"
+  ],
+  "tags": [
+    "bird"
+  ],
+  "shape": "flier",
+  "stage": "basic",
+  "types": [
+    "water"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 39,
+  "height": 75,
+  "weight": 3,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.25
 }

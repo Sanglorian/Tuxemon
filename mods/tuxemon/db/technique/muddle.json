@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["focused", "own_team:enemy_team"]
+      "parameters": [
+        "focused",
+        "own_team:enemy_team"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 1,
   "range": "reach",
@@ -30,7 +33,10 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["ghost", "mental"],
+  "tags": [
+    "ghost",
+    "mental"
+  ],
   "types": [
     "fire",
     "metal"

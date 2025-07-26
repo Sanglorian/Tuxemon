@@ -1,27 +1,33 @@
 {
   "tech_id": 180,
   "accuracy": 0.8,
-	"animation": null,
-	"conditions": [
+  "animation": null,
+  "conditions": [
     {
       "type": "status",
-      "parameters": ["grabbed"],
+      "parameters": [
+        "grabbed"
+      ],
       "operator": "not"
     },
     {
       "type": "status",
-      "parameters": ["stuck"],
+      "parameters": [
+        "stuck"
+      ],
       "operator": "not"
     }
-	],
-	"effects": [
+  ],
+  "effects": [
     {
       "type": "disappear",
-      "parameters": ["hawk"]
+      "parameters": [
+        "hawk"
+      ]
     }
-	],
+  ],
   "flip_axes": "",
-  "is_fast": true,
+  "speed": "extremely_fast",
   "potency": 1,
   "power": 1,
   "range": "melee",
@@ -39,7 +45,9 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["bird"],
+  "tags": [
+    "bird"
+  ],
   "types": [
     "wood",
     "earth"

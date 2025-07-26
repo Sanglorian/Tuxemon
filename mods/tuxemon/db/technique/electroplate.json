@@ -5,11 +5,14 @@
   "effects": [
     {
       "type": "switch",
-      "parameters": ["enemy_monster", "metal"]
+      "parameters": [
+        "enemy_monster",
+        "metal"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -27,7 +30,10 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["machine", "shielded"],
+  "tags": [
+    "machine",
+    "shielded"
+  ],
   "types": [
     "aether"
   ],

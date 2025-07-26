@@ -5,18 +5,23 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["slow", "enemy_monster"]
+      "parameters": [
+        "slow",
+        "enemy_monster"
+      ]
     },
     {
       "type": "multiattack",
-      "parameters": ["5"]
+      "parameters": [
+        "5"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.3,
   "power": 0.5,
   "randomly": false,
@@ -35,7 +40,9 @@
     "own_trainer": false
   },
   "category": "reserved",
-  "tags": ["reserved"],
+  "tags": [
+    "reserved"
+  ],
   "types": [
     "earth",
     "wood"

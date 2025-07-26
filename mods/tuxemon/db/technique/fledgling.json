@@ -8,7 +8,7 @@
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.0,
   "power": 1.7,
   "range": "ranged",
@@ -26,7 +26,9 @@
     "own_trainer": false
   },
   "category": "animal",
-  "tags": ["bird"],
+  "tags": [
+    "bird"
+  ],
   "types": [
     "earth"
   ],

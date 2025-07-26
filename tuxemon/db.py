@@ -5,12 +5,22 @@ from __future__ import annotations
 import difflib
 import json
 import logging
+from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from importlib import import_module
 from pathlib import Path
-from typing import Annotated, Any, ClassVar, Literal, Optional, Union, cast
+from typing import (
+    Annotated,
+    Any,
+    ClassVar,
+    Literal,
+    Optional,
+    TypeVar,
+    Union,
+    cast,
+)
 
 import yaml
 from PIL import Image
@@ -32,8 +42,7 @@ from tuxemon.surfanim import FlipAxes
 logger = logging.getLogger(__name__)
 
 # Load the default translator for data validation
-T.collect_languages(False)
-T.load_translator()
+T.initialize_translations()
 
 
 class Direction(str, Enum):
@@ -87,6 +96,8 @@ class ItemCategory(str, Enum):
     destroy = "destroy"
     capture = "capture"
     stats = "stats"
+    food = "food"
+    doll = "doll"
 
 
 class OutputBattle(str, Enum):
@@ -162,6 +173,17 @@ class EffectPhase(Enum):
     SWAP_MONSTER = "swap_monster"
 
 
+class Acquisition(str, Enum):
+    UNKNOWN = "unknown"
+    CAPTURED = "captured"
+    TRADED = "traded"
+    BRED = "bred"
+    GIFTED = "gifted"
+    PURCHASED = "purchased"
+    RESCUED = "rescued"
+    CREATED = "created"
+
+
 # TODO: Automatically generate state enum through discovery
 State = Enum(
     "State",
@@ -172,6 +194,17 @@ State = Enum(
         "None": "",
     },
 )
+
+U = TypeVar("U", bound="BaseLookupModel")
+
+
+class BaseLookupModel(ABC):
+    table_name: ClassVar[str]
+
+    @classmethod
+    @abstractmethod
+    def lookup(cls: type[U], slug: str, db: ModData) -> U:
+        pass
 
 
 class CommonCondition(BaseModel):
@@ -220,6 +253,14 @@ class ItemBehaviors(BaseModel):
     resellable: bool = Field(
         False, description="Whether or not this item is resellable."
     )
+    repairable: bool = Field(
+        False,
+        description="Whether or not this item can be repaired once damaged or broken.",
+    )
+    craftable: bool = Field(
+        False,
+        description="Whether or not this item can be crafted.",
+    )
 
 
 class WorldMenuEntry(BaseModel):
@@ -228,7 +269,7 @@ class WorldMenuEntry(BaseModel):
     state: str
 
 
-class ItemModel(BaseModel):
+class ItemModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "item"
     model_config = ConfigDict(title="Item")
     slug: str = Field(..., description="The slug of the item")
@@ -239,6 +280,15 @@ class ItemModel(BaseModel):
     use_success: str = Field(
         "generic_success",
         description="Slug to determine which text is displayed when this item is used successfully",
+    )
+    confirm_text: str = Field(
+        "item_confirm_use",
+        description="Translation key for the label used when confirming item usage.",
+    )
+
+    cancel_text: str = Field(
+        "item_confirm_cancel",
+        description="Translation key for the label used when canceling item usage.",
     )
     use_failure: str = Field(
         "generic_failure",
@@ -271,6 +321,17 @@ class ItemModel(BaseModel):
         description="Item adds to World Menu a button (position, label -inside the PO -,state, eg. 3:nu_phone:PhoneState)",
     )
     cost: int = Field(0, description="The standard cost of the item.", ge=0)
+    max_wear: int = Field(
+        0,
+        description="The maximum wear threshold before the item breaks or becomes unusable.",
+        ge=0,
+    )
+    break_chance: float = Field(
+        0.0,
+        description="Chance (0.0-1.0) that the item breaks each time it's used.",
+        ge=0.0,
+        le=1.0,
+    )
     modifiers: list[Modifier] = Field(..., description="Various modifiers")
 
     @classmethod
@@ -322,7 +383,7 @@ class AttributesModel(BaseModel):
     speed: int = Field(..., description="Speed value")
 
 
-class ShapeModel(BaseModel):
+class ShapeModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "shape"
     slug: str = Field(
         ..., description="Slug of the shape, used as a unique identifier."
@@ -402,9 +463,9 @@ class MonsterEvolutionItemModel(BaseModel):
         None,
         description="Whether the monster must be inside to evolve.",
     )
-    traded: Optional[bool] = Field(
+    acquisition: Optional[Acquisition] = Field(
         None,
-        description="Whether the monster must have been traded to evolve.",
+        description="How the monster was obtained (e.g. caught, bred, traded, gifted).",
     )
     variables: Sequence[dict[str, str]] = Field(
         [],
@@ -604,7 +665,7 @@ class MonsterSoundsModel(BaseModel):
 
 
 # Validate assignment allows us to assign a default inside a validator
-class MonsterModel(BaseModel, validate_assignment=True):
+class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
     table_name: ClassVar[str] = "monster"
     slug: str = Field(..., description="The slug of the monster")
     category: str = Field(..., description="The category of monster")
@@ -778,6 +839,28 @@ class Modifier(BaseModel):
     multiplier: float = Field(1.0, description="Multiplier", ge=0.0, le=2.0)
 
 
+class SpeedLabel(str, Enum):
+    EXTREMELY_SLOW = "extremely_slow"
+    VERY_SLOW = "very_slow"
+    SLOW = "slow"
+    NORMAL = "normal"
+    FAST = "fast"
+    VERY_FAST = "very_fast"
+    EXTREMELY_FAST = "extremely_fast"
+
+    @property
+    def numeric_value(self) -> int:
+        return {
+            SpeedLabel.EXTREMELY_SLOW: -3,
+            SpeedLabel.VERY_SLOW: -2,
+            SpeedLabel.SLOW: -1,
+            SpeedLabel.NORMAL: 0,
+            SpeedLabel.FAST: 1,
+            SpeedLabel.VERY_FAST: 2,
+            SpeedLabel.EXTREMELY_FAST: 3,
+        }[self]
+
+
 class TechSort(str, Enum):
     damage = "damage"
     meta = "meta"
@@ -828,7 +911,7 @@ class TargetModel(BaseModel):
         return v
 
 
-class TechniqueModel(BaseModel):
+class TechniqueModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "technique"
     slug: str = Field(..., description="The slug of the technique")
     sort: TechSort = Field(..., description="The sort of technique this is")
@@ -871,6 +954,15 @@ class TechniqueModel(BaseModel):
         None,
         description="Slug of what string to display when technique fails",
     )
+    confirm_text: str = Field(
+        "item_confirm_use",
+        description="Translation key for the label used when confirming tech usage.",
+    )
+
+    cancel_text: str = Field(
+        "item_confirm_cancel",
+        description="Translation key for the label used when canceling tech usage.",
+    )
     types: Sequence[str] = Field([], description="Type(s) of the technique")
     usable_on: bool = Field(
         False,
@@ -882,8 +974,12 @@ class TechniqueModel(BaseModel):
         ge=prepare.POWER_RANGE[0],
         le=prepare.POWER_RANGE[1],
     )
-    is_fast: bool = Field(
-        False, description="Whether or not this is a fast technique"
+    speed: SpeedLabel = Field(
+        default=SpeedLabel.NORMAL,
+        description=(
+            "Indicates the relative speed of this technique. "
+            "Possible values range from 'extremely_slow' to 'extremely_fast'."
+        ),
     )
     randomly: bool = Field(
         True,
@@ -977,7 +1073,7 @@ class TechniqueModel(BaseModel):
         return elements
 
 
-class StatusModel(BaseModel):
+class StatusModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "status"
     slug: str = Field(..., description="The slug of the status")
     sort: TechSort = Field(..., description="The sort of status this is")
@@ -1181,7 +1277,7 @@ class NpcTemplateModel(BaseModel):
         raise ValueError(f"the template {v} doesn't exist in the db")
 
 
-class NpcModel(BaseModel):
+class NpcModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "npc"
     slug: str = Field(..., description="Slug of the name of the NPC")
     forfeit: bool = Field(False, description="Whether you can forfeit or not")
@@ -1270,12 +1366,6 @@ class BattleGraphicsModel(BaseModel):
     menu: str = Field(
         "MainCombatMenuState", description="Menu used for combat."
     )
-    msgid: str = Field(
-        "combat_monster_choice",
-        description="msgid of the sentence that is going to appear in the "
-        "combat menu in between the rounds, when the monster needs to choose "
-        "the next move, (name) shows monster name, (player) the player name.",
-    )
     island_back: str = Field(..., description="Sprite used for back combat")
     island_front: str = Field(..., description="Sprite used for front combat")
     background: str = Field(..., description="Sprite used for background")
@@ -1294,12 +1384,6 @@ class BattleGraphicsModel(BaseModel):
             return v
         raise ValueError(f"no resource exists with path: {v}")
 
-    @field_validator("msgid")
-    def translation_exists_msgid(cls: BattleGraphicsModel, v: str) -> str:
-        if has.translation(v):
-            return v
-        raise ValueError(f"no translation exists with msgid: {v}")
-
     @field_validator("menu")
     def check_state(cls: BattleGraphicsModel, v: str) -> str:
         states = [state.name for state in State]
@@ -1308,7 +1392,7 @@ class BattleGraphicsModel(BaseModel):
         raise ValueError(f"state isn't among: {states}")
 
 
-class EnvironmentModel(BaseModel):
+class EnvironmentModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "environment"
     slug: str = Field(..., description="Slug of the name of the environment")
     battle_music: str = Field(
@@ -1375,7 +1459,7 @@ class EncounterItemModel(BaseModel):
         return v
 
 
-class EncounterModel(BaseModel):
+class EncounterModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "encounter"
     slug: str = Field(
         ..., description="Slug to uniquely identify this encounter"
@@ -1393,7 +1477,7 @@ class EncounterModel(BaseModel):
             raise RuntimeError(f"Encounter {slug} not found")
 
 
-class DialogueModel(BaseModel):
+class DialogueModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "dialogue"
     slug: str = Field(
         ..., description="Slug to uniquely identify this dialogue"
@@ -1431,7 +1515,7 @@ class ElementItemModel(BaseModel):
         raise ValueError(f"the element {v} doesn't exist in the db")
 
 
-class ElementModel(BaseModel):
+class ElementModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "element"
     slug: str = Field(..., description="Slug uniquely identifying the type")
     icon: str = Field(..., description="The icon to use for the type")
@@ -1458,7 +1542,7 @@ class ElementModel(BaseModel):
         raise ValueError(f"the icon {v} doesn't exist in the db")
 
 
-class TasteModel(BaseModel):
+class TasteModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "taste"
     slug: str = Field(..., description="Slug of the taste")
     name: str = Field(..., description="Name of the taste")
@@ -1467,6 +1551,12 @@ class TasteModel(BaseModel):
     )
     modifiers: Sequence[Modifier] = Field(
         ..., description="Modifiers associated with the taste"
+    )
+    rarity_score: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Rarity score between 0 (rare) and 1 (common)",
     )
 
     @classmethod
@@ -1518,7 +1608,7 @@ class EconomyMonsterModel(EconomyEntityModel):
         raise ValueError(f"the monster {v} doesn't exist in the db")
 
 
-class EconomyModel(BaseModel):
+class EconomyModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "economy"
     slug: str = Field(..., description="Slug uniquely identifying the economy")
     resale_multiplier: float = Field(..., description="Resale multiplier")
@@ -1557,7 +1647,7 @@ class ProgressModel(BaseModel):
     )
 
 
-class MissionModel(BaseModel):
+class MissionModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "mission"
     slug: str = Field(..., description="Slug uniquely identifying the mission")
     description: str = Field(
@@ -1648,7 +1738,7 @@ class SoundModel(BaseModel):
         raise ValueError(f"the sound {v} doesn't exist in the db")
 
 
-class AnimationModel(BaseModel):
+class AnimationModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "animation"
     slug: str = Field(..., description="Unique slug for the animation")
     file: str = Field(..., description="File of the animation")
@@ -1670,7 +1760,7 @@ class AnimationModel(BaseModel):
         raise ValueError(f"the animation {v} doesn't exist in the db")
 
 
-class TerrainModel(BaseModel):
+class TerrainModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "terrain"
     slug: str = Field(..., description="Slug of the terrain")
     name: str = Field(..., description="Name of the terrain condition")
@@ -1693,7 +1783,7 @@ class TerrainModel(BaseModel):
         raise ValueError(f"no translation exists with msgid: {v}")
 
 
-class WeatherModel(BaseModel):
+class WeatherModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "weather"
     slug: str = Field(..., description="Slug of the weather")
     name: str = Field(..., description="Name of the weather condition")
@@ -1800,12 +1890,12 @@ class ModMetadataLoader:
     def load_metadata(self) -> dict[str, dict[str, Any]]:
         metadata = {}
         for mod_directory in self.active_mods:
-            mod_path = self.base_path / mod_directory / "mod.json"
+            mod_path = self.base_path / mod_directory / "mod.yaml"
             if mod_path.exists():
                 try:
                     with mod_path.open() as f:
-                        metadata[mod_directory] = json.load(f)
-                except json.JSONDecodeError as e:
+                        metadata[mod_directory] = yaml.safe_load(f)
+                except yaml.YAMLError as e:
                     logger.error(
                         f"Error loading metadata for '{mod_directory}': {e}"
                     )
@@ -1886,16 +1976,37 @@ class ModData:
         """
         if directory == "all":
             if self.config.mod_tables:
-                for mod, tables in self.config.mod_tables.items():
-                    if mod in self.config.active_mods:
+                ordered_mods_for_loading = []
+                resolved_set = set()
+
+                for mod in self.config.active_mods:
+                    if mod in self.config.mod_tables:
                         dependencies = self.resolver.resolve(mod)
-                        mods_to_load = dependencies + [mod]
-                        for mod_to_load in mods_to_load:
-                            if mod_to_load in self.config.mod_tables:
-                                for table in self.config.mod_tables[
-                                    mod_to_load
-                                ]:
-                                    self._preload_table(table, mod_to_load)
+
+                        for dep in dependencies:
+                            if dep not in resolved_set:
+                                logger.info(
+                                    f"Adding dependency to load queue: {dep}"
+                                )
+                                ordered_mods_for_loading.append(dep)
+                                resolved_set.add(dep)
+
+                        if mod not in resolved_set:
+                            logger.info(
+                                f"Adding main mod to load queue: {mod}"
+                            )
+                            ordered_mods_for_loading.append(mod)
+                            resolved_set.add(mod)
+
+                logger.info(
+                    f"Final ordered mods for loading: {ordered_mods_for_loading}"
+                )
+
+                for mod_to_load in ordered_mods_for_loading:
+                    if mod_to_load in self.config.mod_tables:
+                        logger.info(f"Loading mod: {mod_to_load}")
+                        for table in self.config.mod_tables[mod_to_load]:
+                            self._preload_table(table, mod_to_load)
             else:
                 logger.warning("No mod tables specified in config.")
         else:
@@ -2184,17 +2295,17 @@ def load_dict(
 
 
 def load_config(config_path: str) -> DatabaseConfig:
-    """Loads configuration from a JSON file."""
+    """Loads configuration from a YAML file."""
     try:
         with open(config_path) as f:
-            data = json.load(f)
+            data = yaml.safe_load(f)
         return DatabaseConfig(**data)
     except FileNotFoundError:
         raise FileNotFoundError(
             f"Configuration file '{config_path}' not found."
         )
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON in '{config_path}': {e}")
+    except yaml.YAMLError as e:
+        raise ValueError(f"Invalid YAML in '{config_path}': {e}")
 
 
 class Validator:
@@ -2280,7 +2391,7 @@ class Validator:
         return slug in self.db.preloaded[table]
 
 
-path = prepare.fetch(mods_folder.as_posix(), "db_config.json")
+path = prepare.fetch(mods_folder.as_posix(), "db_config.yaml")
 config = load_config(path)
 model_map = load_model_map(config.model_map)
 loader = ModelLoader(model_map)

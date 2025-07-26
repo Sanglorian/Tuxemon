@@ -8,7 +8,9 @@
   "effects": [
     {
       "type": "park",
-      "parameters": ["capture"]
+      "parameters": [
+        "capture"
+      ]
     }
   ],
   "animation": "capture_1",

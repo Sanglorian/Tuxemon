@@ -8,7 +8,7 @@
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.0,
   "power": 1.5,
   "range": "reach",
@@ -26,7 +26,10 @@
     "own_trainer": false
   },
   "category": "basic",
-  "tags": ["ghost", "leadership"],
+  "tags": [
+    "ghost",
+    "leadership"
+  ],
   "types": [
     "metal"
   ],

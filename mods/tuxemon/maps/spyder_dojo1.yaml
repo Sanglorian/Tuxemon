@@ -323,7 +323,7 @@ events:
     type: event
   Talk Zhu Cold:
     actions:
-    - change_taste tasteful_zhu,cold
+    - change_taste tasteful_zhu,cold,random
     - set_variable zhu_taste_done:yes
     conditions:
     - is variable_set which_taste:taste_cold
@@ -365,7 +365,7 @@ events:
     type: event
   Talk Zhu Warm:
     actions:
-    - change_taste tasteful_zhu,warm
+    - change_taste tasteful_zhu,warm,random
     - set_variable zhu_taste_done:yes
     conditions:
     - is variable_set which_taste:taste_warm

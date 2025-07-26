@@ -1,73 +1,77 @@
 {
-    "slug": "merlicun",
-    "category": "dragon_worm",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "fire_ball"
-        },
-        {
-            "level_learned": 1,
-            "technique": "fire_claw"
-        },
-        {
-            "level_learned": 4,
-            "technique": "muddle"
-        },
-        {
-            "level_learned": 7,
-            "technique": "breathe_fire"
-        },
-        {
-            "level_learned": 13,
-            "technique": "chameleon"
-        },
-        {
-            "level_learned": 16,
-            "technique": "kindling_flame"
-        },
-        {
-            "level_learned": 28,
-            "technique": "sunburst"
-        },
-        {
-            "level_learned": 31,
-            "technique": "magma"
-        },
-        {
-            "level_learned": 37,
-            "technique": "arcane_eye"
-        },
-        {
-            "level_learned": 40,
-            "technique": "battery_acid"
-        }
-    ],
-    "evolutions": [
-        {
-            "at_level": 20,
-            "monster_slug": "firomenis"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "firomenis",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": [],
-    "tags": ["bug"],
-    "shape": "varmint",
-    "stage": "basic",
-    "types": [
-        "fire"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 209,
-    "height": 28,
-    "weight": 3,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.9,
-    "upper_catch_resistance": 1.15
+  "slug": "merlicun",
+  "category": "dragon_worm",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "fire_ball"
+    },
+    {
+      "level_learned": 1,
+      "technique": "fire_claw"
+    },
+    {
+      "level_learned": 4,
+      "technique": "muddle"
+    },
+    {
+      "level_learned": 7,
+      "technique": "breathe_fire"
+    },
+    {
+      "level_learned": 13,
+      "technique": "chameleon"
+    },
+    {
+      "level_learned": 16,
+      "technique": "kindling_flame"
+    },
+    {
+      "level_learned": 28,
+      "technique": "sunburst"
+    },
+    {
+      "level_learned": 31,
+      "technique": "magma"
+    },
+    {
+      "level_learned": 37,
+      "technique": "arcane_eye"
+    },
+    {
+      "level_learned": 40,
+      "technique": "battery_acid"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 20,
+      "monster_slug": "firomenis"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "firomenis",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [],
+  "tags": [
+    "bug"
+  ],
+  "shape": "varmint",
+  "stage": "basic",
+  "types": [
+    "fire"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 209,
+  "height": 28,
+  "weight": 3,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.9,
+  "upper_catch_resistance": 1.15
 }
-

@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from tuxemon import formula
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 from tuxemon.locale import T
+from tuxemon.menu.formatter import CurrencyFormatter
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
@@ -34,14 +35,16 @@ class MoneyEffect(CoreEffect):
         extra: list[str] = []
         player = user.get_owner()
         combat = tech.get_combat_state()
-        tech.hit = tech.accuracy >= combat._random_tech_hit.get(user, 0.0)
+        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
 
         damage, mult = formula.simple_damage_calculate(tech, user, target)
 
         if tech.hit:
             amount = int(damage * mult)
             _give_money(session, player, amount)
-            params = {"name": user.name.upper(), "symbol": "$", "gold": amount}
+            formatter = CurrencyFormatter()
+            formatted_amount = formatter.format(amount)
+            params = {"name": user.name.upper(), "gold": formatted_amount}
             extra = [T.format("combat_state_gold", params)]
         else:
             user.current_hp = max(0, user.current_hp - damage)

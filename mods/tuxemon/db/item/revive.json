@@ -2,12 +2,17 @@
   "conditions": [
     {
       "type": "current_hp",
-      "parameters": ["==", "0"],
+      "parameters": [
+        "==",
+        "0"
+      ],
       "operator": "is"
     },
     {
       "type": "status",
-      "parameters": ["faint"],
+      "parameters": [
+        "faint"
+      ],
       "operator": "is"
     }
   ],
@@ -17,7 +22,10 @@
     },
     {
       "type": "heal",
-      "parameters": ["20","fixed"]
+      "parameters": [
+        "20",
+        "fixed"
+      ]
     }
   ],
   "slug": "revive",

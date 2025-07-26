@@ -5,12 +5,16 @@
   "effects": [
     {
       "type": "photogenesis",
-      "parameters": ["6", "12", "18"]
+      "parameters": [
+        "6",
+        "12",
+        "18"
+      ]
     }
   ],
   "flip_axes": "",
   "healing_power": 2,
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -28,7 +32,9 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["plant"],
+  "tags": [
+    "plant"
+  ],
   "types": [
     "aether"
   ],

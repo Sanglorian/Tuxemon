@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "has_tech",
-      "parameters": ["shadow_boxing"],
+      "parameters": [
+        "shadow_boxing"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["shadow_boxing"]
+      "parameters": [
+        "shadow_boxing"
+      ]
     }
   ],
   "slug": "tm_shadow_boxing",

@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["grabbed", "enemy_monster"]
+      "parameters": [
+        "grabbed",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.5,
   "power": 3.0,
   "range": "melee",
@@ -30,7 +33,9 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["plant"],
+  "tags": [
+    "plant"
+  ],
   "types": [
     "wood"
   ],

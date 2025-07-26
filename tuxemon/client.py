@@ -27,14 +27,17 @@ from tuxemon.event.eventpersist import EventPersist
 from tuxemon.map_loader import MapLoader
 from tuxemon.map_manager import MapManager
 from tuxemon.map_transition import MapTransition
+from tuxemon.movement import MovementManager, Pathfinder
 from tuxemon.networking import NetworkManager
 from tuxemon.npc_manager import NPCManager
+from tuxemon.park_tracker import ParkSession
 from tuxemon.platform.events import PlayerInput
 from tuxemon.platform.input_manager import InputManager
 from tuxemon.rumble import RumbleManager
 from tuxemon.session import local_session
 from tuxemon.state import HookManager, State, StateManager, StateRepository
 from tuxemon.state_draw import EventDebugDrawer, Renderer, StateDrawer
+from tuxemon.ui.cipher_processor import CipherProcessor
 
 StateType = TypeVar("StateType", bound=State)
 
@@ -131,6 +134,9 @@ class LocalPygameClient:
         )
         self.event_persist = EventPersist()
 
+        self.movement_manager = MovementManager(
+            self.event_manager, self.input_manager
+        )
         self.npc_manager = NPCManager()
         self.map_loader = MapLoader()
         self.map_manager = MapManager()
@@ -138,6 +144,12 @@ class LocalPygameClient:
             self.map_manager, self.npc_manager
         )
         self.boundary = BoundaryChecker()
+        self.pathfinder = Pathfinder(
+            self.npc_manager,
+            self.map_manager,
+            self.collision_manager,
+            self.boundary,
+        )
         self.map_transition = MapTransition(
             self.map_loader,
             self.npc_manager,
@@ -169,6 +181,10 @@ class LocalPygameClient:
         # TODO: phase these out
         self.key_events: Sequence[PlayerInput] = []
         self.event_data: dict[str, Any] = {}
+
+        # Various Sessions
+        self.park_session = ParkSession()
+        self.cipher_processor: Optional[CipherProcessor] = None
 
     @property
     def is_running(self) -> bool:

@@ -1,71 +1,73 @@
 {
-    "slug": "foxko",
-    "category": "threat",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "gust"
-        },
-        {
-            "level_learned": 1,
-            "technique": "chameleon"
-        },
-        {
-            "level_learned": 4,
-            "technique": "all_in"
-        },
-        {
-            "level_learned": 7,
-            "technique": "pseudopod"
-        },
-        {
-            "level_learned": 13,
-            "technique": "sunburst"
-        },
-        {
-            "level_learned": 16,
-            "technique": "negation"
-        },
-        {
-            "level_learned": 19,
-            "technique": "salamander"
-        },
-        {
-            "level_learned": 25,
-            "technique": "berserk"
-        },
-        {
-            "level_learned": 28,
-            "technique": "shadow_boxing"
-        },
-        {
-            "level_learned": 31,
-            "technique": "conjurer"
-        },
-        {
-            "level_learned": 37,
-            "technique": "torch"
-        },
-        {
-            "level_learned": 40,
-            "technique": "supernova"
-        }
-    ],
-    "evolutions": [],
-    "history": [],
-    "terrains": [],
-    "tags": [],
-    "shape": "serpent",
-    "stage": "standalone",
-    "types": [
-        "fire",
-        "wood"
-    ],
-    "possible_genders": ["neuter"],
-    "txmn_id": 0,
-    "height": 71,
-    "weight": 10,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "foxko",
+  "category": "threat",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "gust"
+    },
+    {
+      "level_learned": 1,
+      "technique": "chameleon"
+    },
+    {
+      "level_learned": 4,
+      "technique": "all_in"
+    },
+    {
+      "level_learned": 7,
+      "technique": "pseudopod"
+    },
+    {
+      "level_learned": 13,
+      "technique": "sunburst"
+    },
+    {
+      "level_learned": 16,
+      "technique": "negation"
+    },
+    {
+      "level_learned": 19,
+      "technique": "salamander"
+    },
+    {
+      "level_learned": 25,
+      "technique": "berserk"
+    },
+    {
+      "level_learned": 28,
+      "technique": "shadow_boxing"
+    },
+    {
+      "level_learned": 31,
+      "technique": "conjurer"
+    },
+    {
+      "level_learned": 37,
+      "technique": "torch"
+    },
+    {
+      "level_learned": 40,
+      "technique": "supernova"
+    }
+  ],
+  "evolutions": [],
+  "history": [],
+  "terrains": [],
+  "tags": [],
+  "shape": "serpent",
+  "stage": "standalone",
+  "types": [
+    "fire",
+    "wood"
+  ],
+  "possible_genders": [
+    "neuter"
+  ],
+  "txmn_id": 0,
+  "height": 71,
+  "weight": 10,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

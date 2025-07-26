@@ -1,64 +1,72 @@
 {
-    "slug": "poinchin",
-    "category": "spiny",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "flood"
-        },
-        {
-            "level_learned": 1,
-            "technique": "flow"
-        },
-        {
-            "level_learned": 4,
-            "technique": "goad"
-        },
-        {
-            "level_learned": 7,
-            "technique": "muck"
-        },
-        {
-            "level_learned": 13,
-            "technique": "font"
-        },
-        {
-            "level_learned": 22,
-            "technique": "midnight_mantle"
-        },
-        {
-            "level_learned": 25,
-            "technique": "needle"
-        },
-        {
-            "level_learned": 28,
-            "technique": "chill_mist"
-        }
-    ],
-    "evolutions": [
-        {
-            "at_level": 18,
-            "monster_slug": "saurchin"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "saurchin",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": ["coastal"],
-    "tags": ["sharp", "toxic"],
-    "shape": "grub",
-    "stage": "basic",
-    "types": [
-        "water"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 348,
-    "height": 30,
-    "weight": 6,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "poinchin",
+  "category": "spiny",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "flood"
+    },
+    {
+      "level_learned": 1,
+      "technique": "flow"
+    },
+    {
+      "level_learned": 4,
+      "technique": "goad"
+    },
+    {
+      "level_learned": 7,
+      "technique": "muck"
+    },
+    {
+      "level_learned": 13,
+      "technique": "font"
+    },
+    {
+      "level_learned": 22,
+      "technique": "midnight_mantle"
+    },
+    {
+      "level_learned": 25,
+      "technique": "needle"
+    },
+    {
+      "level_learned": 28,
+      "technique": "chill_mist"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 18,
+      "monster_slug": "saurchin"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "saurchin",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [
+    "coastal"
+  ],
+  "tags": [
+    "sharp",
+    "toxic"
+  ],
+  "shape": "grub",
+  "stage": "basic",
+  "types": [
+    "water"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 348,
+  "height": 30,
+  "weight": 6,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

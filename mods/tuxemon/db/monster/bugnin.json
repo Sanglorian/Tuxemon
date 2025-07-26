@@ -1,76 +1,85 @@
 {
-    "slug": "bugnin",
-    "category": "honour",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "clamp_on"
-        },
-        {
-            "level_learned": 1,
-            "technique": "buzz"
-        },
-        {
-            "level_learned": 4,
-            "technique": "splinter"
-        },
-        {
-            "level_learned": 7,
-            "technique": "font"
-        },
-        {
-            "level_learned": 10,
-            "technique": "evasion"
-        },
-        {
-            "level_learned": 13,
-            "technique": "sting"
-        },
-        {
-            "level_learned": 16,
-            "technique": "undertaker"
-        },
-        {
-            "level_learned": 19,
-            "technique": "perfect_cut"
-        },
-        {
-            "level_learned": 25,
-            "technique": "blade"
-        },
-        {
-            "level_learned": 28,
-            "technique": "sleep_bomb"
-        },
-        {
-            "level_learned": 46,
-            "technique": "vorpal"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "katapill",
-            "evo_stage": "basic"
-        },
-        {
-            "mon_slug": "katacoon",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": ["woodland"],
-    "tags": ["fists", "bug", "sharp"],
-    "shape": "brute",
-    "stage": "stage2",
-    "types": [
-        "metal",
-        "wood"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 58,
-    "height": 150,
-    "weight": 52,
-    "catch_rate": 35.0,
-    "lower_catch_resistance": 0.8,
-    "upper_catch_resistance": 1.05
+  "slug": "bugnin",
+  "category": "honour",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "clamp_on"
+    },
+    {
+      "level_learned": 1,
+      "technique": "buzz"
+    },
+    {
+      "level_learned": 4,
+      "technique": "splinter"
+    },
+    {
+      "level_learned": 7,
+      "technique": "font"
+    },
+    {
+      "level_learned": 10,
+      "technique": "evasion"
+    },
+    {
+      "level_learned": 13,
+      "technique": "sting"
+    },
+    {
+      "level_learned": 16,
+      "technique": "undertaker"
+    },
+    {
+      "level_learned": 19,
+      "technique": "perfect_cut"
+    },
+    {
+      "level_learned": 25,
+      "technique": "blade"
+    },
+    {
+      "level_learned": 28,
+      "technique": "sleep_bomb"
+    },
+    {
+      "level_learned": 46,
+      "technique": "vorpal"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "katapill",
+      "evo_stage": "basic"
+    },
+    {
+      "mon_slug": "katacoon",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [
+    "woodland"
+  ],
+  "tags": [
+    "fists",
+    "bug",
+    "sharp"
+  ],
+  "shape": "brute",
+  "stage": "stage2",
+  "types": [
+    "metal",
+    "wood"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 58,
+  "height": 150,
+  "weight": 52,
+  "catch_rate": 35.0,
+  "lower_catch_resistance": 0.8,
+  "upper_catch_resistance": 1.05
 }

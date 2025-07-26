@@ -10,7 +10,7 @@ import bisect
 import itertools
 from collections.abc import Mapping, Sequence
 from enum import Enum
-from typing import Any, Final, Optional, TypeVar, Union
+from typing import Any, Optional, TypeVar, Union
 
 # TODO: Feature idea: if the same image file is specified, re-use the Surface
 import pygame
@@ -33,9 +33,6 @@ class State(Enum):
     STOPPED = "stopped"
 
 
-dummy_image: Final = Surface((0, 0))
-
-
 class FrameManager:
     """
     The FrameManager class is designed to manage a sequence of frames, each
@@ -48,6 +45,8 @@ class FrameManager:
             duration: A float value representing the duration of the frame in
                 seconds.
     """
+
+    _dummy_image: Surface = Surface((0, 0))
 
     def __init__(
         self, frames: Sequence[tuple[Union[str, Surface], float]]
@@ -109,7 +108,7 @@ class FrameManager:
         frame number is out of range.
         """
         if frame_num >= len(self.images):
-            return dummy_image
+            return FrameManager._dummy_image
         return self.images[frame_num]
 
 

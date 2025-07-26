@@ -1,75 +1,81 @@
 {
-    "slug": "possessun",
-    "category": "visitor",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "pseudopod"
-        },
-        {
-            "level_learned": 1,
-            "technique": "refresh"
-        },
-        {
-            "level_learned": 4,
-            "technique": "stampede"
-        },
-        {
-            "level_learned": 7,
-            "technique": "mending"
-        },
-        {
-            "level_learned": 13,
-            "technique": "greenstone"
-        },
-        {
-            "level_learned": 16,
-            "technique": "muddle"
-        },
-        {
-            "level_learned": 19,
-            "technique": "quicksand"
-        },
-        {
-            "level_learned": 25,
-            "technique": "crystal"
-        },
-        {
-            "level_learned": 28,
-            "technique": "muck"
-        },
-        {
-            "level_learned": 31,
-            "technique": "amnesia"
-        },
-        {
-            "level_learned": 37,
-            "technique": "bubble_trap"
-        },
-        {
-            "level_learned": 40,
-            "technique": "constrict"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "cairfrey",
-            "evo_stage": "basic"
-        }
-    ],
-    "terrains": [],
-    "tags": ["mental", "megafauna", "ghost"],
-    "shape": "blob",
-    "stage": "stage1",
-    "types": [
-        "metal"
-    ],
-    "possible_genders": ["neuter"],
-    "txmn_id": 72,
-    "height": 69,
-    "weight": 0.1,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.9,
-    "upper_catch_resistance": 1.15
+  "slug": "possessun",
+  "category": "visitor",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "pseudopod"
+    },
+    {
+      "level_learned": 1,
+      "technique": "refresh"
+    },
+    {
+      "level_learned": 4,
+      "technique": "stampede"
+    },
+    {
+      "level_learned": 7,
+      "technique": "mending"
+    },
+    {
+      "level_learned": 13,
+      "technique": "greenstone"
+    },
+    {
+      "level_learned": 16,
+      "technique": "muddle"
+    },
+    {
+      "level_learned": 19,
+      "technique": "quicksand"
+    },
+    {
+      "level_learned": 25,
+      "technique": "crystal"
+    },
+    {
+      "level_learned": 28,
+      "technique": "muck"
+    },
+    {
+      "level_learned": 31,
+      "technique": "amnesia"
+    },
+    {
+      "level_learned": 37,
+      "technique": "bubble_trap"
+    },
+    {
+      "level_learned": 40,
+      "technique": "constrict"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "cairfrey",
+      "evo_stage": "basic"
+    }
+  ],
+  "terrains": [],
+  "tags": [
+    "mental",
+    "megafauna",
+    "ghost"
+  ],
+  "shape": "blob",
+  "stage": "stage1",
+  "types": [
+    "metal"
+  ],
+  "possible_genders": [
+    "neuter"
+  ],
+  "txmn_id": 72,
+  "height": 69,
+  "weight": 0.1,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.9,
+  "upper_catch_resistance": 1.15
 }

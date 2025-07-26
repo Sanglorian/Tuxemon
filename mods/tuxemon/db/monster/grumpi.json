@@ -1,72 +1,77 @@
 {
-    "slug": "grumpi",
-    "category": "gummy",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "constrict"
-        },
-        {
-            "level_learned": 1,
-            "technique": "gnaw"
-        },
-        {
-            "level_learned": 4,
-            "technique": "biting_winds"
-        },
-        {
-            "level_learned": 7,
-            "technique": "invictus"
-        },
-        {
-            "level_learned": 13,
-            "technique": "clamp_on"
-        },
-        {
-            "level_learned": 16,
-            "technique": "mudslide"
-        },
-        {
-            "level_learned": 19,
-            "technique": "quicksand"
-        },
-        {
-            "level_learned": 25,
-            "technique": "all_in"
-        },
-        {
-            "level_learned": 28,
-            "technique": "one_two"
-        },
-        {
-            "level_learned": 31,
-            "technique": "venomous_tentacle"
-        },
-        {
-            "level_learned": 37,
-            "technique": "pit"
-        },
-        {
-            "level_learned": 40,
-            "technique": "greenstone"
-        }
-    ],
-    "evolutions": [],
-    "history": [],
-    "terrains": [],
-    "tags": ["pseudopod", "bite"],
-    "shape": "brute",
-    "stage": "standalone",
-    "types": [
-        "earth",
-        "water"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 354,
-    "height": 150,
-    "weight": 160,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.9,
-    "upper_catch_resistance": 1.15
+  "slug": "grumpi",
+  "category": "gummy",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "constrict"
+    },
+    {
+      "level_learned": 1,
+      "technique": "gnaw"
+    },
+    {
+      "level_learned": 4,
+      "technique": "biting_winds"
+    },
+    {
+      "level_learned": 7,
+      "technique": "invictus"
+    },
+    {
+      "level_learned": 13,
+      "technique": "clamp_on"
+    },
+    {
+      "level_learned": 16,
+      "technique": "mudslide"
+    },
+    {
+      "level_learned": 19,
+      "technique": "quicksand"
+    },
+    {
+      "level_learned": 25,
+      "technique": "all_in"
+    },
+    {
+      "level_learned": 28,
+      "technique": "one_two"
+    },
+    {
+      "level_learned": 31,
+      "technique": "venomous_tentacle"
+    },
+    {
+      "level_learned": 37,
+      "technique": "pit"
+    },
+    {
+      "level_learned": 40,
+      "technique": "greenstone"
+    }
+  ],
+  "evolutions": [],
+  "history": [],
+  "terrains": [],
+  "tags": [
+    "pseudopod",
+    "bite"
+  ],
+  "shape": "brute",
+  "stage": "standalone",
+  "types": [
+    "earth",
+    "water"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 354,
+  "height": 150,
+  "weight": 160,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.9,
+  "upper_catch_resistance": 1.15
 }
-

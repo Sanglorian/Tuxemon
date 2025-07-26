@@ -1,84 +1,90 @@
 {
-    "slug": "botbot",
-    "category": "socket",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "beam"
-        },
-        {
-            "level_learned": 1,
-            "technique": "levitate"
-        },
-        {
-            "level_learned": 4,
-            "technique": "strike"
-        },
-        {
-            "level_learned": 7,
-            "technique": "radiance"
-        },
-        {
-            "level_learned": 13,
-            "technique": "battery_discharge"
-        }
-    ],
-    "evolutions": [
-        {
-            "monster_slug": "av8r",
-            "item": "booster_tech"
-        },
-        {
-            "monster_slug": "picc",
-            "item": "booster_tech"
-        },
-        {
-            "monster_slug": "mrmoswitch",
-            "item": "booster_tech"
-        },
-        {
-            "monster_slug": "k9",
-            "item": "booster_tech"
-        },
-        {
-            "monster_slug": "b_ver_1",
-            "item": "booster_tech"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "b_ver_1",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "k9",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "mrmoswitch",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "picc",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "av8r",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": ["urban"],
-    "tags": ["machine"],
-    "shape": "grub",
-    "stage": "basic",
-    "types": [
-        "metal"
-    ],
-    "possible_genders": ["neuter"],
-    "txmn_id": 125,
-    "height": 40,
-    "weight": 4,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "botbot",
+  "category": "socket",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "beam"
+    },
+    {
+      "level_learned": 1,
+      "technique": "levitate"
+    },
+    {
+      "level_learned": 4,
+      "technique": "strike"
+    },
+    {
+      "level_learned": 7,
+      "technique": "radiance"
+    },
+    {
+      "level_learned": 13,
+      "technique": "battery_discharge"
+    }
+  ],
+  "evolutions": [
+    {
+      "monster_slug": "av8r",
+      "item": "booster_tech"
+    },
+    {
+      "monster_slug": "picc",
+      "item": "booster_tech"
+    },
+    {
+      "monster_slug": "mrmoswitch",
+      "item": "booster_tech"
+    },
+    {
+      "monster_slug": "k9",
+      "item": "booster_tech"
+    },
+    {
+      "monster_slug": "b_ver_1",
+      "item": "booster_tech"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "b_ver_1",
+      "evo_stage": "stage1"
+    },
+    {
+      "mon_slug": "k9",
+      "evo_stage": "stage1"
+    },
+    {
+      "mon_slug": "mrmoswitch",
+      "evo_stage": "stage1"
+    },
+    {
+      "mon_slug": "picc",
+      "evo_stage": "stage1"
+    },
+    {
+      "mon_slug": "av8r",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [
+    "urban"
+  ],
+  "tags": [
+    "machine"
+  ],
+  "shape": "grub",
+  "stage": "basic",
+  "types": [
+    "metal"
+  ],
+  "possible_genders": [
+    "neuter"
+  ],
+  "txmn_id": 125,
+  "height": 40,
+  "weight": 4,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

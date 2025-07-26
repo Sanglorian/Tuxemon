@@ -1,59 +1,68 @@
 {
-    "slug": "windeye",
-    "category": "tower",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "whirlwind"
-        },
-        {
-            "level_learned": 1,
-            "technique": "slice"
-        },
-        {
-            "level_learned": 4,
-            "technique": "bullet"
-        },
-        {
-            "level_learned": 7,
-            "technique": "muddle"
-        },
-        {
-            "level_learned": 13,
-            "technique": "wall_of_steel"
-        },
-        {
-            "level_learned": 19,
-            "technique": "bubble_trap"
-        },
-        {
-            "level_learned": 25,
-            "technique": "adamantine"
-        },
-        {
-            "level_learned": 28,
-            "technique": "constrict"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "fancair",
-            "evo_stage": "basic"
-        }
-    ],
-    "terrains": [],
-    "tags": ["machine", "weather", "electricity", "steel", "sharp"],
-    "shape": "humanoid",
-    "stage": "stage1",
-    "types": [
-        "metal"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 180,
-    "height": 300,
-    "weight": 600,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "windeye",
+  "category": "tower",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "whirlwind"
+    },
+    {
+      "level_learned": 1,
+      "technique": "slice"
+    },
+    {
+      "level_learned": 4,
+      "technique": "bullet"
+    },
+    {
+      "level_learned": 7,
+      "technique": "muddle"
+    },
+    {
+      "level_learned": 13,
+      "technique": "wall_of_steel"
+    },
+    {
+      "level_learned": 19,
+      "technique": "bubble_trap"
+    },
+    {
+      "level_learned": 25,
+      "technique": "adamantine"
+    },
+    {
+      "level_learned": 28,
+      "technique": "constrict"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "fancair",
+      "evo_stage": "basic"
+    }
+  ],
+  "terrains": [],
+  "tags": [
+    "machine",
+    "weather",
+    "electricity",
+    "steel",
+    "sharp"
+  ],
+  "shape": "humanoid",
+  "stage": "stage1",
+  "types": [
+    "metal"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 180,
+  "height": 300,
+  "weight": 600,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

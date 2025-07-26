@@ -1,67 +1,78 @@
 {
-    "slug": "viviteel",
-    "category": "galvanised",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "stone_rot"
-        },
-        {
-            "level_learned": 1,
-            "technique": "hammerhead"
-        },
-        {
-            "level_learned": 4,
-            "technique": "quicksand"
-        },
-        {
-            "level_learned": 7,
-            "technique": "spit_poison"
-        },
-        {
-            "level_learned": 13,
-            "technique": "wallow"
-        },
-        {
-            "level_learned": 16,
-            "technique": "rust_bomb"
-        },
-        {
-            "level_learned": 19,
-            "technique": "constrict"
-        },
-        {
-            "level_learned": 25,
-            "technique": "perfect_cut"
-        },
-        {
-            "level_learned": 31,
-            "technique": "crushing_bite"
-        },
-        {
-            "level_learned": 37,
-            "technique": "steel_jaws"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "vivipere",
-            "evo_stage": "basic"
-        }
-    ],
-    "terrains": ["grassland", "mountains", "ruins", "underground"],
-    "tags": ["shapeshifter", "bite", "steel"],
-    "shape": "serpent",
-    "stage": "stage1",
-    "types": [
-        "metal"
-    ],
-    "possible_genders": ["female"],
-    "txmn_id": 135,
-    "height": 102,
-    "weight": 18,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.25
+  "slug": "viviteel",
+  "category": "galvanised",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "stone_rot"
+    },
+    {
+      "level_learned": 1,
+      "technique": "hammerhead"
+    },
+    {
+      "level_learned": 4,
+      "technique": "quicksand"
+    },
+    {
+      "level_learned": 7,
+      "technique": "spit_poison"
+    },
+    {
+      "level_learned": 13,
+      "technique": "wallow"
+    },
+    {
+      "level_learned": 16,
+      "technique": "rust_bomb"
+    },
+    {
+      "level_learned": 19,
+      "technique": "constrict"
+    },
+    {
+      "level_learned": 25,
+      "technique": "perfect_cut"
+    },
+    {
+      "level_learned": 31,
+      "technique": "crushing_bite"
+    },
+    {
+      "level_learned": 37,
+      "technique": "steel_jaws"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "vivipere",
+      "evo_stage": "basic"
+    }
+  ],
+  "terrains": [
+    "grassland",
+    "mountains",
+    "ruins",
+    "underground"
+  ],
+  "tags": [
+    "shapeshifter",
+    "bite",
+    "steel"
+  ],
+  "shape": "serpent",
+  "stage": "stage1",
+  "types": [
+    "metal"
+  ],
+  "possible_genders": [
+    "female"
+  ],
+  "txmn_id": 135,
+  "height": 102,
+  "weight": 18,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.25
 }

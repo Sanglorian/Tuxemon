@@ -1,80 +1,88 @@
 {
-    "slug": "memnomnom",
-    "category": "relic",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "eyebite"
-        },
-        {
-            "level_learned": 1,
-            "technique": "feint"
-        },
-        {
-            "level_learned": 4,
-            "technique": "shuriken"
-        },
-        {
-            "level_learned": 7,
-            "technique": "slice"
-        },
-        {
-            "level_learned": 13,
-            "technique": "sand_spray"
-        }
-    ],
-    "evolutions": [
-        {
-            "monster_slug": "miaownolith",
-            "item": "earth_booster"
-        },
-        {
-            "monster_slug": "miaownolith",
-            "item": "miaow_milk"
-        },
-        {
-            "monster_slug": "pyraminx",
-            "item": "metal_booster"
-        },
-        {
-            "monster_slug": "pyraminx",
-            "item": "pyramidion"
-        },
-        {
-            "monster_slug": "mauai",
-            "item": "fire_booster"
-        },
-        {
-            "monster_slug": "mauai",
-            "item": "pyramidion"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "pyraminx",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "miaownolith",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "mauai",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": [],
-    "tags": ["ground", "claws", "summoner", "ghost"],
-    "shape": "hunter",
-    "stage": "basic",
-    "types": [
-        "metal"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 19,
-    "height": 70,
-    "weight": 7,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.25
+  "slug": "memnomnom",
+  "category": "relic",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "eyebite"
+    },
+    {
+      "level_learned": 1,
+      "technique": "feint"
+    },
+    {
+      "level_learned": 4,
+      "technique": "shuriken"
+    },
+    {
+      "level_learned": 7,
+      "technique": "slice"
+    },
+    {
+      "level_learned": 13,
+      "technique": "sand_spray"
+    }
+  ],
+  "evolutions": [
+    {
+      "monster_slug": "miaownolith",
+      "item": "earth_booster"
+    },
+    {
+      "monster_slug": "miaownolith",
+      "item": "miaow_milk"
+    },
+    {
+      "monster_slug": "pyraminx",
+      "item": "metal_booster"
+    },
+    {
+      "monster_slug": "pyraminx",
+      "item": "pyramidion"
+    },
+    {
+      "monster_slug": "mauai",
+      "item": "fire_booster"
+    },
+    {
+      "monster_slug": "mauai",
+      "item": "pyramidion"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "pyraminx",
+      "evo_stage": "stage1"
+    },
+    {
+      "mon_slug": "miaownolith",
+      "evo_stage": "stage1"
+    },
+    {
+      "mon_slug": "mauai",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [],
+  "tags": [
+    "ground",
+    "claws",
+    "summoner",
+    "ghost"
+  ],
+  "shape": "hunter",
+  "stage": "basic",
+  "types": [
+    "metal"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 19,
+  "height": 70,
+  "weight": 7,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.25
 }

@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import logging
-import random
-import uuid
 from dataclasses import dataclass
 from typing import final
+from uuid import UUID
 
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
@@ -20,59 +19,84 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ChangeTasteAction(EventAction):
     """
-    Changes tastes monster.
+    Changes the specified taste (warm or cold) of a monster.
 
     Script usage:
         .. code-block::
 
-            change_taste <variable>,<taste>
+            change_taste <variable>,<type_taste>,<new_taste>
 
     Script parameters:
-        variable: Name of the variable where to store the monster id.
-        taste: warm or cold
+        variable: Name of the game variable containing the monster's UUID.
+        type_taste: Either "warm" or "cold" to indicate which taste to change.
+        new_taste: Slug of the new taste to assign, or "random" to select a new one
+            at random (excluding "tasteless" and the current taste).
 
+    Notes:
+        - When using "random", the new taste is chosen based on rarity_score weighting.
+        - When specifying a taste slug, it must exist, match the selected type,
+            and must not be "tasteless".
+        - If no valid taste is found during random selection, the taste remains unchanged
+            and a warning is logged.
     """
 
     name = "change_taste"
     variable: str
-    taste: str
+    type_taste: str
+    new_taste: str
 
     def start(self, session: Session) -> None:
         player = session.player
-        # avoid crash by "return"
+
         if self.variable not in player.game_variables:
             logger.error(f"Game variable {self.variable} not found")
             return
 
-        monster_id = uuid.UUID(player.game_variables[self.variable])
+        monster_id = UUID(player.game_variables[self.variable])
         monster = get_monster_by_iid(session, monster_id)
         if monster is None:
             logger.error("Monster not found")
             return
 
-        if self.taste == "warm":
-            warm = [
-                taste.slug
-                for taste in Taste.get_all_tastes().values()
-                if taste.taste_type == "warm"
-                and taste.slug != monster.taste_warm
-                and taste.slug != "tasteless"
-            ]
-            warmer = random.choice(warm)
-            logger.info(f"{monster.name}'s {self.taste} taste is {warmer}!")
-            monster.taste_warm = warmer
-            monster.set_stats()
-        elif self.taste == "cold":
-            cold = [
-                taste.slug
-                for taste in Taste.get_all_tastes().values()
-                if taste.taste_type == "cold"
-                and taste.slug != monster.taste_cold
-                and taste.slug != "tasteless"
-            ]
-            colder = random.choice(cold)
-            logger.info(f"{monster.name}'s {self.taste} taste is {colder}!")
-            monster.taste_cold = colder
-            monster.set_stats()
+        if self.new_taste == "tasteless":
+            logger.error("Cannot assign 'tasteless' explicitly.")
+            return
+
+        if self.type_taste not in ("warm", "cold"):
+            raise ValueError(
+                f"Invalid taste type '{self.type_taste}'. Must be 'warm' or 'cold'."
+            )
+
+        current_taste = getattr(monster, f"taste_{self.type_taste}")
+        if self.new_taste == "random":
+            new_taste = Taste.get_random_taste_excluding(
+                self.type_taste,
+                exclude_slugs=[current_taste, "tasteless"],
+                use_rarity=True,
+            )
+
+            if not new_taste:
+                logger.warning(
+                    f"No alternate {self.type_taste} taste found for {monster.name}."
+                )
+                return
         else:
-            raise ValueError(f"{self.taste} must be warm or cold")
+            taste_obj = Taste.get_taste(self.new_taste)
+            if not taste_obj:
+                logger.error(f"Taste '{self.new_taste}' not found.")
+                return
+
+            if taste_obj.taste_type != self.type_taste:
+                logger.error(
+                    f"Taste '{self.new_taste}' is of type '{taste_obj.taste_type}', "
+                    f"expected '{self.type_taste}'."
+                )
+                return
+
+            new_taste = self.new_taste
+
+        setattr(monster, f"taste_{self.type_taste}", new_taste)
+        monster.set_stats()
+        logger.info(
+            f"{monster.name}'s {self.type_taste} taste changed to {new_taste}."
+        )

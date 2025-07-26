@@ -3,7 +3,10 @@
   "effects": [
     {
       "type": "buff",
-      "parameters": ["dodge","0.2"]
+      "parameters": [
+        "dodge",
+        "0.2"
+      ]
     }
   ],
   "slug": "boost_dodge",

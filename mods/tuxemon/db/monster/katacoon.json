@@ -1,80 +1,88 @@
 {
-    "slug": "katacoon",
-    "category": "stance",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "clamp_on"
-        },
-        {
-            "level_learned": 1,
-            "technique": "buzz"
-        },
-        {
-            "level_learned": 4,
-            "technique": "splinter"
-        },
-        {
-            "level_learned": 7,
-            "technique": "font"
-        },
-        {
-            "level_learned": 10,
-            "technique": "evasion"
-        },
-        {
-            "level_learned": 13,
-            "technique": "sting"
-        }
-    ],
-    "evolutions": [
-        {
-            "at_level": 12,
-            "monster_slug": "bugnin",
-            "stats": "dodge:greater_than:speed"
-        },
-        {
-            "at_level": 12,
-            "monster_slug": "sumchon",
-            "stats": "speed:greater_than:dodge"
-        },
-        {
-            "at_level": 12,
-            "monster_slug": "gladiatorbug",
-            "stats": "speed:equals:dodge"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "katapill",
-            "evo_stage": "basic"
-        },
-        {
-            "mon_slug": "bugnin",
-            "evo_stage": "stage2"
-        },
-        {
-            "mon_slug": "sumchon",
-            "evo_stage": "stage2"
-        },
-        {
-            "mon_slug": "gladiatorbug",
-            "evo_stage": "stage2"
-        }
-    ],
-    "terrains": ["woodland"],
-    "tags": ["fists", "bug"],
-    "shape": "grub",
-    "stage": "stage1",
-    "types": [
-        "metal",
-        "wood"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 57,
-    "height": 58,
-    "weight": 12,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.9,
-    "upper_catch_resistance": 1.15
+  "slug": "katacoon",
+  "category": "stance",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "clamp_on"
+    },
+    {
+      "level_learned": 1,
+      "technique": "buzz"
+    },
+    {
+      "level_learned": 4,
+      "technique": "splinter"
+    },
+    {
+      "level_learned": 7,
+      "technique": "font"
+    },
+    {
+      "level_learned": 10,
+      "technique": "evasion"
+    },
+    {
+      "level_learned": 13,
+      "technique": "sting"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 12,
+      "monster_slug": "bugnin",
+      "stats": "dodge:greater_than:speed"
+    },
+    {
+      "at_level": 12,
+      "monster_slug": "sumchon",
+      "stats": "speed:greater_than:dodge"
+    },
+    {
+      "at_level": 12,
+      "monster_slug": "gladiatorbug",
+      "stats": "speed:equals:dodge"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "katapill",
+      "evo_stage": "basic"
+    },
+    {
+      "mon_slug": "bugnin",
+      "evo_stage": "stage2"
+    },
+    {
+      "mon_slug": "sumchon",
+      "evo_stage": "stage2"
+    },
+    {
+      "mon_slug": "gladiatorbug",
+      "evo_stage": "stage2"
+    }
+  ],
+  "terrains": [
+    "woodland"
+  ],
+  "tags": [
+    "fists",
+    "bug"
+  ],
+  "shape": "grub",
+  "stage": "stage1",
+  "types": [
+    "metal",
+    "wood"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 57,
+  "height": 58,
+  "weight": 12,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.9,
+  "upper_catch_resistance": 1.15
 }

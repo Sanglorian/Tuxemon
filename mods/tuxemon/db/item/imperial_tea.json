@@ -3,7 +3,9 @@
   "effects": [
     {
       "type": "gain_xp",
-      "parameters": ["3005"]
+      "parameters": [
+        "3005"
+      ]
     }
   ],
   "slug": "imperial_tea",

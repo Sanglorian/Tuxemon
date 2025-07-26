@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["petrified_dung"],
+      "parameters": [
+        "petrified_dung"
+      ],
       "operator": "is"
     }
   ],

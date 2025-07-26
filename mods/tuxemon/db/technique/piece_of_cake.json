@@ -5,7 +5,10 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["charging", "own_monster"]
+      "parameters": [
+        "charging",
+        "own_monster"
+      ]
     },
     {
       "type": "healing"
@@ -13,7 +16,7 @@
   ],
   "flip_axes": "",
   "healing_power": 0.1,
-  "is_fast": true,
+  "speed": "fast",
   "potency": 1.0,
   "power": 0.0,
   "range": "special",
@@ -31,7 +34,9 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["food"],
+  "tags": [
+    "food"
+  ],
   "types": [
     "aether"
   ],

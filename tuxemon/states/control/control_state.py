@@ -10,7 +10,7 @@ import pygame_menu
 from pygame_menu import locals
 
 from tuxemon import prepare
-from tuxemon.animation import Animation
+from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
@@ -51,50 +51,50 @@ class ControlState(PygameMenuState):
         menu.add.button(
             title=T.translate("menu_up_key").upper(),
             action=change_state("SetKeyState", value="up"),
-            font_size=self.font_size_small,
+            font_size=self.font_type.small,
         )
         menu.add.button(
             title=T.translate("menu_left_key").upper(),
             action=change_state("SetKeyState", value="left"),
-            font_size=self.font_size_small,
+            font_size=self.font_type.small,
         )
         menu.add.button(
             title=T.translate("menu_right_key").upper(),
             action=change_state("SetKeyState", value="right"),
-            font_size=self.font_size_small,
+            font_size=self.font_type.small,
         )
         menu.add.button(
             title=T.translate("menu_down_key").upper(),
             action=change_state("SetKeyState", value="down"),
-            font_size=self.font_size_small,
+            font_size=self.font_type.small,
         )
         menu.add.button(
             title=T.translate("menu_primary_select_key").upper(),
             action=change_state("SetKeyState", value="a"),
-            font_size=self.font_size_small,
+            font_size=self.font_type.small,
         )
         menu.add.button(
             title=T.translate("menu_secondary_select_key").upper(),
             action=change_state("SetKeyState", value="b"),
-            font_size=self.font_size_small,
+            font_size=self.font_type.small,
         )
         menu.add.button(
             title=T.translate("menu_back_key").upper(),
             action=change_state("SetKeyState", value="back"),
-            font_size=self.font_size_small,
+            font_size=self.font_type.small,
         )
 
         menu.add.button(
             title=T.translate("menu_reset_default").upper(),
             action=self.client.config.reset_controls_to_default,
-            font_size=self.font_size_small,
+            font_size=self.font_type.small,
         )
 
         language = T.translate("menu_language").upper()
         menu.add.button(
             title=f"{language}: {self.client.config.locale.slug}",
             action=change_state("SetLanguage", main_menu=self.main_menu),
-            font_size=self.font_size_small,
+            font_size=self.font_type.small,
         )
 
         if not self.main_menu:
@@ -110,7 +110,7 @@ class ControlState(PygameMenuState):
                 menu.add.button(
                     title=T.translate("menu_mute_music").upper(),
                     action=mute_music,
-                    font_size=self.font_size_small,
+                    font_size=self.font_type.small,
                 )
 
             _music = self.client.config.music_volume
@@ -131,7 +131,7 @@ class ControlState(PygameMenuState):
                 increment=10,
                 rangeslider_id="menu_music_volume",
                 value_format=lambda x: str(int(x)),
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
             )
             sound = menu.add.range_slider(
                 title=T.translate("menu_sound_volume").upper(),
@@ -140,7 +140,7 @@ class ControlState(PygameMenuState):
                 increment=10,
                 rangeslider_id="menu_sound_volume",
                 value_format=lambda x: str(int(x)),
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
             )
 
             def on_change_music(val: int) -> None:
@@ -184,7 +184,7 @@ class ControlState(PygameMenuState):
                 default=_unit,
                 style="fancy",
                 onchange=on_change_units,
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
             )
 
             def on_change_hemisphere(value: Any, label: str) -> None:
@@ -206,7 +206,7 @@ class ControlState(PygameMenuState):
                 default=_hemi,
                 style="fancy",
                 onchange=on_change_hemisphere,
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
             )
 
     def update_animation_size(self) -> None:
@@ -231,7 +231,7 @@ class ControlState(PygameMenuState):
         """
         self.animation_size = 0.0
         ani = self.animate(self, animation_size=1.0, duration=0.2)
-        ani.update_callback = self.update_animation_size
+        ani.schedule(self.update_animation_size, ScheduleType.ON_UPDATE)
         return ani
 
     def reload_controls(self) -> None:

@@ -88,3 +88,9 @@ class Encounter:
             )
         else:
             return encounter.level_range[0]
+
+    def get_held_item(self, encounter: EncounterItemModel) -> Optional[str]:
+        """Returns a random held item for the encounter."""
+        if not encounter.held_items:
+            return None
+        return random.choice(encounter.held_items)

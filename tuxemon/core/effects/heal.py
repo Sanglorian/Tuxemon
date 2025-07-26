@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Union
 
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
 from tuxemon.db import ItemCategory
+from tuxemon.formula import set_health
 from tuxemon.locale import T
 
 if TYPE_CHECKING:
@@ -45,13 +46,13 @@ class HealEffect(CoreEffect):
             )
 
         if self.heal_type == "fixed":
-            healing_amount = int(self.amount)
+            value = self.amount / target.hp
         elif self.heal_type == "percentage":
-            healing_amount = int(target.hp * self.amount)
+            value = self.amount
         else:
             raise ValueError(
                 f"Invalid heal type '{self.heal_type}'. Must be either 'fixed' or 'percentage'."
             )
-        target.current_hp = min(target.hp, target.current_hp + healing_amount)
+        set_health(target, value, adjust=True)
 
         return ItemEffectResult(name=item.name, success=True)

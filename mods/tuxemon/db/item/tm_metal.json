@@ -2,7 +2,9 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["metal"],
+      "parameters": [
+        "metal"
+      ],
       "operator": "is"
     }
   ],

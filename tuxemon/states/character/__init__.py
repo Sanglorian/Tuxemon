@@ -10,21 +10,18 @@ from pygame_menu import locals
 
 from tuxemon import formula
 from tuxemon import prepare as pre
-from tuxemon.db import MonsterModel, OutputBattle, db
+from tuxemon.db import MonsterModel, db
 from tuxemon.locale import T
+from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 from tuxemon.time_handler import today_ordinal
+from tuxemon.tools import fix_measure
 
 MenuGameObj = Callable[[], object]
 lookup_cache: dict[str, MonsterModel] = {}
-
-
-def fix_measure(measure: int, percentage: float) -> int:
-    """it returns the correct measure based on percentage"""
-    return round(measure * percentage)
 
 
 def _lookup_monsters() -> None:
@@ -50,8 +47,8 @@ class CharacterState(PygameMenuState):
         self,
         menu: pygame_menu.Menu,
     ) -> None:
-        width = menu._width
-        height = menu._height
+        fxw: Callable[[float], int] = lambda r: fix_measure(menu._width, r)
+        fxh: Callable[[float], int] = lambda r: fix_measure(menu._height, r)
 
         name = (
             T.translate(self.char.slug)
@@ -121,77 +118,78 @@ class CharacterState(PygameMenuState):
         lab1: Any = menu.add.label(
             title=name.upper(),
             label_id="name",
-            font_size=self.font_size_big,
+            font_size=self.font_type.big,
             align=locals.ALIGN_LEFT,
             underline=True,
             float=True,
         )
-        lab1.translate(fix_measure(width, 0.45), fix_measure(height, 0.15))
+        lab1.translate(fxw(0.45), fxh(0.15))
         # money
-        money = self.char.money_controller.money_manager.get_money()
+        money = CurrencyFormatter()
+        amount = self.char.money_controller.money_manager.get_money()
         lab2: Any = menu.add.label(
-            title=f"{T.translate('wallet')}: {money}",
+            title=f"{T.translate('wallet')}: {money.format(amount)}",
             label_id="money",
-            font_size=self.font_size_smaller,
+            font_size=self.font_type.smaller,
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab2.translate(fix_measure(width, 0.45), fix_measure(height, 0.25))
+        lab2.translate(fxw(0.45), fxh(0.25))
         # seen
         lab3: Any = menu.add.label(
             title=msg_seen,
             label_id="seen",
-            font_size=self.font_size_smaller,
+            font_size=self.font_type.smaller,
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab3.translate(fix_measure(width, 0.45), fix_measure(height, 0.30))
+        lab3.translate(fxw(0.45), fxh(0.30))
         # caught
         lab4: Any = menu.add.label(
             title=msg_caught,
             label_id="caught",
-            font_size=self.font_size_smaller,
+            font_size=self.font_type.smaller,
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab4.translate(fix_measure(width, 0.45), fix_measure(height, 0.35))
+        lab4.translate(fxw(0.45), fxh(0.35))
         # begin adventure
         lab5: Any = menu.add.label(
             title=msg_begin,
             label_id="begin",
-            font_size=self.font_size_smaller,
+            font_size=self.font_type.smaller,
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab5.translate(fix_measure(width, 0.45), fix_measure(height, 0.40))
+        lab5.translate(fxw(0.45), fxh(0.40))
         # walked
         if steps > 0.0:
             lab6: Any = menu.add.label(
                 title=msg_walked,
                 label_id="walked",
-                font_size=self.font_size_smaller,
+                font_size=self.font_type.smaller,
                 align=locals.ALIGN_LEFT,
                 float=True,
             )
-            lab6.translate(fix_measure(width, 0.45), fix_measure(height, 0.45))
+            lab6.translate(fxw(0.45), fxh(0.45))
         # battles
         lab7: Any = menu.add.label(
             title=msg_battles,
             label_id="battle",
-            font_size=self.font_size_smaller,
+            font_size=self.font_type.smaller,
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab7.translate(fix_measure(width, 0.45), fix_measure(height, 0.50))
+        lab7.translate(fxw(0.45), fxh(0.50))
         # % tuxepedia
         lab8: Any = menu.add.label(
             title=msg_progress,
             label_id="progress",
-            font_size=self.font_size_smaller,
+            font_size=self.font_type.smaller,
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab8.translate(fix_measure(width, 0.45), fix_measure(height, 0.10))
+        lab8.translate(fxw(0.45), fxh(0.10))
         # image
         combat_front = self.char.template.combat_front
         _path = f"gfx/sprites/player/{combat_front}.png"
@@ -199,9 +197,7 @@ class CharacterState(PygameMenuState):
         new_image.scale(pre.SCALE, pre.SCALE)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
-        image_widget.translate(
-            fix_measure(width, 0.20), fix_measure(height, 0.08)
-        )
+        image_widget.translate(fxw(0.20), fxh(0.08))
 
     def __init__(self, **kwargs: Any) -> None:
         if not lookup_cache:

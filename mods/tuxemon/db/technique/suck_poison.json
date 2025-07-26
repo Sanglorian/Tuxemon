@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "transfer",
-      "parameters": ["poison", "user_to_target"]
+      "parameters": [
+        "poison",
+        "user_to_target"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 2.0,
   "range": "melee",
@@ -30,7 +33,9 @@
     "own_trainer": false
   },
   "category": "reserved",
-  "tags": ["reserved"],
+  "tags": [
+    "reserved"
+  ],
   "types": [
     "water"
   ],

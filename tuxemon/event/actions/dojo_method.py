@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import uuid
-from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
 from typing import TYPE_CHECKING, final
@@ -15,6 +14,7 @@ from tuxemon.locale import T
 from tuxemon.monster import Monster
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import open_choice_dialog
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
@@ -58,10 +58,9 @@ class DojoMethodAction(EventAction):
             logger.error(f"{self.option} must be 'monster' or 'technique'")
             return
 
-        menu: list[tuple[str, str, Callable[[], None]]] = []
+        menu_options: list[ChoiceOption] = []
 
         if self.option == "technique":
-            # Get the moves that the monster can learn but hasn't yet
             learnable_moves = [
                 tech.technique
                 for tech in monster.moves.moveset
@@ -73,17 +72,16 @@ class DojoMethodAction(EventAction):
                 session.player.game_variables["dojo_notech"] = "on"
                 return
 
-            # Create menu options for each learnable move
             for move in learnable_moves:
-                menu.append(
-                    (
-                        move,
-                        T.translate(move),
-                        partial(self.learn, monster, move),
+                menu_options.append(
+                    ChoiceOption(
+                        key=move,
+                        display_text=T.translate(move),
+                        action=partial(self.learn, monster, move),
                     )
                 )
+
         else:
-            # Get the monsters that the current monster can devolve into
             devolvable_monsters = [
                 mon
                 for mon in monster.history
@@ -94,17 +92,16 @@ class DojoMethodAction(EventAction):
                 )
             ]
 
-            # Create menu options for each devolvable monster
             for mon in devolvable_monsters:
-                menu.append(
-                    (
-                        mon.mon_slug,
-                        T.translate(mon.mon_slug),
-                        partial(self.devolve, monster, mon.mon_slug),
+                menu_options.append(
+                    ChoiceOption(
+                        key=mon.mon_slug,
+                        display_text=T.translate(mon.mon_slug),
+                        action=partial(self.devolve, monster, mon.mon_slug),
                     )
                 )
 
-        open_choice_dialog(session.client, menu)
+        open_choice_dialog(session.client, MenuOptions(menu_options))
 
     def update(self, session: Session) -> None:
         try:

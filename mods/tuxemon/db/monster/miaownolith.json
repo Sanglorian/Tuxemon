@@ -1,64 +1,73 @@
 {
-    "slug": "miaownolith",
-    "category": "desolate",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "eyebite"
-        },
-        {
-            "level_learned": 1,
-            "technique": "feint"
-        },
-        {
-            "level_learned": 4,
-            "technique": "shuriken"
-        },
-        {
-            "level_learned": 7,
-            "technique": "slice"
-        },
-        {
-            "level_learned": 13,
-            "technique": "sand_spray"
-        },
-        {
-            "level_learned": 19,
-            "technique": "petrify"
-        },
-        {
-            "level_learned": 25,
-            "technique": "fluff_up"
-        },
-        {
-            "level_learned": 28,
-            "technique": "overgrowth"
-        },
-        {
-            "level_learned": 37,
-            "technique": "oedipus"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "memnomnom",
-            "evo_stage": "basic"
-        }
-    ],
-    "terrains": [],
-    "tags": ["ground", "claws", "summoner", "ghost", "rock"],
-    "shape": "hunter",
-    "stage": "stage1",
-    "types": [
-        "metal",
-        "earth"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 20,
-    "height": 210,
-    "weight": 255,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.25
+  "slug": "miaownolith",
+  "category": "desolate",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "eyebite"
+    },
+    {
+      "level_learned": 1,
+      "technique": "feint"
+    },
+    {
+      "level_learned": 4,
+      "technique": "shuriken"
+    },
+    {
+      "level_learned": 7,
+      "technique": "slice"
+    },
+    {
+      "level_learned": 13,
+      "technique": "sand_spray"
+    },
+    {
+      "level_learned": 19,
+      "technique": "petrify"
+    },
+    {
+      "level_learned": 25,
+      "technique": "fluff_up"
+    },
+    {
+      "level_learned": 28,
+      "technique": "overgrowth"
+    },
+    {
+      "level_learned": 37,
+      "technique": "oedipus"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "memnomnom",
+      "evo_stage": "basic"
+    }
+  ],
+  "terrains": [],
+  "tags": [
+    "ground",
+    "claws",
+    "summoner",
+    "ghost",
+    "rock"
+  ],
+  "shape": "hunter",
+  "stage": "stage1",
+  "types": [
+    "metal",
+    "earth"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 20,
+  "height": 210,
+  "weight": 255,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.25
 }

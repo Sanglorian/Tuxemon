@@ -5,15 +5,17 @@ from __future__ import annotations
 import logging
 import random
 import re
-import uuid
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, final
+from uuid import UUID
 
 from tuxemon import formula
+from tuxemon.db import Acquisition, EvolutionStage, StatType
 from tuxemon.event import get_monster_by_iid, get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.monster import Monster
+from tuxemon.taste import Taste
 from tuxemon.time_handler import today_ordinal
 from tuxemon.tools import open_dialog
 
@@ -52,21 +54,21 @@ class SpawnMonsterAction(EventAction):
 
     def start(self, session: Session) -> None:
         player = session.player
-        mother_id = uuid.UUID(player.game_variables["breeding_mother"])
-        father_id = uuid.UUID(player.game_variables["breeding_father"])
+        mother_id = UUID(player.game_variables["breeding_mother"])
+        father_id = UUID(player.game_variables["breeding_father"])
 
         mother = get_monster_by_iid(
             session, mother_id
         ) or player.monster_boxes.get_monsters_by_iid(mother_id)
         if mother is None:
-            logger.debug(f"Mother {mother_id} not found.")
+            logger.error(f"Mother {mother_id} not found.")
             return
 
         father = get_monster_by_iid(
             session, father_id
         ) or player.monster_boxes.get_monsters_by_iid(father_id)
         if father is None:
-            logger.debug(f"Father {father_id} not found.")
+            logger.error(f"Father {father_id} not found.")
             return
 
         # Determine the seed monster based on the types of the mother and father
@@ -91,25 +93,33 @@ class SpawnMonsterAction(EventAction):
         level = (father.level + mother.level) // 2
 
         # Create a new child monster
-        child = Monster.create(seed_slug)
-        child.set_level(level)
-        child.moves.set_moves(level)
+        child = Monster.spawn_base(seed_slug, level)
         child.set_capture(today_ordinal())
         child.name = name
-        child.current_hp = child.hp
+        child.set_acquisition(Acquisition.BRED)
 
         # Give the child a random move from the father
         father_moves = len(father.moves.current_moves)
         replace_tech = random.randrange(0, 2)
         random_move = father.moves.get_moves()[random.randrange(father_moves)]
         child.moves.replace_move(replace_tech, random_move)
+        logger.debug(f"Move inherited from father: move='{random_move.slug}'")
+
+        # Tastes
+        taste_warm, taste_cold = _determine_tastes(mother, father)
+        child.taste_warm = taste_warm
+        child.taste_cold = taste_cold
+        logger.debug(
+            f"Taste inherited from parents: warm='{taste_warm}', cold='{taste_cold}'"
+        )
+        child.set_stats()
 
         # Add the child to the character's monsters
         character = get_npc(session, self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return
-        character.add_monster(child, len(character.monsters))
+        character.party.add_monster(child, len(character.monsters))
 
         # Display a message to the player
         msg = T.format("got_new_tuxemon", {"monster_name": child.name})
@@ -123,21 +133,127 @@ class SpawnMonsterAction(EventAction):
 
 
 def _determine_seed(mother: Monster, father: Monster) -> Monster:
-    """Determine the seed monster based on the multiplier."""
+    """
+    Choose the genetic seed parent using a biologically inspired
+    hierarchy with trace logging.
+    """
 
-    mother_multiplier = formula.calculate_multiplier(
+    stage_order: dict[EvolutionStage, int] = {
+        EvolutionStage.stage2: 3,
+        EvolutionStage.stage1: 2,
+        EvolutionStage.standalone: 1,
+    }
+    stage_mother = stage_order.get(mother.stage, 0)
+    stage_father = stage_order.get(father.stage, 0)
+    logger.debug(
+        f"Evolution stage - Mother: {stage_mother}, Father: {stage_father}"
+    )
+
+    if stage_mother > stage_father:
+        logger.debug("Seed chosen based on higher evolution stage: Mother")
+        return mother
+    elif stage_father > stage_mother:
+        logger.debug("Seed chosen based on higher evolution stage: Father")
+        return father
+
+    stats_mother = sum(mother.return_stat(s) for s in StatType)
+    stats_father = sum(father.return_stat(s) for s in StatType)
+    logger.debug(
+        f"Total stats - Mother: {stats_mother}, Father: {stats_father}"
+    )
+
+    if stats_mother > stats_father:
+        logger.debug("Seed chosen based on superior total stats: Mother")
+        return mother
+    elif stats_father > stats_mother:
+        logger.debug("Seed chosen based on superior total stats: Father")
+        return father
+
+    vitality_mother = mother.hp_ratio
+    vitality_father = father.hp_ratio
+    logger.debug(
+        "Vitality ratio "
+        f"Mother: {vitality_mother:.2f}, Father: {vitality_father:.2f}"
+    )
+
+    if vitality_mother > vitality_father:
+        logger.debug("Seed chosen based on greater vitality: Mother")
+        return mother
+    elif vitality_father > vitality_mother:
+        logger.debug("Seed chosen based on greater vitality: Father")
+        return father
+
+    multiplier_mother = formula.calculate_multiplier(
         mother.types.current, father.types.current
     )
-    father_multiplier = formula.calculate_multiplier(
+    multiplier_father = formula.calculate_multiplier(
         father.types.current, mother.types.current
     )
+    logger.debug(
+        "Type effectiveness "
+        f"Mother vs Father: {multiplier_mother:.2f} "
+        f"Father vs Mother: {multiplier_father:.2f}"
+    )
 
-    if mother_multiplier > father_multiplier:
+    if multiplier_mother > multiplier_father:
+        logger.debug("Seed chosen based on stronger type matchup: Mother")
         return mother
-    elif father_multiplier > mother_multiplier:
+    elif multiplier_father > multiplier_mother:
+        logger.debug("Seed chosen based on stronger type matchup: Father")
         return father
-    else:
-        return random.choice([father, mother])
+
+    logger.debug("Seed chosen randomly: No clear biological dominance")
+    return random.choice([mother, father])
+
+
+def _determine_tastes(mother: Monster, father: Monster) -> tuple[str, str]:
+    """Taste inheritance for a Tuxemon offspring."""
+    warm_slug = random.choice([mother.taste_warm, father.taste_warm])
+    cold_slug = random.choice([mother.taste_cold, father.taste_cold])
+
+    taste_warm = Taste.get_taste(warm_slug)
+    taste_cold = Taste.get_taste(cold_slug)
+
+    if not taste_warm:
+        raise ValueError(
+            f"Warm taste slug '{warm_slug}' could not be resolved."
+        )
+
+    if not taste_cold:
+        raise ValueError(
+            f"Cold taste slug '{cold_slug}' could not be resolved."
+        )
+
+    warm_slug = _mutate_taste(taste_warm, "warm")
+    cold_slug = _mutate_taste(taste_cold, "cold")
+
+    return (taste_warm.slug, taste_cold.slug)
+
+
+def _mutate_taste(
+    taste: Taste, taste_type: str, base_mutation: float = 0.3
+) -> str:
+    """
+    Determines whether a taste should mutate, inversely scaled by rarity.
+    Rare tastes are more stable, while common ones are more likely to mutate.
+    """
+    rarity = min(max(taste.rarity_score or 1.0, 0.0), 1.0)
+    mutation_chance = base_mutation * rarity
+    if random.random() < mutation_chance:
+        new_slug = Taste.get_random_taste_excluding(
+            taste_type,
+            exclude_slugs=[taste.slug, "tasteless"],
+            use_rarity=True,
+        )
+        if new_slug == taste.slug:
+            logger.debug("Mutation selected same taste; skipping")
+            return taste.slug
+        if new_slug:
+            logger.info(
+                f"Taste '{taste.slug}' mutated to '{new_slug}' (chance: {mutation_chance:.2f})"
+            )
+            return new_slug
+    return taste.slug
 
 
 def _determine_name(first: str, second: str) -> str:

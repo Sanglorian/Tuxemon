@@ -74,6 +74,10 @@ class PathfindToCharAction(EventAction):
             logger.info(
                 f"Skipped: Moving entity {self.moving_entity.slug} is already at desired destination {final_destination}."
             )
+            direction = get_direction(
+                self.moving_entity.tile_pos, final_destination
+            )
+            self.moving_entity.set_facing(direction)
             return
 
         self.moving_entity.pathfind(final_destination)

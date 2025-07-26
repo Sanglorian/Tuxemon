@@ -1,70 +1,72 @@
 {
-    "slug": "r0ck1tt3n",
-    "category": "glitched",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "ram"
-        },
-        {
-            "level_learned": 1,
-            "technique": "boulder"
-        },
-        {
-            "level_learned": 4,
-            "technique": "thunderball"
-        },
-        {
-            "level_learned": 7,
-            "technique": "lust"
-        },
-        {
-            "level_learned": 13,
-            "technique": "thunderclap"
-        },
-        {
-            "level_learned": 16,
-            "technique": "fester"
-        },
-        {
-            "level_learned": 19,
-            "technique": "crystal"
-        },
-        {
-            "level_learned": 25,
-            "technique": "cavity"
-        },
-        {
-            "level_learned": 28,
-            "technique": "tsunami"
-        },
-        {
-            "level_learned": 31,
-            "technique": "meltdown"
-        },
-        {
-            "level_learned": 37,
-            "technique": "pit"
-        },
-        {
-            "level_learned": 40,
-            "technique": "avalanche"
-        }
-    ],
-    "evolutions": [],
-    "history": [],
-    "terrains": [],
-    "tags": [],
-    "shape": "hunter",
-    "stage": "standalone",
-    "types": [
-        "earth"
-    ],
-    "possible_genders": ["neuter"],
-    "txmn_id": 0,
-    "height": 0.1,
-    "weight": 25,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "r0ck1tt3n",
+  "category": "glitched",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "ram"
+    },
+    {
+      "level_learned": 1,
+      "technique": "boulder"
+    },
+    {
+      "level_learned": 4,
+      "technique": "thunderball"
+    },
+    {
+      "level_learned": 7,
+      "technique": "lust"
+    },
+    {
+      "level_learned": 13,
+      "technique": "thunderclap"
+    },
+    {
+      "level_learned": 16,
+      "technique": "fester"
+    },
+    {
+      "level_learned": 19,
+      "technique": "crystal"
+    },
+    {
+      "level_learned": 25,
+      "technique": "cavity"
+    },
+    {
+      "level_learned": 28,
+      "technique": "tsunami"
+    },
+    {
+      "level_learned": 31,
+      "technique": "meltdown"
+    },
+    {
+      "level_learned": 37,
+      "technique": "pit"
+    },
+    {
+      "level_learned": 40,
+      "technique": "avalanche"
+    }
+  ],
+  "evolutions": [],
+  "history": [],
+  "terrains": [],
+  "tags": [],
+  "shape": "hunter",
+  "stage": "standalone",
+  "types": [
+    "earth"
+  ],
+  "possible_genders": [
+    "neuter"
+  ],
+  "txmn_id": 0,
+  "height": 0.1,
+  "weight": 25,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

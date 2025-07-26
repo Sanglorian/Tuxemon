@@ -6,16 +6,18 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Optional, final
 
-from tuxemon.db import DialogueModel, db
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import get_avatar, string_to_colorlike
-from tuxemon.locale import process_translate_text
+from tuxemon.locale import T
 from tuxemon.session import Session
 from tuxemon.tools import open_dialog
+from tuxemon.ui.dialogue import DialogueStyleCache
+from tuxemon.ui.text_formatter import TextFormatter
 
 logger = logging.getLogger(__name__)
 
-style_cache: dict[str, DialogueModel] = {}
+
+style_cache = DialogueStyleCache()
 
 
 @final
@@ -55,32 +57,37 @@ class TranslatedDialogAction(EventAction):
     style: Optional[str] = None
 
     def start(self, session: Session) -> None:
-        key = process_translate_text(session, self.raw_parameters, [])
+        key = TextFormatter(session, T).paginate_translation(
+            self.raw_parameters
+        )
+        if key == self.raw_parameters:
+            logger.warning(
+                f"No translation found for key: {self.raw_parameters}"
+            )
 
-        avatar_sprite = None
-        if self.avatar:
-            avatar_sprite = get_avatar(session, self.avatar)
+        avatar_sprite = (
+            get_avatar(session, self.avatar) if self.avatar else None
+        )
 
-        dialogue = self.style if self.style else "default"
-        alignment = self.alignment if self.alignment else "left"
-        v_alignment = self.v_alignment if self.v_alignment else "top"
-        style = _get_style(dialogue)
+        dialogue = self.style or "default"
+        style = style_cache.get(dialogue)
         box_style: dict[str, Any] = {
             "bg_color": string_to_colorlike(style.bg_color),
             "font_color": string_to_colorlike(style.font_color),
             "font_shadow": string_to_colorlike(style.font_shadow_color),
             "border": style.border_path,
-            "alignment": alignment,
-            "v_alignment": v_alignment,
+            "alignment": self.alignment or "left",
+            "v_alignment": self.v_alignment or "top",
         }
-        position = self.position if self.position else "bottom"
 
         open_dialog(
             client=session.client,
             text=key,
             avatar=avatar_sprite,
             box_style=box_style,
-            position=position,
+            position=self.position or "bottom",
+            target_coords=None,
+            custom_rect=None,
         )
 
     def update(self, session: Session) -> None:
@@ -88,15 +95,3 @@ class TranslatedDialogAction(EventAction):
             session.client.get_state_by_name("DialogState")
         except ValueError:
             self.stop()
-
-
-def _get_style(cache_key: str) -> DialogueModel:
-    if cache_key in style_cache:
-        return style_cache[cache_key]
-    else:
-        try:
-            style = DialogueModel.lookup(cache_key, db)
-            style_cache[cache_key] = style
-            return style
-        except KeyError:
-            raise RuntimeError(f"Dialogue {cache_key} not found")

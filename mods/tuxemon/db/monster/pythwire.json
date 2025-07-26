@@ -1,60 +1,66 @@
 {
-    "slug": "pythwire",
-    "category": "power_socket",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "strike"
-        },
-        {
-            "level_learned": 1,
-            "technique": "surge"
-        },
-        {
-            "level_learned": 4,
-            "technique": "viper"
-        },
-        {
-            "level_learned": 7,
-            "technique": "radiance"
-        },
-        {
-            "level_learned": 13,
-            "technique": "constrict"
-        }
-    ],
-    "evolutions": [
-        {
-            "monster_slug": "ouroboutlet",
-            "item": "fire_booster"
-        },
-        {
-            "monster_slug": "sockeserp",
-            "item": "metal_booster"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "ouroboutlet",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "sockeserp",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": ["urban"],
-    "tags": ["electricity"],
-    "shape": "serpent",
-    "stage": "basic",
-    "types": [
-        "metal"
-    ],
-    "possible_genders": ["neuter"],
-    "txmn_id": 89,
-    "height": 200,
-    "weight": 4,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.25
+  "slug": "pythwire",
+  "category": "power_socket",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "strike"
+    },
+    {
+      "level_learned": 1,
+      "technique": "surge"
+    },
+    {
+      "level_learned": 4,
+      "technique": "viper"
+    },
+    {
+      "level_learned": 7,
+      "technique": "radiance"
+    },
+    {
+      "level_learned": 13,
+      "technique": "constrict"
+    }
+  ],
+  "evolutions": [
+    {
+      "monster_slug": "ouroboutlet",
+      "item": "fire_booster"
+    },
+    {
+      "monster_slug": "sockeserp",
+      "item": "metal_booster"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "ouroboutlet",
+      "evo_stage": "stage1"
+    },
+    {
+      "mon_slug": "sockeserp",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [
+    "urban"
+  ],
+  "tags": [
+    "electricity"
+  ],
+  "shape": "serpent",
+  "stage": "basic",
+  "types": [
+    "metal"
+  ],
+  "possible_genders": [
+    "neuter"
+  ],
+  "txmn_id": 89,
+  "height": 200,
+  "weight": 4,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.25
 }

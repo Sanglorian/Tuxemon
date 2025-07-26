@@ -2,7 +2,9 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["wood"],
+      "parameters": [
+        "wood"
+      ],
       "operator": "is"
     }
   ],

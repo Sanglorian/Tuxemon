@@ -5,15 +5,21 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["noddingoff", "own_monster"]
+      "parameters": [
+        "noddingoff",
+        "own_monster"
+      ]
     },
     {
       "type": "prop_healing",
-      "parameters": ["own_monster", "0.66"]
+      "parameters": [
+        "own_monster",
+        "0.66"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -31,7 +37,9 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["megafauna"],
+  "tags": [
+    "megafauna"
+  ],
   "types": [
     "aether"
   ],

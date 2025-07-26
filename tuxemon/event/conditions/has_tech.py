@@ -29,7 +29,7 @@ class HasTechCondition(EventCondition):
     def test(self, session: Session, condition: MapCondition) -> bool:
         player = session.player
         tech = condition.parameters[0]
-        if player.has_tech(tech):
+        if player.party.has_tech(tech):
             return True
         else:
             return False

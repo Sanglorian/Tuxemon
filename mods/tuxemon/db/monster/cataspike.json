@@ -1,80 +1,86 @@
 {
-    "slug": "cataspike",
-    "category": "pointy",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "bullet"
-        },
-        {
-            "level_learned": 1,
-            "technique": "wallow"
-        },
-        {
-            "level_learned": 4,
-            "technique": "buzz"
-        },
-        {
-            "level_learned": 7,
-            "technique": "hibernate"
-        },
-        {
-            "level_learned": 10,
-            "technique": "perfect_cut"
-        },
-        {
-            "level_learned": 13,
-            "technique": "blade"
-        },
-        {
-            "level_learned": 16,
-            "technique": "viper"
-        },
-        {
-            "level_learned": 19,
-            "technique": "lineage"
-        },
-        {
-            "level_learned": 22,
-            "technique": "shuriken"
-        },
-        {
-            "level_learned": 25,
-            "technique": "eyebite"
-        },
-        {
-            "level_learned": 55,
-            "technique": "tornado"
-        }
-    ],
-    "evolutions": [
-        {
-            "at_level": 9,
-            "monster_slug": "puparmor"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "puparmor",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "weavifly",
-            "evo_stage": "stage2"
-        }
-    ],
-    "terrains": [],
-    "tags": ["sharp", "bug"],
-    "shape": "grub",
-    "stage": "basic",
-    "types": [
-        "metal"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 33,
-    "height": 12,
-    "weight": 1,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.25
+  "slug": "cataspike",
+  "category": "pointy",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "bullet"
+    },
+    {
+      "level_learned": 1,
+      "technique": "wallow"
+    },
+    {
+      "level_learned": 4,
+      "technique": "buzz"
+    },
+    {
+      "level_learned": 7,
+      "technique": "hibernate"
+    },
+    {
+      "level_learned": 10,
+      "technique": "perfect_cut"
+    },
+    {
+      "level_learned": 13,
+      "technique": "blade"
+    },
+    {
+      "level_learned": 16,
+      "technique": "viper"
+    },
+    {
+      "level_learned": 19,
+      "technique": "lineage"
+    },
+    {
+      "level_learned": 22,
+      "technique": "shuriken"
+    },
+    {
+      "level_learned": 25,
+      "technique": "eyebite"
+    },
+    {
+      "level_learned": 55,
+      "technique": "tornado"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 9,
+      "monster_slug": "puparmor"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "puparmor",
+      "evo_stage": "stage1"
+    },
+    {
+      "mon_slug": "weavifly",
+      "evo_stage": "stage2"
+    }
+  ],
+  "terrains": [],
+  "tags": [
+    "sharp",
+    "bug"
+  ],
+  "shape": "grub",
+  "stage": "basic",
+  "types": [
+    "metal"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 33,
+  "height": 12,
+  "weight": 1,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.25
 }

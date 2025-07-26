@@ -2,7 +2,9 @@
   "conditions": [
     {
       "type": "facing_sprite",
-      "parameters": ["boulder"],
+      "parameters": [
+        "boulder"
+      ],
       "operator": "is"
     }
   ],

@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["metal"],
+      "parameters": [
+        "metal"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "switch_type",
-      "parameters": ["metal"]
+      "parameters": [
+        "metal"
+      ]
     }
   ],
   "slug": "metal_cherry",

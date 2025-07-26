@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["blinded", "enemy_monster"]
+      "parameters": [
+        "blinded",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.2,
   "power": 1.25,
   "range": "touch",
@@ -30,7 +33,9 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["ground"],
+  "tags": [
+    "ground"
+  ],
   "types": [
     "earth"
   ],

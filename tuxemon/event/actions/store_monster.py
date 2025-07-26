@@ -66,4 +66,4 @@ class StoreMonsterAction(EventAction):
             return
         else:
             character.monster_boxes.add_monster(store, monster)
-            character.remove_monster(monster)
+            character.party.remove_monster(monster)

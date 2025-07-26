@@ -5,15 +5,20 @@
   "effects": [
     {
       "type": "remove",
-      "parameters": ["all", "own_monster:enemy_monster"]
+      "parameters": [
+        "all",
+        "own_monster:enemy_monster"
+      ]
     },
     {
       "type": "reverse",
-      "parameters": ["enemy_team:own_team"]
+      "parameters": [
+        "enemy_team:own_team"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": true,
+  "speed": "fast",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -31,7 +36,9 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["universal"],
+  "tags": [
+    "universal"
+  ],
   "types": [
     "aether"
   ],

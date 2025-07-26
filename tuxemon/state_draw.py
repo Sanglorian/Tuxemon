@@ -11,6 +11,7 @@ from pygame.surface import Surface
 
 from tuxemon import prepare
 from tuxemon.graphics import ColorLike
+from tuxemon.ui.draw import TextRenderer
 
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
@@ -223,6 +224,7 @@ class EventDebugDrawer:
         font_size: int = 15,
     ) -> tuple[int, int]:
         font = Font(get_default_font(), font_size)
-        image = font.render(text, True, color)
+        renderer = TextRenderer(font=font, font_color=color)
+        image = renderer.shadow_text(text)
         self.screen.blit(image, position)
         return image.get_size()

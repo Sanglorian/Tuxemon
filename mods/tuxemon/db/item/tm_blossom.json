@@ -2,19 +2,25 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["wood"],
+      "parameters": [
+        "wood"
+      ],
       "operator": "is"
     },
     {
       "type": "has_tech",
-      "parameters": ["blossom"],
+      "parameters": [
+        "blossom"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["blossom"]
+      "parameters": [
+        "blossom"
+      ]
     }
   ],
   "slug": "tm_blossom",

@@ -5,18 +5,24 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["enraged", "own_monster"]
+      "parameters": [
+        "enraged",
+        "own_monster"
+      ]
     },
     {
       "type": "give",
-      "parameters": ["grabbed", "enemy_monster"]
+      "parameters": [
+        "grabbed",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "xy",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 1.25,
   "range": "touch",
@@ -34,7 +40,12 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["bite", "fists", "leadership", "fury"],
+  "tags": [
+    "bite",
+    "fists",
+    "leadership",
+    "fury"
+  ],
   "types": [
     "fire",
     "wood"

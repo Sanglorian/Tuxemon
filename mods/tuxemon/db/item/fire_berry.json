@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["fire"],
+      "parameters": [
+        "fire"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "switch_type",
-      "parameters": ["fire"]
+      "parameters": [
+        "fire"
+      ]
     }
   ],
   "slug": "fire_berry",

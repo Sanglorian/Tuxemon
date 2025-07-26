@@ -8,7 +8,7 @@
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.0,
   "power": 2.2,
   "range": "melee",
@@ -26,9 +26,12 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["rock"],
+  "tags": [
+    "rock"
+  ],
   "types": [
-    "earth", "metal"
+    "earth",
+    "metal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

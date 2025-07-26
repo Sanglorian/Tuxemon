@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["burn", "own_team:enemy_team"]
+      "parameters": [
+        "burn",
+        "own_team:enemy_team"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 2.9,
   "range": "ranged",
@@ -30,7 +33,9 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["calamity"],
+  "tags": [
+    "calamity"
+  ],
   "types": [
     "fire"
   ],

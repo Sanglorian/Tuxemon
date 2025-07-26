@@ -13,7 +13,7 @@ Beautify all JSON files in a directory with 2-space indent, recursively and forc
     python json_beautifier.py my_json_folder -r -i 2 -f
 
 Example (moving in scripts folder):
-    python yaml_beautifier.py ../mods/tuxemon/PATH/ -r
+    python json_beautifier.py ../mods/tuxemon/PATH/ -r
 
 Get help/usage information:
     python json_beautifier.py --help
@@ -23,7 +23,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 DEFAULT_INDENT: int = 2
-SORT_KEYS: bool = True
+SORT_KEYS: bool = False
 
 
 def beautify_json_file(

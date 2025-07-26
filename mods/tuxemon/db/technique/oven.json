@@ -1,27 +1,33 @@
 {
   "tech_id": 236,
   "accuracy": 0.8,
-	"animation": null,
-	"conditions": [
+  "animation": null,
+  "conditions": [
     {
       "type": "status",
-      "parameters": ["grabbed"],
+      "parameters": [
+        "grabbed"
+      ],
       "operator": "not"
     },
     {
       "type": "status",
-      "parameters": ["stuck"],
+      "parameters": [
+        "stuck"
+      ],
       "operator": "not"
     }
-	],
+  ],
   "effects": [
     {
       "type": "disappear",
-      "parameters": ["fireball"]
+      "parameters": [
+        "fireball"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": true,
+  "speed": "extremely_fast",
   "potency": 1,
   "power": 1,
   "range": "melee",
@@ -39,7 +45,10 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["flame", "food"],
+  "tags": [
+    "flame",
+    "food"
+  ],
   "types": [
     "fire"
   ],

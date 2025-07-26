@@ -14,6 +14,7 @@ from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon import prepare
+from tuxemon.animation import ScheduleType
 from tuxemon.item.item import Item
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
@@ -21,7 +22,8 @@ from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.quantity import QuantityMenu
 from tuxemon.state import State
 from tuxemon.states.items.item_menu import ItemMenuState
-from tuxemon.tools import open_choice_dialog, open_dialog
+from tuxemon.tools import fix_measure, open_choice_dialog, open_dialog
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +34,6 @@ if TYPE_CHECKING:
 
 
 MenuGameObj = Callable[[], object]
-
-
-def fix_measure(measure: int, percentage: float) -> int:
-    """it returns the correct measure based on percentage"""
-    return round(measure * percentage)
 
 
 HIDDEN_LOCKER = "hidden_locker"
@@ -83,15 +80,23 @@ class ItemTakeState(PygameMenuState):
                 "disband": lambda: disband_item(itm),
             }
 
-            menu = []
+            menu_options = []
+
             for action, func in actions.items():
                 if action == "change" and len(box_ids) < 2:
                     continue
-                menu.append((action, T.translate(action).upper(), func))
+
+                translated_label = T.translate(action).upper()
+
+                menu_options.append(
+                    ChoiceOption(
+                        key=action, display_text=translated_label, action=func
+                    )
+                )
 
             open_choice_dialog(
                 self.client,
-                menu=menu,
+                menu=MenuOptions(menu_options),
                 escape_key_exits=True,
             )
 
@@ -106,15 +111,18 @@ class ItemTakeState(PygameMenuState):
             )
 
         def change_locker(itm: Item, box_ids: list[str]) -> None:
-            var_menu = []
+            options = []
+
             for box in box_ids:
                 text = T.translate(box).upper()
-                var_menu.append(
-                    (text, text, partial(update_locker, itm, box, box_ids))
+                action = partial(update_locker, itm, box, box_ids)
+                options.append(
+                    ChoiceOption(key=box, display_text=text, action=action)
                 )
+
             open_choice_dialog(
                 self.client,
-                menu=(var_menu),
+                menu=MenuOptions(options),
                 escape_key_exits=True,
             )
 
@@ -138,23 +146,21 @@ class ItemTakeState(PygameMenuState):
         def take(itm: Item, quantity: int) -> None:
             self.client.remove_state_by_name("ChoiceState")
             self.client.remove_state_by_name("ItemTakeState")
+
             diff = itm.quantity - quantity
             retrieve = self.char.items.find_item(itm.slug)
+
             if diff <= 0:
                 self.item_boxes.remove_item(itm)
-                if retrieve is not None:
-                    retrieve.increase_quantity(quantity)
-                else:
-                    self.char.items.add_item(itm)
             else:
                 itm.set_quantity(diff)
-                if retrieve is not None:
-                    retrieve.increase_quantity(quantity)
-                else:
-                    # item deposited
-                    new_item = Item.create(itm.slug)
-                    new_item.set_quantity(quantity)
-                    self.char.items.add_item(new_item)
+
+            if retrieve:
+                retrieve.increase_quantity(quantity)
+            else:
+                new_item = Item.create(itm.slug)
+                self.char.items.add_item(new_item, quantity)
+
             open_dialog(
                 self.client,
                 [
@@ -200,7 +206,7 @@ class ItemTakeState(PygameMenuState):
             menu.add.label(
                 label,
                 selectable=True,
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 align=locals.ALIGN_CENTER,
                 selection_effect=HighlightSelection(),
             )
@@ -234,10 +240,11 @@ class ItemTakeState(PygameMenuState):
             height=height, width=width, columns=columns, rows=rows
         )
 
+        column_width = fix_measure(self.menu._width, 0.33)
         self.menu._column_max_width = [
-            fix_measure(self.menu._width, 0.33),
-            fix_measure(self.menu._width, 0.33),
-            fix_measure(self.menu._width, 0.33),
+            column_width,
+            column_width,
+            column_width,
         ]
 
         menu_items_map = []
@@ -313,7 +320,7 @@ class ItemBoxState(PygameMenuState):
         self.animation_offset = 0
 
         ani = self.animate(self, animation_offset=width, duration=0.50)
-        ani.update_callback = self.update_animation_position
+        ani.schedule(self.update_animation_position, ScheduleType.ON_UPDATE)
 
         return ani
 
@@ -326,7 +333,7 @@ class ItemBoxState(PygameMenuState):
 
         """
         ani = self.animate(self, animation_offset=0, duration=0.50)
-        ani.update_callback = self.update_animation_position
+        ani.schedule(self.update_animation_position, ScheduleType.ON_UPDATE)
 
         return ani
 
@@ -388,51 +395,33 @@ class ItemDropOff(ItemMenuState):
 
         def deposit(itm: Item, quantity: int) -> None:
             self.client.pop_state(self)
-            if not quantity:
+            if quantity <= 0:
                 return
 
-            # item deposited
-            new_item = Item.create(itm.slug)
-            diff = itm.quantity - quantity
             item_boxes = self.char.item_boxes
-
             box = item_boxes.get_items(self.box_name)
 
-            def find_monster_box(itm: Item, box: list[Item]) -> Optional[Item]:
-                for ele in box:
-                    if ele.slug == itm.slug:
-                        return ele
-                return None
+            new_item = Item.create(itm.slug)
+            new_item.set_quantity(quantity)
 
-            if box:
-                retrieve = find_monster_box(itm, box)
-                if retrieve is not None:
-                    stored = item_boxes.get_items_by_iid(retrieve.instance_id)
-                    if stored is not None:
-                        if diff <= 0:
-                            stored.increase_quantity(quantity)
-                            self.char.items.remove_item(itm)
-                        else:
-                            stored.increase_quantity(quantity)
-                            itm.set_quantity(diff)
-                else:
-                    if diff <= 0:
-                        new_item.set_quantity(quantity)
-                        item_boxes.add_item(self.box_name, new_item)
-                        self.char.items.remove_item(itm)
-                    else:
-                        itm.set_quantity(diff)
-                        new_item.set_quantity(quantity)
-                        item_boxes.add_item(self.box_name, new_item)
+            def find_item_in_box(
+                slug: str, items: list[Item]
+            ) -> Optional[Item]:
+                return next((i for i in items if i.slug == slug), None)
+
+            retrieve = find_item_in_box(itm.slug, box) if box else None
+            stored = (
+                item_boxes.get_items_by_iid(retrieve.instance_id)
+                if retrieve
+                else None
+            )
+
+            if stored:
+                stored.increase_quantity(quantity)
             else:
-                if diff <= 0:
-                    new_item.set_quantity(quantity)
-                    item_boxes.add_item(self.box_name, new_item)
-                    self.char.items.remove_item(itm)
-                else:
-                    itm.set_quantity(diff)
-                    new_item.set_quantity(quantity)
-                    item_boxes.add_item(self.box_name, new_item)
+                item_boxes.add_item(self.box_name, new_item)
+
+            self.char.items.remove_item(itm, quantity)
 
         self.client.push_state(
             QuantityMenu(

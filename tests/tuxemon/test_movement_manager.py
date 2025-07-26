@@ -17,7 +17,9 @@ class TestMovementManager(unittest.TestCase):
         self.mock_client = MagicMock(spec=LocalPygameClient)
         self.mock_client.event_manager = MagicMock(spec=EventManager)
         self.mock_client.input_manager = MagicMock(spec=InputManager)
-        self.movement_manager = MovementManager(self.mock_client)
+        self.movement_manager = MovementManager(
+            self.mock_client.event_manager, self.mock_client.input_manager
+        )
         self.mock_npc = MagicMock(spec=NPC)
         self.mock_npc.slug = "npc_1"
 

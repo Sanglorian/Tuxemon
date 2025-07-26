@@ -515,7 +515,7 @@
   <object id="241" name="Rockitten" type="event" x="352" y="144" width="16" height="32">
    <properties>
     <property name="act05" value="translated_dialog spyder_papertown_thereis"/>
-    <property name="act10" value="change_state JournalInfoState,rockitten"/>
+    <property name="act10" value="open_journal rockitten"/>
     <property name="act25" value="translated_dialog spyder_papertown_rockitten"/>
     <property name="act30" value="translated_dialog_choice yes:no,rockittenchosen"/>
     <property name="cond1" value="is char_facing_tile player"/>
@@ -526,7 +526,7 @@
   <object id="242" name="Lambert" type="event" x="352" y="176" width="16" height="32">
    <properties>
     <property name="act05" value="translated_dialog spyder_papertown_thereis"/>
-    <property name="act10" value="change_state JournalInfoState,lambert"/>
+    <property name="act10" value="open_journal lambert"/>
     <property name="act25" value="translated_dialog spyder_papertown_lambert"/>
     <property name="act30" value="translated_dialog_choice yes:no,lambertchosen"/>
     <property name="cond1" value="is char_facing_tile player"/>
@@ -537,7 +537,7 @@
   <object id="243" name="Nut" type="event" x="432" y="144" width="32" height="16">
    <properties>
     <property name="act05" value="translated_dialog spyder_papertown_thereis"/>
-    <property name="act10" value="change_state JournalInfoState,nut"/>
+    <property name="act10" value="open_journal nut"/>
     <property name="act25" value="translated_dialog spyder_papertown_nut"/>
     <property name="act30" value="translated_dialog_choice yes:no,nutchosen"/>
     <property name="cond1" value="is char_facing_tile player"/>
@@ -548,7 +548,7 @@
   <object id="245" name="Tweesher" type="event" x="464" y="144" width="32" height="16">
    <properties>
     <property name="act05" value="translated_dialog spyder_papertown_thereis"/>
-    <property name="act10" value="change_state JournalInfoState,tweesher"/>
+    <property name="act10" value="open_journal tweesher"/>
     <property name="act25" value="translated_dialog spyder_papertown_tweesher"/>
     <property name="act30" value="translated_dialog_choice yes:no,tweesherchosen"/>
     <property name="cond1" value="is char_facing_tile player"/>
@@ -559,7 +559,7 @@
   <object id="246" name="Agnite" type="event" x="480" y="176" width="16" height="32">
    <properties>
     <property name="act05" value="translated_dialog spyder_papertown_thereis"/>
-    <property name="act10" value="change_state JournalInfoState,agnite"/>
+    <property name="act10" value="open_journal agnite"/>
     <property name="act25" value="translated_dialog spyder_papertown_agnite"/>
     <property name="act30" value="translated_dialog_choice yes:no,agnitechosen"/>
     <property name="cond1" value="is char_facing_tile player"/>

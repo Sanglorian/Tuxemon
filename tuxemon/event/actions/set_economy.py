@@ -2,20 +2,27 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.economy import Economy
+from tuxemon.economy import Economy, EconomyApplier
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
+
+logger = logging.getLogger(__name__)
 
 
 @final
 @dataclass
 class SetEconomyAction(EventAction):
     """
-    Set the economy (prices of items) of the npc or player.
+    Sets the economy (prices and initial stock of items/monsters) for a specific NPC.
+
+    This action orchestrates loading the economy data and then applying it to
+    the target character's shop/inventory, including handling initial quantities
+    and variable-based availability.
 
     Script usage:
         .. code-block::
@@ -25,7 +32,6 @@ class SetEconomyAction(EventAction):
     Script parameters:
         npc_slug: Either "player" or npc slug name (e.g. "npc_maple").
         economy_slug: Slug of an economy.
-
     """
 
     name = "set_economy"
@@ -33,10 +39,21 @@ class SetEconomyAction(EventAction):
     economy_slug: str
 
     def start(self, session: Session) -> None:
-        player = session.player
-        npc = get_npc(session, self.npc_slug)
-        assert npc
+        character = get_npc(session, self.npc_slug)
+        if character is None:
+            logger.error(f"{self.npc_slug} not found")
+            return
 
-        npc.economy = Economy(self.economy_slug)
-        items = npc.economy.load_economy_items(player)
-        npc.economy.add_economy_to_npc(npc, items)
+        try:
+            character.economy = Economy(self.economy_slug)
+            logger.info(
+                f"Loaded economy '{self.economy_slug}' for NPC '{self.npc_slug}'."
+            )
+        except RuntimeError as e:
+            logger.error(f"Error loading economy '{self.economy_slug}': {e}")
+            return
+
+        applier = EconomyApplier()
+        applier.apply_economy_to_character(
+            session, character.economy, character
+        )

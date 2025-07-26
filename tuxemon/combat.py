@@ -1,11 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """
-
 Combat related code that can be independent of the combat state.
-
 Code here might be shared by states, actions, conditions, etc.
-
 """
 
 from __future__ import annotations
@@ -23,6 +20,7 @@ from tuxemon.db import (
     TargetType,
 )
 from tuxemon.locale import T
+from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
@@ -75,8 +73,8 @@ def pre_checking(
     Pre checking allows to check if there are statuses
     or other conditions that change the chosen technique.
     """
-    if monster.status.status_exists():
-        status = monster.status.current_status
+    status = monster.status.get_current_status()
+    if status:
         result_status = status.execute_status_action(
             session, combat, target, EffectPhase.PRE_CHECKING
         )
@@ -230,7 +228,6 @@ def battlefield(session: Session, monster: Monster) -> None:
     set_var(session, "battle_last_monster_level", str(monster.level))
     set_var(session, "battle_last_monster_type", monster.types.primary.slug)
     set_var(session, "battle_last_monster_category", monster.category)
-    set_var(session, "battle_last_monster_shape", monster.shape)
 
 
 def track_battles(
@@ -306,9 +303,10 @@ def _handle_win(
             client.execute_action("modify_money", var, True)
 
             if prize > 0:
+                formatter = CurrencyFormatter()
+                formatted_prize = formatter.format(prize)
+                info["prize"] = formatted_prize
                 set_var(session, "battle_last_prize", str(prize))
-                info["prize"] = str(prize)
-                info["currency"] = "$"
                 return T.format("combat_victory_trainer", info)
             else:
                 return T.format("combat_victory", info)

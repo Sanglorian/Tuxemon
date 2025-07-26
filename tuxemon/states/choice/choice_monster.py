@@ -3,53 +3,66 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Sequence
-from typing import Any
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any, Optional
 
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon import prepare
-from tuxemon.animation import Animation
+from tuxemon.animation import Animation, ScheduleType
 from tuxemon.db import MonsterModel, db
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.session import local_session
+from tuxemon.ui.menu_options import MenuOptions
 
-ChoiceMenuGameObj = Callable[[], None]
-MAX_MENU_ELEMENTS = 15
-MAX_MENU_HEIGHT_PERCENTAGE = 0.8
-ANIMATION_DURATION = 0.2
-ANIMATION_SIZE = 1.0
-MENU_WIDGETS = 3
-MENU_COLUMNS = 5
-SCALE_SPRITE = 0.4
-VERTICAL_FILL = 15
+
+@dataclass
+class MenuMonsterConfig:
+    max_elements: int = 15
+    max_height_percentage: float = 0.8
+    animation_duration: float = 0.2
+    animation_start_size: float = 0.0
+    animation_end_size: float = 1.0
+    number_widgets: int = 3
+    number_columns: int = 5
+    scale_sprite: float = 0.4
+    vertical_fill: int = 15
 
 
 class ChoiceMonster(PygameMenuState):
     """
     Game state with a graphic box and monsters (images) + labels.
-
     """
 
     def __init__(
         self,
-        menu: Sequence[tuple[str, str, Callable[[], None]]] = (),
+        menu: MenuOptions,
         escape_key_exits: bool = False,
+        config: Optional[MenuMonsterConfig] = None,
         **kwargs: Any,
     ) -> None:
-        theme = get_theme()
-        if len(menu) > MAX_MENU_ELEMENTS:
+        self.config = config or MenuMonsterConfig()
+        theme = get_theme().copy()
+        if len(menu.options) > self.config.max_elements:
             theme.scrollarea_position = POSITION_EAST
 
-        rows = math.ceil(len(menu) / MENU_COLUMNS) * MENU_WIDGETS
-        super().__init__(columns=MENU_COLUMNS, rows=rows, **kwargs)
+        rows = (
+            math.ceil(len(menu.options) / self.config.number_columns)
+            * self.config.number_widgets
+        )
+        super().__init__(
+            columns=self.config.number_columns, rows=rows, **kwargs
+        )
 
-        for name, slug, callback in menu:
-            self.add_monster_menu_item(name, slug, callback)
+        for option in menu.get_menu():
+            self.add_monster_menu_item(
+                option.display_text, option.key, option.action
+            )
 
-        self.animation_size = 0.0
+        self.animation_size = self.config.animation_start_size
         self.escape_key_exits = escape_key_exits
 
     def add_monster_menu_item(
@@ -62,7 +75,8 @@ class ChoiceMonster(PygameMenuState):
         path = f"gfx/sprites/battle/{monster.slug}-front.png"
         new_image = self._create_image(path)
         new_image.scale(
-            prepare.SCALE * SCALE_SPRITE, prepare.SCALE * SCALE_SPRITE
+            prepare.SCALE * self.config.scale_sprite,
+            prepare.SCALE * self.config.scale_sprite,
         )
 
         def open_journal() -> None:
@@ -86,11 +100,11 @@ class ChoiceMonster(PygameMenuState):
         self.menu.add.button(
             name,
             callback,
-            font_size=self.font_size_small,
+            font_size=self.font_type.small,
             align=ALIGN_CENTER,
             selection_effect=HighlightSelection(),
         )
-        self.menu.add.vertical_fill(VERTICAL_FILL)
+        self.menu.add.vertical_fill(self.config.vertical_fill)
 
     def update_animation_size(self) -> None:
         width, height = prepare.SCREEN_SIZE
@@ -102,7 +116,7 @@ class ChoiceMonster(PygameMenuState):
         if _width >= width:
             _width = width
         if _height >= height:
-            _height = int(height * MAX_MENU_HEIGHT_PERCENTAGE)
+            _height = int(height * self.config.max_height_percentage)
 
         self.menu.resize(
             max(1, int(_width * self.animation_size)),
@@ -115,13 +129,12 @@ class ChoiceMonster(PygameMenuState):
 
         Returns:
             Popping in animation.
-
         """
-        self.animation_size = 0.0
-
         ani = self.animate(
-            self, animation_size=ANIMATION_SIZE, duration=ANIMATION_DURATION
+            self,
+            animation_size=self.config.animation_end_size,
+            duration=self.config.animation_duration,
         )
-        ani.update_callback = self.update_animation_size
+        ani.schedule(self.update_animation_size, ScheduleType.ON_UPDATE)
 
         return ani

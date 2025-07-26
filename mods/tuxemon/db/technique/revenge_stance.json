@@ -5,11 +5,14 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["revenge", "enemy_monster"]
+      "parameters": [
+        "revenge",
+        "enemy_monster"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -27,7 +30,11 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["soldier", "shielded", "fury"],
+  "tags": [
+    "soldier",
+    "shielded",
+    "fury"
+  ],
   "types": [
     "metal"
   ],

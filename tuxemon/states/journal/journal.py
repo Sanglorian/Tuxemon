@@ -15,6 +15,7 @@ from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
+from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
@@ -23,11 +24,6 @@ MAX_PAGE = 20
 
 MenuGameObj = Callable[[], object]
 lookup_cache: dict[str, MonsterModel] = {}
-
-
-def fix_measure(measure: int, percentage: float) -> int:
-    """it returns the correct measure based on percentage"""
-    return round(measure * percentage)
 
 
 def _lookup_monsters() -> None:
@@ -46,12 +42,10 @@ class JournalState(PygameMenuState):
         menu: pygame_menu.Menu,
         monsters: list[MonsterModel],
     ) -> None:
-        width = menu._width
-        height = menu._height
-        menu._column_max_width = [
-            fix_measure(width, 0.35),
-            fix_measure(width, 0.35),
-        ]
+        column_width = fix_measure(menu._width, 0.35)
+        btn_x_offset = fix_measure(menu._width, 0.25)
+        btn_y_offset = fix_measure(menu._height, 0.01)
+        menu._column_max_width = [column_width, column_width]
 
         def change_state(state: str, **kwargs: Any) -> MenuGameObj:
             return partial(self.client.push_state, state, **kwargs)
@@ -70,11 +64,9 @@ class JournalState(PygameMenuState):
                             monster=mon,
                             source=self.name,
                         ),
-                        font_size=self.font_size_small,
+                        font_size=self.font_type.small,
                         button_id=mon.slug,
-                    ).translate(
-                        fix_measure(width, 0.25), fix_measure(height, 0.01)
-                    )
+                    ).translate(btn_x_offset, btn_y_offset)
                 elif self.char.tuxepedia.is_caught(mon.slug):
                     menu.add.button(
                         label + "◉",
@@ -84,23 +76,19 @@ class JournalState(PygameMenuState):
                             monster=mon,
                             source=self.name,
                         ),
-                        font_size=self.font_size_small,
+                        font_size=self.font_type.small,
                         button_id=mon.slug,
                         underline=True,
-                    ).translate(
-                        fix_measure(width, 0.25), fix_measure(height, 0.01)
-                    )
+                    ).translate(btn_x_offset, btn_y_offset)
             else:
                 label = f"{mon.txmn_id}. -----"
                 lab: Any = menu.add.label(
                     label,
-                    font_size=self.font_size_small,
+                    font_size=self.font_type.small,
                     font_color=prepare.DIMGRAY_COLOR,
                     label_id=mon.slug,
                 )
-                lab.translate(
-                    fix_measure(width, 0.25), fix_measure(height, 0.01)
-                )
+                lab.translate(btn_x_offset, btn_y_offset)
 
     def __init__(
         self, character: NPC, monsters: list[MonsterModel], page: int

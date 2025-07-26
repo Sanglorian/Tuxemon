@@ -5,11 +5,14 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["exhausted", "enemy_monster"]
+      "parameters": [
+        "exhausted",
+        "enemy_monster"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.8,
   "power": 2.8,
   "range": "special",
@@ -27,7 +30,9 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["love"],
+  "tags": [
+    "love"
+  ],
   "types": [
     "earth"
   ],

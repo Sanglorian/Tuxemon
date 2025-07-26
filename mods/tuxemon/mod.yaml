@@ -1,0 +1,8 @@
+# The human-readable name of your mod. This is often displayed to users in a mod list.
+name: Tuxemon
+
+# A list of authors or contributors to this mod.
+authors:
+  - alpha
+  - beta
+  - gamma

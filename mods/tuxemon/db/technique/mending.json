@@ -9,7 +9,7 @@
   ],
   "flip_axes": "",
   "healing_power": 2.0,
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -27,7 +27,9 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["leadership"],
+  "tags": [
+    "leadership"
+  ],
   "types": [
     "earth"
   ],

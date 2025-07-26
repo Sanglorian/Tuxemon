@@ -4,18 +4,11 @@ import unittest
 from unittest.mock import MagicMock
 
 from tuxemon import prepare
-from tuxemon.db import (
-    AttributesModel,
-    Modifier,
-    ShapeModel,
-    TechniqueModel,
-    db,
-)
+from tuxemon.db import Modifier, db
 from tuxemon.monster import Monster
 from tuxemon.prepare import MAX_LEVEL
-from tuxemon.surfanim import FlipAxes
+from tuxemon.shape import ShapeHandler
 from tuxemon.taste import Taste
-from tuxemon.technique.technique import Technique
 from tuxemon.time_handler import today_ordinal
 
 
@@ -58,10 +51,15 @@ class SetCapture(MonsterTestBase):
 
 
 class SetStats(MonsterTestBase):
-    _shape_attr = AttributesModel(
-        armour=7, dodge=5, hp=6, melee=6, ranged=6, speed=6
+    _shape_attr = MagicMock(
+        armour=7,
+        dodge=5,
+        hp=6,
+        melee=6,
+        ranged=6,
+        speed=6,
     )
-    _shape = ShapeModel(slug="dragon", attributes=_shape_attr)
+    _shape = MagicMock(slug="dragon", attributes=_shape_attr)
 
     def setUp(self):
         self.mon = Monster()
@@ -126,7 +124,7 @@ class SetStats(MonsterTestBase):
         self.assertEqual(self.mon.hp, self.value)
 
     def test_set_stats_shape(self):
-        self.mon.shape = "dragon"
+        self.mon.shape = ShapeHandler("dragon")
         self.mon.set_stats()
         _shape = self._shape.attributes
         self.assertEqual(self.mon.armour, _shape.armour * self.value)
@@ -170,49 +168,3 @@ class SetStats(MonsterTestBase):
         self.assertEqual(self.mon.ranged, expected_ranged)
         self.assertEqual(self.mon.speed, self.value)
         self.assertEqual(self.mon.hp, self.value)
-
-
-class Learn(MonsterTestBase):
-    _tech = TechniqueModel(
-        tech_id=69,
-        accuracy=0.85,
-        flip_axes=FlipAxes.NONE,
-        potency=0.0,
-        power=1.5,
-        range="melee",
-        recharge=1,
-        sfx="sfx_blaster",
-        slug="ram",
-        sort="damage",
-        target={
-            "enemy_monster": False,
-            "enemy_team": False,
-            "enemy_trainer": False,
-            "own_monster": False,
-            "own_team": False,
-            "own_trainer": False,
-        },
-        types=[],
-        category="simple",
-        tags=["animal"],
-        use_tech="combat_used_x",
-        effects=[],
-        modifiers=[],
-    )
-
-    def setUp(self):
-        self.mon = Monster()
-        self.mon.name = "agnite"
-        self._tech_model = {"ram": self._tech}
-        db.database["technique"] = self._tech_model
-
-    def test_learn(self):
-        tech = Technique.create("ram")
-        self.mon.moves.learn(tech)
-        self.assertEqual(len(self.mon.moves.current_moves), 1)
-        move = self.mon.moves.current_moves[0]
-        self.assertEqual(move.slug, "ram")
-        self.assertEqual(move.tech_id, 69)
-        self.assertEqual(move.accuracy, 0.85)
-        self.assertEqual(move.power, 1.5)
-        self.assertEqual(move.potency, 0.0)

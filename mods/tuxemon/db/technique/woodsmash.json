@@ -8,7 +8,7 @@
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.0,
   "power": 2.9,
   "range": "melee",
@@ -26,7 +26,9 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["plant"],
+  "tags": [
+    "plant"
+  ],
   "types": [
     "wood"
   ],

@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["flintstone"],
+      "parameters": [
+        "flintstone"
+      ],
       "operator": "is"
     }
   ],

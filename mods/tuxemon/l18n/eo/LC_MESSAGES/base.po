@@ -1,3 +1,4 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Tuxemon\n"
@@ -5,8 +6,7 @@ msgstr ""
 "POT-Creation-Date: 2020-05-14 05:41+0200\n"
 "PO-Revision-Date: 2023-02-03 04:41+0000\n"
 "Last-Translator: Betsy <betsymaxx@gmailvn.net>\n"
-"Language-Team: Esperanto <https://hosted.weblate.org/projects/tuxemon/"
-"tuxemon/eo/>\n"
+"Language-Team: Esperanto <https://hosted.weblate.org/projects/tuxemon/tuxemon/eo/>\n"
 "Language: eo\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 4.16-dev\n"
 
-## ITEM TRANSLATIONS ##
+# ITEM TRANSLATIONS ##
 # Apple
 msgid "apple"
 msgstr "Pomo"
@@ -71,7 +71,7 @@ msgstr "Kaptilo"
 msgid "capture_device_description"
 msgstr "Ilo por kapti monstron."
 
-## NOTIFICATION TRANSLATIONS ##
+# NOTIFICATION TRANSLATIONS ##
 # Combat notifications
 msgid "combat_used_x"
 msgstr "{name} estis uzata de {user}!"
@@ -193,7 +193,7 @@ msgstr "Svenite"
 msgid "poison"
 msgstr "veneno"
 
-## TECHNIQUE TRANSLATIONS ##
+# TECHNIQUE TRANSLATIONS ##
 msgid "bite"
 msgstr "Mordo"
 
@@ -218,9 +218,10 @@ msgstr "Ventokirlo"
 msgid "run"
 msgstr "Run"
 
-## MENU TRANSLATIONS ##
+# MENU TRANSLATIONS ##
 msgid "menu_alphabet"
-msgstr "ABCĈDEFGĜHĤIJĴKLMNOPRSŜTUŬVZabcĉdefgĝhĥijĵklmnoprsŝtuŭvz1234567890.-!\0"
+msgstr ""
+"ABCĈDEFGĜHĤIJĴKLMNOPRSŜTUŬVZabcĉdefgĝhĥijĵklmnoprsŝtuŭvz1234567890.-!\\0"
 
 # Monster Menu notifications
 msgid "monster_menu_info"
@@ -307,7 +308,7 @@ msgstr "Neniu servilo trovata..."
 msgid "multiplayer_join_prompt"
 msgstr "Ĉu gastignomo aŭ IP-adreso?"
 
-## MONSTER TRANSLATIONS ##
+# MONSTER TRANSLATIONS ##
 # Monster details
 msgid "aardart"
 msgstr "Aardart"
@@ -355,7 +356,9 @@ msgid "axolightl"
 msgstr "Axolightl"
 
 msgid "axolightl_description"
-msgstr "Ĝi lumigas la profundajn akvojn per sia vosto, montrante sekuran ŝirmon por fiŝoj."
+msgstr ""
+"Ĝi lumigas la profundajn akvojn per sia vosto, montrante sekuran ŝirmon por "
+"fiŝoj."
 
 msgid "bamboon"
 msgstr "Bambiano"
@@ -415,7 +418,9 @@ msgid "chloragon"
 msgstr "Chloragon"
 
 msgid "chloragon_description"
-msgstr "It hatches when an ancient egg is planted in fertile soil. When the eggs run out, there will be no more Chloragon."
+msgstr ""
+"It hatches when an ancient egg is planted in fertile soil. When the eggs run"
+" out, there will be no more Chloragon."
 
 msgid "conifrost"
 msgstr "Conifrost"
@@ -433,13 +438,17 @@ msgid "dandylion"
 msgstr "Dandleono"
 
 msgid "dandylion_description"
-msgstr "Ĝi naskigas unu idaron dumvive. Do ĝi vagabondas per la mondo, klopodante en trovi ilin."
+msgstr ""
+"Ĝi naskigas unu idaron dumvive. Do ĝi vagabondas per la mondo, klopodante en"
+" trovi ilin."
 
 msgid "djinnbo"
 msgstr "Djinnbo"
 
 msgid "djinnbo_description"
-msgstr "Oni malkorekte kredas, ke ĝi estas homo, kiu mortis en fajro. Aktuale, siaj gepatroj mortis."
+msgstr ""
+"Oni malkorekte kredas, ke ĝi estas homo, kiu mortis en fajro. Aktuale, siaj "
+"gepatroj mortis."
 
 msgid "dollfin"
 msgstr "Dollfin"
@@ -481,7 +490,9 @@ msgid "falcono"
 msgstr "Falcono"
 
 msgid "falcono_description"
-msgstr "It is totally unafraid of adversaries, and will attack an enemy of any size without hesitation."
+msgstr ""
+"It is totally unafraid of adversaries, and will attack an enemy of any size "
+"without hesitation."
 
 msgid "ferricran"
 msgstr "Ferricran"
@@ -529,7 +540,8 @@ msgid "lambert"
 msgstr "Lambert"
 
 msgid "lambert_description"
-msgstr "Ĝi sidiĝis sur siaj nuksoj de siaj gepatroj, kiuj sendis ĝin en la mondon."
+msgstr ""
+"Ĝi sidiĝis sur siaj nuksoj de siaj gepatroj, kiuj sendis ĝin en la mondon."
 
 msgid "legko"
 msgstr "Legko"
@@ -577,7 +589,8 @@ msgid "nudiflot"
 msgstr "Nudiflot"
 
 msgid "nudiflot_description"
-msgstr "Ĝi manĝas kaj konservas la venenon de la marbestoj, per kiu ĝi sin nutras."
+msgstr ""
+"Ĝi manĝas kaj konservas la venenon de la marbestoj, per kiu ĝi sin nutras."
 
 msgid "nut"
 msgstr "Juglando"
@@ -673,7 +686,9 @@ msgid "sumobug"
 msgstr "Sumobug"
 
 msgid "sumobug_description"
-msgstr "Ĝi usas sian pezon por stumbligi plurajn malamikoj. Ĝi estas densa kiel stelo."
+msgstr ""
+"Ĝi usas sian pezon por stumbligi plurajn malamikoj. Ĝi estas densa kiel "
+"stelo."
 
 msgid "tigrock"
 msgstr "Tigroko"
@@ -721,7 +736,9 @@ msgid "wrougon"
 msgstr "Wrougon"
 
 msgid "wrougon_description"
-msgstr "Each Wrougon is born with a patch of rust larger than the patch of its parents."
+msgstr ""
+"Each Wrougon is born with a patch of rust larger than the patch of its "
+"parents."
 
 msgid "zunna"
 msgstr "Zunna"
@@ -859,7 +876,7 @@ msgstr ""
 msgid "slurpy"
 msgstr ""
 
-## NPC TRANSLATIONS ##
+# NPC TRANSLATIONS ##
 # NPC slugs and names
 msgid "aeble"
 msgstr "Aeble"
@@ -939,7 +956,7 @@ msgstr "Team Xero Grunt IX"
 msgid "xerogrunt10"
 msgstr "Team Xero Grunt X"
 
-## DIALOG TRANSLATIONS ##
+# DIALOG TRANSLATIONS ##
 # general dialogs
 msgid "healmytuxemon"
 msgstr "Do you want to heal your Tuxemon?"
@@ -988,7 +1005,8 @@ msgstr "Not really"
 
 # NPC dialogs
 msgid "professor_dialog"
-msgstr "Profesoro: Ah, jes. Vi estas la persono, kiun mi antendas por renkontiĝi.\n"
+msgstr ""
+"Profesoro: Ah, jes. Vi estas la persono, kiun mi antendas por renkontiĝi.\n"
 "Mi aŭdis, ke vi volas lerni pri Tuksemonoj.\n"
 "Tuksemonoj estas etaj bestoj, kelkaj personoj nomas ilin monstrojn, kiuj ni amikiĝas kaj uzas por batali kontraŭ aliaj Tuksemonoj.\n"
 "Mi ĵus ricevis tri novajn Tuksemonojn por serĉado kaj mi dezirus doni unu el ili al vi.\n"
@@ -1004,10 +1022,13 @@ msgid "professor_dialog6.3"
 msgstr "Profesoro: Kia saĝa elekto! Fruktero estas ligno-tipa Tuksemono"
 
 msgid "professor_dialog7"
-msgstr "Profesoro: Mi esperas, ke ni renkontiĝos denove! Mi ekvojaĝos, do eble ni renkontiĝos kelkfoje."
+msgstr ""
+"Profesoro: Mi esperas, ke ni renkontiĝos denove! Mi ekvojaĝos, do eble ni "
+"renkontiĝos kelkfoje."
 
 msgid "karrianna_dialog1"
-msgstr "Lidja: Mi trejnas ekde la lastaj monatoj! Neniuj ankoraŭ malvenkigas min!"
+msgstr ""
+"Lidja: Mi trejnas ekde la lastaj monatoj! Neniuj ankoraŭ malvenkigas min!"
 
 msgid "karrianna_dialog2"
 msgstr "Nu… Vi estas la unua trejnisto, kiun mi renkontis…"
@@ -1022,7 +1043,9 @@ msgid "xero_grunts_block"
 msgstr "This area is under construction, it should be done soon."
 
 msgid "waiting_for_misa"
-msgstr "Our leader would like to talk with you. When you are ready, talk to my friend next to me."
+msgstr ""
+"Our leader would like to talk with you. When you are ready, talk to my "
+"friend next to me."
 
 msgid "teleport?"
 msgstr "Are you ready to meet our leader?"
@@ -1082,7 +1105,8 @@ msgid "Cotton_Mart"
 msgstr ""
 
 msgid "Cotton_Town_Sign"
-msgstr "Welcome to Cotton Town: A Growing Force\n"
+msgstr ""
+"Welcome to Cotton Town: A Growing Force\n"
 "^ Cotton Town --- Route 1 v"
 
 msgid "column1"
@@ -1092,7 +1116,8 @@ msgid "column2"
 msgstr ""
 
 msgid "cityparksign"
-msgstr "Welcome to City Park: A Taste of the Wild\n"
+msgstr ""
+"Welcome to City Park: A Taste of the Wild\n"
 "^ City Park --- Route 2 v"
 
 msgid "route2speech"
@@ -1132,7 +1157,8 @@ msgid "leavemealone"
 msgstr ""
 
 msgid "iamknight3"
-msgstr "What are you doing here? You know that only knights are allowed through city park.\n"
+msgstr ""
+"What are you doing here? You know that only knights are allowed through city park.\n"
 "... ... ... Hmm... So you're trying to get to Leather Town...\n"
 "Well, I guess you could enter the challenge if you want. The only problem is that you'll need a Tuxemon...\n"
 "I'm sure we can lend you one. Are you up for the challenge?"
@@ -1141,7 +1167,8 @@ msgid "sorry"
 msgstr "Okay, well... when you're ready, I'll still be here..."
 
 msgid "splendid"
-msgstr "You will? Splendid! Now, to find you a suitable Tuxemon...\n"
+msgstr ""
+"You will? Splendid! Now, to find you a suitable Tuxemon...\n"
 "... ... You already have a Tuxemon? Well, I'm sure that you'd be able to handle yourself well..."
 
 msgid "cottonnurse_dialog"

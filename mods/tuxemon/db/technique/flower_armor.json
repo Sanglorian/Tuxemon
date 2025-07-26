@@ -5,11 +5,14 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["elementalshield", "own_monster"]
+      "parameters": [
+        "elementalshield",
+        "own_monster"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1.0,
   "power": 0.0,
   "range": "special",
@@ -27,7 +30,9 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["plant"],
+  "tags": [
+    "plant"
+  ],
   "types": [
     "wood"
   ],

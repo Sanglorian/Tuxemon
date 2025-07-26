@@ -2,7 +2,9 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["water"],
+      "parameters": [
+        "water"
+      ],
       "operator": "is"
     }
   ],

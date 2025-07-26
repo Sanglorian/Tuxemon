@@ -2,13 +2,13 @@
   "tech_id": 210,
   "accuracy": 1.0,
   "animation": "tail",
-	"effects": [
+  "effects": [
     {
       "type": "empty"
     }
-	],
+  ],
   "flip_axes": "",
-  "is_fast": true,
+  "speed": "fast",
   "potency": 0.0,
   "power": 0,
   "range": "special",
@@ -18,15 +18,17 @@
   "sort": "meta",
   "modifiers": [],
   "target": {
-		"enemy_monster": false,
-		"enemy_team": false,
-		"enemy_trainer": false,
-		"own_monster": true,
-		"own_team": false,
-		"own_trainer": false
+    "enemy_monster": false,
+    "enemy_team": false,
+    "enemy_trainer": false,
+    "own_monster": true,
+    "own_team": false,
+    "own_trainer": false
   },
   "category": "animal",
-  "tags": ["weak"],
+  "tags": [
+    "weak"
+  ],
   "types": [
     "aether"
   ],

@@ -1,60 +1,69 @@
 {
-    "slug": "fancair",
-    "category": "deadly_fan",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "whirlwind"
-        },
-        {
-            "level_learned": 1,
-            "technique": "slice"
-        },
-        {
-            "level_learned": 4,
-            "technique": "bullet"
-        },
-        {
-            "level_learned": 7,
-            "technique": "muddle"
-        },
-        {
-            "level_learned": 13,
-            "technique": "wall_of_steel"
-        },
-        {
-            "level_learned": 19,
-            "technique": "bubble_trap"
-        },
-        {
-            "level_learned": 28,
-            "technique": "constrict"
-        }
-    ],
-    "evolutions": [
-        {
-            "at_level": 24,
-            "monster_slug": "windeye"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "windeye",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": [],
-    "tags": ["machine", "weather", "electricity", "steel", "sharp"],
-    "shape": "sprite",
-    "stage": "basic",
-    "types": [
-        "metal"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 179,
-    "height": 45,
-    "weight": 18,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "fancair",
+  "category": "deadly_fan",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "whirlwind"
+    },
+    {
+      "level_learned": 1,
+      "technique": "slice"
+    },
+    {
+      "level_learned": 4,
+      "technique": "bullet"
+    },
+    {
+      "level_learned": 7,
+      "technique": "muddle"
+    },
+    {
+      "level_learned": 13,
+      "technique": "wall_of_steel"
+    },
+    {
+      "level_learned": 19,
+      "technique": "bubble_trap"
+    },
+    {
+      "level_learned": 28,
+      "technique": "constrict"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 24,
+      "monster_slug": "windeye"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "windeye",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [],
+  "tags": [
+    "machine",
+    "weather",
+    "electricity",
+    "steel",
+    "sharp"
+  ],
+  "shape": "sprite",
+  "stage": "basic",
+  "types": [
+    "metal"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 179,
+  "height": 45,
+  "weight": 18,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

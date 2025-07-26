@@ -36,7 +36,7 @@ events:
     type: event
   CapDev 1st:
     actions:
-    - change_state JournalInfoState,dollfin
+    - open_journal dollfin
     conditions:
     - is char_facing_tile player
     - is button_pressed K_RETURN
@@ -45,7 +45,7 @@ events:
     y: 8
   CapDev 2nd:
     actions:
-    - change_state JournalInfoState,memnomnom
+    - open_journal memnomnom
     conditions:
     - is char_facing_tile player
     - is button_pressed K_RETURN
@@ -54,7 +54,7 @@ events:
     y: 8
   CapDev 3rd:
     actions:
-    - change_state JournalInfoState,budaye
+    - open_journal budaye
     conditions:
     - is char_facing_tile player
     - is button_pressed K_RETURN
@@ -63,7 +63,7 @@ events:
     y: 8
   CapDev 4th:
     actions:
-    - change_state JournalInfoState,grintot
+    - open_journal grintot
     conditions:
     - is char_facing_tile player
     - is button_pressed K_RETURN
@@ -72,7 +72,7 @@ events:
     y: 8
   CapDev 5th:
     actions:
-    - change_state JournalInfoState,ignibus
+    - open_journal ignibus
     conditions:
     - is char_facing_tile player
     - is button_pressed K_RETURN

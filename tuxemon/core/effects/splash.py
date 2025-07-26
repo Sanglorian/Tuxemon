@@ -28,7 +28,7 @@ class SplashEffect(CoreEffect):
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
         combat = tech.get_combat_state()
-        tech.hit = tech.accuracy >= combat._random_tech_hit.get(user, 0.0)
+        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
 
         damage, mult = formula.simple_damage_calculate(tech, user, target)
         targets = combat.get_targets(tech, user, target)

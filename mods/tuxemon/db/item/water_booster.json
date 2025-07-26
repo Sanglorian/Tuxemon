@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["water_booster"],
+      "parameters": [
+        "water_booster"
+      ],
       "operator": "is"
     }
   ],

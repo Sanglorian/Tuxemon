@@ -183,8 +183,7 @@ events:
     - char_face player,up
     - add_item tuxeball_park,-25
     - clear_variable park_out
-    - clear_variable menu_park_captured
-    - clear_variable menu_park_seen
+    - park_experience stop
     - remove_step_tracker player,steps_park
     conditions:
     - is step_tracker player,steps_park,0
@@ -254,8 +253,7 @@ events:
     - transition_teleport spyder_park_entrance.tmx,5,4,0.3
     - char_face player,up
     - clear_variable park_out
-    - clear_variable menu_park_captured
-    - clear_variable menu_park_seen
+    - park_experience stop
     conditions:
     - not has_item player,tuxeball_park
     type: event

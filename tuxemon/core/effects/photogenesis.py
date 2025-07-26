@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 from tuxemon import formula
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
-from tuxemon.shape import Shape
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
@@ -37,15 +36,14 @@ class PhotogenesisEffect(CoreEffect):
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
         combat = tech.get_combat_state()
-        player = user.get_owner()
         extra: list[str] = []
         done: bool = False
 
-        tech.hit = tech.accuracy >= combat._random_tech_hit.get(user, 0.0)
+        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
 
-        hour = int(player.game_variables.get("hour", 0))
-        shape = Shape(user.shape).attributes
-        max_multiplier = shape.hp / 2
+        hour = int(session.player.game_variables.get("hour", 0))
+        hp = user.shape.attributes.hp
+        max_multiplier = hp / 2
 
         multiplier = formula.calculate_time_based_multiplier(
             hour=hour,

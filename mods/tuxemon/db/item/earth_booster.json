@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["earth_booster"],
+      "parameters": [
+        "earth_booster"
+      ],
       "operator": "is"
     }
   ],

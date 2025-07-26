@@ -5,11 +5,14 @@
   "effects": [
     {
       "type": "prop_damage",
-      "parameters": ["enemy_monster", "0.25"]
+      "parameters": [
+        "enemy_monster",
+        "0.25"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.0,
   "power": 0,
   "range": "reliable",
@@ -27,7 +30,9 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["gadgets"],
+  "tags": [
+    "gadgets"
+  ],
   "types": [
     "earth"
   ],

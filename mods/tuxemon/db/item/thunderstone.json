@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["thunderstone"],
+      "parameters": [
+        "thunderstone"
+      ],
       "operator": "is"
     }
   ],

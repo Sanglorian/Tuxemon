@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+from __future__ import annotations
+
 import logging
 from collections.abc import MutableMapping, Sequence
 from dataclasses import dataclass
@@ -9,10 +11,10 @@ import yaml
 
 from tuxemon.constants import paths
 from tuxemon.db import Direction
-from tuxemon.map import RegionProperties, TuxemonMap
 
 if TYPE_CHECKING:
     from tuxemon.event import EventObject
+    from tuxemon.map import RegionProperties, TuxemonMap
 
 logger = logging.getLogger(__name__)
 

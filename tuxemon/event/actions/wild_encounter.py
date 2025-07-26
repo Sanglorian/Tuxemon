@@ -15,7 +15,7 @@ from tuxemon.graphics import ColorLike, string_to_colorlike
 from tuxemon.item.item import Item
 from tuxemon.monster import Monster
 from tuxemon.session import Session
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.states.combat.combat_context import CombatContext
 
 logger = logging.getLogger(__name__)
 
@@ -60,11 +60,9 @@ class WildEncounterAction(EventAction):
 
         logger.info("Starting wild encounter!")
 
-        current_monster = Monster.create(self.monster_slug)
-        current_monster.level = self.monster_level
-        current_monster.set_level(self.monster_level)
-        current_monster.moves.set_moves(self.monster_level)
-        current_monster.current_hp = current_monster.hp
+        current_monster = Monster.spawn_base(
+            self.monster_slug, self.monster_level
+        )
         if self.exp is not None:
             current_monster.experience_modifier = self.exp
         if self.money is not None:
@@ -85,7 +83,7 @@ class WildEncounterAction(EventAction):
             logger.error(f"{self.name} not found")
             return
 
-        npc.add_monster(current_monster, len(npc.monsters))
+        npc.party.add_monster(current_monster, len(npc.monsters))
         # NOTE: random battles are implemented as trainer battles.
         #       this is a hack. remove this once trainer/random battlers are fixed
 
@@ -95,18 +93,17 @@ class WildEncounterAction(EventAction):
 
         player.tuxepedia.add_entry(current_monster.slug)
 
-        session.client.queue_state(
-            "CombatState",
+        context = CombatContext(
             session=session,
-            players=(player, npc),
+            teams=[player, npc],
             combat_type="monster",
             graphics=environment.battle_graphics,
             battle_mode="single",
         )
+        session.client.queue_state("CombatState", context=context)
 
-        self.world = session.client.get_state_by_name(WorldState)
-        self.world.movement.lock_controls(player)
-        self.world.movement.stop_char(player)
+        session.client.movement_manager.lock_controls(player)
+        session.client.movement_manager.stop_char(player)
 
         rgb: ColorLike = prepare.WHITE_COLOR
         if self.rgb:

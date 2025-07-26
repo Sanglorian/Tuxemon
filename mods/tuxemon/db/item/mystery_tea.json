@@ -3,7 +3,9 @@
   "effects": [
     {
       "type": "gain_xp",
-      "parameters": ["437"]
+      "parameters": [
+        "437"
+      ]
     }
   ],
   "slug": "mystery_tea",

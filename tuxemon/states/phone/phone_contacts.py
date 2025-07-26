@@ -15,16 +15,12 @@ from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.relationship import RELATIONSHIP_STRENGTH
 from tuxemon.tools import open_choice_dialog, open_dialog
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
 
 MenuGameObj = Callable[[], Any]
-
-
-def fix_measure(measure: int, percentage: float) -> int:
-    """it returns the correct measure based on percentage"""
-    return round(measure * percentage)
 
 
 class NuPhoneContacts(PygameMenuState):
@@ -34,11 +30,12 @@ class NuPhoneContacts(PygameMenuState):
     ) -> None:
         def choice(slug: str) -> None:
             label = f"{T.translate('action_call')} {T.translate(slug).upper()}"
-            var_menu = []
-            var_menu.append((label, label, call))
+
+            option = ChoiceOption(key=slug, display_text=label, action=call)
+
             open_choice_dialog(
                 self.client,
-                menu=(var_menu),
+                menu=MenuOptions([option]),
                 escape_key_exits=True,
             )
 
@@ -65,19 +62,19 @@ class NuPhoneContacts(PygameMenuState):
             menu.add.button(
                 title=T.translate(slug),
                 action=partial(choice, slug),
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 selection_effect=HighlightSelection(),
             )
             relationship = T.translate(f"relation_relationship")
             relation = T.translate(f"relation_{contact.relationship_type}")
             menu.add.label(
                 title=f"{relationship}: {relation}",
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
             )
             relation_strength = T.translate(f"relation_strength")
             menu.add.label(
                 title=f"{relation_strength}: {contact.strength}/{RELATIONSHIP_STRENGTH[1]}",
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
             )
             menu.add.vertical_margin(25)
 

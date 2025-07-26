@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["lucky_bamboo"],
+      "parameters": [
+        "lucky_bamboo"
+      ],
       "operator": "is"
     }
   ],

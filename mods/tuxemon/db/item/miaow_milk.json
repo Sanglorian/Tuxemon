@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["miaow_milk"],
+      "parameters": [
+        "miaow_milk"
+      ],
       "operator": "is"
     }
   ],

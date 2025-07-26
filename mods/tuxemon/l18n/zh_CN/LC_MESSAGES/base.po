@@ -1,11 +1,11 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Tuxemon\n"
 "Report-Msgid-Bugs-To: \n"
 "PO-Revision-Date: 2023-01-18 01:47+0000\n"
 "Last-Translator: David Liang <2188741623@qq.com>\n"
-"Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
-"tuxemon/tuxemon/zh_Hans/>\n"
+"Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/tuxemon/tuxemon/zh_Hans/>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -714,7 +714,6 @@ msgstr "北部"
 msgid "menu_hemisphere_south"
 msgstr "南部"
 
-
 # Default mod names on selection menu
 msgid "xero_campaign"
 msgstr "自由小精灵: Xero"
@@ -758,7 +757,7 @@ msgstr "它允许将水系精灵变形为不同的形式."
 
 # Money notification
 msgid "player_wallet"
-msgstr "${{name}}的钱包: ${{currency}}${{money}}"
+msgstr "${{name}}的钱包: ${{money_formatted}}"
 
 msgid "combat_skip"
 msgstr "{user}跳过了本回合!"
@@ -976,7 +975,7 @@ msgstr "{name}现在不能使用."
 msgid "combat_victory_trainer"
 msgstr ""
 "{name}获胜了!\n"
-" 你获得了 {currency}{prize}!"
+" 你获得了 {prize}!"
 
 msgid "combat_state_chargedup_get"
 msgstr "{target}已充满电."
@@ -1211,8 +1210,7 @@ msgid "noctula"
 msgstr "夜图拉"
 
 msgid "jemuar_description"
-msgstr ""
-"它背上的宝石是它出生时发现的类型.在钻石矿脉上方有大量的小岩猫育种设施."
+msgstr "它背上的宝石是它出生时发现的类型.在钻石矿脉上方有大量的小岩猫育种设施."
 
 msgid "jemuar"
 msgstr "宝石虎"
@@ -1565,9 +1563,7 @@ msgid "agnidon"
 msgstr "炎鬣蜥"
 
 msgid "agnigon_description"
-msgstr ""
-"它被称为 \"假龙\",因为它看起来是一条龙,但实际上是从不同的古代爬行动物系列中"
-"进化而来的."
+msgstr "它被称为 \"假龙\",因为它看起来是一条龙,但实际上是从不同的古代爬行动物系列中进化而来的."
 
 msgid "agnigon"
 msgstr "焱龙鬣蜥"
@@ -1582,9 +1578,7 @@ msgid "allagon"
 msgstr "阿拉贡"
 
 msgid "altie_description"
-msgstr ""
-"ALTIE在一个气泡中飘落到地球上.现在它的泡泡已经破灭,它不能在空中漂浮超过几"
-"米."
+msgstr "ALTIE在一个气泡中飘落到地球上.现在它的泡泡已经破灭,它不能在空中漂浮超过几米."
 
 msgid "altie"
 msgstr "阿尔蒂"
@@ -1611,9 +1605,7 @@ msgid "araignee"
 msgstr "阿莱尼"
 
 msgid "arthrobolt_description"
-msgstr ""
-"它在指挥它的同伴螺母兽和螺栓兽时感到不舒服,通常会逃跑.但是除了螺孔兽,没有"
-"精灵去指导螺母兽和螺栓兽."
+msgstr "它在指挥它的同伴螺母兽和螺栓兽时感到不舒服,通常会逃跑.但是除了螺孔兽,没有精灵去指导螺母兽和螺栓兽."
 
 msgid "arthrobolt"
 msgstr "螺孔兽"
@@ -1643,9 +1635,7 @@ msgid "baoby"
 msgstr "小粽树鹿"
 
 msgid "beenstalker_description"
-msgstr ""
-"跟踪豆茎在理智和优雅方面有所欠缺,但它在纯粹的热情和善意方面得到了弥补.它以"
-"吓跑害虫为乐,但从不伤害它们."
+msgstr "跟踪豆茎在理智和优雅方面有所欠缺,但它在纯粹的热情和善意方面得到了弥补.它以吓跑害虫为乐,但从不伤害它们."
 
 msgid "beenstalker"
 msgstr "跟踪豆茎"
@@ -1669,8 +1659,7 @@ msgid "bolt"
 msgstr "螺栓兽"
 
 msgid "boltnu_description"
-msgstr "它的大部分时间都是在草地上挖洞,由于它们在土壤中挖洞所引起的不断震动和运动,"
-"它仍然感到晕眩."
+msgstr "它的大部分时间都是在草地上挖洞,由于它们在土壤中挖洞所引起的不断震动和运动,它仍然感到晕眩."
 
 msgid "boltnu"
 msgstr "双螺兽"
@@ -1685,9 +1674,7 @@ msgid "boxali"
 msgstr "博萨里"
 
 msgid "brewdin_description"
-msgstr ""
-"诞生于被忽视的、曾经珍贵的陶器和类似的宝物.传闻它能为那些能让它微笑的人实现"
-"愿望."
+msgstr "诞生于被忽视的、曾经珍贵的陶器和类似的宝物.传闻它能为那些能让它微笑的人实现愿望."
 
 msgid "brewdin"
 msgstr "布鲁丁"
@@ -1741,8 +1728,7 @@ msgid "chillimp"
 msgstr "冰幽灵"
 
 msgid "chloragon_description"
-msgstr ""
-"当一个古老的蛋被种在肥沃的土壤中时,它就会孵化.当蛋用完时,将不再有氯边形."
+msgstr "当一个古老的蛋被种在肥沃的土壤中时,它就会孵化.当蛋用完时,将不再有氯边形."
 
 msgid "chloragon"
 msgstr "氯龙"
@@ -1772,8 +1758,7 @@ msgid "conifrost"
 msgstr "圆锥花"
 
 msgid "conileaf_description"
-msgstr ""
-"放在其罐子里的食物被混合和腌制.它们被用来储存食物,而不至于让食物变质."
+msgstr "放在其罐子里的食物被混合和腌制.它们被用来储存食物,而不至于让食物变质."
 
 msgid "conileaf"
 msgstr "圆锥叶"
@@ -1797,8 +1782,7 @@ msgid "cowpignon"
 msgstr "人参兽"
 
 msgid "criniotherme_description"
-msgstr ""
-"它的鬃毛在白天闪闪发光,在日落时长得又大又红,到了晚上就像灰烬一样被吹走."
+msgstr "它的鬃毛在白天闪闪发光,在日落时长得又大又红,到了晚上就像灰烬一样被吹走."
 
 msgid "criniotherme"
 msgstr "克里尼奥姆"
@@ -1816,8 +1800,7 @@ msgid "dandylion"
 msgstr "狮面花"
 
 msgid "dinoflop_description"
-msgstr ""
-"它喜欢迅速转身离开它的攻击者,这样他们的打击就会落在它有盾牌和刺的背部."
+msgstr "它喜欢迅速转身离开它的攻击者,这样他们的打击就会落在它有盾牌和刺的背部."
 
 msgid "dinoflop"
 msgstr "迪诺浮普"
@@ -1841,9 +1824,7 @@ msgid "dracune"
 msgstr "德古拉茧"
 
 msgid "dragarbor_description"
-msgstr ""
-"当它觉得自己的生命即将结束时,它就会前往一个墓地,在那里种植自己.它的尾巴花"
-"永远生长着."
+msgstr "当它觉得自己的生命即将结束时,它就会前往一个墓地,在那里种植自己.它的尾巴花永远生长着."
 
 msgid "dragarbor"
 msgstr "龙乔木"
@@ -1852,16 +1833,13 @@ msgid "drashimi"
 msgstr "德拉希米"
 
 msgid "drokoro_description"
-msgstr ""
-"曾经它有一个家庭,但它吃了它的父母,吃了它的孩子,吃了它的配偶,吃了它所有的"
-"同类."
+msgstr "曾经它有一个家庭,但它吃了它的父母,吃了它的孩子,吃了它的配偶,吃了它所有的同类."
 
 msgid "drokoro"
 msgstr "德罗科罗"
 
 msgid "dune_pincher_description"
-msgstr ""
-"这些隐士会用最接近的东西来包裹自己.在沙漠中,那就是死去已久的法老的裹尸布."
+msgstr "这些隐士会用最接近的东西来包裹自己.在沙漠中,那就是死去已久的法老的裹尸布."
 
 msgid "dune_pincher"
 msgstr "沙丘夹子"
@@ -1903,8 +1881,7 @@ msgid "flambear"
 msgstr "火焰熊"
 
 msgid "fluoresfin_description"
-msgstr "当受到威胁时,它与其他荧光鱼蜷缩在一起,形成一个巨大的刺眼的光,以迷惑捕食者"
-"."
+msgstr "当受到威胁时,它与其他荧光鱼蜷缩在一起,形成一个巨大的刺眼的光,以迷惑捕食者."
 
 msgid "fluoresfin"
 msgstr "荧光鱼"
@@ -1937,9 +1914,7 @@ msgid "foxfire_description"
 msgstr "火狐的幼崽在一夜之间烧毁的大火中被发现.没有人知道它们来自哪里."
 
 msgid "fruitera_description"
-msgstr ""
-"它喜欢吃水果,能带多少就带多少.当受到惊吓时,它就把所有的果实扔掉,再把它们"
-"收集起来,然后才跑开."
+msgstr "它喜欢吃水果,能带多少就带多少.当受到惊吓时,它就把所有的果实扔掉,再把它们收集起来,然后才跑开."
 
 msgid "fruitera"
 msgstr "弗朗索拉"
@@ -1951,9 +1926,7 @@ msgid "furnursus_description"
 msgstr "炉子熊很友好,而且经常忘记自己的身体太热,别人无法触摸."
 
 msgid "galnec_description"
-msgstr ""
-"加内克将自己深埋在沙漠的热沙中,只有它的石质尾巴在地上.成群结队时,它们看起"
-"来像石头的花园."
+msgstr "加内克将自己深埋在沙漠的热沙中,只有它的石质尾巴在地上.成群结队时,它们看起来像石头的花园."
 
 msgid "galnec"
 msgstr "加内克"
@@ -2058,15 +2031,13 @@ msgid "nuenflu"
 msgstr "纽恩菲"
 
 msgid "nut_description"
-msgstr ""
-"在漂洋过海的大船上,数以千计的螺母兽和螺栓兽提供动力,将钢板固定在一起."
+msgstr "在漂洋过海的大船上,数以千计的螺母兽和螺栓兽提供动力,将钢板固定在一起."
 
 msgid "nut"
 msgstr "螺母兽"
 
 msgid "octabode_description"
-msgstr ""
-"怀旧章鱼以古代的器皿和文物为家,梦想着那些在他们之前使用这些文物的人的生活."
+msgstr "怀旧章鱼以古代的器皿和文物为家,梦想着那些在他们之前使用这些文物的人的生活."
 
 msgid "octabode"
 msgstr "怀旧章鱼"
@@ -2084,25 +2055,19 @@ msgid "pairagrim"
 msgstr "双头鸟"
 
 msgid "pairagrin_description"
-msgstr ""
-"它是双头鸟的年轻形态,一般来说是一种快乐的生物.在两个头学会一起工作之前,它"
-"一直在努力飞行."
+msgstr "它是双头鸟的年轻形态,一般来说是一种快乐的生物.在两个头学会一起工作之前,它一直在努力飞行."
 
 msgid "pairagrin"
 msgstr "灰白鸟"
 
 msgid "pantherafira_description"
-msgstr ""
-"他们的每个成员都从一个共同的篝火中点燃他们的鬃毛.只要那堆火在燃烧,他们的力"
-"量就会被分享."
+msgstr "他们的每个成员都从一个共同的篝火中点燃他们的鬃毛.只要那堆火在燃烧,他们的力量就会被分享."
 
 msgid "route5_description"
 msgstr "通往木材镇的纪念通道!"
 
 msgid "baobaraffe_description"
-msgstr ""
-"它在巨大的身体里储存了大量的水,这样它就可以在炎热、干燥的沙漠中长途跋涉.它"
-"也会与口渴的生物分享水.当它没有水储存时,它就会变得很瘦."
+msgstr "它在巨大的身体里储存了大量的水,这样它就可以在炎热、干燥的沙漠中长途跋涉.它也会与口渴的生物分享水.当它没有水储存时,它就会变得很瘦."
 
 # # MAP SIGNS ##
 msgid "welcome_location_city"
@@ -2117,9 +2082,7 @@ msgid "angrito_description"
 msgstr "它无法理解为什么人类会感到愤怒和仇恨,但安格里托也感受到了这些冲动."
 
 msgid "apeoro_description"
-msgstr ""
-"古代的国王们用通灵的力量将他们的灵魂转移到这些金色的计算机器中.现在他们继续"
-"活着,无法交流,但仍然梦想着帝国."
+msgstr "古代的国王们用通灵的力量将他们的灵魂转移到这些金色的计算机器中.现在他们继续活着,无法交流,但仍然梦想着帝国."
 
 msgid "araignee_description"
 msgstr "那些说所有的蜘蛛都有八条腿的学者,对阿莱尼的情况却奇怪地保持沉默."
@@ -2128,12 +2091,10 @@ msgid "b_ver_1_description"
 msgstr "它是为所有那些你需要被机器人咬的东西的时候而设计的."
 
 msgid "baoby_description"
-msgstr "它们从一条河到另一条河,寻找可以饮用和储存的水.它头上的叶状骨隐藏着可移动的"
-"点,其作用类似于探水棒.许多生物在干旱时跟随它."
+msgstr "它们从一条河到另一条河,寻找可以饮用和储存的水.它头上的叶状骨隐藏着可移动的点,其作用类似于探水棒.许多生物在干旱时跟随它."
 
 msgid "boxali_description"
-msgstr ""
-"凭借其长长的蓝色披风,博萨里可以在地面上滑行--使其能够执行特技和空中攻击."
+msgstr "凭借其长长的蓝色披风,博萨里可以在地面上滑行--使其能够执行特技和空中攻击."
 
 msgid "bugnin_description"
 msgstr "它的剑实际上是一根天线,是为了这个目的而生长和折断的."
@@ -2175,8 +2136,8 @@ msgid "eruptibus"
 msgstr "火山兽"
 
 msgid "exclawvate_description"
-msgstr "经常在建筑工地上看到,它们可以用自己巨大的手和尾巴来舀起泥土和瓦砾.精灵的下"
-"面是毛毛虫的轮胎,使它们在爬上成堆的瓦砾时有更好的平衡和抓地力."
+msgstr ""
+"经常在建筑工地上看到,它们可以用自己巨大的手和尾巴来舀起泥土和瓦砾.精灵的下面是毛毛虫的轮胎,使它们在爬上成堆的瓦砾时有更好的平衡和抓地力."
 
 msgid "exapode_description"
 msgstr "它挥舞着腿以吸引人们的注意,但大多数时候人们只是跑开."
@@ -2194,9 +2155,7 @@ msgid "eyesore"
 msgstr "疲之眼"
 
 msgid "fancair_description"
-msgstr ""
-"如果有人在不需要的时候让他们的风扇运转,它就会活跃起来,飞出窗外,找到真正需"
-"要冷却的人."
+msgstr "如果有人在不需要的时候让他们的风扇运转,它就会活跃起来,飞出窗外,找到真正需要冷却的人."
 
 msgid "fancair"
 msgstr "风扇兽"
@@ -2244,15 +2203,13 @@ msgid "grumpi"
 msgstr "格鲁姆比"
 
 msgid "happito_description"
-msgstr ""
-"为什么人们不能永远幸福?快乐兽会给他们想要的东西,即使这不是他们所需要的."
+msgstr "为什么人们不能永远幸福?快乐兽会给他们想要的东西,即使这不是他们所需要的."
 
 msgid "happito"
 msgstr "快乐兽"
 
 msgid "heronquak_description"
-msgstr ""
-"它胸前的水晶被偷猎者误认为是钻石.当它从冰鹭的身体中取出时,它就会融化."
+msgstr "它胸前的水晶被偷猎者误认为是钻石.当它从冰鹭的身体中取出时,它就会融化."
 
 msgid "ignibus"
 msgstr "岩浆龟"
@@ -2261,13 +2218,10 @@ msgid "incandesfin_description"
 msgstr "它的整个身体的大小已经大量增长.然而,它的光线仍然是完全一样的."
 
 msgid "ignibus_description"
-msgstr ""
-"当受到威胁时,它退回到它的壳中,并通过排放蒸汽急剧降温.它可能会被误认为是一"
-"块石头."
+msgstr "当受到威胁时,它退回到它的壳中,并通过排放蒸汽急剧降温.它可能会被误认为是一块石头."
 
 msgid "jelillow_description"
-msgstr "当一个人把头靠在果冻兽上时,其果冻般的皮肤会使他们陷入深度睡眠.如果有人有睡"
-"眠问题,那么这个精灵将被用来帮助他们."
+msgstr "当一个人把头靠在果冻兽上时,其果冻般的皮肤会使他们陷入深度睡眠.如果有人有睡眠问题,那么这个精灵将被用来帮助他们."
 
 msgid "jelillow"
 msgstr "果冻兽"
@@ -2327,8 +2281,7 @@ msgid "loliferno"
 msgstr "罗利弗诺"
 
 msgid "metesaur_description"
-msgstr "这种精灵会喜欢潜入地下并留下痕迹.有时,这只精灵会错误地判断撞击,落在树上,"
-"引发巨大而危险的森林火灾"
+msgstr "这种精灵会喜欢潜入地下并留下痕迹.有时,这只精灵会错误地判断撞击,落在树上,引发巨大而危险的森林火灾"
 
 msgid "noctula_description"
 msgstr "它吃虫子,皮斯蝠吃水果,所以尽管生活在很近的地方,但它们并不竞争."
@@ -2349,8 +2302,7 @@ msgid "pantherafira"
 msgstr "潘特拉菲拉"
 
 msgid "pilthropus_description"
-msgstr "与飞犀牛等精灵一起被发现,皮尔思罗普斯是最古老的精灵之一,能够创造自己的工具"
-"."
+msgstr "与飞犀牛等精灵一起被发现,皮尔思罗普斯是最古老的精灵之一,能够创造自己的工具."
 
 msgid "pipis"
 msgstr "皮斯蝠"
@@ -2359,9 +2311,7 @@ msgid "propellercat_description"
 msgstr "它是一个新物种,还是只是一个发明家的宠物?"
 
 msgid "puparmor_description"
-msgstr ""
-"它的茧非常坚硬,如果有一个盔甲蛹掉在他们身上,人们就会被打倒.它们曾经被装入"
-"大炮和弹射器."
+msgstr "它的茧非常坚硬,如果有一个盔甲蛹掉在他们身上,人们就会被打倒.它们曾经被装入大炮和弹射器."
 
 msgid "rosarin_description"
 msgstr "罗萨林的爱是不可思议的,他只是要求一些感情."
@@ -2382,14 +2332,10 @@ msgid "sharpfin_description"
 msgstr "它在水中是看不见的,只有当它跃出水面将岸上的动物拖回深海时才会被看到."
 
 msgid "skwib_description"
-msgstr ""
-"鱿鱼兽满足地在海洋中漂浮,检查潜在的壳屋.它必须担心自己的生命,才能最终做出"
-"选择."
+msgstr "鱿鱼兽满足地在海洋中漂浮,检查潜在的壳屋.它必须担心自己的生命,才能最终做出选择."
 
 msgid "snock_description"
-msgstr ""
-"这种蛇形生物躲在安全的袜套下.如果受到惊吓,它将甩动并非常安静地躺在地上,以"
-"避免引起注意."
+msgstr "这种蛇形生物躲在安全的袜套下.如果受到惊吓,它将甩动并非常安静地躺在地上,以避免引起注意."
 
 msgid "solight_description"
 msgstr "一个反派团队正在策划利用索莱特创造一个微型太阳,以创造一个新的星球."
@@ -2398,14 +2344,10 @@ msgid "polyrock_description"
 msgstr "它把自己伪装成一个人类小孩,潜入道场,向武术大师学习."
 
 msgid "pythock_description"
-msgstr ""
-"使用它的皮影戏,它可以用皮影戏来与对手作战,而且非常准确和迅速.它们更加自"
-"信,有时甚至会在木偶戏中用它们的皮影戏来娱乐小孩子."
+msgstr "使用它的皮影戏,它可以用皮影戏来与对手作战,而且非常准确和迅速.它们更加自信,有时甚至会在木偶戏中用它们的皮影戏来娱乐小孩子."
 
 msgid "seirein_description"
-msgstr ""
-"它在沼泽地里孤独地生长,所以它燃烧得很旺盛,以吸引旅行者靠近--但它很害羞,当"
-"他们接近时就会飞走."
+msgstr "它在沼泽地里孤独地生长,所以它燃烧得很旺盛,以吸引旅行者靠近--但它很害羞,当他们接近时就会飞走."
 
 msgid "tumbleworm_description"
 msgstr "当它们已经超过了它们的蜂巢,它们就会脸朝下掉到地上."
@@ -2420,8 +2362,7 @@ msgid "velocitile_description"
 msgstr "它可以跑过子弹,但只有在它热身后才可以."
 
 msgid "vivicinder_description"
-msgstr ""
-"它在长期燃烧的火堆中筑巢,要么是自己创造的,要么是在纪念馆、铁匠铺和玻璃厂."
+msgstr "它在长期燃烧的火堆中筑巢,要么是自己创造的,要么是在纪念馆、铁匠铺和玻璃厂."
 
 msgid "yiinaang"
 msgstr "两仪兽"
@@ -2469,9 +2410,7 @@ msgid "weavifly"
 msgstr "尖刺蜂"
 
 msgid "windeye_description"
-msgstr ""
-"像一棵强大的树,立扇兽将自己种植在山顶上,吸收阳光和风.充电后,它又离开,在"
-"天空下寻找另一个地方."
+msgstr "像一棵强大的树,立扇兽将自己种植在山顶上,吸收阳光和风.充电后,它又离开,在天空下寻找另一个地方."
 
 msgid "no"
 msgstr "否"
@@ -3092,8 +3031,7 @@ msgstr ""
 "我们不希望你也离开我们."
 
 msgid "37707_villager_female_3"
-msgstr ""
-"微时：不,不,不：停止这样做!你不明白它不存在吗?你不明白它不在那里吗?"
+msgstr "微时：不,不,不：停止这样做!你不明白它不存在吗?你不明白它不在那里吗?"
 
 msgid "spyder_papertown_myfirstmon"
 msgstr ""
@@ -3345,8 +3283,7 @@ msgstr ""
 " 这并不意味着什么.我的鼻子很痒."
 
 msgid "spyder_wayfarer1_morton1"
-msgstr ""
-"我被困在这个房间里,直到我的精灵好起来,所以除了战斗之外没有什么可做的!"
+msgstr "我被困在这个房间里,直到我的精灵好起来,所以除了战斗之外没有什么可做的!"
 
 msgid "spyder_flower_mieke_nobudaye"
 msgstr "哦,这并不重要--我可以看到你没有友友猫."
@@ -3375,8 +3312,8 @@ msgid "37707_villager_female_missing"
 msgstr ""
 "@*!^:0H...@ n3wc0m3r!H0vv p1d y0v g3t he7e? <NONE> h3llen \"T $33N %^&one \n"
 "new 1n...（）h, never n3ver m3V3t N3W37 MIIIIIIIIND\n"
-"@*!^:WElcoME!W3lcome t0...0H N/A: We never g0t ar0und to gi^ing 0ur town \n "
-"{<1}.We never g00000000 {<2}W3 neVer Bu1lt 0uR t0wN\n"
+"@*!^:WElcoME!W3lcome t0...0H N/A: We never g0t ar0und to gi^ing 0ur town \n"
+" {<1}.We never g00000000 {<2}W3 neVer Bu1lt 0uR t0wN\n"
 "適湜怼沵唻説朂偅婹哋倳凊,洇潙沵湜茬潙沵哋笁莋洏笁莋"
 
 msgid "spyder_route5_granny"
@@ -3428,13 +3365,10 @@ msgid "spyder_scoop_turner2"
 msgstr "请记住,我们与疾病的传播没有任何关系!"
 
 msgid "spyder_scoop_paine2"
-msgstr ""
-"如果那些执法者没有进来,没有让他们的宠物精灵接触到这种疾病,它就永远不会离开"
-"这个设施."
+msgstr "如果那些执法者没有进来,没有让他们的宠物精灵接触到这种疾病,它就永远不会离开这个设施."
 
 msgid "spyder_scoop_haf1"
-msgstr ""
-"我把偷了束缚器的人赶到这个房间.但后来生病的精灵进来了,现在我们都被困住了!"
+msgstr "我把偷了束缚器的人赶到这个房间.但后来生病的精灵进来了,现在我们都被困住了!"
 
 msgid "spyder_scoop_asta1"
 msgstr ""
@@ -3484,8 +3418,7 @@ msgid "spyder_route6_gunner1"
 msgstr "对不起,不允许进入.所有格林沃什的员工必须呆在城外."
 
 msgid "spyder_route6_mungo1"
-msgstr ""
-"我不能相信他们把我们锁在了克林沃什总部外面.我就快找到治疗病毒的方法了!"
+msgstr "我不能相信他们把我们锁在了克林沃什总部外面.我就快找到治疗病毒的方法了!"
 
 msgid "spyder_route6_mungo2"
 msgstr "我猜老板们被最新的融合发展吓坏了."
@@ -3733,7 +3666,8 @@ msgid "pythwire"
 msgstr "电线兽"
 
 msgid "qetzlrokilus_description"
-msgstr "这种胥吏会潜入其他恐龙胥吏的群体中,烧死他们.它们还喜欢将森林点燃,并将其灰\n"
+msgstr ""
+"这种胥吏会潜入其他恐龙胥吏的群体中,烧死他们.它们还喜欢将森林点燃,并将其灰\n"
 "烬丢入水中,以破坏水的纯净度."
 
 msgid "qetzlrokilus"
@@ -3767,8 +3701,7 @@ msgid "rosarin"
 msgstr "罗萨林"
 
 msgid "ruption_description"
-msgstr "一旦火球兽的火焰变得足够热,它就会吞噬它的整个身体,在这个过程中基本上取代了"
-"它."
+msgstr "一旦火球兽的火焰变得足够热,它就会吞噬它的整个身体,在这个过程中基本上取代了它."
 
 msgid "ruption"
 msgstr "火球兽"
@@ -3783,8 +3716,7 @@ msgid "sampsage"
 msgstr "桑普萨奇"
 
 msgid "sapragon_description"
-msgstr ""
-"在古代,每个元素都有一条强大的龙--但这些生物已经减少,在这个时代很罕见."
+msgstr "在古代,每个元素都有一条强大的龙--但这些生物已经减少,在这个时代很罕见."
 
 msgid "sapragon"
 msgstr "萨普拉贡"
@@ -3799,8 +3731,7 @@ msgid "saurchin"
 msgstr "索尔钦"
 
 msgid "sclairus_description"
-msgstr ""
-"当庄稼没有收割时--不管是由于懒惰还是灾难--它的稻草人就会变成一个黑暗的活物."
+msgstr "当庄稼没有收割时--不管是由于懒惰还是灾难--它的稻草人就会变成一个黑暗的活物."
 
 msgid "sclairus"
 msgstr "稻草兽"
@@ -3815,8 +3746,7 @@ msgid "selket"
 msgstr "瑟克特"
 
 msgid "selmatek_description"
-msgstr ""
-"由古代沙漠之王饲养的塞尔马泰克是看门狗、狩猎伙伴,现在则是抵御盗墓者的卫士."
+msgstr "由古代沙漠之王饲养的塞尔马泰克是看门狗、狩猎伙伴,现在则是抵御盗墓者的卫士."
 
 msgid "selmatek"
 msgstr "塞尔马泰克"
@@ -3935,8 +3865,7 @@ msgid "sumchon"
 msgstr "相扑瓢虫"
 
 msgid "tarpeur_description"
-msgstr ""
-"他们休息和成长.他们也在成长和休息.很少有休息而不成长或成长而不休息的情况."
+msgstr "他们休息和成长.他们也在成长和休息.很少有休息而不成长或成长而不休息的情况."
 
 msgid "tarpeur"
 msgstr "塔波尔"
@@ -4522,8 +4451,7 @@ msgstr ""
 "我不想失去你,尤其是在我们刚刚安定下来的时候."
 
 msgid "iknowyou"
-msgstr ""
-"你好,凯莉,你好,${{name}},当我无意中听到你在谈论公告时,只是顺便问候一下."
+msgstr "你好,凯莉,你好,${{name}},当我无意中听到你在谈论公告时,只是顺便问候一下."
 
 msgid "ihaveyourmoney2"
 msgstr ""
@@ -4727,8 +4655,7 @@ msgid "staples"
 msgstr "嗯,这很容易."
 
 msgid "higrunts"
-msgstr ""
-"这些步兵甚至没有得到适当的训练,所以他们不是我的对手.看起来你也做得不赖."
+msgstr "这些步兵甚至没有得到适当的训练,所以他们不是我的对手.看起来你也做得不赖."
 
 msgid "higrunts2"
 msgstr "在这里,我将治愈你的精灵."
@@ -4743,9 +4670,7 @@ msgid "ohaimisa5"
 msgstr "等等,他们不是我的..."
 
 msgid "ohaimisa6"
-msgstr ""
-"啊,无所谓了.反正我有更重要的事情要做.你们两个玩得开心点,别再伤害我的人"
-"了!"
+msgstr "啊,无所谓了.反正我有更重要的事情要做.你们两个玩得开心点,别再伤害我的人了!"
 
 msgid "kylekindasucks2"
 msgstr "从另一个角度看,看来凯尔是来开路的.现在看来,战斗区已经开放了."
@@ -4871,8 +4796,7 @@ msgid "somebody"
 msgstr "我宁愿不谈他们"
 
 msgid "somebody2"
-msgstr ""
-"呜呜呜.那么他们对你来说是特别的吗?是不是有一个三角恋?来吧!我们需要知道"
+msgstr "呜呜呜.那么他们对你来说是特别的吗?是不是有一个三角恋?来吧!我们需要知道"
 
 msgid "stahp2"
 msgstr "....很好."
@@ -4961,10 +4885,8 @@ msgstr "歡迊唻菿措誤尒鎮!莪們苁唻莈洊茬過"
 msgid "37707_sign_missing_foreign"
 msgstr ""
 "PyGame - UnboundLocalError.本地变量'map_id'在赋值前被引用\n"
-"错误404.**** 资源未找到.Please notify tHe dEvEl0p#r$ @b0%t t#1# ##### "
-"###########\n"
-"01010010 01100101 01101101 01100101 01101101 01100010 01100101 01110010 "
-"00100000 01101101 01100101 00101110"
+"错误404.**** 资源未找到.Please notify tHe dEvEl0p#r$ @b0%t t#1# ##### ###########\n"
+"01010010 01100101 01101101 01100101 01101101 01100010 01100101 01110010 00100000 01101101 01100101 00101110"
 
 msgid "37707_sign_missing_hidden_read"
 msgstr "莪們倁檤沵看菿孒適個:莪巳經檠哠過沵孒."
@@ -5079,8 +5001,7 @@ msgstr "少管闲事,小子,这里闲人免进!"
 msgid "37707_villager_male_missing"
 msgstr ""
 "00000: 莪苁沬炪泩\n"
-"${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}} "
-"${{name}} ${{name}} ${{name}}"
+"${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}}"
 
 msgid "spyder_cottoncafe_hackerchat"
 msgstr ""
@@ -5487,8 +5408,7 @@ msgid "spyder_nimrod_bowie2"
 msgstr "那个军事硬件问题是假设性的,好吗?"
 
 msgid "spyder_nimrod_tru1"
-msgstr ""
-"我的武器赢得了战争,制服了世界每个角落的起义,而你认为你有机会对抗我吗?"
+msgstr "我的武器赢得了战争,制服了世界每个角落的起义,而你认为你有机会对抗我吗?"
 
 msgid "spyder_nimrod_guard1"
 msgstr ""
@@ -5576,8 +5496,7 @@ msgid "spyder_scoop_orba2"
 msgstr "就这一点而言,我在这里做什么?"
 
 msgid "spyder_scoop_weaver1"
-msgstr ""
-"如果我知道他们会在这里追赶我们,我就不会把束缚带从那些咳嗽的精灵身上取下来!"
+msgstr "如果我知道他们会在这里追赶我们,我就不会把束缚带从那些咳嗽的精灵身上取下来!"
 
 msgid "spyder_scoop_weaver2"
 msgstr "呀!事实证明,犯罪是不需要付出代价的!"
@@ -5642,9 +5561,7 @@ msgid "spyder_route6_ping1"
 msgstr "你听说了吗?执法者们正在没收糖果镇上所有人的精灵."
 
 msgid "spyder_route6_ping2"
-msgstr ""
-"他们不会就此罢休......最终他们会没收所有的精灵,如果他们认为自己可以逃脱的"
-"话."
+msgstr "他们不会就此罢休......最终他们会没收所有的精灵,如果他们认为自己可以逃脱的话."
 
 msgid "spyder_route6_richard1"
 msgstr "伙计,有一天我离开电脑去散步,就会发生这样的事!这是我的错!"
@@ -5662,8 +5579,7 @@ msgid "spyder_flower_artist1"
 msgstr "简洁而笨拙的笔触和一个行人的主题.呸!又一块被毁坏的画布."
 
 msgid "spyder_flower_muse1"
-msgstr ""
-"他对自己很苛刻,对自己画的东西从不满意.他也是如此健忘.也许我可以买一幅画 "
+msgstr "他对自己很苛刻,对自己画的东西从不满意.他也是如此健忘.也许我可以买一幅画 "
 
 msgid "spyder_flower_artist_clipping"
 msgstr ""
@@ -5700,8 +5616,7 @@ msgid "spyder_dryadsgrove_petra1"
 msgstr "破解自然界的霉菌!"
 
 msgid "spyder_searoutec_nigel3"
-msgstr ""
-"对不起,在斯皮德咬伤感染仍在传播的情况下,我不能允许任何人进入神圣的洞穴."
+msgstr "对不起,在斯皮德咬伤感染仍在传播的情况下,我不能允许任何人进入神圣的洞穴."
 
 msgid "spyder_hospital_billie2"
 msgstr ""
@@ -6543,9 +6458,7 @@ msgid "cotton_breeder7a"
 msgstr "很好!你花点时间照顾孩子,我来照顾父母.以后再来看看他们吧."
 
 msgid "taba_greeting1"
-msgstr ""
-"招待员Jaime: 嗨,${{name}}!听说你得到了一只精灵,恭喜你!如果你想壮大你的队"
-"伍,你就需要精灵球."
+msgstr "招待员Jaime: 嗨,${{name}}!听说你得到了一只精灵,恭喜你!如果你想壮大你的队伍,你就需要精灵球."
 
 msgid "cotton_breeder7b"
 msgstr ""
@@ -6872,18 +6785,19 @@ msgstr "男"
 msgid "gender_female"
 msgstr "女"
 
-## DIALOG TRANSLATIONS ##
+# DIALOG TRANSLATIONS ##
 # spyder intros
-
 msgid "spyder_intro_question"
 msgstr "你要跳过介绍吗?"
 
 msgid "spyder_intro00"
-msgstr "你好,我是全能公司的首席执行官,我们为这个地区经营报纸,电视频道和广播电台.\n"
+msgstr ""
+"你好,我是全能公司的首席执行官,我们为这个地区经营报纸,电视频道和广播电台.\n"
 "我有责任向你介绍关于精灵的信息."
 
 msgid "spyder_intro01"
-msgstr "精灵是栖息在这个世界上的一种生物.\n"
+msgstr ""
+"精灵是栖息在这个世界上的一种生物.\n"
 "他们喜欢被俘虏,这样他们的主人就可以与他们争夺乐趣和利润.\n"
 "最强者胜出，就像在商业世界中一样.\n"
 "很多精灵都是在野外发现的,当他们获得足够的经验时,他们会进化成更高级的形式.\n"
@@ -6891,11 +6805,13 @@ msgstr "精灵是栖息在这个世界上的一种生物.\n"
 "改善了自然环境.本季,我们提供五款豪华精灵!"
 
 msgid "spyder_intro02"
-msgstr "这些精灵在接触到令牌时会立即进化 - 这是一种即刻的满足!\n"
+msgstr ""
+"这些精灵在接触到令牌时会立即进化 - 这是一种即刻的满足!\n"
 "更重要的是,他们会让你选择他们将要变成的形态."
 
 msgid "spyder_intro03"
-msgstr "令牌可从所有支柱获得,当然,要收取适度费用!\n"
+msgstr ""
+"令牌可从所有支柱获得,当然,要收取适度费用!\n"
 "咳咳,我刚刚说到哪里了?\n"
 "哦,是的,每个支柱都提供这些独家精灵之一."
 
@@ -6966,7 +6882,6 @@ msgid "app_tuxepedia_description"
 msgstr "在这里跟踪有关精灵的信息, 并与世界分享."
 
 # Player State
-
 msgid "tuxepedia_progress"
 msgstr "精灵百科完成度: {value}%!"
 
@@ -6986,7 +6901,6 @@ msgid "player_battles"
 msgstr "战斗: {tot} (胜利{won} 平局{draw} 失败{lost})"
 
 # Contacts notification
-
 msgid "action_call"
 msgstr "拨号"
 
@@ -6994,7 +6908,6 @@ msgid "phone_no_answer"
 msgstr "对不起,您呼叫的用户暂时无人接听!"
 
 # Tuxepedia
-
 msgid "page_tuxepedia"
 msgstr "从编号{a}到编号{b}"
 
@@ -7025,17 +6938,22 @@ msgstr "种类"
 msgid "monster_menu_shape"
 msgstr "体型"
 
-
-#========================================
 msgid "spyder_papertown_firstfight_after"
 msgstr "这次我会治愈你,但我不是慈善机构,下次你的精灵疲惫不堪时在家休息."
 
 msgid "spyder_papermanor_oldman"
-msgstr "我有两个儿子和一个侄女,第一个是水手,去年他去了群岛.\n"
+msgstr ""
+"我有两个儿子和一个侄女,第一个是水手,去年他去了群岛.\n"
 "第二个是船长,他开客船,我的侄女在外面玩."
 
 msgid "spyder_cottontown_mom"
-msgstr "陌生人你好!你进咖啡馆干什么? \n 你知道咖啡因对你有害......我开玩笑的! \n 你已经12岁了,你可以做任何你喜欢的事情!...但不要吸烟和喝酒 .... \n 但你应该更频繁地打电话回家,我希望有人讲述我的发明. \n ... 哦,我忘了,你还没有手机,这是我发明的,我称之为NuPhone! \n您可以在其上安装各种应用程序,它已经有地图应用程序,所以你永远不会迷路!"
+msgstr ""
+"陌生人你好!你进咖啡馆干什么? \n"
+" 你知道咖啡因对你有害......我开玩笑的! \n"
+" 你已经12岁了,你可以做任何你喜欢的事情!...但不要吸烟和喝酒 .... \n"
+" 但你应该更频繁地打电话回家,我希望有人讲述我的发明. \n"
+" ... 哦,我忘了,你还没有手机,这是我发明的,我称之为NuPhone! \n"
+"您可以在其上安装各种应用程序,它已经有地图应用程序,所以你永远不会迷路!"
 
 msgid "spyder_cotton_homemaker1"
 msgstr "你是来演讲的吗?我对发布感到非常兴奋."
@@ -7056,10 +6974,16 @@ msgid "spyder_cotton_cafeflorist1"
 msgstr "嘘,演讲要开始了."
 
 msgid "spyder_cotton_cafeflorist2"
-msgstr "我迫不及待地想对其他人的条目进行事实核查. \n 你最好确保你有好的来源!"
+msgstr ""
+"我迫不及待地想对其他人的条目进行事实核查. \n"
+" 你最好确保你有好的来源!"
 
 msgid "spyder_papertown_myfirstmon_notmet"
-msgstr "我认得你,你就是那个没有金卡会员的孩子. \n 你知道,我也许能帮你. \n 当花哨的新精灵从大教堂出来时,我们只是把所有的旧精灵都扔进了垃圾箱!\n 这好像太浪费了,尤其是当像你这样的孩子没有任何东西的时候!"
+msgstr ""
+"我认得你,你就是那个没有金卡会员的孩子. \n"
+" 你知道,我也许能帮你. \n"
+" 当花哨的新精灵从大教堂出来时,我们只是把所有的旧精灵都扔进了垃圾箱!\n"
+" 这好像太浪费了,尤其是当像你这样的孩子没有任何东西的时候!"
 
 msgid "spyder_papertown_thereis"
 msgstr "这里有东西..."
@@ -7083,7 +7007,6 @@ msgid "spyder_papertown_agnite"
 msgstr "你想要火鬣蜥吗?"
 
 # Player additional gender, since very few ID as 'neuter'
-
 msgid "gender_enby"
 msgstr "非二元"
 
@@ -7091,7 +7014,6 @@ msgid "gender_whatever"
 msgstr "我不在乎"
 
 # Player Color & Gender
-
 msgid "white_female"
 msgstr "白人女性"
 
@@ -7201,7 +7123,9 @@ msgid "spyder_leathergym_board"
 msgstr "Chad ${{var:chad_points}} 对战 Brad ${{var:brad_points}}"
 
 msgid "spyder_billing_cathedral1"
-msgstr "欢迎来到大教堂中心!\n 你想治愈你的精灵吗?"
+msgstr ""
+"欢迎来到大教堂中心!\n"
+" 你想治愈你的精灵吗?"
 
 msgid "spyder_billing_cathedral2"
 msgstr "治疗完成。费用是 ${{currency}}${{var:party_lost_hp}}."
@@ -7213,42 +7137,60 @@ msgid "spyder_billing_cathedral4"
 msgstr "哦,你付不起钱?没关系,我们会将其添加到您的账单中,另外有 ${{var:cathedral_interest_full}}% 的利息."
 
 msgid "spyder_billing_cathedral5"
-msgstr "当你从对战中获得了钱,我们会分一杯羹,百分比是[${{var:cathedral_share_full}}%] 直到你还给我们钱。简单易行!"
+msgstr ""
+"当你从对战中获得了钱,我们会分一杯羹,百分比是[${{var:cathedral_share_full}}%] 直到你还给我们钱。简单易行!"
 
 msgid "spyder_billing_cathedral6"
 msgstr "感谢您选择大教堂!祝你有美好的一天!"
 
 msgid "spyder_leathershaft1_sign"
 msgstr "地心之旅!"
+
 msgid "spyder_leathershaft1_miner1"
-msgstr "我们要保护原住民、土地......但我们不能将挖矿定为犯罪\n"
+msgstr ""
+"我们要保护原住民、土地......但我们不能将挖矿定为犯罪\n"
 "他们正在寻找谋生手段生存,重要的是矿工受到保护!"
+
 msgid "spyder_leathershaft1_beryll1"
-msgstr "只是在丰登特,就有大约十几个地方正在进行非法或工匠采矿\n"
+msgstr ""
+"只是在丰登特,就有大约十几个地方正在进行非法或工匠采矿\n"
 "但沙夫特被视为邪恶."
+
 msgid "spyder_leathershaft1_roxby1"
-msgstr "群岛中的一些岛屿完全被采矿所接管,无法区分\n"
+msgstr ""
+"群岛中的一些岛屿完全被采矿所接管,无法区分\n"
 "在土著社区和矿区之间,甚至没有水喝,沙夫特反对这些!"
+
 msgid "spyder_leathershaft1_rutherford1"
-msgstr "沙夫特的领导者是一个思想家和实干家,她不是一个健谈的人,她与矿工们见过两次面.\n"
+msgstr ""
+"沙夫特的领导者是一个思想家和实干家,她不是一个健谈的人,她与矿工们见过两次面.\n"
 "她显示了她对丰登特的计划。在气候变化问题上,我们的领导人始终如一."
+
 msgid "spyder_leathershaft1_surat1"
-msgstr "为了简化采矿业,有人开始向有资格采矿的人颁发证书.\n"
+msgstr ""
+"为了简化采矿业,有人开始向有资格采矿的人颁发证书.\n"
 "背后的实体?全能公司!而沙夫特是替罪羊."
 
 msgid "spyder_leathershaft2_dude"
-msgstr "沙夫特是这个地区最大的矿业公司之一,\n"
+msgstr ""
+"沙夫特是这个地区最大的矿业公司之一,\n"
 "尤其是那些为社区做出贡献的人."
+
 msgid "spyder_leathershaft2_achievement"
-msgstr "沙夫特很荣幸能与顶级企业一起参与这场迈向净零经济的竞赛\n"
+msgstr ""
+"沙夫特很荣幸能与顶级企业一起参与这场迈向净零经济的竞赛\n"
 "因为我们相信,气候变化不仅是丰登特面临的最大风险之一,\n"
 "同时也是可持续创新的最大机遇之一."
+
 msgid "spyder_leathershaft2_pc"
 msgstr "TuxTube上的沙夫特宣传片."
+
 msgid "spyder_leathershaft2_papers"
 msgstr "这本来自沙夫特的传单旨在获得基金会人民的信任."
+
 msgid "spyder_leathershaft2_skeptic"
-msgstr "我不相信沙夫特,我的地质学家朋友加入了一个团队来探索河流流域\n"
+msgstr ""
+"我不相信沙夫特,我的地质学家朋友加入了一个团队来探索河流流域\n"
 "确定森林砍伐和采矿对河流和水质的影响.\n"
 "这将标志着有史以来第一次对采矿区池塘的碳和汞生产进行评估,\n"
 "以及它们随后对水流路径的影响,曾经在丰登特进行过."

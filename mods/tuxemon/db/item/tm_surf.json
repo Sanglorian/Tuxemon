@@ -2,24 +2,32 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["water"],
+      "parameters": [
+        "water"
+      ],
       "operator": "is"
     },
     {
       "type": "shape",
-      "parameters": ["piscine:polliwog:leviathan"],
+      "parameters": [
+        "piscine:polliwog:leviathan"
+      ],
       "operator": "is"
     },
     {
       "type": "has_tech",
-      "parameters": ["surf"],
+      "parameters": [
+        "surf"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["surf"]
+      "parameters": [
+        "surf"
+      ]
     }
   ],
   "slug": "tm_surf",

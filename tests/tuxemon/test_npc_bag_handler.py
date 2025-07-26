@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import MagicMock
 from uuid import uuid4
 
+from tuxemon.item.item import Item
 from tuxemon.npc import NPCBagHandler
 
 
@@ -11,7 +12,8 @@ class TestNPCBagHandler(unittest.TestCase):
 
     def setUp(self):
         self.handler = NPCBagHandler(item_boxes=MagicMock())
-        self.item = MagicMock(slug="test_item", instance_id=uuid4())
+        self.item = Item.test()
+        self.item.slug = "test_item"
 
     def test_init(self):
         self.assertEqual(self.handler._items, [])
@@ -23,7 +25,6 @@ class TestNPCBagHandler(unittest.TestCase):
 
     def test_add_item_to_locker(self):
         self.handler._bag_limit = 0
-
         self.handler.add_item(self.item)
         self.assertEqual(self.handler._items, [])
 
@@ -42,8 +43,10 @@ class TestNPCBagHandler(unittest.TestCase):
         self.assertIsNone(found_item)
 
     def test_get_items(self):
-        item1 = MagicMock(slug="test_item1", instance_id=uuid4())
-        item2 = MagicMock(slug="test_item2", instance_id=uuid4())
+        item1 = Item.test()
+        item1.slug = "test_item1"
+        item2 = Item.test()
+        item2.slug = "test_item2"
         self.handler.add_item(item1)
         self.handler.add_item(item2)
         items = self.handler.get_items()
@@ -71,7 +74,31 @@ class TestNPCBagHandler(unittest.TestCase):
         self.handler.clear_items()
         self.assertEqual(self.handler._items, [])
 
-    def test_count_item(self):
-        self.handler.add_item(self.item)
-        self.handler.add_item(self.item)
-        self.assertEqual(self.handler.count_item("test_item"), 2)
+    def test_add_item_existing(self):
+        self.handler.add_item(self.item, quantity=1)
+        self.handler.add_item(self.item, quantity=5)
+        item_in_bag = self.handler.find_item("test_item")
+        self.assertEqual(item_in_bag.quantity, 6)
+
+    def test_remove_item_with_quantity(self):
+        self.handler.add_item(self.item, quantity=10)
+        self.handler.remove_item(self.item, quantity=5)
+        item_in_bag = self.handler.find_item("test_item")
+        self.assertEqual(item_in_bag.quantity, 5)
+
+    def test_remove_item_below_zero(self):
+        self.handler.add_item(self.item, quantity=10)
+        self.handler.remove_item(self.item, quantity=15)
+        self.assertNotIn(self.item, self.handler._items)
+
+    def test_add_item_zero_quantity(self):
+        self.handler.add_item(self.item, quantity=0)
+        self.assertIn(self.item, self.handler._items)
+        item_in_bag = self.handler.find_item("test_item")
+        self.assertEqual(item_in_bag.quantity, 0)
+
+    def test_remove_item_zero_quantity(self):
+        self.handler.add_item(self.item, quantity=10)
+        self.handler.remove_item(self.item, quantity=0)
+        item_in_bag = self.handler.find_item("test_item")
+        self.assertEqual(item_in_bag.quantity, 10)

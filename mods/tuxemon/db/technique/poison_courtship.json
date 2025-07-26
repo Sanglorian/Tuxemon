@@ -5,11 +5,14 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["poison", "enemy_monster"]
+      "parameters": [
+        "poison",
+        "enemy_monster"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -27,7 +30,9 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["bug"],
+  "tags": [
+    "bug"
+  ],
   "types": [
     "aether"
   ],

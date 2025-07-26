@@ -5,11 +5,14 @@
   "effects": [
     {
       "type": "switch",
-      "parameters": ["enemy_team:own_team", "random"]
+      "parameters": [
+        "enemy_team:own_team",
+        "random"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -27,7 +30,10 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["weather", "shapeshifter"],
+  "tags": [
+    "weather",
+    "shapeshifter"
+  ],
   "types": [
     "aether"
   ],

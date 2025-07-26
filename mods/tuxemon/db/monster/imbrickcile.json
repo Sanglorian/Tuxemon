@@ -1,80 +1,91 @@
 {
-    "slug": "imbrickcile",
-    "category": "brick",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "ram"
-        },
-        {
-            "level_learned": 1,
-            "technique": "boulder"
-        },
-        {
-            "level_learned": 4,
-            "technique": "riposte"
-        },
-        {
-            "level_learned": 7,
-            "technique": "assault"
-        },
-        {
-            "level_learned": 13,
-            "technique": "thunderball"
-        },
-        {
-            "level_learned": 28,
-            "technique": "glower"
-        },
-        {
-            "level_learned": 31,
-            "technique": "wall_of_steel"
-        },
-        {
-            "level_learned": 34,
-            "technique": "surge"
-        },
-        {
-            "level_learned": 43,
-            "technique": "stampede"
-        },
-        {
-            "level_learned": 46,
-            "technique": "earthquake"
-        },
-        {
-            "level_learned": 52,
-            "technique": "rocky_barrage"
-        }
-    ],
-    "evolutions": [
-        {
-            "at_level": 18,
-            "monster_slug": "bricgard"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "bricgard",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "brickhemoth",
-            "evo_stage": "stage2"
-        }
-    ],
-    "terrains": ["ruins", "urban"],
-    "tags": ["fists", "rock", "fury", "shielded"],
-    "shape": "sprite",
-    "stage": "basic",
-    "types": [
-        "earth"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 259,
-    "height": 35,
-    "weight": 2,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.25
+  "slug": "imbrickcile",
+  "category": "brick",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "ram"
+    },
+    {
+      "level_learned": 1,
+      "technique": "boulder"
+    },
+    {
+      "level_learned": 4,
+      "technique": "riposte"
+    },
+    {
+      "level_learned": 7,
+      "technique": "assault"
+    },
+    {
+      "level_learned": 13,
+      "technique": "thunderball"
+    },
+    {
+      "level_learned": 28,
+      "technique": "glower"
+    },
+    {
+      "level_learned": 31,
+      "technique": "wall_of_steel"
+    },
+    {
+      "level_learned": 34,
+      "technique": "surge"
+    },
+    {
+      "level_learned": 43,
+      "technique": "stampede"
+    },
+    {
+      "level_learned": 46,
+      "technique": "earthquake"
+    },
+    {
+      "level_learned": 52,
+      "technique": "rocky_barrage"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 18,
+      "monster_slug": "bricgard"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "bricgard",
+      "evo_stage": "stage1"
+    },
+    {
+      "mon_slug": "brickhemoth",
+      "evo_stage": "stage2"
+    }
+  ],
+  "terrains": [
+    "ruins",
+    "urban"
+  ],
+  "tags": [
+    "fists",
+    "rock",
+    "fury",
+    "shielded"
+  ],
+  "shape": "sprite",
+  "stage": "basic",
+  "types": [
+    "earth"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 259,
+  "height": 35,
+  "weight": 2,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.25
 }

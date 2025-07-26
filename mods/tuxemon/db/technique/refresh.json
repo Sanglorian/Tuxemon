@@ -5,7 +5,10 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["recover", "own_monster"]
+      "parameters": [
+        "recover",
+        "own_monster"
+      ]
     },
     {
       "type": "healing"
@@ -13,7 +16,7 @@
   ],
   "flip_axes": "",
   "healing_power": 3.0,
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -31,7 +34,10 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["universal", "healing"],
+  "tags": [
+    "universal",
+    "healing"
+  ],
   "types": [
     "aether"
   ],

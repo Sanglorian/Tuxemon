@@ -6,7 +6,9 @@
     },
     {
       "type": "category",
-      "parameters": ["threat"],
+      "parameters": [
+        "threat"
+      ],
       "operator": "not"
     }
   ],

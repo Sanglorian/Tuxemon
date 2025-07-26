@@ -1,70 +1,76 @@
 {
-    "slug": "masknake",
-    "category": "serpents_tooth",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "starfall"
-        },
-        {
-            "level_learned": 1,
-            "technique": "beam"
-        },
-        {
-            "level_learned": 4,
-            "technique": "supernova"
-        },
-        {
-            "level_learned": 7,
-            "technique": "lava"
-        },
-        {
-            "level_learned": 13,
-            "technique": "firestorm"
-        },
-        {
-            "level_learned": 16,
-            "technique": "magma"
-        },
-        {
-            "level_learned": 19,
-            "technique": "thunderclap"
-        },
-        {
-            "level_learned": 25,
-            "technique": "muddle"
-        },
-        {
-            "level_learned": 28,
-            "technique": "chameleon"
-        },
-        {
-            "level_learned": 31,
-            "technique": "fire_claw"
-        },
-        {
-            "level_learned": 37,
-            "technique": "bubble_trap"
-        },
-        {
-            "level_learned": 40,
-            "technique": "flamethrower"
-        }
-    ],
-    "evolutions": [],
-    "history": [],
-    "terrains": [],
-    "tags": ["light", "mental"],
-    "shape": "serpent",
-    "stage": "standalone",
-    "types": [
-        "fire"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 115,
-    "height": 112,
-    "weight": 8,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "masknake",
+  "category": "serpents_tooth",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "starfall"
+    },
+    {
+      "level_learned": 1,
+      "technique": "beam"
+    },
+    {
+      "level_learned": 4,
+      "technique": "supernova"
+    },
+    {
+      "level_learned": 7,
+      "technique": "lava"
+    },
+    {
+      "level_learned": 13,
+      "technique": "firestorm"
+    },
+    {
+      "level_learned": 16,
+      "technique": "magma"
+    },
+    {
+      "level_learned": 19,
+      "technique": "thunderclap"
+    },
+    {
+      "level_learned": 25,
+      "technique": "muddle"
+    },
+    {
+      "level_learned": 28,
+      "technique": "chameleon"
+    },
+    {
+      "level_learned": 31,
+      "technique": "fire_claw"
+    },
+    {
+      "level_learned": 37,
+      "technique": "bubble_trap"
+    },
+    {
+      "level_learned": 40,
+      "technique": "flamethrower"
+    }
+  ],
+  "evolutions": [],
+  "history": [],
+  "terrains": [],
+  "tags": [
+    "light",
+    "mental"
+  ],
+  "shape": "serpent",
+  "stage": "standalone",
+  "types": [
+    "fire"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 115,
+  "height": 112,
+  "weight": 8,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

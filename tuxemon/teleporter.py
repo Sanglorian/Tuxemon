@@ -12,7 +12,6 @@ from tuxemon.db import Direction
 if TYPE_CHECKING:
     from tuxemon.client import LocalPygameClient
     from tuxemon.npc import NPC
-    from tuxemon.states.world.worldstate import WorldState
 
 logger = logging.getLogger(__name__)
 
@@ -81,11 +80,15 @@ class Teleporter:
     def __init__(
         self,
         client: LocalPygameClient,
-        world: WorldState,
         delayed_teleport: Optional[DelayedTeleport] = None,
     ) -> None:
         self.client = client
-        self.world = world
+        self.boundary = client.boundary
+        self.map_manager = client.map_manager
+        self.map_transition = client.map_transition
+        self.movement_manager = client.movement_manager
+        self.npc_manager = client.npc_manager
+        self.state_manager = client.state_manager
         self.delayed_teleport = delayed_teleport or DelayedTeleport()
 
     def handle_delayed_teleport(self, character: NPC) -> None:
@@ -147,12 +150,12 @@ class Teleporter:
             character: The character to prepare for teleportation.
         """
         logger.debug(f"Preparing {character.slug} for teleportation...")
-        self.world.movement.stop_char(character)
+        self.movement_manager.stop_char(character)
 
-        if len(self.client.state_manager.active_states) == 2:
+        if len(self.state_manager.active_states) == 2:
             self.client.push_state_with_timeout("TeleporterState", 15)
 
-        self.world.movement.lock_controls(character)
+        self.movement_manager.lock_controls(character)
         logger.info(f"{character.slug} is prepared for teleportation.")
 
     def finalize_teleport(self, character: NPC) -> None:
@@ -164,24 +167,24 @@ class Teleporter:
             character: The character to finalize teleportation for.
         """
         logger.debug(f"Finalizing teleportation for {character.slug}...")
-        self.world.movement.unlock_controls(character)
+        self.movement_manager.unlock_controls(character)
         logger.info(f"{character.slug} has completed teleportation.")
-        self.client.npc_manager.add_npc(character)
+        self.npc_manager.add_npc(character)
 
     def _switch_map_if_needed(self, map_name: str) -> None:
         if (
-            self.client.map_manager.current_map is None
-            or map_name != self.client.map_manager.current_map.filename
+            self.map_manager.current_map is None
+            or map_name != self.map_manager.current_map.filename
         ):
             target_map = prepare.fetch("maps", map_name)
             if not target_map:
                 raise ValueError(f"Map '{map_name}' does not exist.")
-            self.client.map_transition.change_map(target_map)
+            self.map_transition.change_map(target_map)
 
     def _update_character_position(
         self, character: NPC, x: int, y: int
     ) -> None:
-        if not self.client.boundary.is_within_boundaries((x, y)):
+        if not self.boundary.is_within_boundaries((x, y)):
             raise ValueError(
                 f"Coordinates ({x}, {y}) are out of map boundaries."
             )

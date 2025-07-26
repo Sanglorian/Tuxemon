@@ -13,7 +13,6 @@ from tuxemon.movement import Pathfinder, PathfindNode, get_tile_moverate
 from tuxemon.npc import NPC
 from tuxemon.npc_manager import NPCManager
 from tuxemon.prepare import CONFIG
-from tuxemon.states.world.worldstate import WorldState
 
 
 class TestPathfinder(unittest.TestCase):
@@ -25,7 +24,12 @@ class TestPathfinder(unittest.TestCase):
         self.client.boundary = MagicMock(spec=BoundaryChecker)
         self.client.npc_manager = MagicMock(spec=NPCManager)
         self.client.collision_manager = MagicMock(spec=CollisionManager)
-        self.pathfinder = Pathfinder(self.client)
+        self.pathfinder = Pathfinder(
+            self.client.npc_manager,
+            self.client.map_manager,
+            self.client.collision_manager,
+            self.client.boundary,
+        )
 
     def test_pathfind_success(self):
         start = (0, 0)

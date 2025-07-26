@@ -5,18 +5,24 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["exhausted", "own_monster"]
+      "parameters": [
+        "exhausted",
+        "own_monster"
+      ]
     },
     {
       "type": "give",
-      "parameters": ["confused", "enemy_monster"]
+      "parameters": [
+        "confused",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.5,
   "power": 3.0,
   "range": "ranged",
@@ -34,9 +40,12 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["mental"],
+  "tags": [
+    "mental"
+  ],
   "types": [
-    "metal", "wood"
+    "metal",
+    "wood"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

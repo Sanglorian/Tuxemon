@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["scoop_badge"],
+      "parameters": [
+        "scoop_badge"
+      ],
       "operator": "is"
     }
   ],

@@ -24,9 +24,12 @@ from pathlib import Path
 import yaml
 
 DEFAULT_INDENT: int = 2
+SORT_KEYS: bool = False
 
 
-def beautify_yaml_file(file_path: Path, indent: int = DEFAULT_INDENT) -> None:
+def beautify_yaml_file(
+    file_path: Path, indent: int = DEFAULT_INDENT, sort_keys: bool = SORT_KEYS
+) -> None:
     """
     Reads a YAML file, pretty-prints its content, and overwrites the original file.
     """
@@ -36,7 +39,13 @@ def beautify_yaml_file(file_path: Path, indent: int = DEFAULT_INDENT) -> None:
             data = yaml.safe_load(f)
 
         with file_path.open("w", encoding="utf-8") as f:
-            yaml.dump(data, f, indent=indent, default_flow_style=False)
+            yaml.dump(
+                data,
+                f,
+                indent=indent,
+                default_flow_style=False,
+                sort_keys=sort_keys,
+            )
         print(f"Successfully beautified '{file_path}'.")
     except FileNotFoundError:
         print(f"Error: File not found at '{file_path}'.")

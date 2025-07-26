@@ -3,16 +3,27 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
+from pygame.surface import Surface
+
+from tuxemon.client import LocalPygameClient
+from tuxemon.movement import MovementManager
 from tuxemon.states.world.world_transition import WorldTransition
 
 
 class TestTransition(TestCase):
     def setUp(self):
         self.mock_world = MagicMock()
+        self.mock_world.client = MagicMock(spec=LocalPygameClient)
+        self.mock_world.client.screen = MagicMock(spec=Surface)
         self.mock_world.client.screen.get_size.return_value = (800, 600)
+        self.mock_world.client.movement_manager = MagicMock(
+            spec=MovementManager
+        )
         self.mock_world.player = MagicMock()
 
-        self.transition = WorldTransition(self.mock_world)
+        self.transition = WorldTransition(
+            self.mock_world, self.mock_world.client.movement_manager
+        )
 
     def test_transition_initialization(self):
         self.assertIsNone(self.transition.transition_surface)
@@ -100,10 +111,10 @@ class TestTransition(TestCase):
             duration=1.0,
             round_values=True,
         )
-        self.mock_world.movement.stop_char.assert_called_with(
+        self.mock_world.client.movement_manager.stop_char.assert_called_with(
             self.mock_world.player
         )
-        self.mock_world.movement.lock_controls.assert_called_with(
+        self.mock_world.client.movement_manager.lock_controls.assert_called_with(
             self.mock_world.player
         )
         self.assertTrue(self.transition.in_transition)
@@ -138,7 +149,7 @@ class TestTransition(TestCase):
             duration=1.0,
             round_values=True,
         )
-        self.mock_world.task.assert_called_with(mock_teleport, 1.0)
+        self.mock_world.task.assert_called_with(mock_teleport, interval=1.0)
 
         chained_task = self.mock_world.task.return_value.chain
         chained_task.assert_called()

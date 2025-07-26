@@ -1,68 +1,75 @@
 {
-    "slug": "grintot",
-    "category": "pebble",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "boulder"
-        },
-        {
-            "level_learned": 1,
-            "technique": "sand_spray"
-        },
-        {
-            "level_learned": 4,
-            "technique": "electroplate"
-        },
-        {
-            "level_learned": 7,
-            "technique": "stonehenge"
-        },
-        {
-            "level_learned": 13,
-            "technique": "avalanche"
-        }
-    ],
-    "evolutions": [
-        {
-            "monster_slug": "grinflare",
-            "item": "earth_booster"
-        },
-        {
-            "monster_slug": "grinflare",
-            "item": "flintstone"
-        },
-        {
-            "monster_slug": "grintrock",
-            "item": "metal_booster"
-        },
-        {
-            "monster_slug": "grintrock",
-            "item": "thunderstone"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "grinflare",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "grintrock",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": [],
-    "tags": ["rock", "ground", "fists"],
-    "shape": "brute",
-    "stage": "basic",
-    "types": [
-        "earth"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 16,
-    "height": 70,
-    "weight": 375,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.25
+  "slug": "grintot",
+  "category": "pebble",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "boulder"
+    },
+    {
+      "level_learned": 1,
+      "technique": "sand_spray"
+    },
+    {
+      "level_learned": 4,
+      "technique": "electroplate"
+    },
+    {
+      "level_learned": 7,
+      "technique": "stonehenge"
+    },
+    {
+      "level_learned": 13,
+      "technique": "avalanche"
+    }
+  ],
+  "evolutions": [
+    {
+      "monster_slug": "grinflare",
+      "item": "earth_booster"
+    },
+    {
+      "monster_slug": "grinflare",
+      "item": "flintstone"
+    },
+    {
+      "monster_slug": "grintrock",
+      "item": "metal_booster"
+    },
+    {
+      "monster_slug": "grintrock",
+      "item": "thunderstone"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "grinflare",
+      "evo_stage": "stage1"
+    },
+    {
+      "mon_slug": "grintrock",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [],
+  "tags": [
+    "rock",
+    "ground",
+    "fists"
+  ],
+  "shape": "brute",
+  "stage": "basic",
+  "types": [
+    "earth"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 16,
+  "height": 70,
+  "weight": 375,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.25
 }

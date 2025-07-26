@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "has_tech",
-      "parameters": ["supernova"],
+      "parameters": [
+        "supernova"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["supernova"]
+      "parameters": [
+        "supernova"
+      ]
     }
   ],
   "slug": "tm_supernova",

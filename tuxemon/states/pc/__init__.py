@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 import pygame_menu
 
 from tuxemon import prepare
-from tuxemon.animation import Animation
+from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.state import State
@@ -49,7 +49,7 @@ class PCState(PygameMenuState):
             return partial(self.client.replace_state, state, **kwargs)
 
         # monster boxes
-        if len(char.monsters) == char.party_limit:
+        if len(char.monsters) == prepare.PARTY_LIMIT:
             storage = partial(
                 open_dialog,
                 self.client,
@@ -113,6 +113,6 @@ class PCState(PygameMenuState):
         self.animation_size = 0.0
 
         ani = self.animate(self, animation_size=1.0, duration=0.2)
-        ani.update_callback = self.update_animation_size
+        ani.schedule(self.update_animation_size, ScheduleType.ON_UPDATE)
 
         return ani

@@ -1,71 +1,82 @@
 {
-    "slug": "coleorus",
-    "category": "timeless",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "air_chain"
-        },
-        {
-            "level_learned": 1,
-            "technique": "buzz"
-        },
-        {
-            "level_learned": 4,
-            "technique": "fluff_up"
-        },
-        {
-            "level_learned": 7,
-            "technique": "battery_discharge"
-        },
-        {
-            "level_learned": 13,
-            "technique": "web"
-        },
-        {
-            "level_learned": 16,
-            "technique": "venom"
-        },
-        {
-            "level_learned": 19,
-            "technique": "cat_calling"
-        },
-        {
-            "level_learned": 25,
-            "technique": "clairaudience"
-        },
-        {
-            "level_learned": 28,
-            "technique": "avalanche"
-        },
-        {
-            "level_learned": 31,
-            "technique": "chameleon"
-        },
-        {
-            "level_learned": 37,
-            "technique": "needle"
-        },
-        {
-            "level_learned": 40,
-            "technique": "fester"
-        }
-    ],
-    "evolutions": [],
-    "history": [],
-    "terrains": ["desert", "grassland", "woodland"],
-    "tags": ["sharp", "rock", "bug"],
-    "shape": "sprite",
-    "stage": "standalone",
-    "types": [
-        "wood",
-        "earth"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 105,
-    "height": 39,
-    "weight": 6,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "coleorus",
+  "category": "timeless",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "air_chain"
+    },
+    {
+      "level_learned": 1,
+      "technique": "buzz"
+    },
+    {
+      "level_learned": 4,
+      "technique": "fluff_up"
+    },
+    {
+      "level_learned": 7,
+      "technique": "battery_discharge"
+    },
+    {
+      "level_learned": 13,
+      "technique": "web"
+    },
+    {
+      "level_learned": 16,
+      "technique": "venom"
+    },
+    {
+      "level_learned": 19,
+      "technique": "cat_calling"
+    },
+    {
+      "level_learned": 25,
+      "technique": "clairaudience"
+    },
+    {
+      "level_learned": 28,
+      "technique": "avalanche"
+    },
+    {
+      "level_learned": 31,
+      "technique": "chameleon"
+    },
+    {
+      "level_learned": 37,
+      "technique": "needle"
+    },
+    {
+      "level_learned": 40,
+      "technique": "fester"
+    }
+  ],
+  "evolutions": [],
+  "history": [],
+  "terrains": [
+    "desert",
+    "grassland",
+    "woodland"
+  ],
+  "tags": [
+    "sharp",
+    "rock",
+    "bug"
+  ],
+  "shape": "sprite",
+  "stage": "standalone",
+  "types": [
+    "wood",
+    "earth"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 105,
+  "height": 39,
+  "weight": 6,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

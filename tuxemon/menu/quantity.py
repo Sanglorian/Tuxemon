@@ -8,6 +8,7 @@ from typing import Optional
 
 from tuxemon.item.item import INFINITE_ITEMS
 from tuxemon.locale import T
+from tuxemon.menu.formatter import CurrencyFormatter, QuantityFormatter
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu
 from tuxemon.platform.const import buttons, intentions
@@ -19,8 +20,6 @@ logger = logging.getLogger(__name__)
 QUANTITY_INCREMENT = 1
 QUANTITY_PAGE_INCREMENT = 10
 MIN_QUANTITY = 1
-CURRENCY_SYMBOL = "$"
-QUANTITY_SYMBOL = "x"
 
 
 class QuantityMenu(Menu[None]):
@@ -34,6 +33,8 @@ class QuantityMenu(Menu[None]):
         shrink_to_items: bool = False,
         price: int = 0,
         cost: int = 0,
+        currency_formatter: Optional[CurrencyFormatter] = None,
+        quantity_formatter: Optional[QuantityFormatter] = None,
     ) -> None:
         """
         Initialize the quantity menu.
@@ -44,6 +45,8 @@ class QuantityMenu(Menu[None]):
             callback: Function to be called when dialog is confirmed. The
                 quantity will be sent as only argument.
             shrink_to_items: Whether to fit the border to contents.
+            currency_formatter: An optional formatter for currency display.
+            quantity_formatter: An optional formatter for quantity display.
         """
         super().__init__()
         self.quantity = quantity
@@ -54,6 +57,8 @@ class QuantityMenu(Menu[None]):
         )
         self.callback = callback
         self.shrink_to_items = shrink_to_items
+        self.currency_formatter = currency_formatter or CurrencyFormatter()
+        self.quantity_formatter = quantity_formatter or QuantityFormatter()
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
         if event.pressed:
@@ -96,13 +101,16 @@ class QuantityMenu(Menu[None]):
         )
 
     def initialize_items(self) -> Generator[MenuItem[None], None, None]:
-        label = f"{QUANTITY_SYMBOL:1} {self.quantity}"
+        label = self.quantity_formatter.format(self.quantity)
         image = self.shadow_text(label)
         yield MenuItem(image, label, None, None)
 
     def show_money(self) -> Generator[MenuItem[None], None, None]:
         money_manager = local_session.player.money_controller.money_manager
-        label = f"{T.translate('wallet')}: {money_manager.get_money()}"
+        formatted_money = self.currency_formatter.format(
+            money_manager.get_money()
+        )
+        label = f"{T.translate('wallet')}: {formatted_money}"
         image_money = self.shadow_text(label)
         yield MenuItem(image_money, label, None, None)
 
@@ -126,8 +134,9 @@ class QuantityAndPriceMenu(QuantityMenu):
         yield from super().initialize_items()
 
         price = self.calculate_total(self.price)
-        price_tag = T.translate("shop_buy_free") if price == 0 else price
-        label = f"{CURRENCY_SYMBOL:1} {price_tag}"
+        label = self.currency_formatter.format(price)
+        if price == 0:
+            label = T.translate("shop_buy_free")
         image = self.shadow_text(label)
         yield MenuItem(image, label, None, None)
 
@@ -148,6 +157,6 @@ class QuantityAndCostMenu(QuantityMenu):
         yield from super().initialize_items()
 
         cost = self.calculate_total(self.cost)
-        label = f"{CURRENCY_SYMBOL:1} {cost}"
+        label = self.currency_formatter.format(cost)
         image = self.shadow_text(label)
         yield MenuItem(image, label, None, None)

@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["slow", "enemy_monster"]
+      "parameters": [
+        "slow",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.5,
   "power": 2.9,
   "range": "ranged",
@@ -30,9 +33,13 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["weather", "calamity"],
+  "tags": [
+    "weather",
+    "calamity"
+  ],
   "types": [
-    "water", "wood"
+    "water",
+    "wood"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

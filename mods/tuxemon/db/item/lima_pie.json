@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["lima_pie"],
+      "parameters": [
+        "lima_pie"
+      ],
       "operator": "is"
     }
   ],

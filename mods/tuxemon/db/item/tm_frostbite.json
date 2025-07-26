@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "has_tech",
-      "parameters": ["frostbite"],
+      "parameters": [
+        "frostbite"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["frostbite"]
+      "parameters": [
+        "frostbite"
+      ]
     }
   ],
   "slug": "tm_frostbite",

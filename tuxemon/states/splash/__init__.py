@@ -25,7 +25,7 @@ class SplashState(State):
         self.parent = parent
 
         # this task will skip the splash screen after some time
-        self.task(self.fade_out, self.default_duration)
+        self.task(self.fade_out, interval=self.default_duration)
         self.triggered = False
 
         width, height = prepare.SCREEN_SIZE

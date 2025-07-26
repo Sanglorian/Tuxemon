@@ -1,17 +1,22 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+from __future__ import annotations
+
 import logging
 from collections import defaultdict
 from collections.abc import Mapping, MutableMapping, Sequence
-from typing import Any, DefaultDict, Optional, Union
+from typing import TYPE_CHECKING, Any, DefaultDict, Optional, Union
 
 from tuxemon import prepare
 from tuxemon.db import Direction
-from tuxemon.entity import Entity
 from tuxemon.map import RegionProperties
-from tuxemon.map_manager import MapManager
-from tuxemon.npc import NPC
-from tuxemon.npc_manager import NPCManager
+
+if TYPE_CHECKING:
+
+    from tuxemon.entity import Entity
+    from tuxemon.map_manager import MapManager
+    from tuxemon.npc import NPC
+    from tuxemon.npc_manager import NPCManager
 
 logger = logging.getLogger(__name__)
 

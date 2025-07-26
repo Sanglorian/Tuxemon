@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["sweet_sand"],
+      "parameters": [
+        "sweet_sand"
+      ],
       "operator": "is"
     }
   ],

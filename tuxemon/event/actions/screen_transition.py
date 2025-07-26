@@ -49,5 +49,5 @@ class ScreenTransitionAction(EventAction):
             world.transition_manager.fade_in(_time, rgb)
 
         world.transition_manager.fade_out(_time, rgb)
-        world.task(fade_in, _time)
+        world.task(fade_in, interval=_time)
         self.stop()

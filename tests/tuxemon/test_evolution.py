@@ -1,94 +1,28 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-from tuxemon.db import (
-    ElementModel,
-    MonsterEvolutionItemModel,
-    TechniqueModel,
-    db,
-)
+from tuxemon.db import Acquisition, MonsterEvolutionItemModel
 from tuxemon.element import Element
 from tuxemon.monster import Monster
+from tuxemon.npc import PartyHandler
 from tuxemon.player import Player
 from tuxemon.session import local_session
-from tuxemon.surfanim import FlipAxes
 from tuxemon.technique.technique import Technique
-
-_ram = TechniqueModel(
-    tech_id=69,
-    accuracy=0.85,
-    flip_axes=FlipAxes.NONE,
-    potency=0.0,
-    power=1.5,
-    range="melee",
-    recharge=1,
-    sfx="sfx_blaster",
-    slug="ram",
-    sort="damage",
-    target={
-        "enemy_monster": False,
-        "enemy_team": False,
-        "enemy_trainer": False,
-        "own_monster": False,
-        "own_team": False,
-        "own_trainer": False,
-    },
-    types=[],
-    use_tech="combat_used_x",
-    tags=["animal"],
-    category="simple",
-    effects=[],
-    modifiers=[],
-)
-
-_strike = TechniqueModel(
-    tech_id=69,
-    accuracy=0.85,
-    flip_axes=FlipAxes.NONE,
-    potency=0.0,
-    power=1.5,
-    range="melee",
-    recharge=1,
-    sfx="sfx_blaster",
-    slug="strike",
-    sort="damage",
-    target={
-        "enemy_monster": False,
-        "enemy_team": False,
-        "enemy_trainer": False,
-        "own_monster": False,
-        "own_team": False,
-        "own_trainer": False,
-    },
-    types=[],
-    use_tech="combat_used_x",
-    tags=["animal"],
-    category="simple",
-    effects=[],
-    modifiers=[],
-)
-
-_metal = ElementModel(
-    slug="metal", icon="gfx/ui/icons/element/metal_type.png", types=[]
-)
 
 
 def mockPlayer(self) -> None:
-    _tech_model = {"ram": _ram, "strike": _strike}
-    _element_model = {"metal": _metal}
-    db.database["technique"] = _tech_model
-    db.database["element"] = _element_model
     self.name = "Jeff"
     self.game_variables = {}
     member1 = Monster()
     member1.slug = "nut"
     member2 = Monster()
     member2.slug = "rockitten"
-    tech = Technique.create("ram")
-    member1.moves.learn(tech)
-    self.monsters = [member1, member2]
+    tech = MagicMock(spec=Technique, slug="ram")
+    member1.moves.moves = [tech]
+    self.party = PartyHandler(MagicMock, self)
+    self.party._monsters = [member1, member2]
 
 
 class TestCanEvolve(unittest.TestCase):
@@ -160,14 +94,16 @@ class TestCanEvolve(unittest.TestCase):
         self.assertTrue(self.mon.evolution_handler.can_evolve(evo, context))
 
     def test_traded_match(self):
-        self.mon.traded = True
-        evo = MonsterEvolutionItemModel(monster_slug="rockat", traded=True)
+        self.mon.set_acquisition(Acquisition.TRADED)
+        evo = MonsterEvolutionItemModel(monster_slug="rockat")
+        evo.acquisition = Acquisition.TRADED
         context = {"map_inside": True}
         self.assertTrue(self.mon.evolution_handler.can_evolve(evo, context))
 
     def test_traded_mismatch(self):
-        self.mon.traded = False
-        evo = MonsterEvolutionItemModel(monster_slug="rockat", traded=True)
+        self.mon.set_acquisition(Acquisition.GIFTED)
+        evo = MonsterEvolutionItemModel(monster_slug="rockat")
+        evo.acquisition = Acquisition.TRADED
         context = {"map_inside": True}
         self.assertFalse(self.mon.evolution_handler.can_evolve(evo, context))
 
@@ -223,8 +159,8 @@ class TestCanEvolve(unittest.TestCase):
         self.assertFalse(self.mon.evolution_handler.can_evolve(evo, context))
 
     def test_stats_match(self):
-        self.mon.hp = 30
-        self.mon.melee = 20
+        self.mon.base_stats.hp = 30
+        self.mon.base_stats.melee = 20
         evo = MonsterEvolutionItemModel(
             monster_slug="rockat", stats="hp:greater_or_equal:melee"
         )
@@ -232,8 +168,8 @@ class TestCanEvolve(unittest.TestCase):
         self.assertTrue(self.mon.evolution_handler.can_evolve(evo, context))
 
     def test_stats_mismatch(self):
-        self.mon.speed = 5
-        self.mon.armour = 10
+        self.mon.base_stats.speed = 5
+        self.mon.base_stats.armour = 10
         evo = MonsterEvolutionItemModel(
             monster_slug="rockat", stats="speed:greater_or_equal:armour"
         )
@@ -330,15 +266,15 @@ class TestCanEvolve(unittest.TestCase):
         self.assertFalse(self.mon.evolution_handler.can_evolve(evo, context))
 
     def test_moves_match(self):
-        tech = Technique.create("ram")
-        self.mon.moves.learn(tech)
+        tech = MagicMock(spec=Technique, slug="ram")
+        self.mon.moves.moves = [tech]
         evo = MonsterEvolutionItemModel(monster_slug="rockat", moves=["ram"])
         context = {"map_inside": True}
         self.assertTrue(self.mon.evolution_handler.can_evolve(evo, context))
 
     def test_moves_mismatch(self):
-        tech = Technique.create("ram")
-        self.mon.moves.learn(tech)
+        tech = MagicMock(spec=Technique, slug="ram")
+        self.mon.moves.moves = [tech]
         evo = MonsterEvolutionItemModel(
             monster_slug="rockat", moves=["strike"]
         )

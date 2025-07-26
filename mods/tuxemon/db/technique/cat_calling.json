@@ -5,11 +5,14 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["harpooned", "enemy_monster"]
+      "parameters": [
+        "harpooned",
+        "enemy_monster"
+      ]
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -27,7 +30,10 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["love", "leadership"],
+  "tags": [
+    "love",
+    "leadership"
+  ],
   "types": [
     "aether"
   ],

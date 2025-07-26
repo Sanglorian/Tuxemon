@@ -1,80 +1,89 @@
 {
-    "slug": "incandesfin",
-    "category": "light_fin",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "flow"
-        },
-        {
-            "level_learned": 1,
-            "technique": "sudden_glow"
-        },
-        {
-            "level_learned": 4,
-            "technique": "grinding"
-        },
-        {
-            "level_learned": 7,
-            "technique": "geyser"
-        },
-        {
-            "level_learned": 13,
-            "technique": "glower"
-        },
-        {
-            "level_learned": 25,
-            "technique": "goad"
-        },
-        {
-            "level_learned": 28,
-            "technique": "starfall"
-        },
-        {
-            "level_learned": 31,
-            "technique": "flood"
-        },
-        {
-            "level_learned": 40,
-            "technique": "static_field"
-        },
-        {
-            "level_learned": 43,
-            "technique": "icicle_spear"
-        },
-        {
-            "level_learned": 46,
-            "technique": "proboscis"
-        }
-    ],
-    "evolutions": [
-        {
-            "at_level": 36,
-            "monster_slug": "lightmare"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "fluoresfin",
-            "evo_stage": "basic"
-        },
-        {
-            "mon_slug": "lightmare",
-            "evo_stage": "stage2"
-        }
-    ],
-    "terrains": ["sea"],
-    "tags": ["water", "light", "bite"],
-    "shape": "piscine",
-    "stage": "stage1",
-    "types": [
-        "water"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 69,
-    "height": 250,
-    "weight": 150,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.9,
-    "upper_catch_resistance": 1.15
+  "slug": "incandesfin",
+  "category": "light_fin",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "flow"
+    },
+    {
+      "level_learned": 1,
+      "technique": "sudden_glow"
+    },
+    {
+      "level_learned": 4,
+      "technique": "grinding"
+    },
+    {
+      "level_learned": 7,
+      "technique": "geyser"
+    },
+    {
+      "level_learned": 13,
+      "technique": "glower"
+    },
+    {
+      "level_learned": 25,
+      "technique": "goad"
+    },
+    {
+      "level_learned": 28,
+      "technique": "starfall"
+    },
+    {
+      "level_learned": 31,
+      "technique": "flood"
+    },
+    {
+      "level_learned": 40,
+      "technique": "static_field"
+    },
+    {
+      "level_learned": 43,
+      "technique": "icicle_spear"
+    },
+    {
+      "level_learned": 46,
+      "technique": "proboscis"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 36,
+      "monster_slug": "lightmare"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "fluoresfin",
+      "evo_stage": "basic"
+    },
+    {
+      "mon_slug": "lightmare",
+      "evo_stage": "stage2"
+    }
+  ],
+  "terrains": [
+    "sea"
+  ],
+  "tags": [
+    "water",
+    "light",
+    "bite"
+  ],
+  "shape": "piscine",
+  "stage": "stage1",
+  "types": [
+    "water"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 69,
+  "height": 250,
+  "weight": 150,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.9,
+  "upper_catch_resistance": 1.15
 }

@@ -5,14 +5,17 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["poison", "enemy_monster"]
+      "parameters": [
+        "poison",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.35,
   "power": 2.25,
   "range": "ranged",
@@ -30,7 +33,9 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["machine"],
+  "tags": [
+    "machine"
+  ],
   "types": [
     "fire",
     "earth"

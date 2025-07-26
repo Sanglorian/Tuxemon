@@ -9,11 +9,12 @@ from tuxemon.mission import (
     MissionController,
     MissionProgress,
 )
+from tuxemon.npc import NPC, NPCBagHandler, PartyHandler
 
 
 class TestMissionManager(TestCase):
     def setUp(self):
-        self.character = MagicMock()
+        self.character = MagicMock(spec=NPC)
         self.mission = Mission()
         self.mission_controller = MissionController(self.character)
         self.mission_manager = self.mission_controller.mission_manager
@@ -66,21 +67,22 @@ class TestMissionManager(TestCase):
         self.character.game_variables = {"key": "wrong_value"}
         self.assertFalse(self.mission_controller.check_all_prerequisites())
 
-    def test_check_required_monsters(self):
-        self.mission.required_monsters = ["potion", "lotion"]
+    def test_check_required_items(self):
+        self.mission.required_items = ["potion", "lotion"]
 
         item1 = MagicMock()
         item1.slug = "potion"
         item2 = MagicMock()
         item2.slug = "lotion"
 
-        self.character.find_item.side_effect = lambda slug: (
+        self.character.items = MagicMock(spec=NPCBagHandler)
+        self.character.items.find_item.side_effect = lambda slug: (
             item1 if slug == "potion" else item2 if slug == "lotion" else None
         )
 
         self.assertTrue(self.mission.check_required_items(self.character))
 
-        self.character.find_item.side_effect = lambda slug: (
+        self.character.items.find_item.side_effect = lambda slug: (
             item1 if slug == "potion" else None
         )
         self.assertFalse(self.mission.check_required_items(self.character))
@@ -93,7 +95,8 @@ class TestMissionManager(TestCase):
         monster2 = MagicMock()
         monster2.slug = "monster2"
 
-        self.character.find_monster.side_effect = lambda slug: (
+        self.character.party = MagicMock(spec=PartyHandler)
+        self.character.party.find_monster.side_effect = lambda slug: (
             monster1
             if slug == "monster1"
             else monster2 if slug == "monster2" else None
@@ -101,7 +104,7 @@ class TestMissionManager(TestCase):
 
         self.assertTrue(self.mission.check_required_monsters(self.character))
 
-        self.character.find_monster.side_effect = lambda slug: (
+        self.character.party.find_monster.side_effect = lambda slug: (
             monster1 if slug == "monster1" else None
         )
         self.assertFalse(self.mission.check_required_monsters(self.character))

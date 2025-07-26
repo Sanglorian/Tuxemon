@@ -1,69 +1,77 @@
 {
-    "slug": "katapill",
-    "category": "beat",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "clamp_on"
-        },
-        {
-            "level_learned": 1,
-            "technique": "buzz"
-        },
-        {
-            "level_learned": 4,
-            "technique": "splinter"
-        },
-        {
-            "level_learned": 7,
-            "technique": "font"
-        },
-        {
-            "level_learned": 10,
-            "technique": "evasion"
-        },
-        {
-            "level_learned": 13,
-            "technique": "sting"
-        }
-    ],
-    "evolutions": [
-        {
-            "at_level": 9,
-            "monster_slug": "katacoon"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "katacoon",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "bugnin",
-            "evo_stage": "stage2"
-        },
-        {
-            "mon_slug": "sumchon",
-            "evo_stage": "stage2"
-        },
-        {
-            "mon_slug": "gladiatorbug",
-            "evo_stage": "stage2"
-        }
-    ],
-    "terrains": ["woodland"],
-    "tags": ["fists", "bug"],
-    "shape": "grub",
-    "stage": "basic",
-    "types": [
-        "metal",
-        "wood"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 56,
-    "height": 32,
-    "weight": 3,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.25
+  "slug": "katapill",
+  "category": "beat",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "clamp_on"
+    },
+    {
+      "level_learned": 1,
+      "technique": "buzz"
+    },
+    {
+      "level_learned": 4,
+      "technique": "splinter"
+    },
+    {
+      "level_learned": 7,
+      "technique": "font"
+    },
+    {
+      "level_learned": 10,
+      "technique": "evasion"
+    },
+    {
+      "level_learned": 13,
+      "technique": "sting"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 9,
+      "monster_slug": "katacoon"
+    }
+  ],
+  "history": [
+    {
+      "mon_slug": "katacoon",
+      "evo_stage": "stage1"
+    },
+    {
+      "mon_slug": "bugnin",
+      "evo_stage": "stage2"
+    },
+    {
+      "mon_slug": "sumchon",
+      "evo_stage": "stage2"
+    },
+    {
+      "mon_slug": "gladiatorbug",
+      "evo_stage": "stage2"
+    }
+  ],
+  "terrains": [
+    "woodland"
+  ],
+  "tags": [
+    "fists",
+    "bug"
+  ],
+  "shape": "grub",
+  "stage": "basic",
+  "types": [
+    "metal",
+    "wood"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 56,
+  "height": 32,
+  "weight": 3,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.25
 }

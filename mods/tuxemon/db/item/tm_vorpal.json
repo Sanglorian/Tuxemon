@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "has_tech",
-      "parameters": ["vorpal"],
+      "parameters": [
+        "vorpal"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["vorpal"]
+      "parameters": [
+        "vorpal"
+      ]
     }
   ],
   "slug": "tm_vorpal",

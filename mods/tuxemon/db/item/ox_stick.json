@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["ox_stick"],
+      "parameters": [
+        "ox_stick"
+      ],
       "operator": "is"
     }
   ],

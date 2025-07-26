@@ -5,18 +5,24 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["poison", "own_monster"]
+      "parameters": [
+        "poison",
+        "own_monster"
+      ]
     },
     {
       "type": "give",
-      "parameters": ["festering", "enemy_monster"]
+      "parameters": [
+        "festering",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.8,
   "power": 2.25,
   "range": "reach",
@@ -34,7 +40,9 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["toxic"],
+  "tags": [
+    "toxic"
+  ],
   "types": [
     "earth",
     "wood"

@@ -37,8 +37,8 @@ class Evolution:
         owner = self.monster.get_owner()
         monster_index = owner.monsters.index(self.monster)
         self.update_new_monster_properties(new_monster)
-        owner.remove_monster(self.monster)
-        owner.add_monster(new_monster, monster_index)
+        owner.party.remove_monster(self.monster)
+        owner.party.add_monster(new_monster, monster_index)
         owner.tuxepedia.add_entry(new_monster.slug, SeenStatus.caught)
 
     def is_eligible_for_evolution(self) -> bool:
@@ -117,9 +117,11 @@ class Evolution:
         if evolution_item.element is not None:
             conditions.append(self.monster.has_type(evolution_item.element))
         if evolution_item.tech is not None:
-            conditions.append(owner.has_tech(evolution_item.tech))
-        if evolution_item.traded is not None:
-            conditions.append(evolution_item.traded == self.monster.traded)
+            conditions.append(owner.party.has_tech(evolution_item.tech))
+        if evolution_item.acquisition is not None:
+            conditions.append(
+                evolution_item.acquisition == self.monster.acquisition
+            )
         if evolution_item.moves:
             moves_slugs = {mov.slug for mov in self.monster.moves.get_moves()}
             conditions.extend(

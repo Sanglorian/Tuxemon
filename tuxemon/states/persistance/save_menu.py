@@ -19,6 +19,7 @@ from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu
 from tuxemon.save import get_save_path
 from tuxemon.tools import open_choice_dialog
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 from tuxemon.ui.text import draw_text
 
 if TYPE_CHECKING:
@@ -170,15 +171,27 @@ class SaveMenuState(PopUpMenu[None]):
             self.client.remove_state_by_name("ChoiceState")
 
         def ask_confirmation() -> None:
-            # open menu to confirm the save
-            var_menu = []
-            _overwrite = T.translate("save_overwrite")
-            var_menu.append(("overwrite", _overwrite, positive_answer))
-            _keep = T.translate("save_keep")
-            var_menu.append(("keep", _keep, negative_answer))
-            _delete = T.translate("save_delete")
-            var_menu.append(("delete", _delete, delete_answer))
-            open_choice_dialog(self.client, var_menu, True)
+            # Open menu to confirm the save
+            options = [
+                ChoiceOption(
+                    key="overwrite",
+                    display_text=T.translate("save_overwrite"),
+                    action=positive_answer,
+                ),
+                ChoiceOption(
+                    key="keep",
+                    display_text=T.translate("save_keep"),
+                    action=negative_answer,
+                ),
+                ChoiceOption(
+                    key="delete",
+                    display_text=T.translate("save_delete"),
+                    action=delete_answer,
+                ),
+            ]
+
+            menu = MenuOptions(options)
+            open_choice_dialog(self.client, menu, escape_key_exits=True)
 
         save_data = save.load(self.selected_index + 1)
         if save_data:

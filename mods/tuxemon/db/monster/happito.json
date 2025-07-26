@@ -1,60 +1,70 @@
 {
-    "slug": "happito",
-    "category": "ecstatic_emotion",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "buzz"
-        },
-        {
-            "level_learned": 1,
-            "technique": "bullet"
-        },
-        {
-            "level_learned": 4,
-            "technique": "blade"
-        },
-        {
-            "level_learned": 7,
-            "technique": "strike"
-        },
-        {
-            "level_learned": 13,
-            "technique": "wall_of_steel"
-        },
-        {
-            "level_learned": 25,
-            "technique": "mudslide"
-        },
-        {
-            "level_learned": 28,
-            "technique": "ram"
-        },
-        {
-            "level_learned": 31,
-            "technique": "rock"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "chromeye",
-            "evo_stage": "basic"
-        }
-    ],
-    "terrains": ["extraplanar", "urban"],
-    "tags": ["mental", "machine", "healing", "light"],
-    "shape": "blob",
-    "stage": "stage1",
-    "types": [
-        "earth",
-        "metal"
-    ],
-    "possible_genders": ["neuter"],
-    "txmn_id": 176,
-    "height": 90,
-    "weight": 55,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "happito",
+  "category": "ecstatic_emotion",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "buzz"
+    },
+    {
+      "level_learned": 1,
+      "technique": "bullet"
+    },
+    {
+      "level_learned": 4,
+      "technique": "blade"
+    },
+    {
+      "level_learned": 7,
+      "technique": "strike"
+    },
+    {
+      "level_learned": 13,
+      "technique": "wall_of_steel"
+    },
+    {
+      "level_learned": 25,
+      "technique": "mudslide"
+    },
+    {
+      "level_learned": 28,
+      "technique": "ram"
+    },
+    {
+      "level_learned": 31,
+      "technique": "rock"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "chromeye",
+      "evo_stage": "basic"
+    }
+  ],
+  "terrains": [
+    "extraplanar",
+    "urban"
+  ],
+  "tags": [
+    "mental",
+    "machine",
+    "healing",
+    "light"
+  ],
+  "shape": "blob",
+  "stage": "stage1",
+  "types": [
+    "earth",
+    "metal"
+  ],
+  "possible_genders": [
+    "neuter"
+  ],
+  "txmn_id": 176,
+  "height": 90,
+  "weight": 55,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

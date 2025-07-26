@@ -41,7 +41,7 @@ class RemoveEffect(CoreEffect):
 
         objectives = self.objectives.split(":")
         potency = random.random()
-        value = combat._random_tech_hit.get(user, 0.0)
+        value = combat.get_tech_hit(user)
         success = tech.potency >= potency and tech.accuracy >= value
 
         if success:

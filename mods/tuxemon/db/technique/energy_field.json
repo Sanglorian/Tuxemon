@@ -5,15 +5,21 @@
   "effects": [
     {
       "type": "give",
-      "parameters": ["charging", "own_monster"]
+      "parameters": [
+        "charging",
+        "own_monster"
+      ]
     },
     {
       "type": "give",
-      "parameters": ["exhausted", "enemy_monster"]
+      "parameters": [
+        "exhausted",
+        "enemy_monster"
+      ]
     }
   ],
   "flip_axes": "x",
-  "is_fast": true,
+  "speed": "fast",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -31,7 +37,9 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["machine"],
+  "tags": [
+    "machine"
+  ],
   "types": [
     "aether"
   ],

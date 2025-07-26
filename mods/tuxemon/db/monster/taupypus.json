@@ -1,71 +1,75 @@
 {
-    "slug": "taupypus",
-    "category": "flatfoot",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "biting_winds"
-        },
-        {
-            "level_learned": 1,
-            "technique": "water_bullet"
-        },
-        {
-            "level_learned": 4,
-            "technique": "flood"
-        },
-        {
-            "level_learned": 7,
-            "technique": "goad"
-        },
-        {
-            "level_learned": 13,
-            "technique": "midnight_mantle"
-        },
-        {
-            "level_learned": 16,
-            "technique": "ice_shield"
-        },
-        {
-            "level_learned": 19,
-            "technique": "pouch"
-        },
-        {
-            "level_learned": 25,
-            "technique": "mobbing"
-        },
-        {
-            "level_learned": 28,
-            "technique": "poison_courtship"
-        },
-        {
-            "level_learned": 31,
-            "technique": "ice_storm"
-        },
-        {
-            "level_learned": 37,
-            "technique": "venomous_tentacle"
-        },
-        {
-            "level_learned": 40,
-            "technique": "kraken"
-        }
-    ],
-    "evolutions": [],
-    "history": [],
-    "terrains": [],
-    "tags": ["water"],
-    "shape": "varmint",
-    "stage": "standalone",
-    "types": [
-        "water"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 219,
-    "height": 60,
-    "weight": 3,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.9,
-    "upper_catch_resistance": 1.15
+  "slug": "taupypus",
+  "category": "flatfoot",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "biting_winds"
+    },
+    {
+      "level_learned": 1,
+      "technique": "water_bullet"
+    },
+    {
+      "level_learned": 4,
+      "technique": "flood"
+    },
+    {
+      "level_learned": 7,
+      "technique": "goad"
+    },
+    {
+      "level_learned": 13,
+      "technique": "midnight_mantle"
+    },
+    {
+      "level_learned": 16,
+      "technique": "ice_shield"
+    },
+    {
+      "level_learned": 19,
+      "technique": "pouch"
+    },
+    {
+      "level_learned": 25,
+      "technique": "mobbing"
+    },
+    {
+      "level_learned": 28,
+      "technique": "poison_courtship"
+    },
+    {
+      "level_learned": 31,
+      "technique": "ice_storm"
+    },
+    {
+      "level_learned": 37,
+      "technique": "venomous_tentacle"
+    },
+    {
+      "level_learned": 40,
+      "technique": "kraken"
+    }
+  ],
+  "evolutions": [],
+  "history": [],
+  "terrains": [],
+  "tags": [
+    "water"
+  ],
+  "shape": "varmint",
+  "stage": "standalone",
+  "types": [
+    "water"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 219,
+  "height": 60,
+  "weight": 3,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.9,
+  "upper_catch_resistance": 1.15
 }
-

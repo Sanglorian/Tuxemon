@@ -10,7 +10,8 @@ from pygame_menu.widgets.core.selection import Selection
 from pygame_menu.widgets.core.widget import Widget
 from pygame_menu.widgets.widget.menubar import MENUBAR_STYLE_ADAPTIVE
 
-from tuxemon.tools import transform_resource_filename
+from tuxemon import prepare
+from tuxemon.tools import scale, transform_resource_filename
 
 _theme: Optional[pygame_menu.Theme] = None
 
@@ -94,6 +95,20 @@ def get_theme() -> pygame_menu.Theme:
         title_bar_style=MENUBAR_STYLE_ADAPTIVE,
         widget_font_shadow=True,
     )
+
+    # Set common font sizes and colors as part of the theme definition
+    theme.widget_font_size = scale(prepare.FONT_SIZE)
+    theme.title_font_size = scale(prepare.FONT_SIZE_BIG)
+    theme.widget_font_color = prepare.FONT_COLOR
+    theme.selection_color = prepare.FONT_COLOR
+    theme.scrollbar_color = prepare.SCROLLBAR_COLOR
+    theme.scrollbar_slider_color = prepare.SCROLLBAR_SLIDER_COLOR
+    theme.title_font_color = prepare.FONT_COLOR
+    theme.title_background_color = prepare.TRANSPARENT_COLOR
+    theme.widget_font_shadow_color = prepare.FONT_SHADOW_COLOR
+    font = prepare.fetch("font", prepare.CONFIG.locale.font_file)
+    theme.title_font = font
+    theme.widget_font = font
 
     _theme = theme
     return _theme

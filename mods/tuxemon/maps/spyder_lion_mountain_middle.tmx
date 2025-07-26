@@ -90,7 +90,7 @@
     <property name="act4" value="translated_dialog spyder_lionmountain_enforcer4"/>
     <property name="act5" value="set_variable lionmountainenforcer:yes"/>
     <property name="act6" value="add_monster chromeye,15"/>
-    <property name="act7" value="change_state JournalInfoState,chromeye"/>
+    <property name="act7" value="open_journal chromeye"/>
     <property name="behav1" value="talk spyder_lionmountain_enforcer"/>
     <property name="cond1" value="not variable_set lionmountainenforcer:yes"/>
    </properties>

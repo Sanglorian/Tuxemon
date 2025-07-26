@@ -1,80 +1,90 @@
 {
-    "slug": "ferricran",
-    "category": "dragon",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "tail_lash"
-        },
-        {
-            "level_learned": 1,
-            "technique": "bullet"
-        },
-        {
-            "level_learned": 4,
-            "technique": "viper"
-        },
-        {
-            "level_learned": 7,
-            "technique": "insanity"
-        },
-        {
-            "level_learned": 13,
-            "technique": "muddle"
-        },
-        {
-            "level_learned": 16,
-            "technique": "strike"
-        },
-        {
-            "level_learned": 40,
-            "technique": "rust_bomb"
-        },
-        {
-            "level_learned": 43,
-            "technique": "shuriken"
-        },
-        {
-            "level_learned": 46,
-            "technique": "wall_of_steel"
-        },
-        {
-            "level_learned": 61,
-            "technique": "amnesia"
-        },
-        {
-            "level_learned": 64,
-            "technique": "undertaker"
-        },
-        {
-            "level_learned": 70,
-            "technique": "shadow_blast"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "wrougon",
-            "evo_stage": "basic"
-        },
-        {
-            "mon_slug": "allagon",
-            "evo_stage": "stage1"
-        }
-    ],
-    "terrains": ["ruins", "underground"],
-    "tags": ["steel", "soldier", "sharp", "tail"],
-    "shape": "dragon",
-    "stage": "stage2",
-    "types": [
-        "metal"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 161,
-    "height": 230,
-    "weight": 214,
-    "catch_rate": 35.0,
-    "lower_catch_resistance": 0.9,
-    "upper_catch_resistance": 1.15
+  "slug": "ferricran",
+  "category": "dragon",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "tail_lash"
+    },
+    {
+      "level_learned": 1,
+      "technique": "bullet"
+    },
+    {
+      "level_learned": 4,
+      "technique": "viper"
+    },
+    {
+      "level_learned": 7,
+      "technique": "insanity"
+    },
+    {
+      "level_learned": 13,
+      "technique": "muddle"
+    },
+    {
+      "level_learned": 16,
+      "technique": "strike"
+    },
+    {
+      "level_learned": 40,
+      "technique": "rust_bomb"
+    },
+    {
+      "level_learned": 43,
+      "technique": "shuriken"
+    },
+    {
+      "level_learned": 46,
+      "technique": "wall_of_steel"
+    },
+    {
+      "level_learned": 61,
+      "technique": "amnesia"
+    },
+    {
+      "level_learned": 64,
+      "technique": "undertaker"
+    },
+    {
+      "level_learned": 70,
+      "technique": "shadow_blast"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "wrougon",
+      "evo_stage": "basic"
+    },
+    {
+      "mon_slug": "allagon",
+      "evo_stage": "stage1"
+    }
+  ],
+  "terrains": [
+    "ruins",
+    "underground"
+  ],
+  "tags": [
+    "steel",
+    "soldier",
+    "sharp",
+    "tail"
+  ],
+  "shape": "dragon",
+  "stage": "stage2",
+  "types": [
+    "metal"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 161,
+  "height": 230,
+  "weight": 214,
+  "catch_rate": 35.0,
+  "lower_catch_resistance": 0.9,
+  "upper_catch_resistance": 1.15
 }
-

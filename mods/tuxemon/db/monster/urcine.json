@@ -1,75 +1,82 @@
 {
-    "slug": "urcine",
-    "category": "temper",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "gnaw"
-        },
-        {
-            "level_learned": 1,
-            "technique": "boulder"
-        },
-        {
-            "level_learned": 4,
-            "technique": "shadow_boxing"
-        },
-        {
-            "level_learned": 7,
-            "technique": "invictus"
-        },
-        {
-            "level_learned": 13,
-            "technique": "spit_poison"
-        },
-        {
-            "level_learned": 16,
-            "technique": "splinter"
-        },
-        {
-            "level_learned": 19,
-            "technique": "pseudopod"
-        },
-        {
-            "level_learned": 25,
-            "technique": "phantasmal_force"
-        },
-        {
-            "level_learned": 28,
-            "technique": "poison_courtship"
-        },
-        {
-            "level_learned": 31,
-            "technique": "orbs"
-        },
-        {
-            "level_learned": 37,
-            "technique": "strangulation"
-        },
-        {
-            "level_learned": 40,
-            "technique": "steel_jaws"
-        },
-        {
-            "level_learned": 55,
-            "technique": "energy_beam"
-        }
-    ],
-    "evolutions": [],
-    "history": [],
-    "terrains": [],
-    "tags": ["fists", "fury", "bite", "soldier"],
-    "shape": "brute",
-    "stage": "standalone",
-    "types": [
-        "wood"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 216,
-    "height": 115,
-    "weight": 45,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.9,
-    "upper_catch_resistance": 1.15
+  "slug": "urcine",
+  "category": "temper",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "gnaw"
+    },
+    {
+      "level_learned": 1,
+      "technique": "boulder"
+    },
+    {
+      "level_learned": 4,
+      "technique": "shadow_boxing"
+    },
+    {
+      "level_learned": 7,
+      "technique": "invictus"
+    },
+    {
+      "level_learned": 13,
+      "technique": "spit_poison"
+    },
+    {
+      "level_learned": 16,
+      "technique": "splinter"
+    },
+    {
+      "level_learned": 19,
+      "technique": "pseudopod"
+    },
+    {
+      "level_learned": 25,
+      "technique": "phantasmal_force"
+    },
+    {
+      "level_learned": 28,
+      "technique": "poison_courtship"
+    },
+    {
+      "level_learned": 31,
+      "technique": "orbs"
+    },
+    {
+      "level_learned": 37,
+      "technique": "strangulation"
+    },
+    {
+      "level_learned": 40,
+      "technique": "steel_jaws"
+    },
+    {
+      "level_learned": 55,
+      "technique": "energy_beam"
+    }
+  ],
+  "evolutions": [],
+  "history": [],
+  "terrains": [],
+  "tags": [
+    "fists",
+    "fury",
+    "bite",
+    "soldier"
+  ],
+  "shape": "brute",
+  "stage": "standalone",
+  "types": [
+    "wood"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 216,
+  "height": 115,
+  "weight": 45,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.9,
+  "upper_catch_resistance": 1.15
 }
-

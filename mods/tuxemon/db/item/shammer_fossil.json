@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["shammer_fossil"],
+      "parameters": [
+        "shammer_fossil"
+      ],
       "operator": "is"
     }
   ],

@@ -1,67 +1,73 @@
 {
-    "slug": "tigrock",
-    "category": "ex_machina",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "wall_of_steel"
-        },
-        {
-            "level_learned": 1,
-            "technique": "blade"
-        },
-        {
-            "level_learned": 4,
-            "technique": "lineage"
-        },
-        {
-            "level_learned": 7,
-            "technique": "rust_bomb"
-        },
-        {
-            "level_learned": 13,
-            "technique": "terror"
-        },
-        {
-            "level_learned": 16,
-            "technique": "fume"
-        },
-        {
-            "level_learned": 31,
-            "technique": "strike"
-        },
-        {
-            "level_learned": 37,
-            "technique": "energy_field"
-        },
-        {
-            "level_learned": 40,
-            "technique": "shuriken"
-        },
-        {
-            "level_learned": 55,
-            "technique": "energy_beam"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "grimachin",
-            "evo_stage": "basic"
-        }
-    ],
-    "terrains": [],
-    "tags": ["machine", "gadgets"],
-    "shape": "hunter",
-    "stage": "stage1",
-    "types": [
-        "metal"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 94,
-    "height": 200,
-    "weight": 220,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.9,
-    "upper_catch_resistance": 1.15
+  "slug": "tigrock",
+  "category": "ex_machina",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "wall_of_steel"
+    },
+    {
+      "level_learned": 1,
+      "technique": "blade"
+    },
+    {
+      "level_learned": 4,
+      "technique": "lineage"
+    },
+    {
+      "level_learned": 7,
+      "technique": "rust_bomb"
+    },
+    {
+      "level_learned": 13,
+      "technique": "terror"
+    },
+    {
+      "level_learned": 16,
+      "technique": "fume"
+    },
+    {
+      "level_learned": 31,
+      "technique": "strike"
+    },
+    {
+      "level_learned": 37,
+      "technique": "energy_field"
+    },
+    {
+      "level_learned": 40,
+      "technique": "shuriken"
+    },
+    {
+      "level_learned": 55,
+      "technique": "energy_beam"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "grimachin",
+      "evo_stage": "basic"
+    }
+  ],
+  "terrains": [],
+  "tags": [
+    "machine",
+    "gadgets"
+  ],
+  "shape": "hunter",
+  "stage": "stage1",
+  "types": [
+    "metal"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 94,
+  "height": 200,
+  "weight": 220,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.9,
+  "upper_catch_resistance": 1.15
 }

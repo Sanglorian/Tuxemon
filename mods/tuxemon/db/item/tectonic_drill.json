@@ -6,7 +6,9 @@
     },
     {
       "type": "has_path",
-      "parameters": ["tectonic_drill"],
+      "parameters": [
+        "tectonic_drill"
+      ],
       "operator": "is"
     }
   ],

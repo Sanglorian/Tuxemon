@@ -2,7 +2,9 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["earth"],
+      "parameters": [
+        "earth"
+      ],
       "operator": "is"
     }
   ],

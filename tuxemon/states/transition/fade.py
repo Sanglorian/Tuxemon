@@ -55,7 +55,7 @@ class FadeTransitionBase(State):
         size = self.client.screen.get_size()
         self.transition_surface = Surface(size, SRCALPHA)
         self.transition_surface.fill(color)
-        self.task(self.client.pop_state, self.state_duration)
+        self.task(self.client.pop_state, interval=self.state_duration)
         self.create_fade_animation()
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:

@@ -2,14 +2,18 @@
   "conditions": [
     {
       "type": "type",
-      "parameters": ["water"],
+      "parameters": [
+        "water"
+      ],
       "operator": "is"
     }
   ],
   "effects": [
     {
       "type": "learn_mm",
-      "parameters": ["water"]
+      "parameters": [
+        "water"
+      ]
     }
   ],
   "slug": "mm_water",

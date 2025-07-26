@@ -14,7 +14,7 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 from pygame.transform import scale
 
-from tuxemon import prepare
+from tuxemon import prepare, tools
 from tuxemon.graphics import ColorLike
 from tuxemon.sprite import Sprite
 
@@ -33,6 +33,54 @@ def create_layout(
 
 
 layout = create_layout(prepare.SCALE)
+
+
+class TileLayout:
+    """
+    Extracts a grid of tiles from a border image and assigns logical names
+    like 'nw', 'n', 'ne', etc. Assumes a 3x3 layout by default.
+    """
+
+    def __init__(self, image: Surface, grid_size: int = 3) -> None:
+        if grid_size <= 0:
+            raise ValueError("Grid size must be a positive integer")
+        self.grid_size = grid_size
+        self.tiles: dict[str, Surface] = self._extract_tiles(image)
+
+    def _extract_tiles(self, image: Surface) -> dict[str, Surface]:
+        if image.get_size() == (0, 0):
+            raise ValueError("Image cannot be empty")
+
+        iw, ih = image.get_size()
+
+        if iw % self.grid_size != 0 or ih % self.grid_size != 0:
+            raise ValueError("Image dimensions must be divisible by grid size")
+
+        tw, th = iw // self.grid_size, ih // self.grid_size
+        layout_map = {
+            (0, 0): "nw",
+            (0, 1): "n",
+            (0, 2): "ne",
+            (1, 0): "w",
+            (1, 1): "c",
+            (1, 2): "e",
+            (2, 0): "sw",
+            (2, 1): "s",
+            (2, 2): "se",
+        }
+
+        tiles: dict[str, Surface] = {}
+        for (row, col), label in layout_map.items():
+            x, y = col * tw, row * th
+            rect = Rect(x, y, tw, th)
+            tiles[label] = image.subsurface(rect)
+
+        if len(tiles) != self.grid_size**2:
+            raise ValueError(
+                f"Expected {self.grid_size ** 2} tiles, got {len(tiles)}"
+            )
+
+        return tiles
 
 
 class GraphicBox(Sprite):
@@ -70,7 +118,7 @@ class GraphicBox(Sprite):
         self._background = background
         self._color = color
         self._fill_tiles = fill_tiles
-        self._tiles: list[Surface] = []
+        self._tiles: dict[str, Surface] = {}
         self._tile_size = 0, 0
 
         if border:
@@ -95,17 +143,15 @@ class GraphicBox(Sprite):
     def _set_border(self, image: Surface) -> None:
         """
         Sets the border image and extracts the individual tiles.
+        The border graphic must contain 9 tiles laid out in a 3x3 grid.
 
         Parameters:
             image: The border image.
         """
-        iw, ih = image.get_size()
-        tw, th = iw // self.TILE_GRID_SIZE, ih // self.TILE_GRID_SIZE
-        self._tile_size = tw, th
-        self._tiles = [
-            image.subsurface((x, y, tw, th))
-            for x, y in product(range(0, iw, tw), range(0, ih, th))
-        ]
+        layout = TileLayout(image, self.TILE_GRID_SIZE)
+        self._tiles = layout.tiles
+        self._tile_size = next(iter(self._tiles.values())).get_size()
+        self._needs_update = True
 
     def update_image(self) -> None:
         """
@@ -139,51 +185,44 @@ class GraphicBox(Sprite):
 
     def _draw_tiled_fill(self, surface: Surface, inner: Rect) -> None:
         tw, th = self._tile_size
+        center_tile = self._tiles["c"]
         for x in range(inner.left, inner.right, tw):
             for y in range(inner.top, inner.bottom, th):
-                surface.blit(self._tiles[4], (x, y))
+                surface.blit(center_tile, (x, y))
 
     def _draw_border(self, surface: Surface, rect: Rect, inner: Rect) -> None:
-        (
-            tile_nw,
-            tile_w,
-            tile_sw,
-            tile_n,
-            tile_c,
-            tile_s,
-            tile_ne,
-            tile_e,
-            tile_se,
-        ) = self._tiles
+        """
+        Draws the tiled border around the inner rectangle.
+        """
         left, top = rect.topleft
         tw, th = self._tile_size
         surface_blit = surface.blit  # cache the blit method
 
-        # Draw top and bottom tiles
+        # Draw top and bottom border tiles
         for x in range(inner.left, inner.right, tw):
             area = (
                 (0, 0, tw, th)
                 if x + tw < inner.right
                 else (0, 0, tw - (x + tw - inner.right), th)
             )
-            surface_blit(tile_n, (x, top), area)
-            surface_blit(tile_s, (x, inner.bottom), area)
+            surface_blit(self._tiles["n"], (x, top), area)
+            surface_blit(self._tiles["s"], (x, inner.bottom), area)
 
-        # Draw left and right tiles
+        # Draw left and right border tiles
         for y in range(inner.top, inner.bottom, th):
             area = (
                 (0, 0, tw, th)
                 if y + th < inner.bottom
                 else (0, 0, tw, th - (y + th - inner.bottom))
             )
-            surface_blit(tile_w, (left, y), area)
-            surface_blit(tile_e, (inner.right, y), area)
+            surface_blit(self._tiles["w"], (left, y), area)
+            surface_blit(self._tiles["e"], (inner.right, y), area)
 
-        # Draw corners
-        surface_blit(tile_nw, (left, top))
-        surface_blit(tile_sw, (left, inner.bottom))
-        surface_blit(tile_ne, (inner.right, top))
-        surface_blit(tile_se, (inner.right, inner.bottom))
+        # Draw corner tiles
+        surface_blit(self._tiles["nw"], (left, top))
+        surface_blit(self._tiles["sw"], (left, inner.bottom))
+        surface_blit(self._tiles["ne"], (inner.right, top))
+        surface_blit(self._tiles["se"], (inner.right, inner.bottom))
 
 
 def guest_font_height(font: Font) -> int:
@@ -197,24 +236,6 @@ def guess_rendered_text_size(
     return font.size(text)
 
 
-def shadow_text(
-    font: Font,
-    fg: ColorLike,
-    bg: ColorLike,
-    text: str,
-) -> Surface:
-    top = font.render(text, True, fg)
-    shadow = font.render(text, True, bg)
-
-    offset = layout((0.5, 0.5))
-    size = [int(math.ceil(a + b)) for a, b in zip(offset, top.get_size())]
-    image = Surface(size, SRCALPHA)
-
-    image.blit(shadow, tuple(offset))
-    image.blit(top, (0, 0))
-    return image
-
-
 def iter_render_text(
     text: str,
     font: Font,
@@ -223,6 +244,7 @@ def iter_render_text(
     rect: Rect,
     alignment: str = "left",
     vertical_alignment: str = "top",
+    text_renderer: Optional[TextRenderer] = None,
 ) -> Generator[tuple[Rect, Surface], None, None]:
     line_height = guest_font_height(font)
 
@@ -237,6 +259,13 @@ def iter_render_text(
         vertical_offset = rect.height - total_text_height
     else:
         vertical_offset = 0
+
+    if text_renderer is None:
+        text_renderer = TextRenderer(
+            font_color=fg,
+            font_shadow_color=bg,
+            font=font,
+        )
 
     for line_index, line in enumerate(lines):
         # Adjust `top` based on the vertical alignment
@@ -255,7 +284,7 @@ def iter_render_text(
                 # No need to blit a white sprite onto a white background
                 continue
             dirty_length = font.size(scrap[:-1])[0]
-            surface = shadow_text(font, fg, bg, scrap[-1])
+            surface = text_renderer.shadow_text(scrap[-1], bg=bg, fg=fg)
             update_rect = surface.get_rect(
                 top=top,
                 left=rect.left + dirty_length + offset,
@@ -330,3 +359,147 @@ def blit_alpha(
     temp.blit(source, (0, 0))
     temp.set_alpha(opacity)
     target.blit(temp, location)
+
+
+def layout_func(scale: float) -> Callable[[Sequence[float]], Sequence[float]]:
+    def func(area: Sequence[float]) -> Sequence[float]:
+        return [scale * i for i in area]
+
+    return func
+
+
+layout = layout_func(prepare.SCALE)
+
+
+class TextRenderer:
+    def __init__(
+        self,
+        font_color: ColorLike,
+        font_shadow_color: Optional[ColorLike] = None,
+        font_filename: Optional[str] = None,
+        font: Optional[Font] = None,
+    ) -> None:
+        self.font_color = font_color
+        if font_shadow_color is None:
+            font_shadow_color = prepare.FONT_SHADOW_COLOR
+        self.font_shadow_color = font_shadow_color
+        self.font = font or Font(font_filename, tools.scale(5))
+
+    def shadow_text(
+        self,
+        text: str,
+        bg: Optional[ColorLike] = None,
+        fg: Optional[ColorLike] = None,
+        offset: tuple[float, float] = (0.5, 0.5),
+    ) -> Surface:
+        """
+        Render shadowed text using the current font and shadow color settings.
+
+        Parameters:
+            text: The text string to render.
+            bg: Shadow color. If None, uses the default font shadow color.
+            fg: Foreground font color. If None, uses the default font color.
+            offset: Tuple representing the x and y shadow offset in pixels.
+
+        Returns:
+            A Surface containing the rendered text with its shadow applied.
+        """
+        if not fg:
+            fg = self.font_color
+        if not bg:
+            bg = self.font_shadow_color
+        font_color = self.font.render(text, True, fg)
+        shadow_color = self.font.render(text, True, bg)
+        _offset = layout(offset)
+        size = [
+            int(math.ceil(a + b))
+            for a, b in zip(_offset, font_color.get_size())
+        ]
+        image = Surface(size, SRCALPHA)
+        image.blit(shadow_color, tuple(_offset))
+        image.blit(font_color, (0, 0))
+        return image
+
+
+class MultilineTextRenderer:
+    def __init__(
+        self,
+        text_renderer: TextRenderer,
+        line_spacing: int = 0,
+    ) -> None:
+        self.text_renderer = text_renderer
+        self.line_spacing = line_spacing
+
+    def render_lines(
+        self, text: str, max_width: int
+    ) -> list[tuple[Surface, int]]:
+        if not text:
+            return []
+
+        lines_to_render = []
+        current_line_words: list[str] = []
+
+        paragraphs = text.split("\\n")
+
+        for paragraph in paragraphs:
+            words = paragraph.split(" ")
+            current_line_words = []
+
+            for word in words:
+                test_line = " ".join(current_line_words + [word])
+                text_width, _ = self.text_renderer.font.size(test_line)
+
+                if text_width > max_width and current_line_words:
+                    lines_to_render.append(
+                        (
+                            " ".join(current_line_words),
+                            self.text_renderer.shadow_text(
+                                " ".join(current_line_words)
+                            ).get_height(),
+                        )
+                    )
+                    current_line_words = [word]
+                else:
+                    current_line_words.append(word)
+
+            if current_line_words:
+                lines_to_render.append(
+                    (
+                        " ".join(current_line_words),
+                        self.text_renderer.shadow_text(
+                            " ".join(current_line_words)
+                        ).get_height(),
+                    )
+                )
+
+            if paragraph == "" and len(paragraphs) > 1:
+                if lines_to_render and lines_to_render[-1][0] != "":
+                    lines_to_render.append(("", 0))
+
+        rendered_surfaces = []
+        for i, (line_text, height) in enumerate(lines_to_render):
+            if line_text == "":
+                empty_line_surface = self.text_renderer.shadow_text(
+                    " ",
+                    fg=self.text_renderer.font_color,
+                    bg=self.text_renderer.font_shadow_color,
+                )
+                rendered_surfaces.append(
+                    (empty_line_surface, empty_line_surface.get_height())
+                )
+            else:
+                rendered_surfaces.append(
+                    (self.text_renderer.shadow_text(line_text), height)
+                )
+
+            # Add extra space between lines
+            if i < len(lines_to_render) - 1:
+                if self.line_spacing > 0:
+                    spacing_surface = Surface(
+                        (max_width, self.line_spacing), SRCALPHA
+                    )
+                    rendered_surfaces.append(
+                        (spacing_surface, self.line_spacing)
+                    )
+
+        return rendered_surfaces

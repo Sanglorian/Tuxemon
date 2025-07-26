@@ -1,70 +1,78 @@
 {
-    "slug": "galnec",
-    "category": "dry_desert",
-    "moveset": [
-        {
-            "level_learned": 1,
-            "technique": "rock"
-        },
-        {
-            "level_learned": 1,
-            "technique": "ram"
-        },
-        {
-            "level_learned": 4,
-            "technique": "mudslide"
-        },
-        {
-            "level_learned": 7,
-            "technique": "stampede"
-        },
-        {
-            "level_learned": 13,
-            "technique": "evasion"
-        },
-        {
-            "level_learned": 16,
-            "technique": "lantern"
-        },
-        {
-            "level_learned": 19,
-            "technique": "mending"
-        },
-        {
-            "level_learned": 25,
-            "technique": "breath"
-        },
-        {
-            "level_learned": 28,
-            "technique": "sylvan"
-        },
-        {
-            "level_learned": 31,
-            "technique": "fledgling"
-        },
-        {
-            "level_learned": 37,
-            "technique": "tip"
-        },
-        {
-            "level_learned": 40,
-            "technique": "earthquake"
-        }
-    ],
-    "evolutions": [],
-    "history": [],
-    "terrains": ["desert"],
-    "tags": ["ground", "rock"],
-    "shape": "hunter",
-    "stage": "standalone",
-    "types": [
-        "earth"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 168,
-    "height": 40,
-    "weight": 6,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+  "slug": "galnec",
+  "category": "dry_desert",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "rock"
+    },
+    {
+      "level_learned": 1,
+      "technique": "ram"
+    },
+    {
+      "level_learned": 4,
+      "technique": "mudslide"
+    },
+    {
+      "level_learned": 7,
+      "technique": "stampede"
+    },
+    {
+      "level_learned": 13,
+      "technique": "evasion"
+    },
+    {
+      "level_learned": 16,
+      "technique": "lantern"
+    },
+    {
+      "level_learned": 19,
+      "technique": "mending"
+    },
+    {
+      "level_learned": 25,
+      "technique": "breath"
+    },
+    {
+      "level_learned": 28,
+      "technique": "sylvan"
+    },
+    {
+      "level_learned": 31,
+      "technique": "fledgling"
+    },
+    {
+      "level_learned": 37,
+      "technique": "tip"
+    },
+    {
+      "level_learned": 40,
+      "technique": "earthquake"
+    }
+  ],
+  "evolutions": [],
+  "history": [],
+  "terrains": [
+    "desert"
+  ],
+  "tags": [
+    "ground",
+    "rock"
+  ],
+  "shape": "hunter",
+  "stage": "standalone",
+  "types": [
+    "earth"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 168,
+  "height": 40,
+  "weight": 6,
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

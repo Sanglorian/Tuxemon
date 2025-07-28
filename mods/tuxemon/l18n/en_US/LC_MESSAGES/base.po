@@ -1517,7 +1517,7 @@ msgstr ""
 "{npc} is disappointed."
 
 msgid "combat_cannot_run_away"
-msgstr "You can't run away!"
+msgstr "Your run attempt failed this time."
 
 msgid "combat_player_run"
 msgstr "You ran away!"

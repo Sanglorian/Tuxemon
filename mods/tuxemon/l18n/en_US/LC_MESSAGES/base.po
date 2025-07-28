@@ -3962,7 +3962,7 @@ msgid "menu_alphabet"
 msgstr "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890.-!"
 
 msgid "dont_care"
-msgstr "DON'T CARE"
+msgstr "RANDOM"
 
 # Monster Menu notifications
 msgid "monster_menu_info"

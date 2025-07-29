@@ -11663,6 +11663,9 @@ msgstr ""
 " They're most effective when used on injured and low-level tuxemon. Select them during battle from your Item menu. \n"
 " Thank you for listening. Here's five Tuxeballs as a free sample. "
 
+msgid "spyder_cotton_tuxepediawelcome"
+msgstr "Good to see you. You're just in time."
+
 msgid "spyder_cotton_tuxepediaahem"
 msgstr "Ahem."
 

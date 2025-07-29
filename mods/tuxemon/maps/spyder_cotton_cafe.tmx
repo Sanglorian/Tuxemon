@@ -11,6 +11,7 @@
  <tileset firstgid="1551" source="../gfx/tilesets/core_outdoor.tsx"/>
  <tileset firstgid="4326" source="../gfx/tilesets/core_indoor_floors.tsx"/>
  <tileset firstgid="8190" source="../gfx/tilesets/core_indoor_walls.tsx"/>
+ <tileset firstgid="12054" source="../../../../../../Tuxemon/mods/tuxemon/gfx/tilesets/core_set pieces.tsx"/>
  <layer id="1" name="Tile Layer 1" width="12" height="12">
   <data encoding="base64" compression="zlib">
    eJzbr8zAsJ8E/JZELK1CGhYRHMVDCQMArcop6Q==
@@ -18,7 +19,7 @@
  </layer>
  <layer id="2" name="Tile Layer 5" width="12" height="12">
   <data encoding="base64" compression="zlib">
-   eJxjYCAduLMQz/4MxF+A+DYQ3wHiPGbc5hryMjAIMTIwCAPxLyD/NxD34lEfxosptgaPehA4wQzBJ4H4FBCfRlN/gQmCYcAfjUYGl4DqNgDpjUB8kQmLAjTzQOrPg8RwqCfGPHT1+MyjNigF2lEGxOVQu3YAww4AxhUf2g==
+   eJxjYCAduLMQz/4MxF+gYu/1GRjymHGba8jLwCDEyMAgzAjh8xkwMPTiUR/Giym2Bo96EDjBDMEngfgUEJ9GU3+BCYJhwB+NRgaXgOo2AOmNQHyRCYsCNPNA6s+DxHCoJ8Y8dPX4zKM2KAXaUQbE5VC7dgDDDgDWNh2K
   </data>
  </layer>
  <layer id="3" name="Tile Layer 4" width="12" height="12">

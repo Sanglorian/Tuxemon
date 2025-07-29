@@ -31,13 +31,13 @@ msgid "potion"
 msgstr "Potion"
 
 msgid "potion_description"
-msgstr "Heals a monster by 20 HP."
+msgstr "Heals a monster by 50 HP."
 
 msgid "super_potion"
 msgstr "Super Potion"
 
 msgid "super_potion_description"
-msgstr "Heals a monster by 50 HP."
+msgstr "Heals a monster by 100 HP."
 
 msgid "imperial_potion"
 msgstr "Imperial Potion"

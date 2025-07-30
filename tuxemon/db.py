@@ -267,6 +267,7 @@ class WorldMenuEntry(BaseModel):
     position: int
     label_key: str
     state: str
+    enabled: bool = True
 
 
 class ItemModel(BaseModel, BaseLookupModel):

@@ -42,8 +42,7 @@ from tuxemon.surfanim import FlipAxes
 logger = logging.getLogger(__name__)
 
 # Load the default translator for data validation
-T.collect_languages(False)
-T.load_translator()
+T.initialize_translations()
 
 
 class Direction(str, Enum):
@@ -268,6 +267,7 @@ class WorldMenuEntry(BaseModel):
     position: int
     label_key: str
     state: str
+    enabled: bool = True
 
 
 class ItemModel(BaseModel, BaseLookupModel):

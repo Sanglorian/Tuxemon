@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="git" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="9" nextobjectid="285">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="9" nextobjectid="285">
  <properties>
   <property name="east" value="brideswood"/>
   <property name="edges" value="clamped"/>
@@ -295,8 +295,9 @@
     <property name="act20" value="create_npc spyder_billie,13,14"/>
     <property name="act30" value="pathfind spyder_billie,25,13"/>
     <property name="act40" value="wait 1.0"/>
-    <property name="act50" value="pathfind_to_char player,spyder_billie"/>
+    <property name="act50" value="pathfind_to_char player,spyder_billie,down"/>
     <property name="act51" value="char_face spyder_billie,player"/>
+    <property name="act52" value="char_face player,spyder_billie"/>
     <property name="act60" value="translated_dialog spyder_papertown_firstfight"/>
     <property name="act61" value="add_monster billie_choice,5,spyder_billie,5,10"/>
     <property name="act62" value="set_monster_attribute add_monster,gender,male"/>

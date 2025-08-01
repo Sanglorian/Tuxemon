@@ -56,10 +56,11 @@
     <property name="cond1" value="not char_exists spyder_cottontown_hacker"/>
    </properties>
   </object>
-  <object id="17" name="Create Barmaid" type="event" x="0" y="64" width="16" height="16">
+  <object id="17" name="Create Barmaid - hidden away" type="event" x="0" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_cottontown_barmaid,0,4"/>
+    <property name="act1" value="create_npc spyder_cottontown_barmaid,2,3"/>
     <property name="cond1" value="not char_exists spyder_cottontown_barmaid"/>
+    <property name="cond2" value="not variable_set visitedcottoncafe:yes"/>
    </properties>
   </object>
   <object id="18" name="Talk Hacker" type="event" x="128" y="80" width="16" height="16">
@@ -244,9 +245,7 @@
     <property name="act1" value="char_face spyder_cottoncafe_wilford,left"/>
     <property name="act2" value="wait 1.5"/>
     <property name="act20" value="char_face spyder_cottoncafe_juliana,down"/>
-    <property name="act30" value="char_face spyder_cottontown_barmaid,up"/>
     <property name="act40" value="wait 1.5"/>
-    <property name="act50" value="char_face spyder_cottontown_barmaid,down"/>
     <property name="act60" value="char_face spyder_cottoncafe_juliana,right"/>
     <property name="act65" value="wait 1.5"/>
     <property name="act66" value="char_face spyder_cottoncafe_wilford,up"/>
@@ -259,6 +258,13 @@
     <property name="act2" value="translated_dialog_choice yes:no,cafebattle"/>
     <property name="behav1" value="talk spyder_cottoncafe_cayden"/>
     <property name="cond1" value="not variable_set foughtincafe:yes"/>
+   </properties>
+  </object>
+  <object id="44" name="Create Barmaid - accessible" type="event" x="16" y="64" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_cottontown_barmaid,0,4"/>
+    <property name="cond1" value="not char_exists spyder_cottontown_barmaid"/>
+    <property name="cond2" value="is variable_set visitedcottoncafe:yes"/>
    </properties>
   </object>
  </objectgroup>

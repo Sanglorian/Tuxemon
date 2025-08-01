@@ -4042,8 +4042,21 @@ msgstr ""
 msgid "uninstall_app"
 msgstr "Unable to uninstall the app."
 
+# Missions
 msgid "mission_deletion"
 msgstr "Do you want to delete this mission?"
+
+msgid "mission_next"
+msgstr "Next mission"
+
+msgid "mission_repeatable"
+msgstr "This mission is repeatable."
+
+msgid "mission_delete"
+msgstr "Delete mission"
+
+msgid "mission_progress"
+msgstr "Progress"
 
 # Player State
 msgid "tuxepedia_progress"

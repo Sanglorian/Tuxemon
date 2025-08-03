@@ -83,12 +83,11 @@ class TestRewardSystem(unittest.TestCase):
         self.assertEqual(money, expected_money)
 
     def test_calculate_experience_default_method(self):
-        hits, _ = self.damage_tracker.count_hits(self.loser, self.winner)
         experience = calculate_experience(
             self.loser, self.winner, self.damage_tracker
         )
         expected_experience = int(
-            (self.loser.total_experience // (self.loser.level * hits))
+            (self.loser.total_experience // (self.loser.level))
             * self.loser.experience_modifier
         )
         self.assertEqual(experience[0], expected_experience)
@@ -117,7 +116,6 @@ class TestRewardSystem(unittest.TestCase):
         total_exp = calculate_experience_base(
             self.loser.total_experience,
             self.loser.level,
-            self.damage_tracker.count_hits(self.loser, self.winner)[0],
             self.loser.experience_modifier,
         )
         participants = self.damage_tracker.get_attackers(self.loser)
@@ -130,11 +128,10 @@ class TestRewardSystem(unittest.TestCase):
         experience = calculate_experience_base(
             self.loser.total_experience,
             self.loser.level,
-            hits,
             self.loser.experience_modifier,
         )
         expected_experience = int(
-            (self.loser.total_experience // (self.loser.level * hits))
+            (self.loser.total_experience // (self.loser.level))
             * self.loser.experience_modifier
         )
         self.assertEqual(experience, expected_experience)

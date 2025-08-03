@@ -115,9 +115,9 @@ class RewardSystem:
                 # Grant experience and update moves
                 if winner.owner and winner.owner.isplayer:
                     levels = winner.give_experience(awarded_exp)
-                    rewards_data.moves = winner.moves.update_moves(
-                        winner.level, levels
-                    )
+                    new_moves = winner.moves.update_moves(winner.level, levels)
+                    if new_moves:
+                        rewards_data.moves.extend(new_moves)
                     rewards_data.messages.append(
                         T.format(
                             "combat_gain_exp",
@@ -169,12 +169,13 @@ def calculate_experience(
         return exp, 0
 
     def equal_method() -> tuple[int, int]:
-        exp = calculate_experience_base(
+        total_exp = calculate_experience_base(
             loser.total_experience,
             loser.level,
             loser.experience_modifier,
-        ) * round(monster_hits / total_hits)
-        return exp, 0
+        )
+        proportional_exp = int(total_exp * (monster_hits / total_hits))
+        return proportional_exp, 0
 
     def feeder_method() -> tuple[int, int]:
         total_exp = calculate_experience_base(

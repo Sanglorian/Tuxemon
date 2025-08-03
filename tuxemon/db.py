@@ -1692,42 +1692,70 @@ class TemplateModel(BaseModel):
     )
 
 
-class ProgressModel(BaseModel):
-    game_variables: dict[str, Any] = Field(
-        ...,
-        description="Dictionary of game variables tracking the mission's progress",
+class MissionStepModel(BaseModel):
+    slug: str = Field(..., description="Unique identifier for the step")
+    order: int = Field(
+        default=0,
+        description="Progression order index used to sequence mission steps",
     )
-    completion_percentage: float = Field(
-        ..., ge=0.0, le=100.0, description="Percentage of mission completed"
+    description: str = Field(
+        ..., description="Describes what the step requires or represents"
     )
+    conditions: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Simple conditions on game_variables (all must be true)",
+    )
+    any_of: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="Alternative condition sets; step completes if any are satisfied",
+    )
+    all_of: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="Additional condition sets; all must be satisfied",
+    )
+    next_steps: list[str] = Field(
+        default_factory=list,
+        description="Slugs of next steps unlocked when this is completed",
+    )
+    optional: bool = Field(False, description="Whether the step is optional")
 
 
 class MissionModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "mission"
+
     slug: str = Field(..., description="Slug uniquely identifying the mission")
     description: str = Field(
         ..., description="Detailed description of the mission objectives"
     )
     prerequisites: Sequence[dict[str, Any]] = Field(
-        ...,
-        description="List of prerequisite missions and their game variables",
+        default_factory=list,
+        description="List of game variables required to unlock the mission",
     )
     connected_missions: Sequence[dict[str, Any]] = Field(
-        ...,
-        description="List of missions accessible once this mission is complete",
-    )
-    progress: Sequence[ProgressModel] = Field(
-        ..., description="List of progress tracking entries for the mission"
+        default_factory=list,
+        description="List of missions that this one unlocks",
     )
     required_items: Sequence[str] = Field(
-        ..., description="List of items required to start the mission"
+        default_factory=list, description="Items required to begin the mission"
     )
     required_monsters: Sequence[str] = Field(
-        ..., description="List of monsters required to start the mission"
+        default_factory=list,
+        description="Monsters required to begin the mission",
     )
     required_missions: Sequence[str] = Field(
-        ...,
-        description="List of mission slugs that must be completed before this mission",
+        default_factory=list,
+        description="Slugs of missions that must be completed before this one",
+    )
+    steps: dict[str, MissionStepModel] = Field(
+        default_factory=dict,
+        description="Dictionary of steps defining structure and branching logic",
+    )
+    repeatable: bool = Field(
+        False, description="Whether the mission can be repeated"
+    )
+    failure_conditions: Sequence[dict[str, Any]] = Field(
+        default_factory=list,
+        description="List of game variables that, if met, cause the mission to fail",
     )
 
     @classmethod

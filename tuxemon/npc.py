@@ -19,7 +19,7 @@ from tuxemon.locale import T
 from tuxemon.map import dirs2, get_direction, proj
 from tuxemon.map_view import SpriteController
 from tuxemon.math import Vector2
-from tuxemon.mission import MissionController
+from tuxemon.mission import MissionController, MissionManager
 from tuxemon.money import MoneyController
 from tuxemon.monster import Monster, decode_monsters, encode_monsters
 from tuxemon.movement import get_tile_moverate
@@ -111,7 +111,7 @@ class NPC(Entity[NPCState]):
         self.money_controller = MoneyController(self)
         # list of ways player can interact with the Npc
         self.interactions: Sequence[str] = []
-        self.mission_controller = MissionController(self)
+        self.mission_controller = MissionController(self, MissionManager())
         self.economy: Optional[Economy] = None
         self.shop_inventory: Optional[ShopInventory] = None
         self.teleport_faint = TeleportFaint()

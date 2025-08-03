@@ -13,7 +13,7 @@ from tuxemon.db import MonsterModel, db
 from tuxemon.graphics import load_sprite
 from tuxemon.locale import T
 from tuxemon.platform.const import buttons
-from tuxemon.state import State
+from tuxemon.state.state import State
 
 if TYPE_CHECKING:
     from tuxemon.platform.events import PlayerInput

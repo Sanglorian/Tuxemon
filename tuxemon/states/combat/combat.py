@@ -66,7 +66,7 @@ from tuxemon.menu.interface import MenuItem
 from tuxemon.monster import Monster
 from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
-from tuxemon.state import State
+from tuxemon.state.state import State
 from tuxemon.states.monster import MonsterMenuState
 from tuxemon.status.status import Status
 from tuxemon.technique.technique import Technique

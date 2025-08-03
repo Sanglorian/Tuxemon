@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from tuxemon.item.item import Item
     from tuxemon.session import Session
     from tuxemon.sprite import Sprite
-    from tuxemon.state import State
+    from tuxemon.state.state import State
     from tuxemon.states.choice.choice_state import MenuStateConfig
     from tuxemon.technique.technique import Technique
     from tuxemon.ui.menu_options import MenuOptions

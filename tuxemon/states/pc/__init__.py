@@ -12,7 +12,7 @@ from tuxemon import prepare
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.state import State
+from tuxemon.state.state import State
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:

@@ -2433,8 +2433,8 @@ msgstr "Energy Field"
 
 msgid "evasion_description"
 msgstr ""
-"The user becomes a blur of motion, making it difficult in the next round to "
-"miss."
+"The user becomes a blur of motion, making it difficult to hit with ranged "
+"attacks."
 
 msgid "evasion"
 msgstr "Evasion"
@@ -2755,9 +2755,7 @@ msgid "kraken"
 msgstr "Kraken"
 
 msgid "lantern_description"
-msgstr ""
-"The user creates a bright light that illuminates the battlefield, boosts its"
-" accuracy and damages the opponent."
+msgstr "The user damages the target with bright light."
 
 msgid "lantern"
 msgstr "Lantern"
@@ -3379,7 +3377,7 @@ msgid "staff_smash"
 msgstr "Staff Smash"
 
 msgid "stampede_description"
-msgstr "A powerful, overwhelming charge that inflicts heavy physical damage."
+msgstr "A powerful charge that puts the user in motion."
 
 msgid "stampede"
 msgstr "Stampede"

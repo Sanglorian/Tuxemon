@@ -822,6 +822,7 @@ class Range(str, Enum):
 
 
 class TechCategory(str, Enum):
+    special = "special"
     animal = "animal"
     simple = "simple"
     basic = "basic"

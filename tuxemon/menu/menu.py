@@ -31,7 +31,7 @@ from tuxemon.sprite import (
     SpriteGroup,
     VisualSpriteList,
 )
-from tuxemon.state import State
+from tuxemon.state.state import State
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text import TextArea
 from tuxemon.ui.text_renderer import TextRenderer

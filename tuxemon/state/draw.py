@@ -16,7 +16,8 @@ from tuxemon.ui.text_renderer import TextRenderer
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
     from tuxemon.event import MapCondition
-    from tuxemon.state import State, StateManager
+    from tuxemon.state.manager import StateManager
+    from tuxemon.state.state import State
 
 
 class Renderer:

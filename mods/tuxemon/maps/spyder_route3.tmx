@@ -210,7 +210,7 @@
     <property name="act06" value="start_battle player,spyder_route3_zoolander"/>
     <property name="act07" value="translated_dialog spyder_route3_zoolander2"/>
     <property name="act08" value="add_item sledgehammer"/>
-    <property name="act09" value="translated_dialog sledgehammer,,center,center,middle"/>
+    <property name="act09" value="translated_dialog sledgehammer,,center,center,center"/>
     <property name="act10" value="set_variable zoolanderdefeat:yes"/>
     <property name="behav1" value="talk spyder_route3_zoolander"/>
     <property name="cond1" value="not variable_set zoolanderdefeat:yes"/>
@@ -433,7 +433,7 @@
     <property name="act08" value="start_battle player,spyder_route3_wanda"/>
     <property name="act09" value="translated_dialog spyder_route3_wanda2"/>
     <property name="act10" value="add_item fishing_rod"/>
-    <property name="act11" value="translated_dialog fishing_rod,,center,center,middle"/>
+    <property name="act11" value="translated_dialog fishing_rod,,center,center,center"/>
     <property name="act12" value="set_variable route3wanda:yes"/>
     <property name="behav1" value="talk spyder_route3_wanda"/>
     <property name="cond1" value="not variable_set route3wanda:yes"/>
@@ -595,7 +595,7 @@
     <property name="act11" value="start_battle player,spyder_route3_wanda"/>
     <property name="act12" value="translated_dialog spyder_route3_wanda2"/>
     <property name="act13" value="add_item fishing_rod"/>
-    <property name="act14" value="translated_dialog fishing_rod,,center,center,middle"/>
+    <property name="act14" value="translated_dialog fishing_rod,,center,center,center"/>
     <property name="act15" value="set_variable route3wanda:yes"/>
     <property name="cond1" value="not variable_set route3wanda:yes"/>
     <property name="cond2" value="is char_at player"/>

@@ -5,7 +5,8 @@ import unittest
 import pygame
 from pygame.surface import Surface
 
-from tuxemon.ui.draw import MultilineTextRenderer, TextRenderer
+from tuxemon.ui.text import MultilineTextRenderer
+from tuxemon.ui.text_renderer import TextRenderer
 
 
 class TestMultilineTextRenderer(unittest.TestCase):

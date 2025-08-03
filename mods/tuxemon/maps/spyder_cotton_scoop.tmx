@@ -81,7 +81,7 @@
     <property name="act14" value="add_item tuxeball"/>
     <property name="act2" value="pathfind spyder_shopkeeper,1,6"/>
     <property name="act3" value="set_variable heardcapture:null"/>
-    <property name="act30" value="translated_dialog tuxeball,,center,center,middle"/>
+    <property name="act30" value="translated_dialog tuxeball,,center,center,center"/>
     <property name="cond1" value="is variable_set heardcapture:yes"/>
    </properties>
   </object>
@@ -98,7 +98,7 @@
     <property name="act25" value="add_item tuxeball"/>
     <property name="act26" value="add_item tuxeball"/>
     <property name="act27" value="add_item tuxeball"/>
-    <property name="act28" value="translated_dialog tuxeball,,center,center,middle"/>
+    <property name="act28" value="translated_dialog tuxeball,,center,center,center"/>
     <property name="act30" value="set_variable heardcapture:null"/>
     <property name="cond1" value="is variable_set heardcapture:no"/>
    </properties>

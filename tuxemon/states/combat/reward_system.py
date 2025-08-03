@@ -164,7 +164,6 @@ def calculate_experience(
         exp = calculate_experience_base(
             loser.total_experience,
             loser.level,
-            total_hits,
             loser.experience_modifier,
         )
         return exp, 0
@@ -173,7 +172,6 @@ def calculate_experience(
         exp = calculate_experience_base(
             loser.total_experience,
             loser.level,
-            total_hits,
             loser.experience_modifier,
         ) * round(monster_hits / total_hits)
         return exp, 0
@@ -182,7 +180,6 @@ def calculate_experience(
         total_exp = calculate_experience_base(
             loser.total_experience,
             loser.level,
-            total_hits,
             loser.experience_modifier,
         )
 
@@ -204,7 +201,6 @@ def calculate_experience(
         total_exp = calculate_experience_base(
             loser.total_experience,
             loser.level,
-            total_hits,
             loser.experience_modifier,
         )
 
@@ -245,9 +241,9 @@ def calculate_experience(
 
 
 def calculate_experience_base(
-    total_experience: float, level: int, hits: int, experience_modifier: float
+    total_experience: float, level: int, experience_modifier: float
 ) -> int:
     """
-    Base formula for experience calculation.
+    Base formula for experience calculation without hits.
     """
-    return int((total_experience // (level * hits)) * experience_modifier)
+    return int((total_experience // level) * experience_modifier)

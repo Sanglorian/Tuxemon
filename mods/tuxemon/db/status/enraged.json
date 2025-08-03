@@ -5,7 +5,7 @@
   "effects": [
     {
       "type": "statchange"
-    },
+    }
   ],
   "flip_axes": "",
   "icon": "gfx/ui/icons/status/icon_enraged.png",

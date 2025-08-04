@@ -344,6 +344,7 @@ class CombatState(CombatAnimations):
         elif phase == CombatPhase.DECISION:
             self.update_icons_for_monsters()
             self.animate_update_party_hud()
+            self.check_decisions()
             if not self._decision_queue:
                 self.initialize_hit_chances()
                 self.process_player_decisions()
@@ -671,6 +672,21 @@ class CombatState(CombatAnimations):
                     monster.moves.recharge_moves()
                     self.ai_manager.process_ai_turn(monster, player)
 
+    def check_decisions(self) -> None:
+        for player in list(self.active_players):
+            monsters = self.field_monsters.get_monsters(player)
+            for monster in monsters:
+                held_item = monster.held_item.get_item()
+                if held_item:
+                    held_item.execute_item_action(
+                        self.session, self, player, monster
+                    )
+                status = monster.status.get_current_status()
+                if status:
+                    status.execute_status_action(
+                        self.session, self, monster, EffectPhase.ON_DECISION
+                    )
+
     def apply_statuses(self) -> None:
         """
         Applies and updates status effects for all active monsters.
@@ -809,7 +825,7 @@ class CombatState(CombatAnimations):
                 message += "\n" + template
             if result_status.statuses:
                 status = random.choice(result_status.statuses)
-                user.status.apply_status(self.session, status)
+                user.status.apply_status(self.session, status, user)
 
         if result_tech.success and method.use_success:
             template = getattr(method, "use_success")

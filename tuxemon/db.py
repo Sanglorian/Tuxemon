@@ -1,16 +1,28 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import difflib
 import json
 import logging
-import os
-import sys
+from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from enum import Enum
-from typing import Annotated, Any, Literal, Optional, Union, overload
+from importlib import import_module
+from pathlib import Path
+from typing import (
+    Annotated,
+    Any,
+    ClassVar,
+    Literal,
+    Optional,
+    TypeVar,
+    Union,
+    cast,
+)
 
+import yaml
 from PIL import Image
 from pydantic import (
     BaseModel,
@@ -22,16 +34,15 @@ from pydantic import (
 )
 
 from tuxemon import prepare
-from tuxemon.constants import paths
+from tuxemon.constants.paths import mods_folder
+from tuxemon.formula import config_monster
 from tuxemon.locale import T
+from tuxemon.surfanim import FlipAxes
 
 logger = logging.getLogger(__name__)
 
 # Load the default translator for data validation
-T.collect_languages(False)
-T.load_translator()
-
-SurfaceKeys = prepare.SURFACE_KEYS
+T.initialize_translations()
 
 
 class Direction(str, Enum):
@@ -120,6 +131,8 @@ class ItemCategory(str, Enum):
     destroy = "destroy"
     capture = "capture"
     stats = "stats"
+    food = "food"
+    doll = "doll"
 
 
 class OutputBattle(str, Enum):
@@ -128,37 +141,10 @@ class OutputBattle(str, Enum):
     draw = "draw"
 
 
-class MonsterShape(str, Enum):
-    default = "default"
-    blob = "blob"
-    brute = "brute"
-    dragon = "dragon"
-    flier = "flier"
-    grub = "grub"
-    humanoid = "humanoid"
-    hunter = "hunter"
-    landrace = "landrace"
-    leviathan = "leviathan"
-    piscine = "piscine"
-    polliwog = "polliwog"
-    serpent = "serpent"
-    sprite = "sprite"
-    varmint = "varmint"
-
-
 class SeenStatus(str, Enum):
     unseen = "unseen"
     seen = "seen"
     caught = "caught"
-
-
-class MapType(str, Enum):
-    notype = "notype"
-    town = "town"
-    route = "route"
-    clinic = "clinic"
-    shop = "shop"
-    dungeon = "dungeon"
 
 
 class StatType(str, Enum):
@@ -181,13 +167,7 @@ class MissionStatus(str, Enum):
     pending = "pending"
     completed = "completed"
     failed = "failed"
-
-
-class EntityFacing(str, Enum):
-    front = "front"
-    back = "back"
-    left = "left"
-    right = "right"
+    removed = "removed"
 
 
 class MusicStatus(str, Enum):
@@ -205,6 +185,41 @@ class Comparison(str, Enum):
     not_equals = "not_equals"
 
 
+class TargetType(str, Enum):
+    enemy_monster = "enemy_monster"
+    own_monster = "own_monster"
+    enemy_team = "enemy_team"
+    own_team = "own_team"
+    enemy_trainer = "enemy_trainer"
+    own_trainer = "own_trainer"
+
+
+class EffectPhase(Enum):
+    CHECK_PARTY_HP = "check_party_hp"
+    DEFAULT = "default"
+    ENQUEUE_ITEM = "enqueue_item"
+    ON_END = "on_end"
+    ON_FAINT = "on_faint"
+    ON_START = "on_start"
+    ON_DECISION = "on_decision"
+    PERFORM_ITEM = "perform_item"
+    PERFORM_STATUS = "perform_status"
+    PERFORM_TECH = "perform_tech"
+    PRE_CHECKING = "pre_checking"
+    SWAP_MONSTER = "swap_monster"
+
+
+class Acquisition(str, Enum):
+    UNKNOWN = "unknown"
+    CAPTURED = "captured"
+    TRADED = "traded"
+    BRED = "bred"
+    GIFTED = "gifted"
+    PURCHASED = "purchased"
+    RESCUED = "rescued"
+    CREATED = "created"
+
+
 # TODO: Automatically generate state enum through discovery
 State = Enum(
     "State",
@@ -215,6 +230,38 @@ State = Enum(
         "None": "",
     },
 )
+
+U = TypeVar("U", bound="BaseLookupModel")
+
+
+class BaseLookupModel(ABC):
+    table_name: ClassVar[str]
+
+    @classmethod
+    @abstractmethod
+    def lookup(cls: type[U], slug: str, db: ModData) -> U:
+        pass
+
+
+class CommonCondition(BaseModel):
+    type: str = Field(..., description="The name of the condition")
+    parameters: Sequence[str] = Field(
+        [], description="The parameters that must be met"
+    )
+    operator: str = Field(..., description="The operator 'is' or 'not'.")
+
+    @field_validator("operator")
+    def operator_must_be_is_or_not(cls: CommonCondition, v: str) -> str:
+        if v not in ["is", "not"]:
+            raise ValueError('operator must be either "is" or "not"')
+        return v
+
+
+class CommonEffect(BaseModel):
+    type: str = Field(..., description="The name of the condition")
+    parameters: Sequence[str] = Field(
+        [], description="The parameters that must be met"
+    )
 
 
 class ItemBehaviors(BaseModel):
@@ -236,11 +283,33 @@ class ItemBehaviors(BaseModel):
     throwable: bool = Field(
         False, description="Whether or not this item is throwable."
     )
+    holdable: bool = Field(
+        False, description="Whether or not this item is holdable."
+    )
+    resellable: bool = Field(
+        False, description="Whether or not this item is resellable."
+    )
+    repairable: bool = Field(
+        False,
+        description="Whether or not this item can be repaired once damaged or broken.",
+    )
+    craftable: bool = Field(
+        False,
+        description="Whether or not this item can be crafted.",
+    )
 
 
-class ItemModel(BaseModel):
+class WorldMenuEntry(BaseModel):
+    position: int
+    label_key: str
+    state: str
+    enabled: bool = True
+
+
+class ItemModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "item"
     model_config = ConfigDict(title="Item")
-    slug: str = Field(..., description="Slug to use")
+    slug: str = Field(..., description="The slug of the item")
     use_item: str = Field(
         ...,
         description="Slug to determine which text is displayed when this item is used",
@@ -248,6 +317,18 @@ class ItemModel(BaseModel):
     use_success: str = Field(
         "generic_success",
         description="Slug to determine which text is displayed when this item is used successfully",
+    )
+    confirm_text: str = Field(
+        "item_confirm_use",
+        description="Translation key for the label used when confirming item usage.",
+    )
+    cancel_text: str = Field(
+        "item_confirm_cancel",
+        description="Translation key for the label used when canceling item usage.",
+    )
+    menu_actions: Sequence[dict[str, str]] = Field(
+        [],
+        description="Custom list of menu actions (key, display_text) for this item.",
     )
     use_failure: str = Field(
         "generic_failure",
@@ -262,25 +343,47 @@ class ItemModel(BaseModel):
         ..., description="State(s) where this item can be used."
     )
     behaviors: ItemBehaviors
-    # TODO: We'll need some more advanced validation logic here to parse item
-    # conditions and effects to ensure they are formatted properly.
-    conditions: Sequence[str] = Field(
+    conditions: Sequence[CommonCondition] = Field(
         [], description="Conditions that must be met"
     )
-    effects: Sequence[str] = Field(
-        [], description="Effects this item will have"
+    effects: Sequence[CommonEffect] = Field(
+        ..., description="Effects this item will have"
     )
-    flip_axes: Literal["", "x", "y", "xy"] = Field(
-        "",
-        description="Axes along which technique animation should be flipped",
+    flip_axes: FlipAxes = Field(
+        FlipAxes.NONE,
+        description="Axes along which item animation should be flipped",
     )
     animation: Optional[str] = Field(
-        None, description="Animation to play for this technique"
+        None, description="Animation to play for this item"
     )
-    world_menu: tuple[int, str, str] = Field(
+    world_menu: Optional[WorldMenuEntry] = Field(
         None,
         description="Item adds to World Menu a button (position, label -inside the PO -,state, eg. 3:nu_phone:PhoneState)",
     )
+    cost: int = Field(0, description="The standard cost of the item.", ge=0)
+    max_wear: int = Field(
+        0,
+        description="The maximum wear threshold before the item breaks or becomes unusable.",
+        ge=0,
+    )
+    break_chance: float = Field(
+        0.0,
+        description="Chance (0.0-1.0) that the item breaks each time it's used.",
+        ge=0.0,
+        le=1.0,
+    )
+    modifiers: list[Modifier] = Field(..., description="Various modifiers")
+    immunity_to_status: Sequence[str] = Field(
+        [], description="Statuses this item grants immunity to"
+    )
+
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> ItemModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(ItemModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Item {slug} not found")
 
     # Validate fields that refer to translated text
     @field_validator("use_item", "use_success", "use_failure")
@@ -313,21 +416,42 @@ class ItemModel(BaseModel):
             return v
         raise ValueError(f"the animation {v} doesn't exist in the db")
 
-    @field_validator("conditions")
-    def check_conditions(cls: ItemModel, v: Sequence[str]) -> Sequence[str]:
-        if not v or has.check_conditions(v):
-            return v
-        raise ValueError(f"the conditions {v} aren't correctly formatted")
+    @field_validator("immunity_to_status")
+    def status_exists(cls: ItemModel, v: Sequence[str]) -> Sequence[str]:
+        if v:
+            for status in v:
+                if status != "all" and not has.db_entry("status", status):
+                    raise ValueError(
+                        f"A status {status} doesn't exist in the db"
+                    )
+        return v
 
 
-class ShapeModel(BaseModel):
-    slug: MonsterShape = Field(..., description="Slug of the shape")
+class AttributesModel(BaseModel):
     armour: int = Field(..., description="Armour value")
     dodge: int = Field(..., description="Dodge value")
-    hp: int = Field(..., description="HP value")
+    hp: int = Field(..., description="HP (Hit Points) value")
     melee: int = Field(..., description="Melee value")
     ranged: int = Field(..., description="Ranged value")
     speed: int = Field(..., description="Speed value")
+
+
+class ShapeModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "shape"
+    slug: str = Field(
+        ..., description="Slug of the shape, used as a unique identifier."
+    )
+    attributes: AttributesModel = Field(
+        ..., description="Statistical attributes of the shape."
+    )
+
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> ShapeModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(ShapeModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Shape {slug} not found")
 
     @field_validator("slug")
     def translation_exists_shape(cls: ShapeModel, v: str) -> str:
@@ -376,7 +500,7 @@ class MonsterEvolutionItemModel(BaseModel):
         description="The level at which the monster evolves.",
         ge=0,
     )
-    element: Optional[ElementType] = Field(
+    element: Optional[str] = Field(
         None,
         description="The element type that the monster must match to evolve.",
     )
@@ -388,16 +512,16 @@ class MonsterEvolutionItemModel(BaseModel):
         None,
         description="The item that the monster must have to evolve.",
     )
-    inside: bool = Field(
+    inside: Optional[bool] = Field(
         None,
         description="Whether the monster must be inside to evolve.",
     )
-    traded: bool = Field(
+    acquisition: Optional[Acquisition] = Field(
         None,
-        description="Whether the monster must have been traded to evolve.",
+        description="How the monster was obtained (e.g. caught, bred, traded, gifted).",
     )
-    variables: Optional[Sequence[str]] = Field(
-        None,
+    variables: Sequence[dict[str, str]] = Field(
+        [],
         description="The game variables that must exist and match a specific value for the monster to evolve.",
         min_length=1,
     )
@@ -413,8 +537,8 @@ class MonsterEvolutionItemModel(BaseModel):
         None,
         description="The technique that a monster in the party must have for the evolution to occur.",
     )
-    moves: Optional[Sequence[str]] = Field(
-        None,
+    moves: Sequence[str] = Field(
+        [],
         description="The techniques that the monster must have learned for the evolution to occur.",
         min_length=1,
         max_length=prepare.MAX_MOVES,
@@ -423,25 +547,25 @@ class MonsterEvolutionItemModel(BaseModel):
         None,
         description="The bond value comparison required for the monster to evolve (e.g., greater_than, less_than, etc.).",
     )
-    party: Optional[Sequence[str]] = Field(
-        None,
+    party: Sequence[str] = Field(
+        [],
         description="The slug of the monsters that must be in the party for the evolution to occur.",
         min_length=1,
         max_length=prepare.PARTY_LIMIT - 1,
     )
-    taste_cold: Optional[TasteCold] = Field(
+    taste_cold: Optional[str] = Field(
         None,
         description="The required taste cold value for the monster to evolve.",
     )
-    taste_warm: Optional[TasteWarm] = Field(
+    taste_warm: Optional[str] = Field(
         None,
         description="The required taste warm value for the monster to evolve.",
     )
 
     @field_validator("moves")
     def move_exists(
-        cls: MonsterEvolutionItemModel, v: Optional[Sequence[str]]
-    ) -> Optional[Sequence[str]]:
+        cls: MonsterEvolutionItemModel, v: Sequence[str]
+    ) -> Sequence[str]:
         if v:
             for element in v:
                 if not has.db_entry("technique", element):
@@ -457,6 +581,22 @@ class MonsterEvolutionItemModel(BaseModel):
         if not v or has.db_entry("technique", v):
             return v
         raise ValueError(f"the technique {v} doesn't exist in the db")
+
+    @field_validator("taste_cold", "taste_warm")
+    def taste_exists(
+        cls: MonsterEvolutionItemModel, v: Optional[str]
+    ) -> Optional[str]:
+        if not v or has.db_entry("taste", v):
+            return v
+        raise ValueError(f"the taste {v} doesn't exist in the db")
+
+    @field_validator("element")
+    def element_exists(
+        cls: MonsterEvolutionItemModel, v: Optional[str]
+    ) -> Optional[str]:
+        if not v or has.db_entry("element", v):
+            return v
+        raise ValueError(f"the element {v} doesn't exist in the db")
 
     @field_validator("monster_slug")
     def monster_exists(cls: MonsterEvolutionItemModel, v: str) -> str:
@@ -483,14 +623,6 @@ class MonsterEvolutionItemModel(BaseModel):
         if not v or has.db_entry("item", v):
             return v
         raise ValueError(f"the item {v} doesn't exist in the db")
-
-    @field_validator("variables")
-    def variables_exists(
-        cls: MonsterEvolutionItemModel, v: Optional[Sequence[str]]
-    ) -> Optional[Sequence[str]]:
-        if v is None:
-            return v
-        return has.validate_variables(v)
 
     @field_validator("stats")
     def stats_exists(
@@ -528,7 +660,7 @@ class MonsterEvolutionItemModel(BaseModel):
                 )
             if not param[1].isdigit():
                 raise ValueError(f"{param[1]} isn't a number (int)")
-            lower, upper = prepare.BOND_RANGE
+            lower, upper = config_monster.bond_range
             if int(param[1]) < lower or int(param[1]) > upper:
                 raise ValueError(
                     f"the bond is between {lower} and {upper} ({v})"
@@ -543,13 +675,13 @@ class MonsterFlairItemModel(BaseModel):
 
 
 class MonsterSpritesModel(BaseModel):
-    battle1: str = Field(..., description="The battle1 sprite")
-    battle2: str = Field(..., description="The battle2 sprite")
+    front: str = Field(..., description="The front sprite")
+    back: str = Field(..., description="The back sprite")
     menu1: str = Field(..., description="The menu1 sprite")
     menu2: str = Field(..., description="The menu2 sprite")
 
     # Validate resources that should exist
-    @field_validator("battle1", "battle2")
+    @field_validator("front", "back")
     def battle_exists(cls: MonsterSpritesModel, v: str) -> str:
         if has.file(f"{v}.png") and has.size(f"{v}.png", prepare.MONSTER_SIZE):
             return v
@@ -586,7 +718,8 @@ class MonsterSoundsModel(BaseModel):
 
 
 # Validate assignment allows us to assign a default inside a validator
-class MonsterModel(BaseModel, validate_assignment=True):
+class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
+    table_name: ClassVar[str] = "monster"
     slug: str = Field(..., description="The slug of the monster")
     category: str = Field(..., description="The category of monster")
     txmn_id: int = Field(..., description="The id of the monster")
@@ -604,13 +737,12 @@ class MonsterModel(BaseModel, validate_assignment=True):
     sprites: Annotated[
         Optional[MonsterSpritesModel], Field(validate_default=True)
     ] = None
-    shape: MonsterShape = Field(..., description="The shape of the monster")
-    tags: Sequence[str] = Field(
-        ..., description="The tags of the monster", min_length=1
+    terrains: Sequence[str] = Field(
+        ..., description="The terrains of the monster"
     )
-    types: Sequence[ElementType] = Field(
-        [], description="The type(s) of this monster"
-    )
+    types: Sequence[str] = Field([], description="The type(s) of this monster")
+    shape: str = Field(..., description="The shape of the monster")
+    tags: Sequence[str] = Field(..., description="The tags of the monster")
     catch_rate: float = Field(
         ...,
         description="The catch rate of the monster",
@@ -649,6 +781,14 @@ class MonsterModel(BaseModel, validate_assignment=True):
         description="The sounds this monster has",
     )
 
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> MonsterModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(MonsterModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Monster {slug} not found")
+
     # Set the default sprites based on slug. Specifying 'always' is needed
     # because by default pydantic doesn't validate null fields.
     @field_validator("sprites")
@@ -657,8 +797,8 @@ class MonsterModel(BaseModel, validate_assignment=True):
     ) -> Union[str, MonsterSpritesModel]:
         slug = info.data.get("slug")
         default = MonsterSpritesModel(
-            battle1=f"gfx/sprites/battle/{slug}-front",
-            battle2=f"gfx/sprites/battle/{slug}-back",
+            front=f"gfx/sprites/battle/{slug}-front",
+            back=f"gfx/sprites/battle/{slug}-back",
             menu1=f"gfx/sprites/battle/{slug}-menu01",
             menu2=f"gfx/sprites/battle/{slug}-menu02",
         )
@@ -669,6 +809,41 @@ class MonsterModel(BaseModel, validate_assignment=True):
         if has.translation(f"cat_{v}"):
             return v
         raise ValueError(f"no translation exists with msgid: {v}")
+
+    @field_validator("types")
+    def element_exists(
+        cls: MonsterModel, elements: Sequence[str]
+    ) -> Sequence[str]:
+        if not elements:
+            return elements
+
+        invalid_elements = [
+            element
+            for element in elements
+            if not has.db_entry("element", element)
+        ]
+        if invalid_elements:
+            raise ValueError(
+                f"elements {', '.join(invalid_elements)} don't exist in the db"
+            )
+
+        return elements
+
+    @field_validator("shape")
+    def shape_exists(cls: MonsterModel, v: str) -> str:
+        if has.db_entry("shape", v):
+            return v
+        raise ValueError(f"the shape {v} doesn't exist in the db")
+
+    @field_validator("terrains")
+    def terrain_exists(cls: MonsterModel, v: Sequence[str]) -> Sequence[str]:
+        if v:
+            for terrain in v:
+                if not has.db_entry("terrain", terrain):
+                    raise ValueError(
+                        f"the terrain '{terrain}' doesn't exist in the db"
+                    )
+        return v
 
 
 class StatModel(BaseModel):
@@ -696,6 +871,7 @@ class Range(str, Enum):
 
 
 class TechCategory(str, Enum):
+    special = "special"
     animal = "animal"
     simple = "simple"
     basic = "basic"
@@ -706,19 +882,51 @@ class TechCategory(str, Enum):
     notype = "notype"
 
 
-# TechSort defines the sort of technique a technique is.
+class Modifier(BaseModel):
+    attribute: str = Field(
+        ..., description="Attribute being modified (type, etc.)"
+    )
+    values: Sequence[str] = Field(
+        [],
+        description="Values associated with the modification (eg. fire, etc.)",
+    )
+    multiplier: float = Field(1.0, description="Multiplier", ge=0.0, le=2.0)
+
+
+class SpeedLabel(str, Enum):
+    EXTREMELY_SLOW = "extremely_slow"
+    VERY_SLOW = "very_slow"
+    SLOW = "slow"
+    NORMAL = "normal"
+    FAST = "fast"
+    VERY_FAST = "very_fast"
+    EXTREMELY_FAST = "extremely_fast"
+
+    @property
+    def numeric_value(self) -> int:
+        return {
+            SpeedLabel.EXTREMELY_SLOW: -3,
+            SpeedLabel.VERY_SLOW: -2,
+            SpeedLabel.SLOW: -1,
+            SpeedLabel.NORMAL: 0,
+            SpeedLabel.FAST: 1,
+            SpeedLabel.VERY_FAST: 2,
+            SpeedLabel.EXTREMELY_FAST: 3,
+        }[self]
+
+
 class TechSort(str, Enum):
     damage = "damage"
     meta = "meta"
 
 
-class CategoryCondition(str, Enum):
+class CategoryStatus(str, Enum):
     negative = "negative"
     positive = "positive"
     neutral = "neutral"
 
 
-class ResponseCondition(str, Enum):
+class ResponseStatus(str, Enum):
     replaced = "replaced"
     removed = "removed"
 
@@ -757,10 +965,10 @@ class TargetModel(BaseModel):
         return v
 
 
-class TechniqueModel(BaseModel):
+class TechniqueModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "technique"
     slug: str = Field(..., description="The slug of the technique")
     sort: TechSort = Field(..., description="The sort of technique this is")
-    icon: str = Field(None, description="The icon to use for the technique")
     category: TechCategory = Field(
         ...,
         description="The tags of the technique",
@@ -768,13 +976,13 @@ class TechniqueModel(BaseModel):
     tags: Sequence[str] = Field(
         ..., description="The tags of the technique", min_length=1
     )
-    conditions: Sequence[str] = Field(
+    conditions: Sequence[CommonCondition] = Field(
         [], description="Conditions that must be met"
     )
-    effects: Sequence[str] = Field(
-        [], description="Effects this technique uses"
+    effects: Sequence[CommonEffect] = Field(
+        ..., description="Effects this technique uses"
     )
-    flip_axes: Literal["", "x", "y", "xy"] = Field(
+    flip_axes: FlipAxes = Field(
         ...,
         description="Axes along which technique animation should be flipped",
     )
@@ -785,6 +993,7 @@ class TechniqueModel(BaseModel):
     sfx: str = Field(
         ..., description="Sound effect to play when this technique is used"
     )
+    modifiers: list[Modifier] = Field(..., description="Various modifiers")
 
     # Optional fields
     use_tech: Optional[str] = Field(
@@ -799,9 +1008,19 @@ class TechniqueModel(BaseModel):
         None,
         description="Slug of what string to display when technique fails",
     )
-    types: Sequence[ElementType] = Field(
-        [], description="Type(s) of the technique"
+    confirm_text: str = Field(
+        "item_confirm_use",
+        description="Translation key for the label used when confirming tech usage.",
     )
+    cancel_text: str = Field(
+        "item_confirm_cancel",
+        description="Translation key for the label used when canceling tech usage.",
+    )
+    menu_actions: Sequence[dict[str, str]] = Field(
+        [],
+        description="Custom list of menu actions (key, display_text) for this technique.",
+    )
+    types: Sequence[str] = Field([], description="Type(s) of the technique")
     usable_on: bool = Field(
         False,
         description="Whether or not the technique can be used outside of combat",
@@ -812,8 +1031,12 @@ class TechniqueModel(BaseModel):
         ge=prepare.POWER_RANGE[0],
         le=prepare.POWER_RANGE[1],
     )
-    is_fast: bool = Field(
-        False, description="Whether or not this is a fast technique"
+    speed: SpeedLabel = Field(
+        default=SpeedLabel.NORMAL,
+        description=(
+            "Indicates the relative speed of this technique. "
+            "Possible values range from 'extremely_slow' to 'extremely_fast'."
+        ),
     )
     randomly: bool = Field(
         True,
@@ -846,14 +1069,14 @@ class TechniqueModel(BaseModel):
         le=prepare.POTENCY_RANGE[1],
     )
 
-    # Validate resources that should exist
-    @field_validator("icon")
-    def file_exists(cls: TechniqueModel, v: str) -> str:
-        if v and has.file(v) and has.size(v, prepare.TECH_ICON_SIZE):
-            return v
-        raise ValueError(f"the icon {v} doesn't exist in the db")
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> TechniqueModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(TechniqueModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Technique {slug} not found")
 
-    # Validate fields that refer to translated text
     @field_validator("use_tech", "use_success", "use_failure")
     def translation_exists(
         cls: TechniqueModel, v: Optional[str]
@@ -881,81 +1104,95 @@ class TechniqueModel(BaseModel):
             return v
         raise ValueError(f"the animation {v} doesn't exist in the db")
 
-    @field_validator("conditions")
-    def check_conditions(
-        cls: TechniqueModel, v: Sequence[str]
-    ) -> Sequence[str]:
-        if not v or has.check_conditions(v):
-            return v
-        raise ValueError(f"the conditions {v} aren't correctly formatted")
-
     @field_validator("sfx")
     def sfx_tech_exists(cls: TechniqueModel, v: str) -> str:
         if has.db_entry("sounds", v):
             return v
         raise ValueError(f"the sound {v} doesn't exist in the db")
 
+    @field_validator("types")
+    def element_exists(
+        cls: TechniqueModel, elements: Sequence[str]
+    ) -> Sequence[str]:
+        if not elements:
+            return elements
 
-class ConditionModel(BaseModel):
-    slug: str = Field(..., description="The slug of the condition")
-    sort: TechSort = Field(..., description="The sort of condition this is")
-    icon: str = Field(None, description="The icon to use for the condition")
-    conditions: Sequence[str] = Field(
+        invalid_elements = [
+            element
+            for element in elements
+            if not has.db_entry("element", element)
+        ]
+        if invalid_elements:
+            raise ValueError(
+                f"elements {', '.join(invalid_elements)} don't exist in the db"
+            )
+
+        return elements
+
+
+class StatusModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "status"
+    slug: str = Field(..., description="The slug of the status")
+    sort: TechSort = Field(..., description="The sort of status this is")
+    icon: str = Field(..., description="The icon to use for the condition")
+    conditions: Sequence[CommonCondition] = Field(
         [], description="Conditions that must be met"
     )
-    effects: Sequence[str] = Field(
-        [], description="Effects this condition uses"
+    effects: Sequence[CommonEffect] = Field(
+        ..., description="Effects this status uses"
     )
-    flip_axes: Literal["", "x", "y", "xy"] = Field(
+    flip_axes: FlipAxes = Field(
         ...,
-        description="Axes along which condition animation should be flipped",
+        description="Axes along which status animation should be flipped",
     )
     animation: Optional[str] = Field(
-        None, description="Animation to play for this condition"
+        None, description="Animation to play for this status"
     )
     sfx: str = Field(
-        ..., description="Sound effect to play when this condition is used"
+        ..., description="Sound effect to play when this status is used"
     )
     bond: bool = Field(
         False,
         description="Whether or not there is a bond between attacker and defender",
     )
     duration: int = Field(
-        0, description="How many turns the condition is supposed to last"
+        0, description="How many turns the status is supposed to last"
     )
+    modifiers: list[Modifier] = Field(..., description="Various modifiers")
 
     # Optional fields
-    category: Optional[CategoryCondition] = Field(
+    category: Optional[CategoryStatus] = Field(
         None, description="Category status: positive or negative"
     )
-    repl_pos: Optional[ResponseCondition] = Field(
-        None, description="How to reply to a positive status"
-    )
-    repl_neg: Optional[ResponseCondition] = Field(
-        None, description="How to reply to a negative status"
-    )
-    repl_tech: Optional[str] = Field(
+    on_positive_status: Optional[ResponseStatus] = Field(
         None,
-        description="With which status or technique reply after a tech used",
+        description="Determines the response when a positive status is applied",
     )
-    repl_item: Optional[str] = Field(
+    on_negative_status: Optional[ResponseStatus] = Field(
         None,
-        description="With which status or technique reply after an item used",
+        description="Determines the response when a negative status is applied",
+    )
+    on_tech_use: Optional[str] = Field(
+        None,
+        description="Status applied after using a technique",
+    )
+    on_item_use: Optional[str] = Field(
+        None,
+        description="Status applied after using an item",
     )
     gain_cond: Optional[str] = Field(
         None,
-        description="Slug of what string to display when condition is gained",
+        description="Slug of what string to display when status is gained",
     )
     use_success: Optional[str] = Field(
         None,
-        description="Slug of what string to display when condition succeeds",
+        description="Slug of what string to display when status succeeds",
     )
     use_failure: Optional[str] = Field(
         None,
-        description="Slug of what string to display when condition fails",
+        description="Slug of what string to display when status fails",
     )
-    range: Range = Field(..., description="The attack range of this condition")
-    cond_id: int = Field(..., description="The id of this condition")
+    cond_id: int = Field(..., description="The id of this status")
     statspeed: Optional[StatModel] = Field(None)
     stathp: Optional[StatModel] = Field(None)
     statarmour: Optional[StatModel] = Field(None)
@@ -963,9 +1200,17 @@ class ConditionModel(BaseModel):
     statmelee: Optional[StatModel] = Field(None)
     statranged: Optional[StatModel] = Field(None)
 
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> StatusModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(StatusModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Status {slug} not found")
+
     # Validate resources that should exist
     @field_validator("icon")
-    def file_exists(cls: ConditionModel, v: str) -> str:
+    def file_exists(cls: StatusModel, v: str) -> str:
         if has.file(v) and has.size(v, prepare.STATUS_ICON_SIZE):
             return v
         raise ValueError(f"the icon {v} doesn't exist in the db")
@@ -973,22 +1218,20 @@ class ConditionModel(BaseModel):
     # Validate fields that refer to translated text
     @field_validator("gain_cond", "use_success", "use_failure")
     def translation_exists(
-        cls: ConditionModel, v: Optional[str]
+        cls: StatusModel, v: Optional[str]
     ) -> Optional[str]:
         if not v or has.translation(v):
             return v
         raise ValueError(f"no translation exists with msgid: {v}")
 
     @field_validator("slug")
-    def translation_exists_cond(cls: ConditionModel, v: str) -> str:
+    def translation_exists_cond(cls: StatusModel, v: str) -> str:
         if has.translation(v):
             return v
         raise ValueError(f"no translation exists with msgid: {v}")
 
     @field_validator("animation")
-    def animation_exists(
-        cls: ConditionModel, v: Optional[str]
-    ) -> Optional[str]:
+    def animation_exists(cls: StatusModel, v: Optional[str]) -> Optional[str]:
         file: str = f"animations/technique/{v}_00.png"
         if (
             not v
@@ -998,26 +1241,14 @@ class ConditionModel(BaseModel):
             return v
         raise ValueError(f"the animation {v} doesn't exist in the db")
 
-    @field_validator("repl_tech", "repl_item")
-    def status_exists(cls: ConditionModel, v: Optional[str]) -> Optional[str]:
-        if (
-            not v
-            or has.db_entry("condition", v)
-            or has.db_entry("technique", v)
-        ):
+    @field_validator("on_tech_use", "on_item_use")
+    def status_exists(cls: StatusModel, v: Optional[str]) -> Optional[str]:
+        if not v or has.db_entry("status", v) or has.db_entry("technique", v):
             return v
         raise ValueError(f"the status {v} doesn't exist in the db")
 
-    @field_validator("conditions")
-    def check_conditions(
-        cls: ConditionModel, v: Sequence[str]
-    ) -> Sequence[str]:
-        if not v or has.check_conditions(v):
-            return v
-        raise ValueError(f"the conditions {v} aren't correctly formatted")
-
     @field_validator("sfx")
-    def sfx_cond_exists(cls: ConditionModel, v: str) -> str:
+    def sfx_cond_exists(cls: StatusModel, v: str) -> str:
         if has.db_entry("sounds", v):
             return v
         raise ValueError(f"the sound {v} doesn't exist in the db")
@@ -1026,13 +1257,18 @@ class ConditionModel(BaseModel):
 class PartyMemberModel(BaseModel):
     slug: str = Field(..., description="Slug of the monster")
     level: int = Field(..., description="Level of the monster", gt=0)
-    money_mod: int = Field(
+    money_mod: float = Field(
         ..., description="Modifier for money this monster gives", gt=0
     )
-    exp_req_mod: int = Field(
+    exp_req_mod: float = Field(
         ..., description="Experience required modifier", gt=0
     )
     gender: GenderType = Field(..., description="Gender of the monster")
+    variables: Sequence[dict[str, str]] = Field(
+        [],
+        description="Sequence of variables that affect the presence of the monster.",
+        min_length=1,
+    )
 
     @field_validator("slug")
     def monster_exists(cls: PartyMemberModel, v: str) -> str:
@@ -1044,6 +1280,11 @@ class PartyMemberModel(BaseModel):
 class BagItemModel(BaseModel):
     slug: str = Field(..., description="Slug of the item")
     quantity: int = Field(..., description="Quantity of the item")
+    variables: Sequence[dict[str, str]] = Field(
+        [],
+        description="List of variables that affect the item.",
+        min_length=1,
+    )
 
     @field_validator("slug")
     def item_exists(cls: BagItemModel, v: str) -> str:
@@ -1093,7 +1334,8 @@ class NpcTemplateModel(BaseModel):
         raise ValueError(f"the template {v} doesn't exist in the db")
 
 
-class NpcModel(BaseModel):
+class NpcModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "npc"
     slug: str = Field(..., description="Slug of the name of the NPC")
     forfeit: bool = Field(False, description="Whether you can forfeit or not")
     template: NpcTemplateModel
@@ -1103,6 +1345,14 @@ class NpcModel(BaseModel):
     items: Sequence[BagItemModel] = Field(
         [], description="List of items in the NPCs bag"
     )
+
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> NpcModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(NpcModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"NPC {slug} not found")
 
 
 class BattleHudModel(BaseModel):
@@ -1173,12 +1423,6 @@ class BattleGraphicsModel(BaseModel):
     menu: str = Field(
         "MainCombatMenuState", description="Menu used for combat."
     )
-    msgid: str = Field(
-        "combat_monster_choice",
-        description="msgid of the sentence that is going to appear in the "
-        "combat menu in between the rounds, when the monster needs to choose "
-        "the next move, (name) shows monster name, (player) the player name.",
-    )
     island_back: str = Field(..., description="Sprite used for back combat")
     island_front: str = Field(..., description="Sprite used for front combat")
     background: str = Field(..., description="Sprite used for background")
@@ -1197,12 +1441,6 @@ class BattleGraphicsModel(BaseModel):
             return v
         raise ValueError(f"no resource exists with path: {v}")
 
-    @field_validator("msgid")
-    def translation_exists_msgid(cls: BattleGraphicsModel, v: str) -> str:
-        if has.translation(v):
-            return v
-        raise ValueError(f"no translation exists with msgid: {v}")
-
     @field_validator("menu")
     def check_state(cls: BattleGraphicsModel, v: str) -> str:
         states = [state.name for state in State]
@@ -1211,12 +1449,23 @@ class BattleGraphicsModel(BaseModel):
         raise ValueError(f"state isn't among: {states}")
 
 
-class EnvironmentModel(BaseModel):
+class EnvironmentModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "environment"
     slug: str = Field(..., description="Slug of the name of the environment")
     battle_music: str = Field(
         ..., description="Filename of the music to use for this environment"
     )
     battle_graphics: BattleGraphicsModel
+
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> EnvironmentModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(
+                EnvironmentModel, db.lookup(slug, table=cls.table_name)
+            )
+        except EntryNotFoundError:
+            raise RuntimeError(f"Encounter {slug} not found")
 
     @field_validator("battle_music")
     def battle_music_exists(cls: EnvironmentModel, v: str) -> str:
@@ -1225,25 +1474,74 @@ class EnvironmentModel(BaseModel):
         raise ValueError(f"the music {v} doesn't exist in the db")
 
 
+class HeldItemProbability(BaseModel):
+    item_slug: str = Field(
+        ..., description="Slug of the item that can be held."
+    )
+    probability: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Probability (0.0-1.0) of this item being held.",
+    )
+
+    @field_validator("item_slug")
+    def item_exists(cls, v: str) -> str:
+        if not has.db_entry("item", v):
+            raise ValueError(f"the item '{v}' doesn't exist in the db")
+        return v
+
+
 class EncounterItemModel(BaseModel):
     monster: str = Field(..., description="Monster slug for this encounter")
     encounter_rate: float = Field(
         ..., description="Probability of encountering this monster."
+    )
+    held_items: Sequence[HeldItemProbability] = Field(
+        [],
+        description="A list of items that will be held with their probabilities.",
     )
     level_range: Sequence[int] = Field(
         ...,
         description="Minimum and maximum levels at which this encounter can occur.",
         max_length=2,
     )
-    variables: Optional[Sequence[str]] = Field(
-        None,
+    variables: Sequence[dict[str, str]] = Field(
+        ...,
         description="List of variables that affect the encounter.",
-        min_length=1,
     )
-    exp_req_mod: int = Field(
-        1,
+    exp_req_mod: float = Field(
+        ...,
         description="Modifier for the experience points required to defeat this wild monster.",
-        gt=0,
+        gt=0.0,
+    )
+    level_offset: Optional[int] = Field(
+        None,
+        description="Offset (+/- levels) to apply to the monster's level.",
+    )
+    level_offset_range: Optional[tuple[int, int]] = Field(
+        None,
+        description="Range of offset (+/- levels) to apply randomly to base level.",
+    )
+    min_player_level: Optional[int] = Field(
+        None,
+        description="Minimum average level of player's party for this encounter.",
+    )
+    max_player_level: Optional[int] = Field(
+        None,
+        description="Maximum average level of player's party for this encounter.",
+    )
+    scaling_enabled: bool = Field(
+        False,
+        description="If true, scales the monster level based on player's party level average.",
+    )
+    override_level_range: bool = Field(
+        False,
+        description="If true, allows scaling to override a monster's declared level_range and match party average directly.",
+    )
+    scaling_offset_range: Optional[tuple[int, int]] = Field(
+        None,
+        description="Range used for random offset when scaling level overrides are applied (e.g. [-3, +4])",
     )
 
     @field_validator("monster")
@@ -1252,25 +1550,43 @@ class EncounterItemModel(BaseModel):
             return v
         raise ValueError(f"the monster {v} doesn't exist in the db")
 
-    @field_validator("variables")
-    def variables_exists(
-        cls: EncounterItemModel, v: Optional[Sequence[str]]
-    ) -> Optional[Sequence[str]]:
-        if v is None:
-            return v
-        return has.validate_variables(v)
 
-
-class EncounterModel(BaseModel):
+class EncounterModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "encounter"
     slug: str = Field(
         ..., description="Slug to uniquely identify this encounter"
     )
     monsters: Sequence[EncounterItemModel] = Field(
         [], description="Monsters encounterable"
     )
+    scaling_zone: bool = Field(
+        False,
+        description="If true, this zone applies level scaling to all monsters",
+    )
+    scale_offset_range: Optional[tuple[int, int]] = Field(
+        None,
+        description="Custom offset range applied when scaling override is active (e.g. -3 to +5)",
+    )
+    scale_multiplier: float = Field(
+        1.0,
+        description="Multiplier applied to party average to define base scaled level",
+    )
+    override_level_range: bool = Field(
+        False,
+        description="If true, allows scaling to override a monster's declared level_range and match party average directly.",
+    )
+
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> EncounterModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(EncounterModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Encounter {slug} not found")
 
 
-class DialogueModel(BaseModel):
+class DialogueModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "dialogue"
     slug: str = Field(
         ..., description="Slug to uniquely identify this dialogue"
     )
@@ -1279,8 +1595,16 @@ class DialogueModel(BaseModel):
     font_shadow_color: str = Field(..., description="RGB color (eg. 255:0:0)")
     border_slug: str = Field(..., description="Name of the border")
     border_path: str = Field(..., description="Path to the border")
+    line_spacing: int = Field(..., description="Line spacing value")
 
-    # Validate resources that should exist
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> DialogueModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(DialogueModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Dialogue {slug} not found")
+
     @field_validator("border_slug")
     def file_exists(cls: DialogueModel, v: str) -> str:
         file: str = f"gfx/borders/{v}.png"
@@ -1290,21 +1614,32 @@ class DialogueModel(BaseModel):
 
 
 class ElementItemModel(BaseModel):
-    against: ElementType = Field(..., description="Name of the type")
+    against: str = Field(..., description="Name of the type")
     multiplier: float = Field(1.0, description="Multiplier against the type")
 
+    @field_validator("against")
+    def element_exists(cls: ElementItemModel, v: str) -> str:
+        if not v or has.db_entry("element", v):
+            return v
+        raise ValueError(f"the element {v} doesn't exist in the db")
 
-class ElementModel(BaseModel):
-    slug: ElementType = Field(
-        ..., description="Slug uniquely identifying the type"
-    )
+
+class ElementModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "element"
+    slug: str = Field(..., description="Slug uniquely identifying the type")
     icon: str = Field(..., description="The icon to use for the type")
     types: Sequence[ElementItemModel]
 
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> ElementModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(ElementModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Element {slug} not found")
+
     @field_validator("slug")
-    def translation_exists_element(
-        cls: ElementModel, v: ElementType
-    ) -> ElementType:
+    def translation_exists_element(cls: ElementModel, v: str) -> str:
         if has.translation(v):
             return v
         raise ValueError(f"no translation exists with msgid: {v}")
@@ -1316,52 +1651,204 @@ class ElementModel(BaseModel):
         raise ValueError(f"the icon {v} doesn't exist in the db")
 
 
-class EconomyItemModel(BaseModel):
-    item_name: str = Field(..., description="Name of the item")
-    price: int = Field(0, description="Price of the item")
-    cost: int = Field(0, description="Cost of the item")
-    inventory: int = Field(-1, description="Quantity of the item")
-    variables: Optional[Sequence[str]] = Field(
-        None,
-        description="List of variables that affect the item in the economy.",
+class TasteModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "taste"
+    slug: str = Field(..., description="Slug of the taste")
+    name: str = Field(..., description="Name of the taste")
+    taste_type: Literal["warm", "cold"] = Field(
+        ..., description="Type of taste: 'cold' or 'warm'"
+    )
+    modifiers: Sequence[Modifier] = Field(
+        ..., description="Modifiers associated with the taste"
+    )
+    rarity_score: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Rarity score between 0 (rare) and 1 (common)",
+    )
+
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> TasteModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(TasteModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Taste {slug} not found")
+
+    @field_validator("name")
+    def translation_exists_taste(cls: TasteModel, v: str) -> str:
+        if has.translation(v):
+            return v
+        raise ValueError(f"no translation exists with msgid: {v}")
+
+
+class EconomyEntityModel(BaseModel):
+    price: int = Field(0, description="Price of the entity")
+    cost: int = Field(0, description="Cost of the entity")
+    inventory: int = Field(-1, description="Quantity of the entity")
+    variables: Sequence[dict[str, str]] = Field(
+        [],
+        description="List of variables that affect the entity in the economy.",
         min_length=1,
     )
 
-    @field_validator("item_name")
-    def item_exists(cls: EconomyItemModel, v: str) -> str:
+
+class EconomyItemModel(EconomyEntityModel):
+    name: str = Field(..., description="Name of the entity")
+    inventory: int = Field(-1, description="Quantity of the entity")
+
+    @field_validator("name")
+    def item_exists(cls: EconomyEntityModel, v: str) -> str:
         if has.db_entry("item", v):
             return v
         raise ValueError(f"the item {v} doesn't exist in the db")
 
-    @field_validator("variables")
-    def variables_exists(
-        cls: EconomyItemModel, v: Optional[Sequence[str]]
-    ) -> Optional[Sequence[str]]:
-        if v is None:
+
+class EconomyMonsterModel(EconomyEntityModel):
+    name: str = Field(..., description="Name of the entity")
+    inventory: int = Field(1, description="Quantity of the entity", gt=0)
+    level: int = Field(1, description="Level of the entity", gt=0)
+
+    @field_validator("name")
+    def monster_exists(cls: EconomyEntityModel, v: str) -> str:
+        if has.db_entry("monster", v):
             return v
-        return has.validate_variables(v)
+        raise ValueError(f"the monster {v} doesn't exist in the db")
 
 
-class EconomyModel(BaseModel):
+class EconomyModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "economy"
     slug: str = Field(..., description="Slug uniquely identifying the economy")
+    resale_multiplier: float = Field(..., description="Resale multiplier")
+    background: str = Field(..., description="Sprite used for background")
     items: Sequence[EconomyItemModel]
+    monsters: Sequence[EconomyMonsterModel]
+
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> EconomyModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(EconomyModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Economy {slug} not found")
+
+    @field_validator("background")
+    def background_exists(cls: EconomyModel, v: str) -> str:
+        if has.file(v) and has.size(v, prepare.NATIVE_RESOLUTION):
+            return v
+        raise ValueError(f"no resource exists with path: {v}")
 
 
 class TemplateModel(BaseModel):
     slug: str = Field(
         ..., description="Slug uniquely identifying the template"
     )
-    double: bool = Field(False, description="Whether triggers 2vs2 or not")
 
 
-class MissionModel(BaseModel):
+class MissionStepModel(BaseModel):
+    slug: str = Field(..., description="Unique identifier for the step")
+    order: int = Field(
+        default=0,
+        description="Progression order index used to sequence mission steps",
+    )
+    description: str = Field(
+        ..., description="Describes what the step requires or represents"
+    )
+    conditions: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Simple conditions on game_variables (all must be true)",
+    )
+    any_of: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="Alternative condition sets; step completes if any are satisfied",
+    )
+    all_of: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="Additional condition sets; all must be satisfied",
+    )
+    next_steps: list[str] = Field(
+        default_factory=list,
+        description="Slugs of next steps unlocked when this is completed",
+    )
+    optional: bool = Field(False, description="Whether the step is optional")
+
+
+class MissionModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "mission"
+
     slug: str = Field(..., description="Slug uniquely identifying the mission")
+    description: str = Field(
+        ..., description="Detailed description of the mission objectives"
+    )
+    prerequisites: Sequence[dict[str, Any]] = Field(
+        default_factory=list,
+        description="List of game variables required to unlock the mission",
+    )
+    connected_missions: Sequence[dict[str, Any]] = Field(
+        default_factory=list,
+        description="List of missions that this one unlocks",
+    )
+    required_items: Sequence[str] = Field(
+        default_factory=list, description="Items required to begin the mission"
+    )
+    required_monsters: Sequence[str] = Field(
+        default_factory=list,
+        description="Monsters required to begin the mission",
+    )
+    required_missions: Sequence[str] = Field(
+        default_factory=list,
+        description="Slugs of missions that must be completed before this one",
+    )
+    steps: dict[str, MissionStepModel] = Field(
+        default_factory=dict,
+        description="Dictionary of steps defining structure and branching logic",
+    )
+    repeatable: bool = Field(
+        False, description="Whether the mission can be repeated"
+    )
+    failure_conditions: Sequence[dict[str, Any]] = Field(
+        default_factory=list,
+        description="List of game variables that, if met, cause the mission to fail",
+    )
+
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> MissionModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(MissionModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Mission {slug} not found")
 
     @field_validator("slug")
     def translation_exists_mission(cls: MissionModel, v: str) -> str:
         if has.translation(v):
             return v
         raise ValueError(f"no translation exists with msgid: {v}")
+
+    @field_validator("description")
+    def translation_exists_desc(cls: MissionModel, v: str) -> str:
+        if has.translation(v):
+            return v
+        raise ValueError(f"no translation exists with msgid: {v}")
+
+    @field_validator("required_items")
+    def item_exists(cls: MissionModel, v: Sequence[str]) -> Sequence[str]:
+        for item_slug in v:
+            if not has.db_entry("item", item_slug):
+                raise ValueError(
+                    f"The item '{item_slug}' doesn't exist in the db"
+                )
+        return v
+
+    @field_validator("required_monsters")
+    def monster_exists(cls: MissionModel, v: Sequence[str]) -> Sequence[str]:
+        for monster_slug in v:
+            if not has.db_entry("monster", monster_slug):
+                raise ValueError(
+                    f"The monster '{monster_slug}' doesn't exist in the db"
+                )
+        return v
 
 
 class MusicModel(BaseModel):
@@ -1388,9 +1875,18 @@ class SoundModel(BaseModel):
         raise ValueError(f"the sound {v} doesn't exist in the db")
 
 
-class AnimationModel(BaseModel):
+class AnimationModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "animation"
     slug: str = Field(..., description="Unique slug for the animation")
     file: str = Field(..., description="File of the animation")
+
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> AnimationModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(AnimationModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Animation {slug} not found")
 
     @field_validator("file")
     def file_exists(cls: AnimationModel, v: str, info: ValidationInfo) -> str:
@@ -1401,29 +1897,60 @@ class AnimationModel(BaseModel):
         raise ValueError(f"the animation {v} doesn't exist in the db")
 
 
-TableName = Literal[
-    "economy",
-    "element",
-    "shape",
-    "template",
-    "mission",
-    "encounter",
-    "dialogue",
-    "environment",
-    "item",
-    "monster",
-    "music",
-    "animation",
-    "npc",
-    "sounds",
-    "condition",
-    "technique",
-]
+class TerrainModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "terrain"
+    slug: str = Field(..., description="Slug of the terrain")
+    name: str = Field(..., description="Name of the terrain condition")
+    element_modifier: dict[str, float] = Field(
+        ..., description="Modifiers for elemental techniques in this terrain"
+    )
+
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> TerrainModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(TerrainModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Terrain {slug} not found")
+
+    @field_validator("name")
+    def translation_exists_item(cls: TerrainModel, v: str) -> str:
+        if has.translation(v):
+            return v
+        raise ValueError(f"no translation exists with msgid: {v}")
+
+
+class WeatherModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "weather"
+    slug: str = Field(..., description="Slug of the weather")
+    name: str = Field(..., description="Name of the weather condition")
+    element_modifier: dict[str, float] = Field(
+        ...,
+        description="Modifiers for elemental techniques during this weather",
+    )
+
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> WeatherModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(WeatherModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Weather {slug} not found")
+
+    @field_validator("name")
+    def translation_exists_item(cls: WeatherModel, v: str) -> str:
+        if has.translation(v):
+            return v
+        raise ValueError(f"no translation exists with msgid: {v}")
+
 
 DataModel = Union[
     EconomyModel,
     ElementModel,
+    TasteModel,
     ShapeModel,
+    TerrainModel,
+    WeatherModel,
     TemplateModel,
     MissionModel,
     EncounterModel,
@@ -1435,50 +1962,147 @@ DataModel = Union[
     AnimationModel,
     NpcModel,
     SoundModel,
-    ConditionModel,
+    StatusModel,
     TechniqueModel,
 ]
 
 
-class JSONDatabase:
-    """
-    Handles connecting to the game database for resources.
+def load_model_map(
+    model_map_config: dict[str, str],
+) -> dict[str, type[DataModel]]:
+    model_map: dict[str, type[DataModel]] = {}
+    for table, model_path in model_map_config.items():
+        module_name, class_name = model_path.rsplit(".", 1)
+        module = import_module(module_name)
+        model_map[table] = getattr(module, class_name)
+    return model_map
 
-    Examples of such resources include monsters, stats, etc.
 
-    """
+@dataclass
+class DatabaseConfig:
+    model_map: dict[str, str]
+    mod_base_path: str
+    mod_db_subfolder: str
+    file_extensions: list[str]
+    default_lookup_table: str
+    active_mods: list[str]
+    mod_versions: dict[str, str]
+    mod_table_exclusions: dict[str, list[str]]
+    mod_activation: dict[str, bool]
+    mod_tables: dict[str, list[str]]
+    mod_dependencies: dict[str, list[str]]
 
-    def __init__(self, dir: str = "all") -> None:
-        self._tables: list[TableName] = [
-            "item",
-            "monster",
-            "npc",
-            "condition",
-            "technique",
-            "encounter",
-            "dialogue",
-            "environment",
-            "sounds",
-            "music",
-            "animation",
-            "economy",
-            "element",
-            "shape",
-            "template",
-            "mission",
-        ]
-        self.preloaded: dict[TableName, dict[str, Any]] = {}
-        self.database: dict[TableName, dict[str, Any]] = {}
-        self.path = ""
-        for table in self._tables:
-            self.preloaded[table] = {}
-            self.database[table] = {}
 
-        # self.load(dir)
+class EntryNotFoundError(Exception):
+    pass
 
-    def preload(
-        self, directory: Union[TableName, Literal["all"]] = "all"
+
+class DependencyResolver:
+    def __init__(self, mod_dependencies: dict[str, list[str]]) -> None:
+        self.mod_dependencies = mod_dependencies
+
+    def resolve(
+        self, mod: str, visited: Optional[set[str]] = None
+    ) -> list[str]:
+        if visited is None:
+            visited = set()
+        if mod in visited:
+            return []
+        visited.add(mod)
+        dependencies = []
+        if mod in self.mod_dependencies:
+            for dep in self.mod_dependencies[mod]:
+                dependencies.extend(self.resolve(dep, visited))
+                dependencies.append(dep)
+        return list(dict.fromkeys(dependencies))
+
+
+class ModMetadataLoader:
+    def __init__(
+        self, active_mods: list[str], base_path: str = "mods"
     ) -> None:
+        self.active_mods = active_mods
+        self.base_path = Path(base_path)
+
+    def load_metadata(self) -> dict[str, dict[str, Any]]:
+        metadata = {}
+        for mod_directory in self.active_mods:
+            mod_path = self.base_path / mod_directory / "mod.yaml"
+            if mod_path.exists():
+                try:
+                    with mod_path.open() as f:
+                        metadata[mod_directory] = yaml.safe_load(f)
+                except yaml.YAMLError as e:
+                    logger.error(
+                        f"Error loading metadata for '{mod_directory}': {e}"
+                    )
+            else:
+                logger.error(f"Metadata file missing: '{mod_path}'")
+        return metadata
+
+
+class ModelLoader:
+    def __init__(self, model_map: dict[str, type[DataModel]]):
+        self.model_map = model_map
+
+    def validate(self, item: Mapping[str, Any], table: str) -> DataModel:
+        try:
+            model_class = self.model_map.get(table)
+            if model_class:
+                return model_class(**item)
+            else:
+                raise ValueError(f"Unexpected table: {table}")
+        except ValidationError as e:
+            logger.error(
+                f"Validation failed for '{item['slug']}' in table '{table}': {e}"
+            )
+            raise e
+
+    def load(
+        self, item: Mapping[str, Any], table: str, validate: bool = False
+    ) -> DataModel:
+        try:
+            if validate:
+                return self.validate(item, table)
+            else:
+                model_class = self.model_map.get(table)
+                if model_class:
+                    return model_class(**item)
+                else:
+                    raise ValueError(f"Unexpected table: {table}")
+        except ValidationError as e:
+            logger.error(
+                f"Validation failed for '{item.get('slug', 'unknown')}' in table '{table}': {e}"
+            )
+            if validate:
+                raise e
+        raise RuntimeError(f"Failed to load item for table '{table}'.")
+
+
+class ModData:
+
+    def __init__(
+        self,
+        config: DatabaseConfig,
+        loader: ModelLoader,
+        resolver: DependencyResolver,
+        mod_loader: ModMetadataLoader,
+    ) -> None:
+        self.config = config
+        self.resolver = resolver
+        self.loader = loader
+        self.preloaded: dict[str, dict[str, Any]] = {}
+        self.database: dict[str, dict[str, DataModel]] = {}
+        self.mod_metadata = mod_loader.load_metadata()
+        if self.config.mod_tables:
+            for mod, tables in self.config.mod_tables.items():
+                if mod in self.config.active_mods:
+                    for table in tables:
+                        if table not in self.preloaded:
+                            self.preloaded[table] = {}
+                            self.database[table] = {}
+
+    def preload(self, directory: str = "all") -> None:
         """
         Loads all data from JSON files located under our data path as an
         untyped preloaded dictionary.
@@ -1486,103 +2110,145 @@ class JSONDatabase:
         Parameters:
             directory: The directory under mods/tuxemon/db/ to load. Defaults
                 to "all".
-
         """
         if directory == "all":
-            for table in self._tables:
-                self.load_json(table)
+            if self.config.mod_tables:
+                ordered_mods_for_loading = []
+                resolved_set = set()
+
+                for mod in self.config.active_mods:
+                    if mod in self.config.mod_tables:
+                        dependencies = self.resolver.resolve(mod)
+
+                        for dep in dependencies:
+                            if dep not in resolved_set:
+                                logger.info(
+                                    f"Adding dependency to load queue: {dep}"
+                                )
+                                ordered_mods_for_loading.append(dep)
+                                resolved_set.add(dep)
+
+                        if mod not in resolved_set:
+                            logger.info(
+                                f"Adding main mod to load queue: {mod}"
+                            )
+                            ordered_mods_for_loading.append(mod)
+                            resolved_set.add(mod)
+
+                logger.info(
+                    f"Final ordered mods for loading: {ordered_mods_for_loading}"
+                )
+
+                for mod_to_load in ordered_mods_for_loading:
+                    if mod_to_load in self.config.mod_tables:
+                        logger.info(f"Loading mod: {mod_to_load}")
+                        for table in self.config.mod_tables[mod_to_load]:
+                            self._preload_table(table, mod_to_load)
+            else:
+                logger.warning("No mod tables specified in config.")
         else:
-            self.load_json(directory)
+            self._preload_table(directory, None)
+
+    def _preload_table(
+        self, table: str, mod_directory: Optional[str] = None
+    ) -> None:
+        """Preloads table data from mod directories."""
+        active_mods = [
+            mod
+            for mod in self.config.active_mods
+            if not self.config.mod_activation
+            or self.config.mod_activation.get(mod, True)
+        ]
+        mod_directories = [mod_directory] if mod_directory else active_mods
+
+        for mod_dir in mod_directories:
+            path = (
+                Path(self.config.mod_base_path)
+                / mod_dir
+                / self.config.mod_db_subfolder
+            )
+
+            if (
+                self.config.mod_versions
+                and mod_dir in self.config.mod_versions
+            ):
+                logger.info(
+                    f"Loading mod '{mod_dir}' version {self.config.mod_versions[mod_dir]}"
+                )
+
+            if not path.exists():
+                logger.warning(f"Mod directory '{path}' not found.")
+                continue
+
+            db_path = path / str(table)
+            if (
+                self.config.mod_table_exclusions
+                and mod_dir in self.config.mod_table_exclusions
+                and table in self.config.mod_table_exclusions[mod_dir]
+            ):
+                logger.info(f"Table '{table}' excluded by mod '{mod_dir}'.")
+                continue
+
+            if db_path.exists():
+                data_loader = load_files(table, path, self.config)
+                self.preloaded.setdefault(table, {}).update(data_loader)
+            else:
+                logger.warning(f"Database directory '{db_path}' not found.")
 
     def load(
         self,
-        directory: Union[TableName, Literal["all"]] = "all",
-        validate: bool = False,
+        directory: str = "all",
+        validate: bool = True,
     ) -> None:
         """
         Loads all data from JSON files located under our data path.
-
         Parameters:
             directory: The directory under mods/tuxemon/db/ to load. Defaults
                 to "all".
             validate: Whether or not we should raise an exception if validation
                 fails
-
         """
-        self.preload(directory)
-        for table, entries in self.preloaded.items():
-            for slug, item in entries.items():
-                self.load_model(item, table, validate)
-        self.preloaded.clear()
-
-    def _load_json_files(self, directory: TableName) -> None:
-        for json_item in os.listdir(os.path.join(self.path, directory)):
-            # Only load .json files.
-            if not json_item.endswith(".json"):
-                continue
-
-            # Load our json as a dictionary.
-            with open(os.path.join(self.path, directory, json_item)) as fp:
-                try:
-                    item = json.load(fp)
-                except ValueError as e:
-                    logger.error(f"Invalid JSON {json_item}: {e}")
-                    continue
-
-            if type(item) is list:
-                for sub in item:
-                    self.load_dict(
-                        sub, directory, os.path.join(self.path, directory)
-                    )
+        if directory == "all":
+            if self.config.mod_tables:
+                for mod, tables in self.config.mod_tables.items():
+                    if mod in self.config.active_mods:
+                        for table in tables:
+                            self._load_models_from_preloaded(table, validate)
             else:
-                self.load_dict(
-                    item, directory, os.path.join(self.path, directory)
-                )
-
-    def load_json(self, directory: TableName, validate: bool = False) -> None:
-        """
-        Loads all JSON items under a specified path.
-
-        Parameters:
-            directory: The directory under mods/mod_name/db/ to look in.
-            validate: Whether or not we should raise an exception if validation
-                fails
-
-        """
-        for mod_directory in prepare.CONFIG.mods:
-            self.path = os.path.join(paths.mods_folder, mod_directory, "db")
-            if os.path.exists(self.path) and os.path.exists(
-                os.path.join(self.path, directory)
-            ):
-                self._load_json_files(directory)
-
-    def load_dict(
-        self, item: Mapping[str, Any], table: TableName, path: str
-    ) -> None:
-        """
-        Loads a single json object and adds it to the appropriate preload db
-        table.
-
-        Parameters:
-            item: The json object to load in.
-            table: The db table to load the object into.
-            path: The path from which the item was loaded.
-
-        """
-        if item["slug"] in self.preloaded[table]:
-            if path in self.preloaded[table][item["slug"]].get("paths", []):
-                logger.warning(
-                    f"Error: Item with slug {item['slug']} was already loaded from this path ({path}).",
-                )
-                return
-            else:
-                self.preloaded[table][item["slug"]]["paths"].append(path)
+                logger.debug("No mod tables specified in config.")
         else:
-            self.preloaded[table][item["slug"]] = item
-            self.preloaded[table][item["slug"]]["paths"] = [path]
+            self._load_models_from_preloaded(directory, validate)
+
+    def _load_models_from_preloaded(self, table: str, validate: bool) -> None:
+        """Loads models from preloaded data into the main database."""
+        for item in self.preloaded[table].values():
+            if "paths" in item:
+                del item["paths"]
+
+            model = self._validate_and_load(item, table, validate)
+            if model:
+                self.database[table][model.slug] = model
+
+    def _validate_and_load(
+        self, item: Mapping[str, Any], table: str, validate: bool
+    ) -> Optional[DataModel]:
+        """Validates and loads a model entry."""
+        try:
+            model_class = self.loader.model_map.get(table)
+            if not model_class:
+                raise ValueError(f"Unexpected table: {table}")
+
+            return model_class(**item)
+        except ValidationError as e:
+            logger.error(
+                f"Validation failed for '{item.get('slug', 'unknown')}' in table '{table}': {e}"
+            )
+            if validate:
+                raise e
+            return None
 
     def load_model(
-        self, item: Mapping[str, Any], table: TableName, validate: bool = False
+        self, item: Mapping[str, Any], table: str, validate: bool = False
     ) -> None:
         """
         Loads a single json object, casts it to the appropriate data model,
@@ -1593,156 +2259,12 @@ class JSONDatabase:
             table: The db table to load the object into.
             validate: Whether or not we should raise an exception if validation
                 fails
-
         """
-        if item["slug"] in self.database[table]:
-            logger.warning(
-                "Error: Item with slug %s was already loaded.",
-                item,
-            )
-            return
+        model = self._validate_and_load(item, table, validate)
+        if model:
+            self.database[table][model.slug] = model
 
-        try:
-            if table == "economy":
-                economy = EconomyModel(**item)
-                self.database[table][economy.slug] = economy
-            elif table == "element":
-                element = ElementModel(**item)
-                self.database[table][element.slug] = element
-            elif table == "shape":
-                shape = ShapeModel(**item)
-                self.database[table][shape.slug] = shape
-            elif table == "template":
-                template = TemplateModel(**item)
-                self.database[table][template.slug] = template
-            elif table == "mission":
-                mission = MissionModel(**item)
-                self.database[table][mission.slug] = mission
-            elif table == "encounter":
-                encounter = EncounterModel(**item)
-                self.database[table][encounter.slug] = encounter
-            elif table == "dialogue":
-                dialogue = DialogueModel(**item)
-                self.database[table][dialogue.slug] = dialogue
-            elif table == "environment":
-                env = EnvironmentModel(**item)
-                self.database[table][env.slug] = env
-            elif table == "item":
-                itm = ItemModel(**item)
-                self.database[table][itm.slug] = itm
-            elif table == "monster":
-                mon = MonsterModel(**item)
-                self.database[table][mon.slug] = mon
-            elif table == "music":
-                music = MusicModel(**item)
-                self.database[table][music.slug] = music
-            elif table == "animation":
-                animation = AnimationModel(**item)
-                self.database[table][animation.slug] = animation
-            elif table == "npc":
-                npc = NpcModel(**item)
-                self.database[table][npc.slug] = npc
-            elif table == "sounds":
-                sfx = SoundModel(**item)
-                self.database[table][sfx.slug] = sfx
-            elif table == "condition":
-                cond = ConditionModel(**item)
-                self.database[table][cond.slug] = cond
-            elif table == "technique":
-                teq = TechniqueModel(**item)
-                self.database[table][teq.slug] = teq
-            else:
-                raise ValueError(f"Unexpected {table =}")
-        except (ValidationError, ValueError) as e:
-            logger.error(f"validation failed for '{item['slug']}': {e}")
-            if validate:
-                raise e
-
-    @overload
-    def lookup(self, slug: str) -> MonsterModel:
-        pass
-
-    @overload
-    def lookup(self, slug: str, table: Literal["monster"]) -> MonsterModel:
-        pass
-
-    @overload
-    def lookup(self, slug: str, table: Literal["condition"]) -> ConditionModel:
-        pass
-
-    @overload
-    def lookup(self, slug: str, table: Literal["technique"]) -> TechniqueModel:
-        pass
-
-    @overload
-    def lookup(self, slug: str, table: Literal["item"]) -> ItemModel:
-        pass
-
-    @overload
-    def lookup(self, slug: str, table: Literal["npc"]) -> NpcModel:
-        pass
-
-    @overload
-    def lookup(self, slug: str, table: Literal["encounter"]) -> EncounterModel:
-        pass
-
-    @overload
-    def lookup(self, slug: str, table: Literal["dialogue"]) -> DialogueModel:
-        pass
-
-    @overload
-    def lookup(self, slug: str, table: Literal["economy"]) -> EconomyModel:
-        pass
-
-    @overload
-    def lookup(self, slug: str, table: Literal["element"]) -> ElementModel:
-        pass
-
-    @overload
-    def lookup(self, slug: str, table: Literal["shape"]) -> ShapeModel:
-        pass
-
-    @overload
-    def lookup(self, slug: str, table: Literal["template"]) -> TemplateModel:
-        pass
-
-    @overload
-    def lookup(self, slug: str, table: Literal["mission"]) -> MissionModel:
-        pass
-
-    @overload
-    def lookup(
-        self,
-        slug: str,
-        table: Literal["music"],
-    ) -> MusicModel:
-        pass
-
-    @overload
-    def lookup(
-        self,
-        slug: str,
-        table: Literal["animation"],
-    ) -> AnimationModel:
-        pass
-
-    @overload
-    def lookup(
-        self,
-        slug: str,
-        table: Literal["sounds"],
-    ) -> SoundModel:
-        pass
-
-    @overload
-    def lookup(
-        self,
-        slug: str,
-        table: Literal["environment"],
-    ) -> EnvironmentModel:
-        pass
-
-    def lookup(self, slug: str, table: TableName) -> DataModel:
+    def lookup(self, slug: str, table: Optional[str] = None) -> DataModel:
         """
         Looks up a monster, technique, item, npc, etc based on slug.
 
@@ -1753,94 +2275,183 @@ class JSONDatabase:
 
         Returns:
             A pydantic.BaseModel from the resulting lookup.
-
         """
-        table_entry = self.database[table]
+        if table is None:
+            table = self.config.default_lookup_table
+        table_entry = self.database.get(table)
         if not table_entry:
-            logger.exception(f"{table} table wasn't loaded")
-            sys.exit()
+            raise ValueError(f"{table} table wasn't loaded")
         if slug not in table_entry:
-            self.log_missing_entry_and_exit(table, slug)
-        else:
-            return table_entry[slug]
+            self.log_missing_entry_and_raise(table, slug)
+        return table_entry[slug]
 
-    def lookup_file(self, table: TableName, slug: str) -> str:
-        """
-        Does a lookup with the given slug in the given table.
-
-        It expects a dictionary with two keys, 'slug' and 'file'.
-
-        Parameters:
-            slug: The slug of the file record.
-            table: The table to do the lookup in, such as "sounds" or "music".
-
-        Returns:
-            The 'file' property of the resulting dictionary OR the slug if it
-            doesn't exist.
-
-        """
-
-        filename = self.database[table][slug].file or slug
-        if filename == slug:
-            logger.debug(
-                f"Could not find a file record for slug {slug}, did you remember to create a database record?"
-            )
-
-        return filename
-
-    def has_entry(self, slug: str, table: TableName) -> bool:
-        table_entry = self.database[table]
-        if not table_entry:
-            logger.exception(f"{table} table wasn't loaded")
-            sys.exit()
-        return slug in table_entry
-
-    def log_missing_entry_and_exit(
-        self,
-        table: Literal[
-            "economy",
-            "element",
-            "shape",
-            "template",
-            "mission",
-            "encounter",
-            "dialogue",
-            "environment",
-            "item",
-            "monster",
-            "music",
-            "animation",
-            "npc",
-            "sounds",
-            "condition",
-            "technique",
-        ],
-        slug: str,
-    ) -> None:
+    def log_missing_entry_and_raise(self, table: str, slug: str) -> None:
+        """Logs a missing entry and raises EntryNotFoundError."""
         options = difflib.get_close_matches(slug, self.database[table].keys())
-        options = [repr(s) for s in options]
-        if len(options) >= 2:
-            options_string = ", ".join(
-                (*options[:-2], options[-2] + " or " + options[-1])
+        options_str = ", ".join(repr(s) for s in options)
+        hint = (
+            f"Did you mean {options_str}?"
+            if options
+            else "No similar slugs found."
+        )
+        raise EntryNotFoundError(
+            f"Lookup failed for unknown {table} '{slug}'. {hint}"
+        )
+
+    def get_entry(self, table: str, slug: str) -> str:
+        """Checks existence of an entry and returns its file path if available."""
+        table_data = self.database.get(table)
+
+        if not table_data:
+            raise ValueError(
+                f"Table '{table}' does not exist in the database."
             )
-            hint = f"Did you mean {options_string}?"
-        elif len(options) == 1:
-            options_string = options[0]
-            hint = f"Did you mean {options_string}?"
+
+        entry = table_data.get(slug)
+
+        if entry is None:
+            raise EntryNotFoundError(
+                f"Entry '{slug}' not found in table '{table}'."
+            )
+
+        return getattr(entry, "file", slug)
+
+    def reload(self, table: str, validate: bool = True) -> None:
+        """Reloads the data for a specific table."""
+        if table not in self.database:
+            logger.error(f"Table '{table}' not loaded.")
+            return
+
+        if table in self.preloaded:
+            logger.info(f"Clearing preloaded data for table '{table}'.")
+            self.preloaded[table] = {}
+        if table in self.database:
+            logger.info(f"Resetting database entries for table '{table}'.")
+            self.database[table] = {}
+
+        try:
+            if table in self.config.mod_tables:
+                mods_associated = [
+                    mod
+                    for mod, tables in self.config.mod_tables.items()
+                    if table in tables and mod in self.config.active_mods
+                ]
+                for mod in mods_associated:
+                    mod_path = (
+                        Path(self.config.mod_base_path)
+                        / mod
+                        / self.config.mod_db_subfolder
+                    )
+                    logger.info(
+                        f"Preloading table '{table}' from mod path '{mod_path}'."
+                    )
+                    self._preload_table(table, mod)
+
+            self._load_models_from_preloaded(table, validate)
+        except Exception as e:
+            logger.error(f"Error reloading table '{table}': {e}")
+
+    def add_entry(
+        self, table: str, data: dict[str, Any], validate: bool = True
+    ) -> None:
+        try:
+            model = self.loader.load(data, table, validate)
+
+            if table not in self.database:
+                self.database[table] = {}
+
+            if model.slug in self.database[table]:
+                logger.error(
+                    f"Entry with slug '{model.slug}' already exists in table '{table}'. Skipping addition."
+                )
+                return
+
+            self.database[table][model.slug] = model
+            logger.info(
+                f"Entry '{model.slug}' added to table '{table}' successfully!"
+            )
+
+        except ValidationError as e:
+            logger.error(
+                f"Validation failed for entry '{data.get('slug', 'unknown')}' in table '{table}': {e}"
+            )
+            if validate:
+                raise e
+        except Exception as ex:
+            logger.error(
+                f"Unexpected error while adding entry to table '{table}': {ex}"
+            )
+
+
+def load_files(
+    directory: str, path: Path, config: DatabaseConfig
+) -> dict[str, Any]:
+    preloaded_data: dict[str, Any] = {}
+    extensions = config.file_extensions
+    directory_path = path / directory
+    for entry in directory_path.iterdir():
+        if entry.is_file() and any(entry.suffix == ext for ext in extensions):
+            try:
+                with entry.open() as fp:
+                    item = (
+                        json.load(fp)
+                        if entry.suffix == ".json"
+                        else yaml.safe_load(fp)
+                    )
+
+                if isinstance(item, list):
+                    for sub_item in item:
+                        load_dict(sub_item, entry, preloaded_data)
+                else:
+                    load_dict(item, entry, preloaded_data)
+            except (
+                json.JSONDecodeError,
+                yaml.YAMLError,
+                FileNotFoundError,
+            ) as e:
+                logger.error(f"Error loading file '{entry}': {e}")
+    return preloaded_data
+
+
+def load_dict(
+    item: Mapping[str, Any],
+    path: Path,
+    preloaded_data: dict[str, Any],
+) -> None:
+    if item["slug"] in preloaded_data:
+        if path in preloaded_data[item["slug"]].get("paths", []):
+            logger.error(
+                f"Error: Item with slug {item['slug']} was already loaded from this path ({path})."
+            )
+            return
         else:
-            hint = "No similar slugs. Are you sure it's in the DB?"
-        logger.exception(f"Lookup failed for unknown {table} '{slug}'. {hint}")
-        sys.exit()
+            preloaded_data[item["slug"]]["paths"].append(path)
+    else:
+        preloaded_data[item["slug"]] = item
+        preloaded_data[item["slug"]]["paths"] = [path]
+
+
+def load_config(config_path: str) -> DatabaseConfig:
+    """Loads configuration from a YAML file."""
+    try:
+        with open(config_path) as f:
+            data = yaml.safe_load(f)
+        return DatabaseConfig(**data)
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            f"Configuration file '{config_path}' not found."
+        )
+    except yaml.YAMLError as e:
+        raise ValueError(f"Invalid YAML in '{config_path}': {e}")
 
 
 class Validator:
     """
     Helper class for validating resources exist.
-
     """
 
-    def __init__(self) -> None:
-        self.db = JSONDatabase()
+    def __init__(self, database: ModData) -> None:
+        self.db = database
         self.db.preload()
 
     def translation(self, msgid: str) -> bool:
@@ -1853,7 +2464,6 @@ class Validator:
 
         Returns:
             True if translation exists
-
         """
         return T.translate(msgid) != msgid
 
@@ -1866,12 +2476,10 @@ class Validator:
 
         Returns:
             True if file exists
-
         """
-
         try:
-            path = prepare.fetch(file)
-            return os.path.exists(path)
+            path = Path(prepare.fetch(file))
+            return path.exists()
         except OSError:
             return False
 
@@ -1885,62 +2493,25 @@ class Validator:
 
         Returns:
             True if file respects
-
         """
         path = prepare.fetch(file)
-        sprite = Image.open(path)
-        native = prepare.NATIVE_RESOLUTION
-        if size == native:
-            if sprite.size[0] > size[0] or sprite.size[1] > size[1]:
-                sprite.close()
-                raise ValueError(
-                    f"{file} {sprite.size}: "
-                    f"It must be less than the native resolution {native}"
-                )
-        else:
-            if sprite.size[0] != size[0] or sprite.size[1] != size[1]:
-                sprite.close()
-                raise ValueError(
-                    f"{file} {sprite.size}: It must be equal to {size}"
-                )
-        sprite.close()
+        with Image.open(path) as sprite:
+            native = prepare.NATIVE_RESOLUTION
+            if size == native:
+                if not (
+                    sprite.size[0] <= size[0] and sprite.size[1] <= size[1]
+                ):
+                    raise ValueError(
+                        f"{file} has size {sprite.size}, but must be less than or equal to {native}"
+                    )
+            else:
+                if sprite.size != size:
+                    raise ValueError(
+                        f"{file} has size {sprite.size}, but must be {size}"
+                    )
         return True
 
-    def check_conditions(self, conditions: Sequence[str]) -> bool:
-        """
-        Check to see if a condition is correctly formatted.
-
-        Parameters:
-            conditions: The sequence containing the conditions
-
-        Returns:
-            True if it's correctly formatted
-
-        """
-        if not conditions:
-            return True
-
-        _conditions = [
-            element
-            for condition in conditions
-            for element in condition.split(" ")
-        ]
-
-        # check nr of elements
-        if len(_conditions) == 1:
-            raise ValueError(
-                f"{_conditions} invalid, it must have at least: 'is' + 'condition'"
-            )
-
-        # check prefix
-        prefix = _conditions[0]
-        _prefix = True if prefix == "is" or _conditions[0] == "not" else False
-        if not _prefix:
-            raise ValueError(f"{prefix} is invalid, it must be: 'is' or 'not'")
-
-        return True
-
-    def db_entry(self, table: TableName, slug: str) -> bool:
+    def db_entry(self, table: str, slug: str) -> bool:
         """
         Check to see if the given slug exists in the database for the given
         table.
@@ -1953,45 +2524,17 @@ class Validator:
 
         Returns:
             True if entry exists
-
         """
-
-        if slug in self.db.preloaded[table]:
-            return True
-        return False
-
-    def validate_variables(self, variables: Sequence[str]) -> Sequence[str]:
-        """
-        Validates a sequence of variables.
-
-        Parameters:
-        variables: A sequence of variables, where each variable is a string
-            in the format "key:value".
-
-        Returns:
-            The input sequence if it is valid.
-
-        Raises:
-        ValueError: If the sequence contains duplicate variables or if any variable
-                    is not in the correct format.
-        """
-        if len(variables) != len(set(variables)):
-            raise ValueError("The sequence contains duplicate variables")
-        for variable in variables:
-            if (
-                not variable
-                or len(variable.split(":")) != 2
-                or variable[0] == ":"
-                or variable[-1] == ":"
-            ):
-                raise ValueError(
-                    f"the variable {variable} isn't formatted correctly"
-                )
-        return variables
+        return slug in self.db.preloaded[table]
 
 
-# Validator container
-has = Validator()
-
+path = prepare.fetch(mods_folder.as_posix(), "db_config.yaml")
+config = load_config(path)
+model_map = load_model_map(config.model_map)
+loader = ModelLoader(model_map)
+resolver = DependencyResolver(config.mod_dependencies)
+mod_loader = ModMetadataLoader(config.active_mods, config.mod_base_path)
 # Global database container
-db = JSONDatabase()
+db = ModData(config, loader, resolver, mod_loader)
+# Validator container
+has = Validator(db)

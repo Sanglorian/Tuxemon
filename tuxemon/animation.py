@@ -1,27 +1,56 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from collections import defaultdict
 from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass, field
+from enum import Enum, auto
 from math import cos, pi, sin, sqrt
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, cast
+from weakref import ref
 
-import pygame
+from pygame.rect import Rect
+from pygame.sprite import Group, Sprite
 
 __all__ = ("Task", "Animation", "remove_animations_of")
 
-from tuxemon.compat import Rect
 
 ScheduledFunction = Callable[[], Any]
 
 logger = logging.getLogger(__name__)
 
-ANIMATION_NOT_STARTED = 0
-ANIMATION_RUNNING = 1
-ANIMATION_DELAYED = 2
-ANIMATION_FINISHED = 3
+
+class AnimationState(Enum):
+    NOT_STARTED = auto()
+    RUNNING = auto()
+    DELAYED = auto()
+    FINISHED = auto()
+    ABORTED = auto()
+
+
+class ScheduleType(Enum):
+    ON_UPDATE = "on update"
+    ON_FINISH = "on finish"
+    ON_ABORT = "on abort"
+    ON_INTERVAL = "on interval"
+
+
+@dataclass
+class AnimatedPropertyData:
+    """Stores the initial and final values for an animated property."""
+
+    initial: float
+    final: float
+
+
+@dataclass
+class AnimatedTargetData:
+    """Stores a target object and the properties being animated on it."""
+
+    target_ref: ref[object]
+    properties: Mapping[str, AnimatedPropertyData]
 
 
 def check_number(value: Any) -> float:
@@ -32,7 +61,6 @@ def check_number(value: Any) -> float:
 
     Parameters:
         value: Some object.
-
     """
     try:
         return float(value)
@@ -40,36 +68,43 @@ def check_number(value: Any) -> float:
         raise ValueError
 
 
-def remove_animations_of(target: object, group: pygame.sprite.Group) -> None:
+def remove_animations_of(
+    target: object, group: Group[Union[Task, Animation]]
+) -> None:
     """
-    Find animations that target objects and remove those animations.
+    Removes animations associated with a given target.
 
     Parameters:
-        target: Object whose animations should be removed.
-        group: Pygame group where to remove the animations.
-
+        target: The object whose animations should be removed.
+        group: A Pygame group containing `Animation` instances.
     """
-    animations = [ani for ani in group.sprites() if isinstance(ani, Animation)]
+    animations = {ani for ani in group if isinstance(ani, Animation)}
     to_remove = [
-        ani for ani in animations if target in [i[0] for i in ani.targets]
+        ani
+        for ani in animations
+        if any(td.target_ref() == target for td in ani.targets)
     ]
+    if not to_remove:
+        logger.debug(f"No animations found for target: {target}")
     group.remove(*to_remove)
 
 
-class TaskBase(pygame.sprite.Sprite):
-    _valid_schedules: Sequence[str] = []
+class TaskBase(Sprite):
+    _valid_schedules: Sequence[ScheduleType] = []
 
     def __init__(self) -> None:
         super().__init__()
         self._callbacks: defaultdict[
-            str,
-            list[ScheduledFunction],
+            ScheduleType,
+            list[tuple[ScheduledFunction, tuple[Any, ...], dict[str, Any]]],
         ] = defaultdict(list)
 
     def schedule(
         self,
         func: ScheduledFunction,
-        when: Optional[str] = None,
+        when: Optional[ScheduleType] = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         """
         Schedule a callback during operation of Task or Animation.
@@ -80,31 +115,34 @@ class TaskBase(pygame.sprite.Sprite):
         * "on update": called each time the Task/Animation is updated.
         * "on finish": called when the Task/Animation completes normally.
         * "on abort": called if the Task/Animation is aborted.
+        * "on interval": called each interval for Tasks.
 
-        If when is not passed, it will be "on finish":
+        If when is not passed, it will be the first valid schedule type.
 
         Parameters:
             func: Callable to schedule.
             when: Time when ``func`` is going to be called.
-
+            args: Positional arguments to pass to the callback.
+            kwargs: Keyword arguments to pass to the callback.
         """
         if when is None:
             when = self._valid_schedules[0]
 
         if when not in self._valid_schedules:
             raise ValueError(
-                "invalid time to schedule a callback"
-                f"valid: {self._valid_schedules}"
+                f"Invalid time to schedule a callback: '{when.value}'. "
+                f"Valid options: {[s.value for s in self._valid_schedules]}"
             )
-        self._callbacks[when].append(func)
 
-    def _execute_callbacks(self, when: str) -> None:
-        try:
-            callbacks = self._callbacks[when]
-        except KeyError:
-            return
-        else:
-            [cb() for cb in callbacks]
+        self._callbacks[when].append((func, args, kwargs))
+
+    def _execute_callbacks(self, when: ScheduleType) -> None:
+        """
+        Execute all scheduled callbacks for a given time.
+        """
+        if when in self._callbacks:
+            for func, args, kwargs in self._callbacks[when]:
+                func(*args, **kwargs)
 
 
 class Task(TaskBase):
@@ -132,7 +170,7 @@ class Task(TaskBase):
         times: Number of intervals.
 
     Examples:
-        >>> task_group = pygame.sprite.Group()
+        >>> task_group = Group()
 
         >>> # like a delay
         >>> def call_later():
@@ -159,10 +197,13 @@ class Task(TaskBase):
         >>> task.chain(Task(something_else))
 
         When chaining tasks, do not add the chained tasks to a group.
-
     """
 
-    _valid_schedules = ("on interval", "on finish", "on abort")
+    _valid_schedules = (
+        ScheduleType.ON_INTERVAL,
+        ScheduleType.ON_FINISH,
+        ScheduleType.ON_ABORT,
+    )
 
     def __init__(
         self,
@@ -176,16 +217,18 @@ class Task(TaskBase):
         if interval < 0:
             raise ValueError("interval must be non negative")
 
-        if times <= 0:
-            raise ValueError("times must be positive")
+        if times < -1 or times == 0:
+            raise ValueError(
+                "times must be -1 for infinite loops, or a positive integer (>= 1)"
+            )
 
         super().__init__()
         self._interval = interval
         self._loops = times
         self._duration: float = 0
         self._chain: list[Task] = []
-        self._state = ANIMATION_RUNNING
-        self.schedule(callback)
+        self._state = AnimationState.RUNNING
+        self.schedule(callback, ScheduleType.ON_INTERVAL)
 
     def chain(
         self,
@@ -206,10 +249,8 @@ class Task(TaskBase):
             callback: Function to execute each interval.
             interval: Time between callbacks.
             times: Number of intervals.
-
         """
-        task = Task(callback, interval, times)
-        self.chain_task(task)
+        self.chain_task(Task(callback, interval, times))
 
     def chain_task(self, *others: Task) -> Sequence[Task]:
         """
@@ -223,13 +264,12 @@ class Task(TaskBase):
 
         Returns:
             The sequence of added Tasks.
-
         """
-        if self._loops <= -1:
-            raise RuntimeError
+        if self._loops == -1:
+            raise RuntimeError("Cannot chain a task to an infinite loop task.")
         for task in others:
             if not isinstance(task, Task):
-                raise TypeError
+                raise TypeError(f"Expected Task, got {type(task).__name__}")
             self._chain.append(task)
         return others
 
@@ -240,47 +280,51 @@ class Task(TaskBase):
         The unit of time passed must match the one used in the
         constructor.
 
-        Task will not 'make up for lost time'.  If an interval
+        Task will not 'make up for lost time'. If an interval
         was skipped because of a lagging clock, then callbacks
         will not be made to account for the missed ones.
 
         Parameters:
             dt: Time passed since last update.
-
         """
-        if self._state is not ANIMATION_RUNNING:
-            raise RuntimeError
+        if self._state is not AnimationState.RUNNING:
+            raise RuntimeError(
+                f"Task cannot proceed: expected state "
+                f" {AnimationState.RUNNING.name}, but found {self._state.name}."
+            )
 
         self._duration += dt
+        self._execute_callbacks(ScheduleType.ON_UPDATE)
         if self._duration >= self._interval:
             self._duration -= self._interval
-            if self._loops >= 0:
+            if self._loops > 0:
                 self._loops -= 1
                 if self._loops == 0:
-                    # loops counter is zero, finish now
                     self.finish()
                 else:
-                    # not finished, but still are iterations left
-                    self._execute_callbacks("on interval")
-            else:
-                # loops == -1, run forever
-                self._execute_callbacks("on interval")
+                    self._execute_callbacks(ScheduleType.ON_INTERVAL)
+            elif self._loops == -1:
+                self._execute_callbacks(ScheduleType.ON_INTERVAL)
 
     def finish(self) -> None:
         """Force task to finish, while executing callbacks."""
-        if self._state is ANIMATION_RUNNING:
-            self._state = ANIMATION_FINISHED
-            self._execute_callbacks("on interval")
-            self._execute_callbacks("on finish")
+        if self._state is AnimationState.RUNNING:
+            self._state = AnimationState.FINISHED
+            self._execute_callbacks(ScheduleType.ON_INTERVAL)
+            self._execute_callbacks(ScheduleType.ON_FINISH)
             self._execute_chain()
             self._cleanup()
+        else:
+            logger.debug(
+                "Task already finished or not running, cannot finish again."
+            )
 
     def is_finish(self) -> bool:
         """
         Returns:
             Whether the task is finished or not.
         """
-        return self._state is ANIMATION_FINISHED
+        return self._state is AnimationState.FINISHED
 
     def reset_delay(self, new_delay: float) -> None:
         """
@@ -296,8 +340,12 @@ class Task(TaskBase):
             self._duration = 0
 
     def abort(self) -> None:
-        """Force task to finish, without executing callbacks."""
-        self._state = ANIMATION_FINISHED
+        """Force task to finish, without executing 'on interval' callbacks."""
+        if self._state is AnimationState.FINISHED:
+            return
+
+        self._state = AnimationState.FINISHED
+        self._execute_callbacks(ScheduleType.ON_ABORT)
         self._cleanup()
 
     def _cleanup(self) -> None:
@@ -310,7 +358,7 @@ class Task(TaskBase):
             task.add(*groups)
 
 
-class Animation(pygame.sprite.Sprite):
+class Animation(TaskBase):
     """
     Change numeric values over time.
 
@@ -336,12 +384,12 @@ class Animation(pygame.sprite.Sprite):
     You can also specify a callback that will be executed when the
     animation finishes:
 
-        >>> ani.callback = my_function
+        >>> ani.schedule(my_function, ScheduleType.ON_FINISH)
 
     Another optional callback is available that is called after
     each update:
 
-        >>> ani.update_callback = post_update_function
+        >>> ani.schedule(post_update_function, ScheduleType.ON_UPDATE)
 
     Animations must be added to a sprite group in order for them
     to be updated.  If the sprite group that contains them is
@@ -380,7 +428,7 @@ class Animation(pygame.sprite.Sprite):
     Parameters:
         targets: Any valid python objects.
         delay: Delay time before the animation starts.
-        round_values: Wether the values must be rounded to the nearest
+        round_values: Whether the values must be rounded to the nearest
             integer before being set.
         duration: Time duration of the animation.
         transition: Transition to use in the animation. Can be the name
@@ -393,7 +441,37 @@ class Animation(pygame.sprite.Sprite):
             one.
         kwargs: Properties of the ``targets`` to be used, and their values.
 
+    Attributes:
+        targets: A list of AnimatedTargetData objects, each containing a target
+            reference and a dictionary of animated properties.
+        _targets: A list of weak references to the target objects.
+        delay: The delay time before the animation starts.
+        _state: The current state of the animation (NOT_STARTED, RUNNING, FINISHED, or ABORTED).
+        _round_values: Whether the values must be rounded to the nearest integer before being set.
+        _duration: The time duration of the animation.
+        _transition: The transition function to use in the animation.
+        _initial: The initial value. Can be numeric or a callable that returns a numeric value.
+        _relative: Whether the values are relative to the initial value.
+        _elapsed: The elapsed time since the animation started.
+
+    Methods:
+        start: Start the animation on a target sprite/object.
+        update: Update the animation.
+        finish: Finish the animation and execute callbacks.
+        abort: Abort the animation and execute callbacks.
+        schedule: Schedule a callback to be executed at a specific time.
+
+    Callbacks:
+        ON_UPDATE: Called after each update.
+        ON_FINISH: Called when the animation finishes.
+        ON_ABORT: Called when the animation is aborted.
     """
+
+    _valid_schedules = (
+        ScheduleType.ON_UPDATE,
+        ScheduleType.ON_FINISH,
+        ScheduleType.ON_ABORT,
+    )
 
     default_duration = 1000.0
     default_transition = "linear"
@@ -407,120 +485,80 @@ class Animation(pygame.sprite.Sprite):
         transition: Union[str, Callable[[float], float], None] = None,
         initial: Union[float, Callable[[], float], None] = None,
         relative: bool = False,
+        callback: Optional[ScheduledFunction] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__()
-        self.callback: Callable[[], Any]
-        self.update_callback: Callable[[], Any]
 
-        self.targets: list[
-            tuple[object, Mapping[str, tuple[float, float]]]
-        ] = list()
-        self._targets: Sequence[object] = list()
+        self.targets: list[AnimatedTargetData] = field(default_factory=list)
+        self._targets: Sequence[ref[object]] = field(default_factory=list)
+
         self.delay = delay
-        self._state = ANIMATION_NOT_STARTED
+        self._state = AnimationState.NOT_STARTED
         self._round_values = round_values
 
         self._duration = (
             self.default_duration if duration is None else duration
         )
-
-        if transition is None:
-            transition = self.default_transition
-
-        if isinstance(transition, str):
-            transition = getattr(AnimationTransition, transition)
-            assert callable(transition)
-
-        self._transition = transition
+        self._transition = self._resolve_transition(transition)
         self._initial = initial
         self._relative = relative
         self._elapsed = 0.0
 
         if not kwargs:
-            raise ValueError
+            raise ValueError(
+                "Animation must have at least one property to modify"
+            )
         self.props = kwargs
 
         if targets:
             self.start(*targets)
 
+    def _resolve_transition(
+        self, transition: Union[str, Callable[[float], float], None] = None
+    ) -> Callable[[float], float]:
+        if transition is None:
+            transition = self.default_transition
+        if isinstance(transition, str):
+            transition_func = getattr(AnimationTransition, transition, None)
+            if transition_func is None or not callable(transition_func):
+                raise ValueError(f"Invalid transition name: {transition}")
+            return cast(Callable[[float], float], transition_func)
+        if not callable(transition):
+            raise TypeError(
+                "Provided transition must be a callable function or a valid string identifier"
+            )
+        return transition
+
     def _get_value(self, target: object, name: str) -> float:
-        """
-        Get value of an attribute, even if it is a callable.
-
-        Parameters:
-            target: Object that contains the attribute.
-            name: Name of the attribute to get the value from.
-
-        Returns:
-            Attribute value.
-
-        """
         if self._initial is None:
             value = getattr(target, name)
         else:
             value = self._initial
-
         if callable(value):
             value = value()
-
         return check_number(value)
 
     def _set_value(self, target: object, name: str, value: float) -> None:
-        """
-        Set a value on some other object.
-
-        If the name references a callable type, then
-        the object of that name will be called with 'value'
-        as the first and only argument.
-
-        Because callables are 'write only', there is no way
-        to determine the initial value.  you can supply
-        an initial value in the constructor as a value or
-        reference to a callable object.
-
-        Parameters:
-            target: Object to be modified.
-            name: Name of attribute to be modified.
-            value: New value of the attribute.
-
-        """
         if self._round_values:
-            value = int(round(value, 0))
-
+            value = round(value)
         attr = getattr(target, name)
         if callable(attr):
             attr(value)
         else:
             setattr(target, name, value)
 
-    def update(self, dt: float) -> None:
-        """
-        Update the animation.
-
-        The unit of time passed must match the one used in the
-        constructor.
-
-        Make sure that you start the animation, otherwise your
-        animation will not be changed during update().
-
-        Will raise RuntimeError if animation is updated after
-        it has finished.
-
-        Parameters:
-            dt: Time passed since last update.
-
-        """
-        if self._state is ANIMATION_FINISHED:
-            return
-            # raise RuntimeError
-
-        if self._state is not ANIMATION_RUNNING:
+    def update(self, time_delta: float) -> None:
+        if self._state in (AnimationState.FINISHED, AnimationState.ABORTED):
             return
 
-        self._elapsed += dt
+        if self._state is not AnimationState.RUNNING:
+            return
+
+        self._elapsed += time_delta
+
         if self.delay > 0:
-            if self._elapsed > self.delay:
+            if self._elapsed >= self.delay:
                 self._elapsed -= self.delay
                 self._gather_initial_values()
                 self.delay = 0
@@ -528,102 +566,121 @@ class Animation(pygame.sprite.Sprite):
 
         p = min(1.0, self._elapsed / self._duration)
         t = self._transition(p)
-        for target, props in self.targets:
-            for name, values in props.items():
-                a, b = values
+
+        for target_data in self.targets:
+            target = target_data.target_ref()
+            if target is None:
+                continue
+
+            for name, prop_data in target_data.properties.items():
+                a, b = prop_data.initial, prop_data.final
                 value = (a * (1.0 - t)) + (b * t)
                 self._set_value(target, name, value)
 
-        if hasattr(self, "update_callback"):
-            self.update_callback()
+        self._execute_callbacks(ScheduleType.ON_UPDATE)
 
         if p >= 1:
             self.finish()
 
     def finish(self) -> None:
-        """
-        Force animation to finish, apply transforms, and execute callbacks.
+        if self._state is not AnimationState.RUNNING:
+            return
 
-        * Update callback will be called because the value is changed.
-        * Final callback ('callback') will be called.
-        * Final values will be applied.
-        * Animation will be removed from group.
+        self._state = AnimationState.FINISHED
 
-        """
-        # if self._state is not ANIMATION_RUNNING:
-        #     raise RuntimeError
+        for target_data in self.targets:
+            target = target_data.target_ref()
+            if target is None:
+                continue
+            for name, prop_data in target_data.properties.items():
+                self._set_value(target, name, prop_data.final)
 
-        if self.targets is not None:
-            for target, props in self.targets:
-                for name, values in props.items():
-                    a, b = values
-                    self._set_value(target, name, b)
+        self._execute_callbacks(ScheduleType.ON_UPDATE)
+        self._execute_callbacks(ScheduleType.ON_FINISH)
 
-        if hasattr(self, "update_callback"):
-            self.update_callback()
-
-        self.abort()
+        self.kill()
 
     def abort(self) -> None:
-        """
-        Force animation to finish, without any cleanup.
+        if self._state in (AnimationState.FINISHED, AnimationState.ABORTED):
+            return
 
-        * Update callback will not be executed.
-        * Final callback will be executed.
-        * Values will not change.
-        * Animation will be removed from group.
-
-        """
-        # if self._state is not ANIMATION_RUNNING:
-        #     raise RuntimeError
-
-        self._state = ANIMATION_FINISHED
-        self.targets = []
+        self._state = AnimationState.ABORTED
+        self._execute_callbacks(ScheduleType.ON_ABORT)
         self.kill()
-        if hasattr(self, "callback"):
-            self.callback()
 
     def start(self, *targets: object, **kwargs: Any) -> None:
         """
         Start the animation on a target sprite/object.
-
-        Targets must have the attributes that were set when
-        this animation was created.
-
-        Parameters:
-            targets: Any valid python objects.
-            kwargs: Ignored.
-
-        Raises:
-            RuntimeError: If the animation is already started.
-
+        ...
         """
-        # TODO: weakref the targets
-        if self._state is not ANIMATION_NOT_STARTED:
-            raise RuntimeError
+        if self._state is not AnimationState.NOT_STARTED:
+            raise RuntimeError("Animation has already been started.")
 
-        self._state = ANIMATION_RUNNING
-        self._targets = targets
+        if kwargs:
+            raise TypeError("start() got an unexpected keyword argument")
+
+        self._state = AnimationState.RUNNING
+
+        self._targets = [ref(t) for t in targets]
 
         if self.delay == 0:
             self._gather_initial_values()
 
     def _gather_initial_values(self) -> None:
-        self.targets = list()
-        for target in self._targets:
-            props = dict()
-            if isinstance(target, Rect):
-                self._round_values = True
-            for name, value in self.props.items():
-                initial = self._get_value(target, name)
-                check_number(initial)
-                check_number(value)
-                if self._relative:
-                    value += initial
-                props[name] = initial, value
-            self.targets.append((target, props))
+        """
+        Gathers the initial and final values for all animated properties
+        on each target and sets the initial values immediately.
+        """
+        self.targets = []
+        local_round_values_for_rect = False
 
-        self.update(0)
+        for target_ref in self._targets:
+            target = target_ref()
+            if target is None:
+                logger.debug(
+                    "Animation target has been garbage-collected. Skipping."
+                )
+                continue
+
+            if isinstance(target, Rect):
+                local_round_values_for_rect = True
+
+            properties_map = {}
+
+            for name, value in self.props.items():
+                try:
+                    initial = self._get_value(target, name)
+                    check_number(initial)
+                    check_number(value)
+
+                    if self._relative:
+                        value += initial
+
+                    properties_map[name] = AnimatedPropertyData(
+                        initial=initial, final=value
+                    )
+                except AttributeError:
+                    logger.warning(
+                        f"Target {target} does not have attribute '{name}' for animation. Skipping."
+                    )
+                    continue
+
+            if properties_map:
+                self.targets.append(
+                    AnimatedTargetData(
+                        target_ref=target_ref, properties=properties_map
+                    )
+                )
+
+        if local_round_values_for_rect:
+            self._round_values = True
+
+        for target_data in self.targets:
+            target = target_data.target_ref()
+            if target is None:
+                continue
+            for name, prop_data in target_data.properties.items():
+                self._set_value(target, name, prop_data.initial)
 
 
 class AnimationTransition:

@@ -1,10 +1,10 @@
 [
-    {
-        "slug" : "capture_1",
-        "file" : "item"
-    },
-    {
-        "slug" : "tuxeball",
-        "file" : "item"
-    }
+  {
+    "file": "item",
+    "slug": "capture_1"
+  },
+  {
+    "file": "item",
+    "slug": "tuxeball"
+  }
 ]

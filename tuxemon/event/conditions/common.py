@@ -1,13 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+from __future__ import annotations
+
 import logging
 from typing import Any, Optional, Union
 
 logger = logging.getLogger(__name__)
+from dataclasses import dataclass
+
 from tuxemon.db import Comparison
 from tuxemon.tools import compare
 
 
+@dataclass
 class CommonCondition:
     name = "Common"
 
@@ -43,7 +48,6 @@ class CommonCondition:
 
         eg. "player,name,alpha" -> is the player named alpha? true/false
         eg. "technique,power,2.0" -> is the technique power 2.0? true/false
-
         """
         attr = CommonCondition._get_attribute(entity, parameter)
         if attr is None:

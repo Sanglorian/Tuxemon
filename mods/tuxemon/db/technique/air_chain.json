@@ -3,11 +3,18 @@
   "accuracy": 0.6,
   "animation": "triforce_163",
   "effects": [
-    "multiattack 3",
-    "damage"
+    {
+      "type": "multiattack",
+      "parameters": [
+        "3"
+      ]
+    },
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "slow",
   "potency": 0.0,
   "power": 1,
   "range": "reach",
@@ -15,6 +22,7 @@
   "sfx": "sfx_blaster",
   "slug": "air_chain",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -24,7 +32,9 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["Bird"],
+  "tags": [
+    "bird"
+  ],
   "types": [
     "earth",
     "wood"

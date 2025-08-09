@@ -1,46 +1,4 @@
 events:
-  Music:
-    actions:
-    - play_music music_home
-    conditions:
-    - not music_playing music_home
-    x: 7
-    y: 0
-    type: "event"
-  Go Downstairs:
-    actions:
-    - transition_teleport player_house_downstairs.tmx,0,2,0.3
-    - char_face player,down
-    conditions:
-    - is char_at player
-    x: 7
-    y: 2
-    type: "event"
-  Use Computer:
-    actions:
-    - change_state PCState
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed K_RETURN
-    x: 3
-    y: 1
-    type: "event"
-  Resting in Bed:
-    actions:
-    - screen_transition 1
-    - wait 0.5
-    - translated_dialog xero_taba_restinbed
-    - set_monster_health
-    - set_monster_status
-    - set_variable teleport_faint:player_house_bedroom.tmx 3 4
-    conditions:
-    - is button_pressed K_RETURN
-    - is char_facing_tile player
-    height: 2
-    width: 1
-    x: 0
-    y: 2
-    type: "event"
   Auto Healing Teleported:
     actions:
     - set_monster_health
@@ -48,7 +6,16 @@ events:
     - set_variable battle_last_result:none
     conditions:
     - is variable_set battle_last_result:lost
-    type: "event"
+    type: event
+  Go Downstairs:
+    actions:
+    - transition_teleport player_house_downstairs.tmx,0,2,0.3
+    - char_face player,down
+    conditions:
+    - is char_at player
+    type: event
+    x: 7
+    y: 2
   Intro:
     actions:
     - change_bg gradient_blue,rockitten,monster
@@ -57,9 +24,21 @@ events:
     conditions:
     - not variable_set question_xero:yes
     - not variable_set question_xero:no
+    type: event
     x: 8
     y: 0
-    type: "event"
+  Intro No:
+    actions:
+    - translated_dialog xero_intro_question
+    - rename_player random
+    - change_bg
+    - set_variable xero_intro:done
+    conditions:
+    - is variable_set question_xero:yes
+    - not variable_set xero_intro:done
+    type: event
+    x: 9
+    y: 0
   Intro Yes:
     actions:
     - translated_dialog xero_intro_1
@@ -74,18 +53,39 @@ events:
     conditions:
     - is variable_set question_xero:no
     - not variable_set xero_intro:done
+    type: event
     x: 8
     y: 1
-    type: "event"
-  Intro No:
+  Music:
     actions:
-    - translated_dialog xero_intro_question
-    - rename_player random
-    - change_bg
-    - set_variable xero_intro:done
+    - play_music music_home
     conditions:
-    - is variable_set question_xero:yes
-    - not variable_set xero_intro:done
-    x: 9
+    - not music_playing music_home
+    type: event
+    x: 7
     y: 0
-    type: "event"
+  Resting in Bed:
+    actions:
+    - screen_transition 1
+    - wait 0.5
+    - translated_dialog xero_taba_restinbed
+    - set_monster_health
+    - set_monster_status
+    - set_teleport_faint player,player_house_bedroom.tmx,3,4
+    conditions:
+    - is button_pressed K_RETURN
+    - is char_facing_tile player
+    height: 2
+    type: event
+    width: 1
+    x: 0
+    y: 2
+  Use Computer:
+    actions:
+    - access_pc player
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed K_RETURN
+    type: event
+    x: 3
+    y: 2

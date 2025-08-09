@@ -1,16 +1,25 @@
 {
   "conditions": [],
   "effects": [
-    "gain_xp 3005"
+    {
+      "type": "gain_xp",
+      "parameters": [
+        "3005"
+      ]
+    }
   ],
   "slug": "imperial_tea",
   "sort": "potion",
   "sprite": "gfx/items/imperial_tea.png",
   "category": "none",
+  "cost": 3450,
   "usable_in": [
     "WorldState"
   ],
-  "behaviors": {},
+  "modifiers": [],
+  "behaviors": {
+    "resellable": true
+  },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

@@ -1,14 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
-import uuid
 from dataclasses import dataclass
 from typing import final
+from uuid import UUID
 
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -35,31 +36,27 @@ class InfoAction(EventAction):
     eg. "info name_variable,owner_steps"
     -> if the owner walked 69 steps, then it'll create a variable called:
         "info_owner_steps:69"
-
     """
 
     name = "info"
     variable: str
     attribute: str
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
         attribute = self.attribute
         variable = self.variable
         if self.variable not in player.game_variables:
             logger.error(f"Game variable {variable} not found")
             return
-        monster_id = uuid.UUID(player.game_variables[variable])
-        monster = get_monster_by_iid(self.session, monster_id)
+        monster_id = UUID(player.game_variables[variable])
+        monster = get_monster_by_iid(session, monster_id)
         if monster is None:
             monster = player.monster_boxes.get_monsters_by_iid(monster_id)
             if monster is None:
                 logger.error("Monster not found")
                 return
-        character = monster.owner
-        if character is None:
-            logger.error(f"{monster.name}'s owner not found!")
-            return
+        character = monster.get_owner()
 
         attr = None
         if attribute.startswith("owner_"):
@@ -68,6 +65,6 @@ class InfoAction(EventAction):
         else:
             attr = getattr(monster, attribute)
 
-        client = self.session.client.event_engine
+        client = session.client.event_engine
         var = f"{self.name}_{attribute}:{attr}"
         client.execute_action("set_variable", [var], True)

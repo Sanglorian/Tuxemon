@@ -1,19 +1,22 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 import uuid
-from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
-from typing import Optional, final
+from typing import TYPE_CHECKING, Optional, final
 
 from tuxemon.event import get_monster_by_iid, get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.monster import Monster
 from tuxemon.tools import open_choice_dialog, open_dialog
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+
+if TYPE_CHECKING:
+    from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +39,6 @@ class EvolutionAction(EventAction):
         variable: Name of the variable where to store the monster id. If no
             variable is specified, all monsters get experience.
         evolution: Slug of the evolution.
-
     """
 
     name = "evolution"
@@ -44,15 +46,16 @@ class EvolutionAction(EventAction):
     variable: Optional[str] = None
     evolution: Optional[str] = None
 
-    def start(self) -> None:
-        client = self.session.client
-        character = get_npc(self.session, self.npc_slug)
+    def start(self, session: Session) -> None:
+        self.session = session
+        client = session.client
+        character = get_npc(session, self.npc_slug)
         if character is None:
             logger.error(f"{self.npc_slug} not found")
             return
 
         self.character = character
-        self.client = self.session.client
+        self.client = session.client
 
         if len(client.state_manager.active_states) > MAX_ACTIVE_STATES:
             return
@@ -84,8 +87,7 @@ class EvolutionAction(EventAction):
             )
             return
         else:
-            evolved = Monster()
-            evolved.load_from_db(evolution)
+            evolved = Monster.create(evolution)
             monster.evolution_handler.evolve_monster(evolved)
             self.client.push_state(
                 "EvolutionTransition",
@@ -108,15 +110,22 @@ class EvolutionAction(EventAction):
             "evolve": evolved.name.upper(),
         }
         msg = T.format("evolution_confirmation", params)
-        open_dialog(self.session, [msg])
-        _no = T.translate("no")
-        _yes = T.translate("yes")
-        menu: list[tuple[str, str, Callable[[], None]]] = []
-        menu.append(
-            ("yes", _yes, partial(self.confirm_evolution, monster, evolved))
-        )
-        menu.append(("no", _no, partial(self.deny_evolution, monster)))
-        open_choice_dialog(self.session, menu)
+        open_dialog(self.session.client, [msg])
+
+        options = [
+            ChoiceOption(
+                key="yes",
+                display_text=T.translate("yes"),
+                action=partial(self.confirm_evolution, monster, evolved),
+            ),
+            ChoiceOption(
+                key="no",
+                display_text=T.translate("no"),
+                action=partial(self.deny_evolution, monster),
+            ),
+        ]
+
+        open_choice_dialog(self.session.client, MenuOptions(options))
 
     def confirm_evolution(self, monster: Monster, evolved: Monster) -> None:
         """Confirm the evolution"""

@@ -120,7 +120,7 @@
     <property name="act94" value="char_move omnigrunt7,left 6"/>
     <property name="act95" value="translated_dialog uhhjason3"/>
     <property name="act96" value="wait 0.5"/>
-    <property name="act97" value="char_move omnigrunt7, left 7"/>
+    <property name="act97" value="char_move omnigrunt7,left 7"/>
     <property name="act98" value="remove_npc omnigrunt7"/>
     <property name="act99" value="unlock_controls"/>
     <property name="act999" value="set_variable jason:gone"/>
@@ -164,7 +164,7 @@
     <property name="act42" value="wait 0.4"/>
     <property name="act43" value="translated_dialog challenger6"/>
     <property name="act50" value="translated_dialog challenger7"/>
-    <property name="act55" value="add_monster chloragon,3,acolyte,80,100"/>
+    <property name="act55" value="add_monster chloragon,3,acolyte,40,100"/>
     <property name="act60" value="start_battle player,acolyte"/>
     <property name="act99" value="set_variable battledone:yes"/>
     <property name="cond1" value="is variable_set battledone:start"/>
@@ -196,11 +196,10 @@
    <properties>
     <property name="act10" value="translated_dialog acolyte1loss"/>
     <property name="act20" value="wait 0.5"/>
-    <property name="act21" value="screen_transition 3"/>
-    <property name="act30" value="teleport_faint"/>
-    <property name="act40" value="set_variable redo:please"/>
-    <property name="act50" value="unlock_controls"/>
-    <property name="cond1" value="is variable_set battle_last_result:lost"/>
+    <property name="act21" value="teleport_faint player"/>
+    <property name="act30" value="set_variable redo:please"/>
+    <property name="act40" value="unlock_controls"/>
+    <property name="cond1" value="not variable_set battle_last_result:won"/>
     <property name="cond2" value="is variable_set battle_last_trainer:acolyte"/>
     <property name="cond4" value="not variable_set redo:please"/>
     <property name="cond5" value="is variable_set battledone:yes"/>
@@ -222,7 +221,7 @@
     <property name="act12" value="pathfind player,9,7"/>
     <property name="act13" value="char_face player,left"/>
     <property name="act20" value="translated_dialog acolyte1redo"/>
-    <property name="act30" value="add_monster chloragon,3,acolyte,80,100"/>
+    <property name="act30" value="add_monster chloragon,3,acolyte,40,100"/>
     <property name="act40" value="start_battle player,acolyte"/>
     <property name="act98" value="set_variable redo:finished"/>
     <property name="act99" value="set_variable battledone:yes"/>

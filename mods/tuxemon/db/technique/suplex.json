@@ -3,12 +3,26 @@
   "accuracy": 0.95,
   "animation": "amethyst_radiate",
   "effects": [
-    "give diehard,user",
-    "give exhausted,target",
-    "damage"
+    {
+      "type": "give",
+      "parameters": [
+        "diehard",
+        "own_monster"
+      ]
+    },
+    {
+      "type": "give",
+      "parameters": [
+        "exhausted",
+        "enemy_monster"
+      ]
+    },
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": true,
+  "speed": "fast",
   "potency": 0.5,
   "power": 2,
   "randomly": false,
@@ -17,6 +31,7 @@
   "sfx": "sfx_blaster",
   "slug": "suplex",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -26,9 +41,12 @@
     "own_trainer": false
   },
   "category": "reserved",
-  "tags": ["Reserved"],
+  "tags": [
+    "reserved"
+  ],
   "types": [
-    "earth", "metal"
+    "earth",
+    "metal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

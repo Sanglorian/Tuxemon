@@ -3,11 +3,19 @@
   "accuracy": 1,
   "animation": "pound",
   "effects": [
-    "give flinching,target",
-    "damage"
+    {
+      "type": "give",
+      "parameters": [
+        "flinching",
+        "enemy_monster"
+      ]
+    },
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.1,
   "power": 2.25,
   "range": "melee",
@@ -15,6 +23,7 @@
   "sfx": "sfx_blaster",
   "slug": "thunderball",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -24,7 +33,9 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["Rock"],
+  "tags": [
+    "rock"
+  ],
   "types": [
     "earth"
   ],

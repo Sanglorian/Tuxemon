@@ -1,16 +1,25 @@
 {
   "conditions": [],
   "effects": [
-    "gain_xp 107"
+    {
+      "type": "gain_xp",
+      "parameters": [
+        "107"
+      ]
+    }
   ],
   "slug": "tea",
   "sort": "potion",
   "sprite": "gfx/items/tea.png",
   "category": "none",
+  "cost": 300,
   "usable_in": [
     "WorldState"
   ],
-  "behaviors": {},
+  "modifiers": [],
+  "behaviors": {
+    "resellable": true
+  },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """This module initializes the display and creates dictionaries of resources.
 It contains all the static and dynamic variables used throughout the game such
 as display resolution, scale, etc.
@@ -7,9 +7,11 @@ as display resolution, scale, etc.
 from __future__ import annotations
 
 import logging
-import os.path
 import re
+from pathlib import Path
 from typing import TYPE_CHECKING
+
+import yaml
 
 from tuxemon import config
 from tuxemon.constants import paths
@@ -19,43 +21,57 @@ if TYPE_CHECKING:
 
     SCREEN: pg.surface.Surface
     SCREEN_RECT: pg.rect.Rect
-    JOYSTICKS: list[pg.joystick.Joystick]
+    JOYSTICKS: list[pg.joystick.JoystickType]
 
 logger = logging.getLogger(__name__)
 
-# TODO: refact this out when other platforms supported (such as headless)
-PLATFORM = "pygame"
 
-# list of regular expressions to blacklist devices
-joystick_blacklist = [
-    re.compile(r"Microsoft.*Transceiver.*"),
-    re.compile(r".*Synaptics.*", re.I),
-    re.compile(r"Wacom*.", re.I),
-]
+def _compile_joystick_blacklist() -> list[re.Pattern[str]]:
+    """Compiles a list of regex patterns for blacklisting joysticks."""
+    logger.debug("Compiling joystick blacklist patterns.")
+    return [
+        re.compile(r"Microsoft.*Transceiver.*"),
+        re.compile(r".*Synaptics.*", re.I),
+        re.compile(r"Wacom*.", re.I),
+    ]
 
-# Create game dir if missing
-if not os.path.isdir(paths.USER_STORAGE_DIR):
-    os.makedirs(paths.USER_STORAGE_DIR)
 
-# Create game data dir if missing
-if not os.path.isdir(paths.USER_GAME_DATA_DIR):
-    os.makedirs(paths.USER_GAME_DATA_DIR)
+joystick_blacklist = _compile_joystick_blacklist()
 
-# Create game savegame dir if missing
-if not os.path.isdir(paths.USER_GAME_SAVE_DIR):
-    os.makedirs(paths.USER_GAME_SAVE_DIR)
 
-# Generate default config
-config.generate_default_config()
+def _setup_user_environment() -> config.TuxemonConfig:
+    """Sets up user storage directories and loads/saves the game configuration."""
+    logger.debug("Setting up user environment and config.")
+    try:
+        paths.USER_STORAGE_DIR.mkdir(parents=True, exist_ok=True)
+        paths.USER_GAME_DATA_DIR.mkdir(parents=True, exist_ok=True)
+        paths.USER_GAME_SAVE_DIR.mkdir(parents=True, exist_ok=True)
+        logger.info("User directories ensured.")
+    except OSError as e:
+        logger.critical(f"Failed to create user directories: {e}")
+        raise
 
-# Read "tuxemon.cfg" config from disk, update and write back
-CONFIG = config.TuxemonConfig(paths.USER_CONFIG_PATH)
+    config.generate_default_config()
+    loaded_config = config.TuxemonConfig(paths.USER_CONFIG_PATH)
+
+    try:
+        with paths.USER_CONFIG_PATH.open("w") as fp:
+            yaml.dump(
+                loaded_config.config, fp, default_flow_style=False, indent=4
+            )
+        logger.info(
+            f"Configuration loaded and saved to {paths.USER_CONFIG_PATH}"
+        )
+    except Exception as e:
+        logger.error(f"Failed to save config: {e}")
+    return loaded_config
+
+
+# How it would be called in the main part of the file:
+CONFIG = _setup_user_environment()
 
 # Starting map
 STARTING_MAP = "start_"
-
-with open(paths.USER_CONFIG_PATH, "w") as fp:
-    CONFIG.cfg.write(fp)
 
 # Set up the screen size and caption
 SCREEN_SIZE = CONFIG.resolution
@@ -168,7 +184,6 @@ BG_PHONE: str = GRAD_BLUE
 BG_PHONE_BANKING: str = GRAD_BLUE
 BG_PHONE_CONTACTS: str = GRAD_BLUE
 BG_PHONE_MAP: str = GRAD_BLUE
-PHONE_MAP: str = "gfx/ui/background/spyder_map.png"
 BG_START_SCREEN: str = GRAD_BLUE
 PYGAME_LOGO: str = "gfx/ui/intro/pygame_logo.png"
 CREATIVE_COMMONS: str = "gfx/ui/intro/creative_commons.png"
@@ -182,7 +197,6 @@ BG_PARTY: str = "gfx/ui/background/player_info2.png"
 BG_ITEMS: str = ITEM_MENU
 BG_ITEMS_BACKPACK: str = "gfx/ui/item/backpack.png"
 BG_MOVES: str = ITEM_MENU
-BG_SHOP: str = ITEM_MENU
 BG_MONSTERS: str = "gfx/ui/monster/monster_menu_bg.png"
 
 # Native resolution is similar to the old gameboy resolution. This is
@@ -207,19 +221,13 @@ MOVERATE_RANGE: tuple[float, float] = (0.0, 20.0)
 TRANS_TIME: float = 0.3  # transition time
 
 # PC
-METRIC: str = "Metric"
-IMPERIAL: str = "Imperial"
-NORTHERN: str = "Northern"
-SOUTHERN: str = "Southern"
 U_KM: str = "km"
 U_MI: str = "mi"
 U_KG: str = "kg"
 U_LB: str = "lb"
 U_CM: str = "cm"
 U_FT: str = "ft"
-MUSIC_VOLUME: float = 0.5
 MUSIC_RANGE: tuple[float, float] = (0.0, 1.0)
-SOUND_VOLUME: float = 0.2
 SOUND_RANGE: tuple[float, float] = (0.0, 1.0)
 MUSIC_LOOP: int = -1
 MUSIC_FADEIN: int = 1000  # milliseconds
@@ -230,8 +238,9 @@ MAX_KENNEL: int = 30  # nr max of pc monsters
 MAX_LOCKER: int = 30  # nr max of pc items
 
 # Items
-INFINITE_ITEMS: int = -1
 MAX_TYPES_BAG: int = 99  # eg 5 capture devices, 1 type and 5 items
+# Items menu
+MAX_MENU_ITEMS: int = 11
 
 # Monsters
 MAX_LEVEL: int = 999
@@ -241,31 +250,14 @@ CATCH_RATE_RANGE: tuple[int, int] = (0, 100)
 CATCH_RESISTANCE_RANGE: tuple[float, float] = (0.0, 2.0)
 # set bond and define range
 BOND: int = 25
-BOND_RANGE: tuple[int, int] = (0, 100)
 # set multiplier stats (multiplier: level + coefficient)
 COEFF_STATS: int = 7
 # set experience required for levelling up
 # (level + level_ofs) ** coefficient) - level_ofs default 0
 COEFF_EXP: int = 3
-# weight and height (min and max) = -/+ 10%
-WEIGHT_RANGE: tuple[float, float] = (-0.1, 0.1)
-HEIGHT_RANGE: tuple[float, float] = (-0.1, 0.1)
-# tastes (malus and bonus)
-TASTE_RANGE: tuple[float, float] = (-0.1, 0.1)
 
-# Capture
-TOTAL_SHAKES: int = 4
-MAX_SHAKE_RATE: int = 65536
-SHAKE_CONSTANT: int = 524325
-# default modifiers
-STATUS_MODIFIER: float = 1.0
-TUXEBALL_MODIFIER: float = 1.0
-# standard modifiers if target has status:
-# if the status is positive
-# equal to status_modifier, but it can be changed
-STATUS_POSITIVE: float = 1.0
-# if the status is negative
-STATUS_NEGATIVE: float = 1.2
+# Camera
+CAMERA_SHAKE_RANGE: tuple[float, float] = (0.0, 3.0)
 
 # Techniques
 RECHARGE_RANGE: tuple[int, int] = (0, 5)
@@ -275,104 +267,12 @@ POWER_RANGE: tuple[float, float] = (0.0, 3.0)
 HEALING_POWER_RANGE: tuple[float, float] = (0.0, 3.0)
 
 # Combat
-# Hud right/left lines
-HUD_RT_LINE1: tuple[int, int] = (12, 11)  # monster, lv, etc.
-HUD_RT_LINE2: tuple[int, int] = (12, 19)  # position hp_bar
-HUD_LT_LINE1: tuple[int, int] = (5, 5)  # monster, lv, etc.
-HUD_LT_LINE2: tuple[int, int] = (5, 13)  # position hp_bar
-# position coordinates hud
-# right side
-RIGHT_COMBAT: dict[str, tuple[int, int, int, int]] = {}
-# where appears the monster (character right side)
-RIGHT_COMBAT["home"] = (0, 62, 95, 70)
-# 1st spot 2 vs 2
-RIGHT_COMBAT["home0"] = (15, 62, 95, 70)
-# 2nd spot 2 vs 2
-RIGHT_COMBAT["home1"] = (-15, 62, 95, 70)
-# name, level, etc.
-RIGHT_COMBAT["hud"] = (145, 45, 110, 50)
-# 1st spot 2 vs 2
-RIGHT_COMBAT["hud0"] = (145, 25, 110, 50)
-# 2nd spot 2 vs 2
-RIGHT_COMBAT["hud1"] = (145, 45, 110, 50)
-# tuxeball icons
-RIGHT_COMBAT["party"] = (145, 57, 110, 50)
-# left side
-LEFT_COMBAT: dict[str, tuple[int, int, int, int]] = {}
-# where appears the monster (character left side)
-LEFT_COMBAT["home"] = (140, 18, 95, 70)
-# 1st spot 2 vs 2
-LEFT_COMBAT["home0"] = (125, 18, 95, 70)
-# 2nd spot 2 vs 2
-LEFT_COMBAT["home1"] = (155, 18, 95, 70)
-# name, level, etc.
-LEFT_COMBAT["hud"] = (18, 0, 85, 30)
-# 1st spot 2 vs 2
-LEFT_COMBAT["hud0"] = (18, 0, 85, 30)
-# 2nd spot 2 vs 2
-LEFT_COMBAT["hud1"] = (18, 20, 85, 30)
-# tuxeball icons
-LEFT_COMBAT["party"] = (18, 12, 85, 30)
+MONSTERS_DOUBLE: int = 3  # 3 monsters to trigger 1vs2 or viceversa
 
 # This is the coefficient that can be found in formula.py and
 # it calculates the user strength
 # eg: user_strength = user.melee * (COEFF_DAMAGE + user.level)
 COEFF_DAMAGE: int = 7
-# This is used as random offset in the def speed_test
-SPEED_OFFSET: float = 50.0
-# This is used as multiplier in the def speed_test
-MULTIPLIER_SPEED: float = 1.5
-
-# Min and max multiplier are the multiplier upper/lower bounds
-MULTIPLIER_RANGE: tuple[float, float] = (0.25, 4.0)
-
-# MULT_MAP associates the multiplier to a specific text
-MULT_MAP = {
-    4: "attack_very_effective",
-    2: "attack_effective",
-    0.5: "attack_resisted",
-    0.25: "attack_weak",
-}
-
-# what comes first, second, etc. during a battle
-SORT_ORDER: list[str] = [
-    "potion",
-    "utility",
-    "quest",
-    "meta",
-    "damage",
-]
-
-# This is the time, in seconds, that the text takes to display.
-LETTER_TIME: float = 0.02
-
-# This is the time, in seconds, that the animation takes to finish.
-ACTION_TIME: float = 2.0
-
-# Status icon positions
-# 1 vs 1
-ICON_PLAYER_DEFAULT: tuple[float, float] = (
-    SCREEN_SIZE[0] * 0.64,
-    SCREEN_SIZE[1] * 0.56,
-)
-ICON_OPPONENT_DEFAULT: tuple[float, float] = (
-    SCREEN_SIZE[0] * 0.06,
-    SCREEN_SIZE[1] * 0.12,
-)
-# 2 vs 2
-ICON_PLAYER_SLOT: tuple[float, float] = (
-    SCREEN_SIZE[0] * 0.64,
-    SCREEN_SIZE[1] * 0.42,
-)
-ICON_OPPONENT_SLOT: tuple[float, float] = (
-    SCREEN_SIZE[0] * 0.06,
-    SCREEN_SIZE[1] * 0.26,
-)
-
-# Fonts
-FONT_BASIC: str = "PressStart2P.ttf"
-FONT_CHINESE: str = "SourceHanSerifCN-Bold.otf"
-FONT_JAPANESE: str = "SourceHanSerifJP-Bold.otf"
 
 # If scaling is enabled, scale the tiles based on the resolution
 if CONFIG.large_gui:
@@ -385,7 +285,7 @@ else:
     SCALE = 1
 
 # Reference user save dir
-SAVE_PATH = os.path.join(paths.USER_GAME_SAVE_DIR, "slot")
+SAVE_PATH = paths.USER_GAME_SAVE_DIR / "slot"
 SAVE_METHOD = "JSON"
 # SAVE_METHOD = "CBOR"
 
@@ -394,6 +294,10 @@ DEV_TOOLS = CONFIG.dev_tools
 
 def pygame_init() -> None:
     """Eventually refactor out of prepare."""
+    from tuxemon import platform
+
+    platform.init()
+
     global JOYSTICKS
     global FONTS
     global MUSIC
@@ -407,7 +311,7 @@ def pygame_init() -> None:
     # Configure databases and locale
     from tuxemon.locale import T
 
-    T.collect_languages(CONFIG.recompile_translations)
+    T.initialize_translations(recompile=CONFIG.recompile_translations)
     from tuxemon.db import db
 
     db.load()
@@ -416,47 +320,57 @@ def pygame_init() -> None:
     pg.init()
     pg.display.set_caption(CONFIG.window_caption)
 
-    from tuxemon import platform
+    from tuxemon.platform import is_android
 
-    if platform.android:
+    fullscreen = pg.FULLSCREEN if CONFIG.fullscreen else 0
+    if is_android():
         fullscreen = pg.FULLSCREEN
-    else:
-        fullscreen = pg.FULLSCREEN if CONFIG.fullscreen else 0
     flags = pg.HWSURFACE | pg.DOUBLEBUF | fullscreen
 
-    SCREEN = pg.display.set_mode(SCREEN_SIZE, flags)
+    if CONFIG.vsync:
+        pg.display.set_allow_screensaver()
+    SCREEN = pg.display.set_mode(SCREEN_SIZE, flags, vsync=CONFIG.vsync)
     SCREEN_RECT = SCREEN.get_rect()
 
     # Disable the mouse cursor visibility
-    pg.mouse.set_visible(not CONFIG.hide_mouse)
+    pg.mouse.set_visible(not CONFIG.controller.hide_mouse)
 
     # Set up any gamepads that we detect
     # The following event types will be generated by the joysticks:
     # JOYAXISMOTION JOYBALLMOTION JOYBUTTONDOWN JOYBUTTONUP JOYHATMOTION
-    JOYSTICKS = list()
-    pg.joystick.init()
-    devices = [pg.joystick.Joystick(x) for x in range(pg.joystick.get_count())]
-
-    # Initialize the individual joysticks themselves.
-    for joystick in devices:
-        name = joystick.get_name()
-        print(f'Found joystick: "{name}"')
-        blacklisted = any(i.match(name) for i in joystick_blacklist)
-        if blacklisted:
-            print(f'Ignoring joystick: "{name}"')
-        else:
-            print(f'Configuring joystick: "{name}"')
-            joystick.init()
-            JOYSTICKS.append(joystick)
+    JOYSTICKS = []
+    for i in range(pg.joystick.get_count()):
+        try:
+            joystick = pg.joystick.Joystick(i)
+            name = joystick.get_name()
+            print(f'Found joystick: "{name}"')
+            if any(pattern.match(name) for pattern in joystick_blacklist):
+                print(f'Ignoring joystick: "{name}"')
+            else:
+                print(f'Configuring joystick: "{name}"')
+                JOYSTICKS.append(joystick)
+        except Exception as e:
+            logger.warning(f"Failed to initialize joystick {i}: {e}")
 
 
-# Initialize the game framework
-def init() -> None:
-    from tuxemon import platform
+def headless_init() -> None:
+    """Initializes game components for a headless environment."""
+    from tuxemon.locale import T
 
-    platform.init()
-    if PLATFORM == "pygame":
+    T.initialize_translations(recompile=CONFIG.recompile_translations)
+    from tuxemon.db import db
+
+    db.load()
+    logger.debug("headless init")
+
+
+def init(platform: str = "pygame") -> None:
+    if platform == "pygame":
         pygame_init()
+    elif platform == "headless":
+        headless_init()
+    else:
+        raise ValueError(f"Unsupported platform: {platform}")
 
 
 # Fetches a resource file
@@ -464,26 +378,26 @@ def init() -> None:
 # eventually, this should be configured at game launch, or in a config file instead
 # of looking all over creation for the required files.
 def fetch(*args: str) -> str:
-    relative_path = os.path.join(*args)
+    relative_path = Path(*args)
 
     for mod_name in CONFIG.mods:
         # when assets are in folder with the source
-        path = os.path.join(paths.mods_folder, mod_name, relative_path)
-        logger.debug("searching asset: %s", path)
-        if os.path.exists(path):
-            return path
+        path = paths.mods_folder / mod_name / relative_path
+        logger.debug(f"searching asset: {path}")
+        if path.exists():
+            return path.as_posix()
 
-        # when assets are in a system path (like for os packages and android)
+        # when assets are in a system path (like for OS packages and Android)
         for root_path in paths.system_installed_folders:
-            path = os.path.join(root_path, "mods", mod_name, relative_path)
-            logger.debug("searching asset: %s", path)
-            if os.path.exists(path):
-                return path
+            path = root_path / "mods" / mod_name / relative_path
+            logger.debug(f"searching asset: {path}")
+            if path.exists():
+                return path.as_posix()
 
-        # mods folder is in same folder as the launch script
-        path = os.path.join(paths.BASEDIR, "mods", mod_name, relative_path)
-        logger.debug("searching asset: %s", path)
-        if os.path.exists(path):
-            return path
+        # mods folder is in the same folder as the launch script
+        path = paths.BASEDIR / "mods" / mod_name / relative_path
+        logger.debug(f"searching asset: {path}")
+        if path.exists():
+            return path.as_posix()
 
-    raise OSError(f"cannot load file {relative_path}")
+    raise OSError(f"Cannot load file {relative_path}")

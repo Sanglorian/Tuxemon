@@ -1,16 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 import random
 from typing import Optional
 
-import pygame
+from pygame.surface import Surface
 
 from tuxemon import prepare
 from tuxemon.platform.events import PlayerInput
-from tuxemon.state import State
+from tuxemon.state.state import State
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +30,10 @@ class StaticTransition(State):
         self.duration = duration
         self.start_time = 0.0
         self.elapsed_time = 0.0
-        self.screenshot: Optional[pygame.Surface] = None
+        self.screenshot: Optional[Surface] = None
 
     def resume(self) -> None:
-        self.screenshot = pygame.Surface.copy(prepare.SCREEN)
+        self.screenshot = Surface.copy(prepare.SCREEN)
 
     def update(self, time_delta: float) -> None:
         self.elapsed_time += time_delta
@@ -41,7 +41,7 @@ class StaticTransition(State):
             logger.info("Static transition finished.")
             self.client.pop_state()
 
-    def draw(self, surface: pygame.surface.Surface) -> None:
+    def draw(self, surface: Surface) -> None:
         surface.fill((0, 0, 0))
         for _ in range(5000):
             x = random.randint(0, surface.get_width())

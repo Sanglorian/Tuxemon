@@ -1,20 +1,26 @@
 {
   "tech_id": 84,
-  "accuracy": 0.9,
+  "accuracy": 1.0,
   "animation": "drip_green",
   "effects": [
-    "give poison,target",
-    "enhance"
+    {
+      "type": "give",
+      "parameters": [
+        "poison",
+        "enemy_monster"
+      ]
+    }
   ],
   "flip_axes": "",
-  "is_fast": true,
-  "potency": 1,
+  "speed": "fast",
+  "potency": 0.9,
   "power": 0,
   "range": "special",
   "recharge": 1,
   "sfx": "sfx_blaster",
   "slug": "stone_rot",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -24,7 +30,9 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["Toxic"],
+  "tags": [
+    "toxic"
+  ],
   "types": [
     "aether"
   ],

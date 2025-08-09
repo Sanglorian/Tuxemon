@@ -1,21 +1,23 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 import uuid
-from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
-from typing import final
+from typing import TYPE_CHECKING, final
 
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.monster import Monster
-from tuxemon.states.dialog import DialogState
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import open_choice_dialog
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+
+if TYPE_CHECKING:
+    from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -36,19 +38,18 @@ class DojoMethodAction(EventAction):
         option: The action to perform. Can be either:
             - "technique": Learn a forgotten technique from the monster's moveset.
             - "monster": Devolve the monster.
-
     """
 
     name = "dojo_method"
     variable_name: str
     option: str
 
-    def start(self) -> None:
-        self.client = self.session.client
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        self.client = session.client
+        player = session.player
         monster_id = uuid.UUID(player.game_variables[self.variable_name])
 
-        monster = get_monster_by_iid(self.session, monster_id)
+        monster = get_monster_by_iid(session, monster_id)
         if monster is None:
             logger.debug(f"Monster {monster_id} not found.")
             return
@@ -57,32 +58,30 @@ class DojoMethodAction(EventAction):
             logger.error(f"{self.option} must be 'monster' or 'technique'")
             return
 
-        menu: list[tuple[str, str, Callable[[], None]]] = []
+        menu_options: list[ChoiceOption] = []
 
         if self.option == "technique":
-            # Get the moves that the monster can learn but hasn't yet
             learnable_moves = [
                 tech.technique
-                for tech in monster.moveset
+                for tech in monster.moves.moveset
                 if tech.level_learned <= monster.level
-                and tech.technique not in [mov.slug for mov in monster.moves]
+                and not monster.moves.has_move(tech.technique)
             ]
 
             if not learnable_moves:
-                self.session.player.game_variables["dojo_notech"] = "on"
+                session.player.game_variables["dojo_notech"] = "on"
                 return
 
-            # Create menu options for each learnable move
             for move in learnable_moves:
-                menu.append(
-                    (
-                        move,
-                        T.translate(move),
-                        partial(self.learn, monster, move),
+                menu_options.append(
+                    ChoiceOption(
+                        key=move,
+                        display_text=T.translate(move),
+                        action=partial(self.learn, monster, move),
                     )
                 )
+
         else:
-            # Get the monsters that the current monster can devolve into
             devolvable_monsters = [
                 mon
                 for mon in monster.history
@@ -93,28 +92,26 @@ class DojoMethodAction(EventAction):
                 )
             ]
 
-            # Create menu options for each devolvable monster
             for mon in devolvable_monsters:
-                menu.append(
-                    (
-                        mon.mon_slug,
-                        T.translate(mon.mon_slug),
-                        partial(self.devolve, monster, mon.mon_slug),
+                menu_options.append(
+                    ChoiceOption(
+                        key=mon.mon_slug,
+                        display_text=T.translate(mon.mon_slug),
+                        action=partial(self.devolve, monster, mon.mon_slug),
                     )
                 )
 
-        open_choice_dialog(self.session, menu)
+        open_choice_dialog(session.client, MenuOptions(menu_options))
 
-    def update(self) -> None:
+    def update(self, session: Session) -> None:
         try:
-            self.session.client.get_state_by_name(DialogState)
+            session.client.get_state_by_name("DialogState")
         except ValueError:
             self.stop()
 
     def devolve(self, monster: Monster, slug: str) -> None:
         """Deny the evolution"""
-        devolution = Monster()
-        devolution.load_from_db(slug)
+        devolution = Monster.create(slug)
         monster.evolution_handler.evolve_monster(devolution)
         logger.info(f"{monster.name}'s devolved!")
         self.client.sound_manager.play_sound("sound_confirm")
@@ -122,9 +119,8 @@ class DojoMethodAction(EventAction):
 
     def learn(self, monster: Monster, technique: str) -> None:
         """Deny the evolution"""
-        tech = Technique()
-        tech.load(technique)
-        monster.learn(tech)
+        tech = Technique.create(technique)
+        monster.moves.learn(tech)
         logger.info(f"{tech.name} learned!")
         self.client.sound_manager.play_sound("sound_confirm")
         self.client.pop_state()

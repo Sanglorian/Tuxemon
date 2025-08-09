@@ -1,11 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """
-
 Combat related code that can be independent of the combat state.
-
 Code here might be shared by states, actions, conditions, etc.
-
 """
 
 from __future__ import annotations
@@ -16,13 +13,14 @@ from collections.abc import Generator, Sequence
 from typing import TYPE_CHECKING, Optional
 
 from tuxemon.db import (
+    EffectPhase,
     GenderType,
     OutputBattle,
-    PlagueType,
-    SeenStatus,
     StatType,
+    TargetType,
 )
 from tuxemon.locale import T
+from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
@@ -30,7 +28,6 @@ if TYPE_CHECKING:
     from tuxemon.npc import NPC
     from tuxemon.session import Session
     from tuxemon.states.combat.combat import CombatState
-    from tuxemon.states.combat.combat_classes import DamageReport
 
 
 logger = logging.getLogger()
@@ -38,36 +35,35 @@ logger = logging.getLogger()
 
 def check_battle_legal(character: NPC) -> bool:
     """
-    Checks to see if the character has any monsters fit for battle.
+    Checks if the character has monsters fit for battle.
 
     Parameters:
         character: Character object.
 
     Returns:
-        Whether the character has monsters that can fight.
-
+        True if the character's monsters can fight, False otherwise.
     """
     if not character.monsters:
         logger.error(f"Cannot start battle, {character.name} has no monsters!")
         return False
-    else:
-        if fainted_party(character.monsters):
-            logger.error(
-                f"Cannot start battle, {character.name}'s monsters are all DEAD."
-            )
-            return False
-        else:
-            if party_no_tech(character.monsters):
-                no_tech = party_no_tech(character.monsters)
-                logger.error(
-                    f"Cannot start battle, {no_tech} has/have no techniques."
-                )
-                return False
-            else:
-                return True
+
+    if fainted_party(character.monsters):
+        logger.error(
+            f"Cannot start battle, {character.name}'s monsters are all DEAD."
+        )
+        return False
+
+    if party_no_tech(character.monsters):
+        logger.error(
+            f"Cannot start battle, {party_no_tech(character.monsters)} has/have no techniques."
+        )
+        return False
+
+    return True
 
 
 def pre_checking(
+    session: Session,
     monster: Monster,
     technique: Technique,
     target: Monster,
@@ -77,36 +73,27 @@ def pre_checking(
     Pre checking allows to check if there are statuses
     or other conditions that change the chosen technique.
     """
-    if monster.status:
-        monster.status[0].combat_state = combat
-        monster.status[0].phase = "pre_checking"
-        result_status = monster.status[0].use(target)
-        if result_status["technique"]:
-            technique = result_status["technique"]
+    status = monster.status.get_current_status()
+    if status:
+        result_status = status.execute_status_action(
+            session, combat, target, EffectPhase.PRE_CHECKING
+        )
+        if result_status.techniques:
+            technique = random.choice(result_status.techniques)
 
-    infected_slugs = [
-        slug
-        for slug, plague in monster.plague.items()
-        if plague == PlagueType.infected
-    ]
-    if infected_slugs and any(
+    if monster.plague.is_infected() and any(
         technique.target.get(target_type, False)
         for target_type in ["enemy_monster", "enemy_team", "enemy_trainer"]
     ):
-        method = Technique()
+        infected_slugs = monster.plague.get_infected_slugs()
         slug = random.choice(infected_slugs)
-        method.load(slug)
-        result_method = method.use(monster, target)
-        if result_method["success"]:
+        method = Technique.create(slug)
+        result_tech = method.execute_tech_action(
+            session, combat, monster, target
+        )
+        if result_tech.success:
             technique = method
     return technique
-
-
-def has_status(monster: Monster, status_name: str) -> bool:
-    """
-    Checks to see if the monster has a specific status/condition.
-    """
-    return any(t for t in monster.status if t.slug == status_name)
 
 
 def has_effect(technique: Technique, effect_name: str) -> bool:
@@ -120,36 +107,32 @@ def party_no_tech(party: list[Monster]) -> list[str]:
     """
     Return list of monsters without techniques.
     """
-    return [p.name for p in party if not p.moves]
+    return [p.name for p in party if not p.moves.has_moves()]
 
 
 def has_effect_param(
-    tech: Technique, effect: str, status: str, param: str
+    tech: Technique, effect_name: str, attribute: str, name: str
 ) -> bool:
     """
-    Checks to see if the effect has the corresponding parameter.
-    """
-    find: bool = False
-    for ele in tech.effects:
-        if ele.name == effect:
-            output = getattr(ele, param)
-            if output == status:
-                find = True
-    return find
+    Checks whether a specific effect contains the specified attribute with a
+    matching value.
 
+    Parameters:
+        tech: The technique object containing a list of effects.
+        effect_name: The name of the effect to look for (e.g., 'give').
+        attribute: The attribute within the effect to check (e.g., 'condition'
+            in the 'give' effect).
+        name: The expected value of the attribute (e.g., 'diehard', which is
+            assigned by the 'give' effect).
 
-def fainted(monster: Monster) -> bool:
+    Returns:
+        bool: True if an effect with the given name and attribute value is
+            found, otherwise False.
     """
-    Checks to see if the monster is fainted.
-    """
-    return has_status(monster, "faint") or monster.current_hp <= 0
-
-
-def recharging(technique: Technique) -> bool:
-    """
-    Checks to see if a technique is recharging.
-    """
-    return technique.next_use > 0
+    return any(
+        ele.name == effect_name and getattr(ele, attribute, None) == name
+        for ele in tech.effects
+    )
 
 
 def get_awake_monsters(
@@ -169,12 +152,11 @@ def get_awake_monsters(
 
     Yields:
         Non-fainted monsters.
-
     """
     awake_monsters = [
         monster
         for monster in character.monsters
-        if not fainted(monster) and monster not in monsters
+        if not monster.is_fainted and monster not in monsters
     ]
 
     if awake_monsters:
@@ -191,14 +173,12 @@ def alive_party(character: NPC) -> list[Monster]:
     """
     Returns a list with all the monsters alive in the character's party.
     """
-    return [monster for monster in character.monsters if not fainted(monster)]
+    return [m for m in character.monsters if not m.is_fainted]
 
 
 def fainted_party(party: Sequence[Monster]) -> bool:
-    """
-    Whether the party is fainted or not.
-    """
-    return all(map(fainted, party))
+    """Whether the party is fainted or not."""
+    return all(monster.is_fainted for monster in party)
 
 
 def defeated(character: NPC) -> bool:
@@ -208,151 +188,34 @@ def defeated(character: NPC) -> bool:
     return fainted_party(character.monsters)
 
 
-def award_money(loser: Monster, winner: Monster) -> int:
+def get_target_monsters(
+    targets: list[str], technique: Technique, user: Monster, target: Monster
+) -> list[Monster]:
     """
-    It calculates money to be awarded. It allows multiple methods.
-    The default one is "default".
-
-    The method could be changed by setting a new value for the game
-    variable called "method_money".
+    Retrieves a list of monsters based on the provided targets and combat state.
 
     Parameters:
-        loser: Fainted monster.
-        winner: Winner monster.
+        targets: A list of targets to retrieve monsters for (own_monster, etc.).
+        technique: The technique object containing the combat state.
+        user: The monster initiating the combat.
+        target: The target monster in the combat.
 
     Returns:
-        Amount of money.
+        A list of monsters matching the provided targets.
+
+    Raises:
+        ValueError: If an objective is not a valid TargetType.
     """
-    method = (
-        winner.owner.game_variables.get("method_money", "default")
-        if winner.owner and winner.owner.isplayer
-        else "default"
-    )
-
-    def default_method() -> int:
-        return int(loser.level * loser.money_modifier)
-
-    methods = {"default": default_method}
-
-    if method not in methods:
-        raise ValueError(f"A formula for {method} doesn't exist.")
-
-    return methods[method]()
+    combat = technique.get_combat_state()
+    monsters = []
+    for objective in targets:
+        if objective not in list(TargetType):
+            raise ValueError(f"{objective} isn't among {list(TargetType)}")
+        monsters.extend(combat.get_targets_from_map(objective, user, target))
+    return monsters
 
 
-def award_experience(
-    loser: Monster, winner: Monster, damages: list[DamageReport]
-) -> int:
-    """
-    It calculates experience to be awarded. It allows multiple methods.
-    The default one is "default".
-
-    The method could be changed by setting a new value for the game
-    variable called "method_experience".
-
-    Parameters:
-        loser: Fainted monster.
-        winner: Winner monster.
-        damages: The list with all the damages.
-
-    Returns:
-        Amount of experience.
-    """
-    hits = sum(1 for damage in damages if damage.defense == loser)
-    hits_mon = sum(
-        1
-        for damage in damages
-        if damage.defense == loser and damage.attack == winner
-    )
-    winners = [damage.attack for damage in damages if damage.defense == loser]
-
-    method = (
-        winner.owner.game_variables.get("method_experience", "default")
-        if winner.owner and winner.owner.isplayer
-        else "default"
-    )
-
-    exp_tot = float(loser.total_experience)
-    exp_mod = float(loser.experience_modifier)
-
-    def default_method() -> int:
-        return int((exp_tot // (loser.level * hits)) * exp_mod)
-
-    def proportional_method() -> int:
-        return int(
-            (exp_tot // (loser.level * hits)) * exp_mod * (hits_mon / hits)
-        )
-
-    def test_method() -> int:
-        return int(
-            ((exp_tot * loser.level) / 7)
-            * 1
-            / len(winners)
-            * exp_mod
-            * (1.5 if winner.traded else 1.0)
-            * (1 if loser.money_modifier == 0 else 1.5)
-        )
-
-    def xp_transmitter_method() -> int:
-        return distribute_experience(
-            exp_tot, loser.level, hits, exp_mod, winners, winner.owner
-        )
-
-    methods = {
-        "default": default_method,
-        "proportional": proportional_method,
-        "test": test_method,
-        "xp_transmitter": xp_transmitter_method,
-    }
-
-    if method not in methods:
-        raise ValueError(f"A formula for {method} doesn't exist.")
-
-    return methods[method]()
-
-
-def distribute_experience(
-    exp_tot: float,
-    level: int,
-    hits: int,
-    exp_mod: float,
-    winners: list[Monster],
-    owner: Optional[NPC],
-) -> int:
-    if owner:
-        alive = alive_party(owner)
-        idle_monsters = list(set(alive).symmetric_difference(winners))
-        exp = int((exp_tot // (level * hits)) * exp_mod * 1 / len(alive))
-        for monster in idle_monsters:
-            monster.give_experience(exp)
-        return exp
-    return 0
-
-
-def get_winners(loser: Monster, damages: list[DamageReport]) -> set[Monster]:
-    """
-    It extracts from the damages the monster/s who hit the loser.
-
-    Parameters:
-        loser: Fainted monster.
-        damages: The list with all the damages.
-
-    Returns:
-        Set of winners.
-    """
-    winners = {damage.attack for damage in damages if damage.defense == loser}
-    if winners and next(iter(winners)).owner:
-        trainer = next(iter(winners)).owner
-        if trainer and trainer.isplayer:
-            method = trainer.game_variables.get("method_experience", "default")
-            if method == "xp_transmitter":
-                return set(alive_party(trainer))
-    return winners
-
-
-def battlefield(
-    session: Session, monster: Monster, players: Sequence[NPC]
-) -> None:
+def battlefield(session: Session, monster: Monster) -> None:
     """
     Record the useful properties of the last monster fought.
 
@@ -360,39 +223,11 @@ def battlefield(
         session: Session
         monster: The monster on the ground.
         players: All the remaining players.
-
     """
-    eligible_players = [
-        p for p in players if p.isplayer and monster not in p.monsters
-    ]
-    if not eligible_players:
-        return
-
-    for player in eligible_players:
-        set_var(session, "battle_last_monster_name", monster.name)
-        set_var(session, "battle_last_monster_level", str(monster.level))
-        set_var(session, "battle_last_monster_type", monster.types[0].slug)
-        set_var(session, "battle_last_monster_category", monster.category)
-        set_var(session, "battle_last_monster_shape", monster.shape)
-
-        if monster.txmn_id > 0:
-            set_tuxepedia(session, player.slug, monster.slug, "seen")
-
-
-def set_tuxepedia(
-    session: Session, character: str, monster: str, label: str
-) -> None:
-    """
-    Registers monster in Tuxepedia.
-
-    Parameters:
-        character: Character slug.
-        monster: The key game variable.
-        value: The value game variable.
-
-    """
-    client = session.client.event_engine
-    client.execute_action("set_tuxepedia", [character, monster, label], True)
+    set_var(session, "battle_last_monster_name", monster.name)
+    set_var(session, "battle_last_monster_level", str(monster.level))
+    set_var(session, "battle_last_monster_type", monster.types.primary.slug)
+    set_var(session, "battle_last_monster_category", monster.category)
 
 
 def track_battles(
@@ -468,9 +303,10 @@ def _handle_win(
             client.execute_action("modify_money", var, True)
 
             if prize > 0:
+                formatter = CurrencyFormatter()
+                formatted_prize = formatter.format(prize)
+                info["prize"] = formatted_prize
                 set_var(session, "battle_last_prize", str(prize))
-                info["prize"] = str(prize)
-                info["currency"] = "$"
                 return T.format("combat_victory_trainer", info)
             else:
                 return T.format("combat_victory", info)
@@ -479,7 +315,7 @@ def _handle_win(
             set_var(session, "battle_last_trainer", winner.slug)
             return T.format("combat_victory", info)
     else:
-        if winner.slug == "random_encounter_dummy":
+        if winner.monsters[0].wild:
             info["name"] = winner.monsters[0].name.upper()
         return T.format("combat_victory", info)
 
@@ -557,7 +393,6 @@ def set_var(session: Session, key: str, value: str) -> None:
         session: Session
         key: The key game variable.
         value: The value game variable.
-
     """
     client = session.client.event_engine
     var = f"{key}:{value}"
@@ -575,7 +410,6 @@ def set_battle(
         output: Output of the battle: won, lost, draw
         player: The human player.
         enemy: The enemy player.
-
     """
     fighter = "player" if player.isplayer else player.slug
     opponent = "player" if enemy.isplayer else enemy.slug
@@ -588,7 +422,7 @@ def build_hud_text(
     monster: Monster,
     is_right: bool,
     is_trainer: bool,
-    is_status: Optional[SeenStatus] = None,
+    is_status: bool,
 ) -> str:
     """
     Returns the text image for use on the callout of the monster.
@@ -602,12 +436,12 @@ def build_hud_text(
 
     Returns:
         A string representing the HUD text for the monster.
-
     """
-    if menu == "MainParkMenuState" and monster.owner and is_right:
+    if menu == "MainParkMenuState" and is_right:
         # Special case for MainParkMenuState
         ball = T.translate("tuxeball_park")
-        item = monster.owner.find_item("tuxeball_park")
+        owner = monster.get_owner()
+        item = owner.items.find_item("tuxeball_park")
         if item is None:
             return f"{ball.upper()}: 0"
         return f"{ball.upper()}: {item.quantity}"
@@ -619,7 +453,7 @@ def build_hud_text(
         icon = "♀"
 
     symbol = ""
-    if not is_trainer and is_status == SeenStatus.caught and not is_right:
+    if not is_trainer and is_status and not is_right:
         symbol = "◉"
 
     return f"{monster.name}{icon} Lv.{monster.level}{symbol}"
@@ -640,7 +474,6 @@ def retrieve_from_party(party: list[Monster], method: str) -> Monster:
     Notes:
         If the method is not recognized, a random monster from
         the party will be returned.
-
     """
     methods = {
         "lv_highest": ("level", max),

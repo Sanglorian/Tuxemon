@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -7,6 +7,7 @@ from typing import Optional, final
 
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 
 @final
@@ -22,16 +23,15 @@ class GetPartyMonsterAction(EventAction):
 
     Script parameters:
         npc_slug: npc slug name (e.g. "npc_maple") - default "player"
-
     """
 
     name = "get_party_monster"
     npc_slug: Optional[str] = None
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
         self.npc_slug = self.npc_slug or "player"
-        trainer = get_npc(self.session, self.npc_slug)
+        trainer = get_npc(session, self.npc_slug)
         if not trainer:
             raise ValueError(f"NPC '{self.npc_slug}' not found")
 

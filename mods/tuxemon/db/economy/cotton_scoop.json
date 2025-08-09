@@ -1,20 +1,23 @@
 {
-  "slug": "cotton_scoop",
+  "background": "gfx/ui/item/item_menu_bg.png",
   "items": [
     {
-      "item_name": "potion",
-      "price": 20,
-      "cost": 5
+      "cost": 5,
+      "name": "potion",
+      "price": 20
     },
     {
-      "item_name": "revive",
-      "price": 100,
-      "cost": 20
+      "cost": 20,
+      "name": "revive",
+      "price": 100
     },
     {
-      "item_name": "tuxeball",
-      "price": 50,
-      "cost": 10
+      "cost": 10,
+      "name": "tuxeball",
+      "price": 50
     }
-  ]
+  ],
+  "monsters": [],
+  "resale_multiplier": 0.5,
+  "slug": "cotton_scoop"
 }

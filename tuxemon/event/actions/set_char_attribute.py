@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -8,6 +8,7 @@ from typing import final
 from tuxemon.event import get_npc
 from tuxemon.event.actions.common import CommonAction
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 
 @final
@@ -33,8 +34,8 @@ class SetCharAttributeAction(EventAction):
     attribute: str
     value: str
 
-    def start(self) -> None:
-        character = get_npc(self.session, self.character)
+    def start(self, session: Session) -> None:
+        character = get_npc(session, self.character)
         assert character
         CommonAction.set_entity_attribute(
             character, self.attribute, self.value

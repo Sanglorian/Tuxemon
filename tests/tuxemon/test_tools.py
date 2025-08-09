@@ -1,13 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import math
 import sys
 import unittest
 from typing import Literal, Optional, Union
-from unittest import mock
+from unittest.mock import MagicMock
 
 from tuxemon.player import Player
-from tuxemon.session import local_session
 from tuxemon.tools import (
     cast_value,
     compare,
@@ -15,14 +14,6 @@ from tuxemon.tools import (
     number_or_variable,
     round_to_divisible,
 )
-
-
-def mockPlayer(self) -> None:
-    self.game_variables = {"my_var": 2}
-
-
-def mockSession(self) -> None:
-    self.session = local_session
 
 
 class TestRoundToDivisible(unittest.TestCase):
@@ -57,24 +48,59 @@ class TestCopyDictWithKeys(unittest.TestCase):
 
 
 class TestVariableNumber(unittest.TestCase):
-    def test_var(self):
-        with mock.patch.object(Player, "__init__", mockPlayer):
-            # session = Session()
-            player = Player()
-            local_session.player = player
+    def setUp(self):
+        self.player = MagicMock(spec=Player)
+        self.player.game_variables = {
+            "my_var": 2,
+            "non_numeric": "text",
+            "none_value": None,
+        }
 
-            result = number_or_variable(local_session, "1")
-            self.assertEqual(result, 1.0)
+    def test_numeric_string(self):
+        result = number_or_variable(self.player.game_variables, "1")
+        self.assertEqual(result, 1.0)
 
-            result = number_or_variable(local_session, "1.5")
-            print(result)
-            self.assertEqual(result, 1.5)
+        result = number_or_variable(self.player.game_variables, "1.5")
+        self.assertEqual(result, 1.5)
 
-            with self.assertRaises(ValueError):
-                result = number_or_variable(local_session, "unbound_var")
+    def test_variable_name(self):
+        result = number_or_variable(self.player.game_variables, "my_var")
+        self.assertEqual(result, 2.0)
 
-            result = number_or_variable(local_session, "my_var")
-            self.assertEqual(result, 2.0)
+    def test_unbound_variable(self):
+        with self.assertRaises(ValueError):
+            number_or_variable(self.player.game_variables, "unbound_var")
+
+    def test_invalid_numeric_string(self):
+        with self.assertRaises(ValueError):
+            number_or_variable(self.player.game_variables, "1.5.3")
+
+        with self.assertRaises(ValueError):
+            number_or_variable(self.player.game_variables, "-1..5")
+
+    def test_empty_string(self):
+        with self.assertRaises(ValueError):
+            number_or_variable(self.player.game_variables, "")
+
+    def test_negative_number(self):
+        result = number_or_variable(self.player.game_variables, "-10")
+        self.assertEqual(result, -10.0)
+
+    def test_zero(self):
+        result = number_or_variable(self.player.game_variables, "0")
+        self.assertEqual(result, 0.0)
+
+    def test_scientific_notation(self):
+        result = number_or_variable(self.player.game_variables, "1e3")
+        self.assertEqual(result, 1000.0)
+
+    def test_non_numeric_variable(self):
+        with self.assertRaises(ValueError):
+            number_or_variable(self.player.game_variables, "non_numeric")
+
+    def test_none_variable(self):
+        with self.assertRaises(ValueError):
+            number_or_variable(self.player.game_variables, "none_value")
 
 
 class TestCastValue(unittest.TestCase):

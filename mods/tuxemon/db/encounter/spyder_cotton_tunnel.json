@@ -1,53 +1,65 @@
 {
-  "slug": "spyder_cotton_tunnel",
   "monsters": [
     {
-      "monster": "dinoflop",
       "encounter_rate": 3.5,
-      "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         35,
         40
+      ],
+      "monster": "dinoflop",
+      "variables": [
+        {
+          "daytime": "false"
+        }
       ]
     },
     {
-      "monster": "furnursus",
       "encounter_rate": 3.5,
-      "variables": [
-        "daytime:false"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         30,
         35
+      ],
+      "monster": "furnursus",
+      "variables": [
+        {
+          "daytime": "false"
+        }
       ]
     },
     {
-      "monster": "boltnu",
       "encounter_rate": 3.5,
-      "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         25,
         35
+      ],
+      "monster": "boltnu",
+      "variables": [
+        {
+          "daytime": "true"
+        }
       ]
     },
     {
-      "monster": "metesaur",
       "encounter_rate": 3.5,
-      "variables": [
-        "daytime:true"
-      ],
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         30,
         35
+      ],
+      "monster": "metesaur",
+      "variables": [
+        {
+          "daytime": "true"
+        }
       ]
     }
-  ]
+  ],
+  "slug": "spyder_cotton_tunnel"
 }

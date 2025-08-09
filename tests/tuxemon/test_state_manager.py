@@ -1,15 +1,20 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
-from unittest import skip
-from unittest.mock import Mock
+from unittest.mock import MagicMock, patch
 
-from tuxemon.state import State, StateManager
+from tuxemon.menu.input import InputMenu
+from tuxemon.state.factory import StateFactory
+from tuxemon.state.manager import StateManager
+from tuxemon.state.repository import StateRepository
+from tuxemon.state.state import HookManager, State
+from tuxemon.states.world.worldstate import WorldState
 
 
 def create_state(name):
-    mock_state = Mock(spec=State, name=f"mock {name}")
+    mock_state = MagicMock(spec=State, name=f"mock {name}")
     mock_state.__name__ = name
+    mock_state.name = name
     return mock_state
 
 
@@ -22,7 +27,7 @@ class StateManagerTestBase(unittest.TestCase):
 
 class PushWhenEmpty(StateManagerTestBase):
     def setUp(self):
-        self.sm = StateManager("head.tail")
+        self.sm = StateManager("head.tail", HookManager(), StateRepository())
         self.create_and_register_state("a")
         self.state_a = self.sm.push_state("a")
         self.sm.update(0)
@@ -41,7 +46,7 @@ class PushWhenEmpty(StateManagerTestBase):
 
 class PushWhenNotEmpty(StateManagerTestBase):
     def setUp(self):
-        self.sm = StateManager("head.tail")
+        self.sm = StateManager("head.tail", HookManager(), StateRepository())
         self.create_and_register_state("a")
         self.create_and_register_state("b")
         self.state_a = self.sm.push_state("a")
@@ -70,7 +75,7 @@ class PushWhenNotEmpty(StateManagerTestBase):
 
 class Pop(StateManagerTestBase):
     def setUp(self):
-        self.sm = StateManager("head.tail")
+        self.sm = StateManager("head.tail", HookManager(), StateRepository())
         self.create_and_register_state("a")
         self.create_and_register_state("b")
         self.state_a = self.sm.push_state("a")
@@ -110,7 +115,7 @@ class Pop(StateManagerTestBase):
 
 class Resume(StateManagerTestBase):
     def setUp(self):
-        self.sm = StateManager("head.tail")
+        self.sm = StateManager("head.tail", HookManager(), StateRepository())
         self.create_and_register_state("a")
         self.create_and_register_state("b")
         self.state_a = self.sm.push_state("a")
@@ -140,13 +145,13 @@ class Resume(StateManagerTestBase):
 
 class RemoveWhenCurrent(StateManagerTestBase):
     def setUp(self):
-        self.sm = StateManager("head.tail")
+        self.sm = StateManager("head.tail", HookManager(), StateRepository())
         self.create_and_register_state("a")
         self.create_and_register_state("b")
         self.state_a = self.sm.push_state("a")
         self.state_b = self.sm.push_state("b")
         # remove the current state
-        self.sm.remove_state(self.state_b)
+        self.sm.pop_state(self.state_b)
         self.sm.update(0)
 
     def test_current_state(self):
@@ -168,16 +173,23 @@ class RemoveWhenCurrent(StateManagerTestBase):
         self.assertEqual(1, self.state_a.pause.call_count)
         self.assertEqual(0, self.state_a.shutdown.call_count)
 
+    def test_remove_middle_state(self):
+        self.create_and_register_state("c")
+        state_c = self.sm.push_state("c")
+        self.sm.pop_state(self.state_a)  # Remove middle state
+        self.assertNotIn(self.state_a, self.sm.active_states)
+        self.assertEqual(1, self.state_a.shutdown.call_count)
+
 
 class RemoveWhenNotCurrent(StateManagerTestBase):
     def setUp(self):
-        self.sm = StateManager("head.tail")
+        self.sm = StateManager("head.tail", HookManager(), StateRepository())
         self.create_and_register_state("a")
         self.create_and_register_state("b")
         self.state_a = self.sm.push_state("a")
         self.state_b = self.sm.push_state("b")
         # remove a state that is not current
-        self.sm.remove_state(self.state_a)
+        self.sm.pop_state(self.state_a)
         self.sm.update(0)
 
     def test_current_state(self):
@@ -202,7 +214,7 @@ class RemoveWhenNotCurrent(StateManagerTestBase):
 
 class Replace(StateManagerTestBase):
     def setUp(self):
-        self.sm = StateManager("head.tail")
+        self.sm = StateManager("head.tail", HookManager(), StateRepository())
         self.create_and_register_state("a")
         self.create_and_register_state("b")
         self.state_a = self.sm.push_state("a")
@@ -231,7 +243,7 @@ class Replace(StateManagerTestBase):
 
 class Enqueue(StateManagerTestBase):
     def setUp(self):
-        self.sm = StateManager("head.tail")
+        self.sm = StateManager("head.tail", HookManager(), StateRepository())
         self.create_and_register_state("a")
         self.create_and_register_state("b")
         self.create_and_register_state("c")
@@ -250,7 +262,7 @@ class Enqueue(StateManagerTestBase):
 
 class EnqueueThenPop(StateManagerTestBase):
     def setUp(self):
-        self.sm = StateManager("head.tail")
+        self.sm = StateManager("head.tail", HookManager(), StateRepository())
         self.create_and_register_state("a")
         self.create_and_register_state("b")
         self.create_and_register_state("c")
@@ -260,15 +272,22 @@ class EnqueueThenPop(StateManagerTestBase):
         self.sm.pop_state()
         self.sm.update(0)
 
-    @skip("need to mock the factory")
-    def test_current_state(self):
-        active = list(i.name for i in self.sm.active_states if i.name == "c")
-        active = list(i.name for i in self.sm.active_states)
-        assert len(active) == 1
-        state_c = active.pop()
-        self.assertEqual(state_c, self.sm.current_state)
+    @patch.object(StateFactory, "create_state")
+    def test_current_state(self, mock_instance):
+        mock_state_c = self.create_and_register_state("c")
+        mock_instance.return_value = mock_state_c
 
-    @skip("need to mock the factory")
+        while self.sm.active_states:
+            self.sm.pop_state()
+
+        self.sm.push_state("c")
+
+        self.assertIn(mock_state_c, self.sm.active_states)
+
+        active = [i.name for i in self.sm.active_states]
+        self.assertEqual(len(active), 1)
+        self.assertEqual(active[0], "c")
+
     def test_queued_not_in_active_states(self):
         active = set(i.name for i in self.sm.active_states)
         self.assertNotIn("c", active)
@@ -276,7 +295,7 @@ class EnqueueThenPop(StateManagerTestBase):
 
 class WhenEmpty(StateManagerTestBase):
     def setUp(self):
-        self.sm = StateManager("head.tail")
+        self.sm = StateManager("head.tail", HookManager(), StateRepository())
 
     def test_pop_raises_runtimeError(self):
         with self.assertRaises(RuntimeError):
@@ -288,3 +307,24 @@ class WhenEmpty(StateManagerTestBase):
 
     def test_no_states_current_state_is_none(self):
         self.assertEqual(self.sm.current_state, None)
+
+
+class TestStateManagerResumeCallCount(unittest.TestCase):
+    def setUp(self):
+        self.state_manager = StateManager(
+            "game", HookManager(), StateRepository()
+        )
+        self.world_state = MagicMock(spec=WorldState)
+        self.input_menu = MagicMock(spec=InputMenu)
+        self.state_manager.push_state(self.world_state)
+
+    def test_resume_called_when_popping_input_menu(self):
+        self.state_manager.push_state(self.input_menu)
+        self.input_menu.confirm()
+        self.state_manager.update(0.1)
+        self.world_state.resume.assert_called()
+
+    def test_resume_called_when_popping_state(self):
+        self.state_manager.push_state(self.input_menu)
+        self.state_manager.pop_state()
+        self.world_state.resume.assert_called()

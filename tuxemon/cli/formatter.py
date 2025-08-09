@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import cmd
@@ -12,7 +12,6 @@ class Formatter:
     Print formatted text things.
 
     Currently just supports printing things in a table.
-
     """
 
     def print_table(
@@ -32,7 +31,6 @@ class Formatter:
             footer: Text to display after table.
             ruler: Character to use to underline the header.
             maxcol: Width of table in characters.
-
         """
         print(header)
         print(ruler * len(header))

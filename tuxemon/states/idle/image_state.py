@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from typing import Optional
@@ -13,8 +13,8 @@ from tuxemon.platform.events import PlayerInput
 
 class ImageState(PygameMenuState):
     """
-    It imposes an image over the world, where it'll be possible to
-    dispay dialogues, etc.
+    A state that overlays an image over the game world, useful for displaying
+    dialogues, menus, or other UI elements.
     """
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:

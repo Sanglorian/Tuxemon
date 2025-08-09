@@ -1,16 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from typing import Optional
 
-import pygame
+from pygame.surface import Surface
 
 from tuxemon import prepare
 from tuxemon.graphics import ColorLike
 from tuxemon.platform.events import PlayerInput
-from tuxemon.state import State
+from tuxemon.rumble.tools import RumbleParams
+from tuxemon.state.state import State
 
 logger = logging.getLogger(__name__)
 
@@ -41,11 +42,12 @@ class FlashTransition(State):
         self.transition_alpha = 0.0
         self.max_flash_count = max_flash_count
         self.flash_count = 0
-        self.client.rumble.rumble(-1, length=1.5)
+        params = RumbleParams(target=-1, length=1.5)
+        self.client.rumble.rumble(params)
         self.color = color
 
     def resume(self) -> None:
-        self.transition_surface = pygame.Surface(prepare.SCREEN_SIZE)
+        self.transition_surface = Surface(prepare.SCREEN_SIZE)
         self.transition_surface.fill(self.color)
 
     def update(self, time_delta: float) -> None:
@@ -81,7 +83,7 @@ class FlashTransition(State):
             )
             self.client.pop_state()
 
-    def draw(self, surface: pygame.surface.Surface) -> None:
+    def draw(self, surface: Surface) -> None:
         # Set the alpha of the screen and fill the screen with white at
         # that alpha level.
         self.transition_surface.set_alpha(int(self.transition_alpha))

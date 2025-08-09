@@ -1,18 +1,33 @@
 {
   "conditions": [
-    "is type earth"
+    {
+      "type": "type",
+      "parameters": [
+        "earth"
+      ],
+      "operator": "is"
+    }
   ],
   "effects": [
-    "learn_mm earth"
+    {
+      "type": "learn_mm",
+      "parameters": [
+        "earth"
+      ]
+    }
   ],
   "slug": "mm_earth",
   "sort": "utility",
   "sprite": "gfx/items/mm_earth.png",
   "category": "technique",
+  "cost": 1000,
   "usable_in": [
     "WorldState"
   ],
-  "behaviors": {},
+  "modifiers": [],
+  "behaviors": {
+    "resellable": true
+  },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -8,7 +8,9 @@ from typing import Optional, final
 
 from tuxemon import prepare, save
 from tuxemon.event.eventaction import EventAction
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.npc import NPCState
+from tuxemon.session import Session
+from tuxemon.states.world.worldstate import WorldSave, WorldState
 
 logger = logging.getLogger(__name__)
 
@@ -36,45 +38,53 @@ class LoadGameAction(EventAction):
 
     eg: "load_game" (slot4.save)
     eg: "load_game 1"
-
     """
 
     name = "load_game"
     index: Optional[int] = None
 
-    def start(self) -> None:
-        client = self.session.client
+    def start(self, session: Session) -> None:
+        client = session.client
         index = 4 if self.index is None else self.index + 1
 
         logger.info("Loading!")
         save_data = save.load(index)
-        if save_data and "error" not in save_data:
+        if save_data:
             try:
                 old_world = client.get_state_by_name(WorldState)
                 # when game is loaded from world menu
-                client.pop_state()
+                client.remove_state_by_name("LoadMenuState")
                 client.pop_state(old_world)
-                client.pop_state()
+                client.remove_state_by_name("WorldMenuState")
             except ValueError:
                 # when game is loaded from the start menu
-                client.pop_state()
+                client.remove_state_by_name("LoadMenuState")
                 # avoid crash save and load same action
                 if self.index is not None:
-                    client.pop_state()
+                    client.remove_state_by_name("StartState")
 
-            map_path = prepare.fetch("maps", save_data["current_map"])
-            client.push_state(
-                WorldState(
-                    map_name=map_path,
-                )
+            map_path = prepare.fetch(
+                "maps", save_data["npc_state"]["current_map"]
             )
+            client.push_state("WorldState", session=session, map_name=map_path)
 
             # TODO: Get player from whatever place and use self.client in
             # order to build a Session
-            self.session.player.set_state(self.session, save_data)
+            session.player.set_state(
+                session, save_data.get("npc_state", NPCState())
+            )
+            session.world.set_state(
+                session, save_data.get("world_state", WorldSave())
+            )
 
             # teleport the player to the correct position using an event
             # engine action
-            tele_x, tele_y = save_data["tile_pos"]
-            params = ["player", save_data["current_map"], tele_x, tele_y]
+            client.current_music.stop()
+            tele_x, tele_y = save_data["npc_state"]["tile_pos"]
+            params = [
+                "player",
+                save_data["npc_state"]["current_map"],
+                tele_x,
+                tele_y,
+            ]
             client.event_engine.execute_action("teleport", params)

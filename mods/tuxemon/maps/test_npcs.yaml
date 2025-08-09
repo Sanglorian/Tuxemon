@@ -1502,4 +1502,4 @@ events:
     - not char_exists test_npc498
     - not char_exists test_npc499
     - not char_exists test_npc500
-    type: "event"
+    type: event

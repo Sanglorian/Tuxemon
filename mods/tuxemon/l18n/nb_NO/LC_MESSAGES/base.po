@@ -1,9 +1,12 @@
+#
 msgid ""
 msgstr ""
+"Project-Id-Version: Tuxemon\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-02-03 04:41+0000\n"
 "PO-Revision-Date: 2023-02-03 04:41+0000\n"
 "Last-Translator: Betsy <betsymaxx@gmailvn.net>\n"
-"Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/tuxemon/"
-"tuxemon/nb_NO/>\n"
+"Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/tuxemon/tuxemon/nb_NO/>\n"
 "Language: nb_NO\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -39,7 +42,7 @@ msgid "combat_state_recover_failure"
 msgstr "{user} kan ikke heles ytterligere."
 
 msgid "super_potion_description"
-msgstr "Heler et monster med 150 HP."
+msgstr "Heler et monster med 100 HP."
 
 msgid "orange_description"
 msgstr "Heler et monster med 20 HP."
@@ -69,7 +72,7 @@ msgstr "Malnavn"
 msgid "log_off"
 msgstr "Logg av"
 
-## MENU TRANSLATIONS ##
+# MENU TRANSLATIONS ##
 # Monster Menu notifications
 msgid "monster_menu_info"
 msgstr "Info"
@@ -195,7 +198,7 @@ msgstr "{user} brukte {name}!"
 msgid "combat_can't_run_from_trainer"
 msgstr "Kan ikke løpe!"
 
-## NOTIFICATION TRANSLATIONS ##
+# NOTIFICATION TRANSLATIONS ##
 # Combat notifications
 msgid "combat_run"
 msgstr "{user} løp unna."
@@ -239,7 +242,7 @@ msgstr "Kirsebær"
 msgid "berry"
 msgstr "Bær"
 
-## ITEM TRANSLATIONS ##
+# ITEM TRANSLATIONS ##
 # Apple
 msgid "apple"
 msgstr "Eple"
@@ -360,24 +363,6 @@ msgstr "Stålvegg"
 # Potion
 msgid "potion"
 msgstr "Krukke"
-
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR The Tuxemon Team
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-msgid "PROJECT DESCRIPTION\n"
-msgstr ""
-"Project-Id-Version: Insert package version from somewhere\n"
-"Report-Msgid-Bugs-To: epost@anotheragency.no\n"
-"POT-Creation-Date: 2018-10-07 20:58:38+0000\n"
-"PO-Revision-Date: 2021-06-17 21:05:38+0100\n"
-"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
-"Language-Team: Liberium\n"
-"Language: nb_NO\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 msgid "multiplayer_already_hosting"
 msgstr "Vertstjener allerede."
@@ -1352,7 +1337,7 @@ msgstr ""
 "Kan ikke bytte monstre.\n"
 "{monster} er {status}!"
 
-## NOTIFICATION TRANSLATIONS ##
+# NOTIFICATION TRANSLATIONS ##
 # Combat notifications
 msgid "combat_miss"
 msgstr "Det savnet..."

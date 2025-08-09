@@ -3,10 +3,12 @@
   "accuracy": 0.8,
   "animation": "pound_bright",
   "effects": [
-    "damage"
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": true,
+  "speed": "extremely_fast",
   "potency": 0.0,
   "power": 1.75,
   "range": "melee",
@@ -14,6 +16,7 @@
   "sfx": "sfx_blaster",
   "slug": "peregrine",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -23,7 +26,10 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["Bird", "Speed"],
+  "tags": [
+    "bird",
+    "speed"
+  ],
   "types": [
     "wood",
     "metal"

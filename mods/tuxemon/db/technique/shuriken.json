@@ -3,11 +3,19 @@
   "accuracy": 0.8,
   "animation": "explosion_small",
   "effects": [
-    "give diehard,user",
-    "damage"
+    {
+      "type": "give",
+      "parameters": [
+        "diehard",
+        "own_monster"
+      ]
+    },
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 2.25,
   "range": "ranged",
@@ -15,6 +23,7 @@
   "sfx": "sfx_blaster",
   "slug": "shuriken",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -24,7 +33,10 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["Soldier", "Steel"],
+  "tags": [
+    "soldier",
+    "steel"
+  ],
   "types": [
     "metal"
   ],

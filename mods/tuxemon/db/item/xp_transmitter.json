@@ -7,8 +7,10 @@
   "usable_in": [
     ""
   ],
+  "modifiers": [],
   "behaviors": {
-    "consumable": false
+    "consumable": false,
+    "holdable": true
   },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",

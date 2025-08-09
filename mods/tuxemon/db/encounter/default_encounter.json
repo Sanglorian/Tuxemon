@@ -1,95 +1,115 @@
 {
-   "slug": "default_encounter",
-   "monsters": [
-     {
-       "encounter_rate": 0.5,
-       "exp_req_mod": 1,
-       "level_range": [
-         2,
-         4
-       ],
-       "monster": "eyenemy"
-     },
-     {
-       "encounter_rate": 0.5,
-       "exp_req_mod": 1,
-       "level_range": [
-         2,
-         4
-       ],
-       "monster": "dandicub"
-     },
-     {
-       "encounter_rate": 0.5,
-       "exp_req_mod": 1,
-       "level_range": [
-         2,
-         4
-       ],
-       "monster": "cardiling"
-     },
-     {
-       "encounter_rate": 0.5,
-       "exp_req_mod": 1,
-       "level_range": [
-         2,
-         4
-       ],
-       "monster": "budaye"
-     },
-     {
-       "encounter_rate": 0.5,
-       "exp_req_mod": 1,
-       "level_range": [
-         2,
-         4
-       ],
-       "monster": "cataspike"
-     },
-     {
-       "encounter_rate": 0.5,
-       "exp_req_mod": 1,
-       "level_range": [
-         3,
-         6
-       ],
-       "monster": "elofly"
-     },
-     {
-       "encounter_rate": 0.5,
-       "exp_req_mod": 1,
-       "level_range": [
-         3,
-         6
-       ],
-       "monster": "aardorn"
-     },
-     {
-       "encounter_rate": 0.5,
-       "exp_req_mod": 1,
-       "level_range": [
-         3,
-         6
-       ],
-       "monster": "nut"
-     },
-     {
-       "encounter_rate": 0.5,
-       "exp_req_mod": 1,
-       "level_range": [
-         3,
-         6
-       ],
-       "monster": "grimachin"
-     },
-     {
-       "encounter_rate": 0.5,
-       "exp_req_mod": 1,
-       "level_range": [
-         3,
-         6
-       ],
-       "monster": "spighter"
-     }
-   ]
- }
+  "monsters": [
+    {
+      "encounter_rate": 0.5,
+      "exp_req_mod": 1,
+      "held_items": [],
+      "level_range": [
+        2,
+        4
+      ],
+      "monster": "eyenemy",
+      "variables": []
+    },
+    {
+      "encounter_rate": 0.5,
+      "exp_req_mod": 1,
+      "held_items": [],
+      "level_range": [
+        2,
+        4
+      ],
+      "monster": "dandicub",
+      "variables": []
+    },
+    {
+      "encounter_rate": 0.5,
+      "exp_req_mod": 1,
+      "held_items": [],
+      "level_range": [
+        2,
+        4
+      ],
+      "monster": "cardiling",
+      "variables": []
+    },
+    {
+      "encounter_rate": 0.5,
+      "exp_req_mod": 1,
+      "held_items": [],
+      "level_range": [
+        2,
+        4
+      ],
+      "monster": "budaye",
+      "variables": []
+    },
+    {
+      "encounter_rate": 0.5,
+      "exp_req_mod": 1,
+      "held_items": [],
+      "level_range": [
+        2,
+        4
+      ],
+      "monster": "cataspike",
+      "variables": []
+    },
+    {
+      "encounter_rate": 0.5,
+      "exp_req_mod": 1,
+      "held_items": [],
+      "level_range": [
+        3,
+        6
+      ],
+      "monster": "elofly",
+      "variables": []
+    },
+    {
+      "encounter_rate": 0.5,
+      "exp_req_mod": 1,
+      "held_items": [],
+      "level_range": [
+        3,
+        6
+      ],
+      "monster": "aardorn",
+      "variables": []
+    },
+    {
+      "encounter_rate": 0.5,
+      "exp_req_mod": 1,
+      "held_items": [],
+      "level_range": [
+        3,
+        6
+      ],
+      "monster": "nut",
+      "variables": []
+    },
+    {
+      "encounter_rate": 0.5,
+      "exp_req_mod": 1,
+      "held_items": [],
+      "level_range": [
+        3,
+        6
+      ],
+      "monster": "grimachin",
+      "variables": []
+    },
+    {
+      "encounter_rate": 0.5,
+      "exp_req_mod": 1,
+      "held_items": [],
+      "level_range": [
+        3,
+        6
+      ],
+      "monster": "spighter",
+      "variables": []
+    }
+  ],
+  "slug": "default_encounter"
+}

@@ -1,18 +1,22 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import Any, ClassVar
+import logging
+from dataclasses import dataclass
+from typing import ClassVar, Optional
 
+from tuxemon.constants.paths import CONDITIONS_PATH
 from tuxemon.event import MapCondition
+from tuxemon.plugin import load_plugins
 from tuxemon.session import Session
 
+logger = logging.getLogger(__name__)
 
+
+@dataclass
 class EventCondition:
-    name: ClassVar[str] = "GenericCondition"
-
-    def __init__(self) -> None:
-        pass
+    name: ClassVar[str]
 
     def test(self, session: Session, condition: MapCondition) -> bool:
         """
@@ -24,30 +28,43 @@ class EventCondition:
 
         Returns:
             Value of the condition.
-
         """
         return True
-
-    def get_persist(self, session: Session) -> dict[str, Any]:
-        """
-        Return dictionary for this event class's data.
-
-        * This dictionary will be shared across all conditions
-        * This dictionary will be saved when game is saved
-
-        Returns:
-            Dictionary with the persisting information.
-
-        """
-        # Create a dictionary that will track movement
-
-        try:
-            return session.client.event_persist[self.name]
-        except KeyError:
-            persist: dict[str, Any] = {}
-            session.client.event_persist[self.name] = persist
-            return persist
 
     @property
     def done(self) -> bool:
         return True
+
+
+class ConditionManager:
+    def __init__(self) -> None:
+        self.conditions = load_plugins(
+            CONDITIONS_PATH,
+            "conditions",
+            interface=EventCondition,
+        )
+
+    def get_condition(self, name: str) -> Optional[EventCondition]:
+        """
+        Get a condition that is loaded into the engine.
+
+        A new instance will be returned each time.
+
+        Return ``None`` if condition is not loaded.
+
+        Parameters:
+            name: Name of the condition.
+
+        Returns:
+            New instance of the condition if that condition is loaded.
+            ``None`` otherwise.
+        """
+        try:
+            return self.conditions[name]()
+        except KeyError:
+            logger.warning(f'EventCondition "{name}" not implemented')
+            return None
+
+    def get_conditions(self) -> list[type[EventCondition]]:
+        """Return list of EventConditions."""
+        return list(self.conditions.values())

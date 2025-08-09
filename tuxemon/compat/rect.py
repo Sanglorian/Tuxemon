@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Sequence
-from typing import Protocol, TypeVar, Union, cast, runtime_checkable
+from typing import Protocol, TypeVar, Union, runtime_checkable
 
 SelfRectType = TypeVar("SelfRectType", bound="ReadOnlyRect")
 RectType = TypeVar("RectType", bound="ReadOnlyRect", covariant=True)
@@ -242,14 +242,14 @@ class Rect(ReadOnlyRect):
             self._h = arg.h
         elif isinstance(arg, (list, tuple)):
             if len(arg) == 2:
-                arg = cast(tuple[tuple[int, int], tuple[int, int]], arg)
                 self._x, self._y = arg[0]
                 self._w, self._h = arg[1]
             elif len(arg) == 4:
-                arg = cast(tuple[int, int, int, int], arg)
                 self._x, self._y, self._w, self._h = arg
+            else:
+                raise ValueError("Invalid argument: expected 2 or 4 elements")
         else:
-            self._x, self._y, self._w, self._h = arg
+            raise ValueError("Invalid argument: expected Rect, tuple or list")
 
     @property
     def w(self) -> int:

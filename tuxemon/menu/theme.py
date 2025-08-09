@@ -1,17 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+from pathlib import Path
 from typing import Optional
 
-import pygame
 import pygame_menu
-from pygame_menu import locals, sound
+from pygame.surface import Surface
+from pygame_menu.locals import ALIGN_LEFT, SCROLLAREA_POSITION_NONE
+from pygame_menu.sound import SOUND_TYPE_WIDGET_SELECTION
 from pygame_menu.widgets.core.selection import Selection
 from pygame_menu.widgets.core.widget import Widget
 from pygame_menu.widgets.widget.menubar import MENUBAR_STYLE_ADAPTIVE
 
 from tuxemon import prepare
-from tuxemon.audio import SoundManager
-from tuxemon.tools import transform_resource_filename
+from tuxemon.tools import scale, transform_resource_filename
 
 _theme: Optional[pygame_menu.Theme] = None
 
@@ -41,11 +42,7 @@ class TuxemonArrowSelection(Selection):
         )
         self.arrow = arrow
 
-    def draw(
-        self,
-        surface: pygame.Surface,
-        widget: Widget,
-    ) -> Selection:
+    def draw(self, surface: Surface, widget: Widget) -> Selection:
         """
         This method receives the surface to draw the selection and the
         widget itself. For retrieving the Selection coordinates the rect
@@ -72,12 +69,6 @@ def get_theme() -> pygame_menu.Theme:
     if _theme is not None:
         return _theme
 
-    if prepare.CONFIG.locale == "zh_CN":
-        font_filename = prepare.fetch("font", prepare.FONT_CHINESE)
-    elif prepare.CONFIG.locale == "ja":
-        font_filename = prepare.fetch("font", prepare.FONT_JAPANESE)
-    else:
-        font_filename = prepare.fetch("font", prepare.FONT_BASIC)
     tuxemon_border = pygame_menu.BaseImage(
         image_path=transform_resource_filename("gfx/borders/borders.png"),
     ).scale(5, 5, smooth=False)
@@ -88,24 +79,37 @@ def get_theme() -> pygame_menu.Theme:
         -2 * tuxemon_background_center_rect.height // 3,
     )
 
+    tuxemon_border._surface = tuxemon_border._surface.convert_alpha()
     tuxemon_background = tuxemon_border.copy().crop_rect(
         tuxemon_background_center_rect
     )
 
     theme = pygame_menu.Theme(
         background_color=tuxemon_background,
-        title_font=font_filename,
-        widget_font=font_filename,
-        widget_alignment=locals.ALIGN_LEFT,
+        widget_alignment=ALIGN_LEFT,
         title=False,
         widget_selection_effect=TuxemonArrowSelection(),
         border_color=tuxemon_border,
-        scrollarea_position=locals.SCROLLAREA_POSITION_NONE,
+        scrollarea_position=SCROLLAREA_POSITION_NONE,
         widget_padding=(10, 20),
         title_close_button=False,
         title_bar_style=MENUBAR_STYLE_ADAPTIVE,
         widget_font_shadow=True,
     )
+
+    # Set common font sizes and colors as part of the theme definition
+    theme.widget_font_size = scale(prepare.FONT_SIZE)
+    theme.title_font_size = scale(prepare.FONT_SIZE_BIG)
+    theme.widget_font_color = prepare.FONT_COLOR
+    theme.selection_color = prepare.FONT_COLOR
+    theme.scrollbar_color = prepare.SCROLLBAR_COLOR
+    theme.scrollbar_slider_color = prepare.SCROLLBAR_SLIDER_COLOR
+    theme.title_font_color = prepare.FONT_COLOR
+    theme.title_background_color = prepare.TRANSPARENT_COLOR
+    theme.widget_font_shadow_color = prepare.FONT_SHADOW_COLOR
+    font = prepare.fetch("font", prepare.CONFIG.locale.font_file)
+    theme.title_font = font
+    theme.widget_font = font
 
     _theme = theme
     return _theme
@@ -114,17 +118,23 @@ def get_theme() -> pygame_menu.Theme:
 _sound_engine: Optional[pygame_menu.Sound] = None
 
 
-def get_sound_engine() -> pygame_menu.Sound:
+def get_sound_engine(
+    volume: float, filename: Optional[Path]
+) -> pygame_menu.Sound:
     """Get Tuxemon default sound engine."""
     global _sound_engine
 
     if _sound_engine is not None:
+        _sound_engine.set_sound_volume(
+            sound_type=SOUND_TYPE_WIDGET_SELECTION, volume=volume
+        )
         return _sound_engine
 
     sound_engine = pygame_menu.Sound()
     sound_engine.set_sound(
-        sound.SOUND_TYPE_WIDGET_SELECTION,
-        SoundManager().get_sound_filename("sound_menu_select"),
+        sound_type=SOUND_TYPE_WIDGET_SELECTION,
+        sound_file=filename,
+        volume=float(volume),
     )
 
     _sound_engine = sound_engine

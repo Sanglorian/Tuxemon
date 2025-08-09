@@ -1,9 +1,17 @@
 {
   "conditions": [
-    "is facing_tile surfable"
+    {
+      "type": "facing_tile",
+      "parameters": [
+        "surfable"
+      ],
+      "operator": "is"
+    }
   ],
   "effects": [
-    "fishing 0.85,25,35"
+    {
+      "type": "fishing"
+    }
   ],
   "slug": "poseidon",
   "sort": "utility",
@@ -12,6 +20,7 @@
   "usable_in": [
     "WorldState"
   ],
+  "modifiers": [],
   "behaviors": {
     "consumable": false,
     "requires_monster_menu": false,

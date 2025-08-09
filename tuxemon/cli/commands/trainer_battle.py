@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import traceback
@@ -13,10 +13,7 @@ from tuxemon.cli.parser import parse
 
 
 class TrainerBattleCommand(CLICommand):
-    """
-    Command to start a trainer battle.
-
-    """
+    """Command to start a trainer battle."""
 
     name = "trainer_battle"
     description = "Start a trainer battle."
@@ -29,7 +26,6 @@ class TrainerBattleCommand(CLICommand):
         Parameters:
             ctx: Contains references to parts of the game and CLI interface.
             line: Complete text as entered into the prompt.
-
         """
         args = parse(line)
         if not args:
@@ -38,7 +34,7 @@ class TrainerBattleCommand(CLICommand):
         elif len(args) == 1:
             trainer = args[0]
             try:
-                action = ctx.session.client.event_engine.execute_action
+                action = ctx.client.event_engine.execute_action
                 action("create_npc", (trainer, 7, 6))
                 action("start_battle", (trainer,))
                 action("remove_npc", (trainer,))

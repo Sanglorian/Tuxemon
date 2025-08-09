@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 
 @final
@@ -27,9 +28,9 @@ class CallEventAction(EventAction):
     name = "call_event"
     event_name: str
 
-    def start(self) -> None:
-        event_engine = self.session.client.event_engine
-        events = self.session.client.events
+    def start(self, session: Session) -> None:
+        event_engine = session.client.event_engine
+        events = session.client.map_manager.events
 
         for e in events:
             if e.name == self.event_name:

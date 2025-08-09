@@ -1,16 +1,25 @@
 {
   "conditions": [],
   "effects": [
-    "gain_xp 437"
+    {
+      "type": "gain_xp",
+      "parameters": [
+        "437"
+      ]
+    }
   ],
   "slug": "mystery_tea",
   "sort": "potion",
   "sprite": "gfx/items/mystery_tea.png",
   "category": "none",
+  "cost": 1050,
   "usable_in": [
     "WorldState"
   ],
-  "behaviors": {},
+  "modifiers": [],
+  "behaviors": {
+    "resellable": true
+  },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

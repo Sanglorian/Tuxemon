@@ -1,16 +1,26 @@
 {
   "conditions": [
-    "is type fire"
+    {
+      "type": "type",
+      "parameters": [
+        "fire"
+      ],
+      "operator": "is"
+    }
   ],
   "effects": [],
   "slug": "tm_fire",
   "sort": "utility",
   "sprite": "gfx/items/tm_fire.png",
   "category": "technique",
+  "cost": 2500,
   "usable_in": [
     "WorldState"
   ],
-  "behaviors": {},
+  "modifiers": [],
+  "behaviors": {
+    "resellable": true
+  },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

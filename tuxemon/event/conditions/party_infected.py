@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 
-from tuxemon.db import PlagueType
 from tuxemon.event import MapCondition, get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
@@ -12,6 +12,7 @@ from tuxemon.session import Session
 logger = logging.getLogger(__name__)
 
 
+@dataclass
 class PartyInfectedCondition(EventCondition):
     """
     Check to see how many monster are infected in the character's party.
@@ -25,7 +26,6 @@ class PartyInfectedCondition(EventCondition):
         character: Either "player" or npc slug name (e.g. "npc_maple").
         plague_slug: The slug of the plague to target.
         value: all, some or none.
-
     """
 
     name = "party_infected"
@@ -40,8 +40,8 @@ class PartyInfectedCondition(EventCondition):
         plague = [
             mon
             for mon in character.monsters
-            if _plague_slug in mon.plague
-            and mon.plague[_plague_slug] == PlagueType.infected
+            if mon.plague.has_plague(_plague_slug)
+            and mon.plague.is_infected_with(_plague_slug)
         ]
 
         if _value == "all":

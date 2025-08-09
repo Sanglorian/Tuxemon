@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -8,6 +8,7 @@ from typing import final
 
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 from tuxemon.states.world.worldstate import WorldState
 
 logger = logging.getLogger(__name__)
@@ -41,20 +42,21 @@ class DelayedTeleportAction(EventAction):
     position_x: int
     position_y: int
 
-    def start(self) -> None:
-        world = self.session.client.get_state_by_name(WorldState)
+    def start(self, session: Session) -> None:
+        world = session.client.get_state_by_name(WorldState)
+        delayed_teleport = world.teleporter.delayed_teleport
 
-        if world.teleporter.delayed_teleport:
+        if delayed_teleport.is_active:
             logger.error("Stop, there is a teleport in progress")
             return
 
-        char = get_npc(self.session, self.character)
+        char = get_npc(session, self.character)
         if char is None:
             logger.error(f"{self.character} not found")
             return
 
-        world.teleporter.delayed_char = char
-        world.teleporter.delayed_teleport = True
-        world.teleporter.delayed_mapname = self.map_name
-        world.teleporter.delayed_x = self.position_x
-        world.teleporter.delayed_y = self.position_y
+        delayed_teleport.char = char
+        delayed_teleport.is_active = True
+        delayed_teleport.mapname = self.map_name
+        delayed_teleport.x = self.position_x
+        delayed_teleport.y = self.position_y

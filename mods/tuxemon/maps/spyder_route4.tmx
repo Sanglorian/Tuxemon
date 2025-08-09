@@ -382,7 +382,7 @@
   <object id="82" name="Talk Marshall" type="event" x="48" y="464" width="48" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_route4_marshall"/>
+    <property name="act2" value="pathfind_to_char player,spyder_route4_marshall"/>
     <property name="act3" value="translated_dialog spyder_route4_marshall1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster puparmor,16,spyder_route4_marshall,5,10"/>
@@ -397,7 +397,7 @@
   <object id="83" name="Talk Beck" type="event" x="64" y="320" width="32" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_route4_beck"/>
+    <property name="act02" value="pathfind_to_char player,spyder_route4_beck"/>
     <property name="act03" value="translated_dialog spyder_route4_beck1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster katapill,14,spyder_route4_beck,5,10"/>
@@ -413,7 +413,7 @@
   <object id="84" name="Talk Wulf" type="event" x="32" y="208" width="16" height="48">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_route4_wulf"/>
+    <property name="act02" value="pathfind_to_char player,spyder_route4_wulf"/>
     <property name="act03" value="translated_dialog spyder_route4_wulf1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster cowpignon,14,spyder_route4_wulf,5,10"/>
@@ -429,7 +429,7 @@
   <object id="85" name="Talk Rosamund" type="event" x="192" y="496" width="16" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_route4_rosamund"/>
+    <property name="act2" value="pathfind_to_char player,spyder_route4_rosamund"/>
     <property name="act3" value="translated_dialog spyder_route4_rosamund1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster foofle,18,spyder_route4_rosamund,5,10"/>
@@ -445,7 +445,7 @@
     <property name="act01" value="char_stop player"/>
     <property name="act02" value="lock_controls"/>
     <property name="act03" value="create_npc spyder_billie,0,4"/>
-    <property name="act04" value="pathfind_to_player spyder_billie"/>
+    <property name="act04" value="pathfind_to_char player,spyder_billie"/>
     <property name="act05" value="unlock_controls"/>
     <property name="act08" value="translated_dialog spyder_route4_billie1"/>
     <property name="act20" value="add_monster billie_choice,18,spyder_billie,5,10"/>
@@ -474,7 +474,7 @@
   </object>
   <object id="90" name="Super Potion" type="event" x="272" y="512" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog super_potion"/>
+    <property name="act1" value="translated_dialog super_potion,,center,center,center"/>
     <property name="act2" value="add_item super_potion"/>
     <property name="act3" value="remove_npc spyder_route4_super"/>
     <property name="act4" value="set_variable route4_super:yes"/>
@@ -490,7 +490,7 @@
   </object>
   <object id="92" name="Boost Ranged" type="event" x="16" y="48" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog boost_ranged"/>
+    <property name="act1" value="translated_dialog boost_ranged,,center,center,center"/>
     <property name="act2" value="add_item boost_ranged"/>
     <property name="act3" value="remove_npc spyder_route4_boost"/>
     <property name="act4" value="set_variable route4_boost:yes"/>

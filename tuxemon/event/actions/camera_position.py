@@ -1,21 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from enum import Enum
 from typing import Optional, final
 
+from tuxemon.camera import Camera
 from tuxemon.event.eventaction import EventAction
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
-
-
-class CameraMode(Enum):
-    FIXED = "fixed"
-    FREE_ROAMING = "free_roaming"
 
 
 @final
@@ -27,44 +22,41 @@ class CameraPositionAction(EventAction):
     Script usage:
         .. code-block::
 
-            camera_position <x>,<y>,<mode>
+            camera_position <x>,<y>
 
     Script parameters:
         x,y: the coordinates where the camera needs to be centered.
-        mode: the camera mode, either "fixed" or "free_roaming", default "fixed"
 
     """
 
     name = "camera_position"
     x: Optional[int] = None
     y: Optional[int] = None
-    mode: Optional[str] = "fixed"
 
-    def start(self) -> None:
-        world = self.session.client.get_state_by_name(WorldState)
-        map_size = self.session.client.map_size
-
+    def start(self, session: Session) -> None:
+        camera = session.client.camera_manager.get_active_camera()
+        if camera is None:
+            logger.error("No active camera found.")
+            return
         if self.x is not None and self.y is not None:
-            if world.boundary_checker.is_within_boundaries((self.x, self.y)):
-                if world.camera.follows_entity:
-                    world.camera.unfollow()
-                if self.mode in [m.value for m in CameraMode]:
-                    world.camera.free_roaming_enabled = (
-                        self.mode == CameraMode.FREE_ROAMING.value
-                    )
-                else:
-                    logger.warning(
-                        f"Invalid camera mode: {self.mode}. Defaulting to fixed."
-                    )
-                    world.camera.free_roaming_enabled = False
-                world.camera.move(self.x, self.y)
-                logger.info(
-                    f"Camera has been set to ({self.x, self.y}) with mode {self.mode}"
-                )
-            else:
+            map_size = session.client.map_manager.map_size
+            if not session.client.boundary.is_within_boundaries(
+                (self.x, self.y)
+            ):
                 logger.error(
                     f"({self.x, self.y}) is outside the map bounds {map_size}"
                 )
+                return
+            self._move_camera(camera, self.x, self.y)
         else:
-            world.camera.reset_to_entity_center()
-            logger.info("Camera has been reset to entity's center")
+            self._reset_camera(camera)
+
+    def _move_camera(self, camera: Camera, x: int, y: int) -> None:
+        if camera.follows_entity:
+            camera.unfollow()
+        camera.set_position(x, y)
+        logger.info(f"Camera has been set to ({x, y})")
+
+    def _reset_camera(self, camera: Camera) -> None:
+        camera.reset_to_entity_center()
+        logger.info("Camera has been reset to entity's center")

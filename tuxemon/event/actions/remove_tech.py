@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -33,15 +34,15 @@ class RemoveTechAction(EventAction):
     name = "remove_tech"
     tech_id: str
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
         if self.tech_id not in player.game_variables:
             logger.error(f"Game variable {self.tech_id} not found")
             return
         tech_id = uuid.UUID(player.game_variables[self.tech_id])
 
         for monster in player.monsters:
-            technique = monster.find_tech_by_id(tech_id)
+            technique = monster.moves.find_tech_by_id(tech_id)
             if technique:
-                monster.moves.remove(technique)
+                monster.moves.forget(technique)
                 logger.info(f"{technique.name} removed from {monster.name}")

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -7,10 +7,11 @@ import uuid
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon.db import Comparison, ElementType, Range
+from tuxemon.db import Comparison, Range
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.interface import MenuItem
+from tuxemon.session import Session
 from tuxemon.states.techniques import TechniqueMenuState
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import compare
@@ -48,7 +49,6 @@ class GetMonsterTechAction(EventAction):
     eg. "get_monster_tech name_variable,monster_id"
     eg. "get_monster_tech name_variable,monster_id,element,water"
     eg, "get_monster_tech name_variable,monster_id,power,less_than,1.6"
-
     """
 
     name = "get_monster_tech"
@@ -70,11 +70,7 @@ class GetMonsterTechAction(EventAction):
                 self.result = True
                 return self.result
             # filter element / type
-            if (
-                filter_name == "element"
-                and value_name in list(ElementType)
-                and technique.has_type(ElementType(value_name))
-            ):
+            if filter_name == "element" and technique.has_type(value_name):
                 self.result = True
                 return self.result
             # filter genders
@@ -108,11 +104,12 @@ class GetMonsterTechAction(EventAction):
         )
         self.session.client.pop_state()
 
-    def start(self) -> None:
+    def start(self, session: Session) -> None:
+        self.session = session
         self.result = False
         self.choose = False
-        player = self.session.player
-        client = self.session.client
+        player = session.player
+        client = session.client
 
         if self.monster_id is None:
             monsters = client.event_data.get("check_max_tech", [])
@@ -132,8 +129,12 @@ class GetMonsterTechAction(EventAction):
 
         for mon in monsters:
             # pull up the monster menu so we know which one we are saving
-            menu = self.session.client.push_state(
-                TechniqueMenuState(monster=mon)
+            menu = session.client.push_state(
+                TechniqueMenuState(
+                    character=session.player,
+                    techniques=mon.moves.get_moves(),
+                    monster=mon,
+                )
             )
             menu.is_valid_entry = self.validate  # type: ignore[assignment]
             menu.on_menu_selection = self.set_var  # type: ignore[assignment]
@@ -146,11 +147,11 @@ class GetMonsterTechAction(EventAction):
         ):
             menu.escape_key_exits = False
 
-    def update(self) -> None:
+    def update(self, session: Session) -> None:
         try:
-            self.session.client.get_state_by_name(TechniqueMenuState)
+            session.client.get_state_by_name("TechniqueMenuState")
         except ValueError:
-            player = self.session.player
+            player = session.player
             if self.result and not self.choose:
                 # the player can choose, but returns
                 player.game_variables[self.variable_name] = "no_choice"

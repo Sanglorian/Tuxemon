@@ -3,12 +3,23 @@
   "accuracy": 1,
   "animation": "screen",
   "effects": [
-    "give charging,user",
-    "give exhausted,target",
-    "enhance"
+    {
+      "type": "give",
+      "parameters": [
+        "charging",
+        "own_monster"
+      ]
+    },
+    {
+      "type": "give",
+      "parameters": [
+        "exhausted",
+        "enemy_monster"
+      ]
+    }
   ],
   "flip_axes": "x",
-  "is_fast": true,
+  "speed": "very_fast",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -16,6 +27,7 @@
   "sfx": "sfx_forcefield",
   "slug": "energy_field",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -25,7 +37,9 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["Machine"],
+  "tags": [
+    "machine"
+  ],
   "types": [
     "aether"
   ],

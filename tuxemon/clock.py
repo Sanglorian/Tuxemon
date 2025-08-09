@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import collections
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+from __future__ import annotations
+
 import time
+from collections import deque
 from collections.abc import Callable
 from heapq import heapify, heappop, heappush, heappushpop
-from typing import Any, Deque, Optional, Union
+from typing import Any, Optional, Union
 
 __all__ = ("ScheduledItem", "Scheduler", "Clock")
 
@@ -48,7 +50,7 @@ class Scheduler:
         super().__init__()
         self._time = time_function
         self._last_ts: float = -1
-        self._times: Deque[int] = collections.deque(maxlen=10)
+        self._times: deque[int] = deque(maxlen=10)
         self._scheduled_items: list[ScheduledItem] = []
         self._next_tick_items: list[ScheduledItem] = []
         self.cumulative_time = 0.0
@@ -152,7 +154,6 @@ class Scheduler:
 
         Returns:
             Reference to scheduled item
-
         """
         last_ts = self._get_nearest_ts()
         if soft:
@@ -184,7 +185,6 @@ class Scheduler:
         Returns:
             The number of time units since the last "tick", or 0 if this
             was the first tick.
-
         """
         delta_t = self.set_time(self._time())
         self._times.append(int(delta_t))
@@ -219,7 +219,6 @@ class Scheduler:
         Returns:
             The number of time units since the last update, or 0.0 if this
             was the first update.
-
         """
         # self._last_ts will be -1 before first time set
         if self._last_ts < 0:
@@ -352,7 +351,6 @@ class Scheduler:
 
         Parameters:
             func: The function to remove from the schedule.
-
         """
 
         def remove(list_: list[ScheduledItem]) -> bool:
@@ -386,7 +384,6 @@ class Clock(Scheduler):
         Parameters:
             gradient:
             offset:
-
         """
         X = 0
         Y = 0

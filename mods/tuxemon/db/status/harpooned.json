@@ -1,0 +1,24 @@
+{
+  "animation": null,
+  "modifiers": [],
+  "category": "negative",
+  "effects": [
+    {
+      "type": "harpooned",
+      "parameters": [
+        "8"
+      ]
+    }
+  ],
+  "flip_axes": "",
+  "icon": "gfx/ui/icons/status/icon_harpooned.png",
+  "on_positive_status": "replaced",
+  "on_negative_status": "replaced",
+  "sfx": "sfx_pulse",
+  "slug": "harpooned",
+  "sort": "meta",
+  "cond_id": 27,
+  "use_failure": null,
+  "use_success": "combat_state_harpooned_get",
+  "gain_cond": null
+}

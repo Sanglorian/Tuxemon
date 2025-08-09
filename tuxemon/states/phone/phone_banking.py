@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from collections.abc import Callable
 from functools import partial
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pygame_menu
 from pygame_menu import locals
@@ -12,16 +12,15 @@ from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon import prepare
 from tuxemon.locale import T
+from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.session import local_session
 from tuxemon.tools import open_choice_dialog, open_dialog
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+
+if TYPE_CHECKING:
+    from tuxemon.npc import NPC
 
 MenuGameObj = Callable[[], Any]
-
-
-def fix_measure(measure: int, percentage: float) -> int:
-    """it returns the correct measure based on percentage"""
-    return round(measure * percentage)
 
 
 class NuPhoneBanking(PygameMenuState):
@@ -29,122 +28,188 @@ class NuPhoneBanking(PygameMenuState):
         self,
         menu: pygame_menu.Menu,
     ) -> None:
-        if "bank_account" not in self.player.money:
-            self.player.money["bank_account"] = 0
-        bank_account = self.player.money["bank_account"]
-        wallet_player = self.player.money["player"]
+        money_manager = self.char.money_controller.money_manager
+        bank_account = money_manager.get_bank_balance()
+        wallet_player = money_manager.get_money()
+        formatter = CurrencyFormatter()
+        formatter_bank = formatter.format(bank_account)
+        formatter_wallet = formatter.format(wallet_player)
 
-        _wallet = f"{T.translate('wallet')}: {wallet_player}"
+        _wallet = f"{T.translate('wallet')}: {formatter_wallet}"
         menu.add.label(
             title=_wallet,
             label_id="wallet",
-            font_size=self.font_size_small,
+            font_size=self.font_type.small,
         )
-        _bank = f"{T.translate('bank')}: {bank_account}"
+        _bank = f"{T.translate('bank')}: {formatter_bank}"
         menu.add.label(
             title=_bank,
             label_id="bank",
-            font_size=self.font_size_small,
+            font_size=self.font_type.small,
         )
 
-        for key, value in self.player.money.items():
-            if key.startswith("bill_") and value > 0:
-                _cathedral = f"{T.translate(key)}: {value}"
+        for key, entry in money_manager.bills.items():
+            if entry.amount > 0:
+                _cathedral = f"{T.translate(key)}: {entry.amount}"
                 menu.add.label(
                     title=_cathedral,
                     label_id=key,
-                    font_size=self.font_size_small,
+                    font_size=self.font_type.small,
                 )
 
         elements: list[int] = [1, 10, 50, 100, 500, 1000]
 
-        def choice(op: str, _from: str, _to: str) -> None:
-            var_menu = []
+        def choice(op: str) -> None:
+            options = []
             for ele in elements:
-                _ele = str(ele)
+                _ele = formatter.format(ele)
                 if op == "deposit" and ele <= wallet_player:
-                    _param = (_ele, _ele, partial(method, ele, _from, _to))
-                    var_menu.append(_param)
-                if op == "withdraw" and ele <= bank_account:
-                    _param = (_ele, _ele, partial(method, ele, _from, _to))
-                    var_menu.append(_param)
+                    options.append(
+                        ChoiceOption(
+                            key=_ele,
+                            display_text=_ele,
+                            action=partial(deposit, ele),
+                        )
+                    )
+                elif op == "withdraw" and ele <= bank_account:
+                    options.append(
+                        ChoiceOption(
+                            key=_ele,
+                            display_text=_ele,
+                            action=partial(withdraw, ele),
+                        )
+                    )
+                elif op == "pay" and ele <= wallet_player:
+                    options.append(
+                        ChoiceOption(
+                            key=_ele,
+                            display_text=_ele,
+                            action=partial(pay, ele),
+                        )
+                    )
+                elif op == "e_pay" and ele <= bank_account:
+                    options.append(
+                        ChoiceOption(
+                            key=_ele,
+                            display_text=_ele,
+                            action=partial(e_pay, ele),
+                        )
+                    )
+            if options:
+                menu = MenuOptions(options)
+                open_choice_dialog(self.client, menu, escape_key_exits=True)
+            else:
+                params = {"operation": T.translate(op)}
+                msg = T.format("no_money_operation", params)
+                open_dialog(self.client, [msg])
+
+        def bill_manager(op: str, bill_name: str) -> None:
+            options = []
+
+            for ele in elements:
+                _ele = formatter.format(ele)
                 if op == "pay" and ele <= wallet_player:
-                    _param = (_ele, _ele, partial(pay, ele, _from, _to))
-                    var_menu.append(_param)
-                if op == "e_pay" and ele <= bank_account:
-                    _param = (_ele, _ele, partial(pay, ele, _from, _to))
-                    var_menu.append(_param)
-            if var_menu:
-                if op == "pay" or op == "e_pay":
-                    self.client.pop_state()
-                open_choice_dialog(local_session, (var_menu), True)
+                    action = partial(pay, ele, bill_name)
+                    options.append(
+                        ChoiceOption(
+                            key="pay", display_text=_ele, action=action
+                        )
+                    )
+                elif op == "e_pay" and ele <= bank_account:
+                    action = partial(e_pay, ele, bill_name)
+                    options.append(
+                        ChoiceOption(
+                            key="e_pay", display_text=_ele, action=action
+                        )
+                    )
+
+            if options:
+                self.client.remove_state_by_name("ChoiceState")
+                menu = MenuOptions(options)
+                open_choice_dialog(self.client, menu, escape_key_exits=True)
             else:
                 params = {"operation": T.translate(op)}
                 msg = T.format("no_money_operation", params)
-                open_dialog(local_session, [msg])
+                open_dialog(self.client, [msg])
 
-        def bill(op: str, _from: str) -> None:
-            var_menu = []
-            for key, value in self.player.money.items():
-                _key = T.translate(key)
-                if key.startswith("bill_") and value > 0:
-                    _param = (_key, _key, partial(choice, op, _from, key))
-                    var_menu.append(_param)
-            if var_menu:
-                open_choice_dialog(local_session, (var_menu), True)
+        def bill(op: str) -> None:
+            options = []
+            for key, entry in money_manager.bills.items():
+                if entry.amount > 0:
+                    display = T.translate(key)
+                    action = partial(bill_manager, op, key)
+                    options.append(
+                        ChoiceOption(
+                            key=key,
+                            display_text=display,
+                            action=action,
+                        )
+                    )
+            if options:
+                menu = MenuOptions(options)
+                open_choice_dialog(self.client, menu, escape_key_exits=True)
             else:
                 params = {"operation": T.translate(op)}
                 msg = T.format("no_money_operation", params)
-                open_dialog(local_session, [msg])
+                open_dialog(self.client, [msg])
 
-        def method(amount: int, _from: str, _to: str) -> None:
-            self.client.pop_state()
-            self.client.pop_state()
-            self.player.money[_from] -= amount
-            self.player.money[_to] += amount
+        def deposit(amount: int) -> None:
+            self.client.remove_state_by_name("ChoiceState")
+            self.client.remove_state_by_name("NuPhoneBanking")
+            money_manager.deposit_to_bank(amount)
+            money_manager.remove_money(amount)
 
-        def pay(amount: int, _from: str, _to: str) -> None:
-            self.client.pop_state()
-            self.client.pop_state()
-            self.player.money[_from] -= amount
-            self.player.money[_to] -= amount
+        def withdraw(amount: int) -> None:
+            self.client.remove_state_by_name("ChoiceState")
+            self.client.remove_state_by_name("NuPhoneBanking")
+            money_manager.withdraw_from_bank(amount)
+            money_manager.add_money(amount)
+
+        def pay(amount: int, bill_name: str) -> None:
+            self.client.remove_state_by_name("ChoiceState")
+            self.client.remove_state_by_name("NuPhoneBanking")
+            money_manager.pay_bill_with_money(bill_name, amount)
+
+        def e_pay(amount: int, bill_name: str) -> None:
+            self.client.remove_state_by_name("ChoiceState")
+            self.client.remove_state_by_name("NuPhoneBanking")
+            money_manager.pay_bill_with_deposit(bill_name, amount)
 
         if wallet_player > 0:
             menu.add.vertical_margin(25)
             menu.add.button(
                 title=T.translate("deposit").upper(),
-                action=partial(choice, "deposit", "player", "bank_account"),
+                action=partial(choice, "deposit"),
                 button_id="deposit",
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 selection_effect=HighlightSelection(),
             )
         if bank_account > 0:
             menu.add.vertical_margin(25)
             menu.add.button(
                 title=T.translate("withdraw").upper(),
-                action=partial(choice, "withdraw", "bank_account", "player"),
+                action=partial(choice, "withdraw"),
                 button_id="withdraw",
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 selection_effect=HighlightSelection(),
             )
 
         _payment = False
         _e_payment = False
-        for key, value in self.player.money.items():
-            if key.startswith("bill_"):
-                if value > 0 and wallet_player > 0:
-                    _payment = True
-                if value > 0 and bank_account > 0:
-                    _e_payment = True
+        for key, entry in money_manager.bills.items():
+            if entry.amount > 0 and wallet_player > 0:
+                _payment = True
+            if entry.amount > 0 and bank_account > 0:
+                _e_payment = True
 
         if _payment:
             menu.add.vertical_margin(25)
             _pay = T.translate("pay").upper()
             menu.add.button(
                 title=_pay,
-                action=partial(bill, "pay", "player"),
+                action=partial(bill, "pay"),
                 button_id=_pay,
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 selection_effect=HighlightSelection(),
             )
 
@@ -153,14 +218,14 @@ class NuPhoneBanking(PygameMenuState):
             _pay = T.translate("e_pay").upper()
             menu.add.button(
                 title=_pay,
-                action=partial(bill, "e_pay", "bank_account"),
+                action=partial(bill, "e_pay"),
                 button_id=_pay,
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 selection_effect=HighlightSelection(),
             )
         menu.set_title(T.translate("app_banking")).center_content()
 
-    def __init__(self) -> None:
+    def __init__(self, character: NPC) -> None:
         width, height = prepare.SCREEN_SIZE
 
         theme = self._setup_theme(prepare.BG_PHONE_BANKING)
@@ -170,7 +235,7 @@ class NuPhoneBanking(PygameMenuState):
         # menu
         theme.title = True
 
-        self.player = local_session.player
+        self.char = character
 
         super().__init__(
             height=height,

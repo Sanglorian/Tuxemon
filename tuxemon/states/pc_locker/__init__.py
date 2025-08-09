@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -14,29 +14,27 @@ from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon import prepare
-from tuxemon.item import item
+from tuxemon.animation import ScheduleType
+from tuxemon.item.filter import ItemFilter
+from tuxemon.item.item import Item
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.quantity import QuantityMenu
-from tuxemon.session import local_session
-from tuxemon.state import State
+from tuxemon.state.state import State
 from tuxemon.states.items.item_menu import ItemMenuState
-from tuxemon.tools import open_choice_dialog, open_dialog
+from tuxemon.tools import fix_measure, open_choice_dialog, open_dialog
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from tuxemon.animation import Animation
     from tuxemon.item.item import Item
+    from tuxemon.npc import NPC
 
 
 MenuGameObj = Callable[[], object]
-
-
-def fix_measure(measure: int, percentage: float) -> int:
-    """it returns the correct measure based on percentage"""
-    return round(measure * percentage)
 
 
 HIDDEN_LOCKER = "hidden_locker"
@@ -54,7 +52,7 @@ class ItemTakeState(PygameMenuState):
         menu: pygame_menu.Menu,
         items: Sequence[Item],
     ) -> None:
-        self.item_boxes = self.player.item_boxes
+        self.item_boxes = self.char.item_boxes
         self.box = self.item_boxes.get_items(self.box_name)
 
         def locker_options(instance_id: str) -> None:
@@ -67,13 +65,13 @@ class ItemTakeState(PygameMenuState):
 
             lockers = [
                 key
-                for key, _ in self.item_boxes.boxes.items()
+                for key, _ in self.item_boxes.item_boxes.items()
                 if key not in HIDDEN_LIST_LOCKER and key != self.box_name
             ]
 
             box_ids = [
                 key
-                for key, value in self.item_boxes.boxes.items()
+                for key, value in self.item_boxes.item_boxes.items()
                 if key not in HIDDEN_LIST_LOCKER
             ]
 
@@ -83,15 +81,23 @@ class ItemTakeState(PygameMenuState):
                 "disband": lambda: disband_item(itm),
             }
 
-            menu = []
+            menu_options = []
+
             for action, func in actions.items():
                 if action == "change" and len(box_ids) < 2:
                     continue
-                menu.append((action, T.translate(action).upper(), func))
+
+                translated_label = T.translate(action).upper()
+
+                menu_options.append(
+                    ChoiceOption(
+                        key=action, display_text=translated_label, action=func
+                    )
+                )
 
             open_choice_dialog(
-                local_session,
-                menu=menu,
+                self.client,
+                menu=MenuOptions(menu_options),
                 escape_key_exits=True,
             )
 
@@ -106,15 +112,18 @@ class ItemTakeState(PygameMenuState):
             )
 
         def change_locker(itm: Item, box_ids: list[str]) -> None:
-            var_menu = []
+            options = []
+
             for box in box_ids:
                 text = T.translate(box).upper()
-                var_menu.append(
-                    (text, text, partial(update_locker, itm, box, box_ids))
+                action = partial(update_locker, itm, box, box_ids)
+                options.append(
+                    ChoiceOption(key=box, display_text=text, action=action)
                 )
+
             open_choice_dialog(
-                local_session,
-                menu=(var_menu),
+                self.client,
+                menu=MenuOptions(options),
                 escape_key_exits=True,
             )
 
@@ -138,26 +147,23 @@ class ItemTakeState(PygameMenuState):
         def take(itm: Item, quantity: int) -> None:
             self.client.remove_state_by_name("ChoiceState")
             self.client.remove_state_by_name("ItemTakeState")
+
             diff = itm.quantity - quantity
-            retrieve = self.player.find_item(itm.slug)
+            retrieve = self.char.items.find_item(itm.slug)
+
             if diff <= 0:
                 self.item_boxes.remove_item(itm)
-                if retrieve is not None:
-                    retrieve.quantity += quantity
-                else:
-                    self.player.add_item(itm)
             else:
-                itm.quantity = diff
-                if retrieve is not None:
-                    retrieve.quantity += quantity
-                else:
-                    # item deposited
-                    new_item = item.Item()
-                    new_item.load(itm.slug)
-                    new_item.quantity = quantity
-                    self.player.add_item(new_item)
+                itm.set_quantity(diff)
+
+            if retrieve:
+                retrieve.increase_quantity(quantity)
+            else:
+                new_item = Item.create(itm.slug)
+                self.char.items.add_item(new_item, quantity)
+
             open_dialog(
-                local_session,
+                self.client,
                 [
                     T.format(
                         "menu_storage_take_item",
@@ -173,9 +179,9 @@ class ItemTakeState(PygameMenuState):
             if diff <= 0:
                 self.item_boxes.remove_item_from(self.box_name, itm)
             else:
-                itm.quantity = diff
+                itm.set_quantity(diff)
             open_dialog(
-                local_session,
+                self.client,
                 [
                     T.format(
                         "item_disbanded",
@@ -201,7 +207,7 @@ class ItemTakeState(PygameMenuState):
             menu.add.label(
                 label,
                 selectable=True,
-                font_size=self.font_size_small,
+                font_size=self.font_type.small,
                 align=locals.ALIGN_CENTER,
                 selection_effect=HighlightSelection(),
             )
@@ -211,7 +217,7 @@ class ItemTakeState(PygameMenuState):
         label = f"{box_label} ({len(self.box)} types - {sum(sum_total)} items)"
         menu.set_title(label).center_content()
 
-    def __init__(self, box_name: str) -> None:
+    def __init__(self, box_name: str, character: NPC) -> None:
         width, height = prepare.SCREEN_SIZE
 
         theme = self._setup_theme(prepare.BG_PC_LOCKER)
@@ -224,8 +230,8 @@ class ItemTakeState(PygameMenuState):
         columns = 3
 
         self.box_name = box_name
-        self.player = local_session.player
-        self.box = self.player.item_boxes.get_items(self.box_name)
+        self.char = character
+        self.box = self.char.item_boxes.get_items(self.box_name)
 
         # Widgets are like a pygame_menu label, image, etc.
         num_widgets = 2
@@ -235,10 +241,11 @@ class ItemTakeState(PygameMenuState):
             height=height, width=width, columns=columns, rows=rows
         )
 
+        column_width = fix_measure(self.menu._width, 0.33)
         self.menu._column_max_width = [
-            fix_measure(self.menu._width, 0.33),
-            fix_measure(self.menu._width, 0.33),
-            fix_measure(self.menu._width, 0.33),
+            column_width,
+            column_width,
+            column_width,
         ]
 
         menu_items_map = []
@@ -252,12 +259,13 @@ class ItemTakeState(PygameMenuState):
 class ItemBoxState(PygameMenuState):
     """Menu to choose an item box."""
 
-    def __init__(self) -> None:
+    def __init__(self, character: NPC) -> None:
         _, height = prepare.SCREEN_SIZE
 
         super().__init__(height=height)
 
         self.animation_offset = 0
+        self.char = character
 
         menu_items_map = self.get_menu_items_map()
         self.add_menu_items(self.menu, menu_items_map)
@@ -269,7 +277,7 @@ class ItemBoxState(PygameMenuState):
     ) -> None:
         menu.add.vertical_fill()
         for key, callback in items:
-            num_itms = local_session.player.item_boxes.get_items(key)
+            num_itms = self.char.item_boxes.get_items(key)
             sum_total = []
             for ele in num_itms:
                 sum_total.append(ele.quantity)
@@ -313,7 +321,7 @@ class ItemBoxState(PygameMenuState):
         self.animation_offset = 0
 
         ani = self.animate(self, animation_offset=width, duration=0.50)
-        ani.update_callback = self.update_animation_position
+        ani.schedule(self.update_animation_position, ScheduleType.ON_UPDATE)
 
         return ani
 
@@ -326,7 +334,7 @@ class ItemBoxState(PygameMenuState):
 
         """
         ani = self.animate(self, animation_offset=0, duration=0.50)
-        ani.update_callback = self.update_animation_position
+        ani.schedule(self.update_animation_position, ScheduleType.ON_UPDATE)
 
         return ani
 
@@ -335,19 +343,21 @@ class ItemStorageState(ItemBoxState):
     """Menu to choose a box, which you can then take an item from."""
 
     def get_menu_items_map(self) -> Sequence[tuple[str, MenuGameObj]]:
-        player = local_session.player
+        item_boxes = self.char.item_boxes
         menu_items_map = []
-        for box_name, items in player.item_boxes.boxes.items():
+        for box_name, items in item_boxes.item_boxes.items():
             if box_name not in HIDDEN_LIST_LOCKER:
                 if not items:
                     menu_callback = partial(
                         open_dialog,
-                        local_session,
+                        self.client,
                         [T.translate("menu_storage_empty_locker")],
                     )
                 else:
                     menu_callback = self.change_state(
-                        "ItemTakeState", box_name=box_name
+                        "ItemTakeState",
+                        box_name=box_name,
+                        character=self.char,
                     )
                 menu_items_map.append((box_name, menu_callback))
         return menu_items_map
@@ -357,12 +367,12 @@ class ItemDropOffState(ItemBoxState):
     """Menu to choose a box, which you can then drop off an item into."""
 
     def get_menu_items_map(self) -> Sequence[tuple[str, MenuGameObj]]:
-        player = local_session.player
+        item_boxes = self.char.item_boxes
         menu_items_map = []
-        for box_name, items in player.item_boxes.boxes.items():
+        for box_name, items in item_boxes.item_boxes.items():
             if box_name not in HIDDEN_LIST_LOCKER:
                 menu_callback = self.change_state(
-                    "ItemDropOff", box_name=box_name
+                    "ItemDropOff", box_name=box_name, character=self.char
                 )
                 menu_items_map.append((box_name, menu_callback))
         return menu_items_map
@@ -371,68 +381,52 @@ class ItemDropOffState(ItemBoxState):
 class ItemDropOff(ItemMenuState):
     """Shows all items in player's bag, puts it into box if selected."""
 
-    def __init__(self, box_name: str) -> None:
-        super().__init__()
+    def __init__(self, box_name: str, character: NPC) -> None:
+        items_filtered = ItemFilter(character)
+        items_filtered.set_filter_all_visible()
+        super().__init__(
+            character=character, source=self.name, item_filter=items_filtered
+        )
 
         self.box_name = box_name
+        self.char = character
 
     def on_menu_selection(
         self,
         menu_item: MenuItem[Optional[Item]],
     ) -> None:
-        player = local_session.player
         game_object = menu_item.game_object
         assert game_object
 
         def deposit(itm: Item, quantity: int) -> None:
             self.client.pop_state(self)
-            if not quantity:
+            if quantity <= 0:
                 return
 
-            # item deposited
-            new_item = item.Item()
-            new_item.load(itm.slug)
-            diff = itm.quantity - quantity
+            item_boxes = self.char.item_boxes
+            box = item_boxes.get_items(self.box_name)
 
-            box = player.item_boxes.get_items(self.box_name)
+            new_item = Item.create(itm.slug)
+            new_item.set_quantity(quantity)
 
-            def find_monster_box(itm: Item, box: list[Item]) -> Optional[Item]:
-                for ele in box:
-                    if ele.slug == itm.slug:
-                        return ele
-                return None
+            def find_item_in_box(
+                slug: str, items: list[Item]
+            ) -> Optional[Item]:
+                return next((i for i in items if i.slug == slug), None)
 
-            if box:
-                retrieve = find_monster_box(itm, box)
-                if retrieve is not None:
-                    stored = player.item_boxes.get_items_by_iid(
-                        retrieve.instance_id
-                    )
-                    if stored is not None:
-                        if diff <= 0:
-                            stored.quantity += quantity
-                            player.remove_item(itm)
-                        else:
-                            stored.quantity += quantity
-                            itm.quantity = diff
-                else:
-                    if diff <= 0:
-                        new_item.quantity = quantity
-                        player.item_boxes.add_item(self.box_name, new_item)
-                        player.remove_item(itm)
-                    else:
-                        itm.quantity = diff
-                        new_item.quantity = quantity
-                        player.item_boxes.add_item(self.box_name, new_item)
+            retrieve = find_item_in_box(itm.slug, box) if box else None
+            stored = (
+                item_boxes.get_items_by_iid(retrieve.instance_id)
+                if retrieve
+                else None
+            )
+
+            if stored:
+                stored.increase_quantity(quantity)
             else:
-                if diff <= 0:
-                    new_item.quantity = quantity
-                    player.item_boxes.add_item(self.box_name, new_item)
-                    player.remove_item(itm)
-                else:
-                    itm.quantity = diff
-                    new_item.quantity = quantity
-                    player.item_boxes.add_item(self.box_name, new_item)
+                item_boxes.add_item(self.box_name, new_item)
+
+            self.char.items.remove_item(itm, quantity)
 
         self.client.push_state(
             QuantityMenu(

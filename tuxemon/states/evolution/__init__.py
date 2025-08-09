@@ -1,20 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING, Optional
 
 import pygame
-from pygame import Surface
+from pygame.surface import Surface
 
 from tuxemon import prepare, tools
 from tuxemon.db import MonsterModel, db
 from tuxemon.graphics import load_sprite
 from tuxemon.locale import T
 from tuxemon.platform.const import buttons
-from tuxemon.session import local_session
-from tuxemon.state import State
+from tuxemon.state.state import State
 
 if TYPE_CHECKING:
     from tuxemon.platform.events import PlayerInput
@@ -138,15 +137,15 @@ class EvolutionTransition(State):
             self.client.sound_manager.play_sound("sound_confirm")
             self.on_animation_complete()
 
-    def draw(self, surface: pygame.surface.Surface) -> None:
+    def draw(self, surface: Surface) -> None:
         surface.fill(prepare.BLACK_COLOR)
-        if self.phase == 3:
-            sprite = self._get_phase_3_sprite()
-        else:
-            sprite = self.phase_sprites[self.phase]
+        sprite = self.phase_sprites.get(self.phase, self.evolved_sprite)
         sprite_image = sprite.image
-        if sprite_image is None:
-            return
+
+        if sprite_image is None or sprite_image.get_alpha() == 0:
+            sprite_image = (
+                self.evolved_sprite_copy
+            )  # fallback to visible image
 
         surface.blit(sprite_image, (self.x, self.y))
 
@@ -154,7 +153,8 @@ class EvolutionTransition(State):
         if slug not in db.database["monster"]:
             logger.error(f"{slug} doesn't exist.")
             return None
-        return db.lookup(slug, table="monster")
+        results = MonsterModel.lookup(slug, db)
+        return results
 
     def _load_sprite(self, slug: str) -> Sprite:
         path = tools.transform_resource_filename(
@@ -170,12 +170,19 @@ class EvolutionTransition(State):
         return sprite
 
     def on_animation_complete(self) -> None:
+        if self.original_sprite.image:
+            self.original_sprite.image.set_alpha(255)
+        self.original_sprite.image = None
+
+        self.evolved_sprite.image = self.evolved_sprite_copy
+        self.evolved_sprite.image.set_alpha(255)
+
         param = {
             "name": T.format(self.original),
             "evolve": T.format(self.evolved),
         }
         msg = T.format("evolution_ended", param)
-        tools.open_dialog(local_session, [msg])
+        tools.open_dialog(self.client, [msg])
         self.dialog_opened = True
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:

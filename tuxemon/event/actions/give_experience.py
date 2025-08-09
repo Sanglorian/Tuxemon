@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -9,6 +9,7 @@ from typing import Optional, final
 
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +40,8 @@ class GiveExperienceAction(EventAction):
     variable: Optional[str] = None
     exp: Optional[str] = None
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
 
         self.exp = "0" if self.exp is None else self.exp
         if self.exp.isdigit():
@@ -58,7 +59,7 @@ class GiveExperienceAction(EventAction):
                 return
 
             monster_id = uuid.UUID(player.game_variables[variable])
-            monster = get_monster_by_iid(self.session, monster_id)
+            monster = get_monster_by_iid(session, monster_id)
             if monster is None:
                 monster = player.monster_boxes.get_monsters_by_iid(monster_id)
                 if monster is None:
@@ -71,5 +72,5 @@ class GiveExperienceAction(EventAction):
                 level = mon.give_experience(exp)
                 logger.info(f"{mon.name} +{exp} exp")
                 if level > 0:
-                    mon.update_moves(level)
+                    mon.moves.update_moves(mon.level, level)
                     logger.info(f"{mon.name} +{level} levels")

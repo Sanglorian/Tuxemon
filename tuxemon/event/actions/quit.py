@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 
 @final
@@ -18,12 +19,9 @@ class QuitAction(EventAction):
         .. code-block::
 
             quit
-
     """
 
     name = "quit"
 
-    def start(self) -> None:
-        # TODO: API
-        self.session.client.exit = True
-        self.session.client.done = True
+    def start(self, session: Session) -> None:
+        session.client.quit()

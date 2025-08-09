@@ -188,8 +188,16 @@
     <property name="act21" value="create_npc bob,32,26,stand"/>
     <property name="act22" value="create_npc marissa,33,26,stand"/>
     <property name="act23" value="create_npc tuxemart_keeper,34,26,stand"/>
-    <property name="cond1" value="not variable_set letusthrough:no"/>
-    <property name="cond2" value="not variable_set letusthrough:almost"/>
+    <property name="cond10" value="not variable_set letusthrough:no"/>
+    <property name="cond11" value="not variable_set letusthrough:almost"/>
+    <property name="cond12" value="not char_exists liela"/>
+    <property name="cond13" value="not char_exists bob"/>
+    <property name="cond14" value="not char_exists marissa"/>
+    <property name="cond15" value="not char_exists tuxemart_keeper"/>
+    <property name="cond16" value="not char_exists omnigrunt"/>
+    <property name="cond17" value="not char_exists omnigrunt2"/>
+    <property name="cond18" value="not char_exists omnigrunt3"/>
+    <property name="cond19" value="not char_exists omnigrunt4"/>
    </properties>
   </object>
   <object id="112" name="they're angry" type="event" x="592" y="336" width="16" height="32">
@@ -278,7 +286,7 @@
     <property name="act42" value="char_face misa,right"/>
     <property name="act43" value="translated_dialog soiwashearing6"/>
     <property name="act44" value="char_face xerogrunt1,down"/>
-    <property name="act45" value="char_move misa, down 1"/>
+    <property name="act45" value="char_move misa,down 1"/>
     <property name="act46" value="wait 1.2"/>
     <property name="act47" value="char_face misa,up"/>
     <property name="act50" value="translated_dialog soiwashearing7"/>
@@ -300,7 +308,7 @@
     <property name="act71" value="translated_dialog yesmaam"/>
     <property name="act72" value="char_move marissa,right 1"/>
     <property name="act73" value="char_face marissa,left"/>
-    <property name="act74" value="char_move misa, down 1"/>
+    <property name="act74" value="char_move misa,down 1"/>
     <property name="act75" value="wait 0.3"/>
     <property name="act76" value="char_face misa,left"/>
     <property name="act77" value="wait 0.4"/>
@@ -368,7 +376,7 @@
    <properties>
     <property name="act10" value="lock_controls"/>
     <property name="act11" value="translated_dialog nobodygetsthrough"/>
-    <property name="act12" value="add_monster aardorn,2,omnigrunt,80,10"/>
+    <property name="act12" value="add_monster aardorn,2,omnigrunt,40,10"/>
     <property name="act20" value="start_battle player,omnigrunt"/>
     <property name="act21" value="wait 1.5"/>
     <property name="act30" value="set_variable whoartthou:done"/>
@@ -435,7 +443,7 @@
     <property name="act58" value="wait 0.3"/>
     <property name="act59" value="char_face kyle,down"/>
     <property name="act60" value="translated_dialog ohaimisa7"/>
-    <property name="act61" value="char_move kyle, down 1"/>
+    <property name="act61" value="char_move kyle,down 1"/>
     <property name="act62" value="pathfind kyle,32,33"/>
     <property name="act63" value="set_variable threemusketeers:yay"/>
     <property name="act64" value="remove_npc kyle"/>
@@ -471,9 +479,12 @@
   <object id="127" name="omnigrunt4move" type="event" x="416" y="384" width="16" height="16">
    <properties>
     <property name="act10" value="wait 2.2"/>
-    <property name="act20" value="char_move omnigrunt4, up 1"/>
+    <property name="act20" value="char_move omnigrunt4,up 1"/>
     <property name="act30" value="char_face omnigrunt4,down"/>
+    <property name="act40" value="remove_npc omnigrunt4"/>
+    <property name="act50" value="set_variable replaceomnigrunt4:yes"/>
     <property name="cond1" value="is variable_set threemusketeers:yay"/>
+    <property name="cond2" value="not variable_set replaceomnigrunt4:yes"/>
    </properties>
   </object>
   <object id="128" name="kyle sucks" type="event" x="400" y="352" width="16" height="16">
@@ -640,6 +651,7 @@
     <property name="act1" value="create_npc omnigrunt4,34,26,stand"/>
     <property name="act2" value="char_face omnigrunt4,down"/>
     <property name="cond1" value="not char_exists omnigrunt4"/>
+    <property name="cond2" value="is variable_set replaceomnigrunt4:yes"/>
    </properties>
   </object>
   <object id="142" name="hey!" type="event" x="384" y="480" width="16" height="160">
@@ -685,7 +697,7 @@
     <property name="act38" value="translated_dialog welcometotaba7"/>
     <property name="act39" value="translated_dialog gasp"/>
     <property name="act40" value="pathfind kyle, 53,36"/>
-    <property name="act41" value="char_face kyle, down"/>
+    <property name="act41" value="char_face kyle,down"/>
     <property name="act42" value="translated_dialog welcometotaba8"/>
     <property name="act43" value="wait 0.4"/>
     <property name="act44" value="translated_dialog welcometotaba9"/>
@@ -841,7 +853,7 @@
   </object>
   <object id="155" name="Default" type="event" x="16" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="teleport_faint"/>
+    <property name="act1" value="teleport_faint player"/>
     <property name="cond1" value="is char_defeated player"/>
    </properties>
   </object>

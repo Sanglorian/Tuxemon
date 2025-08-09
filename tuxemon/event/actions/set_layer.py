@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon import prepare
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import string_to_colorlike
+from tuxemon.session import Session
 from tuxemon.states.world.worldstate import WorldState
 
 
@@ -35,8 +35,7 @@ class SetLayerAction(EventAction):
     name = "set_layer"
     rgb: Optional[str] = None
 
-    def start(self) -> None:
-        transparent = prepare.TRANSPARENT_COLOR
-        rgb = string_to_colorlike(self.rgb) if self.rgb else transparent
-        world = self.session.client.get_state_by_name(WorldState)
-        world.layer_color = rgb
+    def start(self, session: Session) -> None:
+        rgb = string_to_colorlike(self.rgb) if self.rgb else None
+        world = session.client.get_state_by_name(WorldState)
+        world.map_renderer.layer_color = rgb

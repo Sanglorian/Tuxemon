@@ -3,11 +3,22 @@
   "accuracy": 0.8,
   "animation": "lance_ice",
   "effects": [
-    "give lifeleech,target",
-    "splash 2"
+    {
+      "type": "give",
+      "parameters": [
+        "lifeleech",
+        "enemy_monster"
+      ]
+    },
+    {
+      "type": "splash",
+      "parameters": [
+        "2"
+      ]
+    }
   ],
   "flip_axes": "xy",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.5,
   "power": 1,
   "range": "reach",
@@ -15,6 +26,7 @@
   "sfx": "sfx_blaster",
   "slug": "proboscis",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -24,7 +36,9 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["Bug"],
+  "tags": [
+    "bug"
+  ],
   "types": [
     "water"
   ],

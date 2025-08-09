@@ -1,47 +1,53 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 import random
-import uuid
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING, Any, Optional
+from uuid import UUID, uuid4
 
-from tuxemon import formula, fusion, graphics, prepare, tools
-from tuxemon.condition.condition import (
-    Condition,
-    decode_condition,
-    encode_condition,
-)
+from tuxemon import formula, prepare
 from tuxemon.db import (
-    CategoryCondition,
-    ElementType,
+    Acquisition,
+    EffectPhase,
     EvolutionStage,
     GenderType,
     MonsterEvolutionItemModel,
     MonsterHistoryItemModel,
+    MonsterModel,
     MonsterMovesetItemModel,
-    MonsterShape,
+    MonsterSpritesModel,
     PlagueType,
-    ResponseCondition,
     StatType,
-    TasteCold,
-    TasteWarm,
     db,
 )
-from tuxemon.element import Element
+from tuxemon.element import ElementTypesHandler
 from tuxemon.evolution import Evolution
+from tuxemon.fusion import Body
 from tuxemon.locale import T
-from tuxemon.shape import Shape
+from tuxemon.monster_dir.held_item import MonsterItemHandler
+from tuxemon.monster_dir.sprite import (
+    Flair,
+    FlairApplier,
+    MonsterSpriteHandler,
+    SpriteLoader,
+)
+from tuxemon.monster_dir.status import MonsterStatusHandler
+from tuxemon.shape import ShapeHandler
 from tuxemon.sprite import Sprite
+from tuxemon.taste import Taste
 from tuxemon.technique.technique import Technique, decode_moves, encode_moves
+from tuxemon.time_handler import today_ordinal
 
 if TYPE_CHECKING:
-    import pygame
+    pass
 
     from tuxemon.npc import NPC
-    from tuxemon.states.combat.combat_classes import EnqueuedAction
+    from tuxemon.session import Session
+
 
 logger = logging.getLogger(__name__)
 
@@ -52,141 +58,189 @@ SIMPLE_PERSISTANCE_ATTRIBUTES = (
     "slug",
     "total_experience",
     "flairs",
-    "gender",
     "capture",
     "capture_device",
     "height",
     "weight",
     "taste_cold",
     "taste_warm",
-    "traded",
     "steps",
     "bond",
-    "mod_armour",
-    "mod_dodge",
-    "mod_melee",
-    "mod_ranged",
-    "mod_speed",
-    "mod_hp",
 )
 
 
-# class definition for tuxemon flairs:
-class Flair:
-    def __init__(self, category: str, name: str) -> None:
-        self.category = category
-        self.name = name
+@dataclass
+class BasicStats:
+    """The fundamental statistical attributes of a monster."""
+
+    armour: int = 0
+    dodge: int = 0
+    hp: int = 0
+    melee: int = 0
+    ranged: int = 0
+    speed: int = 0
+
+    def sum(self) -> int:
+        total = sum(int(getattr(self, field.name)) for field in fields(self))
+        return total
 
 
-# class definition for first active tuxemon to use in combat:
+@dataclass
+class TemporaryStatBoosts(BasicStats):
+    """Temporary additive boosts to a monster's base stats."""
+
+    def to_dict(self) -> dict[str, int]:
+        return {
+            field.name: getattr(self, field.name) for field in fields(self)
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, int]) -> TemporaryStatBoosts:
+        valid_fields = {field.name for field in fields(cls)}
+        filtered_data = {k: v for k, v in data.items() if k in valid_fields}
+        return cls(**filtered_data)
+
+
 class Monster:
     """
     Tuxemon monster.
 
     A class for a Tuxemon monster object. This class acts as a skeleton for
     a Tuxemon, fetching its details from a database.
-
     """
 
     def __init__(self, save_data: Optional[Mapping[str, Any]] = None) -> None:
         save_data = save_data or {}
 
-        self.slug = ""
-        self.name = ""
-        self.cat = ""
-        self.description = ""
-        self.instance_id = uuid.uuid4()
+        self.slug: str = ""
+        self.name: str = ""
+        self.cat: str = ""
+        self.description: str = ""
+        self.instance_id: UUID = uuid4()
 
-        self.armour = 0
-        self.dodge = 0
-        self.melee = 0
-        self.ranged = 0
-        self.speed = 0
-        self.current_hp = 0
-        self.hp = 0
-        self.level = 0
-        self.steps = 0.0
-        self.bond = prepare.BOND
+        self.base_stats: BasicStats = BasicStats()
+        self.current_hp: int = 0
 
-        # modifier values
-        self.mod_armour = 0
-        self.mod_dodge = 0
-        self.mod_melee = 0
-        self.mod_ranged = 0
-        self.mod_speed = 0
-        self.mod_hp = 0
+        self.level: int = 0
+        self.steps: float = 0.0
+        self.bond: int = prepare.BOND
 
-        self.moves: list[Technique] = []
-        self.moveset: list[MonsterMovesetItemModel] = []
+        self.modifiers = TemporaryStatBoosts()
+
+        self.moves = MonsterMovesHandler()
         self.evolutions: list[MonsterEvolutionItemModel] = []
         self.evolution_handler = Evolution(self)
         self.history: list[MonsterHistoryItemModel] = []
-        self.stage = EvolutionStage.standalone
+        self.stage: EvolutionStage = EvolutionStage.standalone
         self.flairs: dict[str, Flair] = {}
-        self.battle_cry = ""
-        self.faint_cry = ""
         self.owner: Optional[NPC] = None
         self.possible_genders: list[GenderType] = []
+        self.held_item = MonsterItemHandler()
 
-        self.money_modifier = 0
-        self.experience_modifier = 1
-        self.total_experience = 0
+        self.money_modifier: float = 0.0
+        self.experience_modifier: float = 1.0
+        self.total_experience: int = 0
 
-        self.types: list[Element] = []
-        self.default_types: list[Element] = []
-        self.shape = MonsterShape.default
-        self.randomly = True
-        self.out_of_range = False
-        self.got_experience = False
-        self.levelling_up = False
-        self.traded = False
-        self.wild = False
+        self.types = ElementTypesHandler()
+        self.shape: ShapeHandler = ShapeHandler()
+        self.randomly: bool = True
+        self.out_of_range: bool = False
+        self.got_experience: bool = False
+        self.levelling_up: bool = False
+        self.acquisition: Acquisition = Acquisition.UNKNOWN
+        self.wild: bool = False
 
-        self.status: list[Condition] = []
-        self.plague: dict[str, PlagueType] = {}
-        self.taste_cold = TasteCold.tasteless
-        self.taste_warm = TasteWarm.tasteless
+        self.status = MonsterStatusHandler()
+        self.plague = MonsterPlagueHandler()
+        self.taste_cold: str = "tasteless"
+        self.taste_warm: str = "tasteless"
 
-        self.max_moves = prepare.MAX_MOVES
-        self.txmn_id = 0
-        self.capture = 0
-        self.capture_device = "tuxeball"
-        self.height = 0.0
-        self.weight = 0.0
+        self.txmn_id: int = 0
+        self.capture: int = 0
+        self.capture_device: str = "tuxeball"
+        self.height: float = 0.0
+        self.weight: float = 0.0
 
         # The multiplier for checks when a monster ball is thrown this should be a value between 0-100 meaning that
         # 0 is 0% capture rate and 100 has a very good chance of capture. This numbers are based on the capture system
         # calculations. This was originally inspired by the calculations which can be found at:
         # https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_catch_rate, but has been modified to fit with
         # most people's intuitions.
-        self.catch_rate = 100.0
+        self.catch_rate: float = 100.0
 
         # The catch_resistance value is calculated during the capture. The upper and lower catch_resistance
         # set the span on which the catch_resistance will be. For more information check capture.py
-        self.upper_catch_resistance = 1.0
-        self.lower_catch_resistance = 1.0
+        self.upper_catch_resistance: float = 1.0
+        self.lower_catch_resistance: float = 1.0
 
         # The tuxemon's state is used for various animations, etc. For example
         # a tuxemon's state might be "attacking" or "fainting" so we know when
         # to play the animations for those states.
-        self.state = ""
+        self.state: str = ""
 
         # A fusion body object that contains the monster's face and body
         # sprites, as well as _color scheme.
-        self.body = fusion.Body()
+        self.body = Body()
 
         # Set up our sprites.
-        self.sprites: dict[str, pygame.surface.Surface] = {}
-        self.front_battle_sprite = ""
-        self.back_battle_sprite = ""
-        self.menu_sprite_1 = ""
-        self.menu_sprite_2 = ""
+        self.sprite_handler = MonsterSpriteHandler()
 
         self.set_state(save_data)
         self.set_stats()
-        self.set_flairs()
 
-    def load_from_db(self, slug: str) -> None:
+    @classmethod
+    def create(
+        cls, slug: str, save_data: Optional[Mapping[str, Any]] = None
+    ) -> Monster:
+        method = cls(save_data)
+        method.load(slug)
+        return method
+
+    @classmethod
+    def spawn_base(cls, slug: str, level: int) -> Monster:
+        monster = cls.create(slug)
+        monster.set_level(level)
+        monster.moves.set_moves(level)
+        monster.current_hp = monster.hp
+        return monster
+
+    @property
+    def armour(self) -> int:
+        return self.base_stats.armour
+
+    @property
+    def dodge(self) -> int:
+        return self.base_stats.dodge
+
+    @property
+    def hp(self) -> int:
+        return self.base_stats.hp
+
+    @property
+    def melee(self) -> int:
+        return self.base_stats.melee
+
+    @property
+    def ranged(self) -> int:
+        return self.base_stats.ranged
+
+    @property
+    def speed(self) -> int:
+        return self.base_stats.speed
+
+    @property
+    def hp_ratio(self) -> float:
+        return min(self.current_hp / self.hp if self.hp > 0 else 0.0, 1.0)
+
+    @property
+    def missing_hp(self) -> int:
+        return max(min(self.hp - self.current_hp, self.hp), 0)
+
+    @property
+    def is_fainted(self) -> bool:
+        return self.current_hp <= 0
+
+    def load(self, slug: str) -> None:
         """
         Loads and sets this monster's attributes from the monster.db database.
 
@@ -194,100 +248,123 @@ class Monster:
 
         Parameters:
             slug: Slug to lookup.
-
         """
-        try:
-            results = db.lookup(slug, table="monster")
-        except KeyError:
-            raise RuntimeError(f"Monster {slug} not found")
-
+        results = MonsterModel.lookup(slug, db)
         self.level = random.randint(2, 5)
         self.slug = results.slug
         self.name = T.translate(results.slug)
         self.description = T.translate(f"{results.slug}_description")
         self.cat = results.category
         self.category = T.translate(f"cat_{self.cat}")
-        self.shape = results.shape or MonsterShape.default
-        self.stage = results.stage or EvolutionStage.standalone
-        self.taste_cold = self.set_taste_cold(self.taste_cold)
-        self.taste_warm = self.set_taste_warm(self.taste_warm)
-        self.steps = self.steps
-        self.bond = self.bond
+        self.shape = ShapeHandler(results.shape)
+        self.stage = results.stage
+        self.tags = results.tags
+        self.taste_cold, self.taste_warm = Taste.generate(
+            self.taste_cold, self.taste_warm
+        )
 
-        # types
-        self.types = [Element(ele) for ele in results.types]
-        self.default_types = self.types[:]
+        self.types = ElementTypesHandler(results.types)
 
-        self.randomly = results.randomly or self.randomly
-        self.got_experience = self.got_experience
-        self.levelling_up = self.levelling_up
-        self.traded = self.traded
+        self.randomly = results.randomly
 
         self.txmn_id = results.txmn_id
-        self.capture = self.set_capture(self.capture)
-        self.capture_device = self.capture_device
-        self.height = self.set_char_height(results.height)
-        self.weight = self.set_char_weight(results.weight)
+        self.set_capture(self.capture)
+        self.height = formula.set_height(self, results.height)
+        self.weight = formula.set_weight(self, results.weight)
         self.gender = random.choice(list(results.possible_genders))
-        self.catch_rate = results.catch_rate or self.catch_rate
-        self.upper_catch_resistance = (
-            results.upper_catch_resistance or self.upper_catch_resistance
-        )
-        self.lower_catch_resistance = (
-            results.lower_catch_resistance or self.lower_catch_resistance
-        )
+        self.catch_rate = results.catch_rate
+        self.upper_catch_resistance = results.upper_catch_resistance
+        self.lower_catch_resistance = results.lower_catch_resistance
 
-        self.moveset.extend(results.moveset or [])
+        self.moves.set_moveset(results.moveset or [])
         self.evolutions.extend(results.evolutions or [])
         self.history.extend(results.history or [])
 
         # Look up the monster's sprite image paths
-        if results.sprites:
-            self.front_battle_sprite = self.get_sprite_path(
-                results.sprites.battle1
-            )
-            self.back_battle_sprite = self.get_sprite_path(
-                results.sprites.battle2
-            )
-            self.menu_sprite_1 = self.get_sprite_path(results.sprites.menu1)
-            self.menu_sprite_2 = self.get_sprite_path(results.sprites.menu2)
+        sprites = results.sprites or MonsterSpritesModel(
+            front=f"gfx/sprites/battle/{slug}-front",
+            back=f"gfx/sprites/battle/{slug}-back",
+            menu1=f"gfx/sprites/battle/{slug}-menu01",
+            menu2=f"gfx/sprites/battle/{slug}-menu02",
+        )
+        self.flairs = FlairApplier.create(results.flairs)
+        loader = SpriteLoader()
+        self.sprite_handler = MonsterSpriteHandler(
+            slug=slug,
+            front_path=loader.resolve_path(sprites.front),
+            back_path=loader.resolve_path(sprites.back),
+            menu1_path=loader.resolve_path(sprites.menu1),
+            menu2_path=loader.resolve_path(sprites.menu2),
+            flairs=self.flairs,
+        )
 
         # get sound slugs for this monster, defaulting to a generic type-based sound
         self.combat_call = (
             results.sounds.combat_call
             if results.sounds
-            else f"sound_{self.types[0].name}_call"
+            else f"sound_{self.types.primary.slug}_call"
         )
         self.faint_call = (
             results.sounds.faint_call
             if results.sounds
-            else f"sound_{self.types[0].name}_faint"
+            else f"sound_{self.types.primary.slug}_faint"
         )
 
-    def learn(
-        self,
-        technique: Technique,
-    ) -> None:
+    def load_sprites(self, scale: float = prepare.SCALE) -> None:
         """
-        Adds a technique to this tuxemon's moveset.
+        Delegates the task of loading sprites to the sprite handler.
 
         Parameters:
-            technique: The technique for the monster to learn.
-
-        Examples:
-
-        >>> bulbatux.learn(Technique())
-        >>> bulbatux.moves[0].use(bulbatux, target=tuxmander)
-
+            scale: The scaling factor to resize the sprite images.
+                Defaults to the predefined scale value in 'prepare.SCALE'.
         """
+        self.sprite_handler.load_sprites(scale)
 
-        self.moves.append(technique)
+    def get_owner(self) -> NPC:
+        """Returns the character associated with this monster."""
+        if not self.owner:
+            raise ValueError("No character is linked to this monster.")
+        return self.owner
 
-    def reset_types(self) -> None:
+    def set_owner(self, character: Optional[NPC]) -> None:
+        """Sets the NPC associated with this monster."""
+        self.owner = character
+
+    def set_acquisition(self, acquisition: Acquisition) -> None:
+        """Sets the acquisition method of this monster."""
+        self.acquisition = Acquisition(acquisition)
+
+    def has_acquisition(self, method: Acquisition) -> bool:
+        """Returns True if the monster was acquired via the specified method."""
+        return self.acquisition == method
+
+    def get_sprite(
+        self,
+        sprite_type: str,
+        frame_duration: float = 0.25,
+        scale: float = prepare.SCALE,
+        **kwargs: Any,
+    ) -> Sprite:
         """
-        Resets monster types to the default ones.
+        Retrieves a specific sprite via the sprite handler.
+
+        Parameters:
+            sprite_type: The type of sprite to retrieve. Valid options are 'front',
+                'back', 'menu01', and 'menu02'.
+            frame_duration: The duration of each animation frame
+                (applicable only for 'menu')
+                Defaults to 0.25 seconds.
+            scale: A scaling factor applied to resize the sprite during retrieval.
+                (applicable only for 'menu')
+                Defaults to the `prepare.SCALE` constant.
+            **kwargs: Additional arguments to pass to the sprite handler.
+
+        Returns:
+            Sprite: The requested sprite object.
         """
-        self.types = self.default_types
+        return self.sprite_handler.get_sprite(
+            sprite_type, frame_duration, scale, **kwargs
+        )
 
     def return_stat(self, stat: StatType) -> int:
         """
@@ -311,13 +388,11 @@ class Monster:
 
         return stat_map.get(stat, 0)
 
-    def has_type(self, element: Optional[ElementType]) -> bool:
+    def has_type(self, type_slug: str) -> bool:
         """
         Returns TRUE if there is the type among the types.
         """
-        return element is not None and any(
-            ele.slug == element for ele in self.types
-        )
+        return self.types.has_type(type_slug)
 
     def give_experience(self, amount: int = 1) -> int:
         """
@@ -347,61 +422,20 @@ class Monster:
             levels += 1
         return levels
 
-    def apply_status(self, status: Condition) -> None:
-        """
-        Apply a status to the monster by replacing or removing
-        the previous status.
-
-        Parameters:
-            status: The status condition.
-
-        """
-        if not self.status:
-            self.status.append(status)
-            return
-
-        if any(t.slug == status.slug for t in self.status):
-            return
-
-        self.status[0].nr_turn = 0
-        status.nr_turn = 1
-
-        if self.status[0].category == CategoryCondition.positive:
-            if status.repl_pos == ResponseCondition.replaced:
-                self.status = [status]
-            elif status.repl_pos == ResponseCondition.removed:
-                self.status.clear()
-        elif self.status[0].category == CategoryCondition.negative:
-            if status.repl_neg == ResponseCondition.replaced:
-                self.status = [status]
-            elif status.repl_pos == ResponseCondition.removed:
-                self.status.clear()
-        else:
-            self.status = [status]
-
     def calculate_base_stats(self) -> None:
         """
-        Calculate the base stats of the monster.
+        Calculate the base stats of the monster dynamically.
         """
-        level = self.level
-        multiplier = level + prepare.COEFF_STATS
-        shape = Shape(self.shape)
-        self.armour = (shape.armour * multiplier) + self.mod_armour
-        self.dodge = (shape.dodge * multiplier) + self.mod_dodge
-        self.hp = (shape.hp * multiplier) + self.mod_hp
-        self.melee = (shape.melee * multiplier) + self.mod_melee
-        self.ranged = (shape.ranged * multiplier) + self.mod_ranged
-        self.speed = (shape.speed * multiplier) + self.mod_speed
+        multiplier = self.level + prepare.COEFF_STATS
+        self.shape.apply_base_stat_calculation(self, multiplier)
 
     def apply_stat_updates(self) -> None:
         """
         Apply updates to the monster's stats.
         """
-        self.armour += formula.update_stat(self, "armour")
-        self.dodge += formula.update_stat(self, "dodge")
-        self.melee += formula.update_stat(self, "melee")
-        self.ranged += formula.update_stat(self, "ranged")
-        self.speed += formula.update_stat(self, "speed")
+        taste_cold = Taste.get_taste(self.taste_cold)
+        taste_warm = Taste.get_taste(self.taste_warm)
+        formula.apply_stat_updates(self, taste_cold, taste_warm)
 
     def set_stats(self) -> None:
         """
@@ -414,52 +448,12 @@ class Monster:
         self.calculate_base_stats()
         self.apply_stat_updates()
 
-    def set_taste_cold(self, taste_cold: TasteCold) -> TasteCold:
-        """
-        It returns the cold taste.
-        """
-        if taste_cold.tasteless:
-            self.taste_cold = random.choice(
-                [t for t in TasteCold if t != TasteCold.tasteless]
-            )
-        else:
-            self.taste_cold = taste_cold
-        return self.taste_cold
-
-    def set_taste_warm(self, taste_warm: TasteWarm) -> TasteWarm:
-        """
-        It returns the warm taste.
-        """
-        if taste_warm.tasteless:
-            self.taste_warm = random.choice(
-                [t for t in TasteWarm if t != TasteWarm.tasteless]
-            )
-        else:
-            self.taste_warm = taste_warm
-        return self.taste_warm
-
     def set_capture(self, amount: int) -> int:
         """
         It returns the capture date.
         """
-        self.capture = formula.today_ordinal() if amount == 0 else amount
+        self.capture = today_ordinal() if amount == 0 else amount
         return self.capture
-
-    def set_char_weight(self, value: float) -> float:
-        """
-        Set weight for each monster.
-
-        """
-        result = value if self.weight == value else formula.set_weight(value)
-        return result
-
-    def set_char_height(self, value: float) -> float:
-        """
-        Set height for each monster.
-
-        """
-        result = value if self.height == value else formula.set_height(value)
-        return result
 
     def level_up(self) -> None:
         """
@@ -494,53 +488,6 @@ class Monster:
         self.total_experience = self.experience_required()
         self.set_stats()
 
-    def set_moves(self, level: int) -> None:
-        """
-        Set monster moves according to the level.
-
-        Parameters:
-            level: The level of the monster.
-
-        """
-        eligible_moves = [
-            move.technique
-            for move in self.moveset
-            if move.level_learned <= level
-        ]
-        moves_to_learn = eligible_moves[-prepare.MAX_MOVES :]
-        for move in moves_to_learn:
-            tech = Technique()
-            tech.load(move)
-            self.learn(tech)
-
-    def update_moves(self, levels_earned: int) -> list[Technique]:
-        """
-        Set monster moves according to the levels increased.
-        Excludes the moves already learned.
-
-        Parameters:
-            levels_earned: Number of levels earned.
-
-        Returns:
-            techniques: list containing the learned techniques
-
-        """
-        new_level = self.level - levels_earned
-        new_moves = self.moves.copy()
-        new_techniques = []
-        for move in self.moveset:
-            if (
-                move.technique not in (m.slug for m in self.moves)
-                and new_level < move.level_learned <= self.level
-            ):
-                technique = Technique()
-                technique.load(move.technique)
-                new_moves.append(technique)
-                new_techniques.append(technique)
-
-        self.moves = new_moves
-        return new_techniques
-
     def experience_required(self, level_ofs: int = 0) -> int:
         """
         Gets the experience requirement for the given level.
@@ -554,110 +501,6 @@ class Monster:
         """
         required = (self.level + level_ofs) ** prepare.COEFF_EXP
         return int(required)
-
-    def get_sprite(self, sprite: str, **kwargs: Any) -> Sprite:
-        """
-        Gets a specific type of sprite for the monster.
-
-        Parameters:
-            sprite: Name of the sprite type.
-            kwargs: Additional parameters to pass to the loading function.
-
-        Returns:
-            The surface of the monster sprite.
-
-        """
-        sprite_mapping = {
-            "front": self.front_battle_sprite,
-            "back": self.back_battle_sprite,
-            "menu": None,  # handled separately
-        }
-
-        if sprite not in sprite_mapping:
-            raise ValueError(f"Cannot find sprite for: {sprite}")
-
-        if sprite == "menu":
-            assert (
-                not kwargs
-            ), "kwargs aren't supported for loading menu sprites"
-            surface = graphics.load_animated_sprite(
-                [self.menu_sprite_1, self.menu_sprite_2], 0.25
-            )
-        else:
-            sprite_path = sprite_mapping[sprite]
-            if sprite_path is None:
-                raise ValueError(f"Sprite path for {sprite} is not set")
-            surface = graphics.load_sprite(sprite_path, **kwargs)
-
-        # Apply flairs to the monster sprite
-        for flair in self.flairs.values():
-            flair_path = self.get_sprite_path(
-                f"gfx/sprites/battle/{self.slug}-{sprite}-{flair.name}"
-            )
-            if flair_path != prepare.MISSING_IMAGE:
-                flair_sprite = graphics.load_sprite(flair_path, **kwargs)
-                surface.image.blit(flair_sprite.image, (0, 0))
-
-        return surface
-
-    def set_flairs(self) -> None:
-        """Set flairs of this monster if they were not already configured."""
-        if len(self.flairs) > 0 or self.slug == "":
-            return
-
-        results = db.lookup(self.slug, table="monster")
-        for flair in results.flairs:
-            new_flair = Flair(
-                flair.category,
-                random.choice(flair.names),
-            )
-            self.flairs[new_flair.category] = new_flair
-
-    def get_sprite_path(self, sprite: str) -> str:
-        """
-        Get a sprite path.
-
-        Paths are set up by convention, so the file extension is unknown.
-        This adds the appropriate file extension if the sprite exists,
-        and returns a dummy image if it can't be found.
-
-        Returns:
-            Path to sprite or placeholder image.
-
-        """
-        try:
-            path = "%s.png" % sprite
-            full_path = tools.transform_resource_filename(path)
-            if full_path:
-                return full_path
-        except OSError:
-            pass
-
-        logger.error(f"Could not find monster sprite {sprite}")
-        return prepare.MISSING_IMAGE
-
-    def load_sprites(self) -> bool:
-        """
-        Loads the monster's sprite images as Pygame surfaces.
-
-        Returns:
-            ``True`` if the sprites are already loaded, ``False`` otherwise.
-
-        """
-        if self.sprites:
-            return True
-
-        sprite_paths = {
-            "front": self.front_battle_sprite,
-            "back": self.back_battle_sprite,
-            "menu": self.menu_sprite_1,
-        }
-
-        self.sprites = {
-            key: graphics.load_and_scale(path)
-            for key, path in sprite_paths.items()
-        }
-        return False
 
     def get_state(self) -> Mapping[str, Any]:
         """
@@ -674,14 +517,18 @@ class Monster:
         }
 
         save_data["instance_id"] = str(self.instance_id.hex)
-        save_data["plague"] = self.plague
+        save_data["gender"] = self.gender
+        save_data["acquisition"] = self.acquisition
+        save_data["plague"] = self.plague.encode_plagues()
 
         body = self.body.get_state()
         if body:
             save_data["body"] = body
 
-        save_data["condition"] = encode_condition(self.status)
-        save_data["moves"] = encode_moves(self.moves)
+        save_data["status"] = self.status.encode_status()
+        save_data["moves"] = self.moves.encode_moves()
+        save_data["held_item"] = self.held_item.encode_item()
+        save_data["modifiers"] = self.modifiers.to_dict()
 
         return save_data
 
@@ -696,80 +543,243 @@ class Monster:
         if not save_data:
             return
 
-        self.load_from_db(save_data["slug"])
-        self.plague = save_data["plague"]
+        self.load(save_data["slug"])
 
-        self.moves = []
-        for move in decode_moves(save_data.get("moves")):
-            self.moves.append(move)
-        self.status = []
-        for cond in decode_condition(save_data.get("condition")):
-            self.status.append(cond)
+        self.moves.decode_moves(save_data)
+        self.status.decode_status(save_data, self)
+        self.plague.decode_plagues(save_data)
 
         for key, value in save_data.items():
             if key == "body" and value:
                 self.body.set_state(value)
             elif key == "instance_id" and value:
-                self.instance_id = uuid.UUID(value)
+                self.instance_id = UUID(value)
+            elif key == "gender" and value:
+                self.gender = GenderType(value)
+            elif key == "acquisition" and value:
+                self.acquisition = Acquisition(value)
             elif key in SIMPLE_PERSISTANCE_ATTRIBUTES:
                 setattr(self, key, value)
+            elif key == "held_item" and value:
+                item = self.held_item.decode_item(value)
+                if item:
+                    self.held_item.set_item(item)
+            elif key == "modifiers" and value:
+                self.modifiers.from_dict(value)
 
         self.load_sprites()
 
-    def faint(self) -> None:
-        """
-        Kills the monster, sets 0 HP and applies faint status.
-        """
-        faint = Condition()
-        faint.load("faint")
-        self.current_hp = 0
-        self.status.clear()
-        self.apply_status(faint)
-
-    def end_combat(self) -> None:
+    def end_combat(self, session: Session) -> None:
         """
         Ends combat, recharges all moves and heals statuses.
         """
         self.out_of_range = False
+        self.moves.full_recharge_moves()
+
+        if not self.status.is_fainted:
+            self.status.remove_status()
+
+        if self.is_fainted:
+            self.current_hp = 0
+            self.status.apply_faint(self)
+            current = self.status.get_current_status()
+            if current:
+                current.apply_phase_and_use(session, EffectPhase.ON_FAINT)
+
+
+class MonsterMovesHandler:
+    def __init__(
+        self,
+        moves: Optional[list[Technique]] = None,
+        moveset: Optional[Sequence[MonsterMovesetItemModel]] = None,
+    ):
+        self.moves = moves if moves is not None else []
+        self.moveset = moveset if moveset is not None else []
+
+    @property
+    def current_moves(self) -> list[Technique]:
+        return self.moves
+
+    def set_moveset(self, moveset: Sequence[MonsterMovesetItemModel]) -> None:
+        """Sets the raw moveset data from the database."""
+        self.moveset = moveset
+
+    def learn(self, technique: Technique) -> None:
+        """
+        Adds a technique to this tuxemon's moveset.
+
+        Parameters:
+            technique: The technique for the monster to learn.
+        """
+
+        self.moves.append(technique)
+
+    def forget(self, technique: Technique) -> None:
+        """
+        Removes a technique from the monster's moveset.
+
+        Parameters:
+            technique: The technique to forget.
+        """
+        if technique in self.moves:
+            self.moves.remove(technique)
+
+    def replace_move(self, index: int, new_move: Technique) -> None:
+        """
+        Replaces a move at a given index with a new technique.
+
+        Parameters:
+            index: The position of the move to replace.
+            new_move: The new technique to insert.
+        """
+        if 0 <= index < len(self.moves):
+            self.moves[index] = new_move
+
+    def set_moves(
+        self, level: int, max_moves: int = prepare.MAX_MOVES
+    ) -> None:
+        """
+        Set monster moves according to the level.
+
+        Parameters:
+            level: The level of the monster.
+            max_moves: The maximum number of moves the monster can learn.
+        """
+        eligible_moves = [
+            move.technique
+            for move in self.moveset
+            if move.level_learned <= level
+        ]
+        moves_to_learn = eligible_moves[-max_moves:]
+        for move in moves_to_learn:
+            tech = Technique.create(move)
+            self.learn(tech)
+
+    def update_moves(
+        self, monster_level: int, levels_earned: int
+    ) -> list[Technique]:
+        """
+        Set monster moves according to the levels increased.
+        Excludes the moves already learned.
+
+        Parameters:
+            monster_level: The current level of the monster.
+            levels_earned: Number of levels earned.
+
+        Returns:
+            techniques: list containing the learned techniques
+        """
+        new_level = monster_level - levels_earned
+        new_moves = self.moves.copy()
+        new_techniques = []
+        for move in self.moveset:
+            if (
+                move.technique not in (m.slug for m in self.moves)
+                and new_level < move.level_learned <= monster_level
+            ):
+                technique = Technique.create(move.technique)
+                new_moves.append(technique)
+                new_techniques.append(technique)
+
+        self.moves = new_moves
+        return new_techniques
+
+    def recharge_moves(self) -> None:
+        for move in self.moves:
+            move.recharge()
+
+    def full_recharge_moves(self) -> None:
         for move in self.moves:
             move.full_recharge()
 
-        if "faint" in (s.slug for s in self.status):
-            self.faint()
-        else:
-            self.status = []
+    def set_stats(self) -> None:
+        for move in self.moves:
+            move.set_stats()
 
-    def speed_test(self, action: EnqueuedAction) -> int:
-        """
-        Calculate the speed modifier for the given action.
-        """
-        assert isinstance(action.method, Technique)
-        technique = action.method
-        multiplier_speed = prepare.MULTIPLIER_SPEED
-        base_speed = float(self.speed)
-        base_speed_bonus = multiplier_speed if technique.is_fast else 1.0
-        speed_modifier = base_speed * base_speed_bonus
-
-        # Add a controlled random element
-        speed_offset = prepare.SPEED_OFFSET
-        random_offset = random.uniform(-speed_offset, speed_offset)
-        speed_modifier += random_offset
-
-        # Ensure the speed modifier is not negative
-        speed_modifier = max(speed_modifier, 1)
-        # Use dodge as a tiebreaker
-        speed_modifier += float(self.dodge) * 0.01
-
-        return int(speed_modifier)
-
-    def find_tech_by_id(self, instance_id: uuid.UUID) -> Optional[Technique]:
-        """
-        Finds a tech among the monster's moves which has the given id.
-
-        """
+    def find_tech_by_id(self, instance_id: UUID) -> Optional[Technique]:
+        """Finds a technique among the monster's moves which has the given id."""
         return next(
             (m for m in self.moves if m.instance_id == instance_id), None
         )
+
+    def has_moves(self) -> bool:
+        return bool(self.moves)
+
+    def has_move(self, move_slug: str) -> bool:
+        return any(move.slug == move_slug for move in self.get_moves())
+
+    def get_moves(self) -> list[Technique]:
+        return self.moves
+
+    def encode_moves(self) -> Sequence[Mapping[str, Any]]:
+        return encode_moves(self.moves)
+
+    def decode_moves(self, json_data: Optional[Mapping[str, Any]]) -> None:
+        if json_data and "moves" in json_data:
+            self.moves = [mov for mov in decode_moves(json_data["moves"])]
+
+
+class MonsterPlagueHandler:
+    """
+    Manages the various plagues affecting a monster.
+    """
+
+    def __init__(
+        self, plagues: Optional[dict[str, PlagueType]] = None
+    ) -> None:
+        self._plagues = plagues or {}
+
+    @property
+    def current_plagues(self) -> dict[str, PlagueType]:
+        return self._plagues
+
+    def infect(self, plague_slug: str) -> None:
+        self._plagues[plague_slug] = PlagueType.infected
+
+    def inoculate(self, plague_slug: str) -> None:
+        self._plagues[plague_slug] = PlagueType.inoculated
+
+    def is_infected(self) -> bool:
+        return any(
+            plague_type == PlagueType.infected
+            for plague_type in self._plagues.values()
+        )
+
+    def remove_plague(self, plague_slug: str) -> None:
+        if plague_slug in self._plagues:
+            del self._plagues[plague_slug]
+
+    def has_plague(self, plague_slug: str) -> bool:
+        return plague_slug in self._plagues
+
+    def get_plague_type(self, plague_slug: str) -> Optional[PlagueType]:
+        type_str = self._plagues.get(plague_slug)
+        if type_str:
+            return PlagueType(type_str)
+        return None
+
+    def get_infected_slugs(self) -> list[str]:
+        return [
+            slug
+            for slug, plague in self._plagues.items()
+            if plague == PlagueType.infected
+        ]
+
+    def is_infected_with(self, plague_slug: str) -> bool:
+        return self.get_plague_type(plague_slug) == PlagueType.infected
+
+    def is_inoculated_against(self, plague_slug: str) -> bool:
+        return self.get_plague_type(plague_slug) == PlagueType.inoculated
+
+    def clear_plagues(self) -> None:
+        self._plagues.clear()
+
+    def encode_plagues(self) -> dict[str, PlagueType]:
+        return self._plagues.copy()
+
+    def decode_plagues(self, json_data: Optional[Mapping[str, Any]]) -> None:
+        if json_data and "plague" in json_data:
+            self._plagues.update(json_data["plague"])
 
 
 def decode_monsters(

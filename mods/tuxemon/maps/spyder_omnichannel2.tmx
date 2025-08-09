@@ -103,7 +103,7 @@
   <object id="25" name="Talk Schwartz" type="event" x="128" y="192" width="32" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_omnichannel_schwartz"/>
+    <property name="act2" value="pathfind_to_char player,spyder_omnichannel_schwartz"/>
     <property name="act3" value="translated_dialog spyder_omnichannel_schwartz1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster grinflare,35,spyder_omnichannel_schwartz,5,10"/>
@@ -126,7 +126,7 @@
   <object id="30" name="Talk Bettger" type="event" x="112" y="176" width="32" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_omnichannel_bettger"/>
+    <property name="act2" value="pathfind_to_char player,spyder_omnichannel_bettger"/>
     <property name="act3" value="translated_dialog spyder_omnichannel_bettger1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster grintrock,35,spyder_omnichannel_bettger,5,10"/>
@@ -149,7 +149,7 @@
   <object id="32" name="Talk Tohei" type="event" x="64" y="256" width="32" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_omnichannel_tohei"/>
+    <property name="act2" value="pathfind_to_char player,spyder_omnichannel_tohei"/>
     <property name="act3" value="translated_dialog spyder_omnichannel_tohei1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster sludgehog,40,spyder_omnichannel_tohei,5,10"/>
@@ -171,7 +171,7 @@
   <object id="37" name="Talk Crane" type="event" x="128" y="96" width="32" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_omnichannel_crane"/>
+    <property name="act2" value="pathfind_to_char player,spyder_omnichannel_crane"/>
     <property name="act3" value="translated_dialog spyder_omnichannel_crane1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster cochini,35,spyder_omnichannel_crane,5,10"/>
@@ -194,7 +194,7 @@
   <object id="40" name="Talk Dempsey" type="event" x="96" y="32" width="16" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_omnichannel_dempsey"/>
+    <property name="act2" value="pathfind_to_char player,spyder_omnichannel_dempsey"/>
     <property name="act3" value="translated_dialog spyder_omnichannel_dempsey1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster squabbit,20,spyder_omnichannel_dempsey,5,10"/>

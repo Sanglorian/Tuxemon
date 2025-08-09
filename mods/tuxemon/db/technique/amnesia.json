@@ -3,11 +3,19 @@
   "accuracy": 0.8,
   "animation": "sparks_gold_alt",
   "effects": [
-    "give exhausted,both",
-    "damage"
+    {
+      "type": "give",
+      "parameters": [
+        "exhausted",
+        "enemy_monster:own_monster"
+      ]
+    },
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 2.25,
   "range": "reach",
@@ -15,6 +23,7 @@
   "sfx": "sfx_shine",
   "slug": "amnesia",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -24,7 +33,9 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["Mental"],
+  "tags": [
+    "mental"
+  ],
   "types": [
     "fire",
     "metal"

@@ -3,11 +3,15 @@
   "accuracy": 1,
   "animation": "slash_power",
   "effects": [
-    "appear",
-    "damage"
+    {
+      "type": "appear"
+    },
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.0,
   "power": 1.5,
   "range": "touch",
@@ -15,6 +19,7 @@
   "sfx": "sfx_blaster",
   "slug": "hawk",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -23,8 +28,10 @@
     "own_team": false,
     "own_trainer": false
   },
-  "category": "animal",
-  "tags": ["Bird"],
+  "category": "special",
+  "tags": [
+    "bird"
+  ],
   "types": [
     "wood",
     "earth"

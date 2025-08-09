@@ -585,7 +585,7 @@
   <object id="212" name="Get Volcoli" type="event" x="96" y="288" width="32" height="32">
    <properties>
     <property name="act1" value="translated_dialog spyder_dryadsgrove_volcoli1"/>
-    <property name="act2" value="wild_encounter volcoli,50"/>
+    <property name="act2" value="wild_encounter volcoli,50,3"/>
     <property name="act3" value="set_variable dryadsgrovevolcoli:yes"/>
     <property name="act4" value="remove_npc spyder_volcoli"/>
     <property name="cond1" value="is char_facing_tile player"/>
@@ -672,7 +672,7 @@
   <object id="220" name="Talk Aquemini" type="event" x="544" y="192" width="16" height="48">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_dryadsgrove_aquemini"/>
+    <property name="act02" value="pathfind_to_char player,spyder_dryadsgrove_aquemini"/>
     <property name="act03" value="translated_dialog spyder_dryadsgrove_aquemini1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster vivitrans,50,spyder_dryadsgrove_aquemini,5,10"/>
@@ -688,7 +688,7 @@
   <object id="221" name="Talk Ignatia" type="event" x="400" y="128" width="48" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_dryadsgrove_ignatia"/>
+    <property name="act02" value="pathfind_to_char player,spyder_dryadsgrove_ignatia"/>
     <property name="act03" value="translated_dialog spyder_dryadsgrove_ignatia1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster vivicinder,50,spyder_dryadsgrove_ignatia,5,10"/>
@@ -704,7 +704,7 @@
   <object id="222" name="Talk Petra" type="event" x="240" y="96" width="16" height="32">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_dryadsgrove_petra"/>
+    <property name="act02" value="pathfind_to_char player,spyder_dryadsgrove_petra"/>
     <property name="act03" value="translated_dialog spyder_dryadsgrove_petra1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster vivitron,50,spyder_dryadsgrove_petra,5,10"/>
@@ -740,7 +740,7 @@
   <object id="227" name="Talk Ferris" type="event" x="592" y="112" width="16" height="32">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_dryadsgrove_ferris"/>
+    <property name="act02" value="pathfind_to_char player,spyder_dryadsgrove_ferris"/>
     <property name="act03" value="translated_dialog spyder_dryadsgrove_ferris1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster viviteel,50,spyder_dryadsgrove_ferris,5,10"/>
@@ -832,9 +832,10 @@
     <property name="act1" value="translated_dialog spyder_dryadsgrove_boy_yes"/>
     <property name="act2" value="set_variable ruff:proceed"/>
     <property name="act3" value="add_monster wolffsky,10"/>
-    <property name="act4" value="set_monster_attribute add_monster,name,RUFF"/>
-    <property name="act5" value="set_monster_attribute add_monster,gender,male"/>
-    <property name="act6" value="set_monster_attribute add_monster,traded,1"/>
+    <property name="act4" value="translated_dialog wolffsky,,center,center,center"/>
+    <property name="act5" value="set_monster_attribute add_monster,name,RUFF"/>
+    <property name="act6" value="set_monster_attribute add_monster,gender,male"/>
+    <property name="act7" value="set_monster_attribute add_monster,acquisition,traded"/>
     <property name="cond1" value="is variable_set ruff:yes"/>
    </properties>
   </object>

@@ -1,80 +1,114 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
-import uuid
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, Optional
+from uuid import UUID, uuid4
 
-import pygame
+from pygame.surface import Surface
 
-from tuxemon import graphics, plugin, prepare
+from tuxemon import graphics, prepare
 from tuxemon.constants import paths
-from tuxemon.db import ItemCategory, State, db
-from tuxemon.item.itemcondition import ItemCondition
-from tuxemon.item.itemeffect import ItemEffect, ItemEffectResult
+from tuxemon.core.core_condition import CoreCondition
+from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
+from tuxemon.core.core_manager import ConditionManager, EffectManager
+from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
+from tuxemon.db import ItemCategory, ItemModel, State, db
 from tuxemon.locale import T
+from tuxemon.modifiers import ModifiersHandler
+from tuxemon.surfanim import FlipAxes
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
     from tuxemon.npc import NPC
+    from tuxemon.plugin import PluginObject
+    from tuxemon.session import Session
     from tuxemon.states.combat.combat import CombatState
 
 logger = logging.getLogger(__name__)
 
-SIMPLE_PERSISTANCE_ATTRIBUTES = (
-    "slug",
-    "quantity",
-)
+SIMPLE_PERSISTANCE_ATTRIBUTES = ("slug", "quantity", "wear")
+
+INFINITE_ITEMS: int = -1
 
 
 class Item:
     """An item object is an item that can be used either in or out of combat."""
 
-    effects_classes: ClassVar[Mapping[str, type[ItemEffect]]] = {}
-    conditions_classes: ClassVar[Mapping[str, type[ItemCondition]]] = {}
+    effect_manager: Optional[EffectManager] = None
+    condition_manager: Optional[ConditionManager] = None
 
     def __init__(self, save_data: Optional[Mapping[str, Any]] = None) -> None:
         save_data = save_data or {}
 
-        self.slug = ""
-        self.name = ""
-        self.description = ""
-        self.instance_id = uuid.uuid4()
-        self.quantity = 1
+        self.slug: str = ""
+        self.name: str = ""
+        self.description: str = ""
+        self.instance_id: UUID = uuid4()
+        self.quantity: int = 1
         self.animation: Optional[str] = None
-        self.flip_axes = ""
+        self.flip_axes: FlipAxes = FlipAxes.NONE
+        self.modifiers: ModifiersHandler = ModifiersHandler()
         # The path to the sprite to load.
-        self.sprite = ""
-        self.category = ItemCategory.none
-        self.surface: Optional[pygame.surface.Surface] = None
-        self.surface_size_original = (0, 0)
-
-        self.effects: Sequence[ItemEffect] = []
-        self.conditions: Sequence[ItemCondition] = []
+        self.sprite: str = ""
+        self.category: ItemCategory = ItemCategory.none
+        self.surface: Optional[Surface] = None
+        self.surface_size_original: tuple[int, int] = (0, 0)
         self.combat_state: Optional[CombatState] = None
 
-        self.sort = ""
-        self.use_item = ""
-        self.use_success = ""
-        self.use_failure = ""
+        self.sort: str = ""
+        self.confirm_text: str = ""
+        self.cancel_text: str = ""
+        self.use_item: str = ""
+        self.use_success: str = ""
+        self.use_failure: str = ""
         self.usable_in: Sequence[State] = []
+        self.immunity_to_status: Sequence[str] = []
+        self.cost: int = 0
+        self.wear: int = 0
+        self.max_wear: int = 0
+        self.break_chance: float = 0.0
+        self.menu_actions_data: Sequence[Mapping[str, str]] = []
 
-        # load effect and condition plugins if it hasn't been done already
-        if not Item.effects_classes:
-            Item.effects_classes = plugin.load_plugins(
-                paths.ITEM_EFFECT_PATH,
-                "effects",
-                interface=ItemEffect,
+        if Item.effect_manager is None:
+            Item.effect_manager = EffectManager(
+                CoreEffect, paths.CORE_EFFECT_PATH
             )
-            Item.conditions_classes = plugin.load_plugins(
-                paths.ITEM_CONDITION_PATH,
-                "conditions",
-                interface=ItemCondition,
+        if Item.condition_manager is None:
+            Item.condition_manager = ConditionManager(
+                CoreCondition, paths.CORE_CONDITION_PATH
             )
+
+        self.effects: Sequence[PluginObject] = []
+        self.conditions: Sequence[PluginObject] = []
 
         self.set_state(save_data)
+
+    @classmethod
+    def create(
+        cls, slug: str, save_data: Optional[Mapping[str, Any]] = None
+    ) -> Item:
+        method = cls(save_data)
+        method.load(slug)
+        return method
+
+    @classmethod
+    def test(cls, save_data: Optional[Mapping[str, Any]] = None) -> Item:
+        """Creates an Item instance for testing purposes."""
+        method = cls(save_data)
+        return method
+
+    @property
+    def has_wear(self) -> bool:
+        return self.max_wear > 0
+
+    @property
+    def wear_ratio(self) -> float:
+        if self.max_wear == 0:
+            return 0.0  # Item doesn’t use wear, no ratio
+        return min(max(self.wear / self.max_wear, 0.0), 1.0)
 
     def load(self, slug: str) -> None:
         """Loads and sets this item's attributes from the item.db database.
@@ -85,30 +119,38 @@ class Item:
             slug: The item slug to look up in the monster.item database.
 
         """
-        try:
-            results = db.lookup(slug, table="item")
-        except KeyError:
-            raise RuntimeError(f"Item {slug} not found")
-
+        results = ItemModel.lookup(slug, db)
         self.slug = results.slug
         self.name = T.translate(self.slug)
         self.description = T.translate(f"{self.slug}_description")
-        self.quantity = 1
+        self.modifiers = ModifiersHandler(results.modifiers)
 
         # item use notifications (translated!)
         self.use_item = T.translate(results.use_item)
         self.use_success = T.translate(results.use_success)
         self.use_failure = T.translate(results.use_failure)
+        self.confirm_text = T.translate(results.confirm_text)
+        self.cancel_text = T.translate(results.cancel_text)
 
-        # misc attributes (not translated!)
+        self.menu_actions_data = results.menu_actions
         self.world_menu = results.world_menu
         self.behaviors = results.behaviors
+        self.cost = results.cost
+        self.max_wear = results.max_wear
+        self.break_chance = results.break_chance
         self.sort = results.sort
-        self.category = results.category or ItemCategory.none
+        self.immunity_to_status = results.immunity_to_status
+        self.category = results.category
         self.sprite = results.sprite
         self.usable_in = results.usable_in
-        self.effects = self.parse_effects(results.effects)
-        self.conditions = self.parse_conditions(results.conditions)
+        if self.effect_manager and results.effects:
+            self.effects = self.effect_manager.parse_effects(results.effects)
+        if self.condition_manager and results.conditions:
+            self.conditions = self.condition_manager.parse_conditions(
+                results.conditions
+            )
+        self.condition_handler = ConditionProcessor(self.conditions)
+        self.effect_handler = EffectProcessor(self.effects)
         self.surface = graphics.load_and_scale(self.sprite)
         self.surface_size_original = self.surface.get_size()
 
@@ -116,143 +158,132 @@ class Item:
         self.animation = results.animation
         self.flip_axes = results.flip_axes
 
-    def parse_effects(
-        self,
-        raw: Sequence[str],
-    ) -> Sequence[ItemEffect]:
-        """
-        Convert effect strings to effect objects.
+    def get_combat_state(self) -> CombatState:
+        """Returns the CombatState."""
+        if not self.combat_state:
+            raise ValueError("No CombatState.")
+        return self.combat_state
 
-        Takes raw effects list from the item's json and parses it into a
-        form more suitable for the engine.
+    def is_immune(self, status: str) -> bool:
+        return (
+            "all" in self.immunity_to_status
+            or status in self.immunity_to_status
+        )
 
-        Parameters:
-            raw: The raw effects list pulled from the item's db entry.
+    def set_combat_state(self, combat_state: Optional[CombatState]) -> None:
+        """Sets the CombatState."""
+        self.combat_state = combat_state
 
-        Returns:
-            Effects turned into a list of ItemEffect objects.
+    def set_quantity(self, amount: int = 1) -> None:
+        """Set item quantity with clamping at zero, unless it's infinite (-1)."""
+        if amount < -1:
+            logger.warning(f"Invalid quantity: {amount}. Clamping to 0.")
+            amount = 0
 
-        """
-        effects = []
+        self.quantity = amount
+        logger.debug(f"Item '{self.slug}' quantity set to {self.quantity}")
 
-        for line in raw:
-            parts = line.split(maxsplit=1)
-            name = parts[0]
-            params = parts[1].split(",") if len(parts) > 1 else []
-
-            try:
-                effect_class = Item.effects_classes[name]
-            except KeyError:
-                logger.error(f'Error: ItemEffect "{name}" not implemented')
-            else:
-                effects.append(effect_class(*params))
-
-        return effects
-
-    def parse_conditions(
-        self,
-        raw: Sequence[str],
-    ) -> Sequence[ItemCondition]:
-        """
-        Convert condition strings to condition objects.
-
-        Takes raw condition list from the item's json and parses it into a
-        form more suitable for the engine.
-
-        Parameters:
-            raw: The raw conditions list pulled from the item's db entry.
-
-        Returns:
-            Conditions turned into a list of ItemCondition objects.
-
-        """
-        conditions = []
-
-        for line in raw:
-            parts = line.split(maxsplit=2)
-            op = parts[0]
-            name = parts[1]
-            params = parts[2].split(",") if len(parts) > 2 else []
-
-            try:
-                condition_class = Item.conditions_classes[name]
-            except KeyError:
-                logger.error(f'Error: ItemCondition "{name}" not implemented')
-                continue
-
-            if op not in ["is", "not"]:
-                raise ValueError(f"{op} must be 'is' or 'not'")
-
-            condition = condition_class(*params)
-            condition._op = op == "is"
-            conditions.append(condition)
-
-        return conditions
-
-    def validate(self, target: Optional[Monster]) -> bool:
-        """
-        Check if the target meets all conditions that the item has on it's use.
-
-        Parameters:
-            target: The monster or object that we are using this item on.
-
-        Returns:
-            Whether the item may be used by the user on the target.
-
-        """
-        if not self.conditions:
+    def increase_quantity(self, amount: int = 1) -> bool:
+        """Increase item quantity unless it's infinite (-1)."""
+        if self.quantity == -1:
+            logger.debug(f"'{self.slug}' has infinite quantity.")
             return True
-        if not target:
+
+        if amount < 0:
+            logger.warning(
+                f"Negative increase: {amount}. Use decrease_quantity instead."
+            )
             return False
 
-        return all(
-            (
-                condition.test(target)
-                if condition._op
-                else not condition.test(target)
+        self.quantity += amount
+        logger.debug(f"'{self.slug}' quantity increased to {self.quantity}")
+        return True
+
+    def decrease_quantity(self, amount: int = 1) -> bool:
+        """Decrease item quantity unless it's infinite (-1), clamping at zero."""
+        if self.quantity == -1:
+            logger.debug(f"'{self.slug}' has infinite quantity.")
+            return True
+
+        if amount < 0:
+            logger.warning(
+                f"Negative decrease: {amount}. Use increase_quantity instead."
             )
-            for condition in self.conditions
-        )
+            return False
 
-    def use(self, user: NPC, target: Optional[Monster]) -> ItemEffectResult:
+        if self.quantity == 0:
+            logger.debug(f"'{self.slug}', but it's already 0.")
+            return False
+
+        self.quantity = max(0, self.quantity - amount)
+        logger.debug(f"'{self.slug}' quantity decreased to {self.quantity}")
+        return True
+
+    def increase_wear(self, amount: int = 1) -> bool:
+        """Increase the wear level of the item, clamped to max_wear."""
+        if not self.has_wear or amount < 0:
+            logger.warning(
+                f"Cannot increase wear: has_wear={self.has_wear}, amount={amount}"
+            )
+            return False
+
+        self.wear = min(self.wear + amount, self.max_wear)
+        logger.debug(f"'{self.slug}' wear increased to {self.wear}")
+        return True
+
+    def reset_wear(self) -> None:
+        """Resets the item's wear level to zero (fully restored)."""
+        if self.has_wear:
+            self.wear = 0
+            logger.debug(f"'{self.slug}' wear reset to 0")
+
+    def validate_monster(self, session: Session, target: Monster) -> bool:
         """
-        Applies this item's effects as defined in the "effect" column of
-        the item database.
-
-        Parameters:
-            user: The npc that is using this item.
-            target: The monster or object that we are using this item on.
-
-        Returns:
-            An ItemEffectResult object containing the result of the item's effect.
-
+        Check if the target meets all conditions that the item has on it's use.
         """
-        # defaults for the return. items can override these values.
-        meta_result = ItemEffectResult(
-            name=self.name,
-            success=False,
-            num_shakes=0,
-            extra=[],
+        return self.condition_handler.validate(session=session, target=target)
+
+    def execute_item_action(
+        self,
+        session: Session,
+        combat_instance: CombatState,
+        user: NPC,
+        target: Optional[Monster],
+    ) -> ItemEffectResult:
+        """Executes the item action and returns the result."""
+        self.set_combat_state(combat_instance)
+        return self.use(session, user, target)
+
+    def use(
+        self, session: Session, user: NPC, target: Optional[Monster]
+    ) -> ItemEffectResult:
+        """
+        Applies the item's effects using EffectProcessor and returns the results.
+        """
+        result = self.effect_handler.process_item(
+            session=session, source=self, target=target
         )
+        self.consume_if_needed(user, result)
+        return result
 
-        # Loop through all the effects of this technique and execute the effect's function.
-        for effect in self.effects:
-            result = effect.apply(self, target)
-            meta_result.name = result.name
-            meta_result.success = meta_result.success or result.success
-            meta_result.num_shakes += result.num_shakes
-            meta_result.extra.extend(result.extra)
+    def consume_if_needed(self, user: NPC, result: ItemEffectResult) -> None:
+        """
+        Removes this item from the user's inventory if it's marked consumable,
+        and if it's supposed to be consumed based on the result.
+        """
+        should_consume = (
+            prepare.CONFIG.items_consumed_on_failure or result.success
+        ) and self.behaviors.consumable
 
-        # If this is a consumable item, remove it from the player's inventory.
-        if (
-            prepare.CONFIG.items_consumed_on_failure or meta_result.success
-        ) and self.behaviors.consumable:
-            if self.quantity <= 1:
-                user.remove_item(self)
-            else:
-                self.quantity -= 1
-
-        return meta_result
+        if should_consume:
+            logger.debug(
+                f"Consuming item '{self.slug}' from NPC '{user.slug}'."
+            )
+            user.items.remove_item(self)
+        else:
+            logger.debug(
+                f"Item '{self.slug}' not consumed (consumable={self.behaviors.consumable}, success={result.success})."
+            )
 
     def get_state(self) -> Mapping[str, Any]:
         """
@@ -281,7 +312,7 @@ class Item:
 
         for key, value in save_data.items():
             if key == "instance_id" and value:
-                self.instance_id = uuid.UUID(value)
+                self.instance_id = UUID(value)
             elif key in SIMPLE_PERSISTANCE_ATTRIBUTES:
                 setattr(self, key, value)
 

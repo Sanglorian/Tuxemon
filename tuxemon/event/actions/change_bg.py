@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -12,8 +12,7 @@ from tuxemon import prepare
 from tuxemon.db import db
 from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.theme import get_theme
-from tuxemon.states.idle.color_state import ColorState
-from tuxemon.states.idle.image_state import ImageState
+from tuxemon.session import Session
 
 logger = logging.getLogger()
 
@@ -30,11 +29,8 @@ CATEGORY_PATHS: dict[str, str] = {
 @dataclass
 class ChangeBgAction(EventAction):
     """
-    Change the background.
-
-    Eg:
-    act1 change_bg background
-    act2 change_bg
+    Handles the background change within the session, allowing users
+    to apply a new background color or image dynamically.
 
     Script usage:
         .. code-block::
@@ -42,23 +38,20 @@ class ChangeBgAction(EventAction):
             change_bg <background>[,image][,category]
 
     Script parameters:
-        background:
-        - it can be the name of the file (see below note)
-        - it can be a RGB color separated by ":" (eg 255:0:0)
+        background: The background identifier, which can be:
+            - A file name located in `gfx/ui/background/`
+            - An RGB color formatted as `R:G:B` (e.g., `255:0:0`)
+        image: An optional image identifier, which can be:
+            - A monster slug (stored in `gfx/sprites/battle`)
+            - A template slug (stored in `gfx/sprites/player`)
+            - An item slug (stored in `gfx/items`)
+            - A direct file path
+        category: The category of the image (e.g., monster, template,
+            item, image). If omitted, defaults to "background".
 
-        image: monster_slug or template_slug or path
-            if path, then "gfx/ui/background/"
-            if template (eg. ceo) in "gfx/sprites/player"
-            "change_bg gradient_blue,ceo"
-
-        category: (optional) category of the image (e.g. monster, template, etc.)
-            if not provided, it will default to "background"
-
-        note: the background or image (if not monster or template)
-            must be inside the folder (gfx/ui/background/)
-
-        background size: 240x160
-
+    Notes:
+        - Background images must be in `gfx/ui/background/`.
+        - Background dimensions must be 240x160 pixels.
     """
 
     name = "change_bg"
@@ -66,9 +59,9 @@ class ChangeBgAction(EventAction):
     image: Optional[str] = None
     category: Optional[str] = None
 
-    def start(self) -> None:
+    def start(self, session: Session) -> None:
         # don't override previous state if we are still in the state.
-        client = self.session.client
+        client = session.client
         if client.current_state is None:
             # obligatory "should not happen"
             raise RuntimeError
@@ -95,22 +88,24 @@ class ChangeBgAction(EventAction):
                 )
                 return
 
-        if client.current_state.name != str(ImageState):
+        if client.current_state.name != "ImageState":
             if self.background is None:
-                client.pop_state()
-                return
+                if len(client.state_manager.active_states) > 2:
+                    client.pop_state()
+                    return
             else:
                 _background = self.background.split(":")
                 if len(_background) == 1:
                     client.push_state(
-                        ImageState(
-                            background=self.background, image=self.image
-                        )
+                        "ImageState",
+                        background=self.background,
+                        image=self.image,
                     )
-                else:
-                    client.push_state(ColorState(color=self.background))
 
-    def cleanup(self) -> None:
+                else:
+                    client.push_state("ColorState", color=self.background)
+
+    def cleanup(self, session: Session) -> None:
         theme = get_theme()
         theme.background_color = prepare.BACKGROUND_COLOR
         theme.widget_alignment = locals.ALIGN_LEFT

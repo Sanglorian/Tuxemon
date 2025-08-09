@@ -118,7 +118,7 @@
   <object id="59" name="Talk fugger" type="event" x="176" y="48" width="16" height="32">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_walled_fugger"/>
+    <property name="act02" value="pathfind_to_char player,spyder_walled_fugger"/>
     <property name="act03" value="translated_dialog spyder_walled_fugger1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster polyrock,50,spyder_walled_fugger,5,10"/>
@@ -141,7 +141,7 @@
   <object id="61" name="Talk carnegie" type="event" x="64" y="48" width="16" height="32">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_walled_carnegie"/>
+    <property name="act02" value="pathfind_to_char player,spyder_walled_carnegie"/>
     <property name="act03" value="translated_dialog spyder_walled_carnegie1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster tetrchimp,45,spyder_walled_carnegie,5,10"/>
@@ -163,7 +163,7 @@
   <object id="63" name="Talk ford" type="event" x="80" y="128" width="32" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_walled_ford"/>
+    <property name="act02" value="pathfind_to_char player,spyder_walled_ford"/>
     <property name="act03" value="translated_dialog spyder_walled_ford1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster drashimi,50,spyder_walled_ford,5,10"/>
@@ -186,7 +186,7 @@
   <object id="65" name="Talk girard" type="event" x="64" y="144" width="16" height="48">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_walled_girard"/>
+    <property name="act02" value="pathfind_to_char player,spyder_walled_girard"/>
     <property name="act03" value="translated_dialog spyder_walled_girard1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster tigrock,50,spyder_walled_girard,5,10"/>
@@ -209,7 +209,7 @@
   <object id="67" name="Talk vanderbilt" type="event" x="144" y="128" width="32" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_walled_vanderbilt"/>
+    <property name="act02" value="pathfind_to_char player,spyder_walled_vanderbilt"/>
     <property name="act03" value="translated_dialog spyder_walled_vanderbilt1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster angesnow,50,spyder_walled_vanderbilt,5,10"/>
@@ -225,7 +225,7 @@
   <object id="68" name="Talk ford" type="event" x="80" y="64" width="32" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_walled_ford"/>
+    <property name="act02" value="pathfind_to_char player,spyder_walled_ford"/>
     <property name="act03" value="translated_dialog spyder_walled_ford1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster drashimi,50,spyder_walled_ford,5,10"/>
@@ -241,7 +241,7 @@
   <object id="69" name="Talk vanderbilt" type="event" x="144" y="64" width="32" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_walled_vanderbilt"/>
+    <property name="act02" value="pathfind_to_char player,spyder_walled_vanderbilt"/>
     <property name="act03" value="translated_dialog spyder_walled_vanderbilt1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster angesnow,50,spyder_walled_vanderbilt,5,10"/>
@@ -264,7 +264,7 @@
   <object id="71" name="Talk astor" type="event" x="176" y="144" width="16" height="48">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_walled_astor"/>
+    <property name="act02" value="pathfind_to_char player,spyder_walled_astor"/>
     <property name="act03" value="translated_dialog spyder_walled_astor1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster araignee,50,spyder_walled_astor,5,10"/>

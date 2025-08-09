@@ -3,11 +3,19 @@
   "accuracy": 1,
   "animation": "amethyst",
   "effects": [
-    "give flinching,target",
-    "damage"
+    {
+      "type": "give",
+      "parameters": [
+        "flinching",
+        "enemy_monster"
+      ]
+    },
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "slow",
   "potency": 0.8,
   "power": 3,
   "range": "melee",
@@ -15,6 +23,7 @@
   "sfx": "sfx_blaster",
   "slug": "one_million_talons",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -24,7 +33,9 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["Bird"],
+  "tags": [
+    "bird"
+  ],
   "types": [
     "fire"
   ],

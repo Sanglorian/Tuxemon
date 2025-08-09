@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Optional, final
 
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 from tuxemon.tools import number_or_variable, ops_dict
 
 logger = logging.getLogger(__name__)
@@ -42,15 +43,15 @@ class VariableMathAction(EventAction):
     var2: str
     result: Optional[str] = None
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
 
         # Read the parameters
         var = self.var1
         result = var if self.result is None else self.result
-        operand1 = number_or_variable(self.session, var)
+        operand1 = number_or_variable(player.game_variables, var)
         operation = self.operation
-        operand2 = number_or_variable(self.session, self.var2)
+        operand2 = number_or_variable(player.game_variables, self.var2)
 
         # Perform the operation on the variable
         if operation in ops_dict:

@@ -1,14 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from typing import Optional
 
-import pygame
+from pygame.surface import Surface
+from pygame.transform import scale
 
 from tuxemon.platform.events import PlayerInput
-from tuxemon.state import State
+from tuxemon.state.state import State
 
 logger = logging.getLogger(__name__)
 
@@ -48,17 +49,15 @@ class PixelationTransition(State):
             logger.info("Pixelation transition finished.")
             self.client.pop_state()
 
-    def draw(self, surface: pygame.surface.Surface) -> None:
-        small_screen = pygame.transform.scale(
+    def draw(self, surface: Surface) -> None:
+        small_screen = scale(
             surface,
             (
                 surface.get_width() // self.scale_factor,
                 surface.get_height() // self.scale_factor,
             ),
         )
-        surface.blit(
-            pygame.transform.scale(small_screen, surface.get_size()), (0, 0)
-        )
+        surface.blit(scale(small_screen, surface.get_size()), (0, 0))
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
         # prevent other states from getting input

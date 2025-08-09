@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -8,7 +8,7 @@ from typing import final
 
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -32,10 +32,9 @@ class CharStopAction(EventAction):
     name = "char_stop"
     character: str
 
-    def start(self) -> None:
-        character = get_npc(self.session, self.character)
+    def start(self, session: Session) -> None:
+        character = get_npc(session, self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return
-        world = self.session.client.get_state_by_name(WorldState)
-        world.stop_char(character)
+        session.client.movement_manager.stop_char(character)

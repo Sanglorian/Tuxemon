@@ -140,7 +140,7 @@
   <object id="50" name="Talk Meitner" type="event" x="240" y="240" width="16" height="64">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_tunnelb_meitner"/>
+    <property name="act2" value="pathfind_to_char player,spyder_tunnelb_meitner"/>
     <property name="act3" value="translated_dialog spyder_tunnelb_meitner1"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster masknake,22,spyder_tunnelb_meitner,5,10"/>
@@ -154,7 +154,7 @@
   <object id="51" name="Talk Lute" type="event" x="32" y="560" width="16" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_tunnelb_lute"/>
+    <property name="act02" value="pathfind_to_char player,spyder_tunnelb_lute"/>
     <property name="act03" value="translated_dialog spyder_tunnelb_lute1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster noctula,16,spyder_tunnelb_lute,5,10"/>
@@ -171,7 +171,7 @@
   <object id="52" name="Talk Beryll" type="event" x="144" y="512" width="16" height="32">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_tunnelb_beryll"/>
+    <property name="act02" value="pathfind_to_char player,spyder_tunnelb_beryll"/>
     <property name="act03" value="translated_dialog spyder_tunnelb_beryll1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster rockat,20,spyder_tunnelb_beryll,5,10"/>
@@ -199,7 +199,7 @@
   </object>
   <object id="55" name="Shammer" type="event" x="48" y="608" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog shammer_fossil"/>
+    <property name="act1" value="translated_dialog shammer_fossil,,center,center,center"/>
     <property name="act2" value="add_item shammer_fossil"/>
     <property name="act3" value="remove_npc spyder_tunnelb_shammer"/>
     <property name="act4" value="set_variable tunnelb_shammer:yes"/>
@@ -215,7 +215,7 @@
   </object>
   <object id="57" name="Rhincus" type="event" x="256" y="512" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog rhincus_fossil"/>
+    <property name="act1" value="translated_dialog rhincus_fossil,,center,center,center"/>
     <property name="act2" value="add_item rhincus_fossil"/>
     <property name="act3" value="remove_npc spyder_tunnelb_rhincus"/>
     <property name="act4" value="set_variable tunnelb_rhincus:yes"/>

@@ -3,12 +3,20 @@
   "accuracy": 1,
   "animation": "heal_burst_120",
   "effects": [
-    "give chargedup,target",
-    "healing target"
+    {
+      "type": "give",
+      "parameters": [
+        "chargedup",
+        "own_monster"
+      ]
+    },
+    {
+      "type": "healing"
+    }
   ],
   "flip_axes": "",
   "healing_power": 3.0,
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -16,6 +24,7 @@
   "sfx": "sfx_bubbles",
   "slug": "life_surge",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -25,7 +34,9 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["Healing"],
+  "tags": [
+    "healing"
+  ],
   "types": [
     "aether"
   ],

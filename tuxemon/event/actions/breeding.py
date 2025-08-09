@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -8,6 +8,7 @@ from typing import Optional, final
 from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.interface import MenuItem
 from tuxemon.monster import Monster
+from tuxemon.session import Session
 from tuxemon.states.monster import MonsterMenuState
 
 
@@ -25,7 +26,6 @@ class BreedingAction(EventAction):
 
     Script parameters:
         gender: Gender (male or female).
-
     """
 
     name = "breeding"
@@ -47,14 +47,15 @@ class BreedingAction(EventAction):
         player.game_variables[parent] = str(monster.instance_id.hex)
         self.session.client.pop_state()
 
-    def start(self) -> None:
+    def start(self, session: Session) -> None:
+        self.session = session
         # pull up the monster menu so we know which one we are saving
-        menu = self.session.client.push_state(MonsterMenuState())
+        menu = session.client.push_state(MonsterMenuState(session.player))
         menu.is_valid_entry = self.validate  # type: ignore[assignment]
         menu.on_menu_selection = self.set_var  # type: ignore[assignment]
 
-    def update(self) -> None:
+    def update(self, session: Session) -> None:
         try:
-            self.session.client.get_state_by_name(MonsterMenuState)
+            session.client.get_state_by_name("MonsterMenuState")
         except ValueError:
             self.stop()

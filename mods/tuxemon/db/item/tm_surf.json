@@ -1,20 +1,47 @@
 {
   "conditions": [
-    "is type water",
-    "is shape piscine:polliwog:leviathan",
-    "not has_tech surf"
+    {
+      "type": "type",
+      "parameters": [
+        "water"
+      ],
+      "operator": "is"
+    },
+    {
+      "type": "shape",
+      "parameters": [
+        "piscine:polliwog:leviathan"
+      ],
+      "operator": "is"
+    },
+    {
+      "type": "has_tech",
+      "parameters": [
+        "surf"
+      ],
+      "operator": "not"
+    }
   ],
   "effects": [
-    "learn_tm surf"
+    {
+      "type": "learn_tm",
+      "parameters": [
+        "surf"
+      ]
+    }
   ],
   "slug": "tm_surf",
   "sort": "utility",
   "sprite": "gfx/items/tm_water.png",
   "category": "technique",
+  "cost": 2500,
   "usable_in": [
     "WorldState"
   ],
-  "behaviors": {},
+  "modifiers": [],
+  "behaviors": {
+    "resellable": true
+  },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

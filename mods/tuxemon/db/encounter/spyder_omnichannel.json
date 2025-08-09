@@ -1,23 +1,27 @@
 {
-  "slug": "spyder_omnichannel",
   "monsters": [
     {
-      "monster": "dark_robo",
       "encounter_rate": 0.5,
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         30,
         31
-      ]
+      ],
+      "monster": "dark_robo",
+      "variables": []
     },
     {
-      "monster": "xeon_2",
       "encounter_rate": 0.5,
-      "exp_req_mod": 1,
+      "exp_req_mod": 3,
+      "held_items": [],
       "level_range": [
         30,
         31
-      ]
+      ],
+      "monster": "xeon_2",
+      "variables": []
     }
-  ]
+  ],
+  "slug": "spyder_omnichannel"
 }

@@ -3,11 +3,19 @@
   "accuracy": 0.8,
   "animation": null,
   "effects": [
-    "give poison,target",
-    "damage"
+    {
+      "type": "give",
+      "parameters": [
+        "poison",
+        "enemy_monster"
+      ]
+    },
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.2,
   "power": 1.25,
   "range": "ranged",
@@ -15,6 +23,7 @@
   "sfx": "sfx_blaster",
   "slug": "spit_poison",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -24,7 +33,10 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["Bug", "Toxic"],
+  "tags": [
+    "bug",
+    "toxic"
+  ],
   "types": [
     "wood"
   ],

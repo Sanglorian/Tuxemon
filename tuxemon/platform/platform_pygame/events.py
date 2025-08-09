@@ -4,11 +4,12 @@ from collections import defaultdict
 from collections.abc import Generator, Mapping
 from typing import Any, ClassVar, Optional, TypedDict
 
-import pygame
 import pygame as pg
+from pygame.event import Event
 from pygame.rect import Rect
+from pygame.surface import Surface
 
-from tuxemon import graphics
+from tuxemon import graphics, prepare
 from tuxemon.platform.const import buttons, events
 from tuxemon.platform.events import (
     EventQueueHandler,
@@ -17,6 +18,9 @@ from tuxemon.platform.events import (
 )
 from tuxemon.session import local_session
 from tuxemon.ui.draw import blit_alpha
+
+HORIZONTAL_AXIS = 0
+VERTICAL_AXIS = 1
 
 
 class PygameEventQueueHandler(EventQueueHandler):
@@ -34,7 +38,6 @@ class PygameEventQueueHandler(EventQueueHandler):
         Parameters:
             player: Number of the player the handler belongs to.
             handler: Handler whose events will be processed from now on.
-
         """
         self._inputs[player].append(handler)
 
@@ -68,7 +71,7 @@ class PygameEventQueueHandler(EventQueueHandler):
                 yield from player_input.get_events()
 
 
-class PygameEventHandler(InputHandler[pygame.event.Event]):
+class PygameEventHandler(InputHandler[Event]):
     """
     Input handler of Pygame events.
     """
@@ -87,7 +90,6 @@ class PygameGamepadInput(PygameEventHandler):
         deadzone: Threshold used to detect when an analog stick should
             be considered not pressed, as obtaining an exact value of 0 is
             almost impossible.
-
     """
 
     # Xbox 360 Controller buttons:
@@ -106,72 +108,119 @@ class PygameGamepadInput(PygameEventHandler):
         14: buttons.DOWN,
         7: buttons.START,
     }
+    DEADZONE: float = 0.25
 
     def __init__(
         self,
         event_map: Optional[Mapping[Optional[int], int]] = None,
-        deadzone: float = 0.25,
+        deadzone: float = DEADZONE,
     ) -> None:
         super().__init__(event_map)
         self.deadzone = deadzone
 
-    def process_event(self, input_event: pygame.event.Event) -> None:
+    def is_within_deadzone(self, value: float) -> bool:
+        """
+        Checks if the axis value is within the deadzone.
+
+        Parameters:
+            value: The axis value.
+
+        Returns:
+            True if the value is within the deadzone, False otherwise.
+        """
+        return abs(value) < self.deadzone
+
+    def handle_button(
+        self, button: int, pressed: bool, value: float = 0.0
+    ) -> None:
+        """
+        Handles button press or release events.
+
+        Parameters:
+            button: The button identifier.
+            pressed: True if the button is pressed, False if released.
+            value: The analog value of the button (optional, defaults to 0.0).
+        """
+        if pressed:
+            self.press(button, value)
+        else:
+            self.release(button)
+
+    def process_event(self, input_event: Event) -> None:
+        """
+        Processes a pygame event.
+
+        Parameters:
+            input_event: The pygame event.
+        """
         self.check_button(input_event)
         self.check_hat(input_event)
         self.check_axis(input_event)
 
-    def check_button(self, pg_event: pygame.event.Event) -> None:
+    def check_button(self, pg_event: Event) -> None:
+        """
+        Checks for button press/release events.
+
+        Parameters:
+            pg_event: The pygame event.
+        """
         try:
             button = self.event_map[pg_event.button]
-            if pg_event.type == pg.JOYBUTTONDOWN:
-                self.press(button)
-            elif pg_event.type == pg.JOYBUTTONUP:
-                self.release(button)
+            self.handle_button(button, pg_event.type == pg.JOYBUTTONDOWN)
         except (KeyError, AttributeError):
             pass
 
-    def check_hat(self, pg_event: pygame.event.Event) -> None:
+    def check_hat(self, pg_event: Event) -> None:
+        """
+        Checks for hat switch motion events.
+
+        Parameters:
+            pg_event: The pygame event.
+        """
         if pg_event.type == pg.JOYHATMOTION:
             x, y = pg_event.value
-            if x == -1:
-                self.press(buttons.LEFT, value=x * -1)
-            elif x == 0:
-                self.release(buttons.LEFT)
-                self.release(buttons.RIGHT)
-            elif x == 1:
-                self.press(buttons.RIGHT)
+            self.handle_button(buttons.LEFT, x == -1)
+            self.handle_button(buttons.RIGHT, x == 1)
+            # Note: y axis is inverted
+            self.handle_button(buttons.DOWN, y == 1)
+            # Note: y axis is inverted
+            self.handle_button(buttons.UP, y == -1)
+            if x == 0:
+                self.handle_button(buttons.LEFT, False)
+                self.handle_button(buttons.RIGHT, False)
+            if y == 0:
+                self.handle_button(buttons.UP, False)
+                self.handle_button(buttons.DOWN, False)
 
-            if y == -1:
-                self.press(buttons.DOWN, value=y * -1)
-            elif y == 0:
-                self.release(buttons.DOWN)
-                self.release(buttons.UP)
-            elif y == 1:
-                self.press(buttons.UP)
+    def check_axis(self, pg_event: Event) -> None:
+        """
+        Checks for axis motion events.
 
-    def check_axis(self, pg_event: pygame.event.Event) -> None:
+        Parameters:
+            pg_event: The pygame event.
+        """
         if pg_event.type == pg.JOYAXISMOTION:
-            value = pg_event.value
+            self._handle_axis(pg_event.axis, pg_event.value)
 
-            if pg_event.axis == 0:
-                if abs(value) >= self.deadzone:
-                    if value < 0:
-                        self.press(buttons.LEFT, value * -1)
-                    else:
-                        self.press(buttons.RIGHT, value)
-                else:
-                    self.release(buttons.LEFT)
-                    self.release(buttons.RIGHT)
+    def _handle_axis(self, axis: int, value: float) -> None:
+        """Handles axis motion events."""
+        if self.is_within_deadzone(value):
+            if axis == HORIZONTAL_AXIS:
+                self.handle_button(buttons.LEFT, False)
+                self.handle_button(buttons.RIGHT, False)
+            elif axis == VERTICAL_AXIS:
+                self.handle_button(buttons.UP, False)
+                self.handle_button(buttons.DOWN, False)
+            return
 
-            elif pg_event.axis == 1:
-                if abs(value) >= self.deadzone:
-                    if value < 0:
-                        self.press(buttons.UP, value * -1)
-                    else:
-                        self.press(buttons.DOWN, value)
-                else:
-                    self.release(buttons.UP)
-                    self.release(buttons.DOWN)
+        if axis == HORIZONTAL_AXIS:
+            self.handle_button(
+                buttons.RIGHT if value > 0 else buttons.LEFT, True, abs(value)
+            )
+        elif axis == VERTICAL_AXIS:
+            self.handle_button(
+                buttons.DOWN if value > 0 else buttons.UP, True, abs(value)
+            )
 
 
 class PygameKeyboardInput(PygameEventHandler):
@@ -180,7 +229,6 @@ class PygameKeyboardInput(PygameEventHandler):
 
     Parameters:
         event_map: Mapping of original identifiers to button identifiers.
-
     """
 
     default_input_map = {
@@ -196,35 +244,43 @@ class PygameKeyboardInput(PygameEventHandler):
         None: events.UNICODE,
     }
 
-    def process_event(self, input_event: pygame.event.Event) -> None:
+    def process_event(self, input_event: Event) -> None:
+        """
+        Processes a pygame event.
+
+        Parameters:
+            input_event: The pygame event.
+        """
         pressed = input_event.type == pg.KEYDOWN
         released = input_event.type == pg.KEYUP
 
         if pressed or released:
-            # try to get game-specific action for the key
-            try:
-                button = self.event_map[input_event.key]
-            except KeyError:
-                pass
+            self._handle_key_event(input_event, pressed)
+
+    def _handle_key_event(self, input_event: Event, pressed: bool) -> None:
+        """Handles key press or release events."""
+        try:
+            button = self.event_map[input_event.key]
+        except KeyError:
+            self._handle_unicode_event(input_event, pressed)
+        else:
+            if pressed:
+                self.press(button)
             else:
-                if pressed:
-                    self.press(button)
-                else:
-                    self.release(button)
-                return
+                self.release(button)
 
-            # just get unicode value
-            try:
-                if pressed:
-                    self.release(events.UNICODE)
-                    self.press(events.UNICODE, input_event.unicode)
-                else:
-                    self.release(events.UNICODE)
-            except AttributeError:
-                pass
+    def _handle_unicode_event(self, input_event: Event, pressed: bool) -> None:
+        """Handles Unicode input events."""
+        try:
+            if pressed:
+                self.release(events.UNICODE)
+                self.press(events.UNICODE, input_event.unicode)
+            else:
+                self.release(events.UNICODE)
+        except AttributeError:
+            pass
 
 
-# TODO: Someone should refactor these to proper classes.
 class DPadRectsInfo(TypedDict):
     up: Rect
     down: Rect
@@ -233,188 +289,159 @@ class DPadRectsInfo(TypedDict):
 
 
 class DPadInfo(TypedDict):
-    surface: pygame.surface.Surface
+    surface: Surface
     position: tuple[int, int]
     rect: DPadRectsInfo
 
 
 class DPadButtonInfo(TypedDict):
-    surface: pygame.surface.Surface
+    surface: Surface
     position: tuple[int, int]
     rect: Rect
 
 
-class PygameTouchOverlayInput(PygameEventHandler):
-    """
-    Touch overlay event handler.
-
-    Parameters:
-        transparency: Transparency of the drawn overlay.
-
-    """
-
-    default_input_map: ClassVar[Mapping[Optional[int], int]] = {}
-
+class TouchOverlayUI:
     def __init__(self, transparency: int) -> None:
-        super().__init__()
         self.transparency = transparency
-        self.dpad: DPadInfo = {}  # type: ignore[typeddict-item]
-        self.a_button: DPadButtonInfo = {}  # type: ignore[typeddict-item]
-        self.b_button: DPadButtonInfo = {}  # type: ignore[typeddict-item]
-        # TODO: try to simplify this
-        self.buttons[buttons.UP] = PlayerInput(buttons.UP)
-        self.buttons[buttons.DOWN] = PlayerInput(buttons.DOWN)
-        self.buttons[buttons.LEFT] = PlayerInput(buttons.LEFT)
-        self.buttons[buttons.RIGHT] = PlayerInput(buttons.RIGHT)
-        self.buttons[buttons.A] = PlayerInput(buttons.A)
-        self.buttons[buttons.B] = PlayerInput(buttons.B)
+        self.dpad: DPadInfo = self.create_dpad()
+        self.a_button: DPadButtonInfo = self.create_button()
+        self.b_button: DPadButtonInfo = self.create_button()
+        self.load()
 
-    def process_event(self, input_event: pygame.event.Event) -> None:
-        """
-        Process a Pygame event.
+    def create_dpad(self) -> DPadInfo:
+        return DPadInfo(
+            surface=Surface((0, 0)),
+            position=(0, 0),
+            rect=DPadRectsInfo(
+                up=Rect(0, 0, 0, 0),
+                down=Rect(0, 0, 0, 0),
+                left=Rect(0, 0, 0, 0),
+                right=Rect(0, 0, 0, 0),
+            ),
+        )
 
-        Process all events from the controller overlay and pass them down to
-        current State. All controller overlay events are converted to keyboard
-        events for compatibility. This is primarily used for the mobile version
-        of Tuxemon.
-
-        Will probably be janky with multi touch.
-
-        Parameters:
-            input_event: Input event to process.
-
-        """
-        pressed = input_event.type == pg.MOUSEBUTTONDOWN
-        released = input_event.type == pg.MOUSEBUTTONUP
-        button = None
-
-        if (pressed or released) and input_event.button == 1:
-            mouse_pos = input_event.pos
-            dpad_rect = self.dpad["rect"]
-
-            if dpad_rect["up"].collidepoint(mouse_pos):
-                button = buttons.UP
-            elif dpad_rect["down"].collidepoint(mouse_pos):
-                button = buttons.DOWN
-            elif dpad_rect["left"].collidepoint(mouse_pos):
-                button = buttons.LEFT
-            elif dpad_rect["right"].collidepoint(mouse_pos):
-                button = buttons.RIGHT
-            elif self.a_button["rect"].collidepoint(mouse_pos):
-                button = buttons.A
-            elif self.b_button["rect"].collidepoint(mouse_pos):
-                button = buttons.B
-
-        if pressed and button:
-            self.press(button)
-        elif released:
-            for button in self.buttons:
-                self.release(button)
+    def create_button(self) -> DPadButtonInfo:
+        return DPadButtonInfo(
+            surface=Surface((0, 0)),
+            position=(0, 0),
+            rect=Rect(0, 0, 0, 0),
+        )
 
     def load(self) -> None:
-        """Load the touch overlay attributes."""
-        from tuxemon import prepare
-
+        """Loads the UI elements."""
         self.dpad["surface"] = graphics.load_and_scale("gfx/d-pad.png")
         self.dpad["position"] = (
             0,
             prepare.SCREEN_SIZE[1] - self.dpad["surface"].get_height(),
         )
 
-        # Create the collision rectangle objects for the dpad so we can see
-        # if we're pressing a button
-        up = Rect(
-            self.dpad["position"][0] + (self.dpad["surface"].get_width() / 3),
-            self.dpad["position"][1],  # Rectangle position_y
-            self.dpad["surface"].get_width() / 3,  # Rectangle size_x
-            self.dpad["surface"].get_height() / 2,
+        width, height = (
+            self.dpad["surface"].get_width(),
+            self.dpad["surface"].get_height(),
         )
-        down = Rect(
-            self.dpad["position"][0] + (self.dpad["surface"].get_width() / 3),
-            self.dpad["position"][1] + (self.dpad["surface"].get_height() / 2),
-            self.dpad["surface"].get_width() / 3,
-            self.dpad["surface"].get_height() / 2,
+        pos_x, pos_y = self.dpad["position"]
+
+        self.dpad["rect"]["up"] = Rect(
+            pos_x + (width / 3), pos_y, width / 3, height / 2
         )
-        left = Rect(
-            self.dpad["position"][0],
-            self.dpad["position"][1] + (self.dpad["surface"].get_height() / 3),
-            self.dpad["surface"].get_width() / 2,
-            self.dpad["surface"].get_height() / 3,
+        self.dpad["rect"]["down"] = Rect(
+            pos_x + (width / 3), pos_y + (height / 2), width / 3, height / 2
         )
-        right = Rect(
-            self.dpad["position"][0] + (self.dpad["surface"].get_width() / 2),
-            self.dpad["position"][1] + (self.dpad["surface"].get_height() / 3),
-            self.dpad["surface"].get_width() / 2,
-            self.dpad["surface"].get_height() / 3,
+        self.dpad["rect"]["left"] = Rect(
+            pos_x, pos_y + (height / 3), width / 2, height / 3
         )
-        self.dpad["rect"] = {
-            "up": up,
-            "down": down,
-            "left": left,
-            "right": right,
+        self.dpad["rect"]["right"] = Rect(
+            pos_x + (width / 2), pos_y + (height / 3), width / 2, height / 3
+        )
+
+        self.load_button(self.a_button, "gfx/a-button.png", 1.0)
+        self.load_button(self.b_button, "gfx/b-button.png", 2.1)
+
+    def load_button(
+        self, button: DPadButtonInfo, image_path: str, scale: float
+    ) -> None:
+        button["surface"] = graphics.load_and_scale(image_path)
+        button["position"] = (
+            prepare.SCREEN_SIZE[0]
+            - int(button["surface"].get_width() * scale),
+            int(
+                self.dpad["position"][1]
+                + (self.dpad["surface"].get_height() / 2)
+                - (button["surface"].get_height() / 2)
+            ),
+        )
+        button["rect"] = Rect(
+            button["position"][0],
+            button["position"][1],
+            button["surface"].get_width(),
+            button["surface"].get_height(),
+        )
+
+    def draw(self, screen: Surface) -> None:
+        """Draws the UI overlay."""
+        for element in [self.dpad, self.a_button, self.b_button]:
+            blit_alpha(
+                screen,
+                element["surface"],
+                element["position"],
+                self.transparency,
+            )
+
+
+class PygameTouchOverlayInput(PygameEventHandler):
+    default_input_map: ClassVar[Mapping[Optional[int], int]] = {}
+
+    def __init__(self, transparency: int) -> None:
+        super().__init__()
+        self.ui = TouchOverlayUI(transparency)
+        self.buttons = {
+            buttons.UP: PlayerInput(buttons.UP),
+            buttons.DOWN: PlayerInput(buttons.DOWN),
+            buttons.LEFT: PlayerInput(buttons.LEFT),
+            buttons.RIGHT: PlayerInput(buttons.RIGHT),
+            buttons.A: PlayerInput(buttons.A),
+            buttons.B: PlayerInput(buttons.B),
         }
+        self.load()
 
-        # Create the buttons
-        self.a_button["surface"] = graphics.load_and_scale("gfx/a-button.png")
-        self.a_button["position"] = (
-            prepare.SCREEN_SIZE[0]
-            - int(self.a_button["surface"].get_width() * 1.0),
-            int(
-                self.dpad["position"][1]
-                + (self.dpad["surface"].get_height() / 2)
-                - (self.a_button["surface"].get_height() / 2)
-            ),
-        )
-        self.a_button["rect"] = Rect(
-            self.a_button["position"][0],
-            self.a_button["position"][1],
-            self.a_button["surface"].get_width(),
-            self.a_button["surface"].get_height(),
-        )
+    def load(self) -> None:
+        """Loads the UI elements."""
+        self.ui.load()
 
-        self.b_button["surface"] = graphics.load_and_scale("gfx/b-button.png")
-        self.b_button["position"] = (
-            prepare.SCREEN_SIZE[0]
-            - int(self.b_button["surface"].get_width() * 2.1),
-            int(
-                self.dpad["position"][1]
-                + (self.dpad["surface"].get_height() / 2)
-                - (self.b_button["surface"].get_height() / 2)
-            ),
-        )
-        self.b_button["rect"] = Rect(
-            self.b_button["position"][0],
-            self.b_button["position"][1],
-            self.b_button["surface"].get_width(),
-            self.b_button["surface"].get_height(),
-        )
+    def process_event(self, input_event: Event) -> None:
+        """Handles touch events."""
+        if input_event.type not in (pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP):
+            return
 
-    def draw(self, screen: pygame.surface.Surface) -> None:
-        """
-        Draws the controller overlay to the screen.
+        mouse_pos = input_event.pos
+        pressed = input_event.type == pg.MOUSEBUTTONDOWN
 
-        Parameters:
-            screen: Screen surface to draw onto.
+        button = self.get_touched_button(mouse_pos)
+        if button is not None:
+            if pressed:
+                self.press(button)
+            else:
+                self.release(button)
 
-        """
-        blit_alpha(
-            screen,
-            self.dpad["surface"],
-            self.dpad["position"],
-            self.transparency,
-        )
-        blit_alpha(
-            screen,
-            self.a_button["surface"],
-            self.a_button["position"],
-            self.transparency,
-        )
-        blit_alpha(
-            screen,
-            self.b_button["surface"],
-            self.b_button["position"],
-            self.transparency,
-        )
+    def get_touched_button(self, mouse_pos: tuple[int, int]) -> Optional[int]:
+        """Determine which button was pressed based on position."""
+        if self.ui.dpad["rect"]["up"].collidepoint(mouse_pos):
+            return buttons.UP
+        if self.ui.dpad["rect"]["down"].collidepoint(mouse_pos):
+            return buttons.DOWN
+        if self.ui.dpad["rect"]["left"].collidepoint(mouse_pos):
+            return buttons.LEFT
+        if self.ui.dpad["rect"]["right"].collidepoint(mouse_pos):
+            return buttons.RIGHT
+        if self.ui.a_button["rect"].collidepoint(mouse_pos):
+            return buttons.A
+        if self.ui.b_button["rect"].collidepoint(mouse_pos):
+            return buttons.B
+        return None
+
+    def draw(self, screen: Surface) -> None:
+        """Draws the UI overlay."""
+        self.ui.draw(screen)
 
 
 class PygameMouseInput(PygameEventHandler):
@@ -423,7 +450,6 @@ class PygameMouseInput(PygameEventHandler):
 
     Parameters:
         event_map: Mapping of original identifiers to button identifiers.
-
     """
 
     default_input_map = {
@@ -431,7 +457,7 @@ class PygameMouseInput(PygameEventHandler):
         pg.MOUSEBUTTONUP: buttons.MOUSELEFT,
     }
 
-    def process_event(self, pg_event: pygame.event.Event) -> None:
+    def process_event(self, pg_event: Event) -> None:
         if pg_event.type == pg.MOUSEBUTTONDOWN:
             self.press(buttons.MOUSELEFT, pg_event.pos)
         elif pg_event.type == pg.MOUSEBUTTONUP:

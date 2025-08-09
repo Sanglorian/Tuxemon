@@ -3,13 +3,22 @@
   "accuracy": 1,
   "animation": null,
   "effects": [
-    "remove all,user",
-    "remove all,target",
-    "reverse both",
-    "enhance"
+    {
+      "type": "remove",
+      "parameters": [
+        "all",
+        "own_monster:enemy_monster"
+      ]
+    },
+    {
+      "type": "reverse",
+      "parameters": [
+        "enemy_team:own_team"
+      ]
+    }
   ],
   "flip_axes": "",
-  "is_fast": true,
+  "speed": "fast",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -17,6 +26,7 @@
   "sfx": "sfx_blaster",
   "slug": "neutralize",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -26,7 +36,9 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["Universal"],
+  "tags": [
+    "universal"
+  ],
   "types": [
     "aether"
   ],

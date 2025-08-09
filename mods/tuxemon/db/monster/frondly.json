@@ -1,58 +1,79 @@
 {
-    "slug": "frondly",
-    "category": "helping_hand",
-    "moveset": [
-        {
-            "level_learned": 2,
-            "technique": "muddle"
-        },
-        {
-            "level_learned": 2,
-            "technique": "clamp_on"
-        },
-        {
-            "level_learned": 6,
-            "technique": "poison_courtship"
-        },
-        {
-            "level_learned": 8,
-            "technique": "stabilo"
-        },
-        {
-            "level_learned": 12,
-            "technique": "ram"
-        },
-        {
-            "level_learned": 20,
-            "technique": "fester"
-        },
-        {
-            "level_learned": 24,
-            "technique": "splinter"
-        },
-        {
-            "level_learned": 28,
-            "technique": "blossom"
-        }
-    ],
-    "evolutions": [],
-    "history": [
-        {
-            "mon_slug": "budaye",
-            "evo_stage": "basic"
-        }
-    ],
-    "tags": ["sprite", "jungle"],
-    "shape": "sprite",
-    "stage": "stage1",
-    "types": [
-        "wood"
-    ],
-    "possible_genders": ["male", "female"],
-    "txmn_id": 29,
-    "height": 160,
-    "weight": 60,
-    "catch_rate": 70.0,
-    "lower_catch_resistance": 0.8,
-    "upper_catch_resistance": 1.05
+  "slug": "frondly",
+  "category": "helping_hand",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "stick"
+    },
+    {
+      "level_learned": 1,
+      "technique": "clamp_on"
+    },
+    {
+      "level_learned": 7,
+      "technique": "mending"
+    },
+    {
+      "level_learned": 10,
+      "technique": "tail_lash"
+    },
+    {
+      "level_learned": 16,
+      "technique": "mobbing"
+    },
+    {
+      "level_learned": 22,
+      "technique": "stabilo"
+    },
+    {
+      "level_learned": 25,
+      "technique": "lantern"
+    },
+    {
+      "level_learned": 28,
+      "technique": "divinity_beam"
+    },
+    {
+      "level_learned": 31,
+      "technique": "woodsmash"
+    },
+    {
+      "level_learned": 34,
+      "technique": "flower_bloom"
+    }
+  ],
+  "evolutions": [],
+  "history": [
+    {
+      "mon_slug": "budaye",
+      "evo_stage": "basic"
+    }
+  ],
+  "terrains": [
+    "jungle"
+  ],
+  "tags": [
+    "plant",
+    "leadership",
+    "food",
+    "love",
+    "pseudopod",
+    "tail"
+  ],
+  "shape": "sprite",
+  "stage": "stage1",
+  "types": [
+    "wood"
+  ],
+  "possible_genders": [
+    "male",
+    "female"
+  ],
+  "txmn_id": 29,
+  "height": 160,
+  "weight": 60,
+  "catch_rate": 70.0,
+  "lower_catch_resistance": 0.8,
+  "upper_catch_resistance": 1.05
 }

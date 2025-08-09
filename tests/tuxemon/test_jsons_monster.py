@@ -1,23 +1,22 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import json
-import os
 import unittest
+from pathlib import Path
 from typing import Any
 
 from tuxemon import prepare
 
-ALL_MONSTERS: int = 377
-MAX_TXMN_ID: int = 359
+ALL_MONSTERS: int = 411
+MAX_TXMN_ID: int = 393
 
 
 def process_json_data(directory: str) -> list[dict[str, Any]]:
     data_list = []
-    directory = f"{prepare.fetch('db')}/{directory}/"
-    for filename in os.listdir(directory):
-        if filename.endswith(".json"):
-            filepath = os.path.join(directory, filename)
-            with open(filepath, "r") as f:
+    directory_path = Path(prepare.fetch("db")) / directory
+    for file in directory_path.iterdir():
+        if file.suffix == ".json" and file.is_file():
+            with file.open("r") as f:
                 data_list.append(json.load(f))
     return data_list
 
@@ -184,3 +183,62 @@ class TestJSONProcessing(unittest.TestCase):
                     history = get_history(self.data_list, name)
                     history_names = [h["mon_slug"] for h in history]
                     self.assertIn(data["slug"], history_names)
+
+    def test_moveset_level_learned_evolution_at_level(self) -> None:
+        START_LEVEL = 1
+        errors = []
+        for data in self.data_list:
+            slug = data["slug"]
+            evolutions = data["evolutions"]
+            moveset = data["moveset"]
+            if moveset and evolutions:
+                at_levels = set(
+                    evolution.get("at_level")
+                    for evolution in evolutions
+                    if evolution.get("at_level") is not None
+                )
+                levels = [move["level_learned"] for move in moveset] + list(
+                    at_levels
+                )
+                similar_levels = [
+                    level
+                    for level in set(levels)
+                    if levels.count(level) > 1 and level != START_LEVEL
+                ]
+                if similar_levels:
+                    errors.append(
+                        f"Similar levels found in {slug}: {similar_levels}"
+                    )
+        if errors:
+            print("The following monsters:")
+            for error in errors:
+                print(error)
+            self.fail(
+                f"Levels must be different, only exception lv {START_LEVEL} starting move."
+            )
+
+    def test_moveset_level_sequence(self) -> None:
+        RANGE: int = 34  # more or less between 1 and 100
+        START: int = 1  # starting level
+        INTERVAL: int = 3  # each 3 levels
+        errors = []
+        for data in self.data_list:
+            slug = data["slug"]
+            moveset = data["moveset"]
+            if moveset:
+                levels = [move["level_learned"] for move in moveset]
+                sequence_levels = [START + INTERVAL * i for i in range(RANGE)]
+                invalid_levels = [
+                    level for level in levels if level not in sequence_levels
+                ]
+                if invalid_levels:
+                    errors.append(
+                        f"Invalid levels found in {slug}: {invalid_levels}"
+                    )
+        if errors:
+            print("The following monsters:")
+            for error in errors:
+                print(error)
+            self.fail(
+                "Levels must be in the sequence 1, 4, 7, 10, 13, 16, etc."
+            )

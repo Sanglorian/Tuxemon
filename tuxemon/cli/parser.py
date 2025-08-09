@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import shlex
@@ -11,7 +11,6 @@ def parse(text: str) -> list[str]:
 
     Parameters:
         text: Text to split into tokens.
-
     """
     return shlex.split(text)
 
@@ -22,7 +21,6 @@ def split(line: str) -> tuple[str, str]:
 
     Parameters:
         line: Text to split.
-
     """
     try:
         index = line.index(" ")

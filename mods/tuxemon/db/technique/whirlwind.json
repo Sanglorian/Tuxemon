@@ -3,10 +3,12 @@
   "accuracy": 1,
   "animation": "tornado_volume",
   "effects": [
-    "damage"
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": true,
+  "speed": "very_fast",
   "potency": 0.0,
   "power": 1.25,
   "range": "ranged",
@@ -14,6 +16,7 @@
   "sfx": "sfx_blaster",
   "slug": "whirlwind",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -23,7 +26,9 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["Weather"],
+  "tags": [
+    "weather"
+  ],
   "types": [
     "wood",
     "metal"

@@ -3,11 +3,19 @@
   "accuracy": 0.95,
   "animation": "amethyst_radiate",
   "effects": [
-    "give revenge,target",
-    "damage"
+    {
+      "type": "give",
+      "parameters": [
+        "revenge",
+        "enemy_monster"
+      ]
+    },
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": true,
+  "speed": "fast",
   "potency": 1,
   "power": 3,
   "randomly": false,
@@ -16,6 +24,7 @@
   "sfx": "sfx_blaster",
   "slug": "vorpal",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -25,9 +34,11 @@
     "own_trainer": false
   },
   "category": "reserved",
-  "tags": ["Reserved"],
+  "tags": [
+    "reserved"
+  ],
   "types": [
-    "earth"
+    "metal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

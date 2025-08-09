@@ -1,20 +1,34 @@
 {
   "conditions": [
-    "is can_evolve",
-    "is has_path ox_stick"
+    {
+      "type": "can_evolve",
+      "operator": "is"
+    },
+    {
+      "type": "has_path",
+      "parameters": [
+        "ox_stick"
+      ],
+      "operator": "is"
+    }
   ],
   "effects": [
-    "evolve"
+    {
+      "type": "evolve"
+    }
   ],
   "slug": "ox_stick",
   "sort": "utility",
   "sprite": "gfx/items/ox_stick.png",
   "category": "morph",
+  "cost": 2000,
   "usable_in": [
     "WorldState"
   ],
+  "modifiers": [],
   "behaviors": {
-    "show_dialog_on_success": false
+    "show_dialog_on_success": false,
+    "resellable": true
   },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",

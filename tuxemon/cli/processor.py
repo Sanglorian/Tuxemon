@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import os
 import sys
 from collections.abc import Iterable, Sequence
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 from prompt_toolkit import PromptSession
 
@@ -12,8 +13,13 @@ from tuxemon.cli.clicommand import CLICommand
 from tuxemon.cli.context import InvokeContext
 from tuxemon.cli.exceptions import CommandNotFoundError, ParseError
 from tuxemon.cli.formatter import Formatter
-from tuxemon.plugin import PluginManager, get_available_classes
-from tuxemon.session import Session
+from tuxemon.plugin import (
+    get_available_classes,
+    load_directory,
+)
+
+if TYPE_CHECKING:
+    from tuxemon.client import LocalPygameClient
 
 
 class MetaCommand(CLICommand):
@@ -22,7 +28,6 @@ class MetaCommand(CLICommand):
 
     Parameters:
         commands: Sequence of commands to make available at the prompt.
-
     """
 
     name = "Meta Command"
@@ -38,7 +43,6 @@ class MetaCommand(CLICommand):
         Parameters:
             ctx: Contains references to parts of the game and CLI interface.
             line: Input text after the command name.
-
         """
         print("No command provided. Available commands:", file=sys.stderr)
         for command in self._commands:
@@ -50,7 +54,6 @@ class MetaCommand(CLICommand):
 
         Parameters:
             ctx: Contains references to parts of the game and CLI interface.
-
         """
         return self._commands
 
@@ -60,15 +63,14 @@ class CommandProcessor:
     A class to enable an interactive debug command line.
 
     Parameters:
-        session: Session which will be controlled by the debug prompt.
+        client: LocalPygameClient which will be controlled by the debug prompt.
         prompt: Default text to display before the input area, ie "> ".
-
     """
 
-    def __init__(self, session: Session, prompt: str = "> ") -> None:
+    def __init__(self, client: LocalPygameClient, prompt: str = "> ") -> None:
         self.prompt = prompt
-        self.session = session
-        folder = os.path.join(os.path.dirname(__file__), "commands")
+        self.client = client
+        folder = Path(__file__).parent / "commands"
         # TODO: add folder(s) from mods
         commands = list(self.collect_commands(folder))
         self.root_command = MetaCommand(commands)
@@ -76,20 +78,19 @@ class CommandProcessor:
     def run(self) -> None:
         """
         Repeatedly get input from user, parse it, and run the commands.
-
         """
         ctx = InvokeContext(
             processor=self,
-            session=self.session,
+            client=self.client,
             root_command=self.root_command,
             current_command=self.root_command,
             formatter=Formatter(),
         )
-        session = PromptSession()
+        self.prompt_session: PromptSession[str] = PromptSession()
 
-        while True:
+        while self.client.is_running:
             try:
-                line = session.prompt(self.prompt)
+                line = self.prompt_session.prompt(self.prompt)
                 if line:
                     try:
                         command, tail = self.root_command.resolve(ctx, line)
@@ -110,23 +111,26 @@ class CommandProcessor:
             except KeyboardInterrupt:
                 print("Got KeyboardInterrupt")
                 print("Press CTRL-D to quit.")
+                break
 
-        event_engine = self.session.client.event_engine
-        event_engine.execute_action("quit")
+        self.quit()
 
-    def collect_commands(self, folder: str) -> Iterable[CLICommand]:
+    def quit(self) -> None:
+        """
+        Gracefully shuts down the command processor and exits the client.
+        """
+        self.client.quit()
+
+    def collect_commands(self, folder: Path) -> Iterable[CLICommand]:
         """
         Use plugins to load CLICommand classes for commands.
 
         Parameters:
             folder: Folder to search.
-
         """
-        pm = PluginManager()
-        pm.setPluginPlaces([folder])
-        pm.include_patterns = ["commands"]
-        pm.exclude_classes = ["CLICommand"]
-        pm.collectPlugins()
+        pm = load_directory(
+            folder, include=["commands"], exclude=["CLICommand"]
+        )
         for cmd_class in get_available_classes(pm, interface=CLICommand):
             if cmd_class.usable_from_root:
                 yield cmd_class()

@@ -1,16 +1,26 @@
 {
   "conditions": [
-    "is type water"
+    {
+      "type": "type",
+      "parameters": [
+        "water"
+      ],
+      "operator": "is"
+    }
   ],
   "effects": [],
   "slug": "tm_water",
   "sort": "utility",
   "sprite": "gfx/items/tm_water.png",
   "category": "technique",
+  "cost": 2500,
   "usable_in": [
     "WorldState"
   ],
-  "behaviors": {},
+  "modifiers": [],
+  "behaviors": {
+    "resellable": true
+  },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
   "use_success": "generic_success"

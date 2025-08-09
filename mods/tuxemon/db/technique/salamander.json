@@ -3,11 +3,19 @@
   "accuracy": 0.8,
   "animation": "whisp_fire",
   "effects": [
-    "give poison,target",
-    "damage"
+    {
+      "type": "give",
+      "parameters": [
+        "poison",
+        "enemy_monster"
+      ]
+    },
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.8,
   "power": 1.25,
   "range": "reach",
@@ -15,6 +23,7 @@
   "sfx": "sfx_blaster",
   "slug": "salamander",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -24,7 +33,11 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["Amphibian", "Flame", "Toxic"],
+  "tags": [
+    "amphibian",
+    "flame",
+    "toxic"
+  ],
   "types": [
     "fire"
   ],

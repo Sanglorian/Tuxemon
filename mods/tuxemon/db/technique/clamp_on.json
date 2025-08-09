@@ -3,12 +3,23 @@
   "accuracy": 1,
   "animation": "bite",
   "effects": [
-    "give diehard,user",
-    "give grabbed,target",
-    "enhance"
+    {
+      "type": "give",
+      "parameters": [
+        "diehard",
+        "own_monster"
+      ]
+    },
+    {
+      "type": "give",
+      "parameters": [
+        "grabbed",
+        "enemy_monster"
+      ]
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -16,6 +27,7 @@
   "sfx": "sfx_blaster",
   "slug": "clamp_on",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -25,7 +37,11 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["Bug", "Bite", "Fury"],
+  "tags": [
+    "bug",
+    "bite",
+    "fury"
+  ],
   "types": [
     "aether"
   ],

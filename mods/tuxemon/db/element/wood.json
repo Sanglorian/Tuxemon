@@ -1,6 +1,6 @@
 {
-  "slug": "wood",
   "icon": "gfx/ui/icons/element/wood_type.png",
+  "slug": "wood",
   "types": [
     {
       "against": "aether",

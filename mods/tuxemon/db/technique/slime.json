@@ -3,11 +3,19 @@
   "accuracy": 1,
   "animation": "sparks_green_alt",
   "effects": [
-    "give festering,target",
-    "damage"
+    {
+      "type": "give",
+      "parameters": [
+        "festering",
+        "enemy_monster"
+      ]
+    },
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.2,
   "power": 1.1,
   "range": "reach",
@@ -15,6 +23,7 @@
   "sfx": "sfx_blaster",
   "slug": "slime",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -24,7 +33,10 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["Pseudopod", "Toxic"],
+  "tags": [
+    "pseudopod",
+    "toxic"
+  ],
   "types": [
     "earth"
   ],

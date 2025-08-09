@@ -3,12 +3,26 @@
   "accuracy": 0.8,
   "animation": "lightning_bolt_138",
   "effects": [
-    "give focused,user",
-    "give tired,target",
-    "damage"
+    {
+      "type": "give",
+      "parameters": [
+        "focused",
+        "own_monster"
+      ]
+    },
+    {
+      "type": "give",
+      "parameters": [
+        "tired",
+        "enemy_monster"
+      ]
+    },
+    {
+      "type": "damage"
+    }
   ],
   "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 1.25,
   "range": "ranged",
@@ -16,6 +30,7 @@
   "sfx": "sfx_blaster",
   "slug": "starfall",
   "sort": "damage",
+  "modifiers": [],
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -25,7 +40,11 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["Darkness", "Celestial", "Weather"],
+  "tags": [
+    "darkness",
+    "celestial",
+    "weather"
+  ],
   "types": [
     "water"
   ],

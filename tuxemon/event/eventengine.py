@@ -1,20 +1,22 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from collections.abc import Generator, Iterable, Sequence
 from contextlib import contextmanager
 from textwrap import dedent
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
-from tuxemon import plugin, prepare
-from tuxemon.constants import paths
-from tuxemon.event import EventObject, MapAction, MapCondition
-from tuxemon.event.eventaction import EventAction
-from tuxemon.event.eventcondition import EventCondition
-from tuxemon.map import TuxemonMap
-from tuxemon.session import Session
+from tuxemon import prepare
+
+if TYPE_CHECKING:
+    from tuxemon.event import EventObject, MapAction, MapCondition
+    from tuxemon.event.eventaction import ActionManager, EventAction
+    from tuxemon.event.eventcondition import ConditionManager
+    from tuxemon.map import TuxemonMap
+    from tuxemon.session import Session
+
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +40,6 @@ class RunningEvent:
     Parameters:
         map_event: Event defined in the map containing the information
             about the actions.
-
     """
 
     __slots__ = (
@@ -47,6 +48,7 @@ class RunningEvent:
         "action_index",
         "current_action",
         "current_map_action",
+        "cancelled",
     )
 
     def __init__(self, map_event: EventObject) -> None:
@@ -55,6 +57,7 @@ class RunningEvent:
         self.action_index = 0
         self.current_action: Optional[EventAction] = None
         self.current_map_action = None
+        self.cancelled = False
 
     def get_next_action(self) -> Optional[MapAction]:
         """
@@ -66,7 +69,6 @@ class RunningEvent:
 
         Returns:
             Next action to execute. ``None`` if there isn't one.
-
         """
         # if None, then make a new one
         try:
@@ -81,6 +83,10 @@ class RunningEvent:
 
     def advance(self) -> None:
         self.action_index += 1
+
+    def cancel(self) -> None:
+        """Cancels the event."""
+        self.cancelled = True
 
 
 class EventEngine:
@@ -97,11 +103,17 @@ class EventEngine:
 
     Parameters:
         session: Object containing the session information.
-
     """
 
-    def __init__(self, session: Session) -> None:
+    def __init__(
+        self,
+        session: Session,
+        action: ActionManager,
+        condition: ConditionManager,
+    ) -> None:
         self.session = session
+        self.action_manager = action
+        self.condition_manager = condition
 
         self.running_events: dict[int, RunningEvent] = dict()
         self.name = "Event"
@@ -113,113 +125,18 @@ class EventEngine:
         # debug
         self.partial_events: list[Sequence[tuple[bool, MapCondition]]] = list()
 
-        self.conditions = plugin.load_plugins(
-            paths.CONDITIONS_PATH,
-            "conditions",
-            interface=EventCondition,
-        )
-
-        # Mypy fails to typecheck here because
-        # https://github.com/python/mypy/issues/4717
-        # The workarounds are ugly, so we will wait
-        # for that to be fixed.
-        self.actions = plugin.load_plugins(
-            paths.ACTIONS_PATH,
-            "actions",
-            interface=EventAction,  # type: ignore[type-abstract]
-        )
+    def set_current_map(self, new_map: Optional[TuxemonMap]) -> None:
+        """Updates the current map."""
+        if self.current_map != new_map:
+            self.current_map = new_map
 
     def reset(self) -> None:
         """Clear out running events.  Use when changing maps."""
         self.running_events = dict()
-        self.current_map = None
+        self.set_current_map(None)
         self.timer = 0.0
         self.wait = 0.0
         self.button = None
-
-    def get_action(
-        self,
-        name: str,
-        parameters: Optional[Sequence[Any]] = None,
-    ) -> Optional[EventAction]:
-        """
-        Get an action that is loaded into the engine.
-
-        A new instance will be returned each time.
-
-        Return ``None`` if action is not loaded.
-
-        Parameters:
-            name: Name of the action.
-            parameters: List of parameters that the action accepts.
-
-        Returns:
-            New instance of the action with the appropriate parameters if
-            that action is loaded. ``None`` otherwise.
-
-        """
-        parameters = parameters or []
-
-        try:
-            action = self.actions[name]
-
-        except KeyError:
-            error = f'Error: EventAction "{name}" not implemented'
-            logger.warning(error)
-            return None
-
-        if parameters == [""]:
-            return action()
-
-        try:
-            return action(*parameters)
-        except TypeError as e:
-            logger.warning(
-                f"Error instantiating {action} with parameters {parameters}: {e}"
-            )
-            return None
-        except Exception as e:
-            logger.error(
-                f"Unexpected error instantiating {action} with parameters {parameters}: {e}"
-            )
-            return None
-
-    def get_actions(self) -> list[type[EventAction]]:
-        """
-        Return list of EventActions.
-
-        """
-        return list(self.actions.values())
-
-    def get_condition(self, name: str) -> Optional[EventCondition]:
-        """
-        Get a condition that is loaded into the engine.
-
-        A new instance will be returned each time.
-
-        Return ``None`` if condition is not loaded.
-
-        Parameters:
-            name: Name of the condition.
-
-        Returns:
-            New instance of the condition if that condition is loaded.
-            ``None`` otherwise.
-
-        """
-        # TODO: make generic
-        try:
-            return self.conditions[name]()
-        except KeyError:
-            logger.warning(f'EventCondition "{name}" not implemented')
-            return None
-
-    def get_conditions(self) -> list[type[EventCondition]]:
-        """
-        Return list of EventConditions.
-
-        """
-        return list(self.conditions.values())
 
     def check_condition(
         self,
@@ -235,9 +152,8 @@ class EventEngine:
 
         Returns:
             The value of the condition.
-
         """
-        map_condition = self.get_condition(cond_data.type)
+        map_condition = self.condition_manager.get_condition(cond_data.type)
         if map_condition is None:
             logger.debug(f'map condition "{cond_data.type}" is not loaded')
             return False
@@ -265,11 +181,10 @@ class EventEngine:
             action_name: Name of the action.
             parameters: Parameters of the action.
             skip: Boolean for skipping the action.update().
-
         """
         parameters = parameters or []
 
-        action = self.get_action(action_name, parameters)
+        action = self.action_manager.get_action(action_name, parameters)
         if action is None:
             error_msg = f'Map action "{action_name}" is not loaded'
             logger.warning(error_msg)
@@ -277,8 +192,12 @@ class EventEngine:
 
         action._skip = skip
 
+        if action.cancelled:
+            logger.debug(f"Action '{action_name}' is cancelled, not executing")
+            return
+
         try:
-            return action.execute()
+            return action.execute(self.session)
         except Exception as e:
             logger.error(f"Error executing action '{action_name}': {e}")
             raise
@@ -291,7 +210,6 @@ class EventEngine:
 
         Parameters:
             map_event: Event whose actions will be executed.
-
         """
         if map_event.id is None:
             raise ValueError("Event ID is required")
@@ -304,8 +222,8 @@ class EventEngine:
             token = RunningEvent(map_event)
             self.running_events[map_event.id] = token
 
-            if map_event in self.session.client.inits:
-                self.session.client.inits.remove(map_event)
+            if map_event in self.session.client.map_manager.inits:
+                self.session.client.map_manager.inits.remove(map_event)
 
     def process_map_event(self, map_event: EventObject) -> None:
         """
@@ -315,7 +233,6 @@ class EventEngine:
 
         Parameters:
             map_event: Event to process.
-
         """
         if prepare.CONFIG.collision_map:
             # TODO: wrap with add_error_context
@@ -339,7 +256,6 @@ class EventEngine:
 
         Parameters:
             events: Iterable of events to process.
-
         """
         for event in events:
             self.process_map_event(event)
@@ -350,7 +266,6 @@ class EventEngine:
 
         Parameters:
             dt: Amount of time passed in seconds since last frame.
-
         """
         # debug
         self.partial_events = list()
@@ -362,16 +277,25 @@ class EventEngine:
         Checks conditions. If any are satisfied, start the MapActions.
 
         Actions may be started during this function.
-
         """
         # do the "init" events.  this will be done just once
         # TODO: make event engine generic, so can be used in global scope,
         # not just maps
-        if self.session.client.inits:
-            self.process_map_events(self.session.client.inits)
+        if self.session.client.map_manager.inits:
+            self.process_map_events(self.session.client.map_manager.inits)
 
         # process any other events
-        self.process_map_events(self.session.client.events)
+        self.process_map_events(self.session.client.map_manager.events)
+
+    def cancel_event(self, event_id: int) -> None:
+        """Cancels the event with the given ID."""
+        if event_id in self.running_events:
+            self.running_events[event_id].cancel()
+
+    def cancel_all_events(self) -> None:
+        """Cancels all currently running events."""
+        for event in self.running_events.values():
+            event.cancel()
 
     def update_running_events(self, dt: float) -> None:
         """
@@ -379,13 +303,12 @@ class EventEngine:
 
         Parameters:
             dt: Amount of time passed in seconds since last frame.
-
         """
         to_remove = set()
         current_map = self.current_map
 
         # Loop through the list of actions and update them
-        for i, e in self.running_events.items():
+        for event_id, running_event in self.running_events.items():
             # If the current map has changed, then `reset` has also been
             # called, which replaced self.running_events with an empty dict.
             # We need to stop processing the running_events, as they may not
@@ -397,84 +320,107 @@ class EventEngine:
                 assert not self.running_events
                 return
 
-            while True:
-                """
-                * if RunningEvent is currently running an action, then continue
-                    to do so
-                * if not, attempt to get the next queued action
-                * if no queued action, do not check the RunningEvent next frame
-                * if there is an action, then update it
-                * if action is finished, then clear the pointer to the action
-                    and inc. the index, cleanup
-                * RunningEvent will be checked next frame
+            # Check for cancellation
+            if running_event.cancelled:
+                to_remove.add(event_id)
+                continue
 
-                This loop will execute as many actions as possible for every
-                MapEvent. For example, some actions like set_variable do not
-                require several frames, so all of them will be processed this
-                frame.
+            if not self.process_running_event(running_event):
+                # Event is complete or failed; mark it for removal
+                to_remove.add(event_id)
 
-                If an action is not finished, then this loop breaks and will
-                check another RunningEvent, but the position in the action list
-                is remembered and will be restored.
-                """
-                if e.current_action is None:
-                    next_action = e.get_next_action()
+        # Clean up completed or cancelled events
+        for event_id in to_remove:
+            self.running_events.pop(event_id, None)
 
-                    if next_action is None:
-                        # no next action, so remove the running event
-                        to_remove.add(i)
-                        break
+    def process_running_event(self, running_event: RunningEvent) -> bool:
+        """
+        Processes a single running event by handling its current or next action.
 
-                    else:
-                        # got an action, so start it
-                        action = self.get_action(
-                            next_action.type,
-                            next_action.parameters,
-                        )
+        Parameters:
+            running_event: The event being processed.
 
-                        if action is None:
-                            # action was not loaded, so, break?  raise
-                            # exception, idk
-                            # TODO: raise custom exception instead of None
-                            # return?
-                            # TODO: decide what to do for actions not loaded
-                            logger.debug("action is not loaded!")
-                            to_remove.add(i)
-                            break
+        Returns:
+            True if the event continues to run, False if it is complete.
+        """
+        while True:
+            """
+            * if RunningEvent is currently running an action, then continue
+                to do so
+            * if not, attempt to get the next queued action
+            * if no queued action, do not check the RunningEvent next frame
+            * if there is an action, then update it
+            * if action is finished, then clear the pointer to the action
+                and inc. the index, cleanup
+            * RunningEvent will be checked next frame
 
-                        else:
-                            # start the action
-                            # with add_error_context(e.map_event, next_action,
-                            # self.session):
-                            action.start()
+            This loop will execute as many actions as possible for every
+            MapEvent. For example, some actions like set_variable do not
+            require several frames, so all of them will be processed this
+            frame.
 
-                            # save the action that is running
-                            e.current_action = action
+            If an action is not finished, then this loop breaks and will
+            check another RunningEvent, but the position in the action list
+            is remembered and will be restored.
+            """
+            current_action = running_event.current_action
 
-                # update the action
-                action = e.current_action
-                # with add_error_context(e.map_event, e.current_map_action,
-                # self.session):
-                action.update()
+            # Handle initialization of the next action if none is active
+            if current_action is None:
+                if not self.handle_next_action(running_event):
+                    return False  # Event is complete
+                continue
 
-                if action.done:
-                    # action finished, so continue and do the next one,
-                    # if available
-                    action.cleanup()
-                    e.advance()
-                    e.current_action = None
-                    logger.debug(f"action finished: {action}")
+            # Check for cancellation
+            if current_action.cancelled:
+                logger.debug("Action is cancelled, advancing to the next one.")
+                running_event.advance()
+                running_event.current_action = None
+                continue
 
-                else:
-                    # action didn't finish, so move on to next RunningEvent
-                    break
+            # with add_error_context(e.map_event, e.current_map_action,
+            # self.session):
+            current_action.update(self.session)
 
-        for i in to_remove:
-            try:
-                del self.running_events[i]
-            except KeyError:
-                # map changes or engine resets may cause this error
-                pass
+            if current_action.done:
+                # action finished, so continue and do the next one,
+                # if available
+                current_action.cleanup(self.session)
+                running_event.advance()
+                running_event.current_action = None
+                logger.debug(f"Action finished: {current_action}")
+            else:
+                # Action is still running, exit the loop
+                return True
+
+    def handle_next_action(self, running_event: RunningEvent) -> bool:
+        """
+        Initializes the next action for a running event.
+
+        Parameters:
+            running_event: The event being processed.
+
+        Returns:
+            True if a new action was successfully started, False if none exist.
+        """
+        next_action_data = running_event.get_next_action()
+
+        if next_action_data is None:
+            # No more actions; event is complete
+            return False
+
+        action = self.action_manager.get_action(
+            next_action_data.type, next_action_data.parameters
+        )
+        if action is None:
+            logger.debug("Action is not loaded, skipping event.")
+            return False
+
+        # start the action
+        # with add_error_context(e.map_event, next_action, self.session):
+        action.start(self.session)
+        running_event.current_action = action
+        return True
 
 
 @contextmanager
@@ -493,14 +439,13 @@ def add_error_context(
         event: Event associated with the condition or action.
         item: Condition or action that produces the error.
         session: Object containing the session information.
-
     """
     try:
         yield
     except Exception:
         from lxml import etree
 
-        file_name = session.client.get_map_filepath()
+        file_name = session.client.map_manager.get_map_filepath()
         tree = etree.parse(file_name)
         event_node = tree.find("//object[@id='%s']" % event.id)
         msg = None

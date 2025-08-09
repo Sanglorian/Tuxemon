@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import logging
 from typing import Any, Optional
 
@@ -50,7 +50,6 @@ class CommonAction:
             entity: The entity object to modify.
             parameter: The parameter to modify.
             value: The value to set the parameter to, as a string.
-
         """
         attr = CommonAction._get_attribute(entity, parameter)
         if attr is None:
@@ -83,7 +82,6 @@ class CommonAction:
             entity: The entity object to modify.
             parameter: The parameter to modify.
             modifier: The modifier to apply the parameter by.
-
         """
         attr = CommonAction._get_attribute(entity, parameter)
         if attr is None:

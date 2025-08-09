@@ -1,22 +1,27 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2024 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
-import uuid
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, Optional
+from uuid import UUID, uuid4
 
-from tuxemon import plugin
 from tuxemon.constants import paths
-from tuxemon.db import ElementType, Range, db
-from tuxemon.element import Element
+from tuxemon.core.core_condition import CoreCondition
+from tuxemon.core.core_effect import CoreEffect, TechEffectResult
+from tuxemon.core.core_manager import ConditionManager, EffectManager
+from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
+from tuxemon.db import Range, TechniqueModel, db
+from tuxemon.element import ElementTypesHandler
 from tuxemon.locale import T
-from tuxemon.technique.techcondition import TechCondition
-from tuxemon.technique.techeffect import TechEffect, TechEffectResult
+from tuxemon.modifiers import ModifiersHandler
+from tuxemon.surfanim import FlipAxes
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
+    from tuxemon.plugin import PluginObject
+    from tuxemon.session import Session
     from tuxemon.states.combat.combat import CombatState
 
 logger = logging.getLogger(__name__)
@@ -30,60 +35,73 @@ SIMPLE_PERSISTANCE_ATTRIBUTES = (
 class Technique:
     """
     Particular skill that tuxemon monsters can use in battle.
-
     """
 
-    effects_classes: ClassVar[Mapping[str, type[TechEffect]]] = {}
-    conditions_classes: ClassVar[Mapping[str, type[TechCondition]]] = {}
+    effect_manager: Optional[EffectManager] = None
+    condition_manager: Optional[ConditionManager] = None
 
     def __init__(self, save_data: Optional[Mapping[str, Any]] = None) -> None:
         save_data = save_data or {}
 
-        self.instance_id = uuid.uuid4()
-        self.counter = 0
-        self.tech_id = 0
-        self.accuracy = 0.0
+        self.instance_id: UUID = uuid4()
+        self.counter: int = 0
+        self.tech_id: int = 0
+        self.accuracy: float = 0.0
         self.animation: Optional[str] = None
         self.combat_state: Optional[CombatState] = None
-        self.conditions: Sequence[TechCondition] = []
-        self.description = ""
-        self.effects: Sequence[TechEffect] = []
-        self.flip_axes = ""
-        self.icon = ""
-        self.hit = False
-        self.is_fast = False
-        self.randomly = True
-        self.name = ""
-        self.next_use = 0
-        self.nr_turn = 0
-        self.potency = 0.0
-        self.power = 1.0
-        self.range = Range.melee
-        self.healing_power = 0.0
-        self.recharge_length = 0
-        self.sfx = ""
-        self.sort = ""
-        self.slug = ""
-        self.types: list[Element] = []
-        self.usable_on = False
-        self.use_success = ""
-        self.use_failure = ""
-        self.use_tech = ""
+        self.description: str = ""
+        self.flip_axes: FlipAxes = FlipAxes.NONE
+        self.hit: bool = False
+        self.speed: int = 0
+        self.randomly: bool = True
+        self.name: str = ""
+        self.next_use: int = 0
+        self.potency: float = 0.0
+        self.power: float = 1.0
+        self.default_potency: float = 0.0
+        self.default_power: float = 1.0
+        self.range: Range = Range.melee
+        self.healing_power: float = 0.0
+        self.recharge_length: int = 0
+        self.sfx: str = ""
+        self.sort: str = ""
+        self.slug: str = ""
+        self.types: ElementTypesHandler = ElementTypesHandler()
+        self.modifiers: ModifiersHandler = ModifiersHandler()
+        self.usable_on: bool = False
+        self.use_success: str = ""
+        self.use_failure: str = ""
+        self.use_tech: str = ""
+        self.confirm_text: str = ""
+        self.cancel_text: str = ""
+        self.menu_actions_data: Sequence[Mapping[str, str]] = []
 
-        # load effect and condition plugins if it hasn't been done already
-        if not Technique.effects_classes:
-            Technique.effects_classes = plugin.load_plugins(
-                paths.TECH_EFFECT_PATH,
-                "effects",
-                interface=TechEffect,
+        if Technique.effect_manager is None:
+            Technique.effect_manager = EffectManager(
+                CoreEffect, paths.CORE_EFFECT_PATH
             )
-            Technique.conditions_classes = plugin.load_plugins(
-                paths.TECH_CONDITION_PATH,
-                "conditions",
-                interface=TechCondition,
+        if Technique.condition_manager is None:
+            Technique.condition_manager = ConditionManager(
+                CoreCondition, paths.CORE_CONDITION_PATH
             )
+
+        self.effects: Sequence[PluginObject] = []
+        self.conditions: Sequence[PluginObject] = []
 
         self.set_state(save_data)
+
+    @classmethod
+    def create(
+        cls, slug: str, save_data: Optional[Mapping[str, Any]] = None
+    ) -> Technique:
+        method = cls(save_data)
+        method.load(slug)
+        return method
+
+    @property
+    def is_recharging(self) -> bool:
+        """Returns whether the technique is currently recharging."""
+        return self.next_use > 0
 
     def load(self, slug: str) -> None:
         """
@@ -93,11 +111,7 @@ class Technique:
         Parameters:
             The slug of the technique to look up in the database.
         """
-        try:
-            results = db.lookup(slug, table="technique")
-        except KeyError:
-            raise RuntimeError(f"Technique {slug} not found")
-
+        results = TechniqueModel.lookup(slug, db)
         self.slug = results.slug  # a short English identifier
         self.name = T.translate(self.slug)
         self.description = T.translate(f"{self.slug}_description")
@@ -108,31 +122,38 @@ class Technique:
         self.use_tech = T.maybe_translate(results.use_tech)
         self.use_success = T.maybe_translate(results.use_success)
         self.use_failure = T.maybe_translate(results.use_failure)
+        self.confirm_text = T.translate(results.confirm_text)
+        self.cancel_text = T.translate(results.cancel_text)
 
-        self.icon = results.icon
-        self.counter = self.counter
         # types
-        self.types = [Element(ele) for ele in results.types]
+        self.types = ElementTypesHandler(results.types)
         # technique stats
-        self.accuracy = results.accuracy or self.accuracy
-        self.potency = results.potency or self.potency
-        self.power = results.power or self.power
+        self.accuracy = results.accuracy
+        self.potency = results.potency
+        self.power = results.power
 
-        self.default_potency = results.potency or self.potency
-        self.default_power = results.power or self.power
+        self.default_potency = results.potency
+        self.default_power = results.power
 
-        self.hit = self.hit
-        self.is_fast = results.is_fast or self.is_fast
-        self.randomly = results.randomly or self.randomly
-        self.healing_power = results.healing_power or self.healing_power
-        self.recharge_length = results.recharge or self.recharge_length
-        self.range = results.range or Range.melee
-        self.tech_id = results.tech_id or self.tech_id
+        self.speed = results.speed.numeric_value
+        self.randomly = results.randomly
+        self.healing_power = results.healing_power
+        self.recharge_length = results.recharge
+        self.range = results.range
+        self.tech_id = results.tech_id
+        self.menu_actions_data = results.menu_actions
 
-        self.conditions = self.parse_conditions(results.conditions)
-        self.effects = self.parse_effects(results.effects)
+        if self.effect_manager and results.effects:
+            self.effects = self.effect_manager.parse_effects(results.effects)
+        if self.condition_manager and results.conditions:
+            self.conditions = self.condition_manager.parse_conditions(
+                results.conditions
+            )
+        self.condition_handler = ConditionProcessor(self.conditions)
+        self.effect_handler = EffectProcessor(self.effects)
         self.target = results.target.model_dump()
-        self.usable_on = results.usable_on or self.usable_on
+        self.usable_on = results.usable_on
+        self.modifiers = ModifiersHandler(results.modifiers)
 
         # Load the animation sprites that will be used for this technique
         self.animation = results.animation
@@ -141,110 +162,27 @@ class Technique:
         # Load the sound effect for this technique
         self.sfx = results.sfx
 
-    def parse_effects(
-        self,
-        raw: Sequence[str],
-    ) -> Sequence[TechEffect]:
-        """
-        Convert effect strings to effect objects.
+    def get_combat_state(self) -> CombatState:
+        """Returns the CombatState."""
+        if not self.combat_state:
+            raise ValueError("No CombatState.")
+        return self.combat_state
 
-        Takes raw effects list from the technique's json and parses it into a
-        form more suitable for the engine.
-
-        Parameters:
-            raw: The raw effects list pulled from the technique's db entry.
-
-        Returns:
-            Effects turned into a list of TechEffect objects.
-
-        """
-        effects = []
-
-        for line in raw:
-            parts = line.split(maxsplit=1)
-            name = parts[0]
-            params = parts[1].split(",") if len(parts) > 1 else []
-
-            try:
-                effect_class = Technique.effects_classes[name]
-            except KeyError:
-                logger.error(f'Error: TechEffect "{name}" not implemented')
-            else:
-                effects.append(effect_class(*params))
-
-        return effects
-
-    def parse_conditions(
-        self,
-        raw: Sequence[str],
-    ) -> Sequence[TechCondition]:
-        """
-        Convert condition strings to condition objects.
-
-        Takes raw condition list from the technique's json and parses it into a
-        form more suitable for the engine.
-
-        Parameters:
-            raw: The raw conditions list pulled from the technique's db entry.
-
-        Returns:
-            Conditions turned into a list of TechCondition objects.
-
-        """
-        conditions = []
-
-        for line in raw:
-            parts = line.split(maxsplit=2)
-            op = parts[0]
-            name = parts[1]
-            params = parts[2].split(",") if len(parts) > 2 else []
-
-            try:
-                condition_class = Technique.conditions_classes[name]
-            except KeyError:
-                logger.error(f'Error: TechCondition "{name}" not implemented')
-                continue
-
-            if op not in ["is", "not"]:
-                raise ValueError(f"{op} must be 'is' or 'not'")
-
-            condition = condition_class(*params)
-            condition._op = op == "is"
-            conditions.append(condition)
-
-        return conditions
+    def set_combat_state(self, combat_state: Optional[CombatState]) -> None:
+        """Sets the CombatState."""
+        self.combat_state = combat_state
 
     def advance_round(self) -> None:
         """
         Advance the counter for this technique if used.
-
         """
         self.counter += 1
 
-    def validate(self, target: Optional[Monster]) -> bool:
+    def validate_monster(self, session: Session, target: Monster) -> bool:
         """
         Check if the target meets all conditions that the technique has on its use.
-
-        Parameters:
-            target: The monster or object that we are using this technique on.
-
-        Returns:
-            Whether the technique may be used.
-
         """
-        if not self.conditions:
-            return True
-        if not target:
-            return False
-
-        return all(
-            (
-                condition.test(target)
-                if condition._op
-                else not condition.test(target)
-            )
-            for condition in self.conditions
-        )
+        return self.condition_handler.validate(session=session, target=target)
 
     def recharge(self) -> None:
         self.next_use -= 1
@@ -252,79 +190,41 @@ class Technique:
     def full_recharge(self) -> None:
         self.next_use = 0
 
-    def use(self, user: Monster, target: Monster) -> TechEffectResult:
+    def execute_tech_action(
+        self,
+        session: Session,
+        combat_instance: CombatState,
+        user: Monster,
+        target: Monster,
+    ) -> TechEffectResult:
+        """Executes the tech action and returns the result."""
+        self.set_combat_state(combat_instance)
+        return self.use(session, user, target)
+
+    def use(
+        self, session: Session, user: Monster, target: Monster
+    ) -> TechEffectResult:
         """
-        Apply the technique.
-
-        Applies this technique's effects as defined in the "effect" column of
-        the technique database. This method will execute a function with the
-        same name as the effect defined in the database. If you want to add a
-        new effect, simply create a new function under the Technique class
-        with the name of the effect you define in monster.db.
-
-        Parameters:
-            user: The Monster object that used this technique.
-            target: Monster object that we are using this technique on.
-
-        Returns:
-            A dictionary with the effect name, success and misc properties.
-
-        Examples:
-
-        >>> technique = Technique()
-        >>> technique.load("technique_poison_sting")
-        >>> bulbatux.learn(technique)
-        >>>
-        >>> bulbatux.moves[0].use(user=bulbatux, target=tuxmander)
-
+        Applies the technique's effects using EffectProcessor and returns the results.
         """
-        # Loop through all the effects of this technique and execute the
-        # effect's function.
-        # TODO: more robust API
-        # TODO: separate classes for each Technique
-        # TODO: consider moving message templates to the JSON DB
-
-        # Defaults for the return. items can override these values in their
-        # return.
-        meta_result: TechEffectResult = {
-            "name": self.name,
-            "success": False,
-            "should_tackle": False,
-            "damage": 0,
-            "element_multiplier": 0.0,
-            "extra": None,
-        }
-
+        result = self.effect_handler.process_tech(
+            session=session,
+            source=self,
+            user=user,
+            target=target,
+        )
         self.next_use = self.recharge_length
+        return result
 
-        # Loop through all the effects of this technique and execute the effect's function.
-        for effect in self.effects:
-            result = effect.apply(self, user, target)
-            meta_result["success"] = (
-                meta_result["success"] or result["success"]
-            )
-            meta_result["should_tackle"] = (
-                meta_result["should_tackle"] or result["should_tackle"]
-            )
-            meta_result["damage"] += result["damage"]
-            meta_result["element_multiplier"] *= result["element_multiplier"]
-            if result["extra"] is not None:
-                meta_result["extra"] = result["extra"]
-
-        return meta_result
-
-    def has_type(self, element: Optional[ElementType]) -> bool:
+    def has_type(self, type_slug: str) -> bool:
         """
         Returns TRUE if there is the type among the types.
         """
-        return (
-            element in [ele.slug for ele in self.types] if element else False
-        )
+        return self.types.has_type(type_slug)
 
     def set_stats(self) -> None:
         """
         Reset technique stats default value.
-
         """
         self.potency = self.default_potency
         self.power = self.default_power
@@ -332,7 +232,6 @@ class Technique:
     def get_state(self) -> Mapping[str, Any]:
         """
         Prepares a dictionary of the technique to be saved to a file.
-
         """
         save_data = {
             attr: getattr(self, attr)
@@ -347,7 +246,6 @@ class Technique:
     def set_state(self, save_data: Mapping[str, Any]) -> None:
         """
         Loads information from saved data.
-
         """
         if not save_data:
             return
@@ -356,7 +254,7 @@ class Technique:
 
         for key, value in save_data.items():
             if key == "instance_id" and value:
-                self.instance_id = uuid.UUID(value)
+                self.instance_id = UUID(value)
             elif key in SIMPLE_PERSISTANCE_ATTRIBUTES:
                 setattr(self, key, value)
 

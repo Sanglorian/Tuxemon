@@ -35,6 +35,10 @@ from pydantic import (
 )
 
 from tuxemon import prepare
+from tuxemon.constants.asset_loader import (
+    fetch_asset,
+    fetch_mod_asset_roots,
+)
 from tuxemon.constants.paths import mods_folder
 from tuxemon.formula import config_monster
 from tuxemon.locale import T
@@ -2595,6 +2599,38 @@ class ModData:
                 f"Unexpected error while adding entry to table '{table}': {ex}"
             )
 
+    def get_mod_attribute(
+        self, mod_name: str, attribute_name: str
+    ) -> Optional[Any]:
+        """
+        Retrieves a specific attribute (field) from a mod's metadata.
+
+        Parameters:
+            mod_name: The directory name of the mod (e.g., "tuxemon").
+            attribute_name: The name of the attribute/field to retrieve
+                (e.g., "starting_map", "name", "authors").
+
+        Returns:
+            The value of the attribute if found, otherwise None.
+        """
+        mod_meta = self.mod_metadata.get(mod_name)
+        if mod_meta:
+            value = mod_meta.get(attribute_name)
+            if value is None:
+                logger.debug(
+                    f"Attribute '{attribute_name}' not found in mod '{mod_name}'"
+                )
+            return value
+        return None
+
+    def require_mod_attribute(self, mod_name: str, attribute_name: str) -> Any:
+        value = self.get_mod_attribute(mod_name, attribute_name)
+        if value is None:
+            raise ValueError(
+                f"mod.yaml in '{mod_name}' lacks required attribute '{attribute_name}'"
+            )
+        return value
+
 
 def load_files(
     directory: str, path: Path, config: DatabaseConfig
@@ -2691,7 +2727,7 @@ class Validator:
             True if file exists
         """
         try:
-            path = Path(prepare.fetch(file))
+            path = Path(fetch_asset(file))
             return path.exists()
         except OSError:
             return False
@@ -2707,7 +2743,7 @@ class Validator:
         Returns:
             True if file respects
         """
-        path = prepare.fetch(file)
+        path = fetch_asset(file)
         with Image.open(path) as sprite:
             native = prepare.NATIVE_RESOLUTION
             if size == native:
@@ -2741,7 +2777,8 @@ class Validator:
         return slug in self.db.preloaded[table]
 
 
-path = prepare.fetch(mods_folder.as_posix(), "db_config.yaml")
+fetch_mod_asset_roots(prepare.CONFIG)
+path = fetch_asset(mods_folder.as_posix(), "db_config.yaml")
 config = load_config(path)
 model_map = load_model_map(config.model_map)
 loader = ModelLoader(model_map)

@@ -83,41 +83,6 @@ class SkinSprite(str, Enum):
     orc = "orc"
 
 
-class TasteWarm(str, Enum):
-    tasteless = "tasteless"
-    peppy = "peppy"
-    salty = "salty"
-    hearty = "hearty"
-    zesty = "zesty"
-    refined = "refined"
-
-
-class TasteCold(str, Enum):
-    tasteless = "tasteless"
-    mild = "mild"
-    sweet = "sweet"
-    soft = "soft"
-    flakey = "flakey"
-    dry = "dry"
-
-
-class ElementType(str, Enum):
-    aether = "aether"
-    wood = "wood"
-    fire = "fire"
-    earth = "earth"
-    metal = "metal"
-    water = "water"
-    normal = "normal"
-    frost = "frost"
-    heroic = "heroic"
-    lightning = "lightning"
-    cosmic = "cosmic"
-    shadow = "shadow"
-    sky = "sky"
-    venom = "venom"
-
-
 class ItemCategory(str, Enum):
     none = "none"
     badge = "badge"

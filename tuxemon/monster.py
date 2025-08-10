@@ -253,7 +253,7 @@ class Monster:
         self.slug = results.slug
         self.name = T.translate(results.slug)
         self.description = T.translate(f"{results.slug}_description")
-        self.species = results.category
+        self.species = results.species
         self.species_name = T.translate(f"cat_{self.species}")
         self.shape = ShapeHandler(results.shape)
         self.stage = results.stage

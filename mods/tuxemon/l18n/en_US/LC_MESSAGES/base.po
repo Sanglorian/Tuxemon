@@ -8645,6 +8645,10 @@ msgstr "Bland"
 msgid "taste_bland_description"
 msgstr "A vague, chalky taste, like powdered mashed potatoes made with a sigh instead of water."
 
+# Factions
+msgid "faction_enforcers"
+msgstr "Enforcers"
+
 # Terrains
 msgid "terrain_freshwater"
 msgstr "Freshwater"

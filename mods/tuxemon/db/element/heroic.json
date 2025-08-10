@@ -1,6 +1,6 @@
 {
-  "icon": "gfx/ui/icons/element/aether_type.png",
-  "slug": "aether",
+  "slug": "heroic",
+  "icon": "gfx/ui/icons/element/heroic_type.png",
   "types": [
     {
       "against": "aether",
@@ -16,7 +16,7 @@
     },
     {
       "against": "frost",
-      "multiplier": 1
+      "multiplier": 2
     },
     {
       "against": "heroic",
@@ -28,7 +28,7 @@
     },
     {
       "against": "cosmic",
-      "multiplier": 1
+      "multiplier": 0.5
     },
     {
       "against": "metal",
@@ -36,11 +36,11 @@
     },
     {
       "against": "normal",
-      "multiplier": 1
+      "multiplier": 2
     },
     {
       "against": "shadow",
-      "multiplier": 1
+      "multiplier": 2
     },
     {
       "against": "sky",
@@ -48,7 +48,7 @@
     },
     {
       "against": "venom",
-      "multiplier": 1
+      "multiplier": 0.5
     },
     {
       "against": "water",

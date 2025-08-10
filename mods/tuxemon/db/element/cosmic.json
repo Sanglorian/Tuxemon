@@ -1,6 +1,6 @@
 {
-  "icon": "gfx/ui/icons/element/aether_type.png",
-  "slug": "aether",
+  "slug": "cosmic",
+  "icon": "gfx/ui/icons/element/cosmic_type.png",
   "types": [
     {
       "against": "aether",
@@ -20,7 +20,7 @@
     },
     {
       "against": "heroic",
-      "multiplier": 1
+      "multiplier": 2
     },
     {
       "against": "lightning",
@@ -40,7 +40,7 @@
     },
     {
       "against": "shadow",
-      "multiplier": 1
+      "multiplier": 0.5
     },
     {
       "against": "sky",
@@ -48,7 +48,7 @@
     },
     {
       "against": "venom",
-      "multiplier": 1
+      "multiplier": 2
     },
     {
       "against": "water",

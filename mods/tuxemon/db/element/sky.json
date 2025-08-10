@@ -1,6 +1,6 @@
 {
-  "icon": "gfx/ui/icons/element/aether_type.png",
-  "slug": "aether",
+  "slug": "sky",
+  "icon": "gfx/ui/icons/element/sky_type.png",
   "types": [
     {
       "against": "aether",
@@ -8,11 +8,11 @@
     },
     {
       "against": "earth",
-      "multiplier": 1
+      "multiplier": 2
     },
     {
       "against": "fire",
-      "multiplier": 1
+      "multiplier": 0.5
     },
     {
       "against": "frost",
@@ -20,7 +20,7 @@
     },
     {
       "against": "heroic",
-      "multiplier": 1
+      "multiplier": 2
     },
     {
       "against": "lightning",
@@ -56,7 +56,7 @@
     },
     {
       "against": "wood",
-      "multiplier": 1
+      "multiplier": 2
     }
   ]
 }

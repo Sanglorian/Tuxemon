@@ -1,6 +1,6 @@
 {
-  "icon": "gfx/ui/icons/element/aether_type.png",
-  "slug": "aether",
+  "slug": "normal",
+  "icon": "gfx/ui/icons/element/normal_type.png",
   "types": [
     {
       "against": "aether",
@@ -36,7 +36,7 @@
     },
     {
       "against": "normal",
-      "multiplier": 1
+      "multiplier": 0.5
     },
     {
       "against": "shadow",

@@ -1,6 +1,6 @@
 {
-  "icon": "gfx/ui/icons/element/aether_type.png",
-  "slug": "aether",
+  "slug": "venom",
+  "icon": "gfx/ui/icons/element/venom_type.png",
   "types": [
     {
       "against": "aether",
@@ -8,7 +8,7 @@
     },
     {
       "against": "earth",
-      "multiplier": 1
+      "multiplier": 0.5
     },
     {
       "against": "fire",
@@ -32,11 +32,11 @@
     },
     {
       "against": "metal",
-      "multiplier": 1
+      "multiplier": 0.5
     },
     {
       "against": "normal",
-      "multiplier": 1
+      "multiplier": 2
     },
     {
       "against": "shadow",
@@ -48,15 +48,15 @@
     },
     {
       "against": "venom",
-      "multiplier": 1
+      "multiplier": 0.5
     },
     {
       "against": "water",
-      "multiplier": 1
+      "multiplier": 0.5
     },
     {
       "against": "wood",
-      "multiplier": 1
+      "multiplier": 2
     }
   ]
 }

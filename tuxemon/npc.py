@@ -23,6 +23,7 @@ from tuxemon.mission.controller import MissionController
 from tuxemon.mission.manager import MissionManager
 from tuxemon.money import MoneyController
 from tuxemon.monster import Monster, decode_monsters, encode_monsters
+from tuxemon.monster_dir.evolution_registry import EvolutionRegistry
 from tuxemon.movement import get_tile_moverate
 from tuxemon.relationship import (
     Relationships,
@@ -66,6 +67,7 @@ class NPCState(TypedDict, total=False):
     tracker: Mapping[str, Any]
     step_tracker: Mapping[str, Any]
     unlocked_letters: Mapping[str, Any]
+    evolution_registry: Mapping[str, Any]
 
 
 def tile_distance(tile0: Iterable[float], tile1: Iterable[float]) -> float:
@@ -127,7 +129,7 @@ class NPC(Entity[NPCState]):
         self.party = PartyHandler(monster_boxes=self.monster_boxes, owner=self)
         self.item_boxes = ItemBoxes()
         self.items = NPCBagHandler(item_boxes=self.item_boxes)
-        self.pending_evolutions: list[tuple[Monster, Monster]] = []
+        self.evolution_registry = EvolutionRegistry()
         self.steps: float = 0.0
         self.dialogue: Optional[DialogueProfile] = None
 
@@ -182,6 +184,7 @@ class NPC(Entity[NPCState]):
             "tracker": encode_tracking(self.tracker),
             "step_tracker": encode_steps(self.step_tracker),
             "unlocked_letters": encode_cipher(self.unlocked_letters),
+            "evolution_registry": self.evolution_registry.encode_registry(),
         }
         return state
 
@@ -205,6 +208,9 @@ class NPC(Entity[NPCState]):
         self.steps = save_data["player_steps"]
         self.money_controller.load(save_data)
         self.unlocked_letters = decode_cipher(save_data)
+        self.evolution_registry.decode_registry(
+            save_data.get("evolution_registry", {})
+        )
         self.monster_boxes.load(self, save_data)
         self.item_boxes.load(save_data)
 

@@ -161,7 +161,6 @@ class CombatState(CombatAnimations):
 
         super().__init__(context=context)
         self._lock_update = self.client.config.combat_click_to_continue
-        self.is_trainer_battle = context.combat_type == CombatType.TRAINER
         self.show_combat_dialog()
         self.transition_phase(CombatPhase.BEGIN)
         self.task(
@@ -641,7 +640,7 @@ class CombatState(CombatAnimations):
                 players=opponents if opponents else players,
                 turns=self._turn,
                 prize=self._prize if result_type == "won" else 0,
-                trainer_battle=self.is_trainer_battle,
+                trainer_battle=self.context.is_trainer_battle,
             )
         return message
 
@@ -1067,7 +1066,7 @@ class CombatState(CombatAnimations):
         Parameters:
             monster: Monster that was fainted.
         """
-        reward_system = RewardSystem(self._damage_map, self.is_trainer_battle)
+        reward_system = RewardSystem(self._damage_map, self.context)
         rewards = reward_system.award_rewards(monster)
 
         # Update combat state with rewards

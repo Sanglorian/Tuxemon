@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from tuxemon.states.combat.combat_classes import DamageTracker
     from tuxemon.technique.technique import Technique
     from tuxemon.monster import Monster
+    from .combat_context import CombatContext
 
 from dataclasses import dataclass
 
@@ -41,10 +42,10 @@ class RewardData:
 
 class RewardSystem:
     def __init__(
-        self, damage_map: DamageTracker, is_trainer_battle: bool
+        self, damage_map: DamageTracker, combat_context: CombatContext
     ) -> None:
         self.damage_map = damage_map
-        self.is_trainer_battle = is_trainer_battle
+        self.combat_context = combat_context
 
     def award_rewards(self, monster: Monster) -> RewardData:
         """
@@ -128,7 +129,7 @@ class RewardSystem:
                     )
 
                     # Add money for trainer battles
-                    if self.is_trainer_battle:
+                    if self.combat_context.is_trainer_battle:
                         rewards_data.prize += awarded_money
 
                     # Update HUD or handle level-up externally

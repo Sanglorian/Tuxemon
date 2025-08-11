@@ -45,7 +45,7 @@ class TestRewardSystem(unittest.TestCase):
 
     def test_reward_system_winner(self):
         reward_system = RewardSystem(
-            self.damage_tracker, is_trainer_battle=True
+            self.damage_tracker, MagicMock(combat_type="trainer")
         )
         rewards = reward_system.award_rewards(self.loser)
 
@@ -54,7 +54,7 @@ class TestRewardSystem(unittest.TestCase):
 
     def test_reward_system_money(self):
         reward_system = RewardSystem(
-            self.damage_tracker, is_trainer_battle=True
+            self.damage_tracker, MagicMock(combat_type="trainer")
         )
         rewards = reward_system.award_rewards(self.loser)
 
@@ -64,7 +64,7 @@ class TestRewardSystem(unittest.TestCase):
 
     def test_reward_system_experience(self):
         reward_system = RewardSystem(
-            self.damage_tracker, is_trainer_battle=True
+            self.damage_tracker, MagicMock(combat_type="trainer")
         )
         rewards = reward_system.award_rewards(self.loser)
 
@@ -75,7 +75,7 @@ class TestRewardSystem(unittest.TestCase):
 
     def test_reward_system_update(self):
         reward_system = RewardSystem(
-            self.damage_tracker, is_trainer_battle=True
+            self.damage_tracker, MagicMock(combat_type="trainer")
         )
         rewards = reward_system.award_rewards(self.loser)
         self.assertTrue(rewards.update)
@@ -170,7 +170,7 @@ class TestRewardSystem(unittest.TestCase):
         self.winner.owner.monsters = mock_monsters
 
         reward_system = RewardSystem(
-            self.damage_tracker, is_trainer_battle=True
+            self.damage_tracker, MagicMock(combat_type="trainer")
         )
         rewards = reward_system.award_rewards(self.loser)
 
@@ -189,7 +189,9 @@ class TestRewardSystem(unittest.TestCase):
 
     def test_award_rewards_no_winners(self):
         empty_tracker = DamageTracker()
-        reward_system = RewardSystem(empty_tracker, is_trainer_battle=True)
+        reward_system = RewardSystem(
+            empty_tracker, MagicMock(combat_type="trainer")
+        )
         rewards = reward_system.award_rewards(self.loser)
 
         self.assertEqual(len(rewards.winners), 0)
@@ -201,7 +203,7 @@ class TestRewardSystem(unittest.TestCase):
     def test_award_rewards_no_new_moves(self):
         self.winner.moves.update_moves.return_value = []
         reward_system = RewardSystem(
-            self.damage_tracker, is_trainer_battle=True
+            self.damage_tracker, MagicMock(combat_type="trainer")
         )
         rewards = reward_system.award_rewards(self.loser)
 
@@ -223,7 +225,7 @@ class TestRewardSystem(unittest.TestCase):
         self.damage_tracker.log_damage(second_winner, self.loser, 5, 1)
 
         reward_system = RewardSystem(
-            self.damage_tracker, is_trainer_battle=True
+            self.damage_tracker, MagicMock(combat_type="trainer")
         )
         rewards = reward_system.award_rewards(self.loser)
 
@@ -234,7 +236,7 @@ class TestRewardSystem(unittest.TestCase):
     def test_award_rewards_with_held_item_modifier(self):
         self.winner.held_item.get_item.return_value.slug = "xp_booster"
         reward_system = RewardSystem(
-            self.damage_tracker, is_trainer_battle=True
+            self.damage_tracker, MagicMock(combat_type="trainer")
         )
         rewards = reward_system.award_rewards(self.loser)
 
@@ -243,7 +245,7 @@ class TestRewardSystem(unittest.TestCase):
     def test_award_rewards_non_player_monster(self):
         self.winner.owner.isplayer = False
         reward_system = RewardSystem(
-            self.damage_tracker, is_trainer_battle=True
+            self.damage_tracker, MagicMock(combat_type="trainer")
         )
         rewards = reward_system.award_rewards(self.loser)
 

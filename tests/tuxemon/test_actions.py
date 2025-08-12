@@ -4,7 +4,6 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from tuxemon import prepare
-from tuxemon.battle import BattlesHandler
 from tuxemon.db import Direction
 from tuxemon.entity import Body, Mover
 from tuxemon.event.eventaction import ActionManager

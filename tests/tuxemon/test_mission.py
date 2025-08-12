@@ -4,10 +4,12 @@ from unittest import TestCase
 from unittest.mock import MagicMock
 
 from tuxemon.db import MissionStatus
+from tuxemon.entity_dir.bag import BagHandler
+from tuxemon.entity_dir.party import PartyHandler
 from tuxemon.mission.controller import MissionController
 from tuxemon.mission.manager import MissionManager
 from tuxemon.mission.mission import Mission, check_items, check_monsters
-from tuxemon.npc import NPC, NPCBagHandler, PartyHandler
+from tuxemon.npc import NPC
 
 
 class TestMissionManager(TestCase):
@@ -81,7 +83,7 @@ class TestMissionManager(TestCase):
         item2.slug = "lotion"
         item2.quantity = 2
 
-        self.character.items = MagicMock(spec=NPCBagHandler)
+        self.character.items = MagicMock(spec=BagHandler)
         self.character.items.find_item.side_effect = lambda slug: (
             item1 if slug == "potion" else item2 if slug == "lotion" else None
         )

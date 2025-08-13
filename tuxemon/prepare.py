@@ -197,7 +197,7 @@ BG_MONSTERS: str = "gfx/ui/monster/monster_menu_bg.png"
 
 # Native resolution is similar to the old gameboy resolution. This is
 # used for scaling.
-NATIVE_RESOLUTION: tuple[int, int] = (240, 160)
+NATIVE_RESOLUTION: tuple[int, int] = (256, 144)
 
 # Maps
 # 1 tile = 1 m (3.28 ft) large

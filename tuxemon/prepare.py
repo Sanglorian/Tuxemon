@@ -105,7 +105,7 @@ ELEMENT_SIZE: tuple[int, int] = (24, 24)
 # set island size, battle terrains (grass, etc.)
 ISLAND_SIZE: tuple[int, int] = (96, 57)
 # set battle background size (grass, etc.)
-BATTLE_BG_SIZE: tuple[int, int] = (280, 112)
+BATTLE_BG_SIZE: tuple[int, int] = (256, 108)
 
 # Set the healthbar _color
 GFX_HP_BAR: str = "gfx/ui/monster/hp_bar.png"

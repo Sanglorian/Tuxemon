@@ -480,7 +480,7 @@ class AIManager:
             )
             return available_monsters[0]
 
-        strategy = getattr(character, "strategy", None)
+        strategy = character.combat.switch_logic
         logger.debug(f"{character.name} strategy: {strategy}")
 
         # If no strategy, pick the next available monster in order

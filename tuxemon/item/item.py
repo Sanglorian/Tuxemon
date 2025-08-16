@@ -74,11 +74,11 @@ class Item:
 
         if Item.effect_manager is None:
             Item.effect_manager = EffectManager(
-                CoreEffect, paths.CORE_EFFECT_PATH
+                CoreEffect, paths.CORE_EFFECT_PATH, paths.LIBDIR.parent
             )
         if Item.condition_manager is None:
             Item.condition_manager = ConditionManager(
-                CoreCondition, paths.CORE_CONDITION_PATH
+                CoreCondition, paths.CORE_CONDITION_PATH, paths.LIBDIR.parent
             )
 
         self.effects: Sequence[PluginObject] = []

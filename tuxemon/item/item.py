@@ -133,7 +133,7 @@ class Item:
         self.cancel_text = T.translate(results.cancel_text)
 
         self.menu_actions_data = results.menu_actions
-        self.world_menu = results.world_menu
+        self.dynamic_menu = results.dynamic_menu
         self.behaviors = results.behaviors
         self.cost = results.cost
         self.max_wear = results.max_wear

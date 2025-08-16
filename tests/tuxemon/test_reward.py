@@ -36,7 +36,7 @@ class TestRewardSystem(unittest.TestCase):
         self.winner.current_hp = 50
         self.winner.stage = "basic"
         self.winner.owner = MagicMock(spec=NPC)
-        self.winner.owner.isplayer = True
+        self.winner.owner.is_player = True
         self.winner.owner.monsters = [self.winner]
         self.winner.held_item = MagicMock(slug="xp_transmitter")
 
@@ -241,7 +241,7 @@ class TestRewardSystem(unittest.TestCase):
         self.assertGreater(rewards.winners[0].experience, 0)
 
     def test_award_rewards_non_player_monster(self):
-        self.winner.owner.isplayer = False
+        self.winner.owner.is_player = False
         reward_system = RewardSystem(
             self.damage_tracker, is_trainer_battle=True
         )

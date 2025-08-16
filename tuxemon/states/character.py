@@ -216,7 +216,7 @@ class CharacterState(PygameMenuState):
 
         bg = (
             pre.BG_PLAYER2
-            if self.char.monsters and self.char.isplayer
+            if self.char.monsters and self.char.is_player
             else pre.BG_PLAYER1
         )
 

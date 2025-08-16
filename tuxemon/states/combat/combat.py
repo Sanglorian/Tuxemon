@@ -523,7 +523,7 @@ class CombatState(CombatAnimations):
             monster: The monster that was encountered.
         """
         for other_player in self.players:
-            if other_player.isplayer and other_player != player:
+            if other_player.is_player and other_player != player:
                 if monster.slug not in self._combat_variables:
                     other_player.tuxepedia.add_entry(monster.slug)
                     self._combat_variables[monster.slug] = True
@@ -651,7 +651,7 @@ class CombatState(CombatAnimations):
         """
         for player in self.remaining_players:
             monsters = self.field_monsters.get_monsters(player)
-            if monsters and not player.isplayer:
+            if monsters and not player.is_player:
                 for mon in monsters:
                     battlefield(self.session, mon)
 
@@ -1097,7 +1097,7 @@ class CombatState(CombatAnimations):
                 mex = T.format("tuxemon_new_tech", params)
                 self.text_anim.add_xp_message(mex)
             owner = winner.get_owner()
-            if owner.isplayer:
+            if owner.is_player:
                 self.task(partial(self.animate_exp, winner), interval=2.5)
                 self.task(
                     partial(self.update_hud, owner, False, True), interval=4.0
@@ -1207,7 +1207,7 @@ class CombatState(CombatAnimations):
     def human_players(self) -> Iterable[NPC]:
         """Players controlled by humans."""
         for player in self.players:
-            if player.isplayer:
+            if player.is_player:
                 yield player
 
     @property

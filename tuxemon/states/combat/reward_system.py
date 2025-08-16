@@ -113,7 +113,7 @@ class RewardSystem:
                 )
 
                 # Grant experience and update moves
-                if winner.owner and winner.owner.isplayer:
+                if winner.owner and winner.owner.is_player:
                     levels = winner.give_experience(awarded_exp)
                     new_moves = winner.moves.update_moves(
                         winner.level, levels, winner.stage

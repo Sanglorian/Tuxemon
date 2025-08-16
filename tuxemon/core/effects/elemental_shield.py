@@ -38,9 +38,8 @@ class ElementalShieldBackEffect(CoreEffect):
         ranges = self.ranges.split(":")
 
         if status.has_phase(EffectPhase.PERFORM_STATUS):
-            combat = status.get_combat_state()
-            log = combat._action_queue
-            turn = combat._turn
+            log = session.client.combat_session.action_queue
+            turn = session.client.combat_session.turn
             action = log.get_last_action(turn, target, "target")
 
             if (

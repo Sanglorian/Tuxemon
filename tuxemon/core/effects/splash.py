@@ -28,7 +28,8 @@ class SplashEffect(CoreEffect):
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
         combat = tech.get_combat_state()
-        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
+        hit = session.client.combat_session.get_tech_hit(user)
+        tech.hit = tech.accuracy >= hit
 
         damage, mult = formula.simple_damage_calculate(tech, user, target)
         targets = combat.get_targets(tech, user, target)
@@ -41,7 +42,9 @@ class SplashEffect(CoreEffect):
                 monster.current_hp = max(0, monster.current_hp - damage)
                 # to avoid double registration in the self._damage_map
                 if monster != target:
-                    combat.enqueue_damage(user, monster, damage)
+                    session.client.combat_session.enqueue_damage(
+                        user, monster, damage
+                    )
 
         return TechEffectResult(
             name=tech.name,

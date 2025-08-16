@@ -578,17 +578,23 @@ class AI:
         """
         Send action tech.
         """
-        self.combat._combat_variables["action_tech"] = technique.slug
+        self.session.client.combat_session.set_variable(
+            "action_tech", technique.slug
+        )
         technique = pre_checking(
             self.session, self.monster, technique, target, self.combat
         )
-        self.combat.enqueue_action(self.monster, technique, target)
+        self.session.client.combat_session.enqueue_action(
+            self.monster, technique, target
+        )
 
     def action_item(self, item: Item) -> None:
         """
         Send action item.
         """
-        self.combat.enqueue_action(self.character, item, self.monster)
+        self.session.client.combat_session.enqueue_action(
+            self.character, item, self.monster
+        )
 
 
 def check_item_conditions(item_entry: ItemEntry, ai: AI) -> bool:
@@ -627,7 +633,7 @@ def check_tech_conditions(condition: TechniqueCondition, ai: AI) -> bool:
     """
     Check if all conditions for a technique are met.
     """
-    current_turn = ai.combat._turn
+    current_turn = ai.session.client.combat_session.turn
     monster_health = ai.monster.hp_ratio
 
     if condition.always:

@@ -41,10 +41,10 @@ class StepHealingEffect(CoreEffect):
         monsters: list[Monster] = []
         extra: list[str] = []
         done: bool = False
-        combat = tech.get_combat_state()
+        hit = session.client.combat_session.get_tech_hit(user)
 
         objectives = self.objectives.split(":")
-        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
+        tech.hit = tech.accuracy >= hit
 
         if tech.hit:
             monsters = get_target_monsters(objectives, tech, user, target)

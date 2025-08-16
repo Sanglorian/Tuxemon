@@ -64,7 +64,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         if self.character == cmb.players[1]:
             self.enemy = cmb.players[0]
             self.opponents = cmb.field_monsters.get_monsters(self.enemy)
-        self.menu_visibility = cmb._menu_visibility
+        self.menu_visibility = self.client.combat_session.menu_visibility
         self.menu_visibility.menu_forfeit = self.enemy.forfeit
         params = {"name": monster.name}
         message = T.format("combat_monster_choice", params)
@@ -113,7 +113,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         forfeit = Technique.create("menu_forfeit")
         forfeit.set_combat_state(self.combat)
         self.client.remove_state_by_name("MainCombatMenuState")
-        self.combat.enqueue_action(self.party[0], forfeit, self.opponents[0])
+        self.client.combat_session.enqueue_action(
+            self.party[0], forfeit, self.opponents[0]
+        )
 
     def run(self) -> None:
         """
@@ -132,7 +134,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             tools.open_dialog(self.client, [msg])
             return
         self.client.remove_state_by_name("MainCombatMenuState")
-        self.combat.enqueue_action(self.party[0], run, self.opponents[0])
+        self.client.combat_session.enqueue_action(
+            self.party[0], run, self.opponents[0]
+        )
 
     def open_swap_menu(self) -> None:
         """Open menus to swap monsters in party."""
@@ -151,8 +155,10 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 msg = T.format("combat_player_swap_status", params)
                 tools.open_dialog(self.client, [msg])
                 return
-            self.combat.swap_tracker.register(added)
-            self.combat.enqueue_action(self.monster, swap, added)
+            self.client.combat_session.swap_tracker.register(added)
+            self.client.combat_session.enqueue_action(
+                self.monster, swap, added
+            )
             self.client.remove_state_by_name("MonsterMenuState")
             self.client.remove_state_by_name("MainCombatMenuState")
 
@@ -161,7 +167,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 return False
             if menu_item in self.combat.active_monsters:
                 return False
-            if not self.combat.swap_tracker.can_swap(menu_item):
+            if not self.client.combat_session.swap_tracker.can_swap(menu_item):
                 return False
             return True
 
@@ -245,7 +251,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     return
 
             # enqueue the item
-            self.combat.enqueue_action(self.character, item, target)
+            self.client.combat_session.enqueue_action(
+                self.character, item, target
+            )
 
             # close all the open menus
             self.client.remove_state_by_name("MainCombatMenuState")
@@ -379,13 +387,17 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 return
 
             # Pre-check the technique for validity
-            self.combat._combat_variables["action_tech"] = technique.slug
+            self.client.combat_session.set_variable(
+                "action_tech", technique.slug
+            )
             technique = combat.pre_checking(
                 self.session, self.monster, technique, target, self.combat
             )
 
             # Enqueue the action
-            self.combat.enqueue_action(self.monster, technique, target)
+            self.client.combat_session.enqueue_action(
+                self.monster, technique, target
+            )
 
             # close all the open menus
             if len(self.opponents) > 1:

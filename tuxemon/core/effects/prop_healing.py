@@ -41,10 +41,10 @@ class PropHealingEffect(CoreEffect):
             raise ValueError(f"{self.proportional} must be between 0 and 1")
 
         monsters: list[Monster] = []
-        combat = tech.get_combat_state()
+        hit = session.client.combat_session.get_tech_hit(user)
 
         objectives = self.objectives.split(":")
-        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
+        tech.hit = tech.accuracy >= hit
         reference_hp = user.hp
 
         if tech.hit:

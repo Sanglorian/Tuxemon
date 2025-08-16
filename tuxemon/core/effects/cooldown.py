@@ -46,8 +46,8 @@ class CoolDownEffect(CoreEffect):
                 f"{self.name}: {self.next_use} must be between {RECHARGE_RANGE}"
             )
 
-        combat = tech.get_combat_state()
-        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
+        hit = session.client.combat_session.get_tech_hit(user)
+        tech.hit = tech.accuracy >= hit
         if not tech.hit:
             return TechEffectResult(name=tech.name)
 

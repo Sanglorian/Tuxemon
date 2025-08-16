@@ -32,6 +32,7 @@ class SwapEffect(CoreEffect):
     ) -> TechEffectResult:
         player = user.get_owner()
         combat_state = tech.get_combat_state()
+        combat_session = session.client.combat_session
 
         logger.debug(
             f"Initiating swap: removing {user.name}, adding {target.name}"
@@ -43,7 +44,7 @@ class SwapEffect(CoreEffect):
             )
             combat_state.add_monster_into_play(player, target, removed)
 
-        combat_state._action_queue.swap(user, target)
+        combat_session.action_queue.swap(user, target)
         logger.debug(f"Action queue updated: {user.name} > {target.name}")
 
         combat_state.remove_monster_from_play(user)

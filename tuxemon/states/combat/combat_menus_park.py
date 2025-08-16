@@ -182,5 +182,5 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
         elif item.category == ItemCategory.doll:
             self.encounter.apply_doll_effect(item)
 
-        self.combat.enqueue_action(self.player, item, enemy)
+        self.client.combat_session.enqueue_action(self.player, item, enemy)
         self.client.pop_state()

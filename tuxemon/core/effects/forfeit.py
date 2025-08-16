@@ -33,7 +33,7 @@ class ForfeitEffect(CoreEffect):
         player = user.get_owner()
         set_var(session, "battle_last_result", self.name)
         set_var(session, "teleport_clinic", OutputBattle.lost.value)
-        combat._run = True
+        session.client.combat_session.set_variable("run", True)
         params = {"npc": combat.players[1].name.upper()}
         extra = [T.format("combat_forfeit", params)]
         self._clean_combat_state(combat)

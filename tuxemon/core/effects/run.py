@@ -30,6 +30,7 @@ class RunEffect(CoreEffect):
         ran: bool = False
         combat = tech.get_combat_state()
         self.session = session
+        self.combat_session = session.client.combat_session
 
         game_variables = session.player.game_variables
         attempts = game_variables.get("run_attempts", 0)
@@ -76,7 +77,7 @@ class RunEffect(CoreEffect):
         """
         Handle the escape trigger and clean up the combat state.
         """
-        combat._run = True
+        self.combat_session.set_variable("run", True)
         extra.append(T.translate("combat_player_run"))
         game_variables["run_attempts"] = 0
         set_var(self.session, "battle_last_result", self.name)

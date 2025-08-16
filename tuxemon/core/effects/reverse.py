@@ -34,9 +34,9 @@ class ReverseEffect(CoreEffect):
     def apply_tech_target(
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
-        combat = tech.get_combat_state()
+        hit = session.client.combat_session.get_tech_hit(user)
 
-        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
+        tech.hit = tech.accuracy >= hit
 
         if not tech.hit:
             return TechEffectResult(name=tech.name, success=tech.hit)

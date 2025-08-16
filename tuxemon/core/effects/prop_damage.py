@@ -45,7 +45,8 @@ class PropDamageEffect(CoreEffect):
         combat = tech.get_combat_state()
 
         objectives = self.objectives.split(":")
-        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
+        hit = session.client.combat_session.get_tech_hit(user)
+        tech.hit = tech.accuracy >= hit
         reference_hp = target.hp
 
         if tech.hit:
@@ -57,7 +58,9 @@ class PropDamageEffect(CoreEffect):
                 monster.current_hp = max(0, monster.current_hp - damage)
                 # to avoid double registration in the self._damage_map
                 if monster != target:
-                    combat.enqueue_damage(user, monster, damage)
+                    session.client.combat_session.enqueue_damage(
+                        user, monster, damage
+                    )
 
         return TechEffectResult(
             name=tech.name,

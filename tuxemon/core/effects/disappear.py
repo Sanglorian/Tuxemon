@@ -30,6 +30,7 @@ class DisappearEffect(CoreEffect):
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
         combat = tech.get_combat_state()
+        combat_session = session.client.combat_session
 
         # Get the user's sprite
         user_sprite = combat.sprite_map.get_sprite(user)
@@ -41,6 +42,7 @@ class DisappearEffect(CoreEffect):
             land_technique = Technique.create(self.attack)
             # Add the land action to the pending queue
             land_action = EnqueuedAction(user, land_technique, target)
-            combat._action_queue.add_pending(land_action, combat._turn)
+            turn = combat_session.turn
+            combat_session.action_queue.add_pending(land_action, turn)
 
         return TechEffectResult(name=tech.name, success=user.out_of_range)

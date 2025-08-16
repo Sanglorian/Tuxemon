@@ -42,9 +42,9 @@ class SwitchEffect(CoreEffect):
     ) -> TechEffectResult:
 
         elements = list(db.database["element"])
-        combat = tech.get_combat_state()
+        hit = session.client.combat_session.get_tech_hit(user)
 
-        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
+        tech.hit = tech.accuracy >= hit
 
         if not tech.hit:
             return TechEffectResult(name=tech.name, success=tech.hit)

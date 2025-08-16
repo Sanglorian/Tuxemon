@@ -780,7 +780,7 @@ class CombatAnimations(Menu[None], ABC):
 
         if is_captured and monster.owner:
             combat = item.get_combat_state()
-            combat._captured_mon = monster
+            self.client.combat_session.set_variable("captured_mon", monster)
 
             def show_success(delay: float) -> None:
                 self.task(combat.end_combat, interval=delay + 4)

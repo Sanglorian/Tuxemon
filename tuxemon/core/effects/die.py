@@ -36,7 +36,7 @@ class DieEffect(CoreEffect):
         self, session: Session, item: Item, target: Monster
     ) -> ItemEffectResult:
         combat = item.get_combat_state()
-        if combat._turn == 1:
+        if session.client.combat_session.turn == 1:
             statuses = self.statuses.split(":")
             status_slug = random.choice(statuses)
             status = Status.create(status_slug, target)

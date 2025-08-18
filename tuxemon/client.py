@@ -18,7 +18,7 @@ from tuxemon.boundary import BoundaryChecker
 from tuxemon.camera import CameraManager
 from tuxemon.cli.processor import CommandProcessor
 from tuxemon.collision_manager import CollisionManager
-from tuxemon.combat_dir.session import CombatSession
+from tuxemon.combat.session import CombatSession
 from tuxemon.config import TuxemonConfig
 from tuxemon.constants import paths
 from tuxemon.event import get_event_bus

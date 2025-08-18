@@ -33,13 +33,14 @@ class DamageEffect(CoreEffect):
         mult = 1.0
         targets: list[Monster] = []
 
-        combat = tech.get_combat_state()
         hit = session.client.combat_session.get_tech_hit(user)
         tech.hit = tech.accuracy >= hit
 
         if tech.hit and not target.out_of_range:
             damage, mult = formula.simple_damage_calculate(tech, user, target)
-            targets = combat.get_targets(tech, user, target)
+            targets = session.client.combat_session.get_targets(
+                tech, user, target
+            )
 
         if targets:
             for monster in targets:

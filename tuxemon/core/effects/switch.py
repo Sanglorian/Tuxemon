@@ -6,7 +6,6 @@ import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat import get_target_monsters
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 from tuxemon.db import db
 from tuxemon.element import Element
@@ -50,7 +49,9 @@ class SwitchEffect(CoreEffect):
             return TechEffectResult(name=tech.name, success=tech.hit)
 
         objectives = self.objectives.split(":")
-        monsters = get_target_monsters(objectives, tech, user, target)
+        monsters = session.client.combat_session.get_target_monsters(
+            objectives, user, target
+        )
 
         if self.element == "random":
             new_type = Element(random.choice(elements))

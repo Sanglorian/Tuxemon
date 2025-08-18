@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat import get_target_monsters
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 
 if TYPE_CHECKING:
@@ -48,7 +47,9 @@ class PropHealingEffect(CoreEffect):
         reference_hp = user.hp
 
         if tech.hit:
-            monsters = get_target_monsters(objectives, tech, user, target)
+            monsters = session.client.combat_session.get_target_monsters(
+                objectives, user, target
+            )
 
         if monsters:
             amount = int((reference_hp) * self.proportional)

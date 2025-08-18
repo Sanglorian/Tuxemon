@@ -38,7 +38,7 @@ class CaptureCombinedEffect(CoreEffect):
         status_modifier = formula.calculate_status_modifier(item, target)
 
         # Calculate tuxeball modifier
-        tuxeball_modifier = self._calculate_tuxeball_modifier(item, target)
+        tuxeball_modifier = self._calculate_tuxeball_modifier(target)
 
         # Perform shake check and capture calculation
         shake_check = formula.shake_check(
@@ -56,16 +56,15 @@ class CaptureCombinedEffect(CoreEffect):
             name=item.name, success=True, num_shakes=shakes
         )
 
-    def _calculate_tuxeball_modifier(
-        self, item: Item, target: Monster
-    ) -> float:
+    def _calculate_tuxeball_modifier(self, target: Monster) -> float:
         """
         Calculate the status effectiveness modifier based on the opponent's
         status.
         """
         capdev_modifier = formula.config_capdev.capdev_modifier
-        combat = item.get_combat_state()
-        our_monster = combat.field_monsters.get_monsters(self.session.player)
+        our_monster = self.client.combat_session.field_monsters.get_monsters(
+            self.session.player
+        )
 
         if not our_monster:
             return capdev_modifier

@@ -6,7 +6,7 @@ import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat import has_effect_param
+from tuxemon.combat.utils import has_effect_param
 from tuxemon.core.core_effect import CoreEffect, StatusEffectResult
 from tuxemon.db import EffectPhase
 from tuxemon.locale import T

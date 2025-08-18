@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from tuxemon.combat.action_queue import EnqueuedAction
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
-from tuxemon.states.combat.combat_classes import EnqueuedAction
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:

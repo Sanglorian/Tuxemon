@@ -1404,20 +1404,32 @@ class NpcSpeech(BaseModel):
     )
 
 
+class NpcCombatModel(BaseModel):
+    forfeit: bool = Field(
+        False,
+        description="Whether the NPC allows the player to forfeit during combat",
+    )
+    switch_logic: Optional[str] = Field(
+        None,
+        description=(
+            "Defines how the NPC selects a replacement monster when one faints. "
+            "Examples include 'random', 'lv_highest', or 'healthiest'."
+        ),
+    )
+
+
 class NpcModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "npc"
     slug: str = Field(..., description="Slug of the name of the NPC")
-    forfeit: bool = Field(False, description="Whether you can forfeit or not")
     template: NpcTemplateModel
+    combat: NpcCombatModel
     monsters: Sequence[PartyMemberModel] = Field(
         [], description="List of monsters in the NPCs party"
     )
     items: Sequence[BagItemModel] = Field(
         [], description="List of items in the NPCs bag"
     )
-    speech: Optional[NpcSpeech] = Field(
-        None, description="Dialogue for this NPC"
-    )
+    speech: NpcSpeech
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> NpcModel:

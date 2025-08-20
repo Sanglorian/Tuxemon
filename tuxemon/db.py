@@ -269,10 +269,11 @@ class ItemBehaviors(BaseModel):
     )
 
 
-class WorldMenuEntry(BaseModel):
+class DynamicMenuEntry(BaseModel):
     position: int
     label_key: str
     state: str
+    menu_type: str
     enabled: bool = True
 
 
@@ -326,9 +327,9 @@ class ItemModel(BaseModel, BaseLookupModel):
     animation: Optional[str] = Field(
         None, description="Animation to play for this item"
     )
-    world_menu: Optional[WorldMenuEntry] = Field(
+    dynamic_menu: Optional[DynamicMenuEntry] = Field(
         None,
-        description="Item adds to World Menu a button (position, label -inside the PO -,state, eg. 3:nu_phone:PhoneState)",
+        description="Item adds a button to a specific menu (world, phone, etc.).",
     )
     cost: int = Field(0, description="The standard cost of the item.", ge=0)
     max_wear: int = Field(
@@ -1403,20 +1404,32 @@ class NpcSpeech(BaseModel):
     )
 
 
+class NpcCombatModel(BaseModel):
+    forfeit: bool = Field(
+        False,
+        description="Whether the NPC allows the player to forfeit during combat",
+    )
+    switch_logic: Optional[str] = Field(
+        None,
+        description=(
+            "Defines how the NPC selects a replacement monster when one faints. "
+            "Examples include 'random', 'lv_highest', or 'healthiest'."
+        ),
+    )
+
+
 class NpcModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "npc"
     slug: str = Field(..., description="Slug of the name of the NPC")
-    forfeit: bool = Field(False, description="Whether you can forfeit or not")
     template: NpcTemplateModel
+    combat: NpcCombatModel
     monsters: Sequence[PartyMemberModel] = Field(
         [], description="List of monsters in the NPCs party"
     )
     items: Sequence[BagItemModel] = Field(
         [], description="List of items in the NPCs bag"
     )
-    speech: Optional[NpcSpeech] = Field(
-        None, description="Dialogue for this NPC"
-    )
+    speech: NpcSpeech
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> NpcModel:

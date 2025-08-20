@@ -39,12 +39,15 @@ class PhotogenesisEffect(CoreEffect):
     def apply_tech_target(
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
-        combat = tech.get_combat_state()
 
         if session.client.map_manager.map_inside:
             return TechEffectResult(name=tech.name)
 
-        tech.hit = tech.accuracy >= combat.get_tech_hit(user)
+        hit = session.client.combat_session.get_tech_hit(user)
+        extra: list[str] = []
+        done: bool = False
+
+        tech.hit = tech.accuracy >= hit
 
         if not tech.hit:
             return TechEffectResult(name=tech.name)

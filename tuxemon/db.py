@@ -2132,6 +2132,22 @@ class AnimationModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "animation"
     slug: str = Field(..., description="Unique slug for the animation")
     file: str = Field(..., description="File of the animation")
+    duration: float = Field(
+        default=0.09,
+        description="Duration (in seconds) for each frame of the animation.",
+    )
+    loop: bool = Field(
+        default=False,
+        description="Whether the animation should repeat after finishing.",
+    )
+    rate: float = Field(
+        default=1.0,
+        description="Playback speed multiplier. 1.0 is normal speed; higher values play faster.",
+    )
+    flip_axes: FlipAxes = Field(
+        default=FlipAxes.NONE,
+        description="Axes to flip the animation frames. Options: '', 'x', 'y', or 'xy'.",
+    )
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> AnimationModel:
@@ -2148,6 +2164,12 @@ class AnimationModel(BaseModel, BaseLookupModel):
         if has.file(file):
             return v
         raise ValueError(f"the animation {v} doesn't exist in the db")
+
+    @field_validator("duration")
+    def validate_duration(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("Duration must be positive")
+        return v
 
 
 class TerrainModel(BaseModel, BaseLookupModel):

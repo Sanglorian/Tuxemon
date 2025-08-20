@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable
+from typing import Optional
 
 from pygame.surface import Surface
 
-from tuxemon import prepare
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import AnimationModel, db
 from tuxemon.graphics import create_animation, load_frames_files
@@ -22,15 +21,15 @@ class AnimationEntity:
     def __init__(
         self,
         slug: str,
-        duration: float = prepare.FRAME_TIME,
-        loop: bool = False,
+        duration: Optional[float] = None,
+        loop: Optional[bool] = None,
     ) -> None:
         self.slug: str = ""
-        self.duration: float = duration
-        self.loop: bool = loop
+        self.duration = duration
+        self.loop = loop
         self.file: str = ""
         self.directory: str = ""
-        self.frames: Iterable[Surface] = []
+        self.frames: list[Surface] = []
         self.load(slug)
 
     def load(self, slug: str) -> None:
@@ -38,10 +37,20 @@ class AnimationEntity:
         results = AnimationModel.lookup(slug, db)
         self.slug = results.slug
         self.file = results.file
+        self.duration = self.duration or results.duration
+        self.loop = self.loop if self.loop is not None else results.loop
 
         self.directory = fetch_asset("animations", self.file)
-        self.frames = load_frames_files(self.directory, self.slug)
+        self.frames = list(load_frames_files(self.directory, self.slug))
         self.play = create_animation(self.frames, self.duration, self.loop)
+
+        # Optional enhancements
+        self.play.rate = results.rate
+        self.play.flip(results.flip_axes)
+
+        logger.debug(
+            f"Loaded animation '{self.slug}' with {len(self.frames)} frames from '{self.directory}'"
+        )
 
 
 def setup_and_play_animation(

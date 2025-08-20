@@ -73,7 +73,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 self.enemy
             )
         self.menu_visibility = self.combat_session.menu_visibility
-        self.menu_visibility.menu_forfeit = self.enemy.forfeit
+        self.menu_visibility.menu_forfeit = self.enemy.combat.forfeit
         params = {"name": monster.name}
         message = T.format("combat_monster_choice", params)
         self.combat.dialog.alert(message)

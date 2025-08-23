@@ -1300,15 +1300,18 @@ class BagItemModel(BaseModel):
         raise ValueError(f"the item {v} doesn't exist in the db")
 
 
-class NpcTemplateModel(BaseModel):
+class TemplateModel(BaseModel):
+    slug: str = Field(
+        ..., description="Slug uniquely identifying the template"
+    )
+
+
+class NpcTemplateModel(TemplateModel):
     sprite_name: str = Field(
         ..., description="Name of the overworld sprite filename"
     )
     combat_front: str = Field(
         ..., description="Name of the battle front sprite filename"
-    )
-    slug: str = Field(
-        ..., description="Name of the battle back sprite filename"
     )
 
     @field_validator("combat_front")
@@ -1757,6 +1760,18 @@ class ElementModel(BaseModel, BaseLookupModel):
             return v
         raise ValueError(f"no translation exists with msgid: {v}")
 
+    @field_validator("slug")
+    def sound_call_exists(cls: ElementModel, v: str) -> str:
+        if has.db_entry("sounds", f"sound_{v}_call"):
+            return v
+        raise ValueError(f"the sound {v} doesn't exist in the db")
+
+    @field_validator("slug")
+    def sound_faint_exists(cls: ElementModel, v: str) -> str:
+        if has.db_entry("sounds", f"sound_{v}_faint"):
+            return v
+        raise ValueError(f"the sound {v} doesn't exist in the db")
+
     @field_validator("icon")
     def file_exists(cls: ElementModel, v: str) -> str:
         if has.file(v) and has.size(v, prepare.ELEMENT_SIZE):
@@ -1851,12 +1866,6 @@ class EconomyModel(BaseModel, BaseLookupModel):
         if has.file(v) and has.size(v, prepare.NATIVE_RESOLUTION):
             return v
         raise ValueError(f"no resource exists with path: {v}")
-
-
-class TemplateModel(BaseModel):
-    slug: str = Field(
-        ..., description="Slug uniquely identifying the template"
-    )
 
 
 class FactionKind(str, Enum):

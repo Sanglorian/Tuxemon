@@ -1,6 +1,6 @@
 {
   "slug": "banvengeance",
-  "category": "sepulchre",
+  "species": "sepulchre",
   "moveset": [
     {
       "level_learned": 1,
@@ -78,7 +78,8 @@
   "shape": "brute",
   "stage": "stage2",
   "types": [
-    "wood"
+    "wood",
+    "shadow"
   ],
   "possible_genders": [
     "neuter"

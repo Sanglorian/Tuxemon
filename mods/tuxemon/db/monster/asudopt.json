@@ -1,6 +1,6 @@
 {
   "slug": "asudopt",
-  "category": "god_penguin",
+  "species": "god_penguin",
   "moveset": [
     {
       "level_learned": 1,
@@ -94,8 +94,8 @@
   "shape": "flier",
   "stage": "standalone",
   "types": [
-    "fire",
-    "water"
+    "frost",
+    "cosmic"
   ],
   "possible_genders": [
     "neuter"

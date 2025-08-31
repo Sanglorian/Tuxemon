@@ -22,7 +22,7 @@
     }
   ],
   "flip_axes": "xy",
-  "speed": "normal",
+  "speed": "slow",
   "potency": 1,
   "power": 1.25,
   "range": "touch",
@@ -47,8 +47,7 @@
     "fury"
   ],
   "types": [
-    "fire",
-    "wood"
+    "heroic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

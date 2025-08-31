@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import logging
 import re
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import yaml
@@ -70,9 +69,6 @@ def _setup_user_environment() -> config.TuxemonConfig:
 # How it would be called in the main part of the file:
 CONFIG = _setup_user_environment()
 
-# Starting map
-STARTING_MAP = "start_"
-
 # Set up the screen size and caption
 SCREEN_SIZE = CONFIG.resolution
 
@@ -109,7 +105,7 @@ ELEMENT_SIZE: tuple[int, int] = (24, 24)
 # set island size, battle terrains (grass, etc.)
 ISLAND_SIZE: tuple[int, int] = (96, 57)
 # set battle background size (grass, etc.)
-BATTLE_BG_SIZE: tuple[int, int] = (280, 112)
+BATTLE_BG_SIZE: tuple[int, int] = (256, 108)
 
 # Set the healthbar _color
 GFX_HP_BAR: str = "gfx/ui/monster/hp_bar.png"
@@ -201,7 +197,7 @@ BG_MONSTERS: str = "gfx/ui/monster/monster_menu_bg.png"
 
 # Native resolution is similar to the old gameboy resolution. This is
 # used for scaling.
-NATIVE_RESOLUTION: tuple[int, int] = (240, 160)
+NATIVE_RESOLUTION: tuple[int, int] = (256, 144)
 
 # Maps
 # 1 tile = 1 m (3.28 ft) large
@@ -311,7 +307,7 @@ def pygame_init() -> None:
     # Configure databases and locale
     from tuxemon.locale import T
 
-    T.initialize_translations()
+    T.initialize_translations(recompile=CONFIG.recompile_translations)
     from tuxemon.db import db
 
     db.load()
@@ -357,7 +353,7 @@ def headless_init() -> None:
     """Initializes game components for a headless environment."""
     from tuxemon.locale import T
 
-    T.initialize_translations()
+    T.initialize_translations(recompile=CONFIG.recompile_translations)
     from tuxemon.db import db
 
     db.load()
@@ -371,33 +367,3 @@ def init(platform: str = "pygame") -> None:
         headless_init()
     else:
         raise ValueError(f"Unsupported platform: {platform}")
-
-
-# Fetches a resource file
-# note: this has the potential of being a bottle neck doing to all the checking of paths
-# eventually, this should be configured at game launch, or in a config file instead
-# of looking all over creation for the required files.
-def fetch(*args: str) -> str:
-    relative_path = Path(*args)
-
-    for mod_name in CONFIG.mods:
-        # when assets are in folder with the source
-        path = paths.mods_folder / mod_name / relative_path
-        logger.debug(f"searching asset: {path}")
-        if path.exists():
-            return path.as_posix()
-
-        # when assets are in a system path (like for OS packages and Android)
-        for root_path in paths.system_installed_folders:
-            path = root_path / "mods" / mod_name / relative_path
-            logger.debug(f"searching asset: {path}")
-            if path.exists():
-                return path.as_posix()
-
-        # mods folder is in the same folder as the launch script
-        path = paths.BASEDIR / "mods" / mod_name / relative_path
-        logger.debug(f"searching asset: {path}")
-        if path.exists():
-            return path.as_posix()
-
-    raise OSError(f"Cannot load file {relative_path}")

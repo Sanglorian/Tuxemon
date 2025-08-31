@@ -32,13 +32,12 @@
     "own_team": false,
     "own_trainer": false
   },
-  "category": "animal",
+  "category": "simple",
   "tags": [
     "tail"
   ],
   "types": [
-    "water",
-    "fire"
+    "normal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

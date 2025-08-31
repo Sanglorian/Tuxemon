@@ -1,6 +1,6 @@
 {
   "slug": "solight",
-  "category": "pulsar",
+  "species": "pulsar",
   "moveset": [
     {
       "level_learned": 1,
@@ -67,7 +67,7 @@
   "stage": "standalone",
   "types": [
     "fire",
-    "metal"
+    "cosmic"
   ],
   "possible_genders": [
     "neuter"

@@ -1,6 +1,6 @@
 {
   "slug": "hoodoll",
-  "category": "old_man",
+  "species": "old_man",
   "moveset": [
     {
       "level_learned": 1,
@@ -71,7 +71,8 @@
   "shape": "blob",
   "stage": "basic",
   "types": [
-    "wood"
+    "wood",
+    "venom"
   ],
   "possible_genders": [
     "neuter"

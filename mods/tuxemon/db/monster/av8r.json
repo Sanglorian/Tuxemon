@@ -1,6 +1,6 @@
 {
   "slug": "av8r",
-  "category": "heliotrope",
+  "species": "heliotrope",
   "moveset": [
     {
       "level_learned": 1,
@@ -52,7 +52,8 @@
   "shape": "flier",
   "stage": "stage1",
   "types": [
-    "metal"
+    "metal",
+    "sky"
   ],
   "possible_genders": [
     "neuter"

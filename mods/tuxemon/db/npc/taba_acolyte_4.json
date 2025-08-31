@@ -1,10 +1,10 @@
 {
-    "slug": "loch",
-    "template":
-      {
-        "sprite_name": "disciple",
-        "combat_front": "disciple",
-        "slug": "disciple"
-      }
+  "slug": "loch",
+  "speech": {"profile": {"default": {}}},
+  "combat": {},
+  "template": {
+    "sprite_name": "disciple",
+    "combat_front": "disciple",
+    "slug": "disciple"
   }
-  
+}

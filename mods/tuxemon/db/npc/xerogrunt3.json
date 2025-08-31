@@ -1,10 +1,10 @@
 {
   "slug": "xerogrunt3",
-  "template": 
-    {
-      "sprite_name": "xerogrunt",
-      "combat_front": "adventurer",
-      "slug": "xerogrunt"
-    }
-
+  "speech": {"profile": {"default": {}}},
+  "combat": {},
+  "template": {
+    "sprite_name": "xerogrunt",
+    "combat_front": "adventurer",
+    "slug": "xerogrunt"
+  }
 }

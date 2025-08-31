@@ -1,6 +1,6 @@
 {
   "slug": "shull",
-  "category": "myrmidon",
+  "species": "myrmidon",
   "moveset": [
     {
       "level_learned": 1,
@@ -31,7 +31,11 @@
     {
       "at_level": 20,
       "monster_slug": "myrmison",
-      "variable": "daytime:false"
+      "variables": [
+        {
+          "daytime": "false"
+        }
+      ]
     }
   ],
   "history": [
@@ -60,7 +64,8 @@
   "shape": "blob",
   "stage": "stage1",
   "types": [
-    "metal"
+    "earth",
+    "heroic"
   ],
   "possible_genders": [
     "male",

@@ -2,7 +2,7 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, ClassVar, Optional
 
 import pygame
 from pygame_menu import locals
@@ -20,6 +20,8 @@ class SetKeyState(PygameMenuState):
     This only works for pygame events.
     """
 
+    name: ClassVar[str] = "SetKeyState"
+
     def __init__(self, value: str, **kwargs: Any) -> None:
         """
         Used when initializing the state
@@ -28,7 +30,10 @@ class SetKeyState(PygameMenuState):
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
         super().__init__(**kwargs)
-        self.menu.add.label(T.translate("options_new_input_key0").upper())
+        self.menu.add.label(
+            T.translate("options_new_input_key0").upper(),
+            font_size=self.font_type.small,
+        )
         self.value = value
         self.reset_theme()
 
@@ -77,13 +82,7 @@ class SetKeyState(PygameMenuState):
         )
 
     def animate_open(self) -> Animation:
-        """
-        Animate the menu popping in.
-
-        Returns:
-            Popping in animation.
-
-        """
+        """Animate the menu popping in."""
         self.animation_size = 0.0
         ani = self.animate(self, animation_size=1.0, duration=0.2)
         ani.schedule(self.update_animation_size, ScheduleType.ON_UPDATE)

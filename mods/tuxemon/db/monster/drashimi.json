@@ -1,6 +1,6 @@
 {
   "slug": "drashimi",
-  "category": "dragon_roll",
+  "species": "dragon_roll",
   "moveset": [
     {
       "level_learned": 1,
@@ -74,7 +74,6 @@
   "shape": "polliwog",
   "stage": "basic",
   "types": [
-    "water",
     "wood"
   ],
   "possible_genders": [

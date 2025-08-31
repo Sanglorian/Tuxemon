@@ -1,6 +1,6 @@
 {
   "slug": "delfeco",
-  "category": "joyful_dolphin",
+  "species": "joyful_dolphin",
   "moveset": [
     {
       "level_learned": 1,
@@ -71,7 +71,8 @@
   "shape": "piscine",
   "stage": "stage1",
   "types": [
-    "water"
+    "water",
+    "wood"
   ],
   "possible_genders": [
     "male",

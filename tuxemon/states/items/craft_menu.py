@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, ClassVar, Optional
 
 import pygame_menu
 from pygame_menu import locals
@@ -25,8 +25,13 @@ class CraftMenuState(PygameMenuState):
     This state is responsible for the craft menu.
     """
 
-    def __init__(self, character: NPC, method: Optional[str] = None) -> None:
+    name: ClassVar[str] = "CraftMenuState"
+
+    def __init__(
+        self, character: NPC, file_yaml: str, method: Optional[str] = None
+    ) -> None:
         self.character = character
+        self.file_yaml = file_yaml
         self.method = method
         width, height = prepare.SCREEN_SIZE
 
@@ -46,7 +51,7 @@ class CraftMenuState(PygameMenuState):
         def up() -> None:
             menu._scrollarea._scrollbars[0].bump_to_top()
 
-        yaml_path = (paths.mods_folder / "recipes.yaml").resolve()
+        yaml_path = (paths.mods_folder / self.file_yaml).resolve()
         if not yaml_path.exists():
             raise FileNotFoundError(f"Recipe file not found: {yaml_path}")
 
@@ -97,7 +102,7 @@ class CraftMenuState(PygameMenuState):
             )
 
     def add_tool_label(self, menu: pygame_menu.Menu, recipe: Recipe) -> None:
-        for tool in getattr(recipe, "required_tools", []):
+        for tool in recipe.required_tools:
             tool_name = T.translate(tool.get("slug", ""))
             consumed_text = (
                 T.translate("menu_tool_consumed")

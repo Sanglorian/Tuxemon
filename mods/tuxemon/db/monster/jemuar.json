@@ -1,6 +1,6 @@
 {
   "slug": "jemuar",
-  "category": "precious_boulder",
+  "species": "precious_boulder",
   "moveset": [
     {
       "level_learned": 1,
@@ -76,7 +76,8 @@
   "shape": "hunter",
   "stage": "stage2",
   "types": [
-    "earth"
+    "earth",
+    "cosmic"
   ],
   "possible_genders": [
     "male",

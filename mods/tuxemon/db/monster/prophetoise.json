@@ -1,6 +1,6 @@
 {
   "slug": "prophetoise",
-  "category": "dragon_bone",
+  "species": "dragon_bone",
   "moveset": [
     {
       "level_learned": 1,
@@ -60,7 +60,8 @@
   "shape": "humanoid",
   "stage": "stage1",
   "types": [
-    "fire"
+    "fire",
+    "cosmic"
   ],
   "possible_genders": [
     "male",

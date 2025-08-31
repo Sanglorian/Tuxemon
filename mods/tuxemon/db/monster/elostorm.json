@@ -1,6 +1,6 @@
 {
   "slug": "elostorm",
-  "category": "cloudburst",
+  "species": "cloudburst",
   "moveset": [
     {
       "level_learned": 1,
@@ -70,7 +70,8 @@
   "shape": "flier",
   "stage": "stage2",
   "types": [
-    "water"
+    "normal",
+    "sky"
   ],
   "possible_genders": [
     "male",

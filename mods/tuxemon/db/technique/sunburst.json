@@ -32,14 +32,13 @@
     "own_team": false,
     "own_trainer": false
   },
-  "category": "basic",
+  "category": "simple",
   "tags": [
     "flame",
     "celestial"
   ],
   "types": [
-    "fire",
-    "metal"
+    "fire"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

@@ -8,7 +8,7 @@
     }
   ],
   "flip_axes": "",
-  "speed": "normal",
+  "speed": "extremely_slow",
   "potency": 0.0,
   "power": 2.7,
   "range": "reach",
@@ -31,8 +31,7 @@
     "calamity"
   ],
   "types": [
-    "water",
-    "earth"
+    "water"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

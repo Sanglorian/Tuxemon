@@ -1,6 +1,6 @@
 {
   "slug": "ouroboutlet",
-  "category": "infinite_energy",
+  "species": "infinite_energy",
   "moveset": [
     {
       "level_learned": 1,
@@ -51,8 +51,8 @@
   "shape": "serpent",
   "stage": "stage1",
   "types": [
-    "metal",
-    "fire"
+    "lightning",
+    "metal"
   ],
   "possible_genders": [
     "neuter"

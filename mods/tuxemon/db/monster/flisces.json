@@ -1,6 +1,6 @@
 {
   "slug": "flisces",
-  "category": "cypselurus",
+  "species": "cypselurus",
   "moveset": [
     {
       "level_learned": 1,
@@ -64,7 +64,8 @@
   "shape": "piscine",
   "stage": "standalone",
   "types": [
-    "water"
+    "water",
+    "sky"
   ],
   "possible_genders": [
     "male",

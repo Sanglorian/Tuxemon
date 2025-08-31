@@ -1,6 +1,6 @@
 {
   "slug": "sampsack",
-  "category": "brawn",
+  "species": "brawn",
   "moveset": [
     {
       "level_learned": 1,
@@ -63,7 +63,7 @@
   "shape": "brute",
   "stage": "standalone",
   "types": [
-    "metal"
+    "heroic"
   ],
   "possible_genders": [
     "male",

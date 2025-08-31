@@ -1,6 +1,6 @@
 {
   "slug": "imbrickcile",
-  "category": "brick",
+  "species": "brick",
   "moveset": [
     {
       "level_learned": 1,
@@ -76,7 +76,8 @@
   "shape": "sprite",
   "stage": "basic",
   "types": [
-    "earth"
+    "earth",
+    "heroic"
   ],
   "possible_genders": [
     "male",

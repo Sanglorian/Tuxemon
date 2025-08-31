@@ -28,13 +28,12 @@
     "own_team": false,
     "own_trainer": false
   },
-  "category": "animal",
+  "category": "special",
   "tags": [
     "bird"
   ],
   "types": [
-    "wood",
-    "earth"
+    "sky"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

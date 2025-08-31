@@ -1,6 +1,6 @@
 {
   "slug": "lunight",
-  "category": "quasar",
+  "species": "quasar",
   "moveset": [
     {
       "level_learned": 1,
@@ -66,8 +66,8 @@
   "shape": "sprite",
   "stage": "standalone",
   "types": [
-    "metal",
-    "water"
+    "shadow",
+    "cosmic"
   ],
   "possible_genders": [
     "neuter"

@@ -1,6 +1,6 @@
 {
   "slug": "snokari",
-  "category": "hydra",
+  "species": "hydra",
   "moveset": [
     {
       "level_learned": 1,
@@ -54,7 +54,7 @@
   "shape": "serpent",
   "stage": "stage1",
   "types": [
-    "water"
+    "normal"
   ],
   "possible_genders": [
     "male",

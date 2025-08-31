@@ -1,6 +1,6 @@
 {
   "slug": "scarlant",
-  "category": "myrmidon",
+  "species": "myrmidon",
   "moveset": [
     {
       "level_learned": 1,
@@ -58,7 +58,8 @@
   "shape": "varmint",
   "stage": "basic",
   "types": [
-    "metal"
+    "earth",
+    "heroic"
   ],
   "possible_genders": [
     "male",

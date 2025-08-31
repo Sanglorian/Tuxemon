@@ -1,6 +1,6 @@
 {
   "slug": "angesnow",
-  "category": "driven_snow",
+  "species": "driven_snow",
   "moveset": [
     {
       "level_learned": 1,
@@ -72,7 +72,8 @@
   "shape": "humanoid",
   "stage": "stage1",
   "types": [
-    "water"
+    "frost",
+    "cosmic"
   ],
   "possible_genders": [
     "neuter"

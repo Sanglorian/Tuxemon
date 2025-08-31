@@ -1,6 +1,6 @@
 {
   "slug": "ziggurat",
-  "category": "mazerunner",
+  "species": "mazerunner",
   "moveset": [
     {
       "level_learned": 1,
@@ -63,7 +63,8 @@
   "shape": "varmint",
   "stage": "standalone",
   "types": [
-    "earth"
+    "earth",
+    "normal"
   ],
   "possible_genders": [
     "male",

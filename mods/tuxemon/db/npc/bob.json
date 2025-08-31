@@ -1,10 +1,10 @@
 {
   "slug": "bob",
-  "template": 
-    {
-      "sprite_name": "bob",
-      "combat_front": "adventurer",
-      "slug": "noclass"
-    }
-
+  "speech": {"profile": {"default": {}}},
+  "combat": {},
+  "template": {
+    "sprite_name": "bob",
+    "combat_front": "adventurer",
+    "slug": "noclass"
+  }
 }

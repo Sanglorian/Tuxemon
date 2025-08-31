@@ -44,13 +44,12 @@
     "own_team": false,
     "own_trainer": false
   },
-  "category": "simple",
+  "category": "special",
   "tags": [
     "bird"
   ],
   "types": [
-    "wood",
-    "earth"
+    "sky"
   ],
   "use_failure": "altitude_fail",
   "use_success": "altitude_success",

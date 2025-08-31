@@ -1,6 +1,6 @@
 {
   "slug": "ampystoma",
-  "category": "lightning_salamander",
+  "species": "lightning_salamander",
   "moveset": [
     {
       "level_learned": 1,
@@ -70,11 +70,13 @@
     "light",
     "weather",
     "water",
-    "electricity"
+    "electricity",
+    "amphibian"
   ],
   "shape": "brute",
   "stage": "stage1",
   "types": [
+    "lightning",
     "water"
   ],
   "possible_genders": [

@@ -1,6 +1,6 @@
 {
   "slug": "howl",
-  "category": "athena",
+  "species": "athena",
   "moveset": [
     {
       "level_learned": 1,
@@ -60,7 +60,8 @@
   "shape": "flier",
   "stage": "standalone",
   "types": [
-    "earth"
+    "normal",
+    "sky"
   ],
   "possible_genders": [
     "male",

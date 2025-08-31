@@ -1,6 +1,6 @@
 {
   "slug": "metoxic",
-  "category": "toxic_flag",
+  "species": "toxic_flag",
   "moveset": [
     {
       "level_learned": 1,
@@ -47,8 +47,7 @@
   "shape": "blob",
   "stage": "standalone",
   "types": [
-    "metal",
-    "wood"
+    "venom"
   ],
   "possible_genders": [
     "neuter"

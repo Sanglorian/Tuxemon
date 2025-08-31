@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import uuid
+from collections import Counter
 from collections.abc import Iterable, Mapping, Sequence
 from math import hypot
 from typing import TYPE_CHECKING, Any, Optional, TypedDict
@@ -11,16 +12,18 @@ from typing import TYPE_CHECKING, Any, Optional, TypedDict
 from tuxemon import prepare
 from tuxemon.battle import BattlesHandler
 from tuxemon.boxes import ItemBoxes, MonsterBoxes
-from tuxemon.db import Direction, NpcModel, db
+from tuxemon.db import DialogueProfile, Direction, NpcModel, db
 from tuxemon.entity import Entity
 from tuxemon.item.item import Item, decode_items, encode_items
 from tuxemon.locale import T
 from tuxemon.map import dirs2, get_direction, proj
 from tuxemon.map_view import SpriteController
 from tuxemon.math import Vector2
-from tuxemon.mission import MissionController
+from tuxemon.mission.controller import MissionController
+from tuxemon.mission.manager import MissionManager
 from tuxemon.money import MoneyController
 from tuxemon.monster import Monster, decode_monsters, encode_monsters
+from tuxemon.monster_dir.evolution_registry import EvolutionRegistry
 from tuxemon.movement import get_tile_moverate
 from tuxemon.relationship import (
     Relationships,
@@ -35,7 +38,8 @@ from tuxemon.tuxepedia import Tuxepedia, decode_tuxepedia, encode_tuxepedia
 from tuxemon.ui.cipher_processor import decode_cipher, encode_cipher
 
 if TYPE_CHECKING:
-    from tuxemon.economy import Economy, ShopInventory
+    from tuxemon.economy.applier import ShopInventory
+    from tuxemon.economy.economy import Economy
     from tuxemon.session import Session
 
 
@@ -63,6 +67,7 @@ class NPCState(TypedDict, total=False):
     tracker: Mapping[str, Any]
     step_tracker: Mapping[str, Any]
     unlocked_letters: Mapping[str, Any]
+    evolution_registry: Mapping[str, Any]
 
 
 def tile_distance(tile0: Iterable[float], tile1: Iterable[float]) -> float:
@@ -95,6 +100,7 @@ class NPC(Entity[NPCState]):
         # load initial data from the npc database
         npc_data = NpcModel.lookup(npc_slug, db)
         self.template = npc_data.template
+        self.combat = npc_data.combat
 
         # This is the NPC's name to be used in dialog
         self.name = T.translate(self.slug)
@@ -103,21 +109,13 @@ class NPC(Entity[NPCState]):
         self.behavior: Optional[str] = "wander"  # not used for now
         self.game_variables: dict[str, Any] = {}  # Tracks the game state
         self.battle_handler = BattlesHandler()
-        self.forfeit: bool = False
         # Tracks Tuxepedia (monster seen or caught)
         self.tuxepedia = Tuxepedia()
         self.relationships = Relationships()
         self.money_controller = MoneyController(self)
         # list of ways player can interact with the Npc
         self.interactions: Sequence[str] = []
-        # menu labels (world menu)
-        self.menu_save: bool = True
-        self.menu_load: bool = True
-        self.menu_player: bool = True
-        self.menu_monsters: bool = True
-        self.menu_bag: bool = True
-        self.menu_missions: bool = True
-        self.mission_controller = MissionController(self)
+        self.mission_controller = MissionController(self, MissionManager())
         self.economy: Optional[Economy] = None
         self.shop_inventory: Optional[ShopInventory] = None
         self.teleport_faint = TeleportFaint()
@@ -131,8 +129,9 @@ class NPC(Entity[NPCState]):
         self.party = PartyHandler(monster_boxes=self.monster_boxes, owner=self)
         self.item_boxes = ItemBoxes()
         self.items = NPCBagHandler(item_boxes=self.item_boxes)
-        self.pending_evolutions: list[tuple[Monster, Monster]] = []
+        self.evolution_registry = EvolutionRegistry()
         self.steps: float = 0.0
+        self.dialogue: Optional[DialogueProfile] = None
 
         # pathfinding and waypoint related
         self.pathfinding: Optional[tuple[int, int]] = None
@@ -171,26 +170,22 @@ class NPC(Entity[NPCState]):
             "battles": self.battle_handler.encode_battle(),
             "tuxepedia": encode_tuxepedia(self.tuxepedia),
             "relationships": encode_relationships(self.relationships),
-            "money": dict(),
+            "money": self.money_controller.save(),
             "items": self.items.encode_items(),
             "template": self.template.model_dump(),
             "missions": self.mission_controller.encode_missions(),
             "monsters": self.party.encode_party(),
             "player_name": self.name,
             "player_steps": self.steps,
-            "monster_boxes": dict(),
-            "item_boxes": dict(),
+            "monster_boxes": self.monster_boxes.get_state(),
+            "item_boxes": self.item_boxes.get_state(),
             "tile_pos": self.tile_pos,
             "teleport_faint": self.teleport_faint.to_tuple(),
             "tracker": encode_tracking(self.tracker),
             "step_tracker": encode_steps(self.step_tracker),
             "unlocked_letters": encode_cipher(self.unlocked_letters),
+            "evolution_registry": self.evolution_registry.encode_registry(),
         }
-
-        self.monster_boxes.save(state)
-        self.item_boxes.save(state)
-        state["money"] = self.money_controller.save()
-
         return state
 
     def set_state(self, session: Session, save_data: NPCState) -> None:
@@ -213,8 +208,11 @@ class NPC(Entity[NPCState]):
         self.steps = save_data["player_steps"]
         self.money_controller.load(save_data)
         self.unlocked_letters = decode_cipher(save_data)
+        self.evolution_registry.decode_registry(
+            save_data.get("evolution_registry", {})
+        )
         self.monster_boxes.load(self, save_data)
-        self.item_boxes.load(self, save_data)
+        self.item_boxes.load(save_data)
 
         self.teleport_faint = TeleportFaint.from_tuple(
             save_data["teleport_faint"]
@@ -670,6 +668,28 @@ class PartyHandler:
         """Returns the maximum number of monsters allowed in the party."""
         return self._party_limit
 
+    @property
+    def level_lowest(self) -> Optional[int]:
+        """Returns the lowest level among monsters in the party, or None if empty."""
+        if not self._monsters:
+            return None
+        return min(mon.level for mon in self._monsters)
+
+    @property
+    def level_highest(self) -> Optional[int]:
+        """Returns the highest level among monsters in the party, or None if empty."""
+        if not self._monsters:
+            return None
+        return max(mon.level for mon in self._monsters)
+
+    @property
+    def level_average(self) -> Optional[int]:
+        """Returns the average level of monsters in the party, or None if empty."""
+        if not self._monsters:
+            return None
+        total = sum(mon.level for mon in self._monsters)
+        return round(total / len(self._monsters))
+
     def add_monster(
         self,
         monster: Monster,
@@ -833,6 +853,27 @@ class PartyHandler:
             for monster in self._monsters:
                 monster.owner = None
         self._monsters.clear()
+
+    def get_alignment(self) -> Optional[str]:
+        """
+        Returns the dominant elemental type in the party,
+        based on the most frequently occurring type among monsters.
+        If no types are found, returns None.
+        """
+        type_counter: Counter[str] = Counter()
+
+        for monster in self._monsters:
+            try:
+                type_slugs = monster.types.get_type_slugs()
+                type_counter.update(type_slugs)
+            except Exception:
+                continue  # Skip if the monster has no types
+
+        if not type_counter:
+            return None
+
+        dominant_type, _ = type_counter.most_common(1)[0]
+        return dominant_type
 
     def encode_party(self) -> Sequence[Mapping[str, Any]]:
         return encode_monsters(self._monsters)

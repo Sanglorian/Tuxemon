@@ -25,12 +25,12 @@
     "own_team": false,
     "own_trainer": false
   },
-  "category": "animal",
+  "category": "special",
   "tags": [
     "weak"
   ],
   "types": [
-    "aether"
+    "normal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

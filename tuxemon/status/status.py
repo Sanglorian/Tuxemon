@@ -21,13 +21,13 @@ from tuxemon.db import (
     db,
 )
 from tuxemon.locale import T
+from tuxemon.modifiers import ModifiersHandler
 from tuxemon.surfanim import FlipAxes
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
     from tuxemon.plugin import PluginObject
     from tuxemon.session import Session
-    from tuxemon.states.combat.combat import CombatState
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +43,8 @@ class Status:
     Particular status that tuxemon monsters can be affected.
     """
 
+    MAX_STACKS: int = 5
+
     effect_manager: Optional[EffectManager] = None
     condition_manager: Optional[ConditionManager] = None
 
@@ -54,6 +56,8 @@ class Status:
     ) -> None:
         save_data = save_data or {}
 
+        self._effect_applied: set[str] = set()
+
         self.instance_id: UUID = uuid4()
         self.set_steps(steps)
         self.bond: bool = False
@@ -61,7 +65,6 @@ class Status:
         self.cond_id: int = 0
         self.animation: Optional[str] = None
         self.category: Optional[CategoryStatus] = None
-        self.combat_state: Optional[CombatState] = None
         self.description: str = ""
         self.flip_axes: FlipAxes = FlipAxes.NONE
         self.gain_cond: str = ""
@@ -72,6 +75,7 @@ class Status:
         self.duration: int = 0
         self.phase: EffectPhase = EffectPhase.DEFAULT
         self.range: Range = Range.melee
+        self.stack_level: int = 1
         self.on_positive_status: Optional[ResponseStatus] = None
         self.on_negative_status: Optional[ResponseStatus] = None
         self.on_tech_use: Optional[str] = None
@@ -81,14 +85,15 @@ class Status:
         self.slug: str = ""
         self.use_success: str = ""
         self.use_failure: str = ""
+        self.modifiers: ModifiersHandler = ModifiersHandler()
 
         if Status.effect_manager is None:
             Status.effect_manager = EffectManager(
-                CoreEffect, paths.CORE_EFFECT_PATH
+                CoreEffect, paths.CORE_EFFECT_PATH, paths.LIBDIR.parent
             )
         if Status.condition_manager is None:
             Status.condition_manager = ConditionManager(
-                CoreCondition, paths.CORE_CONDITION_PATH
+                CoreCondition, paths.CORE_CONDITION_PATH, paths.LIBDIR.parent
             )
 
         self.effects: Sequence[PluginObject] = []
@@ -130,7 +135,7 @@ class Status:
 
         self.icon = results.icon
 
-        self.modifiers = results.modifiers
+        self.modifiers = ModifiersHandler(results.modifiers)
         # monster stats
         self.statspeed = results.statspeed
         self.stathp = results.stathp
@@ -165,16 +170,6 @@ class Status:
         # Load the sound effect for this status
         self.sfx = results.sfx
 
-    def get_combat_state(self) -> CombatState:
-        """Returns the CombatState."""
-        if not self.combat_state:
-            raise ValueError("No CombatState.")
-        return self.combat_state
-
-    def set_combat_state(self, combat_state: Optional[CombatState]) -> None:
-        """Sets the CombatState."""
-        self.combat_state = combat_state
-
     def has_phase(self, phase: EffectPhase) -> bool:
         """Returns True if the current phase is equal to the provided phase, False otherwise."""
         return self.phase == phase
@@ -189,8 +184,7 @@ class Status:
         """
         Sets the phase for a given status and immediately applies its effect.
         """
-        self.set_phase(phase)
-        return self.use(session, self.get_host())
+        return self.use(session, self.get_host(), phase)
 
     def advance_round(self) -> None:
         """Advance the counter for this status if used."""
@@ -222,22 +216,13 @@ class Status:
         """Checks if the status has lasted beyond its intended duration."""
         return self.nr_turn > self.duration
 
-    def execute_status_action(
-        self,
-        session: Session,
-        combat_instance: CombatState,
-        target: Monster,
-        phase: EffectPhase,
+    def use(
+        self, session: Session, target: Monster, phase: EffectPhase
     ) -> StatusEffectResult:
-        """Executes the current status action and returns the result."""
-        self.set_combat_state(combat_instance)
-        self.set_phase(phase)
-        return self.use(session, target)
-
-    def use(self, session: Session, target: Monster) -> StatusEffectResult:
         """
         Applies the status's effects using EffectProcessor and returns the results.
         """
+        self.set_phase(phase)
         result = self.effect_handler.process_status(
             session=session,
             source=self,
@@ -255,7 +240,7 @@ class Status:
             if getattr(self, attr)
         }
 
-        save_data["instance_id"] = str(self.instance_id.hex)
+        save_data["instance_id"] = self.instance_id.hex
 
         return save_data
 

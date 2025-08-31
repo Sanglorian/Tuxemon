@@ -1,6 +1,6 @@
 {
   "slug": "rhincus",
-  "category": "missing_link",
+  "species": "missing_link",
   "moveset": [
     {
       "level_learned": 1,
@@ -65,7 +65,8 @@
   "shape": "flier",
   "stage": "standalone",
   "types": [
-    "earth"
+    "earth",
+    "sky"
   ],
   "possible_genders": [
     "male",

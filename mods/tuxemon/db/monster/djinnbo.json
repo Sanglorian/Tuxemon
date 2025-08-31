@@ -1,6 +1,6 @@
 {
   "slug": "djinnbo",
-  "category": "vengeance",
+  "species": "vengeance",
   "moveset": [
     {
       "level_learned": 1,
@@ -69,7 +69,8 @@
   "shape": "humanoid",
   "stage": "standalone",
   "types": [
-    "fire"
+    "fire",
+    "shadow"
   ],
   "possible_genders": [
     "neuter"

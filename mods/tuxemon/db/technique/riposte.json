@@ -12,7 +12,7 @@
     }
   ],
   "flip_axes": "",
-  "speed": "fast",
+  "speed": "extremely_fast",
   "potency": 1,
   "power": 0,
   "range": "special",
@@ -36,7 +36,7 @@
     "shielded"
   ],
   "types": [
-    "fire"
+    "normal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

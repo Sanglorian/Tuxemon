@@ -15,7 +15,7 @@
     }
   ],
   "flip_axes": "",
-  "speed": "normal",
+  "speed": "slow",
   "potency": 0.8,
   "power": 3,
   "range": "melee",
@@ -37,7 +37,7 @@
     "bird"
   ],
   "types": [
-    "fire"
+    "sky"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

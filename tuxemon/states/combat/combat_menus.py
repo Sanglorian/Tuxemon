@@ -6,23 +6,24 @@ import logging
 from collections import defaultdict
 from collections.abc import Callable, Generator
 from functools import partial
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, ClassVar, Optional
 
 from pygame import SRCALPHA
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon import combat, graphics, prepare, tools
+from tuxemon import graphics, prepare, tools
+from tuxemon.combat import utils
 from tuxemon.db import EffectPhase, State, TechSort
+from tuxemon.item.filter import ItemFilter
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu, PopUpMenu
 from tuxemon.monster import Monster
-from tuxemon.sprite import SpriteGroup, VisualSpriteList
 from tuxemon.states.items.item_menu import ItemMenuState
 from tuxemon.states.monster import MonsterMenuState
 from tuxemon.technique.technique import Technique
-from tuxemon.ui.draw import GraphicBox
+from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
@@ -44,6 +45,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
     query what player is doing what. There's lots of spaghetti right now.
     """
 
+    name: ClassVar[str] = "MainCombatMenuState"
     escape_key_exits = False
     columns = 2
 
@@ -53,21 +55,28 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         super().__init__()
         self.rect = self.calculate_menu_rectangle()
         self.session = session
+        self.combat_session = self.client.combat_session
         self.combat = cmb
         self.character = monster.get_owner()
         self.monster = monster
-        self.party = cmb.field_monsters.get_monsters(self.character)
-        if self.character == cmb.players[0]:
-            self.enemy = cmb.players[1]
-            self.opponents = cmb.field_monsters.get_monsters(self.enemy)
-        if self.character == cmb.players[1]:
-            self.enemy = cmb.players[0]
-            self.opponents = cmb.field_monsters.get_monsters(self.enemy)
-        self.menu_visibility = cmb._menu_visibility
-        self.menu_visibility.menu_forfeit = self.enemy.forfeit
+        self.party = self.combat_session.field_monsters.get_monsters(
+            self.character
+        )
+        if self.character == self.combat_session.left_player:
+            self.enemy = self.combat_session.right_player
+            self.opponents = self.combat_session.field_monsters.get_monsters(
+                self.enemy
+            )
+        if self.character == self.combat_session.right_player:
+            self.enemy = self.combat_session.left_player
+            self.opponents = self.combat_session.field_monsters.get_monsters(
+                self.enemy
+            )
+        self.menu_visibility = self.combat_session.menu_visibility
+        self.menu_visibility.menu_forfeit = self.enemy.combat.forfeit
         params = {"name": monster.name}
         message = T.format("combat_monster_choice", params)
-        self.combat.alert(message)
+        self.combat.dialog.alert(message)
 
     def calculate_menu_rectangle(self) -> Rect:
         rect_screen = self.client.screen.get_rect()
@@ -84,7 +93,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             ("menu_item", self.open_item_menu),
         )
 
-        if self.combat.is_trainer_battle:
+        if self.client.combat_session.is_trainer_battle:
             menu_items_map = common_menu_items + (
                 ("menu_forfeit", self.forfeit),
             )
@@ -110,16 +119,16 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         Cause player to forfeit from the trainer battles.
         """
         forfeit = Technique.create("menu_forfeit")
-        forfeit.set_combat_state(self.combat)
         self.client.remove_state_by_name("MainCombatMenuState")
-        self.combat.enqueue_action(self.party[0], forfeit, self.opponents[0])
+        self.combat_session.enqueue_action(
+            self.party[0], forfeit, self.opponents[0]
+        )
 
     def run(self) -> None:
         """
         Cause player to run from the wild encounters.
         """
         run = Technique.create("menu_run")
-        run.set_combat_state(self.combat)
         status = self.monster.status.get_current_status()
         message = status.name.lower() if status else ""
         if not run.validate_monster(self.session, self.monster):
@@ -131,7 +140,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             tools.open_dialog(self.client, [msg])
             return
         self.client.remove_state_by_name("MainCombatMenuState")
-        self.combat.enqueue_action(self.party[0], run, self.opponents[0])
+        self.combat_session.enqueue_action(
+            self.party[0], run, self.opponents[0]
+        )
 
     def open_swap_menu(self) -> None:
         """Open menus to swap monsters in party."""
@@ -139,7 +150,6 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         def swap_it(menuitem: MenuItem[Monster]) -> None:
             added = menuitem.game_object
             swap = Technique.create("swap")
-            swap.set_combat_state(self.combat)
             status = self.monster.status.get_current_status()
             message = status.name.lower() if status else ""
             if not swap.validate_monster(self.session, self.monster):
@@ -150,17 +160,17 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 msg = T.format("combat_player_swap_status", params)
                 tools.open_dialog(self.client, [msg])
                 return
-            self.combat.swap_tracker.register(added)
-            self.combat.enqueue_action(self.monster, swap, added)
+            self.combat_session.swap_tracker.register(added)
+            self.combat_session.enqueue_action(self.monster, swap, added)
             self.client.remove_state_by_name("MonsterMenuState")
             self.client.remove_state_by_name("MainCombatMenuState")
 
         def validate_monster(menu_item: Monster) -> bool:
             if menu_item.is_fainted:
                 return False
-            if menu_item in self.combat.active_monsters:
+            if menu_item in self.combat_session.active_monsters:
                 return False
-            if not self.combat.swap_tracker.can_swap(menu_item):
+            if not self.combat_session.swap_tracker.can_swap(menu_item):
                 return False
             return True
 
@@ -169,7 +179,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 return validate_monster(menu_item)
             return False
 
-        menu = self.client.push_state(MonsterMenuState(self.character))
+        menu = self.client.push_state(
+            MonsterMenuState(self.character.monsters)
+        )
         menu.on_menu_selection = swap_it  # type: ignore[assignment]
         menu.is_valid_entry = validate  # type: ignore[assignment]
         menu.anchor("bottom", self.rect.top)
@@ -184,8 +196,10 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
         def choose_item() -> None:
             # open menu to choose item
+            items_filtered = ItemFilter(self.character)
+            items_filtered.set_filter_usable_in_state("MainCombatMenuState")
             menu = self.client.push_state(
-                ItemMenuState(self.character, self.name)
+                ItemMenuState(self.character, self.name, items_filtered)
             )
 
             # set next menu after the selection is made
@@ -204,7 +218,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     enqueue_item(item, mon)
                 else:
                     state = self.client.push_state(
-                        MonsterMenuState(self.character)
+                        MonsterMenuState(self.character.monsters)
                     )
                     state.is_valid_entry = partial(validate, item)  # type: ignore[method-assign]
                     state.on_menu_selection = partial(enqueue_item, item)  # type: ignore[method-assign]
@@ -228,8 +242,8 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             # check target status
             status = target.status.get_current_status()
             if status:
-                result_status = status.execute_status_action(
-                    self.session, self.combat, target, EffectPhase.ENQUEUE_ITEM
+                result_status = status.use(
+                    self.session, target, EffectPhase.ENQUEUE_ITEM
                 )
                 if result_status.extras:
                     templates = [
@@ -240,7 +254,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     return
 
             # enqueue the item
-            self.combat.enqueue_action(self.character, item, target)
+            self.combat_session.enqueue_action(self.character, item, target)
 
             # close all the open menus
             self.client.remove_state_by_name("MainCombatMenuState")
@@ -314,12 +328,12 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                         "rec": str(tech.game_object.recharge_length),
                     },
                 )
-                self.combat.alert(label, dialog_speed="max")
+                self.combat.dialog.alert(label, dialog_speed="max")
 
             def hide() -> None:
                 params = {"name": self.monster.name}
                 message = T.format("combat_monster_choice", params)
-                self.combat.alert(message, dialog_speed="max")
+                self.combat.dialog.alert(message, dialog_speed="max")
 
             menu.on_menu_selection_change_callback = show
             menu.on_close_callback = hide
@@ -365,7 +379,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 return
 
             if (
-                combat.has_effect(technique, "damage")
+                utils.has_effect(technique, "damage")
                 and target == self.monster
             ):
                 params = {"name": technique.name.upper()}
@@ -374,13 +388,13 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 return
 
             # Pre-check the technique for validity
-            self.combat._combat_variables["action_tech"] = technique.slug
-            technique = combat.pre_checking(
-                self.session, self.monster, technique, target, self.combat
+            self.combat_session.set_variable("action_tech", technique.slug)
+            technique = self.combat_session.pre_checking(
+                self.session, self.monster, technique, target
             )
 
             # Enqueue the action
-            self.combat.enqueue_action(self.monster, technique, target)
+            self.combat_session.enqueue_action(self.monster, technique, target)
 
             # close all the open menus
             if len(self.opponents) > 1:
@@ -394,6 +408,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 class CombatTargetMenuState(Menu[Monster]):
     """Menu for selecting targets of techniques and items."""
 
+    name: ClassVar[str] = "CombatTargetMenuState"
     transparent = True
 
     def __init__(
@@ -402,11 +417,9 @@ class CombatTargetMenuState(Menu[Monster]):
         super().__init__()
         self.monster = monster
         self.combat_state = combat_state
+        self.combat_session = self.client.combat_session
         self.character = monster.get_owner()
         self.technique = technique
-
-        self.menu_items = VisualSpriteList(parent=self.calc_menu_items_rect)
-        self.menu_sprites = SpriteGroup()
         self.targeting_map: defaultdict[str, list[Monster]] = defaultdict(list)
 
         self._create_menu()
@@ -423,7 +436,7 @@ class CombatTargetMenuState(Menu[Monster]):
         for (
             player,
             monsters,
-        ) in self.combat_state.field_monsters.get_all_monsters().items():
+        ) in self.combat_session.field_monsters.get_all_monsters().items():
             targeting_class = (
                 "own_monster" if player == self.character else "enemy_monster"
             )
@@ -507,7 +520,7 @@ class CombatTargetMenuState(Menu[Monster]):
             self.border.draw(selected.image)
 
             if selected.description:
-                self.alert(selected.description)
+                self.dialog.alert(selected.description)
 
     def on_menu_selection_change(self) -> None:
         """Handles border updates when selection changes."""

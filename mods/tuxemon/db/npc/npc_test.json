@@ -1,11 +1,12 @@
 {
   "slug": "npc_test",
-  "template": 
-    {
-      "sprite_name": "adventurer",
-      "combat_front": "adventurer",
-      "slug": "adventurer"
-    },
+  "speech": {"profile": {"default": {}}},
+  "combat": {},
+  "template": {
+    "sprite_name": "adventurer",
+    "combat_front": "adventurer",
+    "slug": "adventurer"
+  },
   "monsters": [
     {
       "name": "Snowball",

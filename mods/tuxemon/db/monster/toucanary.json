@@ -1,6 +1,6 @@
 {
   "slug": "toucanary",
-  "category": "tropical",
+  "species": "tropical",
   "moveset": [
     {
       "level_learned": 1,
@@ -74,7 +74,7 @@
   "shape": "flier",
   "stage": "basic",
   "types": [
-    "wood"
+    "sky"
   ],
   "possible_genders": [
     "male",

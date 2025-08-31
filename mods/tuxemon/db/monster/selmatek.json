@@ -1,6 +1,6 @@
 {
   "slug": "selmatek",
-  "category": "sand_steed",
+  "species": "sand_steed",
   "moveset": [
     {
       "level_learned": 1,
@@ -51,7 +51,8 @@
   "shape": "grub",
   "stage": "stage1",
   "types": [
-    "earth"
+    "earth",
+    "venom"
   ],
   "possible_genders": [
     "male",

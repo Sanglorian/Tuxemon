@@ -1,6 +1,6 @@
 {
   "slug": "spoilurm",
-  "category": "detritus",
+  "species": "detritus",
   "moveset": [
     {
       "level_learned": 1,
@@ -61,7 +61,7 @@
   "shape": "serpent",
   "stage": "standalone",
   "types": [
-    "wood"
+    "venom"
   ],
   "possible_genders": [
     "male",

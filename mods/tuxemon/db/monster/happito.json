@@ -1,6 +1,6 @@
 {
   "slug": "happito",
-  "category": "ecstatic_emotion",
+  "species": "ecstatic_emotion",
   "moveset": [
     {
       "level_learned": 1,
@@ -55,8 +55,8 @@
   "shape": "blob",
   "stage": "stage1",
   "types": [
-    "earth",
-    "metal"
+    "metal",
+    "cosmic"
   ],
   "possible_genders": [
     "neuter"

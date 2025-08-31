@@ -33,12 +33,12 @@
     "own_team": false,
     "own_trainer": false
   },
-  "category": "condition_imposer",
+  "category": "special",
   "tags": [
     "megafauna"
   ],
   "types": [
-    "aether"
+    "water"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

@@ -1,6 +1,6 @@
 {
   "slug": "ghosteeth",
-  "category": "cheshire",
+  "species": "cheshire",
   "moveset": [
     {
       "level_learned": 1,
@@ -67,7 +67,7 @@
   "shape": "blob",
   "stage": "standalone",
   "types": [
-    "metal"
+    "shadow"
   ],
   "possible_genders": [
     "neuter"

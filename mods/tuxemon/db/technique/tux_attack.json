@@ -8,7 +8,7 @@
     }
   ],
   "flip_axes": "",
-  "speed": "fast",
+  "speed": "extremely_fast",
   "potency": 0.1,
   "power": 2,
   "randomly": false,
@@ -31,7 +31,8 @@
     "reserved"
   ],
   "types": [
-    "wood"
+    "frost",
+    "heroic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

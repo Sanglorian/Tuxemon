@@ -1,10 +1,10 @@
 {
   "slug": "penguin",
-  "template": 
-    {
-      "sprite_name": "penguin",
-      "combat_front": "penguin",
-      "slug": "noclass"
-    }
-
+  "speech": {"profile": {"default": {}}},
+  "combat": {},
+  "template": {
+    "sprite_name": "penguin",
+    "combat_front": "penguin",
+    "slug": "noclass"
+  }
 }

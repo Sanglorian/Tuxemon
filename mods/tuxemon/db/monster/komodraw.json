@@ -1,6 +1,6 @@
 {
   "slug": "komodraw",
-  "category": "quickdraw",
+  "species": "quickdraw",
   "moveset": [
     {
       "level_learned": 1,
@@ -80,7 +80,7 @@
   "shape": "humanoid",
   "stage": "basic",
   "types": [
-    "fire"
+    "normal"
   ],
   "possible_genders": [
     "male",

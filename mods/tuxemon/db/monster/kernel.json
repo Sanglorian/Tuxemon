@@ -1,6 +1,6 @@
 {
   "slug": "kernel",
-  "category": "virtual",
+  "species": "virtual",
   "moveset": [
     {
       "level_learned": 1,
@@ -65,6 +65,7 @@
   "shape": "sprite",
   "stage": "standalone",
   "types": [
+    "lightning",
     "metal"
   ],
   "possible_genders": [

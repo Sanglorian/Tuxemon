@@ -1,6 +1,6 @@
 {
   "slug": "medushock",
-  "category": "jellyfish",
+  "species": "jellyfish",
   "moveset": [
     {
       "level_learned": 1,
@@ -64,8 +64,8 @@
   "shape": "polliwog",
   "stage": "standalone",
   "types": [
-    "fire",
-    "water"
+    "lightning",
+    "venom"
   ],
   "possible_genders": [
     "male",

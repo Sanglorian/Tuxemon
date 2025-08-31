@@ -1,6 +1,6 @@
 {
   "slug": "katacoon",
-  "category": "stance",
+  "species": "stance",
   "moveset": [
     {
       "level_learned": 1,
@@ -73,7 +73,7 @@
   "stage": "stage1",
   "types": [
     "metal",
-    "wood"
+    "venom"
   ],
   "possible_genders": [
     "male",

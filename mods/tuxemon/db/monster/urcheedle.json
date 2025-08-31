@@ -1,6 +1,6 @@
 {
   "slug": "urcheedle",
-  "category": "spiked",
+  "species": "spiked",
   "moveset": [
     {
       "level_learned": 1,
@@ -64,7 +64,8 @@
   "shape": "blob",
   "stage": "standalone",
   "types": [
-    "water"
+    "earth",
+    "venom"
   ],
   "possible_genders": [
     "male",

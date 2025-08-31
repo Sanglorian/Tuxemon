@@ -1,6 +1,6 @@
 {
   "slug": "eskipup",
-  "category": "frosty",
+  "species": "frosty",
   "moveset": [
     {
       "level_learned": 1,
@@ -45,7 +45,7 @@
   "shape": "hunter",
   "stage": "basic",
   "types": [
-    "water"
+    "frost"
   ],
   "possible_genders": [
     "male",

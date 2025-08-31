@@ -1,6 +1,6 @@
 {
   "slug": "crustagu",
-  "category": "grandfather",
+  "species": "grandfather",
   "moveset": [
     {
       "level_learned": 1,
@@ -75,7 +75,8 @@
   "shape": "polliwog",
   "stage": "stage2",
   "types": [
-    "water"
+    "water",
+    "venom"
   ],
   "possible_genders": [
     "male",

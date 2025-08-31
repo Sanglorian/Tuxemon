@@ -1,6 +1,6 @@
 {
   "slug": "gladiatorbug",
-  "category": "bustuarius",
+  "species": "bustuarius",
   "moveset": [
     {
       "level_learned": 1,
@@ -70,7 +70,8 @@
   "shape": "humanoid",
   "stage": "stage2",
   "types": [
-    "wood"
+    "metal",
+    "heroic"
   ],
   "possible_genders": [
     "male",

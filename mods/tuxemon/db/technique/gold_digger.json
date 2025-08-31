@@ -8,7 +8,7 @@
     }
   ],
   "flip_axes": "",
-  "speed": "normal",
+  "speed": "very_slow",
   "potency": 1,
   "power": 1,
   "range": "melee",
@@ -30,7 +30,7 @@
     "gemstone"
   ],
   "types": [
-    "aether"
+    "normal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

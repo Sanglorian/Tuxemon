@@ -10,15 +10,15 @@ from __future__ import annotations
 import logging
 from abc import ABC
 from functools import partial
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, ClassVar, Optional, Union
 
 from pygame.rect import Rect
+from pygame.surface import Surface
 from pygame.transform import flip as pg_flip
 
 from tuxemon import graphics, prepare
-from tuxemon.combat import alive_party, build_hud_text
+from tuxemon.combat.utils import alive_party, build_hud_text
 from tuxemon.formula import config_combat
-from tuxemon.locale import T
 from tuxemon.menu.menu import Menu
 from tuxemon.sprite import CaptureDeviceSprite, Sprite
 from tuxemon.tools import scale
@@ -30,18 +30,20 @@ from tuxemon.ui.combat_layout import (
     prepare_layout,
     scaled_layouts,
 )
-from tuxemon.ui.combat_monsters import FieldMonsters, MonsterSpriteMap
+from tuxemon.ui.combat_monsters import MonsterSpriteMap
 from tuxemon.ui.combat_status import StatusIconManager
 from tuxemon.ui.combat_zone import CombatZone
-from tuxemon.ui.text import HorizontalAlignment
+from tuxemon.ui.graphic_box import GraphicBox
+from tuxemon.ui.text import TextArea
+from tuxemon.ui.text_alignment import HorizontalAlignment
 
 if TYPE_CHECKING:
     from tuxemon.animation import Animation
+    from tuxemon.combat.combat_context import CombatContext
+    from tuxemon.core.core_effect import ItemEffectResult
     from tuxemon.item.item import Item
     from tuxemon.monster import Monster
     from tuxemon.npc import NPC
-
-    from .combat_context import CombatContext
 
 logger = logging.getLogger(__name__)
 
@@ -66,22 +68,48 @@ class CombatAnimations(Menu[None], ABC):
     but never game objects.
     """
 
+    name: ClassVar[str] = "CombatAnimations"
+
     def __init__(self, context: CombatContext) -> None:
         super().__init__()
         self.session = context.session
-        self.players = context.teams
         self.graphics = context.graphics
-        self.is_double = context.battle_mode == "double"
-        self.field_monsters = FieldMonsters()
         self.sprite_map = MonsterSpriteMap()
-        self.is_trainer_battle = False
         self.capdevs: list[CaptureDeviceSprite] = []
         self.bars = CombatBars(self.graphics)
         layout_manager = LayoutManager(scaled_layouts, layout_groups)
-        _layout = prepare_layout(self.players, layout_manager)
+        _layout = prepare_layout(context.teams, layout_manager)
         self.hud_manager = CombatLayoutManager(_layout)
         self.status_icons = StatusIconManager(self, _layout, self.hud_manager)
         self.combat_zone = CombatZone(prepare.SCREEN_RECT)
+
+    def draw(self, surface: Surface) -> None:
+        """
+        Draw combat state.
+
+        Parameters:
+            surface: Surface where to draw.
+        """
+        super().draw(surface)
+        self.bars.draw_bars(self.hud_manager.hud_map)
+
+    def show_combat_dialog(self) -> None:
+        """Create and show the area where battle messages are displayed."""
+        # make the border and area at the bottom of the screen for messages
+        rect_screen = self.client.screen.get_rect()
+        rect = Rect(0, 0, rect_screen.w, rect_screen.h // 4)
+        rect.bottomright = rect_screen.w, rect_screen.h
+        border = graphics.load_and_scale(self.borders_filename)
+        self.dialog_box = GraphicBox(border, None, self.background_color)
+        self.dialog_box.rect = rect
+        self.sprites.add(self.dialog_box, layer=100)
+
+        # make a text area to show messages
+        self.text_area = TextArea(self.font, self.font_color)
+        self.text_area.rect = self.dialog_box.calc_inner_rect(
+            self.dialog_box.rect,
+        )
+        self.sprites.add(self.text_area, layer=100)
 
     def animate_open(self) -> None:
         self.transition_none_normal()
@@ -93,7 +121,9 @@ class CombatAnimations(Menu[None], ABC):
         for player, layout in self.hud_manager.layout.items():
             self.animate_party_hud_in(player, layout["party"][0])
 
-        for player in self.players[: 2 if self.is_trainer_battle else 1]:
+        for player in self.client.combat_session.players[
+            : 2 if self.client.combat_session.is_trainer_battle else 1
+        ]:
             self.task(partial(self.animate_trainer_leave, player), interval=3)
 
     def blink(self, sprite: Sprite) -> None:
@@ -123,7 +153,10 @@ class CombatAnimations(Menu[None], ABC):
         monster sprite moving into position, and the capture device opening animation.
         It also plays the combat call sound.
         """
-        self.hud_manager.assign(npc, monster, self.is_double)
+        session = self.client.combat_session
+        self.hud_manager.assign(
+            session.count_players, npc, monster, session.is_double
+        )
         feet = self.hud_manager.get_feet_position(npc, monster)
 
         # Load and scale capture device sprite
@@ -166,7 +199,7 @@ class CombatAnimations(Menu[None], ABC):
 
         # Load monster sprite and set final position
         monster_sprite = monster.get_sprite(
-            "back" if npc == self.players[0] else "front"
+            "back" if npc == session.left_player else "front"
         )
         monster_sprite.rect.midbottom = feet
         self.sprites.add(monster_sprite)
@@ -238,7 +271,11 @@ class CombatAnimations(Menu[None], ABC):
         self.animate_monster_leave(monster)
         self.task(kill_monster, interval=2)
 
-        for monsters in self.field_monsters.get_all_monsters().values():
+        for (
+            monsters
+        ) in (
+            self.client.combat_session.field_monsters.get_all_monsters().values()
+        ):
             if monster in monsters:
                 monsters.remove(monster)
 
@@ -269,21 +306,71 @@ class CombatAnimations(Menu[None], ABC):
             transition="out_quint",
         )
 
-    def animate_exp(self, monster: Monster) -> None:
-        target_previous = monster.experience_required()
-        target_next = monster.experience_required(1)
-        diff_value = monster.total_experience - target_previous
-        diff_target = target_next - target_previous
-        value = max(0, min(1, (diff_value) / (diff_target)))
-        if monster.levelling_up:
-            value = 1.0
-        exp_bar = self.bars.get_exp_bar(monster)
-        self.animate(
-            exp_bar,
-            value=value,
-            duration=0.7,
-            transition="out_quint",
+    def calculate_bar_value(
+        self, total_experience: int, xp_start: int, xp_end: int
+    ) -> float:
+        """
+        Calculates normalized bar progress as a float between 0.0 and 1.0.
+        Prevents overflow/underflow visually.
+        """
+        return max(
+            0.0, min(1.0, (total_experience - xp_start) / (xp_end - xp_start))
         )
+
+    def animate_exp(self, monster: Monster) -> None:
+        exp_bar = self.bars.get_exp_bar(monster)
+
+        if monster.levelling_up:
+
+            def fill_to_max() -> Animation:
+                return self.animate(
+                    exp_bar,
+                    value=1.0,
+                    duration=0.3,
+                    transition="linear",
+                )
+
+            def reset_bar() -> Animation:
+                return self.animate(
+                    exp_bar,
+                    value=0.0,
+                    duration=0.1,
+                    transition="linear",
+                    delay=1.0,
+                )
+
+            def animate_new_level_progress() -> Animation:
+                value_for_new_level = self.calculate_bar_value(
+                    total_experience=monster.total_experience,
+                    xp_start=monster.experience_required(),
+                    xp_end=monster.experience_required(1),
+                )
+                return self.animate(
+                    exp_bar,
+                    value=value_for_new_level,
+                    duration=0.7,
+                    transition="linear",
+                    delay=0.5,
+                )
+
+            self.chain_animations(
+                fill_to_max,
+                reset_bar,
+                animate_new_level_progress,
+            )
+
+        else:
+            value = self.calculate_bar_value(
+                total_experience=monster.total_experience,
+                xp_start=monster.experience_required(),
+                xp_end=monster.experience_required(1),
+            )
+            self.animate(
+                exp_bar,
+                value=value,
+                duration=0.7,
+                transition="out_quint",
+            )
 
     def animate_monster_leave(self, monster: Monster) -> None:
         sprite = self.sprite_map.get_sprite(monster)
@@ -345,7 +432,7 @@ class CombatAnimations(Menu[None], ABC):
                 displayed (e.g. "hud0", etc.).
             animate: Whether the HUD should be animated (slide in) or not.
         """
-        trainer_battle = self.is_trainer_battle
+        trainer_battle = self.client.combat_session.is_trainer_battle
         menu = self.graphics.menu
         owner = monster.get_owner()
         hud_rect = self.hud_manager.get_rect(owner, hud_position)
@@ -361,10 +448,9 @@ class CombatAnimations(Menu[None], ABC):
             Returns:
                 The built HUD sprite.
             """
+            left_player = self.client.combat_session.left_player
             symbol = False
-            if not is_player and self.players[0].tuxepedia.is_caught(
-                monster.slug
-            ):
+            if not is_player and left_player.tuxepedia.is_caught(monster.slug):
                 symbol = True
             label = build_hud_text(
                 menu, monster, is_player, trainer_battle, symbol
@@ -415,7 +501,10 @@ class CombatAnimations(Menu[None], ABC):
     def animate_party_hud_left(
         self, home: Rect
     ) -> tuple[Optional[Sprite], int, int]:
-        if self.is_trainer_battle and not self.is_double:
+        if (
+            self.client.combat_session.is_trainer_battle
+            and not self.client.combat_session.is_double
+        ):
             tray = self._load_sprite(
                 self.graphics.hud.tray_opponent,
                 {"bottom": home.bottom, "right": 0, "layer": hud_layer},
@@ -505,13 +594,17 @@ class CombatAnimations(Menu[None], ABC):
     def animate_parties_in(self) -> None:
         """Animate the parties entering the battle scene."""
         x, y, w, h = prepare.SCREEN_RECT
+        session = self.client.combat_session
 
         # Load background image
         self.update_background(self.graphics.background)
 
         # Get player and opponent
-        player, opponent = self.players
+        player, opponent = session.players
         opp_mon = opponent.monsters[0]
+        self.hud_manager.assign(
+            session.count_players, opponent, opp_mon, session.is_double
+        )
         player_home = self.hud_manager.get_rect(player, "home")
         opp_home = self.hud_manager.get_rect(opponent, "home")
 
@@ -531,7 +624,7 @@ class CombatAnimations(Menu[None], ABC):
         )
 
         # Load and animate opponent
-        if self.is_trainer_battle:
+        if self.client.combat_session.is_trainer_battle:
             combat_front = opponent.template.combat_front
             enemy = self.load_sprite(
                 f"gfx/sprites/player/{combat_front}.png",
@@ -544,7 +637,7 @@ class CombatAnimations(Menu[None], ABC):
             enemy.rect.bottom = back_island.rect.bottom - scale(24)
             enemy.rect.centerx = back_island.rect.centerx
             self.sprite_map.add_sprite(opp_mon, enemy)
-            self.field_monsters.add_monster(opponent, opp_mon)
+            session.field_monsters.add_monster(opponent, opp_mon)
             self.update_hud(opponent, True, True)
 
         self.sprites.add(enemy)
@@ -569,10 +662,12 @@ class CombatAnimations(Menu[None], ABC):
         self.sprite_map.add_sprite(player, player_back)
         self.flip_sprites(enemy, player_back)
         self.animate_sprites(enemy, back_island, front_island, player_back)
-        if not self.is_trainer_battle:
-            sound = self.players[1].monsters[0].combat_call
+        if not self.client.combat_session.is_trainer_battle:
+            sound = session.right_player.monsters[0].combat_call
             self.play_sound_effect(sound, 1.5)
-        self.display_alert_message()
+
+        start_message = self.client.combat_session.get_start_message()
+        self.dialog.alert(start_message)
 
     def flip_sprites(self, enemy: Sprite, player_back: Sprite) -> None:
         """Flip the sprites horizontally."""
@@ -592,12 +687,13 @@ class CombatAnimations(Menu[None], ABC):
         player_back: Sprite,
     ) -> None:
         """Animate the sprites."""
+        session = self.client.combat_session
         y_mod = scale(50)
         duration = 3
         animate = partial(
             self.animate, transition="out_quad", duration=duration
         )
-        position1 = self.hud_manager.get_rect(self.players[1], "home")
+        position1 = self.hud_manager.get_rect(session.right_player, "home")
         animate(
             enemy.rect,
             back_island.rect,
@@ -610,7 +706,7 @@ class CombatAnimations(Menu[None], ABC):
             transition="out_back",
             relative=True,
         )
-        position2 = self.hud_manager.get_rect(self.players[0], "home")
+        position2 = self.hud_manager.get_rect(session.left_player, "home")
         animate(
             player_back.rect,
             front_island.rect,
@@ -629,15 +725,6 @@ class CombatAnimations(Menu[None], ABC):
     ) -> None:
         """Play the sound effect."""
         self.client.sound_manager.play_sound(sound, value)
-
-    def display_alert_message(self) -> None:
-        """Display the alert message."""
-        if self.is_trainer_battle:
-            params = {"name": self.players[1].name.upper()}
-            self.alert(T.format("combat_trainer_appeared", params))
-        else:
-            params = {"name": self.players[1].monsters[0].name.upper()}
-            self.alert(T.format("combat_wild_appeared", params))
 
     def animate_throwing(
         self,
@@ -669,22 +756,25 @@ class CombatAnimations(Menu[None], ABC):
 
     def animate_capture_monster(
         self,
-        is_captured: bool,
-        num_shakes: int,
+        result: ItemEffectResult,
         monster: Monster,
         item: Item,
         sprite: Sprite,
+        texts: tuple[str, str, str],
     ) -> None:
         """
         Animation for capturing monsters.
 
         Parameters:
-            is_captured: Whether the monster will be successfully captured.
-            num_shakes: The number of times the capture device will shake.
+            result: Result of the capture plugin.
             monster: The monster being captured.
             item: The capture device used to capture the monster.
             sprite: The sprite to animate.
+            messages: Success header, success and failture text.
         """
+        num_shakes = result.num_shakes
+        is_captured = result.success
+        success_header_text, success_text, failure_text = texts
         monster_sprite = self.sprite_map.get_sprite(monster)
         if monster_sprite is None:
             raise KeyError(f"Sprite not found for entity: {monster.name}")
@@ -725,28 +815,29 @@ class CombatAnimations(Menu[None], ABC):
             shake_ball(1.8 + i * 1.0)
 
         if is_captured and monster.owner:
-            combat = item.get_combat_state()
-            trainer = monster.get_owner()
-            combat._captured_mon = monster
+            event_bus = self.client.event_bus
+            self.client.combat_session.set_variable("captured_mon", monster)
 
             def show_success(delay: float) -> None:
-                self.task(combat.end_combat, interval=delay + 4)
-                gotcha = T.translate("gotcha")
-                params = {"name": monster.name.upper()}
-                if len(trainer.monsters) >= prepare.PARTY_LIMIT:
-                    info = T.format("gotcha_kennel", params)
-                else:
-                    info = T.format("gotcha_team", params)
-                gotcha += "\n" + info
-                delay += len(gotcha) * config_combat.letter_time
                 self.task(
-                    partial(self.alert, gotcha),
+                    partial(event_bus.publish, "clean_combat"),
+                    interval=delay + 4,
+                )
+                full_text = success_header_text + "\n" + success_text
+                delay += len(full_text) * config_combat.letter_time
+                self.task(
+                    partial(self.dialog.alert, full_text),
                     interval=delay,
                 )
 
             self.task(kill_monster, interval=2 + num_shakes)
             delay = num_shakes / 2
             self.task(partial(show_success, delay), interval=num_shakes)
+            self.client.combat_session.field_monsters.remove_npc(
+                monster.get_owner()
+            )
+            self.client.combat_session.remove_player(monster.get_owner())
+            self.client.combat_session.reset()
         else:
             breakout_delay = 1.8 + num_shakes * 1.0
 
@@ -765,11 +856,9 @@ class CombatAnimations(Menu[None], ABC):
                 self.task(partial(self.blink, sprite), interval=delay + 0.5)
 
             def show_failure(delay: float) -> None:
-                label = f"captured_failed_{num_shakes}"
-                failed = T.translate(label)
-                delay += len(failed) * config_combat.letter_time
+                delay += len(failure_text) * config_combat.letter_time
                 self.task(
-                    partial(self.alert, failed),
+                    partial(self.dialog.alert, failure_text),
                     interval=delay,
                 )
 
@@ -787,7 +876,9 @@ class CombatAnimations(Menu[None], ABC):
             animate: Whether to animate HUD transitions.
             delete: Whether to delete existing HUDs before updating.
         """
-        monsters = self.field_monsters.get_monsters(character)
+        monsters = self.client.combat_session.field_monsters.get_monsters(
+            character
+        )
         if not monsters:
             return
 

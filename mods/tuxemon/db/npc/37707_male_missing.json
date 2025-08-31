@@ -1,10 +1,10 @@
 {
   "slug": "37707_male_missing",
-  "template": 
-    {
-      "sprite_name": "37707_male_missing",
-      "combat_front": "adventurer",
-      "slug": "noclass"
-    }
-
+  "speech": {"profile": {"default": {}}},
+  "combat": {},
+  "template": {
+    "sprite_name": "37707_male_missing",
+    "combat_front": "adventurer",
+    "slug": "noclass"
+  }
 }

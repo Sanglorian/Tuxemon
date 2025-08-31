@@ -1,10 +1,10 @@
 {
   "slug": "marissa",
-  "template": 
-    {
-      "sprite_name": "girl1",
-      "combat_front": "heroine",
-      "slug": "heroine"
-    }
-
+  "speech": {"profile": {"default": {}}},
+  "combat": {},
+  "template": {
+    "sprite_name": "girl1",
+    "combat_front": "heroine",
+    "slug": "heroine"
+  }
 }

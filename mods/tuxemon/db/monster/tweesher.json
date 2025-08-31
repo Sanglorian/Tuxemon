@@ -1,6 +1,6 @@
 {
   "slug": "tweesher",
-  "category": "halcyon",
+  "species": "halcyon",
   "moveset": [
     {
       "level_learned": 1,
@@ -76,7 +76,7 @@
   "shape": "flier",
   "stage": "basic",
   "types": [
-    "water"
+    "frost"
   ],
   "possible_genders": [
     "male",

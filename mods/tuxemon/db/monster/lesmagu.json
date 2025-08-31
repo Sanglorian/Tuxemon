@@ -1,6 +1,6 @@
 {
   "slug": "lesmagu",
-  "category": "vagrant",
+  "species": "vagrant",
   "moveset": [
     {
       "level_learned": 1,
@@ -78,7 +78,8 @@
   "shape": "polliwog",
   "stage": "basic",
   "types": [
-    "water"
+    "earth",
+    "venom"
   ],
   "possible_genders": [
     "male",

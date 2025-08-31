@@ -32,14 +32,13 @@
     "own_team": false,
     "own_trainer": false
   },
-  "category": "basic",
+  "category": "simple",
   "tags": [
     "electricity",
     "bug"
   ],
   "types": [
-    "wood",
-    "metal"
+    "lightning"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

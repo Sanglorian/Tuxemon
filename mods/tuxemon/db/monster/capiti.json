@@ -1,6 +1,6 @@
 {
   "slug": "capiti",
-  "category": "woodwose",
+  "species": "woodwose",
   "moveset": [
     {
       "level_learned": 1,
@@ -83,7 +83,7 @@
   "shape": "sprite",
   "stage": "basic",
   "types": [
-    "wood"
+    "normal"
   ],
   "possible_genders": [
     "male",

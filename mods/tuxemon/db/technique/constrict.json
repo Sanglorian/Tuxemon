@@ -15,7 +15,7 @@
     }
   ],
   "flip_axes": "",
-  "speed": "normal",
+  "speed": "very_slow",
   "potency": 0.75,
   "power": 1.25,
   "range": "reliable",
@@ -37,7 +37,7 @@
     "pseudopod"
   ],
   "types": [
-    "metal"
+    "normal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

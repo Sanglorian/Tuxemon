@@ -1,6 +1,6 @@
 {
   "slug": "poinchin",
-  "category": "spiny",
+  "species": "spiny",
   "moveset": [
     {
       "level_learned": 1,
@@ -57,7 +57,7 @@
   "shape": "grub",
   "stage": "basic",
   "types": [
-    "water"
+    "venom"
   ],
   "possible_genders": [
     "male",

@@ -1,6 +1,6 @@
 {
   "slug": "bishosand",
-  "category": "sand_bishop",
+  "species": "sand_bishop",
   "moveset": [
     {
       "level_learned": 1,
@@ -63,7 +63,7 @@
   "stage": "stage1",
   "types": [
     "earth",
-    "metal"
+    "cosmic"
   ],
   "possible_genders": [
     "neuter"

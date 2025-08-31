@@ -2,13 +2,14 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, ClassVar, Optional
 
 import pygame_menu
 from pygame_menu import locals
 
 from tuxemon import prepare
 from tuxemon.animation import Animation, ScheduleType
+from tuxemon.item.filter import ItemFilter
 from tuxemon.item.item import Item
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
@@ -24,6 +25,8 @@ class MonsterItemState(PygameMenuState):
     Shows details of the single monster held item.
     """
 
+    name: ClassVar[str] = "MonsterItemState"
+
     def add_menu_items(
         self,
         menu: pygame_menu.Menu,
@@ -32,12 +35,12 @@ class MonsterItemState(PygameMenuState):
         owner = monster.get_owner()
 
         def add_item() -> None:
-            menu = self.client.push_state(ItemMenuState(owner, self.name))
-            menu.is_valid_entry = validate  # type: ignore[method-assign]
+            items_filtered = ItemFilter(owner)
+            items_filtered.add_filter(lambda item: item.behaviors.holdable)
+            menu = self.client.push_state(
+                ItemMenuState(owner, self.name, items_filtered)
+            )
             menu.on_menu_selection = choose_target  # type: ignore[method-assign]
-
-        def validate(item: Optional[Item]) -> bool:
-            return item is not None and item.behaviors.holdable
 
         def choose_target(menu_item: MenuItem[Item]) -> None:
             item = menu_item.game_object

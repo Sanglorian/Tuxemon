@@ -1,6 +1,6 @@
 {
   "slug": "flambear",
-  "category": "too_hot",
+  "species": "too_hot",
   "moveset": [
     {
       "level_learned": 1,
@@ -58,7 +58,8 @@
   "shape": "brute",
   "stage": "stage1",
   "types": [
-    "fire"
+    "fire",
+    "cosmic"
   ],
   "possible_genders": [
     "male",

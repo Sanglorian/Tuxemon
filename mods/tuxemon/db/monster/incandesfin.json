@@ -1,6 +1,6 @@
 {
   "slug": "incandesfin",
-  "category": "light_fin",
+  "species": "light_fin",
   "moveset": [
     {
       "level_learned": 1,
@@ -74,6 +74,7 @@
   "shape": "piscine",
   "stage": "stage1",
   "types": [
+    "lightning",
     "water"
   ],
   "possible_genders": [

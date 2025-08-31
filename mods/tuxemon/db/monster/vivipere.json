@@ -1,6 +1,6 @@
 {
   "slug": "vivipere",
-  "category": "potentia",
+  "species": "potentia",
   "moveset": [
     {
       "level_learned": 1,
@@ -108,7 +108,7 @@
   "shape": "serpent",
   "stage": "basic",
   "types": [
-    "earth"
+    "normal"
   ],
   "possible_genders": [
     "male",

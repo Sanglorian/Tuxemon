@@ -1,11 +1,10 @@
 {
-    "slug": "garth",
-    "template": 
-      {
-        "sprite_name": "disciple",
-        "combat_front": "disciple",
-        "slug": "disciple"
-      }
-  
+  "slug": "garth",
+  "speech": {"profile": {"default": {}}},
+  "combat": {},
+  "template": {
+    "sprite_name": "disciple",
+    "combat_front": "disciple",
+    "slug": "disciple"
   }
-  
+}

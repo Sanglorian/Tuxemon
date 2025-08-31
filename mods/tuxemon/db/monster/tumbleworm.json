@@ -1,6 +1,6 @@
 {
   "slug": "tumbleworm",
-  "category": "buzzkill",
+  "species": "buzzkill",
   "moveset": [
     {
       "level_learned": 1,
@@ -54,7 +54,7 @@
   "shape": "grub",
   "stage": "basic",
   "types": [
-    "metal"
+    "venom"
   ],
   "possible_genders": [
     "male",

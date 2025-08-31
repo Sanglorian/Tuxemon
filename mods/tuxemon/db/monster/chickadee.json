@@ -1,6 +1,6 @@
 {
   "slug": "chickadee",
-  "category": "chickadee",
+  "species": "chickadee",
   "moveset": [
     {
       "level_learned": 1,
@@ -62,7 +62,8 @@
   "shape": "flier",
   "stage": "basic",
   "types": [
-    "wood"
+    "normal",
+    "sky"
   ],
   "possible_genders": [
     "male",

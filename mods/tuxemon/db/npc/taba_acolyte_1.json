@@ -1,11 +1,10 @@
 {
-    "slug": "acolyte",
-    "template": 
-      {
-        "sprite_name": "disciple",
-        "combat_front": "disciple",
-        "slug": "disciple"
-      }
-  
+  "slug": "acolyte",
+  "speech": {"profile": {"default": {}}},
+  "combat": {},
+  "template": {
+    "sprite_name": "disciple",
+    "combat_front": "disciple",
+    "slug": "disciple"
   }
-  
+}

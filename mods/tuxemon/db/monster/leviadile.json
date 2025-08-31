@@ -1,6 +1,6 @@
 {
   "slug": "leviadile",
-  "category": "crocodile",
+  "species": "crocodile",
   "moveset": [
     {
       "level_learned": 1,
@@ -71,7 +71,8 @@
   "shape": "leviathan",
   "stage": "stage2",
   "types": [
-    "water"
+    "water",
+    "venom"
   ],
   "possible_genders": [
     "male",

@@ -1,6 +1,6 @@
 {
   "slug": "eruptibus",
-  "category": "hot_rock",
+  "species": "hot_rock",
   "moveset": [
     {
       "level_learned": 1,
@@ -56,6 +56,7 @@
   "shape": "landrace",
   "stage": "stage1",
   "types": [
+    "earth",
     "fire"
   ],
   "possible_genders": [

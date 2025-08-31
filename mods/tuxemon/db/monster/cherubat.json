@@ -1,6 +1,6 @@
 {
   "slug": "cherubat",
-  "category": "patu",
+  "species": "patu",
   "moveset": [
     {
       "level_learned": 1,
@@ -65,7 +65,8 @@
   "shape": "flier",
   "stage": "standalone",
   "types": [
-    "metal"
+    "sky",
+    "cosmic"
   ],
   "possible_genders": [
     "male",

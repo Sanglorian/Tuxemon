@@ -1,6 +1,6 @@
 {
   "slug": "legoplaste",
-  "category": "amoeba",
+  "species": "amoeba",
   "moveset": [
     {
       "level_learned": 1,
@@ -38,7 +38,7 @@
   "shape": "blob",
   "stage": "standalone",
   "types": [
-    "wood"
+    "normal"
   ],
   "possible_genders": [
     "neuter"

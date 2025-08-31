@@ -1,6 +1,6 @@
 {
   "slug": "baddrscratch",
-  "category": "fuminous",
+  "species": "fuminous",
   "moveset": [
     {
       "level_learned": 1,
@@ -53,7 +53,8 @@
   "shape": "hunter",
   "stage": "stage1",
   "types": [
-    "earth"
+    "earth",
+    "shadow"
   ],
   "possible_genders": [
     "male",

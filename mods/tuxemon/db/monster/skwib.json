@@ -1,6 +1,6 @@
 {
   "slug": "skwib",
-  "category": "naive",
+  "species": "naive",
   "moveset": [
     {
       "level_learned": 1,
@@ -58,7 +58,7 @@
   "shape": "polliwog",
   "stage": "basic",
   "types": [
-    "water"
+    "normal"
   ],
   "possible_genders": [
     "male",

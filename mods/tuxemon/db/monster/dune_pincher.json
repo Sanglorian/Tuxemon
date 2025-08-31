@@ -1,6 +1,6 @@
 {
   "slug": "dune_pincher",
-  "category": "hermit",
+  "species": "hermit",
   "moveset": [
     {
       "level_learned": 1,
@@ -61,7 +61,7 @@
   "shape": "grub",
   "stage": "standalone",
   "types": [
-    "water"
+    "normal"
   ],
   "possible_genders": [
     "male",

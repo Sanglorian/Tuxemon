@@ -1,6 +1,17 @@
 [
   {
     "slug": "spyder_scoop_alyssa",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_scoop_alyssa1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_scoop_alyssa2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "nurse_blonde",
       "combat_front": "nurse",
@@ -9,6 +20,17 @@
   },
   {
     "slug": "spyder_scoop_paine",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_scoop_paine1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_scoop_paine2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "nurse_green",
       "combat_front": "nurse",
@@ -17,6 +39,17 @@
   },
   {
     "slug": "spyder_scoop_orba",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_scoop_orba1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_scoop_orba2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "spyderrookie",
       "combat_front": "spyder_rookie",
@@ -25,6 +58,17 @@
   },
   {
     "slug": "spyder_scoop_rubid",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_scoop_rubid1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_scoop_rubid2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "scientist",
       "combat_front": "scientist",
@@ -33,6 +77,17 @@
   },
   {
     "slug": "spyder_scoop_weaver",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_scoop_weaver1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_scoop_weaver2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "spyderrookie",
       "combat_front": "spyder_rookie",
@@ -41,6 +96,17 @@
   },
   {
     "slug": "spyder_scoop_turner",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_scoop_turner1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_scoop_turner2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "knight",
       "combat_front": "enforcer_rookie",
@@ -49,6 +115,17 @@
   },
   {
     "slug": "spyder_scoop_taggart",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_scoop_taggart1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_scoop_taggart2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "nurse_red",
       "combat_front": "nurse",
@@ -57,6 +134,8 @@
   },
   {
     "slug": "spyder_scoop_arachne",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "spyderboss_blonde",
       "combat_front": "spyder_boss",
@@ -65,6 +144,17 @@
   },
   {
     "slug": "spyder_scoop_berys",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_scoop_berys1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_scoop_berys2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "professor_black",
       "combat_front": "professor",
@@ -73,6 +163,8 @@
   },
   {
     "slug": "spyder_scoop_cochinia",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "varmint",
       "combat_front": "cochini",
@@ -81,6 +173,8 @@
   },
   {
     "slug": "spyder_scoop_cochinib",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "varmint",
       "combat_front": "cochini",
@@ -89,6 +183,8 @@
   },
   {
     "slug": "spyder_scoop_cochinic",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "varmint",
       "combat_front": "cochini",
@@ -97,6 +193,17 @@
   },
   {
     "slug": "spyder_scoop_donald",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_scoop_donald1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_scoop_donald2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "cooldude_fiery",
       "combat_front": "cooldude",
@@ -105,6 +212,8 @@
   },
   {
     "slug": "spyder_scoop_landrace",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "landrace",
       "combat_front": "sludgehog",
@@ -113,6 +222,17 @@
   },
   {
     "slug": "spyder_scoop_lanth",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_scoop_lanth1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_scoop_lanth2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "professor",
       "combat_front": "professor",
@@ -121,6 +241,8 @@
   },
   {
     "slug": "spyder_scoop_lapinoua",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "varmint",
       "combat_front": "lapinou",
@@ -129,6 +251,8 @@
   },
   {
     "slug": "spyder_scoop_lapinoub",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "varmint",
       "combat_front": "lapinou",
@@ -137,6 +261,8 @@
   },
   {
     "slug": "spyder_scoop_lapinouc",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "varmint",
       "combat_front": "lapinou",
@@ -145,6 +271,8 @@
   },
   {
     "slug": "spyder_scoop_nash",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "scientist_fiery",
       "combat_front": "scientist",
@@ -153,6 +281,8 @@
   },
   {
     "slug": "spyder_scoop_reese",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "scientist_brown",
       "combat_front": "scientist",

@@ -1,6 +1,6 @@
 {
   "slug": "eaglace",
-  "category": "cirrus",
+  "species": "cirrus",
   "moveset": [
     {
       "level_learned": 1,
@@ -76,7 +76,8 @@
   "shape": "flier",
   "stage": "stage2",
   "types": [
-    "water"
+    "frost",
+    "sky"
   ],
   "possible_genders": [
     "male",

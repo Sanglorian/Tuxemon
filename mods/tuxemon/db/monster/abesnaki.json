@@ -1,6 +1,6 @@
 {
   "slug": "abesnaki",
-  "category": "shield-mask",
+  "species": "shield-mask",
   "moveset": [
     {
       "level_learned": 1,
@@ -67,7 +67,7 @@
   "shape": "serpent",
   "stage": "standalone",
   "types": [
-    "fire"
+    "cosmic"
   ],
   "possible_genders": [
     "neuter"

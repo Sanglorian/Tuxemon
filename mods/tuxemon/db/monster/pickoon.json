@@ -1,6 +1,6 @@
 {
   "slug": "pickoon",
-  "category": "raccoon",
+  "species": "raccoon",
   "moveset": [
     {
       "level_learned": 1,
@@ -59,8 +59,7 @@
   "shape": "hunter",
   "stage": "basic",
   "types": [
-    "earth",
-    "metal"
+    "normal"
   ],
   "possible_genders": [
     "male",

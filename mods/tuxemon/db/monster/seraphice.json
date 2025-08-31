@@ -1,6 +1,6 @@
 {
   "slug": "seraphice",
-  "category": "carol",
+  "species": "carol",
   "moveset": [
     {
       "level_learned": 1,
@@ -68,7 +68,8 @@
   "shape": "humanoid",
   "stage": "stage2",
   "types": [
-    "water"
+    "frost",
+    "cosmic"
   ],
   "possible_genders": [
     "neuter"

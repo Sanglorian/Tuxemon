@@ -1,6 +1,6 @@
 {
   "slug": "enduros",
-  "category": "defensive",
+  "species": "defensive",
   "moveset": [
     {
       "level_learned": 1,
@@ -65,7 +65,7 @@
   "shape": "brute",
   "stage": "standalone",
   "types": [
-    "earth"
+    "heroic"
   ],
   "possible_genders": [
     "male",

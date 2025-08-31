@@ -1,6 +1,6 @@
 {
   "slug": "pythwire",
-  "category": "power_socket",
+  "species": "power_socket",
   "moveset": [
     {
       "level_learned": 1,
@@ -52,6 +52,7 @@
   "shape": "serpent",
   "stage": "basic",
   "types": [
+    "lightning",
     "metal"
   ],
   "possible_genders": [

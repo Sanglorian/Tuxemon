@@ -1,6 +1,6 @@
 {
   "slug": "statursus",
-  "category": "inner_fire",
+  "species": "inner_fire",
   "moveset": [
     {
       "level_learned": 1,
@@ -59,7 +59,8 @@
   "shape": "humanoid",
   "stage": "stage1",
   "types": [
-    "fire"
+    "fire",
+    "cosmic"
   ],
   "possible_genders": [
     "male",

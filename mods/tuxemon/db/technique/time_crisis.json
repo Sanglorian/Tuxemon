@@ -15,7 +15,7 @@
     }
   ],
   "flip_axes": "",
-  "speed": "fast",
+  "speed": "very_fast",
   "potency": 0.6,
   "power": 2.5,
   "range": "ranged",
@@ -38,7 +38,7 @@
     "mental"
   ],
   "types": [
-    "metal"
+    "cosmic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

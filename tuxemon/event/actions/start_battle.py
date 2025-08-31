@@ -6,12 +6,16 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon.combat import check_battle_legal
+from tuxemon.combat.combat_context import (
+    BattleMode,
+    CombatContext,
+    CombatType,
+)
+from tuxemon.combat.utils import check_battle_legal
 from tuxemon.db import EnvironmentModel, db
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
-from tuxemon.states.combat.combat_context import CombatContext
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +61,7 @@ class StartBattleAction(EventAction):
 
         env_slug = "grass"
         for fighter in [character1, character2]:
-            if fighter.isplayer:
+            if fighter.is_player:
                 env_slug = fighter.game_variables.get("environment", "grass")
             else:
                 env_slug = session.player.game_variables.get(
@@ -67,7 +71,7 @@ class StartBattleAction(EventAction):
         env = EnvironmentModel.lookup(env_slug, db)
 
         fighters = sorted(
-            [character1, character2], key=lambda x: not x.isplayer
+            [character1, character2], key=lambda x: not x.is_player
         )
 
         logger.info(
@@ -76,9 +80,9 @@ class StartBattleAction(EventAction):
         context = CombatContext(
             session=session,
             teams=fighters,
-            combat_type="trainer",
+            combat_type=CombatType.TRAINER,
             graphics=env.battle_graphics,
-            battle_mode="single",
+            battle_mode=BattleMode.SINGLE,
         )
         session.client.push_state("CombatState", context=context)
 

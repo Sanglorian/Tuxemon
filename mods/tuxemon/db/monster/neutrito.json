@@ -1,6 +1,6 @@
 {
   "slug": "neutrito",
-  "category": "calm_emotion",
+  "species": "calm_emotion",
   "moveset": [
     {
       "level_learned": 1,
@@ -55,7 +55,7 @@
   "stage": "stage1",
   "types": [
     "metal",
-    "wood"
+    "cosmic"
   ],
   "possible_genders": [
     "neuter"

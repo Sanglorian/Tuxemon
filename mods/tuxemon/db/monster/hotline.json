@@ -1,6 +1,6 @@
 {
   "slug": "hotline",
-  "category": "ma_bell",
+  "species": "ma_bell",
   "moveset": [
     {
       "level_learned": 1,
@@ -65,7 +65,8 @@
   "shape": "sprite",
   "stage": "standalone",
   "types": [
-    "metal"
+    "metal",
+    "fire"
   ],
   "possible_genders": [
     "neuter"

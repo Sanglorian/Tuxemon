@@ -1,6 +1,6 @@
 {
   "slug": "gupphish",
-  "category": "boiling_goldfish",
+  "species": "boiling_goldfish",
   "moveset": [
     {
       "level_learned": 1,
@@ -78,8 +78,8 @@
   "shape": "piscine",
   "stage": "basic",
   "types": [
-    "fire",
-    "water"
+    "water",
+    "fire"
   ],
   "possible_genders": [
     "male",

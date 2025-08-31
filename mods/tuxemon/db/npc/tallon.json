@@ -1,10 +1,10 @@
 {
   "slug": "tallon",
-  "template": 
-    {
-      "sprite_name": "ninja",
-      "combat_front": "ninja",
-      "slug": "ninja"
-    }
-
+  "speech": {"profile": {"default": {}}},
+  "combat": {},
+  "template": {
+    "sprite_name": "ninja",
+    "combat_front": "ninja",
+    "slug": "ninja"
+  }
 }

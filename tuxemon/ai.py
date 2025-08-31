@@ -12,8 +12,8 @@ from typing import TYPE_CHECKING, Any, Optional
 import yaml
 
 from tuxemon import prepare
-from tuxemon.combat import pre_checking
 from tuxemon.constants import paths
+from tuxemon.db import StatType
 from tuxemon.formula import simple_damage_multiplier
 from tuxemon.technique.technique import Technique
 
@@ -22,7 +22,6 @@ if TYPE_CHECKING:
     from tuxemon.monster import Monster
     from tuxemon.npc import NPC
     from tuxemon.session import Session
-    from tuxemon.states.combat.combat import CombatState
 
 logger = logging.getLogger(__name__)
 
@@ -235,9 +234,12 @@ class TechniqueTracker:
 
 class OpponentEvaluator:
     def __init__(
-        self, combat: CombatState, user: Monster, opponents: list[Monster]
+        self,
+        session: Session,
+        user: Monster,
+        opponents: list[Monster],
     ):
-        self.combat = combat
+        self.session = session
         self.user = user
         self.opponents = opponents
         self.ai_opponent = AIConfigLoader.get_ai_opponent("ai_opponent.yaml")
@@ -247,7 +249,10 @@ class OpponentEvaluator:
         Scores opponents based on their current health, status effects, and power level.
         Higher scores indicate better targets.
         """
-        if not self.combat.is_trainer_battle or not self.combat.is_double:
+        if (
+            not self.session.client.combat_session.is_trainer_battle
+            or not self.session.client.combat_session.is_double
+        ):
             return 1.0
 
         owner = self.user.get_owner()
@@ -430,9 +435,8 @@ class WildAIDecisionStrategy(AIDecisionStrategy):
 
 
 class AIManager:
-    def __init__(self, session: Session, combat: CombatState) -> None:
+    def __init__(self, session: Session) -> None:
         self.session = session
-        self.combat = combat
         self.active_ais: dict[Monster, AI] = {}
 
     def process_ai_turn(self, monster: Monster, character: NPC) -> None:
@@ -442,9 +446,7 @@ class AIManager:
         """
         if monster not in self.active_ais:
             logger.debug(f"New AI instance for monster: {monster}")
-            self.active_ais[monster] = AI(
-                self.session, self.combat, monster, character
-            )
+            self.active_ais[monster] = AI(self.session, monster, character)
 
         ai_instance = self.active_ais[monster]
         logger.debug(f"AI turn for monster: {monster}")
@@ -461,27 +463,94 @@ class AIManager:
         logger.debug("Clearing all AI instances.")
         self.active_ais.clear()
 
+    def choose_replacement_monster(self, character: NPC) -> Optional[Monster]:
+        """
+        AI logic to select a replacement monster to send out.
+
+        This method uses the available monsters and applies AI strategy.
+        """
+        available_monsters = self.session.client.combat_session.get_bench(
+            character
+        )
+
+        if not available_monsters:
+            logger.debug(f"No available monsters for {character.name}")
+            return None
+
+        if len(available_monsters) == 1:
+            logger.debug(
+                f"Only one monster available for {character.name}: {available_monsters[0].name}"
+            )
+            return available_monsters[0]
+
+        strategy = character.combat.switch_logic
+        logger.debug(f"{character.name} strategy: {strategy}")
+
+        # If no strategy, pick the next available monster in order
+        if strategy is None:
+            logger.debug(
+                f"No strategy defined. Selecting first available monster: {available_monsters[0].name}"
+            )
+            return available_monsters[0]
+
+        methods = {
+            "lv_highest": ("level", max),
+            "lv_lowest": ("level", min),
+            "healthiest": ("current_hp", max),
+            "weakest": ("current_hp", min),
+            "oldest": ("steps", max),
+            "newest": ("steps", min),
+        }
+
+        methods.update(
+            {f"{stat.value}_max": (stat.value, max) for stat in StatType}
+        )
+        methods.update(
+            {f"{stat.value}_min": (stat.value, min) for stat in StatType}
+        )
+
+        if strategy == "random":
+            chosen = random.choice(available_monsters)
+            logger.debug(f"Random strategy selected: {chosen.name}")
+            return chosen
+
+        if strategy in methods:
+            attr, func = methods[strategy]
+            chosen = func(available_monsters, key=lambda m: getattr(m, attr))
+            logger.debug(
+                f"Strategy '{strategy}' selected monster: {chosen.name} (based on {attr})"
+            )
+            return chosen
+
+        logger.debug(
+            f"Unrecognized strategy '{strategy}'. Defaulting to first available: {available_monsters[0].name}"
+        )
+        return available_monsters[0]
+
 
 class AI:
     def __init__(
         self,
         session: Session,
-        combat: CombatState,
         monster: Monster,
         character: NPC,
     ) -> None:
         self.session = session
-        self.combat = combat
+        self.combat_session = session.client.combat_session
         self.character = character
         self.monster = monster
         self.opponents: list[Monster] = (
-            combat.field_monsters.get_monsters(combat.players[1])
-            if character == combat.players[0]
-            else combat.field_monsters.get_monsters(combat.players[0])
+            self.combat_session.field_monsters.get_monsters(
+                self.combat_session.right_player
+            )
+            if character == self.combat_session.left_player
+            else self.combat_session.field_monsters.get_monsters(
+                self.combat_session.left_player
+            )
         )
 
         self.evaluator = OpponentEvaluator(
-            self.combat, self.monster, self.opponents
+            self.session, self.monster, self.opponents
         )
         self.tracker = TechniqueTracker(
             self.session, self.monster.moves.get_moves()
@@ -489,7 +558,7 @@ class AI:
 
         self.decision_strategy = (
             TrainerAIDecisionStrategy(self.evaluator, self.tracker)
-            if self.combat.is_trainer_battle
+            if self.combat_session.is_trainer_battle
             else WildAIDecisionStrategy(self.evaluator, self.tracker)
         )
 
@@ -515,17 +584,17 @@ class AI:
         """
         Send action tech.
         """
-        self.character.game_variables["action_tech"] = technique.slug
-        technique = pre_checking(
-            self.session, self.monster, technique, target, self.combat
+        self.combat_session.set_variable("action_tech", technique.slug)
+        technique = self.combat_session.pre_checking(
+            self.session, self.monster, technique, target
         )
-        self.combat.enqueue_action(self.monster, technique, target)
+        self.combat_session.enqueue_action(self.monster, technique, target)
 
     def action_item(self, item: Item) -> None:
         """
         Send action item.
         """
-        self.combat.enqueue_action(self.character, item, self.monster)
+        self.combat_session.enqueue_action(self.character, item, self.monster)
 
 
 def check_item_conditions(item_entry: ItemEntry, ai: AI) -> bool:
@@ -564,7 +633,7 @@ def check_tech_conditions(condition: TechniqueCondition, ai: AI) -> bool:
     """
     Check if all conditions for a technique are met.
     """
-    current_turn = ai.combat._turn
+    current_turn = ai.session.client.combat_session.turn
     monster_health = ai.monster.hp_ratio
 
     if condition.always:
@@ -591,21 +660,21 @@ def check_tech_conditions(condition: TechniqueCondition, ai: AI) -> bool:
         )
 
     if condition.opponent_status:
-        if not ai.combat.is_double:
+        if not ai.session.client.combat_session.is_double:
             return any(
                 ai.opponents[0].status.has_status(opponent_status)
                 for opponent_status in condition.opponent_status
             )
 
     if condition.opponent_types:
-        if not ai.combat.is_double:
+        if not ai.session.client.combat_session.is_double:
             return any(
                 ai.opponents[0].has_type(opponent_type)
                 for opponent_type in condition.opponent_types
             )
 
     if condition.opponent_slugs:
-        if not ai.combat.is_double:
+        if not ai.session.client.combat_session.is_double:
             return ai.opponents[0].slug in condition.opponent_slugs
 
     return True

@@ -5,11 +5,12 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable, Generator
 from enum import Enum, auto
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, ClassVar, Optional
 
 from pygame.rect import Rect
 
 from tuxemon.db import ItemCategory
+from tuxemon.item.filter import ItemFilter
 from tuxemon.item.item import Item
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
@@ -36,6 +37,7 @@ class ParkMenuKeys(Enum):
 class MainParkMenuState(PopUpMenu[MenuGameObj]):
     """Main menu Park: ball, food, doll and run"""
 
+    name: ClassVar[str] = "MainParkMenuState"
     escape_key_exits = False
     columns = 2
 
@@ -46,17 +48,25 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
         self.rect = self.calculate_menu_rectangle()
         self.session = session
         self.combat = cmb
-        self.player = cmb.players[0]  # human
-        self.enemy = cmb.players[1]  # ai
+        self.player = session.client.combat_session.left_player  # human
+        self.enemy = session.client.combat_session.right_player  # ai
         self.monster = monster
-        self.opponents = cmb.field_monsters.get_monsters(self.enemy)
+        self.opponents = (
+            session.client.combat_session.field_monsters.get_monsters(
+                self.enemy
+            )
+        )
+        if not self.client.park_session.is_active:
+            raise ValueError(
+                "Use the event action 'park_experience start' to enable the Park Session"
+            )
         self.encounter = session.client.park_session.start_encounter(
             self.opponents[0]
         )
         self.itm_description: Optional[str] = None
         params = {"player": monster.get_owner().name}
         message = T.format("combat_player_choice", params)
-        self.combat.alert(message)
+        self.combat.dialog.alert(message)
 
     def calculate_menu_rectangle(self) -> Rect:
         rect_screen = self.client.screen.get_rect()
@@ -109,8 +119,7 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
 
     def run(self) -> None:
         self.combat.clean_combat()
-        self.combat.field_monsters.clear_all()
-        self.combat.players.clear()
+        self.client.combat_session.reset()
 
     def check_category(self, cat_slug: str) -> int:
         category = sum(
@@ -137,8 +146,10 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
             self.itm_description = choice.description
 
         def choose_item() -> None:
+            items_filtered = ItemFilter(self.player)
+            items_filtered.set_filter_usable_in_state("MainCombatMenuState")
             menu = self.client.push_state(
-                ItemMenuState(self.player, self.name)
+                ItemMenuState(self.player, self.name, items_filtered)
             )
             menu.is_valid_entry = validate  # type: ignore[method-assign]
             menu.on_menu_selection = choose_target  # type: ignore[method-assign]
@@ -174,5 +185,5 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
         elif item.category == ItemCategory.doll:
             self.encounter.apply_doll_effect(item)
 
-        self.combat.enqueue_action(self.player, item, enemy)
+        self.client.combat_session.enqueue_action(self.player, item, enemy)
         self.client.pop_state()

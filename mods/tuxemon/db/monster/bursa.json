@@ -1,6 +1,6 @@
 {
   "slug": "bursa",
-  "category": "too_hot",
+  "species": "too_hot",
   "moveset": [
     {
       "level_learned": 1,
@@ -63,7 +63,8 @@
   "shape": "humanoid",
   "stage": "basic",
   "types": [
-    "fire"
+    "fire",
+    "cosmic"
   ],
   "possible_genders": [
     "male",

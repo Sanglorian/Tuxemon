@@ -1,6 +1,6 @@
 {
   "slug": "lettice",
-  "category": "freezerburn",
+  "species": "freezerburn",
   "moveset": [
     {
       "level_learned": 1,
@@ -72,8 +72,8 @@
   "shape": "humanoid",
   "stage": "stage1",
   "types": [
-    "water",
-    "wood"
+    "wood",
+    "frost"
   ],
   "possible_genders": [
     "male",

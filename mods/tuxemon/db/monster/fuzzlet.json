@@ -1,6 +1,6 @@
 {
   "slug": "fuzzlet",
-  "category": "toy",
+  "species": "toy",
   "moveset": [
     {
       "level_learned": 1,
@@ -73,7 +73,8 @@
   "shape": "blob",
   "stage": "basic",
   "types": [
-    "earth"
+    "cosmic",
+    "normal"
   ],
   "possible_genders": [
     "neuter"

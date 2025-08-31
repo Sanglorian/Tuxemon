@@ -1,6 +1,6 @@
 {
   "slug": "flacono",
-  "category": "horned_raptor",
+  "species": "horned_raptor",
   "moveset": [
     {
       "level_learned": 1,
@@ -76,7 +76,7 @@
   "shape": "flier",
   "stage": "basic",
   "types": [
-    "metal"
+    "sky"
   ],
   "possible_genders": [
     "male",

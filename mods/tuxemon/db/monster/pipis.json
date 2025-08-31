@@ -1,6 +1,6 @@
 {
   "slug": "pipis",
-  "category": "echo",
+  "species": "echo",
   "moveset": [
     {
       "level_learned": 1,
@@ -54,7 +54,8 @@
   "shape": "flier",
   "stage": "basic",
   "types": [
-    "wood"
+    "sky",
+    "normal"
   ],
   "possible_genders": [
     "male",

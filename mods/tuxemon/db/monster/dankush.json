@@ -1,6 +1,6 @@
 {
   "slug": "dankush",
-  "category": "zaza",
+  "species": "zaza",
   "moveset": [
     {
       "level_learned": 1,
@@ -66,8 +66,8 @@
   "shape": "sprite",
   "stage": "standalone",
   "types": [
-    "fire",
-    "wood"
+    "wood",
+    "fire"
   ],
   "possible_genders": [
     "neuter"

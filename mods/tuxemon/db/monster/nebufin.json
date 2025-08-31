@@ -1,6 +1,6 @@
 {
   "slug": "nebufin",
-  "category": "sea_angel",
+  "species": "sea_angel",
   "moveset": [
     {
       "level_learned": 1,
@@ -51,8 +51,8 @@
   "shape": "polliwog",
   "stage": "basic",
   "types": [
-    "metal",
-    "water"
+    "water",
+    "venom"
   ],
   "possible_genders": [
     "neuter"

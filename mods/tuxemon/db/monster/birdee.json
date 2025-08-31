@@ -1,6 +1,6 @@
 {
   "slug": "birdee",
-  "category": "chickenhawk",
+  "species": "chickenhawk",
   "moveset": [
     {
       "level_learned": 1,
@@ -65,7 +65,8 @@
   "shape": "flier",
   "stage": "stage1",
   "types": [
-    "wood"
+    "normal",
+    "sky"
   ],
   "possible_genders": [
     "male",

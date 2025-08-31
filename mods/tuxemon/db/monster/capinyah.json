@@ -1,6 +1,6 @@
 {
   "slug": "capinyah",
-  "category": "woodwose",
+  "species": "woodwose",
   "moveset": [
     {
       "level_learned": 1,
@@ -78,7 +78,7 @@
   "shape": "humanoid",
   "stage": "stage1",
   "types": [
-    "wood"
+    "heroic"
   ],
   "possible_genders": [
     "male",

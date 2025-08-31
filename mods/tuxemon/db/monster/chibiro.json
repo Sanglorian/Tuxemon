@@ -1,6 +1,6 @@
 {
   "slug": "chibiro",
-  "category": "false_turnip",
+  "species": "false_turnip",
   "moveset": [
     {
       "level_learned": 1,
@@ -61,7 +61,8 @@
   "shape": "varmint",
   "stage": "standalone",
   "types": [
-    "wood"
+    "wood",
+    "normal"
   ],
   "possible_genders": [
     "male",

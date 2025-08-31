@@ -1,6 +1,6 @@
 {
   "slug": "vigueur",
-  "category": "energised",
+  "species": "energised",
   "moveset": [
     {
       "level_learned": 1,
@@ -56,7 +56,8 @@
   "shape": "brute",
   "stage": "stage1",
   "types": [
-    "wood"
+    "wood",
+    "heroic"
   ],
   "possible_genders": [
     "male",

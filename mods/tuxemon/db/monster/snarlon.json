@@ -1,6 +1,6 @@
 {
   "slug": "snarlon",
-  "category": "westerly",
+  "species": "westerly",
   "moveset": [
     {
       "level_learned": 1,
@@ -65,7 +65,8 @@
   "shape": "hunter",
   "stage": "standalone",
   "types": [
-    "earth"
+    "shadow",
+    "normal"
   ],
   "possible_genders": [
     "male",

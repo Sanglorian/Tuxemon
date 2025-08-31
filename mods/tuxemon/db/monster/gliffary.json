@@ -1,6 +1,6 @@
 {
   "slug": "gliffary",
-  "category": "toothsome",
+  "species": "toothsome",
   "moveset": [
     {
       "level_learned": 1,
@@ -27,6 +27,10 @@
       "technique": "orbs"
     },
     {
+      "level_learned": 22,
+      "technique": "cavity"
+    },
+    {
       "level_learned": 40,
       "technique": "divinity_beam"
     }
@@ -43,7 +47,7 @@
   "shape": "sprite",
   "stage": "standalone",
   "types": [
-    "fire"
+    "cosmic"
   ],
   "possible_genders": [
     "neuter"

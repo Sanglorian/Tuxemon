@@ -1,6 +1,17 @@
 [
   {
     "slug": "spyder_top_jackson",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_top_jackson1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_top_jackson2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "rogue_copper",
       "combat_front": "rogue",
@@ -9,6 +20,17 @@
   },
   {
     "slug": "spyder_top_mickey",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_top_mickey1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_top_mickey2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "scientist_fiery",
       "combat_front": "scientist",
@@ -17,6 +39,17 @@
   },
   {
     "slug": "spyder_top_ricardo",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_top_ricardo1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_top_ricardo2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "rogue_red",
       "combat_front": "rogue",
@@ -25,6 +58,17 @@
   },
   {
     "slug": "spyder_top_russell",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_top_russell1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_top_russell2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "magician_fiery",
       "combat_front": "mage",
@@ -33,6 +77,8 @@
   },
   {
     "slug": "spyder_top_penelope",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "barmaid_red",
       "combat_front": "barmaid",
@@ -41,6 +87,8 @@
   },
   {
     "slug": "spyder_top_maura",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "barmaid_blonde",
       "combat_front": "barmaid",
@@ -49,6 +97,8 @@
   },
   {
     "slug": "spyder_top_lenny",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "magician",
       "combat_front": "magician",
@@ -57,6 +107,8 @@
   },
   {
     "slug": "spyder_mansion_drinkingbuddya",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "rogue_green",
       "combat_front": "rogue",
@@ -65,6 +117,8 @@
   },
   {
     "slug": "spyder_mansion_wayne",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "magician_black",
       "combat_front": "magician",
@@ -73,6 +127,17 @@
   },
   {
     "slug": "spyder_mansion_lyle",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_mansion_pirate1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_mansion_pirate2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "riverboatcaptain",
       "combat_front": "pirate",
@@ -81,6 +146,17 @@
   },
   {
     "slug": "spyder_mansion_lucy",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_mansion_lucy1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_mansion_lucy2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "barmaid_red",
       "combat_front": "barmaid",
@@ -89,6 +165,17 @@
   },
   {
     "slug": "spyder_mansion_gillette",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_mansion_gillette1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_mansion_gillette2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "magician_brown",
       "combat_front": "magician",
@@ -97,6 +184,8 @@
   },
   {
     "slug": "spyder_mansion_drinkingbuddyb",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "warrior",
       "combat_front": "enforcer_rookie",
@@ -105,6 +194,8 @@
   },
   {
     "slug": "spyder_mansion_lainey",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "barmaid",
       "combat_front": "barmaid",
@@ -113,6 +204,8 @@
   },
   {
     "slug": "spyder_mansion_rolo",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "riverboatcaptain",
       "combat_front": "enforcer_rookie",
@@ -121,6 +214,8 @@
   },
   {
     "slug": "spyder_mansion_tamara",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "picnicker",
       "combat_front": "picnicker",
@@ -129,6 +224,8 @@
   },
   {
     "slug": "spyder_mansion_reed",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "magician_fiery",
       "combat_front": "magician",
@@ -137,6 +234,8 @@
   },
   {
     "slug": "spyder_mansion_nurse",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "nurse_lapi",
       "combat_front": "nurse",
@@ -145,6 +244,17 @@
   },
   {
     "slug": "spyder_basement_bobby",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_basement_bobby1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_basement_bobby2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "postboy",
       "combat_front": "rocker",
@@ -153,6 +263,17 @@
   },
   {
     "slug": "spyder_basement_catholi",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_basement_catholi1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_basement_catholi2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "disciple",
       "combat_front": "healer",
@@ -161,6 +282,17 @@
   },
   {
     "slug": "spyder_basement_coralli",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_basement_coralli1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_basement_coralli2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "barmaid_blonde",
       "combat_front": "dancer",
@@ -169,6 +301,8 @@
   },
   {
     "slug": "spyder_basement_josephine",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "disciple",
       "combat_front": "healer",
@@ -177,6 +311,17 @@
   },
   {
     "slug": "spyder_basement_roger",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_basement_roger1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_basement_roger2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "tennisplayer_lapi",
       "combat_front": "tennisplayer",
@@ -185,6 +330,8 @@
   },
   {
     "slug": "spyder_basement_josh",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "boss_orange",
       "combat_front": "baller",
@@ -193,6 +340,8 @@
   },
   {
     "slug": "spyder_basement_garret",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "rogue_green",
       "combat_front": "rogue",
@@ -201,6 +350,8 @@
   },
   {
     "slug": "spyder_basement_flick",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "riverboatcaptain",
       "combat_front": "enforcer_rookie",

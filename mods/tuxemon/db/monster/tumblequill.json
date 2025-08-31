@@ -1,6 +1,6 @@
 {
   "slug": "tumblequill",
-  "category": "urchin",
+  "species": "urchin",
   "moveset": [
     {
       "level_learned": 1,
@@ -71,7 +71,8 @@
   "shape": "varmint",
   "stage": "basic",
   "types": [
-    "earth"
+    "earth",
+    "normal"
   ],
   "possible_genders": [
     "male",

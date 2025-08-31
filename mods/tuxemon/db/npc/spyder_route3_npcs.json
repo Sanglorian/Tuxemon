@@ -1,6 +1,17 @@
 [
   {
     "slug": "spyder_route3_qqq",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_route3_qqq1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_route3_qqq2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "spyderrookie",
       "combat_front": "spyder_rookie",
@@ -9,6 +20,17 @@
   },
   {
     "slug": "spyder_route3_zoolander",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_route3_zoolander1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_route3_zoolander2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "overseer",
       "combat_front": "overseer",
@@ -17,6 +39,17 @@
   },
   {
     "slug": "spyder_route3_weaver",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_route3_weaver1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_route3_weaver2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "knight",
       "combat_front": "knight",
@@ -25,6 +58,17 @@
   },
   {
     "slug": "spyder_route3_wanda",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_route3_wanda1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_route3_wanda2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "fisher",
       "combat_front": "fisher",
@@ -33,6 +77,17 @@
   },
   {
     "slug": "spyder_route3_twig",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_route3_twig1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_route3_twig2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "miner_yellow",
       "combat_front": "miner",
@@ -41,6 +96,17 @@
   },
   {
     "slug": "spyder_route3_surat",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_route3_surat1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_route3_surat2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "miner_red",
       "combat_front": "miner",
@@ -49,6 +115,17 @@
   },
   {
     "slug": "spyder_route3_roxby",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_route3_roxby1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_route3_roxby2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "miner_green",
       "combat_front": "miner",
@@ -57,6 +134,17 @@
   },
   {
     "slug": "spyder_route3_novak",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_route3_novak1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_route3_novak2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "tennisplayer",
       "combat_front": "tennisplayer",
@@ -65,6 +153,17 @@
   },
   {
     "slug": "spyder_route3_curie",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_route3_curie1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_route3_curie2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "scientist",
       "combat_front": "scientist",
@@ -73,6 +172,17 @@
   },
   {
     "slug": "spyder_route3_connor",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_route3_connor1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_route3_connor2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "tennisplayer",
       "combat_front": "tennisplayer",
@@ -81,6 +191,8 @@
   },
   {
     "slug": "spyder_route3_ryland",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "spyderrookie",
       "combat_front": "spyder_rookie",
@@ -89,6 +201,8 @@
   },
   {
     "slug": "spyder_route3_miner1",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "miner_blue",
       "combat_front": "miner",
@@ -97,6 +211,8 @@
   },
   {
     "slug": "spyder_route3_miner2",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "miner_red",
       "combat_front": "miner",
@@ -105,6 +221,8 @@
   },
   {
     "slug": "spyder_route3_miner3",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "miner_yellow",
       "combat_front": "miner",

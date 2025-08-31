@@ -1,6 +1,6 @@
 {
   "slug": "katapill",
-  "category": "beat",
+  "species": "beat",
   "moveset": [
     {
       "level_learned": 1,
@@ -62,7 +62,7 @@
   "stage": "basic",
   "types": [
     "metal",
-    "wood"
+    "venom"
   ],
   "possible_genders": [
     "male",

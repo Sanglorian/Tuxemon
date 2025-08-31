@@ -1,6 +1,6 @@
 {
   "tech_id": 192,
-  "accuracy": 0.99,
+  "accuracy": 0.95,
   "animation": "divinity_beam",
   "effects": [
     {
@@ -38,8 +38,7 @@
     "calamity"
   ],
   "types": [
-    "metal",
-    "wood"
+    "cosmic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

@@ -1,6 +1,6 @@
 {
   "slug": "bugnin",
-  "category": "honour",
+  "species": "honour",
   "moveset": [
     {
       "level_learned": 1,
@@ -70,7 +70,7 @@
   "stage": "stage2",
   "types": [
     "metal",
-    "wood"
+    "venom"
   ],
   "possible_genders": [
     "male",

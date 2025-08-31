@@ -1,6 +1,6 @@
 {
   "slug": "gupphire",
-  "category": "boiling_goldfish",
+  "species": "boiling_goldfish",
   "moveset": [
     {
       "level_learned": 1,
@@ -78,8 +78,8 @@
   "shape": "piscine",
   "stage": "stage1",
   "types": [
-    "fire",
-    "water"
+    "water",
+    "fire"
   ],
   "possible_genders": [
     "male",

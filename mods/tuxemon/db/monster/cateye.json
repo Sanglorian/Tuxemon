@@ -1,6 +1,6 @@
 {
   "slug": "cateye",
-  "category": "sentinel",
+  "species": "sentinel",
   "moveset": [
     {
       "level_learned": 1,
@@ -61,7 +61,7 @@
   "shape": "hunter",
   "stage": "standalone",
   "types": [
-    "metal"
+    "cosmic"
   ],
   "possible_genders": [
     "male",

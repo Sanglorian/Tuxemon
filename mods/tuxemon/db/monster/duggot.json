@@ -1,6 +1,6 @@
 {
   "slug": "duggot",
-  "category": "unwelcome_mouthful",
+  "species": "unwelcome_mouthful",
   "moveset": [
     {
       "level_learned": 1,
@@ -42,8 +42,8 @@
   "shape": "varmint",
   "stage": "basic",
   "types": [
-    "earth",
-    "wood"
+    "wood",
+    "venom"
   ],
   "possible_genders": [
     "male",

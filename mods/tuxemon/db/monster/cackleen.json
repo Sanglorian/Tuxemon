@@ -1,6 +1,6 @@
 {
   "slug": "cackleen",
-  "category": "witch_spirit",
+  "species": "witch_spirit",
   "moveset": [
     {
       "level_learned": 1,
@@ -35,7 +35,11 @@
     {
       "at_level": 16,
       "monster_slug": "brumi",
-      "variable": "daytime:false"
+      "variables": [
+        {
+          "daytime": "false"
+        }
+      ]
     }
   ],
   "history": [
@@ -61,8 +65,8 @@
   "shape": "sprite",
   "stage": "basic",
   "types": [
-    "metal",
-    "wood"
+    "shadow",
+    "cosmic"
   ],
   "possible_genders": [
     "neuter"

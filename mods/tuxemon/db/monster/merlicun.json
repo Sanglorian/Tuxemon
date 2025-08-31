@@ -1,6 +1,6 @@
 {
   "slug": "merlicun",
-  "category": "dragon_worm",
+  "species": "dragon_worm",
   "moveset": [
     {
       "level_learned": 1,
@@ -62,7 +62,8 @@
   "shape": "varmint",
   "stage": "basic",
   "types": [
-    "fire"
+    "cosmic",
+    "normal"
   ],
   "possible_genders": [
     "male",

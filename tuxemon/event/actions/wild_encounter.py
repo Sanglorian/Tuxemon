@@ -7,7 +7,12 @@ from dataclasses import dataclass
 from typing import Optional, final
 
 from tuxemon import prepare
-from tuxemon.combat import check_battle_legal
+from tuxemon.combat.combat_context import (
+    BattleMode,
+    CombatContext,
+    CombatType,
+)
+from tuxemon.combat.utils import check_battle_legal
 from tuxemon.db import EnvironmentModel, db
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
@@ -15,7 +20,6 @@ from tuxemon.graphics import ColorLike, string_to_colorlike
 from tuxemon.item.item import Item
 from tuxemon.monster import Monster
 from tuxemon.session import Session
-from tuxemon.states.combat.combat_context import CombatContext
 
 logger = logging.getLogger(__name__)
 
@@ -96,9 +100,9 @@ class WildEncounterAction(EventAction):
         context = CombatContext(
             session=session,
             teams=[player, npc],
-            combat_type="monster",
+            combat_type=CombatType.MONSTER,
             graphics=environment.battle_graphics,
-            battle_mode="single",
+            battle_mode=BattleMode.SINGLE,
         )
         session.client.queue_state("CombatState", context=context)
 

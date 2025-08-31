@@ -1,6 +1,6 @@
 {
   "slug": "tumbledillo",
-  "category": "ermine",
+  "species": "ermine",
   "moveset": [
     {
       "level_learned": 1,
@@ -67,7 +67,8 @@
   "shape": "varmint",
   "stage": "stage1",
   "types": [
-    "earth"
+    "earth",
+    "normal"
   ],
   "possible_genders": [
     "male",

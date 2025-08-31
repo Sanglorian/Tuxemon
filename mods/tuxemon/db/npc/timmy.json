@@ -1,11 +1,11 @@
 {
-    "slug": "timmy",
-    "gender": "male",
-    "template": 
-        {
-          "sprite_name": "childactor",
-          "combat_front": "heroine",
-          "slug": "childactor"
-        }
-    
+  "slug": "timmy",
+  "gender": "male",
+  "speech": {"profile": {"default": {}}},
+  "combat": {},
+  "template": {
+    "sprite_name": "childactor",
+    "combat_front": "heroine",
+    "slug": "childactor"
+  }
 }

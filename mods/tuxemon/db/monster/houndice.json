@@ -1,6 +1,6 @@
 {
   "slug": "houndice",
-  "category": "snowy",
+  "species": "snowy",
   "moveset": [
     {
       "level_learned": 1,
@@ -40,8 +40,7 @@
   "shape": "hunter",
   "stage": "stage1",
   "types": [
-    "metal",
-    "water"
+    "frost"
   ],
   "possible_genders": [
     "male",

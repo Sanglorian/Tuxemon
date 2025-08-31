@@ -1,6 +1,6 @@
 {
   "slug": "toxiris",
-  "category": "every_thorn",
+  "species": "every_thorn",
   "moveset": [
     {
       "level_learned": 1,
@@ -80,7 +80,8 @@
   "shape": "humanoid",
   "stage": "stage1",
   "types": [
-    "wood"
+    "wood",
+    "venom"
   ],
   "possible_genders": [
     "male",

@@ -15,7 +15,7 @@
     }
   ],
   "flip_axes": "",
-  "speed": "normal",
+  "speed": "very_slow",
   "potency": 0.2,
   "power": 2.8,
   "range": "reach",
@@ -38,8 +38,7 @@
     "calamity"
   ],
   "types": [
-    "earth",
-    "metal"
+    "venom"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

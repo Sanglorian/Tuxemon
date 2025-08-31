@@ -1,6 +1,6 @@
 {
   "slug": "sampsage",
-  "category": "brains",
+  "species": "brains",
   "moveset": [
     {
       "level_learned": 1,
@@ -62,7 +62,7 @@
   "shape": "humanoid",
   "stage": "standalone",
   "types": [
-    "metal"
+    "cosmic"
   ],
   "possible_genders": [
     "male",

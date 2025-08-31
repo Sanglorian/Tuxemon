@@ -1,6 +1,6 @@
 {
   "slug": "octabode",
-  "category": "hermit",
+  "species": "hermit",
   "moveset": [
     {
       "level_learned": 1,
@@ -54,7 +54,8 @@
   "shape": "polliwog",
   "stage": "stage1",
   "types": [
-    "water"
+    "earth",
+    "normal"
   ],
   "possible_genders": [
     "male",

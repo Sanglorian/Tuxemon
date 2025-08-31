@@ -1,6 +1,6 @@
 {
   "slug": "grintrock",
-  "category": "thunderstone",
+  "species": "thunderstone",
   "moveset": [
     {
       "level_learned": 1,
@@ -54,8 +54,8 @@
   "shape": "brute",
   "stage": "stage1",
   "types": [
-    "earth",
-    "metal"
+    "lightning",
+    "earth"
   ],
   "possible_genders": [
     "male",

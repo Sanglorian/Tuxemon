@@ -1,6 +1,6 @@
 {
   "slug": "memnomnom",
-  "category": "relic",
+  "species": "relic",
   "moveset": [
     {
       "level_learned": 1,
@@ -73,7 +73,7 @@
   "shape": "hunter",
   "stage": "basic",
   "types": [
-    "metal"
+    "normal"
   ],
   "possible_genders": [
     "male",

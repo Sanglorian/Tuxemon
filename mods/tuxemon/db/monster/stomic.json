@@ -1,6 +1,6 @@
 {
   "slug": "stomic",
-  "category": "radioactive",
+  "species": "radioactive",
   "moveset": [
     {
       "level_learned": 1,
@@ -64,7 +64,8 @@
   "shape": "blob",
   "stage": "basic",
   "types": [
-    "metal"
+    "metal",
+    "venom"
   ],
   "possible_genders": [
     "neuter"

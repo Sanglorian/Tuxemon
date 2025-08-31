@@ -1,6 +1,6 @@
 {
   "slug": "snock",
-  "category": "sock",
+  "species": "sock",
   "moveset": [
     {
       "level_learned": 1,
@@ -63,7 +63,7 @@
   "shape": "serpent",
   "stage": "basic",
   "types": [
-    "metal"
+    "normal"
   ],
   "possible_genders": [
     "male",

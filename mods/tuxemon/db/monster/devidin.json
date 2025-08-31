@@ -1,6 +1,6 @@
 {
   "slug": "devidin",
-  "category": "dog_toothed",
+  "species": "dog_toothed",
   "moveset": [
     {
       "level_learned": 1,
@@ -74,7 +74,8 @@
   "shape": "landrace",
   "stage": "basic",
   "types": [
-    "earth"
+    "earth",
+    "fire"
   ],
   "possible_genders": [
     "male",

@@ -1,6 +1,6 @@
 {
   "slug": "rabbitosaur",
-  "category": "rabbit",
+  "species": "rabbit",
   "moveset": [
     {
       "level_learned": 1,
@@ -59,7 +59,7 @@
   "shape": "varmint",
   "stage": "stage1",
   "types": [
-    "earth"
+    "heroic"
   ],
   "possible_genders": [
     "male",

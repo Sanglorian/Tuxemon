@@ -1,6 +1,6 @@
 {
   "slug": "sumchon",
-  "category": "wrestling",
+  "species": "wrestling",
   "moveset": [
     {
       "level_learned": 1,
@@ -69,7 +69,7 @@
   "stage": "stage2",
   "types": [
     "metal",
-    "wood"
+    "heroic"
   ],
   "possible_genders": [
     "male",

@@ -1,6 +1,6 @@
 {
   "slug": "sludgehog",
-  "category": "garbage",
+  "species": "garbage",
   "moveset": [
     {
       "level_learned": 1,
@@ -64,7 +64,8 @@
   "shape": "landrace",
   "stage": "standalone",
   "types": [
-    "earth"
+    "earth",
+    "wood"
   ],
   "possible_genders": [
     "male",

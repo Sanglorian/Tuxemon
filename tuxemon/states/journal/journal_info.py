@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 import pygame_menu
 from pygame_menu import locals
@@ -32,6 +32,8 @@ def _lookup_monsters() -> None:
 
 class JournalInfoState(PygameMenuState):
     """Shows journal (screen 3/3)."""
+
+    name: ClassVar[str] = "JournalInfoState"
 
     def add_menu_items(
         self,
@@ -142,7 +144,7 @@ class JournalInfoState(PygameMenuState):
         )
         lab6.translate(fxw(0.50), fxh(0.40))
         # species
-        spec = T.translate(f"cat_{monster.category}")
+        spec = T.translate(f"cat_{monster.species}")
         spec = self._safe_display(spec)
         species = T.translate("monster_menu_species") + ": " + spec
         lab7: Any = menu.add.label(

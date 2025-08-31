@@ -1,6 +1,6 @@
 {
   "slug": "pharavion",
-  "category": "spirit_elephant",
+  "species": "spirit_elephant",
   "moveset": [
     {
       "level_learned": 1,
@@ -75,7 +75,8 @@
   "shape": "landrace",
   "stage": "stage1",
   "types": [
-    "water"
+    "water",
+    "heroic"
   ],
   "possible_genders": [
     "male",

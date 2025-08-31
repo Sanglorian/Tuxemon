@@ -1,6 +1,6 @@
 {
   "slug": "lightmare",
-  "category": "nightmare_fuel",
+  "species": "nightmare_fuel",
   "moveset": [
     {
       "level_learned": 1,
@@ -69,6 +69,7 @@
   "shape": "leviathan",
   "stage": "stage2",
   "types": [
+    "lightning",
     "water"
   ],
   "possible_genders": [

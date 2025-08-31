@@ -1,6 +1,6 @@
 {
   "slug": "equill",
-  "category": "cave_dweller",
+  "species": "cave_dweller",
   "moveset": [
     {
       "level_learned": 1,
@@ -56,7 +56,8 @@
   "shape": "landrace",
   "stage": "stage1",
   "types": [
-    "earth"
+    "shadow",
+    "normal"
   ],
   "possible_genders": [
     "male",

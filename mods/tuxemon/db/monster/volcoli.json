@@ -1,6 +1,6 @@
 {
   "slug": "volcoli",
-  "category": "seasonal",
+  "species": "seasonal",
   "moveset": [
     {
       "level_learned": 1,
@@ -61,7 +61,8 @@
   "shape": "humanoid",
   "stage": "standalone",
   "types": [
-    "fire"
+    "wood",
+    "cosmic"
   ],
   "possible_genders": [
     "neuter"

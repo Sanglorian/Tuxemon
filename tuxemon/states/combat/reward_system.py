@@ -5,13 +5,14 @@ from __future__ import annotations
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from tuxemon.combat import alive_party
+from tuxemon.combat.utils import alive_party
 from tuxemon.locale import T
 
 if TYPE_CHECKING:
-    from tuxemon.states.combat.combat_classes import DamageTracker
+    from tuxemon.combat.damage_tracker import DamageTracker
     from tuxemon.technique.technique import Technique
     from tuxemon.monster import Monster
+    from tuxemon.session import Session
 
 from dataclasses import dataclass
 
@@ -41,10 +42,12 @@ class RewardData:
 
 class RewardSystem:
     def __init__(
-        self, damage_map: DamageTracker, is_trainer_battle: bool
+        self,
+        session: Session,
+        damage_map: DamageTracker,
     ) -> None:
+        self.session = session
         self.damage_map = damage_map
-        self.is_trainer_battle = is_trainer_battle
 
     def award_rewards(self, monster: Monster) -> RewardData:
         """
@@ -94,7 +97,7 @@ class RewardSystem:
                 for non_participant in non_participants:
                     levels = non_participant.give_experience(awarded_exp)
                     non_participant.moves.update_moves(
-                        non_participant.level, levels
+                        non_participant.level, levels, non_participant.stage
                     )
 
             for winner in winners:
@@ -113,11 +116,13 @@ class RewardSystem:
                 )
 
                 # Grant experience and update moves
-                if winner.owner and winner.owner.isplayer:
+                if winner.owner and winner.owner.is_player:
                     levels = winner.give_experience(awarded_exp)
-                    rewards_data.moves = winner.moves.update_moves(
-                        winner.level, levels
+                    new_moves = winner.moves.update_moves(
+                        winner.level, levels, winner.stage
                     )
+                    if new_moves:
+                        rewards_data.moves.extend(new_moves)
                     rewards_data.messages.append(
                         T.format(
                             "combat_gain_exp",
@@ -126,7 +131,7 @@ class RewardSystem:
                     )
 
                     # Add money for trainer battles
-                    if self.is_trainer_battle:
+                    if self.session.client.combat_session.is_trainer_battle:
                         rewards_data.prize += awarded_money
 
                     # Update HUD or handle level-up externally
@@ -161,28 +166,31 @@ def calculate_experience(
     total_hits, monster_hits = damages.count_hits(loser, winner)
 
     def default_method() -> tuple[int, int]:
-        exp = calculate_experience_base(
+        total_exp = calculate_experience_base(
             loser.total_experience,
             loser.level,
-            total_hits,
             loser.experience_modifier,
         )
-        return exp, 0
+
+        participants = damages.get_attackers(loser)
+        num_participants = len(participants) if participants else 1
+
+        divided_exp = total_exp // num_participants
+        return divided_exp, 0
 
     def equal_method() -> tuple[int, int]:
-        exp = calculate_experience_base(
+        total_exp = calculate_experience_base(
             loser.total_experience,
             loser.level,
-            total_hits,
             loser.experience_modifier,
-        ) * round(monster_hits / total_hits)
-        return exp, 0
+        )
+        proportional_exp = int(total_exp * (monster_hits / total_hits))
+        return proportional_exp, 0
 
     def feeder_method() -> tuple[int, int]:
         total_exp = calculate_experience_base(
             loser.total_experience,
             loser.level,
-            total_hits,
             loser.experience_modifier,
         )
 
@@ -204,7 +212,6 @@ def calculate_experience(
         total_exp = calculate_experience_base(
             loser.total_experience,
             loser.level,
-            total_hits,
             loser.experience_modifier,
         )
 
@@ -245,9 +252,9 @@ def calculate_experience(
 
 
 def calculate_experience_base(
-    total_experience: float, level: int, hits: int, experience_modifier: float
+    total_experience: float, level: int, experience_modifier: float
 ) -> int:
     """
-    Base formula for experience calculation.
+    Base formula for experience calculation without hits.
     """
-    return int((total_experience // (level * hits)) * experience_modifier)
+    return int((total_experience // level) * experience_modifier)

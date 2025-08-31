@@ -1,6 +1,17 @@
 [
   {
     "slug": "spyder_hospital1_aurora",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_hospital1_aurora1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_hospital1_aurora2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "spyderboss_blonde",
       "combat_front": "spyder_boss",
@@ -9,6 +20,8 @@
   },
   {
     "slug": "spyder_hospital1_pem",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "spyderrookie",
       "combat_front": "spyder_rookie",
@@ -17,6 +30,17 @@
   },
   {
     "slug": "spyder_hospital1_luzia",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_hospital1_luzia1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_hospital1_luzia2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "spyderboss_fiery",
       "combat_front": "spyder_boss",
@@ -25,6 +49,17 @@
   },
   {
     "slug": "spyder_hospital1_liane",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_hospital1_liane1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_hospital1_liane2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "spyderboss_green",
       "combat_front": "spyder_boss",
@@ -33,6 +68,17 @@
   },
   {
     "slug": "spyder_hospital1_fring",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_hospital1_fring1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_hospital1_fring2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "spyderrookie",
       "combat_front": "spyder_rookie",
@@ -41,6 +87,17 @@
   },
   {
     "slug": "spyder_hospital1_felu",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_hospital1_felu1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_hospital1_felu2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "spyderrookie",
       "combat_front": "spyder_rookie",
@@ -49,6 +106,17 @@
   },
   {
     "slug": "spyder_hospital1_eleni",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_hospital1_eleni1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_hospital1_eleni2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "spyderboss_lapi",
       "combat_front": "spyder_boss",
@@ -57,6 +125,17 @@
   },
   {
     "slug": "spyder_hospital1_rakez",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_hospital1_rakez1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_hospital1_rakez2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "spyderrookie",
       "combat_front": "spyder_rookie",
@@ -65,6 +144,8 @@
   },
   {
     "slug": "spyder_hospital1_rea",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "spyderboss",
       "combat_front": "spyder_boss",
@@ -73,6 +154,17 @@
   },
   {
     "slug": "spyder_hospital1_zekar",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_hospital1_zekar1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_hospital1_zekar2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "spyderrookie",
       "combat_front": "spyder_rookie",
@@ -81,6 +173,17 @@
   },
   {
     "slug": "spyder_hospital1_walt",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_hospital1_walt1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_hospital1_walt2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "spyderrookie",
       "combat_front": "spyder_rookie",
@@ -89,6 +192,17 @@
   },
   {
     "slug": "spyder_hospital1_rhizome",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_hospital1_rhizome1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_hospital1_rhizome2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "professor_brown",
       "combat_front": "professor",
@@ -97,6 +211,8 @@
   },
   {
     "slug": "spyder_hospital1_smith",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "scientist_brown",
       "combat_front": "scientist",
@@ -105,6 +221,8 @@
   },
   {
     "slug": "spyder_hospital1_lesley",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "scientist_black",
       "combat_front": "scientist",
@@ -113,6 +231,8 @@
   },
   {
     "slug": "spyder_hospital1_trafford",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "scientist_fiery",
       "combat_front": "scientist",
@@ -121,6 +241,8 @@
   },
   {
     "slug": "spyder_hospital1_marylyn",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "nurse_green",
       "combat_front": "nurse",
@@ -129,6 +251,8 @@
   },
   {
     "slug": "spyder_hospital1_melanie",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "nurse_blonde",
       "combat_front": "nurse",
@@ -137,6 +261,8 @@
   },
   {
     "slug": "spyder_hospital1_audie",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "nurse_blue",
       "combat_front": "nurse",

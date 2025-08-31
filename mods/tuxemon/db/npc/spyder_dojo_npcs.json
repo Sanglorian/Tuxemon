@@ -1,6 +1,17 @@
 [
   {
     "slug": "spyder_dojo_ares",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_dojo_ares1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_dojo_ares2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "monk_black",
       "combat_front": "monk",
@@ -9,6 +20,8 @@
   },
   {
     "slug": "spyder_dojo_fu",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "granny_yellow",
       "combat_front": "adventurer",
@@ -17,6 +30,8 @@
   },
   {
     "slug": "spyder_dojo_fu_student1",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "childactor_black",
       "combat_front": "childactor",
@@ -25,6 +40,8 @@
   },
   {
     "slug": "spyder_dojo_fu_student2",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "childactor_blonde",
       "combat_front": "childactor",
@@ -33,6 +50,17 @@
   },
   {
     "slug": "spyder_dojo_kataro",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_dojo_kataro1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_dojo_kataro2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "monk_orange",
       "combat_front": "monk",
@@ -41,6 +69,17 @@
   },
   {
     "slug": "spyder_dojo_iroh",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_dojo_iroh1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_dojo_iroh2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "monk_red",
       "combat_front": "monk",
@@ -49,6 +88,17 @@
   },
   {
     "slug": "spyder_dojo_hermes",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_dojo_hermes1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_dojo_hermes2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "monk_orange",
       "combat_front": "monk",
@@ -57,6 +107,17 @@
   },
   {
     "slug": "spyder_dojo_hephastus",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_dojo_hephastus1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_dojo_hephastus2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "monk_blue",
       "combat_front": "monk",
@@ -65,6 +126,17 @@
   },
   {
     "slug": "spyder_dojo_orion",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_dojo_orion1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_dojo_orion2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "monk_green",
       "combat_front": "monk",
@@ -73,6 +145,17 @@
   },
   {
     "slug": "spyder_dojo_saturn",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_dojo_saturn1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_dojo_saturn2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "monk_red",
       "combat_front": "monk",
@@ -81,6 +164,17 @@
   },
   {
     "slug": "spyder_dojo_sokka",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_dojo_sokka1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_dojo_sokka2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "monk_green",
       "combat_front": "monk",
@@ -89,6 +183,8 @@
   },
   {
     "slug": "spyder_dojo_thri",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "maniac_yellow",
       "combat_front": "riddler",
@@ -97,6 +193,17 @@
   },
   {
     "slug": "spyder_dojo_toph",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_dojo_toph1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_dojo_toph2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "monk_black",
       "combat_front": "monk",
@@ -105,6 +212,8 @@
   },
   {
     "slug": "spyder_dojo_tu",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "ninja_red",
       "combat_front": "ninja",
@@ -113,6 +222,8 @@
   },
   {
     "slug": "spyder_dojo_wan",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "ninja_blue",
       "combat_front": "ninja",
@@ -121,6 +232,8 @@
   },
   {
     "slug": "spyder_dojo_xiang",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "granny_green",
       "combat_front": "adventurer",
@@ -129,6 +242,17 @@
   },
   {
     "slug": "spyder_dojo_yangchen",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_dojo_yangchen1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_dojo_yangchen2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "monk_blue",
       "combat_front": "monk",
@@ -137,6 +261,8 @@
   },
   {
     "slug": "spyder_dojo_yin",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "maniac_violet",
       "combat_front": "adventurer",
@@ -145,6 +271,8 @@
   },
   {
     "slug": "spyder_dojo_zhao",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "maniac_green",
       "combat_front": "adventurer",
@@ -153,6 +281,8 @@
   },
   {
     "slug": "spyder_dojo_zhu",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "maniac_rose",
       "combat_front": "adventurer",

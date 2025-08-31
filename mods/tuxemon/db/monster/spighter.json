@@ -1,6 +1,6 @@
 {
   "slug": "spighter",
-  "category": "eyerachnid",
+  "species": "eyerachnid",
   "moveset": [
     {
       "level_learned": 1,
@@ -61,7 +61,8 @@
   "shape": "grub",
   "stage": "standalone",
   "types": [
-    "wood"
+    "venom",
+    "shadow"
   ],
   "possible_genders": [
     "male",

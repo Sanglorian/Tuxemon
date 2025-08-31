@@ -1,6 +1,6 @@
 {
   "slug": "tobishimi",
-  "category": "dragon_roll",
+  "species": "dragon_roll",
   "moveset": [
     {
       "level_learned": 1,
@@ -70,7 +70,6 @@
   "shape": "dragon",
   "stage": "stage2",
   "types": [
-    "water",
     "wood"
   ],
   "possible_genders": [

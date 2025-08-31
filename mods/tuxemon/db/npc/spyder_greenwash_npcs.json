@@ -1,6 +1,17 @@
 [
   {
     "slug": "spyder_greenwash_aissa",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_aissa1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_aissa2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "nurse_red",
       "combat_front": "nurse",
@@ -9,6 +20,17 @@
   },
   {
     "slug": "spyder_greenwash_alex",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_alex1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_alex2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "florist_rose",
       "combat_front": "florist",
@@ -17,6 +39,17 @@
   },
   {
     "slug": "spyder_greenwash_broer",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_broer1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_broer2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "nurse_lapi",
       "combat_front": "nurse",
@@ -25,6 +58,17 @@
   },
   {
     "slug": "spyder_greenwash_chip",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_chip1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_chip2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "scientist_fiery",
       "combat_front": "scientist",
@@ -33,6 +77,17 @@
   },
   {
     "slug": "spyder_greenwash_clarence",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_clarence1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_clarence2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "scientist_brown",
       "combat_front": "aviator",
@@ -41,6 +96,17 @@
   },
   {
     "slug": "spyder_greenwash_dempsey",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_dempsey1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_dempsey1",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "rogue_copper",
       "combat_front": "rogue",
@@ -49,6 +115,17 @@
   },
   {
     "slug": "spyder_greenwash_dippel",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_dippel1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_dippel2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "scientist_fiery",
       "combat_front": "scientist",
@@ -57,6 +134,17 @@
   },
   {
     "slug": "spyder_greenwash_gluck",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_gluck1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_gluck2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "florist_fiery",
       "combat_front": "florist",
@@ -65,6 +153,17 @@
   },
   {
     "slug": "spyder_greenwash_gregor",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_gregor1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_gregor2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "scientist_brown",
       "combat_front": "scientist",
@@ -73,6 +172,8 @@
   },
   {
     "slug": "spyder_greenwash_guard",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "soldier",
       "combat_front": "soldier",
@@ -81,6 +182,17 @@
   },
   {
     "slug": "spyder_greenwash_heidenstam",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_heidenstam1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_heidenstam2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "postboy_red",
       "combat_front": "cooldude",
@@ -89,6 +201,17 @@
   },
   {
     "slug": "spyder_greenwash_hunt",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_hunt1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_hunt2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "scientist_black",
       "combat_front": "scientist",
@@ -97,6 +220,17 @@
   },
   {
     "slug": "spyder_greenwash_lewie",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_lewie1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_lewie2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "firefighter",
       "combat_front": "firefighter",
@@ -105,6 +239,17 @@
   },
   {
     "slug": "spyder_greenwash_lewis",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_lewis1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_lewis2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "firefighter",
       "combat_front": "firefighter",
@@ -113,6 +258,17 @@
   },
   {
     "slug": "spyder_greenwash_looten",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_looten1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_looten2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "goth",
       "combat_front": "goth",
@@ -121,6 +277,17 @@
   },
   {
     "slug": "spyder_greenwash_louis",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_louis1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_louis2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "scientist",
       "combat_front": "scientist",
@@ -129,6 +296,17 @@
   },
   {
     "slug": "spyder_greenwash_moreau",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_moreau1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_moreau2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "scientist_black",
       "combat_front": "scientist",
@@ -137,6 +315,17 @@
   },
   {
     "slug": "spyder_greenwash_morehouse",
+    "speech": {
+      "profile": {
+        "default": {
+          "pre_battle": "spyder_greenwash_morehouse1",
+          "post_battle_win": null,
+          "post_battle_lose": "spyder_greenwash_morehouse2",
+          "post_battle_draw": null
+        }
+      }
+    },
+    "combat": {},
     "template": {
       "sprite_name": "scientist",
       "combat_front": "scientist",
@@ -145,6 +334,8 @@
   },
   {
     "slug": "spyder_greenwash_norton",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "firefighter",
       "combat_front": "firefighter",
@@ -153,6 +344,8 @@
   },
   {
     "slug": "spyder_greenwash_selby",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
     "template": {
       "sprite_name": "scientist_fiery",
       "combat_front": "scientist",

@@ -1,6 +1,6 @@
 {
   "slug": "doctsky",
-  "category": "erythrocyte",
+  "species": "erythrocyte",
   "moveset": [
     {
       "level_learned": 1,
@@ -87,7 +87,7 @@
   "shape": "hunter",
   "stage": "stage1",
   "types": [
-    "metal"
+    "normal"
   ],
   "possible_genders": [
     "male",

@@ -1,6 +1,6 @@
 {
   "slug": "taupypus",
-  "category": "flatfoot",
+  "species": "flatfoot",
   "moveset": [
     {
       "level_learned": 1,
@@ -60,7 +60,8 @@
   "shape": "varmint",
   "stage": "standalone",
   "types": [
-    "water"
+    "water",
+    "normal"
   ],
   "possible_genders": [
     "male",

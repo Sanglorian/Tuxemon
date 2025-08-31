@@ -1,6 +1,6 @@
 {
   "slug": "shelagu",
-  "category": "sheltering",
+  "species": "sheltering",
   "moveset": [
     {
       "level_learned": 1,
@@ -80,7 +80,8 @@
   "shape": "polliwog",
   "stage": "stage1",
   "types": [
-    "water"
+    "earth",
+    "venom"
   ],
   "possible_genders": [
     "male",

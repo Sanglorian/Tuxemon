@@ -15,7 +15,7 @@
     }
   ],
   "flip_axes": "",
-  "speed": "normal",
+  "speed": "slow",
   "potency": 1,
   "power": 2.25,
   "range": "melee",
@@ -37,7 +37,7 @@
     "fury"
   ],
   "types": [
-    "fire"
+    "heroic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,

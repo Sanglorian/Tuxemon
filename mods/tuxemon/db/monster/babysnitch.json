@@ -1,6 +1,6 @@
 {
   "slug": "babysnitch",
-  "category": "fuminous",
+  "species": "fuminous",
   "moveset": [
     {
       "level_learned": 1,
@@ -57,7 +57,8 @@
   "shape": "hunter",
   "stage": "basic",
   "types": [
-    "earth"
+    "shadow",
+    "normal"
   ],
   "possible_genders": [
     "male",

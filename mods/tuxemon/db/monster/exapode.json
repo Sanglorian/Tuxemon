@@ -1,6 +1,6 @@
 {
   "slug": "exapode",
-  "category": "big_frightfear",
+  "species": "big_frightfear",
   "moveset": [
     {
       "level_learned": 1,
@@ -50,7 +50,7 @@
   "shape": "grub",
   "stage": "stage1",
   "types": [
-    "earth"
+    "normal"
   ],
   "possible_genders": [
     "male",

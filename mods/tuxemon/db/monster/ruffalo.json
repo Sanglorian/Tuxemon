@@ -1,6 +1,6 @@
 {
   "slug": "ruffalo",
-  "category": "buffalo",
+  "species": "buffalo",
   "moveset": [
     {
       "level_learned": 1,
@@ -36,7 +36,7 @@
   "shape": "landrace",
   "stage": "standalone",
   "types": [
-    "earth"
+    "normal"
   ],
   "possible_genders": [
     "male",

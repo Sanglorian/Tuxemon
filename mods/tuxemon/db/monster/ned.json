@@ -1,6 +1,6 @@
 {
   "slug": "ned",
-  "category": "red_hands",
+  "species": "red_hands",
   "moveset": [
     {
       "level_learned": 1,
@@ -40,7 +40,7 @@
   "shape": "brute",
   "stage": "standalone",
   "types": [
-    "earth"
+    "normal"
   ],
   "possible_genders": [
     "male",

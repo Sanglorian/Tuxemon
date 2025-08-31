@@ -1,6 +1,6 @@
 {
   "slug": "crankus",
-  "category": "cranky",
+  "species": "cranky",
   "moveset": [
     {
       "level_learned": 1,
@@ -63,7 +63,8 @@
   "shape": "landrace",
   "stage": "stage1",
   "types": [
-    "water"
+    "frost",
+    "normal"
   ],
   "possible_genders": [
     "male",

@@ -1,6 +1,6 @@
 {
   "slug": "boxali",
-  "category": "macropod",
+  "species": "macropod",
   "moveset": [
     {
       "level_learned": 1,
@@ -65,7 +65,8 @@
   "shape": "brute",
   "stage": "standalone",
   "types": [
-    "metal"
+    "heroic",
+    "sky"
   ],
   "possible_genders": [
     "male",

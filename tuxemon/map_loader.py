@@ -45,13 +45,6 @@ RegionTile = tuple[
     Optional[RegionProperties],
 ]
 
-region_properties = [
-    "enter_from",
-    "exit_from",
-    "endure",
-    "key",
-]
-
 
 def parse_yaml(path: Path) -> Any:
     """
@@ -507,7 +500,7 @@ class TMXMapLoader:
         if obj.type and obj.type.lower().startswith("collision"):
             if getattr(obj, "closed", True):
                 region_conditions = copy_dict_with_keys(
-                    obj.properties, region_properties
+                    obj.properties, prepare.REGION_KEYS
                 )
                 _extract = extract_region_properties(region_conditions)
                 collision_map[(x, y)] = _extract
@@ -594,7 +587,7 @@ class TMXMapLoader:
             Tuples with form (tile position, properties).
         """
         region_conditions = copy_dict_with_keys(
-            region.properties, region_properties
+            region.properties, prepare.REGION_KEYS
         )
         rect = snap_rect(
             Rect((region.x, region.y, region.width, region.height)), grid_size

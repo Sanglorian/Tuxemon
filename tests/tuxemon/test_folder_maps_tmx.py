@@ -10,7 +10,6 @@ from typing import Any
 from tuxemon import prepare
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import db
-from tuxemon.map_loader import region_properties
 from tuxemon.map_manager import map_types_list
 from tuxemon.script.parser import parse_action_string
 
@@ -72,7 +71,7 @@ def _is_multiple_of_16(value) -> bool:
 
 
 def _is_valid_property_name(name) -> bool:
-    region_properties_set = set(region_properties)
+    region_properties_set = set(prepare.REGION_KEYS)
     if name in region_properties_set:
         return True
     opt = ("act", "cond", "behav")

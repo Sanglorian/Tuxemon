@@ -138,10 +138,11 @@ class CollisionManager:
         coords = (int(pos[0]), int(pos[1]))
         region = self._map_manager.collision_map.get(coords)
 
-        enter_from = region.enter_from if entity.is_player and region else []
-        exit_from = region.exit_from if entity.is_player and region else []
-        endure = region.endure if entity.is_player and region else []
-        key = region.key if entity.is_player and region else None
+        enter_from = region.enter_from if region else []
+        exit_from = region.exit_from if region else []
+        endure = region.endure if region else []
+        key = region.key if region else None
+        push_effect = region.push_effect if region else None
 
         prop = RegionProperties(
             enter_from=enter_from,
@@ -149,6 +150,7 @@ class CollisionManager:
             endure=endure,
             entity=entity,
             key=key,
+            push_effect=push_effect,
         )
 
         self._map_manager.collision_map[coords] = prop
@@ -166,11 +168,11 @@ class CollisionManager:
 
         if any([region.enter_from, region.exit_from, region.endure]):
             prop = RegionProperties(
-                region.enter_from,
-                region.exit_from,
-                region.endure,
-                None,
-                region.key,
+                enter_from=region.enter_from,
+                exit_from=region.exit_from,
+                endure=region.endure,
+                key=region.key,
+                push_effect=region.push_effect,
             )
             self._map_manager.collision_map[tile_pos] = prop
         else:
@@ -186,7 +188,6 @@ class CollisionManager:
             exit_from=[],
             endure=[],
             key=label,
-            entity=None,
         )
         if coords:
             for coord in coords:
@@ -200,7 +201,6 @@ class CollisionManager:
             exit_from=[],
             endure=[],
             key=label,
-            entity=None,
         )
         self._map_manager.collision_map[position] = properties
 
@@ -210,7 +210,6 @@ class CollisionManager:
             exit_from=list(Direction),
             endure=[],
             key=label,
-            entity=None,
         )
         coords = self.check_collision_zones(
             self._map_manager.collision_map, label
@@ -264,22 +263,30 @@ class CollisionManager:
         if region:
             if isinstance(entity_or_label, str):
                 return RegionProperties(
-                    region.enter_from,
-                    region.exit_from,
-                    region.endure,
-                    None,
-                    entity_or_label,
+                    enter_from=region.enter_from,
+                    exit_from=region.exit_from,
+                    endure=region.endure,
+                    key=entity_or_label,
+                    push_effect=region.push_effect,
                 )
             else:
                 return RegionProperties(
-                    region.enter_from,
-                    region.exit_from,
-                    region.endure,
-                    entity_or_label,
-                    region.key,
+                    enter_from=region.enter_from,
+                    exit_from=region.exit_from,
+                    endure=region.endure,
+                    entity=entity_or_label,
+                    key=region.key,
+                    push_effect=region.push_effect,
                 )
         else:
             if isinstance(entity_or_label, str):
-                return RegionProperties([], [], [], None, entity_or_label)
+                return RegionProperties(
+                    enter_from=[], exit_from=[], endure=[], key=entity_or_label
+                )
             else:
-                return RegionProperties([], [], [], entity_or_label, None)
+                return RegionProperties(
+                    enter_from=[],
+                    exit_from=[],
+                    endure=[],
+                    entity=entity_or_label,
+                )

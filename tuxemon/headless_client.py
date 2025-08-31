@@ -11,7 +11,7 @@ from typing import Any, Optional, TypeVar, Union, overload
 
 from tuxemon.audio import MusicPlayerState, SoundManager
 from tuxemon.boundary import BoundaryChecker
-from tuxemon.camera import CameraManager
+from tuxemon.camera.camera import CameraManager
 from tuxemon.config import TuxemonConfig
 from tuxemon.constants import paths
 from tuxemon.event import get_event_bus

@@ -15,7 +15,7 @@ from pygame.surface import Surface
 
 from tuxemon.audio import MusicPlayerState, SoundManager
 from tuxemon.boundary import BoundaryChecker
-from tuxemon.camera import CameraManager
+from tuxemon.camera.camera import CameraManager
 from tuxemon.cli.processor import CommandProcessor
 from tuxemon.collision_manager import CollisionManager
 from tuxemon.combat.session import CombatSession

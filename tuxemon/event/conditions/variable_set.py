@@ -37,8 +37,8 @@ class VariableSetCondition(EventCondition):
         player = session.player
 
         return all(
-            key in player.game_variables
-            and (not value or player.game_variables[key] == value)
+            player.game_variables.has(key)
+            and (not value or player.game_variables.get(key) == value)
             for part in condition.parameters
             for key, _, value in [part.partition(":")]
         )

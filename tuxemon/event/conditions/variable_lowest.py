@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any
 
 from tuxemon.event import MapCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -38,13 +37,11 @@ class VariableLowestCondition(EventCondition):
         key_to_check, _keys_to_check = condition.parameters
         keys_to_check = _keys_to_check.split(":")
 
-        if key_to_check not in game_variables:
+        if not game_variables.has(key_to_check):
             logger.error(f"{key_to_check} is not in the game variables.")
             return False
 
-        lowest_value, lowest_keys = find_lowest_value_and_keys(
-            game_variables, keys_to_check
-        )
+        lowest_value, lowest_keys = game_variables.find_lowest(keys_to_check)
 
         if len(lowest_keys) > 1:
             logger.error(
@@ -52,25 +49,3 @@ class VariableLowestCondition(EventCondition):
             )
 
         return key_to_check == lowest_keys[0] if lowest_keys else False
-
-
-def find_lowest_value_and_keys(
-    game_variables: dict[str, Any], keys_to_check: list[str]
-) -> tuple[float, list[str]]:
-    lowest_value = float("inf")
-    lowest_keys = []
-
-    for key in keys_to_check:
-        if key in game_variables:
-            value = game_variables[key]
-            try:
-                value = float(value)
-            except ValueError:
-                raise ValueError(f"The value of '{key}' is not a number")
-            if value < lowest_value:
-                lowest_value = value
-                lowest_keys = [key]
-            elif value == lowest_value:
-                lowest_keys.append(key)
-
-    return lowest_value, lowest_keys

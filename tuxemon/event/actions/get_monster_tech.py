@@ -138,7 +138,9 @@ class GetMonsterTechAction(EventAction):
         player = self.session.player
         technique = menu_item.game_object
 
-        player.game_variables[self.variable_name] = technique.instance_id.hex
+        player.game_variables.set(
+            self.variable_name, technique.instance_id.hex
+        )
         self.session.client.pop_state()
 
     def start(self, session: Session) -> None:
@@ -152,11 +154,11 @@ class GetMonsterTechAction(EventAction):
             monsters = client.event_data.get("check_max_tech", [])
             client.event_data.pop("check_max_tech")
         else:
-            if self.monster_id not in player.game_variables:
+            if not player.game_variables.has(self.monster_id):
                 logger.error(f"Game variable {self.monster_id} not found")
                 return
             monster_id = UUID(
-                player.game_variables[self.monster_id],
+                player.game_variables.get(self.monster_id),
             )
             monster = get_monster_by_iid(self.session, monster_id)
             if monster is None:
@@ -191,8 +193,8 @@ class GetMonsterTechAction(EventAction):
             player = session.player
             if self.result and not self.choose:
                 # the player can choose, but returns
-                player.game_variables[self.variable_name] = "no_choice"
+                player.game_variables.set(self.variable_name, "no_choice")
             if not self.result:
                 # the player can't choose (eg no females in the party)
-                player.game_variables[self.variable_name] = "no_options"
+                player.game_variables.set(self.variable_name, "no_options")
             self.stop()

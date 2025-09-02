@@ -156,8 +156,8 @@ class Mission:
 
         return all(
             all(
-                key in character.game_variables
-                and character.game_variables[key] == value
+                character.game_variables.has(key)
+                and character.game_variables.get(key) == value
                 for key, value in prerequisite.items()
             )
             for prerequisite in self.prerequisites
@@ -169,8 +169,8 @@ class Mission:
 
         return all(
             all(
-                key in character.game_variables
-                and character.game_variables[key] == value
+                character.game_variables.has(key)
+                and character.game_variables.get(key) == value
                 for key, value in condition.items()
             )
             for condition in self.failure_conditions

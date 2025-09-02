@@ -14,6 +14,7 @@ from tuxemon.battle import BattlesHandler
 from tuxemon.boxes import ItemBoxes, MonsterBoxes
 from tuxemon.db import DialogueProfile, Direction, NpcModel, db
 from tuxemon.entity import Entity
+from tuxemon.game_variables import GameVariablesManager, PlayerVariablesManager
 from tuxemon.item.item import Item, decode_items, encode_items
 from tuxemon.locale import T
 from tuxemon.map import dirs2, get_direction, proj
@@ -107,7 +108,7 @@ class NPC(Entity[NPCState]):
 
         # general
         self.behavior: Optional[str] = "wander"  # not used for now
-        self.game_variables: dict[str, Any] = {}  # Tracks the game state
+        self._variables = GameVariablesManager()
         self.battle_handler = BattlesHandler()
         # Tracks Tuxepedia (monster seen or caught)
         self.tuxepedia = Tuxepedia()
@@ -148,6 +149,10 @@ class NPC(Entity[NPCState]):
         self.sprite_controller = SpriteController(self)
 
     @property
+    def game_variables(self) -> PlayerVariablesManager:
+        return self._variables.player
+
+    @property
     def monsters(self) -> list[Monster]:
         """Returns the list of monsters in the party."""
         return self.party.monsters
@@ -166,7 +171,7 @@ class NPC(Entity[NPCState]):
         state: NPCState = {
             "current_map": session.client.get_map_name(),
             "facing": self.facing,
-            "game_variables": self.game_variables,
+            "game_variables": self._variables.get_player_state(),
             "battles": self.battle_handler.encode_battle(),
             "tuxepedia": encode_tuxepedia(self.tuxepedia),
             "relationships": encode_relationships(self.relationships),
@@ -197,7 +202,7 @@ class NPC(Entity[NPCState]):
             save_data: Data used to recreate the NPC.
         """
         self.set_facing(Direction(save_data.get("facing", "down")))
-        self.game_variables = save_data["game_variables"]
+        self._variables.set_player_state(save_data["game_variables"])
         self.tuxepedia = decode_tuxepedia(save_data["tuxepedia"])
         self.relationships = decode_relationships(save_data["relationships"])
         self.battle_handler.decode_battle(save_data)

@@ -54,8 +54,8 @@ class SpawnMonsterAction(EventAction):
 
     def start(self, session: Session) -> None:
         player = session.player
-        mother_id = UUID(player.game_variables["breeding_mother"])
-        father_id = UUID(player.game_variables["breeding_father"])
+        mother_id = UUID(player.game_variables.get("breeding_mother"))
+        father_id = UUID(player.game_variables.get("breeding_father"))
 
         mother = get_monster_by_iid(
             session, mother_id

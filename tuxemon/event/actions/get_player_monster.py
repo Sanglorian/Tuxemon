@@ -140,7 +140,7 @@ class GetPlayerMonsterAction(EventAction):
         player = self.session.player
         monster = menu_item.game_object
 
-        player.game_variables[self.variable_name] = monster.instance_id.hex
+        player.game_variables.set(self.variable_name, monster.instance_id.hex)
         self.session.client.pop_state()
 
     def start(self, session: Session) -> None:
@@ -168,8 +168,8 @@ class GetPlayerMonsterAction(EventAction):
             player = session.player
             if self.result and not self.choose:
                 # the player can choose, but returns
-                player.game_variables[self.variable_name] = "no_choice"
+                player.game_variables.set(self.variable_name, "no_choice")
             if not self.result:
                 # the player can't choose (eg no females in the party)
-                player.game_variables[self.variable_name] = "no_options"
+                player.game_variables.set(self.variable_name, "no_options")
             self.stop()

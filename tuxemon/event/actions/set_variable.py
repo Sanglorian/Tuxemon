@@ -40,4 +40,4 @@ class SetVariableAction(EventAction):
         player = session.player
         for param in self.raw_parameters:
             var_key, _, var_value = param.partition(":")
-            player.game_variables[var_key] = var_value
+            player.game_variables.set(var_key, var_value)

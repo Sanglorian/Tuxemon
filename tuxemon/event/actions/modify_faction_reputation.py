@@ -55,6 +55,6 @@ class ModifyFactionReputationAction(EventAction):
             f"[Reputation] {char.slug}'s rep in {self.faction_slug} changed by {self.amount}. "
             f"New rep: {faction.get_reputation(char.slug)}"
         )
-        faction.check_promotion(char.slug, char.game_variables)
+        faction.check_promotion(char.slug, char.game_variables.get_state())
         faction.check_degradation(char.slug)
         faction_manager.clear_membership_cache(char.slug)

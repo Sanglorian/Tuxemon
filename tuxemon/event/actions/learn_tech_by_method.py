@@ -44,11 +44,11 @@ class LearnTechByMethodAction(EventAction):
     def start(self, session: Session) -> None:
         player = session.player
 
-        if self.monster_var not in player.game_variables:
+        if not player.game_variables.has(self.monster_var):
             logger.error(f"Monster variable '{self.monster_var}' not found")
             return
 
-        monster_id = UUID(player.game_variables[self.monster_var])
+        monster_id = UUID(player.game_variables.get(self.monster_var))
         monster = get_monster_by_iid(session, monster_id)
 
         if monster is None:

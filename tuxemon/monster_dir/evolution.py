@@ -169,8 +169,8 @@ class Evolution:
             for variable in evolution_item.variables:
                 for key, value in variable.items():
                     conditions.append(
-                        key in owner.game_variables
-                        and owner.game_variables[key] == value
+                        owner.game_variables.has(key)
+                        and owner.game_variables.get(key) == value
                     )
 
         # Check if the monster has taken the required number of steps

@@ -36,7 +36,7 @@ class RemoveEntityEffect(CoreEffect):
                     client.event_engine.execute_action(
                         "remove_npc", [npc.slug], True
                     )
-                    player.game_variables[npc.slug] = self.name
+                    player.game_variables.set(npc.slug, self.name)
                     remove = True
 
         return ItemEffectResult(name=item.name, success=remove)

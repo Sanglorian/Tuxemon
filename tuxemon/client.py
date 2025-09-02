@@ -179,6 +179,7 @@ class LocalPygameClient:
             # behavior for the game.  at some point, a lock should be
             # implemented so that actions executed here have exclusive
             # control of the game loop and state.
+            local_session.set_client(self)
             self.cli = CommandProcessor(local_session)
             thread = Thread(target=self.cli.run)
             thread.daemon = True

@@ -50,7 +50,8 @@ class TransactionManager:
     ) -> None:
         if item.quantity != INFINITE_ITEMS:
             item.decrease_quantity(quantity)
-            buyer.game_variables[label] -= quantity
+            current = buyer.game_variables.get(label, 0)
+            buyer.game_variables.set(label, current - quantity)
 
         self._adjust_inventory(buyer, item, quantity)
         self._process_payment(cost * quantity, is_buying=True)
@@ -69,7 +70,8 @@ class TransactionManager:
         label: str,
         cost: int,
     ) -> None:
-        buyer.game_variables[label] -= quantity
+        current = buyer.game_variables.get(label, 0)
+        buyer.game_variables.set(label, current - quantity)
         self._adjust_monster_party(buyer, monster)
         self._process_payment(cost * quantity, is_buying=True)
 

@@ -181,6 +181,7 @@ class JournalInfoState(PygameMenuState):
             label_id="description",
             font_size=self.font_type.small,
             wordwrap=True,
+            leading=35,
             align=locals.ALIGN_LEFT,
             float=True,
         )

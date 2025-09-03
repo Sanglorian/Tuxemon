@@ -42,6 +42,7 @@ from typing import TYPE_CHECKING, ClassVar, Optional, Union
 from tuxemon import prepare
 from tuxemon.ai import AIManager
 from tuxemon.animation import Animation, Task
+from tuxemon.animation_entity import AnimationManager
 from tuxemon.combat.combat_context import CombatContext
 from tuxemon.combat.machine import CombatMachine, CombatPhase
 from tuxemon.combat.reward_system import RewardSystem
@@ -66,8 +67,8 @@ from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.status.status import Status
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import assert_never
-from tuxemon.ui.combat_method_animation import MethodAnimationCache
 from tuxemon.ui.combat_notifier import CombatNotifier, TextAnimationManager
+from tuxemon.ui.method_animation import MethodAnimationCache
 from tuxemon.ui.text_alignment import HorizontalAlignment
 
 if TYPE_CHECKING:
@@ -111,7 +112,7 @@ class CombatState(CombatAnimations):
 
     def __init__(self, context: CombatContext) -> None:
         self.phase: Optional[CombatPhase] = None
-        self._method_cache = MethodAnimationCache()
+        self._method_cache = MethodAnimationCache(AnimationManager())
         self.text_anim = TextAnimationManager()
         self._decision_queue: list[Monster] = []
         # player => home areas on screen

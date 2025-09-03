@@ -209,7 +209,8 @@ class SurfaceAnimation:
 
     def flip(self, flip_axes: FlipAxes) -> None:
         """Flip all frames of an animation along the X-axis and/or Y-axis."""
-        # Empty string - animation won't be flipped
+        if flip_axes == FlipAxes.NONE:
+            return
         flip_x = flip_axes in {FlipAxes.X, FlipAxes.XY}
         flip_y = flip_axes in {FlipAxes.Y, FlipAxes.XY}
         self._frame_manager.flip_images(flip_x, flip_y)

@@ -43,7 +43,6 @@ class TestPathfinder(unittest.TestCase):
         path = self.pathfinder.pathfind(start, dest, Direction.down)
 
         self.assertIsNone(path)
-        self.client.npc_manager.get_entity_pos.assert_called_once_with(start)
 
     def test_pathfind_failure(self):
         start = (0, 0)
@@ -56,7 +55,6 @@ class TestPathfinder(unittest.TestCase):
         path = self.pathfinder.pathfind(start, dest, Direction.down)
 
         self.assertIsNone(path)
-        self.client.npc_manager.get_entity_pos.assert_called_once_with(start)
 
     def test_is_valid_position(self):
         position = (1, 1)

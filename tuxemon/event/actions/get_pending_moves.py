@@ -10,7 +10,7 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.interface import MenuItem
 from tuxemon.monster import Monster
 from tuxemon.session import Session
-from tuxemon.states.techniques import TechniqueMenuState
+from tuxemon.states.technique_menu import TechniqueMenuState
 from tuxemon.technique.technique import Technique
 
 logger = logging.getLogger(__name__)

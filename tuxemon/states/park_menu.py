@@ -16,11 +16,11 @@ from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu
 from tuxemon.monster import Monster
-from tuxemon.states.items.item_menu import ItemMenuState
+from tuxemon.states.item_menu import ItemMenuState
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
-    from tuxemon.states.combat.combat import CombatState
+    from tuxemon.states.combat_state import CombatState
 
 logger = logging.getLogger(__name__)
 

@@ -77,56 +77,58 @@ class TestPathfinder(unittest.TestCase):
         self.assertFalse(self.pathfinder.is_valid_position((2, 2), skip_nodes))
 
     def test_is_tile_traversable(self):
-        npc = MagicMock(spec=NPC)
-        npc.tile_pos = (1, 1)
-        npc.ignore_collisions = False
-        npc.facing = Direction.down
         tile = (1, 2)
 
         self.pathfinder.get_exits = MagicMock(return_value=[tile])
         self.client.npc_manager.get_entity_pos = MagicMock(return_value=None)
 
-        self.assertTrue(self.pathfinder.is_tile_traversable(npc, tile))
+        result = self.pathfinder.is_tile_traversable(
+            (1, 1), Direction.down, tile, False
+        )
+        self.assertTrue(result)
 
         other_npc = MagicMock()
         other_npc.moving = True
         other_npc.moverate = CONFIG.player_walkrate
         other_npc.facing = Direction.up
         self.client.npc_manager.get_entity_pos.return_value = other_npc
-        self.assertFalse(self.pathfinder.is_tile_traversable(npc, tile))
+        result = self.pathfinder.is_tile_traversable(
+            (1, 1), Direction.down, tile, False
+        )
+        self.assertFalse(result)
 
-        npc.ignore_collisions = True
-        self.assertTrue(self.pathfinder.is_tile_traversable(npc, tile))
+        result = self.pathfinder.is_tile_traversable(
+            (1, 1), Direction.down, tile, True
+        )
+        self.assertTrue(result)
 
     def test_get_tile_moverate(self):
-        npc = MagicMock(spec=NPC)
         destination = (1, 1)
 
         self.client.map_manager.surface_map = {
             destination: {"speed_modifier": 0.5}
         }
-        npc.moverate = 2.0
+        npc_moverate = 2.0
 
         moverate = get_tile_moverate(
-            self.client.map_manager.surface_map, npc, destination
+            self.client.map_manager.surface_map, destination
         )
 
-        expected_moverate = npc.moverate * 0.5  # 2.0 * 0.5
-        self.assertEqual(moverate, expected_moverate)
+        expected_moverate = npc_moverate * 0.5  # 2.0 * 0.5
+        self.assertEqual(moverate * npc_moverate, expected_moverate)
 
     def test_get_tile_moverate_no_properties(self):
-        npc = MagicMock(spec=NPC)
         destination = (1, 1)
 
         self.client.map_manager.surface_map = {destination: {}}
-        npc.moverate = 2.0
+        npc_moverate = 2.0
 
         moverate = get_tile_moverate(
-            self.client.map_manager.surface_map, npc, destination
+            self.client.map_manager.surface_map, destination
         )
 
-        expected_moverate = npc.moverate * 1.0  # 2.0 * 1.0
-        self.assertEqual(moverate, expected_moverate)
+        expected_moverate = npc_moverate * 1.0  # 2.0 * 1.0
+        self.assertEqual(moverate * npc_moverate, expected_moverate)
 
     def test_pathfind_with_same_start_and_dest(self):
         start = (1, 1)
@@ -145,25 +147,23 @@ class TestPathfinder(unittest.TestCase):
         )
 
     def test_is_tile_traversable_with_no_npcs(self):
-        npc = MagicMock(spec=NPC)
-        npc.tile_pos = (1, 1)
-        npc.ignore_collisions = False
-        npc.facing = Direction.down
         tile = (1, 2)
         self.pathfinder.get_exits = MagicMock(return_value=[tile])
         self.client.npc_manager.get_entity_pos = MagicMock(return_value=None)
-        self.assertTrue(self.pathfinder.is_tile_traversable(npc, tile))
+        result = self.pathfinder.is_tile_traversable(
+            (1, 1), Direction.down, tile, False
+        )
+        self.assertTrue(result)
 
     def test_get_tile_moverate_with_no_surface_data(self):
-        npc = MagicMock(spec=NPC)
         destination = (1, 1)
         self.client.map_manager.surface_map = {}
-        npc.moverate = 2.0
+        npc_moverate = 2.0
         moverate = get_tile_moverate(
-            self.client.map_manager.surface_map, npc, destination
+            self.client.map_manager.surface_map, destination
         )
-        expected_moverate = npc.moverate * 1.0
-        self.assertEqual(moverate, expected_moverate)
+        expected_moverate = npc_moverate * 1.0
+        self.assertEqual(moverate * npc_moverate, expected_moverate)
 
     def test_get_exits_with_tile_data(self):
         position = (1, 1)
@@ -374,9 +374,6 @@ class TestPathfinder(unittest.TestCase):
 
     def test_is_tile_traversable_blocked_by_npc(self):
         npc = MagicMock(spec=NPC)
-        npc.tile_pos = (1, 1)
-        npc.ignore_collisions = False
-        npc.facing = Direction.down
 
         tile = (1, 2)
         self.pathfinder.get_exits = MagicMock(return_value=[tile])
@@ -392,5 +389,7 @@ class TestPathfinder(unittest.TestCase):
         )
         self.client.map_manager.map_size = (10, 10)
 
-        result = self.pathfinder.is_tile_traversable(npc, tile)
+        result = self.pathfinder.is_tile_traversable(
+            (1, 1), Direction.down, tile, False
+        )
         self.assertFalse(result)

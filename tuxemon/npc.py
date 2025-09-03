@@ -417,8 +417,11 @@ class NPC(Entity[NPCState]):
         direction = get_direction(proj(self.position), target)
         self.set_facing(direction)
         try:
-            if self.client.pathfinder.is_tile_traversable(self, target):
-                moverate = get_tile_moverate(surface_map, self, target)
+            if self.client.pathfinder.is_tile_traversable(
+                self.tile_pos, self.facing, target, self.ignore_collisions
+            ):
+                tile_rate = get_tile_moverate(surface_map, target)
+                self.set_moverate_modifier(tile_rate)
                 # Surfanim suffers from significant clock drift, causing
                 # timing inconsistencies. Even after completing one animation
                 # cycle, the timing can become inaccurate. This drift results
@@ -432,7 +435,7 @@ class NPC(Entity[NPCState]):
                 # visual glitches and ensure frame accuracy.
                 self.sprite_controller.play_animation()
                 self.path_origin = self.tile_pos
-                self.mover.move(self.mover.current_direction, moverate)
+                self.mover.move(self.mover.current_direction)
                 self.remove_collision()
             else:
                 self.stop_moving()

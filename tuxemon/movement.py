@@ -227,93 +227,154 @@ class Pathfinder:
         skip_nodes: Optional[set[tuple[int, int]]] = None,
     ) -> Sequence[tuple[int, int]]:
         """
-        Retrieves a list of adjacent tiles that can be moved into from the given position.
+        Determines all adjacent tiles that can be traversed from the given position.
 
         Parameters:
-            position: The original position as a tuple of (x, y) coordinates.
-            facing: The direction the character is currently facing, used to determine
-                valid exits.
-            collision_map: An optional mapping of collisions with entities and terrain.
-            skip_nodes: A set of nodes to skip during the exit check.
+            position: The current tile coordinates (x, y).
+            facing: The direction the character is currently facing.
+            collision_map: Optional preloaded collision map; defaults to current map's
+                collision data.
+            skip_nodes: Optional set of positions to exclude from traversal.
 
         Returns:
-            A sequence of adjacent and traversable tile positions.
+            A list of adjacent tile positions that are valid for movement.
         """
-        # get tile-level and npc/entity blockers
         collision_map = (
             collision_map or self.collision_manager.get_collision_map()
         )
         skip_nodes = skip_nodes or set()
-        logger.debug(f"Getting exits for position {position}.")
+        logger.debug(f"[get_exits] Position: {position}, Facing: {facing}")
+        logger.debug(f"[get_exits] Skip nodes: {skip_nodes}")
 
-        # Get explicit 'continue' and 'exits' based on tile data if it exists
-        exits = []
         tile_data = collision_map.get(position)
-        if tile_data is not None:
-            exits = get_explicit_tile_exits(
-                position, tile_data, facing, skip_nodes
-            )
-            logger.debug(f"Found explicit exits: {exits}.")
-        else:
-            logger.debug(
-                f"No tile data found for position {position}. "
-                "No explicit exits can be determined."
-            )
+        exits = (
+            get_explicit_tile_exits(position, tile_data, facing, skip_nodes)
+            if tile_data
+            else []
+        )
+        logger.debug(f"[get_exits] Found explicit exits: {exits}")
 
         adjacent_tiles = set()
-        # Loop through all directions dynamically using dirs2
+
         for direction, vector in dirs2.items():
             neighbor = get_adjacent_position(position, direction)
-            # If we have specific exits defined, make sure the neighbor is one of them
-            # Also, skip this neighbor if it's in the list of nodes we want to avoid
-            # We only need to check the edges since we can't go out of bounds
-            if (exits and neighbor not in exits) or not self.is_valid_position(
-                neighbor, skip_nodes
+            logger.debug(
+                f"[get_exits] Checking direction: {direction}, Neighbor: {neighbor}"
+            )
+
+            if self.is_tile_traversable_from(
+                position, neighbor, direction, exits, collision_map, skip_nodes
             ):
-                logger.debug(
-                    f"Skipping neighbor {neighbor} (not valid or not an exit)."
-                )
-                continue
+                adjacent_tiles.add(neighbor)
 
-            if (
-                position,
-                direction,
-            ) in self.map_manager.collision_lines_map:
-                logger.debug(
-                    f"Wall detected between {position} and {neighbor}."
-                )
-                continue
-
-            # test if this tile has special movement handling
-            # NOTE: Do not refact. into a dict.get(xxxxx, None) style check
-            # NOTE: None has special meaning in this check
-            try:
-                tile_data = collision_map[neighbor]
-            except KeyError:
-                pass
-            else:
-                # None means tile is blocked with no specific data
-                if tile_data is None:
-                    continue
-
-                try:
-                    if pairs(direction) not in tile_data.enter_from:
-                        continue
-                except KeyError:
-                    continue
-
-            logger.debug(f"Neighbor {neighbor} is free to move into.")
-            adjacent_tiles.add(neighbor)
-
-        logger.debug(f"Adjacent tiles found: {adjacent_tiles}.")
+        logger.debug(f"[get_exits] Final adjacent tiles: {adjacent_tiles}")
         return list(adjacent_tiles)
 
-    def is_tile_traversable(self, npc: NPC, tile: tuple[int, int]) -> bool:
+    def is_explicitly_allowed(
+        self,
+        neighbor: tuple[int, int],
+        exits: list[tuple[float, ...]],
+    ) -> bool:
+        """
+        Checks whether a neighbor tile is explicitly allowed based on exit rules.
+
+        Parameters:
+            neighbor: The adjacent tile to evaluate.
+            exits: A list of explicitly allowed exit positions.
+
+        Returns:
+            True if no explicit exits are defined or if the neighbor is in the list;
+            False otherwise.
+        """
+        return not exits or neighbor in exits
+
+    def is_tile_enterable(
+        self,
+        neighbor: tuple[int, int],
+        direction: Direction,
+        collision_map: CollisionMap,
+    ) -> bool:
+        """
+        Determines whether a tile can be entered from a given direction.
+
+        Parameters:
+            neighbor: The tile to enter.
+            direction: The direction from which entry is attempted.
+            collision_map: The map containing tile data and entry rules.
+
+        Returns:
+            True if the tile allows entry from the given direction; False otherwise.
+        """
+        try:
+            tile_data = collision_map[neighbor]
+        except KeyError:
+            return True  # Missing tile data is treated as traversable
+
+        if tile_data is None:
+            return False
+
+        try:
+            return pairs(direction) in tile_data.enter_from
+        except KeyError:
+            return False
+
+    def is_tile_traversable_from(
+        self,
+        position: tuple[int, int],
+        neighbor: tuple[int, int],
+        direction: Direction,
+        exits: list[tuple[float, ...]],
+        collision_map: CollisionMap,
+        skip_nodes: set[tuple[int, int]],
+    ) -> bool:
+        """
+        Evaluates whether a neighboring tile is traversable from the current position.
+
+        Parameters:
+            position: The current tile position.
+            neighbor: The adjacent tile to evaluate.
+            direction: The direction of movement toward the neighbor.
+            exits: A list of explicitly allowed exit positions.
+            collision_map: The map containing tile data and entry rules.
+            skip_nodes: A set of positions to exclude from traversal.
+
+        Returns:
+            True if the neighbor tile is traversable; False otherwise.
+        """
+        if not self.is_explicitly_allowed(neighbor, exits):
+            logger.debug(f"[traversable] {neighbor} not in explicit exits")
+            return False
+        if not self.is_valid_position(neighbor, skip_nodes):
+            logger.debug(
+                f"[traversable] {neighbor} is invalid (boundary or skipped)"
+            )
+            return False
+        if (position, direction) in self.map_manager.collision_lines_map:
+            logger.debug(
+                f"[traversable] Wall between {position} and {neighbor}"
+            )
+            return False
+        if not self.is_tile_enterable(neighbor, direction, collision_map):
+            logger.debug(
+                f"[traversable] Cannot enter {neighbor} from {direction}"
+            )
+            return False
+
+        logger.debug(f"[traversable] {neighbor} is traversable")
+        return True
+
+    def is_tile_traversable(
+        self,
+        tile_pos: tuple[int, int],
+        facing: Direction,
+        tile: tuple[int, int],
+        ignore_collisions: bool,
+    ) -> bool:
         """Checks if a tile is traversable for the given NPC."""
-        if npc.ignore_collisions:
+        if ignore_collisions:
             return True
 
-        if tile not in self.get_exits(npc.tile_pos, npc.facing):
+        if tile not in self.get_exits(tile_pos, facing):
             return False
 
         # Check for collisions with moving entities
@@ -324,7 +385,7 @@ class Pathfinder:
                 char
                 and char.moving
                 and char.moverate == CONFIG.player_walkrate
-                and npc.facing != char.facing
+                and facing != char.facing
             ):
                 return False
 
@@ -333,12 +394,9 @@ class Pathfinder:
 
 def get_tile_moverate(
     surface_map: MutableMapping[tuple[int, int], dict[str, float]],
-    npc: NPC,
     destination: tuple[int, int],
 ) -> float:
     """Gets the movement speed modifier for the given tile."""
     tile_properties = surface_map.get(destination, {})
     rate = next(iter(tile_properties.values()), 1.0)
-    # Convert rate to a numeric type if necessary
-    _moverate = npc.moverate * float(rate)
-    return _moverate
+    return rate

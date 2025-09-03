@@ -9,7 +9,7 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.interface import MenuItem
 from tuxemon.monster import Monster
 from tuxemon.session import Session
-from tuxemon.states.monster import MonsterMenuState
+from tuxemon.states.monster_menu import MonsterMenuState
 
 
 @final

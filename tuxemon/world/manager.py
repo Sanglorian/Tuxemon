@@ -6,24 +6,16 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
-import pygame_menu
-
-from tuxemon import prepare
-from tuxemon.animation import ScheduleType
 from tuxemon.item.filter import ItemFilter
 from tuxemon.locale import T
-from tuxemon.menu.menu import PygameMenuState
-from tuxemon.platform.const import buttons
-from tuxemon.platform.events import PlayerInput
-from tuxemon.states.monster import MonsterMenuHandler
-from tuxemon.states.world.world_menu_flags import MenuFlags
+from tuxemon.world.menu_flags import MenuFlags
 
 if TYPE_CHECKING:
-    from tuxemon.animation import Animation
     from tuxemon.client import LocalPygameClient
     from tuxemon.npc import NPC
+    from tuxemon.states.world_menus import WorldMenuState
 
 logger = logging.getLogger(__name__)
 
@@ -37,36 +29,6 @@ class MenuItem:
     label: str
     callback: WorldMenuGameObj
     enabled: bool = True
-
-
-def add_menu_items_to_pygame_menu(
-    menu: pygame_menu.Menu,
-    items: list[MenuItem],
-) -> None:
-    """Helper function to add items to a pygame_menu.Menu instance."""
-    menu.clear()
-    menu.add.vertical_fill()
-
-    for item in items:
-        label = item.label
-        callback = item.callback
-        if item.enabled:
-            menu.add.button(label, callback)
-        else:
-            menu.add.label(
-                label,
-                font_color=prepare.DIMGRAY_COLOR,
-            )
-        menu.add.vertical_fill()
-
-    width, height = prepare.SCREEN_SIZE
-    widgets_size = menu.get_size(widget=True)
-    b_width, b_height = menu.get_scrollarea().get_border_size()
-    menu.resize(
-        widgets_size[0],
-        height - 2 * b_height,
-        position=(width + b_width, b_height, False),
-    )
 
 
 class WorldMenuManager:
@@ -294,50 +256,3 @@ class WorldMenuManager:
         self._insert_item_specific_entries_in_menu(player, current_menu)
         current_menu.extend(self._merge_persistent_items(current_menu))
         return current_menu
-
-
-class WorldMenuState(PygameMenuState):
-    """Menu for the world state."""
-
-    name: ClassVar[str] = "WorldMenuState"
-
-    def __init__(self, menu_manager: WorldMenuManager, character: NPC) -> None:
-        """Initialize menu state and build menu separately."""
-        self.char = character
-        super().__init__(height=prepare.SCREEN_SIZE[1])
-        self.menu_manager = menu_manager
-        self.menu_manager.set_menu_renderer(self)
-        self.update_menu_from_manager()
-        self.handler = MonsterMenuHandler(self.client, self.char)
-
-    def update_menu_from_manager(self) -> None:
-        """Refreshes the menu display using items provided by the manager."""
-        display = self.menu_manager.build_current_menu_items(self.char)
-        add_menu_items_to_pygame_menu(self.menu, display)
-
-    def open_monster_menu(self) -> None:
-        self.handler.open_monster_menu()
-
-    def update_animation_position(self) -> None:
-        self.menu.translate(-self.animation_offset, 0)
-
-    def animate_open(self) -> Animation:
-        width = self.menu.get_width(border=True)
-        self.animation_offset = 0
-        ani = self.animate(self, animation_offset=width, duration=0.50)
-        ani.schedule(self.update_animation_position, ScheduleType.ON_UPDATE)
-        return ani
-
-    def animate_close(self) -> Animation:
-        ani = self.animate(self, animation_offset=0, duration=0.50)
-        ani.schedule(self.update_animation_position, ScheduleType.ON_UPDATE)
-        return ani
-
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
-        if (
-            event.button in (buttons.START, buttons.B, buttons.BACK)
-            and event.pressed
-        ):
-            self.client.pop_state()
-            return None
-        return super().process_event(event)

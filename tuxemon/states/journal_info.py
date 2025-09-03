@@ -42,7 +42,7 @@ class JournalInfoState(PygameMenuState):
     ) -> None:
         fxw: Callable[[float], int] = lambda r: fix_measure(menu._width, r)
         fxh: Callable[[float], int] = lambda r: fix_measure(menu._height, r)
-        menu._width = fxw(0.97)
+        menu._width = fxw((248/256))
 
         # evolutions
         evo = T.translate("no_evolution")
@@ -57,8 +57,8 @@ class JournalInfoState(PygameMenuState):
         # weight and height
         unit = self.client.config.unit_measure
         if unit == "metric":
-            mon_weight = monster.weight
-            mon_height = monster.height
+            mon_weight = round(monster.weight)
+            mon_height = round(monster.height)
             unit_weight = prepare.U_KG
             unit_height = prepare.U_CM
         else:
@@ -72,11 +72,11 @@ class JournalInfoState(PygameMenuState):
         lab1: Any = menu.add.label(
             title=name,
             label_id="name",
-            font_size=self.font_type.big,
+            font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab1.translate(fxw(0.50), fxh(0.15))
+        lab1.translate(fxw((126/256)), fxh((19.8/144)))
         # weight
         _weight = f"{mon_weight} {unit_weight}"
         lab2: Any = menu.add.label(
@@ -86,7 +86,7 @@ class JournalInfoState(PygameMenuState):
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab2.translate(fxw(0.50), fxh(0.25))
+        lab2.translate(fxw((158/256)), fxh((39/144)))
         # height
         _height = f"{mon_height} {unit_height}"
         lab3: Any = menu.add.label(
@@ -96,32 +96,29 @@ class JournalInfoState(PygameMenuState):
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab3.translate(fxw(0.65), fxh(0.25))
+        lab3.translate(fxw((126/256)), fxh((39/144)))
         # type
-        _type = T.translate("monster_menu_type")
-        lab4: Any = menu.add.label(
-            title=_type,
-            label_id="type_label",
-            font_size=self.font_type.small,
-            align=locals.ALIGN_LEFT,
-            float=True,
-        )
-        lab4.translate(fxw(0.50), fxh(0.30))
-        path1 = f"gfx/ui/icons/element/{monster.types[0]}_type.png"
+        path1 = f"gfx/ui/icons/element/{monster.types[0]}_type_small.png"
         type_image_1 = self._create_image(path1)
+        type_image_1.scale(prepare.SCALE, prepare.SCALE)
         if len(monster.types) > 1:
-            path2 = f"gfx/ui/icons/element/{monster.types[1]}_type.png"
+            path2 = f"gfx/ui/icons/element/{monster.types[1]}_type_small.png"
             type_image_2 = self._create_image(path2)
+            type_image_2.scale(prepare.SCALE, prepare.SCALE)
             menu.add.image(type_image_1, float=True).translate(
-                fxw(0.17), fxh(0.29)
+                fxw((11.4/256)), fxh((47.8/144))
             )
             menu.add.image(type_image_2, float=True).translate(
-                fxw(0.19), fxh(0.29)
+                fxw((25.4/256)), fxh((47.8/144))
             )
         else:
             menu.add.image(type_image_1, float=True).translate(
-                fxw(0.17), fxh(0.29)
+                fxw((11.4/256)), fxh((47.8/144))
             )
+            
+        # Shift amount for two types
+        type_shift = (15/256) if len(monster.types) > 1 else 0
+            
         types = self._safe_display(types)
         lab5: Any = menu.add.label(
             title=types,
@@ -130,7 +127,17 @@ class JournalInfoState(PygameMenuState):
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab5.translate(fxw(0.50), fxh(0.35))
+        lab5.translate(fxw((141.4/256) + type_shift), fxh((56/144)))
+        
+        _type = T.translate("monster_menu_type")
+        lab4: Any = menu.add.label(
+            title=_type,
+            label_id="type_label",
+            font_size=self.font_type.small,
+            align=locals.ALIGN_LEFT,
+            float=True,
+        )
+        lab4.translate(fxw((141/256) + type_shift), fxh((49/144)))
         # shape
         menu_shape = T.translate("monster_menu_shape")
         _shape = T.translate(monster.shape)
@@ -142,11 +149,11 @@ class JournalInfoState(PygameMenuState):
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab6.translate(fxw(0.50), fxh(0.40))
+        lab6.translate(fxw((126/256)), fxh((66/144)))
         # species
         spec = T.translate(f"cat_{monster.species}")
         spec = self._safe_display(spec)
-        species = T.translate("monster_menu_species") + ": " + spec
+        species = spec + " " + T.translate("monster_menu_species")
         lab7: Any = menu.add.label(
             title=species,
             label_id="species",
@@ -154,7 +161,7 @@ class JournalInfoState(PygameMenuState):
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab7.translate(fxw(0.50), fxh(0.45))
+        lab7.translate(fxw((126/256)), fxh((29/144)))
         # txmn_id
         _txmn_id = f"ID: {monster.txmn_id}"
         lab8: Any = menu.add.label(
@@ -164,7 +171,8 @@ class JournalInfoState(PygameMenuState):
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab8.translate(fxw(0.50), fxh(0.10))
+        lab8.translate(fxw((124.6/256)), fxh((10/144)))
+        
         # description
         desc = T.translate(f"{monster.slug}_description")
         desc = self._safe_display(desc)
@@ -176,7 +184,10 @@ class JournalInfoState(PygameMenuState):
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab9.translate(fxw(0.01), fxh(0.56))
+
+        lab9.translate(fxw((2/256)), fxh((82/144)))
+        
+
         # evolution
         evo = self._safe_display(evo)
         lab10: Any = menu.add.label(
@@ -187,17 +198,17 @@ class JournalInfoState(PygameMenuState):
             align=locals.ALIGN_LEFT,
             float=True,
         )
-        lab10.translate(fxw(0.01), fxh(0.76))
+        lab10.translate(fxw((2/256)), fxh((109/144)))
 
         # evolution monsters
         if self.is_visible:
             f = menu.add.frame_h(
                 float=True,
-                width=fxw(0.95),
-                height=fxw(0.05),
+                width=fxw((243/256)),
+                height=fxw((7/144)),
                 frame_id="histories",
             )
-            f.translate(fxw(0.02), fxh(0.80))
+            f.translate(fxw((5/256)), fxh((115/144)))
             f._relax = True
             slugs = [ele.monster_slug for ele in monster.evolutions]
             elements = list(dict.fromkeys(slugs))
@@ -218,7 +229,7 @@ class JournalInfoState(PygameMenuState):
         new_image.scale(prepare.SCALE, prepare.SCALE)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
-        image_widget.translate(fxw(0.20), fxh(0.05))
+        image_widget.translate(fxw((53.6/256) ), fxh((10/144) ))
 
     def __init__(
         self,

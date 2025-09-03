@@ -142,12 +142,14 @@ if CONFIG.large_gui:
     FONT_SIZE = 6
     FONT_SIZE_BIG = 7
     FONT_SIZE_BIGGER = 8
+    FONT_SIZE_BIGGEST = 9
 else:
     FONT_SIZE_SMALLER = 3
     FONT_SIZE_SMALL = 4
     FONT_SIZE = 5
     FONT_SIZE_BIG = 6
     FONT_SIZE_BIGGER = 7
+    FONT_SIZE_BIGGEST = 8
 
 # gradients
 # Hex 77767b > Hex ffffff (linear + top/bottom)

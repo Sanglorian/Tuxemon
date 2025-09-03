@@ -47,6 +47,7 @@ class FontSettings:
     medium: int = prepare.SCALE * prepare.FONT_SIZE
     big: int = prepare.SCALE * prepare.FONT_SIZE_BIG
     bigger: int = prepare.SCALE * prepare.FONT_SIZE_BIGGER
+    biggest: int = prepare.SCALE * prepare.FONT_SIZE_BIGGEST
 
 
 T = TypeVar("T", covariant=True)

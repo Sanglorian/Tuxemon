@@ -14,7 +14,6 @@ from tuxemon.entity_dir.bag import BagHandler
 from tuxemon.entity_dir.battle import BattlesHandler
 from tuxemon.entity_dir.party import PartyHandler
 from tuxemon.game_variables import GameVariablesManager, PlayerVariablesManager
-from tuxemon.item.item import Item, decode_items, encode_items
 from tuxemon.locale import T
 from tuxemon.map import dirs2, get_direction, proj
 from tuxemon.map_view import SpriteController

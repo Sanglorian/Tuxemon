@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import logging
-from collections import deque
 from collections.abc import MutableMapping, Sequence
+from heapq import heappop, heappush
 from typing import TYPE_CHECKING, Optional
 
 from tuxemon.map import (
@@ -36,9 +36,14 @@ class PathfindNode:
         self,
         value: tuple[int, int],
         parent: Optional[PathfindNode] = None,
+        g_cost: float = 0.0,
+        h_cost: float = 0.0,
     ) -> None:
         self.parent = parent
         self.value = value
+        self.g_cost = g_cost
+        self.h_cost = h_cost
+        self.f_cost = self.g_cost + self.h_cost
         if self.parent:
             self.depth: int = self.parent.depth + 1
         else:
@@ -73,6 +78,9 @@ class PathfindNode:
         if self.parent is not None:
             s += str(self.parent)
         return s
+
+    def __lt__(self, other: PathfindNode) -> bool:
+        return (self.f_cost, self.depth) < (other.f_cost, other.depth)
 
 
 class MovementManager:
@@ -160,41 +168,45 @@ class Pathfinder:
         """
         logger.info(f"Pathfinding from {start} to {dest}.")
 
-        queue = deque([PathfindNode(start)])
+        def heuristic(pos: tuple[int, int], target: tuple[int, int]) -> float:
+            return abs(pos[0] - target[0]) + abs(pos[1] - target[1])
+
+        open_set: list[PathfindNode] = []
+        g_costs: dict[tuple[int, int], float] = {start: 0.0}
         known_nodes: set[tuple[int, int]] = set()
-        collision_map = self.collision_manager.get_collision_map()
 
-        while queue:
-            node = queue.popleft()
-            logger.debug(f"Checking node {node.get_value()}.")
+        start_node = PathfindNode(
+            start, g_cost=0.0, h_cost=heuristic(start, dest)
+        )
+        heappush(open_set, start_node)
 
-            if node.get_value() == dest:
+        while open_set:
+            current_node = heappop(open_set)
+            current_pos = current_node.get_value()
+
+            if current_pos == dest:
                 logger.info(f"Destination {dest} reached.")
-                path = node.reconstruct_path()
-                return path
+                return current_node.reconstruct_path()
 
-            for adj_pos in self.get_exits(
-                position=node.get_value(),
+            for neighbor_pos in self.get_exits(
+                position=current_pos,
                 facing=facing,
-                collision_map=collision_map,
                 skip_nodes=known_nodes,
             ):
-                if adj_pos not in known_nodes:
-                    known_nodes.add(adj_pos)
-                    new_node = PathfindNode(adj_pos, node)
-                    queue.append(new_node)
-                    logger.debug(
-                        f"Added adjacent position {adj_pos} to the queue."
-                    )
+                new_g_cost = g_costs[current_pos] + 1
 
-        character = self.npc_manager.get_entity_pos(start)
-        if character and self.map_manager.current_map:
-            filename = self.map_manager.current_map.filename
-            logger.error(
-                f"{character.name}'s pathfinding failed in {filename}."
-            )
-        else:
-            logger.error(f"No character found at start position {start}.")
+                if new_g_cost < g_costs.get(neighbor_pos, float("inf")):
+                    g_costs[neighbor_pos] = new_g_cost
+                    neighbor_h_cost = heuristic(neighbor_pos, dest)
+                    neighbor_node = PathfindNode(
+                        value=neighbor_pos,
+                        parent=current_node,
+                        g_cost=new_g_cost,
+                        h_cost=neighbor_h_cost,
+                    )
+                    heappush(open_set, neighbor_node)
+                    known_nodes.add(neighbor_pos)
+
         logger.warning(f"No path found to destination {dest}.")
         return None
 

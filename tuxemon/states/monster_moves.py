@@ -68,9 +68,9 @@ class MonsterMovesState(PygameMenuState):
         moveset: list[Technique] = monster.moves.get_moves()
         output = sorted(moveset, key=lambda x: x.tech_id)
 
-        _height = (4.8 / 144)
+        _height = 4.8 / 144
         for tech in output:
-            _height += (12 / 144)
+            _height += 12 / 144
             menu.add.button(
                 title=tech.name.upper(),
                 action=None,
@@ -98,9 +98,13 @@ class MonsterMovesState(PygameMenuState):
 
         # Structure from baseline (re-usable widgets), plus your custom pieces
         self._add_description_label(menu, technique)
-        self._add_progress_bars(menu, technique)   # accuracy/potency with manual placement
-        self._add_icons(menu, technique)           # type icons, range icon, speed icon
-        self._add_power_label(menu, technique)     # power % label (manual placement)
+        self._add_progress_bars(
+            menu, technique
+        )  # accuracy/potency with manual placement
+        self._add_icons(menu, technique)  # type icons, range icon, speed icon
+        self._add_power_label(
+            menu, technique
+        )  # power % label (manual placement)
 
     # -------- description ----------
     def _add_description_label(
@@ -139,10 +143,16 @@ class MonsterMovesState(PygameMenuState):
                 info_label = widget
                 break
 
-        types_text = " ".join(map(lambda s: T.translate(s.slug), technique.types.current))
+        types_text = " ".join(
+            map(lambda s: T.translate(s.slug), technique.types.current)
+        )
         label_text = T.format(
             "technique_id_types_recharge",
-            {"id": technique.tech_id, "types": types_text, "rec": str(technique.recharge_length)},
+            {
+                "id": technique.tech_id,
+                "types": types_text,
+                "rec": str(technique.recharge_length),
+            },
         )
 
         if info_label is None:
@@ -167,8 +177,12 @@ class MonsterMovesState(PygameMenuState):
     ) -> None:
         width, height = prepare.SCREEN_SIZE
 
-        diff_accuracy = round((technique.accuracy / prepare.ACCURACY_RANGE[1]) * 100)
-        diff_potency = round((technique.potency / prepare.POTENCY_RANGE[1]) * 100)
+        diff_accuracy = round(
+            (technique.accuracy / prepare.ACCURACY_RANGE[1]) * 100
+        )
+        diff_potency = round(
+            (technique.potency / prepare.POTENCY_RANGE[1]) * 100
+        )
 
         # Find existing bars (by title) if present
         bar_accuracy: Optional[ProgressBar] = None
@@ -222,8 +236,12 @@ class MonsterMovesState(PygameMenuState):
         if not hasattr(self, "speed_icon_widget"):
             self.speed_icon_widget: Optional[Any] = None
 
-        fxw: Callable[[float], int] = lambda r: fix_measure(prepare.SCREEN_SIZE[0], r)
-        fxh: Callable[[float], int] = lambda r: fix_measure(prepare.SCREEN_SIZE[1], r)
+        fxw: Callable[[float], int] = lambda r: fix_measure(
+            prepare.SCREEN_SIZE[0], r
+        )
+        fxh: Callable[[float], int] = lambda r: fix_measure(
+            prepare.SCREEN_SIZE[1], r
+        )
 
         # Clear previous type icons (remove from menu, not just hide)
         for w in self.type_icon_widgets:
@@ -232,18 +250,27 @@ class MonsterMovesState(PygameMenuState):
         self.type_icon_widgets.clear()
 
         # Clear previous range icon
-        if self.range_icon_widget is not None and self.range_icon_widget in menu.get_widgets():
+        if (
+            self.range_icon_widget is not None
+            and self.range_icon_widget in menu.get_widgets()
+        ):
             menu.remove_widget(self.range_icon_widget)
         self.range_icon_widget = None
 
         # Clear previous speed icon
-        if self.speed_icon_widget is not None and self.speed_icon_widget in menu.get_widgets():
+        if (
+            self.speed_icon_widget is not None
+            and self.speed_icon_widget in menu.get_widgets()
+        ):
             menu.remove_widget(self.speed_icon_widget)
         self.speed_icon_widget = None
 
         # Type icons (manual placement; up to 2)
         if technique.types.current:
-            x_positions = [225 / 256, 213.4 / 256]  # second slightly left of first
+            x_positions = [
+                225 / 256,
+                213.4 / 256,
+            ]  # second slightly left of first
             y_position = 73.8 / 144
             for i, t in enumerate(technique.types.current[:2]):
                 path = f"gfx/ui/icons/element/{t.name.lower()}_type_small.png"
@@ -265,17 +292,17 @@ class MonsterMovesState(PygameMenuState):
         if getattr(technique, "speed", None) is not None:
             # Normalize speed into filename
             speed = technique.speed
-            if hasattr(speed, "value"):        # enum-like
+            if hasattr(speed, "value"):  # enum-like
                 speed_key = speed.value
-            elif isinstance(speed, int):       # numeric
+            elif isinstance(speed, int):  # numeric
                 mapping = {
                     -3: "extremely_slow",
                     -2: "very_slow",
                     -1: "slow",
-                     0: "normal",
-                     1: "fast",
-                     2: "very_fast",
-                     3: "extremely_fast",
+                    0: "normal",
+                    1: "fast",
+                    2: "very_fast",
+                    3: "extremely_fast",
                 }
                 speed_key = mapping.get(speed, "normal")
             else:
@@ -288,13 +315,18 @@ class MonsterMovesState(PygameMenuState):
             self.speed_icon_widget.translate(fxw(222 / 256), fxh(51.8 / 144))
 
     # -------- power label ----------
-    def _add_power_label(self, menu: pygame_menu.Menu, technique: Technique) -> None:
+    def _add_power_label(
+        self, menu: pygame_menu.Menu, technique: Technique
+    ) -> None:
         width, height = prepare.SCREEN_SIZE
         power_percent = round(technique.power * 100)
         power_text = f"{T.translate('technique_power')} {power_percent}%"
 
         # Remove old label if present
-        if hasattr(self, "power_label") and self.power_label in menu.get_widgets():
+        if (
+            hasattr(self, "power_label")
+            and self.power_label in menu.get_widgets()
+        ):
             menu.remove_widget(self.power_label)
 
         # Create fresh
@@ -370,7 +402,9 @@ class MonsterMovesState(PygameMenuState):
                 self.update_selected_widget()
                 menu = self.menu.get_current()
                 if self.selected_widget:
-                    self.add_menu_technique(menu, self.selected_widget.get_id())
+                    self.add_menu_technique(
+                        menu, self.selected_widget.get_id()
+                    )
                 return super().process_event(event)
 
         return None

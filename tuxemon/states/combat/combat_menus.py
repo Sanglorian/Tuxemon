@@ -20,8 +20,8 @@ from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu, PopUpMenu
 from tuxemon.monster import Monster
-from tuxemon.states.items.item_menu import ItemMenuState
-from tuxemon.states.monster import MonsterMenuState
+from tuxemon.states.item_menu import ItemMenuState
+from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.technique.technique import Technique
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text import TextArea
@@ -29,7 +29,7 @@ from tuxemon.ui.text import TextArea
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
     from tuxemon.session import Session
-    from tuxemon.states.combat.combat import CombatState
+    from tuxemon.states.combat_state import CombatState
 
 logger = logging.getLogger(__name__)
 

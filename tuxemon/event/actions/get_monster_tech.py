@@ -11,7 +11,7 @@ from tuxemon.db import Comparison, Range
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.interface import MenuItem
-from tuxemon.states.techniques import TechniqueMenuState
+from tuxemon.states.technique_menu import TechniqueMenuState
 from tuxemon.tools import compare, parse_flag
 
 if TYPE_CHECKING:

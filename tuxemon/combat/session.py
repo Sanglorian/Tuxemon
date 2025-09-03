@@ -11,7 +11,6 @@ from tuxemon.combat.action_queue import ActionQueue, EnqueuedAction
 from tuxemon.combat.combat_context import CombatType
 from tuxemon.combat.damage_tracker import DamageTracker
 from tuxemon.combat.field_monsters import FieldMonsters
-from tuxemon.combat.menu_visibility import MenuVisibility
 from tuxemon.combat.utils import alive_party, battlefield, defeated
 from tuxemon.db import EffectPhase, TargetType
 from tuxemon.event import get_event_bus
@@ -45,7 +44,7 @@ class CombatSession:
         self._combat_variables: dict[str, Any] = {}
         self.field_monsters = FieldMonsters()
         self.swap_tracker = SwapTracker()
-        self.menu_visibility = MenuVisibility()
+        self.menu_visibility_map: dict[str, bool] = {}
         self.damage_tracker = DamageTracker()
         self.action_queue = ActionQueue()
 
@@ -589,7 +588,7 @@ class CombatSession:
         self.reset_players()
         self.set_battle_format(False)
         self.reset_combat_type()
-        self.menu_visibility.reset_to_default()
+        self.menu_visibility_map.clear()
         self.damage_tracker.clear_damage()
         self.action_queue.clear_queue()
         self.action_queue.clear_history()

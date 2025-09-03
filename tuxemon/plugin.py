@@ -68,11 +68,11 @@ class FileSystemPluginDiscovery(PluginDiscovery):
     def __init__(
         self,
         folders: list[Path],
-        folder_name: str = "tuxemon",
+        root_path: Path,
         file_extensions: tuple[str, str] = (".py", ".pyc"),
     ):
         self.folders = folders or []
-        self.folder_name = folder_name
+        self.root_path = root_path.resolve()
         self.file_extensions = file_extensions
 
     def discover_plugins(self) -> list[str]:
@@ -101,15 +101,13 @@ class FileSystemPluginDiscovery(PluginDiscovery):
     def _get_module_path(self, folder: Path) -> str:
         """Converts a folder path to a module path using pathlib."""
         folder = folder.resolve()
-
-        if self.folder_name not in folder.parts:
+        try:
+            relative = folder.relative_to(self.root_path)
+        except ValueError:
             raise RuntimeError(
-                f"Unable to determine plugin module path for: {folder}"
+                f"{folder} is not under root path {self.root_path}"
             )
-
-        match_index = folder.parts.index(self.folder_name)
-        module_parts = folder.parts[match_index:]
-        return ".".join(module_parts)
+        return ".".join(relative.parts)
 
 
 class PluginLoader:
@@ -179,9 +177,19 @@ class PluginFilter:
 
     def is_valid_plugin(self, class_name: str, class_obj: type) -> bool:
         """Check if a plugin should be included."""
-        return not self.is_excluded(class_name) and self.matches_patterns(
-            class_obj
-        )
+        if self.is_excluded(class_name):
+            logger.debug(
+                f"Skipping class '{class_name}' because it's in the exclusion list."
+            )
+            return False
+
+        if not self.matches_patterns(class_obj):
+            logger.debug(
+                f"Skipping class '{class_name}' because its name does not match an include pattern."
+            )
+            return False
+
+        return True
 
 
 class PluginManager:
@@ -220,7 +228,7 @@ class PluginManager:
                 )
             except ImportError as e:
                 logger.error(
-                    f"Skipping module {module_name} due to import error: {e}"
+                    f"Skipping module '{module_name}' due to import error: {e}"
                 )
         return imported_plugins
 
@@ -254,7 +262,8 @@ class PluginManager:
 
 
 def load_directory(
-    plugin_folder: Path,
+    plugin_folders: list[Path],
+    root_path: Path,
     exclude: list[str] = ["IPlugin"],
     include: list[str] = PLUGIN_INCLUDE_PATTERNS,
 ) -> PluginManager:
@@ -262,7 +271,8 @@ def load_directory(
     Load plugins from a directory.
 
     Parameters:
-        plugin_folder: The folder where to look for plugin files.
+        plugin_folders: The folders where to look for plugin files.
+        root_path: The root of the Python module hierarchy.
         exclude: List of class names to exclude from loading.
             Defaults to ["IPlugin"].
         include: List of patterns to match plugin names against.
@@ -271,7 +281,9 @@ def load_directory(
     Returns:
         A plugin manager, with the modules already loaded.
     """
-    discovery = FileSystemPluginDiscovery([plugin_folder])
+    discovery = FileSystemPluginDiscovery(
+        folders=plugin_folders, root_path=root_path
+    )
     loader = PluginLoader(ImportLibPluginLoader())
     filter = PluginFilter(exclude_classes=exclude, include_patterns=include)
     manager = PluginManager(discovery, loader, filter)
@@ -303,20 +315,27 @@ def get_available_classes(
 
 @overload
 def load_plugins(
-    path: Path, category: str = "plugins"
+    paths: list[Path],
+    root_path: Path,
+    category: str = "plugins",
 ) -> Mapping[str, type[PluginObject]]:
     pass
 
 
 @overload
 def load_plugins(
-    path: Path, category: str = "plugins", *, interface: type[InterfaceValue]
+    paths: list[Path],
+    root_path: Path,
+    category: str = "plugins",
+    *,
+    interface: type[InterfaceValue],
 ) -> Mapping[str, type[InterfaceValue]]:
     pass
 
 
 def load_plugins(
-    path: Path,
+    paths: list[Path],
+    root_path: Path,
     category: str = "plugins",
     *,
     interface: Union[type[InterfaceValue], type[PluginObject]] = PluginObject,
@@ -325,7 +344,7 @@ def load_plugins(
     Load plugins from a directory and return them by name.
 
     Parameters:
-        path: Location of the modules to load.
+        paths: Locations of the modules to load.
         category: Optional string for debugging info.
         interface: Superclass or protocol of the returned classes. If no
             class is given, they are only required to have a `name` attribute.
@@ -335,7 +354,7 @@ def load_plugins(
         itself.
     """
     classes: dict[str, Union[type[InterfaceValue], type[PluginObject]]] = {}
-    plugins = load_directory(path)
+    plugins = load_directory(plugin_folders=paths, root_path=root_path)
 
     for cls in get_available_classes(plugins, interface=interface):
         try:

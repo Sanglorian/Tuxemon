@@ -13,13 +13,14 @@ from tuxemon.cli.clicommand import CLICommand
 from tuxemon.cli.context import InvokeContext
 from tuxemon.cli.exceptions import CommandNotFoundError, ParseError
 from tuxemon.cli.formatter import Formatter
+from tuxemon.constants.paths import LIBDIR
 from tuxemon.plugin import (
     get_available_classes,
     load_directory,
 )
 
 if TYPE_CHECKING:
-    from tuxemon.client import LocalPygameClient
+    from tuxemon.session import Session
 
 
 class MetaCommand(CLICommand):
@@ -63,13 +64,14 @@ class CommandProcessor:
     A class to enable an interactive debug command line.
 
     Parameters:
-        client: LocalPygameClient which will be controlled by the debug prompt.
+        session: Session which will be controlled by the debug prompt.
         prompt: Default text to display before the input area, ie "> ".
     """
 
-    def __init__(self, client: LocalPygameClient, prompt: str = "> ") -> None:
+    def __init__(self, session: Session, prompt: str = "> ") -> None:
         self.prompt = prompt
-        self.client = client
+        self.session = session
+        self.client = session.client
         folder = Path(__file__).parent / "commands"
         # TODO: add folder(s) from mods
         commands = list(self.collect_commands(folder))
@@ -81,7 +83,7 @@ class CommandProcessor:
         """
         ctx = InvokeContext(
             processor=self,
-            client=self.client,
+            session=self.session,
             root_command=self.root_command,
             current_command=self.root_command,
             formatter=Formatter(),
@@ -129,7 +131,10 @@ class CommandProcessor:
             folder: Folder to search.
         """
         pm = load_directory(
-            folder, include=["commands"], exclude=["CLICommand"]
+            plugin_folders=[folder],
+            root_path=LIBDIR.parent,
+            include=["commands"],
+            exclude=["CLICommand"],
         )
         for cmd_class in get_available_classes(pm, interface=CLICommand):
             if cmd_class.usable_from_root:

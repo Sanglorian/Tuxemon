@@ -13,7 +13,7 @@ from pytmx import pytmx
 from pytmx.pytmx import TiledMap
 
 from tuxemon import prepare
-from tuxemon.camera import project
+from tuxemon.camera.camera import project
 from tuxemon.compat.rect import ReadOnlyRect
 from tuxemon.db import Direction, Orientation
 from tuxemon.event import EventObject

@@ -62,21 +62,29 @@ class TestBody(unittest.TestCase):
         self.assertEqual(self.body.velocity, Vector3(0, 0, 0))
 
     def test_move_with_valid_direction(self):
-        self.mover.move(Vector3(0, -1, 0), speed=5)
+        self.mover.base_moverate = 5
+        self.mover.moverate_modifier = 1.0
+        self.mover.move(Vector3(0, -1, 0))
         self.assertEqual(self.body.velocity, Vector3(0, -5, 0))
         self.assertEqual(self.mover.facing, Direction.up)
 
     def test_move_with_invalid_direction(self):
+        self.mover.base_moverate = 10
+        self.mover.moverate_modifier = 1.0
         with self.assertRaises(ValueError):
-            self.mover.move(Vector3(1, 1, 1), speed=10)
+            self.mover.move(Vector3(1, 1, 1))
 
     def test_move_boundary_case(self):
-        self.mover.move(Vector3(0, 1, 0), speed=0.0001)
+        self.mover.base_moverate = 0.0001
+        self.mover.moverate_modifier = 1.0
+        self.mover.move(Vector3(0, 1, 0))
         self.assertEqual(self.body.velocity, Vector3(0, 0.0001, 0))
         self.assertEqual(self.mover.facing, Direction.down)
 
     def test_no_change_in_facing_when_stopping(self):
-        self.mover.move(Vector3(1, 0, 0), speed=5)
+        self.mover.base_moverate = 5
+        self.mover.moverate_modifier = 1.0
+        self.mover.move(Vector3(1, 0, 0))
         self.mover.stop()
 
         self.assertEqual(self.body.velocity, Vector3(0, 0, 0))
@@ -114,36 +122,50 @@ class TestMover(unittest.TestCase):
         self.mover = Mover(self.body)
 
     def test_move_with_valid_direction(self):
-        self.mover.move(Vector3(1, 0, 0), speed=5)
+        self.mover.base_moverate = 5
+        self.mover.moverate_modifier = 1.0
+        self.mover.move(Vector3(1, 0, 0))
         self.assertEqual(self.body.velocity, Vector3(5, 0, 0))
         self.assertEqual(self.mover.facing, Direction.right)
 
     def test_move_with_invalid_direction(self):
+        self.mover.base_moverate = 5
+        self.mover.moverate_modifier = 1.0
         with self.assertRaises(ValueError):
-            self.mover.move(Vector3(0.5, 0.5, 0.5), speed=5)
+            self.mover.move(Vector3(0.5, 0.5, 0.5))
 
     def test_stop(self):
-        self.mover.move(Vector3(1, 0, 0), speed=5)
+        self.mover.base_moverate = 5
+        self.mover.moverate_modifier = 1.0
+        self.mover.move(Vector3(1, 0, 0))
         self.mover.stop()
         self.assertEqual(self.body.velocity, Vector3(0, 0, 0))
 
     def test_move_with_zero_speed(self):
-        self.mover.move(Vector3(0, 1, 0), speed=0)
+        self.mover.base_moverate = 0
+        self.mover.moverate_modifier = 1.0
+        self.mover.move(Vector3(0, 1, 0))
         self.assertEqual(self.body.velocity, Vector3(0, 0, 0))
         self.assertEqual(self.mover.facing, Direction.down)
 
     def test_move_with_negative_speed(self):
-        self.mover.move(Vector3(0, 1, 0), speed=-5)
+        self.mover.base_moverate = -5
+        self.mover.moverate_modifier = 1.0
+        self.mover.move(Vector3(0, 1, 0))
         self.assertEqual(self.body.velocity, Vector3(0, -5, 0))
         self.assertEqual(self.mover.facing, Direction.down)
 
     def test_move_extreme_speed(self):
-        self.mover.move(Vector3(1, 0, 0), speed=999999)
+        self.mover.base_moverate = 999999
+        self.mover.moverate_modifier = 1.0
+        self.mover.move(Vector3(1, 0, 0))
         self.assertEqual(self.body.velocity, Vector3(999999, 0, 0))
         self.assertEqual(self.mover.facing, Direction.right)
 
     def test_facing_consistency_after_stop(self):
-        self.mover.move(Vector3(0, -1, 0), speed=5)
+        self.mover.base_moverate = 5
+        self.mover.moverate_modifier = 1.0
+        self.mover.move(Vector3(0, -1, 0))
         self.mover.stop()
         self.assertEqual(self.mover.facing, Direction.up)
 

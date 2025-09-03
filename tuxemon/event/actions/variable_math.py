@@ -49,17 +49,19 @@ class VariableMathAction(EventAction):
         # Read the parameters
         var = self.var1
         result = var if self.result is None else self.result
-        operand1 = number_or_variable(player.game_variables, var)
+        operand1 = number_or_variable(player.game_variables.get_state(), var)
         operation = self.operation
-        operand2 = number_or_variable(player.game_variables, self.var2)
+        operand2 = number_or_variable(
+            player.game_variables.get_state(), self.var2
+        )
 
         # Perform the operation on the variable
         if operation in ops_dict:
             output = ops_dict[operation](operand1, operand2)
-            player.game_variables[result] = output
+            player.game_variables.set(result, output)
             logger.info(f"Game variable: {result}:{output}")
         elif operation == "=":
-            player.game_variables[result] = operand2
+            player.game_variables.set(result, operand2)
             logger.info(f"Game variable: {result}:{operand2}")
         else:
             raise ValueError(f"invalid operation type {operation}")

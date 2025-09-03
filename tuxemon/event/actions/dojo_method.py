@@ -48,7 +48,7 @@ class DojoMethodAction(EventAction):
     def start(self, session: Session) -> None:
         self.client = session.client
         player = session.player
-        monster_id = UUID(player.game_variables[self.variable_name])
+        monster_id = UUID(player.game_variables.get(self.variable_name))
 
         monster = get_monster_by_iid(session, monster_id)
         if monster is None:
@@ -69,7 +69,7 @@ class DojoMethodAction(EventAction):
             ]
 
             if not learnable_moves:
-                session.player.game_variables["dojo_notech"] = "on"
+                session.player.game_variables.set("dojo_notech", "on")
                 return
 
             if len(learnable_moves) == 1:
@@ -125,7 +125,7 @@ class DojoMethodAction(EventAction):
 
     def learn(self, monster: Monster, technique: str) -> None:
         tech = Technique.create(technique)
-        monster.moves.learn(tech)
+        monster.moves.learn(monster.instance_id, tech)
         logger.info(f"{tech.name} learned!")
         self.client.sound_manager.play_sound("sound_confirm")
         self.client.pop_state()

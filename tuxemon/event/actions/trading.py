@@ -46,7 +46,7 @@ class TradingAction(EventAction):
 
     def start(self, session: Session) -> None:
         player = session.player
-        _monster_id = UUID(player.game_variables[self.variable])
+        _monster_id = UUID(player.game_variables.get(self.variable))
         monster_id = get_monster_by_iid(session, _monster_id)
         if monster_id is None:
             logger.error("Monster not found")
@@ -60,7 +60,7 @@ class TradingAction(EventAction):
             owner.party.add_monster(new, slot)
             owner.tuxepedia.add_entry(new.slug, SeenStatus.caught)
         else:
-            _added_id = UUID(player.game_variables[self.added])
+            _added_id = UUID(player.game_variables.get(self.added))
             added_id = get_monster_by_iid(session, _added_id)
             if added_id is None:
                 logger.error("Monster not found")

@@ -64,4 +64,6 @@ class MapTransition:
     def _update_boundaries(self) -> None:
         """Updates the game boundaries to fit the new map."""
         map_size = self.map_manager.map_size
-        self.boundary.update_boundaries(map_size)
+        self.boundary.set_rectangular_boundary(
+            "map", 0, map_size[0], 0, map_size[1]
+        )

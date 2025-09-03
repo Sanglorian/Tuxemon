@@ -133,7 +133,7 @@
   </object>
   <object id="28" name="Talk Iroh" type="event" x="128" y="0" width="16" height="16">
    <properties>
-    <property name="act11" value="translated_dialog spyder_dojo_iroh1"/>
+    <property name="act11" value="char_talk spyder_dojo_iroh,pre_battle"/>
     <property name="act12" value="add_monster cardiwing,20,spyder_dojo_iroh,5,10"/>
     <property name="act13" value="add_monster djinnbo,20,spyder_dojo_iroh,5,10"/>
     <property name="act14" value="add_monster abesnaki,20,spyder_dojo_iroh,5,10"/>
@@ -146,7 +146,7 @@
     <property name="act24" value="add_tech iid_slot_3,radiance"/>
     <property name="act25" value="add_tech iid_slot_4,demiurge"/>
     <property name="act30" value="start_battle player,spyder_dojo_iroh"/>
-    <property name="act31" value="translated_dialog spyder_dojo_iroh2"/>
+    <property name="act31" value="char_talk spyder_dojo_iroh,post_battle_lose"/>
     <property name="act32" value="set_variable dojoiroh:yes"/>
     <property name="act40" value="set_monster_health"/>
     <property name="act50" value="set_monster_status"/>
@@ -156,13 +156,13 @@
   </object>
   <object id="29" name="Talk Yangchen" type="event" x="144" y="0" width="16" height="16">
    <properties>
-    <property name="act11" value="translated_dialog spyder_dojo_yangchen1"/>
+    <property name="act11" value="char_talk spyder_dojo_yangchen,pre_battle"/>
     <property name="act12" value="add_monster sapsnap,20,spyder_dojo_yangchen,5,10"/>
     <property name="act13" value="add_monster trapsnap,20,spyder_dojo_yangchen,5,10"/>
     <property name="act14" value="add_monster dandylion,20,spyder_dojo_yangchen,5,10"/>
     <property name="act15" value="add_monster budaye,20,spyder_dojo_yangchen,5,10"/>
     <property name="act16" value="start_battle player,spyder_dojo_yangchen"/>
-    <property name="act17" value="translated_dialog spyder_dojo_yangchen2"/>
+    <property name="act17" value="char_talk spyder_dojo_yangchen,post_battle_lose"/>
     <property name="act18" value="set_variable dojoyangchen:yes"/>
     <property name="act20" value="set_monster_health"/>
     <property name="act30" value="set_monster_status"/>
@@ -172,10 +172,10 @@
   </object>
   <object id="30" name="Talk Kataro" type="event" x="160" y="0" width="16" height="16">
    <properties>
-    <property name="act11" value="translated_dialog spyder_dojo_kataro1"/>
+    <property name="act11" value="char_talk spyder_dojo_kataro,pre_battle"/>
     <property name="act12" value="add_monster hydrone,20,spyder_dojo_kataro,5,10"/>
     <property name="act13" value="start_battle player,spyder_dojo_kataro"/>
-    <property name="act14" value="translated_dialog spyder_dojo_kataro2"/>
+    <property name="act14" value="char_talk spyder_dojo_kataro,post_battle_lose"/>
     <property name="act15" value="set_variable dojokataro:yes"/>
     <property name="act20" value="set_monster_health"/>
     <property name="act30" value="set_monster_status"/>
@@ -185,13 +185,13 @@
   </object>
   <object id="19" name="Talk Sokka" type="event" x="176" y="0" width="16" height="16">
    <properties>
-    <property name="act11" value="translated_dialog spyder_dojo_sokka1"/>
+    <property name="act11" value="char_talk spyder_dojo_sokka,pre_battle"/>
     <property name="act12" value="add_monster hydrone,20,spyder_dojo_sokka,5,10"/>
     <property name="act13" value="add_monster miaownolith,20,spyder_dojo_sokka,5,10"/>
     <property name="act14" value="add_monster embazook,20,spyder_dojo_sokka,5,10"/>
     <property name="act15" value="add_monster grintrock,20,spyder_dojo_sokka,5,10"/>
     <property name="act16" value="start_battle player,spyder_dojo_sokka"/>
-    <property name="act17" value="translated_dialog spyder_dojo_sokka2"/>
+    <property name="act17" value="char_talk spyder_dojo_sokka,post_battle_lose"/>
     <property name="act18" value="set_variable dojosokka:yes"/>
     <property name="act20" value="set_monster_health"/>
     <property name="act30" value="set_monster_status"/>
@@ -201,7 +201,7 @@
   </object>
   <object id="32" name="Talk Toph" type="event" x="192" y="0" width="16" height="16">
    <properties>
-    <property name="act01" value="translated_dialog spyder_dojo_toph1"/>
+    <property name="act01" value="char_talk spyder_dojo_toph,pre_battle"/>
     <property name="act02" value="add_monster rockat,20,spyder_dojo_toph,5,10"/>
     <property name="act03" value="add_monster rhincus,20,spyder_dojo_toph,5,10"/>
     <property name="act04" value="add_monster aardorn,20,spyder_dojo_toph,5,10"/>
@@ -209,7 +209,7 @@
     <property name="act06" value="add_monster forturtle,20,spyder_dojo_toph,5,10"/>
     <property name="act07" value="add_monster vivipere,20,spyder_dojo_toph,5,10"/>
     <property name="act08" value="start_battle player,spyder_dojo_toph"/>
-    <property name="act09" value="translated_dialog spyder_dojo_toph2"/>
+    <property name="act09" value="char_talk spyder_dojo_toph,post_battle_lose"/>
     <property name="act10" value="set_variable dojotoph:yes"/>
     <property name="act20" value="set_monster_health"/>
     <property name="act30" value="set_monster_status"/>
@@ -263,35 +263,35 @@
   </object>
   <object id="33" name="Post Talk Iroh" type="event" x="128" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_dojo_iroh2"/>
+    <property name="act1" value="char_talk spyder_dojo_iroh,post_battle_lose"/>
     <property name="behav1" value="talk spyder_dojo_iroh"/>
     <property name="cond1" value="is variable_set dojoiroh:yes"/>
    </properties>
   </object>
   <object id="34" name="Post Talk Yangchen" type="event" x="144" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_dojo_yangchen2"/>
+    <property name="act1" value="char_talk spyder_dojo_yangchen,post_battle_lose"/>
     <property name="behav1" value="talk spyder_dojo_yangchen"/>
     <property name="cond1" value="is variable_set dojoyangchen:yes"/>
    </properties>
   </object>
   <object id="35" name="Post Talk Kataro" type="event" x="160" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_dojo_kataro2"/>
+    <property name="act1" value="char_talk spyder_dojo_kataro,post_battle_lose"/>
     <property name="behav1" value="talk spyder_dojo_kataro"/>
     <property name="cond1" value="is variable_set dojokataro:yes"/>
    </properties>
   </object>
   <object id="36" name="Post Talk Sokka" type="event" x="176" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_dojo_sokka2"/>
+    <property name="act1" value="char_talk spyder_dojo_sokka,post_battle_lose"/>
     <property name="behav1" value="talk spyder_dojo_sokka"/>
     <property name="cond1" value="is variable_set dojosokka:yes"/>
    </properties>
   </object>
   <object id="37" name="Post Talk Toph" type="event" x="192" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_dojo_toph2"/>
+    <property name="act1" value="char_talk spyder_dojo_toph,post_battle_lose"/>
     <property name="behav1" value="talk spyder_dojo_toph"/>
     <property name="cond1" value="is variable_set dojotoph:yes"/>
    </properties>

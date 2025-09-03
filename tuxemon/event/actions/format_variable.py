@@ -49,12 +49,12 @@ class FormatVariableAction(EventAction):
         if type_format not in _formats:
             raise ValueError(f"{type_format} isn't 'float' or 'int'")
         if type_format == "int":
-            player.game_variables[key] = int(value)
+            player.game_variables.set(key, int(value))
         elif type_format == "-int":
-            player.game_variables[key] = -int(value)
+            player.game_variables.set(key, -int(value))
         elif type_format == "float":
-            player.game_variables[key] = float(value)
+            player.game_variables.set(key, float(value))
         elif type_format == "-float":
-            player.game_variables[key] = -float(value)
+            player.game_variables.set(key, -float(value))
         else:
-            player.game_variables[key] = value
+            player.game_variables.set(key, value)

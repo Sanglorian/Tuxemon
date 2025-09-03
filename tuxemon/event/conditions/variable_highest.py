@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any
 
 from tuxemon.event import MapCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -38,12 +37,12 @@ class VariableHighestCondition(EventCondition):
         key_to_check, _keys_to_check = condition.parameters
         keys_to_check = _keys_to_check.split(":")
 
-        if key_to_check not in game_variables:
+        if not game_variables.has(key_to_check):
             logger.error(f"{key_to_check} is not in the game variables.")
             return False
 
-        highest_value, highest_keys = find_highest_value_and_keys(
-            game_variables, keys_to_check
+        highest_value, highest_keys = game_variables.find_highest(
+            keys_to_check
         )
 
         if len(highest_keys) > 1:
@@ -52,25 +51,3 @@ class VariableHighestCondition(EventCondition):
             )
 
         return key_to_check == highest_keys[0] if highest_keys else False
-
-
-def find_highest_value_and_keys(
-    game_variables: dict[str, Any], keys_to_check: list[str]
-) -> tuple[float, list[str]]:
-    highest_value = float("-inf")
-    highest_keys = []
-
-    for key in keys_to_check:
-        if key in game_variables:
-            value = game_variables[key]
-            try:
-                value = float(value)
-            except ValueError:
-                raise ValueError(f"The value of '{key}' is not a number")
-            if value > highest_value:
-                highest_value = value
-                highest_keys = [key]
-            elif value == highest_value:
-                highest_keys.append(key)
-
-    return highest_value, highest_keys

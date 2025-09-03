@@ -60,6 +60,42 @@ class ScopeVariablesManager:
     def clear_dirty(self) -> None:
         self._dirty = False
 
+    def find_highest(self, keys: list[str]) -> tuple[float, list[str]]:
+        highest_value = float("-inf")
+        highest_keys = []
+
+        for key in keys:
+            if key in self._variables:
+                try:
+                    value = float(self._variables[key])
+                except ValueError:
+                    raise ValueError(f"The value of '{key}' is not a number")
+                if value > highest_value:
+                    highest_value = value
+                    highest_keys = [key]
+                elif value == highest_value:
+                    highest_keys.append(key)
+
+        return highest_value, highest_keys
+
+    def find_lowest(self, keys: list[str]) -> tuple[float, list[str]]:
+        lowest_value = float("inf")
+        lowest_keys = []
+
+        for key in keys:
+            if key in self._variables:
+                try:
+                    value = float(self._variables[key])
+                except ValueError:
+                    raise ValueError(f"The value of '{key}' is not a number")
+                if value < lowest_value:
+                    lowest_value = value
+                    lowest_keys = [key]
+                elif value == lowest_value:
+                    lowest_keys.append(key)
+
+        return lowest_value, lowest_keys
+
 
 class PlayerVariablesManager(ScopeVariablesManager):
     """

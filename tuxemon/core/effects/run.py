@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Optional
 
 from tuxemon import formula
 from tuxemon.combat.utils import set_var
@@ -30,9 +30,9 @@ class RunEffect(CoreEffect):
         self.session = session
         self.combat_session = session.client.combat_session
 
-        game_vars = session.player.game_variables
-        attempts = game_vars.get("run_attempts", 0)
-        escape_method = self._determine_escape_method(user, game_vars)
+        self.game_vars = session.player.game_variables
+        attempts = self.game_vars.get("run_attempts", 0)
+        escape_method = self._determine_escape_method(user)
 
         if not escape_method:
             return TechEffectResult(name=tech.name, success=True)
@@ -41,20 +41,18 @@ class RunEffect(CoreEffect):
         extras: list[str] = []
 
         if success:
-            self._handle_successful_escape(game_vars, extras)
+            self._handle_successful_escape(extras)
         else:
-            game_vars["run_attempts"] = attempts + 1
+            self.game_vars.set("run_attempts", attempts + 1)
 
         return TechEffectResult(name=tech.name, success=success, extras=extras)
 
-    def _determine_escape_method(
-        self, user: Monster, game_vars: dict[str, Any]
-    ) -> Optional[str]:
+    def _determine_escape_method(self, user: Monster) -> Optional[str]:
         """
         Determines which escape method to use based on monster position.
         """
-        method_player = str(game_vars.get("method_escape", "default"))
-        method_ai = str(game_vars.get("method_escape_ai", "default"))
+        method_player = str(self.game_vars.get("method_escape", "default"))
+        method_ai = str(self.game_vars.get("method_escape_ai", "default"))
 
         if user in self.combat_session.monsters_in_play_right:
             return method_player
@@ -62,12 +60,10 @@ class RunEffect(CoreEffect):
             return method_ai
         return None
 
-    def _handle_successful_escape(
-        self, game_vars: dict[str, Any], extras: list[str]
-    ) -> None:
+    def _handle_successful_escape(self, extras: list[str]) -> None:
         self.combat_session.set_variable("run", True)
         extras.append(T.translate("combat_player_run"))
-        game_vars["run_attempts"] = 0
+        self.game_vars.set("run_attempts", 0)
         set_var(self.session, "battle_last_result", self.name)
 
         self._clean_combat_state()

@@ -39,7 +39,7 @@ class TestMapTransition(unittest.TestCase):
         self.event_engine.set_current_map.assert_called_once_with(map_data)
         self.map_manager.load_map.assert_called_once_with(map_data)
         self.npc_manager.clear_npcs.assert_called_once()
-        self.boundary.update_boundaries.assert_called_once()
+        self.boundary.set_rectangular_boundary.assert_called_once()
 
     def test_reset_events(self):
         map_data = MagicMock()
@@ -59,4 +59,6 @@ class TestMapTransition(unittest.TestCase):
     def test_update_boundaries(self):
         self.map_manager.map_size = (10, 10)
         self.map_transition._update_boundaries()
-        self.boundary.update_boundaries.assert_called_once_with((10, 10))
+        self.boundary.set_rectangular_boundary.assert_called_once_with(
+            "map", 0, 10, 0, 10
+        )

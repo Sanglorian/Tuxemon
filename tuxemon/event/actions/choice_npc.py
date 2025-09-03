@@ -42,7 +42,7 @@ class ChoiceNpcAction(EventAction):
 
     def start(self, session: Session) -> None:
         def _set_variable(var_value: str, player: NPC) -> None:
-            player.game_variables[self.variable] = var_value
+            player.game_variables.set(self.variable, var_value)
             session.client.pop_state()
 
         # perform text substitutions

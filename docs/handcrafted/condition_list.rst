@@ -5,7 +5,7 @@
 .. autoscriptinfoclass:: tuxemon.event.conditions.button_count.ButtonCountCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.button_held.ButtonHeldCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.button_pressed.ButtonPressedCondition
-.. autoscriptinfoclass:: tuxemon.event.conditions.camera_position.CameraPositionCondition
+.. autoscriptinfoclass:: tuxemon.event.conditions.camera_at.CameraAtCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_at.CharAtCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_at_position.CharAtPositionCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_defeated.CharDefeatedCondition

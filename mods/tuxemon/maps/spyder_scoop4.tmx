@@ -86,7 +86,7 @@
   </object>
   <object id="31" name="Talk Orba" type="event" x="48" y="192" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_scoop_orba1"/>
+    <property name="act1" value="char_talk spyder_scoop_orba,pre_battle"/>
     <property name="act2" value="add_monster abesnaki,30,spyder_scoop_orba,5,10"/>
     <property name="act3" value="add_monster spighter,30,spyder_scoop_orba,5,10"/>
     <property name="act4" value="start_battle player,spyder_scoop_orba"/>
@@ -297,7 +297,7 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_scoop_weaver"/>
-    <property name="act03" value="translated_dialog spyder_scoop_weaver1"/>
+    <property name="act03" value="char_talk spyder_scoop_weaver,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster cardiling,30,spyder_scoop_weaver,5,10"/>
     <property name="act06" value="add_monster spighter,30,spyder_scoop_weaver,5,10"/>

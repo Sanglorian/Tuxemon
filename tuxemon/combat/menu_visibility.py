@@ -2,26 +2,43 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     pass
 
 
-@dataclass
-class MenuVisibility:
-    menu_fight: bool = True
-    menu_monster: bool = True
-    menu_item: bool = True
-    menu_forfeit: bool = False
-    menu_run: bool = True
+class MenuProfiles:
+    @staticmethod
+    def default_trainer_battle() -> tuple[dict[str, str], dict[str, bool]]:
+        return (
+            {
+                "menu_fight": "open_technique_menu",
+                "menu_monster": "open_swap_menu",
+                "menu_item": "open_item_menu",
+                "menu_forfeit": "forfeit",
+            },
+            {
+                "menu_fight": True,
+                "menu_monster": True,
+                "menu_item": True,
+                "menu_forfeit": False,  # default visibility
+            },
+        )
 
-    def update_visibility(self, key: str, visible: bool) -> None:
-        if hasattr(self, key):
-            setattr(self, key, visible)
-        else:
-            raise ValueError(f"Invalid menu item key: {key}")
-
-    def reset_to_default(self) -> None:
-        self.__dict__.update(MenuVisibility().__dict__)
+    @staticmethod
+    def default_monster_battle() -> tuple[dict[str, str], dict[str, bool]]:
+        return (
+            {
+                "menu_fight": "open_technique_menu",
+                "menu_monster": "open_swap_menu",
+                "menu_item": "open_item_menu",
+                "menu_run": "run",
+            },
+            {
+                "menu_fight": True,
+                "menu_monster": True,
+                "menu_item": True,
+                "menu_run": True,
+            },
+        )

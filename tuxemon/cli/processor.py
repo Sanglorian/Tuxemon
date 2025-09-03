@@ -2,9 +2,10 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import inspect
+import logging
 import sys
 from collections.abc import Iterable, Sequence
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from prompt_toolkit import PromptSession
@@ -13,7 +14,7 @@ from tuxemon.cli.clicommand import CLICommand
 from tuxemon.cli.context import InvokeContext
 from tuxemon.cli.exceptions import CommandNotFoundError, ParseError
 from tuxemon.cli.formatter import Formatter
-from tuxemon.constants.paths import LIBDIR
+from tuxemon.constants.paths import get_active_mod_paths, mods_folder
 from tuxemon.plugin import (
     get_available_classes,
     load_directory,
@@ -21,6 +22,8 @@ from tuxemon.plugin import (
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
+
+logger = logging.getLogger(__name__)
 
 
 class MetaCommand(CLICommand):
@@ -72,9 +75,7 @@ class CommandProcessor:
         self.prompt = prompt
         self.session = session
         self.client = session.client
-        folder = Path(__file__).parent / "commands"
-        # TODO: add folder(s) from mods
-        commands = list(self.collect_commands(folder))
+        commands = list(self.collect_commands())
         self.root_command = MetaCommand(commands)
 
     def run(self) -> None:
@@ -123,19 +124,48 @@ class CommandProcessor:
         """
         self.client.quit()
 
-    def collect_commands(self, folder: Path) -> Iterable[CLICommand]:
+    def collect_commands(self) -> Iterable[CLICommand]:
         """
-        Use plugins to load CLICommand classes for commands.
+        Use plugins to load CLICommand classes from all mod folders.
+        """
+        command_folders_to_search = [
+            mod_dir / "commands" for mod_dir in get_active_mod_paths()
+        ]
+        existing_command_folders = [
+            folder for folder in command_folders_to_search if folder.is_dir()
+        ]
 
-        Parameters:
-            folder: Folder to search.
-        """
-        pm = load_directory(
-            plugin_folders=[folder],
-            root_path=LIBDIR.parent,
-            include=["commands"],
-            exclude=["CLICommand"],
-        )
-        for cmd_class in get_available_classes(pm, interface=CLICommand):
-            if cmd_class.usable_from_root:
-                yield cmd_class()
+        if not existing_command_folders:
+            logger.debug("No existing command folders to search.")
+            return []
+
+        command_dict = {}
+
+        try:
+            # Load plugins from discovered folders
+            pm = load_directory(
+                plugin_folders=existing_command_folders,
+                root_path=mods_folder.parent,
+                include=["commands"],
+                exclude=["CLICommand"],
+            )
+
+            logger.info(f"Discovered plugin modules: {pm.modules}")
+
+            for cmd_class in get_available_classes(pm, interface=CLICommand):
+                if (
+                    not inspect.isabstract(cmd_class)
+                    and cmd_class.usable_from_root
+                ):
+                    if cmd_class.name in command_dict:
+                        logger.warning(
+                            f"Overwriting command '{cmd_class.name}' from {cmd_class.__module__}"
+                        )
+                    command_dict[cmd_class.name] = cmd_class()
+                    logger.info(f"Registered command: {cmd_class.name}")
+        except Exception:
+            logger.error(
+                "Error loading commands from mod folders", exc_info=True
+            )
+
+        return command_dict.values()

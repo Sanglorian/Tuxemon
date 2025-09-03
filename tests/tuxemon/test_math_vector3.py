@@ -70,3 +70,25 @@ class TestVector3(unittest.TestCase):
         v3_zero = Vector3(0, 0, 0)
         normalized_v3_zero = v3_zero.normalized
         self.assertEqual(normalized_v3_zero.magnitude, 0.0)
+
+    def test_scalar_division(self):
+        v = Vector3(9, 18, 27)
+        result = v / 3
+        self.assertEqual(tuple(result), (3.0, 6.0, 9.0))
+
+    def test_vector_subtraction(self):
+        v1 = Vector3(10, 20, 30)
+        v2 = Vector3(1, 2, 3)
+        result = v1 - v2
+        self.assertEqual(tuple(result), (9, 18, 27))
+
+        result = v1 - (5, 5, 5)
+        self.assertEqual(tuple(result), (5, 15, 25))
+
+    def test_reverse_subtraction(self):
+        v1 = Vector3(2, 4, 6)
+        result = (10, 10, 10) - v1
+        self.assertEqual(tuple(result), (8, 6, 4))
+
+        result = Vector3(5, 5, 5) - Vector3(1, 2, 3)
+        self.assertEqual(tuple(result), (4, 3, 2))

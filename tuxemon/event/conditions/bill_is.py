@@ -52,7 +52,7 @@ class BillIsCondition(EventCondition):
 
         if not _amount.isdigit():
             amount = 0
-            if _amount in player.game_variables:
+            if player.game_variables.has(_amount):
                 amount = int(player.game_variables.get(_amount, 0))
         else:
             amount = int(_amount)

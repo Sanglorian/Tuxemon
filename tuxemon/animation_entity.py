@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable
+from typing import TYPE_CHECKING, Optional
 
 from pygame.surface import Surface
 
-from tuxemon import prepare
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import AnimationModel, db
 from tuxemon.graphics import create_animation, load_frames_files
 from tuxemon.map_view import AnimationInfo
+
+if TYPE_CHECKING:
+    from tuxemon.surfanim import SurfaceAnimation
 
 logger = logging.getLogger(__name__)
 
@@ -22,26 +24,85 @@ class AnimationEntity:
     def __init__(
         self,
         slug: str,
-        duration: float = prepare.FRAME_TIME,
-        loop: bool = False,
+        duration: Optional[float] = None,
+        loop: Optional[bool] = None,
     ) -> None:
-        self.slug: str = ""
-        self.duration: float = duration
-        self.loop: bool = loop
+        self.slug = slug
+        self.duration = duration
+        self.loop = loop
         self.file: str = ""
-        self.directory: str = ""
-        self.frames: Iterable[Surface] = []
-        self.load(slug)
+        self.frames: list[Surface] = []
+        self._load_data()
 
-    def load(self, slug: str) -> None:
+    def _load_data(self) -> None:
         """Loads animation."""
-        results = AnimationModel.lookup(slug, db)
+        results = AnimationModel.lookup(self.slug, db)
         self.slug = results.slug
         self.file = results.file
+        self.duration = (
+            self.duration if self.duration is not None else results.duration
+        )
+        self.loop = self.loop if self.loop is not None else results.loop
 
-        self.directory = fetch_asset("animations", self.file)
-        self.frames = load_frames_files(self.directory, self.slug)
-        self.play = create_animation(self.frames, self.duration, self.loop)
+        directory = fetch_asset("animations", self.file)
+        self.frames = list(load_frames_files(directory, self.slug))
+
+
+class AnimationManager:
+    """Manages the creation, caching, and playback of animations."""
+
+    def __init__(self) -> None:
+        self._cache: dict[str, AnimationInfo] = {}
+
+    def get_or_create_animation(
+        self,
+        slug: str,
+        duration: Optional[float] = None,
+        loop: Optional[bool] = None,
+    ) -> SurfaceAnimation:
+        """
+        Retrieves a cached animation or creates a new one.
+        """
+        if slug in self._cache:
+            return self._cache[slug].animation
+
+        entity = AnimationEntity(slug, duration, loop)
+
+        assert entity.duration is not None, "Animation duration must be set"
+        assert entity.loop is not None, "Animation loop mode must be set"
+
+        surface_animation = create_animation(
+            entity.frames, entity.duration, entity.loop
+        )
+
+        results = AnimationModel.lookup(slug, db)
+        surface_animation.rate = results.rate
+        surface_animation.flip(results.flip_axes)
+
+        self._cache[slug] = AnimationInfo(surface_animation, (0, 0), 0)
+
+        logger.debug(f"Created and cached animation '{slug}'")
+        return surface_animation
+
+    def play_animation(
+        self, animation_name: str, position: tuple[int, int], layer: int
+    ) -> None:
+        """Plays a cached animation and sets its position and layer."""
+        animation_info = self._cache.get(animation_name)
+        if animation_info:
+            animation_info.position = position
+            animation_info.layer = layer
+            animation_info.animation.play()
+            logger.debug(f"Playing existing animation: {animation_name}")
+        else:
+            logger.warning(
+                f"Attempted to play non-existent animation: {animation_name}"
+            )
+
+    def update_all(self, time_delta: float) -> None:
+        """Updates all animations in the cache."""
+        for anim_info in self._cache.values():
+            anim_info.animation.update(time_delta)
 
 
 def setup_and_play_animation(
@@ -53,22 +114,16 @@ def setup_and_play_animation(
     layer: int,
 ) -> None:
     """
-    Sets up and plays a map animation with configurable layering.
+    Sets up and plays a map animation using AnimationManager.
 
     Parameters:
         animation_name: The name of the animation to play.
         duration: Duration (in seconds) for each frame of the animation.
-        loop: Indicates whether the animation should loop. Must be "loop"
-            or "noloop".
-        position: The (x, y) coordinates where the animation should be
-            displayed.
-        animations: A dictionary of existing animations, storing their
-            states and properties.
-        layer: The rendering layer for the animation, affecting its visual
-            depth.
-
-    Raises:
-        ValueError: If `loop` is not "loop" or "noloop".
+        loop: "loop" or "noloop" to control animation looping.
+        position: (x, y) coordinates for display.
+        animations: Dictionary of existing animations.
+        layer: Rendering layer.
+        manager: Instance of AnimationManager to manage caching and playback.
     """
     if loop == "loop":
         loop_mode = True
@@ -77,15 +132,16 @@ def setup_and_play_animation(
     else:
         raise ValueError(f"{loop} value must be 'loop' or 'noloop'")
 
-    _animation = AnimationEntity(animation_name, duration, loop_mode)
+    manager = AnimationManager()
+    animation = manager.get_or_create_animation(
+        animation_name, duration, loop_mode
+    )
 
     if animation_name in animations:
-        logger.debug(f"{animation_name} loaded")
+        logger.debug(f"{animation_name} already loaded")
         animations[animation_name].position = position
         animations[animation_name].animation.play()
     else:
-        logger.debug(f"{animation_name} not loaded, loading")
-        animations[animation_name] = AnimationInfo(
-            _animation.play, position, layer
-        )
-        _animation.play.play()
+        logger.debug(f"{animation_name} not loaded, creating new")
+        animations[animation_name] = AnimationInfo(animation, position, layer)
+        animation.play()

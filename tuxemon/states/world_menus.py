@@ -13,7 +13,7 @@ from tuxemon.animation import ScheduleType
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
-from tuxemon.states.monster import MonsterMenuHandler
+from tuxemon.states.monster_menu import MonsterMenuHandler
 
 if TYPE_CHECKING:
     from tuxemon.animation import Animation

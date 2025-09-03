@@ -142,12 +142,14 @@ if CONFIG.large_gui:
     FONT_SIZE = 6
     FONT_SIZE_BIG = 7
     FONT_SIZE_BIGGER = 8
+    FONT_SIZE_BIGGEST = 9
 else:
     FONT_SIZE_SMALLER = 3
     FONT_SIZE_SMALL = 4
     FONT_SIZE = 5
     FONT_SIZE_BIG = 6
     FONT_SIZE_BIGGER = 7
+    FONT_SIZE_BIGGEST = 8
 
 # gradients
 # Hex 77767b > Hex ffffff (linear + top/bottom)
@@ -169,6 +171,7 @@ GRAD_YELLOW: str = "gfx/ui/background/gradient_yellow.png"
 # backgrounds
 TUX_GENERIC: str = "gfx/ui/background/tux_generic.png"
 TUX_INFO: str = "gfx/ui/background/tux_info.png"
+TECH_INFO: str = "gfx/ui/background/tech_info.png"
 ITEM_MENU: str = "gfx/ui/item/item_menu_bg.png"
 
 # background per state

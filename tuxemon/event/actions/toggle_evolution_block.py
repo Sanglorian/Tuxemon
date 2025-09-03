@@ -50,17 +50,19 @@ class ToggleEvolutionBlockAction(EventAction):
 
         registry = character.evolution_registry
 
-        if self.monster_variable not in character.game_variables:
+        if not character.game_variables.has(self.monster_variable):
             logger.error(
                 f"Variable '{self.monster_variable}' not found in {self.npc_slug}'s game variables."
             )
             return
 
         try:
-            monster_id = UUID(character.game_variables[self.monster_variable])
+            monster_id = UUID(
+                character.game_variables.get(self.monster_variable)
+            )
         except ValueError:
             logger.error(
-                f"Invalid UUID in variable '{self.monster_variable}': {character.game_variables[self.monster_variable]}"
+                f"Invalid UUID in variable '{self.monster_variable}': {character.game_variables.get(self.monster_variable)}"
             )
             return
 

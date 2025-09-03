@@ -38,4 +38,4 @@ class CopyVariableAction(EventAction):
         player = session.player
         first = self.var1
         second = self.var2
-        player.game_variables[first] = player.game_variables[second]
+        player.game_variables.set(first, player.game_variables.get(second))

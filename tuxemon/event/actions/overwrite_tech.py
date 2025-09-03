@@ -67,11 +67,11 @@ class OverwriteTechAction(EventAction):
 
     def start(self, session: Session) -> None:
         player = session.player
-        if self.removed not in player.game_variables:
+        if not player.game_variables.has(self.removed):
             logger.error(f"Game variable '{self.removed}' not found")
             return
 
-        tech_id = UUID(player.game_variables[self.removed])
+        tech_id = UUID(player.game_variables.get(self.removed))
 
         for monster in player.monsters:
             technique = monster.moves.find_tech_by_id(tech_id)

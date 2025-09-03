@@ -45,8 +45,8 @@ class AddItemAction(EventAction):
         # check item existence
         item_id: str = ""
         if self.item_slug not in db.database["item"]:
-            if self.item_slug in player.game_variables:
-                item_id = player.game_variables[self.item_slug]
+            if player.game_variables.has(self.item_slug):
+                item_id = player.game_variables.get(self.item_slug)
             else:
                 raise ValueError(
                     f"{self.item_slug} doesn't exist (item or variable)."

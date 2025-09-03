@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 from tuxemon.db import MissionStatus
 from tuxemon.entity_dir.bag import BagHandler
 from tuxemon.entity_dir.party import PartyHandler
+from tuxemon.game_variables import GameVariablesManager
 from tuxemon.mission.controller import MissionController
 from tuxemon.mission.manager import MissionManager
 from tuxemon.mission.mission import Mission, check_items, check_monsters
@@ -16,6 +17,7 @@ class TestMissionManager(TestCase):
     def setUp(self):
         self.character = MagicMock(spec=NPC)
         self.character.slug = "test_character"
+        self.character._variables = GameVariablesManager()
         self.mission = Mission()
         self.manager = MissionManager()
         self.mission_controller = MissionController(
@@ -65,11 +67,12 @@ class TestMissionManager(TestCase):
     def test_check_all_prerequisites(self):
         self.mission.prerequisites = [{"key": "value"}]
         self.mission_manager.add_mission(self.mission)
+        self.character.game_variables = self.character._variables.player
 
-        self.character.game_variables = {"key": "value"}
+        self.character.game_variables.set("key", "value")
         self.assertTrue(self.mission_controller.check_all_prerequisites())
 
-        self.character.game_variables = {"key": "wrong_value"}
+        self.character.game_variables.set("key", "wrong_value")
         self.assertFalse(self.mission_controller.check_all_prerequisites())
 
     def test_check_required_items(self):
@@ -145,7 +148,7 @@ class TestMissionManager(TestCase):
         self.mission.prerequisites = [{"key": "required_value"}]
         self.mission_manager.add_mission(self.mission)
 
-        self.character.game_variables = {"key": "incorrect_value"}
+        self.character.game_variables.set("key", "incorrect_value")
         self.assertFalse(self.mission_controller.check_all_prerequisites())
 
     def test_encode_missions(self):

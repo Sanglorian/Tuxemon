@@ -33,5 +33,8 @@ class ButtonLockEffect(CoreEffect):
     ) -> TechEffectResult:
         combat = session.client.combat_session
         visible = self.visible.lower() == "true"
-        combat.menu_visibility.update_visibility(self.menu, visible)
+
+        if combat.menu_visibility_map:
+            combat.menu_visibility_map[self.menu] = visible
+
         return TechEffectResult(name=tech.name, success=True)

@@ -66,15 +66,15 @@ class ShowMonsterAction(EventAction):
     def _retrieve_monster(self, session: Session) -> Optional[Monster]:
         """Retrieve a monster from the game database."""
         player = session.player
-        if self.monster_variable not in player.game_variables:
+        if not player.game_variables.has(self.monster_variable):
             logger.error(f"Game variable {self.monster_variable} not found")
             return None
         try:
-            monster_id = UUID(player.game_variables[self.monster_variable])
+            monster_id = UUID(player.game_variables.get(self.monster_variable))
         except ValueError:
             logger.error(
                 f"Invalid UUID in game variable {self.monster_variable}: "
-                f"{player.game_variables[self.monster_variable]}"
+                f"{player.game_variables.get(self.monster_variable)}"
             )
             return None
         return get_monster_by_iid(session, monster_id)

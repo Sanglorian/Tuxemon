@@ -44,10 +44,10 @@ class RemoveTechAction(EventAction):
 
     def start(self, session: Session) -> None:
         player = session.player
-        if self.tech_id not in player.game_variables:
+        if not player.game_variables.has(self.tech_id):
             logger.error(f"Game variable {self.tech_id} not found")
             return
-        tech_id = UUID(player.game_variables[self.tech_id])
+        tech_id = UUID(player.game_variables.get(self.tech_id))
 
         force_remove = parse_flag(self.force_remove)
 

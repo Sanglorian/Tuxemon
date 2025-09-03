@@ -73,11 +73,11 @@ class EvolutionAction(EventAction):
 
     def process_direct_evolutions(self, variable: str, evolution: str) -> None:
         """Process direct evolutions for the character"""
-        if variable not in self.char.game_variables:
+        if not self.char.game_variables.has(variable):
             logger.error(f"Variable '{variable}' doesn't exist.")
             return
 
-        monster_id = UUID(self.char.game_variables[variable])
+        monster_id = UUID(self.char.game_variables.get(variable))
         monster = get_monster_by_iid(self.session, monster_id)
 
         if monster is None:

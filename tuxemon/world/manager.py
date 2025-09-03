@@ -15,7 +15,7 @@ from tuxemon.world.menu_flags import MenuFlags
 if TYPE_CHECKING:
     from tuxemon.client import LocalPygameClient
     from tuxemon.npc import NPC
-    from tuxemon.states.world.world_menus import WorldMenuState
+    from tuxemon.states.world_menus import WorldMenuState
 
 logger = logging.getLogger(__name__)
 

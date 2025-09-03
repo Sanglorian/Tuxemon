@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 
 from tuxemon.db import Acquisition, MonsterEvolutionItemModel
 from tuxemon.element import Element
+from tuxemon.game_variables import GameVariablesManager
 from tuxemon.monster import Monster
 from tuxemon.npc import PartyHandler
 from tuxemon.player import Player
@@ -14,7 +15,7 @@ from tuxemon.technique.technique import Technique
 
 def mockPlayer(self) -> None:
     self.name = "Jeff"
-    self.game_variables = {}
+    self._variables = GameVariablesManager()
     member1 = Monster()
     member1.slug = "nut"
     member2 = Monster()
@@ -177,7 +178,7 @@ class TestCanEvolve(unittest.TestCase):
         self.assertFalse(self.mon.evolution_handler.can_evolve(evo, context))
 
     def test_variables_match(self):
-        self.player.game_variables["var"] = "val"
+        self.player.game_variables.set("var", "val")
         evo = MonsterEvolutionItemModel(
             monster_slug="rockat", variables=[{"var": "val"}]
         )
@@ -185,7 +186,7 @@ class TestCanEvolve(unittest.TestCase):
         self.assertTrue(self.mon.evolution_handler.can_evolve(evo, context))
 
     def test_variables_mismatch(self):
-        self.player.game_variables["var"] = "other_val"
+        self.player.game_variables.set("var", "other_val")
         evo = MonsterEvolutionItemModel(
             monster_slug="rockat", variables=[{"var": "val"}]
         )
@@ -193,8 +194,8 @@ class TestCanEvolve(unittest.TestCase):
         self.assertFalse(self.mon.evolution_handler.can_evolve(evo, context))
 
     def test_variables_double_match(self):
-        self.player.game_variables["var1"] = "val"
-        self.player.game_variables["var2"] = "val"
+        self.player.game_variables.set("var1", "val")
+        self.player.game_variables.set("var2", "val")
         evo = MonsterEvolutionItemModel(
             monster_slug="rockat", variables=[{"var1": "val"}, {"var2": "val"}]
         )
@@ -202,8 +203,8 @@ class TestCanEvolve(unittest.TestCase):
         self.assertTrue(self.mon.evolution_handler.can_evolve(evo, context))
 
     def test_variables_double_mismatch(self):
-        self.player.game_variables["var1"] = "val"
-        self.player.game_variables["var2"] = "val"
+        self.player.game_variables.set("var1", "val")
+        self.player.game_variables.set("var2", "val")
         evo = MonsterEvolutionItemModel(
             monster_slug="rockat",
             variables=[{"var1": "val"}, {"var2": "other_val"}],

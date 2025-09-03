@@ -13,6 +13,8 @@ from tuxemon.entity import Entity
 from tuxemon.entity_dir.bag import BagHandler
 from tuxemon.entity_dir.battle import BattlesHandler
 from tuxemon.entity_dir.party import PartyHandler
+from tuxemon.game_variables import GameVariablesManager, PlayerVariablesManager
+from tuxemon.item.item import Item, decode_items, encode_items
 from tuxemon.locale import T
 from tuxemon.map import dirs2, get_direction, proj
 from tuxemon.map_view import SpriteController
@@ -105,7 +107,7 @@ class NPC(Entity[NPCState]):
 
         # general
         self.behavior: Optional[str] = "wander"  # not used for now
-        self.game_variables: dict[str, Any] = {}  # Tracks the game state
+        self._variables = GameVariablesManager()
         self.battle_handler = BattlesHandler()
         # Tracks Tuxepedia (monster seen or caught)
         self.tuxepedia = Tuxepedia()
@@ -146,6 +148,10 @@ class NPC(Entity[NPCState]):
         self.sprite_controller = SpriteController(self)
 
     @property
+    def game_variables(self) -> PlayerVariablesManager:
+        return self._variables.player
+
+    @property
     def monsters(self) -> list[Monster]:
         """Returns the list of monsters in the party."""
         return self.party.monsters
@@ -164,7 +170,7 @@ class NPC(Entity[NPCState]):
         state: NPCState = {
             "current_map": session.client.get_map_name(),
             "facing": self.facing,
-            "game_variables": self.game_variables,
+            "game_variables": self._variables.get_player_state(),
             "battles": self.battle_handler.encode_battle(),
             "tuxepedia": encode_tuxepedia(self.tuxepedia),
             "relationships": encode_relationships(self.relationships),
@@ -195,7 +201,7 @@ class NPC(Entity[NPCState]):
             save_data: Data used to recreate the NPC.
         """
         self.set_facing(Direction(save_data.get("facing", "down")))
-        self.game_variables = save_data["game_variables"]
+        self._variables.set_player_state(save_data["game_variables"])
         self.tuxepedia = decode_tuxepedia(save_data["tuxepedia"])
         self.relationships = decode_relationships(save_data["relationships"])
         self.battle_handler.decode_battle(save_data)
@@ -410,8 +416,11 @@ class NPC(Entity[NPCState]):
         direction = get_direction(proj(self.position), target)
         self.set_facing(direction)
         try:
-            if self.client.pathfinder.is_tile_traversable(self, target):
-                moverate = get_tile_moverate(surface_map, self, target)
+            if self.client.pathfinder.is_tile_traversable(
+                self.tile_pos, self.facing, target, self.ignore_collisions
+            ):
+                tile_rate = get_tile_moverate(surface_map, target)
+                self.set_moverate_modifier(tile_rate)
                 # Surfanim suffers from significant clock drift, causing
                 # timing inconsistencies. Even after completing one animation
                 # cycle, the timing can become inaccurate. This drift results
@@ -425,7 +434,7 @@ class NPC(Entity[NPCState]):
                 # visual glitches and ensure frame accuracy.
                 self.sprite_controller.play_animation()
                 self.path_origin = self.tile_pos
-                self.mover.move(self.mover.current_direction, moverate)
+                self.mover.move(self.mover.current_direction)
                 self.remove_collision()
             else:
                 self.stop_moving()

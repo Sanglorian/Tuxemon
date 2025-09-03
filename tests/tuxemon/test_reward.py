@@ -4,15 +4,15 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from tuxemon.combat.damage_tracker import DamageTracker
-from tuxemon.monster import Monster
-from tuxemon.monster_dir.status import MonsterStatusHandler
-from tuxemon.npc import NPC
-from tuxemon.states.combat.reward_system import (
+from tuxemon.combat.reward_system import (
     RewardSystem,
     calculate_experience,
     calculate_experience_base,
     calculate_money,
 )
+from tuxemon.monster import Monster
+from tuxemon.monster_dir.status import MonsterStatusHandler
+from tuxemon.npc import NPC
 
 
 class TestRewardSystem(unittest.TestCase):

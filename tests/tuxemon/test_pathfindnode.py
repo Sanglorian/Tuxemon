@@ -119,3 +119,27 @@ class TestPathfindNode(unittest.TestCase):
         for i in range(10000):
             current = PathfindNode((i + 1, i + 1), current)
         self.assertEqual(len(current.reconstruct_path()), 10000)
+
+    def test_node_comparison_by_f_cost(self):
+        node1 = PathfindNode((0, 0), g_cost=1.0, h_cost=2.0)  # f_cost = 3.0
+        node2 = PathfindNode((1, 1), g_cost=2.0, h_cost=2.0)  # f_cost = 4.0
+        self.assertTrue(node1 < node2)
+
+    def test_reconstruct_path_after_parent_change(self):
+        root = PathfindNode((0, 0))
+        child = PathfindNode((1, 1), root)
+        alt_root = PathfindNode((9, 9))
+        child.set_parent(alt_root)
+        self.assertEqual(child.reconstruct_path(), [(1, 1)])
+
+    def test_node_equality(self):
+        node1 = PathfindNode((1, 2))
+        node2 = PathfindNode((1, 2))
+        self.assertNotEqual(node1, node2)
+
+    def test_branching_path_reconstruction(self):
+        root = PathfindNode((0, 0))
+        branch1 = PathfindNode((1, 0), root)
+        branch2 = PathfindNode((0, 1), root)
+        leaf = PathfindNode((1, 1), branch2)
+        self.assertEqual(leaf.reconstruct_path(), [(1, 1), (0, 1)])

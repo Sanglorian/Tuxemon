@@ -9,7 +9,7 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.interface import MenuItem
 from tuxemon.monster import Monster
 from tuxemon.session import Session
-from tuxemon.states.monster import MonsterMenuState
+from tuxemon.states.monster_menu import MonsterMenuState
 
 
 @final
@@ -44,7 +44,7 @@ class BreedingAction(EventAction):
         parent = (
             "breeding_mother" if self.gender == "female" else "breeding_father"
         )
-        player.game_variables[parent] = monster.instance_id.hex
+        player.game_variables.set(parent, monster.instance_id.hex)
         self.session.client.pop_state()
 
     def start(self, session: Session) -> None:

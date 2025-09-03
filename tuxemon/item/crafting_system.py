@@ -12,7 +12,7 @@ from tuxemon.item.item import Item
 from tuxemon.item.recipe import Recipe
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPCBagHandler
+    from tuxemon.entity_dir.bag import BagHandler
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class CraftingResult:
 
 class CraftingSystem:
     """
-    Manages crafting operations using recipe rules and live NPCBagHandler contents.
+    Manages crafting operations using recipe rules and live BagHandler contents.
     No static item definitions required.
     """
 
@@ -70,7 +70,7 @@ class CraftingSystem:
         return possible_outputs[-1]
 
     def check_can_craft(
-        self, recipe_slug: str, npc_bag_handler: NPCBagHandler
+        self, recipe_slug: str, npc_bag_handler: BagHandler
     ) -> bool:
         """
         Determines if a recipe can be crafted, based on the player's inventory
@@ -121,7 +121,7 @@ class CraftingSystem:
         return True
 
     def craft_item_for_bag(
-        self, recipe_slug: str, npc_bag_handler: NPCBagHandler
+        self, recipe_slug: str, npc_bag_handler: BagHandler
     ) -> CraftingResult:
         logger.debug(f"[Craft] Attempting to craft recipe: '{recipe_slug}'")
 

@@ -2,8 +2,9 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
 
-from tuxemon.battle import Battle, BattlesHandler
+from tuxemon.battle import Battle
 from tuxemon.db import OutputBattle
+from tuxemon.entity_dir.battle import BattlesHandler
 
 
 class TestBattlesHandler(unittest.TestCase):

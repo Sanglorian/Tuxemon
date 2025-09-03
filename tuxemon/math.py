@@ -110,6 +110,38 @@ class Vector3(Vector):
         yield self.y
         yield self.z
 
+    def __mul__(self, scalar: float) -> Vector3:
+        return Vector3(self.x * scalar, self.y * scalar, self.z * scalar)
+
+    def __truediv__(self, scalar: float) -> Vector3:
+        return Vector3(self.x / scalar, self.y / scalar, self.z / scalar)
+
+    def __sub__(self, other: Union[Vector3, Sequence[float]]) -> Vector3:
+        if isinstance(other, Vector3):
+            return Vector3(
+                self.x - other.x, self.y - other.y, self.z - other.z
+            )
+        elif isinstance(other, (tuple, list)) and len(other) == 3:
+            return Vector3(
+                self.x - other[0], self.y - other[1], self.z - other[2]
+            )
+        raise TypeError(
+            f"Unsupported operand type(s) for -: 'Vector3' and '{type(other).__name__}'"
+        )
+
+    def __rsub__(self, other: Union[Vector3, Sequence[float]]) -> Vector3:
+        if isinstance(other, Vector3):
+            return Vector3(
+                other.x - self.x, other.y - self.y, other.z - self.z
+            )
+        elif isinstance(other, (tuple, list)) and len(other) == 3:
+            return Vector3(
+                other[0] - self.x, other[1] - self.y, other[2] - self.z
+            )
+        raise TypeError(
+            f"Unsupported operand type(s) for -: '{type(other).__name__}' and 'Vector3'"
+        )
+
 
 class Vector2(Vector):
     @overload
@@ -142,6 +174,39 @@ class Vector2(Vector):
     def __iter__(self) -> Generator[float, None, None]:
         yield self.x
         yield self.y
+
+    def __add__(self, other: Union[Vector2, Sequence[float]]) -> Vector2:
+        if isinstance(other, Vector2):
+            return Vector2(self.x + other.x, self.y + other.y)
+        elif isinstance(other, (tuple, list)) and len(other) == 2:
+            return Vector2(self.x + other[0], self.y + other[1])
+        raise TypeError(
+            f"Unsupported operand type(s) for +: 'Vector2' and '{type(other).__name__}'"
+        )
+
+    def __mul__(self, scalar: float) -> Vector2:
+        return Vector2(self.x * scalar, self.y * scalar)
+
+    def __truediv__(self, scalar: float) -> Vector2:
+        return Vector2(self.x / scalar, self.y / scalar)
+
+    def __sub__(self, other: Union[Vector2, Sequence[float]]) -> Vector2:
+        if isinstance(other, Vector2):
+            return Vector2(self.x - other.x, self.y - other.y)
+        elif isinstance(other, (tuple, list)) and len(other) == 2:
+            return Vector2(self.x - other[0], self.y - other[1])
+        raise TypeError(
+            f"Unsupported operand type(s) for -: 'Vector2' and '{type(other).__name__}'"
+        )
+
+    def __rsub__(self, other: Union[Vector2, Sequence[float]]) -> Vector2:
+        if isinstance(other, Vector2):
+            return Vector2(other.x - self.x, other.y - self.y)
+        elif isinstance(other, (tuple, list)) and len(other) == 2:
+            return Vector2(other[0] - self.x, other[1] - self.y)
+        raise TypeError(
+            f"Unsupported operand type(s) for -: '{type(other).__name__}' and 'Vector2'"
+        )
 
 
 Point3 = Vector3

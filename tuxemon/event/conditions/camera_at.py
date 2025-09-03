@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
-from tuxemon.camera import unproject
+from tuxemon.camera.camera import unproject
 from tuxemon.event import MapCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
@@ -15,21 +15,21 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class CameraPositionCondition(EventCondition):
+class CameraAtCondition(EventCondition):
     """
     Check to see if the camera is at the position on the map.
 
     Script usage:
         .. code-block::
 
-            is camera_position <tile_pos_x>,<tile_pos_y>
+            is camera_at <tile_pos_x>,<tile_pos_y>
 
     Script parameters:
         pos_x: X position of the camera.
         pos_y: Y position of the camera.
     """
 
-    name = "camera_position"
+    name = "camera_at"
 
     def test(self, session: Session, condition: MapCondition) -> bool:
         map_size = session.client.map_manager.map_size
@@ -39,7 +39,8 @@ class CameraPositionCondition(EventCondition):
         if camera is None:
             logger.error("No active camera found.")
             return False
-        cx, cy = unproject(camera.position)
+        camera_pos = camera.get_position()
+        cx, cy = unproject((camera_pos.x, camera_pos.y))
         if not session.client.boundary.is_within_boundaries((pos_x, pos_y)):
             logger.error(
                 f"({pos_x, pos_y}) is outside the map bounds {map_size}"

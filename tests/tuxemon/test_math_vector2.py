@@ -68,3 +68,25 @@ class TestVector2(unittest.TestCase):
         v2_zero = Vector2(0, 0)
         normalized_v2_zero = v2_zero.normalized
         self.assertEqual(normalized_v2_zero.magnitude, 0.0)
+
+    def test_scalar_division(self):
+        v = Vector2(10, 20)
+        result = v / 2
+        self.assertEqual(tuple(result), (5.0, 10.0))
+
+    def test_vector_subtraction(self):
+        v1 = Vector2(5, 7)
+        v2 = Vector2(2, 3)
+        result = v1 - v2
+        self.assertEqual(tuple(result), (3, 4))
+
+        result = v1 - (1, 2)
+        self.assertEqual(tuple(result), (4, 5))
+
+    def test_reverse_subtraction(self):
+        v1 = Vector2(2, 3)
+        result = (5, 7) - v1
+        self.assertEqual(tuple(result), (3, 4))
+
+        result = Vector2(10, 10) - Vector2(5, 3)
+        self.assertEqual(tuple(result), (5, 7))

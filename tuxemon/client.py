@@ -15,7 +15,7 @@ from pygame.surface import Surface
 
 from tuxemon.audio import MusicPlayerState, SoundManager
 from tuxemon.boundary import BoundaryChecker
-from tuxemon.camera import CameraManager
+from tuxemon.camera.camera import CameraManager
 from tuxemon.cli.processor import CommandProcessor
 from tuxemon.collision_manager import CollisionManager
 from tuxemon.combat.session import CombatSession
@@ -179,7 +179,7 @@ class LocalPygameClient:
             # behavior for the game.  at some point, a lock should be
             # implemented so that actions executed here have exclusive
             # control of the game loop and state.
-            self.cli = CommandProcessor(self)
+            self.cli = CommandProcessor(local_session)
             thread = Thread(target=self.cli.run)
             thread.daemon = True
             thread.start()

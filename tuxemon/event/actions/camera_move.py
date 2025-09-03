@@ -6,7 +6,7 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon.camera import Camera
+from tuxemon.camera.camera import Camera
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 
@@ -53,7 +53,7 @@ class CameraMoveAction(EventAction):
             self._reset_camera(self.camera)
 
     def _move_camera(self, camera: Camera, x: int, y: int) -> None:
-        if camera.follows_entity:
+        if camera.is_following():
             camera.unfollow()
         camera.move_smoothly_to(x, y, self.time)
         logger.info(f"Camera has been moved to ({x, y})")

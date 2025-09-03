@@ -12,7 +12,7 @@ from tuxemon.core.core_effect import TechEffectResult
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.session import Session
-from tuxemon.states.monster import MonsterMenuState
+from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import open_dialog, show_result_as_dialog
 from tuxemon.ui.menu_options import ChoiceOption, MenuOptions

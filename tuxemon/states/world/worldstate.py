@@ -16,7 +16,7 @@ from typing import (
 from pygame.surface import Surface
 
 from tuxemon import networking, prepare
-from tuxemon.camera import Camera
+from tuxemon.camera.camera import Camera
 from tuxemon.db import Direction
 from tuxemon.faction.manager import FactionManager
 from tuxemon.map_view import MapRenderer
@@ -26,10 +26,10 @@ from tuxemon.platform.tools import translate_input_event
 from tuxemon.player import Player
 from tuxemon.session import Session
 from tuxemon.state.state import State
-from tuxemon.states.world.world_menus import WorldMenuManager
-from tuxemon.states.world.world_transition import WorldTransition
 from tuxemon.teleporter import Teleporter
 from tuxemon.tools import extract_mod_name
+from tuxemon.world.manager import WorldMenuManager
+from tuxemon.world.transition import WorldTransition
 
 if TYPE_CHECKING:
     from tuxemon.entity import Entity
@@ -207,7 +207,7 @@ class WorldState(State):
 
         # Handle directional movement
         if (direction := direction_map.get(event.button)) is not None:
-            if not self.camera.follows_entity:
+            if not self.camera.is_following():
                 return self.client.camera_manager.handle_input(event)
             if event.held:
                 self.client.movement_manager.queue_movement(

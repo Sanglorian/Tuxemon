@@ -9,19 +9,20 @@ from typing import TYPE_CHECKING, ClassVar, Optional
 from pygame.rect import Rect
 
 from tuxemon import prepare, tools
-from tuxemon.item.item import INFINITE_ITEMS, Item
+from tuxemon.item.item import INFINITE_ITEMS
+from tuxemon.item.shop_utils import (
+    TransactionManager,
+    calc_internal_rect,
+    filter_party,
+    generate_label,
+)
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu
 from tuxemon.menu.quantity import QuantityAndCostMenu, QuantityAndPriceMenu
+from tuxemon.monster import Monster
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 from tuxemon.sprite import Sprite
-from tuxemon.states.items.shop_utils import (
-    TransactionManager,
-    calc_internal_rect,
-    filter_inventory,
-    generate_label,
-)
 from tuxemon.ui.paginator import Paginator
 from tuxemon.ui.text import TextArea
 
@@ -30,9 +31,9 @@ if TYPE_CHECKING:
     from tuxemon.npc import NPC
 
 
-class ShopItemMenuState(Menu[Item]):
+class ShopMonsterMenuState(Menu[Monster]):
 
-    name: ClassVar[str] = "ShopItemMenuState"
+    name: ClassVar[str] = "ShopMonsterMenuState"
     draw_borders = False
 
     def __init__(
@@ -44,17 +45,17 @@ class ShopItemMenuState(Menu[Item]):
     ) -> None:
         super().__init__()
 
-        # this sprite is used to display the item
+        # this sprite is used to display the monster
         self.item_center = self.rect.width * 0.164, self.rect.height * 0.13
-        self.item_sprite = Sprite()
-        self.sprites.add(self.item_sprite)
+        self.monster_sprite = Sprite()
+        self.sprites.add(self.monster_sprite)
 
         self.menu_items.line_spacing = tools.scale(7)
         self.current_page = 0
         self.total_pages = 0
-        self.inventory: list[Item] = []
+        self.inventory: list[Monster] = []
 
-        # this is the area where the item description is displayed
+        # this is the area where the monster description is displayed
         rect = self.client.screen.get_rect()
         rect.top = tools.scale(106)
         rect.left = tools.scale(3)
@@ -80,71 +81,80 @@ class ShopItemMenuState(Menu[Item]):
     def calc_internal_rect(self) -> Rect:
         return calc_internal_rect(self.rect)
 
-    def is_valid_entry(self, item: Optional[Item]) -> bool:
-        """Check if the selected item is valid for purchase or sale."""
-        if not item:
+    def is_valid_entry(self, monster: Optional[Monster]) -> bool:
+        """Check if the selected monster is valid for purchase or sale."""
+        if not monster:
             return False
         if self.buyer.is_player:
-            _, _, price = generate_label(item, self.economy, 1)
+            _, _, price = generate_label(monster, self.economy, 1)
             wallet = self.buyer_manager.get_money()
-            key = f"{self.economy.model.slug}:{item.slug}"
+            key = f"{self.economy.model.slug}:{monster.slug}"
             qty = self.buyer.game_variables.get(key, 0)
             if price > wallet or qty == 0:
+                return False
+        if self.seller.is_player:
+            if self.seller.party.party_size == 1:
                 return False
         return True
 
     def on_menu_selection_change(self) -> None:
         """Called when menu selection changes."""
-        item = self.get_selected_item()
-        if item:
-            image = item.game_object.surface
+        monster = self.get_selected_item()
+        if monster:
+            image = monster.game_object.get_sprite("front")
             assert image
-            self.item_sprite.image = image
-            self.item_sprite.rect = image.get_rect(center=self.image_center)
-            if item.description:
-                self.dialog.alert(item.description, dialog_speed="max")
+            self.monster_sprite.image = image.image
+            self.monster_sprite.rect = image.image.get_rect(
+                center=self.image_center
+            )
+            if monster.description:
+                self.dialog.alert(monster.description, dialog_speed="max")
 
-    def generate_label(
+    def generate_monster_label(
         self,
-        item: Item,
+        monster: Monster,
         qty: Optional[int] = None,
         seller_mode: bool = False,
     ) -> tuple[str, str, int]:
-        """Generate the label for shop items, handling both buyer and seller modes."""
-        return generate_label(item, self.economy, qty, seller_mode)
+        """Generate the label for shop monsters, handling both buyer and seller modes."""
+        return generate_label(monster, self.economy, qty, seller_mode)
 
-    def _populate_menu_items(
-        self, inventory: list[Item]
-    ) -> Generator[MenuItem[Item], None, None]:
-        for item in inventory:
+    def _populate_menu_monsters(
+        self, inventory: list[Monster]
+    ) -> Generator[MenuItem[Monster], None, None]:
+        for monster in inventory:
             if self.buyer.is_player:
-                key = f"{self.economy.model.slug}:{item.slug}"
+                key = f"{self.economy.model.slug}:{monster.slug}"
                 qty = self.buyer.game_variables.get(key, 0)
-                label, discount, price = self.generate_label(item, qty)
+                label, discount, price = self.generate_monster_label(
+                    monster, qty
+                )
                 fg = (
                     self.unavailable_color_shop
                     if price > self.buyer_manager.get_money()
                     else None
                 )
                 image = self.shadow_text(label, fg=fg)
-                menu_item = MenuItem(image, item.name, item.description, item)
-                yield menu_item
-                menu_item.metadata["price"] = price
-                self.add(menu_item)
+                menu_monster = MenuItem(
+                    image, monster.name, monster.description, monster
+                )
+                yield menu_monster
+                menu_monster.metadata["price"] = price
+                self.add(menu_monster)
             elif self.seller.is_player:
-                label, discount, cost = self.generate_label(
-                    item, qty=None, seller_mode=True
+                label, discount, cost = self.generate_monster_label(
+                    monster, qty=None, seller_mode=True
                 )
                 image = self.shadow_text(label)
-                menu_item = MenuItem(image, item.name, item.description, item)
-                yield menu_item
-                menu_item.metadata["cost"] = cost
-                self.add(menu_item)
+                menu_monster = MenuItem(
+                    image, monster.name, monster.description, monster
+                )
+                yield menu_monster
+                menu_monster.metadata["cost"] = cost
+                self.add(menu_monster)
 
-    def initialize_items(self) -> Generator[MenuItem[Item], None, None]:
-        self.inventory = filter_inventory(
-            self.buyer, self.seller, self.economy
-        )
+    def initialize_items(self) -> Generator[MenuItem[Monster], None, None]:
+        self.inventory = filter_party(self.buyer, self.seller, self.economy)
         if not self.inventory:
             return
 
@@ -155,17 +165,15 @@ class ShopItemMenuState(Menu[Item]):
         )
 
         paged_inventory = self.paginator.paginate(self.current_page)
-        yield from self._populate_menu_items(paged_inventory)
+        yield from self._populate_menu_monsters(paged_inventory)
 
     def reload_shop(self) -> None:
         self.clear()
-        self.inventory = filter_inventory(
-            self.buyer, self.seller, self.economy
-        )
+        self.inventory = filter_party(self.buyer, self.seller, self.economy)
 
         paged_inventory = self.paginator.paginate(self.current_page)
         # Force generator execution
-        list(self._populate_menu_items(paged_inventory))
+        list(self._populate_menu_monsters(paged_inventory))
 
         self.selected_index = (
             min(self.selected_index, len(self.menu_items) - 1)
@@ -193,24 +201,24 @@ class ShopItemMenuState(Menu[Item]):
         return None
 
 
-class ShopItemBuyMenuState(ShopItemMenuState):
-    """State for buying items."""
+class ShopMonsterBuyMenuState(ShopMonsterMenuState):
+    """State for buying monsters."""
 
-    name: ClassVar[str] = "ShopItemBuyMenuState"
+    name: ClassVar[str] = "ShopMonsterBuyMenuState"
 
-    def on_menu_selection(self, menu_item: MenuItem[Item]) -> None:
-        item = menu_item.game_object
-        price: int = menu_item.metadata.get("price", 1)
-        label = f"{self.economy.model.slug}:{item.slug}"
+    def on_menu_selection(self, menu_monster: MenuItem[Monster]) -> None:
+        monster = menu_monster.game_object
+        price: int = menu_monster.metadata.get("price", 1)
+        label = f"{self.economy.model.slug}:{monster.slug}"
 
-        def buy_item(quantity: int) -> None:
-            self.transaction_manager.buy_item(
-                self.buyer, item, quantity, label, price
+        def buy_monster(quantity: int) -> None:
+            self.transaction_manager.buy_monster(
+                self.buyer, monster, quantity, label, price
             )
             self.reload_items()
             if (
                 self.seller.shop_inventory
-                and not self.seller.shop_inventory.has_item(item.slug)
+                and not self.seller.shop_inventory.has_monster(monster.slug)
             ):
                 self.on_menu_selection_change()
 
@@ -225,7 +233,7 @@ class ShopItemBuyMenuState(ShopItemMenuState):
 
         self.client.push_state(
             QuantityAndPriceMenu(
-                callback=partial(buy_item),
+                callback=partial(buy_monster),
                 max_quantity=max_quantity,
                 quantity=1,
                 shrink_to_items=True,
@@ -234,35 +242,33 @@ class ShopItemBuyMenuState(ShopItemMenuState):
         )
 
 
-class ShopItemSellMenuState(ShopItemMenuState):
-    """State for selling items."""
+class ShopMonsterSellMenuState(ShopMonsterMenuState):
+    """State for selling monsters."""
 
-    name: ClassVar[str] = "ShopItemSellMenuState"
+    name: ClassVar[str] = "ShopMonsterSellMenuState"
 
-    def on_menu_selection(self, menu_item: MenuItem[Item]) -> None:
-        item = menu_item.game_object
-        metadata_cost = menu_item.metadata.get("cost")
-        basic_cost = self.economy.lookup_item_field(item.slug, "cost")
+    def on_menu_selection(self, menu_monster: MenuItem[Monster]) -> None:
+        monster = menu_monster.game_object
+        metadata_cost = menu_monster.metadata.get("cost")
+        basic_cost = self.economy.lookup_item_field(monster.slug, "cost")
 
         if metadata_cost is not None:
             cost = metadata_cost
         elif basic_cost:
             cost = basic_cost
         else:
-            cost = round(item.cost * self.economy.model.resale_multiplier)
+            cost = round(monster.hp * self.economy.model.resale_multiplier)
 
-        def sell_item(quantity: int) -> None:
-            self.transaction_manager.sell_item(
-                self.seller, item, quantity, cost
-            )
+        def sell_monster(quantity: int) -> None:
+            self.transaction_manager.sell_monster(self.seller, monster, cost)
             self.reload_items()
-            if not self.seller.items.has_item(item.slug):
+            if not self.seller.party.has_monster(monster):
                 self.on_menu_selection_change()
 
         self.client.push_state(
             QuantityAndCostMenu(
-                callback=partial(sell_item),
-                max_quantity=item.quantity,
+                callback=partial(sell_monster),
+                max_quantity=1,
                 quantity=1,
                 shrink_to_items=True,
                 cost=cost,

@@ -44,6 +44,7 @@ from tuxemon.ai import AIManager
 from tuxemon.animation import Animation, Task
 from tuxemon.combat.combat_context import CombatContext
 from tuxemon.combat.machine import CombatMachine, CombatPhase
+from tuxemon.combat.reward_system import RewardSystem
 from tuxemon.combat.utils import (
     set_var,
     track_battles,
@@ -60,16 +61,14 @@ from tuxemon.monster import Monster
 from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
 from tuxemon.state.state import State
-from tuxemon.states.monster import MonsterMenuState
+from tuxemon.states.combat_animations import CombatAnimations
+from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.status.status import Status
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import assert_never
 from tuxemon.ui.combat_method_animation import MethodAnimationCache
 from tuxemon.ui.combat_notifier import CombatNotifier, TextAnimationManager
 from tuxemon.ui.text_alignment import HorizontalAlignment
-
-from .combat_animations import CombatAnimations
-from .reward_system import RewardSystem
 
 if TYPE_CHECKING:
     from tuxemon.platform.events import PlayerInput

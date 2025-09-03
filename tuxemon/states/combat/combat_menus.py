@@ -314,13 +314,17 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 types = " ".join(
                     map(lambda s: (s.name), tech.game_object.types.current)
                 )
+                base_pow = tech.game_object.power
+                level = self.monster.level
+                scaled_pow = int(base_pow * level)
+                range_text = T.translate(tech.game_object.range.name)
                 label = T.format(
                     "technique_combat",
                     {
                         "name": tech.game_object.name,
                         "types": types,
                         "acc": int(tech.game_object.accuracy * 100),
-                        "pow": tech.game_object.power,
+                        "pow": scaled_pow,
                         "max_pow": prepare.POWER_RANGE[1],
                         "rec": str(tech.game_object.recharge_length),
                     },

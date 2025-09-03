@@ -169,6 +169,7 @@ GRAD_YELLOW: str = "gfx/ui/background/gradient_yellow.png"
 # backgrounds
 TUX_GENERIC: str = "gfx/ui/background/tux_generic.png"
 TUX_INFO: str = "gfx/ui/background/tux_info.png"
+TECH_INFO: str = "gfx/ui/background/tech_info.png"
 ITEM_MENU: str = "gfx/ui/item/item_menu_bg.png"
 
 # background per state

@@ -6,7 +6,7 @@
     {
       "type": "cooldown",
       "parameters": [
-        "user",
+        "own_monster",
         "0",
         "sort",
         "damage"

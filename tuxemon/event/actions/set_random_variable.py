@@ -46,4 +46,4 @@ class SetRandomVariableAction(EventAction):
             value = self.var_value
 
         # Append the game_variables dictionary with the key: value pair
-        player.game_variables[self.var_key] = value
+        player.game_variables.set(self.var_key, value)

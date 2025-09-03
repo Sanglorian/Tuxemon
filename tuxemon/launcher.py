@@ -79,7 +79,7 @@ class GameLauncher:
         execute.execute_action("set_template", ["player", sprite, combat])
 
         # Record session metadata
-        session.player.game_variables["date_start_game"] = today_ordinal()
+        session.player.game_variables.set("date_start_game", today_ordinal())
 
         # Optionally clean up states
         if remove_states:

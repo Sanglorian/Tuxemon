@@ -49,17 +49,20 @@ class UpdateTimeAction(EventAction):
 
         current_time = get_current_time()
         game_variables = character.game_variables
-        game_variables["hour"] = current_time.strftime("%H")
-        game_variables["day_of_year"] = str(current_time.timetuple().tm_yday)
-        game_variables["year"] = current_time.strftime("%Y")
-        game_variables["weekday"] = current_time.strftime("%A")
-        game_variables["leap_year"] = (
-            "true" if is_leap_year(current_time.year) else "false"
+        game_variables.set("hour", current_time.strftime("%H"))
+        game_variables.set(
+            "day_of_year", str(current_time.timetuple().tm_yday)
         )
-        game_variables["daytime"] = calculate_day_night_cycle(current_time)
-        game_variables["stage_of_day"] = calculate_day_stage_of_day(
-            current_time
+        game_variables.set("year", current_time.strftime("%Y"))
+        game_variables.set("weekday", current_time.strftime("%A"))
+        game_variables.set(
+            "leap_year",
+            ("true" if is_leap_year(current_time.year) else "false"),
         )
-        game_variables["season"] = determine_season(
-            current_time, prepare.CONFIG.hemisphere
+        game_variables.set("daytime", calculate_day_night_cycle(current_time))
+        game_variables.set(
+            "stage_of_day", calculate_day_stage_of_day(current_time)
+        )
+        game_variables.set(
+            "season", determine_season(current_time, prepare.CONFIG.hemisphere)
         )

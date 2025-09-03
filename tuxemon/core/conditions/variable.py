@@ -28,8 +28,8 @@ class VariableCondition(CoreCondition):
 
         player = session.player
         if type(expect) is str:
-            return bool(player.game_variables[var_name] == expect)
+            return bool(player.game_variables.get(var_name) == expect)
         elif type(expect) is int:
-            return bool(player.game_variables[var_name] >= expect)
+            return bool(player.game_variables.get(var_name) >= expect)
         else:
-            return not player.game_variables[var_name]
+            return not player.game_variables.get(var_name)

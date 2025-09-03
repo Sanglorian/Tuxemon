@@ -52,11 +52,11 @@ class EconomyApplier:
         for eco_item_model in economy.model.items:
             label = f"{economy.model.slug}:{eco_item_model.name}"
 
-            if label not in player.game_variables:
+            if not player.game_variables.has(label):
                 initial_quantity = economy.lookup_item_field(
                     eco_item_model.name, "inventory"
                 )
-                player.game_variables[label] = initial_quantity
+                player.game_variables.set(label, initial_quantity)
 
             if eco_item_model.variables and not economy.variable(
                 eco_item_model.variables, player
@@ -66,7 +66,9 @@ class EconomyApplier:
 
             try:
                 item_instance = Item.create(eco_item_model.name)
-                item_instance.set_quantity(int(player.game_variables[label]))
+                item_instance.set_quantity(
+                    int(player.game_variables.get(label))
+                )
                 shop_items.append(item_instance)
             except Exception as e:
                 logger.error(
@@ -77,14 +79,14 @@ class EconomyApplier:
         for eco_monster_model in economy.model.monsters:
             label = f"{economy.model.slug}:{eco_monster_model.name}"
 
-            if label not in player.game_variables:
+            if not player.game_variables.has(label):
                 default = (
                     economy.get_monster_field(
                         eco_monster_model.name, "inventory"
                     )
                     or 1
                 )
-                player.game_variables[label] = default
+                player.game_variables.set(label, default)
 
             if eco_monster_model.variables and not economy.variable(
                 eco_monster_model.variables, player

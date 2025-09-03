@@ -58,8 +58,8 @@ class GetPendingMovesAction(EventAction):
     def set_var(self, menu_item: MenuItem[Technique]) -> None:
         technique = menu_item.game_object
 
-        self.session.player.game_variables[self.variable_name] = (
-            technique.instance_id.hex
+        self.session.player.game_variables.set(
+            self.variable_name, technique.instance_id.hex
         )
         self.session.client.pop_state()
 

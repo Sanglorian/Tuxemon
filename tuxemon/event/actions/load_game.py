@@ -11,7 +11,7 @@ from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.event.eventaction import EventAction
 from tuxemon.npc import NPCState
 from tuxemon.session import Session
-from tuxemon.states.world.worldstate import WorldSave, WorldState
+from tuxemon.states.world_state import WorldSave, WorldState
 
 logger = logging.getLogger(__name__)
 

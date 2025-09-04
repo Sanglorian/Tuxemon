@@ -8,7 +8,7 @@ from typing import Optional, final
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import string_to_colorlike
 from tuxemon.session import Session
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.states.world_state import WorldState
 
 
 @final

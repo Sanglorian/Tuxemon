@@ -86,6 +86,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.quit.QuitAction
 .. autoscriptinfoclass:: tuxemon.event.actions.random_battle.RandomBattleAction
 .. autoscriptinfoclass:: tuxemon.event.actions.random_encounter.RandomEncounterAction
+.. autoscriptinfoclass:: tuxemon.event.actions.random_horde.RandomHordeAction
 .. autoscriptinfoclass:: tuxemon.event.actions.random_integer.RandomIntegerAction
 .. autoscriptinfoclass:: tuxemon.event.actions.random_item.RandomItemAction
 .. autoscriptinfoclass:: tuxemon.event.actions.random_monster.RandomMonsterAction

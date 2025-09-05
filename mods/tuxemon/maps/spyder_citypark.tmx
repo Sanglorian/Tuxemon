@@ -230,11 +230,11 @@
   </object>
   <object id="53" name="Talk Frances" type="event" x="448" y="368" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_citypark_frances1"/>
+    <property name="act1" value="char_talk spyder_citypark_frances,pre_battle"/>
     <property name="act2" value="add_monster shybulb,8,spyder_citypark_frances,5,10"/>
     <property name="act3" value="add_monster shybulb,8,spyder_citypark_frances,5,10"/>
     <property name="act4" value="start_battle player,spyder_citypark_frances"/>
-    <property name="act5" value="translated_dialog spyder_citypark_frances2"/>
+    <property name="act5" value="char_talk spyder_citypark_frances,post_battle_lose"/>
     <property name="act6" value="set_variable citypark_frances:yes"/>
     <property name="behav1" value="talk spyder_citypark_frances"/>
     <property name="cond1" value="not variable_set citypark_frances:yes"/>
@@ -249,10 +249,10 @@
   </object>
   <object id="55" name="Talk Bobette" type="event" x="256" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_citypark_bobette1"/>
+    <property name="act1" value="char_talk spyder_citypark_bobette,pre_battle"/>
     <property name="act2" value="add_monster aardorn,10,spyder_citypark_bobette,5,10"/>
     <property name="act3" value="start_battle player,spyder_citypark_bobette"/>
-    <property name="act4" value="translated_dialog spyder_citypark_bobette2"/>
+    <property name="act4" value="char_talk spyder_citypark_bobette,post_battle_lose"/>
     <property name="act5" value="set_variable citypark_bobette:yes"/>
     <property name="behav1" value="talk spyder_citypark_bobette"/>
     <property name="cond1" value="not variable_set citypark_bobette:yes"/>
@@ -267,11 +267,11 @@
   </object>
   <object id="57" name="Talk Edith" type="event" x="608" y="272" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_citypark_edith1"/>
+    <property name="act1" value="char_talk spyder_citypark_edith,pre_battle"/>
     <property name="act2" value="add_monster squabbit,8,spyder_citypark_edith,5,10"/>
     <property name="act3" value="add_monster squabbit,8,spyder_citypark_edith,5,10"/>
     <property name="act4" value="start_battle player,spyder_citypark_edith"/>
-    <property name="act5" value="translated_dialog spyder_citypark_edith2"/>
+    <property name="act5" value="char_talk spyder_citypark_edith,post_battle_lose"/>
     <property name="act6" value="set_variable citypark_edith:yes"/>
     <property name="behav1" value="talk spyder_citypark_edith"/>
     <property name="cond1" value="not variable_set citypark_edith:yes"/>
@@ -477,11 +477,11 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_citypark_bobette"/>
-    <property name="act3" value="translated_dialog spyder_citypark_bobette1"/>
+    <property name="act3" value="char_talk spyder_citypark_bobette,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster aardorn,10,spyder_citypark_bobette,5,10"/>
     <property name="act6" value="start_battle player,spyder_citypark_bobette"/>
-    <property name="act7" value="translated_dialog spyder_citypark_bobette2"/>
+    <property name="act7" value="char_talk spyder_citypark_bobette,post_battle_lose"/>
     <property name="act8" value="set_variable citypark_bobette:yes"/>
     <property name="cond1" value="not variable_set citypark_bobette:yes"/>
     <property name="cond2" value="is char_at player"/>
@@ -592,21 +592,21 @@
   </object>
   <object id="293" name="Post Talk Bobette" type="event" x="256" y="224" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_citypark_bobette2"/>
+    <property name="act1" value="char_talk spyder_citypark_bobette,post_battle_lose"/>
     <property name="behav1" value="talk spyder_citypark_bobette"/>
     <property name="cond1" value="is variable_set citypark_bobette:yes"/>
    </properties>
   </object>
   <object id="294" name="Post Talk Frances" type="event" x="448" y="352" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_citypark_frances2"/>
+    <property name="act1" value="char_talk spyder_citypark_frances,post_battle_lose"/>
     <property name="behav1" value="talk spyder_citypark_frances"/>
     <property name="cond1" value="is variable_set citypark_frances:yes"/>
    </properties>
   </object>
   <object id="295" name="Post Talk Edith" type="event" x="624" y="272" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_citypark_edith2"/>
+    <property name="act1" value="char_talk spyder_citypark_edith,post_battle_lose"/>
     <property name="behav1" value="talk spyder_citypark_edith"/>
     <property name="cond1" value="is variable_set citypark_edith:yes"/>
    </properties>

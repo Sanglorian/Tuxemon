@@ -41,7 +41,7 @@ class ParkExperienceAction(EventAction):
 
     def _handle_stop(self, session: Session) -> None:
         self.client = session.client
-        session.player.game_variables.pop("park_out", None)
+        session.player.game_variables.remove("park_out")
 
         if self.client.current_state is None:
             raise RuntimeError("No current state active. This is unexpected.")

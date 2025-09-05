@@ -14,14 +14,15 @@ from pygame.surface import Surface
 
 from tuxemon import graphics, prepare, tools
 from tuxemon.combat import utils
+from tuxemon.combat.menu_visibility import MenuProfiles
 from tuxemon.db import EffectPhase, State, TechSort
 from tuxemon.item.filter import ItemFilter
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu, PopUpMenu
 from tuxemon.monster import Monster
-from tuxemon.states.items.item_menu import ItemMenuState
-from tuxemon.states.monster import MonsterMenuState
+from tuxemon.states.item_menu import ItemMenuState
+from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.technique.technique import Technique
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text import TextArea
@@ -29,7 +30,7 @@ from tuxemon.ui.text import TextArea
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
     from tuxemon.session import Session
-    from tuxemon.states.combat.combat import CombatState
+    from tuxemon.states.combat_state import CombatState
 
 logger = logging.getLogger(__name__)
 
@@ -72,8 +73,6 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             self.opponents = self.combat_session.field_monsters.get_monsters(
                 self.enemy
             )
-        self.menu_visibility = self.combat_session.menu_visibility
-        self.menu_visibility.menu_forfeit = self.enemy.combat.forfeit
         params = {"name": monster.name}
         message = T.format("combat_monster_choice", params)
         self.combat.dialog.alert(message)
@@ -86,32 +85,30 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         rect.bottomright = rect_screen.w, rect_screen.h
         return rect
 
-    def initialize_items(self) -> Generator[MenuItem[MenuGameObj], None, None]:
-        common_menu_items = (
-            ("menu_fight", self.open_technique_menu),
-            ("menu_monster", self.open_swap_menu),
-            ("menu_item", self.open_item_menu),
-        )
-
-        if self.client.combat_session.is_trainer_battle:
-            menu_items_map = common_menu_items + (
-                ("menu_forfeit", self.forfeit),
-            )
+    def get_menu_profile(self) -> tuple[dict[str, str], dict[str, bool]]:
+        if self.combat_session.is_trainer_battle:
+            return MenuProfiles.default_trainer_battle()
         else:
-            menu_items_map = common_menu_items + (("menu_run", self.run),)
+            return MenuProfiles.default_monster_battle()
 
-        for key, callback in menu_items_map:
-            foreground = (
-                self.unavailable_color
-                if not getattr(self.menu_visibility, key)
-                else None
-            )
+    def initialize_items(self) -> Generator[MenuItem[MenuGameObj], None, None]:
+        menu_map, default_visibility = self.get_menu_profile()
+
+        visibility_map = default_visibility.copy()
+
+        visibility_map.update(self.combat_session.menu_visibility_map)
+
+        for key, method_name in menu_map.items():
+            callback = getattr(self, method_name)
+            visible = visibility_map.get(key, False)
+            foreground = self.unavailable_color if not visible else None
+
             yield MenuItem(
                 self.shadow_text(T.translate(key).upper(), fg=foreground),
                 T.translate(key).upper(),
                 None,
                 callback,
-                getattr(self.menu_visibility, key),
+                visible,
             )
 
     def forfeit(self) -> None:
@@ -317,13 +314,17 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 types = " ".join(
                     map(lambda s: (s.name), tech.game_object.types.current)
                 )
+                base_pow = tech.game_object.power
+                level = self.monster.level
+                scaled_pow = int(base_pow * level)
+                range_text = T.translate(tech.game_object.range.name)
                 label = T.format(
                     "technique_combat",
                     {
                         "name": tech.game_object.name,
                         "types": types,
                         "acc": int(tech.game_object.accuracy * 100),
-                        "pow": tech.game_object.power,
+                        "pow": scaled_pow,
                         "max_pow": prepare.POWER_RANGE[1],
                         "rec": str(tech.game_object.recharge_length),
                     },

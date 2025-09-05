@@ -10,7 +10,7 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.interface import MenuItem
 from tuxemon.monster import Monster
 from tuxemon.session import Session
-from tuxemon.states.techniques import TechniqueMenuState
+from tuxemon.states.technique_menu import TechniqueMenuState
 from tuxemon.technique.technique import Technique
 
 logger = logging.getLogger(__name__)
@@ -58,8 +58,8 @@ class GetPendingMovesAction(EventAction):
     def set_var(self, menu_item: MenuItem[Technique]) -> None:
         technique = menu_item.game_object
 
-        self.session.player.game_variables[self.variable_name] = (
-            technique.instance_id.hex
+        self.session.player.game_variables.set(
+            self.variable_name, technique.instance_id.hex
         )
         self.session.client.pop_state()
 

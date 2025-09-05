@@ -118,7 +118,7 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_scoop_alyssa"/>
-    <property name="act3" value="translated_dialog spyder_scoop_alyssa1"/>
+    <property name="act3" value="char_talk spyder_scoop_alyssa,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster possessun,40,spyder_scoop_alyssa,5,10"/>
     <property name="act6" value="start_battle player,spyder_scoop_alyssa"/>
@@ -132,7 +132,7 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_scoop_taggart"/>
-    <property name="act03" value="translated_dialog spyder_scoop_taggart1"/>
+    <property name="act03" value="char_talk spyder_scoop_taggart,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster elofly,30,spyder_scoop_taggart,5,10"/>
     <property name="act06" value="add_monster elowind,35,spyder_scoop_taggart,5,10"/>
@@ -148,7 +148,7 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_scoop_donald"/>
-    <property name="act03" value="translated_dialog spyder_scoop_donald1"/>
+    <property name="act03" value="char_talk spyder_scoop_donald,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster birdling,35,spyder_scoop_donald,5,10"/>
     <property name="act06" value="add_monster pigabyte,35,spyder_scoop_donald,5,10"/>

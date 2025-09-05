@@ -106,11 +106,11 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_aurora"/>
-    <property name="act03" value="translated_dialog spyder_hospital1_aurora1"/>
+    <property name="act03" value="char_talk spyder_hospital1_aurora,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster exclawvate,40,spyder_hospital1_aurora,5,10"/>
     <property name="act06" value="start_battle player,spyder_hospital1_aurora"/>
-    <property name="act07" value="translated_dialog spyder_hospital1_aurora2"/>
+    <property name="act07" value="char_talk spyder_hospital1_aurora,post_battle_lose"/>
     <property name="act08" value="set_variable hospital1aurora:yes"/>
     <property name="cond1" value="not variable_set hospital1aurora:yes"/>
     <property name="cond2" value="is char_at player"/>
@@ -126,14 +126,14 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_eleni"/>
-    <property name="act03" value="translated_dialog spyder_hospital1_eleni1"/>
+    <property name="act03" value="char_talk spyder_hospital1_eleni,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster boltnu,30,spyder_hospital1_eleni,5,10"/>
     <property name="act06" value="add_monster taupypus,30,spyder_hospital1_eleni,5,10"/>
     <property name="act07" value="add_monster snaki,30,spyder_hospital1_eleni,5,10"/>
     <property name="act08" value="add_monster galnec,30,spyder_hospital1_eleni,5,10"/>
     <property name="act09" value="start_battle player,spyder_hospital1_eleni"/>
-    <property name="act10" value="translated_dialog spyder_hospital1_eleni2"/>
+    <property name="act10" value="char_talk spyder_hospital1_eleni,post_battle_lose"/>
     <property name="act11" value="set_variable hospital1eleni:yes"/>
     <property name="cond1" value="not variable_set hospital1eleni:yes"/>
     <property name="cond2" value="is char_at player"/>
@@ -150,12 +150,12 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_felu"/>
-    <property name="act03" value="translated_dialog spyder_hospital1_felu1"/>
+    <property name="act03" value="char_talk spyder_hospital1_felu,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster anu,30,spyder_hospital1_felu,5,10"/>
     <property name="act06" value="add_monster galnec,30,spyder_hospital1_felu,5,10"/>
     <property name="act07" value="start_battle player,spyder_hospital1_felu"/>
-    <property name="act08" value="translated_dialog spyder_hospital1_felu2"/>
+    <property name="act08" value="char_talk spyder_hospital1_felu,post_battle_lose"/>
     <property name="act09" value="set_variable hospital1felu:yes"/>
     <property name="cond1" value="not variable_set hospital1felu:yes"/>
     <property name="cond2" value="is char_at player"/>
@@ -171,12 +171,12 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_fring"/>
-    <property name="act03" value="translated_dialog spyder_hospital1_fring1"/>
+    <property name="act03" value="char_talk spyder_hospital1_fring,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster anu,30,spyder_hospital1_fring,5,10"/>
     <property name="act06" value="add_monster selket,30,spyder_hospital1_fring,5,10"/>
     <property name="act07" value="start_battle player,spyder_hospital1_fring"/>
-    <property name="act08" value="translated_dialog spyder_hospital1_fring2"/>
+    <property name="act08" value="char_talk spyder_hospital1_fring,post_battle_lose"/>
     <property name="act09" value="set_variable hospital1fring:yes"/>
     <property name="cond1" value="not variable_set hospital1fring:yes"/>
     <property name="cond2" value="is char_at player"/>
@@ -192,12 +192,12 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_walt"/>
-    <property name="act03" value="translated_dialog spyder_hospital1_walt1"/>
+    <property name="act03" value="char_talk spyder_hospital1_walt,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster anu,34,spyder_hospital1_walt,5,10"/>
     <property name="act06" value="add_monster taupypus,27,spyder_hospital1_walt,5,10"/>
     <property name="act07" value="start_battle player,spyder_hospital1_walt"/>
-    <property name="act08" value="translated_dialog spyder_hospital1_walt2"/>
+    <property name="act08" value="char_talk spyder_hospital1_walt,post_battle_lose"/>
     <property name="act09" value="set_variable hospital1walt:yes"/>
     <property name="cond1" value="not variable_set hospital1walt:yes"/>
     <property name="cond2" value="is char_at player"/>
@@ -213,12 +213,12 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_liane"/>
-    <property name="act03" value="translated_dialog spyder_hospital1_liane1"/>
+    <property name="act03" value="char_talk spyder_hospital1_liane,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster boltnu,36,spyder_hospital1_liane,5,10"/>
     <property name="act06" value="add_monster snaki,36,spyder_hospital1_liane,5,10"/>
     <property name="act07" value="start_battle player,spyder_hospital1_liane"/>
-    <property name="act08" value="translated_dialog spyder_hospital1_liane2"/>
+    <property name="act08" value="char_talk spyder_hospital1_liane,post_battle_lose"/>
     <property name="act09" value="set_variable hospital1liane:yes"/>
     <property name="cond1" value="not variable_set hospital1liane:yes"/>
     <property name="cond2" value="is char_at player"/>
@@ -266,12 +266,12 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_fring"/>
-    <property name="act03" value="translated_dialog spyder_hospital1_fring1"/>
+    <property name="act03" value="char_talk spyder_hospital1_fring,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster anu,30,spyder_hospital1_fring,5,10"/>
     <property name="act06" value="add_monster selket,30,spyder_hospital1_fring,5,10"/>
     <property name="act07" value="start_battle player,spyder_hospital1_fring"/>
-    <property name="act08" value="translated_dialog spyder_hospital1_fring2"/>
+    <property name="act08" value="char_talk spyder_hospital1_fring,post_battle_lose"/>
     <property name="act09" value="set_variable hospital1fring:yes"/>
     <property name="cond1" value="not variable_set hospital1fring:yes"/>
     <property name="cond2" value="is char_at player"/>
@@ -281,12 +281,12 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_walt"/>
-    <property name="act03" value="translated_dialog spyder_hospital1_walt1"/>
+    <property name="act03" value="char_talk spyder_hospital1_walt,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster anu,34,spyder_hospital1_walt,5,10"/>
     <property name="act06" value="add_monster taupypus,27,spyder_hospital1_walt,5,10"/>
     <property name="act07" value="start_battle player,spyder_hospital1_walt"/>
-    <property name="act08" value="translated_dialog spyder_hospital1_walt2"/>
+    <property name="act08" value="char_talk spyder_hospital1_walt,post_battle_lose"/>
     <property name="act09" value="set_variable hospital1walt:yes"/>
     <property name="cond1" value="not variable_set hospital1walt:yes"/>
     <property name="cond2" value="is char_at player"/>
@@ -311,42 +311,42 @@
   </object>
   <object id="99" name="Talk Felu" type="event" x="48" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_hospital1_felu2"/>
+    <property name="act1" value="char_talk spyder_hospital1_felu,post_battle_lose"/>
     <property name="behav1" value="talk spyder_hospital1_felu"/>
     <property name="cond1" value="is variable_set hospital1felu:yes"/>
    </properties>
   </object>
   <object id="100" name="Post Talk Fring" type="event" x="32" y="96" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_hospital1_fring2"/>
+    <property name="act1" value="char_talk spyder_hospital1_fring,post_battle_lose"/>
     <property name="behav1" value="talk spyder_hospital1_fring"/>
     <property name="cond1" value="is variable_set hospital1fring:yes"/>
    </properties>
   </object>
   <object id="101" name="Post Talk Aurora" type="event" x="48" y="160" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_hospital1_aurora2"/>
+    <property name="act1" value="char_talk spyder_hospital1_aurora,post_battle_lose"/>
     <property name="behav1" value="talk spyder_hospital1_aurora"/>
     <property name="cond1" value="is variable_set hospital1aurora:yes"/>
    </properties>
   </object>
   <object id="102" name="Post Talk Eleni" type="event" x="256" y="160" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_hospital1_eleni2"/>
+    <property name="act1" value="char_talk spyder_hospital1_eleni,post_battle_lose"/>
     <property name="behav1" value="talk spyder_hospital1_eleni"/>
     <property name="cond1" value="is variable_set hospital1eleni:yes"/>
    </properties>
   </object>
   <object id="103" name="Post Talk Liane" type="event" x="256" y="224" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_hospital1_liane2"/>
+    <property name="act1" value="char_talk spyder_hospital1_liane,post_battle_lose"/>
     <property name="behav1" value="talk spyder_hospital1_liane"/>
     <property name="cond1" value="is variable_set hospital1liane:yes"/>
    </properties>
   </object>
   <object id="104" name="Post Talk Walt" type="event" x="272" y="96" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_hospital1_walt2"/>
+    <property name="act1" value="char_talk spyder_hospital1_walt,post_battle_lose"/>
     <property name="behav1" value="talk spyder_hospital1_walt"/>
     <property name="cond1" value="is variable_set hospital1walt:yes"/>
    </properties>

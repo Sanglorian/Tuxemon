@@ -44,7 +44,7 @@ class CameraModeAction(EventAction):
         mode = CameraMode(self.mode)
         if mode == CameraMode.FREE_ROAMING:
             camera.free_roaming_enabled = True
-            if camera.follows_entity:
+            if camera.is_following():
                 camera.unfollow()
         else:
             camera.reset_to_entity_center()

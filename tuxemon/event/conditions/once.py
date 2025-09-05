@@ -32,15 +32,15 @@ class OnceCondition(EventCondition):
         variable = condition.parameters[1]
         player = session.player
 
-        if variable not in player.game_variables:
-            player.game_variables[variable] = today_ordinal()
+        if not player.game_variables.has(variable):
+            player.game_variables.set(variable, today_ordinal())
             return True
 
-        last_occurrence_day = int(player.game_variables[variable])
+        last_occurrence_day = int(player.game_variables.get(variable))
         current_day = today_ordinal()
 
         if current_day - last_occurrence_day > timeframe:
-            player.game_variables[variable] = current_day
+            player.game_variables.set(variable, current_day)
             return True
 
         return False

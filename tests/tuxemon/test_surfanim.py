@@ -6,6 +6,7 @@ import pygame
 from pygame.surface import Surface
 
 from tuxemon.surfanim import (
+    PlayMode,
     State,
     SurfaceAnimation,
     SurfaceAnimationCollection,
@@ -79,7 +80,7 @@ class TestSurfaceAnimation(unittest.TestCase):
         self.animation.update(1.5)
         self.assertGreaterEqual(self.animation.elapsed, 1.5 - 0.001)
         self.assertLessEqual(self.animation.elapsed, 1.5 + 0.001)
-        self.animation.elapsed = 2.5
+        self.animation.seek_to_time(2.5)
         self.assertGreaterEqual(self.animation.elapsed, 2.5 - 0.001)
         self.assertLessEqual(self.animation.elapsed, 2.5 + 0.001)
 
@@ -114,6 +115,101 @@ class TestSurfaceAnimation(unittest.TestCase):
         self.assertEqual(clip(5, 2, 10), 5)
         self.assertEqual(clip(1, 2, 10), 2)
         self.assertEqual(clip(11, 2, 10), 10)
+
+    def test_rewind(self):
+        self.animation.play()
+        self.animation.update(2.0)
+        self.assertGreater(self.animation.elapsed, 0.0)
+        self.animation.rewind()
+        self.assertAlmostEqual(self.animation.elapsed, 0.0, places=3)
+        self.assertEqual(self.animation.frames_played, 0)
+
+    def test_rewind_while_paused(self):
+        self.animation.play()
+        self.animation.update(1.0)
+        self.animation.pause()
+        self.animation.rewind()
+        self.assertAlmostEqual(self.animation.elapsed, 0.0, places=3)
+        self.assertEqual(self.animation.state, State.PAUSED)
+
+    def test_frames_played_backward(self):
+        self.animation.play_mode = PlayMode.BACKWARD
+        self.animation.play()
+        self.animation.update(1.5)
+        self.assertEqual(self.animation.frames_played, 0)  # reversed
+
+    def test_frames_played_ping_pong(self):
+        self.animation.play_mode = PlayMode.PING_PONG
+        self.animation.play()
+        self.animation.update(1.0)  # 1st half of ping-pong
+        self.assertEqual(self.animation.frames_played, 1)
+        self.animation.update(2.5)  # 2nd half of ping-pong
+        self.assertEqual(self.animation.frames_played, 0)
+
+    def test_completion_callback_triggered(self):
+        triggered = []
+
+        def callback():
+            triggered.append(True)
+
+        self.animation.loop = False
+        self.animation._on_completion_callback = callback
+        self.animation.play()
+        self.animation.update(3.1)
+        _ = self.animation.state
+        self.assertTrue(triggered)
+        self.assertEqual(self.animation.state, State.STOPPED)
+
+    def test_callback_only_triggers_once(self):
+        count = []
+
+        def callback():
+            count.append("called")
+
+        self.animation.loop = False
+        self.animation._on_completion_callback = callback
+        self.animation.play()
+        self.animation.update(3.1)
+        _ = self.animation.state
+        _ = self.animation.state
+        _ = self.animation.state
+        self.assertEqual(len(count), 1)
+
+    def test_empty_animation_raises(self):
+        with self.assertRaises(ValueError) as context:
+            SurfaceAnimation([])
+        self.assertEqual(
+            str(context.exception), "Must contain at least one frame."
+        )
+
+    def test_zero_duration_frame_raises(self):
+        frames = [(Surface((5, 5)), 0.0), (Surface((15, 15)), 0.0)]
+        with self.assertRaises(ValueError) as context:
+            SurfaceAnimation(frames)
+        self.assertIn(
+            "duration must be greater than zero", str(context.exception)
+        )
+
+    def test_looping_resets_elapsed(self):
+        self.animation.loop = True
+        self.animation.play()
+        self.animation.update(3.5)
+        self.assertEqual(self.animation.state, State.PLAYING)
+        self.assertLess(self.animation.elapsed, self.animation.duration)
+
+    def test_seek_out_of_bounds_internal(self):
+        self.animation.seek_to_time(10.0)
+        expected_start = self.animation._internal_clock - (
+            self.animation.duration / self.animation.rate
+        )
+        self.assertAlmostEqual(
+            self.animation._playing_start_time, expected_start, places=5
+        )
+
+    def test_seek_while_stopped(self):
+        self.animation.seek_to_time(10.0)
+        self.assertEqual(self.animation.state, State.PAUSED)
+        self.assertEqual(self.animation.elapsed, 0.0)
 
 
 class TestSurfaceAnimationCollection(unittest.TestCase):

@@ -37,11 +37,11 @@ class AddHeldItemction(EventAction):
 
     def start(self, session: Session) -> None:
         player = session.player
-        if self.variable not in player.game_variables:
+        if not player.game_variables.has(self.variable):
             logger.error(f"Game variable {self.variable} not found")
             return
 
-        monster_id = UUID(player.game_variables[self.variable])
+        monster_id = UUID(player.game_variables.get(self.variable))
         monster = get_monster_by_iid(session, monster_id)
         if monster is None:
             logger.error("Monster not found")

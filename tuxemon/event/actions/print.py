@@ -40,12 +40,12 @@ class PrintAction(EventAction):
         if self.variables:
             variables = [var for var in self.variables.split(":") if var]
             for variable in variables:
-                if player.game_variables and variable in player.game_variables:
-                    print(f"{variable}: {player.game_variables[variable]}")
+                if player.game_variables.has(variable):
+                    print(f"{variable}: {player.game_variables.get(variable)}")
                 else:
                     print(f"'{variable}' has not been set yet by map actions.")
         else:
-            if player.game_variables:
-                print(player.game_variables)
+            if player.game_variables.get_state():
+                print(player.game_variables.get_state())
             else:
                 print("No game variables have been set.")

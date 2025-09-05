@@ -16,7 +16,7 @@ from typing import (
 from pygame.surface import Surface
 
 from tuxemon import networking, prepare
-from tuxemon.camera import Camera
+from tuxemon.camera.camera import Camera
 from tuxemon.db import Direction
 from tuxemon.faction.manager import FactionManager
 from tuxemon.map_view import MapRenderer
@@ -207,7 +207,7 @@ class WorldState(State):
 
         # Handle directional movement
         if (direction := direction_map.get(event.button)) is not None:
-            if not self.camera.follows_entity:
+            if not self.camera.is_following():
                 return self.client.camera_manager.handle_input(event)
             if event.held:
                 self.client.movement_manager.queue_movement(

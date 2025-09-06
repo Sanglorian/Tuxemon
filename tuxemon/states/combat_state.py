@@ -1005,7 +1005,6 @@ class CombatState(CombatAnimations):
                 session.add_monster_into_play(
                     self.session, player, replacement
                 )
-                session.update_tuxepedia(player, replacement)
 
     def _on_update_sprite_position(
         self, player: NPC, monster: Monster

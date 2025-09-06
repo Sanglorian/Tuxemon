@@ -79,10 +79,35 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         message = T.format("combat_monster_choice", params)
         self.combat.dialog.alert(message)
 
+    def _clear_tech_overlay(self) -> None:
+        """Remove technique icons/text from the overlay."""
+        if hasattr(self, "range_icon_sprite") and self.range_icon_sprite:
+            if self.range_icon_sprite in self.sprites:
+                self.sprites.remove(self.range_icon_sprite)
+            self.range_icon_sprite = None
+
+        if hasattr(self, "speed_icon_sprite") and self.speed_icon_sprite:
+            if self.speed_icon_sprite in self.sprites:
+                self.sprites.remove(self.speed_icon_sprite)
+            self.speed_icon_sprite = None
+
+        if hasattr(self, "type_icon_sprites"):
+            for spr in self.type_icon_sprites:
+                if spr in self.sprites:
+                    self.sprites.remove(spr)
+        self.type_icon_sprites = []
+
+        if hasattr(self, "text_sprites"):
+            for spr in self.text_sprites.values():
+                if spr in self.sprites:
+                    self.sprites.remove(spr)
+        self.text_sprites = {}
+
+
     def calculate_menu_rectangle(self) -> Rect:
         rect_screen = self.client.screen.get_rect()
-        menu_width = rect_screen.w // 2.5
-        menu_height = rect_screen.h // 4
+        menu_width  = fix_measure(rect_screen.w, 102 / 256)
+        menu_height = fix_measure(rect_screen.h, 36 / 144)
         rect = Rect(0, 0, menu_width, menu_height)
         rect.bottomright = rect_screen.w, rect_screen.h
         return rect
@@ -313,25 +338,21 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             def show() -> None:
                 import pygame
                 from tuxemon.tools import fix_measure
-
+                
                 # Clear the combat dialog so the old "What will X do?" text disappears
                 self.combat.dialog.alert("", dialog_speed="max")
+
+
 
                 screen_w, screen_h = self.client.screen.get_size()
 
                 # --- Clear old sprites if they exist ---
-                if (
-                    hasattr(self, "range_icon_sprite")
-                    and self.range_icon_sprite
-                ):
+                if hasattr(self, "range_icon_sprite") and self.range_icon_sprite:
                     if self.range_icon_sprite in self.sprites:
                         self.sprites.remove(self.range_icon_sprite)
                     self.range_icon_sprite = None
 
-                if (
-                    hasattr(self, "speed_icon_sprite")
-                    and self.speed_icon_sprite
-                ):
+                if hasattr(self, "speed_icon_sprite") and self.speed_icon_sprite:
                     if self.speed_icon_sprite in self.sprites:
                         self.sprites.remove(self.speed_icon_sprite)
                     self.speed_icon_sprite = None
@@ -358,24 +379,16 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     for i, t in enumerate(technique.types.current[:2]):
                         path = f"gfx/ui/icons/element/{t.name.lower()}_type_small.png"
                         try:
-                            icon_surface = graphics.load_and_scale(
-                                path, prepare.SCALE
-                            )
+                            icon_surface = graphics.load_and_scale(path, prepare.SCALE)
                             spr = pygame.sprite.Sprite()
                             spr.image = icon_surface
                             spr.rect = spr.image.get_rect()
 
                             # Position independently on grid
                             if i == 0:
-                                spr.rect.topleft = (
-                                    fix_measure(screen_w, 136 / 256),
-                                    fix_measure(screen_h, 126 / 144),
-                                )
+                                spr.rect.topleft = (fix_measure(screen_w, 136/256), fix_measure(screen_h, 126/144))
                             else:
-                                spr.rect.topleft = (
-                                    fix_measure(screen_w, 144 / 256),
-                                    fix_measure(screen_h, 126 / 144),
-                                )
+                                spr.rect.topleft = (fix_measure(screen_w, 144/256), fix_measure(screen_h, 126/144))
 
                             self.sprites.add(spr, layer=200)
                             self.type_icon_sprites.append(spr)
@@ -390,10 +403,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                         spr = pygame.sprite.Sprite()
                         spr.image = surf
                         spr.rect = surf.get_rect()
-                        spr.rect.topleft = (
-                            fix_measure(screen_w, 7 / 256),
-                            fix_measure(screen_h, 121 / 144),
-                        )
+                        spr.rect.topleft = (fix_measure(screen_w, 7/256), fix_measure(screen_h, 121/144))
                         self.sprites.add(spr, layer=200)
                         self.range_icon_sprite = spr
                     except Exception as e:
@@ -405,10 +415,10 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                         -3: "extremely_slow",
                         -2: "very_slow",
                         -1: "slow",
-                        0: "normal",
-                        1: "fast",
-                        2: "very_fast",
-                        3: "extremely_fast",
+                         0: "normal",
+                         1: "fast",
+                         2: "very_fast",
+                         3: "extremely_fast",
                     }
                     if hasattr(technique.speed, "value"):
                         speed_val = technique.speed.value
@@ -423,10 +433,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                         spr = pygame.sprite.Sprite()
                         spr.image = surf
                         spr.rect = surf.get_rect()
-                        spr.rect.topleft = (
-                            fix_measure(screen_w, 135 / 256),
-                            fix_measure(screen_h, 113 / 144),
-                        )
+                        spr.rect.topleft = (fix_measure(screen_w, 135/256), fix_measure(screen_h, 113/144))
                         self.sprites.add(spr, layer=200)
                         self.speed_icon_sprite = spr
                     except Exception as e:
@@ -443,9 +450,10 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
                 # Only add Power if it's not zero
                 if scaled_pow > 0:
-                    text_lines["power"] = (
-                        f"{T.translate('technique_power')} {scaled_pow}"
-                    )
+                    text_lines["power"] = f"{T.translate('technique_power')} {scaled_pow}"
+
+
+
 
                 for key, line in text_lines.items():
                     surf = font.render(line, True, (0, 0, 0))  # black text
@@ -455,33 +463,34 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
                     # Independent positioning (you can tweak these individually)
                     if key == "accuracy":
-                        spr.rect.topleft = (
-                            fix_measure(screen_w, 7 / 256),
-                            fix_measure(screen_h, 114 / 144),
-                        )
+                        spr.rect.topleft = (fix_measure(screen_w, 7/256), fix_measure(screen_h, 114/144))
                     elif key == "power":
-                        spr.rect.topleft = (
-                            fix_measure(screen_w, 44 / 256),
-                            fix_measure(screen_h, 123 / 144),
-                        )
+                        spr.rect.topleft = (fix_measure(screen_w, 44/256), fix_measure(screen_h, 123/144))
                     elif key == "recharge":
-                        spr.rect.topleft = (
-                            fix_measure(screen_w, 7 / 256),
-                            fix_measure(screen_h, 133 / 144),
-                        )
+                        spr.rect.topleft = (fix_measure(screen_w, 7/256), fix_measure(screen_h, 133/144))
 
                     self.sprites.add(spr, layer=200)
                     self.text_sprites[key] = spr
 
+
+
+
             def hide() -> None:
+                # Clear all technique overlay sprites
+                self._clear_tech_overlay()
+
+                # Restore the original combat prompt
                 params = {"name": self.monster.name}
                 message = T.format("combat_monster_choice", params)
                 self.combat.dialog.alert(message, dialog_speed="max")
-
+            
             menu.on_menu_selection_change_callback = show
             menu.on_close_callback = hide
             menu.on_menu_selection_change()
             menu.on_close()
+
+
+
 
         def choose_target(menu_item: MenuItem[Technique]) -> None:
             # open menu to choose target of technique

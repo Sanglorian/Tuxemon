@@ -2,6 +2,8 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import os  # make sure this is at the top of your file if not already
+from tuxemon.tools import fix_measure
 import logging
 from collections import defaultdict
 from collections.abc import Callable, Generator
@@ -309,27 +311,143 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             menu.on_menu_selection = choose_target  # type: ignore[assignment]
 
             def show() -> None:
+                import pygame
+                from tuxemon.tools import fix_measure
+                
+                # Clear the combat dialog so the old "What will X do?" text disappears
+                self.combat.dialog.alert("", dialog_speed="max")
+
+
+
+                screen_w, screen_h = self.client.screen.get_size()
+
+                # --- Clear old sprites if they exist ---
+                if hasattr(self, "range_icon_sprite") and self.range_icon_sprite:
+                    if self.range_icon_sprite in self.sprites:
+                        self.sprites.remove(self.range_icon_sprite)
+                    self.range_icon_sprite = None
+
+                if hasattr(self, "speed_icon_sprite") and self.speed_icon_sprite:
+                    if self.speed_icon_sprite in self.sprites:
+                        self.sprites.remove(self.speed_icon_sprite)
+                    self.speed_icon_sprite = None
+
+                if hasattr(self, "type_icon_sprites"):
+                    for spr in self.type_icon_sprites:
+                        if spr in self.sprites:
+                            self.sprites.remove(spr)
+                self.type_icon_sprites = []
+
+                if hasattr(self, "text_sprites"):
+                    for spr in self.text_sprites.values():
+                        if spr in self.sprites:
+                            self.sprites.remove(spr)
+                self.text_sprites = {}
+
+                # --- Technique reference ---
                 tech = menu.get_selected_item()
                 assert tech and tech.game_object
-                types = " ".join(
-                    map(lambda s: (s.name), tech.game_object.types.current)
-                )
-                base_pow = tech.game_object.power
-                level = self.monster.level
-                scaled_pow = int(base_pow * level)
-                range_text = T.translate(tech.game_object.range.name)
-                label = T.format(
-                    "technique_combat",
-                    {
-                        "name": tech.game_object.name,
-                        "types": types,
-                        "acc": int(tech.game_object.accuracy * 100),
-                        "pow": scaled_pow,
-                        "max_pow": prepare.POWER_RANGE[1],
-                        "rec": str(tech.game_object.recharge_length),
-                    },
-                )
-                self.combat.dialog.alert(label, dialog_speed="max")
+                technique = tech.game_object
+
+                # --- Draw type icons ---
+                if technique.types.current:
+                    for i, t in enumerate(technique.types.current[:2]):
+                        path = f"gfx/ui/icons/element/{t.name.lower()}_type_small.png"
+                        try:
+                            icon_surface = graphics.load_and_scale(path, prepare.SCALE)
+                            spr = pygame.sprite.Sprite()
+                            spr.image = icon_surface
+                            spr.rect = spr.image.get_rect()
+
+                            # Position independently on grid
+                            if i == 0:
+                                spr.rect.topleft = (fix_measure(screen_w, 136/256), fix_measure(screen_h, 126/144))
+                            else:
+                                spr.rect.topleft = (fix_measure(screen_w, 144/256), fix_measure(screen_h, 126/144))
+
+                            self.sprites.add(spr, layer=200)
+                            self.type_icon_sprites.append(spr)
+                        except Exception as e:
+                            print(f"Could not load type icon {path}: {e}")
+
+                # --- Draw range icon ---
+                if technique.range:
+                    path = f"gfx/ui/icons/range/{technique.range.name.lower()}.png"
+                    try:
+                        surf = graphics.load_and_scale(path, prepare.SCALE)
+                        spr = pygame.sprite.Sprite()
+                        spr.image = surf
+                        spr.rect = surf.get_rect()
+                        spr.rect.topleft = (fix_measure(screen_w, 7/256), fix_measure(screen_h, 121/144))
+                        self.sprites.add(spr, layer=200)
+                        self.range_icon_sprite = spr
+                    except Exception as e:
+                        print(f"Could not load range icon {path}: {e}")
+
+                # --- Draw speed icon ---
+                if technique.speed is not None:
+                    mapping = {
+                        -3: "extremely_slow",
+                        -2: "very_slow",
+                        -1: "slow",
+                         0: "normal",
+                         1: "fast",
+                         2: "very_fast",
+                         3: "extremely_fast",
+                    }
+                    if hasattr(technique.speed, "value"):
+                        speed_val = technique.speed.value
+                    elif isinstance(technique.speed, int):
+                        speed_val = mapping.get(technique.speed, "normal")
+                    else:
+                        speed_val = str(technique.speed).lower()
+
+                    path = f"gfx/ui/icons/speed/{speed_val}.png"
+                    try:
+                        surf = graphics.load_and_scale(path, prepare.SCALE)
+                        spr = pygame.sprite.Sprite()
+                        spr.image = surf
+                        spr.rect = surf.get_rect()
+                        spr.rect.topleft = (fix_measure(screen_w, 135/256), fix_measure(screen_h, 113/144))
+                        self.sprites.add(spr, layer=200)
+                        self.speed_icon_sprite = spr
+                    except Exception as e:
+                        print(f"Could not load speed icon {path}: {e}")
+
+                # --- Draw text labels ---
+                font = self.font
+                scaled_pow = int(technique.power * (7 + self.monster.level))
+
+                text_lines = {
+                    "accuracy": f"{T.translate('technique_accuracy')} {int(technique.accuracy * 100)}%",
+                    "recharge": f"{T.translate('technique_recharge')} {technique.recharge_length} {T.translate('technique_turns')}",
+                }
+
+                # Only add Power if it's not zero
+                if scaled_pow > 0:
+                    text_lines["power"] = f"{T.translate('technique_power')} {scaled_pow}"
+
+
+
+
+                for key, line in text_lines.items():
+                    surf = font.render(line, True, (0, 0, 0))  # black text
+                    spr = pygame.sprite.Sprite()
+                    spr.image = surf
+                    spr.rect = surf.get_rect()
+
+                    # Independent positioning (you can tweak these individually)
+                    if key == "accuracy":
+                        spr.rect.topleft = (fix_measure(screen_w, 7/256), fix_measure(screen_h, 114/144))
+                    elif key == "power":
+                        spr.rect.topleft = (fix_measure(screen_w, 44/256), fix_measure(screen_h, 123/144))
+                    elif key == "recharge":
+                        spr.rect.topleft = (fix_measure(screen_w, 7/256), fix_measure(screen_h, 133/144))
+
+                    self.sprites.add(spr, layer=200)
+                    self.text_sprites[key] = spr
+
+
 
             def hide() -> None:
                 params = {"name": self.monster.name}

@@ -18,7 +18,7 @@ from tuxemon.middleware import Controller, Multiplayer
 from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
 from tuxemon.session import local_session
-from tuxemon.states.world import worldstate as world
+from tuxemon.states import world_state as world
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)

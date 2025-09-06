@@ -4082,6 +4082,9 @@ msgstr "{name} is trying to evolve into {evolve}. Allow evolution?"
 msgid "evolution_ended"
 msgstr "{name} evolves into {evolve}!"
 
+msgid "trade_completed"
+msgstr "You traded {sent} and received {received}!"
+
 msgid "no_signal"
 msgstr "No Signal"
 

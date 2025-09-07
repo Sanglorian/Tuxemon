@@ -72,6 +72,8 @@ class MissionController:
             if not mission.check_all_prerequisites(self.character):
                 continue
 
+            mission.check_step_conditions(self.character)
+
             for step_slug, step in mission.steps.items():
                 if step_slug in mission.completed_steps:
                     continue

@@ -613,7 +613,9 @@ class CombatAnimations(Menu[None], ABC):
         full_surf.blit(surf, (0, 0))
 
         # Extend last row of background downward to fill gap
-        last_row = surf.subsurface(pygame.Rect(0, surf.get_height() - 1, surf.get_width(), 1))
+        last_row = surf.subsurface(
+            pygame.Rect(0, surf.get_height() - 1, surf.get_width(), 1)
+        )
         for y in range(surf.get_height(), full_height):
             full_surf.blit(last_row, (0, y))
 
@@ -625,8 +627,6 @@ class CombatAnimations(Menu[None], ABC):
 
         self.sprites.add(spr, layer=0)
         self.background_sprite = spr
-
-
 
     def animate_parties_in(self) -> None:
         """Animate the parties entering the battle scene."""

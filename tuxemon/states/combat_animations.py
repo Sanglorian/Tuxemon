@@ -592,7 +592,6 @@ class CombatAnimations(Menu[None], ABC):
                 dev.animate_capture(animate)
 
     def update_background(self, bg_path: str) -> None:
-        """Draw combat background in its native 256x108 (scaled) portion of the screen."""
         import pygame
 
         # Clear old
@@ -604,17 +603,29 @@ class CombatAnimations(Menu[None], ABC):
         # Load and scale to SCALE only (no stretching to full screen)
         surf = graphics.load_and_scale(bg_path, prepare.SCALE)
 
+        # Create a full-screen surface (black by default)
+        full_height = prepare.SCREEN_RECT.height
+        full_width = prepare.SCREEN_RECT.width
+        full_surf = pygame.Surface((full_width, full_height))
+        full_surf.fill((0, 0, 0))  # fill rest with black
+
+        # Blit background onto the top of the full surface
+        full_surf.blit(surf, (0, 0))
+
+        # Extend last row of background downward to fill gap
+        last_row = surf.subsurface(pygame.Rect(0, surf.get_height() - 1, surf.get_width(), 1))
+        for y in range(surf.get_height(), full_height):
+            full_surf.blit(last_row, (0, y))
+
+        # Wrap in sprite
         spr = pygame.sprite.Sprite()
-        spr.image = surf
-        spr.rect = surf.get_rect()
-
-        # Position: top of the screen, left aligned
-        screen_rect = self.client.screen.get_rect()
-        spr.rect.topleft = (screen_rect.left, screen_rect.top)
-
+        spr.image = full_surf
+        spr.rect = full_surf.get_rect()
+        spr.rect.topleft = (0, 0)
 
         self.sprites.add(spr, layer=0)
         self.background_sprite = spr
+
 
 
     def animate_parties_in(self) -> None:

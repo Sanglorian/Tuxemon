@@ -422,6 +422,26 @@ class TranslatorManager:
                     f"Configured locale mode '{_locale_mode}' doesn't exist as a supported language."
                 )
 
+    def discover_and_load_all_domains(self, locale_name: str) -> None:
+        """
+        Discovers all available translation domains and loads a translator for each.
+
+        Parameters:
+            locale_name: The locale to use when loading translators.
+        """
+        logger.info(
+            "Discovering and loading all available translation domains..."
+        )
+
+        all_domains = {
+            info.domain for info in self.locale_finder.search_locales()
+        }
+
+        for domain in sorted(all_domains):
+            self.load_translator_for_domain(domain, locale_name)
+
+        logger.info(f"Loaded translators for domains: {sorted(all_domains)}")
+
     def initialize_translations(
         self,
         locale_name: str = LOCALE_CONFIG.slug,
@@ -450,3 +470,4 @@ locale_finder = LocaleFinder(all_l18n_mod_paths)
 gettext_compiler = GettextCompiler(paths.CACHE_DIR)
 T = TranslatorManager(locale_finder, gettext_compiler)
 T.initialize_translations()
+T.discover_and_load_all_domains(locale_name=LOCALE_CONFIG.slug)

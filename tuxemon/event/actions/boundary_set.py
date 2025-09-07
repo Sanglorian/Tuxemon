@@ -16,15 +16,17 @@ logger = logging.getLogger(__name__)
 @dataclass
 class BoundarySetAction(EventAction):
     """
-    Replaces the current boundary with a new one, or resets to default
+    Sets or replaces the current boundary with a new one, or resets to default
     if no parameters are given.
 
     Script usage:
         .. code-block::
 
-            boundary_set [shape][,values]
+            boundary_set <boundary_name>[,shape][,values]
 
     Script parameters:
+        boundary_name: Required. The name to assign to the boundary
+            (e.g., "safe_zone", "event").
         shape: Optional. Either "rectangle" or "circle".
         values: Optional. A colon-separated string of integers:
             - For "rectangle": x0:x1:y0:y1
@@ -32,6 +34,7 @@ class BoundarySetAction(EventAction):
     """
 
     name = "boundary_set"
+    boundary_name: str
     shape: Optional[str] = None
     values: Optional[str] = None
 
@@ -60,11 +63,13 @@ class BoundarySetAction(EventAction):
 
         if self.shape == "rectangle" and len(nums) == 4:
             x0, x1, y0, y1 = nums
-            checker.set_rectangular_boundary("event", x0, x1, y0, y1)
+            checker.set_rectangular_boundary(
+                self.boundary_name, x0, x1, y0, y1
+            )
 
         elif self.shape == "circle" and len(nums) == 3:
             cx, cy, radius = nums
-            checker.set_circular_boundary("event", (cx, cy), radius)
+            checker.set_circular_boundary(self.boundary_name, (cx, cy), radius)
 
         else:
             logger.warning(

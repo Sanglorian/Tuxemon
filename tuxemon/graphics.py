@@ -394,7 +394,7 @@ def capture_screenshot(game: LocalPygameClient) -> Surface:
     Returns:
         The captured screenshot.
     """
-    from tuxemon.states.world.worldstate import WorldState
+    from tuxemon.states.world_state import WorldState
 
     screenshot = Surface(game.screen.get_size())
     world = game.get_state_by_name(WorldState)

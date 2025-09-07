@@ -95,8 +95,6 @@ class WildEncounterAction(EventAction):
         env = env_var if self.env is None else self.env
         environment = EnvironmentModel.lookup(env, db)
 
-        player.tuxepedia.add_entry(current_monster.slug)
-
         context = CombatContext(
             session=session,
             teams=[player, npc],

@@ -75,9 +75,6 @@ SCREEN_SIZE = CONFIG.resolution
 # Surface Keys (tilesets)
 SURFACE_KEYS: list[str] = ["surfable", "walkable", "climbable"]
 
-# frame
-FRAME_TIME: float = 0.09
-
 # Set the native tile size so we know how much to scale our maps
 # 1 tile = 16 pixels
 TILE_SIZE: tuple[int, int] = (16, 16)
@@ -105,7 +102,7 @@ ELEMENT_SIZE: tuple[int, int] = (24, 24)
 # set island size, battle terrains (grass, etc.)
 ISLAND_SIZE: tuple[int, int] = (96, 57)
 # set battle background size (grass, etc.)
-BATTLE_BG_SIZE: tuple[int, int] = (280, 112)
+BATTLE_BG_SIZE: tuple[int, int] = (256, 108)
 
 # Set the healthbar _color
 GFX_HP_BAR: str = "gfx/ui/monster/hp_bar.png"
@@ -142,12 +139,14 @@ if CONFIG.large_gui:
     FONT_SIZE = 6
     FONT_SIZE_BIG = 7
     FONT_SIZE_BIGGER = 8
+    FONT_SIZE_BIGGEST = 9
 else:
     FONT_SIZE_SMALLER = 3
     FONT_SIZE_SMALL = 4
     FONT_SIZE = 5
     FONT_SIZE_BIG = 6
     FONT_SIZE_BIGGER = 7
+    FONT_SIZE_BIGGEST = 8
 
 # gradients
 # Hex 77767b > Hex ffffff (linear + top/bottom)
@@ -169,6 +168,7 @@ GRAD_YELLOW: str = "gfx/ui/background/gradient_yellow.png"
 # backgrounds
 TUX_GENERIC: str = "gfx/ui/background/tux_generic.png"
 TUX_INFO: str = "gfx/ui/background/tux_info.png"
+TECH_INFO: str = "gfx/ui/background/tech_info.png"
 ITEM_MENU: str = "gfx/ui/item/item_menu_bg.png"
 
 # background per state
@@ -197,7 +197,7 @@ BG_MONSTERS: str = "gfx/ui/monster/monster_menu_bg.png"
 
 # Native resolution is similar to the old gameboy resolution. This is
 # used for scaling.
-NATIVE_RESOLUTION: tuple[int, int] = (240, 160)
+NATIVE_RESOLUTION: tuple[int, int] = (256, 144)
 
 # Maps
 # 1 tile = 1 m (3.28 ft) large

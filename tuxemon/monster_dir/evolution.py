@@ -49,7 +49,9 @@ class Evolution:
                 and move.learning_method == LearningMethod.EVOLUTION
             ):
                 new_monster.moves.learn_by_method(
-                    move.technique, move.learning_method
+                    new_monster.instance_id,
+                    move.technique,
+                    move.learning_method,
                 )
 
         owner.party.remove_monster(self.monster)
@@ -169,8 +171,8 @@ class Evolution:
             for variable in evolution_item.variables:
                 for key, value in variable.items():
                     conditions.append(
-                        key in owner.game_variables
-                        and owner.game_variables[key] == value
+                        owner.game_variables.has(key)
+                        and owner.game_variables.get(key) == value
                     )
 
         # Check if the monster has taken the required number of steps

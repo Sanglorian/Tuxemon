@@ -37,21 +37,12 @@ class TestPathfinder(unittest.TestCase):
         self.client.collision_manager.get_collision_map.return_value = {}
         self.client.npc_manager.get_entity_pos.return_value = None
 
-        node1 = MagicMock(spec=PathfindNode)
-        node1.get_value.return_value = start
-        node1.get_parent.return_value = None
-        node1.reconstruct_path.return_value = [start]
-
-        node2 = MagicMock(spec=PathfindNode)
-        node2.get_value.return_value = dest
-        node2.get_parent.return_value = node1
-        node2.reconstruct_path.return_value = [start, dest]
-
-        self.pathfinder.pathfind_r = MagicMock(return_value=node2)
+        # No exits from start
+        self.pathfinder.get_exits = MagicMock(return_value=[])
 
         path = self.pathfinder.pathfind(start, dest, Direction.down)
 
-        self.assertEqual(path, [start, dest])
+        self.assertIsNone(path)
 
     def test_pathfind_failure(self):
         start = (0, 0)
@@ -59,12 +50,11 @@ class TestPathfinder(unittest.TestCase):
         self.client.collision_manager.get_collision_map.return_value = {}
         self.client.npc_manager.get_entity_pos.return_value = None
 
-        self.pathfinder.pathfind_r = MagicMock(return_value=None)
+        self.pathfinder.get_exits = MagicMock(return_value=[])
 
         path = self.pathfinder.pathfind(start, dest, Direction.down)
 
         self.assertIsNone(path)
-        self.client.npc_manager.get_entity_pos.assert_called_once_with(start)
 
     def test_is_valid_position(self):
         position = (1, 1)
@@ -85,87 +75,58 @@ class TestPathfinder(unittest.TestCase):
         self.assertFalse(self.pathfinder.is_valid_position((2, 2), skip_nodes))
 
     def test_is_tile_traversable(self):
-        npc = MagicMock(spec=NPC)
-        npc.tile_pos = (1, 1)
-        npc.ignore_collisions = False
-        npc.facing = Direction.down
         tile = (1, 2)
 
         self.pathfinder.get_exits = MagicMock(return_value=[tile])
         self.client.npc_manager.get_entity_pos = MagicMock(return_value=None)
 
-        self.assertTrue(self.pathfinder.is_tile_traversable(npc, tile))
+        result = self.pathfinder.is_tile_traversable(
+            (1, 1), Direction.down, tile, False
+        )
+        self.assertTrue(result)
 
         other_npc = MagicMock()
         other_npc.moving = True
         other_npc.moverate = CONFIG.player_walkrate
         other_npc.facing = Direction.up
         self.client.npc_manager.get_entity_pos.return_value = other_npc
-        self.assertFalse(self.pathfinder.is_tile_traversable(npc, tile))
+        result = self.pathfinder.is_tile_traversable(
+            (1, 1), Direction.down, tile, False
+        )
+        self.assertFalse(result)
 
-        npc.ignore_collisions = True
-        self.assertTrue(self.pathfinder.is_tile_traversable(npc, tile))
+        result = self.pathfinder.is_tile_traversable(
+            (1, 1), Direction.down, tile, True
+        )
+        self.assertTrue(result)
 
     def test_get_tile_moverate(self):
-        npc = MagicMock(spec=NPC)
         destination = (1, 1)
 
         self.client.map_manager.surface_map = {
             destination: {"speed_modifier": 0.5}
         }
-        npc.moverate = 2.0
+        npc_moverate = 2.0
 
         moverate = get_tile_moverate(
-            self.client.map_manager.surface_map, npc, destination
+            self.client.map_manager.surface_map, destination
         )
 
-        expected_moverate = npc.moverate * 0.5  # 2.0 * 0.5
-        self.assertEqual(moverate, expected_moverate)
+        expected_moverate = npc_moverate * 0.5  # 2.0 * 0.5
+        self.assertEqual(moverate * npc_moverate, expected_moverate)
 
     def test_get_tile_moverate_no_properties(self):
-        npc = MagicMock(spec=NPC)
         destination = (1, 1)
 
         self.client.map_manager.surface_map = {destination: {}}
-        npc.moverate = 2.0
+        npc_moverate = 2.0
 
         moverate = get_tile_moverate(
-            self.client.map_manager.surface_map, npc, destination
+            self.client.map_manager.surface_map, destination
         )
 
-        expected_moverate = npc.moverate * 1.0  # 2.0 * 1.0
-        self.assertEqual(moverate, expected_moverate)
-
-    def test_pathfind_r_with_no_nodes(self):
-        dest = (1, 1)
-        queue = []
-        known_nodes = set()
-
-        result = self.pathfinder.pathfind_r(
-            dest, queue, known_nodes, Direction.down
-        )
-
-        self.assertIsNone(result)
-
-    def test_pathfind_r_reaches_destination(self):
-        start = (0, 0)
-        dest = (1, 1)
-        node1 = MagicMock(spec=PathfindNode)
-        node1.get_value.return_value = start
-        node1.get_parent.return_value = None
-
-        node2 = MagicMock(spec=PathfindNode)
-        node2.get_value.return_value = dest
-        node2.get_parent.return_value = node1
-
-        self.pathfinder.get_exits = MagicMock(return_value=[dest])
-        self.pathfinder.pathfind_r = MagicMock(return_value=node2)
-
-        result = self.pathfinder.pathfind_r(
-            dest, [node1], set(), Direction.down
-        )
-
-        self.assertEqual(result, node2)
+        expected_moverate = npc_moverate * 1.0  # 2.0 * 1.0
+        self.assertEqual(moverate * npc_moverate, expected_moverate)
 
     def test_pathfind_with_same_start_and_dest(self):
         start = (1, 1)
@@ -184,50 +145,23 @@ class TestPathfinder(unittest.TestCase):
         )
 
     def test_is_tile_traversable_with_no_npcs(self):
-        npc = MagicMock(spec=NPC)
-        npc.tile_pos = (1, 1)
-        npc.ignore_collisions = False
-        npc.facing = Direction.down
         tile = (1, 2)
         self.pathfinder.get_exits = MagicMock(return_value=[tile])
         self.client.npc_manager.get_entity_pos = MagicMock(return_value=None)
-        self.assertTrue(self.pathfinder.is_tile_traversable(npc, tile))
+        result = self.pathfinder.is_tile_traversable(
+            (1, 1), Direction.down, tile, False
+        )
+        self.assertTrue(result)
 
     def test_get_tile_moverate_with_no_surface_data(self):
-        npc = MagicMock(spec=NPC)
         destination = (1, 1)
         self.client.map_manager.surface_map = {}
-        npc.moverate = 2.0
+        npc_moverate = 2.0
         moverate = get_tile_moverate(
-            self.client.map_manager.surface_map, npc, destination
+            self.client.map_manager.surface_map, destination
         )
-        expected_moverate = npc.moverate * 1.0
-        self.assertEqual(moverate, expected_moverate)
-
-    def test_pathfind_r_with_multiple_exits(self):
-        start = (0, 0)
-        dest = (1, 1)
-        node1 = MagicMock(spec=PathfindNode)
-        node1.get_value.return_value = start
-        node2 = MagicMock(spec=PathfindNode)
-        node2.get_value.return_value = dest
-        self.pathfinder.get_exits = MagicMock(return_value=[(1, 1), (0, 1)])
-        self.pathfinder.pathfind_r = MagicMock(return_value=node2)
-        result = self.pathfinder.pathfind_r(
-            dest, [node1], set(), Direction.down
-        )
-        self.assertEqual(result, node2)
-
-    def test_pathfind_r_no_adjacent_nodes(self):
-        start = (0, 0)
-        dest = (1, 1)
-        node1 = MagicMock(spec=PathfindNode)
-        node1.get_value.return_value = start
-        self.pathfinder.get_exits = MagicMock(return_value=[])
-        result = self.pathfinder.pathfind_r(
-            dest, [node1], set(), Direction.down
-        )
-        self.assertIsNone(result)
+        expected_moverate = npc_moverate * 1.0
+        self.assertEqual(moverate * npc_moverate, expected_moverate)
 
     def test_get_exits_with_tile_data(self):
         position = (1, 1)
@@ -361,3 +295,99 @@ class TestPathfinder(unittest.TestCase):
         exits = self.pathfinder.get_exits(position, Direction.down)
 
         self.assertEqual(exits, [])
+
+    def test_pathfind_multi_step_success(self):
+        start = (0, 0)
+        dest = (2, 0)
+        self.client.collision_manager.get_collision_map.return_value = {}
+        self.client.npc_manager.get_entity_pos.return_value = None
+
+        self.pathfinder.get_exits = MagicMock(
+            side_effect=[
+                [(1, 0)],  # from (0, 0)
+                [(2, 0)],  # from (1, 0)
+                [],  # from (2, 0)
+            ]
+        )
+
+        path = self.pathfinder.pathfind(start, dest, Direction.right)
+        self.assertEqual(path, [(2, 0), (1, 0)])
+
+    def test_pathfind_avoids_cycles(self):
+        start = (0, 0)
+        dest = (1, 1)
+        self.client.collision_manager.get_collision_map.return_value = {}
+        self.client.npc_manager.get_entity_pos.return_value = None
+
+        self.pathfinder.get_exits = MagicMock(
+            side_effect=[
+                [(0, 1)],  # from (0, 0)
+                [(0, 0), (1, 1)],  # from (0, 1)
+                [],  # from (1, 1)
+            ]
+        )
+
+        path = self.pathfinder.pathfind(start, dest, Direction.down)
+
+        self.assertEqual(path, [(1, 1), (0, 1)])
+
+    def test_pathfind_skips_blocked_tile(self):
+        start = (0, 0)
+        dest = (1, 1)
+        self.client.collision_manager.get_collision_map.return_value = {}
+
+        # Simulate that no exits are available from (0, 0)
+        self.pathfinder.get_exits = MagicMock(return_value=[])
+        self.client.npc_manager.get_entity_pos.return_value = None
+
+        path = self.pathfinder.pathfind(start, dest, Direction.down)
+
+        self.assertIsNone(path)
+
+    def test_get_exits_respects_facing(self):
+        position = (1, 1)
+        collision_map = {
+            position: RegionProperties(
+                enter_from=[],
+                exit_from=["up"],  # Only allow exit upward
+                endure=[],
+                entity=None,
+                key=None,
+            ),
+            (1, 0): RegionProperties(
+                enter_from=["down"],
+                exit_from=[],
+                endure=[],
+                entity=None,
+                key=None,
+            ),
+        }
+        self.client.collision_manager.get_collision_map.return_value = (
+            collision_map
+        )
+        self.client.boundary.is_within_boundaries.return_value = True
+
+        exits = self.pathfinder.get_exits(position, Direction.up)
+        self.assertEqual(exits, [(1, 0)])
+
+    def test_is_tile_traversable_blocked_by_npc(self):
+        npc = MagicMock(spec=NPC)
+
+        tile = (1, 2)
+        self.pathfinder.get_exits = MagicMock(return_value=[tile])
+
+        # Simulate a blocking NPC on a neighboring tile
+        blocking_npc = MagicMock()
+        blocking_npc.moving = True
+        blocking_npc.moverate = CONFIG.player_walkrate
+        blocking_npc.facing = Direction.up  # Opposite direction
+
+        self.client.npc_manager.get_entity_pos = MagicMock(
+            return_value=blocking_npc
+        )
+        self.client.map_manager.map_size = (10, 10)
+
+        result = self.pathfinder.is_tile_traversable(
+            (1, 1), Direction.down, tile, False
+        )
+        self.assertFalse(result)

@@ -38,6 +38,6 @@ class ClearVariableAction(EventAction):
     def start(self, session: Session) -> None:
         player = session.player
         for param in self.raw_parameters:
-            if param not in player.game_variables:
+            if not player.game_variables.has(param):
                 logger.error(f"Key '{param}' not found in game variables")
-            player.game_variables.pop(param, None)
+            player.game_variables.remove(param)

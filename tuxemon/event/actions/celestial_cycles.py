@@ -71,7 +71,7 @@ class CelestialCyclesAction(EventAction):
         for body in bodies:
             validate_celestial_data(body)
             phase = get_celestial_phase(day_of_year, body.phase_data)
-            player.game_variables[body.name] = phase
+            player.game_variables.set(body.name, phase)
 
 
 def validate_celestial_data(celestial_cycle: CelestialCycle) -> None:

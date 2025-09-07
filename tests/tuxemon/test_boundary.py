@@ -2,121 +2,186 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
 
-from tuxemon.boundary import BoundaryChecker
+from tuxemon.boundary import (
+    BoundaryChecker,
+    CircularBoundary,
+    CompositeBoundary,
+    InvertedBoundary,
+    NullBoundary,
+    RectangularBoundary,
+    TaggedBoundary,
+)
 
 
 class TestBoundaryChecker(unittest.TestCase):
     def setUp(self):
         self.checker = BoundaryChecker()
 
-    def test_initial_boundaries(self):
-        self.assertEqual(self.checker.invalid_x, (-1, 0))
-        self.assertEqual(self.checker.invalid_y, (-1, 0))
+    def test_default_boundary_rejects_all(self):
+        self.assertFalse(self.checker.is_within_boundaries((0, 0)))
+        self.assertFalse(self.checker.is_within_boundaries((-1, -1)))
 
-    def test_update_boundaries(self):
-        self.checker.update_boundaries((10, 20))
-        self.assertEqual(self.checker.invalid_x, (0, 10))
-        self.assertEqual(self.checker.invalid_y, (0, 20))
+    def test_set_rectangular_boundary(self):
+        self.checker.set_rectangular_boundary("map", 2, 6, 3, 8)
+        self.assertTrue(self.checker.is_within_boundaries((3, 4)))
+        self.assertFalse(self.checker.is_within_boundaries((1, 4)))
+        self.assertFalse(self.checker.is_within_boundaries((6, 4)))
+        self.assertFalse(self.checker.is_within_boundaries((3, 8)))
 
-    def test_is_within_boundaries_valid(self):
-        self.checker.update_boundaries((10, 20))
-        self.assertTrue(self.checker.is_within_boundaries((5, 15)))
-
-    def test_is_within_boundaries_invalid_x(self):
-        self.checker.update_boundaries((10, 20))
-        self.assertFalse(self.checker.is_within_boundaries((-2, 15)))
-        self.assertFalse(self.checker.is_within_boundaries((12, 15)))
-
-    def test_is_within_boundaries_invalid_y(self):
-        self.checker.update_boundaries((10, 20))
-        self.assertFalse(self.checker.is_within_boundaries((5, -2)))
-        self.assertFalse(self.checker.is_within_boundaries((5, 22)))
-
-    def test_repr(self):
-        self.checker.update_boundaries((5, 7))
-        self.assertEqual(
-            repr(self.checker),
-            "BoundaryChecker(invalid_x=(0, 5), invalid_y=(0, 7))",
-        )
-
-    def test_is_within_boundaries_on_edge_x_low(self):
-        self.checker.update_boundaries((10, 20))
-        self.assertTrue(self.checker.is_within_boundaries((0, 15)))
-
-    def test_is_within_boundaries_on_edge_x_high(self):
-        self.checker.update_boundaries((10, 20))
-        self.assertFalse(self.checker.is_within_boundaries((10, 15)))
-
-    def test_is_within_boundaries_on_edge_y_low(self):
-        self.checker.update_boundaries((10, 20))
-        self.assertTrue(self.checker.is_within_boundaries((5, 0)))
-
-    def test_is_within_boundaries_on_edge_y_high(self):
-        self.checker.update_boundaries((10, 20))
-        self.assertFalse(self.checker.is_within_boundaries((5, 20)))
-
-    def test_is_within_boundaries_zero_zero(self):
-        self.checker.update_boundaries((10, 20))
-        self.assertTrue(self.checker.is_within_boundaries((0, 0)))
-
-    def test_get_boundary_validity_valid(self):
-        self.checker.update_boundaries((10, 20))
-        valid_x, valid_y = self.checker.get_boundary_validity((5, 15))
+    def test_get_boundary_validity_rectangular(self):
+        self.checker.set_rectangular_boundary("map", 0, 5, 0, 5)
+        valid_x, valid_y = self.checker.get_boundary_validity((3, 4))
         self.assertTrue(valid_x)
         self.assertTrue(valid_y)
 
-    def test_get_boundary_validity_invalid_x(self):
-        self.checker.update_boundaries((10, 20))
-        valid_x, valid_y = self.checker.get_boundary_validity((-2, 15))
+        valid_x, valid_y = self.checker.get_boundary_validity((6, 4))
         self.assertFalse(valid_x)
         self.assertTrue(valid_y)
 
-    def test_get_boundary_validity_invalid_y(self):
-        self.checker.update_boundaries((10, 20))
-        valid_x, valid_y = self.checker.get_boundary_validity((5, -2))
-        self.assertTrue(valid_x)
-        self.assertFalse(valid_y)
+    def test_get_boundary_validity_raises_on_non_rectangular(self):
+        self.checker.set_circular_boundary("map", (5, 5), 3)
+        with self.assertRaises(TypeError):
+            self.checker.get_boundary_validity((5, 5))
 
-    def test_set_area(self):
-        self.checker.set_area((2, 3), (4, 5), (10, 20))
-        self.assertEqual(self.checker.invalid_x, (2, 6))
-        self.assertEqual(self.checker.invalid_y, (3, 8))
-
-    def test_set_area_out_of_bounds_x(self):
-        with self.assertRaises(ValueError):
-            self.checker.set_area((11, 3), (4, 5), (10, 20))
-
-    def test_set_area_out_of_bounds_y(self):
-        with self.assertRaises(ValueError):
-            self.checker.set_area((2, 21), (4, 5), (10, 20))
-
-    def test_set_area_negative_size(self):
-        with self.assertRaises(ValueError):
-            self.checker.set_area((2, 3), (-4, 5), (10, 20))
-
-    def test_set_area_zero_size(self):
-        with self.assertRaises(ValueError):
-            self.checker.set_area((2, 3), (0, 5), (10, 20))
-
-    def test_set_area_from_center(self):
-        self.checker.set_area_from_center((5, 10), 3, (10, 20))
-        self.assertEqual(self.checker.invalid_x, (2, 8))
-        self.assertEqual(self.checker.invalid_y, (7, 13))
-
-    def test_set_area_from_center_out_of_bounds_x(self):
-        self.checker.set_area_from_center((9, 10), 3, (10, 20))
-        self.assertEqual(self.checker.invalid_x, (6, 10))
-
-    def test_set_area_from_center_out_of_bounds_y(self):
-        self.checker.set_area_from_center((5, 19), 3, (10, 20))
-        self.assertEqual(self.checker.invalid_y, (16, 20))
-
-    def test_set_area_from_center_negative_radius(self):
-        with self.assertRaises(ValueError):
-            self.checker.set_area_from_center((5, 10), -3, (10, 20))
+    def test_set_circular_boundary(self):
+        self.checker.set_circular_boundary("map", (10, 10), 5)
+        self.assertTrue(self.checker.is_within_boundaries((10, 10)))
+        self.assertTrue(self.checker.is_within_boundaries((13, 13)))
+        self.assertFalse(self.checker.is_within_boundaries((16, 10)))
+        self.assertFalse(self.checker.is_within_boundaries((10, 16)))
 
     def test_reset_to_default(self):
-        self.checker.update_boundaries((10, 20))
+        self.checker.set_rectangular_boundary("map", 0, 10, 0, 10)
+        self.assertTrue(self.checker.is_within_boundaries((5, 5)))
         self.checker.reset_to_default()
-        self.assertEqual(self.checker.invalid_x, (-1, 0))
-        self.assertEqual(self.checker.invalid_y, (-1, 0))
+        self.assertFalse(self.checker.is_within_boundaries((5, 5)))
+
+    def test_repr_contains_boundary_type(self):
+        self.checker.set_rectangular_boundary("map", 0, 5, 0, 5)
+        self.assertIn("RectangularBoundary", repr(self.checker))
+
+        self.checker.set_circular_boundary("map", (5, 5), 2)
+        self.assertIn("CircularBoundary", repr(self.checker))
+
+    def test_default_boundary_rejects_all(self):
+        self.assertFalse(self.checker.is_within_boundaries((0, 0)))
+        self.assertFalse(self.checker.is_within_boundaries((-1, -1)))
+        self.assertFalse(self.checker.is_within_boundaries((999, 999)))
+
+    def test_reset_to_default_rejects_all(self):
+        self.checker.set_rectangular_boundary("map", 0, 10, 0, 10)
+        self.assertTrue(self.checker.is_within_boundaries((5, 5)))
+        self.checker.reset_to_default()
+        self.assertFalse(self.checker.is_within_boundaries((5, 5)))
+
+    def test_repr_shows_reject_all_boundary(self):
+        self.checker.reset_to_default()
+        self.assertIn("NullBoundary", repr(self.checker))
+
+    def test_rectangular_boundary_edges(self):
+        width, height = 10, 10
+        self.checker.set_rectangular_boundary("map", 0, width, 0, height)
+
+        # Corners that should be valid
+        self.assertTrue(self.checker.is_within_boundaries((0, 0)))  # top-left
+        self.assertTrue(
+            self.checker.is_within_boundaries((width - 1, 0))
+        )  # top-right
+        self.assertTrue(
+            self.checker.is_within_boundaries((0, height - 1))
+        )  # bottom-left
+        self.assertTrue(
+            self.checker.is_within_boundaries((width - 1, height - 1))
+        )  # bottom-right
+
+        # Edges that should be invalid (exclusive upper bounds)
+        self.assertFalse(
+            self.checker.is_within_boundaries((width, 5))
+        )  # right edge
+        self.assertFalse(
+            self.checker.is_within_boundaries((5, height))
+        )  # bottom edge
+        self.assertFalse(
+            self.checker.is_within_boundaries((width, height))
+        )  # bottom-right corner out of bounds
+
+
+class TestCompositeBoundary(unittest.TestCase):
+    def test_union_combines_multiple_boundaries(self):
+        rect = RectangularBoundary((0, 5), (0, 5))
+        circle = CircularBoundary((10, 10), 3)
+        combo = CompositeBoundary([rect, circle], mode="union")
+
+        self.assertTrue(combo.is_within((2, 2)))  # Inside rectangle
+        self.assertTrue(combo.is_within((10, 10)))  # Inside circle
+        self.assertFalse(combo.is_within((7, 7)))  # Outside both
+
+    def test_intersection_requires_all_boundaries(self):
+        rect = RectangularBoundary((0, 10), (0, 10))
+        circle = CircularBoundary((5, 5), 3)
+        combo = CompositeBoundary([rect, circle], mode="intersection")
+
+        self.assertTrue(combo.is_within((5, 5)))  # Inside both
+        self.assertFalse(combo.is_within((9, 9)))  # Inside rect only
+        self.assertFalse(combo.is_within((2, 2)))  # Inside circle only
+
+    def test_empty_composite_union_returns_false(self):
+        combo = CompositeBoundary([], mode="union")
+        self.assertFalse(combo.is_within((0, 0)))
+
+    def test_empty_composite_intersection_returns_true(self):
+        combo = CompositeBoundary([], mode="intersection")
+        self.assertTrue(combo.is_within((0, 0)))  # Vacuously true
+
+    def test_invalid_mode_raises(self):
+        with self.assertRaises(ValueError):
+            CompositeBoundary([], mode="invalid")
+
+
+class TestBoundaryMovement(unittest.TestCase):
+    def test_move_rectangular_boundary(self):
+        boundary = RectangularBoundary((0, 5), (0, 5))
+        self.assertTrue(boundary.is_within((2, 2)))
+        boundary.move(3, 3)
+        self.assertFalse(boundary.is_within((2, 2)))
+        self.assertTrue(boundary.is_within((5, 5)))
+        self.assertEqual(boundary.get_center(), (5.5, 5.5))
+
+    def test_move_circular_boundary(self):
+        boundary = CircularBoundary((5, 5), 3)
+        self.assertTrue(boundary.is_within((5, 5)))
+        boundary.move(2, -1)
+        self.assertFalse(boundary.is_within((3, 3)))
+        self.assertTrue(boundary.is_within((7, 4)))
+
+    def test_move_null_boundary(self):
+        boundary = NullBoundary()
+        boundary.move(100, 100)  # Should be a no-op
+        self.assertFalse(boundary.is_within((0, 0)))
+        self.assertEqual(boundary.get_center(), (0.0, 0.0))
+
+    def test_move_inverted_boundary(self):
+        base = RectangularBoundary((0, 5), (0, 5))
+        boundary = InvertedBoundary(base)
+        self.assertFalse(boundary.is_within((2, 2)))  # Inside base
+        boundary.move(5, 5)
+        self.assertTrue(boundary.is_within((2, 2)))  # Now outside moved base
+
+    def test_move_tagged_boundary(self):
+        base = CircularBoundary((10, 10), 2)
+        boundary = TaggedBoundary(base, "safe_zone")
+        self.assertTrue(boundary.is_within((10, 10)))
+        boundary.move(-5, -5)
+        self.assertFalse(boundary.is_within((10, 10)))
+        self.assertTrue(boundary.is_within((5, 5)))
+
+    def test_move_composite_boundary(self):
+        b1 = RectangularBoundary((0, 5), (0, 5))
+        b2 = CircularBoundary((10, 10), 3)
+        composite = CompositeBoundary([b1, b2], mode="union")
+        self.assertTrue(composite.is_within((2, 2)))
+        self.assertTrue(composite.is_within((10, 10)))
+        composite.move(5, 5)
+        self.assertFalse(composite.is_within((2, 2)))
+        self.assertTrue(composite.is_within((7, 7)))
+        self.assertTrue(composite.is_within((15, 15)))

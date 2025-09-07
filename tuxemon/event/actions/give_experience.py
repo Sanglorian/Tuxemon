@@ -54,10 +54,10 @@ class GiveExperienceAction(EventAction):
             monsters = player.monsters
         else:
             variable = self.variable
-            if variable not in player.game_variables:
+            if not player.game_variables.has(variable):
                 return
 
-            monster_id = UUID(player.game_variables[variable])
+            monster_id = UUID(player.game_variables.get(variable))
             monster = get_monster_by_iid(session, monster_id)
             if monster is None:
                 monster = player.monster_boxes.get_monsters_by_iid(monster_id)

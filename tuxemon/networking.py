@@ -18,7 +18,7 @@ from tuxemon.middleware import Controller, Multiplayer
 from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
 from tuxemon.session import local_session
-from tuxemon.states.world import worldstate as world
+from tuxemon.states import world_state as world
 
 logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=4)
@@ -33,7 +33,7 @@ except ImportError:
     networking = False
 
 if TYPE_CHECKING:
-    from tuxemon.client import LocalPygameClient
+    from tuxemon.base_client import BaseClient
     from tuxemon.platform.events import PlayerInput
 
 
@@ -61,7 +61,7 @@ class EventData(TypedDict, total=False):
 
 
 class NetworkManager:
-    def __init__(self, parent: LocalPygameClient) -> None:
+    def __init__(self, parent: BaseClient) -> None:
         self.parent = parent
         self.server: Optional[TuxemonServer] = None
         self.client: Optional[TuxemonClient] = None
@@ -131,7 +131,7 @@ class TuxemonServer:
 
     def __init__(
         self,
-        game: LocalPygameClient,
+        game: BaseClient,
         server_name: Optional[str] = SERVER_NAME,
         server_port: int = 40081,
         timeout: int = 15,
@@ -382,7 +382,7 @@ class ControllerServer:
     to the local game for processing.
     """
 
-    def __init__(self, game: LocalPygameClient) -> None:
+    def __init__(self, game: BaseClient) -> None:
         """
         Initializes the ControllerServer instance.
 
@@ -453,7 +453,7 @@ class TuxemonClient:
 
     def __init__(
         self,
-        game: LocalPygameClient,
+        game: BaseClient,
         server_port: int = 40081,
         wait_delay: float = 0.25,
         ping_time: float = 2.0,
@@ -951,7 +951,7 @@ class DummyNetworking:
 
 # Universal functions
 def populate_client(
-    cuuid: Any, event_data: Any, game: LocalPygameClient, registry: Any
+    cuuid: Any, event_data: Any, game: BaseClient, registry: Any
 ) -> Any:
     """
     Creates an NPC to represent the client character and adds the information
@@ -986,7 +986,7 @@ def populate_client(
     )
     sprite = get_npc(local_session, "char_name")
     assert sprite
-    sprite.isplayer = True
+    sprite.is_player = True
     sprite.final_move_dest = sprite.tile_pos
     sprite.interactions = ["TRADE", "DUEL"]
 
@@ -997,9 +997,7 @@ def populate_client(
     return sprite
 
 
-def update_client(
-    sprite: Any, char_dict: Any, game: LocalPygameClient
-) -> None:
+def update_client(sprite: Any, char_dict: Any, game: BaseClient) -> None:
     """Corrects character location when it changes map or loses sync.
 
     Updates a client's character information, correcting its location and

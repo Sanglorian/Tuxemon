@@ -126,7 +126,7 @@ class FishingEffect(CoreEffect):
 
         environment = (
             self._fish.environment.get("night")
-            if self.player.game_variables["stage_of_day"] == "night"
+            if self.player.game_variables.get("stage_of_day") == "night"
             else self._fish.environment.get("default")
         )
         rgb = ":".join(map(str, self._fish.sea_blue_color))

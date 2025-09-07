@@ -7,11 +7,10 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, final
 from uuid import UUID
 
-from tuxemon.db import Acquisition, SeenStatus, db
+from tuxemon.db import db
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
-from tuxemon.monster import Monster
-from tuxemon.time_handler import today_ordinal
+from tuxemon.trade_manager import TradeManager, TradeResult
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
@@ -45,57 +44,63 @@ class TradingAction(EventAction):
     added: str
 
     def start(self, session: Session) -> None:
+        trade_manager = TradeManager()
         player = session.player
-        _monster_id = UUID(player.game_variables[self.variable])
-        monster_id = get_monster_by_iid(session, _monster_id)
-        if monster_id is None:
-            logger.error("Monster not found")
+        try:
+            player_monster_id = UUID(
+                player.game_variables.get(self.variable, "")
+            )
+            player_monster = get_monster_by_iid(session, player_monster_id)
+        except (ValueError, KeyError):
+            logger.error("Invalid monster ID or variable not found.")
+            return
+
+        if player_monster is None:
+            logger.error("Player's monster not found.")
             return
 
         if self.added in db.database["monster"]:
-            new = _create_traded_monster(monster_id, self.added)
-            owner = monster_id.get_owner()
-            slot = owner.monsters.index(monster_id)
-            owner.party.remove_monster(monster_id)
-            owner.party.add_monster(new, slot)
-            owner.tuxepedia.add_entry(new.slug, SeenStatus.caught)
+            # Trade for a new monster from the database
+            result = trade_manager.execute_scripted_trade(
+                player_monster, self.added
+            )
+
+            if result == TradeResult.SUCCESS:
+                logger.info("Scripted trade completed successfully.")
+                session.client.push_state(
+                    "TradingTransition",
+                    sent_monster=player_monster.slug,
+                    received_monster=self.added,
+                )
+            elif result == TradeResult.NOT_FOUND:
+                logger.error("Player's monster not found in party.")
         else:
-            _added_id = UUID(player.game_variables[self.added])
-            added_id = get_monster_by_iid(session, _added_id)
-            if added_id is None:
-                logger.error("Monster not found")
+            # Trade for an existing monster from another party
+            try:
+                other_monster_id = UUID(
+                    player.game_variables.get(self.added, "")
+                )
+                other_monster = get_monster_by_iid(session, other_monster_id)
+            except (ValueError, KeyError):
+                logger.error(
+                    "Invalid monster ID or variable not found for the added monster."
+                )
                 return
-            _switch_monsters(monster_id, added_id)
 
+            if other_monster is None:
+                logger.error("Other monster not found.")
+                return
 
-def _create_traded_monster(removed: Monster, added: str) -> Monster:
-    """Create a new monster with the same level and moves as the removed monster."""
-    new = Monster.spawn_base(added, removed.level)
-    new.set_capture(today_ordinal())
-    new.set_acquisition(Acquisition.TRADED)
-    return new
+            result = trade_manager.execute_trade(player_monster, other_monster)
 
-
-def _switch_monsters(removed: Monster, added: Monster) -> None:
-    """Switch two monsters between their owners."""
-    receiver = removed.get_owner()
-    giver = added.get_owner()
-
-    slot_removed = receiver.monsters.index(removed)
-    slot_added = giver.monsters.index(added)
-
-    removed.set_acquisition(Acquisition.TRADED)
-    added.set_acquisition(Acquisition.TRADED)
-
-    logger.info(f"{removed.name} traded for {added.name}!")
-    logger.info(f"{added.name} traded for {removed.name}!")
-    logger.info(f"{receiver.name} welcomes {added.name}!")
-    logger.info(f"{giver.name} welcomes {removed.name}!")
-
-    giver.party.remove_monster(removed)
-    receiver.party.add_monster(added, slot_removed)
-    receiver.tuxepedia.add_entry(added.slug, SeenStatus.caught)
-
-    receiver.party.remove_monster(added)
-    giver.party.add_monster(removed, slot_added)
-    giver.tuxepedia.add_entry(removed.slug, SeenStatus.caught)
+            if result == TradeResult.SUCCESS:
+                logger.info("Trade completed successfully!")
+                session.client.push_state(
+                    "TradingTransition",
+                    sent_monster=player_monster.slug,
+                    received_monster=other_monster.slug,
+                )
+            elif result == TradeResult.SAME_OWNER:
+                logger.error("You can't trade with yourself.")
+            elif result == TradeResult.NOT_FOUND:
+                logger.error("One of the monsters wasn't found in the party.")

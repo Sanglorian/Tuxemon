@@ -49,8 +49,8 @@ class AddMonsterAction(EventAction):
             raise ValueError(f"NPC '{self.npc_slug}' not found")
 
         if self.monster_slug not in db.database["monster"]:
-            if self.monster_slug in player.game_variables:
-                monster_slug = player.game_variables[self.monster_slug]
+            if player.game_variables.has(self.monster_slug):
+                monster_slug = player.game_variables.get(self.monster_slug)
             else:
                 raise ValueError(
                     f"{self.monster_slug} doesn't exist (monster or variable)"
@@ -68,4 +68,4 @@ class AddMonsterAction(EventAction):
 
         trainer.party.add_monster(monster, len(trainer.monsters))
         trainer.tuxepedia.add_entry(monster.slug, SeenStatus.caught)
-        player.game_variables[self.name] = monster.instance_id.hex
+        player.game_variables.set(self.name, monster.instance_id.hex)

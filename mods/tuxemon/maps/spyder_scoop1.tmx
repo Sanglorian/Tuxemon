@@ -74,7 +74,7 @@
   </object>
   <object id="47" name="Talk Lanth" type="event" x="0" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_scoop_lanth1"/>
+    <property name="act1" value="char_talk spyder_scoop_lanth,pre_battle"/>
     <property name="act2" value="add_monster mrmoswitch,35,spyder_scoop_lanth,5,10"/>
     <property name="act3" value="add_monster picc,35,spyder_scoop_lanth,5,10"/>
     <property name="act4" value="start_battle player,spyder_scoop_lanth"/>
@@ -92,7 +92,7 @@
   </object>
   <object id="50" name="Talk Paine" type="event" x="96" y="48" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_scoop_paine1"/>
+    <property name="act1" value="char_talk spyder_scoop_paine,pre_battle"/>
     <property name="act2" value="add_monster possessun,35,spyder_scoop_paine,5,10"/>
     <property name="act3" value="add_monster cairfrey,30,spyder_scoop_paine,5,10"/>
     <property name="act4" value="start_battle player,spyder_scoop_paine"/>
@@ -111,7 +111,7 @@
   </object>
   <object id="52" name="Talk Rubid" type="event" x="224" y="160" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_scoop_rubid1"/>
+    <property name="act1" value="char_talk spyder_scoop_rubid,pre_battle"/>
     <property name="act2" value="add_monster birdling,35,spyder_scoop_rubid,5,10"/>
     <property name="act3" value="add_monster hatchling,30,spyder_scoop_rubid,5,10"/>
     <property name="act4" value="start_battle player,spyder_scoop_rubid"/>
@@ -130,7 +130,7 @@
   </object>
   <object id="54" name="Talk Berys" type="event" x="304" y="80" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_scoop_berys1"/>
+    <property name="act1" value="char_talk spyder_scoop_berys,pre_battle"/>
     <property name="act2" value="add_monster propellercat,40,spyder_scoop_berys,5,10"/>
     <property name="act3" value="add_monster embazook,35,spyder_scoop_berys,5,10"/>
     <property name="act4" value="start_battle player,spyder_scoop_berys"/>
@@ -148,7 +148,7 @@
   </object>
   <object id="56" name="Talk Turner" type="event" x="16" y="144" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_scoop_turner1"/>
+    <property name="act1" value="char_talk spyder_scoop_turner,pre_battle"/>
     <property name="act2" value="add_monster flacono,30,spyder_scoop_turner,5,10"/>
     <property name="act3" value="add_monster squabbit,30,spyder_scoop_turner,5,10"/>
     <property name="act4" value="start_battle player,spyder_scoop_turner"/>
@@ -191,7 +191,7 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_scoop_lanth"/>
-    <property name="act3" value="translated_dialog spyder_scoop_lanth1"/>
+    <property name="act3" value="char_talk spyder_scoop_lanth,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster mrmoswitch,35,spyder_scoop_lanth,5,10"/>
     <property name="act6" value="add_monster picc,35,spyder_scoop_lanth,5,10"/>
@@ -206,7 +206,7 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_scoop_berys"/>
-    <property name="act3" value="translated_dialog spyder_scoop_berys1"/>
+    <property name="act3" value="char_talk spyder_scoop_berys,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster propellercat,40,spyder_scoop_berys,5,10"/>
     <property name="act6" value="add_monster embazook,35,spyder_scoop_berys,5,10"/>
@@ -221,7 +221,7 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_scoop_turner"/>
-    <property name="act3" value="translated_dialog spyder_scoop_turner1"/>
+    <property name="act3" value="char_talk spyder_scoop_turner,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster flacono,30,spyder_scoop_turner,5,10"/>
     <property name="act6" value="add_monster squabbit,30,spyder_scoop_turner,5,10"/>
@@ -236,7 +236,7 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_scoop_paine"/>
-    <property name="act3" value="translated_dialog spyder_scoop_paine1"/>
+    <property name="act3" value="char_talk spyder_scoop_paine,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster possessun,35,spyder_scoop_paine,5,10"/>
     <property name="act6" value="add_monster cairfrey,30,spyder_scoop_paine,5,10"/>
@@ -251,7 +251,7 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_scoop_rubid"/>
-    <property name="act3" value="translated_dialog spyder_scoop_rubid1"/>
+    <property name="act3" value="char_talk spyder_scoop_rubid,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster birdling,35,spyder_scoop_rubid,5,10"/>
     <property name="act6" value="add_monster hatchling,30,spyder_scoop_rubid,5,10"/>

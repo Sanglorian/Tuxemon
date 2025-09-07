@@ -82,12 +82,14 @@ class Mover:
         self,
         body: Body,
         facing: Direction = Direction.down,
-        moverate: float = 0.0,
+        base_moverate: float = CONFIG.player_walkrate,
+        moverate_modifier: float = 1.0,
     ) -> None:
         self.state = EntityState.IDLE
         self.body = body
         self.facing = facing
-        self.moverate = moverate  # walk by default
+        self.base_moverate = base_moverate
+        self.moverate_modifier = moverate_modifier
         self.direction_map = {tuple(v.normalized): k for k, v in dirs3.items()}
         self.move_direction: Optional[Direction] = None
 
@@ -95,15 +97,23 @@ class Mover:
     def current_direction(self) -> Vector3:
         return dirs3[self.facing]
 
-    def move(self, direction: Vector3, speed: float) -> None:
+    @property
+    def effective_moverate(self) -> float:
+        return self.moverate * self.moverate_modifier
+
+    @property
+    def moverate(self) -> float:
+        return self.base_moverate * self.moverate_modifier
+
+    def move(self, direction: Vector3) -> None:
         """Applies movement in a given direction."""
         normalized_direction = tuple(direction.normalized)
         if normalized_direction in self.direction_map:
-            self.body.velocity = Vector3(*normalized_direction) * speed
+            self.body.velocity = Vector3(*normalized_direction) * self.moverate
             self.facing = self.direction_map[normalized_direction]
             self.state = (
                 EntityState.RUNNING
-                if speed > CONFIG.player_walkrate
+                if self.base_moverate == CONFIG.player_runrate
                 else EntityState.WALKING
             )
         else:
@@ -113,18 +123,18 @@ class Mover:
         """Stops movement without affecting acceleration."""
         self.body.velocity = Vector3(0, 0, 0)
         self.state = EntityState.IDLE
-        self.moverate = CONFIG.player_walkrate
+        self.base_moverate = CONFIG.player_walkrate
 
     def running(self) -> None:
         """Boosts moverate to running speed."""
         if self.body.is_moving:
-            self.moverate = CONFIG.player_runrate
+            self.base_moverate = CONFIG.player_runrate
             self.state = EntityState.RUNNING
 
     def walking(self) -> None:
         """Resets moverate back to walking speed."""
         if self.body.is_moving:
-            self.moverate = CONFIG.player_walkrate
+            self.base_moverate = CONFIG.player_walkrate
             self.state = EntityState.WALKING
 
     def update_movement_state(self, running: bool) -> None:
@@ -163,10 +173,10 @@ class Entity(Generic[SaveDict]):
         self.world = session.world
         self.instance_id: UUID = uuid4()
         self.body = Body(position=Point3(0, 0, 0))
-        self.mover = Mover(self.body, moverate=CONFIG.player_walkrate)
+        self.mover = Mover(self.body)
         self.tile_pos: tuple[int, int] = (0, 0)
         self.update_location: bool = False
-        self.isplayer: bool = False
+        self.is_player: bool = False
         self.ignore_collisions: bool = False
 
     # === PHYSICS START =======================================================
@@ -206,7 +216,15 @@ class Entity(Generic[SaveDict]):
         Parameters:
             moverate: The new movement rate to be applied.
         """
-        self.mover.moverate = moverate
+        self.mover.base_moverate = moverate
+
+    def set_moverate_modifier(self, modifier: float) -> None:
+        """Sets a new moverate modifier.
+
+        Parameters:
+            modifier: The new modifier to be applied.
+        """
+        self.mover.moverate_modifier = max(0.0, modifier)
 
     def set_facing(self, direction: Direction) -> None:
         """

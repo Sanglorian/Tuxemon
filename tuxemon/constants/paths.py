@@ -75,3 +75,19 @@ system_installed_folders = [
     path.resolve() for path in get_system_storage_dirs()
 ]
 logger.debug(f"system folders: {system_installed_folders}")
+
+
+# --- Methods ---
+
+
+def get_active_mod_paths() -> list[Path]:
+    """
+    Scans the mods folder and returns a list of paths to all active mod directories.
+    """
+    active_mod_paths = []
+    # Iterate through all subdirectories in the mods folder
+    for mod_dir in mods_folder.iterdir():
+        # Check if the entry is a directory and not a hidden or special folder
+        if mod_dir.is_dir() and not mod_dir.name.startswith((".", "__")):
+            active_mod_paths.append(mod_dir)
+    return active_mod_paths

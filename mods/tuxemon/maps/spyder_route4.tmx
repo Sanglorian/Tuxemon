@@ -94,11 +94,11 @@
   </object>
   <object id="48" name="Talk Marshall" type="event" x="32" y="480" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_route4_marshall1"/>
+    <property name="act1" value="char_talk spyder_route4_marshall,pre_battle"/>
     <property name="act2" value="add_monster puparmor,16,spyder_route4_marshall,5,10"/>
     <property name="act3" value="add_monster puparmor,16,spyder_route4_marshall,5,10"/>
     <property name="act4" value="start_battle player,spyder_route4_marshall"/>
-    <property name="act5" value="translated_dialog spyder_route4_marshall2"/>
+    <property name="act5" value="char_talk spyder_route4_marshall,post_battle_lose"/>
     <property name="act6" value="set_variable route4marshall:yes"/>
     <property name="behav1" value="talk spyder_route4_marshall"/>
     <property name="cond1" value="not variable_set route4marshall:yes"/>
@@ -281,10 +281,10 @@
   </object>
   <object id="71" name="Talk Roger" type="event" x="176" y="320" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_route4_roger1"/>
+    <property name="act1" value="char_talk spyder_route4_roger,pre_battle"/>
     <property name="act2" value="add_monster rabbitosaur,16,spyder_route4_roger,5,10"/>
     <property name="act3" value="start_battle player,spyder_route4_roger"/>
-    <property name="act4" value="translated_dialog spyder_route4_roger2"/>
+    <property name="act4" value="char_talk spyder_route4_roger,post_battle_lose"/>
     <property name="act6" value="set_variable route4roger:yes"/>
     <property name="behav1" value="talk spyder_route4_roger"/>
     <property name="cond1" value="not variable_set route4roger:yes"/>
@@ -298,12 +298,12 @@
   </object>
   <object id="73" name="Talk Wulf" type="event" x="32" y="176" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_route4_wulf1"/>
+    <property name="act1" value="char_talk spyder_route4_wulf,pre_battle"/>
     <property name="act2" value="add_monster cowpignon,14,spyder_route4_wulf,5,10"/>
     <property name="act3" value="add_monster cowpignon,14,spyder_route4_wulf,5,10"/>
     <property name="act4" value="add_monster shybulb,14,spyder_route4_wulf,5,10"/>
     <property name="act5" value="start_battle player,spyder_route4_wulf"/>
-    <property name="act6" value="translated_dialog spyder_route4_wulf2"/>
+    <property name="act6" value="char_talk spyder_route4_wulf,post_battle_lose"/>
     <property name="act7" value="set_variable route4wulf:yes"/>
     <property name="behav1" value="talk spyder_route4_wulf"/>
     <property name="cond1" value="not variable_set route4wulf:yes"/>
@@ -318,11 +318,11 @@
   </object>
   <object id="75" name="Talk Rincewind" type="event" x="208" y="80" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_route4_rincewind1"/>
+    <property name="act1" value="char_talk spyder_route4_rincewind,pre_battle"/>
     <property name="act2" value="add_monster k9,16,spyder_route4_rincewind,5,10"/>
     <property name="act3" value="add_monster k9,16,spyder_route4_rincewind,5,10"/>
     <property name="act4" value="start_battle player,spyder_route4_rincewind"/>
-    <property name="act5" value="translated_dialog spyder_route4_rincewind2"/>
+    <property name="act5" value="char_talk spyder_route4_rincewind,post_battle_lose"/>
     <property name="act6" value="set_variable route4rincewind:yes"/>
     <property name="behav1" value="talk spyder_route4_rincewind"/>
     <property name="cond1" value="not variable_set route4rincewind:yes"/>
@@ -336,10 +336,10 @@
   </object>
   <object id="77" name="Talk Rosamund" type="event" x="176" y="480" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_route4_rosamund1"/>
+    <property name="act1" value="char_talk spyder_route4_rosamund,pre_battle"/>
     <property name="act2" value="add_monster foofle,18,spyder_route4_rosamund,5,10"/>
     <property name="act3" value="start_battle player,spyder_route4_rosamund"/>
-    <property name="act4" value="translated_dialog spyder_route4_rosamund2"/>
+    <property name="act4" value="char_talk spyder_route4_rosamund,post_battle_lose"/>
     <property name="act6" value="set_variable route4rosamund:yes"/>
     <property name="behav1" value="talk spyder_route4_rosamund"/>
     <property name="cond1" value="not variable_set route4rosamund:yes"/>
@@ -354,12 +354,12 @@
   </object>
   <object id="79" name="Talk Beck" type="event" x="32" y="320" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_route4_beck1"/>
+    <property name="act1" value="char_talk spyder_route4_beck,pre_battle"/>
     <property name="act2" value="add_monster katapill,14,spyder_route4_beck,5,10"/>
     <property name="act3" value="add_monster tumbleworm,12,spyder_route4_beck,5,10"/>
     <property name="act4" value="add_monster spighter,12,spyder_route4_beck,5,10"/>
     <property name="act5" value="start_battle player,spyder_route4_beck"/>
-    <property name="act6" value="translated_dialog spyder_route4_beck2"/>
+    <property name="act6" value="char_talk spyder_route4_beck,post_battle_lose"/>
     <property name="act7" value="set_variable route4beck:yes"/>
     <property name="behav1" value="talk spyder_route4_beck"/>
     <property name="cond1" value="not variable_set route4beck:yes"/>
@@ -383,12 +383,12 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_route4_marshall"/>
-    <property name="act3" value="translated_dialog spyder_route4_marshall1"/>
+    <property name="act3" value="char_talk spyder_route4_marshall,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster puparmor,16,spyder_route4_marshall,5,10"/>
     <property name="act6" value="add_monster puparmor,16,spyder_route4_marshall,5,10"/>
     <property name="act7" value="start_battle player,spyder_route4_marshall"/>
-    <property name="act8" value="translated_dialog spyder_route4_marshall2"/>
+    <property name="act8" value="char_talk spyder_route4_marshall,post_battle_lose"/>
     <property name="act9" value="set_variable route4marshall:yes"/>
     <property name="cond1" value="not variable_set route4marshall:yes"/>
     <property name="cond2" value="is char_at player"/>
@@ -398,13 +398,13 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_route4_beck"/>
-    <property name="act03" value="translated_dialog spyder_route4_beck1"/>
+    <property name="act03" value="char_talk spyder_route4_beck,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster katapill,14,spyder_route4_beck,5,10"/>
     <property name="act06" value="add_monster tumbleworm,12,spyder_route4_beck,5,10"/>
     <property name="act07" value="add_monster spighter,12,spyder_route4_beck,5,10"/>
     <property name="act08" value="start_battle player,spyder_route4_beck"/>
-    <property name="act09" value="translated_dialog spyder_route4_beck2"/>
+    <property name="act09" value="char_talk spyder_route4_beck,post_battle_lose"/>
     <property name="act10" value="set_variable route4beck:yes"/>
     <property name="cond1" value="not variable_set route4beck:yes"/>
     <property name="cond2" value="is char_at player"/>
@@ -414,13 +414,13 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_route4_wulf"/>
-    <property name="act03" value="translated_dialog spyder_route4_wulf1"/>
+    <property name="act03" value="char_talk spyder_route4_wulf,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster cowpignon,14,spyder_route4_wulf,5,10"/>
     <property name="act06" value="add_monster cowpignon,14,spyder_route4_wulf,5,10"/>
     <property name="act07" value="add_monster shybulb,14,spyder_route4_wulf,5,10"/>
     <property name="act08" value="start_battle player,spyder_route4_wulf"/>
-    <property name="act09" value="translated_dialog spyder_route4_wulf2"/>
+    <property name="act09" value="char_talk spyder_route4_wulf,post_battle_lose"/>
     <property name="act10" value="set_variable route4wulf:yes"/>
     <property name="cond1" value="not variable_set route4wulf:yes"/>
     <property name="cond2" value="is char_at player"/>
@@ -430,11 +430,11 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_route4_rosamund"/>
-    <property name="act3" value="translated_dialog spyder_route4_rosamund1"/>
+    <property name="act3" value="char_talk spyder_route4_rosamund,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster foofle,18,spyder_route4_rosamund,5,10"/>
     <property name="act6" value="start_battle player,spyder_route4_rosamund"/>
-    <property name="act7" value="translated_dialog spyder_route4_rosamund2"/>
+    <property name="act7" value="char_talk spyder_route4_rosamund,post_battle_lose"/>
     <property name="act8" value="set_variable route4rosamund:yes"/>
     <property name="cond1" value="not variable_set route4rosamund:yes"/>
     <property name="cond2" value="is char_at player"/>
@@ -499,42 +499,42 @@
   </object>
   <object id="93" name="Post Talk Rincewind" type="event" x="288" y="80" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_route4_rincewind2"/>
+    <property name="act1" value="char_talk spyder_route4_rincewind,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route4_rincewind"/>
     <property name="cond1" value="is variable_set route4rincewind:yes"/>
    </properties>
   </object>
   <object id="94" name="Post Talk Roger" type="event" x="144" y="320" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_route4_roger2"/>
+    <property name="act1" value="char_talk spyder_route4_roger,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route4_roger"/>
     <property name="cond1" value="is variable_set route4roger:yes"/>
    </properties>
   </object>
   <object id="95" name="Post Talk Rosamund" type="event" x="192" y="464" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_route4_rosamund2"/>
+    <property name="act1" value="char_talk spyder_route4_rosamund,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route4_rosamund"/>
     <property name="cond1" value="is variable_set route4rosamund:yes"/>
    </properties>
   </object>
   <object id="96" name="Post Talk Marshall" type="event" x="16" y="464" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_route4_marshall2"/>
+    <property name="act1" value="char_talk spyder_route4_marshall,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route4_marshall"/>
     <property name="cond1" value="is variable_set route4marshall:yes"/>
    </properties>
   </object>
   <object id="97" name="Post Talk Beck" type="event" x="16" y="320" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_route4_beck2"/>
+    <property name="act1" value="char_talk spyder_route4_beck,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route4_beck"/>
     <property name="cond1" value="is variable_set route4beck:yes"/>
    </properties>
   </object>
   <object id="98" name="Post Talk Wulf" type="event" x="16" y="176" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_route4_wulf2"/>
+    <property name="act1" value="char_talk spyder_route4_wulf,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route4_wulf"/>
     <property name="cond1" value="is variable_set route4wulf:yes"/>
    </properties>

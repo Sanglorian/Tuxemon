@@ -36,11 +36,13 @@ class OneOfCondition(EventCondition):
         key = condition.parameters[0]
         values = condition.parameters[1].split(":")
 
-        if key not in player.game_variables:
+        if not player.game_variables.has(key):
             return False
 
         result = [
-            value for value in values if player.game_variables[key] == value
+            value
+            for value in values
+            if player.game_variables.get(key) == value
         ]
 
         return bool(result)

@@ -9,7 +9,7 @@ from typing import final
 from tuxemon.animation_entity import setup_and_play_animation
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.states.world_state import WorldState
 
 logger = logging.getLogger(__name__)
 

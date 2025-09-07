@@ -11,7 +11,7 @@ from tuxemon.db import Comparison, Range
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.interface import MenuItem
-from tuxemon.states.techniques import TechniqueMenuState
+from tuxemon.states.technique_menu import TechniqueMenuState
 from tuxemon.tools import compare, parse_flag
 
 if TYPE_CHECKING:
@@ -60,7 +60,7 @@ class GetMonsterTechAction(EventAction):
 
     name = "get_monster_tech"
     variable_name: str
-    monster_id: Optional[str] = None
+    monster_id: str
     skip_eligibility_check: Optional[str] = None
     filter_name: Optional[str] = None
     value_name: Optional[str] = None
@@ -79,24 +79,8 @@ class GetMonsterTechAction(EventAction):
 
         if not skip_check:
             if not monster.moves.can_forget(technique):
-                logger.debug(f"{technique.slug} is not forgettable, skipping.")
-                return False
-            entry = next(
-                (
-                    m
-                    for m in monster.moves.moveset
-                    if m.technique == technique.slug
-                ),
-                None,
-            )
-            if entry is None:
-                logger.warning(f"No moveset entry found for {technique.slug}")
-                return False
-            if not monster.moves.is_move_eligible(
-                move=entry, level=monster.level, evolution_stage=monster.stage
-            ):
                 logger.debug(
-                    f"{technique.slug} not eligible for {monster.name} at level {monster.level} and stage {monster.stage}"
+                    f"Technique '{technique.slug}' is not forgettable — skipping."
                 )
                 return False
 
@@ -138,7 +122,9 @@ class GetMonsterTechAction(EventAction):
         player = self.session.player
         technique = menu_item.game_object
 
-        player.game_variables[self.variable_name] = technique.instance_id.hex
+        player.game_variables.set(
+            self.variable_name, technique.instance_id.hex
+        )
         self.session.client.pop_state()
 
     def start(self, session: Session) -> None:
@@ -146,23 +132,18 @@ class GetMonsterTechAction(EventAction):
         self.result = False
         self.choose = False
         player = session.player
-        client = session.client
 
-        if self.monster_id is None:
-            monsters = client.event_data.get("check_max_tech", [])
-            client.event_data.pop("check_max_tech")
-        else:
-            if self.monster_id not in player.game_variables:
-                logger.error(f"Game variable {self.monster_id} not found")
-                return
-            monster_id = UUID(
-                player.game_variables[self.monster_id],
-            )
-            monster = get_monster_by_iid(self.session, monster_id)
-            if monster is None:
-                logger.error(f"Monster not found")
-                return
-            monsters = [monster]
+        if not player.game_variables.has(self.monster_id):
+            logger.error(f"Game variable {self.monster_id} not found")
+            return
+        monster_id = UUID(
+            player.game_variables.get(self.monster_id),
+        )
+        monster = get_monster_by_iid(self.session, monster_id)
+        if monster is None:
+            logger.error(f"Monster not found")
+            return
+        monsters = [monster]
 
         for mon in monsters:
             self.monster: Monster = mon
@@ -191,8 +172,8 @@ class GetMonsterTechAction(EventAction):
             player = session.player
             if self.result and not self.choose:
                 # the player can choose, but returns
-                player.game_variables[self.variable_name] = "no_choice"
+                player.game_variables.set(self.variable_name, "no_choice")
             if not self.result:
                 # the player can't choose (eg no females in the party)
-                player.game_variables[self.variable_name] = "no_options"
+                player.game_variables.set(self.variable_name, "no_options")
             self.stop()

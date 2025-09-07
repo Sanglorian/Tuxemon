@@ -4,14 +4,15 @@ import unittest
 from unittest.mock import patch
 
 from tuxemon.boxes import MonsterBoxes
+from tuxemon.game_variables import GameVariablesManager
 from tuxemon.monster import Monster
 from tuxemon.npc import NPC, PartyHandler
 from tuxemon.prepare import KENNEL, PARTY_LIMIT
 
 
 def mockNPC(self) -> None:
-    self.isplayer = True
-    self.game_variables = {}
+    self.is_player = True
+    self._variables = GameVariablesManager()
     self.monster_boxes = MonsterBoxes()
     self.monster_boxes.create_box(KENNEL, "monster")
     self.party = PartyHandler(self.monster_boxes, self)

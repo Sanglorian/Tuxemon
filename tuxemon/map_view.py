@@ -16,7 +16,7 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 
 from tuxemon import prepare
-from tuxemon.camera import project
+from tuxemon.camera.camera import project
 from tuxemon.graphics import ColorLike, apply_cinema_bars, load_and_scale
 from tuxemon.map import get_pos_from_tilepos, proj
 from tuxemon.math import Vector2
@@ -291,7 +291,6 @@ class MapRenderer:
         self.client = client
         self.screen = client.screen
         self.camera_manager = client.camera_manager
-        self.camera = self.camera_manager.get_active_camera()
         self.layer = Surface(self.screen.get_size(), pygame.SRCALPHA)
         self.layer_color: Optional[ColorLike] = None
         self.cinema_x_ratio: Optional[float] = None
@@ -321,10 +320,10 @@ class MapRenderer:
         """Prepares the map renderer for drawing."""
         if current_map.renderer is None:
             current_map.initialize_renderer()
-        position = self.camera.position if self.camera else Vector2(0, 0)
-        camera_x, camera_y = position
+        camera = self.camera_manager.get_active_camera()
+        center = camera.get_viewport_center() if camera else Vector2(0, 0)
         assert current_map.renderer
-        current_map.renderer.center((camera_x, camera_y))
+        current_map.renderer.center(center)
 
     def _get_and_position_surfaces(
         self, current_map: TuxemonMap

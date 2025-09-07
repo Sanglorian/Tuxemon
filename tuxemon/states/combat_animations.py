@@ -591,6 +591,32 @@ class CombatAnimations(Menu[None], ABC):
                 animate = partial(self.animate, duration=0.1, delay=0.1)
                 dev.animate_capture(animate)
 
+    def update_background(self, bg_path: str) -> None:
+        """Draw combat background in its native 256x108 (scaled) portion of the screen."""
+        import pygame
+
+        # Clear old
+        if hasattr(self, "background_sprite") and self.background_sprite:
+            if self.background_sprite in self.sprites:
+                self.sprites.remove(self.background_sprite)
+            self.background_sprite = None
+
+        # Load and scale to SCALE only (no stretching to full screen)
+        surf = graphics.load_and_scale(bg_path, prepare.SCALE)
+
+        spr = pygame.sprite.Sprite()
+        spr.image = surf
+        spr.rect = surf.get_rect()
+
+        # Position: top of the screen, left aligned
+        screen_rect = self.client.screen.get_rect()
+        spr.rect.topleft = (screen_rect.left, screen_rect.top)
+
+
+        self.sprites.add(spr, layer=0)
+        self.background_sprite = spr
+
+
     def animate_parties_in(self) -> None:
         """Animate the parties entering the battle scene."""
         x, y, w, h = prepare.SCREEN_RECT

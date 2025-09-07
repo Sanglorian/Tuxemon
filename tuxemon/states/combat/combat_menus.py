@@ -2,9 +2,8 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import os  # make sure this is at the top of your file if not already
-from tuxemon.tools import fix_measure
 import logging
+import os  # make sure this is at the top of your file if not already
 from collections import defaultdict
 from collections.abc import Callable, Generator
 from functools import partial
@@ -26,6 +25,7 @@ from tuxemon.monster import Monster
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.technique.technique import Technique
+from tuxemon.tools import fix_measure
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text import TextArea
 
@@ -336,6 +336,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
             def show() -> None:
                 import pygame
+
                 from tuxemon.tools import fix_measure
 
                 # Clear the combat dialog so the old "What will X do?" text disappears

@@ -103,8 +103,6 @@ class RandomEncounterAction(EventAction):
         env = player.game_variables.get("environment", "grass")
         environment = EnvironmentModel.lookup(env, db)
 
-        player.tuxepedia.add_entry(current_monster.slug)
-
         context = CombatContext(
             session=session,
             teams=[player, npc],

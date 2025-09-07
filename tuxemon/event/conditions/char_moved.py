@@ -6,7 +6,8 @@ import logging
 from dataclasses import dataclass
 from typing import Optional
 
-from tuxemon.event import MapCondition, collide, get_npc
+from tuxemon.boundary import MapConditionBoundary
+from tuxemon.event import MapCondition, get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.event.eventpersist import EventPersist
 from tuxemon.npc import NPC
@@ -37,7 +38,6 @@ class CharMovedCondition(EventCondition):
 
     Script parameters:
         character: Either "player" or character slug name (e.g. "npc_maple")
-
     """
 
     name = "char_moved"
@@ -67,6 +67,7 @@ def generic_test(
     Returns:
         True if the character has moved onto the event tile, False otherwise.
     """
+    map_boundary = MapConditionBoundary(condition)
     # Retrieve where the character is going (not where it currently is)
     move_destination = character.move_destination
 
@@ -76,7 +77,7 @@ def generic_test(
     stopped = move_destination is None
     collide_next = False
     if move_destination is not None:
-        collide_next = collide(condition, move_destination)
+        collide_next = map_boundary.is_within(move_destination)
 
     # Retrieve persistent storage where movement tracking data is stored
     stored = persist.get_event_data(name)
@@ -92,7 +93,7 @@ def generic_test(
     moved = move_destination != last_destination
 
     # Verify if the character is currently colliding with the condition boundaries
-    collided = collide(condition, character.tile_pos)
+    collided = map_boundary.is_within(character.tile_pos)
 
     # Update movement tracking data for this condition
     persist.update_event_data(name, condition_str, move_destination)

@@ -4,7 +4,16 @@ from __future__ import annotations
 
 import math
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import TYPE_CHECKING, NamedTuple, Optional
+
+if TYPE_CHECKING:
+    from tuxemon.event import MapCondition
+
+
+class Dimensions(NamedTuple):
+    width: float = 0.0
+    height: float = 0.0
+    radius: float = 0.0
 
 
 class Boundary(ABC):
@@ -15,12 +24,16 @@ class Boundary(ABC):
         pass
 
     @abstractmethod
-    def get_dimensions(self) -> dict[str, float]:
+    def get_dimensions(self) -> Dimensions:
         """Returns dimensions like width/height or radius."""
 
     @abstractmethod
     def get_center(self) -> tuple[float, float]:
         """Returns the center point of the boundary."""
+
+    @abstractmethod
+    def move(self, dx: float, dy: float) -> None:
+        """Moves the boundary by the given deltas."""
 
 
 class NullBoundary(Boundary):
@@ -29,11 +42,14 @@ class NullBoundary(Boundary):
     def is_within(self, position: tuple[float, float]) -> bool:
         return False
 
-    def get_dimensions(self) -> dict[str, float]:
-        return {}
+    def get_dimensions(self) -> Dimensions:
+        return Dimensions()
 
     def get_center(self) -> tuple[float, float]:
         return (0.0, 0.0)
+
+    def move(self, dx: float, dy: float) -> None:
+        pass  # No-op, since NullBoundary doesn't represent a real shape
 
     def __repr__(self) -> str:
         return "NullBoundary()"
@@ -46,11 +62,14 @@ class InvertedBoundary(Boundary):
     def is_within(self, position: tuple[float, float]) -> bool:
         return not self.base.is_within(position)
 
-    def get_dimensions(self) -> dict[str, float]:
+    def get_dimensions(self) -> Dimensions:
         return self.base.get_dimensions()
 
     def get_center(self) -> tuple[float, float]:
         return self.base.get_center()
+
+    def move(self, dx: float, dy: float) -> None:
+        self.base.move(dx, dy)
 
     def __repr__(self) -> str:
         return f"InvertedBoundary(base={self.base})"
@@ -64,11 +83,14 @@ class TaggedBoundary(Boundary):
     def is_within(self, position: tuple[float, float]) -> bool:
         return self.boundary.is_within(position)
 
-    def get_dimensions(self) -> dict[str, float]:
+    def get_dimensions(self) -> Dimensions:
         return self.boundary.get_dimensions()
 
     def get_center(self) -> tuple[float, float]:
         return self.boundary.get_center()
+
+    def move(self, dx: float, dy: float) -> None:
+        self.boundary.move(dx, dy)
 
     def __repr__(self) -> str:
         return f"TaggedBoundary(tag='{self.tag}', boundary={self.boundary})"
@@ -87,10 +109,10 @@ class RectangularBoundary(Boundary):
             and self.y_range[0] <= position[1] < self.y_range[1]
         )
 
-    def get_dimensions(self) -> dict[str, float]:
+    def get_dimensions(self) -> Dimensions:
         width = self.x_range[1] - self.x_range[0]
         height = self.y_range[1] - self.y_range[0]
-        return {"width": width, "height": height}
+        return Dimensions(width=width, height=height)
 
     def get_center(self) -> tuple[float, float]:
         center_x = (self.x_range[0] + self.x_range[1]) / 2
@@ -101,6 +123,11 @@ class RectangularBoundary(Boundary):
         """Resizes the rectangular boundary by expanding its width and height by the given deltas."""
         self.x_range = (self.x_range[0], self.x_range[1] + dx)
         self.y_range = (self.y_range[0], self.y_range[1] + dy)
+
+    def move(self, dx: float, dy: float) -> None:
+        """Moves the rectangular boundary by dx and dy."""
+        self.x_range = (int(self.x_range[0] + dx), int(self.x_range[1] + dx))
+        self.y_range = (int(self.y_range[0] + dy), int(self.y_range[1] + dy))
 
     def __repr__(self) -> str:
         return f"RectangularBoundary(x={self.x_range}, y={self.y_range})"
@@ -120,9 +147,9 @@ class CircularBoundary(Boundary):
         dy = position[1] - self.center[1]
         return (dx * dx + dy * dy) <= self.radius_squared
 
-    def get_dimensions(self) -> dict[str, float]:
+    def get_dimensions(self) -> Dimensions:
         radius = math.sqrt(self.radius_squared)
-        return {"radius": radius}
+        return Dimensions(radius=radius)
 
     def get_center(self) -> tuple[float, float]:
         return self.center
@@ -133,6 +160,12 @@ class CircularBoundary(Boundary):
         if new_radius < 0:
             raise ValueError("Resized radius must be non-negative.")
         self.radius_squared = int(new_radius * new_radius)
+
+    def move(self, dx: float, dy: float) -> None:
+        """Moves the circular boundary by dx and dy."""
+        new_x = int(self.center[0] + dx)
+        new_y = int(self.center[1] + dy)
+        self.center = (new_x, new_y)
 
     def __repr__(self) -> str:
         return f"CircularBoundary(center={self.center}, radius={math.sqrt(self.radius_squared)})"
@@ -153,7 +186,7 @@ class CompositeBoundary(Boundary):
         else:  # intersection
             return all(b.is_within(position) for b in self.boundaries)
 
-    def get_dimensions(self) -> dict[str, float]:
+    def get_dimensions(self) -> Dimensions:
         raise NotImplementedError(
             "CompositeBoundary does not support unified dimensions."
         )
@@ -167,8 +200,53 @@ class CompositeBoundary(Boundary):
         count = len(self.boundaries)
         return (sum_x / count, sum_y / count)
 
+    def move(self, dx: float, dy: float) -> None:
+        for b in self.boundaries:
+            b.move(dx, dy)
+
     def __repr__(self) -> str:
         return f"CompositeBoundary(mode={self.mode}, count={len(self.boundaries)})"
+
+
+class MapConditionBoundary(Boundary):
+    def __init__(self, condition: MapCondition):
+        self._condition = condition
+        self.x = float(condition.x)
+        self.y = float(condition.y)
+        self.width = condition.width
+        self.height = condition.height
+
+    def is_within(self, position: tuple[float, float]) -> bool:
+        return (
+            self.x < position[0] + 1
+            and self.y < position[1] + 1
+            and self.x + self.width > position[0]
+            and self.y + self.height > position[1]
+        )
+
+    def get_dimensions(self) -> Dimensions:
+        return Dimensions(width=float(self.width), height=float(self.height))
+
+    def get_center(self) -> tuple[float, float]:
+        center_x = self.x + self.width / 2
+        center_y = self.y + self.height / 2
+        return (center_x, center_y)
+
+    def move(self, dx: float, dy: float) -> None:
+        """Moves the boundary by dx and dy."""
+        self.x += dx
+        self.y += dy
+
+    def resize(self, dx: int, dy: int) -> None:
+        """Resizes the boundary by expanding width and height."""
+        self.width = max(0, self.width + dx)
+        self.height = max(0, self.height + dy)
+
+    def __repr__(self) -> str:
+        return (
+            f"MapConditionBoundary(x={self.x}, y={self.y}, "
+            f"width={self.width}, height={self.height})"
+        )
 
 
 class BoundaryChecker:

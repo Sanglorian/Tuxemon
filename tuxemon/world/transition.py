@@ -13,7 +13,7 @@ from tuxemon.graphics import ColorLike
 if TYPE_CHECKING:
     from tuxemon.movement import MovementManager
     from tuxemon.npc import NPC
-    from tuxemon.states.world.worldstate import WorldState
+    from tuxemon.states.world_state import WorldState
 
 
 class WorldTransition:

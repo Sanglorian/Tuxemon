@@ -9,7 +9,7 @@ from tuxemon.event import MapCondition, get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.graphics import string_to_colorlike
 from tuxemon.session import Session
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.states.world_state import WorldState
 
 logger = logging.getLogger(__name__)
 

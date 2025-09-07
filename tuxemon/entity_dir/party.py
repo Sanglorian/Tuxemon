@@ -258,6 +258,32 @@ class PartyHandler:
         dominant_type, _ = type_counter.most_common(1)[0]
         return dominant_type
 
+    def replace_party(
+        self, new_monsters: list[Monster], add_overflow_to_box: bool = True
+    ) -> None:
+        """
+        Replaces the entire party with a new list of monsters.
+
+        Parameters:
+            new_monsters: The new monsters to set as the party.
+            add_overflow_to_box:
+                If True, overflow monsters are added to the box.
+                If False, overflow monsters are discarded.
+        """
+        self.clear_party()
+
+        for monster in new_monsters[: self._party_limit]:
+            monster.set_owner(self._owner)
+            self._monsters.append(monster)
+
+        if add_overflow_to_box:
+            overflow = new_monsters[self._party_limit :]
+            for monster in overflow:
+                monster.set_owner(self._owner)
+                self._monster_boxes.add_monster(prepare.KENNEL, monster)
+                if self._monster_boxes.is_box_full(prepare.KENNEL):
+                    self._monster_boxes.create_and_merge_box(prepare.KENNEL)
+
     def encode_party(self) -> Sequence[Mapping[str, Any]]:
         return encode_monsters(self._monsters)
 

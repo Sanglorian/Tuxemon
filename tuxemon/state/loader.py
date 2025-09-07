@@ -10,9 +10,11 @@ from importlib import import_module
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from tuxemon.plugin import get_available_classes, load_directory
+from tuxemon.state.state import State
+
 if TYPE_CHECKING:
     from tuxemon.state.repository import StateRepository
-    from tuxemon.state.state import State
 
 logger = logging.getLogger(__name__)
 

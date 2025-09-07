@@ -15,15 +15,14 @@ from tuxemon.entity_dir.battle import BattlesHandler
 from tuxemon.entity_dir.party import PartyHandler
 from tuxemon.game_variables import GameVariablesManager, PlayerVariablesManager
 from tuxemon.locale import T
-from tuxemon.map import dirs2, get_direction, proj
-from tuxemon.map_view import SpriteController
+from tuxemon.map.map import dirs2, get_direction, proj
+from tuxemon.map.map_view import SpriteController
 from tuxemon.math import Vector2
 from tuxemon.mission.controller import MissionController
 from tuxemon.mission.manager import MissionManager
 from tuxemon.money import MoneyController
 from tuxemon.monster import Monster
 from tuxemon.monster_dir.evolution_registry import EvolutionRegistry
-from tuxemon.movement import get_tile_moverate
 from tuxemon.relationship import (
     Relationships,
     decode_relationships,
@@ -394,6 +393,54 @@ class NPC(Entity[NPCState]):
         target = Vector2(self.tile_pos) + dirs2[direction]
         self.path.append(vector2_to_tile_pos(target))
 
+    def move_multiple_tiles(self, direction: Direction, strength: int) -> None:
+        """
+        Attempts to move the entity multiple tiles in the specified direction,
+        up to the given strength.
+
+        This method checks tile-by-tile whether movement is allowed using the
+        pathfinder's exit logic.
+        If a tile is blocked, movement stops at the last valid position. The
+        resulting path is reversed before being appended to ensure that the
+        next waypoint is always the immediate neighbor, since movement logic
+        expects self.path[-1] to be adjacent to the current position.
+
+        Parameters:
+            direction: The direction in which to move.
+            strength: The maximum number of tiles to attempt moving through.
+        """
+        self.set_facing(direction)
+
+        origin = self.path[-1] if self.path else self.tile_pos
+        steps: list[tuple[int, int]] = []
+
+        for _ in range(strength):
+            candidate = vector2_to_tile_pos(Vector2(origin) + dirs2[direction])
+
+            if candidate == origin:
+                continue
+
+            exits = self.client.pathfinder.get_exits(origin, direction)
+            logger.debug(
+                f"Valid exits from {origin} facing {direction}: {exits}"
+            )
+            if candidate not in exits:
+                logger.debug(
+                    f"Tile blocked: {candidate} from {origin} facing {direction}"
+                )
+                break
+
+            steps.append(candidate)
+            origin = candidate
+
+        if steps:
+            self.path.extend(reversed(steps))
+            self.path_origin = self.tile_pos
+            logger.debug(
+                f"Final path (last is next): {self.path} | path_origin={self.path_origin}"
+            )
+            self.next_waypoint()
+
     @property
     def move_destination(self) -> Optional[tuple[int, int]]:
         """Only used for the char_moved condition."""
@@ -411,15 +458,12 @@ class NPC(Entity[NPCState]):
         * If the next waypoint is blocked, the waypoint will be removed
         """
         target = self.path[-1]
-        surface_map = self.client.map_manager.surface_map
         direction = get_direction(proj(self.position), target)
         self.set_facing(direction)
         try:
             if self.client.pathfinder.is_tile_traversable(
                 self.tile_pos, self.facing, target, self.ignore_collisions
             ):
-                tile_rate = get_tile_moverate(surface_map, target)
-                self.set_moverate_modifier(tile_rate)
                 # Surfanim suffers from significant clock drift, causing
                 # timing inconsistencies. Even after completing one animation
                 # cycle, the timing can become inaccurate. This drift results
@@ -477,9 +521,33 @@ class NPC(Entity[NPCState]):
             self.set_position(target)
             self.path.pop()
             self.path_origin = None
+
+            self.check_tile_properties()
+
             self.check_continue()
             if self.path:
                 self.next_waypoint()
+
+    def check_tile_properties(self) -> None:
+        """
+        Checks the current tile properties and applies them if found.
+        """
+        try:
+            tile = self.client.map_manager.collision_map.get(self.tile_pos)
+            if tile is None:
+                return  # No tile found, nothing to apply
+
+            if tile.push_effect:
+                self.move_multiple_tiles(
+                    direction=tile.push_effect.direction,
+                    strength=tile.push_effect.strength,
+                )
+
+            if tile.speed_modifier:
+                self.set_moverate_modifier(tile.speed_modifier)
+
+        except (KeyError, TypeError):
+            pass
 
     def pos_update(self) -> None:
         """WIP.  Required to be called after position changes."""

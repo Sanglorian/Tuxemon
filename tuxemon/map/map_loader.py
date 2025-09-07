@@ -21,7 +21,7 @@ from tuxemon.db import Direction, Orientation
 from tuxemon.event import EventObject, MapAction, MapCondition
 from tuxemon.graphics import scaled_image_loader
 from tuxemon.lib.bresenham import bresenham
-from tuxemon.map import (
+from tuxemon.map.map import (
     RegionProperties,
     TuxemonMap,
     angle_of_points,
@@ -43,13 +43,6 @@ logger = logging.getLogger(__name__)
 RegionTile = tuple[
     tuple[int, int],
     Optional[RegionProperties],
-]
-
-region_properties = [
-    "enter_from",
-    "exit_from",
-    "endure",
-    "key",
 ]
 
 
@@ -507,7 +500,7 @@ class TMXMapLoader:
         if obj.type and obj.type.lower().startswith("collision"):
             if getattr(obj, "closed", True):
                 region_conditions = copy_dict_with_keys(
-                    obj.properties, region_properties
+                    obj.properties, prepare.REGION_KEYS
                 )
                 _extract = extract_region_properties(region_conditions)
                 collision_map[(x, y)] = _extract
@@ -594,7 +587,7 @@ class TMXMapLoader:
             Tuples with form (tile position, properties).
         """
         region_conditions = copy_dict_with_keys(
-            region.properties, region_properties
+            region.properties, prepare.REGION_KEYS
         )
         rect = snap_rect(
             Rect((region.x, region.y, region.width, region.height)), grid_size

@@ -72,6 +72,15 @@ CONFIG = _setup_user_environment()
 # Set up the screen size and caption
 SCREEN_SIZE = CONFIG.resolution
 
+REGION_KEYS: list[str] = [
+    "enter_from",
+    "exit_from",
+    "endure",
+    "key",
+    "push_direction",
+    "push_strength",
+    "speed_modifier",
+]
 # Surface Keys (tilesets)
 SURFACE_KEYS: list[str] = ["surfable", "walkable", "climbable"]
 

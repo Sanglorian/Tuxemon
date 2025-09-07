@@ -14,7 +14,6 @@ from tuxemon.audio import MusicPlayerState, SoundManager
 from tuxemon.boundary import BoundaryChecker
 from tuxemon.camera.camera import CameraManager
 from tuxemon.cli.processor import CommandProcessor
-from tuxemon.collision_manager import CollisionManager
 from tuxemon.combat.session import CombatSession
 from tuxemon.config import TuxemonConfig
 from tuxemon.constants import paths
@@ -24,9 +23,10 @@ from tuxemon.event.eventcondition import ConditionManager
 from tuxemon.event.eventengine import EventEngine
 from tuxemon.event.eventmanager import EventManager
 from tuxemon.event.eventpersist import EventPersist
-from tuxemon.map_loader import MapLoader
-from tuxemon.map_manager import MapManager
-from tuxemon.map_transition import MapTransition
+from tuxemon.map.collision_manager import CollisionManager
+from tuxemon.map.map_loader import MapLoader
+from tuxemon.map.map_manager import MapManager
+from tuxemon.map.map_transition import MapTransition
 from tuxemon.movement import MovementManager, Pathfinder
 from tuxemon.networking import NetworkManager
 from tuxemon.npc_manager import NPCManager

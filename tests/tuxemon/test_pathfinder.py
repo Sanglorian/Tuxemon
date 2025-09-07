@@ -5,11 +5,11 @@ from unittest.mock import MagicMock
 
 from tuxemon.boundary import BoundaryChecker
 from tuxemon.client import LocalPygameClient
-from tuxemon.collision_manager import CollisionManager
 from tuxemon.db import Direction
-from tuxemon.map import RegionProperties, dirs2
-from tuxemon.map_manager import MapManager
-from tuxemon.movement import Pathfinder, PathfindNode, get_tile_moverate
+from tuxemon.map.collision_manager import CollisionManager
+from tuxemon.map.map import RegionProperties, dirs2
+from tuxemon.map.map_manager import MapManager
+from tuxemon.movement import Pathfinder
 from tuxemon.npc import NPC
 from tuxemon.npc_manager import NPCManager
 from tuxemon.prepare import CONFIG
@@ -100,34 +100,6 @@ class TestPathfinder(unittest.TestCase):
         )
         self.assertTrue(result)
 
-    def test_get_tile_moverate(self):
-        destination = (1, 1)
-
-        self.client.map_manager.surface_map = {
-            destination: {"speed_modifier": 0.5}
-        }
-        npc_moverate = 2.0
-
-        moverate = get_tile_moverate(
-            self.client.map_manager.surface_map, destination
-        )
-
-        expected_moverate = npc_moverate * 0.5  # 2.0 * 0.5
-        self.assertEqual(moverate * npc_moverate, expected_moverate)
-
-    def test_get_tile_moverate_no_properties(self):
-        destination = (1, 1)
-
-        self.client.map_manager.surface_map = {destination: {}}
-        npc_moverate = 2.0
-
-        moverate = get_tile_moverate(
-            self.client.map_manager.surface_map, destination
-        )
-
-        expected_moverate = npc_moverate * 1.0  # 2.0 * 1.0
-        self.assertEqual(moverate * npc_moverate, expected_moverate)
-
     def test_pathfind_with_same_start_and_dest(self):
         start = (1, 1)
         dest = (1, 1)
@@ -152,16 +124,6 @@ class TestPathfinder(unittest.TestCase):
             (1, 1), Direction.down, tile, False
         )
         self.assertTrue(result)
-
-    def test_get_tile_moverate_with_no_surface_data(self):
-        destination = (1, 1)
-        self.client.map_manager.surface_map = {}
-        npc_moverate = 2.0
-        moverate = get_tile_moverate(
-            self.client.map_manager.surface_map, destination
-        )
-        expected_moverate = npc_moverate * 1.0
-        self.assertEqual(moverate * npc_moverate, expected_moverate)
 
     def test_get_exits_with_tile_data(self):
         position = (1, 1)

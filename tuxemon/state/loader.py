@@ -10,6 +10,7 @@ from importlib import import_module
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from tuxemon.constants.paths import get_active_mod_paths, mods_folder
 from tuxemon.plugin import get_available_classes, load_directory
 from tuxemon.state.state import State
 
@@ -23,8 +24,6 @@ class StateLoader:
     """
     Handles the discovery, loading, and initial registration of game state
     classes.
-    TODO: This discovery logic overlaps with the plugin system.
-    For now, StateLoader handles static filesystem-based discovery.
     """
 
     def __init__(self, base_package: str, lib_dir: Path) -> None:
@@ -96,41 +95,57 @@ class StateLoader:
 
     def auto_state_discovery(self, repository: StateRepository) -> None:
         """
-        Scan a package's folder, load states found in it, and register them
-        with the provided StateRepository.
-        Supports both subfolders and flat .py files.
+        Discover and register game states from the main states folder and mod states folders.
+        Only loads top-level modules from the main states folder.
         """
         state_folder = self.lib_dir / Path(*self.base_package.split(".")[1:])
         logger.info(f"Initiating game state discovery from {state_folder}")
 
-        if not state_folder.is_dir():
+        plugin_folders = []
+
+        # Include top-level .py files from main states folder
+        if state_folder.is_dir():
+            top_level_modules = [
+                f.stem
+                for f in state_folder.glob("*.py")
+                if f.is_file() and f.stem != "State"
+            ]
+            plugin_folders.append(state_folder)
+        else:
             logger.warning(
-                f"State discovery path does not exist or is not a directory: {state_folder}"
+                f"State discovery path does not exist: {state_folder}"
             )
-            return
 
-        for entry in state_folder.iterdir():
-            # Handle subfolders (legacy behavior)
-            if entry.is_dir() and (entry / "__init__.py").exists():
-                import_name = f"{self.base_package}.{entry.name}"
-            # Handle flat .py files
-            elif (
-                entry.is_file()
-                and entry.suffix == ".py"
-                and entry.name != "__init__.py"
-            ):
-                import_name = f"{self.base_package}.{entry.stem}"
-            else:
-                continue
+        # Include mod states folders
+        mod_state_folders = [
+            mod_path / "states"
+            for mod_path in get_active_mod_paths()
+            if (mod_path / "states").is_dir()
+        ]
+        plugin_folders.extend(mod_state_folders)
 
-            logger.debug(f"Attempting to load states from: {import_name}")
+        # Load plugins from all valid folders
+        pm = load_directory(
+            plugin_folders=plugin_folders,
+            include=(
+                top_level_modules if plugin_folders[0] == state_folder else []
+            ),
+            root_path=mods_folder.parent,
+            exclude=["State"],
+        )
+
+        for state_cls in get_available_classes(pm, interface=State):
             try:
-                for state_cls in self._collect_states_from_module(import_name):
+                if not inspect.isabstract(state_cls):
                     repository.add_state(state_cls)
                     state_name = getattr(state_cls, "name", state_cls.__name__)
-                    logger.debug(f"Registered state: {state_name}")
+                    logger.info(f"Registered state: {state_name}")
+                else:
+                    logger.debug(
+                        f"Skipped abstract state: {state_cls.__name__}"
+                    )
             except Exception:
                 logger.error(
-                    f"Skipping '{entry.name}' due to errors during state collection.",
+                    f"Error registering state '{state_cls.__name__}'",
                     exc_info=True,
                 )

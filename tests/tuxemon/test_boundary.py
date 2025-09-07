@@ -6,7 +6,10 @@ from tuxemon.boundary import (
     BoundaryChecker,
     CircularBoundary,
     CompositeBoundary,
+    InvertedBoundary,
+    NullBoundary,
     RectangularBoundary,
+    TaggedBoundary,
 )
 
 
@@ -133,3 +136,52 @@ class TestCompositeBoundary(unittest.TestCase):
     def test_invalid_mode_raises(self):
         with self.assertRaises(ValueError):
             CompositeBoundary([], mode="invalid")
+
+
+class TestBoundaryMovement(unittest.TestCase):
+    def test_move_rectangular_boundary(self):
+        boundary = RectangularBoundary((0, 5), (0, 5))
+        self.assertTrue(boundary.is_within((2, 2)))
+        boundary.move(3, 3)
+        self.assertFalse(boundary.is_within((2, 2)))
+        self.assertTrue(boundary.is_within((5, 5)))
+        self.assertEqual(boundary.get_center(), (5.5, 5.5))
+
+    def test_move_circular_boundary(self):
+        boundary = CircularBoundary((5, 5), 3)
+        self.assertTrue(boundary.is_within((5, 5)))
+        boundary.move(2, -1)
+        self.assertFalse(boundary.is_within((3, 3)))
+        self.assertTrue(boundary.is_within((7, 4)))
+
+    def test_move_null_boundary(self):
+        boundary = NullBoundary()
+        boundary.move(100, 100)  # Should be a no-op
+        self.assertFalse(boundary.is_within((0, 0)))
+        self.assertEqual(boundary.get_center(), (0.0, 0.0))
+
+    def test_move_inverted_boundary(self):
+        base = RectangularBoundary((0, 5), (0, 5))
+        boundary = InvertedBoundary(base)
+        self.assertFalse(boundary.is_within((2, 2)))  # Inside base
+        boundary.move(5, 5)
+        self.assertTrue(boundary.is_within((2, 2)))  # Now outside moved base
+
+    def test_move_tagged_boundary(self):
+        base = CircularBoundary((10, 10), 2)
+        boundary = TaggedBoundary(base, "safe_zone")
+        self.assertTrue(boundary.is_within((10, 10)))
+        boundary.move(-5, -5)
+        self.assertFalse(boundary.is_within((10, 10)))
+        self.assertTrue(boundary.is_within((5, 5)))
+
+    def test_move_composite_boundary(self):
+        b1 = RectangularBoundary((0, 5), (0, 5))
+        b2 = CircularBoundary((10, 10), 3)
+        composite = CompositeBoundary([b1, b2], mode="union")
+        self.assertTrue(composite.is_within((2, 2)))
+        self.assertTrue(composite.is_within((10, 10)))
+        composite.move(5, 5)
+        self.assertFalse(composite.is_within((2, 2)))
+        self.assertTrue(composite.is_within((7, 7)))
+        self.assertTrue(composite.is_within((15, 15)))

@@ -11,7 +11,7 @@ from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.map.map import get_direction
 from tuxemon.session import Session
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.states.world_state import WorldState
 
 logger = logging.getLogger(__name__)
 

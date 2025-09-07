@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from tuxemon.client import LocalPygameClient
     from tuxemon.player import Player
-    from tuxemon.states.world.worldstate import WorldState
+    from tuxemon.states.world_state import WorldState
 
 logger = logging.getLogger(__name__)
 

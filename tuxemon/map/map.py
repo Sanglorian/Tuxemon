@@ -43,6 +43,7 @@ class RegionProperties(NamedTuple):
     entity: Optional[Union[NPC, Entity[Any]]] = None
     key: Optional[str] = None
     push_effect: Optional[PushEffect] = None
+    speed_modifier: Optional[float] = None
 
 
 # direction => vector
@@ -492,6 +493,7 @@ def extract_region_properties(
     label = None
     push_direction = None
     push_strength = 0
+    speed_modifier = None
 
     for key, value in properties.items():
         key = key.lower()
@@ -517,6 +519,12 @@ def extract_region_properties(
         elif key == "push_strength":
             if value:
                 push_strength = int(value)
+        elif key == "speed_modifier":
+            if value:
+                speed_modifier = float(value)
+                if not movements["enter_from"] and not movements["exit_from"]:
+                    movements["enter_from"] = all_dirs
+                    movements["exit_from"] = all_dirs
 
     if movements["exit_from"] and not movements["enter_from"]:
         movements["enter_from"] = sorted(
@@ -542,7 +550,11 @@ def extract_region_properties(
         )
 
     return RegionProperties(
-        **movements, entity=None, key=label, push_effect=push_effect
+        **movements,
+        entity=None,
+        key=label,
+        push_effect=push_effect,
+        speed_modifier=speed_modifier,
     )
 
 

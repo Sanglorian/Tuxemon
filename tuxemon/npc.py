@@ -15,15 +15,14 @@ from tuxemon.entity_dir.battle import BattlesHandler
 from tuxemon.entity_dir.party import PartyHandler
 from tuxemon.game_variables import GameVariablesManager, PlayerVariablesManager
 from tuxemon.locale import T
-from tuxemon.map import dirs2, get_direction, proj
-from tuxemon.map_view import SpriteController
+from tuxemon.map.map import dirs2, get_direction, proj
+from tuxemon.map.map_view import SpriteController
 from tuxemon.math import Vector2
 from tuxemon.mission.controller import MissionController
 from tuxemon.mission.manager import MissionManager
 from tuxemon.money import MoneyController
 from tuxemon.monster import Monster
 from tuxemon.monster_dir.evolution_registry import EvolutionRegistry
-from tuxemon.movement import get_tile_moverate
 from tuxemon.relationship import (
     Relationships,
     decode_relationships,
@@ -459,15 +458,12 @@ class NPC(Entity[NPCState]):
         * If the next waypoint is blocked, the waypoint will be removed
         """
         target = self.path[-1]
-        surface_map = self.client.map_manager.surface_map
         direction = get_direction(proj(self.position), target)
         self.set_facing(direction)
         try:
             if self.client.pathfinder.is_tile_traversable(
                 self.tile_pos, self.facing, target, self.ignore_collisions
             ):
-                tile_rate = get_tile_moverate(surface_map, target)
-                self.set_moverate_modifier(tile_rate)
                 # Surfanim suffers from significant clock drift, causing
                 # timing inconsistencies. Even after completing one animation
                 # cycle, the timing can become inaccurate. This drift results
@@ -526,23 +522,30 @@ class NPC(Entity[NPCState]):
             self.path.pop()
             self.path_origin = None
 
-            self.check_for_push_effect()
+            self.check_tile_properties()
 
             self.check_continue()
             if self.path:
                 self.next_waypoint()
 
-    def check_for_push_effect(self) -> None:
+    def check_tile_properties(self) -> None:
         """
-        Checks the current tile for a push effect and applies it if found.
+        Checks the current tile properties and applies them if found.
         """
         try:
             tile = self.client.map_manager.collision_map.get(self.tile_pos)
-            if tile and tile.push_effect:
+            if tile is None:
+                return  # No tile found, nothing to apply
+
+            if tile.push_effect:
                 self.move_multiple_tiles(
                     direction=tile.push_effect.direction,
                     strength=tile.push_effect.strength,
                 )
+
+            if tile.speed_modifier:
+                self.set_moverate_modifier(tile.speed_modifier)
+
         except (KeyError, TypeError):
             pass
 

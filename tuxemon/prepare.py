@@ -79,6 +79,7 @@ REGION_KEYS: list[str] = [
     "key",
     "push_direction",
     "push_strength",
+    "speed_modifier",
 ]
 # Surface Keys (tilesets)
 SURFACE_KEYS: list[str] = ["surfable", "walkable", "climbable"]

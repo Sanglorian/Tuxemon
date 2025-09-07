@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import MutableMapping, Sequence
+from collections.abc import Sequence
 from heapq import heappop, heappush
 from typing import TYPE_CHECKING, Optional
 
-from tuxemon.map import (
+from tuxemon.map.map import (
     dirs2,
     get_adjacent_position,
     get_coords_ext,
@@ -18,10 +18,10 @@ from tuxemon.prepare import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.boundary import BoundaryChecker
-    from tuxemon.collision_manager import CollisionManager, CollisionMap
     from tuxemon.db import Direction
     from tuxemon.event.eventmanager import EventManager
-    from tuxemon.map_manager import MapManager
+    from tuxemon.map.collision_manager import CollisionManager, CollisionMap
+    from tuxemon.map.map_manager import MapManager
     from tuxemon.npc import NPC
     from tuxemon.npc_manager import NPCManager
     from tuxemon.platform.input_manager import InputManager
@@ -402,13 +402,3 @@ class Pathfinder:
                 return False
 
         return True
-
-
-def get_tile_moverate(
-    surface_map: MutableMapping[tuple[int, int], dict[str, float]],
-    destination: tuple[int, int],
-) -> float:
-    """Gets the movement speed modifier for the given tile."""
-    tile_properties = surface_map.get(destination, {})
-    rate = next(iter(tile_properties.values()), 1.0)
-    return rate

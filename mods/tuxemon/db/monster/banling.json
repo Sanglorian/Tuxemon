@@ -85,9 +85,9 @@
   "types": [
     "wood"
   ],
-  "possible_genders": [
-    "neuter"
-  ],
+  "gender_weights": {
+    "neuter": 1.0
+  },
   "txmn_id": 355,
   "height": 120,
   "weight": 180,

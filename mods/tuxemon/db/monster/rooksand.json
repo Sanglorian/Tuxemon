@@ -64,9 +64,9 @@
   "types": [
     "earth"
   ],
-  "possible_genders": [
-    "neuter"
-  ],
+  "gender_weights": {
+    "neuter": 1.0
+  },
   "txmn_id": 375,
   "height": 300,
   "weight": 1000,

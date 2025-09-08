@@ -133,7 +133,7 @@ class Monster:
         self.stage: EvolutionStage = EvolutionStage.standalone
         self.flairs: dict[str, Flair] = {}
         self.owner: Optional[NPC] = None
-        self.possible_genders: list[GenderType] = []
+        self.gender_weights: dict[GenderType, float] = {}
         self.held_item = MonsterItemHandler()
 
         self.money_modifier: float = 0.0
@@ -274,7 +274,8 @@ class Monster:
         self.set_capture(self.capture)
         self.height = formula.set_height(self, results.height)
         self.weight = formula.set_weight(self, results.weight)
-        self.gender = random.choice(list(results.possible_genders))
+        self.gender_weights = results.gender_weights
+        self.gender = self.assign_gender(results.gender_weights)
         self.catch_rate = results.catch_rate
         self.upper_catch_resistance = results.upper_catch_resistance
         self.lower_catch_resistance = results.lower_catch_resistance
@@ -504,6 +505,14 @@ class Monster:
         """
         required = (self.level + level_ofs) ** prepare.COEFF_EXP
         return int(required)
+
+    def assign_gender(self, weights: dict[GenderType, float]) -> GenderType:
+        """Randomly selects a gender based on weighted probabilities."""
+        return random.choices(
+            population=list(weights.keys()),
+            weights=list(weights.values()),
+            k=1,
+        )[0]
 
     def get_state(self) -> Mapping[str, Any]:
         """

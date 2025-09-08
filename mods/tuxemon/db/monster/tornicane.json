@@ -66,9 +66,9 @@
     "water",
     "sky"
   ],
-  "possible_genders": [
-    "neuter"
-  ],
+  "gender_weights": {
+    "neuter": 1.0
+  },
   "txmn_id": 165,
   "height": 300,
   "weight": 0.1,

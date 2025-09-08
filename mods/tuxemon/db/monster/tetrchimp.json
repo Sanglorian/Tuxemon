@@ -63,10 +63,10 @@
     "lightning",
     "cosmic"
   ],
-  "possible_genders": [
-    "male",
-    "female"
-  ],
+  "gender_weights": {
+    "male": 0.5,
+    "female": 0.5
+  },
   "txmn_id": 196,
   "height": 45,
   "weight": 4,

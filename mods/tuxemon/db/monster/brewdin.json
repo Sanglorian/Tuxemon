@@ -73,9 +73,9 @@
     "water",
     "shadow"
   ],
-  "possible_genders": [
-    "neuter"
-  ],
+  "gender_weights": {
+    "neuter": 1.0
+  },
   "txmn_id": 215,
   "height": 22,
   "weight": 1,

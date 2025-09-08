@@ -31,12 +31,19 @@ logger = logging.getLogger(__name__)
 RectTypeVar = TypeVar("RectTypeVar", bound=ReadOnlyRect)
 
 
+class PushEffect(NamedTuple):
+    direction: Direction
+    strength: int
+
+
 class RegionProperties(NamedTuple):
     enter_from: Sequence[Direction]
     exit_from: Sequence[Direction]
     endure: Sequence[Direction]
-    entity: Optional[Union[NPC, Entity[Any]]]
-    key: Optional[str]
+    entity: Optional[Union[NPC, Entity[Any]]] = None
+    key: Optional[str] = None
+    push_effect: Optional[PushEffect] = None
+    speed_modifier: Optional[float] = None
 
 
 # direction => vector
@@ -470,11 +477,12 @@ def extract_region_properties(
     Raises:
         ValueError: If the input dictionary contains an invalid value.
     """
+    all_dirs = list(Direction)
+
     if not properties:
         return None
 
-    valid_keys = {"enter_from", "exit_from", "endure", "key"}
-    if not any(key.lower() in valid_keys for key in properties):
+    if not any(key.lower() in prepare.REGION_KEYS for key in properties):
         return None
 
     movements: dict[str, list[Direction]] = {
@@ -483,6 +491,9 @@ def extract_region_properties(
         "endure": [],
     }
     label = None
+    push_direction = None
+    push_strength = 0
+    speed_modifier = None
 
     for key, value in properties.items():
         key = key.lower()
@@ -501,18 +512,50 @@ def extract_region_properties(
                     f"Invalid value for 'key': cannot be an empty string"
                 )
             label = value
+        elif key == "push_direction":
+            push_dir = direction_to_single(value)
+            if push_dir:
+                push_direction = push_dir
+        elif key == "push_strength":
+            if value:
+                push_strength = int(value)
+        elif key == "speed_modifier":
+            if value:
+                speed_modifier = float(value)
+                if not movements["enter_from"] and not movements["exit_from"]:
+                    movements["enter_from"] = all_dirs
+                    movements["exit_from"] = all_dirs
 
     if movements["exit_from"] and not movements["enter_from"]:
         movements["enter_from"] = sorted(
             set(Direction) - set(movements["exit_from"]),
-            key=lambda d: list(Direction).index(d),
+            key=lambda d: all_dirs.index(d),
         )
 
     if label == "slide":
         for key in movements:
-            movements[key] = list(Direction)
+            movements[key] = all_dirs
 
-    return RegionProperties(**movements, entity=None, key=label)
+    push_effect = None
+    if label == "push_tile":
+        if push_direction is None or push_strength <= 0:
+            raise ValueError(
+                "'push_tile' key requires both 'push_direction' and 'push_strength'."
+            )
+        if not movements["enter_from"] and not movements["exit_from"]:
+            movements["enter_from"] = all_dirs
+            movements["exit_from"] = all_dirs
+        push_effect = PushEffect(
+            direction=push_direction, strength=push_strength
+        )
+
+    return RegionProperties(
+        **movements,
+        entity=None,
+        key=label,
+        push_effect=push_effect,
+        speed_modifier=speed_modifier,
+    )
 
 
 def get_coords_ext(
@@ -577,6 +620,26 @@ def direction_to_list(direction: Optional[str]) -> list[Direction]:
             for d in {d.strip().lower() for d in direction.split(",")}
         ]
     )
+
+
+def direction_to_single(direction: Optional[str]) -> Optional[Direction]:
+    """
+    Converts a single direction string into a Direction object.
+
+    Parameters:
+        direction: Optional[str]
+
+    Returns:
+        A Direction object or None if input is invalid or empty.
+    """
+    if direction is None:
+        return None
+
+    cleaned = direction.strip().lower()
+    if not cleaned:
+        return None
+
+    return Direction(cleaned)
 
 
 def get_explicit_tile_exits(

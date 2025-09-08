@@ -149,9 +149,9 @@ class EventEngine:
             map_event: The event to evaluate and potentially start.
         """
         running_conditions = [
-            RunningCondition(cond) for cond in map_event.conds
+            RunningCondition(cond, self.evaluator) for cond in map_event.conds
         ]
-        all_met = all(rc.check(self.evaluator) for rc in running_conditions)
+        all_met = all(rc.check() for rc in running_conditions)
 
         if prepare.CONFIG.collision_map:
             self.partial_events.append(
@@ -201,11 +201,9 @@ class EventEngine:
                 continue
 
             running_conditions = [
-                RunningCondition(cond) for cond in event.conds
+                RunningCondition(cond, self.evaluator) for cond in event.conds
             ]
-            all_met = all(
-                rc.check(self.evaluator) for rc in running_conditions
-            )
+            all_met = all(rc.check() for rc in running_conditions)
 
             if prepare.CONFIG.collision_map:
                 self.partial_events.append(

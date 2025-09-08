@@ -113,12 +113,16 @@ class ConditionState(Enum):
 class RunningCondition:
     __slots__ = (
         "map_condition",
+        "evaluator",
         "state",
         "result",
     )
 
-    def __init__(self, map_condition: MapCondition) -> None:
+    def __init__(
+        self, map_condition: MapCondition, evaluator: ConditionEvaluator
+    ) -> None:
         self.map_condition = map_condition
+        self.evaluator = evaluator
         self.state = ConditionState.WAITING
         self.result: Optional[bool] = None
 
@@ -137,14 +141,14 @@ class RunningCondition:
     def is_failed(self) -> bool:
         return self.state == ConditionState.FAILED
 
-    def check(self, evaluator: ConditionEvaluator) -> bool:
+    def check(self) -> bool:
         if self.is_cancelled():
             self.result = False
             return False
 
         self.start_check()
         try:
-            passed = evaluator.evaluate(self.map_condition)
+            passed = self.evaluator.evaluate(self.map_condition)
             self.result = passed
             self.state = (
                 ConditionState.MET if passed else ConditionState.FAILED

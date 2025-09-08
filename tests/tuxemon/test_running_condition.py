@@ -44,7 +44,9 @@ class TestRunningCondition(unittest.TestCase):
             name="TestCondition",
         )
 
-        self.running_condition = RunningCondition(self.map_condition)
+        self.running_condition = RunningCondition(
+            self.map_condition, self.evaluator
+        )
 
     def test_initial_state(self):
         self.assertEqual(self.running_condition.state, ConditionState.WAITING)
@@ -62,35 +64,35 @@ class TestRunningCondition(unittest.TestCase):
         )
 
     def test_check_condition_met(self):
-        result = self.running_condition.check(self.evaluator)
+        result = self.running_condition.check()
         self.assertTrue(result)
         self.assertTrue(self.running_condition.is_met())
         self.assertEqual(self.running_condition.result, True)
 
     def test_check_condition_failed(self):
         self.mock_condition.test.return_value = False
-        result = self.running_condition.check(self.evaluator)
+        result = self.running_condition.check()
         self.assertFalse(result)
         self.assertTrue(self.running_condition.is_failed())
         self.assertEqual(self.running_condition.result, False)
 
     def test_check_condition_type_not_found(self):
         self.mock_condition_manager.get_condition.return_value = None
-        result = self.running_condition.check(self.evaluator)
+        result = self.running_condition.check()
         self.assertFalse(result)
         self.assertTrue(self.running_condition.is_failed())
         self.assertEqual(self.running_condition.result, False)
 
     def test_check_condition_exception(self):
         self.mock_condition.test.side_effect = Exception("Test error")
-        result = self.running_condition.check(self.evaluator)
+        result = self.running_condition.check()
         self.assertFalse(result)
         self.assertTrue(self.running_condition.is_failed())
         self.assertEqual(self.running_condition.result, False)
 
     def test_check_cancelled_condition(self):
         self.running_condition.cancel()
-        result = self.running_condition.check(self.evaluator)
+        result = self.running_condition.check()
         self.assertFalse(result)
         self.assertTrue(self.running_condition.is_cancelled())
         self.assertEqual(self.running_condition.result, False)

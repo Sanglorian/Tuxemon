@@ -1200,12 +1200,10 @@ class StatusModel(BaseModel, BaseLookupModel):
         description="Slug of what string to display when status fails",
     )
     cond_id: int = Field(..., description="The id of this status")
-    statspeed: Optional[StatModel] = Field(None)
-    stathp: Optional[StatModel] = Field(None)
-    statarmour: Optional[StatModel] = Field(None)
-    statdodge: Optional[StatModel] = Field(None)
-    statmelee: Optional[StatModel] = Field(None)
-    statranged: Optional[StatModel] = Field(None)
+    stat_modifiers: dict[str, StatModel] = Field(
+        default_factory=dict,
+        description="Dictionary of stat modifiers keyed by stat name (e.g., 'speed', 'hp')",
+    )
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> StatusModel:

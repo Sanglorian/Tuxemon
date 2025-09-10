@@ -32,7 +32,10 @@ class Evolution:
 
     def has_history_to(self, slug: str) -> bool:
         return any(
-            history.mon_slug == slug for history in self.monster.history
+            history.slug == slug
+            or slug in history.evolves_from
+            or slug in history.evolves_into
+            for history in self.monster.history
         )
 
     def evolve_monster(self, new_monster: Monster) -> None:

@@ -467,16 +467,36 @@ class MonsterMovesetItemModel(BaseModel):
 
 
 class MonsterHistoryItemModel(BaseModel):
-    mon_slug: str = Field(..., description="The monster in the evolution path")
-    evo_stage: EvolutionStage = Field(
-        ..., description="The evolution stage of the monster"
+    slug: str = Field(
+        ..., description="The monster slug in the evolution path."
+    )
+    stage: EvolutionStage = Field(
+        ..., description="The evolution stage of the monster."
+    )
+    evolves_from: list[str] = Field(
+        default_factory=list, description="Monsters this monster evolves from."
+    )
+    evolves_into: list[str] = Field(
+        default_factory=list,
+        description="Monsters this monster can evolve into.",
     )
 
-    @field_validator("mon_slug")
-    def monster_exists(cls: MonsterHistoryItemModel, v: str) -> str:
-        if has.db_entry("monster", v):
+    @field_validator("slug", "evolves_from", "evolves_into")
+    def validate_monsters_exist(
+        cls, v: Union[str, list[str]]
+    ) -> Union[str, list[str]]:
+        if isinstance(v, str):
+            if has.db_entry("monster", v):
+                return v
+            raise ValueError(f"Monster slug '{v}' not found in database.")
+        elif isinstance(v, list):
+            for slug in v:
+                if not has.db_entry("monster", slug):
+                    raise ValueError(
+                        f"Monster slug '{slug}' not found in database."
+                    )
             return v
-        raise ValueError(f"the monster {v} doesn't exist in the db")
+        return v
 
 
 class MonsterEvolutionItemModel(BaseModel):

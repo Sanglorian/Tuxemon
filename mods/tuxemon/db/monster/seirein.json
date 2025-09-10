@@ -51,16 +51,39 @@
   ],
   "history": [
     {
-      "mon_slug": "loliferno",
-      "evo_stage": "stage1"
+      "slug": "seirein",
+      "stage": "basic",
+      "evolves_from": [],
+      "evolves_into": [
+        "loliferno",
+        "spirain"
+      ]
     },
     {
-      "mon_slug": "spirain",
-      "evo_stage": "stage1"
+      "slug": "loliferno",
+      "stage": "stage1",
+      "evolves_from": [
+        "seirein"
+      ],
+      "evolves_into": []
     },
     {
-      "mon_slug": "tornicane",
-      "evo_stage": "stage2"
+      "slug": "spirain",
+      "stage": "stage1",
+      "evolves_from": [
+        "seirein"
+      ],
+      "evolves_into": [
+        "tornicane"
+      ]
+    },
+    {
+      "slug": "tornicane",
+      "stage": "stage2",
+      "evolves_from": [
+        "spirain"
+      ],
+      "evolves_into": []
     }
   ],
   "terrains": [

@@ -35,8 +35,20 @@
   ],
   "history": [
     {
-      "mon_slug": "shrab",
-      "evo_stage": "stage1"
+      "slug": "sheye",
+      "stage": "basic",
+      "evolves_from": [],
+      "evolves_into": [
+        "shrab"
+      ]
+    },
+    {
+      "slug": "shrab",
+      "stage": "stage1",
+      "evolves_from": [
+        "sheye"
+      ],
+      "evolves_into": []
     }
   ],
   "terrains": [

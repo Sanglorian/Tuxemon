@@ -192,6 +192,7 @@ class ControllerConfig:
         self.overlay: bool = display["controller_overlay"]
         self.transparency: int = display["controller_transparency"]
         self.hide_mouse: bool = display["hide_mouse"]
+        self.show_input_visualizer: bool = display["show_input_visualizer"]
 
 
 class LocaleConfig:
@@ -303,6 +304,7 @@ def generate_default_config() -> dict[str, Any]:
             "controller_overlay": False,
             "controller_transparency": 45,
             "hide_mouse": True,
+            "show_input_visualizer": False,
         },
         "game": {
             "data": "tuxemon",

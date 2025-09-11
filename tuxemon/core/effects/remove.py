@@ -52,7 +52,8 @@ class RemoveEffect(CoreEffect):
                 elif self.status in ("positive", "negative"):
                     # Remove all statuses that match the given category
                     to_remove = [
-                        s for s in monster.status.statuses
+                        s
+                        for s in monster.status.statuses
                         if getattr(s, "category", None) == self.status
                     ]
                     for s in to_remove:
@@ -60,7 +61,6 @@ class RemoveEffect(CoreEffect):
                 else:
                     if monster.status.has_status(self.status):
                         monster.status.clear_status(session)
-
 
         if monsters:
             event_bus = session.client.event_bus

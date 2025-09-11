@@ -46,13 +46,21 @@ class RemoveEffect(CoreEffect):
             monsters = session.client.combat_session.get_target_monsters(
                 objectives, user, target
             )
-            if self.status == "all":
-                for monster in monsters:
+            for monster in monsters:
+                if self.status == "all":
                     monster.status.clear_status(session)
-            else:
-                for monster in monsters:
+                elif self.status in ("positive", "negative"):
+                    # Remove all statuses that match the given category
+                    to_remove = [
+                        s for s in monster.status.statuses
+                        if getattr(s, "category", None) == self.status
+                    ]
+                    for s in to_remove:
+                        monster.status.remove_status(s.slug, session)
+                else:
                     if monster.status.has_status(self.status):
                         monster.status.clear_status(session)
+
 
         if monsters:
             event_bus = session.client.event_bus

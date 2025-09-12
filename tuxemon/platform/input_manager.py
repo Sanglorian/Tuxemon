@@ -6,6 +6,7 @@ import logging
 from collections.abc import Generator
 from typing import TYPE_CHECKING, Optional
 
+from tuxemon.platform.combo_detector import ComboManager
 from tuxemon.platform.input_history import InputHistory
 from tuxemon.platform.platform_pygame.events import (
     PygameEventQueueHandler,
@@ -37,6 +38,7 @@ class InputManager:
         self.input = config.input
         self.controller_overlay: Optional[PygameTouchOverlayInput] = None
         self.setup_inputs()
+        self.combo_manager = ComboManager()
 
     def setup_inputs(self) -> None:
         """
@@ -101,4 +103,5 @@ class InputManager:
         """
         for event in self.event_queue.process_events():
             self.input_history.add(event)
+            self.combo_manager.process(event)
             yield event

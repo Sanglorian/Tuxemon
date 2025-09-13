@@ -57,11 +57,11 @@ class RemoveEffect(CoreEffect):
                     ]
 
                     for s in to_remove:
-                        monster.status.remove_status(s.slug, session)
+                        monster.status.remove_status(s.slug)
 
                 else:
                     if monster.status.has_status(self.status):
-                        monster.status.clear_status(session)
+                        monster.status.remove_status(self.status)
 
         if monsters:
             event_bus = session.client.event_bus

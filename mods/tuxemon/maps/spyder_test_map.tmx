@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="609">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="620">
  <properties>
   <property name="east" value="route2"/>
   <property name="edges" value="clamped"/>
@@ -21,7 +21,7 @@
  </layer>
  <layer id="2" name="Tile Layer 2" width="40" height="40">
   <data encoding="base64" compression="zlib">
-   eJzt2CEOgDAQBdG9A1XA9bi/ay2YmjUkjOiSzEvIVyXNyPYtYjxfL7pHizhb3Z33rCb3y679+7/J2env/VazH2M/xn6M/Rj7MfZj7MfYj7EfYz/Gfoz9GPsx9mPsx9iPyf2q7ur3+be9ATs8utc=
+   eJztmEsKwkAQROcOZuMnl/ASbuMhXGpyIo/gVs8UspS4tcEJhIZBTcV0GfpB0TCQoXiTD6RdhPCQtKRznYWwyXhn15MN7U9zWA3fu3/t0H3+3Z817g/D/WHM0d99+dtOfb7113WbqqP2t4vrF+C7MSYpfyz9UvcfSz/tr4i9WPppf7X0qiQNSb85vv+mJOXvKud7i2d8lrnNbfp96m9v1C/l75i/cpKUkorcnxX+/GK4Pwz3h+H+MNwfhvvDcH8Y2h/rtP4//24+AbV6yrI=
   </data>
  </layer>
  <layer id="3" name="Tile Layer 3" width="40" height="40">
@@ -50,16 +50,10 @@
   </object>
   <object id="540" name="Sign: Get Rockitten" type="event" x="96" y="48" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog rockittenforyou"/>
-    <property name="act2" value="add_monster rockitten,99"/>
+    <property name="act1" value="translated_dialog aardornforyou"/>
+    <property name="act2" value="add_monster aardorn,4"/>
     <property name="cond1" value="is char_facing_tile player"/>
     <property name="cond2" value="is button_pressed K_RETURN"/>
-   </properties>
-  </object>
-  <object id="543" name="Talk monk" type="event" x="-80" y="64" width="16" height="16">
-   <properties>
-    <property name="act1" value="translated_dialog spyder_cottontown_monk"/>
-    <property name="behav1" value="talk spyder_cottontown_monk"/>
    </properties>
   </object>
   <object id="562" name="Play Music" type="event" x="112" y="0" width="16" height="16">
@@ -133,6 +127,103 @@
    <properties>
     <property name="act1" value="translated_dialog resetcleo"/>
     <property name="act2" value="set_variable testcleo:no"/>
+    <property name="cond1" value="is char_facing_tile player"/>
+    <property name="cond2" value="is button_pressed K_RETURN"/>
+   </properties>
+  </object>
+  <object id="609" name="Create Shopkeeper" type="event" x="48" y="256" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_shopassistant,3,16"/>
+    <property name="act2" value="char_face spyder_shopassistant,right"/>
+    <property name="act3" value="set_economy spyder_shopassistant,spyder_candy_scoop"/>
+    <property name="cond1" value="not char_exists spyder_shopassistant"/>
+   </properties>
+  </object>
+  <object id="610" name="Open Shop" type="event" x="64" y="256" width="16" height="16">
+   <properties>
+    <property name="act1" value="char_face spyder_shopassistant,right"/>
+    <property name="act2" value="translated_dialog spyder_scoop_welcome"/>
+    <property name="act3" value="open_shop spyder_shopassistant,both_item"/>
+    <property name="cond1" value="is char_facing_tile player"/>
+    <property name="cond2" value="is button_pressed K_RETURN"/>
+   </properties>
+  </object>
+  <object id="611" name="Open Shop" type="event" x="48" y="272" width="16" height="16">
+   <properties>
+    <property name="act1" value="char_face spyder_shopassistant,down"/>
+    <property name="act2" value="translated_dialog spyder_scoop_welcome"/>
+    <property name="act3" value="open_shop spyder_shopassistant,both_item"/>
+    <property name="cond1" value="is char_facing_tile player"/>
+    <property name="cond2" value="is button_pressed K_RETURN"/>
+   </properties>
+  </object>
+  <object id="612" name="Create Tech Shop" type="event" x="48" y="224" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_wayfarer1_norm,3,14"/>
+    <property name="act2" value="char_face spyder_wayfarer1_norm,right"/>
+    <property name="act3" value="set_economy spyder_wayfarer1_norm,spyder_candy_tech"/>
+    <property name="cond1" value="not char_exists spyder_wayfarer1_norm"/>
+   </properties>
+  </object>
+  <object id="613" name="Open Tech" type="event" x="64" y="224" width="16" height="16">
+   <properties>
+    <property name="act1" value="char_face spyder_wayfarer1_norm,right"/>
+    <property name="act2" value="translated_dialog spyder_scoop_welcome"/>
+    <property name="act3" value="open_shop spyder_wayfarer1_norm,both_item"/>
+    <property name="cond1" value="is char_facing_tile player"/>
+    <property name="cond2" value="is button_pressed K_RETURN"/>
+   </properties>
+  </object>
+  <object id="614" name="Create Barmaid - hidden away" type="event" x="64" y="336" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_cottontown_barmaid,4,21"/>
+    <property name="cond1" value="not char_exists spyder_cottontown_barmaid"/>
+    <property name="cond2" value="not variable_set visitedcottoncafe:yes"/>
+   </properties>
+  </object>
+  <object id="615" name="Talk Barmaid" type="event" x="64" y="352" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog spyder_cottoncafe_barmaid"/>
+    <property name="act2" value="translated_dialog_choice yes:no,chooses"/>
+    <property name="cond1" value="is variable_set visitedcottoncafe:yes"/>
+    <property name="cond2" value="not variable_set chooses:yes"/>
+    <property name="cond3" value="is variable_set introdcottoncafe2:yes"/>
+    <property name="cond4" value="is char_facing_tile player"/>
+    <property name="cond5" value="is button_pressed K_RETURN"/>
+   </properties>
+  </object>
+  <object id="616" name="Talk Barmaid (1st)" type="event" x="64" y="368" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog spyder_cottoncafe_barmaidintro"/>
+    <property name="act2" value="translated_dialog_choice yes:no,chooses"/>
+    <property name="act3" value="set_variable introdcottoncafe2:yes"/>
+    <property name="cond1" value="is variable_set visitedcottoncafe:yes"/>
+    <property name="cond2" value="not variable_set chooses:yes"/>
+    <property name="cond3" value="not variable_set introdcottoncafe2:yes"/>
+    <property name="cond4" value="is char_at player"/>
+    <property name="cond5" value="is char_facing player,up"/>
+    <property name="cond6" value="is button_pressed K_RETURN"/>
+   </properties>
+  </object>
+  <object id="617" name="Create Barmaid - accessible" type="event" x="80" y="336" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_cottontown_barmaid,4,21"/>
+    <property name="cond1" value="not char_exists spyder_cottontown_barmaid"/>
+    <property name="cond2" value="is variable_set visitedcottoncafe:yes"/>
+   </properties>
+  </object>
+  <object id="618" name="Teleport to Cotton Cathedral" type="event" x="176" y="192" width="16" height="16">
+   <properties>
+    <property name="act1" value="transition_teleport spyder_healing_center.tmx,6,10,0.3"/>
+    <property name="act2" value="char_face player,up"/>
+    <property name="cond1" value="is char_at player"/>
+    <property name="cond2" value="is char_facing player,up"/>
+   </properties>
+  </object>
+  <object id="619" name="Sign: Add Level" type="event" x="384" y="48" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog addlevel"/>
+    <property name="act2" value="set_monster_level"/>
     <property name="cond1" value="is char_facing_tile player"/>
     <property name="cond2" value="is button_pressed K_RETURN"/>
    </properties>

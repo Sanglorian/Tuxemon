@@ -14,7 +14,6 @@
  <tileset firstgid="3791" source="../gfx/tilesets/core_outdoor.tsx"/>
  <tileset firstgid="6566" source="../gfx/tilesets/core_set pieces.tsx"/>
  <tileset firstgid="8116" source="../gfx/tilesets/core_outdoor_nature.tsx"/>
- <tileset firstgid="16308" source="../../../../Documents/GitHub/Tuxemon/mods/tuxemon/gfx/tilesets/core_set pieces.tsx"/>
  <layer id="1" name="Tile Layer 1" width="40" height="40">
   <data encoding="base64" compression="zlib">
    eJztmMENwjAMRbsBG/UC7ALdBRiGDtNuQ5BA+or60yR1sENzeLdGebUdu2l/6Lq+sQuOjhNwNuCEbrPjCkyGHC+emxXHby792CGDoh9zsuJ3/zAa9Vurv6fjQdb4510CVuvMLxQ7tmYLbL8b5Bphsfu1Xw7snVLB2rdQ66E8NL/9+ZXoYyngbF3yK9EnJPtLTX7veSbR03JZmge1nx9tml/zq9Gv5NzB7+hcv5J9fSD7WPebEnKAc53NnTHimbU5IhEHFneJs2fdT+Kew+55/9q7NPzY2dP8PxZT25pxjant0D+KxjZe2R5F+Q==
@@ -22,7 +21,7 @@
  </layer>
  <layer id="2" name="Tile Layer 2" width="40" height="40">
   <data encoding="base64" compression="zlib">
-   eJzt2LEJgDAUBuG3g6nUYVzGCdw9ttqkSSPkijzhPpC/ioQrU5eI+/1q0t1KxF7ybrtnNn2/3rmO//s6xs82f+83m/0Y+zH2Y+zH2I+xH2M/xn6M/Rj7MfZj7MfYj7EfYz/GfkzfL+vOfp//2gfcwrsL
+   eJzt2CEOgDAQBdG9A1XA9bi/ay2YmjUkjOiSzEvIVyXNyPYtYjxfL7pHizhb3Z33rCb3y679+7/J2env/VazH2M/xn6M/Rj7MfZj7MfYj7EfYz/Gfoz9GPsx9mPsx9iPyf2q7ur3+be9ATs8utc=
   </data>
  </layer>
  <layer id="3" name="Tile Layer 3" width="40" height="40">

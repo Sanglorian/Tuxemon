@@ -91,27 +91,32 @@
   </object>
   <object id="602" name="Talk Cleo" type="event" x="304" y="48" width="16" height="16">
    <properties>
-    <property name="act1" value="char_talk spyder_route5_cleo,pre_battle"/>
-    <property name="act2" value="add_monster memnomnom,5,spyder_route5_cleo,99,99"/>
-    <property name="act3" value="add_monster memnomnom,5,spyder_route5_cleo,99,99"/>
-    <property name="act4" value="start_battle player,spyder_route5_cleo"/>
-    <property name="act5" value="char_talk spyder_route5_cleo,post_battle_lose"/>
-    <property name="act6" value="set_variable testcleo:yes"/>
+    <property name="act09" value="set_bubble spyder_route5_cleo,exclamation"/>
+    <property name="act10" value="char_talk spyder_route5_cleo,pre_battle"/>
+    <property name="act20" value="add_monster memnomnom,5,spyder_route5_cleo,99,99"/>
+    <property name="act30" value="add_monster memnomnom,5,spyder_route5_cleo,99,99"/>
+    <property name="act40" value="start_battle player,spyder_route5_cleo"/>
+    <property name="act41" value="set_bubble spyder_route5_cleo"/>
+    <property name="act50" value="char_talk spyder_route5_cleo,post_battle_lose"/>
+    <property name="act60" value="set_variable testcleo:yes"/>
     <property name="behav1" value="talk spyder_route5_cleo"/>
     <property name="cond1" value="not variable_set testcleo:yes"/>
    </properties>
   </object>
-  <object id="603" name="Talk Cleo" type="event" x="272" y="64" width="16" height="64">
+  <object id="603" name="Ambush Cleo" type="event" x="272" y="64" width="16" height="64">
    <properties>
-    <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_char player,spyder_route5_cleo"/>
-    <property name="act3" value="char_talk spyder_route5_cleo,pre_battle"/>
-    <property name="act4" value="unlock_controls"/>
-    <property name="act5" value="add_monster memnomnom,5,spyder_route5_cleo,99,99"/>
-    <property name="act6" value="add_monster memnomnom,5,spyder_route5_cleo,99,99"/>
-    <property name="act7" value="start_battle player,spyder_route5_cleo"/>
-    <property name="act8" value="char_talk spyder_route5_cleo,post_battle_lose"/>
-    <property name="act9" value="set_variable testcleo:yes"/>
+    <property name="act10" value="lock_controls"/>
+    <property name="act11" value="set_bubble spyder_route5_cleo,exclamation"/>
+    <property name="act20" value="pathfind_to_char player,spyder_route5_cleo"/>
+    <property name="act22" value="char_face player,spyder_route5_cleo"/>
+    <property name="act30" value="char_talk spyder_route5_cleo,pre_battle"/>
+    <property name="act40" value="unlock_controls"/>
+    <property name="act50" value="add_monster memnomnom,5,spyder_route5_cleo,99,99"/>
+    <property name="act60" value="add_monster memnomnom,5,spyder_route5_cleo,99,99"/>
+    <property name="act70" value="start_battle player,spyder_route5_cleo"/>
+    <property name="act71" value="set_bubble spyder_route5_cleo"/>
+    <property name="act80" value="char_talk spyder_route5_cleo,post_battle_lose"/>
+    <property name="act90" value="set_variable testcleo:yes"/>
     <property name="cond1" value="not variable_set testcleo:yes"/>
     <property name="cond2" value="is char_at player"/>
    </properties>

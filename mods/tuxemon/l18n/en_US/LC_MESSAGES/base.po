@@ -419,6 +419,12 @@ msgstr "Nu Phone"
 msgid "nu_phone_description"
 msgstr "You can do a lot with this, e.g. phone home."
 
+msgid "drone"
+msgstr "Drone"
+
+msgid "drone_description"
+msgstr "Switch out one tuxemon on your team for one in storage."
+
 msgid "spyder_pass"
 msgstr "Spyder Pass"
 
@@ -4101,6 +4107,12 @@ msgstr ""
 
 msgid "uninstall_app"
 msgstr "Unable to uninstall the app."
+
+msgid "menu_storage_swap_monster"
+msgstr "The drone completed the transfer: {from} is now in storage, and {to} has joined your party."
+
+msgid "menu_storage_swap_monster_fail"
+msgstr "The drone could not complete the transfer: no monsters are available in the kennel."
 
 # Missions
 msgid "mission_deletion"

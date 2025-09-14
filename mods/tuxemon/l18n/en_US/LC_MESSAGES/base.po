@@ -492,6 +492,12 @@ msgstr "Cureall"
 msgid "cureall_description"
 msgstr "Heals your tuxemon to full health and removes any conditions."
 
+msgid "escape_key"
+msgstr "Escape Key"
+
+msgid "escape_key_description"
+msgstr "Slip out the back door."
+
 # Craft
 msgid "unknown_object"
 msgstr "Unknown Object"

@@ -6,14 +6,14 @@
     {
       "type": "prop_damage",
       "parameters": [
-        "enemy_monster",
+        "own_monster",
         "0.5"
       ]
     },
     {
       "type": "prop_damage",
       "parameters": [
-        "own_monster",
+        "enemy_monster",
         "0.5"
       ]
     }

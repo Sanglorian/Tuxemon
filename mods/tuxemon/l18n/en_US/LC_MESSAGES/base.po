@@ -4450,9 +4450,6 @@ msgstr "You added {name} into your party!"
 msgid "menu_storage_take_item"
 msgstr "You added {nr} {name} into your bag!"
 
-msgid "menu_storage_monsters_full"
-msgstr "Your party is full, you cannot take any more from storage."
-
 msgid "menu_storage_items_full"
 msgstr "Your bag is full, you cannot take any more from storage."
 

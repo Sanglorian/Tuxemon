@@ -31,17 +31,29 @@
     {
       "at_level": 12,
       "monster_slug": "bugnin",
-      "stats": "dodge:greater_than:speed"
+      "stats": {
+        "stat_type": "dodge",
+        "comparison": "greater_than",
+        "target_stat": "speed"
+      }
     },
     {
       "at_level": 12,
       "monster_slug": "sumchon",
-      "stats": "speed:greater_than:dodge"
+      "stats": {
+        "stat_type": "speed",
+        "comparison": "greater_than",
+        "target_stat": "dodge"
+      }
     },
     {
       "at_level": 12,
       "monster_slug": "gladiatorbug",
-      "stats": "speed:equals:dodge"
+      "stats": {
+        "stat_type": "speed",
+        "comparison": "equals",
+        "target_stat": "dodge"
+      }
     }
   ],
   "history": [

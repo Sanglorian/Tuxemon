@@ -25,6 +25,7 @@ from tuxemon.db import (
 from tuxemon.element import ElementTypesHandler
 from tuxemon.fusion import Body
 from tuxemon.locale import T
+from tuxemon.monster_dir.bond import BondHandler
 from tuxemon.monster_dir.evolution import Evolution
 from tuxemon.monster_dir.held_item import MonsterItemHandler
 from tuxemon.monster_dir.moves import MonsterMovesHandler
@@ -64,7 +65,6 @@ SIMPLE_PERSISTANCE_ATTRIBUTES = (
     "taste_cold",
     "taste_warm",
     "steps",
-    "bond",
 )
 
 
@@ -122,7 +122,7 @@ class Monster:
 
         self.level: int = 0
         self.steps: float = 0.0
-        self.bond: int = prepare.BOND
+        self.bond_handler: BondHandler = BondHandler(save_data)
 
         self.modifiers = TemporaryStatBoosts()
 
@@ -538,6 +538,7 @@ class Monster:
         save_data["moves"] = self.moves.encode_moves()
         save_data["held_item"] = self.held_item.encode_item()
         save_data["modifiers"] = self.modifiers.to_dict()
+        save_data["bond_dict"] = self.bond_handler.get_state()
 
         return save_data
 
@@ -557,6 +558,7 @@ class Monster:
         self.moves.decode_moves(save_data)
         self.status.decode_status(save_data, self)
         self.plague.decode_plagues(save_data)
+        self.bond_handler.set_state(save_data)
 
         for key, value in save_data.items():
             if key == "body" and value:

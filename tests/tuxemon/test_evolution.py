@@ -225,7 +225,7 @@ class TestCanEvolve(unittest.TestCase):
         self.assertFalse(self.mon.evolution_handler.can_evolve(evo, context))
 
     def test_bond_match(self):
-        self.mon.bond = 10
+        self.mon.bond_handler.bond = 10
         evo = MonsterEvolutionItemModel(
             monster_slug="rockat", bond="greater_or_equal:10"
         )
@@ -233,7 +233,7 @@ class TestCanEvolve(unittest.TestCase):
         self.assertTrue(self.mon.evolution_handler.can_evolve(evo, context))
 
     def test_bond_mismatch(self):
-        self.mon.bond = 5
+        self.mon.bond_handler.bond = 5
         evo = MonsterEvolutionItemModel(
             monster_slug="rockat", bond="greater_or_equal:10"
         )

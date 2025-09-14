@@ -4,9 +4,17 @@
   "animation": "lance_ice",
   "effects": [
     {
-      "type": "sacrifice",
+      "type": "prop_damage",
       "parameters": [
-        "1"
+        "enemy_monster",
+        "0.5"
+      ]
+    },
+    {
+      "type": "prop_damage",
+      "parameters": [
+        "own_monster",
+        "0.5"
       ]
     }
   ],

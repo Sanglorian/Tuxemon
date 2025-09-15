@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
-from tuxemon.event import MapCondition, collide, get_npc
+from tuxemon.boundary import MapConditionBoundary
+from tuxemon.event import MapCondition, get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -24,7 +25,6 @@ class CharAtCondition(EventCondition):
 
     Script parameters:
         character: Either "player" or character slug name (e.g. "npc_maple").
-
     """
 
     name = "char_at"
@@ -34,4 +34,6 @@ class CharAtCondition(EventCondition):
         if character is None:
             logger.error(f"{condition.parameters[0]} not found")
             return False
-        return collide(condition, character.tile_pos)
+
+        map_boundary = MapConditionBoundary(condition)
+        return map_boundary.is_within(character.tile_pos)

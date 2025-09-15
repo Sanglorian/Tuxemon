@@ -2,9 +2,9 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import gettext
 import logging
 from collections.abc import Callable, Mapping
+from gettext import GNUTranslations, NullTranslations, translation
 from pathlib import Path
 from typing import Any, Optional, Union
 
@@ -44,20 +44,24 @@ class TranslatorPo:
         self.domain = domain
         self.localedir = localedir
         self.fallback_locale = fallback_locale
-        self._translation_cache: dict[str, str] = {}
-        self._real_translate: Callable[[str], str] = (
+        self._real_translate: Union[GNUTranslations, NullTranslations] = (
             self._load_gettext_translation()
         )
-        self.translate: Callable[[str], str] = self._translate_with_cache
+        self.translate: Callable[[str], str] = self._real_translate.gettext
+        self.translate_plural: Callable[[str, str, int], str] = (
+            self._real_translate.ngettext
+        )
 
-    def _load_gettext_translation(self) -> Callable[[str], str]:
+    def _load_gettext_translation(
+        self,
+    ) -> Union[GNUTranslations, NullTranslations]:
         """
         Loads and returns the gettext translation function for this translator.
         Handles fallback if the specific translation is not found.
         """
-        trans: Union[gettext.GNUTranslations, gettext.NullTranslations]
+        trans: Union[GNUTranslations, NullTranslations]
         try:
-            trans = gettext.translation(
+            trans = translation(
                 self.domain, self.localedir, [self.locale_name]
             )
             logger.debug(
@@ -70,7 +74,7 @@ class TranslatorPo:
                 f"Attempting to use fallback '{self.fallback_locale}'."
             )
             try:
-                trans = gettext.translation(
+                trans = translation(
                     self.domain, self.localedir, [self.fallback_locale]
                 )
                 logger.debug(
@@ -82,10 +86,10 @@ class TranslatorPo:
                     f"No translation found for domain '{self.domain}' in any locale."
                     " Using NullTranslations."
                 )
-                trans = gettext.NullTranslations()
+                trans = NullTranslations()
 
         try:
-            fallback_base_trans = gettext.translation(
+            fallback_base_trans = translation(
                 "base", self.localedir, [self.fallback_locale]
             )
             trans.add_fallback(fallback_base_trans)
@@ -98,16 +102,7 @@ class TranslatorPo:
                 "Translations might be very incomplete."
             )
 
-        return trans.gettext
-
-    def _translate_with_cache(self, message: str) -> str:
-        """Translates a message, caching the result."""
-        if message in self._translation_cache:
-            return self._translation_cache[message]
-
-        translated_message = self._real_translate(message)
-        self._translation_cache[message] = translated_message
-        return translated_message
+        return trans
 
     def get_current_language(self) -> str:
         """
@@ -129,7 +124,24 @@ class TranslatorPo:
         Returns:
             True if the translation exists, False otherwise.
         """
-        return self._real_translate(msgid) != msgid
+        return self.translate(msgid) != msgid
+
+    def has_plural_translation(
+        self, singular_msgid: str, plural_msgid: str, n: int
+    ) -> bool:
+        """
+        Checks if a plural translation exists for the given message IDs.
+
+        Parameters:
+            singular_msgid: The singular msgid.
+            plural_msgid: The plural msgid.
+            n: The number used to determine the plural form.
+
+        Returns:
+            True if a plural translation exists, False otherwise.
+        """
+        translated = self.translate_plural(singular_msgid, plural_msgid, n)
+        return translated != singular_msgid and translated != plural_msgid
 
     def format(
         self,

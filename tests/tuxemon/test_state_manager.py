@@ -9,7 +9,7 @@ from tuxemon.state.factory import StateFactory
 from tuxemon.state.manager import StateManager
 from tuxemon.state.repository import StateRepository
 from tuxemon.state.state import State
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.states.world_state import WorldState
 
 
 def create_state(name):

@@ -22,7 +22,7 @@ from tuxemon.client import LocalPygameClient
 from tuxemon.npc import NPCState
 from tuxemon.save_upgrader import SAVE_VERSION, upgrade_save
 from tuxemon.session import Session
-from tuxemon.states.world.worldstate import WorldSave, WorldState
+from tuxemon.states.world_state import WorldSave, WorldState
 
 try:
     import cbor

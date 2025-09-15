@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Generator, Iterable, Sequence
 from contextlib import contextmanager
+from enum import Enum, auto
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Optional, Union
 
@@ -14,11 +15,18 @@ if TYPE_CHECKING:
     from tuxemon.event import EventObject, MapAction, MapCondition
     from tuxemon.event.eventaction import ActionManager, EventAction
     from tuxemon.event.eventcondition import ConditionManager
-    from tuxemon.map import TuxemonMap
+    from tuxemon.map.map import TuxemonMap
     from tuxemon.session import Session
 
 
 logger = logging.getLogger(__name__)
+
+
+class EventState(Enum):
+    WAITING = auto()
+    RUNNING = auto()
+    COMPLETED = auto()
+    CANCELLED = auto()
 
 
 class RunningEvent:
@@ -48,7 +56,7 @@ class RunningEvent:
         "action_index",
         "current_action",
         "current_map_action",
-        "cancelled",
+        "state",
     )
 
     def __init__(self, map_event: EventObject) -> None:
@@ -57,7 +65,7 @@ class RunningEvent:
         self.action_index = 0
         self.current_action: Optional[EventAction] = None
         self.current_map_action = None
-        self.cancelled = False
+        self.state = EventState.WAITING
 
     def get_next_action(self) -> Optional[MapAction]:
         """
@@ -85,8 +93,19 @@ class RunningEvent:
         self.action_index += 1
 
     def cancel(self) -> None:
-        """Cancels the event."""
-        self.cancelled = True
+        self.state = EventState.CANCELLED
+
+    def complete(self) -> None:
+        self.state = EventState.COMPLETED
+
+    def running(self) -> None:
+        self.state = EventState.RUNNING
+
+    def is_cancelled(self) -> bool:
+        return self.state == EventState.CANCELLED
+
+    def is_running(self) -> bool:
+        return self.state == EventState.RUNNING
 
 
 class EventEngine:
@@ -220,6 +239,7 @@ class EventEngine:
             logger.debug(map_event)
 
             token = RunningEvent(map_event)
+            token.running()
             self.running_events[map_event.id] = token
 
             if map_event in self.session.client.map_manager.inits:
@@ -304,11 +324,15 @@ class EventEngine:
         Parameters:
             dt: Amount of time passed in seconds since last frame.
         """
-        to_remove = set()
         current_map = self.current_map
 
-        # Loop through the list of actions and update them
-        for event_id, running_event in self.running_events.items():
+        running_events_to_process = [
+            (event_id, event)
+            for event_id, event in self.running_events.items()
+            if event.is_running()
+        ]
+
+        for event_id, running_event in running_events_to_process:
             # If the current map has changed, then `reset` has also been
             # called, which replaced self.running_events with an empty dict.
             # We need to stop processing the running_events, as they may not
@@ -320,16 +344,17 @@ class EventEngine:
                 assert not self.running_events
                 return
 
-            # Check for cancellation
-            if running_event.cancelled:
-                to_remove.add(event_id)
-                continue
-
             if not self.process_running_event(running_event):
-                # Event is complete or failed; mark it for removal
-                to_remove.add(event_id)
+                # Event is complete or failed; mark it as completed
+                running_event.complete()
 
-        # Clean up completed or cancelled events
+        # Clean up completed or cancelled events outside the loop
+        to_remove = [
+            event_id
+            for event_id, event in self.running_events.items()
+            if event.state in (EventState.COMPLETED, EventState.CANCELLED)
+        ]
+
         for event_id in to_remove:
             self.running_events.pop(event_id, None)
 
@@ -363,6 +388,11 @@ class EventEngine:
             check another RunningEvent, but the position in the action list
             is remembered and will be restored.
             """
+            # Check if the event was cancelled during processing
+            if running_event.is_cancelled():
+                logger.debug("Running event was cancelled.")
+                return False
+
             current_action = running_event.current_action
 
             # Handle initialization of the next action if none is active
@@ -407,6 +437,7 @@ class EventEngine:
 
         if next_action_data is None:
             # No more actions; event is complete
+            running_event.complete()
             return False
 
         action = self.action_manager.get_action(
@@ -442,50 +473,38 @@ def add_error_context(
     """
     try:
         yield
-    except Exception:
+    except Exception as original_exc:
         from lxml import etree
 
         file_name = session.client.map_manager.get_map_filepath()
-        tree = etree.parse(file_name)
-        event_node = tree.find("//object[@id='%s']" % event.id)
-        msg = None
-        if event_node:
-            if item.name is None:
-                # It's an "interact" event, so no condition defined in the map
-                msg = """
-                    Error in {file_name}
-                    {event}
-                    Line {line_number}
-                """.format(
-                    file_name=file_name,
-                    event=etree.tostring(event_node)
-                    .decode()
-                    .split("\n")[0]
-                    .strip(),
-                    line_number=event_node.sourceline,
-                )
-            else:
-                # This is either a condition or an action
-                child_node = event_node.find(
-                    ".//property[@name='%s']" % (item.name)
-                )
-                if child_node:
-                    msg = """
-                        Error in {file_name}
-                        {event}
-                            ...
-                            {line}
-                        Line {line_number}
-                    """.format(
-                        file_name=file_name,
-                        event=etree.tostring(event_node)
-                        .decode()
-                        .split("\n")[0]
-                        .strip(),
-                        line=etree.tostring(child_node).decode().strip(),
-                        line_number=child_node.sourceline,
-                    )
-        if msg:
-            print(dedent(msg))
+        try:
+            tree = etree.parse(file_name)
+            event_node = tree.find(f"//object[@id='{event.id}']")
+        except Exception as parse_exc:
+            logger.error(
+                f"Failed to parse map file '{file_name}': {parse_exc}"
+            )
+            raise original_exc
 
-        raise
+        msg_lines = [f"\nError in map file: {file_name}"]
+
+        if event_node is not None:
+            event_summary = (
+                etree.tostring(event_node).decode().split("\n")[0].strip()
+            )
+            msg_lines.append(f"Event: {event_summary}")
+            msg_lines.append(f"Line: {event_node.sourceline}")
+
+            if item.name:
+                child_node = event_node.find(
+                    f".//property[@name='{item.name}']"
+                )
+                if child_node is not None:
+                    child_summary = etree.tostring(child_node).decode().strip()
+                    msg_lines.append(f"Property: {child_summary}")
+                    msg_lines.append(f"Line: {child_node.sourceline}")
+        else:
+            msg_lines.append(f"Event with ID '{event.id}' not found in XML.")
+
+        print(dedent("\n".join(msg_lines)))
+        raise original_exc

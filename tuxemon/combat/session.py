@@ -468,6 +468,10 @@ class CombatSession:
                     "monster_needed", player=player, ask=ask
                 )
 
+            on_the_field = self.field_monsters.get_monsters(player)
+            for monster in on_the_field:
+                self.update_tuxepedia(player, monster)
+
     def add_monster_into_play(
         self,
         session: Session,

@@ -44,11 +44,14 @@ class RandomHordeAction(EventAction):
 
     Script parameters:
         encounter_slug: Slug of the encounter list.
+        total_prob: Optional float between 0 and 100 representing the chance
+            of triggering a horde encounter.
         rgb: color (eg red > 255,0,0 > 255:0:0) - default rgb(255,255,255)
     """
 
     name = "random_horde"
     encounter_slug: str
+    total_prob: Optional[float] = None
     rgb: Optional[str] = None
 
     def start(self, session: Session) -> None:
@@ -58,9 +61,16 @@ class RandomHordeAction(EventAction):
             logger.error("Battle is not legal, won't start")
             return
 
+        if self.total_prob is not None:
+            if not (0 <= self.total_prob <= 100):
+                logger.error(
+                    f"Invalid total_prob: {self.total_prob}. Must be between 0 and 100."
+                )
+                return
+
         zone = EncounterData(self.encounter_slug)
         encounter = Encounter(zone)
-        results = encounter.get_horde_encounter(player)
+        results = encounter.get_horde_encounter(player, self.total_prob)
 
         if not results:
             return
@@ -100,7 +110,7 @@ class RandomHordeAction(EventAction):
             logger.error("'wild_encounter' not found")
             return
 
-        npc.party.replace_party(horde)
+        npc.party.replace_party(horde, False)
         # NOTE: random battles are implemented as trainer battles.
         #       this is a hack. remove this once trainer/random battlers are fixed
 

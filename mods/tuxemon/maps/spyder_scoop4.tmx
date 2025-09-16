@@ -127,7 +127,7 @@
    <properties>
     <property name="act1" value="translated_dialog spyder_scoop_arachne2"/>
     <property name="behav1" value="talk spyder_scoop_arachne"/>
-    <property name="cond1" value="is variable_set scooparachne:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_scoop_arachne"/>
     <property name="cond2" value="not variable_set scooplandrace:yes"/>
    </properties>
   </object>
@@ -312,14 +312,14 @@
    <properties>
     <property name="act1" value="translated_dialog spyder_scoop_orba2"/>
     <property name="behav1" value="talk spyder_scoop_orba"/>
-    <property name="cond1" value="is variable_set scooporba:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_scoop_orba"/>
    </properties>
   </object>
   <object id="60" name="Post Talk Weaver" type="event" x="96" y="96" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog spyder_scoop_weaver2"/>
     <property name="behav1" value="talk spyder_scoop_weaver"/>
-    <property name="cond1" value="is variable_set scoopweaver:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_scoop_weaver"/>
     <property name="cond2" value="not variable_set scooplandrace:yes"/>
    </properties>
   </object>

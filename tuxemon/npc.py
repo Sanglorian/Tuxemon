@@ -56,6 +56,7 @@ class NPCState(TypedDict, total=False):
     missions: Sequence[Mapping[str, Any]]
     items: Sequence[Mapping[str, Any]]
     monsters: Sequence[Mapping[str, Any]]
+    player_slug: str
     player_name: str
     player_steps: float
     monster_boxes: dict[str, Sequence[Mapping[str, Any]]]
@@ -177,6 +178,7 @@ class NPC(Entity[NPCState]):
             "template": self.template.model_dump(),
             "missions": self.mission_controller.encode_missions(),
             "monsters": self.party.encode_party(),
+            "player_slug": self.slug,
             "player_name": self.name,
             "player_steps": self.steps,
             "monster_boxes": self.monster_boxes.get_state(),
@@ -206,6 +208,7 @@ class NPC(Entity[NPCState]):
         self.items.decode_items(save_data)
         self.party.decode_party(save_data)
         self.mission_controller.decode_missions(save_data.get("missions"))
+        self.slug = save_data["player_slug"]
         self.name = save_data["player_name"]
         self.steps = save_data["player_steps"]
         self.money_controller.load(save_data)
@@ -245,7 +248,9 @@ class NPC(Entity[NPCState]):
             destination: Desired final position.
         """
         self.pathfinding = destination
-        path = self.world.pathfind(self.tile_pos, destination, self.facing)
+        path = self.client.pathfinder.pathfind(
+            self.tile_pos, destination, self.facing
+        )
         if path:
             self.path = list(path)
             self.next_waypoint()

@@ -129,7 +129,6 @@ class TuxemonConfig:
         # [player]
         player = self.config["player"]
         self.player_animation_speed: float = player["animation_speed"]
-        self.player_npc: str = player["player_npc"]
         self.player_walkrate: float = player["player_walkrate"]
         self.player_runrate: float = player["player_runrate"]
 
@@ -335,7 +334,6 @@ def generate_default_config() -> dict[str, Any]:
         },
         "player": {
             "animation_speed": 0.15,
-            "player_npc": "npc_red",
             "player_walkrate": 3.75,
             "player_runrate": 7.35,
         },

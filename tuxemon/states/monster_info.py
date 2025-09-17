@@ -195,7 +195,32 @@ class MonsterInfoState(PygameMenuState):
             float=True,
             font_color=(0x5D, 0x41, 0x07),
         )
-        lab10.translate(fxw((35/256)), fxh((114/144)))
+        lab10.translate(fxw((35/256)), fxh((117/144)))
+
+
+        # type icons (first and second type separately)
+        types = monster.types.current
+
+        if len(types) >= 1:
+            type1_icon = self._create_image(f"gfx/ui/icons/element/{types[0].slug}_type_watermark.png")
+            type1_icon.scale(prepare.SCALE, prepare.SCALE)
+            icon1_widget = menu.add.image(image_path=type1_icon)
+            icon1_widget.set_float(origin_position=True)
+            # Position of type 1 (set wherever you want)
+            icon1_widget.translate(fxw(148.4/256), fxh(59/144))
+
+        if len(types) >= 2:
+            type2_icon = self._create_image(f"gfx/ui/icons/element/{types[1].slug}_type_watermark.png")
+            type2_icon.scale(prepare.SCALE, prepare.SCALE)
+            icon2_widget = menu.add.image(image_path=type2_icon)
+            icon2_widget.set_float(origin_position=True)
+            # Position of type 2 (independent from type 1)
+            icon2_widget.translate(fxw(127/256), fxh(43/144))
+
+
+
+
+
         # hp
         lab11: Any = menu.add.label(
             title=f"{monster.hp}",

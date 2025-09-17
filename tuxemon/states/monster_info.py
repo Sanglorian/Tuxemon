@@ -297,7 +297,7 @@ class MonsterInfoState(PygameMenuState):
             raise ValueError("No monster")
         width, height = prepare.SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_MONSTER_INFO)
+        theme = self._setup_theme(prepare.INDIV_INFO)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
 

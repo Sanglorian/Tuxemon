@@ -39,6 +39,7 @@ from tuxemon.state.loader import StateLoader
 from tuxemon.state.manager import StateManager
 from tuxemon.state.repository import StateRepository
 from tuxemon.state.state import State
+from tuxemon.teleporter import Teleporter
 from tuxemon.ui.cipher_processor import CipherProcessor
 
 StateType = TypeVar("StateType", bound=State)
@@ -141,6 +142,14 @@ class BaseClient(ABC):
             self.map_manager,
             self.boundary,
             self.event_engine,
+        )
+        self.teleporter = Teleporter(
+            self.boundary,
+            self.map_manager,
+            self.map_transition,
+            self.movement_manager,
+            self.npc_manager,
+            self.state_manager,
         )
 
         # Various Sessions

@@ -234,7 +234,6 @@ def _handle_loss(
 ) -> str:
     """Handles the case where the human player lost the battle."""
     info = {"name": loser.name.upper()}
-    set_var(session, "teleport_clinic", OutputBattle.lost.value)
 
     if trainer_battle:
         if loser.is_player:
@@ -267,7 +266,6 @@ def _handle_draw(
     """Handles the case where the battle was a draw."""
     defeat = list(players)
     defeat.remove(player)
-    set_var(session, "teleport_clinic", OutputBattle.draw.value)
 
     if trainer_battle:
         set_var(session, "battle_last_result", OutputBattle.draw.value)

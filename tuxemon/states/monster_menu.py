@@ -76,9 +76,11 @@ class MonsterMenuState(Menu[Optional[Monster]]):
     def calc_menu_items_rect(self) -> Rect:
         width, height = self.rect.size
         left = width // 2.25
-        top = height // 12
+        top_margin = tools.scale(6)
         width //= 2
-        return Rect(left, top, width, height - top * 2)
+        bottom_margin = tools.scale(8)
+        available_height = max(height - top_margin - bottom_margin, 0)
+        return Rect(int(left), top_margin, width, available_height)
 
     def initialize_items(
         self,
@@ -412,11 +414,16 @@ class MonsterSpriteDisplay:
                 self.sprite = monster.get_sprite("menu")
                 self.menu_state.sprites.add(self.sprite)
             if self.sprite is not None:
+                menu_items = self.menu_state.menu_items
+                menu_items.update_rect_from_parent()
                 self.sprite.rect.x = prepare.SCREEN_SIZE[0] - (
                     self.sprite.rect.width
                     + int(prepare.SCREEN_SIZE[0] * 0.005)
                 )
-                self.sprite.rect.y = rect.y + (self.sprite.rect.height)
+                self.sprite.rect.y = (
+                    menu_items.rect.top + rect.y + tools.scale(2)
+                )
+
         else:
             if self.sprite is not None:
                 self.menu_state.sprites.remove(self.sprite)

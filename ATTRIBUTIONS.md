@@ -1841,9 +1841,6 @@ Adapted by Jaskrendix from a sprite by Henrique Lazarini from the CC0 "496 pixel
 * ["icon_stuck.png"](https://wiki.tuxemon.org/File:Slow.png)
 [https://opengameart.org/content/rpg-ui-icons CC0 on OGA]
 
-* ["icon_tired.png"](https://wiki.tuxemon.org/File:Tired.png)
-[https://opengameart.org/content/smoke-fire-animated-particle-16x16 CC BY in OGA]
-
 * ["icon_wasting.png"](https://wiki.tuxemon.org/File:Poison-icon.png)
 Unknown artist. Found in Tuxemon code. 
 

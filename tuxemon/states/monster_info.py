@@ -16,7 +16,7 @@ from tuxemon.monster import Monster
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 from tuxemon.time_handler import today_ordinal
-from tuxemon.tools import fix_measure
+from tuxemon.tools import fix_measure, transform_resource_filename
 
 lookup_cache: dict[str, MonsterModel] = {}
 
@@ -199,9 +199,10 @@ class MonsterInfoState(PygameMenuState):
         lab10: Any = menu.add.label(
             title=reference,
             label_id="capture",
-            font_size=self.font_type.big,
+            font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
+            font_name=transform_resource_filename("font", "Pizel.ttf"),
             font_color=(0x5D, 0x41, 0x07),
         )
         lab10.translate(fxw((35 / 256)), fxh((117 / 144)))

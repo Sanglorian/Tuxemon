@@ -21,6 +21,12 @@ from tuxemon.tools import fix_measure
 lookup_cache: dict[str, MonsterModel] = {}
 
 
+import json
+
+with open("mods/tuxemon/db/taste/taste.json", "r") as f:
+    taste_map = json.load(f)
+
+
 def _lookup_monsters() -> None:
     monsters = list(db.database["monster"])
     for mon in monsters:
@@ -215,7 +221,7 @@ class MonsterInfoState(PygameMenuState):
             icon2_widget = menu.add.image(image_path=type2_icon)
             icon2_widget.set_float(origin_position=True)
             # Position of type 2 (independent from type 1)
-            icon2_widget.translate(fxw(127/256), fxh(43/144))
+            icon2_widget.translate(fxw(131/256), fxh(43/144))
 
 
 
@@ -230,7 +236,7 @@ class MonsterInfoState(PygameMenuState):
             float=True,
             font_color=(0x5D, 0x41, 0x07),
         )
-        lab11.translate(fxw((199/256)), fxh(32.8/144))
+        lab11.translate(fxw((202/256)), fxh(32.8/144))
         # armour
         lab12: Any = menu.add.label(
             title=f"{monster.armour}",
@@ -240,7 +246,7 @@ class MonsterInfoState(PygameMenuState):
             float=True,
             font_color=(0x5D, 0x41, 0x07),
         )
-        lab12.translate(fxw((199/256)), fxh(45.8/144))
+        lab12.translate(fxw((202/256)), fxh(45.8/144))
         # dodge
         lab13: Any = menu.add.label(
             title=f"{monster.dodge}",
@@ -250,7 +256,7 @@ class MonsterInfoState(PygameMenuState):
             float=True,
             font_color=(0x5D, 0x41, 0x07),
         )
-        lab13.translate(fxw(199/256), fxh(58.8/144))
+        lab13.translate(fxw(202/256), fxh(58.8/144))
         # melee
         lab14: Any = menu.add.label(
             title=f"{monster.melee}",
@@ -260,7 +266,7 @@ class MonsterInfoState(PygameMenuState):
             float=True,
             font_color=(0x5D, 0x41, 0x07),
         )
-        lab14.translate(fxw(199/256), fxh(70.8/144))
+        lab14.translate(fxw(202/256), fxh(70.8/144))
         # ranged
         lab15: Any = menu.add.label(
             title=f"{monster.ranged}",
@@ -270,7 +276,7 @@ class MonsterInfoState(PygameMenuState):
             float=True,
             font_color=(0x5D, 0x41, 0x07),
         )
-        lab15.translate(fxw(199/256), fxh(83.8/144))
+        lab15.translate(fxw(202/256), fxh(83.8/144))
         # speed
         lab16: Any = menu.add.label(
             title=f"{monster.speed}",
@@ -280,7 +286,47 @@ class MonsterInfoState(PygameMenuState):
             float=True,
             font_color=(0x5D, 0x41, 0x07),
         )
-        lab16.translate(fxw(199/256), fxh(96.8/144))
+        lab16.translate(fxw(202/256), fxh(96.8/144))
+
+
+        stat_positions = {
+            "hp": (fxw((181.6/256)), fxh(34/144)),
+            "armour": (fxw((181.6/256)), fxh(47/144)),
+            "dodge": (fxw((181.6/256)), fxh(47/144)),
+            "melee": (fxw(181.6/256), fxh(60/144)),
+            "ranged": (fxw(181.6/256), fxh(85/144)),
+            "speed": (fxw(181.6/256), fxh(98/144)),
+        }
+
+        plus_icon = self._create_image("gfx/ui/icons/plusminus/plus.png")
+        minus_icon = self._create_image("gfx/ui/icons/plusminus/minus.png")
+        plus_icon.scale(prepare.SCALE, prepare.SCALE)
+        minus_icon.scale(prepare.SCALE, prepare.SCALE)
+
+        # Helper: find which stat a taste affects
+        def get_stat_for_taste(slug: str) -> str | None:
+            for entry in taste_map:
+                if entry["slug"] == slug.lower():
+                    return entry["modifiers"][0]["values"][0]
+            return None
+
+        # Warm taste gives +10%
+        warm_stat = get_stat_for_taste(monster.taste_warm)
+        if warm_stat in stat_positions:
+            x, y = stat_positions[warm_stat]
+            plus = menu.add.image(image_path=plus_icon.copy())
+            plus.set_float(origin_position=True)
+            plus.translate(x + fxw(0.08), y)
+
+        # Cold taste gives -10%
+        cold_stat = get_stat_for_taste(monster.taste_cold)
+        if cold_stat in stat_positions:
+            x, y = stat_positions[cold_stat]
+            minus = menu.add.image(image_path=minus_icon.copy())
+            minus.set_float(origin_position=True)
+            minus.translate(x + fxw(0.08), y)
+
+
 
 
         # image

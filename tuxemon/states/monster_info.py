@@ -13,6 +13,7 @@ from tuxemon.db import MonsterModel, db
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.monster import Monster
+from tuxemon.session import local_session
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 from tuxemon.time_handler import today_ordinal
@@ -329,23 +330,29 @@ class MonsterInfoState(PygameMenuState):
             minus.translate(x + fxw(0.08), y)
 
         # bond icon
-        bond_value = monster.bond
+        try:
+            player = local_session.player
+        except ValueError:
+            player = None
 
-        if bond_value <= 20:
-            bond_file = "gfx/ui/icons/bond/bond1.png"
-        elif bond_value <= 50:
-            bond_file = "gfx/ui/icons/bond/bond2.png"
-        elif bond_value <= 75:
-            bond_file = "gfx/ui/icons/bond/bond3.png"
-        else:
-            bond_file = "gfx/ui/icons/bond/bond4.png"
+        if player is not None and player.items.find_item("friendship_scroll"):
+            bond_value = monster.bond
 
-        bond_icon = self._create_image(bond_file)
-        bond_icon.scale(prepare.SCALE, prepare.SCALE)
-        bond_widget = menu.add.image(image_path=bond_icon)
-        bond_widget.set_float(origin_position=True)
+            if bond_value <= 20:
+                bond_file = "gfx/ui/icons/bond/bond1.png"
+            elif bond_value <= 50:
+                bond_file = "gfx/ui/icons/bond/bond2.png"
+            elif bond_value <= 75:
+                bond_file = "gfx/ui/icons/bond/bond3.png"
+            else:
+                bond_file = "gfx/ui/icons/bond/bond4.png"
 
-        bond_widget.translate(fxw(13.4 / 256), fxh(26 / 144))
+            bond_icon = self._create_image(bond_file)
+            bond_icon.scale(prepare.SCALE, prepare.SCALE)
+            bond_widget = menu.add.image(image_path=bond_icon)
+            bond_widget.set_float(origin_position=True)
+
+            bond_widget.translate(fxw(13.4 / 256), fxh(26 / 144))
 
         # image
         new_image = self._create_image(monster.sprite_handler.front_path)

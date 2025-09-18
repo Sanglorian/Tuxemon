@@ -409,7 +409,7 @@ class MonsterSpriteDisplay:
         self.monster = monster
         if monster:
             if self.sprite is None:
-                self.sprite = monster.get_sprite("menu", 0.25, 2.5)
+                self.sprite = monster.get_sprite("menu")
                 self.menu_state.sprites.add(self.sprite)
             if self.sprite is not None:
                 self.sprite.rect.x = prepare.SCREEN_SIZE[0] - (

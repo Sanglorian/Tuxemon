@@ -102,6 +102,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.remove_tracker.RemoveTrackerAction
 .. autoscriptinfoclass:: tuxemon.event.actions.rename_monster.RenameMonsterAction
 .. autoscriptinfoclass:: tuxemon.event.actions.rename_player.RenamePlayerAction
+.. autoscriptinfoclass:: tuxemon.event.actions.replace_techs_from_yaml.ReplaceTechsFromYamlAction
 .. autoscriptinfoclass:: tuxemon.event.actions.rumble.RumbleAction
 .. autoscriptinfoclass:: tuxemon.event.actions.save_game.SaveGameAction
 .. autoscriptinfoclass:: tuxemon.event.actions.screen_transition.ScreenTransitionAction

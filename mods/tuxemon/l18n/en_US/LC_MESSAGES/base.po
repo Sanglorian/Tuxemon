@@ -19,13 +19,13 @@ msgid "fire_berry"
 msgstr "Fire Berry"
 
 msgid "fire_berry_description"
-msgstr "It changes monster type into fire."
+msgstr "It changes monster type to Fire."
 
 msgid "metal_cherry"
 msgstr "Metal Cherry"
 
 msgid "metal_cherry_description"
-msgstr "It changes monster type into metal."
+msgstr "It changes monster type to Metal."
 
 msgid "potion"
 msgstr "Potion"

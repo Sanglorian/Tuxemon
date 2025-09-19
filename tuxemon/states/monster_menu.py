@@ -75,12 +75,18 @@ class MonsterMenuState(Menu[Optional[Monster]]):
 
     def calc_menu_items_rect(self) -> Rect:
         width, height = self.rect.size
-        left = width // 2.25
+        left = width // 2.5
+        left_offset = tools.scale(8)
         top_margin = tools.scale(6)
         width //= 2
         bottom_margin = tools.scale(6)
         available_height = max(height - top_margin - bottom_margin, 0)
-        return Rect(int(left), top_margin, width, available_height)
+        return Rect(
+            max(int(left) - left_offset, 0),
+            top_margin,
+            width,
+            available_height,
+        )
 
     def initialize_items(
         self,

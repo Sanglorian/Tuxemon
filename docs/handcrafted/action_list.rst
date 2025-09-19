@@ -92,6 +92,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.random_item.RandomItemAction
 .. autoscriptinfoclass:: tuxemon.event.actions.random_monster.RandomMonsterAction
 .. autoscriptinfoclass:: tuxemon.event.actions.remove_collision.RemoveCollisionAction
+.. autoscriptinfoclass:: tuxemon.event.actions.replace_party_from_yaml.ReplacePartyFromYamlAction
 .. autoscriptinfoclass:: tuxemon.event.actions.remove_contacts.RemoveContactsAction
 .. autoscriptinfoclass:: tuxemon.event.actions.remove_held_item.RemoveHeldItemction
 .. autoscriptinfoclass:: tuxemon.event.actions.remove_monster.RemoveMonsterAction

@@ -137,6 +137,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.start_double_battle.StartDoubleBattleAction
 .. autoscriptinfoclass:: tuxemon.event.actions.stop_cinema_mode.StopCinemaModeAction
 .. autoscriptinfoclass:: tuxemon.event.actions.store_monster.StoreMonsterAction
+.. autoscriptinfoclass:: tuxemon.event.actions.store_party.StorePartyAction
 .. autoscriptinfoclass:: tuxemon.event.actions.teleport_faint.TeleportFaintAction
 .. autoscriptinfoclass:: tuxemon.event.actions.teleport.TeleportAction
 .. autoscriptinfoclass:: tuxemon.event.actions.toggle_evolution_block.ToggleEvolutionBlockAction

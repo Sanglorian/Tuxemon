@@ -78,7 +78,7 @@ class MonsterMenuState(Menu[Optional[Monster]]):
         left = width // 2.25
         top_margin = tools.scale(6)
         width //= 2
-        bottom_margin = tools.scale(8)
+        bottom_margin = tools.scale(6)
         available_height = max(height - top_margin - bottom_margin, 0)
         return Rect(int(left), top_margin, width, available_height)
 
@@ -423,7 +423,7 @@ class MonsterSpriteDisplay:
                     + int(prepare.SCREEN_SIZE[0] * 0.005)
                 )
                 slot_top = menu_items.rect.top + rect.y
-                extra_spacing = tools.scale(1.4) * slot_index
+                extra_spacing = tools.scale(1) * slot_index
                 self.sprite.rect.y = slot_top - tools.scale(4) + extra_spacing
 
         else:

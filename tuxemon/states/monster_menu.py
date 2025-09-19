@@ -165,7 +165,7 @@ class MonsterMenuState(Menu[Optional[Monster]]):
             )
             if monster:
                 monster_sprite_display = MonsterSpriteDisplay(self)
-                monster_sprite_display.update(monster, item.rect)
+                monster_sprite_display.update(monster, item.rect, index)
                 self.monster_sprite_displays.append(monster_sprite_display)
 
     def draw_monster_info(
@@ -407,7 +407,9 @@ class MonsterSpriteDisplay:
         self.sprite: Optional[Sprite] = None
         self.monster: Optional[Monster] = None
 
-    def update(self, monster: Optional[Monster], rect: Rect) -> None:
+    def update(
+        self, monster: Optional[Monster], rect: Rect, slot_index: int
+    ) -> None:
         self.monster = monster
         if monster:
             if self.sprite is None:
@@ -420,9 +422,9 @@ class MonsterSpriteDisplay:
                     self.sprite.rect.width
                     + int(prepare.SCREEN_SIZE[0] * 0.005)
                 )
-                self.sprite.rect.y = (
-                    menu_items.rect.top + rect.y + tools.scale(2)
-                )
+                slot_top = menu_items.rect.top + rect.y
+                extra_spacing = tools.scale(1.4) * slot_index
+                self.sprite.rect.y = slot_top - tools.scale(4) + extra_spacing
 
         else:
             if self.sprite is not None:

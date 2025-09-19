@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="623">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="624">
  <properties>
   <property name="east" value="route2"/>
   <property name="edges" value="clamped"/>
@@ -21,7 +21,7 @@
  </layer>
  <layer id="2" name="Tile Layer 2" width="40" height="40">
   <data encoding="base64" compression="zlib">
-   eJztmEEKgzAQRXMH3dTWS/QSbttDdNnWE3mDdlvPVFwWu+1AI8hAqmaq+ZF58BkIGD4vQcE2MeZNaUHnNjVml+LOrica3B/nlPnv3X/Wd5/Y/YVG/clQfzLW6O+1mbdTn6n+um5LdeT+Crt+F3w3/onLH0o/1/1D6cf9HWwvlH7c35N6lZQGpN8a339L4vL3oPOt7RlXNPf58F635Hd8GOvvGKify985/+ZCuVLKEf3mINb7h4L6k6H+ZKg/GepPhvqTof5kxOYPdYb+Pz80PySr1rI=
+   eJztmE0KwjAQRnOHduNPL9FLiDs9hOBG7Ym8gW71TOJS6taBJiADaTqOSaZlHgwTSjt8vIQW2hbGvKFaoX1RGrMs5XaXMzbrOe1+7A+zI87zPevWe+K81P6ohPzlRv3xUH88pujvNYub6RuqP5ctVUbsb2WvXxnfjX/i8ycln+/8ScmH/W1sLin5sL8H5GqgnkLyTfH9lxKfvxvs793u8Rl6XYVnXYr++oWh/raZ8vn8HaqujlAnqGZAvhiM9fxJQf3xUH881B8P9cdD/fFQfzzG5k9qz/1/PtQ/thvXlw==
   </data>
  </layer>
  <layer id="3" name="Tile Layer 3" width="40" height="40">
@@ -255,6 +255,15 @@
     <property name="act2" value="play_map_animation grass,0.1,noloop,player"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_moved player"/>
+   </properties>
+  </object>
+  <object id="623" name="Sign: Add Barking" type="event" x="416" y="48" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog addbarking"/>
+    <property name="act2" value="get_player_monster barkingtarget"/>
+    <property name="act3" value="add_tech barkingtarget,barking"/>
+    <property name="cond1" value="is char_facing_tile player"/>
+    <property name="cond2" value="is button_pressed K_RETURN"/>
    </properties>
   </object>
  </objectgroup>

@@ -155,7 +155,7 @@ class MonsterInfoState(PygameMenuState):
             font_name=thin_font_path,
             font_color=light_color,
         )
-        height_label.translate(fxw((60 / 256)), fxh((34.8 / 144)))
+        height_label.translate(fxw((79 / 256)), fxh((25.8 / 144)))
 
         weight_label: Any = menu.add.label(
             title=T.translate("weight"),
@@ -166,7 +166,7 @@ class MonsterInfoState(PygameMenuState):
             font_name=thin_font_path,
             font_color=light_color,
         )
-        weight_label.translate(fxw((103 / 256)), fxh((34.8 / 144)))
+        weight_label.translate(fxw((118 / 256)), fxh((25.8 / 144)))
 
         tastes_label: Any = menu.add.label(
             title=T.translate("tastes"),
@@ -177,7 +177,7 @@ class MonsterInfoState(PygameMenuState):
             font_name=thin_font_path,
             font_color=light_color,
         )
-        tastes_label.translate(fxw((84 / 256)), fxh((50 / 144)))
+        tastes_label.translate(fxw((79 / 256)), fxh((48.8 / 144)))
 
         exp_label: Any = menu.add.label(
             title=T.translate("exp_to_next_level"),
@@ -188,7 +188,7 @@ class MonsterInfoState(PygameMenuState):
             font_name=thin_font_path,
             font_color=light_color,
         )
-        exp_label.translate(fxw((84 / 256)), fxh((76 / 144)))
+        exp_label.translate(fxw((79 / 256)), fxh((78.8 / 144)))
 
         # gender
         gender_symbol = ""
@@ -351,16 +351,16 @@ class MonsterInfoState(PygameMenuState):
         lab16.translate(fxw(200 / 256), fxh(98.8 / 144))
 
         stat_positions = {
-            "hp": (fxw((179.6 / 256)), fxh(34.8 / 144)),
-            "armour": (fxw((179.6 / 256)), fxh(47.8 / 144)),
-            "dodge": (fxw((179.6 / 256)), fxh(60.8 / 144)),
-            "melee": (fxw(179.6 / 256), fxh(72.8 / 144)),
-            "ranged": (fxw(179.6 / 256), fxh(85.8 / 144)),
-            "speed": (fxw(179.6 / 256), fxh(98.8 / 144)),
+            "hp": (fxw((165 / 256)), fxh(34.8 / 144)),
+            "armour": (fxw((165 / 256)), fxh(47.8 / 144)),
+            "dodge": (fxw((165 / 256)), fxh(60.8 / 144)),
+            "melee": (fxw(165 / 256), fxh(72.8 / 144)),
+            "ranged": (fxw(165 / 256), fxh(85.8 / 144)),
+            "speed": (fxw(165 / 256), fxh(98.8 / 144)),
         }
 
         stat_labels = {
-            "hp": T.translate("hp"),
+            "hp": T.translate("short_hp"),
             "armour": T.translate("armour"),
             "dodge": T.translate("dodge"),
             "melee": T.translate("melee"),
@@ -399,7 +399,7 @@ class MonsterInfoState(PygameMenuState):
             x, y = stat_positions[warm_stat]
             plus = menu.add.image(image_path=plus_icon.copy())
             plus.set_float(origin_position=True)
-            plus.translate(x + fxw(20 / 256), y)
+            plus.translate(x + fxw(36 / 256), y + (0.2 / 144))
 
         # Cold taste gives -10%
         cold_stat = get_stat_for_taste(monster.taste_cold)
@@ -407,7 +407,7 @@ class MonsterInfoState(PygameMenuState):
             x, y = stat_positions[cold_stat]
             minus = menu.add.image(image_path=minus_icon.copy())
             minus.set_float(origin_position=True)
-            minus.translate(x + fxw(20 / 256), y)
+            minus.translate(x + fxw(36 / 256), y + (0.2 / 144))
 
         # bond icon
         try:

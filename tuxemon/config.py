@@ -226,6 +226,7 @@ class LocaleConfig:
         self.font_file: str = game["font_file"]
         self.thin_font_file: str = game.get("thin_font_file")
 
+
 class InputConfig:
     """Handles input-related configurations."""
 

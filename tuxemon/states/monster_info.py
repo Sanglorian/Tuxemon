@@ -50,7 +50,7 @@ class MonsterInfoState(PygameMenuState):
         menu: pygame_menu.Menu,
         monster: Monster,
     ) -> None:
-        
+
         fxw: Callable[[float], int] = lambda r: fix_measure(menu._width, r)
         fxh: Callable[[float], int] = lambda r: fix_measure(menu._height, r)
         menu._width = fxw(1)
@@ -327,7 +327,7 @@ class MonsterInfoState(PygameMenuState):
             x, y = stat_positions[warm_stat]
             plus = menu.add.image(image_path=plus_icon.copy())
             plus.set_float(origin_position=True)
-            plus.translate(x + fxw(20/256), y)
+            plus.translate(x + fxw(20 / 256), y)
 
         # Cold taste gives -10%
         cold_stat = get_stat_for_taste(monster.taste_cold)
@@ -335,7 +335,7 @@ class MonsterInfoState(PygameMenuState):
             x, y = stat_positions[cold_stat]
             minus = menu.add.image(image_path=minus_icon.copy())
             minus.set_float(origin_position=True)
-            minus.translate(x + fxw(20/256), y)
+            minus.translate(x + fxw(20 / 256), y)
 
         # bond icon
         try:

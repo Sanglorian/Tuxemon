@@ -87,13 +87,18 @@ class MonsterInfoState(PygameMenuState):
             unit_height = prepare.U_FT
         # name
         menu._auto_centering = False
+        thin_font_path = transform_resource_filename(
+            "font", prepare.CONFIG.locale.thin_font_file
+        )
+        dark_color = (0x5D, 0x41, 0x07)
+        light_color = (0x8A, 0x6F, 0x30)
         lab1: Any = menu.add.label(
             title=f"{monster.name.upper()}",
             label_id="name",
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab1.translate(fxw((37 / 256)), fxh((9.8 / 144)))
         # level + exp
@@ -104,7 +109,7 @@ class MonsterInfoState(PygameMenuState):
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab2.translate(fxw((169 / 256)), fxh((12.8 / 144)))
         # XP progress to next level
@@ -126,7 +131,7 @@ class MonsterInfoState(PygameMenuState):
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab3.translate(fxw((84 / 256)), fxh((86.8 / 144)))
 
@@ -136,9 +141,54 @@ class MonsterInfoState(PygameMenuState):
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab3b.translate(fxw((92 / 256)), fxh((96.8 / 144)))
+
+        # section labels
+        height_label: Any = menu.add.label(
+            title=T.translate("height"),
+            label_id="label-height",
+            font_size=self.font_type.biggest,
+            align=locals.ALIGN_LEFT,
+            float=True,
+            font_name=thin_font_path,
+            font_color=light_color,
+        )
+        height_label.translate(fxw((60 / 256)), fxh((34.8 / 144)))
+
+        weight_label: Any = menu.add.label(
+            title=T.translate("weight"),
+            label_id="label-weight",
+            font_size=self.font_type.biggest,
+            align=locals.ALIGN_LEFT,
+            float=True,
+            font_name=thin_font_path,
+            font_color=light_color,
+        )
+        weight_label.translate(fxw((103 / 256)), fxh((34.8 / 144)))
+
+        tastes_label: Any = menu.add.label(
+            title=T.translate("tastes"),
+            label_id="label-tastes",
+            font_size=self.font_type.biggest,
+            align=locals.ALIGN_LEFT,
+            float=True,
+            font_name=thin_font_path,
+            font_color=light_color,
+        )
+        tastes_label.translate(fxw((84 / 256)), fxh((50 / 144)))
+
+        exp_label: Any = menu.add.label(
+            title=T.translate("exp_to_next_level"),
+            label_id="label-exp-next",
+            font_size=self.font_type.biggest,
+            align=locals.ALIGN_LEFT,
+            float=True,
+            font_name=thin_font_path,
+            font_color=light_color,
+        )
+        exp_label.translate(fxw((84 / 256)), fxh((76 / 144)))
 
         # gender
         gender_symbol = ""
@@ -153,7 +203,7 @@ class MonsterInfoState(PygameMenuState):
                 label_id="gender",
                 font_size=self.font_type.biggest,
                 align=locals.ALIGN_LEFT,
-                font_color=(0x5D, 0x41, 0x07),
+                font_color=dark_color,
                 float=True,
             )
             lab_gender.translate(fxw((11 / 256)), fxh((9 / 144)))
@@ -165,7 +215,7 @@ class MonsterInfoState(PygameMenuState):
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab4.translate(fxw((122 / 256)), fxh((34.8 / 144)))
         # height
@@ -175,12 +225,11 @@ class MonsterInfoState(PygameMenuState):
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab5.translate(fxw((84 / 256)), fxh((34.8 / 144)))
 
         # taste
-        tastes = T.translate("tastes")
         cold = T.translate(f"taste_{monster.taste_cold.lower()}")
         warm = T.translate(f"taste_{monster.taste_warm.lower()}")
         lab8: Any = menu.add.label(
@@ -189,7 +238,7 @@ class MonsterInfoState(PygameMenuState):
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab8.translate(fxw((84 / 256)), fxh((58 / 144)))
 
@@ -199,15 +248,12 @@ class MonsterInfoState(PygameMenuState):
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab9.translate(fxw((84 / 256)), fxh((66 / 144)))
 
         # capture
         reference = get_acquisition_reference(monster)
-        thin_font_path = transform_resource_filename(
-            "font", prepare.CONFIG.locale.thin_font_file
-        )
 
         lab10: Any = menu.add.label(
             title=reference,
@@ -216,7 +262,7 @@ class MonsterInfoState(PygameMenuState):
             align=locals.ALIGN_LEFT,
             float=True,
             font_name=thin_font_path,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab10.translate(fxw((38 / 256)), fxh((118.8 / 144)))
 
@@ -250,7 +296,7 @@ class MonsterInfoState(PygameMenuState):
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab11.translate(fxw((200 / 256)), fxh(34.8 / 144))
         # armour
@@ -260,7 +306,7 @@ class MonsterInfoState(PygameMenuState):
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab12.translate(fxw((200 / 256)), fxh(47.8 / 144))
         # dodge
@@ -270,7 +316,7 @@ class MonsterInfoState(PygameMenuState):
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab13.translate(fxw(200 / 256), fxh(60.8 / 144))
         # melee
@@ -280,7 +326,7 @@ class MonsterInfoState(PygameMenuState):
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab14.translate(fxw(200 / 256), fxh(72.8 / 144))
         # ranged
@@ -290,7 +336,7 @@ class MonsterInfoState(PygameMenuState):
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab15.translate(fxw(200 / 256), fxh(85.8 / 144))
         # speed
@@ -300,18 +346,40 @@ class MonsterInfoState(PygameMenuState):
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_color=(0x5D, 0x41, 0x07),
+            font_color=dark_color,
         )
         lab16.translate(fxw(200 / 256), fxh(98.8 / 144))
 
         stat_positions = {
-            "hp": (fxw((179.6 / 256)), fxh(36 / 144)),
-            "armour": (fxw((179.6 / 256)), fxh(49 / 144)),
-            "dodge": (fxw((179.6 / 256)), fxh(49 / 144)),
-            "melee": (fxw(179.6 / 256), fxh(62 / 144)),
-            "ranged": (fxw(179.6 / 256), fxh(87 / 144)),
-            "speed": (fxw(179.6 / 256), fxh(100 / 144)),
+            "hp": (fxw((179.6 / 256)), fxh(34.8 / 144)),
+            "armour": (fxw((179.6 / 256)), fxh(47.8 / 144)),
+            "dodge": (fxw((179.6 / 256)), fxh(60.8 / 144)),
+            "melee": (fxw(179.6 / 256), fxh(72.8 / 144)),
+            "ranged": (fxw(179.6 / 256), fxh(85.8 / 144)),
+            "speed": (fxw(179.6 / 256), fxh(98.8 / 144)),
         }
+
+        stat_labels = {
+            "hp": T.translate("hp"),
+            "armour": T.translate("armour"),
+            "dodge": T.translate("dodge"),
+            "melee": T.translate("melee"),
+            "ranged": T.translate("ranged"),
+            "speed": T.translate("speed"),
+        }
+
+        for stat, title in stat_labels.items():
+            stat_label = menu.add.label(
+                title=title,
+                label_id=f"label-{stat}",
+                font_size=self.font_type.biggest,
+                align=locals.ALIGN_LEFT,
+                float=True,
+                font_name=thin_font_path,
+                font_color=light_color,
+            )
+            x, y = stat_positions[stat]
+            stat_label.translate(x, y)
 
         plus_icon = self._create_image("gfx/ui/icons/plusminus/plus.png")
         minus_icon = self._create_image("gfx/ui/icons/plusminus/minus.png")

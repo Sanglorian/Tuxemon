@@ -205,13 +205,17 @@ class MonsterInfoState(PygameMenuState):
 
         # capture
         reference = get_acquisition_reference(monster)
+        thin_font_path = transform_resource_filename(
+            "font", prepare.CONFIG.locale.thin_font_file
+        )
+
         lab10: Any = menu.add.label(
             title=reference,
             label_id="capture",
             font_size=self.font_type.biggest,
             align=locals.ALIGN_LEFT,
             float=True,
-            font_name=transform_resource_filename("font", "Pizel.ttf"),
+            font_name=thin_font_path,
             font_color=(0x5D, 0x41, 0x07),
         )
         lab10.translate(fxw((38 / 256)), fxh((118.8 / 144)))

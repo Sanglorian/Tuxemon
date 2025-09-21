@@ -4049,6 +4049,9 @@ msgstr "Body Type"
 msgid "monster_menu_release"
 msgstr "Release"
 
+msgid "shop_heal_to"
+msgstr "Heal to {hp} HP"
+
 msgid "shop_buy_free"
 msgstr "FREE!"
 

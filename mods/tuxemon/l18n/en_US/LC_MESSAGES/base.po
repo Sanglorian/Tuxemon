@@ -4055,6 +4055,9 @@ msgstr "FREE!"
 msgid "shop_buy_soldout"
 msgstr "Sold Out!"
 
+msgid "shop_train_to"
+msgstr "Train to Lv. {level}"
+
 msgid "buy"
 msgstr "Buy"
 

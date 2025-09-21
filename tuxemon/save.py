@@ -73,7 +73,7 @@ def capture_screenshot(client: LocalPygameClient) -> Surface:
     Returns:
         Captured image.
     """
-    screenshot = Surface(client.screen.get_size())
+    screenshot = Surface(prepare.SCREEN_SIZE)
     world = client.get_state_by_name(WorldState)
     world.draw(screenshot)
     return screenshot

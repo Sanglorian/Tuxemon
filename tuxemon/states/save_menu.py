@@ -58,7 +58,7 @@ class SaveMenuState(PopUpMenu[None]):
             )
 
     def initialize_items(self) -> None:
-        rect = self.client.screen.get_rect()
+        rect = prepare.SCREEN_RECT.copy()
         slot_rect = Rect(
             0,
             0,

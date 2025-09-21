@@ -78,7 +78,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         self.combat.dialog.alert(message)
 
     def calculate_menu_rectangle(self) -> Rect:
-        rect_screen = self.client.screen.get_rect()
+        rect_screen = prepare.SCREEN_RECT.copy()
         menu_width = rect_screen.w // 2.5
         menu_height = rect_screen.h // 4
         rect = Rect(0, 0, menu_width, menu_height)
@@ -182,7 +182,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         menu.on_menu_selection = swap_it  # type: ignore[assignment]
         menu.is_valid_entry = validate  # type: ignore[assignment]
         menu.anchor("bottom", self.rect.top)
-        menu.anchor("right", self.client.screen.get_rect().right)
+        menu.anchor("right", prepare.SCREEN_RECT.right)
 
         if all(not validate_monster(mon) for mon in self.character.monsters):
             party_unselectable = T.translate("combat_party_unselectable")
@@ -303,7 +303,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
             # position the new menu
             menu.anchor("bottom", self.rect.top)
-            menu.anchor("right", self.client.screen.get_rect().right)
+            menu.anchor("right", prepare.SCREEN_RECT.right)
 
             # set next menu after the selection is made
             menu.on_menu_selection = choose_target  # type: ignore[assignment]
@@ -464,7 +464,7 @@ class CombatTargetMenuState(Menu[Monster]):
 
     def _create_menu(self) -> None:
         """Sets up the menu UI."""
-        rect_screen = self.client.screen.get_rect()
+        rect_screen = prepare.SCREEN_RECT.copy()
         rect = Rect(0, 0, rect_screen.w // 2, rect_screen.h // 4)
         rect.bottomright = rect_screen.w, rect_screen.h
 

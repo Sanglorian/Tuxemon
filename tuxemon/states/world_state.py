@@ -60,7 +60,6 @@ class WorldState(State):
         self.mod_name = extract_mod_name(map_name)
         self.session = session
         self.session.set_world(self)
-        self.screen = self.client.screen
         self.tile_size = prepare.TILE_SIZE
         self.menu_manager = WorldMenuManager(self.client)
         self.teleporter = Teleporter(self.client)
@@ -149,7 +148,6 @@ class WorldState(State):
         Parameters:
             surface: Surface to draw into.
         """
-        self.screen = surface
         if self.client.map_manager.current_map is None:
             raise ValueError("Unable to draw the game world.")
         self.map_renderer.draw(surface, self.client.map_manager.current_map)

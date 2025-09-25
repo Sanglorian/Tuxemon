@@ -11,11 +11,11 @@ from tuxemon import prepare
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu
-from tuxemon.monster import Monster
 from tuxemon.session import local_session
 from tuxemon.sprite import Sprite
 from tuxemon.technique.controller import TechController
 from tuxemon.technique.filter import TechFilter
+from tuxemon.technique.sorter import TechSorter
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import (
     open_choice_dialog,
@@ -39,12 +39,12 @@ class TechniqueMenuState(Menu[Technique]):
         self,
         character: NPC,
         techniques: list[Technique],
-        monster: Optional[Monster] = None,
         tech_filter: Optional[TechFilter] = None,
+        tech_sorter: Optional[TechSorter] = None,
     ) -> None:
         self.char = character
-        self.monster = monster
         self.tech_filter = tech_filter or TechFilter(techniques)
+        self.tech_sorter = tech_sorter or TechSorter()
 
         super().__init__()
 
@@ -109,24 +109,22 @@ class TechniqueMenuState(Menu[Technique]):
         """Get all player techniques."""
         # load the backpack icon
         self.backpack_center = self.rect.width * 0.16, self.rect.height * 0.45
-        if self.monster:
-            sprite = self.monster.sprite_handler.front_path
-        else:
-            sprite = prepare.MISSING_IMAGE
-
-        self.load_sprite(
-            sprite,
-            center=self.backpack_center,
-            layer=100,
-        )
 
         output = self.tech_filter.get_filtered_techniques()
         if not output:
             return
 
-        output = sorted(output, key=lambda x: x.tech_id)
-
-        for tech in output:
+        for tech in self.tech_sorter.sort(output):
+            mon = self.char.party.find_monster_by_tech_id(tech.instance_id)
+            if mon:
+                sprite = mon.sprite_handler.front_path
+            else:
+                sprite = prepare.MISSING_IMAGE
+            self.load_sprite(
+                sprite,
+                center=self.backpack_center,
+                layer=100,
+            )
             yield self.create_technique_menu_item(tech)
 
     def on_menu_selection_change(self) -> None:

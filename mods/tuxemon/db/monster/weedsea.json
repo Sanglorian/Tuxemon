@@ -67,8 +67,22 @@
   ],
   "history": [
     {
-      "mon_slug": "weedlantis",
-      "evo_stage": "stage1"
+      "slug": "weedsea",
+      "stage": "basic",
+      "evolves_from": [],
+      "evolves_into": [
+        "weedlantis",
+        "weedlantis"
+      ]
+    },
+    {
+      "slug": "weedlantis",
+      "stage": "stage1",
+      "evolves_from": [
+        "weedsea",
+        "weedsea"
+      ],
+      "evolves_into": []
     }
   ],
   "terrains": [

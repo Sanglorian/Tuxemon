@@ -41,12 +41,33 @@
   ],
   "history": [
     {
-      "mon_slug": "embazook",
-      "evo_stage": "stage1"
+      "slug": "ignibus",
+      "stage": "basic",
+      "evolves_from": [],
+      "evolves_into": [
+        "eruptibus",
+        "eruptibus",
+        "embazook",
+        "embazook"
+      ]
     },
     {
-      "mon_slug": "eruptibus",
-      "evo_stage": "stage1"
+      "slug": "embazook",
+      "stage": "stage1",
+      "evolves_from": [
+        "ignibus",
+        "ignibus"
+      ],
+      "evolves_into": []
+    },
+    {
+      "slug": "eruptibus",
+      "stage": "stage1",
+      "evolves_from": [
+        "ignibus",
+        "ignibus"
+      ],
+      "evolves_into": []
     }
   ],
   "terrains": [

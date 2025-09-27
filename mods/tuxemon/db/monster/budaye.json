@@ -57,12 +57,33 @@
   ],
   "history": [
     {
-      "mon_slug": "bamboon",
-      "evo_stage": "stage1"
+      "slug": "budaye",
+      "stage": "basic",
+      "evolves_from": [],
+      "evolves_into": [
+        "bamboon",
+        "bamboon",
+        "frondly",
+        "frondly"
+      ]
     },
     {
-      "mon_slug": "frondly",
-      "evo_stage": "stage1"
+      "slug": "bamboon",
+      "stage": "stage1",
+      "evolves_from": [
+        "budaye",
+        "budaye"
+      ],
+      "evolves_into": []
+    },
+    {
+      "slug": "frondly",
+      "stage": "stage1",
+      "evolves_from": [
+        "budaye",
+        "budaye"
+      ],
+      "evolves_into": []
     }
   ],
   "terrains": [

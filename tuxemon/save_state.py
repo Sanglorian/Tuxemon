@@ -34,6 +34,7 @@ class NPCState(TypedDict, total=False):
     items: Sequence[Mapping[str, Any]]
     monsters: Sequence[Mapping[str, Any]]
     player_name: str
+    player_slug: str
     player_steps: float
     monster_boxes: dict[str, Sequence[Mapping[str, Any]]]
     item_boxes: dict[str, Sequence[Mapping[str, Any]]]

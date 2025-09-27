@@ -106,3 +106,27 @@ def get_plugin_paths(
         if mod_plugin_path.is_dir():
             plugin_paths.append(mod_plugin_path)
     return plugin_paths
+
+
+def get_mod_name_from_path(file_path: Path) -> Optional[str]:
+    """
+    Extracts the mod name from a given file path.
+
+    The mod name is assumed to be the directory immediately following
+    the "mods" directory.
+    """
+    try:
+        mod_index = file_path.parts.index("mods")
+        if mod_index + 1 < len(file_path.parts):
+            return file_path.parts[mod_index + 1]
+        else:
+            logger.warning(f"Path ends after 'mods' folder: {file_path}")
+            return None
+    except ValueError:
+        logger.error(f"The path does not contain a 'mods' folder: {file_path}")
+        return None
+    except IndexError:
+        logger.error(
+            f"Path is too short to contain a mod name after 'mods': {file_path}"
+        )
+        return None

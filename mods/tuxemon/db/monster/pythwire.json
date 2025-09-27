@@ -26,11 +26,15 @@
   "evolutions": [
     {
       "monster_slug": "ouroboutlet",
-      "item": "fire_booster"
+      "item": {
+        "fire_booster": 1.0
+      }
     },
     {
       "monster_slug": "sockeserp",
-      "item": "metal_booster"
+      "item": {
+        "metal_booster": 1.0
+      }
     }
   ],
   "history": [

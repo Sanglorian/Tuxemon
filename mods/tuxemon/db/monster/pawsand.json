@@ -46,15 +46,21 @@
   "evolutions": [
     {
       "monster_slug": "knightsand",
-      "item": "sweet_sand"
+      "item": {
+        "sweet_sand": 1.0
+      }
     },
     {
       "monster_slug": "bishosand",
-      "item": "earth_booster"
+      "item": {
+        "earth_booster": 1.0
+      }
     },
     {
       "monster_slug": "rooksand",
-      "item": "pyramidion"
+      "item": {
+        "pyramidion": 1.0
+      }
     }
   ],
   "history": [

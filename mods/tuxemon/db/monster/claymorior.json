@@ -59,7 +59,9 @@
     {
       "at_level": 32,
       "monster_slug": "regalance",
-      "taste_warm": "hearty"
+      "tastes": {
+        "warm": "hearty"
+      }
     }
   ],
   "history": [

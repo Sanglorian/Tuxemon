@@ -9,7 +9,6 @@ from typing import (
     Any,
     ClassVar,
     Optional,
-    TypedDict,
     no_type_check,
 )
 
@@ -23,6 +22,7 @@ from tuxemon.map.map_view import MapRenderer
 from tuxemon.platform.const import intentions
 from tuxemon.platform.events import PlayerInput
 from tuxemon.platform.tools import translate_input_event
+from tuxemon.save_state import WorldSave
 from tuxemon.session import Session
 from tuxemon.state.state import State
 from tuxemon.teleporter import Teleporter
@@ -43,11 +43,6 @@ direction_map: Mapping[int, Direction] = {
 }
 
 
-class WorldSave(TypedDict, total=False):
-    factions_manager: dict[str, Any]
-    menu_flags: dict[str, bool]
-
-
 class WorldState(State):
     """The state responsible for the world game play"""
 
@@ -58,7 +53,6 @@ class WorldState(State):
         self.mod_name = extract_mod_name(map_name)
         self.session = session
         self.session.set_world(self)
-        self.screen = self.client.screen
         self.tile_size = prepare.TILE_SIZE
         self.menu_manager = WorldMenuManager(self.client)
         self.teleporter = Teleporter(self.client)
@@ -147,7 +141,6 @@ class WorldState(State):
         Parameters:
             surface: Surface to draw into.
         """
-        self.screen = surface
         if self.client.map_manager.current_map is None:
             raise ValueError("Unable to draw the game world.")
         self.map_renderer.draw(surface, self.client.map_manager.current_map)

@@ -7,13 +7,11 @@ from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
 from enum import Enum
 from pathlib import Path
-from threading import Thread
 from typing import Any, Optional, TypeVar, Union, overload
 
 from tuxemon.audio import MusicPlayerState, SoundManager
 from tuxemon.boundary import BoundaryChecker
 from tuxemon.camera.camera import CameraManager
-from tuxemon.cli.processor import CommandProcessor
 from tuxemon.combat.session import CombatSession
 from tuxemon.config import TuxemonConfig
 from tuxemon.constants import paths
@@ -23,6 +21,7 @@ from tuxemon.event.eventcondition import ConditionManager
 from tuxemon.event.eventengine import EventEngine
 from tuxemon.event.eventmanager import EventManager
 from tuxemon.event.eventpersist import EventPersist
+from tuxemon.event.running import ConditionEvaluator
 from tuxemon.map.collision_manager import CollisionManager
 from tuxemon.map.map_loader import MapLoader
 from tuxemon.map.map_manager import MapManager
@@ -89,8 +88,11 @@ class BaseClient(ABC):
         self.event_manager = EventManager(self.state_manager)
         self.action_manager = ActionManager()
         self.condition_manager = ConditionManager()
+        self.evaluator = ConditionEvaluator(
+            local_session, self.condition_manager
+        )
         self.event_engine = EventEngine(
-            local_session, self.action_manager, self.condition_manager
+            local_session, self.action_manager, self.evaluator
         )
         self.event_persist = EventPersist()
 
@@ -103,12 +105,6 @@ class BaseClient(ABC):
         # Set up a variable that will keep track of currently playing music.
         self.current_music = MusicPlayerState()
         self.sound_manager = SoundManager()
-
-        if self.config.cli:
-            self.cli = CommandProcessor(local_session)
-            thread = Thread(target=self.cli.run)
-            thread.daemon = True
-            thread.start()
 
         # Set up rumble support for gamepads
         self.rumble_manager = RumbleManager()

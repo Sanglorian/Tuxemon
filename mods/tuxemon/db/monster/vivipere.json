@@ -33,8 +33,8 @@
       "element": "wood"
     },
     {
-      "at_level": 24,
       "monster_slug": "viviteel",
+      "at_level": 24,
       "gender": "female"
     },
     {
@@ -42,24 +42,20 @@
       "inside": true
     },
     {
-      "at_level": 26,
-      "monster_slug": "vivitron"
+      "monster_slug": "vivitron",
+      "at_level": 26
     },
     {
       "monster_slug": "vividactil",
-      "item": "petrified_dung"
+      "item": {
+        "petrified_dung": 0.333,
+        "shammer_fossil": 0.333,
+        "rhincus_fossil": 0.334
+      }
     },
     {
-      "monster_slug": "vividactil",
-      "item": "shammer_fossil"
-    },
-    {
-      "monster_slug": "vividactil",
-      "item": "rhincus_fossil"
-    },
-    {
-      "at_level": 24,
       "monster_slug": "vivisource",
+      "at_level": 24,
       "gender": "male"
     }
   ],

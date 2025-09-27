@@ -94,6 +94,7 @@ class MonsterConfig:
     bond_strings: dict[str, str] = field(default_factory=dict)
     opposite_tastes: dict[str, list[str]] = field(default_factory=dict)
     bond_preferences: dict[str, int] = field(default_factory=dict)
+    experience_multipliers: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass

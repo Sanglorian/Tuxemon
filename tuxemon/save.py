@@ -12,17 +12,17 @@ from datetime import datetime
 from enum import Enum
 from operator import itemgetter
 from pathlib import Path
-from typing import Any, Optional, TypedDict, TypeVar
+from typing import Any, Optional, TypeVar
 
 from pygame.image import tobytes
 from pygame.surface import Surface
 
 from tuxemon import prepare
 from tuxemon.client import LocalPygameClient
-from tuxemon.npc import NPCState
+from tuxemon.save_state import SaveData
 from tuxemon.save_upgrader import SAVE_VERSION, upgrade_save
 from tuxemon.session import Session
-from tuxemon.states.world_state import WorldSave, WorldState
+from tuxemon.states.world_state import WorldState
 
 try:
     import cbor
@@ -51,16 +51,6 @@ class SaveMethod(Enum):
         except KeyError:
             # Fallback to JSON if an unknown method is encountered or cbor not available
             return cls.JSON
-
-
-class SaveData(TypedDict, total=False):
-    screenshot: str
-    screenshot_width: int
-    screenshot_height: int
-    time: str
-    version: int
-    npc_state: NPCState
-    world_state: WorldSave
 
 
 def capture_screenshot(client: LocalPygameClient) -> Surface:

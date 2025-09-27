@@ -591,6 +591,43 @@ class CombatAnimations(Menu[None], ABC):
                 animate = partial(self.animate, duration=0.1, delay=0.1)
                 dev.animate_capture(animate)
 
+    def update_background(self, bg_path: str) -> None:
+        import pygame
+
+        # Clear old
+        if hasattr(self, "background_sprite") and self.background_sprite:
+            if self.background_sprite in self.sprites:
+                self.sprites.remove(self.background_sprite)
+            self.background_sprite = None
+
+        # Load and scale to SCALE only (no stretching to full screen)
+        surf = graphics.load_and_scale(bg_path, prepare.SCALE)
+
+        # Create a full-screen surface (black by default)
+        full_height = prepare.SCREEN_RECT.height
+        full_width = prepare.SCREEN_RECT.width
+        full_surf = pygame.Surface((full_width, full_height))
+        full_surf.fill((0, 0, 0))  # fill rest with black
+
+        # Blit background onto the top of the full surface
+        full_surf.blit(surf, (0, 0))
+
+        # Extend last row of background downward to fill gap
+        last_row = surf.subsurface(
+            pygame.Rect(0, surf.get_height() - 1, surf.get_width(), 1)
+        )
+        for y in range(surf.get_height(), full_height):
+            full_surf.blit(last_row, (0, y))
+
+        # Wrap in sprite
+        spr = pygame.sprite.Sprite()
+        spr.image = full_surf
+        spr.rect = full_surf.get_rect()
+        spr.rect.topleft = (0, 0)
+
+        self.sprites.add(spr, layer=0)
+        self.background_sprite = spr
+
     def animate_parties_in(self) -> None:
         """Animate the parties entering the battle scene."""
         x, y, w, h = prepare.SCREEN_RECT

@@ -9,7 +9,6 @@ from typing import (
     Any,
     ClassVar,
     Optional,
-    TypedDict,
     no_type_check,
 )
 
@@ -24,6 +23,7 @@ from tuxemon.platform.const import intentions
 from tuxemon.platform.events import PlayerInput
 from tuxemon.platform.tools import translate_input_event
 from tuxemon.player import Player
+from tuxemon.save_state import WorldSave
 from tuxemon.session import Session
 from tuxemon.state.state import State
 from tuxemon.teleporter import Teleporter
@@ -43,11 +43,6 @@ direction_map: Mapping[int, Direction] = {
     intentions.LEFT: Direction.left,
     intentions.RIGHT: Direction.right,
 }
-
-
-class WorldSave(TypedDict, total=False):
-    factions_manager: dict[str, Any]
-    menu_flags: dict[str, bool]
 
 
 class WorldState(State):

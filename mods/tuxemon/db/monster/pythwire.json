@@ -39,12 +39,29 @@
   ],
   "history": [
     {
-      "mon_slug": "ouroboutlet",
-      "evo_stage": "stage1"
+      "slug": "pythwire",
+      "stage": "basic",
+      "evolves_from": [],
+      "evolves_into": [
+        "ouroboutlet",
+        "sockeserp"
+      ]
     },
     {
-      "mon_slug": "sockeserp",
-      "evo_stage": "stage1"
+      "slug": "ouroboutlet",
+      "stage": "stage1",
+      "evolves_from": [
+        "pythwire"
+      ],
+      "evolves_into": []
+    },
+    {
+      "slug": "sockeserp",
+      "stage": "stage1",
+      "evolves_from": [
+        "pythwire"
+      ],
+      "evolves_into": []
     }
   ],
   "terrains": [

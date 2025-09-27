@@ -41,12 +41,33 @@
   ],
   "history": [
     {
-      "mon_slug": "grinflare",
-      "evo_stage": "stage1"
+      "slug": "grintot",
+      "stage": "basic",
+      "evolves_from": [],
+      "evolves_into": [
+        "grinflare",
+        "grinflare",
+        "grintrock",
+        "grintrock"
+      ]
     },
     {
-      "mon_slug": "grintrock",
-      "evo_stage": "stage1"
+      "slug": "grinflare",
+      "stage": "stage1",
+      "evolves_from": [
+        "grintot",
+        "grintot"
+      ],
+      "evolves_into": []
+    },
+    {
+      "slug": "grintrock",
+      "stage": "stage1",
+      "evolves_from": [
+        "grintot",
+        "grintot"
+      ],
+      "evolves_into": []
     }
   ],
   "terrains": [],

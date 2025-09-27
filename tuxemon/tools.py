@@ -232,7 +232,7 @@ def open_dialog(
         dialog_rect = custom_rect
     else:
         dialog_rect = calc_dialog_rect(
-            client.screen.get_rect(), position, target_coords=target_coords
+            prepare.SCREEN_RECT, position, target_coords=target_coords
         )
 
     return client.push_state(

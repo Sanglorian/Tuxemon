@@ -7,13 +7,11 @@ from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
 from enum import Enum
 from pathlib import Path
-from threading import Thread
 from typing import Any, Optional, TypeVar, Union, overload
 
 from tuxemon.audio import MusicPlayerState, SoundManager
 from tuxemon.boundary import BoundaryChecker
 from tuxemon.camera.camera import CameraManager
-from tuxemon.cli.processor import CommandProcessor
 from tuxemon.combat.session import CombatSession
 from tuxemon.config import TuxemonConfig
 from tuxemon.constants import paths
@@ -40,6 +38,7 @@ from tuxemon.state.loader import StateLoader
 from tuxemon.state.manager import StateManager
 from tuxemon.state.repository import StateRepository
 from tuxemon.state.state import State
+from tuxemon.teleporter import Teleporter
 from tuxemon.ui.cipher_processor import CipherProcessor
 
 StateType = TypeVar("StateType", bound=State)
@@ -108,12 +107,6 @@ class BaseClient(ABC):
         self.current_music = MusicPlayerState()
         self.sound_manager = SoundManager()
 
-        if self.config.cli:
-            self.cli = CommandProcessor(local_session)
-            thread = Thread(target=self.cli.run)
-            thread.daemon = True
-            thread.start()
-
         # Set up rumble support for gamepads
         self.rumble_manager = RumbleManager()
         self.rumble = self.rumble_manager.rumbler
@@ -145,6 +138,14 @@ class BaseClient(ABC):
             self.map_manager,
             self.boundary,
             self.event_engine,
+        )
+        self.teleporter = Teleporter(
+            self.boundary,
+            self.map_manager,
+            self.map_transition,
+            self.movement_manager,
+            self.npc_manager,
+            self.state_manager,
         )
 
         # Various Sessions

@@ -9,6 +9,8 @@ from typing import Optional, final
 from tuxemon import save
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.event.eventaction import EventAction
+from tuxemon.player import Player
+from tuxemon.prepare import PLAYER_NPC
 from tuxemon.session import Session
 from tuxemon.states.world_state import WorldState
 
@@ -62,6 +64,10 @@ class LoadGameAction(EventAction):
                 # avoid crash save and load same action
                 if self.index is not None:
                     client.remove_state_by_name("StartState")
+
+            slug = save_data["npc_state"].get("player_slug", PLAYER_NPC)
+            save_data["npc_state"]["player_slug"] = slug
+            Player.create(session, slug=slug)
 
             map_path = fetch_asset(
                 "maps", save_data["npc_state"]["current_map"]

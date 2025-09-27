@@ -214,6 +214,13 @@ class BaseLookupModel(ABC):
         pass
 
 
+class ColorModel(BaseModel):
+    red: int = Field(..., ge=0, le=255)
+    green: int = Field(..., ge=0, le=255)
+    blue: int = Field(..., ge=0, le=255)
+    alpha: int = Field(255, ge=0, le=255)
+
+
 class CommonCondition(BaseModel):
     type: str = Field(..., description="The name of the condition")
     parameters: Sequence[str] = Field(
@@ -558,16 +565,36 @@ class MonsterMovesetItemModel(BaseModel):
 
 
 class MonsterHistoryItemModel(BaseModel):
-    mon_slug: str = Field(..., description="The monster in the evolution path")
-    evo_stage: EvolutionStage = Field(
-        ..., description="The evolution stage of the monster"
+    slug: str = Field(
+        ..., description="The monster slug in the evolution path."
+    )
+    stage: EvolutionStage = Field(
+        ..., description="The evolution stage of the monster."
+    )
+    evolves_from: list[str] = Field(
+        default_factory=list, description="Monsters this monster evolves from."
+    )
+    evolves_into: list[str] = Field(
+        default_factory=list,
+        description="Monsters this monster can evolve into.",
     )
 
-    @field_validator("mon_slug")
-    def monster_exists(cls: MonsterHistoryItemModel, v: str) -> str:
-        if has.db_entry("monster", v):
+    @field_validator("slug", "evolves_from", "evolves_into")
+    def validate_monsters_exist(
+        cls, v: Union[str, list[str]]
+    ) -> Union[str, list[str]]:
+        if isinstance(v, str):
+            if has.db_entry("monster", v):
+                return v
+            raise ValueError(f"Monster slug '{v}' not found in database.")
+        elif isinstance(v, list):
+            for slug in v:
+                if not has.db_entry("monster", slug):
+                    raise ValueError(
+                        f"Monster slug '{slug}' not found in database."
+                    )
             return v
-        raise ValueError(f"the monster {v} doesn't exist in the db")
+        return v
 
 
 class MonsterEvolutionItemModel(BaseModel):
@@ -740,9 +767,66 @@ class MonsterEvolutionItemModel(BaseModel):
         raise ValueError(f"the held item {v} doesn't exist in the db")
 
 
-class MonsterFlairItemModel(BaseModel):
-    category: str = Field(..., description="The category of this flair item")
-    names: Sequence[str] = Field(..., description="The names")
+class FlairModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "flair"
+
+    slug: str = Field(..., description="The unique name of the flair.")
+    category: str = Field(..., description="The category of this flair item.")
+    weight: float = Field(
+        1.0,
+        description="A value representing the flair's rarity or probability.",
+        ge=0,
+    )
+    layer: int = Field(
+        0,
+        description="The drawing layer for the flair. Higher numbers are drawn on top.",
+    )
+    layer_order: int = Field(
+        0,
+        description="The drawing order for flairs within the same layer. Lower numbers are drawn first.",
+    )
+    x_offset: Optional[int] = Field(
+        None,
+        description="The horizontal offset of the flair from the sprite's origin.",
+    )
+    y_offset: Optional[int] = Field(
+        None,
+        description="The vertical offset of the flair from the sprite's origin.",
+    )
+    sprite_type: Optional[set[str]] = Field(
+        None,
+        description="Specifies which sprite type this flair applies to (e.g., 'front', 'back', 'menu01'). If None, applies to all.",
+    )
+    sprite_type_override: Optional[str] = Field(
+        None,
+        description="Overrides the default sprite type used in the file path (e.g., 'universal').",
+    )
+    color: Optional[ColorModel] = Field(
+        None, description="The color tint to apply to the flair sprite."
+    )
+
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> FlairModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(FlairModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Flair {slug} not found")
+
+    @model_validator(mode="after")
+    def validate_flair_path(self) -> FlairModel:
+        if not self.slug.strip():
+            raise ValueError("Flair name cannot be empty or whitespace.")
+
+        folder = self.sprite_type_override or self.category
+        path = f"gfx/sprites/flairs/{folder}/{self.slug}.png"
+
+        if not has.file(path):
+            raise ValueError(
+                f"No resource exists for flair name '{self.slug}' at path: {path}"
+            )
+
+        return self
 
 
 class MonsterSpritesModel(BaseModel):
@@ -844,8 +928,8 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
     evolutions: Sequence[MonsterEvolutionItemModel] = Field(
         [], description="The evolutions this monster has"
     )
-    flairs: Sequence[MonsterFlairItemModel] = Field(
-        [], description="The flairs this monster has"
+    flairs: set[str] = Field(
+        default_factory=set, description="The flairs this monster has"
     )
     sounds: Optional[MonsterSoundsModel] = Field(
         None,
@@ -928,6 +1012,16 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
                 if not has.db_entry("terrain", terrain):
                     raise ValueError(
                         f"the terrain '{terrain}' doesn't exist in the db"
+                    )
+        return v
+
+    @field_validator("flairs")
+    def flair_exists(cls: MonsterModel, v: Sequence[str]) -> Sequence[str]:
+        if v:
+            for flair in v:
+                if not has.db_entry("flair", flair):
+                    raise ValueError(
+                        f"the flair '{flair}' doesn't exist in the db"
                     )
         return v
 
@@ -1297,12 +1391,10 @@ class StatusModel(BaseModel, BaseLookupModel):
         description="Slug of what string to display when status fails",
     )
     cond_id: int = Field(..., description="The id of this status")
-    statspeed: Optional[StatModel] = Field(None)
-    stathp: Optional[StatModel] = Field(None)
-    statarmour: Optional[StatModel] = Field(None)
-    statdodge: Optional[StatModel] = Field(None)
-    statmelee: Optional[StatModel] = Field(None)
-    statranged: Optional[StatModel] = Field(None)
+    stat_modifiers: dict[str, StatModel] = Field(
+        default_factory=dict,
+        description="Dictionary of stat modifiers keyed by stat name (e.g., 'speed', 'hp')",
+    )
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> StatusModel:
@@ -2351,6 +2443,7 @@ DataModel = Union[
     EnvironmentModel,
     ItemModel,
     MonsterModel,
+    FlairModel,
     MusicModel,
     AnimationModel,
     NpcModel,

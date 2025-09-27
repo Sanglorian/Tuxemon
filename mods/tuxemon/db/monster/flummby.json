@@ -62,8 +62,20 @@
   ],
   "history": [
     {
-      "mon_slug": "flummack",
-      "evo_stage": "stage1"
+      "slug": "flummby",
+      "stage": "basic",
+      "evolves_from": [],
+      "evolves_into": [
+        "flummack"
+      ]
+    },
+    {
+      "slug": "flummack",
+      "stage": "stage1",
+      "evolves_from": [
+        "flummby"
+      ],
+      "evolves_into": []
     }
   ],
   "terrains": [

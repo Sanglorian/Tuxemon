@@ -46,7 +46,6 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.crafting_station.CraftingStationAction
 .. autoscriptinfoclass:: tuxemon.event.actions.create_kennel.CreateKennelAction
 .. autoscriptinfoclass:: tuxemon.event.actions.create_npc.CreateNpcAction
-.. autoscriptinfoclass:: tuxemon.event.actions.delayed_teleport.DelayedTeleportAction
 .. autoscriptinfoclass:: tuxemon.event.actions.dojo_method.DojoMethodAction
 .. autoscriptinfoclass:: tuxemon.event.actions.evolution.EvolutionAction
 .. autoscriptinfoclass:: tuxemon.event.actions.fade_in.FadeInAction
@@ -144,6 +143,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.trading.TradingAction
 .. autoscriptinfoclass:: tuxemon.event.actions.transfer_money.TransferMoneyAction
 .. autoscriptinfoclass:: tuxemon.event.actions.transition_teleport.TransitionTeleportAction
+.. autoscriptinfoclass:: tuxemon.event.actions.transition_teleport_return.TransitionTeleportReturnAction
 .. autoscriptinfoclass:: tuxemon.event.actions.translated_dialog_choice.TranslatedDialogChoiceAction
 .. autoscriptinfoclass:: tuxemon.event.actions.translated_dialog.TranslatedDialogAction
 .. autoscriptinfoclass:: tuxemon.event.actions.unload_sound.UnloadSoundAction

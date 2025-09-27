@@ -25,7 +25,6 @@ from tuxemon.platform.tools import translate_input_event
 from tuxemon.save_state import WorldSave
 from tuxemon.session import Session
 from tuxemon.state.state import State
-from tuxemon.teleporter import Teleporter
 from tuxemon.tools import extract_mod_name
 from tuxemon.world.manager import WorldMenuManager
 from tuxemon.world.transition import WorldTransition
@@ -55,7 +54,6 @@ class WorldState(State):
         self.session.set_world(self)
         self.tile_size = prepare.TILE_SIZE
         self.menu_manager = WorldMenuManager(self.client)
-        self.teleporter = Teleporter(self.client)
         self.transition_manager = WorldTransition(
             self, self.client.movement_manager
         )

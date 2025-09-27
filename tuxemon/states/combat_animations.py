@@ -96,7 +96,7 @@ class CombatAnimations(Menu[None], ABC):
     def show_combat_dialog(self) -> None:
         """Create and show the area where battle messages are displayed."""
         # make the border and area at the bottom of the screen for messages
-        rect_screen = self.client.screen.get_rect()
+        rect_screen = prepare.SCREEN_RECT.copy()
         rect = Rect(0, 0, rect_screen.w, rect_screen.h // 4)
         rect.bottomright = rect_screen.w, rect_screen.h
         border = graphics.load_and_scale(self.borders_filename)
@@ -206,7 +206,7 @@ class CombatAnimations(Menu[None], ABC):
         self.sprite_map.add_sprite(monster, monster_sprite)
 
         # Position monster sprite off screen and animate it to final spot
-        monster_sprite.rect.top = self.client.screen.get_height()
+        monster_sprite.rect.top = prepare.SCREEN.get_height()
         self.animate(
             monster_sprite.rect,
             bottom=feet[1],

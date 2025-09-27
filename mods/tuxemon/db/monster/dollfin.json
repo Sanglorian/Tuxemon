@@ -26,23 +26,24 @@
   "evolutions": [
     {
       "monster_slug": "bigfin",
-      "item": "water_booster"
-    },
-    {
-      "monster_slug": "bigfin",
-      "item": "sweet_sand"
-    },
-    {
-      "monster_slug": "sharpfin",
-      "item": "metal_booster"
+      "item": {
+        "water_booster": 0.5,
+        "sweet_sand": 0.5
+      }
     },
     {
       "monster_slug": "sharpfin",
-      "item": "sea_girdle"
+      "item": {
+        "metal_booster": 0.5,
+        "sea_girdle": 0.5
+      }
     },
     {
       "monster_slug": "delfeco",
-      "bond": "equals:100"
+      "bond": {
+        "comparison": "equals",
+        "value": 100
+      }
     }
   ],
   "history": [

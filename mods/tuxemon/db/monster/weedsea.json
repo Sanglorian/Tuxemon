@@ -50,15 +50,19 @@
   "evolutions": [
     {
       "monster_slug": "weedlantis",
-      "party": [
-        "shrab"
-      ]
+      "party_conditions": {
+        "monster_slugs": {
+          "shrab": 1
+        }
+      }
     },
     {
       "monster_slug": "weedlantis",
-      "party": [
-        "lesmagu"
-      ]
+      "party_conditions": {
+        "monster_slugs": {
+          "lesmagu": 1
+        }
+      }
     }
   ],
   "history": [

@@ -42,11 +42,13 @@
   "evolutions": [
     {
       "monster_slug": "loliferno",
-      "item": "flintstone"
+      "item": {
+        "flintstone": 1.0
+      }
     },
     {
-      "at_level": 20,
-      "monster_slug": "spirain"
+      "monster_slug": "spirain",
+      "at_level": 20
     }
   ],
   "history": [

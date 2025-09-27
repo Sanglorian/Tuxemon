@@ -53,8 +53,11 @@
   ],
   "evolutions": [
     {
-      "at_level": 32,
-      "monster_slug": "fuzzina"
+      "monster_slug": "fuzzina",
+      "bond": {
+        "comparison": "greater_than",
+        "value": 80
+      }
     }
   ],
   "history": [

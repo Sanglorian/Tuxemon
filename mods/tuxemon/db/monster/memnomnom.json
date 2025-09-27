@@ -26,27 +26,24 @@
   "evolutions": [
     {
       "monster_slug": "miaownolith",
-      "item": "earth_booster"
-    },
-    {
-      "monster_slug": "miaownolith",
-      "item": "miaow_milk"
-    },
-    {
-      "monster_slug": "pyraminx",
-      "item": "metal_booster"
+      "item": {
+        "earth_booster": 0.5,
+        "miaow_milk": 0.5
+      }
     },
     {
       "monster_slug": "pyraminx",
-      "item": "pyramidion"
+      "item": {
+        "metal_booster": 0.5,
+        "pyramidion": 0.5
+      }
     },
     {
       "monster_slug": "mauai",
-      "item": "fire_booster"
-    },
-    {
-      "monster_slug": "mauai",
-      "item": "pyramidion"
+      "item": {
+        "fire_booster": 0.5,
+        "pyramidion": 0.5
+      }
     }
   ],
   "history": [

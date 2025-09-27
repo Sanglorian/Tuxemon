@@ -22,9 +22,11 @@
   "evolutions": [
     {
       "monster_slug": "breem",
-      "party": [
-        "tumbleworm"
-      ]
+      "party_conditions": {
+        "monster_slugs": {
+          "tumbleworm": 1
+        }
+      }
     }
   ],
   "history": [

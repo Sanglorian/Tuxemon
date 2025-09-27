@@ -23,6 +23,7 @@ from tuxemon.event.eventcondition import ConditionManager
 from tuxemon.event.eventengine import EventEngine
 from tuxemon.event.eventmanager import EventManager
 from tuxemon.event.eventpersist import EventPersist
+from tuxemon.event.running import ConditionEvaluator
 from tuxemon.map.collision_manager import CollisionManager
 from tuxemon.map.map_loader import MapLoader
 from tuxemon.map.map_manager import MapManager
@@ -89,8 +90,11 @@ class BaseClient(ABC):
         self.event_manager = EventManager(self.state_manager)
         self.action_manager = ActionManager()
         self.condition_manager = ConditionManager()
+        self.evaluator = ConditionEvaluator(
+            local_session, self.condition_manager
+        )
         self.event_engine = EventEngine(
-            local_session, self.action_manager, self.condition_manager
+            local_session, self.action_manager, self.evaluator
         )
         self.event_persist = EventPersist()
 

@@ -58,7 +58,9 @@
   "evolutions": [
     {
       "monster_slug": "trojerror",
-      "item": "metal_booster"
+      "item": {
+        "metal_booster": 1.0
+      }
     }
   ],
   "history": [

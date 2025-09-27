@@ -53,9 +53,11 @@
   ],
   "evolutions": [
     {
-      "at_level": 32,
       "monster_slug": "flummack",
-      "item": "lima_pie"
+      "at_level": 32,
+      "item": {
+        "lima_pie": 1.0
+      }
     }
   ],
   "history": [

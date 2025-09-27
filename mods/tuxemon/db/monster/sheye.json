@@ -30,7 +30,10 @@
   "evolutions": [
     {
       "monster_slug": "shrab",
-      "bond": "greater_than:40"
+      "bond": {
+        "comparison": "greater_than",
+        "value": 40
+      }
     }
   ],
   "history": [

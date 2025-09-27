@@ -54,11 +54,15 @@
   "evolutions": [
     {
       "monster_slug": "askylpaws",
-      "item": "ox_stick"
+      "item": {
+        "ox_stick": 1.0
+      }
     },
     {
       "monster_slug": "erythroskyte",
-      "item": "peace_lily"
+      "item": {
+        "peace_lily": 1.0
+      }
     }
   ],
   "history": [

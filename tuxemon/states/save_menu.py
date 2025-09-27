@@ -23,7 +23,7 @@ from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 from tuxemon.ui.text import draw_text
 
 if TYPE_CHECKING:
-    from tuxemon.save import SaveData
+    from tuxemon.save_state import SaveData
 
 logger = logging.getLogger(__name__)
 

@@ -101,6 +101,8 @@ class LocalPygameClient(BaseClient):
                     draw()
                     if self.input_manager.controller_overlay:
                         self.input_manager.controller_overlay.draw(screen)
+                    if self.input_manager.show_visualizer:
+                        self.input_manager.draw_visualizer(screen)
                     flip()
                 if self.config.show_fps:
                     self.renderer.update_fps(clock_tick)

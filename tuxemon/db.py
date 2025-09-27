@@ -213,6 +213,13 @@ class BaseLookupModel(ABC):
         pass
 
 
+class ColorModel(BaseModel):
+    red: int = Field(..., ge=0, le=255)
+    green: int = Field(..., ge=0, le=255)
+    blue: int = Field(..., ge=0, le=255)
+    alpha: int = Field(255, ge=0, le=255)
+
+
 class CommonCondition(BaseModel):
     type: str = Field(..., description="The name of the condition")
     parameters: Sequence[str] = Field(
@@ -759,9 +766,66 @@ class MonsterEvolutionItemModel(BaseModel):
         raise ValueError(f"the held item {v} doesn't exist in the db")
 
 
-class MonsterFlairItemModel(BaseModel):
-    category: str = Field(..., description="The category of this flair item")
-    names: Sequence[str] = Field(..., description="The names")
+class FlairModel(BaseModel, BaseLookupModel):
+    table_name: ClassVar[str] = "flair"
+
+    slug: str = Field(..., description="The unique name of the flair.")
+    category: str = Field(..., description="The category of this flair item.")
+    weight: float = Field(
+        1.0,
+        description="A value representing the flair's rarity or probability.",
+        ge=0,
+    )
+    layer: int = Field(
+        0,
+        description="The drawing layer for the flair. Higher numbers are drawn on top.",
+    )
+    layer_order: int = Field(
+        0,
+        description="The drawing order for flairs within the same layer. Lower numbers are drawn first.",
+    )
+    x_offset: Optional[int] = Field(
+        None,
+        description="The horizontal offset of the flair from the sprite's origin.",
+    )
+    y_offset: Optional[int] = Field(
+        None,
+        description="The vertical offset of the flair from the sprite's origin.",
+    )
+    sprite_type: Optional[set[str]] = Field(
+        None,
+        description="Specifies which sprite type this flair applies to (e.g., 'front', 'back', 'menu01'). If None, applies to all.",
+    )
+    sprite_type_override: Optional[str] = Field(
+        None,
+        description="Overrides the default sprite type used in the file path (e.g., 'universal').",
+    )
+    color: Optional[ColorModel] = Field(
+        None, description="The color tint to apply to the flair sprite."
+    )
+
+    @classmethod
+    def lookup(cls, slug: str, db: ModData) -> FlairModel:
+        """Retrieve an instance from the database using a slug."""
+        try:
+            return cast(FlairModel, db.lookup(slug, table=cls.table_name))
+        except EntryNotFoundError:
+            raise RuntimeError(f"Flair {slug} not found")
+
+    @model_validator(mode="after")
+    def validate_flair_path(self) -> FlairModel:
+        if not self.slug.strip():
+            raise ValueError("Flair name cannot be empty or whitespace.")
+
+        folder = self.sprite_type_override or self.category
+        path = f"gfx/sprites/flairs/{folder}/{self.slug}.png"
+
+        if not has.file(path):
+            raise ValueError(
+                f"No resource exists for flair name '{self.slug}' at path: {path}"
+            )
+
+        return self
 
 
 class MonsterSpritesModel(BaseModel):
@@ -863,8 +927,8 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
     evolutions: Sequence[MonsterEvolutionItemModel] = Field(
         [], description="The evolutions this monster has"
     )
-    flairs: Sequence[MonsterFlairItemModel] = Field(
-        [], description="The flairs this monster has"
+    flairs: set[str] = Field(
+        default_factory=set, description="The flairs this monster has"
     )
     sounds: Optional[MonsterSoundsModel] = Field(
         None,
@@ -932,6 +996,16 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
                 if not has.db_entry("terrain", terrain):
                     raise ValueError(
                         f"the terrain '{terrain}' doesn't exist in the db"
+                    )
+        return v
+
+    @field_validator("flairs")
+    def flair_exists(cls: MonsterModel, v: Sequence[str]) -> Sequence[str]:
+        if v:
+            for flair in v:
+                if not has.db_entry("flair", flair):
+                    raise ValueError(
+                        f"the flair '{flair}' doesn't exist in the db"
                     )
         return v
 
@@ -2353,6 +2427,7 @@ DataModel = Union[
     EnvironmentModel,
     ItemModel,
     MonsterModel,
+    FlairModel,
     MusicModel,
     AnimationModel,
     NpcModel,

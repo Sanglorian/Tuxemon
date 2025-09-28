@@ -1,0 +1,7 @@
+default:
+  force_to_box: false
+  kennel_override: null
+
+example_policy:
+  force_to_box: true
+  kennel_override: "example_kennel"

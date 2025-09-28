@@ -10,6 +10,7 @@ from uuid import UUID
 
 from tuxemon import prepare
 from tuxemon.boxes import MonsterBoxes
+from tuxemon.entity_dir.routing import RoutingPolicy, RoutingPolicyRegistry
 from tuxemon.monster import Monster, decode_monsters, encode_monsters
 
 if TYPE_CHECKING:
@@ -30,11 +31,27 @@ class PartyHandler:
         owner: NPC,
         monsters: Optional[list[Monster]] = None,
         party_limit: int = prepare.PARTY_LIMIT,
+        routing_policy_name: str = "default",
     ) -> None:
         self._monsters = monsters if monsters is not None else []
         self._party_limit = party_limit
         self._monster_boxes = monster_boxes
         self._owner = owner
+        self._routing_policy_name = routing_policy_name
+
+    @property
+    def routing_policy(self) -> RoutingPolicy:
+        return RoutingPolicyRegistry.get(self._routing_policy_name)
+
+    @property
+    def routing_policy_name(self) -> str:
+        return self._routing_policy_name
+
+    @routing_policy_name.setter
+    def routing_policy_name(self, name: str) -> None:
+        if name not in RoutingPolicyRegistry.all():
+            raise ValueError(f"Unknown routing policy: {name}")
+        self._routing_policy_name = name
 
     @property
     def monsters(self) -> list[Monster]:
@@ -77,7 +94,7 @@ class PartyHandler:
         self,
         monster: Monster,
         slot: Optional[int] = None,
-        kennel: str = prepare.KENNEL,
+        kennel: Optional[str] = None,
     ) -> None:
         """
         Adds a monster to the party. If the party is full, it sends the monster
@@ -90,7 +107,11 @@ class PartyHandler:
         """
         monster.set_owner(self._owner)
 
-        if self.party_size >= self._party_limit:
+        policy = self.routing_policy
+        force_to_box = policy.should_force_to_box()
+        kennel = kennel if kennel is not None else policy.get_kennel()
+
+        if force_to_box or self.party_size >= self._party_limit:
             self._monster_boxes.add_monster(kennel, monster)
             if self._monster_boxes.is_box_full(kennel):
                 self._monster_boxes.create_and_merge_box(kennel)

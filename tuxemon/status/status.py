@@ -15,6 +15,7 @@ from tuxemon.db import (
     EffectPhase,
     Range,
     ResponseStatus,
+    StatModel,
     StatusModel,
     db,
 )
@@ -81,6 +82,7 @@ class Status:
         self.use_success: str = ""
         self.use_failure: str = ""
         self.modifiers: ModifiersHandler = ModifiersHandler()
+        self.stat_modifiers: dict[str, StatModel] = {}
 
         self.core_assets = CoreAssetManager()
 
@@ -125,12 +127,8 @@ class Status:
 
         self.modifiers = ModifiersHandler(results.modifiers)
         # monster stats
-        self.statspeed = results.statspeed
-        self.stathp = results.stathp
-        self.statarmour = results.statarmour
-        self.statmelee = results.statmelee
-        self.statranged = results.statranged
-        self.statdodge = results.statdodge
+        self.stat_modifiers = results.stat_modifiers
+
         # status fields
         self.duration = results.duration
         self.bond = results.bond

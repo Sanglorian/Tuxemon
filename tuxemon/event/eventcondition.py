@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar, Optional
 
@@ -22,6 +22,10 @@ logger = logging.getLogger(__name__)
 @dataclass
 class EventCondition:
     name: ClassVar[str]
+    is_expected: bool = field(default=False, init=False)
+
+    def __post_init__(self) -> None:
+        pass
 
     def test(self, session: Session, condition: MapCondition) -> bool:
         """
@@ -57,7 +61,9 @@ class ConditionManager:
             interface=EventCondition,
         )
 
-    def get_condition(self, name: str) -> Optional[EventCondition]:
+    def get_condition(
+        self, cond_data: MapCondition
+    ) -> Optional[EventCondition]:
         """
         Get a condition that is loaded into the engine.
 
@@ -73,10 +79,24 @@ class ConditionManager:
             ``None`` otherwise.
         """
         try:
-            return self.conditions[name]()
+            condition_class = self.conditions[cond_data.type]
         except KeyError:
-            logger.warning(f'EventCondition "{name}" not implemented')
+            logger.warning(
+                f'EventCondition "{cond_data.type}" not implemented'
+            )
             return None
+
+        instance = condition_class()
+        # Instantiate with parameters (positional unpacking)
+        # try:
+        #    instance = condition_class(*cond_data.parameters)
+        # except TypeError as e:
+        #    logger.error(f"Failed to instantiate {cond_data.type} with parameters {cond_data.parameters}: {e}")
+        #    return None
+
+        # Set expected state
+        instance.is_expected = cond_data.operator == "is"
+        return instance
 
     def get_conditions(self) -> list[type[EventCondition]]:
         """Return list of EventConditions."""

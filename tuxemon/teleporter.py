@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Mapping
 from collections import deque
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Optional
 
@@ -40,7 +40,7 @@ class TeleportFaint:
             keys = ["map_name", "x", "y"]
             mapped = dict(zip(keys, raw))
         elif isinstance(raw, Mapping):
-            mapped = raw
+            mapped = dict(raw)
         else:
             # Unexpected format—fallback to empty
             mapped = {}

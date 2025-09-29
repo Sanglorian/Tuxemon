@@ -46,23 +46,21 @@ class Evolution:
             return
 
         owner = self.monster.get_owner()
-        monster_index = owner.monsters.index(self.monster)
         self.update_new_monster_properties(new_monster)
 
         for move in new_monster.moves.moveset:
-            if (
-                move.learning_method
-                and move.learning_method == LearningMethod.EVOLUTION
-            ):
+            if move.learning_method == LearningMethod.EVOLUTION:
                 new_monster.moves.learn_by_method(
                     new_monster.instance_id,
                     move.technique,
                     move.learning_method,
                 )
 
-        owner.party.remove_monster(self.monster)
-        owner.party.add_monster(new_monster, monster_index)
-        owner.tuxepedia.add_entry(new_monster.slug, SeenStatus.caught)
+        if owner.party.replace_monster(self.monster, new_monster):
+            owner.tuxepedia.add_entry(new_monster.slug, SeenStatus.caught)
+            logger.info(f"{self.monster} evolved into {new_monster}")
+        else:
+            logger.warning(f"Failed to evolve {self.monster}")
 
     def is_eligible_for_evolution(self) -> bool:
         return (

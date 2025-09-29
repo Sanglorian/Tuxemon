@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from typing import Any
+from dataclasses import dataclass, field
+from typing import Any, Optional
 
 import yaml
 
@@ -18,7 +19,7 @@ class RoutingPolicyRegistry:
     _policies: dict[str, dict[str, Any]] = {}
 
     @classmethod
-    def load_from_file(cls, path: str) -> None:
+    def load_from_file(cls, path: str = "routing_policies.yaml") -> None:
         yaml_path = mods_folder / path
         with yaml_path.open() as f:
             raw = yaml.safe_load(f)
@@ -28,34 +29,47 @@ class RoutingPolicyRegistry:
     def get(cls, name: str) -> RoutingPolicy:
         if name not in cls._policies:
             raise KeyError(f"Routing policy '{name}' not found.")
-        return RoutingPolicy(name)
+        return RoutingPolicy.from_registry(name)
 
     @classmethod
     def get_raw(cls, name: str) -> dict[str, Any]:
         return cls._policies[name]
 
     @classmethod
-    def all(cls) -> dict[str, dict[str, Any]]:
-        return cls._policies.copy()
+    def has(cls, name: str) -> bool:
+        return name in cls._policies
 
 
+@dataclass
 class RoutingPolicy:
-    """
-    Controls routing behavior for monster addition.
-    Loaded by name from RoutingPolicyRegistry.
-    """
+    name: str
+    force_to_box: bool = False
+    kennel_override: Optional[str] = None
+    max_party_size: Optional[int] = None
+    allow_party_addition: bool = True
+    auto_release_if_box_full: bool = False
+    overflow_kennel: Optional[str] = None
+    max_box_capacity: Optional[int] = None
+    nickname_rules: dict[str, Any] = field(default_factory=dict)
+    kennel_name_rules: dict[str, Any] = field(default_factory=dict)
 
-    def __init__(self, name: str) -> None:
-        self.name = name
-        self._data = RoutingPolicyRegistry.get_raw(name)
-
-    @property
-    def force_to_box(self) -> bool:
-        return bool(self._data.get("force_to_box", False))
-
-    @property
-    def kennel_override(self) -> str | None:
-        return self._data.get("kennel_override")
+    @classmethod
+    def from_registry(cls, name: str) -> RoutingPolicy:
+        raw = RoutingPolicyRegistry.get_raw(name)
+        return cls(
+            name=name,
+            force_to_box=bool(raw.get("force_to_box", False)),
+            kennel_override=raw.get("kennel_override"),
+            max_party_size=raw.get("max_party_size"),
+            allow_party_addition=bool(raw.get("allow_party_addition", True)),
+            auto_release_if_box_full=bool(
+                raw.get("auto_release_if_box_full", False)
+            ),
+            overflow_kennel=raw.get("overflow_kennel"),
+            max_box_capacity=raw.get("max_box_capacity"),
+            nickname_rules=raw.get("nickname_rules", {}),
+            kennel_name_rules=raw.get("kennel_name_rules", {}),
+        )
 
     def should_force_to_box(self) -> bool:
         return self.force_to_box
@@ -63,16 +77,26 @@ class RoutingPolicy:
     def get_kennel(self) -> str:
         return self.kennel_override or KENNEL
 
-    def to_dict(self) -> Mapping[str, Any]:
-        return {"routing_policy": self.name}
+    def to_dict(self) -> str:
+        return self.name
 
     @classmethod
-    def from_dict(cls, data: Mapping[str, Any]) -> RoutingPolicy:
+    def from_dict(cls, data: Mapping[str, Any]) -> str:
         name = data.get("routing_policy")
-        if name is None:
-            raise ValueError("Missing 'routing_policy' in saved data.")
 
-        if name not in RoutingPolicyRegistry.all():
-            raise ValueError(f"Routing policy '{name}' not found in registry.")
+        if not isinstance(name, str) or not name:
+            logger.warning(
+                "No routing policy found in save data. Falling back to 'default'."
+            )
+            return "default"
 
-        return cls(name=name)
+        if not RoutingPolicyRegistry.has(name):
+            logger.warning(
+                f"Routing policy '{name}' not found in registry. Falling back to 'default'."
+            )
+            return "default"
+
+        return name
+
+
+RoutingPolicyRegistry.load_from_file()

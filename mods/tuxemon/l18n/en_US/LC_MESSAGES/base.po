@@ -4304,6 +4304,9 @@ msgstr "Failed"
 msgid "menu_minigame"
 msgstr "Minigame"
 
+msgid "menu_battle"
+msgstr "Battle"
+
 msgid "menu_player"
 msgstr "Player"
 

@@ -1771,6 +1771,9 @@ msgstr "A wild {name} appeared!"
 msgid "combat_horde_appeared"
 msgstr "A horde of wild creatures surrounds you!"
 
+msgid "combat_horde_swap"
+msgstr "{target} emerges from the horde!"
+
 msgid "combat_monster_choice"
 msgstr "What will {name} do?"
 

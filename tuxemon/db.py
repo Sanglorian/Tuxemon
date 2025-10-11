@@ -1893,6 +1893,21 @@ class EncounterModel(BaseModel, BaseLookupModel):
         except EntryNotFoundError:
             raise RuntimeError(f"Encounter {slug} not found")
 
+    @model_validator(mode="after")
+    def check_monster_horde_exclusivity(self) -> EncounterModel:
+        has_monsters = bool(self.monsters)
+        has_horde = self.horde is not None and bool(self.horde.monsters)
+
+        if has_monsters and has_horde:
+            raise ValueError(
+                "Encounter cannot have both 'monsters' and 'horde' defined."
+            )
+        if not has_monsters and not has_horde:
+            raise ValueError(
+                "Encounter must define either 'monsters' or 'horde'."
+            )
+        return self
+
 
 class DialogueModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "dialogue"

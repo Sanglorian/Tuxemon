@@ -78,7 +78,7 @@
    <properties>
     <property name="act1" value="translated_dialog spyder_scoop_alyssa2"/>
     <property name="behav1" value="talk spyder_scoop_alyssa"/>
-    <property name="cond1" value="is variable_set scoopalyssa:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_scoop_alyssa"/>
    </properties>
   </object>
   <object id="20" name="Create Taggart" type="event" x="112" y="176" width="16" height="16">
@@ -92,7 +92,7 @@
    <properties>
     <property name="act1" value="translated_dialog spyder_scoop_taggart2"/>
     <property name="behav1" value="talk spyder_scoop_taggart"/>
-    <property name="cond1" value="is variable_set scooptaggart:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_scoop_taggart"/>
    </properties>
   </object>
   <object id="22" name="Create Donald" type="event" x="176" y="144" width="16" height="16">
@@ -105,7 +105,7 @@
    <properties>
     <property name="act1" value="translated_dialog spyder_scoop_donald2"/>
     <property name="behav1" value="talk spyder_scoop_donald"/>
-    <property name="cond1" value="is variable_set scoopdonald:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_scoop_donald"/>
    </properties>
   </object>
   <object id="25" name="Environment" type="event" x="16" y="0" width="16" height="16">

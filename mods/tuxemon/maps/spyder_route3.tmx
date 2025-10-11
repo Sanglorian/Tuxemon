@@ -679,35 +679,35 @@
    <properties>
     <property name="act1" value="char_talk spyder_route3_curie,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route3_curie"/>
-    <property name="cond1" value="is variable_set route3curie:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_route3_curie"/>
    </properties>
   </object>
   <object id="709" name="Post Novak Talk" type="event" x="144" y="480" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_route3_novak,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route3_novak"/>
-    <property name="cond1" value="is variable_set route3novak:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_route3_novak"/>
    </properties>
   </object>
   <object id="710" name="Post Talk Wanda" type="event" x="480" y="272" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_route3_wanda,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route3_wanda"/>
-    <property name="cond1" value="is variable_set route3wanda:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_route3_wanda"/>
    </properties>
   </object>
   <object id="711" name="Post Connor Talk" type="event" x="320" y="16" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_route3_connor,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route3_connor"/>
-    <property name="cond1" value="is variable_set route3connor:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_route3_connor"/>
    </properties>
   </object>
   <object id="712" name="Post Enforcer Talk" type="event" x="240" y="144" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_route3_weaver,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route3_weaver"/>
-    <property name="cond1" value="is variable_set route3weaver:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_route3_weaver"/>
    </properties>
   </object>
  </objectgroup>

@@ -856,6 +856,8 @@ is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/
 
 * ["Boost Speed"](https://wiki.tuxemon.org/File:Boost_5.png) Adapted by Sanglorian from a sprite from [https://github.com/alphaonex86/CatchChallenger-datapack Catch Challenger (CC BY)], art director Jordan Brule. Project developer Herman Brule.
 
+* ["Drone"](https://wiki.tuxemon.org/File:Pixel_icons_by_oceansdream16.png) [http://opengameart.org/content/various-inventory-24-pixel-icon-set CC BY 3.0 on OGA, from OceansDream]
+
 * ["Raise Armour"](https://wiki.tuxemon.org/File:Diamond_-_Clint_Bellanger.png) [http://opengameart.org/content/gem-icons CC BY-SA 3.0, on OpenGameArt]
 
 * ["Raise Dodge"](https://wiki.tuxemon.org/File:Opal_-_Clint_Bellanger.png) [http://opengameart.org/content/gem-icons CC BY-SA 3.0, on OpenGameArt]

@@ -66,7 +66,6 @@ class Item:
         self.menu_actions_data: Sequence[Mapping[str, str]] = []
 
         self.core_assets = CoreAssetManager()
-
         self.effects: Sequence[PluginObject] = []
         self.conditions: Sequence[PluginObject] = []
 

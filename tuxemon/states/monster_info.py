@@ -30,11 +30,12 @@ with open("mods/tuxemon/db/taste/taste.json", "r") as f:
 
 
 def _lookup_monsters() -> None:
-    monsters = list(db.database["monster"])
-    for mon in monsters:
-        results = MonsterModel.lookup(mon, db)
-        if results.txmn_id > 0:
-            lookup_cache[mon] = results
+    global lookup_cache
+    lookup_cache = {
+        mon_name: result
+        for mon_name in db.database["monster"]
+        if (result := MonsterModel.lookup(mon_name, db)).txmn_id > 0
+    }
 
 
 class MonsterInfoState(PygameMenuState):

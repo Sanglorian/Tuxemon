@@ -257,13 +257,6 @@
     <property name="cond2" value="is char_moved player"/>
    </properties>
   </object>
-  <object id="623" name="Create Box2" type="event" x="320" y="256" width="16" height="16">
-   <properties>
-    <property name="act1" value="create_npc spyder_citypark_potion2,20,16"/>
-    <property name="cond1" value="not char_exists spyder_citypark_potion2"/>
-    <property name="cond2" value="not variable_set testmap_potion2:yes"/>
-   </properties>
-  </object>
   <object id="624" name="Box2" type="event" x="304" y="256" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog friendship_scroll,,center,center,center"/>

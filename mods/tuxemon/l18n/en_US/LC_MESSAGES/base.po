@@ -1846,12 +1846,6 @@ msgstr "{target}'s armor softens."
 msgid "combat_state_stuck_get"
 msgstr "{target} is stuck in place."
 
-msgid "combat_state_tired_get"
-msgstr "{target} is worn out."
-
-msgid "combat_state_tired_end"
-msgstr "{target} shakes off its tiredness."
-
 msgid "combat_state_plague0"
 msgstr "{target} begins to sniffle."
 
@@ -2129,9 +2123,6 @@ msgstr "Spyder Bite"
 
 msgid "stuck"
 msgstr "Stuck"
-
-msgid "tired"
-msgstr "Tired"
 
 msgid "wasting"
 msgstr "Wasting"
@@ -4320,6 +4311,18 @@ msgstr "Party"
 
 msgid "menu_bond"
 msgstr "Bond"
+
+msgid "menu_bond_despise"
+msgstr "{monster_name} despises {player_name}"
+
+msgid "menu_bond_wary"
+msgstr "{monster_name} is wary of {player_name}"
+
+msgid "menu_bond_along"
+msgstr "{monster_name} gets along with {player_name}"
+
+msgid "menu_bond_adore"
+msgstr "{monster_name} adores {player_name}"
 
 msgid "menu_to_the_top"
 msgstr "To The Top"

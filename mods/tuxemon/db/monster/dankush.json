@@ -76,9 +76,9 @@
     "wood",
     "fire"
   ],
-  "possible_genders": [
-    "neuter"
-  ],
+  "gender_weights": {
+    "neuter": 1.0
+  },
   "txmn_id": 247,
   "height": 40,
   "weight": 0.5,

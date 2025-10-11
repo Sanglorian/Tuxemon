@@ -4178,6 +4178,9 @@ msgstr "Techniques"
 msgid "monster_menu_item"
 msgstr "Held Item"
 
+msgid "monster_menu_pick"
+msgstr "Pick"
+
 msgid "monster_menu_desc"
 msgstr "Description"
 

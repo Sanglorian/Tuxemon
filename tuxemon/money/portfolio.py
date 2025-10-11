@@ -99,7 +99,7 @@ class PortfolioManager:
 
 
 class MarketDataManager:
-    def __init__(self):
+    def __init__(self) -> None:
         self.prices: dict[str, float] = {}
 
     def get_price(self, symbol: str) -> float:
@@ -130,36 +130,3 @@ class MarketDataManager:
         if current_price > 0:
             new_price = current_price * (1 + percentage_change)
             self.set_price(symbol, new_price)
-
-
-# Example usage:
-# market = MarketDataManager()
-# market.set_price("GGL", 1500.0)
-# market.apply_fluctuation("GGL", 0.05) # 5% increase
-# print(market.get_price("GGL")) # Output: 1575.0
-
-# class MoneyManager:
-#     def __init__(self) -> None:
-#         self.portfolio_manager: PortfolioManager = PortfolioManager()
-
-#     def get_total_wealth(self, market_prices: Mapping[str, float]) -> int:
-#         portfolio_value = self.portfolio_manager.get_portfolio_value(market_prices)
-#         return int(self.money + self.bank_account + portfolio_value)
-
-#     def buy_investment(self, symbol: str, shares: int, price: float) -> None:
-#         """Buys investment shares using money from the bank account."""
-#         total_cost = self.portfolio_manager.buy_shares(symbol, shares, price)
-#         self.withdraw_from_bank(int(total_cost))
-
-#     def sell_investment(self, symbol: str, shares: int, price: float) -> None:
-#         """Sells investment shares and deposits the revenue into the bank account."""
-#         total_revenue = self.portfolio_manager.sell_shares(symbol, shares, price)
-#         self.deposit_to_bank(int(total_revenue))
-
-# def decode_money(json_data: Mapping[str, Any]) -> MoneyManager:
-#       for bill_name, bill_data in bills.items():
-#         portfolio_data = json_data.get("portfolio", {})
-#         money_manager.portfolio_manager = PortfolioManager.from_state(portfolio_data)
-
-# def encode_money(money_manager: MoneyManager) -> Mapping[str, Any]:
-#         "portfolio": money_manager.portfolio_manager.get_state(),

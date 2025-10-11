@@ -94,9 +94,9 @@
     "frost",
     "cosmic"
   ],
-  "possible_genders": [
-    "neuter"
-  ],
+  "gender_weights": {
+    "neuter": 1.0
+  },
   "txmn_id": 263,
   "height": 120,
   "weight": 30,

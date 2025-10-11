@@ -77,10 +77,10 @@
     "water",
     "frost"
   ],
-  "possible_genders": [
-    "male",
-    "female"
-  ],
+  "gender_weights": {
+    "male": 0.5,
+    "female": 0.5
+  },
   "txmn_id": 268,
   "height": 25,
   "weight": 1,

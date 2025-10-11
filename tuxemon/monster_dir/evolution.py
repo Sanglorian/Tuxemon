@@ -210,7 +210,7 @@ class Evolution:
         if evolution_item.bond is not None:
             _operator = evolution_item.bond.comparison
             _value = evolution_item.bond.value
-            _bond = self.monster.bond
+            _bond = self.monster.bond_handler.bond
             conditions.append(compare(_operator.value, _bond, _value))
 
         # Check if the monster is holding the required item for evolution

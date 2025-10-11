@@ -1846,12 +1846,6 @@ msgstr "{target}'s armor softens."
 msgid "combat_state_stuck_get"
 msgstr "{target} is stuck in place."
 
-msgid "combat_state_tired_get"
-msgstr "{target} is worn out."
-
-msgid "combat_state_tired_end"
-msgstr "{target} shakes off its tiredness."
-
 msgid "combat_state_plague0"
 msgstr "{target} begins to sniffle."
 
@@ -2129,9 +2123,6 @@ msgstr "Spyder Bite"
 
 msgid "stuck"
 msgstr "Stuck"
-
-msgid "tired"
-msgstr "Tired"
 
 msgid "wasting"
 msgstr "Wasting"

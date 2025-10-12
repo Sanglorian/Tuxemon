@@ -2,11 +2,16 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import logging
 from functools import partial
-from typing import Any, ClassVar, Optional
+from pathlib import Path
+from typing import Any, ClassVar, Literal, Optional
 
+import yaml
+from pydantic import BaseModel, Field
 from pygame.surface import Surface
 
+from tuxemon.constants import paths
 from tuxemon.item.shop_utils import filter_party
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
@@ -14,6 +19,28 @@ from tuxemon.menu.quantity import QuantityAndCostMenu
 from tuxemon.monster import Monster
 from tuxemon.prepare import MAX_LEVEL
 from tuxemon.states.shop_base import ShopMenuState
+
+logger = logging.getLogger(__name__)
+
+
+def load_yaml(filepath: Path) -> Any:
+    try:
+        with filepath.open() as file:
+            return yaml.safe_load(file)
+    except FileNotFoundError:
+        logger.error(f"Config file not found: {filepath}")
+        raise
+    except yaml.YAMLError as exc:
+        logger.error(f"Error parsing YAML file: {exc}")
+        raise exc
+
+
+class TrainingShopConfig(BaseModel):
+    base_cost_per_level: int
+    cost_scaling_type: Literal["linear", "polynomial", "exponential"] = (
+        "linear"
+    )
+    polynomial_exponent: Optional[float] = Field(default=1.5)
 
 
 class TrainingCostMenu(QuantityAndCostMenu):
@@ -45,10 +72,17 @@ class ShopTrainingMenuState(ShopMenuState[Monster]):
     name: ClassVar[str] = "ShopTrainingMenuState"
 
     def __init__(
-        self, *args: Any, base_training_cost: int = 100, **kwargs: Any
+        self,
+        *args: Any,
+        model: Optional[str] = None,
+        **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.base_training_cost = base_training_cost
+        yaml_path = paths.mods_folder / "training_shop_config.yaml"
+        raw_data = load_yaml(yaml_path)
+        _model = model if model is not None else "cathedral"
+        self.config = TrainingShopConfig(**raw_data[_model])
+        self.base_cost_per_level = self.config.base_cost_per_level
 
     def _get_asset_image(self, asset: MenuItem[Monster]) -> Optional[Surface]:
         """Returns the front sprite image for a monster."""
@@ -123,19 +157,33 @@ class ShopTrainingMenuState(ShopMenuState[Monster]):
         self, monster: Monster, quantity: int
     ) -> int:
         return sum(
-            (monster.level + i) * self.base_training_cost
+            self._get_level_cost(monster, monster.level + i)
             for i in range(1, quantity + 1)
         )
 
     def _get_level_cost(self, monster: Monster, target_level: int) -> int:
-        return target_level * self.base_training_cost  # Default linear scaling
+        base = self.config.base_cost_per_level
+        scaling = self.config.cost_scaling_type
+
+        if scaling == "linear":
+            return target_level * base
+        elif scaling == "polynomial":
+            exponent = self.config.polynomial_exponent or 1.5
+            return int((target_level**exponent) * base)
+        elif scaling == "exponential":
+            return int(base * (2 ** (target_level - 1)))
+        else:
+            logger.warning(
+                f"Unknown scaling type '{scaling}', defaulting to linear."
+            )
+            return target_level * base
 
     def _format_monster_label(self, monster: Monster, cost: int) -> str:
         return f"{monster.name} Lv.{monster.level} (${cost})"
 
     def _calculate_training_cost(self, monster: Monster) -> int:
         """Calculates the cost to level up a monster."""
-        return (monster.level + 1) * self.base_training_cost
+        return self._get_level_cost(monster, monster.level + 1)
 
     def on_menu_selection(self, menu_monster: MenuItem[Monster]) -> None:
         monster = menu_monster.game_object

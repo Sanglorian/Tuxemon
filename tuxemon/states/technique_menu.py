@@ -84,16 +84,18 @@ class TechniqueMenuState(Menu[Technique]):
         tech = menu_technique.game_object
 
         if not any(
-            menu_technique.game_object.validate_monster(local_session, m)
-            for m in self.char.monsters
+            tech.validate_monster(local_session, m) for m in self.char.monsters
         ):
             msg = T.format("item_no_available_target", {"name": tech.name})
             open_dialog(self.client, [msg])
-        elif tech.usable_on is False:
+            return
+
+        if tech.behaviors.is_field_tech is False:
             msg = T.format("item_cannot_use_here", {"name": tech.name})
             open_dialog(self.client, [msg])
-        else:
-            self.open_confirm_use_menu(tech)
+            return
+
+        self.open_confirm_use_menu(tech)
 
     def open_confirm_use_menu(self, technique: Technique) -> None:
         """

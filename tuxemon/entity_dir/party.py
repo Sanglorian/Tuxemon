@@ -101,11 +101,20 @@ class PartyHandler:
         self, policy: Optional[RoutingPolicy] = None
     ) -> bool:
         policy = policy or self.routing_policy
-        party_limit = policy.max_party_size or self._party_limit
+
+        is_unlimited = (
+            policy.max_party_size is not None and policy.max_party_size == -1
+        )
+        party_limit = (
+            policy.max_party_size
+            if policy.max_party_size is not None
+            else self._party_limit
+        )
+
         return (
             policy.should_force_to_box()
             or not policy.allow_party_addition
-            or self.party_size >= party_limit
+            or (not is_unlimited and self.party_size >= party_limit)
         )
 
     def send_monster_to_box(
@@ -385,18 +394,26 @@ class PartyHandler:
         else:
             policy = self.routing_policy
 
-        for monster in new_monsters[
-            : policy.max_party_size or self._party_limit
-        ]:
+        party_limit = (
+            policy.max_party_size
+            if policy.max_party_size is not None
+            else self._party_limit
+        )
+
+        if policy.max_party_size == -1:
+            party_monsters = new_monsters
+            overflow = []
+        else:
+            party_limit = policy.max_party_size or self._party_limit
+            party_monsters = new_monsters[:party_limit]
+            overflow = new_monsters[party_limit:]
+
+        for monster in party_monsters:
             monster.set_owner(self._owner)
             self._monsters.append(monster)
 
-        if add_overflow_to_box:
-            overflow = new_monsters[
-                (policy.max_party_size or self._party_limit) :
-            ]
+        if add_overflow_to_box and overflow:
             kennel_for_overflow = policy.get_kennel()
-
             for monster in overflow:
                 monster.set_owner(self._owner)
                 self.send_monster_to_box(monster, kennel_for_overflow)

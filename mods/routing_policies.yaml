@@ -7,7 +7,7 @@
 # force_to_box: If true, all monsters go directly to the box instead of the party.
 # kennel_override: Optional override for the default box name (KENNEL). Use null to disable.
 # overflow_kennel: Optional secondary box used if the primary kennel is full. If also full, kennel_name_rules may be used to create overflow boxes.
-# max_party_size: Maximum number of monsters allowed in the party.
+# max_party_size: Maximum number of monsters allowed in the party. -1 means unlimited party size
 # allow_party_addition: If false, monsters are never allowed in the party.
 # auto_release_if_box_full: If true, monsters are released when the box is full.
 # nickname_rules:
@@ -35,8 +35,11 @@ example_policy:
   auto_release_if_box_full: false    # If true, monsters are released when the box is full.
 
   # ── Nickname Customization ────────────────
-  nickname_rules:            # Rules for formatting monster nicknames.
+  nickname_rules:                    # Rules for formatting monster nicknames.
     prefix: "Elite-"
     suffix: "-X"
 
-
+unlimited_party:
+  force_to_box: false
+  allow_party_addition: true
+  max_party_size: -1                 # -1 means unlimited party size

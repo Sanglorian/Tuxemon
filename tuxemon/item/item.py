@@ -15,7 +15,7 @@ from tuxemon.core.core_condition import CoreCondition
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
 from tuxemon.core.core_manager import ConditionManager, EffectManager
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
-from tuxemon.db import ItemCategory, ItemModel, State, db
+from tuxemon.db import ItemBehaviors, ItemCategory, ItemModel, State, db
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
 from tuxemon.surfanim import FlipAxes
@@ -64,6 +64,7 @@ class Item:
         self.use_failure: str = ""
         self.usable_in: Sequence[State] = []
         self.immunity_to_status: Sequence[str] = []
+        self.behaviors: ItemBehaviors
         self.cost: int = 0
         self.wear: int = 0
         self.max_wear: int = 0

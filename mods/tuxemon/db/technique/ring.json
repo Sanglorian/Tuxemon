@@ -23,7 +23,7 @@
   "power": 2,
   "range": "reach",
   "recharge": 2,
-  "sfx": "sfx_blaster",
+  "sfx": "sfx_forcefield",
   "slug": "ring",
   "sort": "damage",
   "modifiers": [],

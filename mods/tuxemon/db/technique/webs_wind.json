@@ -26,7 +26,7 @@
   "power": 0.5,
   "range": "ranged",
   "recharge": 2,
-  "sfx": "sfx_blaster",
+  "sfx": "sfx_tornado",
   "slug": "webs_wind",
   "sort": "damage",
   "modifiers": [],

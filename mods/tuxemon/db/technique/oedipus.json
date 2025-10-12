@@ -27,7 +27,7 @@
   "power": 2.2,
   "range": "reach",
   "recharge": 3,
-  "sfx": "sfx_blaster",
+  "sfx": "sfx_forcefield",
   "slug": "oedipus",
   "sort": "damage",
   "modifiers": [],

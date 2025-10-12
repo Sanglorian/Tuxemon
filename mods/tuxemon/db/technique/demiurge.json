@@ -27,7 +27,7 @@
   "power": 2,
   "range": "touch",
   "recharge": 2,
-  "sfx": "sfx_blaster",
+  "sfx": "sfx_forcefield",
   "slug": "demiurge",
   "sort": "damage",
   "modifiers": [],

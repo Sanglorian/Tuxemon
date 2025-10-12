@@ -1,5 +1,6 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.access_pc.AccessPCAction
 .. autoscriptinfoclass:: tuxemon.event.actions.add_collision.AddCollisionAction
+.. autoscriptinfoclass:: tuxemon.event.actions.add_combo.AddComboAction
 .. autoscriptinfoclass:: tuxemon.event.actions.add_contacts.AddContactsAction
 .. autoscriptinfoclass:: tuxemon.event.actions.add_held_item.AddHeldItemction
 .. autoscriptinfoclass:: tuxemon.event.actions.add_item.AddItemAction

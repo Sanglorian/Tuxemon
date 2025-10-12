@@ -59,6 +59,7 @@ def _lookup_techniques(element: str) -> None:
     lookup_cache = {
         tech_name: result
         for tech_name in db.database["technique"]
-        if (result := TechniqueModel.lookup(tech_name, db)).category != TechCategory.reserved
+        if (result := TechniqueModel.lookup(tech_name, db)).category
+        != TechCategory.reserved
         and element in result.types
     }

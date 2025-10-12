@@ -329,16 +329,10 @@ class PartyConditionsModel(BaseModel):
                     )
         return v
 
+
 class Behaviors(BaseModel):
     """Base class for shared behaviors."""
 
-class ItemBehaviors(Behaviors):
-    consumable: bool = Field(
-        True, description="Whether or not this item is consumable."
-    )
-    visible: bool = Field(
-        True, description="Whether or not this item is visible."
-    )
     requires_monster_menu: bool = Field(
         True, description="Whether a monster menu is required for this action."
     )

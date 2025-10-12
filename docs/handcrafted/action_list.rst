@@ -91,6 +91,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.random_item.RandomItemAction
 .. autoscriptinfoclass:: tuxemon.event.actions.random_monster.RandomMonsterAction
 .. autoscriptinfoclass:: tuxemon.event.actions.remove_collision.RemoveCollisionAction
+.. autoscriptinfoclass:: tuxemon.event.actions.remove_combo.RemoveComboAction
 .. autoscriptinfoclass:: tuxemon.event.actions.remove_contacts.RemoveContactsAction
 .. autoscriptinfoclass:: tuxemon.event.actions.remove_flair.RemoveFlairAction
 .. autoscriptinfoclass:: tuxemon.event.actions.remove_held_item.RemoveHeldItemction

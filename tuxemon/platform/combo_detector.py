@@ -67,6 +67,33 @@ class ComboDetector:
             node.max_delay_s = max_delay_s
         node.callback = callback
 
+    def remove_combo(self, buttons: list[int]) -> bool:
+        """Removes a combo pattern from the Trie."""
+        path: list[tuple[int, _TrieNode]] = []
+        node = self._trie
+
+        # Traverse the Trie and record the path
+        for button in buttons:
+            if button not in node.children:
+                return False  # Combo not found
+            path.append((button, node))
+            node = node.children[button]
+
+        # Remove the callback
+        if node.callback is None:
+            return False  # No combo to remove
+        node.callback = None
+
+        # Prune orphaned nodes
+        for button, parent in reversed(path):
+            child = parent.children[button]
+            if child.callback is None and not child.children:
+                del parent.children[button]
+            else:
+                break
+
+        return True
+
     def process_input(self, input_event: PlayerInput) -> None:
         """
         Processes a single input event and checks for any matching combos

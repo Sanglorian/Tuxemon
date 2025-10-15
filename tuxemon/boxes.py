@@ -16,7 +16,7 @@ from tuxemon.states.pc_locker import HIDDEN_LIST_LOCKER
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
     from tuxemon.monster import Monster
-    from tuxemon.npc import NPC, NPCState
+    from tuxemon.npc import NPC
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +66,42 @@ class BoxCollection:
         if box_id not in self.monster_boxes:
             self.create_box(box_id, "monster")
         self.monster_boxes[box_id].append(monster)
+
+    def store_party_in_box(
+        self,
+        box_id: str,
+        party: list[Monster],
+        max_size: int = prepare.MAX_KENNEL,
+    ) -> bool:
+        """
+        Attempts to store all monsters from the given party into the specified box.
+
+        Parameters:
+            box_id: The ID of the monster box.
+            party: A list of Monster instances to store.
+            max_size: The maximum capacity of the box.
+
+        Returns:
+            True if the party was successfully stored, False otherwise.
+        """
+        if box_id not in self.monster_boxes:
+            self.create_box(box_id, "monster")
+
+        current_size = len(self.monster_boxes[box_id])
+        required_space = len(party)
+
+        if current_size + required_space > max_size:
+            logger.error(
+                f"Cannot store party in box '{box_id}': "
+                f"{required_space} monsters to store, "
+                f"but only {max_size - current_size} slots available."
+            )
+            return False
+
+        self.monster_boxes[box_id].extend(party)
+        logger.info(f"Stored {required_space} monsters in box '{box_id}'.")
+        party.clear()
+        return True
 
     def remove_item(self, item: Item) -> None:
         """
@@ -349,7 +385,7 @@ class ItemBoxes(BoxCollection):
             for box_id, items in self.item_boxes.items()
         }
 
-    def load(self, save_data: NPCState) -> None:
+    def load(self, save_data: Mapping[str, Any]) -> None:
         """
         Loads the item boxes from a saved state.
         """
@@ -524,7 +560,7 @@ class MonsterBoxes(BoxCollection):
             for box_id, monsters in self.monster_boxes.items()
         }
 
-    def load(self, char: NPC, save_data: NPCState) -> None:
+    def load(self, char: NPC, save_data: Mapping[str, Any]) -> None:
         """
         Loads the monster boxes from a saved state.
         """

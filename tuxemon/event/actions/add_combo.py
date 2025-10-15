@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import final
+from typing import Optional, final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -49,11 +49,13 @@ class AddComboAction(EventAction):
         combo_name: Required. A name or ID for the combo.
         buttons: Required. A colon-separated list of button names (e.g. LEFT:RIGHT:A).
         max_delay_ms: Optional. Max delay between presses (default: 1000).
+        event_name: The name of the event whose actions will be executed (optional)
     """
 
     name = "add_combo"
     combo_name: str
     values: str
+    event_name: Optional[str] = None
 
     def start(self, session: Session) -> None:
         try:
@@ -76,7 +78,11 @@ class AddComboAction(EventAction):
 
         def on_combo_triggered() -> None:
             logger.info(f"Combo '{self.combo_name}' triggered!")
-            # Optional: trigger a named event or script
+            if not self.event_name:
+                return
+            session.client.event_engine.execute_action(
+                "call_event", [self.event_name]
+            )
 
         try:
             session.client.input_manager.combo_manager.detector.add_combo(

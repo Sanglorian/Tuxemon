@@ -15,6 +15,7 @@ from tuxemon.combat.utils import alive_party, battlefield, defeated
 from tuxemon.db import EffectPhase, TargetType
 from tuxemon.event import get_event_bus
 from tuxemon.locale import T
+from tuxemon.technique.technique import Technique
 from tuxemon.ui.combat_swap import SwapTracker
 
 if TYPE_CHECKING:
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
     from tuxemon.npc import NPC
     from tuxemon.session import Session
     from tuxemon.status.status import Status
-    from tuxemon.technique.technique import Technique
+
 logger = logging.getLogger(__name__)
 
 
@@ -300,7 +301,7 @@ class CombatSession:
     def get_message_swap(self, character: NPC, monster: Monster) -> str:
         """Determines and returns the appropriate alert message for combat start."""
         params = {"target": monster.name.upper()}
-        if self.combat_type is CombatType.TRAINER:
+        if self.combat_type in (CombatType.TRAINER, CombatType.MONSTER):
             params["user"] = character.name.upper()
             return T.format("combat_swap", params)
         elif self.combat_type is CombatType.HORDE:

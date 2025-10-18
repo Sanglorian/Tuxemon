@@ -13943,6 +13943,11 @@ msgstr ""
 msgid "spyder_route6_gunner2"
 msgstr "You're not a Greenwash employee? I've heard that one before!"
 
+msgid "spyder_flower_guard"
+msgstr ""
+"Access restricted. Only those who've completed the combat evaluation at "
+"the Dojo are cleared for entry. Orders from above — no exceptions."
+
 msgid "spyder_flower_artist1"
 msgstr ""
 "Simplistic and clumsy brushstrokes and a pedestrian theme. Bah! Another "
@@ -15462,9 +15467,6 @@ msgstr "Ray"
 
 msgid "spyder_dragonscave_lucille"
 msgstr "Lucille"
-
-msgid "spyder_dragonscave_tru"
-msgstr "Tru"
 
 msgid "spyder_flower_cady"
 msgstr "Cady"

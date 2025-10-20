@@ -312,9 +312,9 @@ def build_hud_text(
     is_right: bool,
     is_trainer: bool,
     is_status: bool,
-) -> str:
+) -> dict[str, str]:
     """
-    Returns the text image for use on the callout of the monster.
+    Returns the text elements for use on the HUD.
 
     Parameters:
         menu: Combat menu (eg. MainCombatMenuState).
@@ -322,18 +322,14 @@ def build_hud_text(
         is_right: Boolean side (true: right side, false: left side).
             right side (player), left side (opponent)
         is_trainer: Boolean battle (trainer: true, wild: false).
-
-    Returns:
-        A string representing the HUD text for the monster.
     """
     if menu == "MainParkMenuState" and is_right:
         # Special case for MainParkMenuState
-        ball = T.translate("tuxeball_park")
+        ball = T.translate("tuxeball_park").upper()
         owner = monster.get_owner()
         item = owner.items.find_item("tuxeball_park")
-        if item is None:
-            return f"{ball.upper()}: 0"
-        return f"{ball.upper()}: {item.quantity}"
+        quantity = item.quantity if item else 0
+        return {"line1": f"{ball}: {quantity}", "line2": ""}
 
     icon = ""
     if monster.gender == GenderType.male:
@@ -345,4 +341,7 @@ def build_hud_text(
     if not is_trainer and is_status and not is_right:
         symbol = "◉"
 
-    return f"{monster.name}{icon} Lv.{monster.level}{symbol}"
+    return {
+        "line1": f"{monster.name}{icon} Lv.{monster.level}{symbol}",
+        "line2": "",
+    }

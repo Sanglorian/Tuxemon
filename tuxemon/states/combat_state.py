@@ -585,10 +585,13 @@ class CombatState(CombatAnimations):
                 user, target, result_tech.damage
             )
 
-            if user.plague.is_infected():
-                params = {"target": user.name.upper()}
-                m = T.format("combat_state_plague1", params)
-                message += "\n" + m
+            plague = user.plague.get_most_severe_plague_slug()
+            if plague:
+                m = user.plague.get_suppressed_symptom_message(
+                    user.name, plague
+                )
+                if m:
+                    message += "\n" + m
 
             if method.range != "special":
                 element_damage_key = config_combat.multiplier_map.get(

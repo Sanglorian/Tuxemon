@@ -55,7 +55,7 @@ class Evolution:
                 and move.learning_method == LearningMethod.EVOLUTION
             ):
                 new_monster.moves.learn_by_method(
-                    new_monster.instance_id,
+                    new_monster,
                     move.technique,
                     move.learning_method,
                 )

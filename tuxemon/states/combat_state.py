@@ -52,6 +52,7 @@ from tuxemon.combat.utils import (
 from tuxemon.db import (
     EffectPhase,
     ItemCategory,
+    OutputBattle,
 )
 from tuxemon.formula import config_combat
 from tuxemon.item.item import Item
@@ -231,17 +232,21 @@ class CombatState(CombatAnimations):
 
         elif phase == CombatPhase.DRAW_MATCH:
             message = self.track_battle_results(
-                "draw", c_session.defeated_players
+                OutputBattle.draw, c_session.defeated_players
             )
             if message:
                 self.process_combat_message(message)
 
         elif phase == CombatPhase.HAS_WINNER:
             message = self.track_battle_results(
-                "won", c_session.remaining_players, c_session.defeated_players
+                OutputBattle.won,
+                c_session.remaining_players,
+                c_session.defeated_players,
             )
             message += "\n" + self.track_battle_results(
-                "lost", c_session.defeated_players, c_session.remaining_players
+                OutputBattle.lost,
+                c_session.defeated_players,
+                c_session.remaining_players,
             )
             if message:
                 self.process_combat_message(message)
@@ -388,7 +393,7 @@ class CombatState(CombatAnimations):
 
     def track_battle_results(
         self,
-        result_type: str,
+        result_type: OutputBattle,
         players: Sequence[NPC],
         opponents: Optional[Sequence[NPC]] = None,
     ) -> str:
@@ -403,13 +408,13 @@ class CombatState(CombatAnimations):
             message += ("\n" if message else "") + track_battles(
                 session=self.session,
                 output=result_type,
-                player=player,
-                players=opponents if opponents else players,
+                character=player,
+                opponents=opponents if opponents else players,
                 turns=self.client.combat_session.turn,
                 combat_type=self.client.combat_session.combat_type,
                 prize=(
                     self.client.combat_session.prize
-                    if result_type == "won"
+                    if result_type == OutputBattle.won
                     else 0
                 ),
             )

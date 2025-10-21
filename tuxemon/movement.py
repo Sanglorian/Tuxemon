@@ -33,6 +33,10 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def manhattan_distance(pos: tuple[int, int], target: tuple[int, int]) -> float:
+    return abs(pos[0] - target[0]) + abs(pos[1] - target[1])
+
+
 class PathfindNode:
     """Used in path finding search."""
 
@@ -208,16 +212,12 @@ class Pathfinder:
                 exists.
         """
         logger.info(f"Pathfinding from {start} to {dest}.")
-
-        def heuristic(pos: tuple[int, int], target: tuple[int, int]) -> float:
-            return abs(pos[0] - target[0]) + abs(pos[1] - target[1])
-
         open_set: list[PathfindNode] = []
         g_costs: dict[tuple[int, int], float] = {start: 0.0}
         known_nodes: set[tuple[int, int]] = set()
 
         start_node = PathfindNode(
-            start, g_cost=0.0, h_cost=heuristic(start, dest)
+            start, g_cost=0.0, h_cost=manhattan_distance(start, dest)
         )
         heappush(open_set, start_node)
 
@@ -238,7 +238,7 @@ class Pathfinder:
 
                 if new_g_cost < g_costs.get(neighbor_pos, float("inf")):
                     g_costs[neighbor_pos] = new_g_cost
-                    neighbor_h_cost = heuristic(neighbor_pos, dest)
+                    neighbor_h_cost = manhattan_distance(neighbor_pos, dest)
                     neighbor_node = PathfindNode(
                         value=neighbor_pos,
                         parent=current_node,
@@ -361,15 +361,15 @@ class Pathfinder:
         try:
             tile_data = collision_map[neighbor]
         except KeyError:
-            return True  # Missing tile data is treated as traversable
+            # Missing tile data implies traversable space by default.
+            return True
 
+        # Check if data exists AND if the entry rule allows it
         if tile_data is None:
             return False
 
-        try:
-            return pairs(direction) in tile_data.enter_from
-        except KeyError:
-            return False
+        # Check if the reversed direction is in the tile's allowed entry directions.
+        return pairs(direction) in tile_data.enter_from
 
     def is_tile_traversable_from(
         self,

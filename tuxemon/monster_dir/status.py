@@ -136,7 +136,7 @@ class MonsterStatusHandler:
             )
             if new_status.on_negative_status == ResponseStatus.replaced:
                 self.add_status(new_status)
-            elif new_status.on_positive_status == ResponseStatus.removed:
+            elif new_status.on_negative_status == ResponseStatus.removed:
                 self.remove_status()
         else:
             logger.debug(

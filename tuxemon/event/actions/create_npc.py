@@ -97,7 +97,7 @@ def load_party_monsters(
             npc_monster.variables, game_variables
         ):
             monster = party_monster(npc_monster)
-            npc.party.add_monster(monster, len(npc.monsters))
+            npc.party.insert_monster_to_party(monster, len(npc.monsters))
 
 
 def party_monster(npc_monster: PartyMemberModel) -> Monster:

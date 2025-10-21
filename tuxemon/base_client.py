@@ -169,6 +169,7 @@ class BaseClient(ABC):
 
     def perform_cleanup(self) -> None:
         """Handles necessary cleanup before shutting down."""
+        self.map_loader.clear_cache()
         self.current_music.stop()
         local_session.reset()
         logger.info("Performing cleanup before exiting...")

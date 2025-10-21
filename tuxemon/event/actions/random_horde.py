@@ -110,7 +110,11 @@ class RandomHordeAction(EventAction):
             logger.error("'wild_encounter' not found")
             return
 
-        npc.party.replace_party(horde, False)
+        npc.party.replace_party(
+            horde,
+            add_overflow_to_box=False,
+            override_policy_name="unlimited_party",
+        )
         # NOTE: random battles are implemented as trainer battles.
         #       this is a hack. remove this once trainer/random battlers are fixed
 

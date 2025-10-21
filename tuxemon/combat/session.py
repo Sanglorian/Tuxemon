@@ -294,7 +294,8 @@ class CombatSession:
             params = {"name": self.right_player.monsters[0].name.upper()}
             return T.format("combat_wild_appeared", params)
         elif self.combat_type is CombatType.HORDE:
-            return T.translate("combat_horde_appeared")
+            horde = self.right_player.party.party_size
+            return f"{T.translate('combat_horde_appeared')} ({horde})"
         else:
             raise ValueError(f"Unexpected combat_type: {self.combat_type}")
 

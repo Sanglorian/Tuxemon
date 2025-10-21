@@ -104,7 +104,7 @@ def party_monster(npc_monster: PartyMemberModel) -> Monster:
     """Creates a new monster object from the database details."""
     monster = Monster.spawn_base(npc_monster.slug, npc_monster.level)
     monster.money_modifier = npc_monster.money_mod
-    monster.experience_modifier = npc_monster.exp_req_mod
+    monster.set_experience_modifier(npc_monster.exp_req_mod)
     monster.gender = npc_monster.gender
     return monster
 

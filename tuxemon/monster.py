@@ -623,7 +623,12 @@ class Monster:
         self.moves.full_recharge_moves()
 
         if not self.status.is_fainted:
-            self.status.remove_status()
+            current_status = self.status.get_current_status()
+            if (
+                current_status
+                and not current_status.behaviors.persists_after_combat
+            ):
+                self.status.remove_status()
 
         if self.is_fainted:
             self.current_hp = 0

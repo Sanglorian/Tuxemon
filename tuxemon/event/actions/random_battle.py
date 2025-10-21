@@ -100,7 +100,7 @@ class RandomBattleAction(EventAction):
             spawn_monster = Monster.spawn_base(monster.slug, level)
             spawn_monster.set_capture(today_ordinal())
             spawn_monster.money_modifier = level
-            spawn_monster.experience_modifier = level
+            spawn_monster.set_experience_modifier(level)
             npc.party.insert_monster_to_party(spawn_monster, len(npc.monsters))
 
         player = session.player

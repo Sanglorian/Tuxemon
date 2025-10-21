@@ -68,7 +68,7 @@ class WildEncounterAction(EventAction):
             self.monster_slug, self.monster_level
         )
         if self.exp is not None:
-            current_monster.experience_modifier = self.exp
+            current_monster.set_experience_modifier(self.exp)
         if self.money is not None:
             current_monster.money_modifier = self.money
         if self.held_item is not None:

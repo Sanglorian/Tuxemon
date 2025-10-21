@@ -193,8 +193,7 @@ class Evolution:
             result = evolution_item.steps - int(self.monster.steps)
             conditions.append(result == 0)
             self.monster.steps += 1
-            self.monster.levelling_up = True
-            self.monster.got_experience = True
+            self.monster.experience_handler.trigger_experience_flags()
 
         # Check if the party conditions
         if evolution_item.party_conditions is not None:

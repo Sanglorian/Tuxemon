@@ -83,7 +83,7 @@ class RandomHordeAction(EventAction):
             eligible, level, held_item = result
 
             current_monster = Monster.spawn_base(eligible.monster, level)
-            current_monster.experience_modifier = eligible.exp_req_mod
+            current_monster.set_experience_modifier(eligible.exp_req_mod)
 
             if held_item is not None:
                 item = Item.create(held_item)

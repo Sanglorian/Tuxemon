@@ -776,6 +776,10 @@ class CombatState(CombatAnimations):
         reward_system.apply_penalties(monster)
         rewards = reward_system.award_rewards(monster)
 
+        for data in rewards.winners:
+            if data.levels_gained > 0:
+                self.monsters_just_leveled_up[data.winner.slug] = True
+
         # Update combat state with rewards
         self.client.combat_session.add_prize(rewards.prize)
         for message in rewards.messages:

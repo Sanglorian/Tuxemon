@@ -34,6 +34,7 @@ class RewardDataEntry:
     winner: Monster
     money: int
     experience: int
+    levels_gained: int = 0
 
 
 @dataclass
@@ -117,18 +118,20 @@ class RewardSystem:
                 )
                 awarded_money = calculate_money(monster, winner)
 
-                rewards_data.winners.append(
-                    RewardDataEntry(
-                        winner=winner,
-                        money=awarded_money,
-                        experience=awarded_exp,
-                    )
-                )
-
                 # Grant experience and update moves
                 if winner.owner and winner.owner.is_player:
                     calculate_tps(winner, monster)
                     levels = winner.give_experience(awarded_exp)
+
+                    rewards_data.winners.append(
+                        RewardDataEntry(
+                            winner=winner,
+                            money=awarded_money,
+                            experience=awarded_exp,
+                            levels_gained=levels,
+                        )
+                    )
+
                     new_moves = winner.moves.update_moves(winner, levels)
                     if new_moves:
                         rewards_data.moves.extend(new_moves)

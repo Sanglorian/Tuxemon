@@ -1,0 +1,248 @@
+,MainAnimation,TXMN ID,TXMN Blurb,TXMN Element,TXMN Category,TXMN Family,Tags,TXMN Accuracy,TXMN Potency,TXMN Power,TXMN Recharge,TXMN Healing Power,TXMN Is fast,TXMN Effects,TXMN User Condition,TXMN Target Condition,TXMN Animation Target
+Adamantine,,120,The user's body glows intensely before it delivers a crushing blow.,Metal,Touch,Reserved,Reserved,100%,,3,2,,Very Slow,,,,1
+Revenge Stance,,181,"The user adopts a defensive posture, provoking the opponent into attacking first, while preparing for revenge.",Normal,Special,Condition imposer,SoldierShieldedFury,100%,100%,,1,,Normal,,Revenge,,
+Stabilo,,108,The user summons a barrage of sharp wooden splinters that pierce the opponent.,Wood,Reliable,Simple,PlantSharp,60%,,1,2,,Normal,Multi attack 3,,,1
+Vorpal,,155,"The user unleashes a devastating, precision strike that inflicts severe damage and fills the opponent with a burning desire for revenge.",Metal,Melee,Reserved,Reserved,95%,100%,3,3,,Fast,,,Revenge,1
+Inner Power,,,The user calls upon their inner power to unleash an attack of the same type.,Normal,Melee,Simple,Universal,100%,,2,1,,Normal,Movetype user,,,0
+Beam,,18,"A concentrated beam of energy is fired from the user's eyes, blinding the opponent.",Heroic,Ranged,Simple,Light,100%,75%,2,2,,Normal,,,Blinded,2
+Water Blast,,195,"The user unleashes a powerful blast of water, striking the opponent with a torrent of liquid force, dealing damage.",Water,Ranged,Simple,Water,100%,,2.3,1,,Normal,,,,1
+Electric Multibite,,220,The user bites repeatedly while channeling electricity. May shock the target.,Lightning,Touch,Exotic,BiteElectricity,90%,15%,1.2,3,,Fast,Multi attack 2,,Slow,1
+Crushing Bite,,216,The user bites down with bone-crushing force. May leave the target unable to act.,Normal,Touch,Simple,Bite,90%,20%,1.8,2,,Very Slow,,,Stuck,1
+Grinding,,109,"The user relentlessly batters the opponent with a barrage of grinding blows, wearing them down with sustained pressure.",EarthMetal,Melee,Simple,Rock,75%,,2.2,2,,Slow,,,,1
+Clamp On,,17,The user latches onto the opponent with its powerful jaws.,Normal,Special,Exotic,BiteBugFury,100%,100%,,3,,Normal,,Diehard,Grabbed,1
+Steel Jaws,,217,The user clamps down with jaws reinforced by metal. A powerful biting attack.,Metal,Touch,Powerful,BiteSteel,95%,,2.5,3,,Normal,,,,2
+Platinum,,143,"The user's body becomes infused with a lustrous metal, granting it increased defense and the ability to inflict damage.",Metal,Melee,Simple,GemstoneMachineShieldedSteel,70%,70%,1.7,2,,Normal,,Focused,Softened,1
+Bubble Trap,,57,The user creates a large bubble that traps both itself and the opponent.,Cosmic,Reach,Exotic,SummonerMental,75%,100%,2.25,3,,Normal,,Grabbed,Grabbed,2
+Bubbles,,214,"The user blows a wide jet of bubbles at the target, weak but difficult to avoid.",Water,Ranged,Simple,AmphibianWater,100%,,1.4,1,,Normal,,,,1
+Fume,,28,The user becomes enraged.,Normal,Special,Condition imposer,Fury,100%,100%,,1,,Normal,,Enraged,,0
+Goad,,39,"The user taunts the opponent, causing them to become enraged.",Normal,Melee,Simple,SpeedShielded,80%,80%,1.75,2,,Very Fast,,,Enraged,1
+Gourmet,,234,"The user devours a nourishing meal, restoring their vitality and rejuvenating their spirits.",Cosmic,Special,Condition imposer,Food,100%,100%,,3,2,Normal,,Recovering,,0
+Heavenly Desserts,,233,A bizarre move that can both heal you and send you to heaven by how good it tastes.,Cosmic,Ranged,Reserved,Food,90%,100%,3,3,,Normal,,,Recovering,1
+Piece of Cake,,228,"The user enters a state of effortless ease, healing their wounds and restoring their vitality as everything becomes as simple as enjoying a delicious cake.",Normal,Special,Condition imposer,Food,100%,100%,,2,0.5,Fast,,Charging,,
+Potluck,,235,"The user and opponent engage in a mutual exchange of gifts, fostering a brief moment of camaraderie in the midst of battle.",Normal,Special,Special,Food,100%,80%,,1,1,Normal,,Exhausted,Nodding Off,0
+Cat Calling,,124,The user emits a high-pitched cry that distracts the opponent.,Cosmic,Special,Condition imposer,LoveLeadership,100%,100%,,2,,Normal,,,Charmed,1
+Midnight Mantle,,55,"The user shrouds itself in a cloak of darkness, striking out with shadowy tendrils that inflict damage and disorient the opponent.",Shadow,Ranged,Basic,DarknessCelestial,60%,,1.25,1,,Very Fast,Splash,,,1
+Canine,,123,"The user unleashes a primal, ferocious attack that sends the opponent into a frenzy.",Normal,Special,Condition imposer,ShapeshifterFury,100%,100%,,2,,Normal,,,Wild,1
+Feline,,129,The user focuses its predatory instincts.,Normal,Special,Condition imposer,SpeedShapeshifter,100%,100%,,2,,Very Fast,,Wild,,1
+Clock,,105,The user creates a swirling vortex that confuses the opponent.,Cosmic,Special,Condition imposer,GadgetsLeadershipMental,100%,100%,,1,,Normal,,,Confused,1
+Berserk,,44,"The user enters a frenzied state, attacking with reckless abandon.",Heroic,Melee,Simple,Fury,80%,100%,2.25,2,,Slow,,Enraged,,1
+Kindling Flame,,30,"The user ignites with inner fire, increasing its attack power.",Fire,Ranged,Exotic,Flame,80%,100%,2.25,2,,Normal,,Enraged,,2
+Rock,,6,A heavy rock falls on the target.,Earth,Touch,Basic,Rock,100%,,1.5,1,,Normal,,,,1
+Arcane Eye,,158,An arcane veil lashes at those that would curse the user.,Cosmic,Special,Condition imposer,GazeSummoner,90%,100%,,1,,Very Fast,,Elemental Shield,,0
+Breath,,122,The user exhales a cloud of sleep-inducing gas.,Cosmic,Special,Condition imposer,Mental,100%,100%,,2,,Normal,,,Nodding Off,1
+Crystal,,128,"The user fires a sharp, crystalline projectile at the opponent.",Cosmic,Ranged,Basic,Gemstone,90%,,1,1,,Normal,,,,1
+Dreamwalk,,211,"Allows the user to enter the dreams of sleeping opponents, potentially dealing damage.",CosmicShadow,Reliable,Exotic,Mental,100%,,2.8,4,,Normal,,,,0
+Demiurge,,147,"The user undergoes a transformation, healing itself and confusing the opponent.",Cosmic,Touch,Reserved,Reserved,80%,80%,2,2,,Normal,,Recovering,Confused,1
+Battery Acid,,88,"A corrosive liquid is ejected from the user's body, poisoning the opponent.",Venom,Ranged,Simple,Machine,80%,35%,2.25,2,,Normal,,,Poisoned,1
+Battery Discharge,,83,The user's body emits a bright light as it restores its own health.,Lightning,Ranged,Simple,Machine,80%,,1.25,2,3,Normal,Healing user,,,1
+Buzz,,197,"The user generates a close-ranged blast of electromagnetic energy from its body, striking the opponent with a burst of electric force, dealing damage.",Lightning,Melee,Simple,ElectricityBug,100%,50%,1.2,1,,Normal,,,Flinching,
+Magnetic Body,,237,"A powerful magnetic field is generated, sending metal objects flying wildly across the battlefield and disrupting the opponent's movements.",LightningMetal,Melee,Powerful,MachineSteelElectricity,100%,80%,3,3,,Normal,,Grabbed,Grabbed,0
+Static Field,,15,"The user generates a static electric field around itself, granting it increased defense.",Lightning,Special,Powerful,Shielded,100%,100%,,3,,Normal,,Hard Shell,Exhausted,3
+Divinity Beam,,192,A ray of divinity blinds those who look upon it.,Cosmic,Ranged,Powerful,CelestialCalamity,95%,50%,3,4,0,Normal,,,Blinded,
+Suck Poison,,58,The user draws out the poison from their own body and infects their enemy with it.,Venom,Melee,Reserved,Reserved,100%,100%,2,1,,Normal,,,,1
+Fester,,78,"A foul smell washes across the battlefield, hindering the recovery of all combatants.",Venom,Reach,Exotic,Toxic,100%,80%,2.25,2,,Normal,Techniques,Festering,Festering,2
+Rot,,38,A sickness befalls the target.,Venom,Special,Condition imposer,Toxic,100%,100%,,2,,Normal,,,Poisoned,1
+Stone Rot,,84,A sickness quickly befalls the target.,Venom,Special,Condition imposer,Toxic,100%,90%,,1,,Fast,,,Poisoned,1
+Acid,,119,"A corrosive liquid is ejected from the user's mouth, burning the opponent.",Venom,Reliable,Basic,Toxic,80%,,1.4,2,,Normal,,,,1
+Poison Courtship,,113,"The user emits a seductive aura laces with toxins, charming the opponent while slowly poisoning them.",Venom,Special,Condition imposer,Bug,100%,100%,,1,,Normal,,,Poisoned,1
+Lust,,136,The user uses its charm to weaken the opponent's defenses.,Cosmic,Special,Condition imposer,Love,100%,80%,,3,,Normal,,,Charmed,1
+Diet,,231,"The user fuels their body with healthy foods, enhancing their physical resilience and making them more resistant to damage.",Normal,Special,Condition imposer,FoodSoldier,100%,100%,0,3,,Normal,,Diehard,,0
+Egg Smash,,232,"The user hurls an egg or egg fragment at the opponent, striking them with a messy and disorienting blow.",NormalSky,Ranged,Simple,FoodBirdAmphibian,90%,,2,2,,Normal,,,,1
+Pouch,,198,The user refreshes themselves with a tasty morsel from a pouch or bag.,Normal,Special,Special,Food,,,0,2,,Normal,"Cooldown user,0,sort,damage",,,
+Sylvan,,148,"The user summons the power of nature, transforming the opponent into a wooden puppet.",Wood,Special,Exotic,PlantShapeshifter,100%,100%,,4,,Normal,Switch Wood Target,,,1
+Caustic Spray,,153,The user secretes a corrosive acid that burns the opponent upon contact.,Venom,Ranged,Simple,Toxic,90%,,2.2,2,,Normal,,,,1
+Viper,,154,"The user launches a volley of sharp, wooden darts with incredible speed and accuracy.",Venom,Reliable,Powerful,Toxic,80%,,2.9,3,,Normal,,,,1
+Energy Beam,,191,The user fires a beam of energy that burns all in its path.,Normal,Ranged,Powerful,CalamityFury,95%,50%,3,4,0,Normal,,,Burn,1
+Laser Beam,,238,A powerful ranged energy attack that may blind that goes at the speed of light.,LightningMetal,Ranged,Powerful,MachineElectricity,100%,30%,3,4,,Extremely Fast,,,Blinded,1
+Shuriken,,16,"The user hurls a deadly array of throwing stars, reinforcing its own resolve with each hit.",Metal,Ranged,Simple,SoldierSteel,80%,100%,2.25,2,,Normal,,Diehard,,3
+Sand Spray,,32,"A cloud of abrasive sand is hurled at the opponent, damaging their vision and inflicting damage.",Earth,Touch,Simple,Ground,80%,20%,1.25,1,,Normal,,,Blinded,1
+Sleeping Powder,,49,"A cloud of sleep-inducing pollen is released, causing the opponent to fall asleep.",Cosmic,Special,Condition imposer,Bug,100%,80%,,3,,Normal,,,Nodding Off,1
+Stampede,,14,A powerful charge that puts the user in motion.,Normal,Melee,Simple,MegafaunaFury,100%,100%,1.25,3,,Normal,Negate user’s positive condition,,,1
+Biting Winds,,24,A chill wind leaves the target weak and exposed.,Sky,Ranged,Simple,Weather,80%,100%,1.25,2,,Slow,,,Softened,1
+Snowstorm,,25,"A blizzard engulfs the opponent, inflicting cold damage and leaving them exhausted.",Frost,Melee,Powerful,CalamityWeather,60%,100%,3,3,,Normal,Splash,,Exhausted,3
+Mind Explosion,,225,A powerful psychic or mushroom hallucinogen attack.,CosmicWood,Ranged,Exotic,Mental,100%,50%,3,3,,Normal,,Exhausted,Confused,1
+Panjandrum,,177,A reliable technique that hurts any monster in proportion to its HP.,Normal,Reliable,Exotic,GadgetsCalamityBomber,75%,,,2,,Normal,Damage = 25% of target's maximum HP,,,1
+Shrapnel,,60,"The user unleashes a barrage of sharp fragments, causing widespread damage.",Metal,Ranged,Powerful,BomberSteel,60%,,2.5,3,,Fast,Splash,,,1
+Fire Ball,,4,An orb of scorching fire is flung at the target.,Fire,Ranged,Basic,BomberFlame,90%,,1.2,1,,Normal,,,,1
+Supernova,,81,"A cataclysmic explosion of energy, dealing immense damage to all opponents.",Fire,Ranged,Powerful,CelestialLight,75%,100%,3,3,,Extremely Slow,,,Chargedup,1
+Firestorm,,166,The user creates a raging inferno that engulfs the opponent.,Fire,Reach,Powerful,BomberCalamity,80%,,3,3,,Very Slow,Areas,,,1
+Oven,,236,"The user throws themselves into a fiery oven or pyre, then re-emerges to attack.",Fire,Melee,Simple,FlameFood,80%,,1,4,,Extremely Fast,Disappear Fireball,,,0
+Give All,,34,The user sacrifices itself.,Heroic,Melee,Powerful,FuryLeadership,100%,100%,3,2,,Normal,,Exhausted,,1
+Breathe Fire,,64,"Fire bursts from the user's mouth, scorching the target.",Fire,Ranged,Simple,Flame,80%,,2.25,2,,Normal,,,,1
+Flamethrower,,73,The user spews a stream of intense flames at the opponent.,Fire,Ranged,Simple,FlameGadgets,80%,50%,2.25,2,,Normal,,,Burn,1
+Pyrokinesis,,208,The user unleashes a wave of intense heat and flames that can scorch its opponents.,FireCosmic,Ranged,Exotic,FlameMental,80%,,2.5,4,,Fast,,,,0
+Magma,,137,The user erupts with a torrent of molten rock.,Fire,Ranged,Simple,RockFlame,80%,,1.4,1,,Very Slow,Areas,,,1
+Flower Armor,,226,The user creates an armor out of flowers.,Wood,Special,Condition imposer,Plant,100%,100%,,1,,Normal,,Elemental Shield,,0
+Flower Bloom,,227,A hard to evade massive bloom of flower petals blasts like a blizzard across the landscape.,Wood,Ranged,Powerful,Plant,95%,,3,3,,Slow,Splash,,,1
+Food Fight,,229,"The user initiates a frantic food fight, rapidly throwing edible projectiles at the opponent with reckless abandon.",Normal,Ranged,Exotic,Food,95%,,0.4,1,0.1,Fast,,,,1
+Just Desserts,,230,"The user offers the opponent a poisoned treat, exacting a sweet revenge as they succumb to the toxic effects.",HeroicCosmic,Ranged,Exotic,Food,70%,100%,2,2,,Normal,,Revenge,Poisoned,1
+Blossom,,26,"Carnivorous plants grow around the target, drawing away nutrients for the user's benefit.",Wood,Ranged,Simple,PlantHealingBug,85%,100%,1.25,2,2,Normal,Healing user,,,1
+Lantern,,133,The user damages the target with bright light.,Heroic,Ranged,Basic,GadgetsLightLeadership,90%,,1,1,,Normal,,,,1
+Insanity,,130,"The user becomes consumed by rage, increasing its power.",Cosmic,Special,Condition imposer,MentalFury,100%,100%,,2,,Normal,,Diehard,,1
+Gnaw,,215,"The user nibbles at the target, dealing a small amount of damage. A weak but fast and consistent attack.",Normal,Touch,Animal,Bite,100%,,1,1,,Fast,,,,1
+Glower,,13,"At the user's glare, the target grows weak and vulnerable.",Normal,Special,Condition imposer,GazeFury,100%,100%,,2,,Very Fast,,,Softened,1
+Tip,,110,"The user delivery a swift, precise strike to a vital point.",Metal,Melee,Simple,Sharp,100%,90%,2.2,3,,Normal,,,Festering,1
+Life Surge,,175,"An eruption of life charges the monster, but at the expense of healing its opponent.",Normal,Special,Exotic,Healing,100%,100%,,2,3,Normal,Healing target,Chargedup,,
+Refresh,,40,"The user rejuvenates itself, restoring health and entering a state of rapid recovery.",Normal,Special,Powerful,UniversalHealing,100%,100%,,3,3,Normal,Healing user,Recovering,,3
+Sudden Glow,,67,"The user emits a radiant light, healing itself and restoring its stamina.",Heroic,Special,Exotic,LightHealing,100%,100%,,2,2,Normal,Healing user,Recovering,Focused,3
+Ice Storm,,171,"The opponent is engulfed in a freezing aura, creating a treacherous environment.",Frost,Ranged,Simple,Weather,60%,,2.5,2,,Very Slow,Areas,,,1
+Constrict,,75,"The user wraps its body around the opponent, squeezing tightly.",Normal,Reliable,Simple,Pseudopod,85%,75%,1.25,2,,Very Slow,,,Grabbed,1
+Ice Claw,,21,The user's claws become covered in ice as it delivers a freezing attack.,Frost,Melee,Basic,IceClaws,80%,,1.25,1,,Normal,,,,1
+Kraken,,132,"The user summons the power of a legendary sea creature, unleashing a devastating attack.",Water,Melee,Simple,PseudopodSummoner,80%,,2.5,2,,Extremely Slow,,,,1
+Frostbite,,87,The user shoots a freezing blast that inflicts poison on the opponent.,Frost,Reach,Powerful,BiteIce,80%,50%,3,3,,Normal,,,Poisoned,1
+Icicle Spear,,23,The user launches a volley of sharp ice shards at the opponent.,Frost,Melee,Simple,Ice,75%,,2.25,2,,Normal,Splash,,,1
+Proboscis,,47,"The user extends a long, proboscis-like appendage, draining the opponent's life force while inflicting damage.",Normal,Reach,Simple,Bug,80%,50%,1,1,,Normal,,,Lifeleech,1
+Tonguespear,,50,"The tongue is jabbed into the opponent, and their blood drained.",Normal,Melee,Powerful,BugTongue,80%,100%,2.5,3,,Normal,,,Lifeleech,1
+Cutting Leaves,,224,"They charge into the opponent with cutting, sharp leaves that may snag against the foe.",Wood,Melee,Powerful,Plant,95%,50%,3,3,,Slow,,,Grabbed,1
+Leaf Barrage,,223,Barrage the opponent with a series of leaves.,Wood,Reach,Simple,Plant,95%,,1.3,1,,Slow,Multi attack 2,,,1
+Leaf Stab,,222,"The user throws a prickly sharp leaf, which induces a burning feeling on contact as the stab wound bleeds.",Wood,Ranged,Simple,Plant,80%,80%,1.2,1,,Normal,,,Burn,1
+Feint,,36,"The user feigns an attack, then strikes with a swift, surprise blow.",Normal,Special,Condition imposer,Sharp,100%,100%,,1,,Normal,Negate enemy monster's positive condition,Focused,,3
+Surge,,19,A powerful electric discharge that shocks the opponent.,Lightning,Ranged,Simple,Electricity,75%,100%,1.25,2,,Normal,Negate own monster's positive condition,,,3
+Electrical Storm,,76,"The user summons a raging thunderstorm, striking the opponent with lightning bolts.",Lightning,Ranged,Powerful,ElectricityWeather,65%,,3,2,,Very Slow,Splash,,,3
+Lightning Spheres,,163,The user launches multiple balls of electricity at the opponent.,Lightning,Ranged,Basic,Electricity,90%,,1.2,1,,Normal,,,,1
+Meltdown,,103,The user unleashes a corrosive attack that damages the opponent.,Venom,Reach,Powerful,BomberCalamity,70%,20%,2.8,2,,Very Slow,,,Festering,1
+Scope,,176,Identifies an opponent's strengths and weaknesses.,Normal,Special,Exotic,Universal,100%,100%,,1,,Normal,Scoping,,,1
+Orbs,,141,The user fires off an energy ball that causes a mystical transformation in the target.,Cosmic,Ranged,Exotic,Summoner,100%,100%,2,3,,Normal,Switch Random Target,,,1
+Clairaudience,,125,"The user attunes its senses, anticipating the opponent's next move and preparing a counterattack.",Cosmic,Special,Condition imposer,Mental,100%,100%,,3,,Normal,,Feedback,,1
+Altitude,Missing,180,"Fly high out of reach, then dive with a powerful attack.",Sky,Melee,Special,Bird,80%,100%,1,4,,Extremely Fast,Disappear Hawk,,,0
+Burrow Blast,Missing,204,"The user digs underground and reappear at a different location, striking the opponent with a burst of dirt and debris.",Earth,Melee,Simple,Ground,80%,100%,1,4,,Extremely Fast,Disappear Strike,,,0
+Changeling,Missing,183,"The user undergoes a transformation, healing its wounds in the process.",Cosmic,Special,Condition imposer,Shapeshifter,100%,100%,,4,,Normal,Switch Cosmic User,Recovering,,
+Cheat,Missing,,"The user employs a deceptive tactic, randomly bestowing a beneficial effect upon a random target. The higher the opponent's level, the greater the likelihood of the target being the opponent itself.",,Special,,,,,,,,Normal,,,,
+Depth Charge,Missing,205,"The user dives underwater and then explode upwards, dealing damage to the opponent.",Water,Melee,Simple,AmphibianWater,80%,100%,1,4,,Extremely Fast,Disappear Strike,,,0
+Eyebite,Missing,35,A glance from the user saps the target of its vim and vigor.,Shadow,Special,Exotic,Gaze,100%,100%,,3,,Very Fast,,,Exhausted,1
+Frighten,Missing,244,"A spooked opponent takes to the higher ground, helping ranged attacks at the expense of close combat.",Cosmic,Special,Condition imposer,GhostMental,100%,100%,,2,,Fast,,,Sniping,
+Greenstone,Missing,106,The user strikes with the force of a falling stone.,Earth,Touch,Powerful,Gemstone,60%,,2.5,2,,Slow,,,,1
+Hammerhead,Missing,72,"The user charges forward, striking the opponent with its head.",Earth,Melee,Animal,Rock,100%,,1,1,,Slow,,,,1
+Hibernate,Missing,45,The user falls into a restorative sleep.,Normal,Special,Exotic,Megafauna,100%,100%,,3,,Normal,Healing = 66% of target's maximum HP,Nodding Off,,0
+Levitate,Missing,82,"Combatants float into the air, giving them a vantage point but leaving both struggling to connect with their hand-to-hand attacks.",Cosmic,Special,Exotic,MentalBird,100%,100%,,2,,Normal,,Sniping,Sniping,2
+Lie,Missing,,"The user weaves a deceptive illusion, inflicting a random negative status effect on a random target. The higher the user's level, the greater the likelihood the opponents being the target of the deception.",Shadow,Special,,,100%,100%,,,,Normal,,,,
+Mind Vise,Missing,185,"The user traps the opponent's mind, preventing them from acting.",Cosmic,Melee,Simple,GhostMental,100%,100%,1,1,,Normal,,,Stuck,
+Negation,Missing,140,The user cancels out the effects of the opponent's healing.,Normal,Special,Condition imposer,HealingMentalToxic,100%,100%,,2,,Normal,,,Festering,1
+Neutralize,Missing,179,"The battlefield is reset, with all conditions and other changes cleared.",Normal,Special,Exotic,Universal,100%,100%,,1,,Fast,"Reverse both, ""remove all, user"", ""remove all, target""",,,1
+Oedipus,Missing,100,"The user attacks with a vengeance, confusing the opponent and seeking revenge.",Metal,Reach,Reserved,Reserved,85%,80%,2.2,3,,Slow,,Revenge,Confused,1
+One Million Talons,Missing,186,"The user unleashes a flurry of rapid, razor-sharp attacks.",Sky,Melee,Powerful,Bird,100%,80%,3,3,,Slow,,,Flinching,
+Overfeed,Missing,173,"The user overloads the opponent with energy, slowing them down.",Normal,Special,Condition imposer,Food,100%,100%,,5,,Normal,,,Slow,1
+Punch,Missing,182,"A classic, powerful strike with the user's fist.",Heroic,Melee,Animal,Fists,90%,,1.5,1,,Normal,,,,
+Rift Dash,Missing,206,"The user creates a temporary rift in space and dash through it, reappearing at a different location and striking the opponent with a swift attack.",LightningCosmic,Melee,Simple,MachineElectricitySpeed,80%,100%,1,4,,Extremely Fast,Disappear Strike,,,0
+Riposte,Missing,187,"The user assumes a defensive stance, preparing to counter any attack with a swift and powerful retaliation.",Normal,Special,Condition imposer,SpeedSharpShielded,100%,100%,,1,,Extremely Fast,,Retaliate,,
+Slice,Missing,101,"The user wields a sharp blade, delivery a powerful, cutting attack.",Metal,Melee,Animal,Sharp,90%,,1.2,1,,Normal,,,,1
+Solar Synthesis,Missing,189,Heals the user's health by absorbing sunlight.,Wood,Special,Exotic,PlantLight,100%,100%,0,2,2,Normal,"Photogenesis user,6,12,18",,,0
+Spit Poison,Missing,2,Liquid death sprays from the user's venom sacs.,Venom,Ranged,Simple,ToxicBug,80%,100%,0.75,1,,Normal,,,Poisoned,1
+Sunburst,Missing,159,"The user channels the energy of the sun, unleashing a blindingly bright attack.",Fire,Ranged,Simple,CelestialFlame,90%,90%,1.1,1,,Normal,,,Blinded,1
+Suplex,Missing,184,"A powerful grappling move that throws the opponent to the ground, inflicting damage and granting the user increased resilience.",Metal,Melee,Reserved,Reserved,95%,50%,2,3,,Fast,,Diehard,Exhausted,1
+Taunt,Missing,243,A quick jab provokes the opponent into a powerful but distracted rage.,Shadow,Special,Condition imposer,FuryMentalWeak,100%,100%,,2,,Fast,,,Enraged,
+Ten Thousand Feathers,Missing,188,"A flurry of feathers descends upon the opponent, inflicting multiple hits.",Sky,Ranged,Powerful,Bird,90%,100%,3,3,,Normal,,Charging,,
+Tinder,Missing,178,The target is set alight.,Fire,Special,Condition imposer,FlameGadgets,100%,100%,,1,,Normal,,,Burn,1
+Tooth for Tooth,Missing,242,"The user bares their fangs, taking pain to give it back.",Normal,Melee,Reserved,Reserved,100%,,,,,Normal,"Prop damage own monster,enemy monster, 0.5",,,
+Needle,,196,The user stabs the target rapidly with a needle or thorns.,MetalWood,Ranged,Exotic,PlantMachineSteel,90%,,2.5,1,,Very Fast,,,,2
+Spiky Strike,,199,"The user lashes out with its sharp spines or quills, striking the opponent with a flurry of piercing blows, inflicting pain and damage.",EarthWood,Reach,Basic,Sharp,95%,,1.5,1,,Normal,,,,
+Sting,,1,"The user inflicts a painful sting, injecting poison into the opponent's body.",Venom,Melee,Simple,ToxicBug,80%,40%,1.25,1,,Normal,,,Poisoned,1
+Thorn Burst,,200,"The user unleashes a rain of thorns, shooting a cloud of sharp, piercing projectiles at the opponent, dealing damage and potentially causing the opponent to become stuck, immobilized by the thorny barrage.",Wood,Ranged,Powerful,Plant,95%,80%,3,3,,Normal,,,Stuck,0
+Fungal Spore,,239,"On touch, the user explodes with spores. These have a small chance of infecting the target and leeching life from them.",Wood,Touch,Simple,Spore,100%,25%,1.4,1,,Normal,,,Lifeleech,0
+Hallucinogen Spore,,240,"The user releases a cloud of hallucinogenic spores, disorienting the opponent and altering their perception of reality.",CosmicWood,Ranged,Exotic,Spore,90%,90%,2,2,,Normal,,,Confused,1
+Pollen Blast,,212,"Releases a cloud of pollen, dealing damage to opponents and potentially causing them to become disoriented.",Wood,Ranged,Powerful,Plant,80%,30%,1.5,2,,Normal,,,Confused,1
+Conjurer,,127,The user conjures a force field that traps the opponent.,Shadow,Special,Condition imposer,Summoner,100%,100%,,2,,Normal,,,Grabbed,1
+Fiery,,98,The user emits a powerful blast of fire that changes the opponent's type to Fire.,Fire,Special,Exotic,Shapeshifter,100%,100%,,4,,Normal,Switch Fire Target,,,1
+Peregrine,,65,"The user dives from the sky with incredible speed, delivering a powerful, piercing attack.",Sky,Melee,Simple,BirdSpeed,80%,,1.75,2,,Extremely Fast,,,,1
+Stonehenge,,107,"The user manipulates the earth, creating a ring of stones that crush the opponent.",Earth,Reach,Powerful,RockSummoner,80%,,2.6,2,,Very Slow,Splash,,,1
+Assault,,94,"The user unleashes a flurry of rapid, powerful attacks.",Normal,Melee,Simple,SpeedFury,90%,,1.7,2,,Fast,,,,1
+Barking,,112,"The user lets out a powerful, intimidating roar that makes the opponent flinch.",Normal,Special,Condition imposer,ShapeshifterFury,100%,80%,,2,,Normal,,,Flinching,1
+Electroplate,,151,"Electricity causes the target to be coated in metal, changing its type.",Metal,Special,Exotic,MachineShielded,100%,100%,,4,,Normal,Switch Metal Target,,,1
+Mobbing,,115,"A swarm of small creatures emerges from the user, overwhelming the opponent with a flurry of attacks.",Shadow,Melee,Simple,Leadership,100%,10%,1.8,2,,Slow,,,,1
+Peck,,70,The user attacks with a sharp peck from its beak.,Sky,Reach,Animal,Bird,100%,,1.25,1,,Normal,,,,1
+Ram,,5,"The user charges forward with incredible force, delivering a devastating physical blow.",Normal,Melee,Animal,Fury,85%,,1.5,1,,Normal,,,,1
+Wing Tip,,69,"The user delivers a sharp, cutting attack with the tip of its wing.",Sky,Melee,Simple,Bird,80%,,1.25,1,,Fast,,,,1
+Torch,,150,A projectile that strikes the opponent.,Fire,Reach,Simple,GadgetsFlame,70%,20%,1.4,1,,Normal,,,Flinching,1
+Ring,,145,"The user conjures a ring that expands, engulfing the opponent.",Wood,Reach,Reserved,Reserved,80%,100%,2,2,,Normal,Splash,Recovering,,1
+Radiance,,144,"The user emits blinding flash of light, followed by a powerful energy blast.",Heroic,Ranged,Simple,LightLeadership,95%,,2.5,2,,Normal,,,,1
+Chameleon,,97,"The user changes its type to Wood, while also creating a protective shell around itself.",Wood,Special,Condition imposer,Shapeshifter,100%,100%,,4,,Normal,Switch Wood User,Hard Shell,,1
+Avalanche,,33,The user gathers momentum before unleashing a devastating avalanche of ice and rock.,Earth,Ranged,Powerful,CalamityIceRock,80%,80%,2.25,3,,Extremely Slow,Splash,,Exhausted,3
+Rocky Barrage,,241,"The user unleashes a furious barrage of rocks, threatening to overwhelm the opponent with a crushing avalanche of stone.",Earth,Ranged,Powerful,GroundRock,90%,,1,3,,Normal,Multi attack 3,,,1
+Earthquake,,168,The ground shakes violently as the user unleashes a powerful ground attack.,Earth,Touch,Powerful,CalamityGround,70%,,2.9,2,,Extremely Slow,Areas,,,1
+Bullet,,8,A piece of metal is flung at the target with great alacrity.,Metal,Ranged,Simple,Soldier,85%,,1.25,1,,Extremely Fast,,,,1
+Roll,,202,The user curls into a ball and rolls over or against the opponent.,Normal,Melee,Simple,ShieldedSpeed,90%,80%,1.2,1,,Fast,,Hard Shell,,0
+Thunderball,,12,"With a rumbling like thunder, a hard ball of rock strikes the target.",Earth,Melee,Simple,Rock,100%,10%,2.25,2,,Normal,,,Flinching,1
+Ruby,,146,"The user fires a concentrated beam of ruby-like energy, inflicting damage.",Cosmic,Reach,Simple,Gemstone,80%,,2.5,2,,Normal,,,,1
+Nest,,114,The user constructs a protective nest around itself.,Sky,Special,Powerful,BirdHealing,80%,90%,,2,2,Normal,,Sniping,,1
+Blood Nets,,164,"A web of sticky, blood-red substance is shot from the user's body, draining the opponent's life force.",Shadow,Special,Condition imposer,Bug,100%,100%,,2,,Normal,,,Lifeleech,1
+Energy Field,,22,"The device saps the target's energy, empowering the user.",Lightning,Special,Powerful,Machine,100%,100%,,3,,Very Fast,,Charging,Exhausted,3
+Wall of Steel,,62,"The user spins about, creating a biting, shielding wall of steel.",Metal,Melee,Simple,Summoner,75%,100%,1.25,2,,Normal,,Hard Shell,,0
+Shadow Blast,,193,"The user releases a blast of negative energy, sucking life from other beings.",Shadow,Ranged,Powerful,GhostDarkness,95%,100%,2.8,4,0.2,Very Fast,,,,1
+Fire Shield,,167,"The user surrounds itself with a protective wall of fire, while also burning the opponent.",Fire,Special,Exotic,SoldierShielded,100%,100%,,2,,Normal,,Elemental Shield,Burn,1
+Lava,,134,"The user erupts with molten lava, burning both itself and the opponent.",Fire,Ranged,Powerful,Calamity,80%,100%,2.9,2,,Very Slow,Areas,Burn,Burn,1
+Boulder,,11,The user shelters beneath a rocky shell.,Earth,Special,Condition imposer,RockShieldedBug,100%,100%,,2,,Normal,,Hard Shell,,0
+Petrify,,37,The user emits a powerful aura that renders the opponent stuck.,Earth,Special,Condition imposer,Rock,100%,100%,,2,,Very Fast,,,Stuck,1
+Blade,,7,A lightning-fast cut.,Metal,Melee,Simple,SharpSteel,85%,,1.25,1,,Extremely Fast,,,,1
+Energy Claws,,31,"The user's claws glow with energy as it delivers a powerful, focused attack.",Lightning,Melee,Exotic,Claws,80%,100%,2.25,3,,Normal,,Sniping,,3
+Fire Claw,,3,The user's claws ignite with fire as it delivers a burning attack.,Fire,Reach,Simple,FlameClaws,75%,20%,1.75,2,,Normal,,,Burn,3
+Ants,,131,"The user summons a swarm of ants that crawl over the opponent, changing their type to Earth.",Earth,Special,Exotic,ShapeshifterBug,100%,100%,,4,,Normal,Switch Earth Target,,,1
+Cavity,,118,"The user strikes with pinpoint accuracy, targeting the opponent's weak points.",Normal,Reliable,Reserved,Reserved,70%,,2.9,3,,Normal,,,,1
+Hawk,,111,The user soars high into the air before diving down with a powerful attack.,Sky,Touch,Special,Bird,100%,100%,1.5,1,,Normal,Appear,,,1
+Perfect Cut,,61,"The user strikes with surgical precision, leaving no room for error.",Metal,Reliable,Simple,Sharp,80%,,2,2,,Normal,,,,1
+Strike,,74,"The user delivers a powerful, focused blow.",Normal,Reliable,Animal,Fists,100%,,1.25,1,,Normal,,,,1
+Geyser,,91,"The user erupts with a powerful water spout, changing the opponent's type to Water.",Water,Special,Exotic,Shapeshifter,100%,100%,,4,,Normal,Switch Water Target,,,1
+Rust Bomb,,86,"A corrosive projectile that explodes on impact, dealing damage and poisoning the opponent.",Metal,Ranged,Simple,BomberSteel,60%,50%,2.25,2,,Normal,Splash,,Poisoned,3
+Fluff Up,,71,"The user's body puffs up, healing its wounds.",Normal,Special,Condition imposer,Shielded,100%,100%,,3,,Normal,,Recovering,,0
+Take Cover,,29,"The user assumes a defensive stance, increasing its accuracy.",Normal,Special,Condition imposer,LeadershipShieldedBug,100%,100%,,1,,Normal,,Sniping,,0
+Infectious Bite,,218,A sharp fast bite that injects a festering toxin. May leave the target with a lingering injury.,VenomWood,Touch,Simple,Bite,95%,30%,1,2,,Fast,,,Festering,1
+Overgrowth,,27,"Vines lash the target, locking them in place.",Wood,Ranged,Simple,PlantSummoner,80%,100%,2.25,2,,Very Slow,,,Grabbed,1
+Pseudopod,,68,"The user extends a pseudopod to deliver a forceful, sticky blow.",Venom,Reach,Simple,Pseudopod,100%,70,1.25,1,,Normal,,,Festering,1
+Splinter,,41,"The user launches a barrage of wooden splinters, blinding and damaging the opponent.",Wood,Reach,Simple,PlantBomber,80%,20%,1.25,1,,Normal,,,Blinded,1
+Web,,42,"A sticky web is shot at the opponent, trapping them and inflicting damage.",Venom,Melee,Simple,Bug,80%,100%,1.25,2,,Normal,,,Grabbed,1
+Cloud Aether,,126,"The user is enveloped in a swirling cloud, causing both it and the opponent to change types randomly.",Cosmic,Special,Exotic,WeatherShapeshifter,100%,100%,,4,,Normal,Switch Random User & Target,,,1
+Mystic Blending,,139,"The user becomes one with its surroundings, healing itself.",Cosmic,Special,Exotic,HealingMental,100%,100%,,4,3,Normal,Healing user,Recovering,Focused,1
+Gold Digger,,99,"The user digs into the ground, finding treasure or attacking itself.",Normal,Special,Exotic,Gemstone,60%,100%,1,1,,Very Slow,Money,,,1
+All In,,54,"The user draws on their last ounce of strength, striking hard and getting their second wind.",Heroic,Touch,Powerful,LeadershipFury,80%,100%,3,3,,Slow,,Recovering,,0
+Amnesia,,53,"The combatants' minds touch, leaving both befuddled.",Cosmic,Reach,Simple,Mental,80%,100%,2.25,2,,Normal,,Exhausted,Exhausted,3
+Slime,,96,"A sticky, viscous substance is emitted, engulfing the opponent and dealing damage.",Venom,Reach,Simple,PseudopodToxic,100%,20%,1.1,2,,Normal,,,Festering,1
+Phantasmal Force,,162,The user creates an illusionary copy of itself that attacks the opponent.,Shadow,Melee,Basic,Ghost,90%,10%,1.1,1,,Normal,,,,1
+Blood Bond,,79,"The user sucks the target's blood, but leaves something of themselves behind.",Water,Touch,Exotic,Love,80%,100%,2.25,2,,Normal,,Lifeleech,Lifeleech,2
+Muddle,,43,A haze over the battlefield makes it harder for attacks to connect.,Cosmic,Reach,Simple,GhostMental,100%,100%,1,1,,Normal,,Focused,Focused,3
+Sleep Bomb,,59,A violent explosion of sleeping powder threatens to send both combatants into a doze.,Cosmic,Reach,Exotic,Bomber,75%,100%,2.25,2,,Normal,,Nodding Off,Nodding Off,3
+Mudslide,,89,The user creates a massive mudslide that engulfs the opponent.,Earth,Melee,Simple,Ground,80%,100%,2.25,2,,Extremely Slow,,,Softened,1
+Quicksand,,90,"The user creates a treacherous patch of quicksand, trapping and damaging the opponent.",Earth,Touch,Simple,Ground,80%,100%,2.25,2,,Very Slow,,,Stuck,1
+Staff Smash,,207,The user delivers a powerful blow with its staff.,MetalWood,Melee,Simple,Staff,80%,,2.5,3,,Normal,,,,0
+Stick,,221,"The user uses a stick, plant part or twig to poke or smack the opponent.",Wood,Reach,Basic,PlantStaff,95%,,1.4,1,,Normal,,,,1
+Shooting Star,,190,Heals the user's health by harnessing the energy of a shooting star streaking across the night sky.,Cosmic,Special,Exotic,CelestialLightDarkness,100%,100%,0,2,2,Normal,"Photogenesis user,18,0,6",,,0
+Starfall,,56,"A shower of celestial bodies descends upon the opponent, inflicting damage and granting the user heightened focus while exhausting the opponent.",Cosmic,Ranged,Simple,DarknessCelestialWeather,80%,100%,1.25,2,,Normal,Negate enemy monster's positive condition,Focused,,3
+Tail Lash,,201,The user lashes out with their tail or tail like appendage.,Normal,Melee,Simple,Tail,100%,20%,1.2,1,,Normal,,,Flinching,1
+Wiggle,,210,"The user shakes their body back and forth, creating a silly, attention-grabbing display that doesn't do any damage but might be entertaining to watch.",Normal,Special,Special,Weak,100%,,,1,,Fast,,,,0
+Venomous Tentacle,,80,"A poisonous tentacle strikes the opponent, inflicting damage and poisoning them.",Water,Reach,Simple,Pseudopod,80%,100%,2.25,2,,Normal,,,Poisoned,1
+Thunderclap,,20,"A sudden, deafening clap of thunder that stuns and damages the opponent.",Lightning,Ranged,Simple,Electricity,95%,75%,1.25,2,,Normal,,,Exhausted,1
+Lick Lash,,209,"The user lashes out with its tongue, dealing damage and possibly leaving the opponent stunned.",NormalEarth,Melee,Simple,Tongue,80%,100%,1.5,3,,Normal,,,Flinching,0
+Tornado,,194,"The user summons a swirling vortex of air, unleashing a devastating tornado that lifts the opponent off the ground and deals damage.",Sky,Ranged,Powerful,WeatherCalamity,80%,50%,2.9,3,,Normal,,,Slow,3
+Webs Wind,,157,"The user creates a swirling vortex of sticky webs that ensnare the opponent, dealing multiple hits and slowing their movement.",Sky,Ranged,Reserved,Reserved,100%,30%,0.5,2,,Normal,Multi attack 5,,Slow,1
+Whirlwind,,66,The user creates a powerful vortex of wind that sweeps the opponent away.,Sky,Ranged,Simple,Weather,100%,,1.25,1,,Very Fast,,,,1
+Air Chain,,121,"The user rapidly strikes the air, creating a series of powerful gusts that hit the opponent.",Sky,Reach,Simple,Bird,60%,,1,1,,Slow,Multi attack 3,,,1
+Invictus,,63,"The user enters a berserker state, attacking with relentless fury and trapping the opponent.",Heroic,Touch,Simple,BiteFistsLeadershipFury,75%,100%,1.25,2,,Slow,,Enraged,Grabbed,3
+One-Two,,52,Two decisive strikes bring the target to its knees.,Heroic,Touch,Simple,Fists,100%,,3,2,,Normal,,,,2
+Shadow Boxing,,51,A flurry of punches strikes the target.,Heroic,Touch,Animal,FistsDarkness,100%,,1.25,1,,Normal,,,,1
+Trample,,219,"The user charges at the opponent with a powerful shoulder tackle, knocking them to the ground and then quickly moving away, leaving the target stuck in place.",Normal,Melee,Powerful,MegafaunaFury,90%,80%,2.5,3,,Fast,,,Stuck,1
+Fledgling,,117,The user hurls sharp feathers at the opponent.,Sky,Ranged,Animal,Bird,75%,,1.7,1,,Normal,,,,1
+Tux Attack,,92,"The user transforms into a whirlwind of data, dealing heavy damage.",FrostHeroic,Melee,Reserved,Reserved,100%,,2,1,,Extremely Fast,,,,1
+Ubuntu,,95,The user emits a chaotic energy that randomly alters the opponent's type.,Normal,Special,Exotic,Shapeshifter,100%,100%,,4,,Normal,Switch Random Target,,,1
+Wall of Fire,,165,The user conjures a fiery wall that both protects it and scorches the opponent.,Fire,Reach,Simple,SummonerShielded,80%,80%,1.9,3,,Very Slow,,Elemental Shield,Burn,1
+Ice Shield,,172,"The user surrounds itself with a protective wall of ice, while also slowing down the opponent.",Frost,Special,Exotic,IceSoldierShielded,100%,100%,,2,,Normal,,Elemental Shield,Slow,1
+Walls,,156,The user constructs sturdy walls of earth or rock to create a defensive barrier.,Earth,Touch,Simple,SummonerShielded,80%,100%,1,2,,Normal,,Hard Shell,,1
+Water Bullet,,213,A mouthful of water is flung at the target with great alacrity.,Water,Ranged,Simple,SoldierWater,90%,,1.25,1,,Very Fast,,,,1
+Surf,,174,A massive wave crashes down upon the opponent.,Water,Ranged,Powerful,Water,60%,,2.6,3,,Normal,Splash,,,1
+Tsunami,,170,The user summons a colossal wave that crashes down upon the opponent.,Water,Reach,Powerful,WaterCalamity,75%,,2.7,3,,Extremely Slow,Areas,,,1
+Flood,,10,The user summons a powerful flood that washes over the opponent.,Water,Ranged,Basic,Water,60%,,1.5,1,,Extremely Slow,Splash,,,1
+Chill Mist,,77,The user releases a freezing mist that lowers the opponent's stats.,Frost,Ranged,Basic,Weather,60%,,1.5,1,,Slow,Splash,,,1
+Flow,,9,The user channels a powerful water stream.,Water,Melee,Basic,Water,60%,,1.5,1,,Normal,Splash,,,1
+Font,,48,The user draws energy from a mystical font to heal itself.,Water,Ranged,Simple,WaterHealing,80%,100%,1.25,2,,Normal,,Recovering,,0
+Wallow,,46,"The user relaxes in a pool of mud, healing its wounds.",Water,Special,Special,Megafauna,100%,90%,,2,2,Normal,Healing user,Focused,,0
+Salamander,,85,A bite brimming with heat and lashing pain.,Fire,Reach,Simple,AmphibianFlameToxic,80%,80%,1.25,2,,Normal,,,Poisoned,1
+Woodsmash,,203,"The user slams into the opponent with a powerful wooden strike, dealing damage and potentially knocking them back.",HeroicWood,Melee,Powerful,Plant,90%,,2.9,2,,Normal,,,,
+Evasion,,116,"The user becomes a blur of motion, making it difficult to hit with ranged attacks.",Heroic,Special,Condition imposer,SpeedBug,100%,100%,,2,,Extremely Fast,,Focused,,1
+Gust,,161,The user creates a powerful wind that blows the opponent back.,Sky,Ranged,Basic,Weather,100%,,0.9,1,,Normal,,,,1
+Mending,,169,The user draws energy from its surroundings to heal itself.,Metal,Special,Special,Leadership,100%,100%,,1,2,Normal,Healing user,,,1
+Muck,,138,"The user covers the opponent in a sticky, poisonous substance.",Venom,Reach,Simple,Toxic,80%,,2,2,,Normal,,,,1
+Pit,,142,"The user creates a pit beneath the opponent, causing them to fall and take damage.",Earth,Touch,Simple,GroundSummoner,80%,100%,2.1,3,,Very Slow,,,Harpooned,1
+Saber,,102,The user strikes with a swift and powerful sword-like attack.,Metal,Melee,Simple,SharpSteel,80%,,2.2,2,,Normal,,,,1
+Shapechange,,160,"The user undergoes a rapid transformation, striking the opponent with a surprising and powerful attack.",Cosmic,Melee,Simple,Shapeshifter,70%,,2.2,3,,Normal,Switch Random User,,,1
+Strangulation,,93,"The user constricts the opponent's throat, cutting off their air supply.",Shadow,Melee,Powerful,Fury,80%,,2.5,1,,Normal,,,,1
+Terror,,149,"The target is shaking with fear, unable to pick up or use items.",Cosmic,Special,Condition imposer,Mental,100%,100%,,2,,Normal,,,Lockdown,1
+Time Crisis,,104,"The user distorts the flow of time, causing the opponent damage.",Cosmic,Ranged,Powerful,SummonerMental,80%,60%,2.5,3,,Very Fast,,,Slow,1
+Undertaker,,152,"A desperate, self-sacrificing attack that deals a massive damage at the cost of the user's health.",Shadow,Melee,Exotic,GhostGround,100%,100%,1,1,,Extremely Slow,Sacrifice,,Prickly,1
+Lineage,,135,The user draws power from its ancestors to unleash an attack.,Cosmic,Reach,Basic,GhostLeadership,100%,,1.5,3,,Normal,,,,1

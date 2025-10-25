@@ -357,10 +357,16 @@ class MonsterMovesState(PygameMenuState):
         theme.widget_alignment = locals.ALIGN_CENTER
 
         super().__init__(height=height, width=width)
+        self.type_icon_widgets = []
         self._source = source
         self._monster = monster
         self.add_menu_items(self.menu, monster)
         self.update_selected_widget()
+        menu = self.menu.get_current()
+        if (selected_widget := self.menu.get_selected_widget()) is not None:
+            slug = selected_widget.get_id()
+            if isinstance(slug, str):
+                self.add_menu_technique(menu, slug)
         self.reset_theme()
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
@@ -384,13 +390,15 @@ class MonsterMovesState(PygameMenuState):
                 param["monster"] = monsters[slot]
                 client.replace_state("MonsterMovesState", kwargs=param)
             else:
+                result = super().process_event(event)
                 self.update_selected_widget()
                 menu = self.menu.get_current()
-                if self.selected_widget:
-                    self.add_menu_technique(
-                        menu, self.selected_widget.get_id()
-                    )
-                return super().process_event(event)
+                selected_widget = self.menu.get_selected_widget()
+                if selected_widget:
+                    slug = selected_widget.get_id()
+                    if isinstance(slug, str):
+                        self.add_menu_technique(menu, slug)
+                return result
 
         return None
 

@@ -47,8 +47,6 @@ class GiveEffect(CoreEffect):
         if not success:
             return TechEffectResult(name=tech.name)
 
-        status = Status.create(self.condition, user, player.steps)
-
         immune_info = []
         successful_targets = []
         extras = []
@@ -56,7 +54,10 @@ class GiveEffect(CoreEffect):
             objectives, user, target
         )
 
+        status_name = ""
         for monster in monsters:
+            status = Status.create(self.condition, monster, player.steps)
+            status_name = status.name
             result = monster.status.apply_status(session, status, monster)
             if result.applied:
                 successful_targets.append(monster)
@@ -70,7 +71,7 @@ class GiveEffect(CoreEffect):
                 if len(immune_info) == 1
                 else "combat_state_immune_multiple"
             )
-            params = {"target": immune_names, "method": status.name}
+            params = {"target": immune_names, "method": status_name}
             extract_text = T.format(key, params)
             extras = [extract_text]
 

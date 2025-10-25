@@ -41,7 +41,8 @@ class FlinchingEffect(CoreEffect):
             assert empty
             skip = Technique.create(empty)
             tech = [skip]
-            target.status.clear_status(session)
+            afflicted = status.get_host()
+            afflicted.status.clear_status(session)
         return StatusEffectResult(
             name=status.name, success=True, techniques=tech
         )

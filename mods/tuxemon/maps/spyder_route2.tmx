@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="2" nextobjectid="214">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="2" nextobjectid="214">
  <properties>
   <property name="edges" value="clamped"/>
+  <property name="map_type" value="route"/>
   <property name="north" value="citypark"/>
   <property name="scenario" value="spyder"/>
   <property name="slug" value="route2"/>
   <property name="south" value="brideswood"/>
-  <property name="map_type" value="route"/>
   <property name="west" value="cotton_town"/>
  </properties>
  <tileset firstgid="1" source="../gfx/tilesets/core_outdoor.tsx"/>
@@ -24,7 +24,7 @@
  </layer>
  <layer id="3" name="Layer 3" width="40" height="20">
   <data encoding="base64" compression="zlib">
-   eAG1letNAzEQhB0E/E8XedRCSC8kfUA7QBHQALTCjnKfMqzscw4uKzmz3uf4cc7qrpR1jFUHyyC9uLn9D8FrF6OH8OvFze1/XpbyEuNasl6UskljG3OJfN+350Gc/JzDR3D7nJEfPcDticqv303M5Mcnji778HEObs/6IfKOKTfH/HceV6scgo/G/VBM/Ni/Xn1x/It4X/oLsxzDxhnvBv+l+0etrws5vkbC2zDeSU4IB5nFQ9xUX4ivtn+sgXLMQexjSH3FqIfkMd3tHEN94dOQoz31+0cM6zhVPu878xbyLbgffm6TXuMnOxwcZUfcLn2KkOs5U/iRD+Z98rpan/PTWzAm1PQc4tlX3jvZPZ53hjjQ46kF+v57PfwgffJaqzwjiZ6sn3xHarf2Xn7n57m1voonRjpSi6WnvgF/b9D19lGLWOo5wo/3kRzQY13HD7pP+lhP+T1vLBZefN/Mld8S9gBkLzze7xpn7X74ge5zPfPKc4+lVkadIf9VHj+mqwZ3WXpLOF94EZfn1MjcmE/hSA5IzxZyTjVUDnV6yP9Bq4/bqeW2a+nL9J+W+9TW7TaPX8RZ38SYil6jpu87HGs5NdsPShOwgA==
+   eAG1letNAzEQhB0E/E8XedRCSC8kfUA7QBHQALTCjnKfMqzscw4uKzmz3uf4cc7qrpR1jFUHyyC9uLn9D8FrF6OH8OvFze1/XpbyEuNasl6UskljG3OJfN+350Gc/JzDR3D7nJEfPcDticqv303M5Mcnji778HEObs/6IfKOKTfH/HceV6scgo/G/VBM/Ni/Xn1x/It4X/oLsxzDxhnvBv+l+0etrws5vkbC2zDeSU4IB5nFQ9xUX4ivtn+sgXLMQexjSH3FqIfkMd3tHEN94dOQoz31+0cM6zhVPu878xbyLbgffm6TXuMnOxwcZUfcLn2KkOs5U/iRD+Z98rpan/PTWzAm1PQc4tlX3jvZPZ53hjjQ46kF+v57vcyTPnmtVZ5RiJ6sn3xHOLT2Xn7n57m1voonRjpSi6WnvgF/b9D19lGLWOo5wo/3kRzQY13HD7pP+lhP+T1vLBZefN/Mld8S9gBkLzze7xpn7X74ge5zPfPKc4+lVkadIf9VHj+mqwZ3WXpLOF94EZfn1MjcmE/hSA5IzxZyTjVUDnV6yP9Bq4/bqeW2a+nL9J+W+9TW7TaPX8RZ38SYil6jpu87HGs5NdsPL9Kwqg==
   </data>
  </layer>
  <layer id="4" name="Layer 4" width="40" height="20">
@@ -448,8 +448,8 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_route2_roddick"/>
-	<property name="act3" value="char_face player,spyder_route2_roddick"/>
-	<property name="act4" value="char_talk spyder_route2_roddick,pre_battle"/>
+    <property name="act3" value="char_face player,spyder_route2_roddick"/>
+    <property name="act4" value="char_talk spyder_route2_roddick,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
     <property name="act6" value="add_monster spighter,8,spyder_route2_roddick,5,10"/>
     <property name="act7" value="start_battle player,spyder_route2_roddick"/>
@@ -463,7 +463,7 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_route2_marion"/>
-	<property name="act3" value="char_face player,spyder_route2_marion"/>
+    <property name="act3" value="char_face player,spyder_route2_marion"/>
     <property name="act4" value="char_talk spyder_route2_marion,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
     <property name="act6" value="add_monster aardorn,7,spyder_route2_marion,5,10"/>
@@ -479,7 +479,7 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_route2_graf"/>
-	<property name="act03" value="char_face player,spyder_route2_graf"/>
+    <property name="act03" value="char_face player,spyder_route2_graf"/>
     <property name="act04" value="char_talk spyder_route2_graf,pre_battle"/>
     <property name="act05" value="unlock_controls"/>
     <property name="act06" value="add_monster cardiling,7,spyder_route2_graf,5,10"/>

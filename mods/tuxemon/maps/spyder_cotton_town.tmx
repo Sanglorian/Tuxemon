@@ -21,7 +21,7 @@
  </layer>
  <layer id="2" name="Tile Layer 2" width="40" height="40">
   <data encoding="base64" compression="zlib">
-   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
+   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
   </data>
  </layer>
  <layer id="3" name="Tile Layer 3" width="40" height="40">
@@ -232,18 +232,18 @@
    <properties>
     <property name="act10" value="char_stop player"/>
     <property name="act11" value="lock_controls"/>
-    <property name="act20" value="create_npc spyder_cottontown_hacker,23,23"/>
+    <property name="act20" value="create_npc spyder_cottontown_hacker,31,23"/>
     <property name="act30" value="pathfind_to_char player,spyder_cottontown_hacker,left"/>
     <property name="act31" value="char_face spyder_cottontown_hacker,right"/>
     <property name="act40" value="translated_dialog spyder_cottontown_stopthere"/>
-    <property name="act50" value="pathfind player,33,29"/>
+    <property name="act50" value="pathfind player,36,28"/>
     <property name="act51" value="wait 0.5"/>
     <property name="act52" value="pathfind_to_char player,spyder_cottontown_hacker,left"/>
     <property name="act53" value="char_face spyder_cottontown_hacker,right"/>
     <property name="act54" value="wait 0.5"/>
     <property name="act55" value="translated_dialog spyder_cottontown_followme"/>
     <property name="act56" value="wait 0.5"/>
-    <property name="act60" value="pathfind spyder_cottontown_hacker,23,23"/>
+    <property name="act60" value="pathfind spyder_cottontown_hacker,31,23"/>
     <property name="act80" value="remove_npc spyder_cottontown_hacker"/>
     <property name="act90" value="unlock_controls"/>
     <property name="cond1" value="is char_at player"/>
@@ -376,7 +376,7 @@
    <properties>
     <property name="act11" value="char_stop player"/>
     <property name="act12" value="lock_controls"/>
-    <property name="act13" value="create_npc spyder_papertown_mom,23,23"/>
+    <property name="act13" value="create_npc spyder_papertown_mom,22,18"/>
     <property name="act14" value="pathfind spyder_papertown_mom,31,18"/>
     <property name="act15" value="unlock_controls"/>
     <property name="act16" value="char_face spyder_papertown_mom,player"/>
@@ -388,7 +388,7 @@
     <property name="act31" value="translated_dialog app_banking,,center,center,center"/>
     <property name="act35" value="add_item app_map"/>
     <property name="act36" value="translated_dialog app_map,,center,center,center"/>
-    <property name="act40" value="pathfind spyder_papertown_mom,23,23"/>
+    <property name="act40" value="pathfind spyder_papertown_mom,22,18"/>
     <property name="act41" value="set_variable spokenmomcotton:yes"/>
     <property name="act42" value="remove_npc spyder_papertown_mom"/>
     <property name="act50" value="add_tracker player,cotton_town"/>

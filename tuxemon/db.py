@@ -2375,7 +2375,7 @@ class AnimationModel(BaseModel, BaseLookupModel):
     slug: str = Field(..., description="Unique slug for the animation")
     file: str = Field(..., description="File of the animation")
     duration: float = Field(
-        default=0.09,
+        default=0.1,
         description="Duration (in seconds) for each frame of the animation.",
     )
     loop: bool = Field(

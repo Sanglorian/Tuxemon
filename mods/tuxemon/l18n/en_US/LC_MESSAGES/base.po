@@ -16500,9 +16500,7 @@ msgstr "Fu"
 
 msgid "spyder_dojo_wan1"
 msgstr ""
-"My Wood tuxemon all know Fire moves, \n"
-" so if you send a Metal tuxemon against me to take advantage of their weakness to Metal, \n"
-" we'll meet it with Fire."
+"On this level, you must prove your mastery of the elements that make up everything in the universe."
 
 msgid "spyder_dojo_wan2"
 msgstr ""

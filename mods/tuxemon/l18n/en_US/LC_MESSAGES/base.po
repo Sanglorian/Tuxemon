@@ -16512,7 +16512,7 @@ msgstr ""
 
 msgid "spyder_dojo_wan3"
 msgstr ""
-"Each monk in this room specializes in monsters of a particular type, \n"
+"Each monk in this room specializes in monsters of a particular element, \n"
 " but each has found a way to develop their strengths and to mitigate their weaknesses. \n"
 " Talk to me once you have defeated them all."
 

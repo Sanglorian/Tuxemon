@@ -35,7 +35,7 @@ class PlagueEffect(CoreEffect):
 
         success = target.plague.try_infect(target, self.plague_slug)
         message_key = target.plague.get_combat_message_key(self.plague_slug)
-        params = {"target": target.name.upper(), "user": user.name.upper()}
+        params = {"target": target.name, "user": user.name}
         extra = [T.format(message_key, params)]
         plague_config = target.plague.get_plague_config(self.plague_slug)
         if success and plague_config:

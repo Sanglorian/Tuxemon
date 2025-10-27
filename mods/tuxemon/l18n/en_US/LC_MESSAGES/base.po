@@ -16555,9 +16555,9 @@ msgstr ""
 
 msgid "spyder_dojo_kataro1"
 msgstr ""
-"My Water tuxemon know techniques that work around their weakness, \n"
-" whether that's using Sinkhole to mitigate their weakness toward Earth techniques, \n"
-" or using the fixed damage move Perfect Cut so it's not halved against Wood types."
+"My Water tuxemon know techniques that work around their weaknesses, \n"
+" whether that's using Ants to mitigate their vulnerability to Lightning techniques, \n"
+" or using the fixed damage move Panjandrum so it's not halved against Wood types."
 
 msgid "spyder_dojo_kataro2"
 msgstr ""

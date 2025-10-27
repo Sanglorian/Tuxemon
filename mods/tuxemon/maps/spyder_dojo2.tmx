@@ -176,9 +176,9 @@
    <properties>
     <property name="act11" value="char_talk spyder_dojo_kataro,pre_battle"/>
     <property name="act12" value="add_monster hydrone,20,spyder_dojo_kataro,5,10"/>
-    <property name="act13" value="add_tech iid_slot_0,panjandrum"/>
-    <property name="act14" value="add_monster nudikill,20,spyder_dojo_kataro,5,10"/>
-    <property name="act15" value="get_party_monster spyder_dojo_kataro"/>
+    <property name="act13" value="add_monster nudikill,20,spyder_dojo_kataro,5,10"/>
+    <property name="act14" value="get_party_monster spyder_dojo_kataro"/>
+    <property name="act15" value="add_tech iid_slot_0,panjandrum"/>
     <property name="act16" value="add_item wood_berry,1,spyder_dojo_kataro"/>
     <property name="act17" value="start_battle player,spyder_dojo_kataro"/>
     <property name="act18" value="char_talk spyder_dojo_kataro,post_battle_lose"/>

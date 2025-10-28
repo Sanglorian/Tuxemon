@@ -2069,12 +2069,13 @@ Music
 * [Chibi Ninja](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 * [Come and Find Me](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 * [Digital Native](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [Generic 8-bit JRPG Soundtrack](https://opengameart.org/content/generic-8-bit-jrpg-soundtrack) by t4ngr4m is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+* [Searching](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 * [HHavok-intro](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 * [HHavok-main](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 * [Jumpshot](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 * [Lunar Joyride](https://opengameart.org/content/lunar-joyride-8-bit) by FoxSynergy is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
 * [Melody Eternal](https://opengameart.org/content/melody-eternal) by Trevor Lentz is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
+* [Taking Poison](https://opengameart.org/content/taking-poison) by Trevor Lentz is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
 * [Peasant Kingdom](https://opengameart.org/content/peasant-kingdom) by Spring is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
 * [Stand With Us](https://opengameart.org/content/stand-with-us) by Trevor Lentz is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
 * [Jester Theme](https://hydrogene.itch.io/high-quality-8-bit-musics) by Hydrogene is licensed under [CC0](https://creativecommons.org/publicdomain/zero/1.0/)
@@ -2098,6 +2099,8 @@ Music
 
 * Songs from [Ove's Essential Game Audio Pack Collection](https://opengameart.org/content/oves-essential-game-audio-pack-collection-160-files-updated) by Ove Melaa are licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/):
   * All music under `OveMelaaFullScores` and `OveMelaaLoops`
+
+* [Generic 8-bit JRPG Soundtrack](https://opengameart.org/content/generic-8-bit-jrpg-soundtrack) by AVGVSTA is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/), including "Enter the Emperor"
 
 Sounds
 --------

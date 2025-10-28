@@ -16406,27 +16406,38 @@ msgstr ""
 
 msgid "spyder_dojo_fu3d"
 msgstr ""
-"Feel free to ask my students, if you're interested in the Button Potion. "
-"Both of them might have use for it, depending on their current research."
+"Feel free to ask my students, if you're interested in the Button Potion. \n"
+"Either of them might be prepared to apply it, depending on their current research."
 
 msgid "spyder_dojo_fu_student1"
 msgstr ""
 "You're interested in using the Button Potion on one of your tuxemon? \n"
 "That'll be ${{currency}}500, if you're willing to part with it."
 
+msgid "spyder_dojo_fu_student1_stage"
+msgstr ""
+"Do you have a tuxemon that has evolved twice? \n"
+"Return when you do, and I can guide it back to its intermediate stage."
+
 msgid "spyder_dojo_fu_student1a"
 msgstr ""
+"I can return a monster in its first stage to its original form. \n"
 "A small price to pay for the knowledge that will be gained. \n"
 "To reverse the morphing process, it has its uses."
 
 msgid "spyder_dojo_fu_student1b"
 msgstr ""
+"I can return a monster in its second stage to its intermediary form. \n"
 "The insights from reversing evolution are invaluable to my research."
 
 msgid "spyder_dojo_fu_student1c"
 msgstr ""
 "I see. Well, if you're not interested or can't afford it, I won't pressure you. The Button Potion is a rare and valuable item, after all.\n"
 " Maybe another time, then?"
+
+msgid "spyder_dojo_fu_student2_stage"
+msgstr "Do you have a tuxemon that has evolved once? \n"
+"Come back when it has, and I can restore it to its original form."
 
 msgid "spyder_dojo_fu_nochoice"
 msgstr ""

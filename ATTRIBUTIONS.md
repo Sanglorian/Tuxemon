@@ -836,6 +836,8 @@ is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/
 
 * ["Revive"](https://wiki.tuxemon.org/File:Shroom3.png) Sprite by BizmasterStudios.  Licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
+* ["Sledgehammer"](https://wiki.tuxemon.org/File:Sledgehammer.png) Sprite by BizmasterStudios.  Licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+
 * ["Restoration"](https://wiki.tuxemon.org/File:ORANGE_2.png) original sprite by josepharaoh99. Modifications by Sanglorian. Licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
 * ["Trepidation"](https://wiki.tuxemon.org/index.php?title=File:Interior_Tiles_by_ArMM1998.png) cut and resized by Jaskrendix from Interior tileset by ArMM1998. Licensed under CC0.
@@ -950,7 +952,7 @@ is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/
 
 * ["Hatchet"](https://wiki.tuxemon.org/index.php?title=File:Hatchet.png) [https://opengameart.org/content/icons-items-1 CC0 on OGA]
 
-* ["Fishing Rod"](https://wiki.tuxemon.org/index.php?title=Fishing_Rod) by Catch Challenger is licensed under CC-BY 4.0.
+* ["Fishing Rod"](https://wiki.tuxemon.org/index.php?title=Fishing_Rod) and ["Neptune"](https://wiki.tuxemon.org/File:Super-fishing-rod.png) by Catch Challenger are licensed under CC-BY 4.0. "Poseidon" adapted by JaskRendix from "Neptune". 
 
 * ["Surfboard"](https://wiki.tuxemon.org/File:Surfboard.png) from [https://github.com/alphaonex86/CatchChallenger-datapack Catch Challenger (CC BY)], art director Jordan Brule. Project developer Herman Brule.
 
@@ -2056,6 +2058,8 @@ licensed under [SIL Open Font License, 1.1](http://scripts.sil.org/OFL)
 * ["Minimal3x5"](https://fontstruct.com/fontstructions/show/1194671/minimal3x5) by
 [kheftel](https://copheemoth.itch.io/) is licensed under
 [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+
+* ["Source Han Serif"](https://github.com/adobe-fonts/source-han-serif) by Adobe is licensed under [SIL Open Font License, 1.1](http://scripts.sil.org/OFL)
 
 Music
 ------

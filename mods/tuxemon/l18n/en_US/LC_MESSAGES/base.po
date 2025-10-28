@@ -1133,11 +1133,11 @@ msgstr ""
 "Technique Manual that teaches a Water or Earth Tuxemon the Avalanche "
 "technique."
 
-msgid "tm_cavity"
-msgstr "TM: Cavity"
+msgid "tm_acid"
+msgstr "TM: Acid"
 
 msgid "tm_cavity_description"
-msgstr "Technique Manual that teaches the Cavity technique."
+msgstr "Technique Manual that teaches the Acid technique."
 
 msgid "tm_frostbite"
 msgstr "TM: Frostbite"

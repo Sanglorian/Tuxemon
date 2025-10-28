@@ -3,6 +3,7 @@ events:
     actions:
     - create_npc spyder_captain,37,8
     - char_face spyder_captain,left
+    - add_collision riverboat_captain_block,37,8
     conditions:
     - not char_exists spyder_captain
     - is variable_set captainreturns:yes

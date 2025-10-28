@@ -145,6 +145,7 @@
   <object id="403" name="Create Mieke" type="event" x="320" y="496" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_flower_mieke,20,31"/>
+    <property name="act2" value="char_face spyder_flower_mieke,left"/>
     <property name="cond1" value="not char_exists spyder_flower_mieke"/>
    </properties>
   </object>
@@ -180,6 +181,7 @@
   <object id="407" name="Create Teach" type="event" x="400" y="496" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_flower_teach,25,31"/>
+    <property name="act2" value="char_face spyder_flower_teach,right"/>
     <property name="cond1" value="not char_exists spyder_flower_teach"/>
    </properties>
   </object>
@@ -237,6 +239,7 @@
   <object id="425" name="Create Florist" type="event" x="240" y="480" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_flower_lissa,15,30"/>
+    <property name="act2" value="char_face spyder_flower_lissa,up"/>
     <property name="cond1" value="not char_exists spyder_flower_lissa"/>
     <property name="cond2" value="not variable_set captainreturns:yes"/>
    </properties>
@@ -250,6 +253,7 @@
   <object id="427" name="Create Fez" type="event" x="352" y="448" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_flower_fez,22,28"/>
+    <property name="act2" value="char_face spyder_flower_fez,down"/>
     <property name="cond1" value="not char_exists spyder_flower_fez"/>
    </properties>
   </object>
@@ -285,6 +289,7 @@
   <object id="431" name="Create Cady" type="event" x="448" y="544" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_flower_cady,28,34"/>
+    <property name="act2" value="char_face spyder_flower_cady,left"/>
     <property name="cond1" value="not char_exists spyder_flower_cady"/>
    </properties>
   </object>
@@ -320,6 +325,7 @@
   <object id="435" name="Create Sandy" type="event" x="432" y="384" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_flower_sandy,27,24"/>
+    <property name="act2" value="char_face spyder_flower_sandy,up"/>
     <property name="cond1" value="not char_exists spyder_flower_sandy"/>
    </properties>
   </object>

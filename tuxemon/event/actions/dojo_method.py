@@ -66,7 +66,8 @@ class DojoMethodAction(EventAction):
             learnable_moves = [
                 tech.technique
                 for tech in monster.moves.moveset
-                if not monster.moves.has_move(tech.technique)
+                if tech.level_learned <= monster.level
+                and not monster.moves.has_move(tech.technique)
             ]
 
             if not learnable_moves:

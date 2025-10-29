@@ -2,6 +2,7 @@ events:
   Board A:
     actions:
     - translated_dialog spyder_dojo_board_a
+    - translated_dialog spyder_dojo_fu2
     conditions:
     - is char_facing_tile player
     - is button_pressed K_RETURN
@@ -13,6 +14,7 @@ events:
   Board B:
     actions:
     - translated_dialog spyder_dojo_board_b
+    - translated_dialog spyder_dojo_yin2
     conditions:
     - is char_facing_tile player
     - is button_pressed K_RETURN
@@ -24,6 +26,7 @@ events:
   Board C:
     actions:
     - translated_dialog spyder_dojo_board_c
+    - translated_dialog spyder_dojo_zhu2
     conditions:
     - is char_facing_tile player
     - is button_pressed K_RETURN
@@ -35,6 +38,7 @@ events:
   Board D:
     actions:
     - translated_dialog spyder_dojo_board_d
+    - translated_dialog spyder_dojo_xiang2
     conditions:
     - is char_facing_tile player
     - is button_pressed K_RETURN

@@ -16364,7 +16364,7 @@ msgstr ""
 " Ranged determines how much Damage their ranged and reach attacks do.\n"
 " Armor reduces Damage from melee and reach attacks.\n"
 " Dodge reduces Damage from ranged and touch attacks.\n"
-" Whichever monster has the higher Speed acts first in battle."
+" A higher Speed makes it more likely that monster will act first in battle."
 
 msgid "spyder_dojo_zhu2"
 msgstr ""

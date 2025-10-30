@@ -13,7 +13,7 @@
     },
     "combat": {},
     "template": {
-      "sprite_name": "beachcomber_copper",
+      "sprite_name": "beachgoer",
       "combat_front": "beachgoer",
       "slug": "beachgoer"
     }

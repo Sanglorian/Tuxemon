@@ -377,7 +377,6 @@
    <properties>
     <property name="act1" value="create_npc spyder_captain,17,31"/>
     <property name="act2" value="char_face spyder_captain,up"/>
-    <property name="act3" value="add_collision riverboat_captain_block,17,31"/>
     <property name="cond1" value="not char_exists spyder_captain"/>
     <property name="cond2" value="is variable_set captainreturns:yes"/>
    </properties>

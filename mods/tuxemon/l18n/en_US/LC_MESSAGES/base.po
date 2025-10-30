@@ -1667,6 +1667,9 @@ msgstr " "
 msgid "combat_miss"
 msgstr "It missed..."
 
+msgid "spyderbite_miss"
+msgstr "And the technique was lost."
+
 msgid "combat_full_health"
 msgstr "But it's already at full health."
 

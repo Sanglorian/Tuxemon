@@ -121,25 +121,25 @@ msgid "ancient_tea"
 msgstr "Ancient Tea"
 
 msgid "ancient_tea_description"
-msgstr "Adds 1277 to a monster's XP."
+msgstr "Adds 1,500 to a monster's XP."
 
 msgid "imperial_tea"
 msgstr "Imperial Tea"
 
 msgid "imperial_tea_description"
-msgstr "Adds 3005 to a monster's XP."
+msgstr "Adds 3,000 to a monster's XP."
 
 msgid "mystery_tea"
 msgstr "Mystery Tea"
 
 msgid "mystery_tea_description"
-msgstr "Adds 437 to a monster's XP."
+msgstr "Adds 500 to a monster's XP."
 
 msgid "tea"
 msgstr "Tea"
 
 msgid "tea_description"
-msgstr "Adds 107 to a monster's XP."
+msgstr "Adds 125 to a monster's XP."
 
 msgid "revive"
 msgstr "Revive"

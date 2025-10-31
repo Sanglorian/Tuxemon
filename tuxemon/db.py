@@ -71,6 +71,8 @@ class ItemSort(str, Enum):
 class PlagueType(str, Enum):
     inoculated = "inoculated"
     infected = "infected"
+    carrier = "carrier"
+    recovered = "recovered"
 
 
 class GenderType(str, Enum):
@@ -176,6 +178,7 @@ class EffectPhase(Enum):
     PERFORM_TECH = "perform_tech"
     PRE_CHECKING = "pre_checking"
     SWAP_MONSTER = "swap_monster"
+    ON_STEP_INTERVAL = "on_step_interval"
 
 
 class Acquisition(str, Enum):
@@ -1096,15 +1099,41 @@ class TechCategory(str, Enum):
     notype = "notype"
 
 
+class StackingMode(str, Enum):
+    ADDITIVE = "additive"
+    MULTIPLICATIVE = "multiplicative"
+    OVERRIDE = "override"
+
+
 class Modifier(BaseModel):
     attribute: str = Field(
         ..., description="Attribute being modified (type, etc.)"
     )
     values: Sequence[str] = Field(
         [],
-        description="Values associated with the modification (eg. fire, etc.)",
+        description="Values associated with the modification (e.g. fire, etc.)",
     )
     multiplier: float = Field(1.0, description="Multiplier", ge=0.0, le=2.0)
+    priority: int = Field(
+        0, description="Priority of the modifier. Higher wins."
+    )
+    stacking: StackingMode = Field(
+        StackingMode.MULTIPLICATIVE,
+        description="How this modifier stacks with others.",
+    )
+    max_stacks: Optional[int] = Field(
+        None, description="Maximum number of stackable modifiers of this type"
+    )
+    condition_name: Optional[str] = Field(
+        None,
+        description="Name of a predefined condition function to determine applicability",
+    )
+    source: Optional[str] = Field(
+        None, description="Origin of the modifier (e.g. move, item, ability)"
+    )
+    turns_remaining: Optional[int] = Field(
+        None, description="Number of turns before modifier expires"
+    )
 
 
 class SpeedLabel(str, Enum):
@@ -1372,6 +1401,14 @@ class StatusModel(BaseModel, BaseLookupModel):
     )
     duration: int = Field(
         0, description="How many turns the status is supposed to last"
+    )
+    step_interval: int = Field(
+        0,
+        description="The number of steps between out-of-battle effect triggers.",
+    )
+    step_damage: int = Field(
+        0,
+        description="The amount of HP lost each time the out-of-battle effect triggers.",
     )
     modifiers: list[Modifier] = Field(..., description="Various modifiers")
 
@@ -2418,9 +2455,7 @@ class TerrainModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "terrain"
     slug: str = Field(..., description="Slug of the terrain")
     name: str = Field(..., description="Name of the terrain condition")
-    element_modifier: dict[str, float] = Field(
-        ..., description="Modifiers for elemental techniques in this terrain"
-    )
+    modifiers: list[Modifier] = Field(..., description="Various modifiers")
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> TerrainModel:
@@ -2441,10 +2476,7 @@ class WeatherModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "weather"
     slug: str = Field(..., description="Slug of the weather")
     name: str = Field(..., description="Name of the weather condition")
-    element_modifier: dict[str, float] = Field(
-        ...,
-        description="Modifiers for elemental techniques during this weather",
-    )
+    modifiers: list[Modifier] = Field(..., description="Various modifiers")
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> WeatherModel:

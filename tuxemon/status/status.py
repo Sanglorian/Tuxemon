@@ -54,6 +54,8 @@ class Status:
         save_data = save_data or {}
         self._host: Monster = host
         self._steps: float = steps
+        self._linked_monster: Optional[Monster] = None
+        self._nr_turn: int = 0
 
         self._effect_applied: set[str] = set()
 
@@ -67,13 +69,13 @@ class Status:
         self.flip_axes: FlipAxes = FlipAxes.NONE
         self.gain_cond: str = ""
         self.icon: str = ""
-        self.linked_monster: Optional[Monster] = None
         self.name: str = ""
-        self.nr_turn: int = 0
         self.duration: int = 0
         self.phase: EffectPhase = EffectPhase.DEFAULT
         self.range: Range = Range.melee
         self.stack_level: int = 1
+        self.step_interval: int = 0
+        self.step_damage: int = 0
         self.on_positive_status: Optional[ResponseStatus] = None
         self.on_negative_status: Optional[ResponseStatus] = None
         self.on_tech_use: Optional[str] = None
@@ -105,6 +107,24 @@ class Status:
         method.load(slug)
         return method
 
+    @property
+    def host(self) -> Monster:
+        """Returns the monster associated with this status."""
+        return self._host
+
+    @property
+    def steps(self) -> float:
+        return self._steps
+
+    @property
+    def linked_monster(self) -> Optional[Monster]:
+        """Returns the monster linked to this status effect."""
+        return self._linked_monster
+
+    @property
+    def nr_turn(self) -> int:
+        return self._nr_turn
+
     def load(self, slug: str) -> None:
         """
         Loads and sets this status's attributes from the status
@@ -129,6 +149,8 @@ class Status:
 
         self.modifiers = ModifiersHandler(results.modifiers)
         self.behaviors = results.behaviors
+        self.step_interval = results.step_interval
+        self.step_damage = results.step_damage
         # monster stats
         self.stat_modifiers = results.stat_modifiers
 
@@ -182,25 +204,17 @@ class Status:
         """
         return self.condition_handler.validate(session=session, target=target)
 
-    def get_host(self) -> Monster:
-        """Returns the monster associated with this status."""
-        return self._host
-
-    def get_linked_monster(self) -> Optional[Monster]:
-        """Returns the monster linked to this status effect."""
-        return self.linked_monster
-
     def set_linked_monster(self, monster: Monster) -> None:
         """Assigns a linked monster that benefits from this status."""
-        self.linked_monster = monster
+        self._linked_monster = monster
 
     def has_reached_duration(self) -> bool:
         """Checks if the status has reached or exceeded its duration."""
-        return self.nr_turn >= self.duration > 0
+        return self._nr_turn >= self.duration > 0
 
     def has_exceeded_duration(self) -> bool:
         """Checks if the status has lasted beyond its intended duration."""
-        return self.nr_turn > self.duration
+        return self._nr_turn > self.duration
 
     def use(self, session: Session, phase: EffectPhase) -> StatusEffectResult:
         """
@@ -212,6 +226,56 @@ class Status:
             source=self,
         )
         return result
+
+    def tick_turn(self) -> None:
+        """
+        Advance the turn counter for this status.
+        Only increments nr_turn if the status has a defined duration (> 0).
+        """
+        if self.duration > 0:
+            self._nr_turn += 1
+            logger.debug(
+                f"[Status Duration] {self.slug} turn {self._nr_turn} "
+                f"of {self.duration} at stack {self.stack_level}."
+            )
+
+    def stack(self) -> None:
+        """
+        Increments the status stack level up to MAX_STACKS and
+        resets the turn counter (nr_turn) and the use counter (counter)
+        to refresh the duration and uses.
+        """
+        old_stack = self.stack_level
+        self.stack_level = min(old_stack + 1, self.MAX_STACKS)
+        self._nr_turn = 0
+        self.counter = 0
+        logger.debug(
+            f"Status '{self.slug}' stacked from {old_stack} to {self.stack_level}. "
+            f"Duration/Uses refreshed."
+        )
+
+    def tick_steps(
+        self, session: Session, steps: float
+    ) -> Optional[StatusEffectResult]:
+        """
+        Advance the step counter and trigger the status effect if the interval
+        is reached. Returns the result if the effect was triggered.
+        """
+        if self.step_interval > 0:
+            old_steps = self._steps
+            self._steps += steps
+
+            old_interval_count = old_steps // self.step_interval
+            new_interval_count = self._steps // self.step_interval
+
+            if new_interval_count > old_interval_count:
+                logger.debug(
+                    f"[Status Step Tick] {self.slug} triggered after "
+                    f"{new_interval_count} intervals."
+                )
+                return self.use(session, EffectPhase.ON_STEP_INTERVAL)
+
+        return None
 
     def get_state(self) -> Mapping[str, Any]:
         """

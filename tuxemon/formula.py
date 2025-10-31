@@ -636,7 +636,7 @@ def calculate_status_modifier(item: Item, target: Monster) -> float:
     config = config_capdev.items.get(item.slug)
     status_modifier = config_capdev.status_modifier
 
-    status = target.status.get_current_status()
+    status = target.status.current_status
     if config is None or status is None:
         return status_modifier
 
@@ -778,7 +778,7 @@ def on_capture_fail(item: Item, target: Monster, character: NPC) -> None:
         return
 
     if config.capdev_persistent_on_failure:
-        tuxeball = character.items.find_item(item.slug)
+        tuxeball = character.bag.find_item(item.slug)
         if tuxeball:
             tuxeball.increase_quantity()
 
@@ -789,7 +789,7 @@ def on_capture_success(item: Item, target: Monster, character: NPC) -> None:
         return
 
     if config.capdev_persistent_on_success:
-        tuxeball = character.items.find_item(item.slug)
+        tuxeball = character.bag.find_item(item.slug)
         if tuxeball:
             tuxeball.increase_quantity()
 

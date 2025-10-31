@@ -6,12 +6,18 @@ import logging
 from typing import Any
 from uuid import uuid4
 
-from tuxemon.event import EventObject, MapAction, MapCondition
+from tuxemon.db import (
+    EventObject,
+    Operator,
+    ParameterizableRule,
+    SpatialCondition,
+)
 from tuxemon.script.parser import (
     parse_action_string,
     parse_behav_string,
     parse_condition_string,
 )
+from tuxemon.tools import safe_enum_value
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +34,7 @@ class EventParser:
         y: int,
         w: int,
         h: int,
+        priority: int = 0,
     ) -> EventObject:
         """
         Creates an EventObject from a dictionary of event data.
@@ -40,8 +47,8 @@ class EventParser:
         This method centralizes parsing logic from TMX or YAML sources.
         """
         event_id = uuid4().int
-        conditions: list[MapCondition] = []
-        actions: list[MapAction] = []
+        conditions: list[SpatialCondition] = []
+        actions: list[ParameterizableRule] = []
         logger.debug(f"Creating event object: {name} at ({x}, {y}, {w}, {h})")
 
         # Parse behaviors first, as they add both conditions and actions
@@ -56,24 +63,25 @@ class EventParser:
             # Create a behavior condition
             conditions.insert(
                 0,
-                MapCondition(
-                    "behav",
-                    [behav_type, *args],
-                    x,
-                    y,
-                    w,
-                    h,
-                    "is",
-                    f"behav{str(key*10)}",
+                SpatialCondition(
+                    type="behav",
+                    parameters=[behav_type, *args],
+                    x=x,
+                    y=y,
+                    width=w,
+                    height=h,
+                    operator=Operator.IS,
+                    name=f"behav{key * 10}",
                 ),
             )
-            # Create a behavior action
+
+            # Behavior action
             actions.insert(
                 0,
-                MapAction(
-                    "behav",
-                    [":".join([behav_type, *args])],
-                    f"behav{str(key*10)}",
+                ParameterizableRule(
+                    type="behav",
+                    parameters=[":".join([behav_type, *args])],
+                    name=f"behav{key * 10}",
                 ),
             )
 
@@ -81,22 +89,26 @@ class EventParser:
         conds = event_data.get("conditions") or []
         for key, value in enumerate(conds, start=1):
             logger.debug(f"Parsing condition {key}: {value}")
-            operator, cond_type, args = parse_condition_string(value)
+            _operator, cond_type, args = parse_condition_string(value)
             logger.debug(
-                f" → operator: {operator}, type: {cond_type}, args: {args}"
+                f" → operator: {_operator}, type: {cond_type}, args: {args}"
             )
-            conditions.append(
-                MapCondition(
-                    type=cond_type,
-                    parameters=args,
-                    x=x,
-                    y=y,
-                    width=w,
-                    height=h,
-                    operator=operator,
-                    name=f"cond{str(key*10)}",
-                )
+
+            operator = safe_enum_value(
+                Operator, _operator, default=Operator.IS
             )
+
+            condition = SpatialCondition(
+                type=cond_type,
+                parameters=args,
+                x=x,
+                y=y,
+                width=w,
+                height=h,
+                operator=operator,
+                name=f"cond{key * 10}",
+            )
+            conditions.append(condition)
 
         # Parse actions
         acts = event_data.get("actions") or []
@@ -104,6 +116,22 @@ class EventParser:
             logger.debug(f"Parsing action {key}: {value}")
             act_type, args = parse_action_string(value)
             logger.debug(f" → type: {act_type}, args: {args}")
-            actions.append(MapAction(act_type, args, f"act{str(key*10)}"))
+            actions.append(
+                ParameterizableRule(
+                    type=act_type,
+                    parameters=args,
+                    name=f"act{key * 10}",
+                )
+            )
 
-        return EventObject(event_id, name, x, y, w, h, conditions, actions)
+        return EventObject(
+            id=event_id,
+            name=name,
+            x=x,
+            y=y,
+            w=w,
+            h=h,
+            priority=priority,
+            conds=conditions,
+            acts=actions,
+        )

@@ -2,7 +2,7 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
 
-from tuxemon.event import EventObject
+from tuxemon.db import EventObject
 from tuxemon.map.map_loader import EventParser
 
 

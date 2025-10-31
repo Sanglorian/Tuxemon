@@ -11,6 +11,13 @@ from tuxemon.map.map_manager import MapManager
 from tuxemon.session import Session, local_session
 
 
+class EventObject:
+    def __init__(self, id, priority=0):
+        self.id = id
+        self.priority = priority
+        self.conds = []
+
+
 class TestEventEngine(unittest.TestCase):
     def setUp(self):
         action = MagicMock(spec=ActionManager)
@@ -34,10 +41,6 @@ class TestEventEngine(unittest.TestCase):
         self.assertEqual(self.eng.wait, 0.0)
 
     def test_start_event(self):
-        class EventObject:
-            def __init__(self, id):
-                self.id = id
-
         event = EventObject(1)
         self.eng.session = MagicMock(spec=Session)
         self.eng.session.client = MagicMock(spec=LocalPygameClient)
@@ -45,3 +48,38 @@ class TestEventEngine(unittest.TestCase):
         self.eng.session.client.map_manager.inits = []
         self.eng.start_event(event)
         self.assertIn(1, self.eng.running_events)
+
+    def test_register_global_event_prevents_duplicates(self):
+        event = EventObject(99)
+        self.eng.global_events = [event]
+        result = self.eng.register_global_event(event)
+        self.assertFalse(result)
+
+    def test_unregister_global_event_removes_event(self):
+        event = EventObject(77)
+        self.eng.global_events = [event]
+        self.eng.triggered_global_events = {77}
+
+        result = self.eng.unregister_global_event(77)
+
+        self.assertTrue(result)
+        self.assertNotIn(event, self.eng.global_events)
+        self.assertNotIn(77, self.eng.triggered_global_events)
+
+    def test_register_global_event_prevents_duplicates(self):
+        event = EventObject(303)
+        self.eng.global_events = [event]
+        result = self.eng.register_global_event(event)
+        self.assertFalse(result)
+        self.assertEqual(len(self.eng.global_events), 1)
+
+    def test_unregister_global_event_removes_event_and_flag(self):
+        event = EventObject(404)
+        self.eng.global_events = [event]
+        self.eng.triggered_global_events = {404}
+
+        result = self.eng.unregister_global_event(404)
+
+        self.assertTrue(result)
+        self.assertNotIn(event, self.eng.global_events)
+        self.assertNotIn(404, self.eng.triggered_global_events)

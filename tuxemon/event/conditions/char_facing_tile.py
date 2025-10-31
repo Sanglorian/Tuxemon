@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
-from tuxemon.event import MapCondition, get_npc
+from tuxemon.db import SpatialCondition
+from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.map.map import get_coords, get_direction
 from tuxemon.prepare import SURFACE_KEYS
@@ -33,7 +34,7 @@ class CharFacingTileCondition(EventCondition):
 
     name = "char_facing_tile"
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
+    def test(self, session: Session, condition: SpatialCondition) -> bool:
         character = get_npc(session, condition.parameters[0])
         if character is None:
             logger.error(f"{condition.parameters[0]} not found")

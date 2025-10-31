@@ -219,25 +219,87 @@ class ColorModel(BaseModel):
     alpha: int = Field(255, ge=0, le=255)
 
 
-class CommonCondition(BaseModel):
-    type: str = Field(..., description="The name of the condition")
-    parameters: Sequence[str] = Field(
-        [], description="The parameters that must be met"
-    )
-    operator: str = Field(..., description="The operator 'is' or 'not'.")
+class ParameterizableRule(BaseModel):
+    """
+    Base model for any component (condition or action) that requires type,
+    parameters, and an optional name.
+    """
 
-    @field_validator("operator")
-    def operator_must_be_is_or_not(cls: CommonCondition, v: str) -> str:
-        if v not in ["is", "not"]:
-            raise ValueError('operator must be either "is" or "not"')
+    type: str = Field(
+        ..., description="The functional type or command of the rule."
+    )
+    parameters: Sequence[str] = Field(
+        default_factory=list,
+        description="A list of string arguments for the rule type.",
+    )
+    name: Optional[str] = Field(
+        None,
+        description="An optional user-defined name or identifier for the rule.",
+    )
+
+
+class Operator(str, Enum):
+    IS = "is"
+    NOT = "not"
+
+
+class LogicCondition(ParameterizableRule):
+    """The generic, non-spatial condition model with operator validation."""
+
+    operator: Operator = Field(
+        ..., description="Logical operator: 'is' or 'not'"
+    )
+
+
+class SpatialCondition(LogicCondition):
+    """Represents a condition that inherits generic logic and ADDS a spatial component."""
+
+    x: int = Field(
+        ..., description="The X-coordinate (e.g., top-left) of the area."
+    )
+    y: int = Field(
+        ..., description="The Y-coordinate (e.g., top-left) of the area."
+    )
+    width: int = Field(..., description="The width of the spatial area.")
+    height: int = Field(..., description="The height of the spatial area.")
+
+
+class EventObject(BaseModel):
+    """The main container entity for a game/map event."""
+
+    id: int = Field(
+        ...,
+        description="The unique, optional database ID of the event object.",
+    )
+    name: str = Field(
+        ..., description="The displayed, human-readable name of the event."
+    )
+    priority: int = Field(
+        0,
+        description="Order of evaluation relative to other EventObjects. Lower number (e.g., 0) is higher priority.",
+    )
+    x: int = Field(..., description="Event's X-coordinate.")
+    y: int = Field(..., description="Event's Y-coordinate.")
+    w: int = Field(..., description="Event's width.")
+    h: int = Field(..., description="Event's height.")
+    conds: Sequence[SpatialCondition] = Field(
+        default_factory=list,
+        description="A sequence of conditions (spatial or logic) that must all be met to trigger the actions.",
+    )
+    acts: Sequence[ParameterizableRule] = Field(
+        default_factory=list,
+        description="A sequence of actions/effects to execute when conditions are met.",
+    )
+
+    @field_validator("priority")
+    @classmethod
+    def priority_must_be_non_negative(cls, v: int) -> int:
+        """Ensures the priority is 0 or a positive integer."""
+        if v < 0:
+            raise ValueError(
+                "priority must be a non-negative integer (0 or greater)"
+            )
         return v
-
-
-class CommonEffect(BaseModel):
-    type: str = Field(..., description="The name of the condition")
-    parameters: Sequence[str] = Field(
-        [], description="The parameters that must be met"
-    )
 
 
 class BaseComparison(BaseModel):
@@ -429,10 +491,10 @@ class ItemModel(BaseModel, BaseLookupModel):
         ..., description="State(s) where this item can be used."
     )
     behaviors: ItemBehaviors
-    conditions: Sequence[CommonCondition] = Field(
+    conditions: Sequence[LogicCondition] = Field(
         [], description="Conditions that must be met"
     )
-    effects: Sequence[CommonEffect] = Field(
+    effects: Sequence[ParameterizableRule] = Field(
         ..., description="Effects this item will have"
     )
     flip_axes: FlipAxes = Field(
@@ -1198,10 +1260,10 @@ class TechniqueModel(BaseModel, BaseLookupModel):
     tags: Sequence[str] = Field(
         ..., description="The tags of the technique", min_length=1
     )
-    conditions: Sequence[CommonCondition] = Field(
+    conditions: Sequence[LogicCondition] = Field(
         [], description="Conditions that must be met"
     )
-    effects: Sequence[CommonEffect] = Field(
+    effects: Sequence[ParameterizableRule] = Field(
         ..., description="Effects this technique uses"
     )
     flip_axes: FlipAxes = Field(
@@ -1350,10 +1412,10 @@ class StatusModel(BaseModel, BaseLookupModel):
     sort: TechSort = Field(..., description="The sort of status this is")
     behaviors: StatusBehaviors
     icon: str = Field(..., description="The icon to use for the condition")
-    conditions: Sequence[CommonCondition] = Field(
+    conditions: Sequence[LogicCondition] = Field(
         [], description="Conditions that must be met"
     )
-    effects: Sequence[CommonEffect] = Field(
+    effects: Sequence[ParameterizableRule] = Field(
         ..., description="Effects this status uses"
     )
     flip_axes: FlipAxes = Field(

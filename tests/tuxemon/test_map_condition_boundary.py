@@ -3,62 +3,161 @@
 import unittest
 
 from tuxemon.boundary import Dimensions, MapConditionBoundary
-from tuxemon.event import MapCondition
+from tuxemon.db import Operator, SpatialCondition
 
 
 class TestMapConditionBoundary(unittest.TestCase):
     def test_tile_inside_condition(self):
-        condition = MapCondition("", [], 0, 0, 5, 5, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=0,
+            y=0,
+            width=5,
+            height=5,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         self.assertTrue(boundary.is_within((2, 2)))
 
     def test_tile_outside_condition(self):
-        condition = MapCondition("", [], 0, 0, 5, 5, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=0,
+            y=0,
+            width=5,
+            height=5,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         self.assertFalse(boundary.is_within((6, 6)))
 
     def test_tile_on_edge_condition(self):
-        condition = MapCondition("", [], 0, 0, 5, 5, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=0,
+            y=0,
+            width=5,
+            height=5,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         self.assertTrue(boundary.is_within((0, 0)))  # Top-left
         self.assertTrue(boundary.is_within((4, 4)))  # Bottom-right
 
     def test_invalid_tile_position(self):
-        condition = MapCondition("", [], 0, 0, 5, 5, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=0,
+            y=0,
+            width=5,
+            height=5,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         with self.assertRaises(TypeError):
             boundary.is_within("invalid")
 
     def test_edge_cases_for_condition_dimensions(self):
-        condition = MapCondition("", [], 0, 0, 0, 0, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=0,
+            y=0,
+            width=0,
+            height=0,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         self.assertFalse(boundary.is_within((0, 0)))
 
-        condition = MapCondition("", [], 0, 0, 1, 1, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=0,
+            y=0,
+            width=1,
+            height=1,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         self.assertTrue(boundary.is_within((0, 0)))
 
     def test_negative_coordinates(self):
-        condition = MapCondition("", [], -2, -2, 5, 5, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=-2,
+            y=-2,
+            width=5,
+            height=5,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         self.assertTrue(boundary.is_within((0, 0)))
 
     def test_large_coordinates(self):
-        condition = MapCondition("", [], 10000, 10000, 5, 5, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=10000,
+            y=10000,
+            width=5,
+            height=5,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         self.assertTrue(boundary.is_within((10001, 10001)))
 
     def test_edge_cases_zero_width_or_height(self):
-        condition = MapCondition("", [], 0, 0, 0, 5, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=0,
+            y=0,
+            width=0,
+            height=5,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         self.assertFalse(boundary.is_within((0, 0)))
 
-        condition = MapCondition("", [], 0, 0, 5, 0, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=0,
+            y=0,
+            width=5,
+            height=0,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         self.assertFalse(boundary.is_within((0, 0)))
 
     def test_move_shifts_boundary_position(self):
-        condition = MapCondition("", [], 0, 0, 5, 5, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=0,
+            y=0,
+            width=5,
+            height=5,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         self.assertTrue(boundary.is_within((2, 2)))
 
@@ -68,7 +167,16 @@ class TestMapConditionBoundary(unittest.TestCase):
         self.assertEqual(boundary.get_center(), (5.5, 5.5))
 
     def test_resize_expands_boundary(self):
-        condition = MapCondition("", [], 0, 0, 2, 2, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=0,
+            y=0,
+            width=2,
+            height=2,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         self.assertFalse(boundary.is_within((3, 3)))
 
@@ -79,7 +187,16 @@ class TestMapConditionBoundary(unittest.TestCase):
         )
 
     def test_resize_contracts_boundary(self):
-        condition = MapCondition("", [], 0, 0, 5, 5, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=0,
+            y=0,
+            width=5,
+            height=5,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         self.assertTrue(boundary.is_within((4, 4)))
 
@@ -90,7 +207,16 @@ class TestMapConditionBoundary(unittest.TestCase):
         )
 
     def test_resize_to_zero_dimensions(self):
-        condition = MapCondition("", [], 0, 0, 2, 2, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=0,
+            y=0,
+            width=2,
+            height=2,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         boundary.resize(-2, -2)
         self.assertFalse(boundary.is_within((0, 0)))
@@ -99,7 +225,16 @@ class TestMapConditionBoundary(unittest.TestCase):
         )
 
     def test_move_and_resize_combination(self):
-        condition = MapCondition("", [], 0, 0, 3, 3, "", None)
+        condition = SpatialCondition(
+            type="",
+            parameters=[],
+            x=0,
+            y=0,
+            width=3,
+            height=3,
+            operator=Operator.IS,
+            name=None,
+        )
         boundary = MapConditionBoundary(condition)
         boundary.move(2, 2)
         boundary.resize(2, 2)

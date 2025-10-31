@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 
 from tuxemon.cli.clicommand import CLICommand
 from tuxemon.cli.exceptions import ParseError
-from tuxemon.event import MapCondition
+from tuxemon.db import SpatialCondition
 from tuxemon.script.parser import parse_condition_string
 
 if TYPE_CHECKING:
@@ -72,7 +72,7 @@ class TestConditionCommand(CLICommand):
         line = f"is {self.name} {line}"
         try:
             opr, typ, args = parse_condition_string(line)
-            cond = MapCondition(typ, args, 0, 0, 0, 0, opr, "USERINPUT")
+            cond = SpatialCondition(typ, args, 0, 0, 0, 0, opr, "USERINPUT")
         except ValueError:
             raise ParseError
         try:

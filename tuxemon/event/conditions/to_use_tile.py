@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from tuxemon.db import Operator, SpatialCondition
+from tuxemon.db import BoundingBox, Operator, SpatialCondition
 from tuxemon.event.conditions.button_pressed import ButtonPressedCondition
 from tuxemon.event.conditions.char_facing_tile import CharFacingTileCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -29,6 +29,7 @@ class ToUseTileCondition(EventCondition):
             session,
             condition,
         )
+        box = BoundingBox(x=0, y=0, width=0, height=0)
         button_pressed = ButtonPressedCondition().test(
             session,
             SpatialCondition(
@@ -37,10 +38,7 @@ class ToUseTileCondition(EventCondition):
                     "K_RETURN",
                 ],
                 operator=Operator.IS,
-                width=0,
-                height=0,
-                x=0,
-                y=0,
+                box=box,
                 name="",
             ),
         )

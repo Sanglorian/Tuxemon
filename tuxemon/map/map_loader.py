@@ -16,7 +16,7 @@ from natsort import natsorted
 from tuxemon import prepare
 from tuxemon.compat import Rect
 from tuxemon.constants.asset_loader import fetch_asset
-from tuxemon.db import Direction, EventObject, Orientation
+from tuxemon.db import BoundingBox, Direction, EventObject, Orientation
 from tuxemon.event.eventparser import EventParser
 from tuxemon.graphics import scaled_image_loader
 from tuxemon.lib.bresenham import bresenham
@@ -304,8 +304,9 @@ class YAMLEventLoader:
                 priority = int(event_data.get("priority", 0))
                 x, y = event_data.get("x", 0), event_data.get("y", 0)
                 w, h = event_data.get("width", 1), event_data.get("height", 1)
+                box = BoundingBox(x=x, y=y, width=w, height=h)
                 event = event_parser.create_event_object(
-                    event_data, event_type, name, x, y, w, h, priority
+                    event_data, event_type, name, box, priority
                 )
                 events_dict[event_type].append(event)
         return events_dict
@@ -614,6 +615,7 @@ class TMXMapLoader:
             elif key.startswith("behav"):
                 event_data["behav"].append(value)
 
+        box = BoundingBox(x=x, y=y, width=w, height=h)
         return event_parser.create_event_object(
-            event_data, obj.type or "event", obj.name, x, y, w, h
+            event_data, obj.type or "event", obj.name, box
         )

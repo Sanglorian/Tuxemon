@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import MagicMock
 
 from tuxemon.client import LocalPygameClient
+from tuxemon.db import BoundingBox, EventObject
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventengine import EventEngine
 from tuxemon.event.running import ConditionEvaluator
@@ -11,15 +12,9 @@ from tuxemon.map.map_manager import MapManager
 from tuxemon.session import Session, local_session
 
 
-class EventObject:
-    def __init__(self, id, priority=0):
-        self.id = id
-        self.priority = priority
-        self.conds = []
-
-
 class TestEventEngine(unittest.TestCase):
     def setUp(self):
+        self.box = BoundingBox(x=0, y=0, width=1, height=1)
         action = MagicMock(spec=ActionManager)
         evaluator = MagicMock(spec=ConditionEvaluator)
         self.eng = EventEngine(local_session, action, evaluator)
@@ -41,7 +36,14 @@ class TestEventEngine(unittest.TestCase):
         self.assertEqual(self.eng.wait, 0.0)
 
     def test_start_event(self):
-        event = EventObject(1)
+        event = EventObject(
+            id=1,
+            name="",
+            priority=0,
+            box=self.box,
+            conds=[],
+            acts=[],
+        )
         self.eng.session = MagicMock(spec=Session)
         self.eng.session.client = MagicMock(spec=LocalPygameClient)
         self.eng.session.client.map_manager = MagicMock(spec=MapManager)
@@ -50,13 +52,27 @@ class TestEventEngine(unittest.TestCase):
         self.assertIn(1, self.eng.running_events)
 
     def test_register_global_event_prevents_duplicates(self):
-        event = EventObject(99)
+        event = EventObject(
+            id=99,
+            name="",
+            priority=0,
+            box=self.box,
+            conds=[],
+            acts=[],
+        )
         self.eng.global_events = [event]
         result = self.eng.register_global_event(event)
         self.assertFalse(result)
 
     def test_unregister_global_event_removes_event(self):
-        event = EventObject(77)
+        event = EventObject(
+            id=77,
+            name="",
+            priority=0,
+            box=self.box,
+            conds=[],
+            acts=[],
+        )
         self.eng.global_events = [event]
         self.eng.triggered_global_events = {77}
 
@@ -67,14 +83,28 @@ class TestEventEngine(unittest.TestCase):
         self.assertNotIn(77, self.eng.triggered_global_events)
 
     def test_register_global_event_prevents_duplicates(self):
-        event = EventObject(303)
+        event = EventObject(
+            id=303,
+            name="",
+            priority=0,
+            box=self.box,
+            conds=[],
+            acts=[],
+        )
         self.eng.global_events = [event]
         result = self.eng.register_global_event(event)
         self.assertFalse(result)
         self.assertEqual(len(self.eng.global_events), 1)
 
     def test_unregister_global_event_removes_event_and_flag(self):
-        event = EventObject(404)
+        event = EventObject(
+            id=404,
+            name="",
+            priority=0,
+            box=self.box,
+            conds=[],
+            acts=[],
+        )
         self.eng.global_events = [event]
         self.eng.triggered_global_events = {404}
 

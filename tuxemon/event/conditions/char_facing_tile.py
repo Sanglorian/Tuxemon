@@ -41,9 +41,9 @@ class CharFacingTileCondition(EventCondition):
             return False
 
         tiles = [
-            (condition.x + w, condition.y + h)
-            for w in range(0, condition.width)
-            for h in range(0, condition.height)
+            (condition.box.x + w, condition.box.y + h)
+            for w in range(0, condition.box.width)
+            for h in range(0, condition.box.height)
         ]
         # get all the coordinates around the npc
         client = session.client

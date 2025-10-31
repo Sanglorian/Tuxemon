@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from tuxemon.db import (
+    BoundingBox,
     EventObject,
     Operator,
     ParameterizableRule,
@@ -19,6 +20,9 @@ from tuxemon.script.parser import (
 )
 from tuxemon.tools import safe_enum_value
 
+if TYPE_CHECKING:
+    from tuxemon.db import BoundingBox
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,10 +34,7 @@ class EventParser:
         event_data: dict[str, Any],
         source_type: str,
         name: str,
-        x: int,
-        y: int,
-        w: int,
-        h: int,
+        box: BoundingBox,
         priority: int = 0,
     ) -> EventObject:
         """
@@ -49,7 +50,7 @@ class EventParser:
         event_id = uuid4().int
         conditions: list[SpatialCondition] = []
         actions: list[ParameterizableRule] = []
-        logger.debug(f"Creating event object: {name} at ({x}, {y}, {w}, {h})")
+        logger.debug(f"Creating event object: {name} at ({box})")
 
         # Parse behaviors first, as they add both conditions and actions
         # NOTE: Conditions use structured lists; actions require joined strings.
@@ -66,10 +67,7 @@ class EventParser:
                 SpatialCondition(
                     type="behav",
                     parameters=[behav_type, *args],
-                    x=x,
-                    y=y,
-                    width=w,
-                    height=h,
+                    box=box,
                     operator=Operator.IS,
                     name=f"behav{key * 10}",
                 ),
@@ -101,10 +99,7 @@ class EventParser:
             condition = SpatialCondition(
                 type=cond_type,
                 parameters=args,
-                x=x,
-                y=y,
-                width=w,
-                height=h,
+                box=box,
                 operator=operator,
                 name=f"cond{key * 10}",
             )
@@ -127,10 +122,7 @@ class EventParser:
         return EventObject(
             id=event_id,
             name=name,
-            x=x,
-            y=y,
-            w=w,
-            h=h,
+            box=box,
             priority=priority,
             conds=conditions,
             acts=actions,

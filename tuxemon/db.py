@@ -222,6 +222,37 @@ class ColorModel(BaseModel):
     alpha: int = Field(255, ge=0, le=255)
 
 
+class BoundingBox(BaseModel):
+    x: int = Field(
+        ...,
+        description="The X-coordinate of the top-left corner of the bounding box.",
+    )
+    y: int = Field(
+        ...,
+        description="The Y-coordinate of the top-left corner of the bounding box.",
+    )
+    width: int = Field(
+        ...,
+        description="The horizontal size of the bounding box. Must be a positive integer.",
+    )
+    height: int = Field(
+        ...,
+        description="The vertical size of the bounding box. Must be a positive integer.",
+    )
+
+    @field_validator("width", "height")
+    @classmethod
+    def must_be_positive(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("'width' and 'height' must be positive.")
+        return v
+
+
+class Operator(str, Enum):
+    IS = "is"
+    NOT = "not"
+
+
 class ParameterizableRule(BaseModel):
     """
     Base model for any component (condition or action) that requires type,
@@ -235,15 +266,10 @@ class ParameterizableRule(BaseModel):
         default_factory=list,
         description="A list of string arguments for the rule type.",
     )
-    name: Optional[str] = Field(
-        None,
-        description="An optional user-defined name or identifier for the rule.",
+    name: str = Field(
+        "unnamed_rule",
+        description="User-defined name or identifier for the rule.",
     )
-
-
-class Operator(str, Enum):
-    IS = "is"
-    NOT = "not"
 
 
 class LogicCondition(ParameterizableRule):
@@ -255,16 +281,11 @@ class LogicCondition(ParameterizableRule):
 
 
 class SpatialCondition(LogicCondition):
-    """Represents a condition that inherits generic logic and ADDS a spatial component."""
+    """Represents a condition that inherits generic logic and adds a spatial component."""
 
-    x: int = Field(
-        ..., description="The X-coordinate (e.g., top-left) of the area."
+    box: BoundingBox = Field(
+        ..., description="The spatial bounding box for this condition."
     )
-    y: int = Field(
-        ..., description="The Y-coordinate (e.g., top-left) of the area."
-    )
-    width: int = Field(..., description="The width of the spatial area.")
-    height: int = Field(..., description="The height of the spatial area.")
 
 
 class EventObject(BaseModel):
@@ -278,13 +299,12 @@ class EventObject(BaseModel):
         ..., description="The displayed, human-readable name of the event."
     )
     priority: int = Field(
-        0,
+        ...,
         description="Order of evaluation relative to other EventObjects. Lower number (e.g., 0) is higher priority.",
     )
-    x: int = Field(..., description="Event's X-coordinate.")
-    y: int = Field(..., description="Event's Y-coordinate.")
-    w: int = Field(..., description="Event's width.")
-    h: int = Field(..., description="Event's height.")
+    box: BoundingBox = Field(
+        ..., description="The spatial bounding box of the event."
+    )
     conds: Sequence[SpatialCondition] = Field(
         default_factory=list,
         description="A sequence of conditions (spatial or logic) that must all be met to trigger the actions.",

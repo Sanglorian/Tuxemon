@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from tuxemon.db import Operator, SpatialCondition
+from tuxemon.db import BoundingBox, Operator, SpatialCondition
 from tuxemon.event.eventcondition import ConditionManager
 from tuxemon.event.running import (
     ConditionEvaluator,
@@ -33,13 +33,11 @@ class TestRunningCondition(unittest.TestCase):
             condition_manager=self.mock_condition_manager,
         )
 
+        box = BoundingBox(x=0, y=0, width=1, height=1)
         self.map_condition = SpatialCondition(
             type="test_type",
             parameters=[],
-            x=0,
-            y=0,
-            width=1,
-            height=1,
+            box=box,
             operator=Operator.IS,
             name="TestCondition",
         )

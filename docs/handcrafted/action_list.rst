@@ -159,6 +159,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.transition_teleport_return.TransitionTeleportReturnAction
 .. autoscriptinfoclass:: tuxemon.event.actions.translated_dialog_choice.TranslatedDialogChoiceAction
 .. autoscriptinfoclass:: tuxemon.event.actions.translated_dialog.TranslatedDialogAction
+.. autoscriptinfoclass:: tuxemon.event.actions.trigger_status.TriggerStatusAction
 .. autoscriptinfoclass:: tuxemon.event.actions.unload_sound.UnloadSoundAction
 .. autoscriptinfoclass:: tuxemon.event.actions.unlock_controls.UnlockControlsAction
 .. autoscriptinfoclass:: tuxemon.event.actions.unpause_music.UnpauseMusicAction

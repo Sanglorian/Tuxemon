@@ -13,7 +13,7 @@
     },
     "combat": {},
     "template": {
-      "sprite_name": "beachgoer",
+      "sprite_name": "homemaker_blonde",
       "combat_front": "beachgoer",
       "slug": "beachgoer"
     }

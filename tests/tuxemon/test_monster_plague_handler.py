@@ -5,6 +5,8 @@ from unittest.mock import MagicMock, patch
 
 from tuxemon.db import PlagueType
 from tuxemon.monster_dir.plague import (
+    CureData,
+    InoculationResult,
     MonsterPlagueHandler,
     PlagueData,
     config_plagues,
@@ -94,7 +96,6 @@ class DummyMonster:
         height,
         status_slug=None,
         plague_data=None,
-        held_item=None,
     ):
         self.name = name
         self.types = MagicMock()
@@ -104,11 +105,10 @@ class DummyMonster:
         self.weight = weight
         self.height = height
         self.status = MagicMock()
-        self.status.get_current_status = MagicMock(
+        self.status.current_status = MagicMock(
             return_value=MagicMock(slug=status_slug) if status_slug else None
         )
-        self.held_item = held_item or MagicMock()
-        self.held_item.get_item = MagicMock(return_value=None)
+        self.held_item = MagicMock()
         self.plague = MonsterPlagueHandler(plague_data=plague_data or {})
 
 
@@ -225,7 +225,7 @@ class TestMonsterPlagueInteraction(unittest.TestCase):
             plague_data={"inoc_plague": inoc_plague},
         )
         result = monster.plague.try_inoculate(monster, "inoc_plague")
-        self.assertTrue(result)
+        self.assertEqual(result, InoculationResult.INOCULATED)
         self.assertTrue(monster.plague.is_inoculated_against("inoc_plague"))
 
     def test_try_inoculate_ineligible_type(self):
@@ -245,7 +245,7 @@ class TestMonsterPlagueInteraction(unittest.TestCase):
             plague_data={"inoc_plague": inoc_plague},
         )
         result = monster.plague.try_inoculate(monster, "inoc_plague")
-        self.assertFalse(result)
+        self.assertEqual(result, InoculationResult.NOT_ELIGIBLE)
 
     def test_try_inoculate_ineligible_shape(self):
         inoc_plague = PlagueData(
@@ -264,7 +264,7 @@ class TestMonsterPlagueInteraction(unittest.TestCase):
             plague_data={"inoc_plague": inoc_plague},
         )
         result = monster.plague.try_inoculate(monster, "inoc_plague")
-        self.assertFalse(result)
+        self.assertEqual(result, InoculationResult.NOT_ELIGIBLE)
 
     def test_try_inoculate_missing_required_item(self):
         inoc_plague = PlagueData(
@@ -282,9 +282,9 @@ class TestMonsterPlagueInteraction(unittest.TestCase):
             1.0,
             plague_data={"inoc_plague": inoc_plague},
         )
-        monster.held_item.get_item = MagicMock(return_value=None)
+        monster.held_item = None
         result = monster.plague.try_inoculate(monster, "inoc_plague")
-        self.assertFalse(result)
+        self.assertEqual(result, InoculationResult.NOT_ELIGIBLE)
 
     def test_try_inoculate_with_required_item(self):
         inoc_plague = PlagueData(
@@ -304,7 +304,7 @@ class TestMonsterPlagueInteraction(unittest.TestCase):
             1.0,
             plague_data={"inoc_plague": inoc_plague},
         )
-        monster.held_item.get_item = MagicMock(return_value=item)
+        monster.held_item = item
         result = monster.plague.try_inoculate(monster, "inoc_plague")
-        self.assertTrue(result)
+        self.assertEqual(result, InoculationResult.INOCULATED)
         self.assertTrue(monster.plague.is_inoculated_against("inoc_plague"))

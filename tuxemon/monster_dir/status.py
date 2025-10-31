@@ -16,6 +16,7 @@ from tuxemon.db import (
 from tuxemon.status.status import Status, decode_status, encode_status
 
 if TYPE_CHECKING:
+    from tuxemon.core.core_effect import StatusEffectResult
     from tuxemon.monster import Monster
     from tuxemon.session import Session
 
@@ -43,14 +44,15 @@ class MonsterStatusHandler:
     def is_fainted(self) -> bool:
         return self.has_status("faint")
 
-    def get_current_status(self) -> Optional[Status]:
+    @property
+    def current_status(self) -> Optional[Status]:
         if not self.status:
             return None
         return self.status[0]
 
     def is_blocked(self, monster: Monster, status_slug: str) -> Optional[str]:
         """Check if the monster's held item grants immunity to the given status."""
-        item = monster.held_item.get_item()
+        item = monster.held_item
         if item and item.is_immune(status_slug):
             logger.debug(
                 f"Item '{item.name}' blocks status '{status_slug}' for monster '{monster.name}'."
@@ -71,7 +73,7 @@ class MonsterStatusHandler:
         ensuring proper transitions between statuses based on their category and
         interaction rules.
         """
-        host = new_status.get_host()
+        host = new_status.host
         logger.debug(
             f"Trying to apply status '{new_status.slug}' to monster '{host.name}'."
         )
@@ -87,11 +89,11 @@ class MonsterStatusHandler:
                 blocked_reason=BlockedReason.IMMUNE_BY_ITEM,
             )
 
-        current_status = self.get_current_status()
+        current_status = self.current_status
         if current_status is None:
             logger.debug("No current status, applying new status directly.")
             self.add_status(new_status)
-            new_status.nr_turn = 1
+            new_status.tick_turn()
             new_status.use(session, EffectPhase.ON_START)
             return StatusApplyResult(applied=True)
 
@@ -99,12 +101,7 @@ class MonsterStatusHandler:
             logger.debug(
                 f"Monster already has status '{new_status.slug}', skipping."
             )
-            current_status.stack_level = min(
-                current_status.stack_level + 1, Status.MAX_STACKS
-            )
-            logger.debug(
-                f"Stacking status '{new_status.slug}': now at {current_status.stack_level}/{Status.MAX_STACKS}."
-            )
+            current_status.stack()
             return StatusApplyResult(
                 applied=False,
                 blocked_by=current_status.name,
@@ -116,7 +113,7 @@ class MonsterStatusHandler:
         )
         current_status.use(session, EffectPhase.ON_END)
 
-        new_status.nr_turn = 1
+        new_status.tick_turn()
         logger.debug(
             f"Starting new status '{new_status.slug}' with ON_START phase."
         )
@@ -160,7 +157,7 @@ class MonsterStatusHandler:
 
     def clear_status(self, session: Session) -> None:
         """Clears the current status effect for monsters in combat."""
-        current_status = self.get_current_status()
+        current_status = self.current_status
         if current_status:
             current_status.use(session, EffectPhase.ON_END)
             self.status.clear()
@@ -186,11 +183,24 @@ class MonsterStatusHandler:
         """
         Checks if a status is expired by its use counter. If so, clears it.
         """
-        current_status = self.get_current_status()
+        current_status = self.current_status
         if current_status and current_status.is_use_expired(max_uses=max_uses):
             self.clear_status(session)
             return True
         return False
+
+    def tick_statuses_on_steps(
+        self, session: Session, steps: float
+    ) -> list[StatusEffectResult]:
+        """
+        Calls the step tick on all active statuses and returns any effect results.
+        """
+        results = []
+        for status in self.status:
+            result = status.tick_steps(session, steps)
+            if result:
+                results.append(result)
+        return results
 
     def encode_status(self) -> Sequence[Mapping[str, Any]]:
         return encode_status(self.status)

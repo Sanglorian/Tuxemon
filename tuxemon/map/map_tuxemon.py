@@ -18,7 +18,7 @@ from tuxemon.locale import T
 
 if TYPE_CHECKING:
     from tuxemon.db import Direction, EventObject
-    from tuxemon.map.map import RegionProperties
+    from tuxemon.map.map_region import RegionProperties
 
 logger = logging.getLogger(__name__)
 
@@ -87,11 +87,11 @@ class AbstractMap(ABC):
 
     @property
     @abstractmethod
-    def events(self) -> Sequence[Any]: ...
+    def events(self) -> Sequence[EventObject]: ...
 
     @property
     @abstractmethod
-    def inits(self) -> Sequence[Any]: ...
+    def inits(self) -> Sequence[EventObject]: ...
 
     @property
     @abstractmethod
@@ -134,6 +134,14 @@ class AbstractMap(ABC):
 
     @abstractmethod
     def reload_tiles(self) -> None: ...
+
+    @abstractmethod
+    def add_events(self, new_events: Sequence[EventObject]) -> None:
+        """Append new events to the existing events list."""
+
+    @abstractmethod
+    def add_inits(self, new_inits: Sequence[EventObject]) -> None:
+        """Append new init events to the existing inits list."""
 
 
 class TuxemonMap(AbstractMap):

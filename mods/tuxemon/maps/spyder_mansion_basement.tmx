@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="24" height="22" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="70">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="24" height="22" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="70">
  <properties>
   <property name="edges" value="clamped"/>
   <property name="inside" type="bool" value="true"/>
+  <property name="map_type" value="dungeon"/>
   <property name="scenario" value="spyder"/>
   <property name="slug" value="mansion_basement"/>
-  <property name="map_type" value="dungeon"/>
  </properties>
  <tileset firstgid="1" source="../gfx/tilesets/core_city_and_country.tsx"/>
  <tileset firstgid="1441" source="../gfx/tilesets/core_indoor_floors.tsx"/>
@@ -120,31 +120,31 @@
     <property name="cond1" value="not char_exists spyder_basement_garret"/>
    </properties>
   </object>
-  <object id="46" name="Create Roger" type="event" x="336" y="224" width="16" height="16">
+  <object id="46" name="Create Roger" type="event" x="320" y="240" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_basement_roger,21,14"/>
+    <property name="act1" value="create_npc spyder_basement_roger,20,15"/>
     <property name="cond1" value="not char_exists spyder_basement_roger"/>
    </properties>
   </object>
-  <object id="47" name="Create Catholi" type="event" x="176" y="320" width="16" height="16">
+  <object id="47" name="Create Catholi" type="event" x="208" y="288" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_basement_catholi,11,20"/>
+    <property name="act1" value="create_npc spyder_basement_catholi,13,18"/>
     <property name="cond1" value="not char_exists spyder_basement_catholi"/>
    </properties>
   </object>
-  <object id="49" name="Create Coralli" type="event" x="304" y="32" width="16" height="16">
+  <object id="49" name="Create Coralli" type="event" x="336" y="32" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_basement_coralli,19,2"/>
+    <property name="act1" value="create_npc spyder_basement_coralli,21,2"/>
     <property name="cond1" value="not char_exists spyder_basement_coralli"/>
    </properties>
   </object>
-  <object id="50" name="Create Bobby" type="event" x="112" y="80" width="16" height="16">
+  <object id="50" name="Create Bobby" type="event" x="96" y="96" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_basement_bobby,7,5"/>
+    <property name="act1" value="create_npc spyder_basement_bobby,6,6"/>
     <property name="cond1" value="not char_exists spyder_basement_bobby"/>
    </properties>
   </object>
-  <object id="51" name="Talk Coralli" type="event" x="336" y="112" width="32" height="16">
+  <object id="51" name="Talk Coralli" type="event" x="336" y="48" width="16" height="48">
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_basement_coralli"/>
@@ -159,7 +159,7 @@
     <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
-  <object id="52" name="Talk Bobby" type="event" x="144" y="112" width="16" height="16">
+  <object id="52" name="Talk Bobby" type="event" x="112" y="96" width="48" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_basement_bobby"/>
@@ -173,7 +173,7 @@
     <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
-  <object id="54" name="Talk Roger" type="event" x="304" y="272" width="16" height="48">
+  <object id="54" name="Talk Roger" type="event" x="320" y="256" width="16" height="64">
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_basement_roger"/>
@@ -187,7 +187,7 @@
     <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
-  <object id="56" name="Talk Catholi" type="event" x="144" y="288" width="96" height="16">
+  <object id="56" name="Talk Catholi" type="event" x="208" y="304" width="16" height="48">
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_basement_catholi"/>

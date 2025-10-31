@@ -11,7 +11,6 @@ from tuxemon.db import EffectPhase
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
     from tuxemon.session import Session
     from tuxemon.status.status import Status
 
@@ -28,14 +27,14 @@ class CharmedEffect(CoreEffect):
     name = "charmed"
     chance: float
 
-    def apply_status_target(
-        self, session: Session, status: Status, target: Monster
+    def apply_status(
+        self, session: Session, status: Status
     ) -> StatusEffectResult:
         if (
             status.has_phase(EffectPhase.PRE_CHECKING)
             and random.random() > self.chance
         ):
-            user = status.get_host()
+            user = status.host
             action = session.client.combat_session.get_variable("action_tech")
             technique = Technique.create(str(action) or "skip")
             if any(

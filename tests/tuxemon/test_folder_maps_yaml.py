@@ -12,7 +12,7 @@ from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import db
 from tuxemon.script.parser import parse_action_string
 
-EXPECTED_SCENARIOS = ["spyder", "xero", "tobedefined"]
+EXPECTED_SCENARIOS = ["spyder", "xero", "tobedefined", "eclipse"]
 FOLDER = "maps"
 EVENTS_KEY = "events"
 COLLISION_KEY = "collisions"
@@ -32,7 +32,7 @@ YAML_TYPES = ["init", "collision", "event"]
 
 def expand_expected_scenarios() -> None:
     for mod in prepare.CONFIG.mods:
-        map: str = db.require_mod_attribute(mod, "starting_map")
+        map: str = db.mod_metadata.require_mod_attribute(mod, "starting_map")
         EXPECTED_SCENARIOS.append(map.removesuffix(".tmx"))
 
 

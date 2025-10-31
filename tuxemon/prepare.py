@@ -84,6 +84,8 @@ REGION_KEYS: list[str] = [
 # Surface Keys (tilesets)
 SURFACE_KEYS: list[str] = ["surfable", "walkable", "climbable"]
 
+MAP_CACHE_SIZE: int = 10
+
 # Set the native tile size so we know how much to scale our maps
 # 1 tile = 16 pixels
 TILE_SIZE: tuple[int, int] = (16, 16)
@@ -179,6 +181,7 @@ TUX_GENERIC: str = "gfx/ui/background/tux_generic.png"
 TUX_INFO: str = "gfx/ui/background/tux_info.png"
 TECH_INFO: str = "gfx/ui/background/tech_info.png"
 ITEM_MENU: str = "gfx/ui/item/item_menu_bg.png"
+INDIV_INFO: str = "gfx/ui/background/passportbackground.png"
 
 # background per state
 BG_MINIGAME: str = GRAD_BLUE
@@ -189,6 +192,7 @@ BG_PHONE: str = GRAD_BLUE
 BG_PHONE_BANKING: str = GRAD_BLUE
 BG_PHONE_CONTACTS: str = GRAD_BLUE
 BG_PHONE_MAP: str = GRAD_BLUE
+BG_PHONE_RENAMING: str = GRAD_BLUE
 BG_START_SCREEN: str = GRAD_BLUE
 PYGAME_LOGO: str = "gfx/ui/intro/pygame_logo.png"
 CREATIVE_COMMONS: str = "gfx/ui/intro/creative_commons.png"
@@ -229,6 +233,8 @@ TRANS_TIME: float = 0.3  # transition time
 U_KM: str = "km"
 U_MI: str = "mi"
 U_KG: str = "kg"
+U_T: str = "t"
+U_M: str = "m"
 U_LB: str = "lb"
 U_CM: str = "cm"
 U_FT: str = "ft"
@@ -248,18 +254,17 @@ MAX_TYPES_BAG: int = 99  # eg 5 capture devices, 1 type and 5 items
 MAX_MENU_ITEMS: int = 11
 
 # Monsters
-MAX_LEVEL: int = 999
+MAX_LEVEL: int = 100
+MAX_TPS: int = 150
+MAX_TOTAL_TPS: int = 300
+DEFAULT_TP_GAIN: int = 1
 MAX_MOVES: int = 4
 MISSING_IMAGE: str = "gfx/sprites/battle/missing.png"
 CATCH_RATE_RANGE: tuple[int, int] = (0, 100)
 CATCH_RESISTANCE_RANGE: tuple[float, float] = (0.0, 2.0)
-# set bond and define range
-BOND: int = 25
+
 # set multiplier stats (multiplier: level + coefficient)
 COEFF_STATS: int = 7
-# set experience required for levelling up
-# (level + level_ofs) ** coefficient) - level_ofs default 0
-COEFF_EXP: int = 3
 
 # Camera
 CAMERA_SHAKE_RANGE: tuple[float, float] = (0.0, 3.0)

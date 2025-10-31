@@ -64,7 +64,7 @@ class SetStats(MonsterTestBase):
     def setUp(self):
         self.mon = Monster()
         self.mon.name = "agnite"
-        self.mon.level = 5
+        self.mon.set_level(5)
         self.value = self.mon.level + prepare.COEFF_STATS
         self._shape_model = {"dragon": self._shape}
         db.database["shape"] = self._shape_model
@@ -141,7 +141,9 @@ class SetStats(MonsterTestBase):
         self.assertEqual(self.mon.dodge, self.value)
         self.assertEqual(self.mon.melee, self.value)
         self.assertEqual(self.mon.ranged, self.value)
-        self.assertEqual(self.mon.speed, int(self.value * 1.1))  # Apply bonus
+        self.assertEqual(
+            self.mon.speed, round(self.value * 1.1)
+        )  # Apply bonus
         self.assertEqual(self.mon.hp, self.value)
 
     def test_set_stats_taste_cold(self):
@@ -151,7 +153,9 @@ class SetStats(MonsterTestBase):
         self.assertEqual(self.mon.dodge, self.value)
         self.assertEqual(self.mon.melee, self.value)
         self.assertEqual(self.mon.ranged, self.value)
-        self.assertEqual(self.mon.speed, int(self.value * 0.9))  # Apply malus
+        self.assertEqual(
+            self.mon.speed, round(self.value * 0.9)
+        )  # Apply malus
         self.assertEqual(self.mon.hp, self.value)
 
     def test_set_stats_tastes(self):
@@ -159,8 +163,8 @@ class SetStats(MonsterTestBase):
         self.mon.taste_warm = self.refined.slug
         self.mon.set_stats()
 
-        expected_dodge = int(self.value * 1.1)  # 10% bonus from refined
-        expected_ranged = int(self.value * 0.9)  # 10% malus from flakey
+        expected_dodge = round(self.value * 1.1)  # 10% bonus from refined
+        expected_ranged = round(self.value * 0.9)  # 10% malus from flakey
 
         self.assertEqual(self.mon.armour, self.value)
         self.assertEqual(self.mon.dodge, expected_dodge)

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards, Benjamin Bean
+# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -53,6 +53,16 @@ class ScopeVariablesManager:
             self._variables.clear()
             self._variables.update(data)
             self._dirty = True
+
+    def update(self, data: dict[str, Any]) -> None:
+        """
+        Update multiple variables at once. Marks the manager as dirty
+        if any value changes or new keys are added.
+        """
+        for key, value in data.items():
+            if self._variables.get(key) != value:
+                self._variables[key] = value
+                self._dirty = True
 
     def is_dirty(self) -> bool:
         return self._dirty

@@ -47,12 +47,12 @@ from tuxemon.combat.combat_context import CombatContext
 from tuxemon.combat.machine import CombatMachine, CombatPhase
 from tuxemon.combat.reward_system import RewardSystem
 from tuxemon.combat.utils import (
-    set_var,
     track_battles,
 )
 from tuxemon.db import (
     EffectPhase,
     ItemCategory,
+    OutputBattle,
 )
 from tuxemon.formula import config_combat
 from tuxemon.item.item import Item
@@ -232,17 +232,21 @@ class CombatState(CombatAnimations):
 
         elif phase == CombatPhase.DRAW_MATCH:
             message = self.track_battle_results(
-                "draw", c_session.defeated_players
+                OutputBattle.draw, c_session.defeated_players
             )
             if message:
                 self.process_combat_message(message)
 
         elif phase == CombatPhase.HAS_WINNER:
             message = self.track_battle_results(
-                "won", c_session.remaining_players, c_session.defeated_players
+                OutputBattle.won,
+                c_session.remaining_players,
+                c_session.defeated_players,
             )
             message += "\n" + self.track_battle_results(
-                "lost", c_session.defeated_players, c_session.remaining_players
+                OutputBattle.lost,
+                c_session.defeated_players,
+                c_session.remaining_players,
             )
             if message:
                 self.process_combat_message(message)
@@ -356,11 +360,9 @@ class CombatState(CombatAnimations):
 
         # Show combat swap message if not first turn
         if self.client.combat_session.turn > 1:
-            format_params = {
-                "target": monster.name.upper(),
-                "user": player.name.upper(),
-            }
-            message = T.format("combat_swap", format_params)
+            message = self.client.combat_session.get_message_swap(
+                player, monster
+            )
             self.text_anim.add_text_animation(
                 partial(self.dialog.alert, message), 0
             )
@@ -391,7 +393,7 @@ class CombatState(CombatAnimations):
 
     def track_battle_results(
         self,
-        result_type: str,
+        result_type: OutputBattle,
         players: Sequence[NPC],
         opponents: Optional[Sequence[NPC]] = None,
     ) -> str:
@@ -406,15 +408,15 @@ class CombatState(CombatAnimations):
             message += ("\n" if message else "") + track_battles(
                 session=self.session,
                 output=result_type,
-                player=player,
-                players=opponents if opponents else players,
+                character=player,
+                opponents=opponents if opponents else players,
                 turns=self.client.combat_session.turn,
+                combat_type=self.client.combat_session.combat_type,
                 prize=(
                     self.client.combat_session.prize
-                    if result_type == "won"
+                    if result_type == OutputBattle.won
                     else 0
                 ),
-                trainer_battle=self.client.combat_session.is_trainer_battle,
             )
         return message
 
@@ -534,7 +536,7 @@ class CombatState(CombatAnimations):
                 message += "\n" + template
             if status_result.statuses:
                 status = random.choice(status_result.statuses)
-                user.status.apply_status(self.session, status, user)
+                user.status.apply_status(self.session, status)
 
         if result_tech.success and method.use_success:
             template = getattr(method, "use_success")
@@ -583,10 +585,13 @@ class CombatState(CombatAnimations):
                 user, target, result_tech.damage
             )
 
-            if user.plague.is_infected():
-                params = {"target": user.name.upper()}
-                m = T.format("combat_state_plague1", params)
-                message += "\n" + m
+            plague = user.plague.get_most_severe_plague_slug()
+            if plague:
+                m = user.plague.get_suppressed_symptom_message(
+                    user.name, plague
+                )
+                if m:
+                    message += "\n" + m
 
             if method.range != "special":
                 element_damage_key = config_combat.multiplier_map.get(
@@ -759,17 +764,6 @@ class CombatState(CombatAnimations):
             )
             self.task(animation.kill, interval=safe_action_time)
 
-    def faint_monster(self, monster: Monster) -> None:
-        """
-        Instantly make the monster faint (will be removed later).
-
-        Parameters:
-            monster: Monster that will faint.
-        """
-        monster.current_hp = 0
-        label = f"{self.name.lower()}_faint"
-        set_var(self.session, label, monster.instance_id.hex)
-
     def award_experience_and_money(self, monster: Monster) -> None:
         """
         Award experience and money to the winners.
@@ -779,7 +773,12 @@ class CombatState(CombatAnimations):
         """
         damage_map = self.client.combat_session.damage_tracker
         reward_system = RewardSystem(self.session, damage_map)
+        reward_system.apply_penalties(monster)
         rewards = reward_system.award_rewards(monster)
+
+        for data in rewards.winners:
+            if data.levels_gained > 0:
+                self.monsters_just_leveled_up[data.winner.slug] = True
 
         # Update combat state with rewards
         self.client.combat_session.add_prize(rewards.prize)
@@ -870,10 +869,10 @@ class CombatState(CombatAnimations):
         Parameters:
             monster: Monster that was defeated.
         """
-        status = monster.status.get_current_status()
+        status = monster.status.current_status
         if status:
             result_status = status.use(
-                self.session, monster, EffectPhase.CHECK_PARTY_HP
+                self.session, EffectPhase.CHECK_PARTY_HP
             )
             if result_status.extras:
                 templates = [
@@ -894,7 +893,6 @@ class CombatState(CombatAnimations):
             monster: Monster that was defeated.
         """
         self.remove_monster_actions_from_queue(monster)
-        self.faint_monster(monster)
         self.award_experience_and_money(monster)
         # Remove monster from damage map
         self.client.combat_session.damage_tracker.remove_monster(monster)

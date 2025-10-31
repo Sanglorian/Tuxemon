@@ -10,13 +10,14 @@ from typing import TYPE_CHECKING
 from tuxemon.combat.utils import alive_party
 from tuxemon.formula import config_monster
 from tuxemon.locale import T
+from tuxemon.monster_dir.stats import BasicStats
+from tuxemon.prepare import DEFAULT_TP_GAIN, MAX_LEVEL
 
 if TYPE_CHECKING:
     from tuxemon.combat.damage_tracker import DamageTracker
     from tuxemon.monster import Monster
     from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
-
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ class RewardDataEntry:
     winner: Monster
     money: int
     experience: int
+    levels_gained: int = 0
 
 
 @dataclass
@@ -52,6 +54,13 @@ class RewardSystem:
     ) -> None:
         self.session = session
         self.damage_map = damage_map
+
+    def apply_penalties(self, monster: Monster) -> None:
+        """Applies defeat-related penalties to the specified monster."""
+        monster.current_hp = 0
+        owner = monster.get_owner()
+        if owner.bag.find_item("friendship_scroll"):
+            monster.bond_handler.apply_bond_modifier("fainted")
 
     def award_rewards(self, monster: Monster) -> RewardData:
         """
@@ -100,9 +109,7 @@ class RewardSystem:
                 )
                 for non_participant in non_participants:
                     levels = non_participant.give_experience(awarded_exp)
-                    non_participant.moves.update_moves(
-                        non_participant.level, levels, non_participant.stage
-                    )
+                    non_participant.moves.update_moves(non_participant, levels)
 
             for winner in winners:
                 # Award money and experience
@@ -111,20 +118,21 @@ class RewardSystem:
                 )
                 awarded_money = calculate_money(monster, winner)
 
-                rewards_data.winners.append(
-                    RewardDataEntry(
-                        winner=winner,
-                        money=awarded_money,
-                        experience=awarded_exp,
-                    )
-                )
-
                 # Grant experience and update moves
                 if winner.owner and winner.owner.is_player:
+                    calculate_tps(winner, monster)
                     levels = winner.give_experience(awarded_exp)
-                    new_moves = winner.moves.update_moves(
-                        winner.level, levels, winner.stage
+
+                    rewards_data.winners.append(
+                        RewardDataEntry(
+                            winner=winner,
+                            money=awarded_money,
+                            experience=awarded_exp,
+                            levels_gained=levels,
+                        )
                     )
+
+                    new_moves = winner.moves.update_moves(winner, levels)
                     if new_moves:
                         rewards_data.moves.extend(new_moves)
                     rewards_data.messages.append(
@@ -148,7 +156,7 @@ def calculate_money(loser: Monster, winner: Monster) -> int:
     """
     Calculate money to be awarded using a default method or custom methods.
     """
-    held_item = winner.held_item.get_item()
+    held_item = winner.held_item
 
     def default_method() -> int:
         return int(loser.level * loser.money_modifier)
@@ -156,6 +164,34 @@ def calculate_money(loser: Monster, winner: Monster) -> int:
     methods = {ExperienceMethod.DEFAULT.value: default_method}
 
     return methods[ExperienceMethod.DEFAULT.value]()
+
+
+def calculate_tps(
+    winner: Monster, loser: Monster, tp_gain: int = DEFAULT_TP_GAIN
+) -> list[tuple[str, int]]:
+    """
+    Compares winner's stats to loser's.
+    Awards training points to the winner for each stat where the opponent's value is higher.
+    Returns a list of (stat_name, tp_gain) tuples.
+    """
+    awarded_stats = []
+
+    logger.debug(
+        f"Calculating TP for winner '{winner.name}' vs loser '{loser.name}'"
+    )
+
+    for stat_name in BasicStats.names():
+        w_val = getattr(winner.base_stats, stat_name)
+        l_val = getattr(loser.base_stats, stat_name)
+
+        if l_val > w_val:
+            logger.debug(
+                f"Awarding {tp_gain} TP for '{stat_name}' (loser: {l_val} > winner: {w_val})"
+            )
+            winner.give_tps(stat_name, tp_gain)
+            awarded_stats.append((stat_name, tp_gain))
+
+    return awarded_stats
 
 
 def calculate_experience(
@@ -167,6 +203,10 @@ def calculate_experience(
     Returns:
         tuple[int, int]: (participant_exp, non_participant_exp)
     """
+
+    if winner.level >= MAX_LEVEL:
+        return 0, 0
+
     total_hits, monster_hits = damages.count_hits(loser, winner)
 
     exp_multiplier = 1.0
@@ -216,7 +256,7 @@ def calculate_experience(
             else 0
         )
 
-        held_item = winner.held_item.get_item()
+        held_item = winner.held_item
         if held_item and held_item.slug == ExperienceMethod.XP_FEEDER.value:
             participant_exp = item_holder_exp
 
@@ -254,7 +294,7 @@ def calculate_experience(
         ExperienceMethod.XP_FEEDER.value: feeder_method,
     }
 
-    held_item = winner.held_item.get_item()
+    held_item = winner.held_item
     if held_item:
         if held_item.slug == ExperienceMethod.XP_TRANSMITTER.value:
             return methods[ExperienceMethod.XP_TRANSMITTER.value]()

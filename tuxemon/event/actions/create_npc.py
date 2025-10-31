@@ -97,14 +97,14 @@ def load_party_monsters(
             npc_monster.variables, game_variables
         ):
             monster = party_monster(npc_monster)
-            npc.party.add_monster(monster, len(npc.monsters))
+            npc.party.insert_monster_to_party(monster, len(npc.monsters))
 
 
 def party_monster(npc_monster: PartyMemberModel) -> Monster:
     """Creates a new monster object from the database details."""
     monster = Monster.spawn_base(npc_monster.slug, npc_monster.level)
     monster.money_modifier = npc_monster.money_mod
-    monster.experience_modifier = npc_monster.exp_req_mod
+    monster.set_experience_modifier(npc_monster.exp_req_mod)
     monster.gender = npc_monster.gender
     return monster
 
@@ -113,13 +113,13 @@ def load_party_items(
     npc: NPC, bag: NpcModel, game_variables: dict[str, Any]
 ) -> None:
     """Loads the NPC's items from the database."""
-    npc.items.clear_items()
+    npc.bag.clear_items()
     for npc_item in bag.items:
         if npc_item.variables and check_variables(
             npc_item.variables, game_variables
         ):
             item = Item.create(npc_item.slug, npc_item.model_dump())
-            npc.items.add_item(item, npc_item.quantity)
+            npc.bag.add_item(item, npc_item.quantity)
 
 
 def check_variables(

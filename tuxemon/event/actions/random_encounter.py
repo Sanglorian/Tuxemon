@@ -12,7 +12,7 @@ from tuxemon.combat.combat_context import (
     CombatContext,
     CombatType,
 )
-from tuxemon.combat.utils import check_battle_legal
+from tuxemon.combat.utils import check_battle_legal, check_repellent
 from tuxemon.db import EnvironmentModel, db
 from tuxemon.encounter import Encounter, EncounterData
 from tuxemon.event import get_npc
@@ -62,9 +62,14 @@ class RandomEncounterAction(EventAction):
             logger.error("Battle is not legal, won't start")
             return
 
+        if check_repellent(player):
+            logger.info(f"Repellent active, skipping encounter.")
+            return
+
         zone = EncounterData(self.encounter_slug)
         encounter = Encounter(zone)
-        results = encounter.get_single_encounter(player, self.total_prob)
+        total_prob = self.total_prob if self.total_prob else 1.0
+        results = encounter.get_single_encounter(player, total_prob)
 
         if results is None:
             return
@@ -74,14 +79,12 @@ class RandomEncounterAction(EventAction):
         logger.info("Starting random encounter!")
 
         current_monster = Monster.spawn_base(eligible.monster, level)
-        current_monster.experience_modifier = eligible.exp_req_mod
+        current_monster.set_experience_modifier(eligible.exp_req_mod)
 
         if held_item is not None:
             item = Item.create(held_item)
-            if item.behaviors.holdable:
-                current_monster.held_item.set_item(item)
-            else:
-                logger.error(f"{item.name} isn't 'holdable'")
+            output = current_monster.item_handler.set_item(item)
+            if not output:
                 return
 
         current_monster.wild = True
@@ -96,7 +99,7 @@ class RandomEncounterAction(EventAction):
             logger.error("'wild_encounter' not found")
             return
 
-        npc.party.add_monster(current_monster, len(npc.monsters))
+        npc.party.insert_monster_to_party(current_monster, len(npc.monsters))
         # NOTE: random battles are implemented as trainer battles.
         #       this is a hack. remove this once trainer/random battlers are fixed
 

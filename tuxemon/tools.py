@@ -16,7 +16,7 @@ from dataclasses import fields
 from enum import Enum
 from functools import lru_cache
 from operator import add, eq, floordiv, ge, gt, le, lt, mul, ne, sub
-from pathlib import Path
+from types import UnionType
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -26,6 +26,7 @@ from typing import (
     TypeVar,
     Union,
 )
+from uuid import UUID
 
 from tuxemon import prepare
 from tuxemon.compat.rect import ReadOnlyRect
@@ -41,6 +42,7 @@ if TYPE_CHECKING:
     from pygame.rect import Rect
 
     from tuxemon.client import LocalPygameClient
+    from tuxemon.game_variables import ScopeVariablesManager
     from tuxemon.item.item import Item
     from tuxemon.session import Session
     from tuxemon.sprite import Sprite
@@ -82,21 +84,6 @@ class NamedTupleProtocol(Protocol):
 
 
 NamedTupleTypeVar = TypeVar("NamedTupleTypeVar", bound=NamedTupleProtocol)
-
-
-def extract_mod_name(map_path: str) -> str:
-    """
-    Extracts the mod name from a map path. Assumes the map is located in a
-    'mods/<mod_name>/...' structure and returns the folder name immediately
-    following 'mods'. If the structure is invalid, a ValueError is raised
-    instead of returning a fallback.
-    """
-    path = Path(map_path)
-    try:
-        mods_index = path.parts.index("mods")
-        return path.parts[mods_index + 1]
-    except (ValueError, IndexError) as e:
-        raise ValueError(f"Invalid mod path structure: {path}") from e
 
 
 def get_cell_coordinates(
@@ -190,6 +177,27 @@ def safe_enum_value(
         return default
 
 
+def get_valid_uuid(
+    game_variables: ScopeVariablesManager, variable_name: str
+) -> Optional[UUID]:
+    """Safely retrieves a valid UUID from game variables."""
+    raw_value: Union[str, None] = game_variables.get(variable_name)
+
+    if raw_value in ("no_choice", "no_options", None):
+        logger.info(
+            f"Monster selection result for '{variable_name}': {raw_value}"
+        )
+        return None
+
+    try:
+        return UUID(str(raw_value))
+    except (ValueError, TypeError) as e:
+        logger.warning(
+            f"Invalid UUID format for '{variable_name}': {raw_value} ({e})"
+        )
+        return None
+
+
 def fix_measure(measure: int, percentage: float) -> int:
     """it returns the correct measure based on percentage"""
     return round(measure * percentage)
@@ -203,6 +211,7 @@ def open_dialog(
     position: DialogPosition = DialogPosition.BOTTOM,
     target_coords: Optional[Union[tuple[int, int], Rect]] = None,
     custom_rect: Optional[Rect] = None,
+    on_complete: Optional[Callable[[], None]] = None,
 ) -> State:
     """
     Open a dialog with the standard window size or a custom size/position.
@@ -241,6 +250,7 @@ def open_dialog(
         avatar=avatar,
         rect=dialog_rect,
         box_style=box_style,
+        on_complete=on_complete,
     )
 
 
@@ -372,10 +382,8 @@ def get_types_tuple(
 ) -> Sequence[ValidParameterSingleType]:
     if typing.get_origin(param_type) is Union:
         return typing.get_args(param_type)
-    # TODO remove # if Python v3.10 (now 3.9)
-    # from types import UnionType
-    # elif typing.get_origin(param_type) is UnionType:
-    #    return typing.get_args(param_type)
+    elif typing.get_origin(param_type) is UnionType:
+        return typing.get_args(param_type)
     else:
         return (param_type,)
 
@@ -540,3 +548,10 @@ def check_condition(value: str, dataset: set[str]) -> bool:
     result = value in dataset
     logging.debug(f"Checking '{value}' in {dataset}: {result}")
     return result
+
+
+def format_playtime(seconds: float) -> str:
+    """Convert seconds into a human-readable hours and minutes format."""
+    minutes, sec = divmod(int(seconds), 60)
+    hours, min = divmod(minutes, 60)
+    return f"{hours}h {min}m"

@@ -12,10 +12,11 @@ from tuxemon.monster_dir.status import MonsterStatusHandler
 class TestMonsterStatusHandler(unittest.TestCase):
 
     def setUp(self):
-        self.status = MagicMock(slug="test")
         self.session = MagicMock()
         self.monster = MagicMock(spec=Monster)
         self.monster.name = "Rockitten"
+        self.status = MagicMock(slug="test")
+        self.status.host = self.monster
         self.basic = MonsterStatusHandler()
         self.handler = MonsterStatusHandler([self.status])
         self.mock_item = MagicMock()
@@ -28,9 +29,8 @@ class TestMonsterStatusHandler(unittest.TestCase):
         self.assertEqual(self.handler.status, [self.status])
 
     def test_apply_status(self):
-        self.monster.held_item = MagicMock(spec=MonsterItemHandler)
-        self.monster.held_item.get_item.return_value = self.mock_item
-        self.basic.apply_status(self.session, self.status, self.monster)
+        self.monster.held_item = self.mock_item
+        self.basic.apply_status(self.session, self.status)
         self.assertEqual(self.basic.status, [self.status])
 
     def test_apply_status_replace(self):
@@ -38,21 +38,23 @@ class TestMonsterStatusHandler(unittest.TestCase):
             category=CategoryStatus.positive,
             on_positive_status=ResponseStatus.replaced,
         )
+        status1.host = self.monster
         status2 = MagicMock(on_positive_status=ResponseStatus.replaced)
-        self.monster.held_item = MagicMock(spec=MonsterItemHandler)
-        self.monster.held_item.get_item.return_value = self.mock_item
+        status2.host = self.monster
+        self.monster.held_item = self.mock_item
         handler = MonsterStatusHandler([status1])
-        handler.apply_status(self.session, status2, self.monster)
+        handler.apply_status(self.session, status2)
         self.assertEqual(len(handler.status), 1)
         self.assertNotEqual(handler.status[0], status1)
 
     def test_apply_status_remove(self):
         status1 = MagicMock(category=CategoryStatus.positive)
+        status1.host = self.monster
         status2 = MagicMock(on_positive_status=ResponseStatus.removed)
-        self.monster.held_item = MagicMock(spec=MonsterItemHandler)
-        self.monster.held_item.get_item.return_value = self.mock_item
+        status2.host = self.monster
+        self.monster.held_item = self.mock_item
         handler = MonsterStatusHandler([status1])
-        handler.apply_status(self.session, status2, self.monster)
+        handler.apply_status(self.session, status2)
         self.assertEqual(handler.status, [])
 
     def test_clear_status(self):

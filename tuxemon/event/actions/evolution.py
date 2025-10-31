@@ -12,7 +12,7 @@ from tuxemon.event import get_monster_by_iid, get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.monster import Monster
-from tuxemon.tools import open_choice_dialog, open_dialog
+from tuxemon.tools import get_valid_uuid, open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 
 if TYPE_CHECKING:
@@ -57,7 +57,7 @@ class EvolutionAction(EventAction):
 
         self.char = character
 
-        if len(self.client.state_manager.active_states) > MAX_ACTIVE_STATES:
+        if len(self.client.active_states) > MAX_ACTIVE_STATES:
             return
 
         self._pending_map: dict[UUID, str] = {}
@@ -73,11 +73,11 @@ class EvolutionAction(EventAction):
 
     def process_direct_evolutions(self, variable: str, evolution: str) -> None:
         """Process direct evolutions for the character"""
-        if not self.char.game_variables.has(variable):
-            logger.error(f"Variable '{variable}' doesn't exist.")
-            return
+        monster_id = get_valid_uuid(self.char.game_variables, variable)
+        if monster_id is None:
+            logger.info(f"No valid monster selected for variable '{variable}'")
+            return  # Exit early if no valid UUID
 
-        monster_id = UUID(self.char.game_variables.get(variable))
         monster = get_monster_by_iid(self.session, monster_id)
 
         if monster is None:
@@ -193,8 +193,7 @@ class EvolutionAction(EventAction):
 
     def deny_evolution(self, monster: Monster) -> None:
         """Deny the evolution"""
-        monster.got_experience = False
-        monster.levelling_up = False
+        monster.experience_handler.reset_status_flags()
         logger.info(f"{monster.name}'s evolution refused!")
 
         slug = self._pending_map.get(monster.instance_id)

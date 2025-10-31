@@ -64,16 +64,9 @@ class PCMenuBuilder:
         menu: list[tuple[str, MenuGameObj]] = []
 
         # Monster box logic
-        if len(char.monsters) == prepare.PARTY_LIMIT:
-            monster_storage_callback = partial(
-                open_dialog,
-                self.client,
-                [T.translate("menu_storage_monsters_full")],
-            )
-        else:
-            monster_storage_callback = self._change_state(
-                "MonsterStorageState", character=char
-            )
+        monster_storage_callback = self._change_state(
+            "MonsterStorageState", character=char
+        )
 
         if char.monster_boxes.get_all_monsters_visible():
             menu.append(("menu_storage", monster_storage_callback))
@@ -87,7 +80,7 @@ class PCMenuBuilder:
             )
 
         # Item box logic
-        if len(char.items.get_items()) == prepare.MAX_LOCKER:
+        if len(char.items) == prepare.MAX_LOCKER:
             item_storage_callback = partial(
                 open_dialog,
                 self.client,
@@ -101,7 +94,7 @@ class PCMenuBuilder:
         if char.item_boxes.get_all_items_visible():
             menu.append(("menu_item_storage", item_storage_callback))
 
-        if len(char.items.get_items()) > 1:
+        if len(char.items) > 1:
             menu.append(
                 (
                     "menu_item_dropoff",

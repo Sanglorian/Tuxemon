@@ -35,7 +35,7 @@ class MonsterItemState(PygameMenuState):
         owner = monster.get_owner()
 
         def add_item() -> None:
-            items_filtered = ItemFilter(owner)
+            items_filtered = ItemFilter(owner.items)
             items_filtered.add_filter(lambda item: item.behaviors.holdable)
             menu = self.client.push_state(
                 ItemMenuState(owner, self.name, items_filtered)
@@ -44,21 +44,20 @@ class MonsterItemState(PygameMenuState):
 
         def choose_target(menu_item: MenuItem[Item]) -> None:
             item = menu_item.game_object
-            monster.held_item.set_item(item)
-            owner.items.remove_item(item)
+            monster.item_handler.set_item(item)
+            owner.bag.remove_item(item)
             self.client.remove_state_by_name("ItemMenuState")
             self.client.remove_state_by_name("MonsterItemState")
             self.client.remove_state_by_name("MonsterMenuState")
 
         def remove_item() -> None:
-            item = monster.held_item.get_item()
-            if item is not None:
-                owner.items.add_item(item)
-            monster.held_item.clear_item()
+            item = monster.item_handler.take_item()
+            if item:
+                owner.bag.add_item(item)
             self.client.remove_state_by_name("MonsterItemState")
             self.client.remove_state_by_name("MonsterMenuState")
 
-        held_item = monster.held_item.get_item()
+        held_item = monster.held_item
 
         if held_item is None:
             held = T.translate("no_held_item")
@@ -91,9 +90,7 @@ class MonsterItemState(PygameMenuState):
         else:
             owner = monster.get_owner()
             holdable = [
-                item
-                for item in owner.items.get_items()
-                if item.behaviors.holdable
+                item for item in owner.items if item.behaviors.holdable
             ]
             if holdable:
                 menu.add.button(

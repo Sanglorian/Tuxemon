@@ -11,6 +11,7 @@ import logging
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
+from tuxemon.combat.combat_context import CombatType
 from tuxemon.db import (
     GenderType,
     OutputBattle,
@@ -55,6 +56,16 @@ def check_battle_legal(character: NPC) -> bool:
         return False
 
     return True
+
+
+def check_repellent(character: NPC) -> bool:
+    """
+    Checks if the repellent is still active.
+    """
+    repellent_tracker = character.step_tracker.get_tracker("repellent")
+    if repellent_tracker is None:
+        return False
+    return repellent_tracker.countdown > 0
 
 
 def has_effect(technique: Technique, effect_name: str) -> bool:
@@ -131,50 +142,42 @@ def battlefield(session: Session, monster: Monster) -> None:
 
 def track_battles(
     session: Session,
-    output: str,
-    player: NPC,
-    players: Sequence[NPC],
+    output: OutputBattle,
+    character: NPC,
+    opponents: Sequence[NPC],
     turns: int,
+    combat_type: CombatType,
     prize: int = 0,
-    trainer_battle: bool = False,
 ) -> str:
     """
-    Tracks battles, fills variables and returns the message.
+    Records the outcome of a battle for a given character and returns a formatted message.
 
     Parameters:
-        session: Session
-        output: Output of the battle: won, lost, draw
-        player: The human player.
-        players: All the players (eg if player is winner, players are losers)
-        prize: Amount of money (prize) after fighting.
-        trainer_battle: Whether a trainer or wild encounter.
+        session: The current game session.
+        output: The result of the battle (won, lost, or draw).
+        character: The character whose battle result is being tracked.
+        opponents: The opposing characters in the battle.
         turns: Number of turns the battle lasted.
+        combat_type: Type of combat (e.g., trainer, wild, horde).
+        prize: Amount of money awarded for winning (if applicable).
 
     Returns:
-        Message to display.
+        A formatted message describing the battle outcome.
     """
-    battle_outcomes = {
-        "won": OutputBattle.won.value,
-        "lost": OutputBattle.lost.value,
-        "draw": OutputBattle.draw.value,
-    }
-
-    if output not in battle_outcomes:
-        raise ValueError("Invalid battle output")
-
     location = session.client.get_map_name()
+    opponents = [op for op in opponents if op.slug != character.slug]
 
-    if output == "won":
+    if output == OutputBattle.won:
         return _handle_win(
-            session, player, players, turns, location, prize, trainer_battle
+            session, character, opponents, turns, location, prize, combat_type
         )
-    elif output == "lost":
+    elif output == OutputBattle.lost:
         return _handle_loss(
-            session, player, players, turns, location, trainer_battle
+            session, character, opponents, turns, location, combat_type
         )
     else:
         return _handle_draw(
-            session, player, players, turns, location, trainer_battle
+            session, character, opponents, turns, location, combat_type
         )
 
 
@@ -185,17 +188,16 @@ def _handle_win(
     turns: int,
     location: str,
     prize: int,
-    trainer_battle: bool,
+    combat_type: CombatType,
 ) -> str:
     """Handles the case where the human player won the battle."""
     info = {"name": winner.name.upper()}
 
-    if trainer_battle:
+    if combat_type == CombatType.TRAINER:
         for loser in losers:
             winner.battle_handler.record_battle(
                 opponent=loser.slug,
                 outcome=OutputBattle.won,
-                steps=int(winner.steps),
                 location=location,
                 turns=turns,
             )
@@ -230,13 +232,12 @@ def _handle_loss(
     winners: Sequence[NPC],
     turns: int,
     location: str,
-    trainer_battle: bool,
+    combat_type: CombatType,
 ) -> str:
     """Handles the case where the human player lost the battle."""
     info = {"name": loser.name.upper()}
-    set_var(session, "teleport_clinic", OutputBattle.lost.value)
 
-    if trainer_battle:
+    if combat_type == CombatType.TRAINER:
         if loser.is_player:
             set_var(session, "battle_last_result", OutputBattle.lost.value)
             set_var(session, "battle_last_loser", "player")
@@ -246,9 +247,8 @@ def _handle_loss(
 
         for winner in winners:
             loser.battle_handler.record_battle(
-                opponent=loser.slug,
+                opponent=winner.slug,
                 outcome=OutputBattle.lost,
-                steps=int(winner.steps),
                 location=location,
                 turns=turns,
             )
@@ -262,21 +262,19 @@ def _handle_draw(
     players: Sequence[NPC],
     turns: int,
     location: str,
-    trainer_battle: bool,
+    combat_type: CombatType,
 ) -> str:
     """Handles the case where the battle was a draw."""
     defeat = list(players)
     defeat.remove(player)
-    set_var(session, "teleport_clinic", OutputBattle.draw.value)
 
-    if trainer_battle:
+    if combat_type == CombatType.TRAINER:
         set_var(session, "battle_last_result", OutputBattle.draw.value)
         for player_defeated in defeat:
             set_var(session, "battle_last_trainer", player_defeated.slug)
             player.battle_handler.record_battle(
                 opponent=player_defeated.slug,
                 outcome=OutputBattle.draw,
-                steps=int(player.steps),
                 location=location,
                 turns=turns,
             )
@@ -303,9 +301,9 @@ def build_hud_text(
     is_right: bool,
     is_trainer: bool,
     is_status: bool,
-) -> str:
+) -> dict[str, str]:
     """
-    Returns the text image for use on the callout of the monster.
+    Returns the text elements for use on the HUD.
 
     Parameters:
         menu: Combat menu (eg. MainCombatMenuState).
@@ -313,18 +311,14 @@ def build_hud_text(
         is_right: Boolean side (true: right side, false: left side).
             right side (player), left side (opponent)
         is_trainer: Boolean battle (trainer: true, wild: false).
-
-    Returns:
-        A string representing the HUD text for the monster.
     """
     if menu == "MainParkMenuState" and is_right:
         # Special case for MainParkMenuState
-        ball = T.translate("tuxeball_park")
+        ball = T.translate("tuxeball_park").upper()
         owner = monster.get_owner()
-        item = owner.items.find_item("tuxeball_park")
-        if item is None:
-            return f"{ball.upper()}: 0"
-        return f"{ball.upper()}: {item.quantity}"
+        item = owner.bag.find_item("tuxeball_park")
+        quantity = item.quantity if item else 0
+        return {"line1": f"{ball}: {quantity}", "line2": ""}
 
     icon = ""
     if monster.gender == GenderType.male:
@@ -336,4 +330,7 @@ def build_hud_text(
     if not is_trainer and is_status and not is_right:
         symbol = "◉"
 
-    return f"{monster.name}{icon} Lv.{monster.level}{symbol}"
+    return {
+        "line1": f"{monster.name}{icon} Lv.{monster.level}{symbol}",
+        "line2": "",
+    }

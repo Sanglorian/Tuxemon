@@ -4,16 +4,15 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload
 
 from tuxemon.audio import MusicPlayerState, SoundManager
 from tuxemon.boundary import BoundaryChecker
 from tuxemon.camera.camera import CameraManager
 from tuxemon.combat.session import CombatSession
-from tuxemon.config import TuxemonConfig
 from tuxemon.constants import paths
 from tuxemon.event import get_event_bus
 from tuxemon.event.eventaction import ActionManager
@@ -26,11 +25,11 @@ from tuxemon.map.collision_manager import CollisionManager
 from tuxemon.map.map_loader import MapLoader
 from tuxemon.map.map_manager import MapManager
 from tuxemon.map.map_transition import MapTransition
+from tuxemon.map.map_view import AbstractRenderer, NullRenderer
 from tuxemon.movement import MovementManager, Pathfinder
 from tuxemon.networking import NetworkManager
 from tuxemon.npc_manager import NPCManager
 from tuxemon.park_tracker import ParkSession
-from tuxemon.platform.events import PlayerInput
 from tuxemon.platform.input_manager import InputManager
 from tuxemon.rumble import RumbleManager
 from tuxemon.session import local_session
@@ -39,7 +38,13 @@ from tuxemon.state.manager import StateManager
 from tuxemon.state.repository import StateRepository
 from tuxemon.state.state import State
 from tuxemon.teleporter import Teleporter
-from tuxemon.ui.cipher_processor import CipherProcessor
+from tuxemon.world.weather import WorldWeatherManager
+
+if TYPE_CHECKING:
+    from tuxemon.config import TuxemonConfig
+    from tuxemon.platform.events import PlayerInput
+    from tuxemon.state.queue import QueuedState
+    from tuxemon.ui.cipher_processor import CipherProcessor
 
 StateType = TypeVar("StateType", bound=State)
 
@@ -121,7 +126,7 @@ class BaseClient(ABC):
         # self.combat_router = CombatRouter(self, self.combat_engine)
 
         self.movement_manager = MovementManager(
-            self.event_manager, self.input_manager
+            self.event_manager, self.input_manager, self.camera_manager
         )
         self.collision_manager = CollisionManager(
             self.map_manager, self.npc_manager
@@ -147,14 +152,20 @@ class BaseClient(ABC):
             self.npc_manager,
             self.state_manager,
         )
+        self._map_renderer: AbstractRenderer = NullRenderer()
 
         # Various Sessions
         self.park_session = ParkSession()
+        self.weather_manager = WorldWeatherManager()
         self.cipher_processor: Optional[CipherProcessor] = None
 
     @property
     def is_running(self) -> bool:
         return self.state == ClientState.RUNNING
+
+    @property
+    def map_renderer(self) -> AbstractRenderer:
+        return self._map_renderer
 
     def on_state_change(self) -> None:
         logger.debug("State change detected. Resetting controls.")
@@ -166,6 +177,7 @@ class BaseClient(ABC):
 
     def perform_cleanup(self) -> None:
         """Handles necessary cleanup before shutting down."""
+        self.map_loader.clear_cache()
         self.current_music.stop()
         local_session.reset()
         logger.info("Performing cleanup before exiting...")
@@ -192,6 +204,10 @@ class BaseClient(ABC):
         if map_path is None:
             raise ValueError("Name of the map requested when no map is active")
         return Path(map_path).name
+
+    def set_renderer(self, renderer: AbstractRenderer) -> None:
+        """Assigns a custom renderer to the client."""
+        self._map_renderer = renderer
 
     @abstractmethod
     def main(self) -> None:
@@ -236,10 +252,7 @@ class BaseClient(ABC):
         """
         return self.state_manager.get_state_by_name(state_name)
 
-    def get_queued_state_by_name(
-        self,
-        state_name: str,
-    ) -> tuple[str, Mapping[str, Any]]:
+    def get_queued_state_by_name(self, state_name: str) -> QueuedState:
         """
         Query the state stack for a state by the name supplied.
         """

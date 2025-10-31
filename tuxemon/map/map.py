@@ -3,47 +3,24 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Generator, Mapping, MutableMapping, Sequence
+from collections.abc import Generator, Mapping, Sequence
 from itertools import product
 from math import atan2, pi
-from typing import TYPE_CHECKING, Any, NamedTuple, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Optional, TypeVar, Union
 
-import pyscroll
-from pytmx import pytmx
-from pytmx.pytmx import TiledMap
-
-from tuxemon import prepare
 from tuxemon.camera.camera import project
 from tuxemon.compat.rect import ReadOnlyRect
 from tuxemon.db import Direction, Orientation
-from tuxemon.event import EventObject
-from tuxemon.graphics import scaled_image_loader
-from tuxemon.locale import T
 from tuxemon.math import Vector2, Vector3
 from tuxemon.tools import round_to_divisible
 
 if TYPE_CHECKING:
-    from tuxemon.entity import Entity
-    from tuxemon.npc import NPC
+    from tuxemon.map.map_region import RegionProperties
+    from tuxemon.map.map_tuxemon import AbstractMap
 
 logger = logging.getLogger(__name__)
 
 RectTypeVar = TypeVar("RectTypeVar", bound=ReadOnlyRect)
-
-
-class PushEffect(NamedTuple):
-    direction: Direction
-    strength: int
-
-
-class RegionProperties(NamedTuple):
-    enter_from: Sequence[Direction]
-    exit_from: Sequence[Direction]
-    endure: Sequence[Direction]
-    entity: Optional[Union[NPC, Entity[Any]]] = None
-    key: Optional[str] = None
-    push_effect: Optional[PushEffect] = None
-    speed_modifier: Optional[float] = None
 
 
 # direction => vector
@@ -449,115 +426,6 @@ def orientation_by_angle(angle: float) -> Orientation:
         raise ValueError("A collision line must be aligned to an axis")
 
 
-def extract_region_properties(
-    properties: Mapping[str, Optional[str]],
-) -> Optional[RegionProperties]:
-    """
-    Given a dictionary from Tiled properties, return a dictionary
-    suitable for collision detection.
-
-    The function expects the input dictionary to contain keys from the following set:
-    {"enter_from", "exit_from", "endure", "key"}. The values for "enter_from", "exit_from",
-    and "endure" should be strings representing directions, while the value for "key"
-    should be a string representing a label.
-
-    If the input dictionary contains an "exit_from" key but no "enter_from" key, the
-    function will automatically calculate the "enter_from" directions based on the
-    "exit_from" directions.
-
-    If the input dictionary contains a "key" with the value "slide", the function will
-    set all movement directions to all possible directions.
-
-    Parameters:
-        properties: A dictionary from Tiled properties.
-
-    Returns:
-        A dictionary suitable for collision detection.
-
-    Raises:
-        ValueError: If the input dictionary contains an invalid value.
-    """
-    all_dirs = list(Direction)
-
-    if not properties:
-        return None
-
-    if not any(key.lower() in prepare.REGION_KEYS for key in properties):
-        return None
-
-    movements: dict[str, list[Direction]] = {
-        "enter_from": [],
-        "exit_from": [],
-        "endure": [],
-    }
-    label = None
-    push_direction = None
-    push_strength = 0
-    speed_modifier = None
-
-    for key, value in properties.items():
-        key = key.lower()
-        if key in ["enter_from", "exit_from", "endure"]:
-            if value == "":
-                raise ValueError(
-                    f"Invalid value for '{key}': cannot be an empty string"
-                )
-            directions = direction_to_list(value)
-            if directions is None:
-                raise ValueError(f"Invalid directions for '{key}': {value}")
-            movements[key] = directions
-        elif key == "key":
-            if value == "":
-                raise ValueError(
-                    f"Invalid value for 'key': cannot be an empty string"
-                )
-            label = value
-        elif key == "push_direction":
-            push_dir = direction_to_single(value)
-            if push_dir:
-                push_direction = push_dir
-        elif key == "push_strength":
-            if value:
-                push_strength = int(value)
-        elif key == "speed_modifier":
-            if value:
-                speed_modifier = float(value)
-                if not movements["enter_from"] and not movements["exit_from"]:
-                    movements["enter_from"] = all_dirs
-                    movements["exit_from"] = all_dirs
-
-    if movements["exit_from"] and not movements["enter_from"]:
-        movements["enter_from"] = sorted(
-            set(Direction) - set(movements["exit_from"]),
-            key=lambda d: all_dirs.index(d),
-        )
-
-    if label == "slide":
-        for key in movements:
-            movements[key] = all_dirs
-
-    push_effect = None
-    if label == "push_tile":
-        if push_direction is None or push_strength <= 0:
-            raise ValueError(
-                "'push_tile' key requires both 'push_direction' and 'push_strength'."
-            )
-        if not movements["enter_from"] and not movements["exit_from"]:
-            movements["enter_from"] = all_dirs
-            movements["exit_from"] = all_dirs
-        push_effect = PushEffect(
-            direction=push_direction, strength=push_strength
-        )
-
-    return RegionProperties(
-        **movements,
-        entity=None,
-        key=label,
-        push_effect=push_effect,
-        speed_modifier=speed_modifier,
-    )
-
-
 def get_coords_ext(
     tile: tuple[int, int], map_size: tuple[int, int], radius: int = 1
 ) -> list[tuple[int, int]]:
@@ -600,46 +468,6 @@ def get_coords_ext(
         )
 
     return list(coords)
-
-
-def direction_to_list(direction: Optional[str]) -> list[Direction]:
-    """
-    Splits direction string and returns a list with Direction/s
-
-    Parameters:
-        direction: str (eg. enter_from = "direction")
-
-    Returns:
-        List with Direction/s
-    """
-    if direction is None:
-        return []
-    return sorted(
-        [
-            Direction(d)
-            for d in {d.strip().lower() for d in direction.split(",")}
-        ]
-    )
-
-
-def direction_to_single(direction: Optional[str]) -> Optional[Direction]:
-    """
-    Converts a single direction string into a Direction object.
-
-    Parameters:
-        direction: Optional[str]
-
-    Returns:
-        A Direction object or None if input is invalid or empty.
-    """
-    if direction is None:
-        return None
-
-    cleaned = direction.strip().lower()
-    if not cleaned:
-        return None
-
-    return Direction(cleaned)
 
 
 def get_explicit_tile_exits(
@@ -689,7 +517,7 @@ def get_explicit_tile_exits(
 
 
 def get_pos_from_tilepos(
-    current_map: TuxemonMap, tile_position: Vector2
+    current_map: AbstractMap, tile_position: Vector2
 ) -> tuple[int, int]:
     """
     Returns the map pixel coordinates based on the tile position.
@@ -699,7 +527,7 @@ def get_pos_from_tilepos(
     Use this method for drawing elements on the screen.
 
     Parameters:
-        current_map: The map object (`TuxemonMap`) containing the renderer
+        current_map: The map object (`AbstractMap`) containing the renderer
             and relevant positional data.
         tile_position: A [x, y] tile position represented as a `Vector2`.
 
@@ -713,118 +541,3 @@ def get_pos_from_tilepos(
     x = px + cx
     y = py + cy
     return x, y
-
-
-class TuxemonMap:
-    """
-    Contains collisions geometry and events loaded from a file.
-
-    Supports entity movement and pathfinding.
-    """
-
-    def __init__(
-        self,
-        events: Sequence[EventObject],
-        inits: Sequence[EventObject],
-        surface_map: MutableMapping[tuple[int, int], dict[str, float]],
-        collision_map: MutableMapping[
-            tuple[int, int], Optional[RegionProperties]
-        ],
-        collisions_lines_map: set[tuple[tuple[int, int], Direction]],
-        tiled_map: TiledMap,
-        maps: dict[str, Any],
-        filename: str,
-    ) -> None:
-        """Constructor
-
-        Collision lines
-        Player can walk in tiles, but cannot cross
-        from one to another. Items in this list should be in the
-        form of pairs, signifying that it is NOT possible to travel
-        from the first tile to the second (but reverse may be
-        possible, i.e. jumping). All pairs of tiles must be adjacent
-        (not diagonal).
-
-        Collision Lines Map
-        Create a list of all pairs of adjacent tiles that are impassable (aka walls).
-        example: ((5,4),(5,3), both)
-
-        Parameters:
-            events: List of map events.
-            inits: List of events to be loaded once, when map is entered.
-            surface_map: Surface map.
-            collision_map: Collision map.
-            collisions_lines_map: Collision map of lines.
-            tiled_map: Original tiled map.
-            maps: Dictionary of map properties.
-            filename: Path of the map.
-        """
-        self.collision_map = collision_map
-        self.surface_map = surface_map
-        self.collision_lines_map = collisions_lines_map
-        self.size = tiled_map.width, tiled_map.height
-        self.area = tiled_map.width * tiled_map.height
-        self.inits = inits
-        self.events = events
-        self.renderer: Optional[pyscroll.BufferedRenderer] = None
-        self.edges = maps.get("edges")
-        self.data = tiled_map
-        self.sprite_layer = 2
-        self.filename = filename
-        self.maps = maps
-
-        # optional fields
-        self.slug = maps.get("slug", "")
-        self.name = T.translate(self.slug)
-        self.description = T.translate(f"{self.slug}_description")
-        # translated cardinal directions (signs)
-        self.north_trans = self.set_cardinals("north", maps)
-        self.south_trans = self.set_cardinals("south", maps)
-        self.east_trans = self.set_cardinals("east", maps)
-        self.west_trans = self.set_cardinals("west", maps)
-        # inside (true), outside (none)
-        self.inside = bool(maps.get("inside"))
-        # scenario: spyder, xero or none
-        _value = maps.get("scenario")
-        self.scenario = None if _value is None else str(_value)
-        # check type of location
-        self.map_type = maps.get("map_type")
-
-    def set_cardinals(self, cardinal: str, maps: dict[str, str]) -> str:
-        cardinals = maps.get(cardinal, "-").split(",")
-        if len(cardinals) == 1:
-            return T.translate(cardinals[0])
-        else:
-            return " - ".join(T.translate(c) for c in cardinals)
-
-    def initialize_renderer(self) -> None:
-        """
-        Initialize the renderer for the map and sprites.
-
-        Returns:
-            Renderer for the map.
-        """
-        visual_data = pyscroll.data.TiledMapData(self.data)
-        # Behaviour at the edges.
-        clamp = self.edges == "clamped"
-        self.renderer = pyscroll.BufferedRenderer(
-            visual_data,
-            prepare.SCREEN_SIZE,
-            clamp_camera=clamp,
-            tall_sprites=2,
-        )
-
-    def reload_tiles(self) -> None:
-        """Reload the map tiles."""
-        if self.renderer is None:
-            raise RuntimeError(
-                "Renderer must be initialized before reloading tiles"
-            )
-
-        data = pytmx.TiledMap(
-            self.data.filename,
-            image_loader=scaled_image_loader,
-            pixelalpha=True,
-        )
-        self.renderer.data.tmx.images = data.images
-        self.renderer.redraw_tiles(self.renderer._buffer)

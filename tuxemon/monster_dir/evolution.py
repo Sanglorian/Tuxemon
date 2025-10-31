@@ -46,23 +46,21 @@ class Evolution:
             return
 
         owner = self.monster.get_owner()
-        monster_index = owner.monsters.index(self.monster)
         self.update_new_monster_properties(new_monster)
 
         for move in new_monster.moves.moveset:
-            if (
-                move.learning_method
-                and move.learning_method == LearningMethod.EVOLUTION
-            ):
+            if move.learning_method == LearningMethod.EVOLUTION:
                 new_monster.moves.learn_by_method(
-                    new_monster.instance_id,
+                    new_monster,
                     move.technique,
                     move.learning_method,
                 )
 
-        owner.party.remove_monster(self.monster)
-        owner.party.add_monster(new_monster, monster_index)
-        owner.tuxepedia.add_entry(new_monster.slug, SeenStatus.caught)
+        if owner.party.replace_monster(self.monster, new_monster):
+            owner.tuxepedia.add_entry(new_monster.slug, SeenStatus.caught)
+            logger.info(f"{self.monster} evolved into {new_monster}")
+        else:
+            logger.warning(f"Failed to evolve {self.monster}")
 
     def is_eligible_for_evolution(self) -> bool:
         return (
@@ -76,10 +74,12 @@ class Evolution:
         new_monster.moves = self.monster.moves
         new_monster.status = self.monster.status
         new_monster.instance_id = self.monster.instance_id
-        if self.monster.gender in new_monster.possible_genders:
+        if self.monster.gender in new_monster.gender_weights:
             new_monster.gender = self.monster.gender
         else:
-            new_monster.gender = random.choice(new_monster.possible_genders)
+            new_monster.gender = new_monster.assign_gender(
+                new_monster.gender_weights
+            )
         new_monster.capture = self.monster.capture
         new_monster.capture_device = self.monster.capture_device
         new_monster.taste_cold = self.monster.taste_cold
@@ -193,8 +193,7 @@ class Evolution:
             result = evolution_item.steps - int(self.monster.steps)
             conditions.append(result == 0)
             self.monster.steps += 1
-            self.monster.levelling_up = True
-            self.monster.got_experience = True
+            self.monster.experience_handler.trigger_experience_flags()
 
         # Check if the party conditions
         if evolution_item.party_conditions is not None:
@@ -208,12 +207,12 @@ class Evolution:
         if evolution_item.bond is not None:
             _operator = evolution_item.bond.comparison
             _value = evolution_item.bond.value
-            _bond = self.monster.bond
+            _bond = self.monster.bond_handler.bond
             conditions.append(compare(_operator.value, _bond, _value))
 
         # Check if the monster is holding the required item for evolution
         if evolution_item.held_item is not None:
-            held_item = self.monster.held_item.get_item()
+            held_item = self.monster.held_item
             conditions.append(
                 held_item is not None
                 and held_item.slug == evolution_item.held_item

@@ -1524,9 +1524,6 @@ msgstr "弃权"
 msgid "menu_storage_take_monster"
 msgstr "你把{name}加入到了你的队伍!"
 
-msgid "menu_storage_monsters_full"
-msgstr "你的队伍已经满了,你不能再从仓库里拿任何东西了."
-
 msgid "menu_storage_empty_kennel"
 msgstr "这个仓库是空的,没有精灵可拿."
 
@@ -6230,9 +6227,6 @@ msgstr "雷"
 msgid "spyder_dragonscave_lucille"
 msgstr "卢 克"
 
-msgid "spyder_dragonscave_tru"
-msgstr "特鲁"
-
 msgid "spyder_flower_cady"
 msgstr "卡迪"
 
@@ -6890,9 +6884,6 @@ msgstr "看到了{param}只精灵,共有{all}"
 
 msgid "tuxepedia_data_caught"
 msgstr "捉住了{param}只精灵,共有{all}"
-
-msgid "player_start_adventure"
-msgstr "冒险开始了{date}天."
 
 msgid "player_walked"
 msgstr "行走的路程 {distance} {unit}"

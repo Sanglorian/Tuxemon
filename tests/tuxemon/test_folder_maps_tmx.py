@@ -10,7 +10,7 @@ from typing import Any
 from tuxemon import prepare
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import db
-from tuxemon.map.map_manager import map_types_list
+from tuxemon.map.map_manager import MAP_TYPES
 from tuxemon.script.parser import parse_action_string
 
 # Constants
@@ -18,12 +18,12 @@ FOLDER = "maps"
 MULTIPLIER = 16
 MIN_LAYERS = 4
 TMX_TYPES_PREFIXES = ("init", "collision", "event")
-EXPECTED_SCENARIOS = ["spyder", "xero", "tobedefined"]
+EXPECTED_SCENARIOS = ["spyder", "xero", "tobedefined", "eclipse"]
 
 
 def expand_expected_scenarios() -> None:
     for mod in prepare.CONFIG.mods:
-        map: str = db.require_mod_attribute(mod, "starting_map")
+        map: str = db.mod_metadata.require_mod_attribute(mod, "starting_map")
         EXPECTED_SCENARIOS.append(map.removesuffix(".tmx"))
 
 
@@ -112,8 +112,10 @@ class TestTMXFiles(unittest.TestCase):
                 prop = root.find("properties")
                 if prop is not None:
                     self.assertTrue(
-                        _is_object_property(prop, "map_type", map_types_list),
-                        f"Map Type wrong name ({map_types_list})",
+                        _is_object_property(
+                            prop, "map_type", list(MAP_TYPES.keys())
+                        ),
+                        f"Map Type wrong name ({list(MAP_TYPES.keys())})",
                     )
 
     def test_object_id(self) -> None:

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import os  # make sure this is at the top of your file if not already
 from collections import defaultdict
 from collections.abc import Callable, Generator
 from functools import partial
@@ -22,6 +21,7 @@ from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu, PopUpMenu
 from tuxemon.monster import Monster
+from tuxemon.sprite import Sprite
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.technique.technique import Technique
@@ -79,6 +79,11 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         message = T.format("combat_monster_choice", params)
         self.combat.dialog.alert(message)
 
+        self.type_icon_sprites: list[Sprite] = []
+        self.text_sprites: dict[str, Sprite] = {}
+        self.range_icon_sprite: Optional[Sprite] = None
+        self.speed_icon_sprite: Optional[Sprite] = None
+
     def _clear_tech_overlay(self) -> None:
         """Remove technique icons/text from the overlay."""
         if hasattr(self, "range_icon_sprite") and self.range_icon_sprite:
@@ -95,13 +100,11 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             for spr in self.type_icon_sprites:
                 if spr in self.sprites:
                     self.sprites.remove(spr)
-        self.type_icon_sprites = []
 
         if hasattr(self, "text_sprites"):
             for spr in self.text_sprites.values():
                 if spr in self.sprites:
                     self.sprites.remove(spr)
-        self.text_sprites = {}
 
     def calculate_menu_rectangle(self) -> Rect:
         rect_screen = prepare.SCREEN_RECT.copy()
@@ -123,6 +126,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         visibility_map = default_visibility.copy()
 
         visibility_map.update(self.combat_session.menu_visibility_map)
+
+        if self.enemy.combat.forfeit:
+            visibility_map["menu_forfeit"] = True
 
         for key, method_name in menu_map.items():
             callback = getattr(self, method_name)
@@ -152,7 +158,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         Cause player to run from the wild encounters.
         """
         run = Technique.create("menu_run")
-        status = self.monster.status.get_current_status()
+        status = self.monster.status.current_status
         message = status.name.lower() if status else ""
         if not run.validate_monster(self.session, self.monster):
             params = {
@@ -173,7 +179,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         def swap_it(menuitem: MenuItem[Monster]) -> None:
             added = menuitem.game_object
             swap = Technique.create("swap")
-            status = self.monster.status.get_current_status()
+            status = self.monster.status.current_status
             message = status.name.lower() if status else ""
             if not swap.validate_monster(self.session, self.monster):
                 params = {
@@ -219,7 +225,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
         def choose_item() -> None:
             # open menu to choose item
-            items_filtered = ItemFilter(self.character)
+            items_filtered = ItemFilter(self.character.items)
             items_filtered.set_filter_usable_in_state("MainCombatMenuState")
             menu = self.client.push_state(
                 ItemMenuState(self.character, self.name, items_filtered)
@@ -263,10 +269,10 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             target = menu_item.game_object
 
             # check target status
-            status = target.status.get_current_status()
+            status = target.status.current_status
             if status:
                 result_status = status.use(
-                    self.session, target, EffectPhase.ENQUEUE_ITEM
+                    self.session, EffectPhase.ENQUEUE_ITEM
                 )
                 if result_status.extras:
                     templates = [
@@ -335,14 +341,10 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             menu.on_menu_selection = choose_target  # type: ignore[assignment]
 
             def show() -> None:
-                import pygame
-
-                from tuxemon.tools import fix_measure
-
                 # Clear the combat dialog so the old "What will X do?" text disappears
                 self.combat.dialog.alert("", dialog_speed="max")
 
-                screen_w, screen_h = self.client.screen.get_size()
+                screen_w, screen_h = prepare.SCREEN_SIZE
 
                 # --- Clear old sprites if they exist ---
                 if (
@@ -386,7 +388,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                             icon_surface = graphics.load_and_scale(
                                 path, prepare.SCALE
                             )
-                            spr = pygame.sprite.Sprite()
+                            spr = Sprite()
                             spr.image = icon_surface
                             spr.rect = spr.image.get_rect()
 
@@ -405,14 +407,16 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                             self.sprites.add(spr, layer=200)
                             self.type_icon_sprites.append(spr)
                         except Exception as e:
-                            print(f"Could not load type icon {path}: {e}")
+                            logger.error(
+                                f"Could not load type icon {path}: {e}"
+                            )
 
                 # --- Draw range icon ---
                 if technique.range:
                     path = f"gfx/ui/icons/range/{technique.range.name.lower()}.png"
                     try:
                         surf = graphics.load_and_scale(path, prepare.SCALE)
-                        spr = pygame.sprite.Sprite()
+                        spr = Sprite()
                         spr.image = surf
                         spr.rect = surf.get_rect()
                         spr.rect.topleft = (
@@ -422,7 +426,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                         self.sprites.add(spr, layer=200)
                         self.range_icon_sprite = spr
                     except Exception as e:
-                        print(f"Could not load range icon {path}: {e}")
+                        logger.error(f"Could not load range icon {path}: {e}")
 
                 # --- Draw speed icon ---
                 if technique.speed is not None:
@@ -445,7 +449,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     path = f"gfx/ui/icons/speed/{speed_val}.png"
                     try:
                         surf = graphics.load_and_scale(path, prepare.SCALE)
-                        spr = pygame.sprite.Sprite()
+                        spr = Sprite()
                         spr.image = surf
                         spr.rect = surf.get_rect()
                         spr.rect.topleft = (
@@ -455,7 +459,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                         self.sprites.add(spr, layer=200)
                         self.speed_icon_sprite = spr
                     except Exception as e:
-                        print(f"Could not load speed icon {path}: {e}")
+                        logger.error(f"Could not load speed icon {path}: {e}")
 
                 # --- Draw text labels ---
                 font = self.font
@@ -474,7 +478,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
                 for key, line in text_lines.items():
                     surf = font.render(line, True, (0, 0, 0))  # black text
-                    spr = pygame.sprite.Sprite()
+                    spr = Sprite()
                     spr.image = surf
                     spr.rect = surf.get_rect()
 

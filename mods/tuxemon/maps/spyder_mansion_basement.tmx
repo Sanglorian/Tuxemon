@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="24" height="22" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="70">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="24" height="22" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="76">
  <properties>
   <property name="edges" value="clamped"/>
   <property name="inside" type="bool" value="true"/>
@@ -278,6 +278,57 @@
     <property name="act1" value="char_talk spyder_basement_roger,post_battle_lose"/>
     <property name="behav1" value="talk spyder_basement_roger"/>
     <property name="cond1" value="is battle_outcome player,won,spyder_basement_roger"/>
+   </properties>
+  </object>
+  <object id="70" name="Create TM Ice Shield" type="event" x="336" y="224" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_mansion_tmiceshield,21,14"/>
+    <property name="cond1" value="not char_exists spyder_mansion_tmiceshield"/>
+    <property name="cond2" value="not variable_set mansion_tmiceshield:yes"/>
+   </properties>
+  </object>
+  <object id="71" name="TM Ice Shield" type="event" x="336" y="208" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog tm_ice_shield,,center,center,center"/>
+    <property name="act2" value="add_item tm_ice_shield"/>
+    <property name="act3" value="remove_npc spyder_mansion_tmiceshield"/>
+    <property name="act4" value="set_variable mansion_tmiceshield:yes"/>
+    <property name="behav1" value="talk spyder_mansion_tmiceshield"/>
+    <property name="cond1" value="not variable_set mansion_tmiceshield:yes"/>
+   </properties>
+  </object>
+  <object id="72" name="Create Grand Tuxeball" type="event" x="160" y="32" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_mansion_grandtux,10,2"/>
+    <property name="cond1" value="not char_exists spyder_mansion_grandtux"/>
+    <property name="cond2" value="not variable_set mansion_grandtux:yes"/>
+   </properties>
+  </object>
+  <object id="73" name="Grand Tuxeball" type="event" x="144" y="32" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog tuxeball_grand,,center,center,center"/>
+    <property name="act2" value="add_item tuxeball_grand"/>
+    <property name="act3" value="remove_npc spyder_mansion_grandtux"/>
+    <property name="act4" value="set_variable mansion_grandtux:yes"/>
+    <property name="behav1" value="talk spyder_mansion_grandtux"/>
+    <property name="cond1" value="not variable_set mansion_grandtux:yes"/>
+   </properties>
+  </object>
+  <object id="74" name="Create Tea" type="event" x="32" y="32" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_mansion_tea,1,2"/>
+    <property name="cond1" value="not char_exists spyder_mansion_tea"/>
+    <property name="cond2" value="not variable_set mansion_tea:yes"/>
+   </properties>
+  </object>
+  <object id="75" name="Tea" type="event" x="16" y="32" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog tea,,center,center,center"/>
+    <property name="act2" value="add_item tea"/>
+    <property name="act3" value="remove_npc spyder_mansion_tea"/>
+    <property name="act4" value="set_variable mansion_tea:yes"/>
+    <property name="behav1" value="talk spyder_mansion_tea"/>
+    <property name="cond1" value="not variable_set mansion_tea:yes"/>
    </properties>
   </object>
  </objectgroup>

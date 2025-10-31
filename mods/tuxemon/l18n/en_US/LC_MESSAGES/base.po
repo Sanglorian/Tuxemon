@@ -1125,6 +1125,18 @@ msgstr "TM: Shadow Boxing"
 msgid "tm_shadow_boxing_description"
 msgstr "Technique Manual that teaches the Shadow Boxing technique."
 
+msgid "tm_ubuntu"
+msgstr "TM: Ubuntu"
+
+msgid "tm_ubuntu_description"
+msgstr "Technique Manual that teaches the Ubuntu technique."
+
+msgid "tm_ice_shield"
+msgstr "TM: Ice Shield"
+
+msgid "tm_ice_shield_description"
+msgstr "Technique Manual that teaches the Ice Shield technique."
+
 msgid "tm_avalanche"
 msgstr "TM: Avalanche"
 

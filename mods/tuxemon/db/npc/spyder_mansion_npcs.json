@@ -211,6 +211,66 @@
       "combat_front": "enforcer_rookie",
       "slug": "riverboatcaptain"
     }
+},
+  {
+    "slug": "spyder_mansion_potion",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
+    "template": {
+      "sprite_name": "box",
+      "combat_front": "noclass",
+      "slug": "interactive_obj"
+    }
+  },
+  {
+    "slug": "spyder_mansion_tea",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
+    "template": {
+      "sprite_name": "box",
+      "combat_front": "noclass",
+      "slug": "interactive_obj"
+    }
+  },
+  {
+    "slug": "spyder_mansion_tmubuntu",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
+    "template": {
+      "sprite_name": "box",
+      "combat_front": "noclass",
+      "slug": "interactive_obj"
+    }
+  },
+  {
+    "slug": "spyder_mansion_tmiceshield",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
+    "template": {
+      "sprite_name": "box",
+      "combat_front": "noclass",
+      "slug": "interactive_obj"
+    }
+  },
+  {
+    "slug": "spyder_mansion_berry",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
+    "template": {
+      "sprite_name": "box",
+      "combat_front": "noclass",
+      "slug": "interactive_obj"
+    }
+  },
+  {
+    "slug": "spyder_mansion_grandtux",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
+    "template": {
+      "sprite_name": "box",
+      "combat_front": "noclass",
+      "slug": "interactive_obj"
+    }
   },
   {
     "slug": "spyder_mansion_tamara",

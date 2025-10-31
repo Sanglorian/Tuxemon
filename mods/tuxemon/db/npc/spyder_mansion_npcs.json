@@ -139,9 +139,9 @@
     },
     "combat": {},
     "template": {
-      "sprite_name": "riverboatcaptain",
-      "combat_front": "pirate",
-      "slug": "pirate"
+      "sprite_name": "rogue_copper",
+      "combat_front": "winger",
+      "slug": "winger"
     }
   },
   {

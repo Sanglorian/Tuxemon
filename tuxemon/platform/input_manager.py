@@ -12,11 +12,14 @@ from tuxemon.platform.combo_detector import ComboManager
 from tuxemon.platform.input_history import InputHistory
 from tuxemon.platform.input_visualizer import InputVisualizer
 from tuxemon.platform.platform_pygame.events import (
+    InputMappingStrategy,
+    PlayStationMapping,
     PygameEventQueueHandler,
     PygameGamepadInput,
     PygameKeyboardInput,
     PygameMouseInput,
     PygameTouchOverlayInput,
+    XboxMapping,
 )
 from tuxemon.prepare import SCREEN_SIZE
 
@@ -76,12 +79,23 @@ class InputManager:
         """
         Sets up the gamepad input device.
         """
-        if self.input.gamepad_button_map:
-            gamepad = PygameGamepadInput(
-                self.input.gamepad_button_map, self.input.gamepad_deadzone
-            )
+        if self.controller.type:
+            strategy = self._get_mapping_strategy(self.controller.type)
+            gamepad = PygameGamepadInput(strategy)
             self.event_queue.add_input(0, gamepad)
-            logger.info("Gamepad set up successfully")
+            logger.info(
+                f"{self.controller.type.capitalize()} gamepad set up successfully"
+            )
+
+    def _get_mapping_strategy(
+        self, controller_type: str
+    ) -> InputMappingStrategy:
+        if controller_type == "xbox":
+            return XboxMapping()
+        elif controller_type == "ps4":
+            return PlayStationMapping()
+        else:
+            raise ValueError(f"Unsupported controller type: {controller_type}")
 
     def setup_controller_overlay(self) -> None:
         """

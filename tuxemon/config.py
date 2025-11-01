@@ -209,11 +209,12 @@ class ControllerConfig:
     """Handles controller-related configurations."""
 
     def __init__(self, config: dict[str, Any]) -> None:
-        display = config["display"]
-        self.overlay: bool = display["controller_overlay"]
-        self.transparency: int = display["controller_transparency"]
-        self.hide_mouse: bool = display["hide_mouse"]
-        self.show_input_visualizer: bool = display["show_input_visualizer"]
+        controller = config["controller"]
+        self.type: Optional[str] = controller.get("type")
+        self.overlay: bool = controller["overlay"]
+        self.transparency: int = controller["transparency"]
+        self.hide_mouse: bool = controller["hide_mouse"]
+        self.show_input_visualizer: bool = controller["show_input_visualizer"]
 
 
 class LocaleConfig:
@@ -232,8 +233,6 @@ class InputConfig:
 
     def __init__(self, config: dict[str, Any]) -> None:
         self.config = config
-        self.gamepad_deadzone: float = 0.25
-        self.gamepad_button_map = None
         self.keyboard_button_map = self._get_custom_pygame_keyboard_controls()
 
     def _get_custom_pygame_keyboard_controls(
@@ -323,10 +322,6 @@ def generate_default_config() -> dict[str, Any]:
             "collision_map": False,
             "large_gui": False,
             "window_caption": "Tuxemon",
-            "controller_overlay": False,
-            "controller_transparency": 45,
-            "hide_mouse": True,
-            "show_input_visualizer": False,
         },
         "game": {
             "data": "tuxemon",
@@ -372,6 +367,13 @@ def generate_default_config() -> dict[str, Any]:
             "b": "rshift, lshift",
             "back": "escape",
             "backspace": "backspace",
+        },
+        "controller": {
+            "type": None,
+            "overlay": False,
+            "transparency": 45,
+            "hide_mouse": True,
+            "show_input_visualizer": False,
         },
         "logging": {
             "loggers": "all",

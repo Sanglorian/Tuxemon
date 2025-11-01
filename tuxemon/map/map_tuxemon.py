@@ -328,3 +328,108 @@ class TuxemonMap(AbstractMap):
         self.renderer.data.tmx.images = data.images
         assert self.renderer._buffer
         self.renderer.redraw_tiles(self.renderer._buffer)
+
+
+class DummyMap(AbstractMap):
+
+    def __init__(
+        self,
+        events: Sequence[EventObject],
+    ) -> None:
+        self._events = events
+
+    @property
+    def slug(self) -> str:
+        return "dummy"
+
+    @property
+    def name(self) -> str:
+        return "Dummy Map"
+
+    @property
+    def description(self) -> str:
+        return "A placeholder map for testing."
+
+    @property
+    def size(self) -> tuple[int, int]:
+        return (10, 10)
+
+    @property
+    def area(self) -> int:
+        return 100
+
+    @property
+    def is_inside(self) -> bool:
+        return False
+
+    @property
+    def map_type(self) -> Optional[str]:
+        return None
+
+    @property
+    def collision_map(self) -> dict[tuple[int, int], Optional[Any]]:
+        return {}
+
+    @property
+    def surface_map(self) -> dict[tuple[int, int], dict[str, float]]:
+        return {}
+
+    @property
+    def collision_lines_map(self) -> set[tuple[tuple[int, int], Any]]:
+        return set()
+
+    @property
+    def events(self) -> Sequence[EventObject]:
+        return self._events
+
+    @property
+    def inits(self) -> list[EventObject]:
+        return []
+
+    @property
+    def maps(self) -> dict[str, Any]:
+        return {}
+
+    @property
+    def filename(self) -> str:
+        return "dummy.tmx"
+
+    @property
+    def north_trans(self) -> str:
+        return ""
+
+    @property
+    def south_trans(self) -> str:
+        return ""
+
+    @property
+    def east_trans(self) -> str:
+        return ""
+
+    @property
+    def west_trans(self) -> str:
+        return ""
+
+    @property
+    def renderer(self) -> Optional[Any]:
+        return None
+
+    @property
+    def sprite_layer(self) -> int:
+        return 2
+
+    @property
+    def scenario(self) -> Optional[str]:
+        return None
+
+    def initialize_renderer(self) -> None:
+        pass
+
+    def reload_tiles(self) -> None:
+        pass
+
+    def add_events(self, new_events: Sequence[EventObject]) -> None:
+        self._events = list(self._events) + list(new_events)
+
+    def add_inits(self, new_inits: Sequence[EventObject]) -> None:
+        pass

@@ -47,7 +47,7 @@ class InputManager:
         self.setup_inputs()
         self.combo_manager = ComboManager()
         self.input_visualizer = InputVisualizer(SCREEN_SIZE)
-        self.show_visualizer = config.controller.show_input_visualizer
+        self.show_visualizer = self.controller.show_input_visualizer
 
     def setup_inputs(self) -> None:
         """

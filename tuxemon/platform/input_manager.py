@@ -69,7 +69,7 @@ class InputManager:
         """
         if self.input.keyboard_button_map:
             keyboard = PygameKeyboardInput(self.input.keyboard_button_map)
-            self.event_queue.add_input(0, keyboard)
+            self.event_queue.add_input(0, 0, keyboard)
             logger.info("Keyboard set up successfully")
 
     def setup_gamepad(self) -> None:
@@ -80,7 +80,7 @@ class InputManager:
             gamepad = PygameGamepadInput(
                 self.input.gamepad_button_map, self.input.gamepad_deadzone
             )
-            self.event_queue.add_input(0, gamepad)
+            self.event_queue.add_input(0, 1, gamepad)
             logger.info("Gamepad set up successfully")
 
     def setup_controller_overlay(self) -> None:
@@ -92,7 +92,7 @@ class InputManager:
                 self.controller.transparency
             )
             self.controller_overlay.load()
-            self.event_queue.add_input(0, self.controller_overlay)
+            self.event_queue.add_input(0, 2, self.controller_overlay)
             logger.info("Controller overlay set up successfully")
 
     def setup_mouse(self) -> None:
@@ -100,7 +100,7 @@ class InputManager:
         Sets up the mouse input device.
         """
         if not self.controller.hide_mouse:
-            self.event_queue.add_input(0, PygameMouseInput())
+            self.event_queue.add_input(0, 3, PygameMouseInput())
             logger.info("Mouse set up successfully")
 
     def process_events(self) -> Generator[PlayerInput, None, None]:
@@ -112,8 +112,7 @@ class InputManager:
 
     def draw_visualizer(self, screen: Surface) -> None:
         all_inputs = {}
-        for player_handlers in self.event_queue._inputs.values():
-            for handler in player_handlers:
-                for button_id, player_input in handler.buttons.items():
-                    all_inputs[button_id] = player_input
+        for handler in self.event_queue.get_input_handlers():
+            for button_id, player_input in handler.buttons.items():
+                all_inputs[button_id] = player_input
         self.input_visualizer.draw(screen, all_inputs)

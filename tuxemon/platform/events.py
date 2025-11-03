@@ -18,7 +18,24 @@ class EventQueueHandler(ABC):
     * Sole manager of platform events
     """
 
-    _inputs: defaultdict[int, list[InputHandler[Any]]] = defaultdict(list)
+    def __init__(self) -> None:
+        """Initialize instance-specific state."""
+        self._inputs: defaultdict[int, dict[int, InputHandler[Any]]] = (
+            defaultdict(dict)
+        )
+
+    def add_input(
+        self, player_id: int, index: int, input_handler: InputHandler[Any]
+    ) -> None:
+        """Add a new input device to be monitored for a specific player."""
+        self._inputs[player_id][index] = input_handler
+
+    def get_input_handlers(self) -> Generator[InputHandler[Any], None, None]:
+        """
+        Yields all currently registered InputHandler instances across all players.
+        """
+        for player_handlers in self._inputs.values():
+            yield from player_handlers.values()
 
     def release_controls(self) -> Generator[PlayerInput, None, None]:
         """
@@ -31,11 +48,10 @@ class EventQueueHandler(ABC):
         Yields:
             Inputs to release all buttons.
         """
-        for value in self._inputs.values():
-            for input_handler in value:
-                for player_input in input_handler.virtual_stop_events():
-                    yield player_input
-                    player_input.previous_value = player_input.value
+        for input_handler in self.get_input_handlers():
+            for player_input in input_handler.virtual_stop_events():
+                yield player_input
+                player_input.previous_value = player_input.value
 
     @abstractmethod
     def process_events(self) -> Generator[PlayerInput, None, None]:
@@ -93,23 +109,24 @@ class InputHandler(ABC, Generic[_InputEventType]):
         Yields:
             Inputs to release all buttons of this handler.
         """
-        for inp in filter(lambda b: b.held, self.buttons.values()):
-            inp.previous_value = inp.value
-            yield PlayerInput(inp.button, 0, 0)
+        for inp in self.buttons.values():
+            if inp.held:
+                inp.previous_value = inp.value
+                yield PlayerInput(inp.button, 0, 0)
 
     def get_events(self) -> Generator[PlayerInput, None, None]:
         """
-        Update the input state (holding time, etc.) and return player inputs.
+        Update the input state and return player inputs (as copies).
 
         Yields:
-            Player inputs (before updating their state).
+            A *new copy* of the PlayerInput object.
         """
-        for inp in filter(
-            lambda b: b.held or b.triggered, self.buttons.values()
-        ):
-            yield inp
+        for inp in self.buttons.values():
+            if inp.held or inp.triggered:
+                yield inp.clone()
+            if inp.held:
+                inp.hold_time += 1
             inp.previous_value = inp.value
-            inp.hold_time += 1 if inp.held else 0
             inp.triggered = False
 
     def press(self, button: int, value: float = 1) -> None:
@@ -120,11 +137,14 @@ class InputHandler(ABC, Generic[_InputEventType]):
             button: Identifier of the button to press.
             value: Intensity value used for pressing the button.
         """
+        if button not in self.buttons:
+            raise ValueError(f"Unknown button ID: {button}")
         inp = self.buttons[button]
+        if inp.value == 0:
+            inp.hold_time = 1
         inp.previous_value = inp.value
         inp.value = value
-        if not inp.hold_time:
-            inp.hold_time = 1
+        inp.triggered = False
 
     def release(self, button: int) -> None:
         """
@@ -133,6 +153,8 @@ class InputHandler(ABC, Generic[_InputEventType]):
         Parameters:
             button: Identifier of the button to release.
         """
+        if button not in self.buttons:
+            raise ValueError(f"Unknown button ID: {button}")
         inp = self.buttons[button]
         inp.previous_value = inp.value
         inp.value = 0
@@ -174,14 +196,30 @@ class PlayerInput:
     )
 
     def __init__(
-        self, button: int, value: Any = 0, hold_time: int = 0
+        self,
+        button: int,
+        value: Any = 0,
+        hold_time: int = 0,
+        previous_value: Any = 0,
+        timestamp: Optional[float] = None,
     ) -> None:
         self.button = button
         self.value = value
         self.hold_time = hold_time
         self.triggered = False
-        self.previous_value = value
-        self.timestamp = time.time()
+        self.previous_value = previous_value
+        self.timestamp = timestamp if timestamp is not None else time.time()
+
+    def clone(self) -> PlayerInput:
+        copy = PlayerInput(
+            button=self.button,
+            value=self.value,
+            hold_time=self.hold_time,
+            previous_value=self.previous_value,
+            timestamp=self.timestamp,
+        )
+        copy.triggered = self.triggered
+        return copy
 
     def __str__(self) -> str:
         return (

@@ -10,7 +10,6 @@ from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon import prepare
 from tuxemon.locale import T
-from tuxemon.map.map_tuxemon import DummyMap
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.player import Player
 from tuxemon.session import local_session
@@ -55,14 +54,9 @@ class DifficultyBattleState(PygameMenuState):
             )
 
     def start_battle(self, difficulty: str) -> None:
-        player = Player.create(local_session, slug=prepare.PLAYER_NPC)
+        Player.create(local_session, slug=prepare.PLAYER_NPC)
         self.client.push_state(
             "WorldState", session=local_session, map_name=None
-        )
-        self.client.map_manager.load_map(DummyMap(events=[]))
-        map_size = self.client.map_manager.map_size
-        self.client.boundary.set_rectangular_boundary(
-            "map", 0, map_size[0], 0, map_size[1]
         )
         self.client.event_engine.execute_action(
             "set_variable", [f"difficulty:{difficulty}"]

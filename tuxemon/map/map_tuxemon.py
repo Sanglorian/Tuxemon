@@ -330,25 +330,24 @@ class TuxemonMap(AbstractMap):
         self.renderer.redraw_tiles(self.renderer._buffer)
 
 
-class DummyMap(AbstractMap):
+class NullMap(AbstractMap):
+    """A no-op map object to safely initialize the WorldState when no map file is loaded."""
 
-    def __init__(
-        self,
-        events: Sequence[EventObject],
-    ) -> None:
-        self._events = events
+    def __init__(self) -> None:
+        self._events: list[EventObject] = []
+        self._inits: list[EventObject] = []
 
     @property
     def slug(self) -> str:
-        return "dummy"
+        return "null_map"
 
     @property
     def name(self) -> str:
-        return "Dummy Map"
+        return "Loading Screen"
 
     @property
     def description(self) -> str:
-        return "A placeholder map for testing."
+        return "The world is initializing."
 
     @property
     def size(self) -> tuple[int, int]:
@@ -364,14 +363,14 @@ class DummyMap(AbstractMap):
 
     @property
     def map_type(self) -> Optional[str]:
-        return None
+        return "notype"
 
     @property
-    def collision_map(self) -> dict[tuple[int, int], Optional[Any]]:
+    def collision_map(self) -> MutableMapping[tuple[int, int], Optional[Any]]:
         return {}
 
     @property
-    def surface_map(self) -> dict[tuple[int, int], dict[str, float]]:
+    def surface_map(self) -> MutableMapping[tuple[int, int], dict[str, float]]:
         return {}
 
     @property
@@ -383,8 +382,8 @@ class DummyMap(AbstractMap):
         return self._events
 
     @property
-    def inits(self) -> list[EventObject]:
-        return []
+    def inits(self) -> Sequence[EventObject]:
+        return self._inits
 
     @property
     def maps(self) -> dict[str, Any]:
@@ -392,7 +391,7 @@ class DummyMap(AbstractMap):
 
     @property
     def filename(self) -> str:
-        return "dummy.tmx"
+        return "null_map.tmx"
 
     @property
     def north_trans(self) -> str:
@@ -429,7 +428,7 @@ class DummyMap(AbstractMap):
         pass
 
     def add_events(self, new_events: Sequence[EventObject]) -> None:
-        self._events = list(self._events) + list(new_events)
+        self._events.extend(new_events)
 
     def add_inits(self, new_inits: Sequence[EventObject]) -> None:
-        pass
+        self._inits.extend(new_inits)

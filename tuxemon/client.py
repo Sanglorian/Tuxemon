@@ -83,6 +83,14 @@ class LocalPygameClient(BaseClient):
             thread.daemon = True
             thread.start()
 
+    def reset_renderer(self) -> None:
+        self.debug_renderer = DebugRenderer(self.map_manager, self.npc_manager)
+        map_renderer = MapRenderer(
+            self.camera_manager, self.npc_manager, self.debug_renderer
+        )
+        self.set_renderer(map_renderer)
+        logger.debug("Renderer reset.")
+
     def main(self) -> None:
         """
         Initiates the main game loop.

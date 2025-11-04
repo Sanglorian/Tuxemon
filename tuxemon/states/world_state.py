@@ -60,9 +60,8 @@ class WorldState(State):
         self.faction_manager = FactionManager()
         self.register_input_handlers()
 
-        if map_name:
-            self.client.map_transition.change_map(map_name)
-        else:
+        self.client.map_transition.change_map(map_name)
+        if map_name is None:
             logger.warning("No map name provided — using fallback renderer.")
             self.client.set_renderer(renderer or NullRenderer())
 

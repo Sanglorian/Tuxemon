@@ -21,32 +21,37 @@ events:
     actions:
     - start_battle player,maple_girl
     conditions:
+    - is char_exists maple_girl
     - is party_size player,greater_than,0
     - is party_size maple_girl,greater_than,0
-    - is char_exists maple_girl
+    - not char_defeated player
+    - not char_defeated maple_girl
     type: event
   Post Win:
     actions:
-    - print
+    - quit_world
     conditions:
     - is battle_outcome player,won,maple_girl
+    - is current_state WorldState
     type: event
   Post Lose:
     actions:
-    - print
+    - quit_world
     conditions:
     - is battle_outcome player,lost,maple_girl
+    - is current_state WorldState
     type: event
   Post Draw:
     actions:
-    - print
+    - quit_world
     conditions:
     - is battle_outcome player,draw,maple_girl
+    - is current_state WorldState
     type: event
   Difficulty beginner:
     actions:
-    - random_monster 5
-    - random_monster 5,maple_girl
+    - random_monster 1
+    - random_monster 99,maple_girl
     - set_variable monsters:full
     conditions:
     - is variable_set difficulty:beginner
@@ -55,10 +60,10 @@ events:
     type: event
   Difficulty easy:
     actions:
-    - random_monster 10
-    - random_monster 10
-    - random_monster 10,maple_girl
-    - random_monster 10,maple_girl
+    - random_monster 15
+    - random_monster 15
+    - random_monster 15,maple_girl
+    - random_monster 15,maple_girl
     - set_variable monsters:full
     conditions:
     - is variable_set difficulty:easy
@@ -67,12 +72,12 @@ events:
     type: event
   Difficulty normal:
     actions:
-    - random_monster 15
-    - random_monster 15
-    - random_monster 15
-    - random_monster 15,maple_girl
-    - random_monster 15,maple_girl
-    - random_monster 15,maple_girl
+    - random_monster 20
+    - random_monster 20
+    - random_monster 20
+    - random_monster 20,maple_girl
+    - random_monster 20,maple_girl
+    - random_monster 20,maple_girl
     - set_variable monsters:full
     conditions:
     - is variable_set difficulty:normal
@@ -81,14 +86,14 @@ events:
     type: event
   Difficulty hard:
     actions:
-    - random_monster 20
-    - random_monster 20
-    - random_monster 20
-    - random_monster 20
-    - random_monster 20,maple_girl
-    - random_monster 20,maple_girl
-    - random_monster 20,maple_girl
-    - random_monster 20,maple_girl
+    - random_monster 25
+    - random_monster 25
+    - random_monster 25
+    - random_monster 25
+    - random_monster 25,maple_girl
+    - random_monster 25,maple_girl
+    - random_monster 25,maple_girl
+    - random_monster 25,maple_girl
     - set_variable monsters:full
     conditions:
     - is variable_set difficulty:hard
@@ -97,16 +102,16 @@ events:
     type: event
   Difficulty expert:
     actions:
-    - random_monster 25
-    - random_monster 25
-    - random_monster 25
-    - random_monster 25
-    - random_monster 25
-    - random_monster 25,maple_girl
-    - random_monster 25,maple_girl
-    - random_monster 25,maple_girl
-    - random_monster 25,maple_girl
-    - random_monster 25,maple_girl
+    - random_monster 30
+    - random_monster 30
+    - random_monster 30
+    - random_monster 30
+    - random_monster 30
+    - random_monster 30,maple_girl
+    - random_monster 30,maple_girl
+    - random_monster 30,maple_girl
+    - random_monster 30,maple_girl
+    - random_monster 30,maple_girl
     - set_variable monsters:full
     conditions:
     - is variable_set difficulty:expert

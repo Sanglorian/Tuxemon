@@ -346,7 +346,7 @@ class NullRenderer(AbstractRenderer):
     def draw(
         self, surface: Surface, current_map: Optional[AbstractMap]
     ) -> None:
-        surface.fill(prepare.DARKGRAY_COLOR)
+        surface.fill(prepare.BLACK_COLOR)
 
 
 class MapRenderer(AbstractRenderer):

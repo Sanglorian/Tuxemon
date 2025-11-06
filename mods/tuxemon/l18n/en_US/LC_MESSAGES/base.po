@@ -11751,9 +11751,6 @@ msgstr ""
 msgid "spyder_papertown_thereis"
 msgstr "There is something here..."
 
-msgid "spyder_papertown_trash"
-msgstr "Just trash"
-
 msgid "spyder_papertown_rockitten"
 msgstr "Do you want ROCKITTEN?"
 

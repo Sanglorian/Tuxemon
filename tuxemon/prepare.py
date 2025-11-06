@@ -233,6 +233,8 @@ TRANS_TIME: float = 0.3  # transition time
 U_KM: str = "km"
 U_MI: str = "mi"
 U_KG: str = "kg"
+U_T: str = "t"
+U_M: str = "m"
 U_LB: str = "lb"
 U_CM: str = "cm"
 U_FT: str = "ft"
@@ -292,10 +294,6 @@ elif CONFIG.scaling:
 else:
     SCALE = 1
 
-# Reference user save dir
-SAVE_PATH = paths.USER_GAME_SAVE_DIR / "slot"
-SAVE_METHOD = "JSON"
-# SAVE_METHOD = "CBOR"
 
 DEV_TOOLS = CONFIG.dev_tools
 

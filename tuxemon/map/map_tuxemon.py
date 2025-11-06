@@ -144,6 +144,12 @@ class AbstractMap(ABC):
     def add_inits(self, new_inits: Sequence[EventObject]) -> None:
         """Append new init events to the existing inits list."""
 
+    @abstractmethod
+    def clear_events(self) -> None: ...
+
+    @abstractmethod
+    def clear_inits(self) -> None: ...
+
 
 class TuxemonMap(AbstractMap):
     """
@@ -313,6 +319,12 @@ class TuxemonMap(AbstractMap):
         """Append new init events to the existing inits list."""
         self._inits = list(self._inits) + list(new_inits)
 
+    def clear_events(self) -> None:
+        self._events = []
+
+    def clear_inits(self) -> None:
+        self._inits = []
+
     def reload_tiles(self) -> None:
         """Reload the map tiles."""
         if self.renderer is None:
@@ -432,3 +444,9 @@ class NullMap(AbstractMap):
 
     def add_inits(self, new_inits: Sequence[EventObject]) -> None:
         self._inits.extend(new_inits)
+
+    def clear_events(self) -> None:
+        self._events = []
+
+    def clear_inits(self) -> None:
+        self._inits = []

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from collections import defaultdict
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, final
 
@@ -30,26 +29,12 @@ class QuitWorldAction(EventAction):
     name = "quit_world"
 
     def start(self, session: Session) -> None:
+        session.client.camera_manager.reset()
+        session.client.npc_manager.clear_npcs()
+        session.client.current_music.stop()
+        session.client.event_engine.reset()
+        session.client.map_manager.clear_events()
+        session.client.map_manager.clear_inits()
+        session.client.replace_state("StartState")
         session.reset(reset_client=False)
         session.reset_time()
-        session.client.current_music.stop()
-        session.client.replace_state("StartState")
-
-        session.client.event_persist.storage = defaultdict(dict)
-        logger.debug("Event persistence storage cleared.")
-
-        session.client.map_manager.current_map = None
-        session.client.map_manager.maps = {}
-        session.client.map_manager._map_type_slug = None
-        logger.debug("Map manager state cleared.")
-
-        session.client.npc_manager.clear_npcs()
-        logger.debug("NPC manager cleared.")
-
-        session.client.boundary.boundaries = {}
-        session.client.boundary.active = None
-        session.client.boundary.reset_to_default()
-        logger.debug("Boundary checker cleared and reset to default.")
-
-        session.client.camera_manager.reset()
-        session.client.reset_renderer()

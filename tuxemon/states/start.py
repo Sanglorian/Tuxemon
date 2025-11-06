@@ -100,16 +100,16 @@ class StartState(PygameMenuState):
                 button_id="menu_mod_choice",
             )
         menu.add.button(
-            title=T.translate("menu_minigame"),
-            action=change_state("DifficultySelectState"),
-            font_size=self.font_type.big,
-            button_id="menu_minigame",
-        )
-        menu.add.button(
             title=T.translate("menu_battle"),
             action=change_state("DifficultyBattleState"),
             font_size=self.font_type.big,
             button_id="menu_battle",
+        )
+        menu.add.button(
+            title=T.translate("menu_minigame"),
+            action=change_state("DifficultySelectState"),
+            font_size=self.font_type.big,
+            button_id="menu_minigame",
         )
         menu.add.button(
             title=T.translate("menu_options"),

@@ -50,8 +50,8 @@ events:
     type: event
   Difficulty beginner:
     actions:
-    - random_monster 1
-    - random_monster 99,maple_girl
+    - random_monster 10
+    - random_monster 10,maple_girl
     - set_variable monsters:full
     conditions:
     - is variable_set difficulty:beginner

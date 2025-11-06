@@ -4687,6 +4687,9 @@ msgstr "An ancient story reemerges! Could this change everything?"
 msgid "quest_trigger_success"
 msgstr "A new quest begins! Your next challenge is calling."
 
+msgid "menu_intro"
+msgstr "Press Any Key"
+
 # Default mod names on selection menu
 msgid "xero_campaign"
 msgstr "Tuxemon: Xero"

@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import logging
+import time
 from collections.abc import Mapping, Sequence
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from tuxemon.battle import Battle, decode_battle, encode_battle
 from tuxemon.db import OutputBattle
+
+if TYPE_CHECKING:
+    from tuxemon.save_state import NPCState
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +33,6 @@ class BattlesHandler:
         self,
         opponent: str,
         outcome: OutputBattle,
-        steps: int,
         location: str = "",
         turns: int = 1,
     ) -> Battle:
@@ -38,7 +41,7 @@ class BattlesHandler:
             "fighter": self.character,
             "opponent": opponent,
             "outcome": outcome,
-            "steps": steps,
+            "timestamp": time.time(),
             "location": location,
             "turns": turns,
         }
@@ -107,13 +110,18 @@ class BattlesHandler:
         battle_outcomes = self.get_battle_outcome_stats()
         total_battles = sum(battle_outcomes.values())
 
+        average_turns = (
+            sum(b.turns for b in self._battles) / len(self._battles)
+            if self._battles
+            else 0.0
+        )
+
         return {
             "total": total_battles,
             "won": battle_outcomes[OutputBattle.won],
             "lost": battle_outcomes[OutputBattle.lost],
             "draw": battle_outcomes[OutputBattle.draw],
-            "average_turns": sum(b.turns for b in self._battles)
-            // len(self._battles),
+            "average_turns": round(average_turns),
         }
 
     def get_battles_by_location(self) -> dict[str, list[Battle]]:
@@ -128,15 +136,17 @@ class BattlesHandler:
         """Serializes battles into a savable format."""
         return encode_battle(self._battles)
 
-    def decode_battle(self, json_data: Optional[Mapping[str, Any]]) -> None:
+    def decode_battle(self, json_data: Optional[NPCState]) -> None:
         """Deserializes and loads battles from saved data."""
-        if json_data and "battles" in json_data:
-            decoded = decode_battle(json_data["battles"])
+        if json_data is None or json_data.battles is None:
+            return
 
-            for battle in decoded:
-                if battle.fighter == LEGACY_PLACEHOLDER:
-                    battle.fighter = self.character
-                if battle.opponent == LEGACY_PLACEHOLDER:
-                    battle.opponent = self.character
+        decoded = decode_battle(json_data.battles)
 
-            self._battles = decoded
+        for battle in decoded:
+            if battle.fighter == LEGACY_PLACEHOLDER:
+                battle.fighter = self.character
+            if battle.opponent == LEGACY_PLACEHOLDER:
+                battle.opponent = self.character
+
+        self._battles = decoded

@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+import time
 import unittest
 
 from tuxemon.battle import Battle
 from tuxemon.db import OutputBattle
 from tuxemon.entity_dir.battle import BattlesHandler
+from tuxemon.save_state import NPCState
 
 
 class TestBattlesHandler(unittest.TestCase):
@@ -21,7 +23,7 @@ class TestBattlesHandler(unittest.TestCase):
                 "fighter": "player",
                 "opponent": "npc",
                 "outcome": OutputBattle.won,
-                "steps": 10,
+                "timestamp": time.time(),
             }
         )
         self.handler.add_battle(battle)
@@ -33,7 +35,7 @@ class TestBattlesHandler(unittest.TestCase):
                 "fighter": "player",
                 "opponent": "npc",
                 "outcome": OutputBattle.won,
-                "steps": 10,
+                "timestamp": time.time(),
             }
         )
         battle2 = Battle().from_save_data(
@@ -41,7 +43,7 @@ class TestBattlesHandler(unittest.TestCase):
                 "fighter": "player",
                 "opponent": "npc",
                 "outcome": OutputBattle.lost,
-                "steps": 5,
+                "timestamp": time.time(),
             }
         )
         self.handler.add_battle(battle1)
@@ -54,7 +56,7 @@ class TestBattlesHandler(unittest.TestCase):
                 "fighter": "player",
                 "opponent": "npc",
                 "outcome": OutputBattle.won,
-                "steps": 10,
+                "timestamp": time.time(),
             }
         )
         self.handler.add_battle(battle)
@@ -67,7 +69,7 @@ class TestBattlesHandler(unittest.TestCase):
                 "fighter": "player",
                 "opponent": "npc",
                 "outcome": OutputBattle.won,
-                "steps": 10,
+                "timestamp": time.time(),
             }
         )
         self.handler.add_battle(battle)
@@ -81,7 +83,7 @@ class TestBattlesHandler(unittest.TestCase):
                 "fighter": "player",
                 "opponent": "npc",
                 "outcome": OutputBattle.won,
-                "steps": 10,
+                "timestamp": time.time(),
             }
         )
         battle2 = Battle().from_save_data(
@@ -89,7 +91,7 @@ class TestBattlesHandler(unittest.TestCase):
                 "fighter": "player",
                 "opponent": "npc",
                 "outcome": OutputBattle.lost,
-                "steps": 5,
+                "timestamp": time.time(),
             }
         )
         self.handler.add_battle(battle1)
@@ -105,7 +107,7 @@ class TestBattlesHandler(unittest.TestCase):
                 "fighter": "player",
                 "opponent": "npc",
                 "outcome": OutputBattle.won,
-                "steps": 10,
+                "timestamp": time.time(),
             }
         )
         battle2 = Battle().from_save_data(
@@ -113,7 +115,7 @@ class TestBattlesHandler(unittest.TestCase):
                 "fighter": "player",
                 "opponent": "npc",
                 "outcome": OutputBattle.lost,
-                "steps": 5,
+                "timestamp": time.time(),
             }
         )
         self.handler.add_battle(battle1)
@@ -129,7 +131,7 @@ class TestBattlesHandler(unittest.TestCase):
                 "fighter": "player",
                 "opponent": "npc",
                 "outcome": OutputBattle.won,
-                "steps": 10,
+                "timestamp": time.time(),
             }
         )
         battle2 = Battle().from_save_data(
@@ -137,7 +139,7 @@ class TestBattlesHandler(unittest.TestCase):
                 "fighter": "player",
                 "opponent": "npc",
                 "outcome": OutputBattle.lost,
-                "steps": 5,
+                "timestamp": time.time(),
             }
         )
         self.handler.add_battle(battle1)
@@ -149,46 +151,48 @@ class TestBattlesHandler(unittest.TestCase):
         self.assertEqual(summary["draw"], 0)
 
     def test_record_battle(self):
-        battle = self.handler.record_battle("npc", OutputBattle.draw, 3)
+        before = time.time()
+        battle = self.handler.record_battle("npc", OutputBattle.draw)
+        after = time.time()
         self.assertEqual(len(self.handler.get_battles()), 1)
         self.assertEqual(battle.opponent, "npc")
         self.assertEqual(battle.outcome, OutputBattle.draw)
-        self.assertEqual(battle.steps, 3)
+        self.assertTrue(before <= battle.timestamp <= after)
 
     def test_get_last_battle(self):
         self.assertIsNone(self.handler.get_last_battle())
-        battle1 = self.handler.record_battle("npc", OutputBattle.won, 10)
-        battle2 = self.handler.record_battle("npc", OutputBattle.lost, 5)
+        battle1 = self.handler.record_battle("npc", OutputBattle.won)
+        battle2 = self.handler.record_battle("npc", OutputBattle.lost)
         self.assertEqual(self.handler.get_last_battle(), battle2)
 
     def test_has_fought_and_outcome_invalid(self):
-        self.handler.record_battle("npc", OutputBattle.won, 10)
+        self.handler.record_battle("npc", OutputBattle.won)
         self.assertFalse(
             self.handler.has_fought_and_outcome("invalid_outcome", "npc")
         )
 
     def test_encode_decode_battle(self):
-        self.handler.record_battle("npc", OutputBattle.won, 10)
+        self.handler.record_battle("npc", OutputBattle.won)
         encoded = self.handler.encode_battle()
         new_handler = BattlesHandler("player")
-        new_handler.decode_battle({"battles": encoded})
+        new_handler.decode_battle(NPCState(battles=encoded))
         self.assertEqual(len(new_handler.get_battles()), 1)
         self.assertEqual(
             new_handler.get_battles()[0].outcome, OutputBattle.won
         )
 
     def test_decode_battle_with_legacy_placeholder(self):
-        legacy_data = {
-            "battles": [
+        legacy_data = NPCState(
+            battles=[
                 {
                     "fighter": "player",
                     "opponent": "player",
                     "outcome": OutputBattle.draw,
-                    "steps": 7,
+                    "timestamp": time.time(),
                     "instance_id": "1234567890abcdef1234567890abcdef",
                 }
             ]
-        }
+        )
         handler = BattlesHandler("hero")
         handler.decode_battle(legacy_data)
         battle = handler.get_battles()[0]
@@ -196,25 +200,21 @@ class TestBattlesHandler(unittest.TestCase):
         self.assertEqual(battle.opponent, "hero")
 
     def test_decode_battle_empty(self):
-        self.handler.decode_battle({})
+        self.handler.decode_battle(NPCState(battles=[]))
         self.assertEqual(len(self.handler.get_battles()), 0)
 
     def test_record_battle_with_location_and_turns(self):
         battle = self.handler.record_battle(
-            "npc", OutputBattle.won, 12, location="forest", turns=3
+            "npc", OutputBattle.won, location="forest", turns=3
         )
         self.assertEqual(battle.location, "forest")
         self.assertEqual(battle.turns, 3)
 
     def test_get_battles_by_location(self):
+        self.handler.record_battle("npc1", OutputBattle.won, location="cave")
+        self.handler.record_battle("npc2", OutputBattle.lost, location="cave")
         self.handler.record_battle(
-            "npc1", OutputBattle.won, 5, location="cave"
-        )
-        self.handler.record_battle(
-            "npc2", OutputBattle.lost, 8, location="cave"
-        )
-        self.handler.record_battle(
-            "npc3", OutputBattle.draw, 3, location="forest"
+            "npc3", OutputBattle.draw, location="forest"
         )
         grouped = self.handler.get_battles_by_location()
         self.assertEqual(len(grouped["cave"]), 2)
@@ -222,13 +222,13 @@ class TestBattlesHandler(unittest.TestCase):
         self.assertEqual(grouped["forest"][0].opponent, "npc3")
 
     def test_default_location_and_turns(self):
-        battle = self.handler.record_battle("npc", OutputBattle.draw, 4)
+        battle = self.handler.record_battle("npc", OutputBattle.draw)
         self.assertEqual(battle.location, "")
         self.assertEqual(battle.turns, 1)
 
     def test_battle_outcome_summary_with_turns(self):
-        self.handler.record_battle("npc1", OutputBattle.won, 5, turns=2)
-        self.handler.record_battle("npc2", OutputBattle.lost, 8, turns=4)
+        self.handler.record_battle("npc1", OutputBattle.won, turns=2)
+        self.handler.record_battle("npc2", OutputBattle.lost, turns=4)
         summary = self.handler.get_battle_outcome_summary()
         self.assertEqual(summary["total"], 2)
         self.assertEqual(summary["won"], 1)

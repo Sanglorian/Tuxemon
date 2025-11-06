@@ -27,7 +27,7 @@ from tuxemon.map.map_manager import MapManager
 from tuxemon.map.map_transition import MapTransition
 from tuxemon.map.map_view import AbstractRenderer, NullRenderer
 from tuxemon.movement import MovementManager, Pathfinder
-from tuxemon.networking import NetworkManager
+from tuxemon.network.manager import NetworkManager
 from tuxemon.npc_manager import NPCManager
 from tuxemon.park_tracker import ParkSession
 from tuxemon.platform.input_manager import InputManager

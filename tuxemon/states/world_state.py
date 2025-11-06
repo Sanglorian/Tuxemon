@@ -14,7 +14,7 @@ from typing import (
 
 from pygame.surface import Surface
 
-from tuxemon import networking, prepare
+from tuxemon import prepare
 from tuxemon.camera.camera import Camera
 from tuxemon.db import Direction
 from tuxemon.faction.manager import FactionManager
@@ -30,7 +30,7 @@ from tuxemon.world.transition import WorldTransition
 
 if TYPE_CHECKING:
     from tuxemon.map.map_view import AbstractRenderer
-    from tuxemon.networking import EventData
+    from tuxemon.network.networking import EventData, update_client
 
 logger = logging.getLogger(__name__)
 
@@ -100,27 +100,9 @@ class WorldState(State):
 
     def broadcast_player_teleport_change(self) -> None:
         """Tell clients/host that player has moved after teleport."""
-        # Set the transition variable in event_data to false when we're done
-        self.client.event_data["transition"] = False
-
-        # Update the server/clients of our new map and populate any other players.
-        self.network = self.client.network_manager
-        if self.network.is_connected():
-            assert self.network.client
-            current_map = self.client.get_map_name()
-            self.client.npc_manager.add_clients_to_map(
-                self.network.client.client.registry, current_map
-            )
-            self.network.client.update_player(self.player.facing)
-
-        # Update the location of the npcs. Doesn't send network data.
-        for npc in self.client.npc_manager.npcs.values():
-            char_dict = {"tile_pos": npc.tile_pos}
-            networking.update_client(npc, char_dict, self.client)
-
-        for npc in self.client.npc_manager.npcs_off_map.values():
-            char_dict = {"tile_pos": npc.tile_pos}
-            networking.update_client(npc, char_dict, self.client)
+        self.client.npc_manager.handle_player_teleport(
+            self.client, self.player, self.client.network_manager
+        )
 
     def update(self, time_delta: float) -> None:
         """
@@ -235,7 +217,7 @@ class WorldState(State):
         """
         target = registry[event_data["target"]]["sprite"]
         target_name = str(target.name)
-        networking.update_client(target, event_data["char_dict"], self.client)
+        update_client(target, event_data["char_dict"], self.client)
         if event_data["interaction"] == "DUEL":
             if not event_data["response"]:
                 self.interaction_menu.visible = True

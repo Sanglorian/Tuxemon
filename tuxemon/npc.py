@@ -112,7 +112,7 @@ class NPC(Entity[NPCState]):
             self.client.map_manager,
             self.client.npc_manager,
         )
-        self.final_move_dest = [0, 0]
+        self.final_move_dest: tuple[int, int] = (0, 0)
 
     @property
     def game_variables(self) -> PlayerVariablesManager:

@@ -36,6 +36,8 @@ class InputManager:
         """
         Initializes the input manager with the given config.
         """
+        self.idle_time: float = 0.0
+        self._was_afk: bool = False
         self.event_queue = PygameEventQueueHandler()
         self.input_history = InputHistory()
         self.controller = config.controller
@@ -45,6 +47,11 @@ class InputManager:
         self.combo_manager = ComboManager()
         self.input_visualizer = InputVisualizer(SCREEN_SIZE)
         self.show_visualizer = config.controller.show_input_visualizer
+
+    @property
+    def is_afk(self) -> bool:
+        # self.config.afk_timeout_seconds
+        return self.idle_time > 60.0
 
     def setup_inputs(self) -> None:
         """
@@ -106,9 +113,20 @@ class InputManager:
     def process_events(self) -> Generator[PlayerInput, None, None]:
         """Processes the input events."""
         for event in self.event_queue.process_events():
+            self.idle_time = 0.0
             self.input_history.add(event)
             self.combo_manager.process(event)
             yield event
+
+    def update(self, time_delta: float) -> None:
+        self.idle_time += time_delta
+
+        if self.is_afk and not self._was_afk:
+            logger.info("Player is now AFK.")
+            self._was_afk = True
+        elif not self.is_afk and self._was_afk:
+            logger.info("Player is no longer AFK.")
+            self._was_afk = False
 
     def draw_visualizer(self, screen: Surface) -> None:
         all_inputs = {}

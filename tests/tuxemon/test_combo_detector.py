@@ -3,7 +3,7 @@
 import time
 import unittest
 
-from tuxemon.platform.combo_detector import ComboDetector
+from tuxemon.platform.combo_detector import ComboDetector, ComboProfile
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 
@@ -20,12 +20,13 @@ class TestComboDetector(unittest.TestCase):
         self.on_combo = on_combo
 
     def test_combo_not_triggered_with_wrong_sequence(self):
-        self.detector.add_combo(
-            [buttons.LEFT, buttons.RIGHT, buttons.LEFT, buttons.RIGHT],
-            self.on_combo,
-            max_delay_ms=1000,
+        profile = ComboProfile(
+            name="TestCombo",
+            buttons=[buttons.LEFT, buttons.RIGHT, buttons.LEFT, buttons.RIGHT],
+            callback=self.on_combo,
+            delays_ms=[1000, 1000, 1000, 1000],
         )
-
+        self.detector.add_combo(profile)
         now = time.time()
         self.detector.process_input(PlayerInput(buttons.LEFT, now))
         self.detector.process_input(
@@ -50,12 +51,20 @@ class TestComboDetector(unittest.TestCase):
             nonlocal triggered_combo2
             triggered_combo2 = True
 
-        self.detector.add_combo(
-            [buttons.LEFT, buttons.RIGHT], on_combo1, max_delay_ms=1000
+        profile1 = ComboProfile(
+            name="TestCombo1",
+            buttons=[buttons.LEFT, buttons.RIGHT],
+            callback=on_combo1,
+            delays_ms=[1000, 1000],
         )
-        self.detector.add_combo(
-            [buttons.A, buttons.B], on_combo2, max_delay_ms=1000
+        self.detector.add_combo(profile1)
+        profile2 = ComboProfile(
+            name="TestCombo2",
+            buttons=[buttons.A, buttons.B],
+            callback=on_combo2,
+            delays_ms=[1000, 1000],
         )
+        self.detector.add_combo(profile2)
 
         now = time.time()
         self.detector.process_input(PlayerInput(buttons.LEFT, now))
@@ -69,9 +78,13 @@ class TestComboDetector(unittest.TestCase):
         self.assertTrue(triggered_combo2, "Combo2 should trigger")
 
     def test_combo_triggered_multiple_times(self):
-        self.detector.add_combo(
-            [buttons.LEFT, buttons.RIGHT], self.on_combo, max_delay_ms=1000
+        profile = ComboProfile(
+            name="TestCombo",
+            buttons=[buttons.LEFT, buttons.RIGHT],
+            callback=self.on_combo,
+            delays_ms=[1000, 1000],
         )
+        self.detector.add_combo(profile)
 
         now = time.time()
         self.detector.process_input(PlayerInput(buttons.LEFT, now))
@@ -87,11 +100,13 @@ class TestComboDetector(unittest.TestCase):
         self.assertTrue(self.triggered, "Combo should trigger second time")
 
     def test_combo_trigger_after_irrelevant_inputs(self):
-        self.detector.add_combo(
-            [buttons.LEFT, buttons.RIGHT, buttons.LEFT, buttons.RIGHT],
-            self.on_combo,
-            max_delay_ms=1000,
+        profile = ComboProfile(
+            name="TestCombo",
+            buttons=[buttons.LEFT, buttons.RIGHT, buttons.LEFT, buttons.RIGHT],
+            callback=self.on_combo,
+            delays_ms=[1000, 1000, 1000, 1000],
         )
+        self.detector.add_combo(profile)
 
         now = time.time()
         # Irrelevant buttons before the combo
@@ -110,11 +125,13 @@ class TestComboDetector(unittest.TestCase):
         )
 
     def test_combo_trigger(self):
-        self.detector.add_combo(
-            [buttons.LEFT, buttons.RIGHT, buttons.LEFT, buttons.RIGHT],
-            self.on_combo,
-            max_delay_ms=1000,
+        profile = ComboProfile(
+            name="TestCombo",
+            buttons=[buttons.LEFT, buttons.RIGHT, buttons.LEFT, buttons.RIGHT],
+            callback=self.on_combo,
+            delays_ms=[1000, 1000, 1000, 1000],
         )
+        self.detector.add_combo(profile)
 
         now = time.time()
         self.detector.process_input(PlayerInput(buttons.LEFT, now))

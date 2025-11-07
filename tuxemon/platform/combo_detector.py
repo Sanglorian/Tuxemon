@@ -30,6 +30,18 @@ class _ActiveCombo:
     last_timestamp: float
 
 
+@dataclass
+class ComboProfile:
+    name: str
+    buttons: list[int]
+    callback: Callable[[], None]
+    # Optional fields with sensible defaults
+    delays_ms: Optional[list[float]] = None
+    description: str = ""
+    character: Optional[str] = None
+    difficulty: int = 1  # 1 = easy, 2 = medium, 3 = hard
+
+
 class ComboManager:
     def __init__(self) -> None:
         self.detector = ComboDetector()
@@ -49,23 +61,24 @@ class ComboDetector:
         self._trie = _TrieNode()
         self._active_combos: list[_ActiveCombo] = []
 
-    def add_combo(
-        self,
-        buttons: list[int],
-        callback: Callable[[], None],
-        max_delay_ms: float,
-    ) -> None:
-        """
-        Adds a combo pattern to the Trie.
-        """
+    def add_combo(self, profile: ComboProfile) -> None:
         node = self._trie
-        max_delay_s = max_delay_ms / 1000.0
-        for button in buttons:
+        num_buttons = len(profile.buttons)
+
+        has_valid_delays = (
+            profile.delays_ms and len(profile.delays_ms) == num_buttons - 1
+        )
+
+        for i, button in enumerate(profile.buttons):
             if button not in node.children:
                 node.children[button] = _TrieNode()
+
+            if profile.delays_ms and has_valid_delays and i < num_buttons - 1:
+                node.max_delay_s = profile.delays_ms[i] / 1000.0
+
             node = node.children[button]
-            node.max_delay_s = max_delay_s
-        node.callback = callback
+
+        node.callback = profile.callback
 
     def remove_combo(self, buttons: list[int]) -> bool:
         """Removes a combo pattern from the Trie."""

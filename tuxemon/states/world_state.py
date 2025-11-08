@@ -18,7 +18,6 @@ from tuxemon import networking, prepare
 from tuxemon.camera.camera import Camera
 from tuxemon.db import Direction
 from tuxemon.faction.manager import FactionManager
-from tuxemon.map.map_view import NullRenderer
 from tuxemon.platform.events import PlayerInput
 from tuxemon.platform.tools import translate_input_event
 from tuxemon.save_state import WorldSave
@@ -29,7 +28,6 @@ from tuxemon.world.manager import WorldMenuManager
 from tuxemon.world.transition import WorldTransition
 
 if TYPE_CHECKING:
-    from tuxemon.map.map_view import AbstractRenderer
     from tuxemon.networking import EventData
 
 logger = logging.getLogger(__name__)
@@ -44,7 +42,7 @@ class WorldState(State):
         self,
         session: Session,
         map_name: Optional[str] = None,
-        renderer: Optional[AbstractRenderer] = None,
+        yaml_name: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.session = session
@@ -59,29 +57,22 @@ class WorldState(State):
         self.client.camera_manager.add_camera(self.camera)
         self.faction_manager = FactionManager()
         self.register_input_handlers()
-
-        if map_name:
-            self.client.map_transition.change_map(map_name)
-        else:
-            logger.warning("No map name provided — using fallback renderer.")
-            self.client.set_renderer(renderer or NullRenderer())
+        self.client.map_transition.change_map(map_name, yaml_name)
+        self.client.reset_renderer()
 
     def get_state(self, session: Session) -> WorldSave:
-        """Returns a dictionary of the World to be saved."""
-        state: WorldSave = {
-            "factions_manager": self.faction_manager.set_state(
+        """Returns a WorldSave model representing the current world state."""
+        return WorldSave(
+            factions_manager=self.faction_manager.set_state(
                 self.client.npc_manager
             ),
-            "menu_flags": self.menu_manager.menu_flags.export(),
-        }
-        return state
+            menu_flags=self.menu_manager.menu_flags.export(),
+        )
 
     def set_state(self, session: Session, save_data: WorldSave) -> None:
         """Recreates the World from the provided saved data."""
-        self.faction_manager.get_state(save_data.get("factions_manager", {}))
-        self.menu_manager.menu_flags.import_flags(
-            save_data.get("menu_flags", {})
-        )
+        self.faction_manager.get_state(save_data.factions_manager)
+        self.menu_manager.menu_flags.import_flags(save_data.menu_flags)
 
     def register_input_handlers(self) -> None:
         self.input_handler = WorldInputHandler(

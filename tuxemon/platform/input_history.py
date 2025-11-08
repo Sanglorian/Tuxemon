@@ -6,11 +6,11 @@ import time
 from collections import deque
 from typing import TYPE_CHECKING, NamedTuple, Optional
 
-from tuxemon.platform.events import PlayerInput
 from tuxemon.platform.tools import translate_input_event
 
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
+    from tuxemon.platform.events import PlayerInput
 
 
 class ComboHint(NamedTuple):
@@ -20,7 +20,6 @@ class ComboHint(NamedTuple):
 
 class InputHistory:
     def __init__(self, config: TuxemonConfig, max_size: int = 25):
-        self.config = config
         self.history: deque[PlayerInput] = deque(maxlen=max_size)
         self.last_history_event: Optional[PlayerInput] = None
         self.held_timers: dict[int, float] = {}
@@ -28,8 +27,7 @@ class InputHistory:
         self._buttons_down: set[int] = set()
         self._last_button_clicked: Optional[int] = None
         self._current_combo_hint: ComboHint = ComboHint()
-        # combo_window_seconds: float = 5.0
-        # self.config.input.combo_window_seconds (5.0)
+        self.combo_window_seconds = config.controller.combo_window_seconds
 
     @property
     def current_combo_hint(self) -> ComboHint:
@@ -66,15 +64,16 @@ class InputHistory:
             self.last_history_event = event
 
     def update(self, time_delta: float) -> None:
-        self.update_history(max_age_s=5.0)
+        self.update_history(max_age_s=self.combo_window_seconds)
         for button in list(self.held_timers.keys()):
             self.held_timers[button] += time_delta
 
-    def update_history(self, max_age_s: float = 5.0) -> None:
+    def update_history(self, max_age_s: Optional[float] = None) -> None:
         """
         Removes inputs from the history if they are older than max_age_s.
-        This enforces a 'combo window.'
+        This enforces a 'combo window'.
         """
+        max_age_s = max_age_s or self.combo_window_seconds
         cutoff_time = time.time() - max_age_s
 
         while self.history and self.history[0].timestamp < cutoff_time:

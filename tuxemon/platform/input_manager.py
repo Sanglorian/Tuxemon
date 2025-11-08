@@ -26,7 +26,6 @@ from tuxemon.prepare import SCREEN_SIZE
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
     from tuxemon.platform.events import PlayerInput
-    from tuxemon.platform.input_history import ComboHint
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +39,6 @@ class InputManager:
         """
         Initializes the input manager with the given config.
         """
-        self.idle_time: float = 0.0
-        self._was_afk: bool = False
-        self.held_timers: dict[int, float] = {}
         self.event_queue = PygameEventQueueHandler()
         self.input_history = InputHistory(config)
         self.controller = config.controller
@@ -52,15 +48,6 @@ class InputManager:
         self.combo_manager = ComboManager()
         self.input_visualizer = InputVisualizer(SCREEN_SIZE)
         self.show_visualizer = self.controller.show_input_visualizer
-
-    @property
-    def is_afk(self) -> bool:
-        # self.config.afk_timeout_seconds
-        return self.idle_time > 60.0
-
-    @property
-    def current_combo_hint(self) -> ComboHint:
-        return self.input_history.current_combo_hint
 
     def setup_inputs(self) -> None:
         """
@@ -138,15 +125,7 @@ class InputManager:
             yield event
 
     def update(self, time_delta: float) -> None:
-        self.idle_time += time_delta
         self.input_history.update(time_delta)
-
-        if self.is_afk and not self._was_afk:
-            logger.info("Player is now AFK.")
-            self._was_afk = True
-        elif not self.is_afk and self._was_afk:
-            logger.info("Player is no longer AFK.")
-            self._was_afk = False
 
     def draw_visualizer(self, screen: Surface) -> None:
         all_inputs = {}

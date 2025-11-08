@@ -20,6 +20,7 @@ class _TrieNode:
     children: dict[int, _TrieNode] = field(default_factory=dict)
     callback: Optional[Callable[[], None]] = None
     max_delay_s: Optional[float] = None
+    priority: int = 0
 
 
 @dataclass
@@ -35,11 +36,11 @@ class ComboProfile:
     name: str
     buttons: list[int]
     callback: Callable[[], None]
-    # Optional fields with sensible defaults
     delays_ms: Optional[list[float]] = None
     description: str = ""
     character: Optional[str] = None
     difficulty: int = 1  # 1 = easy, 2 = medium, 3 = hard
+    priority: int = 0
 
 
 class ComboManager:
@@ -60,6 +61,7 @@ class ComboDetector:
     def __init__(self) -> None:
         self._trie = _TrieNode()
         self._active_combos: list[_ActiveCombo] = []
+        self._global_window_s: float = 2.0
 
     def add_combo(self, profile: ComboProfile) -> None:
         node = self._trie
@@ -73,12 +75,15 @@ class ComboDetector:
             if button not in node.children:
                 node.children[button] = _TrieNode()
 
-            if profile.delays_ms and has_valid_delays and i < num_buttons - 1:
-                node.max_delay_s = profile.delays_ms[i] / 1000.0
+            child = node.children[button]
 
-            node = node.children[button]
+            if profile.delays_ms and has_valid_delays and i < num_buttons - 1:
+                child.max_delay_s = profile.delays_ms[i] / 1000.0
+
+            node = child
 
         node.callback = profile.callback
+        node.priority = profile.priority
 
     def remove_combo(self, buttons: list[int]) -> bool:
         """Removes a combo pattern from the Trie."""
@@ -96,11 +101,16 @@ class ComboDetector:
         if node.callback is None:
             return False  # No combo to remove
         node.callback = None
+        node.priority = 0
 
         # Prune orphaned nodes
         for button, parent in reversed(path):
             child = parent.children[button]
-            if child.callback is None and not child.children:
+            if (
+                child.callback is None
+                and child.priority == 0
+                and not child.children
+            ):
                 del parent.children[button]
             else:
                 break
@@ -112,19 +122,25 @@ class ComboDetector:
         Processes a single input event and checks for any matching combos
         by traversing the Trie.
         """
-        # Add a new potential combo path starting from the root.
+        current_time = input_event.timestamp
+
+        fresh_active_combos: list[_ActiveCombo] = [
+            ac
+            for ac in self._active_combos
+            if (current_time - ac.last_timestamp) <= self._global_window_s
+        ]
+
         new_active_combos: list[_ActiveCombo] = []
+
         if input_event.button in self._trie.children:
             new_active_combos.append(
                 _ActiveCombo(
-                    self._trie.children[input_event.button],
-                    input_event.timestamp,
+                    self._trie.children[input_event.button], current_time
                 )
             )
 
-        # Extend existing active combo paths.
-        for active_combo in self._active_combos:
-            time_diff = input_event.timestamp - active_combo.last_timestamp
+        for active_combo in fresh_active_combos:
+            time_diff = current_time - active_combo.last_timestamp
             if input_event.button in active_combo.node.children and (
                 active_combo.node.max_delay_s is None
                 or time_diff <= active_combo.node.max_delay_s
@@ -132,16 +148,31 @@ class ComboDetector:
                 new_active_combos.append(
                     _ActiveCombo(
                         active_combo.node.children[input_event.button],
-                        input_event.timestamp,
+                        current_time,
                     )
                 )
 
-        # Check if any new paths resulted in a successful combo match.
-        for active_combo in new_active_combos:
-            if active_combo.node.callback:
-                active_combo.node.callback()
-                logger.info("Combo detected, clearing paths.")
-                self._active_combos.clear()
-                return
+        completed_combos = [ac for ac in new_active_combos if ac.node.callback]
+
+        if completed_combos:
+            # Tie-breaker: highest priority, then longest sequence
+            best_combo = max(
+                completed_combos,
+                key=lambda ac: (ac.node.priority, len(ac.node.children)),
+            )
+
+            if best_combo.node.callback:
+                best_combo.node.callback()
+                cb_name = str(best_combo.node.callback)
+                logger.info(
+                    f"Combo detected: priority={best_combo.node.priority}, callback={cb_name}"
+                )
+            else:
+                logger.warning(
+                    f"Combo node reached with priority={best_combo.node.priority} but no callback set."
+                )
+
+            self._active_combos.clear()
+            return
 
         self._active_combos = new_active_combos

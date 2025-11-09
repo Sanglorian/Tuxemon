@@ -53,6 +53,14 @@ class EventQueueHandler(ABC):
                 yield player_input
                 player_input.previous_value = player_input.value
 
+    def update_handlers(self, time_delta: float) -> None:
+        """
+        Forwards the time delta to all registered InputHandlers,
+        triggering state updates.
+        """
+        for handler in self.get_input_handlers():
+            handler.update_state(time_delta)
+
     @abstractmethod
     def process_events(self) -> Generator[PlayerInput, None, None]:
         """
@@ -99,6 +107,24 @@ class InputHandler(ABC, Generic[_InputEventType]):
             input_event: Input event to process.
         """
         raise NotImplementedError
+
+    def update_state(self, dt: float) -> None:
+        """
+        Update the state of all managed PlayerInput objects.
+
+        - Increments hold_time (frames) if held.
+        - Increments hold_duration (seconds) by dt if held.
+        - Resets both when released.
+        """
+        for inp in self.buttons.values():
+            if inp.held:
+                inp.hold_time += 1
+                inp.hold_duration += dt
+            else:
+                inp.hold_time = 0
+                inp.hold_duration = 0.0
+            inp.previous_value = inp.value
+            inp.triggered = False
 
     def virtual_stop_events(self) -> Generator[PlayerInput, None, None]:
         """
@@ -166,24 +192,31 @@ class PlayerInput:
     """
     Represents a single player input.
 
-    Each instance represents the state of a single input:
-    * have float value 0-1
-    * are "pressed" when value is above 0, for exactly one frame
-    * are "held" when "pressed" for longer than zero frames
-    Do not manipulate these values.
-    Once created, these objects will not be destroyed.
-    Input managers will set values on these objects.
-    These objects are reused between frames, do not hold references to
-    them.
+    Each instance tracks the state of a single input:
+    * `value` is a float in the range [0, 1] indicating press intensity.
+    * `pressed` is True only on the frame the input transitions from 0 → >0.
+    * `held` is True as long as the input value remains >0.
+    * `released` is True only on the frame the input transitions from >0 → 0.
+    * `hold_time` counts how many update cycles (frames) the input has been
+        held.
+    * `hold_duration` accumulates the real-world time in seconds the input has
+        been held, updated via `InputHandler.update_state(dt)`.
+
+    Notes:
+        - Do not manipulate these values directly; they are managed by input
+            handlers.
+        - PlayerInput objects are reused between frames and should not be
+            stored long-term.
+        - Input managers will set and update values automatically.
 
     Parameters:
         button: Identifier of the button that caused this input.
-        value: Value associated with the event. For buttons it is the
-            intensity of the press in the range [0, 1]. 0 is not pressed
-            and 1 is fully pressed. Some inputs, such as analog sticks may
-            support intermediate or negative values. Other input may store
-            the unicode key pressed, or the mouse coordinates.
-        hold_time: The number of frames this input has been hold.
+        value: Current intensity of the input. For buttons this is 0 (not
+            pressed) or 1 (fully pressed). Analog inputs may use intermediate
+            or negative values.
+        hold_time: Number of frames the input has been held.
+        hold_duration: Accumulated real-world time in seconds the input has
+            been held. Updated each frame by InputHandler.update_state(dt).
     """
 
     __slots__ = (
@@ -193,6 +226,7 @@ class PlayerInput:
         "triggered",
         "previous_value",
         "timestamp",
+        "hold_duration",
     )
 
     def __init__(
@@ -206,9 +240,10 @@ class PlayerInput:
         self.button = button
         self.value = value
         self.hold_time = hold_time
-        self.triggered = False
+        self.triggered: bool = False
         self.previous_value = previous_value
         self.timestamp = timestamp if timestamp is not None else time.time()
+        self.hold_duration: float = 0.0
 
     def clone(self) -> PlayerInput:
         copy = PlayerInput(
@@ -219,6 +254,7 @@ class PlayerInput:
             timestamp=self.timestamp,
         )
         copy.triggered = self.triggered
+        copy.hold_duration = self.hold_duration
         return copy
 
     def __str__(self) -> str:
@@ -230,8 +266,8 @@ class PlayerInput:
             f"pressed={self.pressed}, "
             f"held={self.held}, "
             f"hold_time={self.hold_time}, "
-            f"released={self.released}, "
-            f"held_long={self.held_long}"
+            f"hold_duration={self.hold_duration:.3f}, "
+            f"released={self.released}"
             f")"
         )
 
@@ -249,10 +285,7 @@ class PlayerInput:
     @property
     def held(self) -> bool:
         """
-        This will be true as long as button is held down.
-
-        Returns:
-            Whether the input is being hold.
+        Returns True as long as the button is held down (value > 0).
         """
         return bool(self.value)
 
@@ -261,25 +294,12 @@ class PlayerInput:
         """
         Returns True *only* on the frame the button is released
         (value transitions from > 0 to 0).
-
-        Returns:
-            Whether the input has been released.
         """
         return bool(not self.value) and bool(self.previous_value)
 
-    @property
-    def held_long(self) -> bool:
-        """
-        Indicates whether the input has been held down for more than one frame.
-
-        Returns:
-            Whether the input has been held down for more than one frame.
-        """
-        return bool(self.value) and self.hold_time > 1
-
-    def is_held(self, min_hold_time: int = 1) -> bool:
+    def is_held(self, min_hold_duration: float = 0.0) -> bool:
         """
         Returns True if the button is currently held for at least
-        min_hold_time frames.
+        min_hold_duration seconds (dt-based).
         """
-        return self.held and self.hold_time >= min_hold_time
+        return self.held and self.hold_duration >= min_hold_duration

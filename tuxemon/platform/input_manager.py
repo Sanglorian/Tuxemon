@@ -124,6 +124,9 @@ class InputManager:
             self.combo_manager.process(event)
             yield event
 
+    def update(self, time_delta: float) -> None:
+        self.event_queue.update_handlers(time_delta)
+
     def draw_visualizer(self, screen: Surface) -> None:
         all_inputs = {}
         for handler in self.event_queue.get_input_handlers():

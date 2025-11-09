@@ -3,7 +3,6 @@
 import unittest
 from collections.abc import Generator
 from typing import Any
-from unittest.mock import MagicMock
 
 from tuxemon.platform.events import (
     EventQueueHandler,
@@ -116,6 +115,49 @@ class TestInputHandler(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.handler.release(99)
 
+    def test_multiple_buttons_independent_state(self):
+        handler = DummyInputHandler(event_map={1: 1, 2: 2})
+        handler.press(1)
+        handler.press(2)
+        events = list(handler.get_events())
+        buttons = {e.button: e for e in events}
+        self.assertTrue(buttons[1].pressed)
+        self.assertTrue(buttons[2].pressed)
+        self.assertEqual(buttons[1].hold_time, 1)
+        self.assertEqual(buttons[2].hold_time, 1)
+
+    def test_hold_duration_increases_over_time(self):
+        self.handler.press(1)
+        inp = self.handler.buttons[1]
+        self.handler.update_state(2.0)
+        self.assertGreaterEqual(inp.hold_duration, 2.0)
+
+    def test_get_events_returns_clone(self):
+        self.handler.press(1)
+        events = list(self.handler.get_events())
+        inp = self.handler.buttons[1]
+        self.assertIsNot(events[0], inp)
+        self.assertEqual(events[0].button, inp.button)
+        self.assertEqual(events[0].value, inp.value)
+
+    def test_virtual_stop_resets_press_time(self):
+        self.handler.press(1)
+        inp = self.handler.buttons[1]
+        list(self.handler.virtual_stop_events())
+        self.assertEqual(inp.value, 1)
+
+    def test_event_queue_handler_collects_events(self):
+        queue = DummyEventQueueHandler()
+        handler1 = DummyInputHandler(event_map={1: 1})
+        handler2 = DummyInputHandler(event_map={2: 2})
+        queue._inputs = {"player1": {1: handler1}, "player2": {2: handler2}}
+        handler1.press(1)
+        handler2.press(2)
+        events = list(queue.process_events())
+        buttons = {e.button for e in events}
+        self.assertIn(1, buttons)
+        self.assertIn(2, buttons)
+
 
 class TestPlayerInput(unittest.TestCase):
 
@@ -159,16 +201,10 @@ class TestPlayerInputEdgeCases(unittest.TestCase):
         inp.previous_value = 0
         self.assertFalse(inp.released)
 
-    def test_held_long_requires_hold_time_gt_1(self):
-        inp = PlayerInput(1, value=1, hold_time=1)
-        self.assertFalse(inp.held_long)
-        inp.hold_time = 2
-        self.assertTrue(inp.held_long)
-
     def test_is_held_with_custom_threshold(self):
         inp = PlayerInput(1, value=1, hold_time=3)
-        self.assertTrue(inp.is_held(2))
-        self.assertFalse(inp.is_held(4))
+        inp.hold_duration = 3.0
+        self.assertTrue(inp.is_held(2.0))
 
 
 class TestEventQueueHandler(unittest.TestCase):

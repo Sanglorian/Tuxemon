@@ -155,10 +155,9 @@ class PygameGamepadInput(PygameEventHandler):
     or held inputs will never be duplicated and are always "correct".
 
     Parameters:
-        event_map: Mapping of original identifiers to button identifiers.
-        deadzone: Threshold used to detect when an analog stick should
-            be considered not pressed, as obtaining an exact value of 0 is
-            almost impossible.
+        mapping_strategy: An InputMappingStrategy instance used to convert
+            raw pygame identifiers (button indices, axis indices, hat values)
+            into logical button identifiers used by the game.
     """
 
     def __init__(self, mapping_strategy: InputMappingStrategy):

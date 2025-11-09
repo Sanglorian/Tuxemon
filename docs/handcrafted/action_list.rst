@@ -14,7 +14,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.boundary_set.BoundarySetAction
 .. autoscriptinfoclass:: tuxemon.event.actions.breeding.BreedingAction
 .. autoscriptinfoclass:: tuxemon.event.actions.call_event.CallEventAction
-.. autoscriptinfoclass:: tuxemon.event.actions.camera_follow.CameraFollowAction
+.. autoscriptinfoclass:: tuxemon.event.actions.camera_manage.CameraManageAction
 .. autoscriptinfoclass:: tuxemon.event.actions.camera_mode.CameraModeAction
 .. autoscriptinfoclass:: tuxemon.event.actions.camera_move.CameraMoveAction
 .. autoscriptinfoclass:: tuxemon.event.actions.camera_position.CameraPositionAction

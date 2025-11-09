@@ -54,7 +54,7 @@ class WorldState(State):
         )
         self.player = self.session.player
         self.camera = Camera(self.player, self.client.boundary)
-        self.client.camera_manager.add_camera(self.camera)
+        self.client.camera_manager.add_camera(self.player.slug, self.camera)
         self.faction_manager = FactionManager()
         self.register_input_handlers()
         self.client.map_transition.change_map(map_name, yaml_name)

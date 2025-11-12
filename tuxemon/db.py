@@ -387,6 +387,56 @@ class StatusBehaviors(Behaviors):
     )
 
 
+class SoundProperties(BaseModel):
+    sfx: Optional[str] = Field(..., description="Sound effect to play")
+    volume: float = Field(..., ge=0.0, description="Playback volume")
+
+    @field_validator("sfx")
+    def sfx_exists(cls: SoundProperties, v: Optional[str]) -> Optional[str]:
+        if not v:
+            return v
+
+        if has.db_entry("sounds", v):
+            return v
+        raise ValueError(f"the sound {v} doesn't exist in the db")
+
+
+class VisualProperties(BaseModel):
+    animation: Optional[str] = Field(
+        ..., description="The slug or path of the animation to play."
+    )
+    flip_axes: FlipAxes = Field(
+        ...,
+        description="Axes (X and/or Y) along which the visual should be flipped.",
+    )
+    loop: int = Field(
+        ...,
+        description=(
+            "Number of times the visual should loop. "
+            "-1 means infinite looping, 0 means play once, "
+            "any positive integer means loop that many times."
+        ),
+    )
+
+    @field_validator("animation")
+    def animation_exists(cls, v: Optional[str]) -> Optional[str]:
+        if not v:
+            return v
+
+        item_file = f"animations/item/{v}_00.png"
+        technique_file = f"animations/technique/{v}_00.png"
+
+        if has.db_entry("animation", v) and (
+            has.size(item_file, prepare.NATIVE_RESOLUTION)
+            or has.size(technique_file, prepare.NATIVE_RESOLUTION)
+        ):
+            return v
+
+        raise ValueError(
+            f"the animation {v} doesn't exist in item/ or technique/ db"
+        )
+
+
 class DynamicMenuEntry(BaseModel):
     position: int
     label_key: str
@@ -438,12 +488,11 @@ class ItemModel(BaseModel, BaseLookupModel):
     effects: Sequence[CommonEffect] = Field(
         ..., description="Effects this item will have"
     )
-    flip_axes: FlipAxes = Field(
-        FlipAxes.NONE,
-        description="Axes along which item animation should be flipped",
+    visuals: VisualProperties = Field(
+        ..., description="Configuration for the item's visual display."
     )
-    animation: Optional[str] = Field(
-        None, description="Animation to play for this item"
+    sound: SoundProperties = Field(
+        ..., description="Configuration for the item's sound playback."
     )
     dynamic_menu: Optional[DynamicMenuEntry] = Field(
         None,
@@ -493,17 +542,6 @@ class ItemModel(BaseModel, BaseLookupModel):
         if has.file(v) and has.size(v, prepare.ITEM_SIZE):
             return v
         raise ValueError(f"the sprite {v} doesn't exist in the db")
-
-    @field_validator("animation")
-    def animation_exists(cls: ItemModel, v: Optional[str]) -> Optional[str]:
-        file: str = f"animations/item/{v}_00.png"
-        if (
-            not v
-            or has.db_entry("animation", v)
-            and has.size(file, prepare.NATIVE_RESOLUTION)
-        ):
-            return v
-        raise ValueError(f"the animation {v} doesn't exist in the db")
 
     @field_validator("immunity_to_status")
     def status_exists(cls: ItemModel, v: Sequence[str]) -> Sequence[str]:
@@ -872,24 +910,12 @@ class MonsterSpritesModel(BaseModel):
 
 
 class MonsterSoundsModel(BaseModel):
-    combat_call: Optional[str] = Field(
-        None, description="The sound used when entering combat"
+    combat_call: Optional[SoundProperties] = Field(
+        None, description="Sound configuration used when entering combat"
     )
-    faint_call: Optional[str] = Field(
-        None, description="The sound used when the monster faints"
+    faint_call: Optional[SoundProperties] = Field(
+        None, description="Sound configuration used when the monster faints"
     )
-
-    @field_validator("combat_call")
-    def combat_call_exists(cls: MonsterSoundsModel, v: str) -> str:
-        if v and has.db_entry("sounds", v):
-            return v
-        raise ValueError(f"the sound {v} doesn't exist in the db")
-
-    @field_validator("faint_call")
-    def faint_call_exists(cls: MonsterSoundsModel, v: str) -> str:
-        if v and has.db_entry("sounds", v):
-            return v
-        raise ValueError(f"the sound {v} doesn't exist in the db")
 
 
 # Validate assignment allows us to assign a default inside a validator
@@ -1233,16 +1259,12 @@ class TechniqueModel(BaseModel, BaseLookupModel):
     effects: Sequence[CommonEffect] = Field(
         ..., description="Effects this technique uses"
     )
-    flip_axes: FlipAxes = Field(
-        ...,
-        description="Axes along which technique animation should be flipped",
-    )
     target: TargetModel
-    animation: Optional[str] = Field(
-        None, description="Animation to play for this technique"
+    visuals: VisualProperties = Field(
+        ..., description="Configuration for the technique's visual display."
     )
-    sfx: str = Field(
-        ..., description="Sound effect to play when this technique is used"
+    sound: SoundProperties = Field(
+        ..., description="Configuration for the technique's sound playback."
     )
     modifiers: list[Modifier] = Field(..., description="Various modifiers")
 
@@ -1334,25 +1356,6 @@ class TechniqueModel(BaseModel, BaseLookupModel):
             return v
         raise ValueError(f"no translation exists with msgid: {v}")
 
-    @field_validator("animation")
-    def animation_exists(
-        cls: TechniqueModel, v: Optional[str]
-    ) -> Optional[str]:
-        file: str = f"animations/technique/{v}_00.png"
-        if (
-            not v
-            or has.db_entry("animation", v)
-            and has.size(file, prepare.NATIVE_RESOLUTION)
-        ):
-            return v
-        raise ValueError(f"the animation {v} doesn't exist in the db")
-
-    @field_validator("sfx")
-    def sfx_tech_exists(cls: TechniqueModel, v: str) -> str:
-        if has.db_entry("sounds", v):
-            return v
-        raise ValueError(f"the sound {v} doesn't exist in the db")
-
     @field_validator("types")
     def element_exists(
         cls: TechniqueModel, elements: Sequence[str]
@@ -1385,15 +1388,11 @@ class StatusModel(BaseModel, BaseLookupModel):
     effects: Sequence[CommonEffect] = Field(
         ..., description="Effects this status uses"
     )
-    flip_axes: FlipAxes = Field(
-        ...,
-        description="Axes along which status animation should be flipped",
+    visuals: VisualProperties = Field(
+        ..., description="Configuration for the status's visual display."
     )
-    animation: Optional[str] = Field(
-        None, description="Animation to play for this status"
-    )
-    sfx: str = Field(
-        ..., description="Sound effect to play when this status is used"
+    sound: SoundProperties = Field(
+        ..., description="Configuration for the status's sound playback."
     )
     bond: bool = Field(
         False,
@@ -1480,28 +1479,11 @@ class StatusModel(BaseModel, BaseLookupModel):
             return v
         raise ValueError(f"no translation exists with msgid: {v}")
 
-    @field_validator("animation")
-    def animation_exists(cls: StatusModel, v: Optional[str]) -> Optional[str]:
-        file: str = f"animations/technique/{v}_00.png"
-        if (
-            not v
-            or has.db_entry("animation", v)
-            and has.size(file, prepare.NATIVE_RESOLUTION)
-        ):
-            return v
-        raise ValueError(f"the animation {v} doesn't exist in the db")
-
     @field_validator("on_tech_use", "on_item_use")
     def status_exists(cls: StatusModel, v: Optional[str]) -> Optional[str]:
         if not v or has.db_entry("status", v) or has.db_entry("technique", v):
             return v
         raise ValueError(f"the status {v} doesn't exist in the db")
-
-    @field_validator("sfx")
-    def sfx_cond_exists(cls: StatusModel, v: str) -> str:
-        if has.db_entry("sounds", v):
-            return v
-        raise ValueError(f"the sound {v} doesn't exist in the db")
 
 
 class PartyMemberModel(BaseModel):
@@ -2415,9 +2397,13 @@ class AnimationModel(BaseModel, BaseLookupModel):
         default=0.1,
         description="Duration (in seconds) for each frame of the animation.",
     )
-    loop: bool = Field(
-        default=False,
-        description="Whether the animation should repeat after finishing.",
+    loop: int = Field(
+        default=-1,
+        description=(
+            "Number of times the visual should loop. "
+            "-1 means infinite looping, 0 means play once, "
+            "any positive integer means loop that many times."
+        ),
     )
     rate: float = Field(
         default=1.0,

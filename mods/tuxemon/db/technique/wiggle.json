@@ -1,19 +1,16 @@
 {
   "tech_id": 210,
   "accuracy": 1.0,
-  "animation": "tail",
   "effects": [
     {
       "type": "empty"
     }
   ],
-  "flip_axes": "",
   "speed": "extremely_fast",
   "potency": 0.0,
   "power": 0,
   "range": "special",
   "recharge": 1,
-  "sfx": "sfx_kick",
   "slug": "wiggle",
   "sort": "damage",
   "modifiers": [],
@@ -35,5 +32,14 @@
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "wiggle_success"
+  "use_tech": "wiggle_success",
+  "visuals": {
+    "animation": "tail",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_kick",
+    "volume": 1.5
+  }
 }

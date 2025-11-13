@@ -8,9 +8,11 @@ from typing import TYPE_CHECKING, ClassVar
 import pygame_menu
 from pygame_menu import locals
 
-from tuxemon import prepare
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.graphics import BG_PHONE_RENAMING
+from tuxemon.platform.const.sizes import PLAYER_NAME_LIMIT
+from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
@@ -27,7 +29,7 @@ class NuPhoneRenaming(PygameMenuState):
         def rename_callback(new_name: str, monster: Monster) -> None:
             monster.name = new_name
             self.menu.clear()
-            theme = self._setup_theme(prepare.BG_PHONE_RENAMING)
+            theme = self._setup_theme(BG_PHONE_RENAMING)
             theme.scrollarea_position = locals.POSITION_EAST
             theme.widget_alignment = locals.ALIGN_CENTER
             self.add_menu_items(self.menu)
@@ -39,7 +41,7 @@ class NuPhoneRenaming(PygameMenuState):
                 callback=partial(rename_callback, monster=monster),
                 escape_key_exits=False,
                 initial=monster.name,
-                char_limit=prepare.PLAYER_NAME_LIMIT,
+                char_limit=PLAYER_NAME_LIMIT,
             )
 
         monsters = self.char.party.monsters
@@ -55,9 +57,9 @@ class NuPhoneRenaming(PygameMenuState):
         menu.set_title(T.translate("app_renaming")).center_content()
 
     def __init__(self, character: NPC) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_PHONE_RENAMING)
+        theme = self._setup_theme(BG_PHONE_RENAMING)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
         theme.title = True

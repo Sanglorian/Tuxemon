@@ -8,7 +8,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, fields
 from typing import Any, Optional
 
-from tuxemon.prepare import COEFF_STATS
+from tuxemon.platform.const.sizes import COEFF_STATS
 from tuxemon.shape import ShapeHandler
 from tuxemon.taste import Taste
 

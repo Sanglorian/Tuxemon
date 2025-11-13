@@ -11,9 +11,19 @@ from pygame_menu.widgets.core.selection import Selection
 from pygame_menu.widgets.core.widget import Widget
 from pygame_menu.widgets.widget.menubar import MENUBAR_STYLE_ADAPTIVE
 
-from tuxemon import prepare
 from tuxemon.constants.asset_loader import fetch_asset
+from tuxemon.platform.const.graphics import (
+    FONT_COLOR,
+    FONT_SHADOW_COLOR,
+    FONT_SIZE,
+    FONT_SIZE_BIG,
+    SCROLLBAR_COLOR,
+    SCROLLBAR_SLIDER_COLOR,
+    TRANSPARENT_COLOR,
+)
+from tuxemon.prepare import SCALE
 from tuxemon.tools import scale, transform_resource_filename
+from tuxemon.user_config import CONFIG
 
 _theme: Optional[pygame_menu.Theme] = None
 
@@ -31,9 +41,9 @@ class TuxemonArrowSelection(Selection):
         #  --------------------------
         #
 
-        scale_factor = max(int(getattr(prepare, "SCALE", 1)), 1)
+        scale_factor = max(SCALE, 1)
         arrow = pygame_menu.BaseImage(
-            image_path=transform_resource_filename(prepare.CONFIG.menu_cursor),
+            image_path=transform_resource_filename(CONFIG.menu_cursor),
         ).scale(scale_factor, scale_factor, smooth=False)
 
         super().__init__(
@@ -71,9 +81,9 @@ def get_theme() -> pygame_menu.Theme:
     if _theme is not None:
         return _theme
 
-    scale_factor = max(int(getattr(prepare, "SCALE", 1)), 1)
+    scale_factor = max(SCALE, 1)
     tuxemon_border = pygame_menu.BaseImage(
-        image_path=transform_resource_filename(prepare.CONFIG.menu_border),
+        image_path=transform_resource_filename(CONFIG.menu_border),
     ).scale(scale_factor, scale_factor, smooth=False)
 
     tuxemon_background_center_rect = tuxemon_border.get_rect()
@@ -101,16 +111,16 @@ def get_theme() -> pygame_menu.Theme:
     )
 
     # Set common font sizes and colors as part of the theme definition
-    theme.widget_font_size = scale(prepare.FONT_SIZE)
-    theme.title_font_size = scale(prepare.FONT_SIZE_BIG)
-    theme.widget_font_color = prepare.FONT_COLOR
-    theme.selection_color = prepare.FONT_COLOR
-    theme.scrollbar_color = prepare.SCROLLBAR_COLOR
-    theme.scrollbar_slider_color = prepare.SCROLLBAR_SLIDER_COLOR
-    theme.title_font_color = prepare.FONT_COLOR
-    theme.title_background_color = prepare.TRANSPARENT_COLOR
-    theme.widget_font_shadow_color = prepare.FONT_SHADOW_COLOR
-    font = fetch_asset("font", prepare.CONFIG.locale.font_file)
+    theme.widget_font_size = scale(FONT_SIZE)
+    theme.title_font_size = scale(FONT_SIZE_BIG)
+    theme.widget_font_color = FONT_COLOR
+    theme.selection_color = FONT_COLOR
+    theme.scrollbar_color = SCROLLBAR_COLOR
+    theme.scrollbar_slider_color = SCROLLBAR_SLIDER_COLOR
+    theme.title_font_color = FONT_COLOR
+    theme.title_background_color = TRANSPARENT_COLOR
+    theme.widget_font_shadow_color = FONT_SHADOW_COLOR
+    font = fetch_asset("font", CONFIG.locale.font_file)
     theme.title_font = font
     theme.widget_font = font
 

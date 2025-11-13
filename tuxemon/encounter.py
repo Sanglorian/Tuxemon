@@ -7,7 +7,6 @@ import random
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Optional, Union
 
-from tuxemon import prepare
 from tuxemon.db import (
     EncounterItemModel,
     EncounterModel,
@@ -15,6 +14,7 @@ from tuxemon.db import (
     HordeEncounterModel,
     db,
 )
+from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
@@ -111,7 +111,7 @@ class Encounter:
         if sum_rates == 0:
             return None
 
-        encounter_rate_modifier = prepare.CONFIG.encounter_rate_modifier
+        encounter_rate_modifier = CONFIG.encounter_rate_modifier
         scale = (total_prob / sum_rates) * encounter_rate_modifier
 
         total = 0.0

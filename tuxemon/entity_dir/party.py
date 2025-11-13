@@ -8,10 +8,10 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
-from tuxemon import prepare
 from tuxemon.boxes import MonsterBoxes
 from tuxemon.entity_dir.routing import RoutingPolicy, RoutingPolicyRegistry
 from tuxemon.monster import Monster, decode_monsters, encode_monsters
+from tuxemon.platform.const.sizes import MAX_KENNEL, PARTY_LIMIT
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
@@ -31,7 +31,7 @@ class PartyHandler:
         monster_boxes: MonsterBoxes,
         owner: NPC,
         monsters: Optional[list[Monster]] = None,
-        party_limit: int = prepare.PARTY_LIMIT,
+        party_limit: int = PARTY_LIMIT,
         routing_policy_name: str = "default",
     ) -> None:
         self._monsters = monsters if monsters is not None else []
@@ -127,7 +127,7 @@ class PartyHandler:
     ) -> None:
         policy = self.routing_policy
         kennel = kennel if kennel is not None else policy.get_kennel()
-        max_box_capacity = policy.max_box_capacity or prepare.MAX_KENNEL
+        max_box_capacity = policy.max_box_capacity or MAX_KENNEL
 
         if self._monster_boxes.is_box_full(kennel, max_box_capacity):
             logger.warning(

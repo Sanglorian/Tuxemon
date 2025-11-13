@@ -12,10 +12,11 @@ import pygame_menu
 import yaml
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 
-from tuxemon import prepare
 from tuxemon.constants import paths
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.graphics import BG_PHONE_CONTACTS
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
@@ -130,8 +131,8 @@ class NuPhoneRadioBase(PygameMenuState, ABC):
     name: ClassVar[str] = "NuPhoneRadioBase"
 
     def __init__(self, character: NPC) -> None:
-        width, height = prepare.SCREEN_SIZE
-        theme = self._setup_theme(prepare.BG_PHONE_CONTACTS)
+        width, height = SCREEN_SIZE
+        theme = self._setup_theme(BG_PHONE_CONTACTS)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
         theme.title = True

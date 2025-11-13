@@ -15,7 +15,7 @@ from tuxemon.combat.utils import check_battle_legal
 from tuxemon.db import EnvironmentModel, db
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
-from tuxemon.prepare import MONSTERS_DOUBLE
+from tuxemon.platform.const.sizes import MONSTERS_DOUBLE
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

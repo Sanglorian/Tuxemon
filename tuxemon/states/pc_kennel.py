@@ -13,11 +13,13 @@ import pygame_menu
 from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon import prepare
 from tuxemon.animation import ScheduleType
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.graphics import BG_PC_KENNEL
+from tuxemon.platform.const.sizes import MAX_KENNEL, PARTY_LIMIT
+from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.state.state import State
 from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.tools import fix_measure, open_choice_dialog, open_dialog
@@ -37,7 +39,7 @@ MenuGameObj = Callable[[], object]
 
 HIDDEN = "hidden_kennel"
 HIDDEN_LIST = [HIDDEN]
-MAX_BOX = prepare.MAX_KENNEL
+MAX_BOX = MAX_KENNEL
 
 
 class MonsterActionHandler:
@@ -222,7 +224,7 @@ class MonsterTakeState(PygameMenuState):
                 for key in box_ids
                 if key != self.box_name
                 and self.monster_boxes.get_box_size(key, "monster")
-                < prepare.MAX_KENNEL
+                < MAX_KENNEL
             ]
 
             swap_target = self.swap_target
@@ -232,7 +234,7 @@ class MonsterTakeState(PygameMenuState):
                 }
             else:
                 actions = {}
-                if len(self.char.monsters) < prepare.PARTY_LIMIT:
+                if len(self.char.monsters) < PARTY_LIMIT:
                     actions["pick"] = lambda: handler.pick(mon)
                 if kennels:
                     actions["move"] = lambda: handler.move(mon, kennels)
@@ -262,7 +264,7 @@ class MonsterTakeState(PygameMenuState):
             label = T.translate(monster.name).upper()
             iid = monster.instance_id.hex
             new_image = self._create_image(monster.sprite_handler.front_path)
-            new_image.scale(prepare.SCALE * 0.5, prepare.SCALE * 0.5)
+            new_image.scale(SCALE * 0.5, SCALE * 0.5)
             menu.add.banner(
                 new_image,
                 partial(kennel_options, iid),
@@ -295,9 +297,9 @@ class MonsterTakeState(PygameMenuState):
         character: NPC,
         swap_target: Optional[Monster] = None,
     ) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_PC_KENNEL)
+        theme = self._setup_theme(BG_PC_KENNEL)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
 
@@ -341,7 +343,7 @@ class MonsterBoxState(PygameMenuState):
     name: ClassVar[str] = "MonsterBoxState"
 
     def __init__(self, character: NPC) -> None:
-        _, height = prepare.SCREEN_SIZE
+        _, height = SCREEN_SIZE
 
         super().__init__(height=height)
 
@@ -366,7 +368,7 @@ class MonsterBoxState(PygameMenuState):
             menu.add.button(label, callback)
             menu.add.vertical_fill()
 
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         widgets_size = menu.get_size(widget=True)
         b_width, b_height = menu.get_scrollarea().get_border_size()
         menu.resize(

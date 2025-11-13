@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Optional
 
 from tuxemon.db import EconomyItemModel, EconomyModel, db
 from tuxemon.economy.price_policy import PricePolicy
-from tuxemon.prepare import GRAD_BLUE
+from tuxemon.platform.const.graphics import GRAD_BLUE
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC

@@ -8,12 +8,15 @@ from typing import Any, ClassVar, Optional
 import pygame_menu
 from pygame_menu import locals
 
-from tuxemon import formula, prepare
+from tuxemon import formula
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.monster import Monster
 from tuxemon.platform.const import buttons
+from tuxemon.platform.const.graphics import BG_PARTY
+from tuxemon.platform.const.sizes import U_KM, U_MI
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 MenuGameObj = Callable[[], object]
@@ -37,9 +40,9 @@ class PartyState(PygameMenuState):
             monsters = element["party"]
         if not monsters:
             raise ValueError("No monsters in the party")
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_PARTY)
+        theme = self._setup_theme(BG_PARTY)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
 
@@ -142,10 +145,10 @@ class PartyState(PygameMenuState):
                 unit = self.client.config.unit_measure
                 if unit == "metric":
                     walked = formula.convert_km(steps)
-                    unit_walked = prepare.U_KM
+                    unit_walked = U_KM
                 else:
                     walked = formula.convert_mi(steps)
-                    unit_walked = prepare.U_MI
+                    unit_walked = U_MI
                 # labels
                 params = {
                     "name": monster.name.upper(),

@@ -28,12 +28,12 @@ from typing import (
 )
 from uuid import UUID
 
-from tuxemon import prepare
 from tuxemon.compat.rect import ReadOnlyRect
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import Comparison
 from tuxemon.locale import T
 from tuxemon.math import Vector2
+from tuxemon.prepare import SCALE, SCREEN_RECT
 from tuxemon.ui.dialogue import calc_dialog_rect
 from tuxemon.ui.text_alignment import DialogPosition
 from tuxemon.ui.text_formatter import TextFormatter
@@ -135,7 +135,7 @@ def scale_sequence(sequence: TVarSequence) -> TVarSequence:
     Returns:
         Scaled sequence.
     """
-    return type(sequence)(i * prepare.SCALE for i in sequence)
+    return type(sequence)(i * SCALE for i in sequence)
 
 
 def scale(number: int) -> int:
@@ -148,7 +148,7 @@ def scale(number: int) -> int:
     Returns:
         Scaled integer.
     """
-    return prepare.SCALE * number
+    return SCALE * number
 
 
 TEnum = TypeVar("TEnum", bound=Enum)
@@ -241,7 +241,7 @@ def open_dialog(
         dialog_rect = custom_rect
     else:
         dialog_rect = calc_dialog_rect(
-            prepare.SCREEN_RECT, position, target_coords=target_coords
+            SCREEN_RECT, position, target_coords=target_coords
         )
 
     return client.push_state(

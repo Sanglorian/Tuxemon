@@ -8,7 +8,7 @@ from typing import Optional, final
 
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
-from tuxemon.prepare import KENNEL
+from tuxemon.platform.const.sizes import KENNEL
 from tuxemon.session import Session
 from tuxemon.tools import get_valid_uuid
 

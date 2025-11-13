@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Optional
 import yaml
 
 from tuxemon.constants.paths import mods_folder
-from tuxemon.prepare import KENNEL
+from tuxemon.platform.const.sizes import KENNEL
 
 if TYPE_CHECKING:
     from tuxemon.save_state import NPCState

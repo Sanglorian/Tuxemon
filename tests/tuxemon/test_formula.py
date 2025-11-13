@@ -4,7 +4,6 @@ import math
 import unittest
 from unittest.mock import MagicMock
 
-from tuxemon import prepare
 from tuxemon.element import Element
 from tuxemon.formula import (
     calculate_time_based_multiplier,
@@ -18,6 +17,7 @@ from tuxemon.formula import (
     simple_heal,
 )
 from tuxemon.monster import Monster
+from tuxemon.platform.const.sizes import COEFF_DAMAGE
 from tuxemon.technique.technique import Technique
 
 
@@ -32,8 +32,7 @@ class TestSimpleHeal(unittest.TestCase):
         self.technique.healing_power = 5
         self.monster.level = 10
         expected_heal = (
-            prepare.COEFF_DAMAGE
-            + self.monster.level * self.technique.healing_power
+            COEFF_DAMAGE + self.monster.level * self.technique.healing_power
         )
         actual_heal = simple_heal(self.technique, self.monster)
         self.assertEqual(int(expected_heal), actual_heal)
@@ -44,8 +43,7 @@ class TestSimpleHeal(unittest.TestCase):
         factors = {"boost": 1.2, "penalty": 0.8}
         expected_multiplier = math.prod(factors.values())
         expected_heal = (
-            prepare.COEFF_DAMAGE
-            + self.monster.level * self.technique.healing_power
+            COEFF_DAMAGE + self.monster.level * self.technique.healing_power
         ) * expected_multiplier
         actual_heal = simple_heal(self.technique, self.monster, factors)
         self.assertEqual(int(expected_heal), actual_heal)
@@ -55,8 +53,7 @@ class TestSimpleHeal(unittest.TestCase):
         self.monster.level = 20
         factors = {}
         expected_heal = (
-            prepare.COEFF_DAMAGE
-            + self.monster.level * self.technique.healing_power
+            COEFF_DAMAGE + self.monster.level * self.technique.healing_power
         )
         actual_heal = simple_heal(self.technique, self.monster, factors)
         self.assertEqual(int(expected_heal), actual_heal)

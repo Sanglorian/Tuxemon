@@ -7,9 +7,9 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
-from tuxemon import prepare
 from tuxemon.item.item import decode_items, encode_items
 from tuxemon.monster import decode_monsters, encode_monsters
+from tuxemon.platform.const.sizes import MAX_KENNEL
 from tuxemon.states.pc_kennel import HIDDEN_LIST
 from tuxemon.states.pc_locker import HIDDEN_LIST_LOCKER
 
@@ -72,7 +72,7 @@ class BoxCollection:
         self,
         box_id: str,
         party: list[Monster],
-        max_size: int = prepare.MAX_KENNEL,
+        max_size: int = MAX_KENNEL,
     ) -> bool:
         """
         Attempts to store all monsters from the given party into the specified box.
@@ -451,9 +451,7 @@ class MonsterBoxes(BoxCollection):
             None,
         )
 
-    def is_box_full(
-        self, box_id: str, max_capacity: int = prepare.MAX_KENNEL
-    ) -> bool:
+    def is_box_full(self, box_id: str, max_capacity: int = MAX_KENNEL) -> bool:
         """
         Checks if a monster box is full.
 

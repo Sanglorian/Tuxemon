@@ -12,8 +12,14 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 
 import yaml
 
-from tuxemon import prepare as pre
 from tuxemon.constants import paths
+from tuxemon.platform.const.sizes import (
+    CATCH_RATE_RANGE,
+    COEFF_DAMAGE,
+    COEFF_FEET,
+    COEFF_MILES,
+    COEFF_POUNDS,
+)
 
 if TYPE_CHECKING:
     from tuxemon.element import Element
@@ -329,11 +335,11 @@ def simple_damage_calculate(
     user_strength: float = 0
     user_stat = range_map_entry.user_stat
     if user_stat.stat == "level":
-        user_strength += (pre.COEFF_DAMAGE + user.level) * user_stat.weight
+        user_strength += (COEFF_DAMAGE + user.level) * user_stat.weight
     else:
         user_strength += (
             getattr(user, user_stat.stat, 0)
-            * (pre.COEFF_DAMAGE + user.level)
+            * (COEFF_DAMAGE + user.level)
             * user_stat.weight
         )
     logger.debug(f"User strength: {user_strength}")
@@ -384,7 +390,7 @@ def simple_heal(
     Returns:
         int: The calculated healing amount.
     """
-    base_heal = pre.COEFF_DAMAGE + monster.level * technique.healing_power
+    base_heal = COEFF_DAMAGE + monster.level * technique.healing_power
     if additional_factors:
         factor_multiplier = math.prod(additional_factors.values())
         base_heal = base_heal * factor_multiplier
@@ -514,12 +520,12 @@ def set_height(monster: Monster, value: float) -> float:
 
 def convert_lbs(kg: float) -> int:
     """It converts kilograms into pounds."""
-    return round(kg * pre.COEFF_POUNDS)
+    return round(kg * COEFF_POUNDS)
 
 
 def convert_ft(cm: float) -> int:
     """It converts centimeters into feet."""
-    return round(cm * pre.COEFF_FEET)
+    return round(cm * COEFF_FEET)
 
 
 def convert_km(steps: float) -> float:
@@ -530,7 +536,7 @@ def convert_km(steps: float) -> float:
 def convert_mi(steps: float) -> float:
     """It converts steps into miles."""
     km = convert_km(steps)
-    return round(km * pre.COEFF_MILES, 2)
+    return round(km * COEFF_MILES, 2)
 
 
 def shake_check(
@@ -548,7 +554,7 @@ def shake_check(
         The shake_check value.
     """
     config_capture = Loader.get_config_capture("config_capture.yaml")
-    max_catch_rate = pre.CATCH_RATE_RANGE[1]
+    max_catch_rate = CATCH_RATE_RANGE[1]
     shake_constant = config_capture.shake_constant
     shake_denominator = config_capture.shake_denominator
     shake_divisor = config_capture.shake_divisor

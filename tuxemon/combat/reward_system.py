@@ -11,7 +11,7 @@ from tuxemon.combat.utils import alive_party
 from tuxemon.formula import config_monster
 from tuxemon.locale import T
 from tuxemon.monster_dir.stats import BasicStats
-from tuxemon.prepare import DEFAULT_TP_GAIN, MAX_LEVEL
+from tuxemon.platform.const.sizes import DEFAULT_TP_GAIN, MAX_LEVEL
 
 if TYPE_CHECKING:
     from tuxemon.combat.damage_tracker import DamageTracker

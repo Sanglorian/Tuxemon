@@ -7,10 +7,10 @@ from typing import Any
 
 import yaml
 
-from tuxemon import prepare
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import db
 from tuxemon.script.parser import parse_action_string
+from tuxemon.user_config import CONFIG
 
 EXPECTED_SCENARIOS = ["spyder", "xero", "tobedefined", "eclipse"]
 FOLDER = "maps"
@@ -31,7 +31,7 @@ YAML_TYPES = ["init", "collision", "event"]
 
 
 def expand_expected_scenarios() -> None:
-    for mod in prepare.CONFIG.mods:
+    for mod in CONFIG.mods:
         map: str = db.mod_metadata.require_mod_attribute(mod, "starting_map")
         EXPECTED_SCENARIOS.append(map.removesuffix(".tmx"))
 

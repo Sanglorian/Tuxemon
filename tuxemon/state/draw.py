@@ -9,8 +9,8 @@ import pygame
 from pygame.font import Font, get_default_font
 from pygame.surface import Surface
 
-from tuxemon import prepare
 from tuxemon.graphics import ColorLike
+from tuxemon.platform.const.graphics import GREEN_COLOR, RED_COLOR
 from tuxemon.ui.text_renderer import TextRenderer
 
 if TYPE_CHECKING:
@@ -142,8 +142,8 @@ class EventDebugDrawer:
         y_offset: int = 200,
         initial_x: int = 4,
         initial_y: int = 20,
-        success_color: ColorLike = prepare.GREEN_COLOR,
-        failure_color: ColorLike = prepare.RED_COLOR,
+        success_color: ColorLike = GREEN_COLOR,
+        failure_color: ColorLike = RED_COLOR,
     ) -> None:
         """
         Initializes the EventDebugDrawer.

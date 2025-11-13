@@ -13,7 +13,6 @@ import pytmx
 import yaml
 from natsort import natsorted
 
-from tuxemon import prepare
 from tuxemon.compat import Rect
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.constants.paths import mods_folder
@@ -31,6 +30,12 @@ from tuxemon.map.map import (
 )
 from tuxemon.map.map_region import RegionProperties, extract_region_properties
 from tuxemon.map.map_tuxemon import AbstractMap, NullMap, TuxemonMap
+from tuxemon.platform.const.sizes import (
+    MAP_CACHE_SIZE,
+    REGION_KEYS,
+    SURFACE_KEYS,
+)
+from tuxemon.prepare import TILE_SIZE
 from tuxemon.tools import copy_dict_with_keys
 
 logger = logging.getLogger(__name__)
@@ -65,13 +70,13 @@ class MapLoader:
 
         Parameters:
             cache_size: Maximum number of maps to retain in the LRU cache.
-                        If None, defaults to prepare.MAP_CACHE_SIZE.
+                        If None, defaults to MAP_CACHE_SIZE.
             enable_cache: Flag to enable or disable caching behavior.
                         If False, maps are always loaded fresh from disk.
         """
         self.tmx_loader = TMXMapLoader()
         self.yaml_loader = YAMLEventLoader()
-        self.cache_size = cache_size or prepare.MAP_CACHE_SIZE
+        self.cache_size = cache_size or MAP_CACHE_SIZE
         self.enable_cache = enable_cache
         self._cache: OrderedDict[str, AbstractMap] = OrderedDict()
 
@@ -382,7 +387,7 @@ class TMXMapLoader:
         """
         data = self.load_tiled_map(filename)
         tile_size = (data.tilewidth, data.tileheight)
-        data.tilewidth, data.tileheight = prepare.TILE_SIZE
+        data.tilewidth, data.tileheight = TILE_SIZE
 
         collision_map, collision_lines_map = self.load_collision_data(
             data, tile_size
@@ -462,7 +467,7 @@ class TMXMapLoader:
         gids_with_surface: dict[int, Any] = {}
 
         for gid, props in data.tile_properties.items():
-            for surface_key in prepare.SURFACE_KEYS:
+            for surface_key in SURFACE_KEYS:
                 surface = props.get(surface_key)
                 if surface is not None:
                     if gid not in gids_with_surface:
@@ -504,7 +509,7 @@ class TMXMapLoader:
         if obj.type and obj.type.lower().startswith("collision"):
             if getattr(obj, "closed", True):
                 region_conditions = copy_dict_with_keys(
-                    obj.properties, prepare.REGION_KEYS
+                    obj.properties, REGION_KEYS
                 )
                 _extract = extract_region_properties(region_conditions)
                 collision_map[(x, y)] = _extract
@@ -590,9 +595,7 @@ class TMXMapLoader:
         Yields:
             Tuples with form (tile position, properties).
         """
-        region_conditions = copy_dict_with_keys(
-            region.properties, prepare.REGION_KEYS
-        )
+        region_conditions = copy_dict_with_keys(region.properties, REGION_KEYS)
         rect = snap_rect(
             Rect((region.x, region.y, region.width, region.height)), grid_size
         )

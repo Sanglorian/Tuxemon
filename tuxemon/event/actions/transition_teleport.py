@@ -8,7 +8,8 @@ from typing import Optional, final
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import ColorLike, string_to_colorlike
-from tuxemon.prepare import BLACK_COLOR, TRANS_TIME
+from tuxemon.platform.const.graphics import BLACK_COLOR
+from tuxemon.platform.const.sizes import TRANS_TIME
 from tuxemon.session import Session
 from tuxemon.teleporter import TeleportRequest
 

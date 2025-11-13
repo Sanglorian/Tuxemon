@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from tuxemon.core.core_condition import CoreCondition
 from tuxemon.map.map import get_coords, get_direction
-from tuxemon.prepare import SURFACE_KEYS
+from tuxemon.platform.const.sizes import SURFACE_KEYS
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster

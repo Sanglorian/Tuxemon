@@ -10,7 +10,6 @@ import pygame_menu
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.sound import SOUND_TYPE_WIDGET_SELECTION
 
-from tuxemon import prepare
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
@@ -18,6 +17,7 @@ from tuxemon.menu.theme import get_theme
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 from tuxemon.platform.platform_pygame.events import PygameKeyboardInput
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 
 
@@ -215,7 +215,7 @@ class ControlState(PygameMenuState):
             )
 
     def update_animation_size(self) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         widgets_size = self.menu.get_size(widget=True)
         _width, _height = widgets_size
         # block width if more than screen width

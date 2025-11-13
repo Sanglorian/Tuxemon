@@ -7,11 +7,11 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any, Optional, Union
 from uuid import UUID
 
-from tuxemon import prepare
 from tuxemon.db import (
     LearningMethod,
     MonsterMovesetItemModel,
 )
+from tuxemon.platform.const.sizes import MAX_MOVES
 from tuxemon.technique.technique import Technique, decode_moves, encode_moves
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ class MonsterMovesHandler:
         self,
         monster: Monster,
         technique: Technique,
-        max_moves: int = prepare.MAX_MOVES,
+        max_moves: int = MAX_MOVES,
         method: Optional[LearningMethod] = None,
         ignore_eligibility: bool = False,
     ) -> bool:
@@ -195,7 +195,7 @@ class MonsterMovesHandler:
     def set_moves(
         self,
         monster: Monster,
-        max_moves: int = prepare.MAX_MOVES,
+        max_moves: int = MAX_MOVES,
         method: LearningMethod = LearningMethod.LEVEL_UP,
     ) -> None:
         """

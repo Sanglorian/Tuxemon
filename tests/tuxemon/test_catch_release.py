@@ -7,7 +7,7 @@ from tuxemon.boxes import MonsterBoxes
 from tuxemon.game_variables import GameVariablesManager
 from tuxemon.monster import Monster
 from tuxemon.npc import NPC, PartyHandler
-from tuxemon.prepare import KENNEL, PARTY_LIMIT
+from tuxemon.platform.const.sizes import KENNEL, PARTY_LIMIT
 
 
 def mockNPC(self) -> None:

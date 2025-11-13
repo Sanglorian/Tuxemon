@@ -7,7 +7,6 @@ from unittest.mock import MagicMock, patch
 import pygame
 from pygame.surface import Surface
 
-from tuxemon import prepare
 from tuxemon.map.map_view import EntityFacing, SpriteController
 from tuxemon.npc import NPC
 from tuxemon.surfanim import SurfaceAnimation

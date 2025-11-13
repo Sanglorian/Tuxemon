@@ -11,11 +11,12 @@ import pygame_menu
 from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon import prepare
 from tuxemon.item.item import Item
 from tuxemon.locale import T
 from tuxemon.map.map_manager import MAP_TYPES, MapType
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.graphics import BG_PHONE
+from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.tools import fix_measure, open_dialog
 
 if TYPE_CHECKING:
@@ -28,10 +29,10 @@ class NuPhone(PygameMenuState):
     name: ClassVar[str] = "NuPhone"
 
     def __init__(self, character: NPC) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         self.char = character
 
-        theme = self._setup_theme(prepare.BG_PHONE)
+        theme = self._setup_theme(BG_PHONE)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
         theme.title = True
@@ -110,7 +111,7 @@ class NuPhone(PygameMenuState):
                 change = self._get_app_callback(item)
 
                 new_image = self._create_image(item.sprite)
-                new_image.scale(prepare.SCALE, prepare.SCALE)
+                new_image.scale(SCALE, SCALE)
 
                 # App image (banner)
                 menu.add.banner(

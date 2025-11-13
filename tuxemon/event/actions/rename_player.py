@@ -5,9 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon import prepare
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
+from tuxemon.platform.const.sizes import PLAYER_NAME_LIMIT
 from tuxemon.session import Session
 
 
@@ -42,7 +42,7 @@ class RenamePlayerAction(EventAction):
             callback=self.set_player_name,
             escape_key_exits=False,
             initial=session.player.name,
-            char_limit=prepare.PLAYER_NAME_LIMIT,
+            char_limit=PLAYER_NAME_LIMIT,
             random=bool(self.random),
         )
 

@@ -9,7 +9,7 @@ from dataclasses import fields
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID, uuid4
 
-from tuxemon import formula, prepare
+from tuxemon import formula
 from tuxemon.db import (
     Acquisition,
     EffectPhase,
@@ -44,6 +44,12 @@ from tuxemon.monster_dir.stats import (
     TrainingPoints,
 )
 from tuxemon.monster_dir.status import MonsterStatusHandler
+from tuxemon.platform.const.sizes import (
+    DEFAULT_TP_GAIN,
+    MAX_TOTAL_TPS,
+    MAX_TPS,
+)
+from tuxemon.prepare import SCALE
 from tuxemon.shape import ShapeHandler
 from tuxemon.sprite import Sprite
 from tuxemon.taste import Taste
@@ -313,7 +319,7 @@ class Monster:
             else f"sound_{self.types.primary.slug}_faint"
         )
 
-    def load_sprites(self, scale: float = prepare.SCALE) -> None:
+    def load_sprites(self, scale: float = SCALE) -> None:
         """
         Delegates the task of loading sprites to the sprite handler.
 
@@ -345,7 +351,7 @@ class Monster:
         self,
         sprite_type: str,
         frame_duration: float = 0.25,
-        scale: float = prepare.SCALE,
+        scale: float = SCALE,
         **kwargs: Any,
     ) -> Sprite:
         """
@@ -409,15 +415,13 @@ class Monster:
 
         return levels_earned
 
-    def give_tps(
-        self, stat_name: str, value: int = prepare.DEFAULT_TP_GAIN
-    ) -> None:
+    def give_tps(self, stat_name: str, value: int = DEFAULT_TP_GAIN) -> None:
         """
         Gives TP points to the monster's TrainingPoints after a battle,
         respecting the per-stat and total TP limits.
         """
-        max_tps = prepare.MAX_TPS
-        max_total_tps = prepare.MAX_TOTAL_TPS
+        max_tps = MAX_TPS
+        max_total_tps = MAX_TOTAL_TPS
         total_tps = sum(
             getattr(self.training_points, field.name)
             for field in fields(self.training_points)

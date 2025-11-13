@@ -11,10 +11,10 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import yaml
 
-from tuxemon import prepare
 from tuxemon.constants import paths
 from tuxemon.db import StatType
 from tuxemon.formula import simple_damage_multiplier
+from tuxemon.platform.const.sizes import POWER_RANGE
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
@@ -775,7 +775,7 @@ def technique_score(
     type_bonus += getattr(config, f"{technique.range}_bonus", 0.0)
 
     if config.power_weight:
-        normalized_power = technique.power / prepare.POWER_RANGE[1]
+        normalized_power = technique.power / POWER_RANGE[1]
         power_score = normalized_power * config.power_weight
 
     if config.accuracy_weight:

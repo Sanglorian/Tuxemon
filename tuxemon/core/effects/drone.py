@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
-from tuxemon.prepare import KENNEL
+from tuxemon.platform.const.sizes import KENNEL
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item

@@ -9,10 +9,10 @@ from typing import TYPE_CHECKING, ClassVar, Optional
 
 from pygame.surface import Surface
 
-from tuxemon import prepare
 from tuxemon.graphics import load_animated_sprite
 from tuxemon.locale import T
 from tuxemon.menu.menu import PopUpMenu
+from tuxemon.platform.const.graphics import BLACK_COLOR
 from tuxemon.platform.events import PlayerInput
 from tuxemon.sprite import Sprite
 from tuxemon.tools import transform_resource_filename
@@ -77,7 +77,7 @@ class IntroState(PopUpMenu[MenuGameObj]):
 
     def draw(self, surface: Surface) -> None:
         if not self.triggered:
-            surface.fill(prepare.BLACK_COLOR)
+            surface.fill(BLACK_COLOR)
             self.sprites.draw(surface)
             label = self.shadow_text(T.translate("menu_intro"))
             label_rect = label.get_rect(midbottom=surface.get_rect().center)

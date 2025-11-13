@@ -14,7 +14,6 @@ class TestRunningEvent(unittest.TestCase):
         self.assertEqual({}, event.context)
         self.assertEqual(0, event.action_index)
         self.assertIsNone(event.current_action)
-        self.assertIsNone(event.current_map_action)
         self.assertEqual(EventState.WAITING, event.state)
 
     def test_get_next_action(self):

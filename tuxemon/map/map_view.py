@@ -590,9 +590,9 @@ class DebugRenderer:
     def _draw_events(self, current_map: AbstractMap, surface: Surface) -> None:
         """Draws event-related debug information on the surface."""
         for event in self.map_manager.events:
-            vector = Vector2(event.x, event.y)
+            vector = Vector2(event.box.x, event.box.y)
             topleft = get_pos_from_tilepos(current_map, vector)
-            size = project((event.w, event.h))
+            size = project((event.box.width, event.box.height))
             rect = topleft, size
             box(surface, rect, self.event_color)
 

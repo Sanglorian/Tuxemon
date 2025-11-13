@@ -227,39 +227,22 @@ class CombatAnimations(Menu[None], ABC):
         # Load and play combat call sound
         self.play_sound_effect(monster.combat_call, 1.3)
 
-    def animate_sprite_spin(self, sprite: Sprite) -> None:
-        self.animate(
-            sprite,
-            rotation=360,
-            initial=0,
-            duration=0.8,
-            transition="in_out_quint",
+    def animate_sprite_tackle(self, attacker: Sprite) -> None:
+        duration = 0.3
+        original_x = attacker.rect.x
+        _, horizontal = self.combat_zone.get_zone(attacker.rect)
+
+        delta = (
+            scale(14) if horizontal is HorizontalAlignment.LEFT else -scale(14)
         )
 
-    def animate_sprite_tackle(self, sprite: Sprite) -> None:
-        duration = 0.3
-        original_x = sprite.rect.x
-        delta = 0
-
-        _, horizontal = self.combat_zone.get_zone(sprite.rect)
-
-        if horizontal is HorizontalAlignment.LEFT:
-            delta = scale(14)
-        elif horizontal is HorizontalAlignment.RIGHT:
-            delta = -scale(14)
-
         self.animate(
-            sprite.rect,
+            attacker.rect,
             x=original_x + delta,
             duration=duration,
             transition="out_circ",
-        )
-        self.animate(
-            sprite.rect,
-            x=original_x,
-            duration=duration,
-            transition="in_out_circ",
-            delay=0.35,
+            yoyo=True,
+            yoyo_loops=1,
         )
 
     def animate_monster_faint(self, monster: Monster) -> None:

@@ -106,7 +106,7 @@ class EventAction(ABC):
     * type, if a tuple, may include None to indicate the parameter is optional
     * name must be a valid python string
 
-    After parsing the parameters of the MapAction, the parameter's value
+    After parsing the parameters of the ParameterizableRule, the parameter's value
     will be passed to the type constructor.
 
     Example types: str, int, float, Monster, Item

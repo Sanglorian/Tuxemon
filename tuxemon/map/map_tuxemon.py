@@ -17,8 +17,7 @@ from tuxemon.locale import T
 from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
-    from tuxemon.db import Direction
-    from tuxemon.event import EventObject
+    from tuxemon.db import Direction, EventObject
     from tuxemon.map.map_region import RegionProperties
 
 logger = logging.getLogger(__name__)

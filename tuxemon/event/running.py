@@ -7,7 +7,7 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
-    from tuxemon.event import EventObject, MapAction, MapCondition
+    from tuxemon.db import EventObject, ParameterizableRule, SpatialCondition
     from tuxemon.event.eventaction import EventAction
     from tuxemon.event.eventcondition import ConditionManager
     from tuxemon.session import Session
@@ -49,8 +49,8 @@ class RunningEvent:
         "context",
         "action_index",
         "current_action",
-        "current_map_action",
         "state",
+        "priority",
     )
 
     def __init__(self, map_event: EventObject) -> None:
@@ -58,10 +58,10 @@ class RunningEvent:
         self.context: dict[str, Any] = dict()
         self.action_index = 0
         self.current_action: Optional[EventAction] = None
-        self.current_map_action = None
         self.state = EventState.WAITING
+        self.priority = map_event.priority
 
-    def get_next_action(self) -> Optional[MapAction]:
+    def get_next_action(self) -> Optional[ParameterizableRule]:
         """
         Get the next action to execute, if any.
 
@@ -101,6 +101,15 @@ class RunningEvent:
     def is_running(self) -> bool:
         return self.state == EventState.RUNNING
 
+    def __repr__(self) -> str:
+        """String representation for debugging."""
+        return (
+            f"<RunningEvent ID={self.map_event.id} "
+            f"State={self.state.name} "
+            f"Priority={self.priority} "
+            f"ActionIndex={self.action_index}>"
+        )
+
 
 class ConditionState(Enum):
     WAITING = auto()
@@ -119,7 +128,7 @@ class RunningCondition:
     )
 
     def __init__(
-        self, map_condition: MapCondition, evaluator: ConditionEvaluator
+        self, map_condition: SpatialCondition, evaluator: ConditionEvaluator
     ) -> None:
         self.map_condition = map_condition
         self.evaluator = evaluator
@@ -168,7 +177,7 @@ class ConditionEvaluator:
         self.session = session
         self.condition_manager = condition_manager
 
-    def evaluate(self, map_condition: MapCondition) -> bool:
+    def evaluate(self, map_condition: SpatialCondition) -> bool:
         condition = self.condition_manager.get_condition(map_condition)
         if condition is None:
             raise ValueError(

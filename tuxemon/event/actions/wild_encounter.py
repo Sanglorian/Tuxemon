@@ -99,6 +99,7 @@ class WildEncounterAction(EventAction):
             teams=[player, npc],
             combat_type=CombatType.MONSTER,
             graphics=environment.battle_graphics,
+            music=environment.battle_music,
             battle_mode=BattleMode.SINGLE,
         )
         session.client.queue_state("CombatState", context=context)
@@ -111,9 +112,11 @@ class WildEncounterAction(EventAction):
             rgb = string_to_colorlike(self.rgb)
         session.client.push_state("FlashTransition", color=rgb)
 
-        session.client.event_engine.execute_action(
-            "play_music", [environment.battle_music], True
-        )
+        sound = environment.battle_music.battle
+        if sound.music:
+            session.client.event_engine.execute_action(
+                "play_music", [sound.music, sound.volume], True
+            )
 
     def update(self, session: Session) -> None:
         try:

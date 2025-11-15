@@ -117,12 +117,15 @@ class RandomBattleAction(EventAction):
             teams=[player, npc],
             combat_type=CombatType.TRAINER,
             graphics=env.battle_graphics,
+            music=env.battle_music,
             battle_mode=BattleMode.SINGLE,
         )
         session.client.push_state("CombatState", context=context)
-        session.client.event_engine.execute_action(
-            "play_music", [env.battle_music], True
-        )
+        sound = env.battle_music.battle
+        if sound.music:
+            session.client.event_engine.execute_action(
+                "play_music", [sound.music, sound.volume], True
+            )
 
     def update(self, session: Session) -> None:
         try:

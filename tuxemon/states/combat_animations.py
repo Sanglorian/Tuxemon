@@ -74,6 +74,7 @@ class CombatAnimations(Menu[None], ABC):
         super().__init__()
         self.session = context.session
         self.graphics = context.graphics
+        self.music = context.music
         self.sprite_map = MonsterSpriteMap()
         self.capdevs: list[CaptureDeviceSprite] = []
         self.horde_sprite: Optional[HordeSprite] = None

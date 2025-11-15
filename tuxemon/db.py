@@ -469,6 +469,70 @@ class StatusBehaviors(Behaviors):
     )
 
 
+class SoundProperties(BaseModel):
+    sfx: Optional[str] = Field(..., description="Sound effect to play")
+    volume: float = Field(..., ge=0.0, description="Playback volume")
+
+    @field_validator("sfx")
+    def sfx_exists(cls: SoundProperties, v: Optional[str]) -> Optional[str]:
+        if not v:
+            return v
+
+        if has.db_entry("sounds", v):
+            return v
+        raise ValueError(f"the sound {v} doesn't exist in the db")
+
+
+class MusicProperties(BaseModel):
+    music: Optional[str] = Field(..., description="Music to play")
+    volume: float = Field(..., ge=0.0, description="Playback volume")
+
+    @field_validator("music")
+    def music_exists(cls: MusicProperties, v: Optional[str]) -> Optional[str]:
+        if not v:
+            return v
+
+        if has.db_entry("music", v):
+            return v
+        raise ValueError(f"the music {v} doesn't exist in the db")
+
+
+class VisualProperties(BaseModel):
+    animation: Optional[str] = Field(
+        ..., description="The slug or path of the animation to play."
+    )
+    flip_axes: FlipAxes = Field(
+        ...,
+        description="Axes (X and/or Y) along which the visual should be flipped.",
+    )
+    loop: int = Field(
+        ...,
+        description=(
+            "Number of times the visual should loop. "
+            "-1 means infinite looping, 0 means play once, "
+            "any positive integer means loop that many times."
+        ),
+    )
+
+    @field_validator("animation")
+    def animation_exists(cls, v: Optional[str]) -> Optional[str]:
+        if not v:
+            return v
+
+        item_file = f"animations/item/{v}_00.png"
+        technique_file = f"animations/technique/{v}_00.png"
+
+        if has.db_entry("animation", v) and (
+            has.size(item_file, prepare.NATIVE_RESOLUTION)
+            or has.size(technique_file, prepare.NATIVE_RESOLUTION)
+        ):
+            return v
+
+        raise ValueError(
+            f"the animation {v} doesn't exist in item/ or technique/ db"
+        )
+
+
 class DynamicMenuEntry(BaseModel):
     position: int
     label_key: str
@@ -1862,13 +1926,23 @@ class BattleGraphicsModel(BaseModel):
         raise ValueError(f"state isn't among: {states}")
 
 
+class BattleMusicModel(BaseModel):
+    battle: MusicProperties = Field(
+        ..., description="Music configuration used when fighting"
+    )
+    victory_music: MusicProperties = Field(
+        ..., description="Music configuration used when winning"
+    )
+    defeat_music: MusicProperties = Field(
+        ..., description="Music configuration used when losing"
+    )
+
+
 class EnvironmentModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "environment"
     slug: str = Field(..., description="Slug of the name of the environment")
-    battle_music: str = Field(
-        ..., description="Filename of the music to use for this environment"
-    )
     battle_graphics: BattleGraphicsModel
+    battle_music: BattleMusicModel
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> EnvironmentModel:
@@ -1879,12 +1953,6 @@ class EnvironmentModel(BaseModel, BaseLookupModel):
             )
         except EntryNotFoundError:
             raise RuntimeError(f"Encounter {slug} not found")
-
-    @field_validator("battle_music")
-    def battle_music_exists(cls: EnvironmentModel, v: str) -> str:
-        if has.db_entry("music", v):
-            return v
-        raise ValueError(f"the music {v} doesn't exist in the db")
 
 
 class HeldItemProbability(BaseModel):

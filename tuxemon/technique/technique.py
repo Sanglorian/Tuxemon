@@ -174,6 +174,8 @@ class Technique:
             target=target,
         )
         self.next_use = self.recharge_length
+        if session.client:
+            session.client.active_techniques.append(self)
         return result
 
     def has_type(self, type_slug: str) -> bool:

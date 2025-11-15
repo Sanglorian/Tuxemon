@@ -221,6 +221,8 @@ class Status:
             session=session,
             source=self,
         )
+        if session.client:
+            session.client.active_statuses.append(self)
         return result
 
     def tick_turn(self) -> None:

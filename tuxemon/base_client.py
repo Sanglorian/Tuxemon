@@ -30,6 +30,7 @@ from tuxemon.movement import MovementManager, Pathfinder
 from tuxemon.networking import NetworkManager
 from tuxemon.npc_manager import NPCManager
 from tuxemon.park_tracker import ParkSession
+from tuxemon.platform.afk_manager import AFKManager
 from tuxemon.platform.input_manager import InputManager
 from tuxemon.rumble import RumbleManager
 from tuxemon.session import local_session
@@ -83,7 +84,8 @@ class BaseClient(ABC):
         self.current_time = 0.0
 
         # setup controls
-        self.input_manager = InputManager(config)
+        self.afk_manager = AFKManager()
+        self.input_manager = InputManager(config, self.afk_manager)
 
         # Set up our networking for multiplayer.
         self.network_manager = NetworkManager(self)

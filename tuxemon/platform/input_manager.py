@@ -25,6 +25,7 @@ from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
+    from tuxemon.platform.afk_manager import AFKManager
     from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
@@ -35,12 +36,11 @@ class InputManager:
     Manages the input devices for the game.
     """
 
-    def __init__(self, config: TuxemonConfig) -> None:
+    def __init__(self, config: TuxemonConfig, afk_manager: AFKManager) -> None:
         """
         Initializes the input manager with the given config.
         """
-        self.idle_time: float = 0.0
-        self._was_afk: bool = False
+        self.afk_manager = afk_manager
         self.event_queue = PygameEventQueueHandler()
         self.input_history = InputHistory()
         self.controller = config.controller
@@ -50,11 +50,6 @@ class InputManager:
         self.combo_manager = ComboManager()
         self.input_visualizer = InputVisualizer(SCREEN_SIZE)
         self.show_visualizer = self.controller.show_input_visualizer
-
-    @property
-    def is_afk(self) -> bool:
-        # self.config.afk_timeout_seconds
-        return self.idle_time > 60.0
 
     def setup_inputs(self) -> None:
         """
@@ -127,20 +122,13 @@ class InputManager:
     def process_events(self) -> Generator[PlayerInput, None, None]:
         """Processes the input events."""
         for event in self.event_queue.process_events():
-            self.idle_time = 0.0
+            self.afk_manager.reset()
             self.input_history.add(event)
             self.combo_manager.process(event)
             yield event
 
     def update(self, time_delta: float) -> None:
-        self.idle_time += time_delta
-
-        if self.is_afk and not self._was_afk:
-            logger.info("Player is now AFK.")
-            self._was_afk = True
-        elif not self.is_afk and self._was_afk:
-            logger.info("Player is no longer AFK.")
-            self._was_afk = False
+        self.afk_manager.update(time_delta)
 
     def draw_visualizer(self, screen: Surface) -> None:
         all_inputs = {}

@@ -234,18 +234,13 @@ class BoundingBox(BaseModel):
     width: int = Field(
         ...,
         description="The horizontal size of the bounding box. Must be a positive integer.",
+        gt=0,
     )
     height: int = Field(
         ...,
         description="The vertical size of the bounding box. Must be a positive integer.",
+        gt=0,
     )
-
-    @field_validator("width", "height")
-    @classmethod
-    def must_be_positive(cls, v: int) -> int:
-        if v <= 0:
-            raise ValueError("'width' and 'height' must be positive.")
-        return v
 
 
 class Operator(str, Enum):
@@ -300,7 +295,16 @@ class EventObject(BaseModel):
     )
     priority: int = Field(
         ...,
-        description="Order of evaluation relative to other EventObjects. Lower number (e.g., 0) is higher priority.",
+        description="Order of evaluation relative to other EventObjects. Higher number (e.g., 10) is higher priority.",
+        ge=0,
+    )
+    timeout: Optional[float] = Field(
+        None,
+        description="Maximum duration (in seconds) this event is allowed to run. None = no timeout.",
+    )
+    delay: Optional[float] = Field(
+        None,
+        description="Delay before the event starts processing (in seconds). None = no delay.",
     )
     box: BoundingBox = Field(
         ..., description="The spatial bounding box of the event."
@@ -313,16 +317,6 @@ class EventObject(BaseModel):
         default_factory=list,
         description="A sequence of actions/effects to execute when conditions are met.",
     )
-
-    @field_validator("priority")
-    @classmethod
-    def priority_must_be_non_negative(cls, v: int) -> int:
-        """Ensures the priority is 0 or a positive integer."""
-        if v < 0:
-            raise ValueError(
-                "priority must be a non-negative integer (0 or greater)"
-            )
-        return v
 
 
 class BaseComparison(BaseModel):

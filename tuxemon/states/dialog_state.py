@@ -40,13 +40,23 @@ class DialogState(PopUpMenu[None]):
         avatar: Optional[Sprite] = None,
         box_style: Optional[dict[str, Any]] = None,
         on_complete: Optional[Callable[[], None]] = None,
+        advance_buttons: Optional[list[int]] = None,
+        timeout: Optional[float] = None,
+        autoclose: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.text_queue = list(text)
         self.avatar = avatar
         self.on_complete = on_complete
+        self.advance_buttons = advance_buttons or [buttons.A]
 
+        # Auto-close settings
+        self.timeout = timeout
+        self.autoclose = autoclose
+        self.elapsed = 0.0
+
+        # Box style setup
         default_box_style: dict[str, Any] = {
             "bg_color": self.background_color,
             "font_color": self.font_color,
@@ -85,8 +95,27 @@ class DialogState(PopUpMenu[None]):
     def on_open(self) -> None:
         self.next_text()
 
+    def update(self, dt: float) -> None:
+        super().update(dt)
+        if self.timeout is not None:
+            self.elapsed += dt
+            if self.elapsed >= self.timeout:
+                # Always finish current line, then advance
+                if self.dialog_box.drawing_text:
+                    self.dialog.dump_remaining_text(self.dialog_box)
+                self.next_text()
+                self.elapsed = 0.0
+
+    def add_advance_button(self, button: int) -> None:
+        if button not in self.advance_buttons:
+            self.advance_buttons.append(button)
+
+    def remove_advance_button(self, button: int) -> None:
+        if button in self.advance_buttons:
+            self.advance_buttons.remove(button)
+
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
-        if event.pressed and event.button == buttons.A:
+        if event.pressed and event.button in self.advance_buttons:
             if not self.dialog.is_dialog_complete(self.dialog_box):
                 logger.debug("Fast-forwarding current dialog line")
                 self.dialog.dump_remaining_text(self.dialog_box)
@@ -102,9 +131,11 @@ class DialogState(PopUpMenu[None]):
         try:
             text = self.text_queue.pop(0)
             self.dialog.alert(text)
+            self.elapsed = 0.0
             return text
         except IndexError:
-            self.client.pop_state(self)
-            if self.on_complete:
-                self.on_complete()
+            if self.autoclose:
+                self.client.pop_state(self)
+                if self.on_complete:
+                    self.on_complete()
             return None

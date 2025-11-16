@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 from collections import deque
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Optional
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Optional
 
 from tuxemon.constants.dialog_speed import resolve_character_delay
 from tuxemon.prepare import CONFIG
@@ -19,6 +20,14 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+@dataclass
+class AlertEntry:
+    message: str
+    callback: Optional[Callable[[], None]]
+    dialog_speed: str
+    split_lines: bool
+
+
 class AlertManager:
     def __init__(
         self, sprites: SpriteGroup[Sprite], task_fn: Callable[..., Task]
@@ -30,7 +39,7 @@ class AlertManager:
         self._dialog_callback: Optional[Callable[[], None]] = None
         self.character_delay: float = 0.05
 
-        self._alert_queue: deque[dict[str, Any]] = deque()
+        self._alert_queue: deque[AlertEntry] = deque()
         self._is_busy: bool = False
 
     def find_textarea(self) -> TextArea:
@@ -86,12 +95,12 @@ class AlertManager:
         split_lines: bool = False,
     ) -> None:
         self._alert_queue.append(
-            {
-                "message": message,
-                "callback": callback,
-                "dialog_speed": dialog_speed,
-                "split_lines": split_lines,
-            }
+            AlertEntry(
+                message=message,
+                callback=callback,
+                dialog_speed=dialog_speed,
+                split_lines=split_lines,
+            )
         )
         if not self._is_busy:
             self._process_next_alert()
@@ -101,10 +110,10 @@ class AlertManager:
             self._is_busy = True
             next_alert = self._alert_queue.popleft()
 
-            message = next_alert["message"]
-            callback = next_alert["callback"]
-            dialog_speed = next_alert["dialog_speed"]
-            split_lines = next_alert["split_lines"]
+            message = next_alert.message
+            callback = next_alert.callback
+            dialog_speed = next_alert.dialog_speed
+            split_lines = next_alert.split_lines
 
             character_delay = resolve_character_delay(dialog_speed)
 

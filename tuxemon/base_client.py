@@ -190,6 +190,7 @@ class BaseClient(ABC):
         Parameters:
             time_delta: Amount of time passed since last frame.
         """
+        self.weather_manager.update(time_delta)
         self.state_manager.update(time_delta)
         if self.state_manager.current_state is None:
             self.state = ClientState.EXITING

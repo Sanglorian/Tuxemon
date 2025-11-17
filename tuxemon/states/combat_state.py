@@ -133,7 +133,7 @@ class CombatState(CombatAnimations):
         self.notifier = CombatNotifier(
             state=self,
             text_anim_manager=self.text_anim,
-            alert_method=self.dialog.alert,
+            alert_manager=self.dialog,
             lock_update=self._lock_update,
         )
 
@@ -299,7 +299,7 @@ class CombatState(CombatAnimations):
             self.perform_action(action.user, action.method, action.target)
             self.task(self.check_party_hp, interval=1)
             self.task(self.animate_party_status, interval=3)
-            self.notifier.trigger_xp_and_wait_for_input()
+            self.notifier.trigger_xp_and_wait_for_input(self.text_area)
 
     def ask_player_for_monster(self, player: NPC) -> None:
         """
@@ -329,7 +329,11 @@ class CombatState(CombatAnimations):
         # must use a partial because alert relies on a text box that may not
         # exist until after the state hs been startup
         state.task(
-            partial(state.dialog.alert, T.translate("combat_replacement")),
+            partial(
+                state.dialog.alert,
+                T.translate("combat_replacement"),
+                self.text_area,
+            ),
             interval=0,
         )
         state.is_valid_entry = validate  # type: ignore[assignment]
@@ -364,7 +368,7 @@ class CombatState(CombatAnimations):
                 player, monster
             )
             self.text_anim.add_text_animation(
-                partial(self.dialog.alert, message), 0
+                partial(self.dialog.alert, message, self.text_area), 0
             )
 
     def update_icons_for_monsters(self) -> None:
@@ -389,7 +393,7 @@ class CombatState(CombatAnimations):
         Handles combat messages by triggering text animation and blocking input
         until the message has been processed.
         """
-        self.notifier.show_message_and_wait_for_input(message)
+        self.notifier.show_message_and_wait_for_input(message, self.text_area)
 
     def track_battle_results(
         self,
@@ -605,7 +609,7 @@ class CombatState(CombatAnimations):
                     )
 
         self.text_anim.add_text_animation(
-            partial(self.dialog.alert, message), action_time
+            partial(self.dialog.alert, message, self.text_area), action_time
         )
 
         is_flipped = False
@@ -689,7 +693,7 @@ class CombatState(CombatAnimations):
             self.play_animation(item, target, None, action_time)
 
         self.text_anim.add_text_animation(
-            partial(self.dialog.alert, message), action_time
+            partial(self.dialog.alert, message, self.text_area), action_time
         )
 
     def _handle_status(self, status: Status, target: Monster) -> None:
@@ -723,7 +727,8 @@ class CombatState(CombatAnimations):
         if message:
             action_time += self.text_anim.compute_text_anim_time(message)
             self.text_anim.add_text_animation(
-                partial(self.dialog.alert, message), action_time
+                partial(self.dialog.alert, message, self.text_area),
+                action_time,
             )
         self.play_animation(status, target, None, action_time)
 
@@ -831,7 +836,7 @@ class CombatState(CombatAnimations):
                     params = {"name": monster.name.upper()}
                     msg = T.format("combat_fainted", params)
                     self.text_anim.add_text_animation(
-                        partial(self.dialog.alert, msg),
+                        partial(self.dialog.alert, msg, self.text_area),
                         config_combat.action_time,
                     )
                     self.animate_monster_faint(monster)
@@ -881,7 +886,8 @@ class CombatState(CombatAnimations):
                 extra = "\n".join(templates)
                 action_time = self.text_anim.compute_text_anim_time(extra)
                 self.text_anim.add_text_animation(
-                    partial(self.dialog.alert, extra), action_time
+                    partial(self.dialog.alert, extra, self.text_area),
+                    action_time,
                 )
 
     def handle_monster_defeat(self, monster: Monster) -> None:

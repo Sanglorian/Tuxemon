@@ -77,7 +77,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             )
         params = {"name": monster.name}
         message = T.format("combat_monster_choice", params)
-        self.combat.dialog.alert(message)
+        self.combat.dialog.alert(message, self.combat.text_area)
 
         self.type_icon_sprites: list[Sprite] = []
         self.text_sprites: dict[str, Sprite] = {}
@@ -342,7 +342,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
             def show() -> None:
                 # Clear the combat dialog so the old "What will X do?" text disappears
-                self.combat.dialog.alert("", dialog_speed="max")
+                self.combat.dialog.alert(
+                    "", self.combat.text_area, dialog_speed="max"
+                )
 
                 screen_w, screen_h = prepare.SCREEN_SIZE
 
@@ -509,7 +511,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 # Restore the original combat prompt
                 params = {"name": self.monster.name}
                 message = T.format("combat_monster_choice", params)
-                self.combat.dialog.alert(message, dialog_speed="max")
+                self.combat.dialog.alert(
+                    message, self.combat.text_area, dialog_speed="max"
+                )
 
             menu.on_menu_selection_change_callback = show
             menu.on_close_callback = hide
@@ -696,7 +700,7 @@ class CombatTargetMenuState(Menu[Monster]):
             self.border.draw(selected.image)
 
             if selected.description:
-                self.dialog.alert(selected.description)
+                self.dialog.alert(selected.description, self.text_area)
 
     def on_menu_selection_change(self) -> None:
         """Handles border updates when selection changes."""

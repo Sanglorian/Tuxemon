@@ -109,6 +109,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.rename_player.RenamePlayerAction
 .. autoscriptinfoclass:: tuxemon.event.actions.replace_party_from_yaml.ReplacePartyFromYamlAction
 .. autoscriptinfoclass:: tuxemon.event.actions.replace_techs_from_yaml.ReplaceTechsFromYamlAction
+.. autoscriptinfoclass:: tuxemon.event.actions.rumble_pattern.RumblePatternAction
 .. autoscriptinfoclass:: tuxemon.event.actions.rumble.RumbleAction
 .. autoscriptinfoclass:: tuxemon.event.actions.save_game.SaveGameAction
 .. autoscriptinfoclass:: tuxemon.event.actions.save_timestamp.SaveTimestampAction

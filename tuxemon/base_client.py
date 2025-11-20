@@ -114,7 +114,6 @@ class BaseClient(ABC):
 
         # Set up rumble support for gamepads
         self.rumble_manager = RumbleManager()
-        self.rumble = self.rumble_manager.rumbler
 
         # TODO: phase these out
         self.key_events: Sequence[PlayerInput] = []
@@ -191,6 +190,7 @@ class BaseClient(ABC):
             time_delta: Amount of time passed since last frame.
         """
         self.state_manager.update(time_delta)
+        self.rumble_manager.update(time_delta)
         if self.state_manager.current_state is None:
             self.state = ClientState.EXITING
 

@@ -20,15 +20,15 @@
     },
     {
       "level_learned": 13,
-      "technique": "flow"
-    },
-    {
-      "level_learned": 16,
       "technique": "icicle_spear"
     },
     {
-      "level_learned": 19,
+      "level_learned": 16,
       "technique": "font"
+    },
+    {
+      "level_learned": 19,
+      "technique": "horn"
     },
     {
       "level_learned": 25,

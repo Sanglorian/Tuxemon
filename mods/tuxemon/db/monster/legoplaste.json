@@ -8,19 +8,39 @@
     },
     {
       "level_learned": 1,
-      "technique": "venomous_tentacle"
+      "technique": "pseudopod"
     },
     {
       "level_learned": 4,
-      "technique": "pseudopod"
+      "technique": "venomous_tentacle"
     },
     {
       "level_learned": 10,
       "technique": "slime"
     },
     {
+      "level_learned": 16,
+      "technique": "inner_power"
+    },
+    {
       "level_learned": 19,
       "technique": "kraken"
+    },
+    {
+      "level_learned": 22,
+      "technique": "sockpuppet"
+    },
+    {
+      "level_learned": 25,
+      "technique": "external_power"
+    },
+    {
+      "level_learned": 31,
+      "technique": "damage_division"
+    },
+    {
+      "level_learned": 37,
+      "technique": "combat_clone"
     },
     {
       "level_learned": 40,

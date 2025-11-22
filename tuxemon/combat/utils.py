@@ -43,15 +43,15 @@ def check_battle_legal(character: NPC) -> bool:
         logger.error(f"Cannot start battle, {character.name} has no monsters!")
         return False
 
-    if fainted_party(character.monsters):
+    if character.party.is_fainted:
         logger.error(
             f"Cannot start battle, {character.name}'s monsters are all DEAD."
         )
         return False
 
-    if party_no_tech(character.monsters):
+    if character.party.no_tech:
         logger.error(
-            f"Cannot start battle, {party_no_tech(character.monsters)} has/have no techniques."
+            f"Cannot start battle, {character.party.no_tech} has/have no techniques."
         )
         return False
 
@@ -73,13 +73,6 @@ def has_effect(technique: Technique, effect_name: str) -> bool:
     Checks to see if the technique has a specific effect (eg ram -> damage).
     """
     return any(t for t in technique.effects if t.name == effect_name)
-
-
-def party_no_tech(party: list[Monster]) -> list[str]:
-    """
-    Return list of monsters without techniques.
-    """
-    return [p.name for p in party if not p.moves.has_moves()]
 
 
 def has_effect_param(
@@ -105,25 +98,6 @@ def has_effect_param(
         ele.name == effect_name and getattr(ele, attribute, None) == name
         for ele in tech.effects
     )
-
-
-def alive_party(character: NPC) -> list[Monster]:
-    """
-    Returns a list with all the monsters alive in the character's party.
-    """
-    return [m for m in character.monsters if not m.is_fainted]
-
-
-def fainted_party(party: Sequence[Monster]) -> bool:
-    """Whether the party is fainted or not."""
-    return all(monster.is_fainted for monster in party)
-
-
-def defeated(character: NPC) -> bool:
-    """
-    Whether all the character's party is fainted.
-    """
-    return fainted_party(character.monsters)
 
 
 def battlefield(session: Session, monster: Monster) -> None:

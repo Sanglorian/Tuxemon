@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 from tuxemon.boxes import MonsterBoxes
+from tuxemon.entity_dir.routing import RoutingPolicy
 from tuxemon.monster import Monster
 from tuxemon.states.pc_kennel import HIDDEN_LIST
 
@@ -138,10 +139,15 @@ class TestBoxes(unittest.TestCase):
         self.monster_boxes.create_box(self.box_id1, "monster")
         self.assertIn(self.box_id1, self.monster_boxes.monster_boxes)
 
-    def test_remove_box(self):
+    def test_remove_box_forced(self):
         self.monster_boxes.add_monster(self.box_id1, self.monster1)
-        self.monster_boxes.remove_box(self.box_id1)
+        self.monster_boxes.remove_box(self.box_id1, force=True)
         self.assertNotIn(self.box_id1, self.monster_boxes.monster_boxes)
+
+    def test_remove_box_not_forced_raises(self):
+        self.monster_boxes.add_monster(self.box_id1, self.monster1)
+        with self.assertRaises(ValueError):
+            self.monster_boxes.remove_box(self.box_id1, force=False)
 
     def test_swap_with_external_monster(self):
         self.monster_boxes.add_monster(self.box_id1, self.monster1)
@@ -198,3 +204,108 @@ class TestBoxes(unittest.TestCase):
             len(self.monster_boxes.get_monsters(f"{self.box_id1}1")), 10
         )
         self.assertEqual(len(self.monster_boxes.get_monsters(self.box_id1)), 0)
+
+    def test_get_total_monster_count(self):
+        self.monster_boxes.add_monster(self.box_id1, self.monster1)
+        self.monster_boxes.add_monster(self.box_id2, self.monster2)
+        self.assertEqual(self.monster_boxes.get_total_monster_count(), 2)
+
+    def test_find_monster_by_slug_in_boxes_found(self):
+        self.monster1.slug = "test_slug"
+        self.monster_boxes.add_monster(self.box_id1, self.monster1)
+        result = self.monster_boxes.find_monster_by_slug_in_boxes("test_slug")
+        self.assertEqual(result, (self.box_id1, self.monster1))
+
+    def test_find_monster_by_slug_in_boxes_not_found(self):
+        self.monster1.slug = "test_slug"
+        self.monster_boxes.add_monster(self.box_id1, self.monster1)
+        result = self.monster_boxes.find_monster_by_slug_in_boxes("other_slug")
+        self.assertIsNone(result)
+
+    def test_remove_monsters(self):
+        self.monster_boxes.add_monster(self.box_id1, self.monster1)
+        self.monster_boxes.add_monster(self.box_id2, self.monster2)
+        self.monster_boxes.remove_monsters([self.monster1, self.monster2])
+        self.assertEqual(self.monster_boxes.get_total_monster_count(), 0)
+
+    def test_remove_box_force_false_empty(self):
+        self.monster_boxes.create_box(self.box_id1, "monster")
+        self.monster_boxes.remove_box(self.box_id1)
+        self.assertNotIn(self.box_id1, self.monster_boxes.monster_boxes)
+
+    def test_remove_box_force_false_non_empty_raises(self):
+        self.monster_boxes.add_monster(self.box_id1, self.monster1)
+        with self.assertRaises(ValueError):
+            self.monster_boxes.remove_box(self.box_id1)
+
+    def test_remove_box_force_true_non_empty(self):
+        self.monster_boxes.add_monster(self.box_id1, self.monster1)
+        self.monster_boxes.remove_box(self.box_id1, force=True)
+        self.assertNotIn(self.box_id1, self.monster_boxes.monster_boxes)
+
+    def test_remove_box_non_existent_raises(self):
+        with self.assertRaises(ValueError):
+            self.monster_boxes.remove_box("does_not_exist")
+
+    def test_attempt_add_monster_normal_case(self):
+        policy = RoutingPolicy(name="test", max_box_capacity=5)
+        self.monster_boxes.create_box(self.box_id1, "monster")
+        self.monster_boxes.attempt_add_monster(
+            self.monster1, policy, preferred_kennel=self.box_id1
+        )
+        self.assertIn(
+            self.monster1, self.monster_boxes.get_monsters(self.box_id1)
+        )
+
+    def test_attempt_add_monster_box_full_with_overflow(self):
+        policy = RoutingPolicy(
+            name="test", max_box_capacity=1, overflow_kennel=self.box_id2
+        )
+        self.monster_boxes.add_monster(self.box_id1, self.monster1)
+        self.monster_boxes.create_box(self.box_id2, "monster")
+        self.monster_boxes.attempt_add_monster(
+            self.monster2, policy, preferred_kennel=self.box_id1
+        )
+        self.assertIn(
+            self.monster2, self.monster_boxes.get_monsters(self.box_id2)
+        )
+
+    def test_attempt_add_monster_box_full_auto_release(self):
+        policy = RoutingPolicy(
+            name="test", max_box_capacity=1, auto_release_if_box_full=True
+        )
+        self.monster_boxes.add_monster(self.box_id1, self.monster1)
+        self.monster_boxes.attempt_add_monster(
+            self.monster2, policy, preferred_kennel=self.box_id1
+        )
+        self.assertNotIn(self.monster2, self.monster_boxes.get_all_monsters())
+
+    def test_attempt_add_monster_box_full_with_kennel_name_rules(self):
+
+        policy = RoutingPolicy(
+            name="test",
+            max_box_capacity=1,
+            kennel_name_rules={"suffix": "extra"},
+        )
+
+        monster1 = Monster()
+        monster2 = Monster()
+        # Give monster2 a unique instance_id
+        monster2.instance_id = uuid4()
+
+        self.monster_boxes.add_monster(self.box_id1, monster1)
+        self.monster_boxes.attempt_add_monster(
+            monster2, policy, preferred_kennel=self.box_id1
+        )
+
+        created_box_id = f"{self.box_id1}1extra"
+        self.assertIn(created_box_id, self.monster_boxes.get_box_ids())
+        monsters_in_new_box = self.monster_boxes.get_monsters(created_box_id)
+
+        # Assert that a monster with the same instance_id is present
+        self.assertTrue(
+            any(
+                m.instance_id == monster2.instance_id
+                for m in monsters_in_new_box
+            )
+        )

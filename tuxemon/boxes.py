@@ -14,6 +14,7 @@ from tuxemon.states.pc_kennel import HIDDEN_LIST
 from tuxemon.states.pc_locker import HIDDEN_LIST_LOCKER
 
 if TYPE_CHECKING:
+    from tuxemon.entity_dir.routing import RoutingPolicy
     from tuxemon.item.item import Item
     from tuxemon.monster import Monster
     from tuxemon.npc import NPC
@@ -408,17 +409,52 @@ class MonsterBoxes(BoxCollection):
         """
         super().__init__()
 
-    def remove_box(self, box_id: str) -> None:
+    def get_total_monster_count(self) -> int:
+        """
+        Returns the total number of monsters stored across all boxes.
+        """
+        return sum(len(monsters) for monsters in self.monster_boxes.values())
+
+    def find_monster_by_slug_in_boxes(
+        self, monster_slug: str
+    ) -> Optional[tuple[str, Monster]]:
+        """
+        Finds a monster by its slug across all boxes.
+
+        Returns:
+            A tuple (box_id, Monster) or None.
+        """
+        for box_id, monsters in self.monster_boxes.items():
+            for monster in monsters:
+                if monster.slug == monster_slug:
+                    return (box_id, monster)
+        return None
+
+    def remove_monsters(self, monsters: list[Monster]) -> None:
+        """
+        Removes a list of monsters from their respective boxes.
+        """
+        for monster in monsters:
+            self.remove_monster(monster)
+
+    def remove_box(self, box_id: str, force: bool = False) -> None:
         """
         Removes a monster box with the given ID.
 
         Parameters:
             box_id: The ID of the box to remove.
+            force: If True, remove the box even if it is not empty.
         """
-        if box_id in self.monster_boxes:
-            del self.monster_boxes[box_id]
-        else:
-            raise ValueError(f"{box_id} doesn't exist.")
+        if box_id not in self.monster_boxes:
+            raise ValueError(f"Monster box '{box_id}' doesn't exist.")
+
+        if not force and self.monster_boxes[box_id]:
+            logger.error(
+                f"Cannot remove non-empty monster box '{box_id}'. Use force=True to override."
+            )
+            raise ValueError("Cannot remove a non-empty monster box.")
+
+        del self.monster_boxes[box_id]
 
     def get_box_ids(self) -> list[str]:
         """
@@ -488,7 +524,7 @@ class MonsterBoxes(BoxCollection):
 
     def create_and_merge_box(
         self, box_id: str, kennel_name_rules: dict[str, Any]
-    ) -> None:
+    ) -> str:
         """
         Creates a new monster box with a unique ID based on the given box_id
         and kennel_name_rules, then merges it with the original box.
@@ -511,6 +547,77 @@ class MonsterBoxes(BoxCollection):
 
         self.create_box(new_box_id, "monster")
         self.merge_boxes(box_id, new_box_id)
+        return new_box_id
+
+    def attempt_add_monster(
+        self,
+        monster: Monster,
+        policy: RoutingPolicy,
+        preferred_kennel: Optional[str] = None,
+    ) -> None:
+        """
+        Attempts to add a monster to a box according to the routing policy,
+        handling full boxes, overflow, and auto-release.
+
+        Parameters:
+            monster: The monster to store.
+            policy: The RoutingPolicy dictating storage rules.
+            preferred_kennel: An optional specific box ID to try first.
+        """
+        kennel = (
+            preferred_kennel
+            if preferred_kennel is not None
+            else policy.get_kennel()
+        )
+        max_box_capacity = policy.max_box_capacity or prepare.MAX_KENNEL
+
+        if self.is_box_full(kennel, max_box_capacity):
+            logger.warning(
+                f"Primary box '{kennel}' is full under policy '{policy.name}'."
+            )
+
+            overflow_kennel = policy.overflow_kennel
+            if overflow_kennel:
+                logger.info(
+                    f"Attempting to use overflow kennel '{overflow_kennel}'."
+                )
+                if not self.is_box_full(overflow_kennel):
+                    self.add_monster(overflow_kennel, monster)
+                    logger.info(
+                        f"Monster '{monster}' added to overflow kennel '{overflow_kennel}'."
+                    )
+                    return
+                else:
+                    logger.warning(
+                        f"Overflow kennel '{overflow_kennel}' is also full."
+                    )
+
+            if policy.kennel_name_rules:
+                logger.info(
+                    f"Creating overflow box using kennel_name_rules for base '{kennel}'."
+                )
+                new_box_id = self.create_and_merge_box(
+                    kennel, policy.kennel_name_rules
+                )
+                self.add_monster(new_box_id, monster)
+                return
+
+            # Final fallback: release if allowed
+            if policy.auto_release_if_box_full:
+                logger.info(
+                    f"Monster '{monster}' discarded due to full boxes and no overflow options."
+                )
+                return
+
+            # Otherwise, monster is lost or error
+            logger.error(
+                f"Monster '{monster}' could not be stored. All boxes full and no overflow strategy."
+            )
+            return
+
+        # Normal case: box is not full
+        self.add_monster(kennel, monster)
+        logger.info(f"Monster '{monster}' added to box '{kennel}'.")
 
     def swap_with_external_monster(
         self, box_id: str, monster_in_box: Monster, external_monster: Monster

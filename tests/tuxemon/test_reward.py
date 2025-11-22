@@ -41,6 +41,8 @@ class TestRewardSystem(unittest.TestCase):
         self.winner.owner = MagicMock(spec=NPC)
         self.winner.owner.is_player = True
         self.winner.owner.monsters = [self.winner]
+        self.winner.owner.party = MagicMock()
+        self.winner.owner.party.alive = [self.winner]
         self.winner.item_handler = MagicMock()
         self.winner.item_handler.held_item.return_value = MagicMock(
             slug="xp_transmitter"
@@ -102,8 +104,7 @@ class TestRewardSystem(unittest.TestCase):
         )
         self.assertEqual(experience[0], expected_experience)
 
-    @patch("tuxemon.combat.utils.alive_party")
-    def test_calculate_experience_with_transmitter(self, alive_party_mock):
+    def test_calculate_experience_with_transmitter(self):
         mock_monsters = [
             MagicMock(
                 spec=Monster,
@@ -127,7 +128,6 @@ class TestRewardSystem(unittest.TestCase):
                 stage="basic",
             ),
         ]
-        alive_party_mock.return_value = mock_monsters
 
         self.winner.item_handler = MagicMock()
         self.winner.item_handler.held_item = MagicMock(slug="xp_transmitter")
@@ -158,8 +158,7 @@ class TestRewardSystem(unittest.TestCase):
         )
         self.assertEqual(experience, expected_experience)
 
-    @patch("tuxemon.combat.utils.alive_party")
-    def test_award_rewards_distribution(self, alive_party_mock):
+    def test_award_rewards_distribution(self):
         mock_monsters = [
             MagicMock(
                 spec=Monster,
@@ -173,9 +172,10 @@ class TestRewardSystem(unittest.TestCase):
             )
             for _ in range(3)
         ]
-        alive_party_mock.return_value = mock_monsters
 
         self.winner.owner.monsters = mock_monsters
+        self.winner.owner.party = MagicMock()
+        self.winner.owner.party.alive = mock_monsters
 
         reward_system = RewardSystem(
             MagicMock(combat_type="trainer"), self.damage_tracker

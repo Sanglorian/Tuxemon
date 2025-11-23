@@ -136,9 +136,9 @@ class PartyHandler:
 
     def send_monster_to_box(
         self, monster: Monster, kennel: Optional[str] = None
-    ) -> None:
+    ) -> bool:
         policy = self.routing_policy
-        self._monster_boxes.attempt_add_monster(monster, policy, kennel)
+        return self._monster_boxes.attempt_add_monster(monster, policy, kennel)
 
     def insert_monster_to_party(
         self, monster: Monster, slot: Optional[int] = None
@@ -370,9 +370,7 @@ class PartyHandler:
             return False
 
         self.remove_monster(monster)
-        self.send_monster_to_box(monster, kennel)
-        logger.info(f"Monster '{monster}' transferred from party to box.")
-        return True
+        return self.send_monster_to_box(monster, kennel)
 
     def transfer_monster_to_party(
         self, monster: Monster, slot: Optional[int] = None

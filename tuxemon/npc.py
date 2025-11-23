@@ -148,6 +148,8 @@ class NPC(Entity[NPCState]):
         Returns:
             Dictionary containing all the information about the npc.
         """
+        monster_boxes_state = self.monster_boxes.get_state()
+        item_boxes_state = self.item_boxes.get_state()
 
         state: dict[str, Any] = {
             "current_map": session.client.get_map_name(),
@@ -164,8 +166,12 @@ class NPC(Entity[NPCState]):
             "player_slug": self.slug,
             "player_name": self.name,
             "player_steps": self.steps,
-            "monster_boxes": self.monster_boxes.get_state(),
-            "item_boxes": self.item_boxes.get_state(),
+            "monster_boxes": monster_boxes_state["monster_boxes"],
+            "monster_box_metadata": monster_boxes_state[
+                "monster_box_metadata"
+            ],
+            "item_boxes": item_boxes_state["item_boxes"],
+            "item_box_metadata": item_boxes_state["item_box_metadata"],
             "tile_pos": self.tile_pos,
             "teleport_faint": self.teleport_faint.to_dict(),
             "tracker": encode_tracking(self.tracker),

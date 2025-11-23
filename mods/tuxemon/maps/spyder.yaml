@@ -77,7 +77,7 @@ events:
     type: event
   Create Quarantine Kennel:
     actions:
-    - create_kennel player,quarantine
+    - create_kennel player,quarantine,true
     conditions:
     - not kennel player,quarantine,exist
     type: event

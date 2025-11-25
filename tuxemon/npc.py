@@ -34,7 +34,11 @@ from tuxemon.step_tracker import StepTrackerManager, decode_steps, encode_steps
 from tuxemon.teleporter import TeleportFaint
 from tuxemon.tools import vector2_to_tile_pos
 from tuxemon.tracker import TrackingData, decode_tracking, encode_tracking
-from tuxemon.tuxepedia import Tuxepedia, decode_tuxepedia, encode_tuxepedia
+from tuxemon.tuxepedia import (
+    TuxepediaManager,
+    decode_tuxepedia,
+    encode_tuxepedia,
+)
 from tuxemon.ui.cipher_processor import decode_cipher, encode_cipher
 
 if TYPE_CHECKING:
@@ -81,7 +85,7 @@ class NPC(Entity[NPCState]):
         self._variables = GameVariablesManager()
         self.battle_handler = BattlesHandler()
         # Tracks Tuxepedia (monster seen or caught)
-        self.tuxepedia = Tuxepedia()
+        self.tuxepedia = TuxepediaManager(self.session.client.event_bus)
         self.relationships = Relationships()
         self.money_controller = MoneyController(self)
         # list of ways player can interact with the Npc
@@ -186,7 +190,9 @@ class NPC(Entity[NPCState]):
         """
         self.set_facing(Direction(save_data.facing or "down"))
         self._variables.set_player_state(save_data.game_variables)
-        self.tuxepedia = decode_tuxepedia(save_data.tuxepedia)
+        self.tuxepedia = decode_tuxepedia(
+            save_data.tuxepedia, session.client.event_bus
+        )
         self.relationships = decode_relationships(save_data.relationships)
         self.battle_handler.decode_battle(save_data)
         self.bag.decode_items(save_data)

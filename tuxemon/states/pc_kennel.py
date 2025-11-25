@@ -193,6 +193,7 @@ class MonsterTakeState(PygameMenuState):
     into your current party."""
 
     name: ClassVar[str] = "MonsterTakeState"
+    swap_target: Optional[Monster]
 
     def add_menu_items(
         self,

@@ -14,7 +14,9 @@
   "slug": "wiggle",
   "sort": "damage",
   "modifiers": [],
-  "behaviors": {},
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": false,
     "enemy_team": false,

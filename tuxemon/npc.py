@@ -14,6 +14,7 @@ from tuxemon.entity_dir.battle import BattlesHandler
 from tuxemon.entity_dir.party import PartyHandler
 from tuxemon.entity_dir.path import PathController
 from tuxemon.entity_dir.routing import RoutingPolicy
+from tuxemon.entity_dir.steps import StepManager
 from tuxemon.game_variables import GameVariablesManager, PlayerVariablesManager
 from tuxemon.locale import T
 from tuxemon.map.map import proj
@@ -92,6 +93,7 @@ class NPC(Entity[NPCState]):
         self.teleport_faint = TeleportFaint()
         self.tracker = TrackingData()
         self.step_tracker = StepTrackerManager()
+        self.step_manager = StepManager(session, self.step_tracker)
         self.unlocked_letters: set[str] = set()
         # Variables for long-term item and monster storage
         # Keeping these separate so other code can safely

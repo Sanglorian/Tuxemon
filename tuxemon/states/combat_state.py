@@ -317,17 +317,14 @@ class CombatState(CombatAnimations):
             self.client.remove_state_by_name("MonsterMenuState")
 
         def validate(menu_item: MenuItem[Monster]) -> bool:
-            if isinstance(menu_item, Monster):
-                if menu_item.is_fainted:
-                    return False
-                if menu_item in self.client.combat_session.active_monsters:
-                    return False
-                return True
-            return False
+            monster = menu_item.game_object
+            if monster.is_fainted:
+                return False
+            if monster in self.client.combat_session.active_monsters:
+                return False
+            return True
 
         state = self.client.push_state(MonsterMenuState(player.monsters))
-        # must use a partial because alert relies on a text box that may not
-        # exist until after the state hs been startup
         state.task(
             partial(state.dialog.alert, T.translate("combat_replacement")),
             interval=0,
@@ -1000,14 +997,19 @@ class CombatState(CombatAnimations):
 
     def _on_monster_needed(self, player: NPC, ask: bool = False) -> None:
         session = self.client.combat_session
-        if player in session.human_players and ask:
-            self.ask_player_for_monster(player)
-        else:
-            replacement = self.ai_manager.choose_replacement_monster(player)
-            if replacement:
-                session.add_monster_into_play(
-                    self.session, player, replacement
+        positions_available = session.get_available_positions(player)
+
+        for _ in range(positions_available):
+            if player in session.human_players and ask:
+                self.ask_player_for_monster(player)
+            else:
+                replacement = self.ai_manager.choose_replacement_monster(
+                    player
                 )
+                if replacement:
+                    session.add_monster_into_play(
+                        self.session, player, replacement
+                    )
 
     def _on_update_sprite_position(
         self, player: NPC, monster: Monster

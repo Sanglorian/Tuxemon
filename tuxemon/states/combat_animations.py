@@ -226,7 +226,10 @@ class CombatAnimations(Menu[None], ABC):
         self.task(partial(self.sprites.add, sprite), interval=1.3)
 
         # Load and play combat call sound
-        self.play_sound_effect(monster.combat_call, 1.3)
+        if monster.combat_call.sfx:
+            self.play_sound_effect(
+                monster.combat_call.sfx, monster.combat_call.volume
+            )
 
     def animate_sprite_tackle(self, attacker: Sprite) -> None:
         duration = 0.3
@@ -357,7 +360,8 @@ class CombatAnimations(Menu[None], ABC):
             if monster.current_hp > 0
             else monster.faint_call
         )
-        self.play_sound_effect(cry)
+        if cry.sfx:
+            self.play_sound_effect(cry.sfx, cry.volume)
         self.animate(sprite.rect, x=x_offset, relative=True, duration=2)
         self.status_icons.animate_icons(monster, self.animate)
 
@@ -701,7 +705,8 @@ class CombatAnimations(Menu[None], ABC):
         self.animate_sprites(enemy, back_island, front_island, player_back)
         if not self.client.combat_session.is_trainer_battle:
             sound = session.right_player.monsters[0].combat_call
-            self.play_sound_effect(sound, 1.5)
+            if sound.sfx:
+                self.play_sound_effect(sound.sfx, sound.volume)
 
         start_message = self.client.combat_session.get_start_message()
         self.dialog.alert(start_message)
@@ -882,7 +887,10 @@ class CombatAnimations(Menu[None], ABC):
                 self.task(
                     partial(toggle_visible, monster_sprite), interval=delay
                 )
-                self.play_sound_effect(monster.combat_call, delay)
+                if monster.combat_call.sfx:
+                    self.play_sound_effect(
+                        monster.combat_call.sfx, monster.combat_call.volume
+                    )
 
             def capture_capsule(delay: float) -> None:
                 assert sprite.animation

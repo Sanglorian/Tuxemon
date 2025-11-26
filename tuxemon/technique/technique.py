@@ -10,7 +10,14 @@ from uuid import UUID, uuid4
 from tuxemon.core.asset import CoreAssetManager
 from tuxemon.core.core_effect import TechEffectResult
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
-from tuxemon.db import Range, TechBehaviors, TechniqueModel, db
+from tuxemon.db import (
+    Range,
+    SoundProperties,
+    TechBehaviors,
+    TechniqueModel,
+    VisualProperties,
+    db,
+)
 from tuxemon.element import ElementTypesHandler
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
@@ -41,9 +48,10 @@ class Technique:
         self.counter: int = 0
         self.tech_id: int = 0
         self.accuracy: float = 0.0
-        self.animation: Optional[str] = None
         self.description: str = ""
-        self.flip_axes: FlipAxes = FlipAxes.NONE
+        self.visuals = VisualProperties(
+            animation=None, flip_axes=FlipAxes.NONE, loop=-1
+        )
         self.hit: bool = False
         self.speed: int = 0
         self.name: str = ""
@@ -55,7 +63,7 @@ class Technique:
         self.range: Range = Range.melee
         self.healing_power: float = 0.0
         self.recharge_length: int = 0
-        self.sfx: str = ""
+        self.sound = SoundProperties(sfx=None, volume=1.5)
         self.sort: str = ""
         self.slug: str = ""
         self.types: ElementTypesHandler = ElementTypesHandler()
@@ -136,12 +144,8 @@ class Technique:
         self.target = results.target.model_dump()
         self.modifiers = ModifiersHandler(results.modifiers)
 
-        # Load the animation sprites that will be used for this technique
-        self.animation = results.animation
-        self.flip_axes = results.flip_axes
-
-        # Load the sound effect for this technique
-        self.sfx = results.sfx
+        self.visuals = results.visuals
+        self.sound = results.sound
 
     def advance_round(self) -> None:
         """

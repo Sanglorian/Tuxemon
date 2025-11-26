@@ -2,11 +2,12 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon import formula
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
+from tuxemon.formula import simple_damage_calculate
 from tuxemon.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
 
@@ -15,6 +16,8 @@ if TYPE_CHECKING:
     from tuxemon.npc import NPC
     from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -33,11 +36,14 @@ class MoneyEffect(CoreEffect):
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
         extra: list[str] = []
-        player = user.get_owner()
+        player = session.client.get_monster_owner(user)
+        if player is None:
+            logger.error(f"{user.name}'s owner not found")
+            return TechEffectResult(name=tech.name)
         hit = session.client.combat_session.get_tech_hit(user)
         tech.hit = tech.accuracy >= hit
 
-        damage = formula.simple_damage_calculate(tech, user, target)[0]
+        damage = simple_damage_calculate(tech, user, target)[0]
 
         if tech.hit:
             amount = damage

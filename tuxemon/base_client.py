@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload
+from uuid import UUID
 
 from tuxemon.audio import MusicPlayerState, SoundManager
 from tuxemon.boundary import BoundaryChecker
@@ -42,6 +43,8 @@ from tuxemon.world.weather import WorldWeatherManager
 
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
+    from tuxemon.monster import Monster
+    from tuxemon.npc import NPC
     from tuxemon.platform.events import PlayerInput
     from tuxemon.state.queue import QueuedState
     from tuxemon.ui.cipher_processor import CipherProcessor
@@ -333,3 +336,31 @@ class BaseClient(ABC):
     def active_state_names(self) -> Sequence[str]:
         """List of names of active states"""
         return self.state_manager.get_active_state_names()
+
+    def get_monster_by_iid(self, iid: UUID) -> Optional[Monster]:
+        """
+        Gets a monster object by iid among all the entities.
+
+        Parameters:
+            iid: The iid of the monster that exists on the current map.
+
+        Returns:
+            The monster object or None if the monster is not found.
+        """
+        return self.npc_manager.get_monster_by_iid(iid)
+
+    def get_monster_owner(self, monster: Monster) -> Optional[NPC]:
+        """
+        Finds the NPC that currently owns the given monster.
+
+        Ownership is determined by checking all NPCs managed by this client's
+        NPCManager and returning the one whose party/monster list contains
+        the specified monster.
+
+        Parameters:
+            monster: The Monster instance whose owner should be resolved.
+
+        Returns:
+            The owning NPC if found, otherwise None.
+        """
+        return self.npc_manager.get_monster_owner(monster)

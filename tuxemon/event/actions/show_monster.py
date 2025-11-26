@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster import Monster
 from tuxemon.session import Session
@@ -74,4 +73,4 @@ class ShowMonsterAction(EventAction):
                 f"No valid monster selected for variable '{self.monster_variable}'"
             )
             return None
-        return get_monster_by_iid(session, monster_id)
+        return session.client.get_monster_by_iid(monster_id)

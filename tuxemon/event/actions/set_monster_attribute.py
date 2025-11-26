@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.event import get_monster_by_iid
 from tuxemon.event.actions.common import CommonAction
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -45,7 +44,7 @@ class SetMonsterAttributeAction(EventAction):
                 f"No valid monster selected for variable '{self.variable}'"
             )
             return  # Exit early if no valid UUID
-        monster = get_monster_by_iid(session, monster_id)
+        monster = session.client.get_monster_by_iid(monster_id)
         if monster is None:
             monster = player.monster_boxes.get_monsters_by_iid(monster_id)
             if monster is None:

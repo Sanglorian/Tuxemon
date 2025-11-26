@@ -9,14 +9,13 @@ import pygame_menu
 from pygame_menu import locals
 
 from tuxemon import formula, prepare
+from tuxemon.entity_dir.party import PartyHandler
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.monster import Monster
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 from tuxemon.tools import fix_measure
-
-MenuGameObj = Callable[[], object]
 
 
 class PartyState(PygameMenuState):
@@ -31,12 +30,9 @@ class PartyState(PygameMenuState):
 
     name: ClassVar[str] = "PartyState"
 
-    def __init__(self, **kwargs: Any) -> None:
-        monsters: list[Monster] = []
-        for element in kwargs.values():
-            monsters = element["party"]
-        if not monsters:
-            raise ValueError("No monsters in the party")
+    def __init__(self, party: PartyHandler) -> None:
+        self.party = party
+        self.char = party.owner
         width, height = prepare.SCREEN_SIZE
 
         theme = self._setup_theme(prepare.BG_PARTY)
@@ -44,7 +40,7 @@ class PartyState(PygameMenuState):
         theme.widget_alignment = locals.ALIGN_CENTER
 
         super().__init__(height=height, width=width)
-        self.initialize_items(self.menu, monsters)
+        self.initialize_items(self.menu, self.party.monsters)
         self.reset_theme()
 
     def initialize_items(
@@ -54,7 +50,6 @@ class PartyState(PygameMenuState):
     ) -> None:
         fxw: Callable[[float], int] = lambda r: fix_measure(menu._width, r)
         fxh: Callable[[float], int] = lambda r: fix_measure(menu._height, r)
-        self.char = monsters[0].get_owner()
         menu._auto_centering = False
         # party
         lab1: Any = menu.add.label(
@@ -66,10 +61,10 @@ class PartyState(PygameMenuState):
         )
         lab1.translate(fxw(0.05), fxh(0.15))
         # levels
-        level_lowest = self.char.party.level_lowest
-        level_highest = self.char.party.level_highest
-        level_average = self.char.party.level_average
-        party_alignment = self.char.party.get_alignment()
+        level_lowest = self.party.level_lowest
+        level_highest = self.party.level_highest
+        level_average = self.party.level_average
+        party_alignment = self.party.get_alignment()
         # highest
         highest = T.translate("menu_party_level_highest")
         lab2: Any = menu.add.label(

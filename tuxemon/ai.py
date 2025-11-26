@@ -255,7 +255,11 @@ class OpponentEvaluator:
         ):
             return 1.0
 
-        owner = self.user.get_owner()
+        owner = self.session.client.get_monster_owner(self.user)
+        if owner is None:
+            logger.error(f"{self.user.name}'s owner not found")
+            return 1.0
+
         config = self.ai_opponent.rules.get(
             owner.slug, self.ai_opponent.rules.get("default")
         )
@@ -297,7 +301,9 @@ class AIDecisionStrategy(ABC):
         if user.wild:
             config = _config.techniques.get(user.slug)
         else:
-            owner = user.get_owner()
+            owner = self.evaluator.session.client.get_monster_owner(user)
+            if owner is None:
+                return None
             config = _config.techniques.get(owner.slug)
         return config
 

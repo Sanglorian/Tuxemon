@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID, uuid4
 
 from tuxemon.db import Acquisition, SeenStatus
-from tuxemon.event import get_event_bus, get_monster_by_iid
+from tuxemon.event import get_event_bus
 from tuxemon.monster import Monster
 from tuxemon.time_handler import today_ordinal
 
@@ -252,11 +252,11 @@ class TradeManager:
             self.pending_offers.remove(offer)
             return TradeResult.EXPIRED
 
-        proposing_monster = get_monster_by_iid(
-            session, offer.proposing_monster_id
+        proposing_monster = session.client.get_monster_by_iid(
+            offer.proposing_monster_id
         )
-        requested_monster = get_monster_by_iid(
-            session, offer.requested_monster_id
+        requested_monster = session.client.get_monster_by_iid(
+            offer.requested_monster_id
         )
 
         if not proposing_monster or not requested_monster:

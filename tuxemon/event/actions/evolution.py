@@ -8,7 +8,7 @@ from functools import partial
 from typing import TYPE_CHECKING, Optional, final
 from uuid import UUID
 
-from tuxemon.event import get_monster_by_iid, get_npc
+from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.monster import Monster
@@ -78,7 +78,7 @@ class EvolutionAction(EventAction):
             logger.info(f"No valid monster selected for variable '{variable}'")
             return  # Exit early if no valid UUID
 
-        monster = get_monster_by_iid(self.session, monster_id)
+        monster = self.client.get_monster_by_iid(monster_id)
 
         if monster is None:
             logger.error(f"Monster '{monster_id}' doesn't exist.")

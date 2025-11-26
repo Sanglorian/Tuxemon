@@ -45,21 +45,6 @@ class NPCManager:
     def get_npc_off_map(self, slug: str) -> Optional[NPC]:
         return self.npcs_off_map.get(slug)
 
-    def get_npc_by_iid(self, iid: UUID) -> Optional[NPC]:
-        return next(
-            (npc for npc in self.npcs.values() if npc.instance_id == iid), None
-        )
-
-    def get_npc_off_map_by_iid(self, iid: UUID) -> Optional[NPC]:
-        return next(
-            (
-                npc
-                for npc in self.npcs_off_map.values()
-                if npc.instance_id == iid
-            ),
-            None,
-        )
-
     def get_entity_pos(self, pos: tuple[int, int]) -> Optional[NPC]:
         return next(
             (npc for npc in self.npcs.values() if npc.tile_pos == pos), None
@@ -103,6 +88,15 @@ class NPCManager:
         return [
             monster for npc in self.npcs.values() for monster in npc.monsters
         ]
+
+    def get_monster_owner(self, monster: Monster) -> Optional[NPC]:
+        for npc in self.npcs.values():
+            if monster in npc.monsters:
+                return npc
+        for npc in self.npcs_off_map.values():
+            if monster in npc.monsters:
+                return npc
+        return None
 
     def get_monster_by_iid(self, iid: UUID) -> Optional[Monster]:
         return next(

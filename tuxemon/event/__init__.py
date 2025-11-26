@@ -21,9 +21,7 @@ logger = logging.getLogger(__name__)
 
 __all__ = [
     "get_npc",
-    "get_npc_by_iid",
     "get_npc_pos",
-    "get_monster_by_iid",
     "get_event_bus",
 ]
 
@@ -57,20 +55,6 @@ def get_npc(session: Session, slug: str) -> Optional[NPC]:
     return session.client.npc_manager.get_npc(slug)
 
 
-def get_npc_by_iid(session: Session, iid: UUID) -> Optional[NPC]:
-    """
-    Gets an NPC object by iid.
-
-    Parameters:
-        session: The session object.
-        iid: The iid of the NPC that exists on the current map.
-
-    Returns:
-        The NPC object or None if the NPC is not found.
-    """
-    return session.client.npc_manager.get_npc_by_iid(iid)
-
-
 def get_npc_pos(session: Session, pos: tuple[int, int]) -> Optional[NPC]:
     """
     Gets an NPC object by location (x,y).
@@ -87,17 +71,3 @@ def get_npc_pos(session: Session, pos: tuple[int, int]) -> Optional[NPC]:
         return session.player
 
     return session.client.npc_manager.get_entity_pos(pos)
-
-
-def get_monster_by_iid(session: Session, iid: UUID) -> Optional[Monster]:
-    """
-    Gets a monster object by iid among all the entities.
-
-    Parameters:
-        session: The session object.
-        iid: The iid of the monster that exists on the current map.
-
-    Returns:
-        The monster object or None if the monster is not found.
-    """
-    return session.client.npc_manager.get_monster_by_iid(iid)

@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 from tuxemon.tools import get_valid_uuid
@@ -44,10 +43,15 @@ class RemoveMonsterAction(EventAction):
                 f"No valid monster selected for variable '{self.variable}'"
             )
             return  # Exit early if no valid UUID
-        monster = get_monster_by_iid(session, monster_id)
+        monster = session.client.get_monster_by_iid(monster_id)
         if monster is None:
             logger.error("Monster not found")
             return
-        character = monster.get_owner()
+
+        character = session.client.get_monster_owner(monster)
+        if character is None:
+            logger.error(f"{monster.name}'s owner not found")
+            return
+
         logger.info(f"{monster.name} removed from {character.name} party!")
         character.party.remove_monster(monster)

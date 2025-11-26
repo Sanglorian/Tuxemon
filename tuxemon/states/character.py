@@ -224,10 +224,12 @@ class CharacterState(PygameMenuState):
         self.reset_theme()
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
-        party = self.char.monsters
-        if event.button == buttons.RIGHT and event.pressed and party:
-            params = {"party": party}
-            self.client.replace_state("PartyState", kwargs=params)
+        if (
+            event.button == buttons.RIGHT
+            and event.pressed
+            and self.char.monsters
+        ):
+            self.client.replace_state("PartyState", party=self.char.party)
         if (
             event.button in (buttons.BACK, buttons.B, buttons.A)
             and event.pressed

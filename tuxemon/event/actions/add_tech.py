@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import Optional, final
 
 from tuxemon import prepare
-from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 from tuxemon.technique.technique import Technique
@@ -56,7 +55,7 @@ class AddTechAction(EventAction):
             )
             return  # Exit early if no valid UUID
 
-        monster = get_monster_by_iid(session, monster_id)
+        monster = session.client.get_monster_by_iid(monster_id)
         if monster is None:
             logger.error("Monster not found")
             return

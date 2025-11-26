@@ -6,7 +6,7 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, final
 
-from tuxemon.event import get_monster_by_iid, get_npc
+from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.tools import get_valid_uuid
 
@@ -59,7 +59,7 @@ class ToggleEvolutionBlockAction(EventAction):
             )
             return  # Exit early if no valid UUID
 
-        monster = get_monster_by_iid(self.session, monster_id)
+        monster = session.client.get_monster_by_iid(monster_id)
         if monster is None:
             logger.warning(
                 f"Monster with ID '{monster_id}' not found. Cannot toggle evolution block."

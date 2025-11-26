@@ -32,7 +32,10 @@ class SwapEffect(CoreEffect):
         logger.debug(f"Swap: removing {user.name}, adding {target.name}")
         combat_session = session.client.combat_session
         combat_session.action_queue.swap(user, target)
-        player = user.get_owner()
+        player = session.client.get_monster_owner(user)
+        if player is None:
+            logger.error(f"{user.name}'s owner not found")
+            return TechEffectResult(name=tech.name)
         event_bus = session.client.event_bus
         event_bus.publish("monster_swapped_out", monster=user)
         event_bus.publish(

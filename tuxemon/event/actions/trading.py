@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, final
 
 from tuxemon.db import db
-from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 from tuxemon.tools import get_valid_uuid
 from tuxemon.trade_manager import TradeManager, TradeResult
@@ -55,7 +54,7 @@ class TradingAction(EventAction):
             )
             return  # Exit early if no valid UUID
 
-        player_monster = get_monster_by_iid(session, player_monster_id)
+        player_monster = session.client.get_monster_by_iid(player_monster_id)
         if player_monster is None:
             logger.error("Player's monster not found.")
             return
@@ -86,7 +85,7 @@ class TradingAction(EventAction):
                 )
                 return  # Exit early if no valid UUID
 
-            other_monster = get_monster_by_iid(session, other_monster_id)
+            other_monster = session.client.get_monster_by_iid(other_monster_id)
             if other_monster is None:
                 logger.error("Other monster not found.")
                 return

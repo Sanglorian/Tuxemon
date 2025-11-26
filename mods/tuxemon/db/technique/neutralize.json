@@ -1,7 +1,6 @@
 {
   "tech_id": 179,
   "accuracy": 1,
-  "animation": null,
   "effects": [
     {
       "type": "remove",
@@ -17,13 +16,11 @@
       ]
     }
   ],
-  "flip_axes": "",
   "speed": "fast",
   "potency": 1,
   "power": 0,
   "range": "special",
   "recharge": 1,
-  "sfx": "sfx_shine",
   "slug": "neutralize",
   "sort": "damage",
   "modifiers": [],
@@ -45,5 +42,14 @@
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_shine",
+    "volume": 1.5
+  }
 }

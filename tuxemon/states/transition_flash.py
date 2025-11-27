@@ -47,7 +47,7 @@ class FlashTransition(State):
         params = RumbleParams(target=-1, length=1.5)
         self.client.rumble.rumble(params)
         self.color = color
-        self.transition_surface = Surface(prepare.SCREEN_SIZE)
+        self.transition_surface = Surface(SCREEN_SIZE)
         self.transition_surface.fill(self.color)
 
     def resume(self) -> None:

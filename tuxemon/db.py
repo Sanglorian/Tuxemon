@@ -510,8 +510,8 @@ class VisualProperties(BaseModel):
         technique_file = f"animations/technique/{v}_00.png"
 
         if has.db_entry("animation", v) and (
-            has.size(item_file, prepare.NATIVE_RESOLUTION)
-            or has.size(technique_file, prepare.NATIVE_RESOLUTION)
+            has.size(item_file, sizes.NATIVE_RESOLUTION)
+            or has.size(technique_file, sizes.NATIVE_RESOLUTION)
         ):
             return v
 

@@ -236,6 +236,7 @@ class PlayerInput:
         hold_time: int = 0,
         previous_value: Any = 0,
         timestamp: Optional[float] = None,
+        hold_duration: float = 0.0,
     ) -> None:
         self.button = button
         self.value = value
@@ -243,7 +244,7 @@ class PlayerInput:
         self.triggered: bool = False
         self.previous_value = previous_value
         self.timestamp = timestamp if timestamp is not None else time.time()
-        self.hold_duration: float = 0.0
+        self.hold_duration = hold_duration
 
     def clone(self) -> PlayerInput:
         copy = PlayerInput(
@@ -252,10 +253,24 @@ class PlayerInput:
             hold_time=self.hold_time,
             previous_value=self.previous_value,
             timestamp=self.timestamp,
+            hold_duration=self.hold_duration,
         )
         copy.triggered = self.triggered
-        copy.hold_duration = self.hold_duration
         return copy
+
+    def to_dict(self) -> dict[str, Any]:
+        """
+        Converts the essential state of the input into a dictionary for
+        serialization.
+        """
+        return {
+            "button": self.button,
+            "value": self.value,
+            "hold_time": self.hold_time,
+            "previous_value": self.previous_value,
+            "timestamp": self.timestamp,
+            "hold_duration": self.hold_duration,
+        }
 
     def __str__(self) -> str:
         return (

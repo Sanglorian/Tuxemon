@@ -25,6 +25,7 @@ from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
+    from tuxemon.platform.afk_manager import AFKManager
     from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
@@ -35,10 +36,11 @@ class InputManager:
     Manages the input devices for the game.
     """
 
-    def __init__(self, config: TuxemonConfig) -> None:
+    def __init__(self, config: TuxemonConfig, afk_manager: AFKManager) -> None:
         """
         Initializes the input manager with the given config.
         """
+        self.afk_manager = afk_manager
         self.event_queue = PygameEventQueueHandler()
         self.input_history = InputHistory(config)
         self.controller = config.controller
@@ -121,11 +123,13 @@ class InputManager:
         """Processes the input events."""
         for event in self.event_queue.process_events():
             self.input_history.record_input(event)
+            self.afk_manager.reset()
             self.combo_manager.process(event)
             yield event
 
     def update(self, time_delta: float) -> None:
         self.input_history.update(time_delta)
+        self.afk_manager.update(time_delta)
 
     def draw_visualizer(self, screen: Surface) -> None:
         all_inputs = {}

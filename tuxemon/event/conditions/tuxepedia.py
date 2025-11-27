@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from tuxemon.db import MonsterModel, db
-from tuxemon.event import MapCondition
+from tuxemon.db import MonsterModel, SpatialCondition, db
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 from tuxemon.tools import compare
@@ -33,7 +32,7 @@ class TuxepediaCondition(EventCondition):
 
     name = "tuxepedia"
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
+    def test(self, session: Session, condition: SpatialCondition) -> bool:
         if not lookup_cache:
             _lookup_monsters()
 

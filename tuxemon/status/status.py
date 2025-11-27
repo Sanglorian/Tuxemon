@@ -15,9 +15,11 @@ from tuxemon.db import (
     EffectPhase,
     Range,
     ResponseStatus,
+    SoundProperties,
     StatModel,
     StatusBehaviors,
     StatusModel,
+    VisualProperties,
     db,
 )
 from tuxemon.locale import T
@@ -63,10 +65,11 @@ class Status:
         self.bond: bool = False
         self.counter: int = 0
         self.cond_id: int = 0
-        self.animation: Optional[str] = None
         self.category: Optional[CategoryStatus] = None
         self.description: str = ""
-        self.flip_axes: FlipAxes = FlipAxes.NONE
+        self.visuals = VisualProperties(
+            animation=None, flip_axes=FlipAxes.NONE, loop=-1
+        )
         self.gain_cond: str = ""
         self.icon: str = ""
         self.name: str = ""
@@ -80,7 +83,7 @@ class Status:
         self.on_negative_status: Optional[ResponseStatus] = None
         self.on_tech_use: Optional[str] = None
         self.on_item_use: Optional[str] = None
-        self.sfx: str = ""
+        self.sound = SoundProperties(sfx=None, volume=1.5)
         self.sort: str = ""
         self.slug: str = ""
         self.use_success: str = ""
@@ -170,12 +173,8 @@ class Status:
         self.condition_handler = ConditionProcessor(self.conditions)
         self.effect_handler = EffectProcessor(self.effects)
 
-        # Load the animation sprites that will be used for this status
-        self.animation = results.animation
-        self.flip_axes = results.flip_axes
-
-        # Load the sound effect for this status
-        self.sfx = results.sfx
+        self.visuals = results.visuals
+        self.sound = results.sound
 
     def has_phase(self, phase: EffectPhase) -> bool:
         """Returns True if the current phase is equal to the provided phase, False otherwise."""
@@ -221,6 +220,8 @@ class Status:
             session=session,
             source=self,
         )
+        if session.client:
+            session.client.active_statuses.append(self)
         return result
 
     def tick_turn(self) -> None:

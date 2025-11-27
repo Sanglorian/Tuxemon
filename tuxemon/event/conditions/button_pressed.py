@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from tuxemon.event import MapCondition
+from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.platform.const import intentions
 from tuxemon.platform.const.intentions import constants
@@ -30,7 +30,7 @@ class ButtonPressedCondition(EventCondition):
 
     name = "button_pressed"
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
+    def test(self, session: Session, condition: SpatialCondition) -> bool:
         button = str(condition.parameters[0])
 
         # TODO: workaround for old maps.  eventually need to decide on a scheme

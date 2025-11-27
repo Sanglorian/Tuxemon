@@ -122,8 +122,8 @@ class InputManager:
     def process_events(self) -> Generator[PlayerInput, None, None]:
         """Processes the input events."""
         for event in self.event_queue.process_events():
-            self.input_history.record_input(event)
             self.afk_manager.reset()
+            self.input_history.record_input(event)
             self.combo_manager.process(event)
             yield event
 

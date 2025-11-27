@@ -19,6 +19,7 @@ from tuxemon.db import (
     MonsterHistoryItemModel,
     MonsterModel,
     MonsterSpritesModel,
+    SoundProperties,
     StatType,
     db,
 )
@@ -307,17 +308,23 @@ class Monster:
             flairs=self.flairs,
         )
 
-        # get sound slugs for this monster, defaulting to a generic type-based sound
-        self.combat_call = (
-            results.sounds.combat_call
-            if results.sounds.combat_call
-            else f"sound_{self.types.primary.slug}_call"
-        )
-        self.faint_call = (
-            results.sounds.faint_call
-            if results.sounds.faint_call
-            else f"sound_{self.types.primary.slug}_faint"
-        )
+        if results.sounds and results.sounds.combat_call:
+            self.combat_call = results.sounds.combat_call
+            if self.combat_call.sfx is None:
+                self.combat_call.sfx = f"sound_{self.types.primary.slug}_call"
+        else:
+            self.combat_call = SoundProperties(
+                sfx=f"sound_{self.types.primary.slug}_call", volume=1.5
+            )
+
+        if results.sounds and results.sounds.faint_call:
+            self.faint_call = results.sounds.faint_call
+            if self.faint_call.sfx is None:
+                self.faint_call.sfx = f"sound_{self.types.primary.slug}_faint"
+        else:
+            self.faint_call = SoundProperties(
+                sfx=f"sound_{self.types.primary.slug}_faint", volume=1.5
+            )
 
     def load_sprites(self, scale: float = SCALE) -> None:
         """

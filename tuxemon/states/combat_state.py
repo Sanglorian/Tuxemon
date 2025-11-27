@@ -556,7 +556,6 @@ class CombatState(CombatAnimations):
             message += "\n" + m
             action_time += self.text_anim.compute_text_anim_time(message)
 
-        self.play_sound_effect(method.sfx)
         # animation own_monster, technique doesn't tackle
         hit_delay += 0.5
         if method.target["own_monster"]:
@@ -617,6 +616,8 @@ class CombatState(CombatAnimations):
                 break
 
         if result_tech.success:
+            if method.sound.sfx:
+                self.play_sound_effect(method.sound.sfx, method.sound.volume)
             self.play_animation(
                 method, target, target_sprite, action_time, is_flipped
             )
@@ -663,6 +664,8 @@ class CombatState(CombatAnimations):
                     f"captured_failed_{result_item.num_shakes}"
                 )
 
+            if item.sound.sfx:
+                self.play_sound_effect(item.sound.sfx, item.sound.volume)
             self.animate_capture_monster(
                 result_item,
                 target,
@@ -686,6 +689,8 @@ class CombatState(CombatAnimations):
             if template:
                 message += "\n" + tmpl
                 action_time += self.text_anim.compute_text_anim_time(message)
+            if item.sound.sfx:
+                self.play_sound_effect(item.sound.sfx, item.sound.volume)
             self.play_animation(item, target, None, action_time)
 
         self.text_anim.add_text_animation(
@@ -725,7 +730,10 @@ class CombatState(CombatAnimations):
             self.text_anim.add_text_animation(
                 partial(self.dialog.alert, message), action_time
             )
-        self.play_animation(status, target, None, action_time)
+        if result.success:
+            if status.sound.sfx:
+                self.play_sound_effect(status.sound.sfx, status.sound.volume)
+            self.play_animation(status, target, None, action_time)
 
     def play_animation(
         self,

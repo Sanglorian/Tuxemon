@@ -13,7 +13,15 @@ from tuxemon import graphics
 from tuxemon.core.asset import CoreAssetManager
 from tuxemon.core.core_effect import ItemEffectResult
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
-from tuxemon.db import ItemBehaviors, ItemCategory, ItemModel, State, db
+from tuxemon.db import (
+    ItemBehaviors,
+    ItemCategory,
+    ItemModel,
+    SoundProperties,
+    State,
+    VisualProperties,
+    db,
+)
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
 from tuxemon.surfanim import FlipAxes
@@ -43,8 +51,10 @@ class Item:
         self.description: str = ""
         self.instance_id: UUID = uuid4()
         self.quantity: int = 1
-        self.animation: Optional[str] = None
-        self.flip_axes: FlipAxes = FlipAxes.NONE
+        self.visuals = VisualProperties(
+            animation=None, flip_axes=FlipAxes.NONE, loop=-1
+        )
+        self.sound = SoundProperties(sfx=None, volume=1.5)
         self.modifiers: ModifiersHandler = ModifiersHandler()
         # The path to the sprite to load.
         self.sprite: str = ""
@@ -137,9 +147,8 @@ class Item:
         self.surface = graphics.load_and_scale(self.sprite)
         self.surface_size_original = self.surface.get_size()
 
-        # Load the animation sprites that will be used for this technique
-        self.animation = results.animation
-        self.flip_axes = results.flip_axes
+        self.visuals = results.visuals
+        self.sound = results.sound
 
     def is_immune(self, status: str) -> bool:
         return (
@@ -225,6 +234,8 @@ class Item:
         result = self.effect_handler.process_item(
             session=session, source=self, target=target
         )
+        if session.client:
+            session.client.active_items.append(self)
         self.consume_if_needed(user, result)
         return result
 

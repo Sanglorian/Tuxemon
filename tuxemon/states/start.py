@@ -134,9 +134,20 @@ class StartState(PygameMenuState):
         theme.widget_alignment = locals.ALIGN_CENTER
 
         super().__init__(height=height, width=width)
-
+        self.client.afk_manager.add_threshold("IntroState", 15.0)
+        self.event_bus.subscribe(
+            "afk.threshold_reached", self._on_afk_threshold, priority=10
+        )
         self.add_menu_items(self.menu)
         self.reset_theme()
+
+    def _on_afk_threshold(self, level: str) -> None:
+        if level == "IntroState":
+            self.client.replace_state("IntroState")
+
+    def shutdown(self) -> None:
+        self.unsubscribe("afk.threshold_reached", self._on_afk_threshold)
+        super().shutdown()
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
         if (

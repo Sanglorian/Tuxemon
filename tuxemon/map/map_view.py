@@ -102,7 +102,7 @@ def load_walking_animations_with_cache(
     frames: list[tuple[Surface, float]] = [
         (load_and_scale_with_cache(image), frame_duration) for image in images
     ]
-    return SurfaceAnimation(frames, loop=True)
+    return SurfaceAnimation(frames)
 
 
 def clear_standing_cache(cache_key: str) -> None:

@@ -15,6 +15,7 @@ from tuxemon.constants.paths import (
     USER_CONFIG_PATH,
     USER_GAME_DATA_DIR,
     USER_GAME_SAVE_DIR,
+    USER_RECORDING_DIR,
     mods_folder,
 )
 
@@ -48,6 +49,9 @@ class TestCorePaths(unittest.TestCase):
 
     def test_user_game_save_dir(self):
         self.assertTrue(USER_GAME_SAVE_DIR.exists())
+
+    def test_user_recording_dir(self):
+        self.assertTrue(USER_RECORDING_DIR.exists())
 
     def test_cache_dir(self):
         self.assertTrue(CACHE_DIR.exists())

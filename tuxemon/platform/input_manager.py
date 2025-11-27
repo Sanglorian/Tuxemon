@@ -10,6 +10,7 @@ from pygame.surface import Surface
 
 from tuxemon.platform.combo_detector import ComboManager
 from tuxemon.platform.input_history import InputHistory
+from tuxemon.platform.input_recorder import InputRecorder
 from tuxemon.platform.input_visualizer import InputVisualizer
 from tuxemon.platform.platform_pygame.events import (
     InputMappingStrategy,
@@ -43,6 +44,7 @@ class InputManager:
         self.afk_manager = afk_manager
         self.event_queue = PygameEventQueueHandler()
         self.input_history = InputHistory()
+        self.recorder = InputRecorder()
         self.controller = config.controller
         self.input = config.input
         self.controller_overlay: Optional[PygameTouchOverlayInput] = None
@@ -74,7 +76,7 @@ class InputManager:
         """
         if self.input.keyboard_button_map:
             keyboard = PygameKeyboardInput(self.input.keyboard_button_map)
-            self.event_queue.add_input(0, keyboard)
+            self.event_queue.add_input(0, 0, keyboard)
             logger.info("Keyboard set up successfully")
 
     def setup_gamepad(self) -> None:
@@ -84,7 +86,7 @@ class InputManager:
         if self.controller.type:
             strategy = self._get_mapping_strategy(self.controller.type)
             gamepad = PygameGamepadInput(strategy)
-            self.event_queue.add_input(0, gamepad)
+            self.event_queue.add_input(0, 1, gamepad)
             logger.info(
                 f"{self.controller.type.capitalize()} gamepad set up successfully"
             )
@@ -108,7 +110,7 @@ class InputManager:
                 self.controller.transparency
             )
             self.controller_overlay.load()
-            self.event_queue.add_input(0, self.controller_overlay)
+            self.event_queue.add_input(0, 2, self.controller_overlay)
             logger.info("Controller overlay set up successfully")
 
     def setup_mouse(self) -> None:
@@ -116,24 +118,32 @@ class InputManager:
         Sets up the mouse input device.
         """
         if not self.controller.hide_mouse:
-            self.event_queue.add_input(0, PygameMouseInput())
+            self.event_queue.add_input(0, 3, PygameMouseInput())
             logger.info("Mouse set up successfully")
 
     def process_events(self) -> Generator[PlayerInput, None, None]:
         """Processes the input events."""
+        if self.recorder._is_playing_back:
+            event = self.recorder.next_playback_event()
+            if event:
+                yield event
+            return
+
+        # Live Mode (Recording or Standard Play)
         for event in self.event_queue.process_events():
             self.afk_manager.reset()
             self.input_history.add(event)
             self.combo_manager.process(event)
+            self.recorder.record_event(event)
             yield event
 
     def update(self, time_delta: float) -> None:
+        self.event_queue.update_handlers(time_delta)
         self.afk_manager.update(time_delta)
 
     def draw_visualizer(self, screen: Surface) -> None:
         all_inputs = {}
-        for player_handlers in self.event_queue._inputs.values():
-            for handler in player_handlers:
-                for button_id, player_input in handler.buttons.items():
-                    all_inputs[button_id] = player_input
+        for handler in self.event_queue.get_input_handlers():
+            for button_id, player_input in handler.buttons.items():
+                all_inputs[button_id] = player_input
         self.input_visualizer.draw(screen, all_inputs)

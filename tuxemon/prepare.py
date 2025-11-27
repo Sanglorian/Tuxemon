@@ -45,6 +45,7 @@ def _setup_user_environment() -> config.TuxemonConfig:
         paths.USER_STORAGE_DIR.mkdir(parents=True, exist_ok=True)
         paths.USER_GAME_DATA_DIR.mkdir(parents=True, exist_ok=True)
         paths.USER_GAME_SAVE_DIR.mkdir(parents=True, exist_ok=True)
+        paths.USER_RECORDING_DIR.mkdir(parents=True, exist_ok=True)
         logger.info("User directories ensured.")
     except OSError as e:
         logger.critical(f"Failed to create user directories: {e}")

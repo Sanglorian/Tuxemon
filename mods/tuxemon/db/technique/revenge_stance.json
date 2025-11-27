@@ -1,7 +1,6 @@
 {
   "tech_id": 181,
   "accuracy": 1,
-  "animation": "amethyst_absorb",
   "effects": [
     {
       "type": "give",
@@ -11,15 +10,13 @@
       ]
     }
   ],
-  "flip_axes": "",
-  "speed": "normal",
+  "speed": "extremely_fast",
   "potency": 1,
   "power": 0,
   "range": "special",
   "recharge": 1,
-  "sfx": "sfx_kick",
   "slug": "revenge_stance",
-  "sort": "meta",
+  "sort": "damage",
   "modifiers": [],
   "behaviors": {},
   "target": {
@@ -41,5 +38,14 @@
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "amethyst_absorb",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_kick",
+    "volume": 1.5
+  }
 }

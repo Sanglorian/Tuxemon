@@ -3,7 +3,7 @@
     {
       "type": "has_tech",
       "parameters": [
-        "cavity"
+        "acid"
       ],
       "operator": "not"
     }
@@ -12,11 +12,11 @@
     {
       "type": "learn_tm",
       "parameters": [
-        "cavity"
+        "acid"
       ]
     }
   ],
-  "slug": "tm_cavity",
+  "slug": "tm_acid",
   "sort": "utility",
   "sprite": "gfx/items/tm_generic.png",
   "category": "technique",
@@ -30,5 +30,14 @@
   },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
-  "use_success": "generic_success"
+  "use_success": "generic_success",
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": null,
+    "volume": 0.0
+  }
 }

@@ -1,7 +1,6 @@
 {
   "tech_id": 167,
-  "accuracy": 0.6,
-  "animation": "shield_fire",
+  "accuracy": 1.0,
   "effects": [
     {
       "type": "give",
@@ -18,13 +17,11 @@
       ]
     }
   ],
-  "flip_axes": "",
   "speed": "normal",
-  "potency": 0.3,
-  "power": 1.5,
+  "potency": 1.0,
+  "power": 0.0,
   "range": "special",
   "recharge": 2,
-  "sfx": "sfx_flames1",
   "slug": "fire_shield",
   "sort": "damage",
   "modifiers": [],
@@ -47,5 +44,14 @@
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "shield_fire",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_flames1",
+    "volume": 1.5
+  }
 }

@@ -2,7 +2,7 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
 
-from tuxemon.event import EventObject
+from tuxemon.db import BoundingBox, EventObject
 from tuxemon.map.map_loader import EventParser
 
 
@@ -16,23 +16,20 @@ class TestEventParser(unittest.TestCase):
         }
         self.name = "test_event"
         self.source_type = "event"
-        self.x, self.y, self.w, self.h = 5, 10, 2, 3
+        self.box = BoundingBox(x=5, y=10, width=2, height=3)
 
     def test_create_event_object(self):
         event = self.parser.create_event_object(
             self.event_data,
             self.source_type,
             self.name,
-            self.x,
-            self.y,
-            self.w,
-            self.h,
+            self.box,
         )
 
         # Basic structure
         self.assertIsInstance(event, EventObject)
         self.assertEqual(event.name, self.name)
-        self.assertEqual(event.x, self.x)
+        self.assertEqual(event.box.x, self.box.x)
         self.assertEqual(len(event.conds), 2)  # 1 behav + 1 condition
         self.assertEqual(len(event.acts), 2)  # 1 behav + 1 action
 
@@ -60,7 +57,7 @@ class TestEventParser(unittest.TestCase):
 
     def test_empty_event_data(self):
         event = self.parser.create_event_object(
-            {}, self.source_type, self.name, self.x, self.y, self.w, self.h
+            {}, self.source_type, self.name, self.box
         )
         self.assertEqual(len(event.conds), 0)
         self.assertEqual(len(event.acts), 0)
@@ -68,7 +65,7 @@ class TestEventParser(unittest.TestCase):
     def test_behav_only(self):
         data = {"behav": ["run:east"]}
         event = self.parser.create_event_object(
-            data, self.source_type, self.name, self.x, self.y, self.w, self.h
+            data, self.source_type, self.name, self.box
         )
         self.assertEqual(len(event.conds), 1)
         self.assertEqual(len(event.acts), 1)
@@ -82,16 +79,13 @@ class TestEventParser(unittest.TestCase):
                 data,
                 self.source_type,
                 self.name,
-                self.x,
-                self.y,
-                self.w,
-                self.h,
+                self.box,
             )
 
     def test_multiple_behaviors(self):
         data = {"behav": ["jump:up", "slide:left"]}
         event = self.parser.create_event_object(
-            data, self.source_type, self.name, self.x, self.y, self.w, self.h
+            data, self.source_type, self.name, self.box
         )
         self.assertEqual(len(event.conds), 2)
         self.assertEqual(len(event.acts), 2)
@@ -101,7 +95,7 @@ class TestEventParser(unittest.TestCase):
     def test_complex_action(self):
         data = {"actions": ["set flag quest_completed:true"]}
         event = self.parser.create_event_object(
-            data, self.source_type, self.name, self.x, self.y, self.w, self.h
+            data, self.source_type, self.name, self.box
         )
         self.assertEqual(
             event.acts[0].parameters, ["flag quest_completed:true"]
@@ -112,12 +106,9 @@ class TestEventParser(unittest.TestCase):
             self.event_data,
             self.source_type,
             self.name,
-            self.x,
-            self.y,
-            self.w,
-            self.h,
+            self.box,
         )
         self.assertTrue(hasattr(event, "id"))
         self.assertEqual(event.name, "test_event")
-        self.assertEqual(event.x, 5)
-        self.assertEqual(event.y, 10)
+        self.assertEqual(event.box.x, self.box.x)
+        self.assertEqual(event.box.y, self.box.y)

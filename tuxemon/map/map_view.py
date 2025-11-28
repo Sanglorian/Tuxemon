@@ -19,7 +19,6 @@ from pygame.surface import Surface
 from tuxemon import prepare
 from tuxemon.camera.camera import project
 from tuxemon.db import Direction
-from tuxemon.entity import EntityState
 from tuxemon.graphics import ColorLike, apply_cinema_bars, load_and_scale
 from tuxemon.map.map import get_pos_from_tilepos, proj
 from tuxemon.math import Vector2
@@ -492,11 +491,7 @@ class MapRenderer(AbstractRenderer):
         """Retrieves sprite surfaces for an NPC."""
         sprite_renderer = npc.sprite_controller.get_sprite_renderer()
 
-        if npc.mover.state in (
-            EntityState.WALKING,
-            EntityState.RUNNING,
-            EntityState.JUMPING,
-        ):
+        if npc.mover.is_moving_state:
             ani_key = sprite_renderer.ANIMATION_MAPPING[npc.mover.state.value][
                 npc.facing.value
             ]

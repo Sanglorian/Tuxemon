@@ -42,11 +42,6 @@ class Vector(ABC, Sequence[float]):
     def as_tuple(self) -> tuple[float, ...]:
         return tuple(self)
 
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Sequence) or len(self) != len(other):
-            return NotImplemented
-        return self.as_tuple == tuple(other)
-
     def __len__(self) -> int:
         return len(tuple(iter(self)))
 
@@ -105,6 +100,13 @@ class Vector3(Vector):
         else:
             self.x, self.y, self.z = x
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Vector3):
+            return (self.x, self.y, self.z) == (other.x, other.y, other.z)
+        if isinstance(other, Sequence) and len(other) == 3:
+            return (self.x, self.y, self.z) == tuple(other)
+        return False
+
     def __iter__(self) -> Generator[float, None, None]:
         yield self.x
         yield self.y
@@ -142,6 +144,9 @@ class Vector3(Vector):
             f"Unsupported operand type(s) for -: '{type(other).__name__}' and 'Vector3'"
         )
 
+    def __repr__(self) -> str:
+        return f"Vector3({self.x}, {self.y}, {self.z})"
+
 
 class Vector2(Vector):
     @overload
@@ -170,6 +175,13 @@ class Vector2(Vector):
             self.y = y
         else:
             self.x, self.y = x
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Vector2):
+            return (self.x, self.y) == (other.x, other.y)
+        if isinstance(other, Sequence) and len(other) == 2:
+            return (self.x, self.y) == tuple(other)
+        return False
 
     def __iter__(self) -> Generator[float, None, None]:
         yield self.x
@@ -207,6 +219,9 @@ class Vector2(Vector):
         raise TypeError(
             f"Unsupported operand type(s) for -: '{type(other).__name__}' and 'Vector2'"
         )
+
+    def __repr__(self) -> str:
+        return f"Vector3({self.x}, {self.y})"
 
 
 Point3 = Vector3

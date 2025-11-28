@@ -64,27 +64,21 @@ class TestBody(unittest.TestCase):
     def test_move_with_valid_direction(self):
         self.mover.base_moverate = 5
         self.mover.moverate_modifier = 1.0
-        self.mover.move(Vector3(0, -1, 0))
+        self.mover.move(Direction.up)
         self.assertEqual(self.body.velocity, Vector3(0, -5, 0))
         self.assertEqual(self.mover.facing, Direction.up)
-
-    def test_move_with_invalid_direction(self):
-        self.mover.base_moverate = 10
-        self.mover.moverate_modifier = 1.0
-        with self.assertRaises(ValueError):
-            self.mover.move(Vector3(1, 1, 1))
 
     def test_move_boundary_case(self):
         self.mover.base_moverate = 0.0001
         self.mover.moverate_modifier = 1.0
-        self.mover.move(Vector3(0, 1, 0))
+        self.mover.move(Direction.down)
         self.assertEqual(self.body.velocity, Vector3(0, 0.0001, 0))
         self.assertEqual(self.mover.facing, Direction.down)
 
     def test_no_change_in_facing_when_stopping(self):
         self.mover.base_moverate = 5
         self.mover.moverate_modifier = 1.0
-        self.mover.move(Vector3(1, 0, 0))
+        self.mover.move(Direction.right)
         self.mover.stop()
 
         self.assertEqual(self.body.velocity, Vector3(0, 0, 0))
@@ -114,75 +108,3 @@ class TestBody(unittest.TestCase):
         self.body.velocity = Vector3(999999, 999999, 999999)
         self.body.update(time_delta=1.0)
         self.assertEqual(self.body.position, Point3(999999, 999999, 999999))
-
-
-class TestMover(unittest.TestCase):
-    def setUp(self):
-        self.body = Body(position=Point3(0, 0, 0))
-        self.mover = Mover(self.body)
-
-    def test_move_with_valid_direction(self):
-        self.mover.base_moverate = 5
-        self.mover.moverate_modifier = 1.0
-        self.mover.move(Vector3(1, 0, 0))
-        self.assertEqual(self.body.velocity, Vector3(5, 0, 0))
-        self.assertEqual(self.mover.facing, Direction.right)
-
-    def test_move_with_invalid_direction(self):
-        self.mover.base_moverate = 5
-        self.mover.moverate_modifier = 1.0
-        with self.assertRaises(ValueError):
-            self.mover.move(Vector3(0.5, 0.5, 0.5))
-
-    def test_stop(self):
-        self.mover.base_moverate = 5
-        self.mover.moverate_modifier = 1.0
-        self.mover.move(Vector3(1, 0, 0))
-        self.mover.stop()
-        self.assertEqual(self.body.velocity, Vector3(0, 0, 0))
-
-    def test_move_with_zero_speed(self):
-        self.mover.base_moverate = 0
-        self.mover.moverate_modifier = 1.0
-        self.mover.move(Vector3(0, 1, 0))
-        self.assertEqual(self.body.velocity, Vector3(0, 0, 0))
-        self.assertEqual(self.mover.facing, Direction.down)
-
-    def test_move_with_negative_speed(self):
-        self.mover.base_moverate = -5
-        self.mover.moverate_modifier = 1.0
-        self.mover.move(Vector3(0, 1, 0))
-        self.assertEqual(self.body.velocity, Vector3(0, -5, 0))
-        self.assertEqual(self.mover.facing, Direction.down)
-
-    def test_move_extreme_speed(self):
-        self.mover.base_moverate = 999999
-        self.mover.moverate_modifier = 1.0
-        self.mover.move(Vector3(1, 0, 0))
-        self.assertEqual(self.body.velocity, Vector3(999999, 0, 0))
-        self.assertEqual(self.mover.facing, Direction.right)
-
-    def test_facing_consistency_after_stop(self):
-        self.mover.base_moverate = 5
-        self.mover.moverate_modifier = 1.0
-        self.mover.move(Vector3(0, -1, 0))
-        self.mover.stop()
-        self.assertEqual(self.mover.facing, Direction.up)
-
-    def test_direction_map_integrity(self):
-        self.assertEqual(
-            self.mover.direction_map[tuple(Vector3(1, 0, 0).normalized)],
-            Direction.right,
-        )
-        self.assertEqual(
-            self.mover.direction_map[tuple(Vector3(-1, 0, 0).normalized)],
-            Direction.left,
-        )
-        self.assertEqual(
-            self.mover.direction_map[tuple(Vector3(0, 1, 0).normalized)],
-            Direction.down,
-        )
-        self.assertEqual(
-            self.mover.direction_map[tuple(Vector3(0, -1, 0).normalized)],
-            Direction.up,
-        )

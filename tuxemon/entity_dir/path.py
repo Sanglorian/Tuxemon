@@ -167,7 +167,7 @@ class PathController:
                 # visual glitches and ensure frame accuracy.
                 self.owner.sprite_controller.play_animation()
                 self.path_origin = self.owner.tile_pos
-                self.owner.mover.move(self.owner.mover.current_direction)
+                self.owner.mover.move(self.owner.facing)
                 self.owner.remove_collision()
             else:
                 self.owner.stop_moving()

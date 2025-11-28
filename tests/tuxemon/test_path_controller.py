@@ -53,7 +53,6 @@ class PathControllerMagicMockTests(unittest.TestCase):
     def mk_npc_with_mocks(self):
         npc = SimpleNPC()
         mover = MagicMock()
-        mover.current_direction = Direction.down
         mover.move = MagicMock()
         npc.mover = mover
         sprite = MagicMock()
@@ -162,7 +161,7 @@ class PathControllerMagicMockTests(unittest.TestCase):
         pc.next_waypoint()
         npc.sprite_controller.play_animation.assert_called_once()
         self.assertEqual(pc.path_origin, (3, 3))
-        npc.mover.move.assert_called_once_with(npc.mover.current_direction)
+        npc.mover.move.assert_called_once_with(npc.facing)
 
     def test_next_waypoint_pathfinder_exception_cancels_path(self):
         pf = MagicMock()

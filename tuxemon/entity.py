@@ -79,6 +79,9 @@ class Body:
 
 
 class Mover:
+
+    GRAVITY: float = -9.8
+
     def __init__(
         self,
         body: Body,
@@ -91,59 +94,80 @@ class Mover:
         self.facing = facing
         self.base_moverate = base_moverate
         self.moverate_modifier = moverate_modifier
-        self.direction_map = {tuple(v.normalized): k for k, v in dirs3.items()}
         self.move_direction: Optional[Direction] = None
-
-    @property
-    def current_direction(self) -> Vector3:
-        return dirs3[self.facing]
-
-    @property
-    def effective_moverate(self) -> float:
-        return self.moverate * self.moverate_modifier
 
     @property
     def moverate(self) -> float:
         return self.base_moverate * self.moverate_modifier
 
-    def move(self, direction: Vector3) -> None:
+    @property
+    def is_moving_state(self) -> bool:
+        return self.state in (
+            EntityState.WALKING,
+            EntityState.RUNNING,
+            EntityState.JUMPING,
+        )
+
+    def move(self, direction: Direction) -> None:
         """Applies movement in a given direction."""
-        normalized_direction = tuple(direction.normalized)
-        if normalized_direction in self.direction_map:
-            self.body.velocity = Vector3(*normalized_direction) * self.moverate
-            self.facing = self.direction_map[normalized_direction]
-            self.state = (
-                EntityState.RUNNING
-                if self.base_moverate == CONFIG.player_runrate
-                else EntityState.WALKING
-            )
-        else:
-            raise ValueError("Invalid direction")
+        direction_vector = dirs3[direction]
+        self.body.velocity = direction_vector * self.moverate
+        self.facing = direction
+        new_state = (
+            EntityState.RUNNING
+            if self.base_moverate == CONFIG.player_runrate
+            else EntityState.WALKING
+        )
+        self.set_state(new_state)
 
     def stop(self) -> None:
-        """Stops movement without affecting acceleration."""
-        self.body.velocity = Vector3(0, 0, 0)
-        self.state = EntityState.IDLE
-        self.base_moverate = CONFIG.player_walkrate
+        """Stops movement and transitions to IDLE."""
+        self.set_state(EntityState.IDLE)
 
     def running(self) -> None:
         """Boosts moverate to running speed."""
         if self.body.is_moving:
             self.base_moverate = CONFIG.player_runrate
-            self.state = EntityState.RUNNING
+            self.set_state(EntityState.RUNNING)
 
     def walking(self) -> None:
         """Resets moverate back to walking speed."""
         if self.body.is_moving:
             self.base_moverate = CONFIG.player_walkrate
-            self.state = EntityState.WALKING
+            self.set_state(EntityState.WALKING)
 
     def jump(self, strength: float = 5.0) -> None:
         """Applies a vertical impulse to simulate a jump."""
         if self.state != EntityState.JUMPING and self.body.position.z == 0:
             self.body.velocity.z = strength
-            self.body.acceleration.z = -9.8  # gravity-like pull
-            self.state = EntityState.JUMPING
+            self.body.acceleration.z = self.GRAVITY  # gravity-like pull
+            self.set_state(EntityState.JUMPING)
+
+    def set_state(self, new_state: EntityState) -> None:
+        """
+        Controls the entity's state transitions, validating if the move is allowed.
+        """
+        current_state = self.state
+
+        if current_state == EntityState.JUMPING and new_state in (
+            EntityState.WALKING,
+            EntityState.RUNNING,
+        ):
+            return  # Transition blocked
+
+        if new_state == EntityState.IDLE:
+            self.body.velocity = Vector3(0, 0, 0)
+            self.base_moverate = CONFIG.player_walkrate
+
+        if current_state == new_state:
+            return
+
+        self.state = new_state
+
+    def apply_gravity(self) -> None:
+        """Sets vertical acceleration if airborne."""
+        if self.body.position.z > 0:
+            self.body.acceleration.z = self.GRAVITY
 
     def update_movement_state(self, running: bool) -> None:
         """
@@ -203,17 +227,26 @@ class Entity(Generic[SaveDict]):
         Parameters:
             td: Time delta (elapsed time).
         """
+        if self.is_airborne:
+            self.mover.apply_gravity()
+
         self.body.update(td)
         self.pos_update()
+        self._handle_vertical_constraint()
 
-        if (
-            self.mover.state == EntityState.JUMPING
-            and self.body.position.z <= 0
-        ):
+    def _handle_vertical_constraint(self) -> None:
+        """
+        Applies constraints when the entity hits the floor (z <= 0).
+        This clamps position/velocity and handles state transition from JUMPING.
+        """
+        if self.body.position.z <= 0:
+            # Clamp all vertical components to zero
             self.body.position.z = 0
             self.body.velocity.z = 0
             self.body.acceleration.z = 0
-            self.mover.state = EntityState.IDLE
+
+            if self.mover.state == EntityState.JUMPING:
+                self.mover.set_state(EntityState.IDLE)
 
     def set_position(self, pos: Sequence[float]) -> None:
         """

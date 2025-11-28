@@ -130,6 +130,14 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         if self.enemy.combat.forfeit:
             visibility_map["menu_forfeit"] = True
 
+        items_filtered = ItemFilter(self.character.items)
+        items_filtered.set_filter_usable_in_state("MainCombatMenuState")
+        if not items_filtered.items:
+            visibility_map["menu_item"] = False
+
+        if self.character.party.party_size == 1:
+            visibility_map["menu_monster"] = False
+
         for key, method_name in menu_map.items():
             callback = getattr(self, method_name)
             visible = visibility_map.get(key, False)

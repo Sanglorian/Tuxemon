@@ -27,13 +27,9 @@ class TestEventEngine(unittest.TestCase):
     def test_reset(self):
         self.eng.running_events = {1: "event1", 2: "event2"}
         self.eng.current_map = "map1"
-        self.eng.timer = 10.0
-        self.eng.wait = 5.0
         self.eng.reset()
         self.assertIsNone(self.eng.current_map)
         self.assertEqual(self.eng.running_events, {})
-        self.assertEqual(self.eng.timer, 0.0)
-        self.assertEqual(self.eng.wait, 0.0)
 
     def test_start_event(self):
         event = EventObject(

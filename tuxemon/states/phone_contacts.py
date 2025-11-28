@@ -25,6 +25,8 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+UNKNOWN_MAP_SLUG = "unknown_map"
+
 
 def load_yaml(filepath: Path) -> Any:
     try:
@@ -66,8 +68,7 @@ class NuPhoneContacts(PygameMenuState):
         """
         required_map_slug = conditions.get("map_slug")
         if required_map_slug:
-            current_map_slug = self.client.get_map_name().split(".")[0]
-            if current_map_slug != required_map_slug:
+            if self.current_map != required_map_slug:
                 return False
 
         required_vars = conditions.get("variables")
@@ -171,6 +172,11 @@ class NuPhoneContacts(PygameMenuState):
         theme.title = True
 
         self.char = character
+
+        if self.char.current_map:
+            self.current_map = self.char.current_map.split(".")[0]
+        else:
+            self.current_map = UNKNOWN_MAP_SLUG
 
         for relation in self.char.relationships.connections.values():
             relation.apply_decay(self.char)

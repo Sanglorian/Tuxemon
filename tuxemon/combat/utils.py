@@ -164,7 +164,7 @@ def track_battles(
     Returns:
         A formatted message describing the battle outcome.
     """
-    location = session.client.get_map_name()
+    location = character.current_map or "unknown"
     opponents = [op for op in opponents if op.slug != character.slug]
 
     if output == OutputBattle.won:

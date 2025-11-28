@@ -35,8 +35,8 @@ class SimpleNPC:
         self.move_direction = d
 
     def set_position(self, pos):
-        self.tile_pos = pos
         self.position = Vector2(float(pos[0]), float(pos[1]))
+        self.tile_pos = vector2_to_tile_pos(self.position)
 
     def remove_collision(self):
         pass

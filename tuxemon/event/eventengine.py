@@ -285,7 +285,7 @@ class EventEngine:
                     )
                 return
 
-            if not self.process_running_event(running_event):
+            if not self.process_running_event(running_event, dt):
                 # Event is complete or failed; mark it as completed
                 running_event.complete()
 
@@ -299,7 +299,9 @@ class EventEngine:
         for event_id in to_remove:
             self.running_events.pop(event_id, None)
 
-    def process_running_event(self, running_event: RunningEvent) -> bool:
+    def process_running_event(
+        self, running_event: RunningEvent, dt: float
+    ) -> bool:
         """
         Processes a single running event by handling its current or next action.
 
@@ -351,7 +353,7 @@ class EventEngine:
 
             # with add_error_context(e.map_event, e.current_action,
             # self.session):
-            current_action.update(self.session)
+            current_action.update(self.session, dt)
 
             if current_action.done:
                 # action finished, so continue and do the next one,
@@ -394,7 +396,7 @@ class EventEngine:
 
         # start the action
         # with add_error_context(e.map_event, next_action, self.session):
-        action.start(self.session)
+        action.on_start(self.session)
         running_event.current_action = action
         return True
 

@@ -9,13 +9,10 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from tuxemon.combat.combat_context import CombatType
-from tuxemon.db import (
-    GenderType,
-    OutputBattle,
-)
+from tuxemon.db import BattleMusicModel, GenderType, OutputBattle
 from tuxemon.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.technique.technique import Technique
@@ -138,6 +135,51 @@ def battlefield(session: Session, monster: Monster) -> None:
     set_var(session, "battle_last_monster_name", monster.name)
     set_var(session, "battle_last_monster_level", str(monster.level))
     set_var(session, "battle_last_monster_type", monster.types.primary.slug)
+
+
+def get_battle_outcome_music(
+    session: Session, music: BattleMusicModel, monster: Monster
+) -> Optional[tuple[str, float]]:
+    """
+    Return the appropriate music track based on outcome and participants.
+    Player-centric: only trigger music if a player is involved.
+    """
+    if not monster.owner:
+        return None
+
+    # Require at least one human player still active
+    if not any(True for _ in session.client.combat_session.human_players):
+        return None
+
+    # If the defeated was a player → defeat music
+    if (
+        monster.owner.is_player
+        and music.defeat_music
+        and music.defeat_music.music
+    ):
+        return (music.defeat_music.music, music.defeat_music.volume)
+
+    # If the defeated was not a player → victory music
+    if (
+        not monster.owner.is_player
+        and music.victory_music
+        and music.victory_music.music
+    ):
+        return (music.victory_music.music, music.victory_music.volume)
+
+    return None
+
+
+def play_outcome_music(
+    session: Session,
+    music: BattleMusicModel,
+    monster: Monster,
+) -> None:
+    track = get_battle_outcome_music(session, music, monster)
+    if track:
+        music_name, volume = track
+        session.client.current_music.play(music_name)
+        session.client.current_music.set_volume(volume)
 
 
 def track_battles(

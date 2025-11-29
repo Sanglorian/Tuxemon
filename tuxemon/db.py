@@ -481,6 +481,20 @@ class SoundProperties(BaseModel):
         raise ValueError(f"the sound {v} doesn't exist in the db")
 
 
+class MusicProperties(BaseModel):
+    music: Optional[str] = Field(..., description="Music to play")
+    volume: float = Field(..., ge=0.0, description="Playback volume")
+
+    @field_validator("music")
+    def music_exists(cls: MusicProperties, v: Optional[str]) -> Optional[str]:
+        if not v:
+            return v
+
+        if has.db_entry("music", v):
+            return v
+        raise ValueError(f"the music {v} doesn't exist in the db")
+
+
 class VisualProperties(BaseModel):
     animation: Optional[str] = Field(
         ..., description="The slug or path of the animation to play."
@@ -1842,13 +1856,23 @@ class BattleGraphicsModel(BaseModel):
         raise ValueError(f"state isn't among: {states}")
 
 
+class BattleMusicModel(BaseModel):
+    battle: MusicProperties = Field(
+        ..., description="Music configuration used when fighting"
+    )
+    victory_music: MusicProperties = Field(
+        ..., description="Music configuration used when winning"
+    )
+    defeat_music: MusicProperties = Field(
+        ..., description="Music configuration used when losing"
+    )
+
+
 class EnvironmentModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "environment"
     slug: str = Field(..., description="Slug of the name of the environment")
-    battle_music: str = Field(
-        ..., description="Filename of the music to use for this environment"
-    )
     battle_graphics: BattleGraphicsModel
+    battle_music: BattleMusicModel
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> EnvironmentModel:
@@ -1859,12 +1883,6 @@ class EnvironmentModel(BaseModel, BaseLookupModel):
             )
         except EntryNotFoundError:
             raise RuntimeError(f"Encounter {slug} not found")
-
-    @field_validator("battle_music")
-    def battle_music_exists(cls: EnvironmentModel, v: str) -> str:
-        if has.db_entry("music", v):
-            return v
-        raise ValueError(f"the music {v} doesn't exist in the db")
 
 
 class HeldItemProbability(BaseModel):

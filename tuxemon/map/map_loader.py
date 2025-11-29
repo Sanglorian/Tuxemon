@@ -331,14 +331,19 @@ class YAMLEventLoader:
         events_dict: dict[str, list[EventObject]] = {"event": [], "init": []}
 
         for name, event_data in yaml_data["events"].items():
-            event_type = str(event_data.get("type"))
+            _event_type = event_data.get("type")
+            event_type = str(_event_type) if _event_type is not None else None
             if event_type == source:
                 priority = int(event_data.get("priority", 0))
+                _timeout = event_data.get("timeout")
+                timeout = float(_timeout) if _timeout is not None else None
+                _delay = event_data.get("delay")
+                delay = float(_delay) if _delay is not None else None
                 x, y = event_data.get("x", 0), event_data.get("y", 0)
                 w, h = event_data.get("width", 1), event_data.get("height", 1)
                 box = BoundingBox(x=x, y=y, width=w, height=h)
                 event = event_parser.create_event_object(
-                    event_data, event_type, name, box, priority
+                    event_data, name, box, priority, timeout, delay
                 )
                 events_dict[event_type].append(event)
         return events_dict
@@ -646,6 +651,4 @@ class TMXMapLoader:
                 event_data["behav"].append(value)
 
         box = BoundingBox(x=x, y=y, width=w, height=h)
-        return event_parser.create_event_object(
-            event_data, obj.type or "event", obj.name, box
-        )
+        return event_parser.create_event_object(event_data, obj.name, box)

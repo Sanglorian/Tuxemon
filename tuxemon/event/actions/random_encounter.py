@@ -128,7 +128,7 @@ class RandomEncounterAction(EventAction):
             "play_music", [environment.battle_music], True
         )
 
-    def update(self, session: Session) -> None:
+    def update(self, session: Session, dt: float) -> None:
         try:
             session.client.get_queued_state_by_name("CombatState")
         except ValueError:

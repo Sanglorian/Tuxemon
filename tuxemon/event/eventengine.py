@@ -51,9 +51,6 @@ class EventEngine:
         self.running_events: dict[int, RunningEvent] = dict()
         self.name = "Event"
         self.current_map: Optional[AbstractMap] = None
-        self.timer = 0.0
-        self.wait = 0.0
-        self.button = None
         self._suspended: bool = False
 
         self.global_events: list[EventObject] = []
@@ -73,9 +70,7 @@ class EventEngine:
         """Clear out running events.  Use when changing maps."""
         self.running_events = dict()
         self.set_current_map(None)
-        self.timer = 0.0
-        self.wait = 0.0
-        self.button = None
+        self.triggered_global_events = set()
 
     def suspend(self) -> None:
         """
@@ -175,7 +170,7 @@ class EventEngine:
         """
         if self._suspended:
             return
-        # debug
+
         self.partial_events = []
         self.check_global_conditions()
         self.check_conditions()
@@ -190,6 +185,7 @@ class EventEngine:
         all_events = list(self.session.client.map_manager.inits) + list(
             self.session.client.map_manager.events
         )
+        all_events.sort(key=lambda event: event.priority, reverse=True)
         for event in all_events:
             self.process_map_event(event)
 
@@ -221,7 +217,11 @@ class EventEngine:
         return was_removed
 
     def check_global_conditions(self) -> None:
-        for event in self.global_events:
+        sorted_global_events = sorted(
+            self.global_events, key=lambda event: event.priority, reverse=True
+        )
+
+        for event in sorted_global_events:
             if event.id in self.triggered_global_events:
                 continue
             self._evaluate_and_queue_event(event, is_global=True)
@@ -273,6 +273,8 @@ class EventEngine:
         ]
 
         for event_id, running_event in running_events_to_process:
+            if not running_event.tick(dt):
+                continue  # either waiting for delay or cancelled by timeout
             # If the current map has changed, then `reset` has also been
             # called, which replaced self.running_events with an empty dict.
             # We need to stop processing the running_events, as they may not
@@ -285,7 +287,7 @@ class EventEngine:
                     )
                 return
 
-            if not self.process_running_event(running_event):
+            if not self.process_running_event(running_event, dt):
                 # Event is complete or failed; mark it as completed
                 running_event.complete()
 
@@ -299,7 +301,9 @@ class EventEngine:
         for event_id in to_remove:
             self.running_events.pop(event_id, None)
 
-    def process_running_event(self, running_event: RunningEvent) -> bool:
+    def process_running_event(
+        self, running_event: RunningEvent, dt: float
+    ) -> bool:
         """
         Processes a single running event by handling its current or next action.
 
@@ -351,7 +355,7 @@ class EventEngine:
 
             # with add_error_context(e.map_event, e.current_action,
             # self.session):
-            current_action.update(self.session)
+            current_action.update(self.session, dt)
 
             if current_action.done:
                 # action finished, so continue and do the next one,
@@ -394,7 +398,7 @@ class EventEngine:
 
         # start the action
         # with add_error_context(e.map_event, next_action, self.session):
-        action.start(self.session)
+        action.on_start(self.session)
         running_event.current_action = action
         return True
 

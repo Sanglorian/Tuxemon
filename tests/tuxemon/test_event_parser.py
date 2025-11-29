@@ -15,13 +15,11 @@ class TestEventParser(unittest.TestCase):
             "actions": ["set flag quest_completed"],
         }
         self.name = "test_event"
-        self.source_type = "event"
         self.box = BoundingBox(x=5, y=10, width=2, height=3)
 
     def test_create_event_object(self):
         event = self.parser.create_event_object(
             self.event_data,
-            self.source_type,
             self.name,
             self.box,
         )
@@ -56,17 +54,13 @@ class TestEventParser(unittest.TestCase):
         self.assertEqual(act.parameters, ["flag quest_completed"])
 
     def test_empty_event_data(self):
-        event = self.parser.create_event_object(
-            {}, self.source_type, self.name, self.box
-        )
+        event = self.parser.create_event_object({}, self.name, self.box)
         self.assertEqual(len(event.conds), 0)
         self.assertEqual(len(event.acts), 0)
 
     def test_behav_only(self):
         data = {"behav": ["run:east"]}
-        event = self.parser.create_event_object(
-            data, self.source_type, self.name, self.box
-        )
+        event = self.parser.create_event_object(data, self.name, self.box)
         self.assertEqual(len(event.conds), 1)
         self.assertEqual(len(event.acts), 1)
         self.assertEqual(event.conds[0].parameters, ["run:east"])
@@ -77,16 +71,13 @@ class TestEventParser(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.parser.create_event_object(
                 data,
-                self.source_type,
                 self.name,
                 self.box,
             )
 
     def test_multiple_behaviors(self):
         data = {"behav": ["jump:up", "slide:left"]}
-        event = self.parser.create_event_object(
-            data, self.source_type, self.name, self.box
-        )
+        event = self.parser.create_event_object(data, self.name, self.box)
         self.assertEqual(len(event.conds), 2)
         self.assertEqual(len(event.acts), 2)
         self.assertEqual(event.conds[0].name, "behav20")
@@ -94,9 +85,7 @@ class TestEventParser(unittest.TestCase):
 
     def test_complex_action(self):
         data = {"actions": ["set flag quest_completed:true"]}
-        event = self.parser.create_event_object(
-            data, self.source_type, self.name, self.box
-        )
+        event = self.parser.create_event_object(data, self.name, self.box)
         self.assertEqual(
             event.acts[0].parameters, ["flag quest_completed:true"]
         )
@@ -104,7 +93,6 @@ class TestEventParser(unittest.TestCase):
     def test_event_object_integrity(self):
         event = self.parser.create_event_object(
             self.event_data,
-            self.source_type,
             self.name,
             self.box,
         )
@@ -112,3 +100,43 @@ class TestEventParser(unittest.TestCase):
         self.assertEqual(event.name, "test_event")
         self.assertEqual(event.box.x, self.box.x)
         self.assertEqual(event.box.y, self.box.y)
+
+    def test_event_with_timeout_and_delay(self):
+        data = {"timeout": 5, "delay": 2}
+        event = self.parser.create_event_object(
+            data,
+            self.name,
+            self.box,
+            priority=0,
+            timeout=5.0,
+            delay=2.0,
+        )
+        self.assertEqual(event.timeout, 5.0)
+        self.assertEqual(event.delay, 2.0)
+
+    def test_event_defaults(self):
+        event = self.parser.create_event_object({}, self.name, self.box)
+        self.assertIsNone(event.timeout)
+        self.assertIsNone(event.delay)
+
+    def test_condition_with_not_operator(self):
+        data = {"conditions": ["not flag quest_started"]}
+        event = self.parser.create_event_object(data, self.name, self.box)
+        cond = event.conds[0]
+        self.assertEqual(cond.operator, "not")
+
+    def test_event_box_integrity(self):
+        event = self.parser.create_event_object(
+            self.event_data, self.name, self.box
+        )
+        self.assertEqual(event.box.width, 2)
+        self.assertEqual(event.box.height, 3)
+
+    def test_multiple_actions(self):
+        data = {
+            "actions": ["set flag quest_started", "clear flag quest_completed"]
+        }
+        event = self.parser.create_event_object(data, self.name, self.box)
+        self.assertEqual(len(event.acts), 2)
+        self.assertEqual(event.acts[0].type, "set")
+        self.assertEqual(event.acts[1].type, "clear")

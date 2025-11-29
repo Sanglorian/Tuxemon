@@ -25,7 +25,9 @@
   "slug": "fire_shield",
   "sort": "damage",
   "modifiers": [],
-  "behaviors": {},
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": true,
     "enemy_team": false,

@@ -440,7 +440,7 @@ class CombatState(CombatAnimations):
 
         # Start the menu flow for human players
         if self._decision_queue:
-            self.show_monster_action_menu(self._decision_queue.pop(0))
+            self.update_phase()
 
     def remove_monster_from_play(self, monster: Monster) -> None:
         """

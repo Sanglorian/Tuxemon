@@ -66,14 +66,15 @@ class StartState(PygameMenuState):
             )
 
         def change_state(
-            state: Union[State, str],
-            **change_state_kwargs: Any,
-        ) -> Callable[[], State]:
-            return partial(
-                self.client.push_state,
-                state,
-                **change_state_kwargs,
-            )
+            state: Union[State, str], **kwargs: Any
+        ) -> Callable[[], None]:
+            def _change() -> None:
+                self.unsubscribe(
+                    "afk.threshold_reached", self._on_afk_threshold
+                )
+                self.client.push_state(state, **kwargs)
+
+            return _change
 
         def exit_game() -> None:
             self.client.quit()

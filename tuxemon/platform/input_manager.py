@@ -4,23 +4,24 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Generator
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any
 
 from pygame.surface import Surface
 
 from tuxemon.platform.combo_detector import ComboManager
+from tuxemon.platform.input_device import (
+    ControllerOverlaySetup,
+    CoreDevices,
+    GamepadSetup,
+    InputDeviceSetup,
+    KeyboardSetup,
+    MouseSetup,
+)
 from tuxemon.platform.input_history import InputHistory
 from tuxemon.platform.input_recorder import InputRecorder
 from tuxemon.platform.input_visualizer import InputVisualizer
 from tuxemon.platform.platform_pygame.events import (
-    InputMappingStrategy,
-    PlayStationMapping,
     PygameEventQueueHandler,
-    PygameGamepadInput,
-    PygameKeyboardInput,
-    PygameMouseInput,
-    PygameTouchOverlayInput,
-    XboxMapping,
 )
 from tuxemon.prepare import SCREEN_SIZE
 
@@ -42,84 +43,37 @@ class InputManager:
         Initializes the input manager with the given config.
         """
         self.afk_manager = afk_manager
-        self.event_queue = PygameEventQueueHandler()
-        self.input_history = InputHistory()
+        self.config = config
+        self.event_queue = PygameEventQueueH
         self.recorder = InputRecorder()
         self.controller = config.controller
         self.input = config.input
         self.controller_overlay: Optional[PygameTouchOverlayInput] = None
         self.setup_inputs()
+        self.input_history = InputHistory(config)
         self.combo_manager = ComboManager()
         self.input_visualizer = InputVisualizer(SCREEN_SIZE)
-        self.show_visualizer = self.controller.show_input_visualizer
+        self.core_devices = CoreDevices()
+        self.extra_devices: dict[str, Any] = {}
+        self._device_setups: dict[str, InputDeviceSetup] = {
+            "keyboard": KeyboardSetup(),
+            "gamepad": GamepadSetup(),
+            "overlay": ControllerOverlaySetup(),
+            "mouse": MouseSetup(),
+        }
+        self.setup_inputs()
 
     def setup_inputs(self) -> None:
-        """
-        Sets up the input devices based on the config.
-        """
-        setup_methods = [
-            self.setup_keyboard,
-            self.setup_gamepad,
-            self.setup_controller_overlay,
-            self.setup_mouse,
-        ]
-
-        for setup_method in setup_methods:
+        for name, setup_strategy in self._device_setups.items():
             try:
-                setup_method()
+                device = setup_strategy.setup(self.event_queue, self.config)
+                if device:
+                    if hasattr(self.core_devices, name):
+                        setattr(self.core_devices, name, device)
+                    else:
+                        self.extra_devices[name] = device
             except Exception as e:
-                logger.error(f"Error setting up {setup_method.__name__}: {e}")
-
-    def setup_keyboard(self) -> None:
-        """
-        Sets up the keyboard input device.
-        """
-        if self.input.keyboard_button_map:
-            keyboard = PygameKeyboardInput(self.input.keyboard_button_map)
-            self.event_queue.add_input(0, 0, keyboard)
-            logger.info("Keyboard set up successfully")
-
-    def setup_gamepad(self) -> None:
-        """
-        Sets up the gamepad input device.
-        """
-        if self.controller.type:
-            strategy = self._get_mapping_strategy(self.controller.type)
-            gamepad = PygameGamepadInput(strategy)
-            self.event_queue.add_input(0, 1, gamepad)
-            logger.info(
-                f"{self.controller.type.capitalize()} gamepad set up successfully"
-            )
-
-    def _get_mapping_strategy(
-        self, controller_type: str
-    ) -> InputMappingStrategy:
-        if controller_type == "xbox":
-            return XboxMapping()
-        elif controller_type == "ps4":
-            return PlayStationMapping()
-        else:
-            raise ValueError(f"Unsupported controller type: {controller_type}")
-
-    def setup_controller_overlay(self) -> None:
-        """
-        Sets up the controller overlay input device.
-        """
-        if self.controller.overlay:
-            self.controller_overlay = PygameTouchOverlayInput(
-                self.controller.transparency
-            )
-            self.controller_overlay.load()
-            self.event_queue.add_input(0, 2, self.controller_overlay)
-            logger.info("Controller overlay set up successfully")
-
-    def setup_mouse(self) -> None:
-        """
-        Sets up the mouse input device.
-        """
-        if not self.controller.hide_mouse:
-            self.event_queue.add_input(0, 3, PygameMouseInput())
-            logger.info("Mouse set up successfully")
+                logger.error(f"Error setting up {name}: {e}")
 
     def process_events(self) -> Generator[PlayerInput, None, None]:
         """Processes the input events."""
@@ -132,18 +86,29 @@ class InputManager:
         # Live Mode (Recording or Standard Play)
         for event in self.event_queue.process_events():
             self.afk_manager.reset()
-            self.input_history.add(event)
+            self.input_history.record_input(event)
             self.combo_manager.process(event)
             self.recorder.record_event(event)
             yield event
 
     def update(self, time_delta: float) -> None:
+        self.input_history.update(time_delta)
         self.event_queue.update_handlers(time_delta)
         self.afk_manager.update(time_delta)
 
+    def draw_overlay(self, screen: Surface) -> None:
+        if self.core_devices.overlay:
+            self.core_devices.overlay.draw(screen)
+
     def draw_visualizer(self, screen: Surface) -> None:
+        if not self.config.controller.show_input_visualizer:
+            return
         all_inputs = {}
         for handler in self.event_queue.get_input_handlers():
             for button_id, player_input in handler.buttons.items():
                 all_inputs[button_id] = player_input
         self.input_visualizer.draw(screen, all_inputs)
+
+    def draw_inputs(self, screen: Surface) -> None:
+        self.draw_overlay(screen)
+        self.draw_visualizer(screen)

@@ -563,7 +563,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             if len(self.opponents) > 1:
                 self.client.remove_state_by_name("CombatTargetMenuState")
             self.client.remove_state_by_name("Menu")
-            self.client.remove_state_by_name("MainCombatMenuState")
+            self.client.pop_state(self)
 
         choose_technique()
 

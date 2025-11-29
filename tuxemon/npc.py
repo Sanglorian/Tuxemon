@@ -82,7 +82,7 @@ class NPC(Entity[NPCState]):
         self.battle_handler = BattlesHandler()
         # Tracks Tuxepedia (monster seen or caught)
         self.tuxepedia = Tuxepedia()
-        self.relationships = Relationships(self.session.client.event_bus)
+        self.relationships = Relationships(session.client.event_bus)
         self.money_controller = MoneyController(self)
         # list of ways player can interact with the Npc
         self.interactions: Sequence[str] = []

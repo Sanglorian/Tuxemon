@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from collections import defaultdict
 from collections.abc import Generator, Mapping
 from dataclasses import dataclass, field
 from typing import Any, ClassVar, Optional
@@ -33,25 +32,23 @@ class PygameEventQueueHandler(EventQueueHandler):
     """Handle all events from the pygame event queue."""
 
     def __init__(self) -> None:
-        self._inputs: defaultdict[int, list[InputHandler[Any]]] = defaultdict(
-            list
-        )
+        super().__init__()
 
-    def add_input(self, player: int, handler: InputHandler[Any]) -> None:
+    def add_input(
+        self, player: int, index: int, handler: InputHandler[Any]
+    ) -> None:
         """
         Add an input handler to process.
 
         Parameters:
             player: Number of the player the handler belongs to.
+            index: The input slot or device index to assign the handler to.
             handler: Handler whose events will be processed from now on.
         """
-        self._inputs[player].append(handler)
+        self._inputs[player][index] = handler
 
     def set_input(
-        self,
-        player: int,
-        element: int,
-        handler: InputHandler[Any],
+        self, player: int, index: int, handler: InputHandler[Any]
     ) -> None:
         """
         Sets an input handler to process.
@@ -61,20 +58,18 @@ class PygameEventQueueHandler(EventQueueHandler):
             element: Index to modify
             handler: Handler whose events will be processed from now on.
         """
-        self._inputs[player][element] = handler
+        self._inputs[player][index] = handler
 
     def process_events(self) -> Generator[PlayerInput, None, None]:
         for pg_event in pg.event.get():
-            for inputs in self._inputs.values():
-                for player_input in inputs:
-                    player_input.process_event(pg_event)
+            for input_handler in self.get_input_handlers():
+                input_handler.process_event(pg_event)
 
             if pg_event.type == pg.QUIT:
                 local_session.client.event_engine.execute_action("quit")
 
-        for inputs in self._inputs.values():
-            for player_input in inputs:
-                yield from player_input.get_events()
+        for input_handler in self.get_input_handlers():
+            yield from input_handler.get_events()
 
 
 class InputMappingStrategy:
@@ -160,10 +155,9 @@ class PygameGamepadInput(PygameEventHandler):
     or held inputs will never be duplicated and are always "correct".
 
     Parameters:
-        event_map: Mapping of original identifiers to button identifiers.
-        deadzone: Threshold used to detect when an analog stick should
-            be considered not pressed, as obtaining an exact value of 0 is
-            almost impossible.
+        mapping_strategy: An InputMappingStrategy instance used to convert
+            raw pygame identifiers (button indices, axis indices, hat values)
+            into logical button identifiers used by the game.
     """
 
     def __init__(self, mapping_strategy: InputMappingStrategy):

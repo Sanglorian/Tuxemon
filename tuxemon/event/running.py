@@ -51,15 +51,36 @@ class RunningEvent:
         "current_action",
         "state",
         "priority",
+        "elapsed_time",
     )
 
     def __init__(self, map_event: EventObject) -> None:
         self.map_event = map_event
         self.context: dict[str, Any] = dict()
-        self.action_index = 0
+        self.action_index: int = 0
         self.current_action: Optional[EventAction] = None
         self.state = EventState.WAITING
         self.priority = map_event.priority
+        self.elapsed_time: float = 0.0
+
+    def tick(self, dt: float) -> bool:
+        self.elapsed_time += dt
+
+        if (
+            self.map_event.delay is not None
+            and self.elapsed_time < self.map_event.delay
+        ):
+            return False
+
+        if (
+            self.map_event.timeout is not None
+            and self.elapsed_time > self.map_event.timeout
+        ):
+            logger.info(f"Event {self.map_event.id} timed out")
+            self.cancel()
+            return False
+
+        return True
 
     def get_next_action(self) -> Optional[ParameterizableRule]:
         """
@@ -84,7 +105,8 @@ class RunningEvent:
         return action
 
     def advance(self) -> None:
-        self.action_index += 1
+        if self.action_index < len(self.map_event.acts):
+            self.action_index += 1
 
     def cancel(self) -> None:
         self.state = EventState.CANCELLED

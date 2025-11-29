@@ -92,8 +92,8 @@ class AddComboAction(EventAction):
                     )
                     continue
 
-                max_delay_ms = float(combo.get("max_delay_ms", 1000.0))
-                delays_ms = [max_delay_ms] * len(button_sequence)
+                max_delay_s = float(combo.get("max_delay_s", 1.0))
+                delays_s = [max_delay_s] * len(button_sequence)
 
                 def make_callback(
                     event_name: Optional[str],
@@ -111,7 +111,7 @@ class AddComboAction(EventAction):
                     name=combo["name"],
                     buttons=button_sequence,
                     callback=make_callback(combo.get("event_name")),
-                    delays_ms=delays_ms,
+                    delays_s=delays_s,
                     description=f"YAML-defined combo for {combo['name']}",
                 )
 

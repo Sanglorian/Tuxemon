@@ -1740,6 +1740,13 @@ class NpcCombatModel(BaseModel):
     )
 
 
+class NpcAudioModel(BaseModel):
+    battle_music: Optional[BattleMusicModel] = Field(
+        None,
+        description="Battle music configuration for the NPC; defaults to empty if not set",
+    )
+
+
 class NpcModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "npc"
     slug: str = Field(..., description="Slug of the name of the NPC")
@@ -1751,7 +1758,14 @@ class NpcModel(BaseModel, BaseLookupModel):
     items: Sequence[BagItemModel] = Field(
         [], description="List of items in the NPCs bag"
     )
-    speech: NpcSpeech
+    speech: NpcSpeech = Field(
+        ...,
+        description="Dialogue configuration for the NPC, including default lines and location-based overrides",
+    )
+    audio: NpcAudioModel = Field(
+        ...,
+        description="Audio configuration for the NPC, including music themes, sound effects, and ambient sounds",
+    )
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> NpcModel:

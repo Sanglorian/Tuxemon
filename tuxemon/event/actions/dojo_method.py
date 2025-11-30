@@ -120,7 +120,7 @@ class DojoMethodAction(EventAction):
 
             open_choice_dialog(session.client, MenuOptions(menu_options))
 
-    def update(self, session: Session) -> None:
+    def update(self, session: Session, dt: float) -> None:
         try:
             session.client.get_state_by_name("DialogState")
         except ValueError:

@@ -66,14 +66,15 @@ class StartState(PygameMenuState):
             )
 
         def change_state(
-            state: Union[State, str],
-            **change_state_kwargs: Any,
-        ) -> Callable[[], State]:
-            return partial(
-                self.client.push_state,
-                state,
-                **change_state_kwargs,
-            )
+            state: Union[State, str], **kwargs: Any
+        ) -> Callable[[], None]:
+            def _change() -> None:
+                self.unsubscribe(
+                    "afk.threshold_reached", self._on_afk_threshold
+                )
+                self.client.push_state(state, **kwargs)
+
+            return _change
 
         def exit_game() -> None:
             self.client.quit()
@@ -132,9 +133,20 @@ class StartState(PygameMenuState):
         theme.widget_alignment = locals.ALIGN_CENTER
 
         super().__init__(height=height, width=width)
-
+        self.client.afk_manager.add_threshold("IntroState", 15.0)
+        self.event_bus.subscribe(
+            "afk.threshold_reached", self._on_afk_threshold, priority=10
+        )
         self.add_menu_items(self.menu)
         self.reset_theme()
+
+    def _on_afk_threshold(self, level: str) -> None:
+        if level == "IntroState":
+            self.client.replace_state("IntroState")
+
+    def shutdown(self) -> None:
+        self.unsubscribe("afk.threshold_reached", self._on_afk_threshold)
+        super().shutdown()
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
         if (

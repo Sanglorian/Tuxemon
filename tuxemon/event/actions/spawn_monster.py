@@ -138,7 +138,7 @@ class SpawnMonsterAction(EventAction):
         msg = T.format("got_new_tuxemon", {"monster_name": child.name})
         open_dialog(session.client, [msg])
 
-    def update(self, session: Session) -> None:
+    def update(self, session: Session, dt: float) -> None:
         try:
             session.client.get_state_by_name("DialogState")
         except ValueError:

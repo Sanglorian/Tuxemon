@@ -233,6 +233,8 @@ class Item:
         result = self.effect_handler.process_item(
             session=session, source=self, target=target
         )
+        if session.client:
+            session.client.active_items.append(self)
         self.consume_if_needed(user, result)
         return result
 

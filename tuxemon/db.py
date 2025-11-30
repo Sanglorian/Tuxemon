@@ -234,18 +234,13 @@ class BoundingBox(BaseModel):
     width: int = Field(
         ...,
         description="The horizontal size of the bounding box. Must be a positive integer.",
+        gt=0,
     )
     height: int = Field(
         ...,
         description="The vertical size of the bounding box. Must be a positive integer.",
+        gt=0,
     )
-
-    @field_validator("width", "height")
-    @classmethod
-    def must_be_positive(cls, v: int) -> int:
-        if v <= 0:
-            raise ValueError("'width' and 'height' must be positive.")
-        return v
 
 
 class Operator(str, Enum):
@@ -300,7 +295,16 @@ class EventObject(BaseModel):
     )
     priority: int = Field(
         ...,
-        description="Order of evaluation relative to other EventObjects. Lower number (e.g., 0) is higher priority.",
+        description="Order of evaluation relative to other EventObjects. Higher number (e.g., 10) is higher priority.",
+        ge=0,
+    )
+    timeout: Optional[float] = Field(
+        None,
+        description="Maximum duration (in seconds) this event is allowed to run. None = no timeout.",
+    )
+    delay: Optional[float] = Field(
+        None,
+        description="Delay before the event starts processing (in seconds). None = no delay.",
     )
     box: BoundingBox = Field(
         ..., description="The spatial bounding box of the event."
@@ -313,16 +317,6 @@ class EventObject(BaseModel):
         default_factory=list,
         description="A sequence of actions/effects to execute when conditions are met.",
     )
-
-    @field_validator("priority")
-    @classmethod
-    def priority_must_be_non_negative(cls, v: int) -> int:
-        """Ensures the priority is 0 or a positive integer."""
-        if v < 0:
-            raise ValueError(
-                "priority must be a non-negative integer (0 or greater)"
-            )
-        return v
 
 
 class BaseComparison(BaseModel):
@@ -458,6 +452,10 @@ class TechBehaviors(Behaviors):
         False,
         description="Whether this technique can be used in the overworld.",
     )
+    bypasses_selection: bool = Field(
+        False,
+        description="Whether this technique skips target selection and applies directly to the user’s monster.",
+    )
 
 
 class StatusBehaviors(Behaviors):
@@ -481,6 +479,20 @@ class SoundProperties(BaseModel):
         if has.db_entry("sounds", v):
             return v
         raise ValueError(f"the sound {v} doesn't exist in the db")
+
+
+class MusicProperties(BaseModel):
+    music: Optional[str] = Field(..., description="Music to play")
+    volume: float = Field(..., ge=0.0, description="Playback volume")
+
+    @field_validator("music")
+    def music_exists(cls: MusicProperties, v: Optional[str]) -> Optional[str]:
+        if not v:
+            return v
+
+        if has.db_entry("music", v):
+            return v
+        raise ValueError(f"the music {v} doesn't exist in the db")
 
 
 class VisualProperties(BaseModel):
@@ -1844,13 +1856,23 @@ class BattleGraphicsModel(BaseModel):
         raise ValueError(f"state isn't among: {states}")
 
 
+class BattleMusicModel(BaseModel):
+    battle: MusicProperties = Field(
+        ..., description="Music configuration used when fighting"
+    )
+    victory_music: MusicProperties = Field(
+        ..., description="Music configuration used when winning"
+    )
+    defeat_music: MusicProperties = Field(
+        ..., description="Music configuration used when losing"
+    )
+
+
 class EnvironmentModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "environment"
     slug: str = Field(..., description="Slug of the name of the environment")
-    battle_music: str = Field(
-        ..., description="Filename of the music to use for this environment"
-    )
     battle_graphics: BattleGraphicsModel
+    battle_music: BattleMusicModel
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> EnvironmentModel:
@@ -1861,12 +1883,6 @@ class EnvironmentModel(BaseModel, BaseLookupModel):
             )
         except EntryNotFoundError:
             raise RuntimeError(f"Encounter {slug} not found")
-
-    @field_validator("battle_music")
-    def battle_music_exists(cls: EnvironmentModel, v: str) -> str:
-        if has.db_entry("music", v):
-            return v
-        raise ValueError(f"the music {v} doesn't exist in the db")
 
 
 class HeldItemProbability(BaseModel):

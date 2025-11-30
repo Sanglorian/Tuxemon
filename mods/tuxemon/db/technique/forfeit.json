@@ -12,7 +12,9 @@
   "slug": "menu_forfeit",
   "sort": "meta",
   "modifiers": [],
-  "behaviors": {},
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": false,
     "enemy_team": false,

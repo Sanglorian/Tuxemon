@@ -9370,6 +9370,12 @@ msgstr "The water ripples, but nothing bites."
 msgid "bivouac_success"
 msgstr "The bivouac restored your team's strength!"
 
+msgid "trap_failed"
+msgstr "The trap snaps shut, yet the earth falls silent."
+
+msgid "trap_triggered"
+msgstr "The trap springs, and a creature emerges from below."
+
 msgid "itsswimmingtime"
 msgstr "Do you want to swim?"
 

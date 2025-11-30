@@ -7,10 +7,6 @@ from pygame.rect import Rect
 
 from tuxemon import prepare
 from tuxemon.camera.camera import (
-    SPEED_DOWN,
-    SPEED_LEFT,
-    SPEED_RIGHT,
-    SPEED_UP,
     Camera,
     project,
     unproject,
@@ -26,6 +22,7 @@ class TestCamera(unittest.TestCase):
         self.boundary = Mock()
         self.boundary.get_boundary_validity.return_value = (True, True)
         self.camera = Camera(self.entity, self.boundary)
+        self.camera.reset_to_entity_center()
         projected = project((self.entity.position.x, self.entity.position.y))
         self.expected_center = Vector2(
             projected[0] + prepare.TILE_SIZE[0] // 2,
@@ -37,7 +34,7 @@ class TestCamera(unittest.TestCase):
         self.assertEqual(actual.y, expected.y)
 
     def test_update_calls_tracker_and_effects(self):
-        self.camera.tracker.update = Mock()
+        self.camera.tracker.update = Mock(return_value=Vector2(0, 0))
         self.camera.effects.update = Mock()
         self.camera.update(0.1)
         self.camera.tracker.update.assert_called_once_with(0.1)
@@ -77,23 +74,23 @@ class TestCamera(unittest.TestCase):
 
     def test_move_up(self):
         self.camera.update(0.1)
-        self.camera.move_up()
-        self.assertEqual(self.camera.get_position().y, 88 - SPEED_UP)
+        self.camera.move(dx=0, dy=-5)
+        self.assertEqual(self.camera.get_position().y, 88 - 5)
 
     def test_move_down(self):
         self.camera.update(0.1)
-        self.camera.move_down()
-        self.assertEqual(self.camera.get_position().y, 88 + SPEED_DOWN)
+        self.camera.move(dx=0, dy=5)
+        self.assertEqual(self.camera.get_position().y, 88 + 5)
 
     def test_move_left(self):
         self.camera.update(0.1)
-        self.camera.move_left()
-        self.assertEqual(self.camera.get_position().x, 88 - SPEED_LEFT)
+        self.camera.move(dx=-5, dy=0)
+        self.assertEqual(self.camera.get_position().x, 88 - 5)
 
     def test_move_right(self):
         self.camera.update(0.1)
-        self.camera.move_right()
-        self.assertEqual(self.camera.get_position().x, 88 + SPEED_RIGHT)
+        self.camera.move(dx=5, dy=0)
+        self.assertEqual(self.camera.get_position().x, 88 + 5)
 
     def test_shake_triggers_effect(self):
         self.camera.effects.shake = Mock()
@@ -108,18 +105,18 @@ class TestCamera(unittest.TestCase):
         )
         self.assertTrue(self.camera.tracker.pending_follow)
 
-    def test_switch_to_entity(self):
+    def test_switch_entity_to_new(self):
         new_entity = Mock()
         new_entity.position = Vector2(10.0, 10.0)
-        self.camera.switch_to_entity(new_entity)
+        self.camera.switch_entity(new_entity)
         self.assertEqual(self.camera.tracker.entity, new_entity)
         self.assertTrue(self.camera.is_following())
 
-    def test_switch_to_original_entity(self):
+    def test_switch_entity_to_original(self):
         new_entity = Mock()
         new_entity.position = Vector2(10.0, 10.0)
-        self.camera.switch_to_entity(new_entity)
-        self.camera.switch_to_original_entity()
+        self.camera.switch_entity(new_entity)
+        self.camera.switch_entity()
         self.assertEqual(self.camera.tracker.entity, self.entity)
         self.assertTrue(self.camera.is_following())
 

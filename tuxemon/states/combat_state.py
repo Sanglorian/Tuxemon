@@ -428,7 +428,7 @@ class CombatState(CombatAnimations):
                     monster
                 )
             )
-            monster.moves.recharge_moves()
+
             if char in self.client.combat_session.human_players:
                 # Still add to queue for menu interaction
                 self._decision_queue.append(monster)

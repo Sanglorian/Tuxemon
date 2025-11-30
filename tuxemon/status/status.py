@@ -168,10 +168,9 @@ class Status:
 
         self.cond_id = results.cond_id
 
-        self.effects = self.core_assets.parse_effects(results.effects)
+        self.effect_defs = results.effects
         self.conditions = self.core_assets.parse_conditions(results.conditions)
         self.condition_handler = ConditionProcessor(self.conditions)
-        self.effect_handler = EffectProcessor(self.effects)
 
         self.visuals = results.visuals
         self.sound = results.sound
@@ -215,6 +214,8 @@ class Status:
         """
         Applies the status's effects using EffectProcessor and returns the results.
         """
+        self.effects = self.core_assets.parse_effects(self.effect_defs)
+        self.effect_handler = EffectProcessor(self.effects)
         self.set_phase(phase)
         result = self.effect_handler.process_status(
             session=session,

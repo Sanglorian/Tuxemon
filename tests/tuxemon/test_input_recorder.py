@@ -170,6 +170,7 @@ class DummyConfig:
                 "overlay": False,
                 "hide_mouse": True,
                 "show_input_visualizer": False,
+                "combo_window_seconds": 5.0,
             },
         )()
         self.input = type("I", (), {"keyboard_button_map": {}})()

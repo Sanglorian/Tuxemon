@@ -44,12 +44,8 @@ class InputManager:
         """
         self.afk_manager = afk_manager
         self.config = config
-        self.event_queue = PygameEventQueueH
+        self.event_queue = PygameEventQueueHandler()
         self.recorder = InputRecorder()
-        self.controller = config.controller
-        self.input = config.input
-        self.controller_overlay: Optional[PygameTouchOverlayInput] = None
-        self.setup_inputs()
         self.input_history = InputHistory(config)
         self.combo_manager = ComboManager()
         self.input_visualizer = InputVisualizer(SCREEN_SIZE)

@@ -24,6 +24,7 @@ from tuxemon.db import (
     db,
 )
 from tuxemon.element import ElementTypesHandler
+from tuxemon.formula import config_monster
 from tuxemon.fusion import Body
 from tuxemon.locale import T
 from tuxemon.monster_dir.bond import BondHandler
@@ -347,6 +348,23 @@ class Monster:
     def has_acquisition(self, method: Acquisition) -> bool:
         """Returns True if the monster was acquired via the specified method."""
         return self.acquisition == method
+
+    def get_experience_multiplier(self) -> float:
+        """
+        Retrieves the experience multiplier based on this monster's acquisition
+        method, reading from the global formula configuration.
+        """
+        exp_multiplier = 1.0
+        experience_multipliers = config_monster.experience_multipliers
+
+        if experience_multipliers:
+            method = self.acquisition.value
+            exp_multiplier = experience_multipliers.get(method, 1.0)
+            logger.debug(
+                f"Experience multiplier for {method}: {exp_multiplier}"
+            )
+
+        return exp_multiplier
 
     def get_sprite(
         self,

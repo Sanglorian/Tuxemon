@@ -197,6 +197,11 @@ class ExperienceMethod(Enum):
     XP_EQUAL = "xp_equal"
     XP_TRANSMITTER = "xp_transmitter"
     XP_FEEDER = "xp_feeder"
+    XP_OVERKILL = "xp_overkill"
+    XP_DAMAGE_PROP = "xp_damage_prop"
+    XP_BOND = "xp_bond"
+    XP_STAGE = "xp_stage"
+    XP_SURVIVOR = "xp_survivor"
 
 
 # TODO: Automatically generate state enum through discovery

@@ -1,22 +1,24 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import MagicMock, PropertyMock
 
 from tuxemon.combat.combat_context import CombatType
 from tuxemon.combat.damage_tracker import DamageTracker
+from tuxemon.combat.experience_strategies import calculate_experience_base
 from tuxemon.combat.reward_system import (
     RewardSystem,
     TrainerRewardCalculator,
     calculate_experience,
-    calculate_experience_base,
     calculate_money,
+    calculate_tps,
 )
 from tuxemon.db import Acquisition, ExperienceMethod
 from tuxemon.monster import Monster
 from tuxemon.monster_dir.stats import BasicStats
 from tuxemon.monster_dir.status import MonsterStatusHandler
 from tuxemon.npc import NPC
+from tuxemon.prepare import MAX_LEVEL
 
 
 class DummyItem:
@@ -295,3 +297,53 @@ class TestRewardSystem(unittest.TestCase):
         self.assertEqual(rewards.prize, 0)
         self.assertEqual(rewards.messages, [])
         self.assertFalse(rewards.update)
+
+    def test_calculate_tps_awards_points(self):
+        loser = Monster()
+        loser.base_stats = BasicStats(hp=10, melee=20)
+        winner = Monster()
+        winner.name = "rockitten"
+        winner.base_stats = BasicStats(hp=5, melee=10)
+        winner.give_tps = MagicMock()
+
+        awarded = calculate_tps(winner, loser, tp_gain=3)
+
+        self.assertIn(("hp", 3), awarded)
+        self.assertIn(("melee", 3), awarded)
+        winner.give_tps.assert_any_call("hp", 3)
+        winner.give_tps.assert_any_call("melee", 3)
+
+    def test_calculate_tps_no_award_when_winner_higher(self):
+        loser = Monster()
+        loser.base_stats = BasicStats(hp=5, melee=5)
+        winner = Monster()
+        winner.base_stats = BasicStats(hp=10, melee=10)
+        winner.give_tps = MagicMock()
+
+        awarded = calculate_tps(winner, loser)
+
+        self.assertEqual(awarded, [])
+        winner.give_tps.assert_not_called()
+
+    def test_apply_penalties_sets_hp_and_bond(self):
+        monster = Monster()
+        monster.current_hp = 50
+        monster.get_owner = MagicMock()
+        owner = monster.get_owner.return_value
+        owner.bag.find_item.return_value = True
+        monster.bond_handler = MagicMock()
+
+        reward_system = RewardSystem(
+            self.session, self.combat_type, self.calculator
+        )
+        reward_system.apply_penalties(monster)
+
+        self.assertEqual(monster.current_hp, 0)
+        monster.bond_handler.apply_bond_modifier.assert_called_with("fainted")
+
+    def test_calculate_experience_max_level_returns_zero(self):
+        self.winner.set_level(MAX_LEVEL)
+        exp = calculate_experience(
+            self.loser, self.winner, self.damage_tracker
+        )
+        self.assertEqual(exp, (0, 0))

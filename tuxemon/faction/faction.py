@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping, Sequence
+from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
 
 from tuxemon.db import (
@@ -21,13 +22,13 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-FACTION_EVENTS = {
-    "RELATION_CHANGED": "faction_relation_changed",
-    "MEMBER_JOINED": "faction_member_joined",
-    "MEMBER_REMOVED": "faction_member_removed",
-    "PROMOTED": "faction_npc_promoted",
-    "DEGRADED": "faction_npc_degraded",
-}
+
+class FactionEvent(Enum):
+    RELATION_CHANGED = "faction_relation_changed"
+    MEMBER_JOINED = "faction_member_joined"
+    MEMBER_REMOVED = "faction_member_removed"
+    PROMOTED = "faction_npc_promoted"
+    DEMOTED = "faction_npc_demoted"
 
 
 class Faction:
@@ -157,7 +158,7 @@ class Faction:
         )
         if self._event_bus:
             self._event_bus.publish(
-                FACTION_EVENTS["RELATION_CHANGED"],
+                FactionEvent.RELATION_CHANGED.value,
                 faction_slug=self.slug,
                 other_faction_slug=other_id,
                 old_status=old_status,
@@ -180,7 +181,7 @@ class Faction:
         logger.info(f"{npc_id} joined faction {self.slug}")
         if self._event_bus:
             self._event_bus.publish(
-                FACTION_EVENTS["MEMBER_JOINED"],
+                FactionEvent.MEMBER_JOINED.value,
                 faction_slug=self.slug,
                 npc_id=npc_id,
             )
@@ -194,7 +195,7 @@ class Faction:
         logger.info(f"{npc_id} left faction {self.slug}")
         if self._event_bus:
             self._event_bus.publish(
-                FACTION_EVENTS["MEMBER_REMOVED"],
+                FactionEvent.MEMBER_REMOVED.value,
                 faction_slug=self.slug,
                 npc_id=npc_id,
             )
@@ -222,7 +223,7 @@ class Faction:
         logger.info(f"{npc_id} promoted to {new_rank} in faction {self.slug}")
         if self._event_bus:
             self._event_bus.publish(
-                FACTION_EVENTS["PROMOTED"],
+                FactionEvent.PROMOTED.value,
                 faction_slug=self.slug,
                 npc_id=npc_id,
                 new_rank=new_rank,
@@ -239,7 +240,7 @@ class Faction:
         )
         if self._event_bus:
             self._event_bus.publish(
-                FACTION_EVENTS["DEGRADED"],
+                FactionEvent.DEMOTED.value,
                 faction_slug=self.slug,
                 npc_id=npc_id,
                 old_rank=old_rank,

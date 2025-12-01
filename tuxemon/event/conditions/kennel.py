@@ -9,7 +9,6 @@ from tuxemon.db import SpatialCondition
 from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
-from tuxemon.states.pc_kennel import HIDDEN_LIST
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +18,7 @@ OPTIONS: list[str] = ["visible", "hidden", "exist"]
 @dataclass
 class KennelCondition(EventCondition):
     """
-    Check if a kennel is hidden or visible.
+    Check if a kennel is hidden, visible, or exists.
 
     Script usage:
         .. code-block::
@@ -32,11 +31,6 @@ class KennelCondition(EventCondition):
         kennel: The name of the kennel to check.
         option: The expected visibility of the kennel ("hidden" or
             "visible") or existence of it ("exist").
-
-    Note: This condition checks if the kennel is in the HIDDEN_LIST. If the
-        kennel is in the list, it is considered hidden; otherwise, it is
-        considered visible.
-
     """
 
     name = "kennel"
@@ -48,10 +42,17 @@ class KennelCondition(EventCondition):
         if character is None:
             logger.error(f"{_character} not found")
             return False
+
         if option == "visible":
-            return kennel_name not in HIDDEN_LIST
+            return character.monster_boxes.has_box(
+                kennel_name, "monster"
+            ) and not character.monster_boxes.is_box_hidden(
+                kennel_name, "monster"
+            )
         elif option == "hidden":
-            return kennel_name in HIDDEN_LIST
+            return character.monster_boxes.has_box(
+                kennel_name, "monster"
+            ) and character.monster_boxes.is_box_hidden(kennel_name, "monster")
         elif option == "exist":
             return character.monster_boxes.has_box(kennel_name, "monster")
         else:

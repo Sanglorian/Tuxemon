@@ -17,7 +17,7 @@ from pygame.surface import Surface
 from pygame.transform import flip as pg_flip
 
 from tuxemon import graphics, prepare
-from tuxemon.combat.utils import alive_party, build_hud_text
+from tuxemon.combat.utils import build_hud_text
 from tuxemon.formula import config_combat
 from tuxemon.menu.menu import Menu
 from tuxemon.sprite import CaptureDeviceSprite, HordeSprite, Sprite
@@ -74,6 +74,7 @@ class CombatAnimations(Menu[None], ABC):
         super().__init__()
         self.session = context.session
         self.graphics = context.graphics
+        self.music = context.music
         self.sprite_map = MonsterSpriteMap()
         self.capdevs: list[CaptureDeviceSprite] = []
         self.horde_sprite: Optional[HordeSprite] = None
@@ -225,7 +226,10 @@ class CombatAnimations(Menu[None], ABC):
         self.task(partial(self.sprites.add, sprite), interval=1.3)
 
         # Load and play combat call sound
-        self.play_sound_effect(monster.combat_call, 1.3)
+        if monster.combat_call.sfx:
+            self.play_sound_effect(
+                monster.combat_call.sfx, monster.combat_call.volume
+            )
 
     def animate_sprite_tackle(self, attacker: Sprite) -> None:
         duration = 0.3
@@ -356,7 +360,8 @@ class CombatAnimations(Menu[None], ABC):
             if monster.current_hp > 0
             else monster.faint_call
         )
-        self.play_sound_effect(cry)
+        if cry.sfx:
+            self.play_sound_effect(cry.sfx, cry.volume)
         self.animate(sprite.rect, x=x_offset, relative=True, duration=2)
         self.status_icons.animate_icons(monster, self.animate)
 
@@ -514,7 +519,7 @@ class CombatAnimations(Menu[None], ABC):
             tray, _, _ = self.animate_party_hud_left(home)
 
             self.horde_sprite = HordeSprite(
-                opponent_party=player.monsters,
+                opponent_party=player.party,
                 tray_rect=home,
                 shadow_text_func=self.shadow_text,
                 scale_func=scale,
@@ -700,7 +705,8 @@ class CombatAnimations(Menu[None], ABC):
         self.animate_sprites(enemy, back_island, front_island, player_back)
         if not self.client.combat_session.is_trainer_battle:
             sound = session.right_player.monsters[0].combat_call
-            self.play_sound_effect(sound, 1.5)
+            if sound.sfx:
+                self.play_sound_effect(sound.sfx, sound.volume)
 
         start_message = self.client.combat_session.get_start_message()
         self.dialog.alert(start_message, self.text_area)
@@ -881,7 +887,10 @@ class CombatAnimations(Menu[None], ABC):
                 self.task(
                     partial(toggle_visible, monster_sprite), interval=delay
                 )
-                self.play_sound_effect(monster.combat_call, delay)
+                if monster.combat_call.sfx:
+                    self.play_sound_effect(
+                        monster.combat_call.sfx, monster.combat_call.volume
+                    )
 
             def capture_capsule(delay: float) -> None:
                 assert sprite.animation
@@ -921,7 +930,7 @@ class CombatAnimations(Menu[None], ABC):
         if delete:
             self._delete_monster_huds(monsters)
 
-        alive_members = alive_party(character)
+        alive_members = character.party.alive
         if len(monsters) > 1 and len(monsters) <= len(alive_members):
             self._update_multiple_huds(monsters, animate)
         else:

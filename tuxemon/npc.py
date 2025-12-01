@@ -14,6 +14,7 @@ from tuxemon.entity_dir.battle import BattlesHandler
 from tuxemon.entity_dir.party import PartyHandler
 from tuxemon.entity_dir.path import PathController
 from tuxemon.entity_dir.routing import RoutingPolicy
+from tuxemon.entity_dir.steps import StepManager
 from tuxemon.game_variables import GameVariablesManager, PlayerVariablesManager
 from tuxemon.locale import T
 from tuxemon.map.map import proj
@@ -92,6 +93,7 @@ class NPC(Entity[NPCState]):
         self.teleport_faint = TeleportFaint()
         self.tracker = TrackingData()
         self.step_tracker = StepTrackerManager()
+        self.step_manager = StepManager(session, self.step_tracker)
         self.unlocked_letters: set[str] = set()
         # Variables for long-term item and monster storage
         # Keeping these separate so other code can safely
@@ -148,6 +150,8 @@ class NPC(Entity[NPCState]):
         Returns:
             Dictionary containing all the information about the npc.
         """
+        monster_boxes_state = self.monster_boxes.get_state()
+        item_boxes_state = self.item_boxes.get_state()
 
         state: dict[str, Any] = {
             "current_map": session.client.get_map_name(),
@@ -164,8 +168,12 @@ class NPC(Entity[NPCState]):
             "player_slug": self.slug,
             "player_name": self.name,
             "player_steps": self.steps,
-            "monster_boxes": self.monster_boxes.get_state(),
-            "item_boxes": self.item_boxes.get_state(),
+            "monster_boxes": monster_boxes_state["monster_boxes"],
+            "monster_box_metadata": monster_boxes_state[
+                "monster_box_metadata"
+            ],
+            "item_boxes": item_boxes_state["item_boxes"],
+            "item_box_metadata": item_boxes_state["item_box_metadata"],
             "tile_pos": self.tile_pos,
             "teleport_faint": self.teleport_faint.to_dict(),
             "tracker": encode_tracking(self.tracker),

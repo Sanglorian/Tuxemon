@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 
 from tuxemon.monster_dir.stats import (
     BasicStats,
+    StatAnalyzer,
     StatCalculator,
     TemporaryStatBoosts,
     TrainingPoints,
@@ -41,7 +42,6 @@ class TestStatCalculator(unittest.TestCase):
 
         self.base_stats = BasicStats()
         self.training_points = TrainingPoints()
-
         self.level = 5
 
         self.calculator = StatCalculator(
@@ -105,7 +105,6 @@ class TestStatCalculator(unittest.TestCase):
 
     def test_calculate(self):
         final_stats = self.calculator.calculate()
-
         self.assertIsInstance(final_stats, BasicStats)
         self.assertGreater(final_stats.sum(), 0)
 
@@ -118,20 +117,71 @@ class TestStatCalculator(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.calculator.calculate_at_level(0)
 
-    def test_get_stat_growth_curve(self):
-        curve = self.calculator.get_stat_growth_curve(3)
-        self.assertEqual(len(curve), 3)
-        for level, stats in curve.items():
-            self.assertIsInstance(level, int)
-            self.assertIsInstance(stats, BasicStats)
-            self.assertGreater(stats.sum(), 0)
+    def test_training_point_scaling(self):
+        self.training_points.armour = 100
+        stats = self.calculator.calculate_raw_stats(level=50)
+        self.assertEqual(stats.armour, (2 * (50 + COEFF_STATS)) + 50 + 1)
 
-    def test_get_stat_growth_curve_invalid(self):
-        with self.assertRaises(ValueError):
-            self.calculator.get_stat_growth_curve(0)
+    def test_negative_modifier(self):
+        self.calculator.modifiers.hp = -10
+        stats = self.calculator.calculate_raw_stats(level=self.level)
+        self.assertLess(stats.hp, (5 * (self.level + COEFF_STATS)))
+
+    def test_high_level_scaling(self):
+        stats = self.calculator.calculate_raw_stats(level=1000)
+        self.assertGreater(stats.sum(), 0)
+
+
+class TestStatAnalyzer(unittest.TestCase):
+
+    def setUp(self):
+        self.mock_shape = MagicMock(spec=ShapeHandler)
+        self.mock_shape.attributes = BasicStats(
+            armour=2, dodge=3, hp=5, melee=4, ranged=1, speed=2
+        )
+
+        self.mock_taste_cold = MagicMock(spec=Taste)
+        self.mock_taste_cold.slug = "cold"
+        self.mock_taste_cold.modifiers = [
+            MagicMock(values=["speed"], multiplier=1.2),
+            MagicMock(values=["hp"], multiplier=0.9),
+        ]
+
+        self.mock_taste_warm = MagicMock(spec=Taste)
+        self.mock_taste_warm.slug = "warm"
+        self.mock_taste_warm.modifiers = [
+            MagicMock(values=["melee"], multiplier=1.1),
+        ]
+
+        self.modifiers = TemporaryStatBoosts(
+            armour=1, dodge=0, hp=2, melee=0, ranged=0, speed=3
+        )
+
+        self.base_stats = BasicStats()
+        self.training_points = TrainingPoints()
+        self.level = 5
+
+        self.calculator = StatCalculator(
+            base_stats=self.base_stats,
+            level=self.level,
+            shape=self.mock_shape,
+            taste_cold="cold",
+            taste_warm="warm",
+            modifiers=self.modifiers,
+            training_points=self.training_points,
+        )
+
+        Taste.get_taste = MagicMock(
+            side_effect=lambda name: {
+                "cold": self.mock_taste_cold,
+                "warm": self.mock_taste_warm,
+            }[name]
+        )
+
+        self.analyzer = StatAnalyzer(self.calculator)
 
     def test_get_breakdown_structure(self):
-        breakdown = self.calculator.get_breakdown()
+        breakdown = self.analyzer.get_breakdown()
         self.assertEqual(set(breakdown.keys()), set(BasicStats.names()))
         for stat, details in breakdown.items():
             self.assertIn("base_value", details)
@@ -143,5 +193,51 @@ class TestStatCalculator(unittest.TestCase):
             self.assertIn("final_value", details)
 
     def test_evaluate_taste_efficiency(self):
-        score = self.calculator.evaluate_taste_efficiency()
+        score = self.analyzer.evaluate_taste_efficiency()
         self.assertIsInstance(score, float)
+
+    def test_get_stat_growth_curve(self):
+        curve = self.analyzer.get_stat_growth_curve(3)
+        self.assertEqual(len(curve), 3)
+        for level, stats in curve.items():
+            self.assertIsInstance(level, int)
+            self.assertIsInstance(stats, BasicStats)
+            self.assertGreater(stats.sum(), 0)
+
+    def test_get_stat_growth_curve_invalid(self):
+        with self.assertRaises(ValueError):
+            self.analyzer.get_stat_growth_curve(0)
+
+    def test_taste_efficiency_normalized_range(self):
+        score = self.analyzer.evaluate_taste_efficiency()
+        self.assertGreaterEqual(score, -1.0)
+        self.assertLessEqual(score, 1.0)
+
+    def test_growth_curve_monotonic(self):
+        curve = self.analyzer.get_stat_growth_curve(5)
+        hp_values = [curve[level].hp for level in range(1, 6)]
+        self.assertTrue(
+            all(
+                hp_values[i] <= hp_values[i + 1]
+                for i in range(len(hp_values) - 1)
+            )
+        )
+
+    def test_breakdown_matches_calculator(self):
+        breakdown = self.analyzer.get_breakdown()
+        final_stats = self.calculator.calculate()
+        for stat in BasicStats.names():
+            self.assertEqual(
+                breakdown[stat]["final_value"], getattr(final_stats, stat)
+            )
+
+    def test_taste_multiplier_stacking(self):
+        self.mock_taste_warm.modifiers = []
+        self.mock_taste_cold.modifiers = [
+            MagicMock(values=["hp"], multiplier=1.5),
+            MagicMock(values=["hp"], multiplier=2.0),
+        ]
+        breakdown = self.analyzer.get_breakdown()
+        self.assertAlmostEqual(
+            breakdown["hp"]["taste_multiplier"], 1.5 * 2.0, places=2
+        )

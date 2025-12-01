@@ -7,7 +7,15 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, ClassVar, Generic, Optional, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Generic,
+    Optional,
+    TypeVar,
+    Union,
+)
 
 import pygame_menu
 from pygame.font import Font
@@ -20,14 +28,12 @@ from tuxemon import graphics, prepare, tools
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.graphics import ColorLike
-from tuxemon.menu.alert import AlertManager
 from tuxemon.menu.controller import MenuController
 from tuxemon.menu.cursor import MenuCursor, MenuCursorController
 from tuxemon.menu.events import playerinput_to_event
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.theme import get_sound_engine, get_theme
 from tuxemon.platform.const import buttons, intentions
-from tuxemon.platform.events import PlayerInput
 from tuxemon.sprite import (
     RelativeGroup,
     SpriteGroup,
@@ -36,6 +42,10 @@ from tuxemon.sprite import (
 from tuxemon.state.state import State
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text_renderer import TextRenderer
+
+if TYPE_CHECKING:
+    from tuxemon.menu.alert import AlertManager
+    from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
 
@@ -358,7 +368,6 @@ class Menu(Generic[T], State):
         self.state_controller = MenuController()
         self._show_contents = False
         self._needs_refresh = False
-        self.dialog = AlertManager(self.sprites, self.task)
         self._anchors: dict[str, Union[int, tuple[int, int]]] = {}
         self.__dict__.update(kwargs)
 
@@ -391,6 +400,10 @@ class Menu(Generic[T], State):
             duration=self.cursor_move_duration,
             remove_animations=self.remove_animations_of,
         )
+
+    @property
+    def dialog(self) -> AlertManager:
+        return self.client.alert_manager
 
     def set_input_handler(self, handler: InputHandler) -> None:
         """

@@ -2344,6 +2344,15 @@ class FactionModel(BaseModel, BaseLookupModel):
 
         return values
 
+    @model_validator(mode="after")
+    def validate_unique_rank_thresholds(self) -> FactionModel:
+        thresholds = [rank.threshold for rank in self.ranks]
+        if len(thresholds) != len(set(thresholds)):
+            raise ValueError(
+                "All rank thresholds must be unique within a faction."
+            )
+        return self
+
 
 class MissionStepModel(BaseModel):
     slug: str = Field(..., description="Unique identifier for the step")

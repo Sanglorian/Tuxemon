@@ -17,7 +17,7 @@ from pygame.surface import Surface
 from pygame.transform import flip as pg_flip
 
 from tuxemon import graphics, prepare
-from tuxemon.combat.utils import alive_party, build_hud_text
+from tuxemon.combat.utils import build_hud_text
 from tuxemon.formula import config_combat
 from tuxemon.menu.menu import Menu
 from tuxemon.sprite import CaptureDeviceSprite, HordeSprite, Sprite
@@ -519,7 +519,7 @@ class CombatAnimations(Menu[None], ABC):
             tray, _, _ = self.animate_party_hud_left(home)
 
             self.horde_sprite = HordeSprite(
-                opponent_party=player.monsters,
+                opponent_party=player.party,
                 tray_rect=home,
                 shadow_text_func=self.shadow_text,
                 scale_func=scale,
@@ -930,7 +930,7 @@ class CombatAnimations(Menu[None], ABC):
         if delete:
             self._delete_monster_huds(monsters)
 
-        alive_members = alive_party(character)
+        alive_members = character.party.alive
         if len(monsters) > 1 and len(monsters) <= len(alive_members):
             self._update_multiple_huds(monsters, animate)
         else:

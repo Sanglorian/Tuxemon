@@ -250,7 +250,7 @@ def check_party_conditions(
 
     # Check party alignment
     if conditions_model.alignment is not None:
-        alignment = party_handler.get_alignment()
+        alignment = party_handler.alignment
         conditions.append(alignment == conditions_model.alignment)
 
     # Check required monster slugs

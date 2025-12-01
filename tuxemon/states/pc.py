@@ -91,7 +91,7 @@ class PCMenuBuilder:
                 "ItemStorageState", character=char
             )
 
-        if char.item_boxes.get_all_items_visible():
+        if char.item_boxes.get_all_monsters_visible():
             menu.append(("menu_item_storage", item_storage_callback))
 
         if len(char.items) > 1:
@@ -128,9 +128,9 @@ class PCState(PygameMenuState):
 
         # it creates the kennel and locker (new players)
         if not char.monster_boxes.has_box(kennel, "monster"):
-            char.monster_boxes.create_box(kennel, "monster")
+            char.monster_boxes.create_box(kennel)
         if not char.item_boxes.has_box(locker, "item"):
-            char.item_boxes.create_box(locker, "item")
+            char.item_boxes.create_box(locker)
 
         if menu_builder is None:
             self.menu_builder = PCMenuBuilder(self.client, char)

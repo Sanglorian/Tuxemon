@@ -19,7 +19,7 @@ class TestCameraController(unittest.TestCase):
         event.pressed = False
         event.button = intentions.UP
         self.handler.handle_input(event)
-        self.camera.move_up.assert_called_once()
+        self.camera.move.assert_called_once_with(dx=0, dy=-self.handler.speed)
 
     def test_handle_input_free_roaming_pressed_down(self):
         self.camera.free_roaming_enabled = True
@@ -28,7 +28,7 @@ class TestCameraController(unittest.TestCase):
         event.pressed = True
         event.button = intentions.DOWN
         self.handler.handle_input(event)
-        self.camera.move_down.assert_called_once()
+        self.camera.move.assert_called_once_with(dx=0, dy=self.handler.speed)
 
     def test_handle_input_free_roaming_disabled(self):
         self.camera.free_roaming_enabled = False
@@ -36,7 +36,7 @@ class TestCameraController(unittest.TestCase):
         event.held = True
         event.button = intentions.UP
         self.handler.handle_input(event)
-        self.camera.move_up.assert_not_called()
+        self.camera.move.assert_not_called()
 
     def test_handle_input_return_event(self):
         self.camera.free_roaming_enabled = True
@@ -52,7 +52,7 @@ class TestCameraController(unittest.TestCase):
         event.held = True
         event.button = intentions.LEFT
         self.handler.handle_input(event)
-        self.camera.move_left.assert_called_once()
+        self.camera.move.assert_called_once_with(dx=-self.handler.speed, dy=0)
 
     def test_handle_input_right(self):
         self.camera.free_roaming_enabled = True
@@ -60,7 +60,7 @@ class TestCameraController(unittest.TestCase):
         event.held = True
         event.button = intentions.RIGHT
         self.handler.handle_input(event)
-        self.camera.move_right.assert_called_once()
+        self.camera.move.assert_called_once_with(dx=self.handler.speed, dy=0)
 
     def test_handle_input_no_action(self):
         self.camera.free_roaming_enabled = True
@@ -70,7 +70,7 @@ class TestCameraController(unittest.TestCase):
         event.button = intentions.UP
         result = self.handler.handle_input(event)
         self.assertIsNone(result)
-        self.camera.move_up.assert_not_called()
+        self.camera.move.assert_not_called()
 
     def test_handle_input_invalid_direction(self):
         self.camera.free_roaming_enabled = True
@@ -79,7 +79,4 @@ class TestCameraController(unittest.TestCase):
         event.button = 999  # Not a valid intention
         result = self.handler.handle_input(event)
         self.assertEqual(result, event)
-        self.camera.move_up.assert_not_called()
-        self.camera.move_down.assert_not_called()
-        self.camera.move_left.assert_not_called()
-        self.camera.move_right.assert_not_called()
+        self.camera.move.assert_not_called()

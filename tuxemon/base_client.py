@@ -30,6 +30,7 @@ from tuxemon.movement import MovementManager, Pathfinder
 from tuxemon.network.manager import NetworkManager
 from tuxemon.npc_manager import NPCManager
 from tuxemon.park_tracker import ParkSession
+from tuxemon.platform.afk_manager import AFKManager
 from tuxemon.platform.input_manager import InputManager
 from tuxemon.rumble import RumbleManager
 from tuxemon.session import local_session
@@ -42,8 +43,11 @@ from tuxemon.world.weather import WorldWeatherManager
 
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
+    from tuxemon.item.item import Item
     from tuxemon.platform.events import PlayerInput
     from tuxemon.state.queue import QueuedState
+    from tuxemon.status.status import Status
+    from tuxemon.technique.technique import Technique
     from tuxemon.ui.cipher_processor import CipherProcessor
 
 StateType = TypeVar("StateType", bound=State)
@@ -66,6 +70,9 @@ class BaseClient(ABC):
 
     def __init__(self, config: TuxemonConfig) -> None:
         self.config = config
+        self.active_techniques: list[Technique] = []
+        self.active_items: list[Item] = []
+        self.active_statuses: list[Status] = []
 
         self.event_bus = get_event_bus()
         self.state_repository = StateRepository()
@@ -83,7 +90,8 @@ class BaseClient(ABC):
         self.current_time = 0.0
 
         # setup controls
-        self.input_manager = InputManager(config)
+        self.afk_manager = AFKManager()
+        self.input_manager = InputManager(config, self.afk_manager)
 
         # Set up our networking for multiplayer.
         self.network_manager = NetworkManager(self)
@@ -190,9 +198,25 @@ class BaseClient(ABC):
         Parameters:
             time_delta: Amount of time passed since last frame.
         """
+        self.weather_manager.update(time_delta)
         self.state_manager.update(time_delta)
         if self.state_manager.current_state is None:
             self.state = ClientState.EXITING
+
+        for tech in list(self.active_techniques):
+            tech.effect_handler.update(local_session, time_delta)
+            if tech.effect_handler.is_finished():
+                self.active_techniques.remove(tech)
+
+        for item in list(self.active_items):
+            item.effect_handler.update(local_session, time_delta)
+            if item.effect_handler.is_finished():
+                self.active_items.remove(item)
+
+        for status in list(self.active_statuses):
+            status.effect_handler.update(local_session, time_delta)
+            if status.effect_handler.is_finished():
+                self.active_statuses.remove(status)
 
     def get_map_name(self) -> str:
         """

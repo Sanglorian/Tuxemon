@@ -46,9 +46,7 @@ from tuxemon.animation_entity import AnimationManager
 from tuxemon.combat.combat_context import CombatContext
 from tuxemon.combat.machine import CombatMachine, CombatPhase
 from tuxemon.combat.reward_system import RewardSystem
-from tuxemon.combat.utils import (
-    track_battles,
-)
+from tuxemon.combat.utils import play_outcome_music, track_battles
 from tuxemon.db import (
     EffectPhase,
     ItemCategory,
@@ -317,17 +315,14 @@ class CombatState(CombatAnimations):
             self.client.remove_state_by_name("MonsterMenuState")
 
         def validate(menu_item: MenuItem[Monster]) -> bool:
-            if isinstance(menu_item, Monster):
-                if menu_item.is_fainted:
-                    return False
-                if menu_item in self.client.combat_session.active_monsters:
-                    return False
-                return True
-            return False
+            monster = menu_item.game_object
+            if monster.is_fainted:
+                return False
+            if monster in self.client.combat_session.active_monsters:
+                return False
+            return True
 
         state = self.client.push_state(MonsterMenuState(player.monsters))
-        # must use a partial because alert relies on a text box that may not
-        # exist until after the state hs been startup
         state.task(
             partial(state.dialog.alert, T.translate("combat_replacement")),
             interval=0,
@@ -433,7 +428,7 @@ class CombatState(CombatAnimations):
                     monster
                 )
             )
-            monster.moves.recharge_moves()
+
             if char in self.client.combat_session.human_players:
                 # Still add to queue for menu interaction
                 self._decision_queue.append(monster)
@@ -443,7 +438,7 @@ class CombatState(CombatAnimations):
 
         # Start the menu flow for human players
         if self._decision_queue:
-            self.show_monster_action_menu(self._decision_queue.pop(0))
+            self.update_phase()
 
     def remove_monster_from_play(self, monster: Monster) -> None:
         """
@@ -556,7 +551,6 @@ class CombatState(CombatAnimations):
             message += "\n" + m
             action_time += self.text_anim.compute_text_anim_time(message)
 
-        self.play_sound_effect(method.sfx)
         # animation own_monster, technique doesn't tackle
         hit_delay += 0.5
         if method.target["own_monster"]:
@@ -617,6 +611,8 @@ class CombatState(CombatAnimations):
                 break
 
         if result_tech.success:
+            if method.sound.sfx:
+                self.play_sound_effect(method.sound.sfx, method.sound.volume)
             self.play_animation(
                 method, target, target_sprite, action_time, is_flipped
             )
@@ -663,6 +659,8 @@ class CombatState(CombatAnimations):
                     f"captured_failed_{result_item.num_shakes}"
                 )
 
+            if item.sound.sfx:
+                self.play_sound_effect(item.sound.sfx, item.sound.volume)
             self.animate_capture_monster(
                 result_item,
                 target,
@@ -686,6 +684,8 @@ class CombatState(CombatAnimations):
             if template:
                 message += "\n" + tmpl
                 action_time += self.text_anim.compute_text_anim_time(message)
+            if item.sound.sfx:
+                self.play_sound_effect(item.sound.sfx, item.sound.volume)
             self.play_animation(item, target, None, action_time)
 
         self.text_anim.add_text_animation(
@@ -725,7 +725,10 @@ class CombatState(CombatAnimations):
             self.text_anim.add_text_animation(
                 partial(self.dialog.alert, message), action_time
             )
-        self.play_animation(status, target, None, action_time)
+        if result.success:
+            if status.sound.sfx:
+                self.play_sound_effect(status.sound.sfx, status.sound.volume)
+            self.play_animation(status, target, None, action_time)
 
     def play_animation(
         self,
@@ -896,6 +899,7 @@ class CombatState(CombatAnimations):
         self.award_experience_and_money(monster)
         # Remove monster from damage map
         self.client.combat_session.damage_tracker.remove_monster(monster)
+        play_outcome_music(self.session, self.music, monster)
 
     def clean_combat(self) -> None:
         """Clean combat."""
@@ -1000,14 +1004,19 @@ class CombatState(CombatAnimations):
 
     def _on_monster_needed(self, player: NPC, ask: bool = False) -> None:
         session = self.client.combat_session
-        if player in session.human_players and ask:
-            self.ask_player_for_monster(player)
-        else:
-            replacement = self.ai_manager.choose_replacement_monster(player)
-            if replacement:
-                session.add_monster_into_play(
-                    self.session, player, replacement
+        positions_available = session.get_available_positions(player)
+
+        for _ in range(positions_available):
+            if player in session.human_players and ask:
+                self.ask_player_for_monster(player)
+            else:
+                replacement = self.ai_manager.choose_replacement_monster(
+                    player
                 )
+                if replacement:
+                    session.add_monster_into_play(
+                        self.session, player, replacement
+                    )
 
     def _on_update_sprite_position(
         self, player: NPC, monster: Monster

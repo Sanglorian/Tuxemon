@@ -28,15 +28,19 @@
     },
     {
       "level_learned": 25,
-      "technique": "slime"
+      "technique": "sockpuppet"
     },
     {
       "level_learned": 31,
-      "technique": "rust_bomb"
+      "technique": "combat_clone"
     },
     {
       "level_learned": 34,
       "technique": "tsunami"
+    },
+    {
+      "level_learned": 37,
+      "technique": "damage_division"
     },
     {
       "level_learned": 40,

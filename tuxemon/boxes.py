@@ -10,6 +10,7 @@ from uuid import UUID
 
 from tuxemon.item.item import decode_items, encode_items
 from tuxemon.monster import decode_monsters, encode_monsters
+from tuxemon.platform.const.sizes import MAX_KENNEL, MAX_LOCKER
 
 if TYPE_CHECKING:
     from tuxemon.entity_dir.routing import RoutingPolicy
@@ -255,9 +256,7 @@ class BoxCollection:
         Retrieve the effective maximum capacity for a box.
         Prefer per-box metadata if available, otherwise fall back to policy or global defaults.
         """
-        default = (
-            prepare.MAX_LOCKER if box_type == "item" else prepare.MAX_KENNEL
-        )
+        default = MAX_LOCKER if box_type == "item" else MAX_KENNEL
         return self.metadata_manager.get_max_capacity(
             box_id, box_type, policy, default
         )
@@ -465,7 +464,7 @@ class ItemBoxes(BoxCollection):
             raise ValueError(f"Item box '{box_id}' already exists.")
         self.item_boxes[box_id] = []
         metadata = box_metadata or BoxMetadata(
-            max_capacity=prepare.MAX_LOCKER, is_hidden=False
+            max_capacity=MAX_LOCKER, is_hidden=False
         )
         self.metadata_manager.create(box_id, "item", metadata)
 
@@ -590,7 +589,7 @@ class ItemBoxes(BoxCollection):
             label="item_boxes",
             metadata_label="item_box_metadata",
             decoder=decode_items,
-            default_capacity=prepare.MAX_LOCKER,
+            default_capacity=MAX_LOCKER,
         )
         self.metadata_manager.set_metadata("item", item_box_metadata)
 
@@ -607,7 +606,7 @@ class MonsterBoxes(BoxCollection):
             raise ValueError(f"Monster box '{box_id}' already exists.")
         self.monster_boxes[box_id] = []
         metadata = box_metadata or BoxMetadata(
-            max_capacity=prepare.MAX_KENNEL, is_hidden=False
+            max_capacity=MAX_KENNEL, is_hidden=False
         )
         self.metadata_manager.create(box_id, "monster", metadata)
 
@@ -791,7 +790,7 @@ class MonsterBoxes(BoxCollection):
             label="monster_boxes",
             metadata_label="monster_box_metadata",
             decoder=decode_monsters,
-            default_capacity=prepare.MAX_KENNEL,
+            default_capacity=MAX_KENNEL,
             owner=char,
         )
         self.metadata_manager.set_metadata("monster", monster_box_metadata)

@@ -11,7 +11,7 @@ from tuxemon.boxes import MonsterBoxes
 from tuxemon.entity_dir.party_stats import PartyStats
 from tuxemon.entity_dir.routing import RoutingPolicy, RoutingPolicyRegistry
 from tuxemon.monster import Monster, decode_monsters, encode_monsters
-from tuxemon.platform.const.sizes import MAX_KENNEL, PARTY_LIMIT
+from tuxemon.platform.const.sizes import PARTY_LIMIT
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC

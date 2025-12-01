@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from tuxemon.combat.utils import alive_party
 from tuxemon.formula import config_monster
 from tuxemon.locale import T
 from tuxemon.monster_dir.stats import BasicStats
@@ -97,7 +96,7 @@ class RewardSystem:
             winner = next(iter(winners))
 
             if winner.owner is not None:
-                all_monsters = set(alive_party(winner.owner))
+                all_monsters = set(winner.owner.party.alive)
             else:
                 all_monsters = set()
 
@@ -275,7 +274,7 @@ def calculate_experience(
         if winner.owner is None:
             return 0, 0
 
-        all_monsters = set(alive_party(winner.owner))
+        all_monsters = set(winner.owner.party.alive)
         non_participants = all_monsters - participants
 
         participant_exp = (

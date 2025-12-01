@@ -90,14 +90,17 @@ class StartDoubleBattleAction(EventAction):
             teams=fighters,
             combat_type=CombatType.TRAINER,
             graphics=env.battle_graphics,
+            music=env.battle_music,
             battle_mode=BattleMode.DOUBLE,
         )
         session.client.push_state("CombatState", context=context)
         # music
-        filename = env.battle_music if not self.music else self.music
-        session.client.event_engine.execute_action(
-            "play_music", [filename], True
-        )
+        sound = env.battle_music.battle
+        if sound.music:
+            filename = sound.music if not self.music else self.music
+            session.client.event_engine.execute_action(
+                "play_music", [filename], True
+            )
 
     def update(self, session: Session, dt: float) -> None:
         try:

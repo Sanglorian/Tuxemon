@@ -45,9 +45,7 @@ from tuxemon.animation_entity import AnimationManager
 from tuxemon.combat.combat_context import CombatContext
 from tuxemon.combat.machine import CombatMachine, CombatPhase
 from tuxemon.combat.reward_system import RewardSystem
-from tuxemon.combat.utils import (
-    track_battles,
-)
+from tuxemon.combat.utils import play_outcome_music, track_battles
 from tuxemon.db import (
     EffectPhase,
     ItemCategory,
@@ -430,7 +428,7 @@ class CombatState(CombatAnimations):
                     monster
                 )
             )
-            monster.moves.recharge_moves()
+
             if char in self.client.combat_session.human_players:
                 # Still add to queue for menu interaction
                 self._decision_queue.append(monster)
@@ -440,7 +438,7 @@ class CombatState(CombatAnimations):
 
         # Start the menu flow for human players
         if self._decision_queue:
-            self.show_monster_action_menu(self._decision_queue.pop(0))
+            self.update_phase()
 
     def remove_monster_from_play(self, monster: Monster) -> None:
         """
@@ -901,6 +899,7 @@ class CombatState(CombatAnimations):
         self.award_experience_and_money(monster)
         # Remove monster from damage map
         self.client.combat_session.damage_tracker.remove_monster(monster)
+        play_outcome_music(self.session, self.music, monster)
 
     def clean_combat(self) -> None:
         """Clean combat."""

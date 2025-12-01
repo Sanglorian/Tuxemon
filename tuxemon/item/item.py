@@ -140,10 +140,9 @@ class Item:
         self.category = results.category
         self.sprite = results.sprite
         self.usable_in = results.usable_in
-        self.effects = self.core_assets.parse_effects(results.effects)
+        self.effect_defs = results.effects
         self.conditions = self.core_assets.parse_conditions(results.conditions)
         self.condition_handler = ConditionProcessor(self.conditions)
-        self.effect_handler = EffectProcessor(self.effects)
         self.surface = graphics.load_and_scale(self.sprite)
         self.surface_size_original = self.surface.get_size()
 
@@ -231,6 +230,8 @@ class Item:
         """
         Applies the item's effects using EffectProcessor and returns the results.
         """
+        self.effects = self.core_assets.parse_effects(self.effect_defs)
+        self.effect_handler = EffectProcessor(self.effects)
         result = self.effect_handler.process_item(
             session=session, source=self, target=target
         )

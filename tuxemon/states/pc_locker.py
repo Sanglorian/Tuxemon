@@ -39,10 +39,6 @@ if TYPE_CHECKING:
 MenuGameObj = Callable[[], object]
 
 
-HIDDEN_LOCKER = "hidden_locker"
-HIDDEN_LIST_LOCKER = [HIDDEN_LOCKER]
-
-
 class ItemActionHandler:
     def __init__(
         self,
@@ -64,7 +60,7 @@ class ItemActionHandler:
         retrieve = self.char.bag.find_item(item.slug)
 
         if diff <= 0:
-            self.item_boxes.remove_item(item)
+            self.item_boxes.remove_from_box("item", None, item)
         else:
             item.set_quantity(diff)
 
@@ -97,7 +93,7 @@ class ItemActionHandler:
 
         diff = item.quantity - quantity
         if diff <= 0:
-            self.item_boxes.remove_item_from(self.box_name, item)
+            self.item_boxes.remove_from_box("item", self.box_name, item)
         else:
             item.set_quantity(diff)
 
@@ -145,7 +141,7 @@ class ItemTakeState(PygameMenuState):
             box_ids = [
                 key
                 for key in self.item_boxes.item_boxes
-                if key not in HIDDEN_LIST_LOCKER
+                if not self.item_boxes.is_box_hidden(key, "item")
             ]
             lockers = [key for key in box_ids if key != self.box_name]
 
@@ -357,7 +353,8 @@ class ItemStorageState(ItemBoxState):
         item_boxes = self.char.item_boxes
         menu_items_map = []
         for box_name, items in item_boxes.item_boxes.items():
-            if box_name not in HIDDEN_LIST_LOCKER:
+            metadata = item_boxes.metadata_manager.get(box_name, "item")
+            if metadata is None or not metadata.is_hidden:
                 if not items:
                     menu_callback = partial(
                         open_dialog,
@@ -383,7 +380,8 @@ class ItemDropOffState(ItemBoxState):
         item_boxes = self.char.item_boxes
         menu_items_map = []
         for box_name, items in item_boxes.item_boxes.items():
-            if box_name not in HIDDEN_LIST_LOCKER:
+            metadata = item_boxes.metadata_manager.get(box_name, "item")
+            if metadata is None or not metadata.is_hidden:
                 menu_callback = self.change_state(
                     "ItemDropOff", box_name=box_name, character=self.char
                 )

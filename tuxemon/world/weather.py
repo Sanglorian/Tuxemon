@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import random
 import time
+from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any, Optional
@@ -32,6 +33,14 @@ class Wind(str, Enum):
     windy = "windy"
     gusty = "gusty"
     stormy = "stormy"
+
+
+@dataclass
+class WeatherTransitionRecord:
+    from_slug: str
+    to_slug: str
+    sim_time: float
+    real_time: float = field(default_factory=time.time)
 
 
 def load_weather_transition_rules(
@@ -130,12 +139,12 @@ class WorldWeatherManager:
         rules_model: Optional[WeatherTransitionRulesModel] = None,
     ) -> None:
         self._current_weather: Optional[Weather] = None
-        self.start_timestamp: float = time.time()
+        self._elapsed_duration_seconds: float = 0.0
         self._transition_rules_model: Optional[WeatherTransitionRulesModel] = (
             None
         )
         self._last_transition_rule: Optional[WeatherTransitionRule] = None
-        self.transition_history: list[tuple[str, str, float]] = []
+        self.transition_history: list[WeatherTransitionRecord] = []
 
         if rules_model:
             self.load_rules_model(rules_model)
@@ -156,7 +165,7 @@ class WorldWeatherManager:
 
     @property
     def elapsed_time(self) -> float:
-        return time.time() - self.start_timestamp
+        return self._elapsed_duration_seconds
 
     def load_rules_model(self, model: WeatherTransitionRulesModel) -> None:
         self._transition_rules_model = model
@@ -170,7 +179,7 @@ class WorldWeatherManager:
         new_weather = Weather(slug)
         if new_weather.slug:
             self._current_weather = new_weather
-            self.start_timestamp = time.time()
+            self._elapsed_duration_seconds = 0.0
             self._last_transition_rule = rule
             logger.info(f"Weather set to: {self._current_weather.slug}")
             return True
@@ -178,12 +187,16 @@ class WorldWeatherManager:
             logger.warning(f"Weather slug '{slug}' not found.")
             return False
 
+    def update(self, dt: float) -> None:
+        self._elapsed_duration_seconds += dt
+        self.advance_turn()
+
     def advance_turn(self) -> None:
         if not self._current_weather or not self._transition_rules_model:
             return
 
         current_slug = self._current_weather.slug
-        elapsed = time.time() - self.start_timestamp
+        elapsed = self._elapsed_duration_seconds
 
         if current_slug in self._transition_rules_model.transitions:
             eligible = [
@@ -224,12 +237,16 @@ class WorldWeatherManager:
                     )
                     self.set_weather(chosen.next_slug, rule=chosen)
                     self.transition_history.append(
-                        (current_slug, chosen.next_slug, time.time())
+                        WeatherTransitionRecord(
+                            current_slug,
+                            chosen.next_slug,
+                            self._elapsed_duration_seconds,
+                        )
                     )
                 else:
                     logger.debug(
                         f"Weather remains '{current_slug}' (No transition triggered)."
                     )
 
-    def get_transition_history(self) -> list[tuple[str, str, float]]:
+    def get_transition_history(self) -> list[WeatherTransitionRecord]:
         return self.transition_history

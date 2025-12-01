@@ -94,7 +94,7 @@
   "weight": 40,
   "sounds": {
     "combat_call": {
-      "sfx": "sound_cute_04",
+      "sfx": "sound_yehehe",
       "volume": 1.5
     },
     "faint_call": {

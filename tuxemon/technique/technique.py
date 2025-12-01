@@ -136,11 +136,10 @@ class Technique:
         self.menu_actions_data = results.menu_actions
         self.tags = results.tags
 
-        self.effects = self.core_assets.parse_effects(results.effects)
+        self.effect_defs = results.effects
         self.conditions = self.core_assets.parse_conditions(results.conditions)
 
         self.condition_handler = ConditionProcessor(self.conditions)
-        self.effect_handler = EffectProcessor(self.effects)
         self.target = results.target.model_dump()
         self.modifiers = ModifiersHandler(results.modifiers)
 
@@ -160,7 +159,8 @@ class Technique:
         return self.condition_handler.validate(session=session, target=target)
 
     def recharge(self) -> None:
-        self.next_use -= 1
+        if self.next_use > 0:
+            self.next_use -= 1
 
     def full_recharge(self) -> None:
         self.next_use = 0
@@ -171,6 +171,8 @@ class Technique:
         """
         Applies the technique's effects using EffectProcessor and returns the results.
         """
+        self.effects = self.core_assets.parse_effects(self.effect_defs)
+        self.effect_handler = EffectProcessor(self.effects)
         result = self.effect_handler.process_tech(
             session=session,
             source=self,

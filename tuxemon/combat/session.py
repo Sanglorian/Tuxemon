@@ -17,7 +17,7 @@ from tuxemon.combat.reward_system import (
     TrainerRewardCalculator,
     WildRewardCalculator,
 )
-from tuxemon.combat.utils import alive_party, battlefield, defeated
+from tuxemon.combat.utils import battlefield
 from tuxemon.db import EffectPhase, TargetType
 from tuxemon.event import get_event_bus
 from tuxemon.locale import T
@@ -92,7 +92,7 @@ class CombatSession:
     def active_players(self) -> Iterable[NPC]:
         """All trainers still active in the battle."""
         for player in self.players:
-            if not defeated(player):
+            if not player.party.is_fainted:
                 yield player
 
     @property
@@ -135,12 +135,12 @@ class CombatSession:
     @property
     def defeated_players(self) -> Sequence[NPC]:
         """All trainers who have lost (party fully fainted)."""
-        return [p for p in self.players if defeated(p)]
+        return [p for p in self.players if p.party.is_fainted]
 
     @property
     def remaining_players(self) -> Sequence[NPC]:
         """Alias for non-defeated players. WIP: subject to future team logic."""
-        return [p for p in self.players if not defeated(p)]
+        return [p for p in self.players if not p.party.is_fainted]
 
     def get_bench(self, player: NPC) -> Sequence[Monster]:
         """Returns non-fainted, off-field monsters for the given player."""
@@ -407,7 +407,7 @@ class CombatSession:
         Calculates the maximum number of positions for a player based on
         their party size and battle mode.
         """
-        if len(alive_party(player)) == 1:
+        if len(player.party.alive) == 1:
             return 1
         return 2 if self.is_double else 1
 

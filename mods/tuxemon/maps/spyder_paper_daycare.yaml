@@ -51,7 +51,7 @@ events:
   Give Monster Yes:
     actions:
     - get_player_monster daycare_choice
-    - create_kennel player,daycare
+    - create_kennel player,daycare,true
     - set_kennel_visible player,daycare,false
     - store_monster daycare_choice,daycare
     - set_variable stored:stored

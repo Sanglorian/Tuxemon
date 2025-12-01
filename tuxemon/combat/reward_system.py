@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 from tuxemon.combat.combat_context import CombatType
-from tuxemon.combat.utils import alive_party
 from tuxemon.db import ExperienceMethod
 from tuxemon.locale import T
 from tuxemon.monster_dir.stats import BasicStats
@@ -108,7 +107,7 @@ class RewardCalculator:
 
         owner = first_winner.owner
         if owner:
-            all_monsters = set(alive_party(owner))
+            all_monsters = set(owner.party.alive)
             non_participants = all_monsters - winners
             for non_participant in non_participants:
                 levels = non_participant.give_experience(awarded_exp)
@@ -328,7 +327,7 @@ class TransmitterExperienceStrategy(ExperienceStrategy):
         if not winner.owner:
             return 0, 0
 
-        all_monsters = set(alive_party(winner.owner))
+        all_monsters = set(winner.owner.party.alive)
         non_participants = all_monsters - participants
 
         participant_exp = total_exp // 2 // (len(participants) or 1)

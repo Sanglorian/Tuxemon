@@ -35,8 +35,6 @@ if TYPE_CHECKING:
 MenuGameObj = Callable[[], object]
 
 
-HIDDEN = "hidden_kennel"
-HIDDEN_LIST = [HIDDEN]
 MAX_BOX = prepare.MAX_KENNEL
 
 
@@ -56,7 +54,7 @@ class MonsterActionHandler:
 
     def pick(self, monster: Monster) -> None:
         self._clear_states("ChoiceState", "MonsterTakeState")
-        self.monster_boxes.remove_monster(monster)
+        self.monster_boxes.remove_from_box("monster", None, monster)
         self.char.party.insert_monster_to_party(
             monster, len(self.char.monsters)
         )
@@ -108,7 +106,9 @@ class MonsterActionHandler:
     def output(self, monster: Optional[Monster]) -> None:
         self._clear_states("ChoiceState", "MonsterTakeState")
         if monster is not None:
-            self.monster_boxes.remove_monster_from(self.box_name, monster)
+            self.monster_boxes.remove_from_box(
+                "monster", self.box_name, monster
+            )
             open_dialog(
                 self.client,
                 [T.format("tuxemon_released", {"name": monster.name})],
@@ -214,8 +214,8 @@ class MonsterTakeState(PygameMenuState):
 
             box_ids = [
                 key
-                for key, value in self.monster_boxes.monster_boxes.items()
-                if len(value) < MAX_BOX and key not in HIDDEN_LIST
+                for key in self.monster_boxes.monster_boxes
+                if not self.monster_boxes.is_box_hidden(key, "monster")
             ]
             kennels = [
                 key
@@ -430,7 +430,8 @@ class MonsterStorageState(MonsterBoxState):
         menu_items_map = []
         monster_boxes = self.char.monster_boxes
         for box_name, monsters in monster_boxes.monster_boxes.items():
-            if box_name not in HIDDEN_LIST:
+            metadata = monster_boxes.metadata_manager.get(box_name, "monster")
+            if metadata is None or not metadata.is_hidden:
                 if not monsters:
                     menu_callback = partial(
                         open_dialog,
@@ -456,7 +457,8 @@ class MonsterDropOffState(MonsterBoxState):
         menu_items_map = []
         monster_boxes = self.char.monster_boxes
         for box_name, monsters in monster_boxes.monster_boxes.items():
-            if box_name not in HIDDEN_LIST:
+            metadata = monster_boxes.metadata_manager.get(box_name, "monster")
+            if metadata is None or not metadata.is_hidden:
                 if len(monsters) < MAX_BOX:
                     menu_callback = self.change_state(
                         "MonsterDropOff",

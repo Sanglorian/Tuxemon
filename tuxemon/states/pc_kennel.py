@@ -336,6 +336,7 @@ class MonsterTakeState(PygameMenuState):
             T.format(f"{box_label}: {len(self.box)}/{MAX_BOX}")
         ).center_content()
 
+
 class MonsterBoxState(PygameMenuState):
     """Menu to choose a tuxemon box."""
 

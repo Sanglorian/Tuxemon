@@ -22,7 +22,11 @@ from tuxemon.monster_dir.filter import MonsterFilter
 from tuxemon.sprite import Sprite
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.graphic_box import GraphicBox
-from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.menu_options import (
+    ChoiceOption,
+    MenuOptions,
+    create_yes_no_options,
+)
 from tuxemon.ui.text import TextArea, draw_text
 
 if TYPE_CHECKING:
@@ -248,18 +252,12 @@ class MonsterMenuHandler:
         params = {"name": monster.name.upper()}
         msg = T.format("release_confirmation", params)
         open_dialog(self.client, [msg])
-        options = [
-            ChoiceOption(
-                key="no",
-                display_text=T.translate("no"),
-                action=self.negative_answer,
-            ),
-            ChoiceOption(
-                key="yes",
-                display_text=T.translate("yes"),
-                action=partial(self.positive_answer, monster),
-            ),
-        ]
+
+        options = create_yes_no_options(
+            yes_action=partial(self.positive_answer, monster),
+            no_action=self.negative_answer,
+        )
+
         menu = MenuOptions(options)
         open_choice_dialog(self.client, menu, escape_key_exits=False)
 

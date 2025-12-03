@@ -8,13 +8,16 @@ from tuxemon.db import (
     BondComparison,
     Comparison,
     GenderType,
+    LearningMethod,
     MonsterEvolutionItemModel,
     PartyConditionsModel,
+    SeenStatus,
     StatsComparison,
     StatType,
 )
 from tuxemon.game_variables import GameVariablesManager
 from tuxemon.monster import Monster
+from tuxemon.monster_dir.evolution import Evolution
 from tuxemon.npc import PartyHandler
 from tuxemon.player import Player
 from tuxemon.session import local_session
@@ -32,15 +35,56 @@ def mockPlayer(self) -> None:
     member1.moves.moves = [tech]
     self.party = PartyHandler(MagicMock, self)
     self.party._monsters = [member1, member2]
+    self.tuxepedia = MagicMock()
 
 
-class TestCanEvolve(unittest.TestCase):
+class TestEvolution(unittest.TestCase):
     def setUp(self):
         self.mon = Monster()
         with patch.object(Player, "__init__", mockPlayer):
             local_session.set_player(Player())
             self.player = local_session.player
             self.mon.set_owner(self.player)
+        self.evo = Evolution(self.mon)
+
+    def test_evolve_monster_success(self):
+        new_mon = Monster()
+        new_mon.slug = "rockat"
+        move = MagicMock()
+        move.learning_method = LearningMethod.EVOLUTION
+        move.technique = "SpecialBeam"
+        new_mon.moves.moveset = [move]
+        self.evo.is_eligible_for_evolution = lambda: True
+        new_mon.transfer_properties_from = MagicMock()
+        new_mon.moves.learn_by_method = MagicMock()
+        self.player.party.replace_monster = MagicMock(return_value=True)
+        self.player.tuxepedia.add_entry = MagicMock()
+        self.evo.evolve_monster(new_mon)
+        new_mon.transfer_properties_from.assert_called_with(self.mon)
+        new_mon.moves.learn_by_method.assert_called_with(
+            new_mon, "SpecialBeam", LearningMethod.EVOLUTION
+        )
+        self.player.party.replace_monster.assert_called_with(self.mon, new_mon)
+        self.player.tuxepedia.add_entry.assert_called_with(
+            "rockat", SeenStatus.caught
+        )
+
+    def test_evolve_monster_not_eligible(self):
+        new_mon = Monster()
+        self.evo.is_eligible_for_evolution = lambda: False
+        new_mon.transfer_properties_from = MagicMock()
+        self.evo.evolve_monster(new_mon)
+        new_mon.transfer_properties_from.assert_not_called()
+
+    def test_evolve_monster_replace_fails(self):
+        new_mon = Monster()
+        new_mon.slug = "rockat"
+        self.evo.is_eligible_for_evolution = lambda: True
+        new_mon.transfer_properties_from = MagicMock()
+        self.player.party.replace_monster = MagicMock(return_value=False)
+        self.player.tuxepedia = MagicMock()
+        self.evo.evolve_monster(new_mon)
+        self.assertFalse(self.player.tuxepedia.add_entry.called)
 
     def test_no_owner(self):
         self.mon.set_owner(None)
@@ -463,3 +507,106 @@ class TestCanEvolve(unittest.TestCase):
         )
         context = {"map_inside": True}
         self.assertFalse(self.mon.evolution_handler.can_evolve(evo, context))
+
+    def test_returns_valid_evolutions(self):
+        item = MagicMock()
+        item.slug = "stone"
+        evo_model_valid = MagicMock(spec=MonsterEvolutionItemModel)
+        evo_model_valid.item = {"stone": 1.0}
+        evo_model_valid.monster_slug = "rockat"
+        evo_model_invalid = MagicMock(spec=MonsterEvolutionItemModel)
+        evo_model_invalid.item = {"other_item": 1.0}
+        evo_model_invalid.monster_slug = "nut"
+        self.mon.evolutions = [evo_model_valid, evo_model_invalid]
+        self.evo.can_evolve = MagicMock(return_value=True)
+        context = {"use_item": True}
+        result = self.evo.get_possible_item_evolutions(item, context)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0][0].monster_slug, "rockat")
+        self.assertEqual(result[0][1], 1.0)
+
+    def test_filters_out_weight_zero(self):
+        item = MagicMock()
+        item.slug = "stone"
+        evo_model = MagicMock(spec=MonsterEvolutionItemModel)
+        evo_model.item = {"stone": 0.0}
+        evo_model.monster_slug = "rockat"
+        self.mon.evolutions = [evo_model]
+        self.evo.can_evolve = MagicMock(return_value=True)
+        context = {"use_item": True}
+        result = self.evo.get_possible_item_evolutions(item, context)
+        self.assertEqual(result, [])
+
+    def test_filters_out_ineligible(self):
+        item = MagicMock()
+        item.slug = "stone"
+        evo_model = MagicMock(spec=MonsterEvolutionItemModel)
+        evo_model.item = {"stone": 1.0}
+        evo_model.monster_slug = "rockat"
+        self.mon.evolutions = [evo_model]
+        self.evo.can_evolve = MagicMock(return_value=False)
+        context = {"use_item": True}
+        result = self.evo.get_possible_item_evolutions(item, context)
+        self.assertEqual(result, [])
+
+    def test_single_evolution_returns_model(self):
+        evo_model = MagicMock(spec=MonsterEvolutionItemModel)
+        possible_evolutions = [(evo_model, 1.0)]
+        result = self.evo.choose_evolution_model(possible_evolutions)
+        self.assertIs(result, evo_model)
+
+    @patch("random.choices")
+    def test_multiple_evolutions_uses_random_choices(self, mock_choices):
+        evo_model1 = MagicMock(spec=MonsterEvolutionItemModel)
+        evo_model2 = MagicMock(spec=MonsterEvolutionItemModel)
+        possible_evolutions = [(evo_model1, 0.5), (evo_model2, 0.5)]
+        mock_choices.return_value = [evo_model2]
+        result = self.evo.choose_evolution_model(possible_evolutions)
+        self.assertIs(result, evo_model2)
+        mock_choices.assert_called_once()
+        args, kwargs = mock_choices.call_args
+        self.assertIn(evo_model1, args[0])
+        self.assertIn(evo_model2, args[0])
+        self.assertEqual(list(kwargs["weights"]), [0.5, 0.5])
+        self.assertEqual(kwargs["k"], 1)
+
+    def test_empty_evolutions_raises_error(self):
+        with self.assertRaises(ValueError):
+            self.evo.choose_evolution_model([])
+
+    def test_is_valid_evolution_target_true_for_direct(self):
+        self.evo.has_evolution_to = MagicMock(return_value=True)
+        self.evo.has_history_to = MagicMock(return_value=False)
+        result = self.evo.is_valid_evolution_target("slug123")
+        self.assertTrue(result)
+
+    def test_is_valid_evolution_target_true_for_history(self):
+        self.evo.has_evolution_to = MagicMock(return_value=False)
+        self.evo.has_history_to = MagicMock(return_value=True)
+        result = self.evo.is_valid_evolution_target("slug123")
+        self.assertTrue(result)
+
+    def test_is_valid_evolution_target_false(self):
+        self.evo.has_evolution_to = MagicMock(return_value=False)
+        self.evo.has_history_to = MagicMock(return_value=False)
+        result = self.evo.is_valid_evolution_target("slug123")
+        self.assertFalse(result)
+
+    def test_confirm_pending_evolution_calls_registry_and_resets_flags(self):
+        registry = MagicMock()
+        self.mon.instance_id = "iid123"
+        self.mon.experience_handler.reset_status_flags = MagicMock()
+        self.evo.confirm_pending_evolution(registry, "slug123")
+        registry.clear_missed.assert_called_once_with("iid123", "slug123")
+        registry.clear_pending.assert_called_once_with("iid123")
+        self.mon.experience_handler.reset_status_flags.assert_called_once()
+
+    def test_deny_pending_evolution_calls_registry_and_resets_flags(self):
+        registry = MagicMock()
+        self.mon.instance_id = "iid123"
+        self.mon.set_level(10)
+        self.mon.experience_handler.reset_status_flags = MagicMock()
+        self.evo.deny_pending_evolution(registry, "slug123")
+        registry.log_missed.assert_called_once_with("iid123", "slug123", 10)
+        registry.clear_pending.assert_called_once_with("iid123")
+        self.mon.experience_handler.reset_status_flags.assert_called_once()

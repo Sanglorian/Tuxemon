@@ -29,7 +29,9 @@ class ShopMonsterMenuState(ShopMenuState[Monster]):
 
     def _display_asset_description(self, asset: MenuItem[Monster]) -> None:
         if asset.description:
-            self.dialog.alert(asset.description, dialog_speed="max")
+            self.dialog.alert(
+                asset.description, self.text_area, dialog_speed="max"
+            )
 
     def _filter_inventory(self) -> list[Monster]:
         return filter_party(self.buyer, self.seller, self.economy)

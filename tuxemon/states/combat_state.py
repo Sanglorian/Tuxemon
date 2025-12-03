@@ -315,12 +315,13 @@ class CombatState(CombatAnimations):
             self.client.remove_state_by_name("MonsterMenuState")
 
         def validate(menu_item: MenuItem[Monster]) -> bool:
-            monster = menu_item.game_object
-            if monster.is_fainted:
-                return False
-            if monster in self.client.combat_session.active_monsters:
-                return False
-            return True
+            if isinstance(menu_item, Monster):
+                if menu_item.is_fainted:
+                    return False
+                if menu_item in self.client.combat_session.active_monsters:
+                    return False
+                return True
+            return False
 
         state = self.client.push_state(MonsterMenuState(player.monsters))
         state.task(
@@ -899,7 +900,8 @@ class CombatState(CombatAnimations):
         self.award_experience_and_money(monster)
         # Remove monster from damage map
         self.client.combat_session.damage_tracker.remove_monster(monster)
-        play_outcome_music(self.session, self.music, monster)
+        if len(self.client.combat_session.remaining_players) <= 1:
+            play_outcome_music(self.session, self.music, monster)
 
     def clean_combat(self) -> None:
         """Clean combat."""

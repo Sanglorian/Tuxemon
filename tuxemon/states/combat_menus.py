@@ -131,7 +131,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             visibility_map["menu_forfeit"] = True
 
         items_filtered = ItemFilter(self.character.items)
-        items_filtered.set_filter_usable_in_state("MainCombatMenuState")
+        items_filtered.set_filter_combat_targets(
+            self.session, self.character.monsters, self.opponents
+        )
         if not items_filtered.items:
             visibility_map["menu_item"] = False
 
@@ -234,7 +236,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         def choose_item() -> None:
             # open menu to choose item
             items_filtered = ItemFilter(self.character.items)
-            items_filtered.set_filter_usable_in_state("MainCombatMenuState")
+            items_filtered.set_filter_combat_targets(
+                self.session, self.character.monsters, self.opponents
+            )
             menu = self.client.push_state(
                 ItemMenuState(self.character, self.name, items_filtered)
             )

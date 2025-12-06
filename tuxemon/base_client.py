@@ -14,6 +14,7 @@ from tuxemon.boundary import BoundaryChecker
 from tuxemon.camera.camera import CameraManager
 from tuxemon.combat.session import CombatSession
 from tuxemon.constants import paths
+from tuxemon.core.active_effect import ActiveEffectManager
 from tuxemon.event import get_event_bus
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventcondition import ConditionManager
@@ -44,11 +45,8 @@ from tuxemon.world.weather import WorldWeatherManager
 
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
-    from tuxemon.item.item import Item
     from tuxemon.platform.events import PlayerInput
     from tuxemon.state.queue import QueuedState
-    from tuxemon.status.status import Status
-    from tuxemon.technique.technique import Technique
     from tuxemon.ui.cipher_processor import CipherProcessor
 
 StateType = TypeVar("StateType", bound=State)
@@ -71,9 +69,7 @@ class BaseClient(ABC):
 
     def __init__(self, config: TuxemonConfig) -> None:
         self.config = config
-        self.active_techniques: list[Technique] = []
-        self.active_items: list[Item] = []
-        self.active_statuses: list[Status] = []
+        self.active_effect_manager = ActiveEffectManager()
 
         self.event_bus = get_event_bus()
         self.state_repository = StateRepository()
@@ -206,21 +202,7 @@ class BaseClient(ABC):
         self.state_manager.update(time_delta)
         if self.state_manager.current_state is None:
             self.state = ClientState.EXITING
-
-        for tech in list(self.active_techniques):
-            tech.effect_handler.update(local_session, time_delta)
-            if tech.effect_handler.is_finished():
-                self.active_techniques.remove(tech)
-
-        for item in list(self.active_items):
-            item.effect_handler.update(local_session, time_delta)
-            if item.effect_handler.is_finished():
-                self.active_items.remove(item)
-
-        for status in list(self.active_statuses):
-            status.effect_handler.update(local_session, time_delta)
-            if status.effect_handler.is_finished():
-                self.active_statuses.remove(status)
+        self.active_effect_manager.update(local_session, time_delta)
 
     def get_map_name(self) -> str:
         """

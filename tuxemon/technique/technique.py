@@ -181,7 +181,7 @@ class Technique:
         )
         self.next_use = self.recharge_length
         if session.client:
-            session.client.active_techniques.append(self)
+            session.client.active_effect_manager.add_technique(self)
         return result
 
     def has_type(self, type_slug: str) -> bool:

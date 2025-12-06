@@ -235,7 +235,7 @@ class Item:
             session=session, source=self, target=target
         )
         if session.client:
-            session.client.active_items.append(self)
+            session.client.active_effect_manager.add_item(self)
         self.consume_if_needed(user, result)
         return result
 

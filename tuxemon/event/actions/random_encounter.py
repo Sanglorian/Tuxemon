@@ -14,7 +14,6 @@ from tuxemon.combat.combat_context import (
 )
 from tuxemon.combat.utils import check_battle_legal, check_repellent
 from tuxemon.db import EnvironmentModel, db
-from tuxemon.encounter import Encounter, EncounterData
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import ColorLike, string_to_colorlike
@@ -57,6 +56,7 @@ class RandomEncounterAction(EventAction):
 
     def start(self, session: Session) -> None:
         player = session.player
+        encounter = session.client.encounter_manager
 
         if not check_battle_legal(player):
             logger.error("Battle is not legal, won't start")
@@ -66,10 +66,11 @@ class RandomEncounterAction(EventAction):
             logger.info(f"Repellent active, skipping encounter.")
             return
 
-        zone = EncounterData(self.encounter_slug)
-        encounter = Encounter(zone)
+        if not encounter.load_zone(self.encounter_slug):
+            return
+
         total_prob = self.total_prob if self.total_prob else 1.0
-        results = encounter.get_single_encounter(player, total_prob)
+        results = encounter.attempt_single_encounter(player, total_prob)
 
         if results is None:
             return

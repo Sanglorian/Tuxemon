@@ -22,6 +22,58 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+class EncounterManager:
+    """
+    Manages the lifecycle and access to the active encounter zone handler.
+    Provides a safe, central API for initiating encounters.
+    """
+
+    def __init__(self) -> None:
+        self._active_handler: Optional[Encounter] = None
+        logger.debug("EncounterManager initialized.")
+
+    def load_zone(self, zone_slug: str) -> bool:
+        """
+        Loads a new zone by creating an EncounterData and an Encounter object.
+        Returns True on success, False on failure.
+        """
+        self._active_handler = None
+
+        try:
+            zone_data = EncounterData(zone_slug)
+            self._active_handler = Encounter(zone_data)
+            logger.debug(f"Successfully loaded encounter zone: {zone_slug}")
+            return True
+        except Exception as e:
+            logger.error(
+                f"Failed to load encounter data for '{zone_slug}': {e}"
+            )
+            return False
+
+    def unload_zone(self) -> None:
+        """Explicitly unloads the current zone, often called when changing maps."""
+        self._active_handler = None
+        logger.debug("Encounter zone unloaded.")
+
+    def attempt_single_encounter(
+        self, character: NPC, total_prob: float
+    ) -> Optional[tuple[EncounterItemModel, int, Optional[str]]]:
+        if self._active_handler:
+            return self._active_handler.get_single_encounter(
+                character, total_prob
+            )
+        return None
+
+    def attempt_horde_encounter(
+        self, character: NPC, total_prob: Optional[float] = None
+    ) -> Optional[list[tuple[EncounterItemModel, int, Optional[str]]]]:
+        if self._active_handler:
+            return self._active_handler.get_horde_encounter(
+                character, total_prob
+            )
+        return None
+
+
 class EncounterData:
     def __init__(self, slug: str) -> None:
         self.slug = slug

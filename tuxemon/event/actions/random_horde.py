@@ -12,9 +12,8 @@ from tuxemon.combat.combat_context import (
     CombatContext,
     CombatType,
 )
-from tuxemon.combat.utils import check_battle_legal
+from tuxemon.combat.utils import check_battle_legal, check_repellent
 from tuxemon.db import EnvironmentModel, db
-from tuxemon.encounter import Encounter, EncounterData
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import ColorLike, string_to_colorlike
@@ -56,9 +55,14 @@ class RandomHordeAction(EventAction):
 
     def start(self, session: Session) -> None:
         player = session.player
+        encounter = session.client.encounter_manager
 
         if not check_battle_legal(player):
             logger.error("Battle is not legal, won't start")
+            return
+
+        if check_repellent(player):
+            logger.info(f"Repellent active, skipping encounter.")
             return
 
         if self.total_prob is not None:
@@ -68,9 +72,10 @@ class RandomHordeAction(EventAction):
                 )
                 return
 
-        zone = EncounterData(self.encounter_slug)
-        encounter = Encounter(zone)
-        results = encounter.get_horde_encounter(player, self.total_prob)
+        if not encounter.load_zone(self.encounter_slug):
+            return
+
+        results = encounter.attempt_horde_encounter(player, self.total_prob)
 
         if not results:
             return

@@ -14,7 +14,7 @@ from tuxemon.combat.combat_context import (
     CombatType,
 )
 from tuxemon.combat.utils import check_battle_legal
-from tuxemon.db import EnvironmentModel, MonsterModel, NpcModel, db
+from tuxemon.db import MonsterModel, NpcModel, db
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster import Monster
@@ -108,20 +108,25 @@ class RandomBattleAction(EventAction):
             logger.warning("Battle is not legal, won't start.")
             return
 
-        env_slug = player.game_variables.get("environment", "grass")
-        env = EnvironmentModel.lookup(env_slug, db)
+        environment = session.client.environment_manager
+        env = environment.get_active_environment()
+        if env is None:
+            logger.error(
+                "No environment defined. Use 'set_environment' before starting combat."
+            )
+            return
 
         logger.info(f"Starting battle with '{npc.name}'!")
         context = CombatContext(
             session=session,
             teams=[player, npc],
             combat_type=CombatType.TRAINER,
-            graphics=env.battle_graphics,
-            music=env.battle_music,
+            graphics=env.get_battle_graphics(),
+            music=env.get_battle_music(),
             battle_mode=BattleMode.SINGLE,
         )
         session.client.push_state("CombatState", context=context)
-        sound = env.battle_music.battle
+        sound = env.get_battle_music().battle
         if sound.music:
             session.client.event_engine.execute_action(
                 "play_music", [sound.music, sound.volume], True

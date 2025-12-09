@@ -28,6 +28,7 @@
 .. autoscriptinfoclass:: tuxemon.event.conditions.check_world.CheckWorldCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.cooldown_days.CooldownDaysCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.current_state.CurrentStateCondition
+.. autoscriptinfoclass:: tuxemon.event.conditions.environment_is.EnvironmentIsCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.faction_reputation.FactionReputationCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.has_bag.HasBagCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.has_item.HasItemCondition

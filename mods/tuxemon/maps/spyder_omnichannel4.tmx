@@ -91,8 +91,8 @@
   </object>
   <object id="23" name="Environment" type="event" x="16" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:interior"/>
-    <property name="cond1" value="not variable_set environment:interior"/>
+    <property name="act1" value="set_environment interior"/>
+    <property name="cond1" value="not environment_is interior"/>
    </properties>
   </object>
   <object id="38" name="Note" type="event" x="32" y="48" width="16" height="16">

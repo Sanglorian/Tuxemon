@@ -191,16 +191,16 @@
   </object>
   <object id="190" name="Environment Day" type="event" x="16" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:grass"/>
+    <property name="act1" value="set_environment grass"/>
     <property name="cond1" value="not variable_set stage_of_day:night"/>
-    <property name="cond2" value="not variable_set environment:grass"/>
+    <property name="cond2" value="not environment_is grass"/>
    </properties>
   </object>
   <object id="191" name="Environment Night" type="event" x="32" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:night_grass"/>
+    <property name="act1" value="set_environment night_grass"/>
     <property name="cond1" value="is variable_set stage_of_day:night"/>
-    <property name="cond2" value="not variable_set environment:night_grass"/>
+    <property name="cond2" value="not environment_is night_grass"/>
    </properties>
   </object>
   <object id="193" name="Teleport to Brideswood B" type="event" x="624" y="80" width="16" height="16">

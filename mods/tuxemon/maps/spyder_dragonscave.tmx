@@ -282,8 +282,8 @@
   </object>
   <object id="91" name="Environment" type="event" x="16" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:cave"/>
-    <property name="cond1" value="not variable_set environment:cave"/>
+    <property name="act1" value="set_environment cave"/>
+    <property name="cond1" value="not environment_is cave"/>
    </properties>
   </object>
   <object id="92" name="Talk Tomas" type="event" x="240" y="528" width="48" height="16">

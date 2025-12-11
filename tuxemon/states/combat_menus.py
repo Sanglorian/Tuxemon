@@ -176,7 +176,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 "status": message,
             }
             msg = T.format("combat_player_run_status", params)
-            tools.open_dialog(self.client, [msg])
+            tools.open_dialog(self.client, [msg], dialog_speed="max")
             return
         self.client.remove_state_by_name("MainCombatMenuState")
         self.combat_session.enqueue_action(
@@ -197,7 +197,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     "status": message,
                 }
                 msg = T.format("combat_player_swap_status", params)
-                tools.open_dialog(self.client, [msg])
+                tools.open_dialog(self.client, [msg], dialog_speed="max")
                 return
             self.combat_session.swap_tracker.register(added)
             self.combat_session.enqueue_action(self.monster, swap, added)
@@ -228,7 +228,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
         if all(not validate_monster(mon) for mon in self.character.monsters):
             party_unselectable = T.translate("combat_party_unselectable")
-            tools.open_dialog(self.client, [party_unselectable])
+            tools.open_dialog(
+                self.client, [party_unselectable], dialog_speed="max"
+            )
 
     def open_item_menu(self) -> None:
         """Open menu to choose item to use."""
@@ -291,7 +293,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                         T.translate(extra) for extra in result_status.extras
                     ]
                     template = "\n".join(templates)
-                    tools.open_dialog(self.client, [template])
+                    tools.open_dialog(
+                        self.client, [template], dialog_speed="max"
+                    )
                     return
 
             # enqueue the item
@@ -546,7 +550,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             if not technique.validate_monster(self.session, target):
                 params = {"name": technique.name.upper()}
                 msg = T.format("cannot_use_tech_monster", params)
-                tools.open_dialog(self.client, [msg])
+                tools.open_dialog(self.client, [msg], dialog_speed="max")
                 return
 
             if (
@@ -555,7 +559,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             ):
                 params = {"name": technique.name.upper()}
                 msg = T.format("combat_target_itself", params)
-                tools.open_dialog(self.client, [msg])
+                tools.open_dialog(self.client, [msg], dialog_speed="max")
                 return
 
             # Pre-check the technique for validity

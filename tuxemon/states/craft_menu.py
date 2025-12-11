@@ -87,9 +87,14 @@ class CraftMenuState(PygameMenuState):
                 open_dialog(
                     self.client,
                     [T.translate(result.revealed_content_slug)],
+                    dialog_speed="max",
                 )
             else:
-                open_dialog(self.client, [T.translate(result.message_slug)])
+                open_dialog(
+                    self.client,
+                    [T.translate(result.message_slug)],
+                    dialog_speed="max",
+                )
 
         menu.add.button(title=T.translate(slug), action=partial(craft, slug))
         if recipe.recipe_text:

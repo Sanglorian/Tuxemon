@@ -101,10 +101,7 @@ class NuPhoneContacts(PygameMenuState):
 
         dialogue_text = [T.translate(msgid) for msgid in dialogue_msgids]
 
-        open_dialog(
-            self.client,
-            dialogue_text,
-        )
+        open_dialog(self.client, dialogue_text, dialog_speed="max")
 
     def choice(self, slug: str) -> None:
         """Opens the choice dialog to confirm the call."""

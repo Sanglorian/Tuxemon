@@ -247,7 +247,7 @@ class MonsterMenuHandler:
         self.client.remove_state_by_name("ChoiceState")
         params = {"name": monster.name.upper()}
         msg = T.format("release_confirmation", params)
-        open_dialog(self.client, [msg])
+        open_dialog(self.client, [msg], dialog_speed="max")
         options = [
             ChoiceOption(
                 key="no",
@@ -271,7 +271,7 @@ class MonsterMenuHandler:
             self.client.remove_state_by_name("DialogState")
             params = {"name": monster.name.upper()}
             msg = T.format("tuxemon_released", params)
-            open_dialog(self.client, [msg])
+            open_dialog(self.client, [msg], dialog_speed="max")
             self.monster_menu.remove_monster_sprite_display(monster)
 
             num_monsters = len(self.char.monsters)
@@ -281,7 +281,9 @@ class MonsterMenuHandler:
             self.monster_menu.refresh_menu_items()
             self.monster_menu.on_menu_selection_change()
         else:
-            open_dialog(self.client, [T.translate("cant_release")])
+            open_dialog(
+                self.client, [T.translate("cant_release")], dialog_speed="max"
+            )
 
     def negative_answer(self) -> None:
         """Handles rejection for releasing a monster."""

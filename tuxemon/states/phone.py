@@ -63,10 +63,16 @@ class NuPhone(PygameMenuState):
         state_name = dm.state
 
         def _no_trackers() -> None:
-            open_dialog(self.client, [T.translate("nu_map_missing")])
+            open_dialog(
+                self.client,
+                [T.translate("nu_map_missing")],
+                dialog_speed="max",
+            )
 
         def _no_signal() -> None:
-            open_dialog(self.client, [T.translate("no_signal")])
+            open_dialog(
+                self.client, [T.translate("no_signal")], dialog_speed="max"
+            )
 
         if state_name == "NuPhoneBanking":
             # Banking app requires a network signal
@@ -89,7 +95,9 @@ class NuPhone(PygameMenuState):
         """Dynamically adds app items to the phone menu."""
 
         def _uninstall(itm: Item) -> None:
-            open_dialog(self.client, [T.translate("uninstall_app")])
+            open_dialog(
+                self.client, [T.translate("uninstall_app")], dialog_speed="max"
+            )
 
         column_width = fix_measure(menu._width, 0.25)
         menu._column_max_width = [column_width] * 4

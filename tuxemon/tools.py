@@ -218,6 +218,7 @@ def open_dialog(
     target_coords: Optional[Union[tuple[int, int], Rect]] = None,
     custom_rect: Optional[Rect] = None,
     on_complete: Optional[Callable[[], None]] = None,
+    dialog_speed: Optional[str] = None,
 ) -> State:
     """
     Open a dialog with the standard window size or a custom size/position.
@@ -234,10 +235,12 @@ def open_dialog(
             Otherwise, it will be relative to the screen.
             This parameter is ignored if custom_rect is provided.
         target_coords: Optional. A tuple (x, y) representing a point, or a Pygame Rect.
-                       If provided, the 'position' will be relative to this point/rect.
-                       Ignored if custom_rect is provided.
+            If provided, the 'position' will be relative to this point/rect.
+            Ignored if custom_rect is provided.
         custom_rect: Optional. A Pygame Rect object specifying the exact area for the dialog.
-                     If provided, 'position' and 'target_coords' will be ignored.
+            If provided, 'position' and 'target_coords' will be ignored.
+        dialog_speed: Characters-per-frame delay for text rendering. If `None`, falls
+            back to the client's configured default. Use 'slow' for instant text display.
 
     Returns:
         The pushed dialog state.
@@ -257,6 +260,7 @@ def open_dialog(
         rect=dialog_rect,
         box_style=box_style,
         on_complete=on_complete,
+        dialog_speed=dialog_speed,
     )
 
 

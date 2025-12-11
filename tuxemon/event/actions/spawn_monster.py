@@ -136,7 +136,7 @@ class SpawnMonsterAction(EventAction):
 
         # Display a message to the player
         msg = T.format("got_new_tuxemon", {"monster_name": child.name})
-        open_dialog(session.client, [msg])
+        open_dialog(session.client, [msg], dialog_speed="max")
 
     def update(self, session: Session, dt: float) -> None:
         try:

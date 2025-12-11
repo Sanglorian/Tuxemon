@@ -100,7 +100,7 @@ class NuPhoneBanking(PygameMenuState):
             else:
                 params = {"operation": T.translate(op)}
                 msg = T.format("no_money_operation", params)
-                open_dialog(self.client, [msg])
+                open_dialog(self.client, [msg], dialog_speed="max")
 
         def bill_manager(op: str, bill_name: str) -> None:
             options = []
@@ -129,7 +129,7 @@ class NuPhoneBanking(PygameMenuState):
             else:
                 params = {"operation": T.translate(op)}
                 msg = T.format("no_money_operation", params)
-                open_dialog(self.client, [msg])
+                open_dialog(self.client, [msg], dialog_speed="max")
 
         def bill(op: str) -> None:
             options = []
@@ -150,7 +150,7 @@ class NuPhoneBanking(PygameMenuState):
             else:
                 params = {"operation": T.translate(op)}
                 msg = T.format("no_money_operation", params)
-                open_dialog(self.client, [msg])
+                open_dialog(self.client, [msg], dialog_speed="max")
 
         def deposit(amount: int) -> None:
             self.client.remove_state_by_name("ChoiceState")

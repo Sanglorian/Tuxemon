@@ -158,7 +158,7 @@ class EvolutionAction(EventAction):
             "evolve": evolved.name.upper(),
         }
         msg = T.format("evolution_confirmation", params)
-        open_dialog(self.session.client, [msg])
+        open_dialog(self.session.client, [msg], dialog_speed="max")
 
         options = [
             ChoiceOption(

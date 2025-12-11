@@ -18,14 +18,22 @@ if TYPE_CHECKING:
 @dataclass
 class DieEffect(CoreEffect):
     """
-    This effect applies one random status from a list to the target monster.
+    Applies one random status from a predefined list to the target monster.
 
-    Typically used by held items like "Die", which grant a random condition
-    (e.g. Enraged or Sniping) when combat begins.
+    This effect is typically triggered by held items such as ``Die``, which
+    grant a random condition (e.g. ``enraged`` or ``sniping``) when combat begins.
 
-    Parameters:
-        statuses: A colon-separated string of status slugs
-            (e.g. "enraged:sniping").
+    **Parameters**
+    - ``statuses``: A colon-separated string of status slugs
+      (e.g. ``"enraged:sniping"``).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "die enraged:sniping"
+        ]
     """
 
     name = "die"

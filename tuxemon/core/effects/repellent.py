@@ -19,8 +19,23 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RepellentEffect(CoreEffect):
     """
-    Applies a repellent effect that prevents wild encounters for a
-    set number of steps.
+    Applies the "repellent" effect to an item.
+
+    This effect prevents wild encounters for a specified number of steps
+    after the item is used. It works by registering a step tracker that
+    counts down until the repellent expires.
+
+    **Parameters**
+    - ``steps``: Float value representing how many steps the repellent
+      will last before wearing off.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "repellent 1000"
+        ]
     """
 
     name = "repellent"

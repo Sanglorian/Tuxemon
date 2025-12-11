@@ -16,15 +16,31 @@ if TYPE_CHECKING:
 @dataclass
 class ReverseEffect(CoreEffect):
     """
-    Reverse "Switch" effect:
-    it returns the original monster type.
+    Applies the "reverse" effect to a technique.
 
-    Parameters:
-        objectives: The targets (e.g. own_monster, enemy_monster, etc.), if
-            single "enemy_monster" or "enemy_monster:own_monster"
+    This effect resets the type(s) of one or more monsters back to their
+    original default values. It is typically used to undo type-changing
+    effects applied earlier in battle.
 
-    eg reverse enemy_monster
-    eg reverse enemy_monster:own_monster
+    **Parameters**
+    - ``objectives``: Colon-separated string specifying which monsters are
+      affected. Examples:
+      - ``enemy_monster`` → resets only the enemy's type(s).
+      - ``own_monster`` → resets only the user's type(s).
+      - ``enemy_monster:own_monster`` → resets both the enemy's and the
+        user's type(s).
+
+    **Examples**
+
+    .. code-block:: json
+
+        "effects": [
+            "reverse enemy_monster"
+        ]
+
+        "effects": [
+            "reverse enemy_monster:own_monster"
+        ]
     """
 
     name = "reverse"

@@ -18,11 +18,22 @@ if TYPE_CHECKING:
 @dataclass
 class FlinchingEffect(CoreEffect):
     """
-    Flinching: 50% chance to miss your next turn.
-    If you do miss your next turn, this status ends.
+    Applies the "flinching" status to a monster.
 
-    Parameters:
-        chance: The chance.
+    This effect represents hesitation or recoil, giving the monster a chance
+    to miss its next turn. If the monster misses its turn due to flinching,
+    the status is cleared.
+
+    **Parameters**
+    - ``chance``: The probability of flinching occurring (float between 0 and 1).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "flinching 0.5"
+        ]
     """
 
     name = "flinching"

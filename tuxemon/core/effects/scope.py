@@ -17,8 +17,19 @@ if TYPE_CHECKING:
 @dataclass
 class ScopeEffect(CoreEffect):
     """
-    Scope: scan monster stats.
+    Applies the "scope" effect to a technique.
 
+    This effect scans the target monster's combat statistics and displays
+    them to the player. It is typically used for reconnaissance in battle,
+    allowing the user to evaluate the opponent's strengths and weaknesses.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "scope"
+        ]
     """
 
     name = "scope"

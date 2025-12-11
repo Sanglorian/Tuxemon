@@ -20,14 +20,25 @@ if TYPE_CHECKING:
 @dataclass
 class GiveEffect(CoreEffect):
     """
-    This effect has a chance to give a status effect.
+    Gives a status to a monster.
 
-    Parameters:
-        condition: The Status slug (e.g. enraged).
-        objectives: The targets (e.g. own_monster, enemy_monster, etc.), if
-            single "enemy_monster" or "enemy_monster:own_monster"
+    This effect attempts to apply a status condition to one or more target
+    monsters. The chance of success depends on the technique's potency and
+    accuracy compared against random rolls. Targets may resist the effect if
+    immune due to items.
 
-    eg "give enraged,own_monster"
+    **Parameters**
+    - ``condition``: The status slug to apply (e.g. ``enraged``).
+    - ``objectives``: Colon-separated list of target groups (e.g.
+      ``enemy_monster`` or ``enemy_monster:own_monster``).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "give enraged enemy_monster"
+        ]
     """
 
     name = "give"

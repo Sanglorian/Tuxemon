@@ -17,7 +17,21 @@ if TYPE_CHECKING:
 
 @dataclass
 class EvolveEffect(CoreEffect):
-    """This effect evolves the target into the monster in the parameters."""
+    """
+    Evolves the target monster into a new form based on item parameters.
+
+    This effect checks the target's available evolutions and determines whether
+    the triggering item can cause an evolution. If multiple valid evolutions
+    exist, one is selected randomly according to weighted probabilities.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "evolve"
+        ]
+    """
 
     name = "evolve"
 

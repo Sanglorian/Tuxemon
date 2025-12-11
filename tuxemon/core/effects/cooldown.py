@@ -18,16 +18,24 @@ if TYPE_CHECKING:
 @dataclass
 class CoolDownEffect(CoreEffect):
     """
-    CoolDown is an effect that modifies the next_use value of a monster's
-    techniques, delaying their availability within a specified recharge range.
+    Applies a cooldown to a monster's techniques, delaying their availability
+    within a specified recharge range.
 
-    Parameters:
-        objectives: The targets (e.g. own_monster, enemy_monster, etc.), if
-            single "enemy_monster" or "enemy_monster:own_monster"
-        next_use: The Monster object that we are using this technique on.
-        parameter: The Technique attribute to check (e.g. category, range, etc.)
-        value: The value is the corresponding attribute value (e.g. animal for
-            category)
+    **Parameters**
+    - ``objectives``: The targets affected (e.g. ``own_monster``, ``enemy_monster``,
+      or a combination like ``enemy_monster:own_monster``).
+    - ``next_use``: The number of turns to delay before the technique can be used again.
+      Must be within ``RECHARGE_RANGE``.
+    - ``parameter``: The technique attribute to check (e.g. ``category``, ``range``, etc.).
+    - ``value``: The expected attribute value (e.g. ``animal`` for category).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "cooldown enemy_monster 2 category animal"
+        ]
     """
 
     name = "cooldown"

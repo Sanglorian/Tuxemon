@@ -19,14 +19,29 @@ if TYPE_CHECKING:
 @dataclass
 class SwitchTypeEffect(CoreEffect):
     """
-    Changes monster type.
+    Applies the "switch_type" effect to an item.
 
-    Parameters:
-        element: type of element (wood, water, etc.)
+    This effect changes the elemental type of the target monster. The new
+    type can be explicitly specified or chosen randomly from the available
+    elements in the database. If the target already has the specified type,
+    no change is applied.
 
-    Examples:
-        "switch wood" or "switch random"
-        if "switch random" then the type is chosen randomly.
+    **Parameters**
+    - ``element``: String representing the new type to assign.
+      - Can be a specific element (e.g., ``wood``, ``water``).
+      - Or ``random`` to select a random element from the database.
+
+    **Examples**
+
+    .. code-block:: json
+
+        "effects": [
+            "switch_type wood"
+        ]
+
+        "effects": [
+            "switch_type random"
+        ]
     """
 
     name = "switch_type"

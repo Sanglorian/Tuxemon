@@ -18,8 +18,31 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TeleportItemEffect(CoreEffect):
     """
-    Teleports the player to a specified map and coordinates.
-    If map_name is 'center', uses the player's faint teleport location.
+    Applies the "teleport_item" effect to an item.
+
+    This effect teleports the player to a specified map and coordinates.
+    It can either use explicit coordinates provided in the item definition
+    or, if ``map_name`` is set to ``center``, teleport the player to their
+    faint recovery location.
+
+    **Parameters**
+    - ``map_name``: The destination map name.
+      - If ``center`` → uses the player's faint teleport location.
+      - Otherwise → uses the specified map name.
+    - ``coord_x``: Integer X-coordinate for teleport destination (default: -1).
+    - ``coord_y``: Integer Y-coordinate for teleport destination (default: -1).
+
+    **Examples**
+
+    .. code-block:: json
+
+        "effects": [
+            "teleport_item town_square 10 5"
+        ]
+
+        "effects": [
+            "teleport_item center"
+        ]
     """
 
     name = "teleport_item"

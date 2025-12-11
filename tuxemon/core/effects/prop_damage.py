@@ -16,16 +16,27 @@ if TYPE_CHECKING:
 @dataclass
 class PropDamageEffect(CoreEffect):
     """
-    Proportional Damage:
-    This effect does damage to the enemy equal to % of the target's maximum HP.
+    Applies the "prop_damage" effect to a technique.
 
-    Parameters:
-        objectives: The targets (e.g. own_monster, enemy_monster, etc.), if
-            single "enemy_monster" or "enemy_monster:own_monster"
-        proportional: The percentage of the max HP (from 0 to 1)
+    This effect deals proportional damage to one or more monsters based on
+    a percentage of the target's maximum HP. It allows damage to scale with
+    the target's durability rather than being a fixed value.
 
-    eg prop_damage enemy_monster,0.25 (1/4 max enemy HP)
+    **Parameters**
+    - ``objectives``: Colon-separated string specifying which monsters are
+      affected. Examples:
+      - ``enemy_monster`` → damages only the enemy.
+      - ``enemy_monster:own_monster`` → damages both the enemy and the user.
+    - ``proportional``: Float value between 0 and 1 representing the fraction
+      of the target's maximum HP to use as damage (e.g., ``0.25`` for 25%).
 
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "prop_damage enemy_monster 0.25"
+        ]
     """
 
     name = "prop_damage"

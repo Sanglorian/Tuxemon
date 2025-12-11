@@ -18,12 +18,24 @@ if TYPE_CHECKING:
 @dataclass
 class WildEffect(CoreEffect):
     """
-    Wild: 1/4 chance each turn that instead of using the chosen
-    technique, you take 1/8 your maximum HP in unmodified damage.
+    Applies the "wild" status to a monster.
 
-    Parameters:
-        chance: The chance.
-        divisor: The divisor.
+    This effect introduces reckless behavior: each turn there is a chance
+    that the monster will skip its chosen technique and instead take damage
+    equal to a fraction of its maximum HP.
+
+    **Parameters**
+    - ``chance``: The probability of avoiding the penalty (float between 0 and 1).
+    - ``divisor``: The divisor used to calculate self-inflicted damage
+      (e.g. 8 for one-eighth of max HP).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "wild 0.25 8"
+        ]
     """
 
     name = "wild"

@@ -20,12 +20,24 @@ logger = logging.getLogger(__name__)
 @dataclass
 class LifeLeechEffect(CoreEffect):
     """
-    This effect has a chance to apply the lifeleech status effect.
+    Applies the "lifeleech" status effect.
 
-    Parameters:
-        user: The monster getting HPs.
-        target: The monster losing HPs.
-        divisor: The number by which target HP is to be divided.
+    This effect drains HP from the host monster and transfers it to the
+    linked monster, simulating a leeching effect. The amount transferred
+    is determined by dividing the host's HP by the specified divisor.
+
+    **Parameters**
+    - ``divisor``: Integer value used to calculate the HP transfer amount.
+      - The host's HP is divided by this number to determine how much HP
+        is leeched and given to the linked monster.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "lifeleech 3"
+        ]
     """
 
     name = "lifeleech"

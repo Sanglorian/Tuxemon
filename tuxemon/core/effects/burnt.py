@@ -18,19 +18,22 @@ if TYPE_CHECKING:
 @dataclass
 class BurntEffect(CoreEffect):
     """
-    This effect has a chance to apply the burnt status based on a calculated
-    damage multiplier.
+    Applies the burnt status to a target based on a calculated damage multiplier.
 
-    Parameters:
-        divisor: Determines how much HP is lost (damage is calculated as
-            target.hp / divisor).
-        mode: Specifies the strategy used to evaluate modifiers against
-            the target. Must be one of: "first", "weakest", "strongest",
-            "average", "cumulative".
+    **Parameters**
+    - ``divisor``: Determines how much HP is lost. Damage is calculated as
+      ``target.hp / divisor``.
+    - ``mode``: Strategy used to evaluate modifiers against the target.
+      Must be one of: ``first``, ``weakest``, ``strongest``, ``average``,
+      or ``cumulative``.
 
-    The effect checks whether a damage multiplier applies to the target using
-    the given mode. If the calculated damage is greater than zero, the target
-    is burned and loses HP. Otherwise, the status fails to apply and is cleared.
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "burnt 4 strongest"
+        ]
     """
 
     name = "burnt"

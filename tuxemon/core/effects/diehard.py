@@ -17,13 +17,22 @@ if TYPE_CHECKING:
 @dataclass
 class DieHardEffect(CoreEffect):
     """
-    DieHard: When HP would fall below 1, set it to 1, remove this status and
-    print "X fights through the pain."
+    Applies the "diehard" status to a monster.
 
-    A monster that is already on exactly 1 HP cannot gain the Diehard status.
+    This effect prevents a monster from fainting by keeping its HP at 1 when
+    it would otherwise drop below that threshold. The status is then removed,
+    and a combat message is displayed.
 
-    Parameters:
-        hp: The amount of HP to set.
+    **Parameters**
+    - ``hp``: The minimum HP value to enforce (typically ``1``).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "diehard 1"
+        ]
     """
 
     name = "diehard"

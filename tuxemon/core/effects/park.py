@@ -21,7 +21,30 @@ VALID_METHODS = {"capture", "doll", "food"}
 
 @dataclass
 class ParkEffect(CoreEffect):
-    """Handles the items used in the park."""
+    """
+    Applies the "park" effect to an item.
+
+    This effect handles special item interactions within the park system,
+    such as capturing monsters, using dolls, or offering food. The behavior
+    depends on the specified ``method``.
+
+    **Parameters**
+    - ``method``: Determines the type of park interaction.
+      - ``capture``: Attempts to capture the target monster using formulas
+        for status, device modifiers, and shake checks.
+      - ``doll``: Applies item modifiers to the encounter, typically affecting
+        monster behavior.
+      - ``food``: Applies item modifiers to the encounter, typically making
+        monsters easier to approach or capture.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "park capture"
+        ]
+    """
 
     name = "park"
     method: str

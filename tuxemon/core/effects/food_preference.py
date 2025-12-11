@@ -19,7 +19,26 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class FoodPreferenceEffect(CoreEffect):
-    """Attempts to capture the target."""
+    """
+    Applies a bond change based on the target monster's food preferences.
+
+    This effect compares the provided warm and cold tastes against the monster's
+    own tastes. Matching preferences increase bond, opposite tastes decrease it,
+    and neutral combinations apply an average change. Opposites are determined
+    using the configured taste map.
+
+    **Parameters**
+    - ``warm``: The warm taste to compare (string).
+    - ``cold``: The cold taste to compare (string).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "food_preference spicy sweet"
+        ]
+    """
 
     name = "food_preference"
     warm: str

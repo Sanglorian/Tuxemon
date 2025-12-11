@@ -16,13 +16,27 @@ if TYPE_CHECKING:
 @dataclass
 class StuckEffect(CoreEffect):
     """
-    This effect has a chance to apply the stuck status effect.
+    Applies the "stuck" status effect.
 
-    It applies an effect on melee and touch techniques.
+    This effect reduces the effectiveness of certain techniques (e.g.,
+    melee or touch-based moves) by lowering their potency and power.
+    It simulates a monster being hindered or immobilized, making its
+    physical attacks weaker while the status is active.
 
-    Parameters:
-        divisor: The divisor.
-        ranges: Technique range separated by ":".
+    **Parameters**
+    - ``divisor``: Float value used to reduce potency and power.
+      - Must be non-zero.
+      - Example: ``2.0`` halves the potency and power of affected moves.
+    - ``ranges``: Colon-separated string specifying which technique ranges
+      are affected (e.g., ``melee:touch``).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "stuck 2 melee:touch"
+        ]
     """
 
     name = "stuck"

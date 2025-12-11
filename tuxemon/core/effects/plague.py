@@ -18,13 +18,26 @@ if TYPE_CHECKING:
 @dataclass
 class PlagueEffect(CoreEffect):
     """
-    Plague is an effect that can infect a monster with a specific disease,
-    using a spreadness value defined in the external configuration file
-    `plagues.yaml`.
+    Applies the "plague" effect to a technique.
 
-    Attributes:
-        plague_slug: The slug of the plague to apply. This is used to look up
-            the plague's properties, such as spreadness, from the config.
+    This effect attempts to infect the target monster with a specific
+    plague defined in the external configuration file ``plagues.yaml``.
+    Each plague has properties such as spreadness, combat messages, and
+    potential minor effects. The effect may also attempt to cure the
+    plague after infection.
+
+    **Parameters**
+    - ``plague_slug``: The slug identifier of the plague to apply.
+      Used to look up plague properties (e.g., spreadness, messages)
+      from the configuration file.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "plague black_fever"
+        ]
     """
 
     name = "plague"

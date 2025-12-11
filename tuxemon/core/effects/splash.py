@@ -17,8 +17,23 @@ if TYPE_CHECKING:
 @dataclass
 class SplashEffect(CoreEffect):
     """
-    Apply splash.
+    Applies the "splash" effect to a technique.
 
+    This effect distributes damage across multiple targets. If the technique
+    misses, the damage is reduced by dividing it with the specified divisor.
+    Otherwise, full damage is applied to all valid targets.
+
+    **Parameters**
+    - ``divisor``: Integer value used to reduce damage when the technique
+      misses. Damage is divided by this value.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "splash 2"
+        ]
     """
 
     name = "splash"

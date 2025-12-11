@@ -18,12 +18,24 @@ if TYPE_CHECKING:
 @dataclass
 class FeedBackEffect(CoreEffect):
     """
-    Each time you are hit by a Special move the attacker takes damage equal to
-    your maximum HP divided by the divisor.
+    Applies the "feedback" status to a monster.
 
-    Parameters:
-        divisor: The divisor used to calculate the damage.
-        ranges: The ranges of moves that trigger the effect.
+    This effect reflects damage back to the attacker whenever the host is hit
+    by a qualifying Special move. The reflected damage is equal to the host's
+    maximum HP divided by the specified divisor.
+
+    **Parameters**
+    - ``divisor``: The divisor used to calculate reflected damage.
+    - ``ranges``: A colon-separated string of move ranges that trigger the effect
+      (e.g. ``"short:long"``).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "feedback 4 short:long"
+        ]
     """
 
     name = "feedback"

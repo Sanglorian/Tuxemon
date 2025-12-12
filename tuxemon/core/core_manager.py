@@ -4,34 +4,40 @@ from __future__ import annotations
 
 import importlib
 import logging
+import sys
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional
+from typing import Generic, Optional
 
 from tuxemon import plugin
 from tuxemon.constants.paths import LIBDIR, get_plugin_paths
+from tuxemon.core.core_condition import CoreCondition
+from tuxemon.core.core_effect import CoreEffect
 from tuxemon.db import LogicCondition, ParameterizableRule
-from tuxemon.plugin import PluginObject
+from tuxemon.plugin import InterfaceValue
 
 logger = logging.getLogger(__name__)
 
 
-class CoreManager:
+class CoreManager(Generic[InterfaceValue]):
     """Core class for managing the loading and unloading of plugins."""
 
     def __init__(
         self,
-        interface: type[PluginObject],
+        interface: type[InterfaceValue],
         path: Path,
         category: str,
+        root_package_name: str,
         root_path: Optional[Path] = None,
     ) -> None:
-        self.classes: dict[str, type[PluginObject]] = {}
+        self.category = category
+        self.root_package_name = root_package_name
+        self.classes: dict[str, type[InterfaceValue]] = {}
         self.load_plugins(interface, path, category, root_path)
 
     def load_plugins(
         self,
-        interface: type[PluginObject],
+        interface: type[InterfaceValue],
         path: Path,
         category: str,
         root_path: Optional[Path],
@@ -54,29 +60,35 @@ class CoreManager:
     def load_plugin(self, name: str) -> None:
         """Dynamically load a specific plugin by name."""
         if name in self.classes:
-            logger.info(
-                f"{self.__class__.__name__} '{name}' is already loaded."
-            )
+            logger.info(f"{self.category} '{name}' is already loaded.")
             return
 
-        module_name = f"{self.__class__.__name__.lower()}s.{name}"
+        module_name = (
+            f"{self.root_package_name}.{self.category}.{name.lower()}"
+        )
         try:
             module = importlib.import_module(module_name)
             plugin_class = getattr(module, name)
             self.classes[name] = plugin_class
-            logger.info(
-                f"Successfully loaded {self.__class__.__name__.lower()}: {name}"
-            )
+
+            logger.info(f"Successfully loaded {self.category}: {name}")
         except (ImportError, AttributeError) as e:
             logger.error(
-                f"Failed to load {self.__class__.__name__.lower()} '{name}': {e}"
+                f"Failed to load {self.category} '{name}' from module {module_name}: {e}"
             )
 
     def unload_plugin(self, name: str) -> None:
-        """Unload a specific plugin by name."""
+        """Unload a specific plugin by name, including removal from sys.modules."""
         if name in self.classes:
+            plugin_class = self.classes[name]
+            module_name = plugin_class.__module__
             del self.classes[name]
-            logger.info(f"Unloaded {self.__class__.__name__.lower()}: {name}")
+
+            if module_name in sys.modules:
+                del sys.modules[module_name]
+                logger.debug(f"Removed module {module_name} from sys.modules.")
+
+            logger.info(f"Unloaded {self.category}: {name}")
 
     def load_plugins_batch(self, names: list[str]) -> None:
         """Batch load multiple plugins by their names."""
@@ -93,11 +105,29 @@ class CoreManager:
         for name in names:
             self.unload_plugin(name)
 
-    def parse_object_effect(
+
+class EffectManager(CoreManager[CoreEffect]):
+    """Manages the loading and unloading of item effects."""
+
+    def __init__(
+        self,
+        effect_class: type[CoreEffect],
+        path: Path,
+        root_package_name: str,
+        category: str = "effects",
+        root_path: Optional[Path] = None,
+    ) -> None:
+        """Initialize the EffectManager with the specific effect type."""
+        super().__init__(
+            effect_class, path, category, root_package_name, root_path
+        )
+        self.effect_class = effect_class
+
+    def parse_effects(
         self, raw: Sequence[ParameterizableRule]
-    ) -> Sequence[PluginObject]:
-        """Parse raw effect data into PluginObject effects."""
-        effects = []
+    ) -> Sequence[CoreEffect]:
+        """Convert raw effect data into the specified effect objects."""
+        effects: list[CoreEffect] = []
         for effect in raw:
             try:
                 effect_class = self.classes[effect.type]
@@ -108,11 +138,29 @@ class CoreManager:
                 effects.append(effect_class(*effect.parameters))
         return effects
 
-    def parse_object_condition(
+
+class ConditionManager(CoreManager[CoreCondition]):
+    """Manages the loading and unloading of various condition types."""
+
+    def __init__(
+        self,
+        condition_class: type[CoreCondition],
+        path: Path,
+        root_package_name: str,
+        category: str = "conditions",
+        root_path: Optional[Path] = None,
+    ) -> None:
+        """Initialize the ConditionManager with the specific condition type."""
+        super().__init__(
+            condition_class, path, category, root_package_name, root_path
+        )
+        self.condition_class = condition_class
+
+    def parse_conditions(
         self, raw: Sequence[LogicCondition]
-    ) -> Sequence[PluginObject]:
-        """Parse raw condition data into PluginObject conditions."""
-        conditions = []
+    ) -> Sequence[CoreCondition]:
+        """Convert raw condition data into the specified condition objects."""
+        conditions: list[CoreCondition] = []
         for condition in raw:
             try:
                 condition_class = self.classes[condition.type]
@@ -123,54 +171,10 @@ class CoreManager:
                 continue
 
             condition_obj = condition_class(*condition.parameters)
+
             if hasattr(condition_obj, "is_expected"):
                 condition_obj.is_expected = condition.operator == "is"
+
             conditions.append(condition_obj)
 
         return conditions
-
-
-class EffectManager(CoreManager):
-    """Manages the loading and unloading of item effects."""
-
-    def __init__(
-        self,
-        effect_class: type[PluginObject],
-        path: Path,
-        category: str = "effects",
-        root_path: Optional[Path] = None,
-    ) -> None:
-        """
-        Initialize the EffectManager with the specific effect type.
-        """
-        super().__init__(effect_class, path, category, root_path)
-        self.effect_class = effect_class
-
-    def parse_effects(
-        self, raw: Sequence[ParameterizableRule]
-    ) -> Sequence[PluginObject]:
-        """Convert raw effect data into the specified effect objects."""
-        return self.parse_object_effect(raw)
-
-
-class ConditionManager(CoreManager):
-    """Manages the loading and unloading of various condition types."""
-
-    def __init__(
-        self,
-        condition_class: type[PluginObject],
-        path: Path,
-        category: str = "conditions",
-        root_path: Optional[Path] = None,
-    ) -> None:
-        """
-        Initialize the ConditionManager with the specific condition type.
-        """
-        super().__init__(condition_class, path, category, root_path)
-        self.condition_class = condition_class
-
-    def parse_conditions(
-        self, raw: Sequence[LogicCondition]
-    ) -> Sequence[PluginObject]:
-        """Convert raw condition data into the specified condition objects."""
-        return self.parse_object_condition(raw)

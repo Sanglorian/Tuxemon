@@ -78,9 +78,7 @@ class NPC(Entity[NPCState]):
         self.template = npc_data.template
         self.combat = npc_data.combat
 
-        # This is the NPC's name to be used in dialog
-        self.name = T.translate(self.slug)
-
+        self._custom_name: Optional[str] = None
         # general
         self.behavior: Optional[str] = "wander"  # not used for now
         self._variables = GameVariablesManager()
@@ -119,6 +117,14 @@ class NPC(Entity[NPCState]):
             self.client.npc_manager,
         )
         self.final_move_dest = [0, 0]
+
+    @property
+    def name(self) -> str:
+        return self._custom_name or T.translate(self.slug)
+
+    @name.setter
+    def name(self, value: str) -> None:
+        self._custom_name = value
 
     @property
     def game_variables(self) -> PlayerVariablesManager:

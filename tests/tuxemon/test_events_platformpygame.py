@@ -289,6 +289,46 @@ class TestPygameKeyboardInput(unittest.TestCase):
         self.keyboard_input.process_event(event4)
         self.assertFalse(self.keyboard_input.buttons[buttons.B].pressed)
 
+    def test_reload_mapping_adds_new_button(self):
+        new_map = {pg.K_LEFT: buttons.A}
+        self.keyboard_input.reload_mapping(new_map)
+        self.assertEqual(self.keyboard_input.event_map, new_map)
+        self.assertIn(buttons.A, self.keyboard_input.buttons)
+
+        event = Event(pg.KEYDOWN, key=pg.K_LEFT)
+        self.keyboard_input.process_event(event)
+        self.assertTrue(self.keyboard_input.buttons[buttons.A].pressed)
+
+    def test_reload_mapping_removes_old_button(self):
+        new_map = {pg.K_DOWN: buttons.A}
+        self.keyboard_input.reload_mapping(new_map)
+        self.assertNotIn(buttons.UP, self.keyboard_input.buttons)
+        self.assertIn(buttons.A, self.keyboard_input.buttons)
+
+    def test_reload_mapping_unicode_preserved(self):
+        new_map = {None: events.UNICODE, pg.K_RETURN: buttons.A}
+        self.keyboard_input.reload_mapping(new_map)
+        self.assertIn(events.UNICODE, self.keyboard_input.buttons)
+
+        event = Event(pg.KEYDOWN, unicode="x", key=pg.K_x)
+        self.keyboard_input.process_event(event)
+        self.assertTrue(self.keyboard_input.buttons[events.UNICODE].pressed)
+        self.assertEqual(
+            self.keyboard_input.buttons[events.UNICODE].value, "x"
+        )
+
+    def test_reload_mapping_press_release_cycle(self):
+        new_map = {pg.K_RETURN: buttons.UP}
+        self.keyboard_input.reload_mapping(new_map)
+
+        event_down = Event(pg.KEYDOWN, key=pg.K_RETURN)
+        self.keyboard_input.process_event(event_down)
+        self.assertTrue(self.keyboard_input.buttons[buttons.UP].pressed)
+
+        event_up = Event(pg.KEYUP, key=pg.K_RETURN)
+        self.keyboard_input.process_event(event_up)
+        self.assertFalse(self.keyboard_input.buttons[buttons.UP].pressed)
+
 
 class TestPygameTouchOverlayInput(unittest.TestCase):
 

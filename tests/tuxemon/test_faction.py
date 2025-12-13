@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from tuxemon.db import FactionRelationStatus, RankStep
 from tuxemon.faction.faction import Faction, satisfies_all_requirements
@@ -12,7 +12,8 @@ class TestFaction(unittest.TestCase):
     def setUp(self):
         self.faction = Faction()
 
-    def test_init(self):
+    @patch("tuxemon.locale.T.translate", return_value="")
+    def test_init(self, mock_translate):
         self.assertEqual(self.faction.slug, "")
         self.assertEqual(self.faction.name, "")
         self.assertEqual(self.faction.description, "")

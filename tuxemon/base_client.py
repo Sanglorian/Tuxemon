@@ -123,7 +123,6 @@ class BaseClient(ABC):
 
         # Set up rumble support for gamepads
         self.rumble_manager = RumbleManager()
-        self.rumble = self.rumble_manager.rumbler
 
         # TODO: phase these out
         self.key_events: Sequence[PlayerInput] = []
@@ -189,6 +188,7 @@ class BaseClient(ABC):
         """Handles necessary cleanup before shutting down."""
         self.map_loader.clear_cache()
         self.current_music.stop()
+        self.event_bus.reset_all_events()
         local_session.reset()
         local_session.reset_time()
         logger.info("Performing cleanup before exiting...")
@@ -203,6 +203,7 @@ class BaseClient(ABC):
         self.alert_manager.update(time_delta)
         self.weather_manager.update(time_delta)
         self.state_manager.update(time_delta)
+        self.rumble_manager.update(time_delta)
         if self.state_manager.current_state is None:
             self.state = ClientState.EXITING
 

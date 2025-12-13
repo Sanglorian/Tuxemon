@@ -47,8 +47,8 @@ class Faction:
         self._event_bus = event_bus
         self._rank_cache: dict[str, str] = {}
         self.slug: str = ""
-        self.name: str = ""
-        self.description: str = ""
+        self._custom_name: Optional[str] = None
+        self._custom_description: Optional[str] = None
         self.kind: Optional[FactionKind] = None
         self.alignment: Optional[FactionAlignment] = None
         self.badge_id: Optional[str] = None
@@ -62,6 +62,24 @@ class Faction:
         self._decay_interval: float = 600.0
         self._decay_rate: float = 0.05
         self._neutral_baseline: int = 50
+
+    @property
+    def name(self) -> str:
+        return self._custom_name or T.translate(self.slug)
+
+    @name.setter
+    def name(self, value: str) -> None:
+        self._custom_name = value
+
+    @property
+    def description(self) -> str:
+        return self._custom_description or T.translate(
+            f"{self.slug}_description"
+        )
+
+    @description.setter
+    def description(self, value: str) -> None:
+        self._custom_description = value
 
     @classmethod
     def load_from_db(cls, slug: str) -> Faction:
@@ -99,8 +117,6 @@ class Faction:
 
     def _populate_from_model(self, model: FactionModel) -> None:
         self.slug = model.slug
-        self.name = T.translate(model.slug)
-        self.description = T.translate(f"{model.slug}_description")
         self.kind = model.kind
         self.alignment = model.alignment
         self.badge_id = model.badge_id

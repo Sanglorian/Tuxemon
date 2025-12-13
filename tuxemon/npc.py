@@ -78,16 +78,14 @@ class NPC(Entity[NPCState]):
         self.template = npc_data.template
         self.combat = npc_data.combat
 
-        # This is the NPC's name to be used in dialog
-        self.name = T.translate(self.slug)
-
+        self._custom_name: Optional[str] = None
         # general
         self.behavior: Optional[str] = "wander"  # not used for now
         self._variables = GameVariablesManager()
         self.battle_handler = BattlesHandler()
         # Tracks Tuxepedia (monster seen or caught)
         self.tuxepedia = TuxepediaManager(session.client.event_bus)
-        self.relationships = Relationships()
+        self.relationships = Relationships(session.client.event_bus)
         self.money_controller = MoneyController(self)
         # list of ways player can interact with the Npc
         self.interactions: Sequence[str] = []
@@ -119,6 +117,14 @@ class NPC(Entity[NPCState]):
             self.client.npc_manager,
         )
         self.final_move_dest = [0, 0]
+
+    @property
+    def name(self) -> str:
+        return self._custom_name or T.translate(self.slug)
+
+    @name.setter
+    def name(self, value: str) -> None:
+        self._custom_name = value
 
     @property
     def game_variables(self) -> PlayerVariablesManager:
@@ -201,7 +207,9 @@ class NPC(Entity[NPCState]):
         self.tuxepedia = decode_tuxepedia(
             save_data.tuxepedia, session.client.event_bus
         )
-        self.relationships = decode_relationships(save_data.relationships)
+        self.relationships = decode_relationships(
+            save_data.relationships, session.client.event_bus
+        )
         self.battle_handler.decode_battle(save_data)
         self.bag.decode_items(save_data)
         self.party.decode_party(save_data)

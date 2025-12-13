@@ -36,8 +36,10 @@ if TYPE_CHECKING:
 
 
 class ShopAsset(Protocol):
-    name: str
-    description: str
+    @property
+    def name(self) -> str: ...
+    @property
+    def description(self) -> str: ...
 
 
 T = TypeVar("T", bound=ShopAsset)

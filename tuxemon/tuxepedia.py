@@ -214,7 +214,7 @@ class TuxepediaManager:
                 status_changed=(entry.status != old_status),
             )
             logger.debug(
-                f"Updated monster {monster_slug}: entry={entry.__str__()}",
+                f"Updated monster {monster_slug}: entry={entry}",
             )
         else:
             new_entry = MonsterEntry(status)
@@ -251,7 +251,7 @@ class TuxepediaManager:
             caught_count=caught_count,
         )
         logger.debug(
-            f"Removed monster {monster_slug} (entry={entry.__str__()})",
+            f"Removed monster {monster_slug} (entry={entry})",
         )
 
     def reset(self, remove_seen_only: bool = True) -> None:

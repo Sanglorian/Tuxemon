@@ -74,6 +74,8 @@ class RewardSystem:
         # Handle winners
         for winner in winners:
             if winner.owner and winner.owner.is_player:
+                if winner.is_fainted:
+                    continue
                 entry = self.calculator.calculate_winner_entry(loser, winner)
                 rewards_data.winners.append(entry)
 

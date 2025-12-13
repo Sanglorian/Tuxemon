@@ -2161,10 +2161,10 @@ class EconomyEntityModel(BaseModel):
 
 
 class EconomyItemModel(EconomyEntityModel):
-    name: str = Field(..., description="Name of the entity")
+    slug: str = Field(..., description="Slug of the Item")
     inventory: int = Field(-1, description="Quantity of the entity")
 
-    @field_validator("name")
+    @field_validator("slug")
     def item_exists(cls: EconomyEntityModel, v: str) -> str:
         if has.db_entry("item", v):
             return v
@@ -2172,11 +2172,11 @@ class EconomyItemModel(EconomyEntityModel):
 
 
 class EconomyMonsterModel(EconomyEntityModel):
-    name: str = Field(..., description="Name of the entity")
+    slug: str = Field(..., description="Slug of the Monster")
     inventory: int = Field(1, description="Quantity of the entity", gt=0)
     level: int = Field(..., description="Level of the entity", gt=0)
 
-    @field_validator("name")
+    @field_validator("slug")
     def monster_exists(cls: EconomyEntityModel, v: str) -> str:
         if has.db_entry("monster", v):
             return v

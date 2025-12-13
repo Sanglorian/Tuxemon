@@ -15,7 +15,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.boundary_set.BoundarySetAction
 .. autoscriptinfoclass:: tuxemon.event.actions.breeding.BreedingAction
 .. autoscriptinfoclass:: tuxemon.event.actions.call_event.CallEventAction
-.. autoscriptinfoclass:: tuxemon.event.actions.camera_follow.CameraFollowAction
+.. autoscriptinfoclass:: tuxemon.event.actions.camera_manage.CameraManageAction
 .. autoscriptinfoclass:: tuxemon.event.actions.camera_mode.CameraModeAction
 .. autoscriptinfoclass:: tuxemon.event.actions.camera_move.CameraMoveAction
 .. autoscriptinfoclass:: tuxemon.event.actions.camera_position.CameraPositionAction
@@ -110,6 +110,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.rename_player.RenamePlayerAction
 .. autoscriptinfoclass:: tuxemon.event.actions.replace_party_from_yaml.ReplacePartyFromYamlAction
 .. autoscriptinfoclass:: tuxemon.event.actions.replace_techs_from_yaml.ReplaceTechsFromYamlAction
+.. autoscriptinfoclass:: tuxemon.event.actions.rumble_pattern.RumblePatternAction
 .. autoscriptinfoclass:: tuxemon.event.actions.rumble.RumbleAction
 .. autoscriptinfoclass:: tuxemon.event.actions.save_game.SaveGameAction
 .. autoscriptinfoclass:: tuxemon.event.actions.save_timestamp.SaveTimestampAction

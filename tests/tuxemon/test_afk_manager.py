@@ -37,6 +37,12 @@ class TestAFKManager(unittest.TestCase):
         self.manager.add_threshold("bad", -5.0)
         self.assertEqual(len(self.manager.thresholds), 0)
 
+    def test_add_threshold_duplicate(self):
+        self.manager.add_threshold("warn", 5.0)
+        self.manager.add_threshold("warn", 10.0)
+        self.assertEqual(len(self.manager.thresholds), 1)
+        self.assertEqual(self.manager.get_duration_by_level("warn"), 5.0)
+
     def test_remove_threshold(self):
         self.manager.add_threshold("warn", 10.0)
         removed = self.manager.remove_threshold("warn")
@@ -69,6 +75,19 @@ class TestAFKManager(unittest.TestCase):
         self.manager.update(2.0)
         self.assertEqual(len(self.events), 0)
         self.assertIsNone(self.manager.current_level)
+
+    def test_update_negative_time_delta(self):
+        self.manager.add_threshold("warn", 5.0)
+        self.manager.update(-3.0)
+        self.assertEqual(self.manager.current_idle_time, 0.0)
+
+    def test_update_triggers_highest_threshold(self):
+        self.manager.add_threshold("warn", 5.0)
+        self.manager.add_threshold("kick", 10.0)
+        result = self.manager.update(12.0)
+        self.assertEqual(result, "kick")
+        self.assertIn("warn", self.manager.active_levels)
+        self.assertIn("kick", self.manager.active_levels)
 
     def test_multiple_thresholds(self):
         self.manager.add_threshold("warn", 5.0)
@@ -108,3 +127,41 @@ class TestAFKManager(unittest.TestCase):
         self.manager.add_threshold("warn", 5.0)
         self.assertEqual(self.manager.get_duration_by_level("warn"), 5.0)
         self.assertEqual(self.manager.get_duration_by_level("missing"), 0.0)
+
+    def test_modify_threshold_resets_state(self):
+        self.manager.add_threshold("warn", 5.0)
+        self.manager.update(6.0)
+        self.assertIn("warn", self.manager.active_levels)
+        self.manager.modify_threshold("warn", 20.0)
+        self.assertEqual(len(self.manager.active_levels), 0)
+        self.assertEqual(self.manager._next_threshold_index, 0)
+
+    def test_threshold_map_consistency(self):
+        self.manager.add_threshold("warn", 5.0)
+        self.assertEqual(self.manager.threshold_map["warn"], 5.0)
+        self.manager.modify_threshold("warn", 15.0)
+        self.assertEqual(self.manager.threshold_map["warn"], 15.0)
+        self.manager.remove_threshold("warn")
+        self.assertNotIn("warn", self.manager.threshold_map)
+
+    def test_stress_game_loop_updates(self):
+        self.manager.add_threshold("warn", 5.0)
+        self.manager.add_threshold("kick", 10.0)
+        self.manager.add_threshold("ban", 20.0)
+
+        for second in range(25):
+            result = self.manager.update(1.0)
+
+            if second + 1 == 5:
+                self.assertEqual(result, "warn")
+            elif second + 1 == 10:
+                self.assertEqual(result, "kick")
+            elif second + 1 == 20:
+                self.assertEqual(result, "ban")
+            else:
+                self.assertIsNone(result)
+
+        self.assertIn("warn", self.manager.active_levels)
+        self.assertIn("kick", self.manager.active_levels)
+        self.assertIn("ban", self.manager.active_levels)
+        self.assertEqual(self.manager.current_level, "ban")

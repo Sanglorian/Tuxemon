@@ -89,6 +89,14 @@ class SkinSprite(str, Enum):
     orc = "orc"
 
 
+class ItemRarity(str, Enum):
+    COMMON = "common"
+    UNCOMMON = "uncommon"
+    RARE = "rare"
+    EPIC = "epic"
+    LEGENDARY = "legendary"
+
+
 class ItemCategory(str, Enum):
     none = "none"
     badge = "badge"
@@ -234,18 +242,13 @@ class BoundingBox(BaseModel):
     width: int = Field(
         ...,
         description="The horizontal size of the bounding box. Must be a positive integer.",
+        gt=0,
     )
     height: int = Field(
         ...,
         description="The vertical size of the bounding box. Must be a positive integer.",
+        gt=0,
     )
-
-    @field_validator("width", "height")
-    @classmethod
-    def must_be_positive(cls, v: int) -> int:
-        if v <= 0:
-            raise ValueError("'width' and 'height' must be positive.")
-        return v
 
 
 class Operator(str, Enum):
@@ -300,7 +303,16 @@ class EventObject(BaseModel):
     )
     priority: int = Field(
         ...,
-        description="Order of evaluation relative to other EventObjects. Lower number (e.g., 0) is higher priority.",
+        description="Order of evaluation relative to other EventObjects. Higher number (e.g., 10) is higher priority.",
+        ge=0,
+    )
+    timeout: Optional[float] = Field(
+        None,
+        description="Maximum duration (in seconds) this event is allowed to run. None = no timeout.",
+    )
+    delay: Optional[float] = Field(
+        None,
+        description="Delay before the event starts processing (in seconds). None = no delay.",
     )
     box: BoundingBox = Field(
         ..., description="The spatial bounding box of the event."
@@ -313,16 +325,6 @@ class EventObject(BaseModel):
         default_factory=list,
         description="A sequence of actions/effects to execute when conditions are met.",
     )
-
-    @field_validator("priority")
-    @classmethod
-    def priority_must_be_non_negative(cls, v: int) -> int:
-        """Ensures the priority is 0 or a positive integer."""
-        if v < 0:
-            raise ValueError(
-                "priority must be a non-negative integer (0 or greater)"
-            )
-        return v
 
 
 class BaseComparison(BaseModel):
@@ -429,6 +431,19 @@ class Behaviors(BaseModel):
     )
 
 
+class MenuAction(BaseModel):
+    key: str = Field(..., description="Internal action slug/key.")
+    display_text: str = Field(
+        ..., description="Translation key for the menu label."
+    )
+
+    @field_validator("display_text")
+    def translation_exists(cls: MenuAction, v: str) -> str:
+        if has.translation(v):
+            return v
+        raise ValueError(f"no translation exists with msgid: {v}")
+
+
 class ItemBehaviors(Behaviors):
     """Behaviors specific to items."""
 
@@ -458,6 +473,10 @@ class TechBehaviors(Behaviors):
         False,
         description="Whether this technique can be used in the overworld.",
     )
+    bypasses_selection: bool = Field(
+        False,
+        description="Whether this technique skips target selection and applies directly to the user’s monster.",
+    )
 
 
 class StatusBehaviors(Behaviors):
@@ -481,6 +500,20 @@ class SoundProperties(BaseModel):
         if has.db_entry("sounds", v):
             return v
         raise ValueError(f"the sound {v} doesn't exist in the db")
+
+
+class MusicProperties(BaseModel):
+    music: Optional[str] = Field(..., description="Music to play")
+    volume: float = Field(..., ge=0.0, description="Playback volume")
+
+    @field_validator("music")
+    def music_exists(cls: MusicProperties, v: Optional[str]) -> Optional[str]:
+        if not v:
+            return v
+
+        if has.db_entry("music", v):
+            return v
+        raise ValueError(f"the music {v} doesn't exist in the db")
 
 
 class VisualProperties(BaseModel):
@@ -547,8 +580,8 @@ class ItemModel(BaseModel, BaseLookupModel):
         "item_confirm_cancel",
         description="Translation key for the label used when canceling item usage.",
     )
-    menu_actions: Sequence[dict[str, str]] = Field(
-        [],
+    menu_actions: Sequence[MenuAction] = Field(
+        default_factory=list,
         description="Custom list of menu actions (key, display_text) for this item.",
     )
     use_failure: str = Field(
@@ -565,7 +598,7 @@ class ItemModel(BaseModel, BaseLookupModel):
     )
     behaviors: ItemBehaviors
     conditions: Sequence[LogicCondition] = Field(
-        [], description="Conditions that must be met"
+        default_factory=list, description="Conditions that must be met"
     )
     effects: Sequence[ParameterizableRule] = Field(
         ..., description="Effects this item will have"
@@ -579,6 +612,10 @@ class ItemModel(BaseModel, BaseLookupModel):
     dynamic_menu: Optional[DynamicMenuEntry] = Field(
         None,
         description="Item adds a button to a specific menu (world, phone, etc.).",
+    )
+    rarity: ItemRarity = Field(
+        ItemRarity.COMMON,
+        description="The rarity tier for display and loot logic.",
     )
     cost: int = Field(0, description="The standard cost of the item.", ge=0)
     max_wear: int = Field(
@@ -594,7 +631,8 @@ class ItemModel(BaseModel, BaseLookupModel):
     )
     modifiers: list[Modifier] = Field(..., description="Various modifiers")
     immunity_to_status: Sequence[str] = Field(
-        [], description="Statuses this item grants immunity to"
+        default_factory=list,
+        description="Statuses this item grants immunity to",
     )
 
     @classmethod
@@ -772,7 +810,7 @@ class MonsterEvolutionItemModel(BaseModel):
         description="How the monster was obtained (e.g. caught, bred, traded, gifted).",
     )
     variables: Sequence[dict[str, str]] = Field(
-        [],
+        default_factory=list,
         description="The game variables that must exist and match a specific value for the monster to evolve.",
         min_length=1,
     )
@@ -794,7 +832,7 @@ class MonsterEvolutionItemModel(BaseModel):
         description="The technique that a monster in the party must have for the evolution to occur.",
     )
     moves: Sequence[str] = Field(
-        [],
+        default_factory=list,
         description="The techniques that the monster must have learned for the evolution to occur.",
         min_length=1,
         max_length=prepare.MAX_MOVES,
@@ -1023,7 +1061,9 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
     terrains: Sequence[str] = Field(
         ..., description="The terrains of the monster"
     )
-    types: Sequence[str] = Field([], description="The type(s) of this monster")
+    types: Sequence[str] = Field(
+        default_factory=list, description="The type(s) of this monster"
+    )
     shape: str = Field(..., description="The shape of the monster")
     tags: Sequence[str] = Field(..., description="The tags of the monster")
     catch_rate: float = Field(
@@ -1048,13 +1088,16 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
         le=prepare.CATCH_RESISTANCE_RANGE[1],
     )
     moveset: Sequence[MonsterMovesetItemModel] = Field(
-        [], description="The moveset of this monster", min_length=1
+        default_factory=list,
+        description="The moveset of this monster",
+        min_length=1,
     )
     history: Sequence[MonsterHistoryItemModel] = Field(
-        [], description="The evolution history of this monster"
+        default_factory=list,
+        description="The evolution history of this monster",
     )
     evolutions: Sequence[MonsterEvolutionItemModel] = Field(
-        [], description="The evolutions this monster has"
+        default_factory=list, description="The evolutions this monster has"
     )
     flairs: set[str] = Field(
         default_factory=set, description="The flairs this monster has"
@@ -1213,12 +1256,24 @@ class StackingMode(str, Enum):
     OVERRIDE = "override"
 
 
+class ModifierAttribute(str, Enum):
+    TYPE = "type"
+    TAG = "tag"
+    TERRAIN = "terrain"
+    SHAPE = "shape"
+    STAGE = "stage"
+    SPECIES = "species"
+    STAT = "stat"
+    STAT_MAX = "stat_max"
+    STAT_MIN = "stat_min"
+
+
 class Modifier(BaseModel):
-    attribute: str = Field(
+    attribute: ModifierAttribute = Field(
         ..., description="Attribute being modified (type, etc.)"
     )
     values: Sequence[str] = Field(
-        [],
+        default_factory=list,
         description="Values associated with the modification (e.g. fire, etc.)",
     )
     multiplier: float = Field(1.0, description="Multiplier", ge=0.0, le=2.0)
@@ -1336,7 +1391,7 @@ class TechniqueModel(BaseModel, BaseLookupModel):
         ..., description="The tags of the technique", min_length=1
     )
     conditions: Sequence[LogicCondition] = Field(
-        [], description="Conditions that must be met"
+        default_factory=list, description="Conditions that must be met"
     )
     effects: Sequence[ParameterizableRule] = Field(
         ..., description="Effects this technique uses"
@@ -1371,11 +1426,13 @@ class TechniqueModel(BaseModel, BaseLookupModel):
         "item_confirm_cancel",
         description="Translation key for the label used when canceling tech usage.",
     )
-    menu_actions: Sequence[dict[str, str]] = Field(
-        [],
+    menu_actions: Sequence[MenuAction] = Field(
+        default_factory=list,
         description="Custom list of menu actions (key, display_text) for this technique.",
     )
-    types: Sequence[str] = Field([], description="Type(s) of the technique")
+    types: Sequence[str] = Field(
+        default_factory=list, description="Type(s) of the technique"
+    )
     power: float = Field(
         ...,
         description="Power of the technique",
@@ -1458,6 +1515,15 @@ class TechniqueModel(BaseModel, BaseLookupModel):
         return elements
 
 
+class StepEffectType(str, Enum):
+    NONE = "none"
+    FLAT_DAMAGE = "flat_damage"
+    PERCENT_MAX_HP_DAMAGE = "percent_max_hp_damage"
+    PERCENT_CURRENT_HP_DAMAGE = "percent_current_hp_damage"
+    PERCENT_MAX_HP_HEAL = "percent_max_hp_heal"
+    PERCENT_CURRENT_HP_HEAL = "percent_current_hp_heal"
+
+
 class StatusModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "status"
     slug: str = Field(..., description="The slug of the status")
@@ -1465,7 +1531,7 @@ class StatusModel(BaseModel, BaseLookupModel):
     behaviors: StatusBehaviors
     icon: str = Field(..., description="The icon to use for the condition")
     conditions: Sequence[LogicCondition] = Field(
-        [], description="Conditions that must be met"
+        default_factory=list, description="Conditions that must be met"
     )
     effects: Sequence[ParameterizableRule] = Field(
         ..., description="Effects this status uses"
@@ -1487,9 +1553,13 @@ class StatusModel(BaseModel, BaseLookupModel):
         0,
         description="The number of steps between out-of-battle effect triggers.",
     )
-    step_damage: int = Field(
-        0,
-        description="The amount of HP lost each time the out-of-battle effect triggers.",
+    step_effect_value: float = Field(
+        0.0,
+        description="The value (flat or percentage) used for the step-interval effect.",
+    )
+    step_effect_type: StepEffectType = Field(
+        StepEffectType.NONE,
+        description="The type of effect triggered by the step interval.",
     )
     modifiers: list[Modifier] = Field(..., description="Various modifiers")
 
@@ -1579,7 +1649,7 @@ class PartyMemberModel(BaseModel):
     )
     gender: GenderType = Field(..., description="Gender of the monster")
     variables: Sequence[dict[str, str]] = Field(
-        [],
+        default_factory=list,
         description="Sequence of variables that affect the presence of the monster.",
         min_length=1,
     )
@@ -1595,7 +1665,7 @@ class BagItemModel(BaseModel):
     slug: str = Field(..., description="Slug of the item")
     quantity: int = Field(..., description="Quantity of the item")
     variables: Sequence[dict[str, str]] = Field(
-        [],
+        default_factory=list,
         description="List of variables that affect the item.",
         min_length=1,
     )
@@ -1734,10 +1804,10 @@ class NpcModel(BaseModel, BaseLookupModel):
     template: NpcTemplateModel
     combat: NpcCombatModel
     monsters: Sequence[PartyMemberModel] = Field(
-        [], description="List of monsters in the NPCs party"
+        default_factory=list, description="List of monsters in the NPCs party"
     )
     items: Sequence[BagItemModel] = Field(
-        [], description="List of items in the NPCs bag"
+        default_factory=list, description="List of items in the NPCs bag"
     )
     speech: NpcSpeech
 
@@ -1844,13 +1914,23 @@ class BattleGraphicsModel(BaseModel):
         raise ValueError(f"state isn't among: {states}")
 
 
+class BattleMusicModel(BaseModel):
+    battle: MusicProperties = Field(
+        ..., description="Music configuration used when fighting"
+    )
+    victory_music: MusicProperties = Field(
+        ..., description="Music configuration used when winning"
+    )
+    defeat_music: MusicProperties = Field(
+        ..., description="Music configuration used when losing"
+    )
+
+
 class EnvironmentModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "environment"
     slug: str = Field(..., description="Slug of the name of the environment")
-    battle_music: str = Field(
-        ..., description="Filename of the music to use for this environment"
-    )
     battle_graphics: BattleGraphicsModel
+    battle_music: BattleMusicModel
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> EnvironmentModel:
@@ -1861,12 +1941,6 @@ class EnvironmentModel(BaseModel, BaseLookupModel):
             )
         except EntryNotFoundError:
             raise RuntimeError(f"Encounter {slug} not found")
-
-    @field_validator("battle_music")
-    def battle_music_exists(cls: EnvironmentModel, v: str) -> str:
-        if has.db_entry("music", v):
-            return v
-        raise ValueError(f"the music {v} doesn't exist in the db")
 
 
 class HeldItemProbability(BaseModel):
@@ -1893,7 +1967,7 @@ class EncounterItemModel(BaseModel):
         ..., description="Probability of encountering this monster."
     )
     held_items: Sequence[HeldItemProbability] = Field(
-        [],
+        default_factory=list,
         description="A list of items that will be held with their probabilities.",
     )
     level_range: Sequence[int] = Field(
@@ -1977,7 +2051,7 @@ class EncounterModel(BaseModel, BaseLookupModel):
         description="The type of this encounter (single monster or a horde).",
     )
     monsters: Sequence[EncounterItemModel] = Field(
-        [], description="Monsters encounterable"
+        default_factory=list, description="Monsters encounterable"
     )
     horde: Optional[HordeEncounterModel] = Field(
         None, description="Horde data (for horde encounters)"
@@ -2138,7 +2212,7 @@ class EconomyEntityModel(BaseModel):
     cost: int = Field(..., description="Cost of the entity")
     inventory: int = Field(-1, description="Quantity of the entity")
     variables: Sequence[dict[str, str]] = Field(
-        [],
+        default_factory=list,
         description="List of variables that affect the entity in the economy.",
         min_length=1,
     )
@@ -2221,7 +2295,7 @@ class FactionRelationStatus(str, Enum):
 class RankRequirement(BaseModel):
     min_reputation: int = 0
     variables: Sequence[dict[str, Any]] = Field(
-        [],
+        default_factory=list,
         description="List of variables that affect the requirement.",
         min_length=1,
     )
@@ -2327,6 +2401,15 @@ class FactionModel(BaseModel, BaseLookupModel):
             )
 
         return values
+
+    @model_validator(mode="after")
+    def validate_unique_rank_thresholds(self) -> FactionModel:
+        thresholds = [rank.threshold for rank in self.ranks]
+        if len(thresholds) != len(set(thresholds)):
+            raise ValueError(
+                "All rank thresholds must be unique within a faction."
+            )
+        return self
 
 
 class MissionStepModel(BaseModel):

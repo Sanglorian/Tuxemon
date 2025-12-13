@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 from tuxemon.db import (
     Acquisition,
@@ -386,8 +386,9 @@ class TestCanEvolve(unittest.TestCase):
 
     def test_can_evolve_party_alignment_matches(self):
         with patch.object(
-            self.player.party, "get_alignment", return_value="fire"
-        ):
+            type(self.player.party), "alignment", new_callable=PropertyMock
+        ) as mock_alignment:
+            mock_alignment.return_value = "fire"
             evolution_item = MonsterEvolutionItemModel(
                 monster_slug="nut",
                 party_conditions=PartyConditionsModel(alignment="fire"),
@@ -400,8 +401,9 @@ class TestCanEvolve(unittest.TestCase):
 
     def test_can_evolve_party_alignment_mismatch(self):
         with patch.object(
-            self.player.party, "get_alignment", return_value="water"
-        ):
+            type(self.player.party), "alignment", new_callable=PropertyMock
+        ) as mock_alignment:
+            mock_alignment.return_value = "water"
             evolution_item = MonsterEvolutionItemModel(
                 monster_slug="nut",
                 party_conditions=PartyConditionsModel(alignment="fire"),

@@ -17,6 +17,8 @@ from tuxemon.db import (
     ItemBehaviors,
     ItemCategory,
     ItemModel,
+    ItemRarity,
+    MenuAction,
     SoundProperties,
     State,
     VisualProperties,
@@ -46,8 +48,6 @@ class Item:
         save_data = save_data or {}
 
         self.slug: str = ""
-        self.name: str = ""
-        self.description: str = ""
         self.instance_id: UUID = uuid4()
         self.quantity: int = 1
         self.visuals = VisualProperties(
@@ -61,6 +61,7 @@ class Item:
         self.surface: Optional[Surface] = None
         self.surface_size_original: tuple[int, int] = (0, 0)
 
+        self.rarity: ItemRarity = ItemRarity.COMMON
         self.sort: str = ""
         self.confirm_text: str = ""
         self.cancel_text: str = ""
@@ -74,7 +75,7 @@ class Item:
         self.wear: int = 0
         self.max_wear: int = 0
         self.break_chance: float = 0.0
-        self.menu_actions_data: Sequence[Mapping[str, str]] = []
+        self.menu_actions_data: Sequence[MenuAction] = []
 
         self.core_assets = CoreAssetManager()
         self.effects: Sequence[PluginObject] = []
@@ -97,6 +98,14 @@ class Item:
         return method
 
     @property
+    def name(self) -> str:
+        return T.translate(self.slug)
+
+    @property
+    def description(self) -> str:
+        return T.translate(f"{self.slug}_description")
+
+    @property
     def has_wear(self) -> bool:
         return self.max_wear > 0
 
@@ -117,8 +126,6 @@ class Item:
         """
         results = ItemModel.lookup(slug, db)
         self.slug = results.slug
-        self.name = T.translate(self.slug)
-        self.description = T.translate(f"{self.slug}_description")
         self.modifiers = ModifiersHandler(results.modifiers)
 
         # item use notifications (translated!)
@@ -134,15 +141,15 @@ class Item:
         self.cost = results.cost
         self.max_wear = results.max_wear
         self.break_chance = results.break_chance
+        self.rarity = results.rarity
         self.sort = results.sort
         self.immunity_to_status = results.immunity_to_status
         self.category = results.category
         self.sprite = results.sprite
         self.usable_in = results.usable_in
-        self.effects = self.core_assets.parse_effects(results.effects)
+        self.effect_defs = results.effects
         self.conditions = self.core_assets.parse_conditions(results.conditions)
         self.condition_handler = ConditionProcessor(self.conditions)
-        self.effect_handler = EffectProcessor(self.effects)
         self.surface = graphics.load_and_scale(self.sprite)
         self.surface_size_original = self.surface.get_size()
 
@@ -230,6 +237,8 @@ class Item:
         """
         Applies the item's effects using EffectProcessor and returns the results.
         """
+        self.effects = self.core_assets.parse_effects(self.effect_defs)
+        self.effect_handler = EffectProcessor(self.effects)
         result = self.effect_handler.process_item(
             session=session, source=self, target=target
         )

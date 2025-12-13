@@ -32,10 +32,11 @@ class EventParser:
     def create_event_object(
         self,
         event_data: dict[str, Any],
-        source_type: str,
         name: str,
         box: BoundingBox,
         priority: int = 0,
+        timeout: float | None = None,
+        delay: float | None = None,
     ) -> EventObject:
         """
         Creates an EventObject from a dictionary of event data.
@@ -124,6 +125,8 @@ class EventParser:
             name=name,
             box=box,
             priority=priority,
+            timeout=timeout,
+            delay=delay,
             conds=conditions,
             acts=actions,
         )

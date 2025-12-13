@@ -54,8 +54,8 @@ class WorldState(State):
         )
         self.player = self.session.player
         self.camera = Camera(self.player, self.client.boundary)
-        self.client.camera_manager.add_camera(self.camera)
-        self.faction_manager = FactionManager()
+        self.client.camera_manager.add_camera(self.player.slug, self.camera)
+        self.faction_manager = FactionManager(self.client.event_bus)
         self.register_input_handlers()
         self.client.map_transition.change_map(map_name, yaml_name)
         self.client.reset_renderer()
@@ -82,6 +82,16 @@ class WorldState(State):
 
         for button, config in self.input_handler.get_handlers().items():
             self.input_router.register(button, config)
+
+    def prepare_for_teleport(self) -> None:
+        """
+        Stops all WorldState background activity and locks player controls
+        in preparation for a map change or teleport.
+        """
+        self.remove_animations_of(self)
+        self.stop_scheduled_callbacks()
+        self.client.movement_manager.stop_char(self.player)
+        self.client.movement_manager.lock_controls(self.player)
 
     def resume(self) -> None:
         """Called after returning focus to this state"""
@@ -124,6 +134,7 @@ class WorldState(State):
             time_delta: Amount of time passed since last frame.
         """
         super().update(time_delta)
+        self.faction_manager.update(time_delta, self.session)
         self.client.npc_manager.update_npcs(time_delta, self.client)
         self.client.npc_manager.update_npcs_off_map(time_delta, self.client)
         self.client.map_renderer.update(time_delta)

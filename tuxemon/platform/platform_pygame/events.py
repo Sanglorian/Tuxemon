@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Generator, Mapping
 from dataclasses import dataclass, field
-from typing import Any, ClassVar, Optional
+from typing import ClassVar, Optional
 
 import pygame as pg
 from pygame.event import Event
@@ -34,32 +34,6 @@ class PygameEventQueueHandler(EventQueueHandler):
     def __init__(self) -> None:
         super().__init__()
 
-    def add_input(
-        self, player: int, index: int, handler: InputHandler[Any]
-    ) -> None:
-        """
-        Add an input handler to process.
-
-        Parameters:
-            player: Number of the player the handler belongs to.
-            index: The input slot or device index to assign the handler to.
-            handler: Handler whose events will be processed from now on.
-        """
-        self._inputs[player][index] = handler
-
-    def set_input(
-        self, player: int, index: int, handler: InputHandler[Any]
-    ) -> None:
-        """
-        Sets an input handler to process.
-
-        Parameters:
-            player: Number of the player the handler belongs to.
-            element: Index to modify
-            handler: Handler whose events will be processed from now on.
-        """
-        self._inputs[player][index] = handler
-
     def process_events(self) -> Generator[PlayerInput, None, None]:
         for pg_event in pg.event.get():
             for input_handler in self.get_input_handlers():
@@ -69,7 +43,9 @@ class PygameEventQueueHandler(EventQueueHandler):
                 local_session.client.event_engine.execute_action("quit")
 
         for input_handler in self.get_input_handlers():
-            yield from input_handler.get_events()
+            for event in input_handler.get_events():
+                if all(f(event) for f in self._filters):
+                    yield event
 
 
 class InputMappingStrategy:
@@ -301,6 +277,12 @@ class PygameKeyboardInput(PygameEventHandler):
         None: events.UNICODE,
     }
 
+    def __init__(
+        self, event_map: Optional[Mapping[Optional[int], int]] = None
+    ) -> None:
+        super().__init__(event_map or self.default_input_map)
+        self._initialize_buttons_from_map(self.event_map)
+
     def process_event(self, input_event: Event) -> None:
         """
         Processes a pygame event.
@@ -313,6 +295,23 @@ class PygameKeyboardInput(PygameEventHandler):
 
         if pressed or released:
             self._handle_key_event(input_event, pressed)
+
+    def reload_mapping(self, new_map: Mapping[Optional[int], int]) -> None:
+        """Update the key→button mapping in place."""
+        self.event_map = new_map
+        self._initialize_buttons_from_map(new_map)
+
+    def _initialize_buttons_from_map(
+        self, mapping: Mapping[Optional[int], int]
+    ) -> None:
+        """Ensure self.buttons matches the given mapping."""
+        for button in mapping.values():
+            if button not in self.buttons:
+                self.buttons[button] = PlayerInput(button)
+
+        for button in list(self.buttons.keys()):
+            if button not in mapping.values():
+                del self.buttons[button]
 
     def _handle_key_event(self, input_event: Event, pressed: bool) -> None:
         """Handles key press or release events."""

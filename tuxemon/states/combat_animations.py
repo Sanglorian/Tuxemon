@@ -709,7 +709,7 @@ class CombatAnimations(Menu[None], ABC):
                 self.play_sound_effect(sound.sfx, sound.volume)
 
         start_message = self.client.combat_session.get_start_message()
-        self.dialog.alert(start_message)
+        self.dialog.alert(start_message, self.text_area)
 
     def flip_sprites(self, enemy: Sprite, player_back: Sprite) -> None:
         """Flip the sprites horizontally."""
@@ -868,7 +868,7 @@ class CombatAnimations(Menu[None], ABC):
                 full_text = success_header_text + "\n" + success_text
                 delay += len(full_text) * config_combat.letter_time
                 self.task(
-                    partial(self.dialog.alert, full_text),
+                    partial(self.dialog.alert, full_text, self.text_area),
                     interval=delay,
                 )
 
@@ -903,7 +903,7 @@ class CombatAnimations(Menu[None], ABC):
             def show_failure(delay: float) -> None:
                 delay += len(failure_text) * config_combat.letter_time
                 self.task(
-                    partial(self.dialog.alert, failure_text),
+                    partial(self.dialog.alert, failure_text, self.text_area),
                     interval=delay,
                 )
 

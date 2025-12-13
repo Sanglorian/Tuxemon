@@ -26,6 +26,7 @@ from tuxemon.map.map_loader import MapLoader
 from tuxemon.map.map_manager import MapManager
 from tuxemon.map.map_transition import MapTransition
 from tuxemon.map.map_view import AbstractRenderer, NullRenderer
+from tuxemon.menu.alert import AlertManager
 from tuxemon.movement import MovementManager, Pathfinder
 from tuxemon.networking import NetworkManager
 from tuxemon.npc_manager import NPCManager
@@ -122,7 +123,6 @@ class BaseClient(ABC):
 
         # Set up rumble support for gamepads
         self.rumble_manager = RumbleManager()
-        self.rumble = self.rumble_manager.rumbler
 
         # TODO: phase these out
         self.key_events: Sequence[PlayerInput] = []
@@ -166,6 +166,7 @@ class BaseClient(ABC):
         self.park_session = ParkSession()
         self.weather_manager = WorldWeatherManager()
         self.cipher_processor: Optional[CipherProcessor] = None
+        self.alert_manager = AlertManager(self.event_bus)
 
     @property
     def is_running(self) -> bool:
@@ -187,6 +188,7 @@ class BaseClient(ABC):
         """Handles necessary cleanup before shutting down."""
         self.map_loader.clear_cache()
         self.current_music.stop()
+        self.event_bus.reset_all_events()
         local_session.reset()
         local_session.reset_time()
         logger.info("Performing cleanup before exiting...")
@@ -198,8 +200,10 @@ class BaseClient(ABC):
         Parameters:
             time_delta: Amount of time passed since last frame.
         """
+        self.alert_manager.update(time_delta)
         self.weather_manager.update(time_delta)
         self.state_manager.update(time_delta)
+        self.rumble_manager.update(time_delta)
         if self.state_manager.current_state is None:
             self.state = ClientState.EXITING
 

@@ -40,8 +40,8 @@ from tuxemon.monster_dir.sprite import (
 )
 from tuxemon.monster_dir.stats import (
     BasicStats,
+    CustomStatBoosts,
     StatCalculator,
-    TemporaryStatBoosts,
     TrainingPoints,
 )
 from tuxemon.monster_dir.status import MonsterStatusHandler
@@ -84,9 +84,7 @@ class Monster:
         save_data = save_data or {}
 
         self.slug: str = ""
-        self.name: str = ""
-        self.species_name: str = ""
-        self.description: str = ""
+        self._custom_name: Optional[str] = None
         self.instance_id: UUID = uuid4()
 
         self.base_stats: BasicStats = BasicStats()
@@ -95,7 +93,7 @@ class Monster:
         self.steps: float = 0.0
         self.bond_handler: BondHandler = BondHandler(save_data)
 
-        self.modifiers = TemporaryStatBoosts()
+        self.custom_stats = CustomStatBoosts()
         self.training_points = TrainingPoints()
 
         self.moves = MonsterMovesHandler()
@@ -177,6 +175,22 @@ class Monster:
         return monster
 
     @property
+    def name(self) -> str:
+        return self._custom_name or T.translate(self.slug)
+
+    @name.setter
+    def name(self, value: str) -> None:
+        self._custom_name = value
+
+    @property
+    def description(self) -> str:
+        return T.translate(f"{self.slug}_description")
+
+    @property
+    def species_name(self) -> str:
+        return T.translate(f"cat_{self.species}")
+
+    @property
     def held_item(self) -> Optional[Item]:
         return self.item_handler.held_item
 
@@ -253,10 +267,7 @@ class Monster:
         results = MonsterModel.lookup(slug, db)
         self.experience_handler.set_level(random.randint(2, 5))
         self.slug = results.slug
-        self.name = T.translate(results.slug)
-        self.description = T.translate(f"{results.slug}_description")
         self.species = results.species
-        self.species_name = T.translate(f"cat_{self.species}")
         self.shape = ShapeHandler(results.shape)
         self.stage = results.stage
         self.tags = results.tags
@@ -464,7 +475,7 @@ class Monster:
             shape=self.shape,
             taste_cold=self.taste_cold,
             taste_warm=self.taste_warm,
-            modifiers=self.modifiers,
+            custom_stats=self.custom_stats,
             training_points=self.training_points,
         )
         self.base_stats = calculator.calculate()
@@ -538,7 +549,7 @@ class Monster:
         save_data["moves"] = self.moves.encode_moves()
         save_data["held_item"] = self.item_handler.encode_item()
         save_data["training_points"] = self.training_points.to_dict()
-        save_data["modifiers"] = self.modifiers.to_dict()
+        save_data["modifiers"] = self.custom_stats.to_dict()
         save_data["bond_dict"] = self.bond_handler.get_state()
         save_data["flair_slugs"] = list(self.flair_slugs)
         save_data["flairs"] = {
@@ -587,9 +598,9 @@ class Monster:
                 if item:
                     self.item_handler.set_item(item)
             elif key == "training_points" and value:
-                self.training_points.from_dict(value)
+                self.training_points = TrainingPoints.from_dict(value)
             elif key == "modifiers" and value:
-                self.modifiers.from_dict(value)
+                self.modifiers = CustomStatBoosts.from_dict(value)
             elif key == "flairs" and value:
                 self.flairs = {
                     category: Flair.from_state(flair_data)

@@ -287,7 +287,6 @@ class CombatState(CombatAnimations):
         for i in range(actual_actions):
             monster = pending_monsters.pop(0)
             logger.debug(f"Processing monster #{i + 1}: {monster.name}")
-            monster.moves.recharge_moves()
             self.show_monster_action_menu(monster)
 
     def handle_action_queue(self) -> None:
@@ -433,6 +432,7 @@ class CombatState(CombatAnimations):
                     monster
                 )
             )
+            monster.moves.recharge_moves()
 
             if char in self.client.combat_session.human_players:
                 # Still add to queue for menu interaction

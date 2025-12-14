@@ -13,7 +13,7 @@ from tuxemon import plugin
 from tuxemon.constants.paths import LIBDIR, get_plugin_paths
 from tuxemon.core.core_condition import CoreCondition
 from tuxemon.core.core_effect import CoreEffect
-from tuxemon.db import LogicCondition, ParameterizableRule
+from tuxemon.db import LogicCondition, Operator, ParameterizableRule
 from tuxemon.plugin import InterfaceValue
 
 logger = logging.getLogger(__name__)
@@ -173,7 +173,7 @@ class ConditionManager(CoreManager[CoreCondition]):
             condition_obj = condition_class(*condition.parameters)
 
             if hasattr(condition_obj, "is_expected"):
-                condition_obj.is_expected = condition.operator == "is"
+                condition_obj.is_expected = condition.operator == Operator.IS
 
             conditions.append(condition_obj)
 

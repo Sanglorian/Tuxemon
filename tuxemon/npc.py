@@ -41,6 +41,7 @@ from tuxemon.tuxepedia import (
 from tuxemon.ui.cipher_processor import decode_cipher, encode_cipher
 
 if TYPE_CHECKING:
+    from tuxemon.db import BattleMusicModel
     from tuxemon.economy.applier import ShopInventory
     from tuxemon.economy.economy import Economy
     from tuxemon.item.item import Item
@@ -75,6 +76,7 @@ class NPC(Entity[NPCState]):
         npc_data = NpcModel.lookup(npc_slug, db)
         self.template = npc_data.template
         self.combat = npc_data.combat
+        self.audio = npc_data.audio
 
         self._custom_name: Optional[str] = None
         # general
@@ -237,6 +239,13 @@ class NPC(Entity[NPCState]):
                 "combat_front", ""
             )
             self.sprite_controller.load_sprites(self.template)
+
+    def get_active_battle_music(
+        self, default_music: BattleMusicModel
+    ) -> BattleMusicModel:
+        if self.audio and self.audio.battle_music:
+            return self.audio.battle_music
+        return default_music
 
     def pathfind(self, destination: tuple[int, int]) -> None:
         self.path_controller.start_path(destination)

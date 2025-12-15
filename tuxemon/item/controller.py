@@ -15,11 +15,7 @@ from tuxemon.menu.interface import MenuItem
 from tuxemon.session import Session
 from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.tools import open_dialog, show_result_as_dialog
-from tuxemon.ui.menu_options import (
-    ChoiceOption,
-    MenuOptions,
-    create_choice_options,
-)
+from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
@@ -119,31 +115,37 @@ class ItemController:
         )
 
     def get_confirm_menu_options(self) -> MenuOptions:
-        actions: dict[str, Callable[..., None]] = {}
+        options: list[ChoiceOption] = []
 
         if self.item.menu_actions_data:
             for action_data in self.item.menu_actions_data:
-                key = action_data.get("key")
-                if key:
-                    actions[key] = self.get_basic_action(key)
-            options = create_choice_options(actions)
-
-            for opt, action_data in zip(options, self.item.menu_actions_data):
-                if "display_text" in action_data:
-                    opt.display_text = action_data["display_text"]
+                key = action_data.key
+                display_text = T.translate(action_data.display_text)
+                action_func = self.get_basic_action(key)
+                options.append(
+                    ChoiceOption(
+                        key=key,
+                        display_text=display_text,
+                        action=action_func,
+                    )
+                )
         else:
             if self.item.confirm_text:
-                actions["use"] = self.get_basic_action("use")
+                options.append(
+                    ChoiceOption(
+                        key="use",
+                        display_text=self.item.confirm_text.upper(),
+                        action=self.get_basic_action("use"),
+                    )
+                )
             if self.item.cancel_text:
-                actions["cancel"] = self.get_basic_action("cancel")
-
-            options = create_choice_options(actions)
-
-            for opt in options:
-                if opt.key == "use" and self.item.confirm_text:
-                    opt.display_text = self.item.confirm_text.upper()
-                elif opt.key == "cancel" and self.item.cancel_text:
-                    opt.display_text = self.item.cancel_text.upper()
+                options.append(
+                    ChoiceOption(
+                        key="cancel",
+                        display_text=self.item.cancel_text.upper(),
+                        action=self.get_basic_action("cancel"),
+                    )
+                )
 
         if not any(
             opt.key.strip().lower() in ("cancel", "back", "close")

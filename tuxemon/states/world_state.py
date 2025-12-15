@@ -14,12 +14,12 @@ from typing import (
 
 from pygame.surface import Surface
 
-from tuxemon import prepare
 from tuxemon.camera.camera import Camera
 from tuxemon.db import Direction
 from tuxemon.faction.manager import FactionManager
 from tuxemon.platform.events import PlayerInput
 from tuxemon.platform.tools import translate_input_event
+from tuxemon.prepare import TILE_SIZE
 from tuxemon.save_state import WorldSave
 from tuxemon.session import Session
 from tuxemon.state.state import State
@@ -47,7 +47,7 @@ class WorldState(State):
         super().__init__()
         self.session = session
         self.session.set_world(self)
-        self.tile_size = prepare.TILE_SIZE
+        self.tile_size = TILE_SIZE
         self.menu_manager = WorldMenuManager(self.client)
         self.transition_manager = WorldTransition(
             self, self.client.movement_manager

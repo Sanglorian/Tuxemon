@@ -152,7 +152,7 @@ class EventEngine:
 
         This method wraps each condition in a RunningCondition, checks them
         using the evaluator, and determines whether the event should be
-        triggered. If debug mode is enabled via `prepare.CONFIG.collision_map`,
+        triggered. If debug mode is enabled via `self.config.collision_map`,
         the condition results are stored in `self.partial_events` for inspection
         or debugging.
 

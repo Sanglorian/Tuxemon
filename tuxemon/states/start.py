@@ -23,7 +23,6 @@ from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.save import get_index_of_latest_save
 from tuxemon.session import local_session
 from tuxemon.state.state import State
-from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
 

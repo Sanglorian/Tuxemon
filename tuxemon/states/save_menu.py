@@ -23,7 +23,6 @@ from tuxemon.save import get_save_path
 from tuxemon.tools import open_choice_dialog
 from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 from tuxemon.ui.text import draw_text
-from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.save_state import SaveData

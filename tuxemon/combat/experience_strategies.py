@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from tuxemon.db import EvolutionStage, ExperienceMethod
-from tuxemon.prepare import MAX_LEVEL
+from tuxemon.platform.const.sizes import MAX_LEVEL
 
 if TYPE_CHECKING:
     from tuxemon.combat.damage_tracker import DamageTracker

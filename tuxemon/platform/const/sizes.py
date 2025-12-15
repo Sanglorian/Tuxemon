@@ -1,5 +1,7 @@
 """Static game constants for sizes, limits, and multipliers."""
 
+UNKNOWN_MAP_SLUG: str = "unknown_map"
+
 # Map / Region Keys
 REGION_KEYS: list[str] = [
     "enter_from",

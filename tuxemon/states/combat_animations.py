@@ -38,7 +38,6 @@ from tuxemon.ui.combat_zone import CombatZone
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text import TextArea
 from tuxemon.ui.text_alignment import HorizontalAlignment
-from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.animation import Animation

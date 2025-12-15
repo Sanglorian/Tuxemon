@@ -5,11 +5,12 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Optional
 
-from tuxemon import log, prepare
+from tuxemon import log
 from tuxemon.client import LocalPygameClient
 from tuxemon.db import db
 from tuxemon.headless_client import HeadlessClient
 from tuxemon.launcher import GameLauncher
+from tuxemon.prepare import SCREEN
 from tuxemon.session import local_session
 
 if TYPE_CHECKING:
@@ -33,7 +34,7 @@ def main(config: TuxemonConfig, load_slot: Optional[int] = None) -> None:
     """
     log.configure()
 
-    screen = prepare.SCREEN
+    screen = SCREEN
 
     import pygame
 

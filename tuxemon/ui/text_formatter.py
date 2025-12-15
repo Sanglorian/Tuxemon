@@ -14,7 +14,6 @@ from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_KM, U_LB, U_MI
 from tuxemon.session import Session
 from tuxemon.ui.cipher_processor import CipherProcessor
 from tuxemon.ui.text_paginator import TextPaginator
-from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
 

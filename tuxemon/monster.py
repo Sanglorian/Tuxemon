@@ -344,7 +344,7 @@ class Monster:
 
         Parameters:
             scale: The scaling factor to resize the sprite images.
-                Defaults to the predefined scale value in 'prepare.SCALE'.
+                Defaults to the predefined scale value in 'SCALE'.
         """
         self.sprite_handler.load_sprites(scale)
 
@@ -401,7 +401,7 @@ class Monster:
                 Defaults to 0.25 seconds.
             scale: A scaling factor applied to resize the sprite during retrieval.
                 (applicable only for 'menu')
-                Defaults to the `prepare.SCALE` constant.
+                Defaults to the `SCALE` constant.
             **kwargs: Additional arguments to pass to the sprite handler.
 
         Returns:

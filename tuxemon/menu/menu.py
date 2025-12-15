@@ -24,8 +24,6 @@ from pygame.surface import Surface
 from pygame_menu import baseimage, locals, themes
 from pygame_menu.widgets.core.widget import Widget
 
-from tuxemon import graphics, tools
-from tuxemon import prepare
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.graphics import ColorLike, load_and_scale, load_image
@@ -49,7 +47,7 @@ from tuxemon.platform.const.graphics import (
     UNAVAILABLE_COLOR_SHOP,
 )
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCALE, SCREEN_RECT
+from tuxemon.prepare import SCREEN_RECT
 from tuxemon.sprite import (
     RelativeGroup,
     SpriteGroup,
@@ -70,12 +68,12 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class FontSettings:
-    smaller: int = scale(prepare.FONT_SIZE_SMALLER)
-    small: int = scale(prepare.FONT_SIZE_SMALL)
-    medium: int = scale(prepare.FONT_SIZE)
-    big: int = scale(prepare.FONT_SIZE_BIG)
-    bigger: int = scale(prepare.FONT_SIZE_BIGGER)
-    biggest: int = scale(prepare.FONT_SIZE_BIGGEST)
+    smaller: int = scale(FONT_SIZE_SMALLER)
+    small: int = scale(FONT_SIZE_SMALL)
+    medium: int = scale(FONT_SIZE)
+    big: int = scale(FONT_SIZE_BIG)
+    bigger: int = scale(FONT_SIZE_BIGGER)
+    biggest: int = scale(FONT_SIZE_BIGGEST)
 
 
 T = TypeVar("T", covariant=True)

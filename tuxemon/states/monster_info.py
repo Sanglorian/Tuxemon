@@ -93,7 +93,7 @@ class MonsterInfoState(PygameMenuState):
         # name
         menu._auto_centering = False
         thin_font_path = transform_resource_filename(
-            "font", CONFIG.locale.thin_font_file
+            "font", self.client.config.locale.thin_font_file
         )
         dark_color = (0x5D, 0x41, 0x07)
         light_color = (0x8A, 0x6F, 0x30)

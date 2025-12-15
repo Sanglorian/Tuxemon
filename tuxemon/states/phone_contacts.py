@@ -17,7 +17,7 @@ from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_CONTACTS
 from tuxemon.prepare import SCREEN_SIZE
-from tuxemon.relationship import RELATIONSHIP_STRENGTH
+from tuxemon.relationship import RelationshipConstants
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 
@@ -129,7 +129,7 @@ class NuPhoneContacts(PygameMenuState):
 
         T_RELATIONSHIP = T.translate("relation_relationship")
         T_STRENGTH = T.translate("relation_strength")
-        MAX_STRENGTH = RELATIONSHIP_STRENGTH[1]
+        MAX_STRENGTH = RelationshipConstants.STRENGTH[1]
 
         connections = self.char.relationships.get_all_connections()
         for slug, contact in connections.items():
@@ -174,12 +174,9 @@ class NuPhoneContacts(PygameMenuState):
         self.char = character
 
         for relation in self.char.relationships.connections.values():
-            relation.apply_decay(self.char)
+            relation.apply_decay(self.char.steps)
 
-        super().__init__(
-            height=height,
-            width=width,
-        )
+        super().__init__(height=height, width=width)
 
         self.add_menu_items(self.menu)
         self.reset_theme()

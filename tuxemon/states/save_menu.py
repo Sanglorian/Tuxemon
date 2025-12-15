@@ -30,7 +30,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-cfgcheck = CONFIG
 
 SLOT_WIDTH_RATIO = 0.80
 SLOT_HEIGHT_RATIO = 6

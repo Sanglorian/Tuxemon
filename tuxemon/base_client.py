@@ -14,6 +14,7 @@ from tuxemon.boundary import BoundaryChecker
 from tuxemon.camera.camera import CameraManager
 from tuxemon.combat.session import CombatSession
 from tuxemon.constants import paths
+from tuxemon.economy.shop_manager import ShopManager
 from tuxemon.event import get_event_bus
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventcondition import ConditionManager
@@ -167,6 +168,7 @@ class BaseClient(ABC):
         self.weather_manager = WorldWeatherManager()
         self.cipher_processor: Optional[CipherProcessor] = None
         self.alert_manager = AlertManager(self.event_bus)
+        self.shop_manager = ShopManager()
 
     @property
     def is_running(self) -> bool:

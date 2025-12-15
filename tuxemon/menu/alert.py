@@ -227,7 +227,7 @@ class AlertManager:
 
             if next_line is not None:
                 # More lines remain — wait for DialogState to advance or
-                # auto‑advance if delay is 0
+                # auto-advance if delay is 0
                 logger.debug(
                     "Waiting for DialogState to advance to the next line."
                 )

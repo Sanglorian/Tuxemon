@@ -173,6 +173,23 @@ class TargetType(str, Enum):
     own_trainer = "own_trainer"
 
 
+class Temperature(str, Enum):
+    freezing = "freezing"
+    cold = "cold"
+    mild = "mild"
+    warm = "warm"
+    hot = "hot"
+    scorching = "scorching"
+
+
+class Wind(str, Enum):
+    calm = "calm"
+    breezy = "breezy"
+    windy = "windy"
+    gusty = "gusty"
+    stormy = "stormy"
+
+
 class EffectPhase(Enum):
     CHECK_PARTY_HP = "check_party_hp"
     DEFAULT = "default"
@@ -198,6 +215,18 @@ class Acquisition(str, Enum):
     PURCHASED = "purchased"
     RESCUED = "rescued"
     CREATED = "created"
+
+
+class ExperienceMethod(Enum):
+    DEFAULT = "default"
+    XP_EQUAL = "xp_equal"
+    XP_TRANSMITTER = "xp_transmitter"
+    XP_FEEDER = "xp_feeder"
+    XP_OVERKILL = "xp_overkill"
+    XP_DAMAGE_PROP = "xp_damage_prop"
+    XP_BOND = "xp_bond"
+    XP_STAGE = "xp_stage"
+    XP_SURVIVOR = "xp_survivor"
 
 
 # TODO: Automatically generate state enum through discovery
@@ -618,6 +647,15 @@ class ItemModel(BaseModel, BaseLookupModel):
         description="The rarity tier for display and loot logic.",
     )
     cost: int = Field(0, description="The standard cost of the item.", ge=0)
+    reward_method: ExperienceMethod = Field(
+        ExperienceMethod.DEFAULT,
+        description="Method applied by a held item to calculate experience gained as a battle reward.",
+    )
+    money_multiplier: float = Field(
+        1.0,
+        description="Multiplier applied by a held item to calculate money gained as a battle reward.",
+        ge=0,
+    )
     max_wear: int = Field(
         0,
         description="The maximum wear threshold before the item breaks or becomes unusable.",
@@ -1798,6 +1836,13 @@ class NpcCombatModel(BaseModel):
     )
 
 
+class NpcAudioModel(BaseModel):
+    battle_music: Optional[BattleMusicModel] = Field(
+        None,
+        description="Battle music configuration for the NPC; defaults to empty if not set",
+    )
+
+
 class NpcModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "npc"
     slug: str = Field(..., description="Slug of the name of the NPC")
@@ -1809,7 +1854,14 @@ class NpcModel(BaseModel, BaseLookupModel):
     items: Sequence[BagItemModel] = Field(
         default_factory=list, description="List of items in the NPCs bag"
     )
-    speech: NpcSpeech
+    speech: NpcSpeech = Field(
+        ...,
+        description="Dialogue configuration for the NPC, including default lines and location-based overrides",
+    )
+    audio: NpcAudioModel = Field(
+        ...,
+        description="Audio configuration for the NPC, including music themes, sound effects, and ambient sounds",
+    )
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> NpcModel:
@@ -2219,10 +2271,10 @@ class EconomyEntityModel(BaseModel):
 
 
 class EconomyItemModel(EconomyEntityModel):
-    name: str = Field(..., description="Name of the entity")
+    slug: str = Field(..., description="Slug of the Item")
     inventory: int = Field(-1, description="Quantity of the entity")
 
-    @field_validator("name")
+    @field_validator("slug")
     def item_exists(cls: EconomyEntityModel, v: str) -> str:
         if has.db_entry("item", v):
             return v
@@ -2230,11 +2282,11 @@ class EconomyItemModel(EconomyEntityModel):
 
 
 class EconomyMonsterModel(EconomyEntityModel):
-    name: str = Field(..., description="Name of the entity")
+    slug: str = Field(..., description="Slug of the Monster")
     inventory: int = Field(1, description="Quantity of the entity", gt=0)
     level: int = Field(..., description="Level of the entity", gt=0)
 
-    @field_validator("name")
+    @field_validator("slug")
     def monster_exists(cls: EconomyEntityModel, v: str) -> str:
         if has.db_entry("monster", v):
             return v
@@ -2627,6 +2679,14 @@ class WeatherModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "weather"
     slug: str = Field(..., description="Slug of the weather")
     name: str = Field(..., description="Name of the weather condition")
+    temperature: Temperature = Field(
+        ...,
+        description="The general temperature category for this weather state.",
+    )
+    wind: Wind = Field(
+        ...,
+        description="The general wind intensity level for this weather state.",
+    )
     modifiers: list[Modifier] = Field(..., description="Various modifiers")
 
     @classmethod

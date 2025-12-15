@@ -24,6 +24,7 @@ from tuxemon.db import (
     db,
 )
 from tuxemon.element import ElementTypesHandler
+from tuxemon.formula import config_monster
 from tuxemon.fusion import Body
 from tuxemon.locale import T
 from tuxemon.monster_dir.bond import BondHandler
@@ -359,6 +360,23 @@ class Monster:
         """Returns True if the monster was acquired via the specified method."""
         return self.acquisition == method
 
+    def get_experience_multiplier(self) -> float:
+        """
+        Retrieves the experience multiplier based on this monster's acquisition
+        method, reading from the global formula configuration.
+        """
+        exp_multiplier = 1.0
+        experience_multipliers = config_monster.experience_multipliers
+
+        if experience_multipliers:
+            method = self.acquisition.value
+            exp_multiplier = experience_multipliers.get(method, 1.0)
+            logger.debug(
+                f"Experience multiplier for {method}: {exp_multiplier}"
+            )
+
+        return exp_multiplier
+
     def get_sprite(
         self,
         sprite_type: str,
@@ -515,6 +533,36 @@ class Monster:
             weights=list(weights.values()),
             k=1,
         )[0]
+
+    def transfer_properties_from(self, old_monster: Monster) -> None:
+        """Copies essential state and identity properties from the pre-evolved monster."""
+        self.set_level(old_monster.level)
+        self.current_hp = min(old_monster.current_hp, self.hp)
+        self.moves = old_monster.moves
+        self.status = old_monster.status
+        self.instance_id = old_monster.instance_id
+
+        if old_monster.gender in self.gender_weights:
+            self.gender = old_monster.gender
+        else:  # Re-roll if incompatible
+            self.gender = self.assign_gender(self.gender_weights)
+
+        self.capture = old_monster.capture
+        self.capture_device = old_monster.capture_device
+        self.taste_cold = old_monster.taste_cold
+        self.taste_warm = old_monster.taste_warm
+        self.plague = old_monster.plague
+        self.steps = old_monster.steps
+        self.bond_handler = old_monster.bond_handler
+
+        if old_monster.name != T.translate(old_monster.slug):
+            self.name = old_monster.name
+
+        for flair_category, new_flair in self.flairs.items():
+            if flair_category in old_monster.flairs:
+                self.flairs[flair_category] = old_monster.flairs[
+                    flair_category
+                ]
 
     def get_state(self) -> Mapping[str, Any]:
         """

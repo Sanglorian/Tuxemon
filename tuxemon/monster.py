@@ -534,6 +534,36 @@ class Monster:
             k=1,
         )[0]
 
+    def transfer_properties_from(self, old_monster: Monster) -> None:
+        """Copies essential state and identity properties from the pre-evolved monster."""
+        self.set_level(old_monster.level)
+        self.current_hp = min(old_monster.current_hp, self.hp)
+        self.moves = old_monster.moves
+        self.status = old_monster.status
+        self.instance_id = old_monster.instance_id
+
+        if old_monster.gender in self.gender_weights:
+            self.gender = old_monster.gender
+        else:  # Re-roll if incompatible
+            self.gender = self.assign_gender(self.gender_weights)
+
+        self.capture = old_monster.capture
+        self.capture_device = old_monster.capture_device
+        self.taste_cold = old_monster.taste_cold
+        self.taste_warm = old_monster.taste_warm
+        self.plague = old_monster.plague
+        self.steps = old_monster.steps
+        self.bond_handler = old_monster.bond_handler
+
+        if old_monster.name != T.translate(old_monster.slug):
+            self.name = old_monster.name
+
+        for flair_category, new_flair in self.flairs.items():
+            if flair_category in old_monster.flairs:
+                self.flairs[flair_category] = old_monster.flairs[
+                    flair_category
+                ]
+
     def get_state(self) -> Mapping[str, Any]:
         """
         Prepares a dictionary of the monster to be saved to a file.

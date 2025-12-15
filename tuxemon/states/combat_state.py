@@ -780,8 +780,9 @@ class CombatState(CombatAnimations):
         Parameters:
             monster: Monster that was fainted.
         """
-        damage_map = self.client.combat_session.damage_tracker
-        reward_system = RewardSystem(self.session, damage_map)
+        combat_type = self.client.combat_session.combat_type
+        calculator = self.client.combat_session.get_calculator(combat_type)
+        reward_system = RewardSystem(self.session, combat_type, calculator)
         reward_system.apply_penalties(monster)
         rewards = reward_system.award_rewards(monster)
 

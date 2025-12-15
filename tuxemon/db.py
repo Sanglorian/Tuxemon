@@ -200,6 +200,18 @@ class Acquisition(str, Enum):
     CREATED = "created"
 
 
+class ExperienceMethod(Enum):
+    DEFAULT = "default"
+    XP_EQUAL = "xp_equal"
+    XP_TRANSMITTER = "xp_transmitter"
+    XP_FEEDER = "xp_feeder"
+    XP_OVERKILL = "xp_overkill"
+    XP_DAMAGE_PROP = "xp_damage_prop"
+    XP_BOND = "xp_bond"
+    XP_STAGE = "xp_stage"
+    XP_SURVIVOR = "xp_survivor"
+
+
 # TODO: Automatically generate state enum through discovery
 State = Enum(
     "State",
@@ -618,6 +630,15 @@ class ItemModel(BaseModel, BaseLookupModel):
         description="The rarity tier for display and loot logic.",
     )
     cost: int = Field(0, description="The standard cost of the item.", ge=0)
+    reward_method: ExperienceMethod = Field(
+        ExperienceMethod.DEFAULT,
+        description="Method applied by a held item to calculate experience gained as a battle reward.",
+    )
+    money_multiplier: float = Field(
+        1.0,
+        description="Multiplier applied by a held item to calculate money gained as a battle reward.",
+        ge=0,
+    )
     max_wear: int = Field(
         0,
         description="The maximum wear threshold before the item breaks or becomes unusable.",

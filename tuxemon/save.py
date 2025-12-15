@@ -76,6 +76,9 @@ def get_save_data(session: Session) -> SaveData:
     npc_state = session.player.get_state(session)
     world_state = session.world.get_state(session)
     session_state = session.get_state()
+    persistent_npcs = session.client.npc_manager.get_persistent_npc_states(
+        session
+    )
 
     return SaveData(
         screenshot=b64encode(tobytes(screenshot, "RGB")).decode(),
@@ -87,6 +90,7 @@ def get_save_data(session: Session) -> SaveData:
         world_state=world_state,
         session_state=session_state,
         shop_stock=session.client.shop_manager.dump_to_dict(),
+        persistent_state=persistent_npcs,
     )
 
 

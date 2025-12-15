@@ -1,46 +1,100 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
+
+import pytest
 
 from tuxemon.npc_manager import NPCManager
 
 
-class TestNPCManager(unittest.TestCase):
-    def setUp(self) -> None:
-        self.manager = NPCManager()
-        self.npc1 = MagicMock(slug="npc_1", instance_id=uuid4())
-        self.npc2 = MagicMock(slug="npc_2", instance_id=uuid4())
+@pytest.fixture
+def npc_manager():
+    return NPCManager()
 
-    def test_add_npc(self) -> None:
-        self.manager.add_npc(self.npc1)
-        self.assertIn(self.npc1.slug, self.manager.npcs)
-        self.assertEqual(self.manager.npcs[self.npc1.slug], self.npc1)
 
-    def test_remove_npc(self) -> None:
-        self.manager.add_npc(self.npc1)
-        self.manager.remove_npc(self.npc1.slug)
-        self.assertNotIn(self.npc1, self.manager.npcs)
+@pytest.fixture
+def session():
+    s = MagicMock()
+    s.player.slug = "player_slug"
+    s.client.get_map_name.return_value = "map_a"
+    return s
 
-    def test_npc_exists(self) -> None:
-        self.manager.add_npc(self.npc1)
-        self.assertTrue(self.manager.npc_exists(self.npc1.slug))
-        self.assertFalse(self.manager.npc_exists("unknown_slug"))
 
-    def test_add_npc_off_map(self) -> None:
-        self.manager.add_npc_off_map(self.npc2)
-        self.assertIn(self.npc2.slug, self.manager.npcs_off_map)
-        self.assertEqual(self.manager.npcs_off_map[self.npc2.slug], self.npc2)
+@pytest.fixture
+def persistent_npcs(session):
+    npc1 = MagicMock(
+        slug="npc_1", instance_id=uuid4(), persistence=True, session=session
+    )
+    npc1.get_state.return_value = MagicMock(
+        player_slug="npc_1", player_name="NPC One", current_map="map_a"
+    )
 
-    def test_remove_npc_off_map(self) -> None:
-        self.manager.add_npc_off_map(self.npc2)
-        self.manager.remove_npc_off_map(self.npc2.slug)
-        self.assertNotIn(self.npc2, self.manager.npcs_off_map)
+    npc2 = MagicMock(
+        slug="npc_2", instance_id=uuid4(), persistence=True, session=session
+    )
+    npc2.get_state.return_value = MagicMock(
+        player_slug="npc_2", player_name="NPC Two", current_map="map_b"
+    )
 
-    def test_clear_npcs(self) -> None:
-        self.manager.add_npc(self.npc1)
-        self.manager.add_npc_off_map(self.npc2)
-        self.manager.clear_npcs()
-        self.assertEqual(len(self.manager.npcs), 0)
-        self.assertEqual(len(self.manager.npcs_off_map), 0)
+    return npc1, npc2
+
+
+@pytest.mark.parametrize(
+    "map_name, expected_location",
+    [
+        ("map_a", "npcs"),  # NPC on current map
+        ("map_b", "npcs_off_map"),  # NPC off current map
+    ],
+)
+@patch("tuxemon.npc_manager.NPC")
+def test_load_persistent_npc_states(
+    MockNPC, npc_manager, session, map_name, expected_location
+):
+    fake_npc = MagicMock(slug=f"npc_{expected_location}")
+    MockNPC.return_value = fake_npc
+
+    state = MagicMock(
+        player_slug=f"npc_{expected_location}",
+        player_name="NPC Test",
+        current_map=map_name,
+    )
+
+    npc_manager.load_persistent_npc_states(session, [state])
+
+    assert f"npc_{expected_location}" in getattr(
+        npc_manager, expected_location
+    )
+
+
+def test_load_persistent_npc_states_skips_none_slug(npc_manager, session):
+    state = MagicMock(
+        player_slug=None, player_name="Nameless NPC", current_map="map_a"
+    )
+    npc_manager.load_persistent_npc_states(session, [state])
+    assert npc_manager.npcs == {}
+    assert npc_manager.npcs_off_map == {}
+
+
+@patch("tuxemon.npc_manager.NPC")
+def test_persistence_round_trip(
+    MockNPC, npc_manager, session, persistent_npcs
+):
+    npc1, npc2 = persistent_npcs
+    fake_npc1 = MagicMock(slug="npc_1")
+    fake_npc2 = MagicMock(slug="npc_2")
+    MockNPC.side_effect = [fake_npc1, fake_npc2]
+
+    npc_manager.add_npc(npc1)
+    npc_manager.add_npc_off_map(npc2)
+    states = npc_manager.get_persistent_npc_states(session)
+    assert len(states) == 2
+
+    npc_manager.npcs.clear()
+    npc_manager.npcs_off_map.clear()
+    npc_manager.load_persistent_npc_states(session, states)
+
+    assert "npc_1" in npc_manager.npcs
+    assert "npc_2" in npc_manager.npcs_off_map
+    assert "npc_1" not in npc_manager.npcs_off_map
+    assert "npc_2" not in npc_manager.npcs

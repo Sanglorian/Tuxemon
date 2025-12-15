@@ -78,6 +78,7 @@ class NPC(Entity[NPCState]):
         npc_data = NpcModel.lookup(npc_slug, db)
         self.template = npc_data.template
         self.combat = npc_data.combat
+        self.persistence = npc_data.persistence
         self.audio = npc_data.audio
 
         self._custom_name: Optional[str] = None

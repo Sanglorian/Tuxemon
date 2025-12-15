@@ -1,0 +1,128 @@
+monsters:
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 22
+  - 26
+  monster: nudiflot_male
+  variables:
+  - daytime: 'true'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 22
+  - 26
+  monster: nudiflot_female
+  variables:
+  - daytime: 'true'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 22
+  - 26
+  monster: nudimind
+  variables:
+  - daytime: 'true'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 22
+  - 26
+  monster: nudikill
+  variables:
+  - daytime: 'true'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 22
+  - 26
+  monster: manosting
+  variables:
+  - daytime: 'true'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 22
+  - 26
+  monster: tweesher
+  variables:
+  - daytime: 'true'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 22
+  - 26
+  monster: nostray
+  variables:
+  - daytime: 'true'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 25
+  - 29
+  monster: nudiflot_male
+  variables:
+  - daytime: 'false'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 25
+  - 29
+  monster: nudiflot_female
+  variables:
+  - daytime: 'false'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 25
+  - 29
+  monster: nudimind
+  variables:
+  - daytime: 'false'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 25
+  - 29
+  monster: nudikill
+  variables:
+  - daytime: 'false'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 25
+  - 29
+  monster: manosting
+  variables:
+  - daytime: 'false'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 25
+  - 29
+  monster: tweesher
+  variables:
+  - daytime: 'false'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 25
+  - 29
+  monster: nostray
+  variables:
+  - daytime: 'false'
+slug: spyder_routec

@@ -27,6 +27,7 @@ class PlagueEffect(CoreEffect):
     plague after infection.
 
     **Parameters**
+
     - ``plague_slug``: The slug identifier of the plague to apply.
       Used to look up plague properties (e.g., spreadness, messages)
       from the configuration file.

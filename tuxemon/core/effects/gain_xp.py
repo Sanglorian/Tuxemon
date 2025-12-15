@@ -23,6 +23,7 @@ class GainXpEffect(CoreEffect):
     specified amount when triggered by an item.
 
     **Parameters**
+
     - ``amount``: The amount of experience to add (integer).
 
     **Example**

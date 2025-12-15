@@ -27,6 +27,7 @@ class StepHealingEffect(CoreEffect):
     combat recovery.
 
     **Parameters**
+
     - ``objectives``: Colon-separated string specifying which monsters are
       healed. Examples:
       - ``enemy_monster`` → heals only the enemy.

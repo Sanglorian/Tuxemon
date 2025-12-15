@@ -24,6 +24,7 @@ class DieHardEffect(CoreEffect):
     and a combat message is displayed.
 
     **Parameters**
+
     - ``hp``: The minimum HP value to enforce (typically ``1``).
 
     **Example**

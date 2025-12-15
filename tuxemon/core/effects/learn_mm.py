@@ -29,6 +29,7 @@ class LearnMmEffect(CoreEffect):
     reserved categories and moves the monster already knows.
 
     **Parameters**
+
     - ``element``: The elemental type of the technique to learn
       (e.g., ``wood``, ``water``, ``fire``).
 

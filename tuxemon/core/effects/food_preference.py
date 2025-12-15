@@ -28,6 +28,7 @@ class FoodPreferenceEffect(CoreEffect):
     using the configured taste map.
 
     **Parameters**
+
     - ``warm``: The warm taste to compare (string).
     - ``cold``: The cold taste to compare (string).
 

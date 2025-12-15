@@ -22,6 +22,7 @@ class CoolDownEffect(CoreEffect):
     within a specified recharge range.
 
     **Parameters**
+
     - ``objectives``: The targets affected (e.g. ``own_monster``, ``enemy_monster``,
       or a combination like ``enemy_monster:own_monster``).
     - ``current_cooldown``: The number of turns to delay before the technique can be used

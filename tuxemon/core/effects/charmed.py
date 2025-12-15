@@ -25,6 +25,7 @@ class CharmedEffect(CoreEffect):
     the probability can be configured.
 
     **Parameters**
+
     - ``chance``: The probability of resisting the charm effect (between 0 and 1).
       Higher values reduce the likelihood of failure.
 

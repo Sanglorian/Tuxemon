@@ -23,6 +23,7 @@ class PropHealingEffect(CoreEffect):
     durability rather than being a fixed value.
 
     **Parameters**
+
     - ``objectives``: Colon-separated string specifying which monsters are
       healed. Examples:
       - ``own_monster`` → heals only the user.

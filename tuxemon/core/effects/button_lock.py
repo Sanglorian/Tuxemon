@@ -19,6 +19,7 @@ class ButtonLockEffect(CoreEffect):
     Dynamically enables or disables specific menu options during combat.
 
     **Parameters**
+
     - ``menu``: The name of the menu option affected.
     - ``visible``: Whether the menu option should be enabled (``"true"``) or disabled (``"false"``).
 

@@ -28,6 +28,7 @@ class CaptureCombinedEffect(CoreEffect):
     number of shakes, and applies capture effects if successful.
 
     **Parameters**
+
     - ``category``: The capture category (used for device classification).
     - ``label``: The capture device label (e.g. ``xero``, ``omni``).
     - ``lower_bound``: Lower bound modifier applied when type conditions are met.

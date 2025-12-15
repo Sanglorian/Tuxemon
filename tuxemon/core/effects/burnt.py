@@ -21,6 +21,7 @@ class BurntEffect(CoreEffect):
     Applies the burnt status to a target based on a calculated damage multiplier.
 
     **Parameters**
+
     - ``divisor``: Determines how much HP is lost. Damage is calculated as
       ``target.hp / divisor``.
     - ``mode``: Strategy used to evaluate modifiers against the target.

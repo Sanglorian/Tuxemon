@@ -21,6 +21,7 @@ class ChangeStatEffect(CoreEffect):
     Permanently increases or decreases a target's statistic by a percentage.
 
     **Parameters**
+
     - ``statistic``: The type of statistic to modify (e.g. ``hp``, ``armour``, ``speed``).
     - ``percentage``: The fraction of the statistic to apply as a permanent buff or debuff.
       Positive values increase the stat, negative values decrease it.

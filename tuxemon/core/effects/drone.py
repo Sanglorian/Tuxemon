@@ -36,6 +36,7 @@ class DroneEffect(CoreEffect):
     in the box, the effect fails.
 
     **Parameters**
+
     - ``stage``: The current stage of the drone sequence (default: ``LAUNCH``).
     - ``_elapsed``: Internal timer tracking elapsed time in the current stage.
     - ``_duration``: Duration of the current stage.

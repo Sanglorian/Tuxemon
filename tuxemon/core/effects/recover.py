@@ -25,7 +25,8 @@ class RecoverEffect(CoreEffect):
     healed.
 
     **Parameters**
-    - ``divisor``: Integer value used to calculate the recovery amount.
+
+      - ``divisor``: Integer value used to calculate the recovery amount.
       - Healing is determined by dividing the host's maximum HP by this
         divisor.
 

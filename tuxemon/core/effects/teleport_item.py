@@ -26,13 +26,14 @@ class TeleportItemEffect(CoreEffect):
     faint recovery location.
 
     **Parameters**
+
     - ``map_name``: The destination map name.
       - If ``center`` → uses the player's faint teleport location.
       - Otherwise → uses the specified map name.
     - ``coord_x``: Integer X-coordinate for teleport destination (default: -1).
     - ``coord_y``: Integer Y-coordinate for teleport destination (default: -1).
 
-    **Examples**
+    **Example**
 
     .. code-block:: json
 

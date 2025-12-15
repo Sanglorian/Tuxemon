@@ -24,6 +24,7 @@ class ForesightEffect(CoreEffect):
     delayed, allowing it to be planned ahead for a guaranteed increase.
 
     **Parameters**
+
     - ``turn``: The number of turns after which the technique will be reused.
 
     **Example**

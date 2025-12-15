@@ -25,6 +25,7 @@ class LifeShareEffect(CoreEffect):
     health between them.
 
     **Parameters**
+
     - ``direction``: Determines the flow of HP sharing.
       - ``user_to_target``: The user's HP is shared with the target.
       - ``target_to_user``: The target's HP is shared with the user.

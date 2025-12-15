@@ -28,6 +28,7 @@ class GiveEffect(CoreEffect):
     immune due to items.
 
     **Parameters**
+
     - ``condition``: The status slug to apply (e.g. ``enraged``).
     - ``objectives``: Colon-separated list of target groups (e.g.
       ``enemy_monster`` or ``enemy_monster:own_monster``).

@@ -25,6 +25,7 @@ class DisappearEffect(CoreEffect):
     ``attack``) to land later, typically paired with an "appear" effect.
 
     **Parameters**
+
     - ``attack``: The slug of the technique to execute when the monster reappears.
 
     **Example**

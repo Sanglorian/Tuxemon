@@ -24,6 +24,7 @@ class MoveTypeEffect(CoreEffect):
     from same-type attack bonus (STAB).
 
     **Parameters**
+
     - ``direction``: Determines whose type the move will adopt.
       - ``own_monster``: The move takes on the type(s) of the user monster.
       - ``enemy_monster``: The move takes on the type(s) of the target monster.

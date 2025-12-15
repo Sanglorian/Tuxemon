@@ -25,6 +25,7 @@ class FlinchingEffect(CoreEffect):
     the status is cleared.
 
     **Parameters**
+
     - ``chance``: The probability of flinching occurring (float between 0 and 1).
 
     **Example**

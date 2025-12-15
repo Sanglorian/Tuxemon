@@ -23,6 +23,7 @@ class MirrorEffect(CoreEffect):
     which sprites are swapped or reoriented.
 
     **Parameters**
+
     - ``direction``: Determines how the sprites are mirrored.
       - ``both``: Switch both the user and target sprites.
       - ``user_to_target``: Switch the user sprite to face the target.

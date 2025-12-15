@@ -24,6 +24,7 @@ class StuckEffect(CoreEffect):
     physical attacks weaker while the status is active.
 
     **Parameters**
+
     - ``divisor``: Float value used to reduce potency and power.
       - Must be non-zero.
       - Example: ``2.0`` halves the potency and power of affected moves.

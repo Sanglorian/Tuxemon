@@ -26,6 +26,7 @@ class RepellentEffect(CoreEffect):
     counts down until the repellent expires.
 
     **Parameters**
+
     - ``steps``: Float value representing how many steps the repellent
       will last before wearing off.
 

@@ -29,7 +29,8 @@ class ParkEffect(CoreEffect):
     depends on the specified ``method``.
 
     **Parameters**
-    - ``method``: Determines the type of park interaction.
+
+      - ``method``: Determines the type of park interaction.
       - ``capture``: Attempts to capture the target monster using formulas
         for status, device modifiers, and shake checks.
       - ``doll``: Applies item modifiers to the encounter, typically affecting

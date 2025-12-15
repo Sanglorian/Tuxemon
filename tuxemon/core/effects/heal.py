@@ -27,6 +27,7 @@ class HealEffect(CoreEffect):
     status and the item used is a potion.
 
     **Parameters**
+
     - ``amount``: Integer or float value.
       - If integer: constant HP to heal.
       - If float: percentage of total HP to heal (e.g. ``0.5`` for 50%).

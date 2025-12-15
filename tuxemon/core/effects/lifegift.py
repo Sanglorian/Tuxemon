@@ -27,7 +27,8 @@ class LifeGiftEffect(CoreEffect):
     by dividing the linked monster's HP by the specified divisor.
 
     **Parameters**
-    - ``divisor``: Integer value used to calculate the HP transfer amount.
+
+      - ``divisor``: Integer value used to calculate the HP transfer amount.
       - The linked monster's HP is divided by this number to determine
         how much HP is gifted.
 

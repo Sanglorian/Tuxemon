@@ -24,6 +24,7 @@ class DieEffect(CoreEffect):
     grant a random condition (e.g. ``enraged`` or ``sniping``) when combat begins.
 
     **Parameters**
+
     - ``statuses``: A colon-separated string of status slugs
       (e.g. ``"enraged:sniping"``).
 

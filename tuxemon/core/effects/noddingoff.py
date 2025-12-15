@@ -26,6 +26,7 @@ class NoddingOffEffect(CoreEffect):
     always end after five turns if not resolved earlier.
 
     **Parameters**
+
     - ``chance``: Float value representing the probability of remaining asleep
       each turn (e.g., ``0.5`` for 50%).
 

@@ -24,6 +24,7 @@ class HarpoonedEffect(CoreEffect):
     to zero.
 
     **Parameters**
+
     - ``divisor``: The divisor used to calculate swap-out damage (e.g. 8 for
       one-eighth of max HP).
 

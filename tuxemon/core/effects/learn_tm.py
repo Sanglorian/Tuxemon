@@ -24,6 +24,7 @@ class LearnTmEffect(CoreEffect):
     monster to learn a fixed move.
 
     **Parameters**
+
     - ``technique``: The slug identifier of the technique to be taught
       (e.g., ``ram``, ``ice_beam``).
 

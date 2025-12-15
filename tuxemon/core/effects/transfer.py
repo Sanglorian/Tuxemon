@@ -25,12 +25,13 @@ class TransferEffect(CoreEffect):
     removed from the source entity.
 
     **Parameters**
+
     - ``condition``: String name of the condition to transfer.
     - ``direction``: String specifying the transfer direction.
       - ``user_to_target`` → transfers condition from the user to the target.
       - ``target_to_user`` → transfers condition from the target to the user.
 
-    **Examples**
+    **Example**
 
     .. code-block:: json
 

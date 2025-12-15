@@ -26,6 +26,7 @@ class RemoveEffect(CoreEffect):
     or ``all``.
 
     **Parameters**
+
     - ``status``: Determines which status effect(s) to remove.
       - Specific slug (e.g., ``enraged``): Removes only that status.
       - ``positive``: Removes only positive status effects.

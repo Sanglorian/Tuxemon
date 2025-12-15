@@ -28,6 +28,7 @@ class PoisonedEffect(CoreEffect):
     fails to apply and is cleared.
 
     **Parameters**
+
     - ``divisor``: Integer value used to determine base damage.
       - Damage is calculated as ``target.hp / divisor``.
     - ``mode``: Strategy used to evaluate modifiers against the target.

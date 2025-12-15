@@ -23,6 +23,7 @@ class PropDamageEffect(CoreEffect):
     the target's durability rather than being a fixed value.
 
     **Parameters**
+
     - ``objectives``: Colon-separated string specifying which monsters are
       affected. Examples:
       - ``enemy_monster`` → damages only the enemy.

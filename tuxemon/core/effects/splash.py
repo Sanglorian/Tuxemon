@@ -24,6 +24,7 @@ class SplashEffect(CoreEffect):
     Otherwise, full damage is applied to all valid targets.
 
     **Parameters**
+
     - ``divisor``: Integer value used to reduce damage when the technique
       misses. Damage is divided by this value.
 

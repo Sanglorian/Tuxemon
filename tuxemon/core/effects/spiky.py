@@ -23,6 +23,7 @@ class SpikyEffect(CoreEffect):
     determined by the specified divisor.
 
     **Parameters**
+
     - ``divisor``: Integer value used to calculate the damage.
       - Damage is calculated as ``host.hp // divisor``.
       - Example: With a divisor of 8, the monster takes 1/8th of its maximum HP.

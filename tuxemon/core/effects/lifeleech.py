@@ -27,7 +27,8 @@ class LifeLeechEffect(CoreEffect):
     is determined by dividing the host's HP by the specified divisor.
 
     **Parameters**
-    - ``divisor``: Integer value used to calculate the HP transfer amount.
+
+      - ``divisor``: Integer value used to calculate the HP transfer amount.
       - The host's HP is divided by this number to determine how much HP
         is leeched and given to the linked monster.
 

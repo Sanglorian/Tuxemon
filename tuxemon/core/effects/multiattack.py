@@ -23,6 +23,7 @@ class MultiAttackEffect(CoreEffect):
     hit enqueues another attack action until the maximum count is reached.
 
     **Parameters**
+
     - ``times``: Integer value indicating how many times the technique
       can be repeated in a single turn.
 

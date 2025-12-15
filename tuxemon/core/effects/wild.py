@@ -25,6 +25,7 @@ class WildEffect(CoreEffect):
     equal to a fraction of its maximum HP.
 
     **Parameters**
+
     - ``chance``: The probability of avoiding the penalty (float between 0 and 1).
     - ``divisor``: The divisor used to calculate self-inflicted damage
       (e.g. 8 for one-eighth of max HP).

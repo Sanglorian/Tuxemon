@@ -28,6 +28,7 @@ class SwitchEffect(CoreEffect):
     with a localized failure message.
 
     **Parameters**
+
     - ``objectives``: Colon-separated string specifying which monsters are
       affected. Examples:
       - ``enemy_monster`` → changes only the enemy's type.
@@ -37,7 +38,7 @@ class SwitchEffect(CoreEffect):
       - Can be a specific element (e.g., ``fire``, ``wood``).
       - Or ``random`` to select a random element from the database.
 
-    **Examples**
+    **Example**
 
     .. code-block:: json
 

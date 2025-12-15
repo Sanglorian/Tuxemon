@@ -24,6 +24,7 @@ class GrabbedEffect(CoreEffect):
     effectiveness of certain moves.
 
     **Parameters**
+
     - ``divisor``: The divisor used to reduce potency and power (must be non-zero).
     - ``ranges``: Colon-separated list of technique ranges affected
       (e.g. ``ranged:reach``).

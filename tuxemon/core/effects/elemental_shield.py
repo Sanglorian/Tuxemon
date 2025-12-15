@@ -25,6 +25,7 @@ class ElementalShieldBackEffect(CoreEffect):
     maximum HP divided by the specified divisor.
 
     **Parameters**
+
     - ``divisor``: The divisor used to calculate reflected damage.
     - ``ranges``: A colon-separated string of move ranges that trigger the effect
       (e.g. ``"short:long"``).

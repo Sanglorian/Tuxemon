@@ -28,6 +28,7 @@ class ConfusedEffect(CoreEffect):
     of confusion occurring, but the probability can be configured.
 
     **Parameters**
+
     - ``chance``: The probability of the confused effect occurring (float between 0 and 1).
       Higher values increase the likelihood of confusion.
 

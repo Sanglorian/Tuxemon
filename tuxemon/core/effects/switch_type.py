@@ -27,6 +27,7 @@ class SwitchTypeEffect(CoreEffect):
     no change is applied.
 
     **Parameters**
+
     - ``element``: String representing the new type to assign.
       - Can be a specific element (e.g., ``wood``, ``water``).
       - Or ``random`` to select a random element from the database.

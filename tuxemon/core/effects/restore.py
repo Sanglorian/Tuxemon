@@ -24,7 +24,8 @@ class RestoreEffect(CoreEffect):
     negative statuses depending on the specified category.
 
     **Parameters**
-    - ``category``: Determines which statuses to remove.
+
+      - ``category``: Determines which statuses to remove.
       - ``None``: Removes all statuses.
       - ``positive``: Removes only positive statuses.
       - ``negative``: Removes only negative statuses.

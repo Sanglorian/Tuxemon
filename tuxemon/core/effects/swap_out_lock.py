@@ -33,6 +33,7 @@ class SwapOutLockEffect(CoreEffect):
     automatically expire once the status is removed.
 
     **Parameters**
+
     - ``action``: Determines whether to block or unblock swapping.
       - ``block`` → prevents the monster from being swapped out.
       - ``unblock`` → allows the monster to be swapped out again.
@@ -42,7 +43,7 @@ class SwapOutLockEffect(CoreEffect):
     - ``until_status_gone``: String flag (``"true"`` or ``"false"``) indicating
       whether the block should automatically be lifted once the status ends.
 
-    **Examples**
+    **Example**
 
     .. code-block:: json
 

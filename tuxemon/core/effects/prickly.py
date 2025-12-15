@@ -26,6 +26,7 @@ class PricklyBackEffect(CoreEffect):
     defined ranges trigger the effect.
 
     **Parameters**
+
     - ``divisor``: Integer value used to calculate the damage.
       - Damage is calculated as ``host.hp // divisor``.
     - ``ranges``: Colon-separated string of move ranges that trigger the effect

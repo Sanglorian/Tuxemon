@@ -23,12 +23,11 @@ class ReverseEffect(CoreEffect):
     effects applied earlier in battle.
 
     **Parameters**
-    - ``objectives``: Colon-separated string specifying which monsters are
-      affected. Examples:
+
+    - ``objectives``: Colon-separated string specifying which monsters are affected. Examples:
       - ``enemy_monster`` → resets only the enemy's type(s).
       - ``own_monster`` → resets only the user's type(s).
-      - ``enemy_monster:own_monster`` → resets both the enemy's and the
-        user's type(s).
+      - ``enemy_monster:own_monster`` → resets both the enemy's and the user's type(s).
 
     **Examples**
 

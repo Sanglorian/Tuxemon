@@ -24,6 +24,7 @@ class SacrificeEffect(CoreEffect):
     converted into damage.
 
     **Parameters**
+
     - ``multiplier``: Float value between 0 and 1 representing the fraction
       of the user's current HP to sacrifice.
       - ``1.0`` → sacrifices all current HP.

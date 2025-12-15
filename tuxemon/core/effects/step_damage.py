@@ -26,6 +26,7 @@ class StepDamageEffect(CoreEffect):
     exploration or movement directly into combat effectiveness.
 
     **Parameters**
+
     - ``objectives``: Colon-separated string specifying which monsters are
       affected. Examples:
       - ``enemy_monster`` → damages only the enemy.

@@ -25,6 +25,7 @@ class PhotogenesisEffect(CoreEffect):
     at full health.
 
     **Parameters**
+
     - ``start_hour``: The hour when healing begins.
     - ``peak_hour``: The hour of maximum healing.
     - ``end_hour``: The hour when healing ends.

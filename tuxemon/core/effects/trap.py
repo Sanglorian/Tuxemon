@@ -137,7 +137,7 @@ class TrapEffect(CoreEffect):
     - ``tags``: List of allowed monster tags.
     - ``*_weights``: Dicts providing weighting factors for stage, shape, type, and tag.
 
-    **Examples**
+    **Example**
 
     .. code-block:: json
 

@@ -23,7 +23,8 @@ class WastingEffect(CoreEffect):
     based on the number of turns the status has been active.
 
     **Parameters**
-    - ``divisor``: Integer divisor used to calculate base damage.
+
+      - ``divisor``: Integer divisor used to calculate base damage.
       - Example: With ``divisor = 16``, the monster takes
         ``(max_hp / 16) * nr_turn`` damage each turn.
 

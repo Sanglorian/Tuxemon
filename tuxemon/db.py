@@ -173,6 +173,23 @@ class TargetType(str, Enum):
     own_trainer = "own_trainer"
 
 
+class Temperature(str, Enum):
+    freezing = "freezing"
+    cold = "cold"
+    mild = "mild"
+    warm = "warm"
+    hot = "hot"
+    scorching = "scorching"
+
+
+class Wind(str, Enum):
+    calm = "calm"
+    breezy = "breezy"
+    windy = "windy"
+    gusty = "gusty"
+    stormy = "stormy"
+
+
 class EffectPhase(Enum):
     CHECK_PARTY_HP = "check_party_hp"
     DEFAULT = "default"
@@ -2662,6 +2679,14 @@ class WeatherModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "weather"
     slug: str = Field(..., description="Slug of the weather")
     name: str = Field(..., description="Name of the weather condition")
+    temperature: Temperature = Field(
+        ...,
+        description="The general temperature category for this weather state.",
+    )
+    wind: Wind = Field(
+        ...,
+        description="The general wind intensity level for this weather state.",
+    )
     modifiers: list[Modifier] = Field(..., description="Various modifiers")
 
     @classmethod

@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 import websockets
-from websockets.legacy.server import WebSocketServerProtocol
+from websockets.asyncio.server import ServerConnection
 
 from tuxemon.network.networking import EventType
 
@@ -25,7 +25,7 @@ class WebsocketServerWrapper:
     def __init__(self, game_server: ServerInterface) -> None:
         self.game_server = game_server
         self.incoming_queue: Queue[tuple[str, dict[str, Any]]] = Queue()
-        self.client_registry: dict[str, WebSocketServerProtocol] = {}
+        self.client_registry: dict[str, ServerConnection] = {}
         self.registry: dict[str, dict[str, Any]] = {}
 
     def start_listening(self, port: int) -> None:
@@ -74,9 +74,7 @@ class WebsocketServerWrapper:
 
         self.loop.run_until_complete(start())
 
-    async def _handler(
-        self, websocket: WebSocketServerProtocol, path: str
-    ) -> None:
+    async def _handler(self, websocket: ServerConnection, path: str) -> None:
         """Handles a single new client connection."""
         cuuid = str(uuid4())
         self.client_registry[cuuid] = websocket
@@ -94,7 +92,7 @@ class WebsocketServerWrapper:
             self._handle_disconnect(cuuid)
 
     async def _listen_to_client(
-        self, cuuid: str, websocket: WebSocketServerProtocol
+        self, cuuid: str, websocket: ServerConnection
     ) -> None:
         """Receives messages from a single connected client."""
         async for message in websocket:

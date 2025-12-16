@@ -1,14 +1,8 @@
 # Configuration file for the Sphinx documentation builder.
-#
-# This file only contains a selection of the most common options. For a full
-# list see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
-
 import importlib
 import pkgutil
 import sys
 from pathlib import Path
-from typing import Any
 
 CONF_DIR = Path(__file__).parent.resolve()
 PROJECT_ROOT = CONF_DIR.parent
@@ -30,15 +24,10 @@ sys.path.append(str(Path(__file__).parent.resolve() / "ext"))
 project = "Tuxemon"
 copyright = "2015-2025, William Edwards"
 author = "William Edwards"
-
-# The full version, including alpha/beta/rc tags
-# You could potentially get a dynamic version from your project here
 release = "alpha"
-
 
 # -- General configuration ---------------------------------------------------
 
-# Add any Sphinx extension module names here, as strings.
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.todo",
@@ -48,63 +37,27 @@ extensions = [
     "script_documenter",
 ]
 
-# Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
-
-# List of patterns, relative to source directory, that match files and
-# directories to ignore when looking for source files.
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "autogen"]
-
 
 # -- Options for HTML output -------------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.
 html_theme = "sphinx_rtd_theme"
-
-# Add any paths that contain custom static files (such as style sheets) here.
 html_static_path = ["_static"]
-
 
 # -- Options for Autodoc and Napoleon ----------------------------------------
 
-# Tell Autodoc how to display type hints
 autodoc_typehints = "description"
-
-# Disable NumPy docstring parsing if you primarily use Google-style docstrings
 napoleon_numpy_docstring = False
-
-# Define your custom Napoleon sections
 napoleon_custom_sections = [
     "Script usage",
     ("Script parameters", "params_style"),
 ]
 
-
-# -- Apidoc Automation -------------------------------------------------------
-
-
-def run_apidoc(_: Any) -> None:
-    """
-    Automatically runs sphinx-apidoc before the Sphinx build process begins.
-    This generates API reference files for all your project's modules.
-    """
-    ignore_paths: list[str] = []
-
-    argv = [
-        "-f",  # Force overwrite output files
-        "-e",  # Put documentation for each module on its own page
-        "-M",  # Look for module files instead of package files
-        "-o",  # Output directory
-        "autogen",  # Name of the directory to store the generated files
-        str(PROJECT_ROOT),  # Use the repo root so apidoc scans everything
-    ] + ignore_paths
-
-    from sphinx.ext import apidoc
-
-    apidoc.main(argv)
+# -- Handcrafted script lists ------------------------------------------------
 
 
-def generate_script_lists(_: Any) -> None:
+def generate_script_lists(_: object) -> None:
     """Generate action_list.rst and condition_list.rst automatically."""
 
     def write_list(package_name: str, suffix: str, outfile: Path) -> None:
@@ -121,9 +74,7 @@ def generate_script_lists(_: Any) -> None:
         outfile.write_text("\n".join(sorted(lines)))
         print(f"Generated {outfile} with {len(lines)} entries")
 
-    write_list(
-        "tuxemon.event.actions", "Action", HANDCRAFTED_DIR / "action_list.rst"
-    )
+    write_list("tuxemon.event.actions", "Action", HANDCRAFTED_DIR / "action_list.rst")
     write_list(
         "tuxemon.event.conditions",
         "Condition",
@@ -141,7 +92,6 @@ def generate_script_lists(_: Any) -> None:
     )
 
 
-def setup(app: Any) -> None:
-    """Connect the run_apidoc function to the 'builder-inited' Sphinx event."""
-    app.connect("builder-inited", run_apidoc)
+def setup(app: object) -> None:
+    """Connect the generate_script_lists function to the 'builder-inited' Sphinx event."""
     app.connect("builder-inited", generate_script_lists)

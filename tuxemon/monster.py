@@ -40,9 +40,11 @@ from tuxemon.monster_dir.sprite import (
 )
 from tuxemon.monster_dir.stats import (
     BasicStats,
+    IndividualValues,
     StatCalculator,
     TemporaryStatBoosts,
     TrainingPoints,
+    randomize_ivs,
 )
 from tuxemon.monster_dir.status import MonsterStatusHandler
 from tuxemon.shape import ShapeHandler
@@ -156,6 +158,13 @@ class Monster:
 
         # Set up our sprites.
         self.sprite_handler = MonsterSpriteHandler()
+
+        if save_data.get("individual_values"):
+            self.individual_values = IndividualValues.from_dict(
+                save_data["individual_values"]
+            )
+        else:
+            self.individual_values = randomize_ivs()
 
         self.set_state(save_data)
         self.set_stats()
@@ -466,6 +475,7 @@ class Monster:
             taste_warm=self.taste_warm,
             modifiers=self.modifiers,
             training_points=self.training_points,
+            individual_values=self.individual_values,
         )
         self.base_stats = calculator.calculate()
 
@@ -538,6 +548,7 @@ class Monster:
         save_data["moves"] = self.moves.encode_moves()
         save_data["held_item"] = self.item_handler.encode_item()
         save_data["training_points"] = self.training_points.to_dict()
+        save_data["individual_values"] = self.individual_values.to_dict()
         save_data["modifiers"] = self.modifiers.to_dict()
         save_data["bond_dict"] = self.bond_handler.get_state()
         save_data["flair_slugs"] = list(self.flair_slugs)
@@ -587,9 +598,11 @@ class Monster:
                 if item:
                     self.item_handler.set_item(item)
             elif key == "training_points" and value:
-                self.training_points.from_dict(value)
+                self.training_points = TrainingPoints.from_dict(value)
             elif key == "modifiers" and value:
-                self.modifiers.from_dict(value)
+                self.modifiers = TemporaryStatBoosts.from_dict(value)
+            elif key == "individual_values" and value:
+                self.individual_values = IndividualValues.from_dict(value)
             elif key == "flairs" and value:
                 self.flairs = {
                     category: Flair.from_state(flair_data)

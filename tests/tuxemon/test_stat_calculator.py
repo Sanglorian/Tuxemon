@@ -7,6 +7,7 @@ import pytest
 from tuxemon.monster_dir.stats import (
     BasicStats,
     CustomStatBoosts,
+    IndividualValues,
     StatAnalyzer,
     StatCalculator,
     TrainingPoints,
@@ -50,6 +51,7 @@ def calculator(mock_shape, mock_tastes):
     )
     base_stats = BasicStats()
     training_points = TrainingPoints()
+    individual_values = IndividualValues()
     return StatCalculator(
         base_stats=base_stats,
         level=5,
@@ -58,6 +60,7 @@ def calculator(mock_shape, mock_tastes):
         taste_warm="warm",
         custom_stats=custom_stats,
         training_points=training_points,
+        individual_values=individual_values,
     )
 
 

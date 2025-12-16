@@ -75,7 +75,6 @@ def randomize_ivs() -> IndividualValues:
     return IndividualValues(**random_data)
 
 
-
 class CustomStatBoosts(BasicStats):
     """
     Persistent, user- or modder-defined additive boosts to a monster's base
@@ -85,6 +84,7 @@ class CustomStatBoosts(BasicStats):
     are external modifications that can be saved, loaded, and adjusted to
     tailor a monster's attributes beyond its natural progression.
     """
+
     def to_dict(self) -> Mapping[str, int]:
         return {
             field.name: getattr(self, field.name) for field in fields(self)

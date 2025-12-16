@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 from tuxemon import prepare
 from tuxemon.db import Modifier, db
 from tuxemon.monster import Monster
+from tuxemon.monster_dir.stats import IndividualValues
 from tuxemon.prepare import MAX_LEVEL
 from tuxemon.shape import ShapeHandler
 from tuxemon.taste import Taste
@@ -65,6 +66,7 @@ class SetStats(MonsterTestBase):
         self.mon = Monster()
         self.mon.name = "agnite"
         self.mon.set_level(5)
+        self.mon.individual_values = IndividualValues()
         self.value = self.mon.level + prepare.COEFF_STATS
         self._shape_model = {"dragon": self._shape}
         db.database["shape"] = self._shape_model

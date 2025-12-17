@@ -14,8 +14,8 @@ from tuxemon.boundary import BoundaryChecker
 from tuxemon.camera.camera import CameraManager
 from tuxemon.combat.session import CombatSession
 from tuxemon.constants import paths
-from tuxemon.encounter import EncounterManager
 from tuxemon.economy.shop_manager import ShopManager
+from tuxemon.encounter import EncounterManager
 from tuxemon.event import get_event_bus
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventcondition import ConditionManager

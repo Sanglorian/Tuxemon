@@ -84,14 +84,17 @@ class RandomHordeAction(EventAction):
 
         horde: list[Monster] = []
 
-        for result in results:
-            eligible, level, held_item = result
+        for result in results.monsters:
+            current_monster = Monster.spawn_base(
+                result.monster.monster, result.level
+            )
+            base_mod = result.monster.exp_req_mod
+            horde_mod = results.horde_exp_mod or 1.0
+            final_mod = base_mod * horde_mod
+            current_monster.set_experience_modifier(final_mod)
 
-            current_monster = Monster.spawn_base(eligible.monster, level)
-            current_monster.set_experience_modifier(eligible.exp_req_mod)
-
-            if held_item is not None:
-                item = Item.create(held_item)
+            if result.held_item is not None:
+                item = Item.create(result.held_item)
                 output = current_monster.item_handler.set_item(item)
                 if not output:
                     return

@@ -75,15 +75,15 @@ class RandomEncounterAction(EventAction):
         if results is None:
             return
 
-        eligible, level, held_item = results
-
         logger.info("Starting random encounter!")
 
-        current_monster = Monster.spawn_base(eligible.monster, level)
-        current_monster.set_experience_modifier(eligible.exp_req_mod)
+        current_monster = Monster.spawn_base(
+            results.monster.monster, results.level
+        )
+        current_monster.set_experience_modifier(results.monster.exp_req_mod)
 
-        if held_item is not None:
-            item = Item.create(held_item)
+        if results.held_item is not None:
+            item = Item.create(results.held_item)
             output = current_monster.item_handler.set_item(item)
             if not output:
                 return

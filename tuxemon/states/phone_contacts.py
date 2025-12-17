@@ -12,10 +12,11 @@ import yaml
 from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon import prepare
 from tuxemon.constants import paths
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.sizes import UNKNOWN_MAP_SLUG
+from tuxemon.prepare import BG_PHONE_CONTACTS, SCREEN_SIZE
 from tuxemon.relationship import RelationshipConstants
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
@@ -24,8 +25,6 @@ if TYPE_CHECKING:
     from tuxemon.npc import NPC
 
 logger = logging.getLogger(__name__)
-
-UNKNOWN_MAP_SLUG = "unknown_map"
 
 
 def load_yaml(filepath: Path) -> Any:
@@ -164,9 +163,9 @@ class NuPhoneContacts(PygameMenuState):
         menu.set_title(T.translate("app_contacts")).center_content()
 
     def __init__(self, character: NPC) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_PHONE_CONTACTS)
+        theme = self._setup_theme(BG_PHONE_CONTACTS)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
         theme.title = True

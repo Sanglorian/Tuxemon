@@ -287,7 +287,6 @@ class CombatState(CombatAnimations):
         for i in range(actual_actions):
             monster = pending_monsters.pop(0)
             logger.debug(f"Processing monster #{i + 1}: {monster.name}")
-            monster.moves.recharge_moves()
             self.show_monster_action_menu(monster)
 
     def handle_action_queue(self) -> None:
@@ -433,6 +432,7 @@ class CombatState(CombatAnimations):
                     monster
                 )
             )
+            monster.moves.recharge_moves()
 
             if char in self.client.combat_session.human_players:
                 # Still add to queue for menu interaction
@@ -780,8 +780,9 @@ class CombatState(CombatAnimations):
         Parameters:
             monster: Monster that was fainted.
         """
-        damage_map = self.client.combat_session.damage_tracker
-        reward_system = RewardSystem(self.session, damage_map)
+        combat_type = self.client.combat_session.combat_type
+        calculator = self.client.combat_session.get_calculator(combat_type)
+        reward_system = RewardSystem(self.session, combat_type, calculator)
         reward_system.apply_penalties(monster)
         rewards = reward_system.award_rewards(monster)
 

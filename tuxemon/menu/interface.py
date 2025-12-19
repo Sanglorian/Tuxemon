@@ -39,8 +39,7 @@ class Bar:
             fg_color: The foreground color of the bar.
             bg_color: The background color of the bar.
         """
-        self._value = 0.0
-        self.value = value
+        self._value = max(0.0, min(1.0, value))
         self.border_filename = border_filename
         self.fg_color = fg_color
         self.bg_color = bg_color
@@ -134,7 +133,10 @@ class HpBar(Bar):
             value: The initial value of the HP bar.
         """
         super().__init__(
-            value, prepare.GFX_HP_BAR, prepare.HP_COLOR_FG, prepare.HP_COLOR_BG
+            max(0.0, min(1.0, value)),
+            prepare.GFX_HP_BAR,
+            prepare.HP_COLOR_FG,
+            prepare.HP_COLOR_BG,
         )
 
 
@@ -149,7 +151,10 @@ class ExpBar(Bar):
             value: The initial value of the EXP bar.
         """
         super().__init__(
-            value, prepare.GFX_XP_BAR, prepare.XP_COLOR_FG, prepare.XP_COLOR_BG
+            max(0.0, min(1.0, value)),
+            prepare.GFX_XP_BAR,
+            prepare.XP_COLOR_FG,
+            prepare.XP_COLOR_BG,
         )
 
 

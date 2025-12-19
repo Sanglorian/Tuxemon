@@ -77,8 +77,6 @@ class StartBattleAction(EventAction):
             session=session,
             teams=fighters,
             combat_type=CombatType.TRAINER,
-            graphics=env.get_battle_graphics(),
-            music=env.get_battle_music(),
             battle_mode=BattleMode.SINGLE,
         )
         session.client.push_state("CombatState", context=context)

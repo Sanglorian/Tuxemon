@@ -205,6 +205,7 @@ class BaseClient(ABC):
             time_delta: Amount of time passed since last frame.
         """
         self.alert_manager.update(time_delta)
+        self.environment_manager.update(time_delta)
         self.weather_manager.update(time_delta)
         self.state_manager.update(time_delta)
         self.rumble_manager.update(time_delta)

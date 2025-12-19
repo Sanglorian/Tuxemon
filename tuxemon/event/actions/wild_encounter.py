@@ -101,8 +101,6 @@ class WildEncounterAction(EventAction):
             session=session,
             teams=[player, npc],
             combat_type=CombatType.MONSTER,
-            graphics=env.get_battle_graphics(),
-            music=env.get_battle_music(),
             battle_mode=BattleMode.SINGLE,
         )
         session.client.queue_state("CombatState", context=context)

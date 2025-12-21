@@ -16,13 +16,26 @@ if TYPE_CHECKING:
 @dataclass
 class MirrorEffect(CoreEffect):
     """
-    A mirror effect that switches the user and target sprites.
+    Applies the "mirror" effect to a technique.
 
-    The direction of the mirror effect can be specified using the `direction` parameter,
-    which can be one of the following:
-    - `both`: Switch both the user and target sprites.
-    - `user_to_target`: Switch the user sprite to face the target.
-    - `target_to_user`: Switch the target sprite to face the user.
+    This effect switches the visual orientation of the user and target
+    sprites during combat. The direction of the mirroring determines
+    which sprites are swapped or reoriented.
+
+    **Parameters**
+
+    - ``direction``: Determines how the sprites are mirrored.
+      - ``both``: Switch both the user and target sprites.
+      - ``user_to_target``: Switch the user sprite to face the target.
+      - ``target_to_user``: Switch the target sprite to face the user.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "mirror both"
+        ]
     """
 
     name = "mirror"

@@ -19,7 +19,19 @@ if TYPE_CHECKING:
 @dataclass
 class RunEffect(CoreEffect):
     """
-    Represents a combat action where the monster attempts to flee.
+    Applies the "run" effect to a technique.
+
+    This effect represents a combat action where the monster attempts to
+    flee from battle. The chance of success depends on the escape method,
+    the number of previous attempts, and combat conditions.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "run"
+        ]
     """
 
     name = "run"

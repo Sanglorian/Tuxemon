@@ -66,12 +66,13 @@ class TransitionTeleportAction(EventAction):
             x=self.x,
             y=self.y,
             facing=None,
-            source_map=session.client.get_map_name(),
+            source_map=char.current_map,
             source_x=char.tile_pos[0],
             source_y=char.tile_pos[1],
         )
         teleport_queue.enqueue(request)
 
+        session.world.prepare_for_teleport()
         session.world.transition_manager.fade_and_teleport(
             _time,
             rgb,

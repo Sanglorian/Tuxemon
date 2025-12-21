@@ -17,7 +17,7 @@ from pygame.surface import Surface
 from pygame.transform import flip as pg_flip
 
 from tuxemon import graphics, prepare
-from tuxemon.combat.utils import alive_party, build_hud_text
+from tuxemon.combat.utils import build_hud_text
 from tuxemon.formula import config_combat
 from tuxemon.menu.menu import Menu
 from tuxemon.sprite import CaptureDeviceSprite, HordeSprite, Sprite
@@ -519,7 +519,7 @@ class CombatAnimations(Menu[None], ABC):
             tray, _, _ = self.animate_party_hud_left(home)
 
             self.horde_sprite = HordeSprite(
-                opponent_party=player.monsters,
+                opponent_party=player.party,
                 tray_rect=home,
                 shadow_text_func=self.shadow_text,
                 scale_func=scale,
@@ -709,7 +709,7 @@ class CombatAnimations(Menu[None], ABC):
                 self.play_sound_effect(sound.sfx, sound.volume)
 
         start_message = self.client.combat_session.get_start_message()
-        self.dialog.alert(start_message)
+        self.dialog.alert(start_message, self.text_area)
 
     def flip_sprites(self, enemy: Sprite, player_back: Sprite) -> None:
         """Flip the sprites horizontally."""
@@ -763,10 +763,11 @@ class CombatAnimations(Menu[None], ABC):
         )
 
     def play_sound_effect(
-        self, sound: str, value: float = prepare.CONFIG.sound_volume
+        self, sound: str, value: Optional[float] = None
     ) -> None:
         """Play the sound effect."""
-        self.client.sound_manager.play_sound(sound, value)
+        volume = value or self.client.config.sound_volume
+        self.client.sound_manager.play_sound(sound, volume)
 
     def animate_throwing(
         self,
@@ -868,7 +869,7 @@ class CombatAnimations(Menu[None], ABC):
                 full_text = success_header_text + "\n" + success_text
                 delay += len(full_text) * config_combat.letter_time
                 self.task(
-                    partial(self.dialog.alert, full_text),
+                    partial(self.dialog.alert, full_text, self.text_area),
                     interval=delay,
                 )
 
@@ -903,7 +904,7 @@ class CombatAnimations(Menu[None], ABC):
             def show_failure(delay: float) -> None:
                 delay += len(failure_text) * config_combat.letter_time
                 self.task(
-                    partial(self.dialog.alert, failure_text),
+                    partial(self.dialog.alert, failure_text, self.text_area),
                     interval=delay,
                 )
 
@@ -930,7 +931,7 @@ class CombatAnimations(Menu[None], ABC):
         if delete:
             self._delete_monster_huds(monsters)
 
-        alive_members = alive_party(character)
+        alive_members = character.party.alive
         if len(monsters) > 1 and len(monsters) <= len(alive_members):
             self._update_multiple_huds(monsters, animate)
         else:

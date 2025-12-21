@@ -77,7 +77,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             )
         params = {"name": monster.name}
         message = T.format("combat_monster_choice", params)
-        self.combat.dialog.alert(message)
+        self.combat.dialog.alert(message, self.combat.text_area)
 
         self.type_icon_sprites: list[Sprite] = []
         self.text_sprites: dict[str, Sprite] = {}
@@ -131,7 +131,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             visibility_map["menu_forfeit"] = True
 
         items_filtered = ItemFilter(self.character.items)
-        items_filtered.set_filter_usable_in_state("MainCombatMenuState")
+        items_filtered.set_filter_combat_targets(
+            self.session, self.character.monsters, self.opponents
+        )
         if not items_filtered.items:
             visibility_map["menu_item"] = False
 
@@ -234,7 +236,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         def choose_item() -> None:
             # open menu to choose item
             items_filtered = ItemFilter(self.character.items)
-            items_filtered.set_filter_usable_in_state("MainCombatMenuState")
+            items_filtered.set_filter_combat_targets(
+                self.session, self.character.monsters, self.opponents
+            )
             menu = self.client.push_state(
                 ItemMenuState(self.character, self.name, items_filtered)
             )
@@ -326,7 +330,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 tech_enabled = True
 
                 if tech.is_recharging:
-                    tech_name = f"{tech.name} ({abs(tech.next_use)})"
+                    tech_name = f"{tech.name} ({abs(tech.current_cooldown)})"
                     tech_color = self.unavailable_color
                     tech_enabled = False
 
@@ -350,7 +354,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
             def show() -> None:
                 # Clear the combat dialog so the old "What will X do?" text disappears
-                self.combat.dialog.alert("", dialog_speed="max")
+                self.combat.dialog.alert(
+                    "", self.combat.text_area, dialog_speed="max"
+                )
 
                 screen_w, screen_h = prepare.SCREEN_SIZE
 
@@ -454,7 +460,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
                 text_lines = {
                     "accuracy": f"{T.translate('technique_accuracy')} {int(technique.accuracy * 100)}%",
-                    "recharge": f"{T.translate('technique_recharge')} {technique.recharge_length} {T.translate('technique_turns')}",
+                    "recharge": f"{T.translate('technique_recharge')} {technique.cooldown_duration} {T.translate('technique_turns')}",
                 }
 
                 # Only add Power if it's not zero
@@ -496,7 +502,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 # Restore the original combat prompt
                 params = {"name": self.monster.name}
                 message = T.format("combat_monster_choice", params)
-                self.combat.dialog.alert(message, dialog_speed="max")
+                self.combat.dialog.alert(
+                    message, self.combat.text_area, dialog_speed="max"
+                )
 
             menu.on_menu_selection_change_callback = show
             menu.on_close_callback = hide
@@ -680,7 +688,7 @@ class CombatTargetMenuState(Menu[Monster]):
             self.border.draw(selected.image)
 
             if selected.description:
-                self.dialog.alert(selected.description)
+                self.dialog.alert(selected.description, self.text_area)
 
     def on_menu_selection_change(self) -> None:
         """Handles border updates when selection changes."""

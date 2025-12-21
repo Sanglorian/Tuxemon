@@ -39,7 +39,7 @@ from tuxemon.compat.rect import ReadOnlyRect
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import Comparison
 from tuxemon.locale import T
-from tuxemon.math import Vector2
+from tuxemon.math import Point3, Vector2
 from tuxemon.ui.dialogue import calc_dialog_rect
 from tuxemon.ui.text_alignment import DialogPosition
 from tuxemon.ui.text_formatter import TextFormatter
@@ -291,6 +291,14 @@ def vector2_to_tile_pos(vector: Vector2) -> tuple[int, int]:
     return (int(vector[0]), int(vector[1]))
 
 
+def tile_pos_to_point3(tile_pos: tuple[int, int]) -> Point3:
+    """
+    Converts a 2D integer tile position to the 3D world position
+    representing the tile's ground position (Z=0).
+    """
+    return Point3(tile_pos[0], tile_pos[1], 0.0)
+
+
 def number_or_variable(variables: dict[str, Any], value: str) -> float:
     """
     Converts a string to a numeric value or retrieves a numeric variable by
@@ -373,18 +381,22 @@ def cast_value(
 
     # Handle empty string
     if isinstance(value, str) and not value.strip():
-        if str in constructors_to_try:
-            return ""
         if is_optional:
             return None
+        if str in constructors_to_try:
+            return ""
         raise ValueError(f"Parameter '{param_name}' cannot be empty string.")
 
     # First pass: direct isinstance
     for constructor in constructors_to_try:
         if get_origin(constructor) is Literal:
             continue
-        if isinstance(value, constructor):
-            return value
+        origin = get_origin(constructor) or constructor
+        try:
+            if isinstance(value, origin):
+                return value
+        except TypeError:
+            continue
 
     # Special handling for numerics
     if any(c in constructors_to_try for c in (int, float, Decimal, Fraction)):
@@ -472,8 +484,13 @@ def cast_value(
         if origin in (list, set, tuple):
             try:
                 if isinstance(value, str):
-                    # split on commas, strip whitespace
-                    items = [v.strip() for v in value.split(",") if v.strip()]
+                    parts = value.split(",")
+                    if is_optional:
+                        items = [
+                            p.strip() if p.strip() else None for p in parts
+                        ]
+                    else:
+                        items = [p.strip() for p in parts]
                     return origin(items)
                 return origin(value)
             except Exception:

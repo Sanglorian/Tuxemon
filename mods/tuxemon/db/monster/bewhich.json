@@ -27,6 +27,26 @@
       "technique": "changeling"
     },
     {
+      "level_learned": 22,
+      "technique": "taunt"
+    },
+    {
+      "level_learned": 25,
+      "technique": "magic_spell"
+    },
+    {
+      "level_learned": 28,
+      "technique": "entomb"
+    },
+    {
+      "level_learned": 34,
+      "technique": "wicked_wind"
+    },
+    {
+      "level_learned": 37,
+      "technique": "arcane_eye"
+    },
+    {
       "level_learned": 40,
       "technique": "shadow_blast"
     }

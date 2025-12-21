@@ -23,8 +23,24 @@ class BivouacStage(Enum):
 @dataclass
 class BivouacEffect(CoreEffect):
     """
-    Fully restores a monster's health and clears any status conditions,
-    simulating rest at a formal healing center.
+    Simulates a monster resting at a bivouac (temporary camp).
+
+    This effect progresses through multiple stages (``SETUP``, ``REST``, ``HEAL``, ``DONE``)
+    to fully restore a monster's health and clear any status conditions.
+
+    **Stages**
+    - ``SETUP``: Initial preparation, locks player controls.
+    - ``REST``: Resting period before healing begins.
+    - ``HEAL``: Restores health and removes status effects, then unlocks controls.
+    - ``DONE``: Marks the effect as finished.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "bivouac"
+        ]
     """
 
     name = "bivouac"

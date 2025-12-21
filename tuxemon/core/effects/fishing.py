@@ -91,7 +91,22 @@ class FishingStage(Enum):
 
 @dataclass
 class FishingEffect(CoreEffect):
-    """This effect triggers fishing."""
+    """
+    Applies the "fishing" effect when using a fishing item.
+
+    This effect initiates a staged fishing sequence that may result in a
+    wild monster encounter. The sequence progresses through several phases
+    (cast, wait, bite, encounter, done) with configurable timings and
+    probabilities defined in external YAML configuration.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "fishing"
+        ]
+    """
 
     name = "fishing"
     stage: FishingStage = FishingStage.CAST

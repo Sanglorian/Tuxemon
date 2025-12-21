@@ -47,7 +47,7 @@ from tuxemon.ui.text_formatter import TextFormatter
 if TYPE_CHECKING:
     from pygame.rect import Rect
 
-    from tuxemon.client import LocalPygameClient
+    from tuxemon.base_client import BaseClient
     from tuxemon.game_variables import ScopeVariablesManager
     from tuxemon.item.item import Item
     from tuxemon.session import Session
@@ -210,7 +210,7 @@ def fix_measure(measure: int, percentage: float) -> int:
 
 
 def open_dialog(
-    client: LocalPygameClient,
+    client: BaseClient,
     text: Sequence[str],
     avatar: Optional[Sprite] = None,
     box_style: Optional[dict[str, Any]] = None,
@@ -261,7 +261,7 @@ def open_dialog(
 
 
 def open_choice_dialog(
-    client: LocalPygameClient,
+    client: BaseClient,
     menu: MenuOptions,
     escape_key_exits: bool = False,
     config: Optional[MenuStateConfig] = None,

@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from tuxemon.animation import Animation
-    from tuxemon.client import LocalPygameClient
+    from tuxemon.base_client import BaseClient
     from tuxemon.monster import Monster
     from tuxemon.npc import NPC
 
@@ -41,7 +41,7 @@ MAX_BOX = prepare.MAX_KENNEL
 class MonsterActionHandler:
     def __init__(
         self,
-        client: LocalPygameClient,
+        client: BaseClient,
         char: NPC,
         box_name: str,
         source_state: str,

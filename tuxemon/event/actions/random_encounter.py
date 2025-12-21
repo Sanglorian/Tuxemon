@@ -57,6 +57,7 @@ class RandomEncounterAction(EventAction):
     def start(self, session: Session) -> None:
         player = session.player
         environment = session.client.environment_manager
+        encounter = session.client.encounter_manager
 
         if not check_battle_legal(player):
             logger.error("Battle is not legal, won't start")
@@ -66,23 +67,24 @@ class RandomEncounterAction(EventAction):
             logger.info(f"Repellent active, skipping encounter.")
             return
 
-        zone = EncounterData(self.encounter_slug)
-        encounter = Encounter(zone)
+        if not encounter.load_zone(self.encounter_slug):
+            return
+
         total_prob = self.total_prob if self.total_prob else 1.0
-        results = encounter.get_single_encounter(player, total_prob)
+        results = encounter.attempt_single_encounter(player, total_prob)
 
         if results is None:
             return
 
-        eligible, level, held_item = results
-
         logger.info("Starting random encounter!")
 
-        current_monster = Monster.spawn_base(eligible.monster, level)
-        current_monster.set_experience_modifier(eligible.exp_req_mod)
+        current_monster = Monster.spawn_base(
+            results.monster.monster, results.level
+        )
+        current_monster.set_experience_modifier(results.monster.exp_req_mod)
 
-        if held_item is not None:
-            item = Item.create(held_item)
+        if results.held_item is not None:
+            item = Item.create(results.held_item)
             output = current_monster.item_handler.set_item(item)
             if not output:
                 return

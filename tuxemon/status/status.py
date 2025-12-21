@@ -230,7 +230,7 @@ class Status:
             source=self,
         )
         if session.client:
-            session.client.active_statuses.append(self)
+            session.client.active_effect_manager.add_status(self)
         return result
 
     def tick_turn(self) -> None:

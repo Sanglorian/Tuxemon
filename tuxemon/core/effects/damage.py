@@ -17,11 +17,19 @@ if TYPE_CHECKING:
 @dataclass
 class DamageEffect(CoreEffect):
     """
-    Apply damage.
+    Applies damage to one or more target monsters.
 
-    This effect applies damage to a target monster or multiple monsters.
-    This effect will only be applied if "damage" is defined in the relevant
-    technique's effect list.
+    This effect is triggered when ``damage`` is defined in a technique's
+    effect list. It calculates damage based on the technique, user, and
+    target, then reduces the target's HP accordingly.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "damage"
+        ]
     """
 
     name = "damage"

@@ -186,7 +186,7 @@ class Technique:
         )
         self.current_cooldown = self.cooldown_duration
         if session.client:
-            session.client.active_techniques.append(self)
+            session.client.active_effect_manager.add_technique(self)
         return result
 
     def has_type(self, type_slug: str) -> bool:

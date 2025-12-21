@@ -21,51 +21,51 @@ logger = logging.getLogger(__name__)
 @dataclass
 class StatChangeEffect(CoreEffect):
     """
-    Applies a stat-altering effect to a target monster during combat.
+    Applies the "statchange" status effect.
 
-    This effect modifies one or more combat-relevant stats on a monster, either
-    through value-based operations (e.g., add/subtract) or step-based scaling,
-    depending on configuration. Step-based changes allow incremental percentage
-    adjustments relative to a stat's base value, with clamping via `max_step_limit`
-    to ensure balance.
+    This effect modifies one or more combat-relevant stats of a monster
+    during battle. Changes can be applied either through direct value-based
+    operations (e.g., add, subtract, divide) or through step-based scaling
+    relative to the stat's base value. Step-based scaling supports clamping
+    via ``max_step_limit`` to maintain balance.
 
-    Stats are pulled from the status's stat components (e.g. `melee`, etc.),
-    and can impact either permanent base stats or runtime health values.
+    **Supported Stats**
+    - ``speed``
+    - ``armour``
+    - ``melee``
+    - ``ranged``
+    - ``dodge``
+    - ``hp`` → modifies permanent base HP
+    - ``current_hp`` → modifies runtime health
 
-    This class supports:
-    - Optional randomness via `max_deviation`
-    - HP overrides using `overridetofull`, which resets current HP to max HP
-    - Clamping of final values to avoid death or stat corruption
+    **Parameters (per stat modifier)**
+    - ``value``: Float, direct adjustment applied to the stat (ignored if ``step`` is used).
+    - ``step``: Integer, step delta for scaling (e.g., +2 steps to speed).
+    - ``max_deviation``: Optional integer, adds randomness to ``step`` or ``value``.
+    - ``max_step_limit``: Float, maximum cumulative scaling boundary (e.g., ±0.5 for ±50%).
+    - ``scaling_mode``: String, either ``linear`` (base * (1 + step)) or ``nonlinear`` (tiered multipliers).
+    - ``operation``: String, arithmetic operation for value logic (``add``, ``subtract``, ``divide``).
+    - ``overridetofull``: Boolean, if ``True`` and stat is HP, restores current HP to maximum.
 
-    Effect Trigger:
-        - Only applies if the status has phase `PERFORM_STATUS`
+    **Example**
 
-    JSON SYNTAX (per stat object inside Status):
-    {
-        "value": float,             # Direct stat adjustment (ignored if using step)
-        "step": int,                # Optional step delta (e.g., +2 steps to speed); used in scaling
-        "max_deviation": int,       # Optional random deviation applied to step or value
-        "max_step_limit": float,    # Max cumulative scaling boundary (e.g., ±0.5 for ±50% total change)
-        "scaling_mode": str,        # "linear" uses base*(1 + step), "nonlinear" uses tiered multipliers
-        "operation": str,           # Arithmetic operation: "add", "subtract", "divide" (for value logic only)
-        "overridetofull": bool      # If True and stat is HP, fully restores current HP to max
-    }
+    .. code-block:: json
 
-    Stats Supported:
-        - speed
-        - armour
-        - melee
-        - ranged
-        - dodge
-        - hp         > modifies base_stats.hp
-        - current_hp > modifies runtime health
+        "effects": [
+            "statchange"
+        ]
 
-    Attributes:
-        name: Effect name, used for identification and serialization.
-
-    Returns:
-        StatusEffectResult: Indicates whether the stat change was successful
-        and contains the status name.
+        "stat_modifiers": {
+            "speed": {
+                "step": 2,
+                "max_deviation": 1,
+                "max_step_limit": 0.5,
+                "scaling_mode": "linear"
+            },
+            "current_hp": {
+                "overridetofull": true
+            }
+        }
     """
 
     name = "statchange"

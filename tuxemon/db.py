@@ -504,7 +504,7 @@ class TechBehaviors(Behaviors):
     )
     bypasses_selection: bool = Field(
         False,
-        description="Whether this technique skips target selection and applies directly to the user’s monster.",
+        description="Whether this technique skips target selection and applies directly to the user's monster.",
     )
 
 

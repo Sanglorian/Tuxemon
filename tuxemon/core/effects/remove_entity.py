@@ -17,7 +17,20 @@ if TYPE_CHECKING:
 @dataclass
 class RemoveEntityEffect(CoreEffect):
     """
-    Removes the NPC and creates a variable.
+    Applies the "remove_entity" effect to an item.
+
+    This effect removes a nearby NPC from the map if the player is facing
+    them, and records the removal by setting a game variable with the NPC's
+    slug. It is typically used for scripted events where interacting with
+    an NPC causes them to disappear.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "remove_entity"
+        ]
     """
 
     name = "remove_entity"

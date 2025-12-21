@@ -115,7 +115,7 @@ class Item:
     @property
     def wear_ratio(self) -> float:
         if self.max_wear == 0:
-            return 0.0  # Item doesn’t use wear, no ratio
+            return 0.0  # Item doesn't use wear, no ratio
         return min(max(self.wear / self.max_wear, 0.0), 1.0)
 
     def load(self, slug: str) -> None:

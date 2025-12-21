@@ -16,6 +16,7 @@ from tuxemon.combat.session import CombatSession
 from tuxemon.constants import paths
 from tuxemon.core.active_effect import ActiveEffectManager
 from tuxemon.economy.shop_manager import ShopManager
+from tuxemon.encounter import EncounterManager
 from tuxemon.event import get_event_bus
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventcondition import ConditionManager
@@ -160,6 +161,7 @@ class BaseClient(ABC):
         self._map_renderer: AbstractRenderer = NullRenderer()
 
         # Various Sessions
+        self.encounter_manager = EncounterManager()
         self.park_session = ParkSession()
         self.weather_manager = WorldWeatherManager()
         self.cipher_processor: Optional[CipherProcessor] = None

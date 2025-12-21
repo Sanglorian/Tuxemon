@@ -6,7 +6,6 @@ import logging
 from typing import TYPE_CHECKING, Optional
 
 from tuxemon.network.client import TuxemonClient
-from tuxemon.network.networking import ConnectionState
 from tuxemon.network.server import TuxemonServer
 
 logger = logging.getLogger(__name__)
@@ -21,18 +20,8 @@ class NetworkManager:
         self.parent = parent
         self.server: Optional[TuxemonServer] = None
         self.client: Optional[TuxemonClient] = None
-        self._state = ConnectionState.DISCONNECTED
-
-    @property
-    def state(self) -> ConnectionState:
-        """Returns the current connection state."""
-        return self._state
-
-    def set_state(self, new_state: ConnectionState) -> None:
-        """Sets the connection state and logs the change if different."""
-        if new_state != self._state:
-            self._state = new_state
-            self._log_connection_state()
+        self._last_host_state = False
+        self._last_client_state = False
 
     def initialize(self) -> None:
         if self.server or self.client:
@@ -52,36 +41,44 @@ class NetworkManager:
         if self.server and self.server.listening:
             self.server.update()
 
-        new_state = self._determine_connection_state()
+        new_host_state = self.is_host()
+        new_client_state = self.is_client()
 
-        # Update state and log changes
-        if new_state != self._state:
-            self._state = new_state
-            self._log_connection_state()
+        if new_host_state != self._last_host_state:
+            logger.info(
+                f"Host state changed: {self._last_host_state} -> {new_host_state}"
+            )
+            self._last_host_state = new_host_state
 
-    def _determine_connection_state(self) -> ConnectionState:
+        if new_client_state != self._last_client_state:
+            logger.info(
+                f"Client state changed: {self._last_client_state} -> {new_client_state}"
+            )
+            self._last_client_state = new_client_state
+
+    def shutdown(self) -> None:
+        """
+        Gracefully stops all network operations (server and client).
+        """
         if self.server and self.server.listening:
-            return ConnectionState.HOST
-        elif self.client and self.client.listening:
-            return ConnectionState.CLIENT
-        return ConnectionState.DISCONNECTED
+            self.server.shutdown()
+            self.server = None
+            logger.info("NetworkManager: Server shutdown complete.")
 
-    def _log_connection_state(self) -> None:
-        if self._state == ConnectionState.HOST:
-            logger.info("NetworkManager: Host connection just established")
-        elif self._state == ConnectionState.CLIENT:
-            logger.info("NetworkManager: Client connection just established")
-        elif self._state == ConnectionState.DISCONNECTED:
-            logger.info("NetworkManager: All connections lost")
+        if self.client and self.client.listening:
+            self.client.disconnect()
+            self.client = None
+            logger.info("NetworkManager: Client disconnected.")
+
+        self.server = None
+        self.client = None
+        logger.info("NetworkManager: All networking systems shut down.")
 
     def is_host(self) -> bool:
-        return self._state == ConnectionState.HOST
+        return self.server is not None and self.server.listening
 
     def is_client(self) -> bool:
-        return self._state == ConnectionState.CLIENT
+        return self.client is not None and self.client.listening
 
     def is_connected(self) -> bool:
-        return self._state in {
-            ConnectionState.HOST,
-            ConnectionState.CLIENT,
-        }
+        return self.is_host() or self.is_client()

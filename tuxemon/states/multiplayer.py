@@ -11,7 +11,6 @@ from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu, PygameMenuState
-from tuxemon.network.networking import ConnectionState
 from tuxemon.tools import open_dialog
 
 MenuGameObj = Callable[[], object]
@@ -71,20 +70,13 @@ class MultiplayerMenu(PygameMenuState):
             )
             return
 
-        elif not self.network.is_client():
-            self.network.set_state(ConnectionState.HOST)
-            self.network.server.listening = True
-            self.network.client.selected_game = (
-                "127.0.0.1",
-                self.network.server.server_port,
-            )
-            self.network.client.enable_join_multiplayer = True
-            self.network.client.listening = True
-            self.client.pop_state(self)
-
-            open_dialog(
-                self.client, [T.translate("multiplayer_hosting_ready")]
-            )
+        self.network.server.listening = True
+        self.network.client.connect_to_host(
+            "127.0.0.1",
+            self.network.server.server_port,
+        )
+        self.client.pop_state(self)
+        open_dialog(self.client, [T.translate("multiplayer_hosting_ready")])
 
     def load_server_list(self) -> None:
         """Loads the hardcoded server list and opens the selection menu."""
@@ -109,7 +101,9 @@ class MultiplayerMenu(PygameMenuState):
         if self.network.is_host():
             return
         else:
-            self.network.client.enable_join_multiplayer = True
+            if self.network.client.selected_game:
+                ip, port = self.network.client.selected_game
+                self.network.client.connect_to_host(ip, port)
 
 
 class MultiplayerSelect(PopUpMenu[None]):

@@ -25,12 +25,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class ConnectionState(Enum):
-    DISCONNECTED = "disconnected"
-    HOST = "host"
-    CLIENT = "client"
-
-
 class EventType(str, Enum):
     PUSH_SELF = "PUSH_SELF"
     CLIENT_MOVE_START = "CLIENT_MOVE_START"
@@ -44,19 +38,6 @@ class EventType(str, Enum):
     CLIENT_START_BATTLE = "CLIENT_START_BATTLE"
     CLIENT_DISCONNECTED = "CLIENT_DISCONNECTED"
     PING = "PING"
-
-    @classmethod
-    def from_notify(cls, notify_type: str) -> Optional[EventType]:
-        if notify_type.startswith("NOTIFY_"):
-            base = notify_type.removeprefix("NOTIFY_")
-            try:
-                return cls(base)
-            except ValueError:
-                return None
-        return None
-
-    def notify(self) -> str:
-        return f"NOTIFY_{self.value}"
 
 
 @dataclass
@@ -116,9 +97,6 @@ class EventData:
     interaction: Optional[str] = (
         None  # Type of interaction (e.g., "talk", "battle") — used in interaction events
     )
-    notify_type: Optional[str] = (
-        None  # Event type string used for dispatching (redundant with `type.name`)
-    )
     map_name: Optional[str] = None  # Name of the map where the event occurred
     char_dict: Optional[CharData] = (
         None  # Snapshot of character state (position, facing, inventory, etc.)
@@ -142,7 +120,6 @@ class EventData:
             "event_number": self.event_number,
             "cuuid": self.cuuid,
             "interaction": self.interaction,
-            "notify_type": self.notify_type,
             "map_name": self.map_name,
             "char_dict": self.char_dict.to_dict() if self.char_dict else None,
             "kb_key": self.kb_key,
@@ -157,7 +134,6 @@ class EventData:
             event_number=data["event_number"],
             cuuid=data.get("cuuid"),
             interaction=data.get("interaction"),
-            notify_type=data.get("notify_type"),
             map_name=data.get("map_name"),
             char_dict=(
                 CharData.from_dict(data["char_dict"])

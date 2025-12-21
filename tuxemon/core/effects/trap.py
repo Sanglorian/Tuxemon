@@ -163,7 +163,7 @@ class TrapEffect(CoreEffect):
         self.stage = TrapStage.SETUP
         self._elapsed = 0.0
         self._duration = 1.0
-        self._origin_map = session.client.get_map_name()
+        self._origin_map = session.player.current_map
         self._origin_pos = session.player.tile_pos
         return ItemEffectResult(name=item.name, success=True)
 
@@ -175,7 +175,7 @@ class TrapEffect(CoreEffect):
             self._elapsed = 0.0
 
         elif self.stage == TrapStage.ARMED:
-            if session.client.get_map_name() != self._origin_map:
+            if session.player.current_map != self._origin_map:
                 self._expire(session)
             elif self._trap.max_distance and (
                 self._distance(session.player.tile_pos, self._origin_pos)

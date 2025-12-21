@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Optional
 from tuxemon.db import Direction
 from tuxemon.map.map import dirs2, get_direction, proj
 from tuxemon.math import Vector2
-from tuxemon.tools import vector2_to_tile_pos
+from tuxemon.tools import tile_pos_to_point3, vector2_to_tile_pos
 
 if TYPE_CHECKING:
     from tuxemon.map.map_manager import MapManager
@@ -335,7 +335,7 @@ class PathController:
         is retained; otherwise, it reverts to its last recorded origin.
         """
         if not preserve_position and self.path_origin is not None:
-            self.owner.tile_pos = self.path_origin
+            self.owner.set_position(tile_pos_to_point3(self.path_origin))
         self.owner.set_move_direction()
         self.owner.stop_moving()
         self.cancel_path()

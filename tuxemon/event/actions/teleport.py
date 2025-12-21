@@ -56,7 +56,7 @@ class TeleportAction(EventAction):
             mapname=self.map_name,
             x=self.x,
             y=self.y,
-            source_map=session.client.get_map_name(),
+            source_map=char.current_map,
             source_x=char.tile_pos[0],
             source_y=char.tile_pos[1],
         )

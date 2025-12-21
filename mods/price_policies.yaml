@@ -4,7 +4,7 @@ black_market:
     cureall: 0.9            # Applies a special 10% discount for potion items
   tax: 0.0                 # No additional tax is added to base item prices in this policy
   fee: 50                  # A fixed transaction fee of 50 units is charged per purchase
-  resell_bonus: 0.2        # When reselling, the item’s base value is increased by 20%
+  resell_bonus: 0.2        # When reselling, the item's base value is increased by 20%
   resell_tax: 0.1          # A 10% tax is applied to the resell value (after the bonus)
   seller_fee: 25           # A fixed 25-unit fee is deducted when the player sells the item
 

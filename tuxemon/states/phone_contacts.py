@@ -12,10 +12,11 @@ import yaml
 from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon import prepare
 from tuxemon.constants import paths
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.sizes import UNKNOWN_MAP_SLUG
+from tuxemon.prepare import BG_PHONE_CONTACTS, SCREEN_SIZE
 from tuxemon.relationship import RelationshipConstants
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
@@ -66,8 +67,7 @@ class NuPhoneContacts(PygameMenuState):
         """
         required_map_slug = conditions.get("map_slug")
         if required_map_slug:
-            current_map_slug = self.client.get_map_name().split(".")[0]
-            if current_map_slug != required_map_slug:
+            if self.current_map != required_map_slug:
                 return False
 
         required_vars = conditions.get("variables")
@@ -163,14 +163,19 @@ class NuPhoneContacts(PygameMenuState):
         menu.set_title(T.translate("app_contacts")).center_content()
 
     def __init__(self, character: NPC) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_PHONE_CONTACTS)
+        theme = self._setup_theme(BG_PHONE_CONTACTS)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
         theme.title = True
 
         self.char = character
+
+        if self.char.current_map:
+            self.current_map = self.char.current_map.split(".")[0]
+        else:
+            self.current_map = UNKNOWN_MAP_SLUG
 
         for relation in self.char.relationships.connections.values():
             relation.apply_decay(self.char.steps)

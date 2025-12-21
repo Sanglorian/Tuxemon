@@ -27,10 +27,28 @@ class DroneStage(Enum):
 @dataclass
 class DroneEffect(CoreEffect):
     """
-    Swaps a monster from the player's party with one from the specified monster
-    box (KENNEL). When used, the player selects a party monster to be swapped
-    with a monster from the box. If no monsters are available in the box, the
-    effect fails.
+    Swaps a monster from the player's party with one from the specified
+    monster box (``KENNEL``).
+
+    This effect simulates a drone sequence with multiple stages (launch,
+    travel, arrival, swap, return, done). The player selects a party monster
+    to be swapped with a monster from the box. If no monsters are available
+    in the box, the effect fails.
+
+    **Parameters**
+
+    - ``stage``: The current stage of the drone sequence (default: ``LAUNCH``).
+    - ``_elapsed``: Internal timer tracking elapsed time in the current stage.
+    - ``_duration``: Duration of the current stage.
+    - ``_finished``: Whether the drone sequence has completed.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "drone"
+        ]
     """
 
     name = "drone"

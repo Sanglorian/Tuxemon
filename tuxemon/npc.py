@@ -17,7 +17,6 @@ from tuxemon.entity_dir.routing import RoutingPolicy
 from tuxemon.entity_dir.steps import StepManager
 from tuxemon.game_variables import GameVariablesManager, PlayerVariablesManager
 from tuxemon.locale import T
-from tuxemon.map.map import proj
 from tuxemon.map.map_view import SpriteController
 from tuxemon.mission.controller import MissionController
 from tuxemon.mission.manager import MissionManager
@@ -33,7 +32,6 @@ from tuxemon.relationship import (
 from tuxemon.save_state import NPCState
 from tuxemon.step_tracker import StepTrackerManager, decode_steps, encode_steps
 from tuxemon.teleporter import TeleportFaint
-from tuxemon.tools import vector2_to_tile_pos
 from tuxemon.tracker import TrackingData, decode_tracking, encode_tracking
 from tuxemon.tuxepedia import (
     TuxepediaManager,
@@ -167,7 +165,7 @@ class NPC(Entity[NPCState]):
         item_boxes_state = self.item_boxes.get_state()
 
         state: dict[str, Any] = {
-            "current_map": session.client.get_map_name(),
+            "current_map": self.current_map,
             "facing": self.facing.value,
             "game_variables": self._variables.get_player_state(),
             "battles": self.battle_handler.encode_battle(),
@@ -205,6 +203,7 @@ class NPC(Entity[NPCState]):
             session: Game session.
             save_data: Data used to recreate the NPC.
         """
+        self.set_current_map(save_data.current_map)
         self.set_facing(Direction(save_data.facing or "down"))
         self._variables.set_player_state(save_data.game_variables)
         self.tuxepedia = decode_tuxepedia(
@@ -283,30 +282,3 @@ class NPC(Entity[NPCState]):
         self.sprite_controller.update(time_delta)
         self.update_physics(time_delta)
         self.path_controller.update(time_delta)
-
-    def pos_update(self) -> None:
-        """WIP.  Required to be called after position changes."""
-        self.tile_pos = vector2_to_tile_pos(proj(self.position))
-        self.network_notify_location_change()
-
-    def network_notify_start_moving(self, direction: Direction) -> None:
-        r"""WIP guesswork ¯\_(ツ)_/¯"""
-        self.network = self.client.network_manager
-        if self.network.is_connected():
-            assert self.network.client
-            self.network.client.update_player(
-                direction, event_type="CLIENT_MOVE_START"
-            )
-
-    def network_notify_stop_moving(self) -> None:
-        r"""WIP guesswork ¯\_(ツ)_/¯"""
-        self.network = self.client.network_manager
-        if self.network.is_connected():
-            assert self.network.client
-            self.network.client.update_player(
-                self.facing, event_type="CLIENT_MOVE_COMPLETE"
-            )
-
-    def network_notify_location_change(self) -> None:
-        r"""WIP guesswork ¯\_(ツ)_/¯"""
-        self.update_location = True

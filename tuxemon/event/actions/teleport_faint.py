@@ -78,6 +78,6 @@ class TeleportFaintAction(EventAction):
             ],
         )
 
-        if healing and session.client.get_map_name() == teleport.map_name:
+        if healing and character.current_map == teleport.map_name:
             action.execute_action("set_monster_health")
             action.execute_action("set_monster_status")

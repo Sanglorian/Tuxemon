@@ -19,12 +19,20 @@ if TYPE_CHECKING:
 @dataclass
 class RevengeEffect(CoreEffect):
     """
-    Revenge:
-    The next time you are attacked, the attacker takes the same amount of
-    damage that you receive. Additionally, you heal for the amount of
-    damage you dealt in the previous turn.
+    Applies the "revenge" status effect.
 
-    Note: This effect is triggered only once, after which it is removed.
+    This effect causes the host monster to retaliate when attacked:
+    - The attacker takes damage equal to the damage they inflicted.
+    - The host heals for the same amount of damage dealt in the previous turn.
+    - The effect is triggered only once, after which it is removed.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "revenge"
+        ]
     """
 
     name = "revenge"

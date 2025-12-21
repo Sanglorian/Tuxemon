@@ -126,10 +126,7 @@ class LocalPygameClient(BaseClient):
                 if time_since_draw >= frame_length:
                     time_since_draw -= frame_length
                     draw()
-                    if self.input_manager.controller_overlay:
-                        self.input_manager.controller_overlay.draw(screen)
-                    if self.input_manager.show_visualizer:
-                        self.input_manager.draw_visualizer(screen)
+                    self.input_manager.draw_inputs(screen)
                     flip()
                 if self.config.show_fps:
                     self.renderer.update(clock_tick)

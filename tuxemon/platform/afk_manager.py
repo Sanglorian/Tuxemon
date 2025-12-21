@@ -23,8 +23,10 @@ class AFKManager:
     def __init__(self) -> None:
         self.current_idle_time: float = 0.0
         self.thresholds: list[AFKThreshold] = []
+        self.threshold_map: dict[str, float] = {}
         self.active_levels: set[str] = set()
         self.event_bus = get_event_bus()
+        self._next_threshold_index: int = 0
 
     def add_threshold(self, level: str, duration: float) -> None:
         """Dynamically adds a new AFK threshold."""
@@ -34,30 +36,41 @@ class AFKManager:
             )
             return
 
+        if level in self.threshold_map:
+            logger.warning(f"Threshold '{level}' already exists. Skipping.")
+            return
+
         new_threshold = AFKThreshold(level, duration)
         self.thresholds.append(new_threshold)
         self.thresholds.sort(key=lambda t: t.duration)
+        self.threshold_map[level] = duration
         logger.debug(f"Added AFK threshold: {level} at {duration}s")
 
     def remove_threshold(self, level: str) -> bool:
         """Removes a threshold by its level name."""
-        initial_length = len(self.thresholds)
+        if level not in self.threshold_map:
+            return False
+
         self.thresholds = [t for t in self.thresholds if t.level != level]
-        if len(self.thresholds) < initial_length:
-            logger.info(f"Removed AFK threshold: {level}")
-            return True
-        return False
+        del self.threshold_map[level]
+        logger.info(f"Removed AFK threshold: {level}")
+        return True
 
     def modify_threshold(self, level: str, new_duration: float) -> bool:
         """Modifies the duration of an existing threshold."""
+        if level not in self.threshold_map:
+            return False
+
         for i, t in enumerate(self.thresholds):
             if t.level == level:
                 self.thresholds[i] = AFKThreshold(level, new_duration)
                 self.thresholds.sort(key=lambda t: t.duration)
+                self.threshold_map[level] = new_duration
                 logger.info(
                     f"Modified AFK threshold {level} to {new_duration}s"
                 )
-                self.active_levels = set()
+                self.active_levels.clear()
+                self._next_threshold_index = 0
                 return True
         return False
 
@@ -66,22 +79,27 @@ class AFKManager:
         Increments idle time and returns the new highest active threshold level
         if the state has changed.
         """
-        self.current_idle_time += time_delta
+        self.current_idle_time = max(0.0, self.current_idle_time + time_delta)
 
-        new_active_levels: set[str] = set()
-        for threshold in self.thresholds:
+        new_active_levels: set[str] = self.active_levels.copy()
+
+        for i in range(self._next_threshold_index, len(self.thresholds)):
+            threshold = self.thresholds[i]
+
             if self.current_idle_time >= threshold.duration:
                 new_active_levels.add(threshold.level)
+                self._next_threshold_index = i + 1
+            else:
+                break
 
         if new_active_levels != self.active_levels:
-            old_levels = self.active_levels
+            gained_levels = new_active_levels - self.active_levels
             self.active_levels = new_active_levels
 
-            gained_levels = new_active_levels - old_levels
             if gained_levels:
                 highest = max(
                     gained_levels,
-                    key=lambda level: self.get_duration_by_level(level),
+                    key=lambda level: self.threshold_map[level],
                 )
                 self.event_bus.publish("afk.threshold_reached", level=highest)
                 return highest
@@ -100,6 +118,7 @@ class AFKManager:
             )
             self.current_idle_time = 0.0
             self.active_levels.clear()
+            self._next_threshold_index = 0
 
             logger.info(
                 f"Player returned to active from level: {highest_old_level}"
@@ -108,6 +127,7 @@ class AFKManager:
             return highest_old_level
 
         self.current_idle_time = 0.0
+        self._next_threshold_index = 0
         return None
 
     @property
@@ -126,7 +146,4 @@ class AFKManager:
 
     def get_duration_by_level(self, level_name: str) -> float:
         """Helper to look up a duration by level name."""
-        for t in self.thresholds:
-            if t.level == level_name:
-                return t.duration
-        return 0.0
+        return self.threshold_map.get(level_name, 0.0)

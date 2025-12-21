@@ -206,7 +206,7 @@ class Entity(Generic[SaveDict]):
         self.instance_id: UUID = uuid4()
         self.body = Body(position=Point3(0, 0, 0))
         self.mover = Mover(self.body)
-        self.tile_pos: tuple[int, int] = (0, 0)
+        self._current_map: Optional[str] = None
         self.update_location: bool = False
         self.is_player: bool = False
         self.ignore_collisions: bool = False
@@ -218,7 +218,29 @@ class Entity(Generic[SaveDict]):
 
     def pos_update(self) -> None:
         """WIP.  Required to be called after position changes."""
-        self.tile_pos = vector2_to_tile_pos(proj(self.body.position))
+        self.network_notify_location_change()
+
+    def network_notify_start_moving(self, direction: Direction) -> None:
+        r"""WIP guesswork ¯\_(ツ)_/¯"""
+        self.network = self.client.network_manager
+        if self.network.is_connected():
+            assert self.network.client
+            self.network.client.update_player(
+                direction, event_type="CLIENT_MOVE_START"
+            )
+
+    def network_notify_stop_moving(self) -> None:
+        r"""WIP guesswork ¯\_(ツ)_/¯"""
+        self.network = self.client.network_manager
+        if self.network.is_connected():
+            assert self.network.client
+            self.network.client.update_player(
+                self.facing, event_type="CLIENT_MOVE_COMPLETE"
+            )
+
+    def network_notify_location_change(self) -> None:
+        r"""WIP guesswork ¯\_(ツ)_/¯"""
+        self.update_location = True
 
     def update_physics(self, td: float) -> None:
         """
@@ -258,6 +280,15 @@ class Entity(Generic[SaveDict]):
         self.body.position = Point3(*pos)
         self.add_collision(pos)
         self.pos_update()
+
+    def set_current_map(self, map_slug: Optional[str]) -> None:
+        """
+        Set the entity's map in the game world.
+
+        Parameters:
+            map_slug: Map to be set.
+        """
+        self._current_map = map_slug
 
     def set_moverate(self, moverate: float) -> None:
         """
@@ -309,6 +340,16 @@ class Entity(Generic[SaveDict]):
         self.client.collision_manager.remove_collision(self.tile_pos)
 
     # === PHYSICS END =========================================================
+
+    @property
+    def tile_pos(self) -> tuple[int, int]:
+        """Return the tile position of the entity."""
+        return vector2_to_tile_pos(proj(self.body.position))
+
+    @property
+    def current_map(self) -> Optional[str]:
+        """Return the current map of the entity."""
+        return self._current_map
 
     @property
     def position(self) -> Point3:

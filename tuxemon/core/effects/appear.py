@@ -16,8 +16,18 @@ if TYPE_CHECKING:
 @dataclass
 class AppearEffect(CoreEffect):
     """
-    Tuxemon re-appears, it follows "disappear".
+    Makes a Tuxemon re-appear after it has previously disappeared.
 
+    This effect resets the monster's ``out_of_range`` state and publishes a
+    ``monster_appeared`` event. It typically follows the ``disappear`` effect.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "appear"
+        ]
     """
 
     name = "appear"

@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 @final
 @dataclass
-class RemoveHeldItemction(EventAction):
+class RemoveHeldItemAction(EventAction):
     """
     Removes a held item from a specific monster.
 

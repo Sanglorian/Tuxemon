@@ -23,11 +23,20 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MoneyEffect(CoreEffect):
     """
-    A tech effect that rewards the player with money if successful,
-    or damages the monster if it fails.
+    Applies the "money" effect to a technique.
 
-    The amount of money rewarded or damage dealt is equal to the
-    calculated damage.
+    This effect either rewards the player with money if the technique
+    successfully hits, or damages the user monster if the technique fails.
+    The amount of money gained or damage dealt is equal to the calculated
+    damage value.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "money"
+        ]
     """
 
     name = "money"

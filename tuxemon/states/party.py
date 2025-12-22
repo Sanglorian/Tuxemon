@@ -64,7 +64,7 @@ class PartyState(PygameMenuState):
         level_lowest = self.party.level_lowest
         level_highest = self.party.level_highest
         level_average = self.party.level_average
-        party_alignment = self.party.get_alignment()
+        party_alignment = self.party.alignment
         # highest
         highest = T.translate("menu_party_level_highest")
         lab2: Any = menu.add.label(

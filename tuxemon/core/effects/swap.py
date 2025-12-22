@@ -19,9 +19,19 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SwapEffect(CoreEffect):
     """
-    Used just for combat: change order of monsters.
+    Applies the "swap" effect to a technique.
 
-    Position of monster in party will be changed.
+    This effect changes the order of monsters in combat by swapping the
+    user monster with the target monster. It is used exclusively in battle
+    to reposition monsters within the party lineup.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "swap"
+        ]
     """
 
     name = "swap"

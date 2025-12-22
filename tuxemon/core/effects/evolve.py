@@ -2,12 +2,10 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
-from tuxemon.db import MonsterEvolutionItemModel
 from tuxemon.monster import Monster
 
 if TYPE_CHECKING:
@@ -17,7 +15,21 @@ if TYPE_CHECKING:
 
 @dataclass
 class EvolveEffect(CoreEffect):
-    """This effect evolves the target into the monster in the parameters."""
+    """
+    Evolves the target monster into a new form based on item parameters.
+
+    This effect checks the target's available evolutions and determines whether
+    the triggering item can cause an evolution. If multiple valid evolutions
+    exist, one is selected randomly according to weighted probabilities.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "evolve"
+        ]
+    """
 
     name = "evolve"
 
@@ -27,27 +39,22 @@ class EvolveEffect(CoreEffect):
         if not target.evolutions:
             return ItemEffectResult(name=item.name)
 
-        possible_evolutions: list[tuple[MonsterEvolutionItemModel, float]] = []
-        for evolution_model in target.evolutions:
-            item_weights = evolution_model.item
-            if isinstance(item_weights, dict) and item.slug in item_weights:
-                weight = item_weights[item.slug]
-                if weight > 0.0:
-                    possible_evolutions.append((evolution_model, weight))
+        context = {"use_item": True}
+        possible_evolutions = (
+            target.evolution_handler.get_possible_item_evolutions(
+                item, context
+            )
+        )
 
         if not possible_evolutions:
             return ItemEffectResult(name=item.name)
 
-        if len(possible_evolutions) == 1:
-            selected_evolution_model = possible_evolutions[0][0]
-        else:
-            evolution_choices, weights = zip(*possible_evolutions)
-            selected_evolution_model = random.choices(
-                evolution_choices, weights=weights, k=1
-            )[0]
-
-        evolution_slug = selected_evolution_model.monster_slug
-        new_monster = Monster.create(evolution_slug)
+        selected_evolution_model = (
+            target.evolution_handler.choose_evolution_model(
+                possible_evolutions
+            )
+        )
+        new_monster = Monster.create(selected_evolution_model.monster_slug)
         target.evolution_handler.evolve_monster(new_monster)
 
         session.client.push_state(

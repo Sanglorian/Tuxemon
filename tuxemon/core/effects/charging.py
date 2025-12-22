@@ -16,7 +16,18 @@ if TYPE_CHECKING:
 @dataclass
 class ChargingEffect(CoreEffect):
     """
-    Charging status
+    Applies the "charging" status to a monster.
+
+    This effect clears existing statuses and, depending on the phase, applies
+    a follow-up status when the monster uses a technique or an item.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "charging"
+        ]
     """
 
     name = "charging"

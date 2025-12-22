@@ -154,7 +154,7 @@ class Encounter:
             return None
 
         roll = random.uniform(0, ENCOUNTER_ROLL_MAX)
-        if roll > total_prob * prepare.CONFIG.encounter_rate_modifier:
+        if roll > total_prob * CONFIG.encounter_rate_modifier:
             return None
 
         chosen = random.choices(valid, weights=weights, k=1)[0]

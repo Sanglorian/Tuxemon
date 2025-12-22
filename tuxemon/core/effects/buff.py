@@ -17,12 +17,21 @@ if TYPE_CHECKING:
 @dataclass
 class BuffEffect(CoreEffect):
     """
-    Increases or decreases target's stats by percentage temporarily.
+    Temporarily increases or decreases a target's statistic by a percentage.
 
-    Parameters:
-        statistic: type of statistic (hp, armour, etc.)
-        percentage: percentage of the statistic (increase / decrease)
+    **Parameters**
 
+    - ``statistic``: The type of statistic to modify (e.g. ``hp``, ``armour``, ``speed``).
+    - ``percentage``: The fraction of the statistic to apply as a buff or debuff.
+      Positive values increase the stat, negative values decrease it.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "buff hp 0.25"
+        ]
     """
 
     name = "buff"

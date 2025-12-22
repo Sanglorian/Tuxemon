@@ -15,7 +15,19 @@ if TYPE_CHECKING:
 @dataclass
 class FesteringEffect(CoreEffect):
     """
-    This effect has a chance to apply the festering status effect.
+    Applies the "festering" status to a monster.
+
+    This effect represents a lingering condition that can be applied during
+    combat. Once triggered, the status is considered active and reported as
+    successful.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "festering"
+        ]
     """
 
     name = "festering"

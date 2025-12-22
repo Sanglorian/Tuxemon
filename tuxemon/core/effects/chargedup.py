@@ -16,7 +16,18 @@ if TYPE_CHECKING:
 @dataclass
 class ChargedUpEffect(CoreEffect):
     """
-    Charged up status
+    Applies the "charged up" status to a monster.
+
+    This effect clears existing statuses and, if a follow-up status is defined
+    (``on_tech_use``), applies it when the monster performs a technique.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "chargedup"
+        ]
     """
 
     name = "chargedup"

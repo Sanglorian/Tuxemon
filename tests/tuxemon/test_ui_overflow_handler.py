@@ -150,7 +150,7 @@ class TestOverflowHandler(unittest.TestCase):
 
     def test_ellipsis_exact_fit(self):
         current_x_position = self.rect.right - self.handler.ellipsis_width
-        segment_width = 50  # Doesn’t matter here
+        segment_width = 50  # Doesn't matter here
         top = 10
         fg = (255, 255, 255)
         bg = (0, 0, 0)

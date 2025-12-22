@@ -17,6 +17,7 @@ from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_CONTACTS
 from tuxemon.prepare import SCREEN_SIZE
+from tuxemon.platform.const.sizes import UNKNOWN_MAP_SLUG
 from tuxemon.relationship import RelationshipConstants
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
@@ -67,8 +68,7 @@ class NuPhoneContacts(PygameMenuState):
         """
         required_map_slug = conditions.get("map_slug")
         if required_map_slug:
-            current_map_slug = self.client.get_map_name().split(".")[0]
-            if current_map_slug != required_map_slug:
+            if self.current_map != required_map_slug:
                 return False
 
         required_vars = conditions.get("variables")
@@ -172,6 +172,11 @@ class NuPhoneContacts(PygameMenuState):
         theme.title = True
 
         self.char = character
+
+        if self.char.current_map:
+            self.current_map = self.char.current_map.split(".")[0]
+        else:
+            self.current_map = UNKNOWN_MAP_SLUG
 
         for relation in self.char.relationships.connections.values():
             relation.apply_decay(self.char.steps)

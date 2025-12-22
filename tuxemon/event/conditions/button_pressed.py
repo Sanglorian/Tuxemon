@@ -34,9 +34,4 @@ class ButtonPressedCondition(EventCondition):
         except KeyError:
             raise ValueError(f"Cannot support key type: {button}")
 
-        # Loop through each event
-        for event in session.client.key_events:
-            if event.pressed and event.button == button_id:
-                return True
-
-        return False
+        return session.client.input_cache.was_button_pressed(button_id)

@@ -6,7 +6,7 @@ import time
 from collections import deque
 from typing import TYPE_CHECKING, NamedTuple, Optional
 
-from tuxemon.platform.tools import translate_input_event
+from tuxemon.event.eventmiddleware import InputTranslatorMiddleware
 
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
@@ -28,6 +28,7 @@ class InputHistory:
         self._last_button_clicked: Optional[int] = None
         self._current_combo_hint: ComboHint = ComboHint()
         self.combo_window_seconds = config.controller.combo_window_seconds
+        self.translator = InputTranslatorMiddleware()
 
     @property
     def current_combo_hint(self) -> ComboHint:
@@ -39,29 +40,34 @@ class InputHistory:
         The history stores only distinct button presses (no consecutive
         duplicates).
         """
-        event = translate_input_event(event)
+        translated_event = self.translator.preprocess(event)
+        if translated_event is None:
+            return
 
-        if event.pressed:
-            self.held_timers[event.button] = 0.0
-        elif event.released:
-            self.held_timers.pop(event.button, None)
+        if translated_event.pressed:
+            self.held_timers[translated_event.button] = 0.0
+        elif translated_event.released:
+            self.held_timers.pop(translated_event.button, None)
 
-        if event.pressed:
-            self._last_button_clicked = event.button
-            if event.button not in self._buttons_down:
-                self._buttons_down.add(event.button)
-        elif event.released and event.button in self._buttons_down:
-            self._click_counts[event.button] = (
-                self._click_counts.get(event.button, 0) + 1
+        if translated_event.pressed:
+            self._last_button_clicked = translated_event.button
+            if translated_event.button not in self._buttons_down:
+                self._buttons_down.add(translated_event.button)
+        elif (
+            translated_event.released
+            and translated_event.button in self._buttons_down
+        ):
+            self._click_counts[translated_event.button] = (
+                self._click_counts.get(translated_event.button, 0) + 1
             )
-            self._buttons_down.discard(event.button)
+            self._buttons_down.discard(translated_event.button)
 
         if (
             not self.last_history_event
-            or event.button != self.last_history_event.button
+            or translated_event.button != self.last_history_event.button
         ):
-            self.history.append(event)
-            self.last_history_event = event
+            self.history.append(translated_event)
+            self.last_history_event = translated_event
 
     def update(self, time_delta: float) -> None:
         self.update_history(max_age_s=self.combo_window_seconds)

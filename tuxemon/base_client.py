@@ -16,8 +16,8 @@ from tuxemon.combat.session import CombatSession
 from tuxemon.constants import paths
 from tuxemon.core.active_effect import ActiveEffectManager
 from tuxemon.economy.shop_manager import ShopManager
-from tuxemon.environment import EnvironmentManager
 from tuxemon.encounter import EncounterManager
+from tuxemon.environment import EnvironmentManager
 from tuxemon.event import get_event_bus
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventcondition import ConditionManager

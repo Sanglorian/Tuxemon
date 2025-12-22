@@ -12,7 +12,6 @@ from tuxemon.combat.combat_context import (
     CombatContext,
     CombatType,
 )
-from tuxemon.encounter import Encounter, EncounterData
 from tuxemon.combat.utils import check_battle_legal, check_repellent
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction

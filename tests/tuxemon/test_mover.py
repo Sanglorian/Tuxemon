@@ -1,109 +1,144 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
+import pytest
 
 from tuxemon.db import Direction
 from tuxemon.entity import Body, EntityState, Mover
-from tuxemon.math import Point3, Vector3
+from tuxemon.math import Vector2
 from tuxemon.prepare import CONFIG
 
 
-class TestMover(unittest.TestCase):
-    def setUp(self):
-        self.body = Body(position=Point3(0, 0, 0))
-        self.mover = Mover(self.body)
+@pytest.fixture
+def body():
+    return Body(position=Vector2(0, 0))
 
-    def test_initial_state(self):
-        self.assertEqual(self.mover.state, EntityState.IDLE)
-        self.assertEqual(self.mover.facing, Direction.down)
-        self.assertEqual(self.body.velocity, Vector3(0, 0, 0))
 
-    def test_move_sets_state_to_walking(self):
-        self.mover.base_moverate = 5
-        self.mover.move(Direction.right)
-        self.assertEqual(self.mover.state, EntityState.WALKING)
-        self.assertEqual(self.body.velocity, Vector3(5, 0, 0))
+@pytest.fixture
+def mover(body):
+    return Mover(body)
 
-    def test_running_sets_state_and_speed(self):
-        self.mover.base_moverate = 5
-        self.mover.move(Direction.up)
-        self.mover.running()
-        self.assertEqual(self.mover.state, EntityState.RUNNING)
-        self.assertEqual(self.mover.base_moverate, CONFIG.player_runrate)
 
-    def test_walking_resets_state_and_speed(self):
-        self.mover.base_moverate = CONFIG.player_runrate
-        self.mover.move(Direction.left)
-        self.mover.walking()
-        self.assertEqual(self.mover.state, EntityState.WALKING)
-        self.assertEqual(self.mover.base_moverate, CONFIG.player_walkrate)
+def test_initial_state(mover, body):
+    assert mover.state == EntityState.IDLE
+    assert mover.facing == Direction.down
+    assert body.velocity == Vector2(0, 0)
 
-    def test_stop_resets_velocity_and_state(self):
-        self.mover.base_moverate = 5
-        self.mover.move(Direction.right)
-        self.mover.stop()
-        self.assertEqual(self.mover.state, EntityState.IDLE)
-        self.assertEqual(self.body.velocity, Vector3(0, 0, 0))
 
-    def test_jump_applies_vertical_impulse(self):
-        self.mover.jump(strength=10.0)
-        self.assertEqual(self.mover.state, EntityState.JUMPING)
-        self.assertEqual(self.body.velocity.z, 10.0)
-        self.assertEqual(self.body.acceleration.z, Mover.GRAVITY)
+@pytest.mark.parametrize(
+    "direction, expected",
+    [
+        (Direction.right, Vector2(5, 0)),
+        (Direction.left, Vector2(-5, 0)),
+        (Direction.up, Vector2(0, -5)),
+        (Direction.down, Vector2(0, 5)),
+    ],
+)
+def test_move_sets_state_and_velocity(mover, body, direction, expected):
+    mover.base_moverate = 5
+    mover.move(direction)
 
-    def test_jump_blocked_if_already_jumping(self):
-        self.mover.jump(strength=5.0)
-        initial_velocity = self.body.velocity.z
-        self.mover.jump(strength=20.0)  # should be ignored
-        self.assertEqual(self.body.velocity.z, initial_velocity)
+    assert mover.state == EntityState.WALKING
+    assert body.velocity == expected
+    assert mover.facing == direction
 
-    def test_apply_gravity_airborne(self):
-        self.body.position.z = 5
-        self.mover.apply_gravity()
-        self.assertEqual(self.body.acceleration.z, Mover.GRAVITY)
 
-    def test_apply_gravity_grounded(self):
-        self.body.position.z = 0
-        self.body.velocity.z = 5
-        self.mover.apply_gravity()
-        self.assertEqual(self.body.acceleration.z, 0)
+def test_move_boundary_case(mover, body):
+    mover.base_moverate = 0.0001
+    mover.move(Direction.down)
 
-    def test_update_movement_state_running(self):
-        self.mover.base_moverate = 5
-        self.mover.move(Direction.right)
-        self.mover.update_movement_state(running=True)
-        self.assertEqual(self.mover.state, EntityState.RUNNING)
+    assert body.velocity == Vector2(0, 0.0001)
+    assert mover.facing == Direction.down
 
-    def test_update_movement_state_walking(self):
-        self.mover.base_moverate = 5
-        self.mover.move(Direction.right)
-        self.mover.update_movement_state(running=False)
-        self.assertEqual(self.mover.state, EntityState.WALKING)
 
-    def test_update_movement_state_idle(self):
-        self.mover.stop()
-        self.mover.update_movement_state(running=True)
-        self.assertEqual(self.mover.state, EntityState.IDLE)
+def test_stop_resets_velocity_and_state(mover, body):
+    mover.base_moverate = 5
+    mover.move(Direction.right)
 
-    def test_set_state_blocks_jump_to_walk_or_run(self):
-        self.mover.jump(strength=5.0)
-        self.assertEqual(self.mover.state, EntityState.JUMPING)
-        self.mover.set_state(EntityState.WALKING)
-        self.assertEqual(self.mover.state, EntityState.JUMPING)
-        self.mover.set_state(EntityState.RUNNING)
-        self.assertEqual(self.mover.state, EntityState.JUMPING)
+    mover.stop()
 
-    def test_set_state_idle_resets_velocity_and_rate(self):
-        self.mover.base_moverate = 10
-        self.mover.move(Direction.right)
-        self.assertNotEqual(self.body.velocity, Vector3(0, 0, 0))
-        self.mover.set_state(EntityState.IDLE)
-        self.assertEqual(self.mover.state, EntityState.IDLE)
-        self.assertEqual(self.body.velocity, Vector3(0, 0, 0))
-        self.assertEqual(self.mover.base_moverate, CONFIG.player_walkrate)
+    assert mover.state == EntityState.IDLE
+    assert body.velocity == Vector2(0, 0)
 
-    def test_set_state_same_state_no_change(self):
-        self.mover.move(Direction.right)
-        self.assertEqual(self.mover.state, EntityState.WALKING)
-        self.mover.set_state(EntityState.WALKING)
-        self.assertEqual(self.mover.state, EntityState.WALKING)
+
+def test_facing_persists_after_stop(mover, body):
+    mover.move(Direction.right)
+    mover.stop()
+
+    assert mover.facing == Direction.right
+
+
+def test_running_sets_state_and_speed(mover, body):
+    mover.base_moverate = 5
+    mover.move(Direction.up)
+
+    mover.running()
+
+    assert mover.state == EntityState.RUNNING
+    assert mover.base_moverate == CONFIG.player_runrate
+
+
+def test_walking_resets_state_and_speed(mover, body):
+    mover.base_moverate = CONFIG.player_runrate
+    mover.move(Direction.left)
+
+    mover.walking()
+
+    assert mover.state == EntityState.WALKING
+    assert mover.base_moverate == CONFIG.player_walkrate
+
+
+def test_jump_sets_state(mover):
+    mover.jump()
+    assert mover.state == EntityState.JUMPING
+
+
+def test_jump_blocked_if_already_jumping(mover):
+    mover.jump()
+    assert mover.state == EntityState.JUMPING
+
+    mover.jump()  # should not change state
+    assert mover.state == EntityState.JUMPING
+
+
+def test_update_movement_state_running(mover, body):
+    mover.base_moverate = 5
+    mover.move(Direction.right)
+
+    mover.update_movement_state(running=True)
+
+    assert mover.state == EntityState.RUNNING
+
+
+def test_update_movement_state_walking(mover, body):
+    mover.base_moverate = 5
+    mover.move(Direction.right)
+
+    mover.update_movement_state(running=False)
+
+    assert mover.state == EntityState.WALKING
+
+
+def test_update_movement_state_idle(mover, body):
+    mover.stop()
+    mover.update_movement_state(running=True)
+
+    assert mover.state == EntityState.IDLE
+
+
+def test_set_state_idle_resets_velocity_and_rate(mover, body):
+    mover.base_moverate = 10
+    mover.move(Direction.right)
+
+    mover.set_state(EntityState.IDLE)
+
+    assert mover.state == EntityState.IDLE
+    assert body.velocity == Vector2(0, 0)
+    assert mover.base_moverate == CONFIG.player_walkrate
+
+
+def test_set_state_same_state_no_change(mover):
+    mover.move(Direction.right)
+    assert mover.state == EntityState.WALKING
+
+    mover.set_state(EntityState.WALKING)
+    assert mover.state == EntityState.WALKING

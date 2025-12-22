@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Generic, Optional, TypeVar
 from uuid import UUID, uuid4
 
 from tuxemon.db import Direction
-from tuxemon.map.map import dirs3, proj
-from tuxemon.math import Point3, Vector3
+from tuxemon.map.map import dirs2
+from tuxemon.math import Vector2
 from tuxemon.prepare import CONFIG
 from tuxemon.tools import vector2_to_tile_pos
 
@@ -29,30 +29,23 @@ class EntityState(Enum):
 
 class Body:
     """
-    Handles physics-related attributes and movement of an entity.
+    Handles 2D movement of an entity.
     """
 
     def __init__(
         self,
-        position: Point3,
-        velocity: Optional[Vector3] = None,
-        acceleration: Optional[Vector3] = None,
+        position: Vector2,
+        velocity: Optional[Vector2] = None,
+        acceleration: Optional[Vector2] = None,
     ) -> None:
         self.position = position
-        self.velocity = velocity or Vector3(0, 0, 0)
-        self.acceleration = acceleration or Vector3(0, 0, 0)
+        self.velocity = velocity or Vector2(0, 0)
+        self.acceleration = acceleration or Vector2(0, 0)
 
     @property
     def is_moving(self) -> bool:
         """Returns whether the entity is currently moving."""
-        return self.velocity != Vector3(0, 0, 0)
-
-    @property
-    def acceleration_magnitude(self) -> float:
-        """
-        Returns the magnitude of the acceleration vector.
-        """
-        return self.acceleration.magnitude
+        return self.velocity != Vector2(0, 0)
 
     def update(self, time_delta: float) -> None:
         """
@@ -71,16 +64,17 @@ class Body:
         Resets attributes selectively.
         """
         if reset_position:
-            self.position = Point3(0, 0, 0)
+            self.position = Vector2(0, 0)
         if reset_velocity:
-            self.velocity = Vector3(0, 0, 0)
+            self.velocity = Vector2(0, 0)
         if reset_acceleration:
-            self.acceleration = Vector3(0, 0, 0)
+            self.acceleration = Vector2(0, 0)
 
 
 class Mover:
-
-    GRAVITY: float = -9.8
+    """
+    Handles movement state transitions and movement logic.
+    """
 
     def __init__(
         self,
@@ -110,9 +104,10 @@ class Mover:
 
     def move(self, direction: Direction) -> None:
         """Applies movement in a given direction."""
-        direction_vector = dirs3[direction]
+        direction_vector = dirs2[direction]  # 2D direction table
         self.body.velocity = direction_vector * self.moverate
         self.facing = direction
+
         new_state = (
             EntityState.RUNNING
             if self.base_moverate == CONFIG.player_runrate
@@ -122,6 +117,7 @@ class Mover:
 
     def stop(self) -> None:
         """Stops movement and transitions to IDLE."""
+        self.body.velocity = Vector2(0, 0)
         self.set_state(EntityState.IDLE)
 
     def running(self) -> None:
@@ -136,38 +132,24 @@ class Mover:
             self.base_moverate = CONFIG.player_walkrate
             self.set_state(EntityState.WALKING)
 
-    def jump(self, strength: float = 5.0) -> None:
-        """Applies a vertical impulse to simulate a jump."""
-        if self.state != EntityState.JUMPING and self.body.position.z == 0:
-            self.body.velocity.z = strength
-            self.body.acceleration.z = self.GRAVITY  # gravity-like pull
+    def jump(self) -> None:
+        """Triggers a jump animation state."""
+        if self.state != EntityState.JUMPING:
             self.set_state(EntityState.JUMPING)
 
     def set_state(self, new_state: EntityState) -> None:
         """
-        Controls the entity's state transitions, validating if the move is allowed.
+        Controls the entity's state transitions.
         """
-        current_state = self.state
-
-        if current_state == EntityState.JUMPING and new_state in (
-            EntityState.WALKING,
-            EntityState.RUNNING,
-        ):
-            return  # Transition blocked
-
-        if new_state == EntityState.IDLE:
-            self.body.velocity = Vector3(0, 0, 0)
-            self.base_moverate = CONFIG.player_walkrate
-
-        if current_state == new_state:
+        if self.state == new_state:
             return
 
-        self.state = new_state
+        # Reset movement when going idle
+        if new_state == EntityState.IDLE:
+            self.body.velocity = Vector2(0, 0)
+            self.base_moverate = CONFIG.player_walkrate
 
-    def apply_gravity(self) -> None:
-        """Sets vertical acceleration if airborne."""
-        if self.body.position.z > 0:
-            self.body.acceleration.z = self.GRAVITY
+        self.state = new_state
 
     def update_movement_state(self, running: bool) -> None:
         """
@@ -204,7 +186,7 @@ class Entity(Generic[SaveDict]):
         self.session = session
         self.client = session.client
         self.instance_id: UUID = uuid4()
-        self.body = Body(position=Point3(0, 0, 0))
+        self.body = Body(position=Vector2(0, 0))
         self.mover = Mover(self.body)
         self._current_map: Optional[str] = None
         self.update_location: bool = False
@@ -249,26 +231,8 @@ class Entity(Generic[SaveDict]):
         Parameters:
             td: Time delta (elapsed time).
         """
-        if self.is_airborne:
-            self.mover.apply_gravity()
-
         self.body.update(td)
         self.pos_update()
-        self._handle_vertical_constraint()
-
-    def _handle_vertical_constraint(self) -> None:
-        """
-        Applies constraints when the entity hits the floor (z <= 0).
-        This clamps position/velocity and handles state transition from JUMPING.
-        """
-        if self.body.position.z <= 0:
-            # Clamp all vertical components to zero
-            self.body.position.z = 0
-            self.body.velocity.z = 0
-            self.body.acceleration.z = 0
-
-            if self.mover.state == EntityState.JUMPING:
-                self.mover.set_state(EntityState.IDLE)
 
     def set_position(self, pos: Sequence[float]) -> None:
         """
@@ -277,7 +241,7 @@ class Entity(Generic[SaveDict]):
         Parameters:
             pos: Position to be set.
         """
-        self.body.position = Point3(*pos)
+        self.body.position = Vector2(*pos)
         self.add_collision(pos)
         self.pos_update()
 
@@ -344,7 +308,7 @@ class Entity(Generic[SaveDict]):
     @property
     def tile_pos(self) -> tuple[int, int]:
         """Return the tile position of the entity."""
-        return vector2_to_tile_pos(proj(self.body.position))
+        return vector2_to_tile_pos(self.body.position)
 
     @property
     def current_map(self) -> Optional[str]:
@@ -352,12 +316,12 @@ class Entity(Generic[SaveDict]):
         return self._current_map
 
     @property
-    def position(self) -> Point3:
+    def position(self) -> Vector2:
         """Return the current position of the entity."""
         return self.body.position
 
     @property
-    def velocity(self) -> Vector3:
+    def velocity(self) -> Vector2:
         """Return the current velocity of the entity."""
         return self.body.velocity
 
@@ -376,10 +340,6 @@ class Entity(Generic[SaveDict]):
         return self.mover.facing
 
     @property
-    def is_airborne(self) -> bool:
-        return self.body.position.z > 0
-
-    @property
     def move_direction(self) -> Optional[Direction]:
         """
         Move direction allows other functions to move the entity in a
@@ -389,9 +349,9 @@ class Entity(Generic[SaveDict]):
         """
         return self.mover.move_direction
 
-    def jump(self, strength: float = 5.0) -> None:
+    def jump(self) -> None:
         """Triggers a jump for the entity."""
-        self.mover.jump(strength)
+        self.mover.jump()
 
     def get_state(self, session: Session) -> SaveDict:
         """

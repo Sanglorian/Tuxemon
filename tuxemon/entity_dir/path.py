@@ -8,9 +8,9 @@ from math import hypot
 from typing import TYPE_CHECKING, Optional
 
 from tuxemon.db import Direction
-from tuxemon.map.map import dirs2, get_direction, proj
+from tuxemon.map.map import dirs2, get_direction
 from tuxemon.math import Vector2
-from tuxemon.tools import tile_pos_to_point3, vector2_to_tile_pos
+from tuxemon.tools import vector2_to_tile_pos
 
 if TYPE_CHECKING:
     from tuxemon.map.map_manager import MapManager
@@ -144,7 +144,7 @@ class PathController:
             return
 
         target = self.path[-1]
-        direction = get_direction(proj(self.owner.position), target)
+        direction = get_direction(self.owner.position, target)
         self.owner.set_facing(direction)
 
         try:
@@ -193,7 +193,7 @@ class PathController:
 
         target = self.path[-1]
         expected = tile_distance(self.path_origin, target)
-        traveled = tile_distance(proj(self.owner.position), self.path_origin)
+        traveled = tile_distance(self.owner.position, self.path_origin)
         if traveled >= expected:
             self.owner.set_position(target)
             self.path.pop()
@@ -316,7 +316,7 @@ class PathController:
         destination, it retains the last waypoint to avoid abrupt stopping.
         Otherwise, all movement is halted and pathfinding is cleared.
         """
-        if proj(self.owner.position) == self.path_origin:
+        if self.owner.position == self.path_origin:
             self.abort_movement(preserve_position=True)
         elif self.path and self.owner.moving:
             self.path = [self.path[-1]]
@@ -335,7 +335,7 @@ class PathController:
         is retained; otherwise, it reverts to its last recorded origin.
         """
         if not preserve_position and self.path_origin is not None:
-            self.owner.set_position(tile_pos_to_point3(self.path_origin))
+            self.owner.set_position(self.path_origin)
         self.owner.set_move_direction()
         self.owner.stop_moving()
         self.cancel_path()

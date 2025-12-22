@@ -222,7 +222,3 @@ class Vector2(Vector):
 
     def __repr__(self) -> str:
         return f"Vector3({self.x}, {self.y})"
-
-
-Point3 = Vector3
-Point2 = Vector2

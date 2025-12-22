@@ -31,7 +31,7 @@ class MonsterEntry:
     appearance_count: int = 1
     caught_count: int = 0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not isinstance(self.status, SeenStatus):
             try:
                 self.status = SeenStatus(self.status)

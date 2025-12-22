@@ -20,7 +20,7 @@ from tuxemon import prepare
 from tuxemon.camera.camera import project
 from tuxemon.db import Direction
 from tuxemon.graphics import ColorLike, apply_cinema_bars, load_and_scale
-from tuxemon.map.map import get_pos_from_tilepos, proj
+from tuxemon.map.map import get_pos_from_tilepos
 from tuxemon.math import Vector2
 from tuxemon.surfanim import SurfaceAnimation, SurfaceAnimationCollection
 
@@ -121,9 +121,7 @@ class SpriteController:
 
     def update(self, time_delta: float) -> None:
         """Update the sprite renderer."""
-        self.sprite_renderer.set_position(
-            self.npc.tile_pos, self.npc.body.position.z
-        )
+        self.sprite_renderer.set_position(self.npc.tile_pos)
         self.sprite_renderer.update(time_delta)
 
     def update_template(self, template: NpcTemplateModel) -> None:
@@ -276,11 +274,9 @@ class SpriteRenderer:
         """Calculate the frame duration for walking animations."""
         return (time_scale / rate) / frame_divisor / time_scale * speed_factor
 
-    def set_position(
-        self, position: tuple[int, int], z_offset: float = 0.0
-    ) -> None:
+    def set_position(self, position: tuple[int, int]) -> None:
         """Set the position of the sprite, optionally offset by vertical jump."""
-        self.rect.topleft = (position[0], position[1] - int(z_offset))
+        self.rect.topleft = position
 
     def update(self, time_delta: float) -> None:
         """Update the sprite animation."""
@@ -504,10 +500,8 @@ class MapRenderer(AbstractRenderer):
                 sprite_renderer.standing,
             )
 
-        pixel_x, pixel_y = proj(npc.position)
-        z_offset = npc.body.position.z if npc.is_airborne else 0.0
-        adjusted_y = pixel_y - z_offset
-        return [WorldSurfaces(frame, Vector2(pixel_x, adjusted_y), layer)]
+        pixel_x, pixel_y = npc.position
+        return [WorldSurfaces(frame, Vector2(pixel_x, pixel_y), layer)]
 
 
 class BubbleManager:
@@ -638,5 +632,5 @@ def collision_box_to_pgrect(
 
 def npc_to_pgrect(current_map: AbstractMap, npc: NPC) -> Rect:
     """Returns a Rect (in screen-coords) version of an NPC's bounding box."""
-    pos = get_pos_from_tilepos(current_map, proj(npc.position))
+    pos = get_pos_from_tilepos(current_map, npc.position)
     return Rect(pos, prepare.TILE_SIZE)

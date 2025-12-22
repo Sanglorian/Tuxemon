@@ -162,7 +162,7 @@ def test_next_waypoint_traversable(
     pc.next_waypoint()
     npc.sprite_controller.play_animation.assert_called_once()
     assert pc.path_origin == (3, 3)
-    npc.mover.move.assert_called_once_with(npc.mover.current_direction)
+    npc.mover.move.assert_called_once_with(Direction.down)
 
 
 def test_next_waypoint_exception_cancels_path(

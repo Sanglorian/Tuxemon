@@ -167,7 +167,7 @@ class FactionManager:
     def set_state(self, npc_manager: NPCManager) -> dict[str, Any]:
         factions_save_data: dict[str, Any] = {}
 
-        npc_slugs = npc_manager.get_all_npc_slugs()
+        npc_slugs = npc_manager.get_all_slugs()
         for faction_slug, faction in self._factions.items():
             faction_data = faction.to_save_data(npc_slugs)
             if faction_data:

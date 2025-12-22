@@ -98,3 +98,206 @@ def test_persistence_round_trip(
     assert "npc_2" in npc_manager.npcs_off_map
     assert "npc_1" not in npc_manager.npcs_off_map
     assert "npc_2" not in npc_manager.npcs
+
+
+@patch("tuxemon.npc_manager.NPC")
+def test_load_persistent_overwrites_duplicate_slugs(
+    MockNPC, npc_manager, session
+):
+    state1 = MagicMock(player_slug="npc_x", current_map="map_a")
+    state2 = MagicMock(player_slug="npc_x", current_map="map_b")
+
+    npc_a = MagicMock(slug="npc_x")
+    npc_b = MagicMock(slug="npc_x")
+    MockNPC.side_effect = [npc_a, npc_b]
+
+    npc_manager.load_persistent_npc_states(session, [state1, state2])
+
+    assert "npc_x" in npc_manager.npcs_off_map
+    assert "npc_x" not in npc_manager.npcs
+
+
+def test_get_persistent_npc_states_skips_missing_session(
+    npc_manager, session, caplog
+):
+    npc = MagicMock(slug="npc_1", persistence=True, session=None)
+    npc_manager.add_npc(npc)
+
+    states = npc_manager.get_persistent_npc_states(session)
+
+    assert states == []
+    assert "missing session" in caplog.text
+
+
+def test_get_persistent_npc_states_ignores_non_persistent(
+    npc_manager, session
+):
+    npc = MagicMock(slug="npc_np", persistence=False, session=session)
+    npc_manager.add_npc(npc)
+
+    states = npc_manager.get_persistent_npc_states(session)
+    assert states == []
+
+
+@patch("tuxemon.npc_manager.NPC")
+def test_load_persistent_mixed_valid_invalid(MockNPC, npc_manager, session):
+    valid = MagicMock(player_slug="npc_ok", current_map="map_a")
+    invalid = MagicMock(player_slug=None, current_map="map_a")
+
+    fake_npc = MagicMock(slug="npc_ok")
+    MockNPC.return_value = fake_npc
+
+    npc_manager.load_persistent_npc_states(session, [valid, invalid])
+
+    assert "npc_ok" in npc_manager.npcs
+    assert npc_manager.npcs_off_map == {}
+
+
+@patch("tuxemon.npc_manager.NPC")
+def test_load_persistent_does_not_clear_existing(
+    MockNPC, npc_manager, session
+):
+    existing = MagicMock(slug="existing")
+    npc_manager.add_npc(existing)
+
+    state = MagicMock(player_slug="npc_new", current_map="map_a")
+    new_npc = MagicMock(slug="npc_new")
+    MockNPC.return_value = new_npc
+
+    npc_manager.load_persistent_npc_states(session, [state])
+
+    assert "existing" in npc_manager.npcs
+    assert "npc_new" in npc_manager.npcs
+
+
+def test_clear_npcs_filters_correctly(npc_manager):
+    persistent = MagicMock(slug="p", persistence=True)
+    non_persistent = MagicMock(slug="np", persistence=False)
+
+    npc_manager.add_npc(persistent)
+    npc_manager.add_npc(non_persistent)
+
+    npc_manager.clear_npcs()
+
+    assert "p" in npc_manager.npcs
+    assert "np" not in npc_manager.npcs
+    non_persistent.remove_collision.assert_called_once()
+
+
+def test_add_clients_to_map_missing_map_name(npc_manager):
+    registry = {"c1": {"sprite": MagicMock(slug="npc1")}}
+
+    npc_manager.add_clients_to_map(registry, "map_a")
+
+    assert "npc1" in npc_manager.npcs_off_map
+
+
+def test_add_clients_to_map_moves_between_maps(npc_manager):
+    sprite = MagicMock(slug="npc1")
+    registry = {"c1": {"sprite": sprite, "map_name": "map_a"}}
+
+    npc_manager.add_clients_to_map(registry, "map_a")
+    assert "npc1" in npc_manager.npcs
+
+    registry["c1"]["map_name"] = "map_b"
+    npc_manager.add_clients_to_map(registry, "map_a")
+
+    assert "npc1" in npc_manager.npcs_off_map
+    assert "npc1" not in npc_manager.npcs
+
+
+def test_sync_public_dicts_reflects_internal_state(npc_manager):
+    npc = MagicMock(slug="npc1")
+    npc_manager.add_npc(npc)
+
+    assert "npc1" in npc_manager._on_map._data
+
+    assert npc_manager.npcs["npc1"] is npc
+
+
+def test_move_npc_between_maps(npc_manager):
+    npc = MagicMock(slug="npc1")
+    npc_manager.add_npc(npc)
+
+    npc_manager.add_npc_off_map(npc)
+
+    assert "npc1" not in npc_manager.npcs
+    assert "npc1" in npc_manager.npcs_off_map
+    assert npc_manager.npcs_off_map["npc1"] is npc
+
+
+def test_clear_npcs_preserves_persistent_on_and_off_map(npc_manager):
+    p1 = MagicMock(slug="p1", persistence=True)
+    p2 = MagicMock(slug="p2", persistence=True)
+    np = MagicMock(slug="np", persistence=False)
+
+    npc_manager.add_npc(p1)
+    npc_manager.add_npc_off_map(p2)
+    npc_manager.add_npc(np)
+
+    npc_manager.clear_npcs()
+
+    assert "p1" in npc_manager.npcs
+    assert "p2" in npc_manager.npcs_off_map
+    assert "np" not in npc_manager.npcs
+
+
+def test_get_entity_pos_only_checks_on_map(npc_manager):
+    npc_on = MagicMock(slug="on", tile_pos=(1, 1))
+    npc_off = MagicMock(slug="off", tile_pos=(1, 1))
+
+    npc_manager.add_npc(npc_on)
+    npc_manager.add_npc_off_map(npc_off)
+
+    assert npc_manager.get_entity_pos((1, 1)) is npc_on
+
+
+@patch("tuxemon.npc_manager.NPC")
+def test_load_persistent_does_not_clear_existing(
+    MockNPC, npc_manager, session
+):
+    existing = MagicMock(slug="existing")
+    npc_manager.add_npc(existing)
+
+    state = MagicMock(player_slug="npc_new", current_map="map_a")
+    new_npc = MagicMock(slug="npc_new")
+    MockNPC.return_value = new_npc
+
+    npc_manager.load_persistent_npc_states(session, [state])
+
+    assert "existing" in npc_manager.npcs
+    assert "npc_new" in npc_manager.npcs
+
+
+def test_update_npcs_only_updates_on_map(npc_manager):
+    client = MagicMock()
+    npc_on = MagicMock(slug="on", update_location=False)
+    npc_off = MagicMock(slug="off", update_location=False)
+
+    npc_manager.add_npc(npc_on)
+    npc_manager.add_npc_off_map(npc_off)
+
+    npc_manager.update_npcs(0.1, client)
+
+    npc_on.update.assert_called_once()
+    npc_off.update.assert_not_called()
+
+
+def test_add_clients_to_map_ignores_entries_without_sprite(npc_manager):
+    registry = {
+        "c1": {"map_name": "map_a"},
+        "c2": {"sprite": MagicMock(slug="npc1"), "map_name": "map_a"},
+    }
+
+    npc_manager.add_clients_to_map(registry, "map_a")
+
+    assert "npc1" in npc_manager.npcs
+    assert len(npc_manager.npcs) == 1
+
+
+def test_public_dicts_are_copies(npc_manager):
+    npc = MagicMock(slug="npc1")
+    npc_manager.add_npc(npc)
+
+    npc_manager.npcs.pop("npc1")
+    assert "npc1" in npc_manager._on_map._data

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, final
 
 from tuxemon.event.eventaction import EventAction
+from tuxemon.states.world_state import WorldState
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
@@ -36,5 +37,10 @@ class QuitWorldAction(EventAction):
         session.client.map_manager.clear_events()
         session.client.map_manager.clear_inits()
         session.client.replace_state("StartState")
+        try:
+            old_world = session.client.get_state_by_name(WorldState)
+            session.client.pop_state(old_world)
+        except ValueError:
+            pass
         session.reset(reset_client=False)
         session.reset_time()

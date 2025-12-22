@@ -19,7 +19,7 @@ from tuxemon.platform.const.sizes import UNKNOWN_MAP_SLUG
 from tuxemon.prepare import BG_PHONE_CONTACTS, SCREEN_SIZE
 from tuxemon.relationship import RelationshipConstants
 from tuxemon.tools import open_choice_dialog, open_dialog
-from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
@@ -110,14 +110,13 @@ class NuPhoneContacts(PygameMenuState):
         """Opens the choice dialog to confirm the call."""
         self._current_call_slug = slug
         label = f"{T.translate('action_call')} {T.translate(slug).upper()}"
-
-        option = ChoiceOption(
-            key=slug, display_text=label, action=self._start_call
-        )
-
+        actions = {slug: self._start_call}
+        options = create_choice_options(actions)
+        for opt in options:
+            opt.display_text = label
         open_choice_dialog(
             self.client,
-            menu=MenuOptions([option]),
+            menu=MenuOptions(options),
             escape_key_exits=True,
         )
 

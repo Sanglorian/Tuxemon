@@ -18,7 +18,7 @@ from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 from tuxemon.tools import open_choice_dialog, open_dialog
-from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.menu_options import MenuOptions, create_yes_no_options
 
 MenuGameObj = Callable[[], object]
 
@@ -99,21 +99,12 @@ class SingleMissionState(PygameMenuState):
             msg = T.translate("mission_deletion")
             open_dialog(self.client, [msg])
 
-            options = [
-                ChoiceOption(
-                    key="no",
-                    display_text=T.translate("no"),
-                    action=refuse_deletion,
-                ),
-                ChoiceOption(
-                    key="yes",
-                    display_text=T.translate("yes"),
-                    action=confirm_deletion,
-                ),
-            ]
+            options = create_yes_no_options(
+                yes_action=confirm_deletion,
+                no_action=refuse_deletion,
+            )
 
             menu = MenuOptions(options)
-
             open_choice_dialog(self.client, menu)
 
         def confirm_deletion() -> None:

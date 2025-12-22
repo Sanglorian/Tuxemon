@@ -18,15 +18,32 @@ if TYPE_CHECKING:
 @dataclass
 class StepDamageEffect(CoreEffect):
     """
-    This effect calculates damage to the target based on the number of steps
-    taken by the monster. The damage is scaled using a specified formula, which
-    is logarithmic.
+    Applies the "step_damage" effect to a technique.
 
-    Parameters:
-        objectives: The targets for this effect, specified as a string
-            (e.g., "enemy_monster" or "enemy_monster:own_monster").
-        scaling_factor: A factor used to scale the damage calculation.
-        scaling_constant: A constant used in the damage calculation formula.
+    This effect calculates damage to the target based on the number of steps
+    taken by the user monster. The damage scales logarithmically, allowing
+    diminishing returns as the step count increases. This mechanic ties
+    exploration or movement directly into combat effectiveness.
+
+    **Parameters**
+
+    - ``objectives``: Colon-separated string specifying which monsters are
+      affected. Examples:
+      - ``enemy_monster`` → damages only the enemy.
+      - ``own_monster`` → damages only the user.
+      - ``enemy_monster:own_monster`` → damages both the enemy and the user.
+    - ``scaling_factor``: Float multiplier applied to the logarithmic damage
+      formula.
+    - ``scaling_constant``: Float divisor used in the logarithmic formula to
+      normalize step counts.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "step_damage enemy_monster 1.5 100"
+        ]
     """
 
     name = "step_damage"

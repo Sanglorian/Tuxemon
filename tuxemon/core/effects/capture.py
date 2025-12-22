@@ -20,7 +20,21 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class CaptureEffect(CoreEffect):
-    """Attempts to capture the target."""
+    """
+    Attempts to capture a target monster using a capture device.
+
+    This effect calculates capture probability based on the target's status
+    and the capture device modifier. It performs a shake check, determines
+    the number of shakes, and applies capture effects if successful.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "capture"
+        ]
+    """
 
     name = "capture"
 

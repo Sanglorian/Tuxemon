@@ -18,15 +18,33 @@ if TYPE_CHECKING:
 @dataclass
 class RemoveEffect(CoreEffect):
     """
-    This effect has a chance to remove a status effect.
+    Applies the "remove" effect to a technique.
 
-    Parameters:
-        status: The Status slug (e.g. enraged) or 'positive', 'negative', 'all'.
-        objectives: The targets (e.g. own_monster, enemy_monster, etc.), if
-            single "enemy_monster" or "enemy_monster:own_monster"
+    This effect attempts to remove one or more status effects from the
+    specified targets. The status to be removed can be a specific slug
+    (e.g., ``enraged``), or a category such as ``positive``, ``negative``,
+    or ``all``.
 
-    eg "remove xxx,own_monster" removes only xxx
-    eg "remove all,own_monster" removes everything
+    **Parameters**
+
+    - ``status``: Determines which status effect(s) to remove.
+      - Specific slug (e.g., ``enraged``): Removes only that status.
+      - ``positive``: Removes only positive status effects.
+      - ``negative``: Removes only negative status effects.
+      - ``all``: Removes all status effects.
+    - ``objectives``: Colon-separated string specifying which monsters are
+      affected. Examples:
+      - ``own_monster`` → removes statuses from the user.
+      - ``enemy_monster`` → removes statuses from the target.
+      - ``enemy_monster:own_monster`` → removes statuses from both.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "remove all own_monster"
+        ]
     """
 
     name = "remove"

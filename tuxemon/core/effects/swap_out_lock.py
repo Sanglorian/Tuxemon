@@ -25,9 +25,39 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SwapOutLockEffect(CoreEffect):
     """
-    Used to block or unblock a target from being swapped.
-    Can be temporary or persistent.
-    Applied via techniques or statuses.
+    Applies the "swap_out_lock" effect.
+
+    This effect prevents or allows a monster to be swapped out of combat.
+    It can be applied via techniques or statuses, and may be temporary or
+    persistent depending on configuration. The effect can also be set to
+    automatically expire once the status is removed.
+
+    **Parameters**
+
+    - ``action``: Determines whether to block or unblock swapping.
+      - ``block`` → prevents the monster from being swapped out.
+      - ``unblock`` → allows the monster to be swapped out again.
+    - ``method``: Determines the duration of the effect.
+      - ``temporary`` → swap restriction lasts only for the current phase.
+      - ``persistent`` → swap restriction persists until explicitly removed.
+    - ``until_status_gone``: String flag (``"true"`` or ``"false"``) indicating
+      whether the block should automatically be lifted once the status ends.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "swap_out_lock block temporary false"
+        ]
+
+        "effects": [
+            "swap_out_lock unblock persistent false"
+        ]
+
+        "effects": [
+            "swap_out_lock block persistent true"
+        ]
     """
 
     name = "swap_out_lock"

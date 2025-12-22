@@ -16,11 +16,25 @@ if TYPE_CHECKING:
 @dataclass
 class SpikyEffect(CoreEffect):
     """
-    Spiky: If an opponent swaps in, the incoming monster takes damage equal
-    to 1/8th of its maximum HP
+    Applies the "spiky" status effect.
 
-    Parameters:
-        divisor: The divisor.
+    This effect damages an incoming monster when it is swapped into battle.
+    The damage is calculated as a fraction of the monster's maximum HP,
+    determined by the specified divisor.
+
+    **Parameters**
+
+    - ``divisor``: Integer value used to calculate the damage.
+      - Damage is calculated as ``host.hp // divisor``.
+      - Example: With a divisor of 8, the monster takes 1/8th of its maximum HP.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "spiky 8"
+        ]
     """
 
     name = "spiky"

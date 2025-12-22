@@ -16,11 +16,25 @@ if TYPE_CHECKING:
 @dataclass
 class WastingEffect(CoreEffect):
     """
-    Wasting: Take #/16 of your maximum HP in damage each turn
-    where # = the number of turns that you have had this status.
+    Applies the "wasting" status effect.
 
-    Parameters:
-        divisor: The divisor.
+    This effect causes a monster to lose a fraction of its maximum HP each
+    turn, with the damage increasing over time. The amount of damage scales
+    based on the number of turns the status has been active.
+
+    **Parameters**
+
+      - ``divisor``: Integer divisor used to calculate base damage.
+      - Example: With ``divisor = 16``, the monster takes
+        ``(max_hp / 16) * nr_turn`` damage each turn.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "wasting 16"
+        ]
     """
 
     name = "wasting"

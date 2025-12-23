@@ -9,7 +9,7 @@ from typing import Any
 
 from tuxemon import prepare
 from tuxemon.constants.asset_loader import fetch_asset
-from tuxemon.db import db
+from tuxemon.database.bootstrap import db
 from tuxemon.map.map_manager import MAP_TYPES
 from tuxemon.script.parser import parse_action_string
 

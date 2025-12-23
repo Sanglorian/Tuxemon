@@ -6,7 +6,8 @@ import logging
 from collections.abc import Sequence
 from typing import Optional
 
-from tuxemon.db import ElementItemModel, ElementModel, db
+from tuxemon.db import ElementItemModel, ElementModel
+from tuxemon.database.bootstrap import db
 from tuxemon.locale import T
 
 logger = logging.getLogger(__name__)

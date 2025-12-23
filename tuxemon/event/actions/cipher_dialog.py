@@ -6,7 +6,8 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Optional, final
 
-from tuxemon.db import DialogueModel, db
+from tuxemon.db import DialogueModel
+from tuxemon.database.bootstrap import db
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import get_avatar, string_to_colorlike
 from tuxemon.locale import T

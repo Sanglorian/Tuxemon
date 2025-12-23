@@ -17,8 +17,8 @@ from tuxemon.db import (
     TechBehaviors,
     TechniqueModel,
     VisualProperties,
-    db,
 )
+from tuxemon.database.bootstrap import db
 from tuxemon.element import ElementTypesHandler
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler

@@ -4,7 +4,8 @@ import unittest
 from unittest.mock import MagicMock
 
 from tuxemon import prepare
-from tuxemon.db import Modifier, db
+from tuxemon.db import Modifier
+from tuxemon.database.bootstrap import db
 from tuxemon.monster import Monster
 from tuxemon.prepare import MAX_LEVEL
 from tuxemon.shape import ShapeHandler

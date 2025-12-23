@@ -6,7 +6,8 @@ import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.db import FlairModel, db
+from tuxemon.db import FlairModel
+from tuxemon.database.bootstrap import db
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster_dir.sprite import Flair

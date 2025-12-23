@@ -8,7 +8,8 @@ from typing import Optional, Union
 from pygame import Rect
 
 from tuxemon import prepare
-from tuxemon.db import DialogueModel, db
+from tuxemon.db import DialogueModel
+from tuxemon.database.bootstrap import db
 from tuxemon.ui.text_alignment import DialogPosition
 
 logger = logging.getLogger(__name__)

@@ -321,8 +321,8 @@ def pygame_init() -> None:
     from tuxemon.locale import T
 
     T.initialize_translations(recompile=CONFIG.recompile_translations)
-    from tuxemon.db import db
-
+    from tuxemon.database.bootstrap import db
+    
     db.load()
 
     logger.debug("pygame init")
@@ -367,7 +367,7 @@ def headless_init() -> None:
     from tuxemon.locale import T
 
     T.initialize_translations(recompile=CONFIG.recompile_translations)
-    from tuxemon.db import db
+    from tuxemon.database.bootstrap import db
 
     db.load()
     logger.debug("headless init")

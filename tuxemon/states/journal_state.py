@@ -10,7 +10,8 @@ import pygame_menu
 from pygame_menu import locals
 
 from tuxemon import prepare
-from tuxemon.db import MonsterModel, db
+from tuxemon.db import MonsterModel
+from tuxemon.database.bootstrap import db
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons

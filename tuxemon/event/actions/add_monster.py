@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon.db import SeenStatus, db
+from tuxemon.db import SeenStatus
+from tuxemon.database.bootstrap import db
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster import Monster

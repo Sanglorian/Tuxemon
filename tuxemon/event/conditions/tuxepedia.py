@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from tuxemon.db import MonsterModel, SpatialCondition, db
+from tuxemon.db import MonsterModel, SpatialCondition
+from tuxemon.database.bootstrap import db
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 from tuxemon.tools import compare

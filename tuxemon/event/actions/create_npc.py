@@ -11,8 +11,8 @@ from tuxemon.db import (
     DialogueContent,
     DialogueProfile,
     NpcModel,
-    db,
 )
+from tuxemon.database.bootstrap import db
 from tuxemon.event.eventaction import EventAction
 from tuxemon.item.item import Item
 from tuxemon.monster import Monster

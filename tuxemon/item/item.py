@@ -23,8 +23,8 @@ from tuxemon.db import (
     SoundProperties,
     State,
     VisualProperties,
-    db,
 )
+from tuxemon.database.bootstrap import db
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
 from tuxemon.surfanim import FlipAxes

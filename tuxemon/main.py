@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Optional
 
 from tuxemon import log, prepare
 from tuxemon.client import LocalPygameClient
-from tuxemon.db import db
+from tuxemon.database.bootstrap import db
 from tuxemon.headless_client import HeadlessClient
 from tuxemon.launcher import GameLauncher
 from tuxemon.session import local_session

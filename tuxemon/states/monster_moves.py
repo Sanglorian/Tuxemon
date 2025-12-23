@@ -11,7 +11,8 @@ from pygame_menu.widgets.widget.label import Label
 from pygame_menu.widgets.widget.progressbar import ProgressBar
 
 from tuxemon import prepare
-from tuxemon.db import MonsterModel, SpeedLabel, db
+from tuxemon.db import MonsterModel, SpeedLabel
+from tuxemon.database.bootstrap import db
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons

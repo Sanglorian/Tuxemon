@@ -13,8 +13,8 @@ from tuxemon.db import (
     EncounterItemModel,
     EncounterModel,
     EncounterType,
-    db,
 )
+from tuxemon.database.bootstrap import db
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC

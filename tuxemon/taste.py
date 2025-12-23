@@ -7,7 +7,8 @@ import random
 from collections.abc import Sequence
 from typing import Optional
 
-from tuxemon.db import TasteModel, db
+from tuxemon.db import TasteModel
+from tuxemon.database.bootstrap import db
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
 

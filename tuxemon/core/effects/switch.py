@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
-from tuxemon.db import db
+from tuxemon.database.bootstrap import db
 from tuxemon.element import Element
 from tuxemon.locale import T
 

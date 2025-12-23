@@ -13,8 +13,8 @@ from tuxemon.db import (
     FactionModel,
     FactionRelationStatus,
     RankStep,
-    db,
 )
+from tuxemon.database.bootstrap import db
 from tuxemon.locale import T
 
 if TYPE_CHECKING:

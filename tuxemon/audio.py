@@ -10,7 +10,8 @@ import pygame
 
 from tuxemon import prepare
 from tuxemon.constants.asset_loader import fetch_asset
-from tuxemon.db import MusicStatus, db
+from tuxemon.db import MusicStatus
+from tuxemon.database.bootstrap import db
 from tuxemon.platform import mixer as mixer2
 from tuxemon.tools import transform_resource_filename
 

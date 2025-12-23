@@ -23,7 +23,8 @@ from pytmx.pytmx import TileFlags
 from pytmx.util_pygame import handle_transformation, smart_convert
 
 from tuxemon import prepare
-from tuxemon.db import MonsterModel, NpcModel, db
+from tuxemon.db import MonsterModel, NpcModel
+from tuxemon.database.bootstrap import db
 from tuxemon.session import Session
 from tuxemon.sprite import Sprite
 from tuxemon.surfanim import SurfaceAnimation

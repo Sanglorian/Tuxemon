@@ -21,8 +21,8 @@ from tuxemon.db import (
     StatusModel,
     StepEffectType,
     VisualProperties,
-    db,
 )
+from tuxemon.database.bootstrap import db
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
 from tuxemon.surfanim import FlipAxes

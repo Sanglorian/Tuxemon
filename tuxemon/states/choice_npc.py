@@ -12,7 +12,8 @@ from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon import prepare
 from tuxemon.animation import Animation, ScheduleType
-from tuxemon.db import NpcModel, db
+from tuxemon.db import NpcModel
+from tuxemon.database.bootstrap import db
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.ui.menu_options import MenuOptions

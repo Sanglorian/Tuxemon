@@ -21,8 +21,8 @@ from tuxemon.db import (
     MonsterSpritesModel,
     SoundProperties,
     StatType,
-    db,
 )
+from tuxemon.database.bootstrap import db
 from tuxemon.element import ElementTypesHandler
 from tuxemon.formula import config_monster
 from tuxemon.fusion import Body

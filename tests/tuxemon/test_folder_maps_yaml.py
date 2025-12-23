@@ -9,7 +9,7 @@ import yaml
 
 from tuxemon import prepare
 from tuxemon.constants.asset_loader import fetch_asset
-from tuxemon.db import db
+from tuxemon.database.bootstrap import db
 from tuxemon.script.parser import parse_action_string
 
 FOLDER = "maps"

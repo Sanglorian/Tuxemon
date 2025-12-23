@@ -11,7 +11,8 @@ from typing import Any, Optional
 from pygame.surface import Surface
 
 from tuxemon import graphics, prepare, tools
-from tuxemon.db import ColorModel, FlairModel, db
+from tuxemon.db import ColorModel, FlairModel
+from tuxemon.database.bootstrap import db
 from tuxemon.sprite import Sprite
 
 logger = logging.getLogger(__name__)

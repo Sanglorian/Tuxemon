@@ -9,7 +9,7 @@ from typing import Optional, final
 from pygame_menu import locals
 
 from tuxemon import prepare
-from tuxemon.db import db
+from tuxemon.database.bootstrap import db
 from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.theme import get_theme
 from tuxemon.session import Session

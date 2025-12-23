@@ -1941,7 +1941,7 @@ class BattleHudModel(BaseModel):
         "tray_player",
         "tray_opponent",
     )
-    def file_exists(cls: BattleHudModel, v: str) -> str:
+    def file_exists(cls, v: str) -> str:
         if has.file(v):
             return v
         raise ValueError(f"no resource exists with path: {v}")
@@ -1970,7 +1970,7 @@ class BattleIconsModel(BaseModel):
         "icon_status",
         "icon_empty",
     )
-    def file_exists(cls: BattleIconsModel, v: str) -> str:
+    def file_exists(cls, v: str) -> str:
         if has.file(v) and has.size(v, prepare.ICON_SIZE):
             return v
         raise ValueError(f"no resource exists with path: {v}")
@@ -2006,19 +2006,19 @@ class BattleGraphicsModel(BaseModel):
     )
 
     @field_validator("island_back", "island_front")
-    def island_exists(cls: BattleGraphicsModel, v: str) -> str:
+    def island_exists(cls, v: str) -> str:
         if has.file(v) and has.size(v, prepare.ISLAND_SIZE):
             return v
         raise ValueError(f"no resource exists with path: {v}")
 
     @field_validator("background")
-    def background_exists(cls: BattleGraphicsModel, v: str) -> str:
+    def background_exists(cls, v: str) -> str:
         if has.file(v) and has.size(v, prepare.BATTLE_BG_SIZE):
             return v
         raise ValueError(f"no resource exists with path: {v}")
 
     @field_validator("menu")
-    def check_state(cls: BattleGraphicsModel, v: str) -> str:
+    def check_state(cls, v: str) -> str:
         states = [state.name for state in State]
         if v in states:
             return v

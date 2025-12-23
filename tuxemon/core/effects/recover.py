@@ -18,10 +18,25 @@ if TYPE_CHECKING:
 @dataclass
 class RecoverEffect(CoreEffect):
     """
-    This effect has a chance to apply the recovering status effect.
+    Applies the "recover" status effect.
 
-    Parameters:
-        divisor: The number by which user HP is to be divided.
+    This effect restores HP to the host monster based on a divisor of its
+    maximum HP. Recovery may clear the status once the monster is fully
+    healed.
+
+    **Parameters**
+
+      - ``divisor``: Integer value used to calculate the recovery amount.
+      - Healing is determined by dividing the host's maximum HP by this
+        divisor.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "recover 4"
+        ]
     """
 
     name = "recover"

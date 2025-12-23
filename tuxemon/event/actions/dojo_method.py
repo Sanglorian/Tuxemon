@@ -16,7 +16,7 @@ from tuxemon.monster import Monster
 from tuxemon.states.technique_menu import TechniqueMenuState
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import get_valid_uuid, open_choice_dialog
-from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
@@ -31,16 +31,23 @@ class DojoMethodAction(EventAction):
     Represents an event action for the monks in the Dojo (Spyder).
 
     Script Usage:
-        .. code-block::
 
-            dojo_method <variable_name>,<option>
+        .. code-block:: text
+
+           dojo_method <variable_name>,<option>
 
     Script Parameters:
-        variable_name: The name of the variable where the monster ID will be stored.
-        option: The action to perform. Can be either:
+
+        variable_name:
+            The name of the variable where the monster ID will be stored.
+
+        option:
+            The action to perform. Can be either:
+
             - "technique": Learn any move the monster hasn't acquired from its base
-                moveset, without restrictions based on level or evolution stage.
+              moveset, without restrictions based on level or evolution stage.
             - "monster": Devolve the monster.
+
     """
 
     name = "dojo_method"
@@ -92,9 +99,8 @@ class DojoMethodAction(EventAction):
             )
             forget.on_menu_selection = self.get_tech  # type: ignore[method-assign]
         else:
-            menu_options: list[ChoiceOption] = []
-            devolvable_monsters = [
-                mon
+            actions = {
+                mon.slug: partial(self.devolve, mon.slug)
                 for mon in monster.history
                 if self.monster.slug in mon.evolves_into
                 and (
@@ -108,16 +114,11 @@ class DojoMethodAction(EventAction):
                         in [EvolutionStage.stage1, EvolutionStage.basic]
                     )
                 )
-            ]
+            }
 
-            for mon in devolvable_monsters:
-                menu_options.append(
-                    ChoiceOption(
-                        key=mon.slug,
-                        display_text=T.translate(mon.slug),
-                        action=partial(self.devolve, mon.slug),
-                    )
-                )
+            menu_options = create_choice_options(actions)
+            for opt in menu_options:
+                opt.display_text = T.translate(opt.key)
 
             open_choice_dialog(session.client, MenuOptions(menu_options))
 

@@ -108,6 +108,44 @@ class TrapStage(Enum):
 
 @dataclass
 class TrapEffect(CoreEffect):
+    """
+    Applies the "trap" effect to an item.
+
+    This effect simulates setting a trap in the overworld. A trap progresses
+    through multiple stages (setup, armed, triggered, resolve, done) and may
+    expire if conditions are not met. When triggered, the trap can initiate
+    a wild monster encounter based on configurable parameters.
+
+    **Stages**
+    - ``SETUP`` → Trap is placed and initializing.
+    - ``ARMED`` → Trap is active and waiting for conditions.
+    - ``TRIGGERED`` → Trap has been activated.
+    - ``RESOLVE`` → Trap resolves its outcome (encounter or failure).
+    - ``DONE`` → Trap is finished and no longer active.
+
+    **Parameters (from TrapConfig)**
+    - ``expire_time``: Float, maximum time before trap expires.
+    - ``max_distance``: Integer, maximum distance player can move before trap expires.
+    - ``trigger_chance``: Float (0–1), probability of trap triggering.
+    - ``failure_dialog``: String, dialog key shown if trap fails.
+    - ``success_dialog``: String, dialog key shown if trap succeeds.
+    - ``level_bounds``: Tuple[int, int], min and max monster level for encounters.
+    - ``weight_bounds``: Optional tuple[float, float], min and max monster weight.
+    - ``stages``: List of allowed monster stages.
+    - ``shapes``: List of allowed monster shapes.
+    - ``types``: List of allowed monster types.
+    - ``tags``: List of allowed monster tags.
+    - ``*_weights``: Dicts providing weighting factors for stage, shape, type, and tag.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "trap"
+        ]
+    """
+
     name = "trap"
     stage: TrapStage = TrapStage.SETUP
     _elapsed: float = 0.0
@@ -125,7 +163,7 @@ class TrapEffect(CoreEffect):
         self.stage = TrapStage.SETUP
         self._elapsed = 0.0
         self._duration = 1.0
-        self._origin_map = session.client.get_map_name()
+        self._origin_map = session.player.current_map
         self._origin_pos = session.player.tile_pos
         return ItemEffectResult(name=item.name, success=True)
 
@@ -137,7 +175,7 @@ class TrapEffect(CoreEffect):
             self._elapsed = 0.0
 
         elif self.stage == TrapStage.ARMED:
-            if session.client.get_map_name() != self._origin_map:
+            if session.player.current_map != self._origin_map:
                 self._expire(session)
             elif self._trap.max_distance and (
                 self._distance(session.player.tile_pos, self._origin_pos)

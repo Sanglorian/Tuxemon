@@ -13,7 +13,7 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.monster import Monster
 from tuxemon.tools import get_valid_uuid, open_choice_dialog, open_dialog
-from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.menu_options import MenuOptions, create_yes_no_options
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
@@ -84,9 +84,7 @@ class EvolutionAction(EventAction):
             logger.error(f"Monster '{monster_id}' doesn't exist.")
             return
 
-        if not monster.evolution_handler.has_evolution_to(
-            evolution
-        ) and not monster.evolution_handler.has_history_to(evolution):
+        if not monster.evolution_handler.is_valid_evolution_target(evolution):
             logger.error(
                 f"Monster '{evolution}' isn't in the evolutionary path."
             )
@@ -137,10 +135,9 @@ class EvolutionAction(EventAction):
             f"Pending evolutions for selected monster: {pending_evolutions}"
         )
 
-        registry.clear_pending(monster_to_evolve.instance_id)
-        logger.debug(
-            f"Cleared pending evolutions for monster: {monster_to_evolve.name}"
-        )
+        if not pending_evolutions:
+            logger.debug("No pending evolutions found for selected monster.")
+            return
 
         slug = pending_evolutions[0]
         evolved = Monster.create(slug)
@@ -160,19 +157,11 @@ class EvolutionAction(EventAction):
         msg = T.format("evolution_confirmation", params)
         open_dialog(self.session.client, [msg], dialog_speed="max")
 
-        options = [
-            ChoiceOption(
-                key="yes",
-                display_text=T.translate("yes"),
-                action=partial(self.confirm_evolution, monster, evolved),
-            ),
-            ChoiceOption(
-                key="no",
-                display_text=T.translate("no"),
-                action=partial(self.deny_evolution, monster),
-            ),
-        ]
-
+        options = create_yes_no_options(
+            yes_action=partial(self.confirm_evolution, monster, evolved),
+            no_action=partial(self.deny_evolution, monster),
+            reverse_order=True,
+        )
         open_choice_dialog(self.session.client, MenuOptions(options))
 
     def confirm_evolution(self, monster: Monster, evolved: Monster) -> None:
@@ -182,8 +171,9 @@ class EvolutionAction(EventAction):
         logger.info(f"{monster.name} evolves into {evolved.name}!")
 
         registry = self.char.evolution_registry
-        registry.clear_missed(monster.instance_id, evolved.slug)
-        registry.clear_pending(monster.instance_id)
+        monster.evolution_handler.confirm_pending_evolution(
+            registry, evolved.slug
+        )
         self._pending_map.pop(monster.instance_id, None)
 
         monster.evolution_handler.evolve_monster(evolved)
@@ -199,8 +189,7 @@ class EvolutionAction(EventAction):
         slug = self._pending_map.get(monster.instance_id)
         if slug:
             registry = self.char.evolution_registry
-            registry.log_missed(monster.instance_id, slug, monster.level)
-            registry.clear_pending(monster.instance_id)
+            monster.evolution_handler.deny_pending_evolution(registry, slug)
             self._pending_map.pop(monster.instance_id, None)
 
         self.client.pop_state()

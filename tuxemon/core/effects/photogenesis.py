@@ -17,18 +17,26 @@ if TYPE_CHECKING:
 @dataclass
 class PhotogenesisEffect(CoreEffect):
     """
-    Healing effect based on photogenesis.
+    Applies the "photogenesis" effect to a technique.
 
-    Heals the user based on time of day, with maximum healing at `peak_hour`.
-    Healing is skipped if the user is indoors, the technique misses, or the user
-    is at full health.
+    This effect heals the user based on the time of day, with maximum
+    healing occurring at the specified ``peak_hour``. Healing is skipped
+    if the user is indoors, the technique misses, or the user is already
+    at full health.
 
-    Parameters:
-        start_hour: Hour when healing begins.
-        peak_hour: Hour of maximum healing.
-        end_hour: Hour when healing ends.
+    **Parameters**
 
-    Example: "photogenesis 18,0,6" — heals from 6 PM to 6 AM, peaking at midnight.
+    - ``start_hour``: The hour when healing begins.
+    - ``peak_hour``: The hour of maximum healing.
+    - ``end_hour``: The hour when healing ends.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "photogenesis 18 0 6"
+        ]
     """
 
     name = "photogenesis"

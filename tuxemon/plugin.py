@@ -9,6 +9,7 @@ import logging
 import sys
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Mapping, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
 from typing import (
@@ -41,12 +42,10 @@ T = TypeVar("T")
 InterfaceValue = TypeVar("InterfaceValue", bound=PluginObject)
 
 
+@dataclass(frozen=True)
 class Plugin(Generic[T]):
-    __slots__ = ("name", "plugin_object")
-
-    def __init__(self, name: str, module: T) -> None:
-        self.name = name
-        self.plugin_object = module
+    name: str
+    plugin_object: T
 
 
 class PluginDiscovery(ABC):

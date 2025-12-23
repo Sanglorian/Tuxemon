@@ -1,0 +1,56 @@
+monsters:
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 2
+  - 4
+  monster: pairagrin
+  variables:
+  - daytime: 'true'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 2
+  - 4
+  monster: aardorn
+  variables:
+  - daytime: 'true'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 2
+  - 4
+  monster: cataspike
+  variables:
+  - daytime: 'true'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 3
+  - 5
+  monster: pairagrin
+  variables:
+  - daytime: 'false'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 3
+  - 5
+  monster: aardorn
+  variables:
+  - daytime: 'false'
+- encounter_rate: 3.5
+  exp_req_mod: 3
+  held_items: []
+  level_range:
+  - 3
+  - 5
+  monster: cataspike
+  variables:
+  - daytime: 'false'
+slug: spyder_route1

@@ -16,15 +16,29 @@ if TYPE_CHECKING:
 @dataclass
 class PropHealingEffect(CoreEffect):
     """
-    Proportional Healing:
-    This effect does healing to the enemy equal to % of the user's maximum HP.
+    Applies the "prop_healing" effect to a technique.
 
-    Parameters:
-        objectives: The targets (e.g. own_monster, enemy_monster, etc.), if
-            single "enemy_monster" or "enemy_monster:own_monster"
-        proportional: The percentage of the max HP (from 0 to 1)
+    This effect restores HP to one or more monsters based on a percentage
+    of the user's maximum HP. It allows healing to scale with the user's
+    durability rather than being a fixed value.
 
-    eg prop_healing own_monster,0.25 (1/4 max enemy HP)
+    **Parameters**
+
+    - ``objectives``: Colon-separated string specifying which monsters are
+      healed. Examples:
+      - ``own_monster`` → heals only the user.
+      - ``enemy_monster`` → heals only the target.
+      - ``enemy_monster:own_monster`` → heals both the user and the target.
+    - ``proportional``: Float value between 0 and 1 representing the fraction
+      of the user's maximum HP to restore (e.g., ``0.25`` for 25%).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "prop_healing own_monster 0.25"
+        ]
     """
 
     name = "prop_healing"

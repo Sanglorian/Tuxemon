@@ -18,12 +18,27 @@ if TYPE_CHECKING:
 @dataclass
 class PricklyBackEffect(CoreEffect):
     """
-    Each time you are hit by a Physical move the attacker takes damage equal to
-    your maximum HP divided by the divisor.
+    Applies the "prickly" status effect.
 
-    Parameters:
-        divisor: The divisor used to calculate the damage.
-        ranges: The ranges of moves that trigger the effect.
+    This effect causes attackers to take damage whenever they hit the host
+    monster with a physical move. The damage dealt is equal to the host's
+    maximum HP divided by the specified divisor. Only moves within the
+    defined ranges trigger the effect.
+
+    **Parameters**
+
+    - ``divisor``: Integer value used to calculate the damage.
+      - Damage is calculated as ``host.hp // divisor``.
+    - ``ranges``: Colon-separated string of move ranges that trigger the effect
+      (e.g., ``melee:ranged``).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "prickly 4 melee:ranged"
+        ]
     """
 
     name = "prickly"

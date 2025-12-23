@@ -2,12 +2,13 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import logging
+from typing import TYPE_CHECKING
 
-from tuxemon.platform.const import buttons, events, intentions
-from tuxemon.platform.events import PlayerInput
+from tuxemon.platform.const import buttons, intentions
 
-logger = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from tuxemon.event.eventbus import EventBus
+    from tuxemon.platform.events import PlayerInput
 
 keymap = {
     buttons.UP: intentions.UP,
@@ -20,36 +21,10 @@ keymap = {
     buttons.BACK: intentions.WORLD_MENU,
 }
 
-
-def translate_input_event(event: PlayerInput) -> PlayerInput:
-    """
-    Translate the given input event into a PlayerInput object.
-
-    Parameters:
-        event: The input event to be translated.
-
-    Returns:
-
-    Returns:
-        The translated PlayerInput object. If the event cannot be translated,
-        the original event is returned.
-    """
-    try:
-        return PlayerInput(keymap[event.button], event.value, event.hold_time)
-    except KeyError:
-        pass
-
-    unicode_map = {
-        "n": intentions.NOCLIP,
-        "r": intentions.RELOAD_MAP,
-    }
-
-    if event.button == events.UNICODE and event.value in unicode_map:
-        return PlayerInput(
-            unicode_map[event.value], event.value, event.hold_time
-        )
-
-    return event
+unicode_map = {
+    "n": intentions.NOCLIP,
+    "r": intentions.RELOAD_MAP,
+}
 
 
 class ButtonEdgeFilter:
@@ -73,3 +48,34 @@ class ButtonEdgeFilter:
         was_pressed = self.previous_states.get(button, False)
         self.previous_states[button] = is_pressed
         return not is_pressed and was_pressed
+
+
+class ScriptInputCache:
+    def __init__(self, event_bus: EventBus):
+        self._pressed_buttons: set[int] = set()
+        self._released_buttons: set[int] = set()
+        self._held_buttons: set[int] = set()
+        event_bus.subscribe("PLAYER_INPUT", self.handle_input_event)
+
+    def handle_input_event(self, event: PlayerInput) -> None:
+        """Called by the EventBus when a state-approved input occurs."""
+        if event.pressed:
+            self._pressed_buttons.add(event.button)
+            self._held_buttons.add(event.button)
+        else:
+            self._released_buttons.add(event.button)
+            self._held_buttons.discard(event.button)
+
+    def clear_frame_state(self) -> None:
+        """Called once per frame (e.g., at the start of Client.update())."""
+        self._pressed_buttons.clear()
+        self._released_buttons.clear()
+
+    def was_button_pressed(self, button_id: int) -> bool:
+        return button_id in self._pressed_buttons
+
+    def was_button_released(self, button_id: int) -> bool:
+        return button_id in self._released_buttons
+
+    def is_button_held(self, button_id: int) -> bool:
+        return button_id in self._held_buttons

@@ -19,14 +19,24 @@ if TYPE_CHECKING:
 @dataclass
 class NoddingOffEffect(CoreEffect):
     """
-    This effect has a chance to apply the nodding off status effect.
+    Applies the "noddingoff" status effect.
 
-    Sleep lasts for a minimum of one turn.
-    It has a 50% chance to end after each turn.
-    If it has gone on for 5 turns, it ends.
+    This effect simulates a monster falling asleep in battle. Sleep lasts
+    for at least one turn, has a chance to end after each turn, and will
+    always end after five turns if not resolved earlier.
 
-    Parameters:
-        chance: The chance.
+    **Parameters**
+
+    - ``chance``: Float value representing the probability of remaining asleep
+      each turn (e.g., ``0.5`` for 50%).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "noddingoff 0.5"
+        ]
     """
 
     name = "noddingoff"

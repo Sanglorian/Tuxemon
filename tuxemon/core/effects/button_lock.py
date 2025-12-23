@@ -16,12 +16,20 @@ if TYPE_CHECKING:
 @dataclass
 class ButtonLockEffect(CoreEffect):
     """
-    Effect that modifies menu visibility in combat.
-    This effect dynamically enables or disables specific menu options.
+    Dynamically enables or disables specific menu options during combat.
 
-    Attributes:
-        menu: The menu option affected.
-        visible: Determines if the menu option is enabled ("true") or disabled ("false")
+    **Parameters**
+
+    - ``menu``: The name of the menu option affected.
+    - ``visible``: Whether the menu option should be enabled (``"true"``) or disabled (``"false"``).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "button_lock flee false"
+        ]
     """
 
     name = "button_lock"

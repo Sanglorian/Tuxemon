@@ -20,7 +20,28 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class CaptureCombinedEffect(CoreEffect):
-    """Attempts to capture the target."""
+    """
+    Attempts to capture a target monster using a capture device.
+
+    This effect combines multiple modifiers (status and tuxeball type) to
+    determine capture success. It performs a shake check, calculates the
+    number of shakes, and applies capture effects if successful.
+
+    **Parameters**
+
+    - ``category``: The capture category (used for device classification).
+    - ``label``: The capture device label (e.g. ``xero``, ``omni``).
+    - ``lower_bound``: Lower bound modifier applied when type conditions are met.
+    - ``upper_bound``: Upper bound modifier applied when type conditions are met.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "capture_combined omni 0.5 1.5"
+        ]
+    """
 
     name = "capture_combined"
     category: str

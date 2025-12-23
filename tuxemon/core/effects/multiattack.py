@@ -16,13 +16,25 @@ if TYPE_CHECKING:
 @dataclass
 class MultiAttackEffect(CoreEffect):
     """
-    Multiattack #: Do # attacks.
+    Applies the "multiattack" effect to a technique.
 
-    Parameters:
-        times: how many times multiattack
+    This effect allows a technique to be executed multiple times in the
+    same turn, up to the specified number of repetitions. Each successful
+    hit enqueues another attack action until the maximum count is reached.
 
-    eg effects ["multiattack 3", "damage"]
+    **Parameters**
 
+    - ``times``: Integer value indicating how many times the technique
+      can be repeated in a single turn.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "multiattack 3",
+            "damage"
+        ]
     """
 
     name = "multiattack"

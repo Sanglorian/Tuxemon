@@ -39,7 +39,7 @@ from tuxemon.compat.rect import ReadOnlyRect
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import Comparison
 from tuxemon.locale import T
-from tuxemon.math import Vector2
+from tuxemon.math import Point3, Vector2
 from tuxemon.ui.dialogue import calc_dialog_rect
 from tuxemon.ui.text_alignment import DialogPosition
 from tuxemon.ui.text_formatter import TextFormatter
@@ -293,6 +293,14 @@ def open_choice_dialog(
 
 def vector2_to_tile_pos(vector: Vector2) -> tuple[int, int]:
     return (int(vector[0]), int(vector[1]))
+
+
+def tile_pos_to_point3(tile_pos: tuple[int, int]) -> Point3:
+    """
+    Converts a 2D integer tile position to the 3D world position
+    representing the tile's ground position (Z=0).
+    """
+    return Point3(tile_pos[0], tile_pos[1], 0.0)
 
 
 def number_or_variable(variables: dict[str, Any], value: str) -> float:

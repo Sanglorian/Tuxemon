@@ -17,19 +17,23 @@ if TYPE_CHECKING:
 @dataclass
 class ForesightEffect(CoreEffect):
     """
-    The ForesightEffect allows you to set a future turn where the associated technique
-    will be reused with its power set to the specified number of turns. This effect
-    can be used to plan ahead and execute a technique with a guaranteed increased power.
+    Applies the "foresight" effect to a technique.
 
-    The technique will be reused after the specified number of turns have passed,
-    regardless of other events that may occur.
+    This effect schedules the technique to be reused after a specified number
+    of turns. The technique's power is set equal to the number of turns
+    delayed, allowing it to be planned ahead for a guaranteed increase.
 
-    Parameters:
-        turn: number of turns after which the technique will be reused.
+    **Parameters**
 
-    Example:
-        If the current turn is 5 and self.turn is 3, the technique will be reused
-        on turn 8 (5 + 3) with a power of 3.0.
+    - ``turn``: The number of turns after which the technique will be reused.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "foresight 3"
+        ]
     """
 
     name = "foresight"

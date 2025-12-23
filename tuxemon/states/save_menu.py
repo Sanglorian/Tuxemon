@@ -19,7 +19,7 @@ from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu
 from tuxemon.save import get_save_path
 from tuxemon.tools import open_choice_dialog
-from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 from tuxemon.ui.text import draw_text
 
 if TYPE_CHECKING:
@@ -27,7 +27,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-cfgcheck = prepare.CONFIG
 
 SLOT_WIDTH_RATIO = 0.80
 SLOT_HEIGHT_RATIO = 6
@@ -176,25 +175,12 @@ class SaveMenuState(PopUpMenu[None]):
             self.client.remove_state_by_name("ChoiceState")
 
         def ask_confirmation() -> None:
-            # Open menu to confirm the save
-            options = [
-                ChoiceOption(
-                    key="overwrite",
-                    display_text=T.translate("save_overwrite"),
-                    action=positive_answer,
-                ),
-                ChoiceOption(
-                    key="keep",
-                    display_text=T.translate("save_keep"),
-                    action=negative_answer,
-                ),
-                ChoiceOption(
-                    key="delete",
-                    display_text=T.translate("save_delete"),
-                    action=delete_answer,
-                ),
-            ]
-
+            actions = {
+                "overwrite": positive_answer,
+                "keep": negative_answer,
+                "delete": delete_answer,
+            }
+            options = create_choice_options(actions)
             menu = MenuOptions(options)
             open_choice_dialog(self.client, menu, escape_key_exits=True)
 

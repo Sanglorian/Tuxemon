@@ -39,7 +39,7 @@ from collections.abc import Sequence
 from functools import partial
 from typing import TYPE_CHECKING, ClassVar, Optional, Union
 
-from tuxemon.ai import AIManager
+from tuxemon.ai.manager import AIManager
 from tuxemon.animation import Animation, Task
 from tuxemon.animation_entity import AnimationManager
 from tuxemon.combat.combat_context import CombatContext

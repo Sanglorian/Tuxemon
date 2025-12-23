@@ -19,7 +19,6 @@ from tuxemon.db import Direction
 from tuxemon.event.eventmiddleware import InputTranslatorMiddleware
 from tuxemon.faction.manager import FactionManager
 from tuxemon.platform.events import PlayerInput
-from tuxemon.platform.tools import translate_input_event
 from tuxemon.prepare import TILE_SIZE
 from tuxemon.save_state import WorldSave
 from tuxemon.session import Session

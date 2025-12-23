@@ -254,8 +254,7 @@ class MonsterTakeState(PygameMenuState):
             key
             for key in box_ids
             if key != self.box_name
-            and self.monster_boxes.get_box_size(key, "monster")
-            < prepare.MAX_KENNEL
+            and self.monster_boxes.get_box_size(key, "monster") < MAX_KENNEL
         ]
 
         swap_target = self.swap_target
@@ -263,7 +262,7 @@ class MonsterTakeState(PygameMenuState):
             actions = {"swap": lambda: handler.swap(mon, swap_target)}
         else:
             actions = {}
-            if len(self.char.monsters) < prepare.PARTY_LIMIT:
+            if len(self.char.monsters) < PARTY_LIMIT:
                 actions["pick"] = lambda: handler.pick(mon)
             if kennels:
                 actions["move"] = lambda: handler.move(mon, kennels)

@@ -60,6 +60,10 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.get_player_monster.GetPlayerMonsterAction
 .. autoscriptinfoclass:: tuxemon.event.actions.give_experience.GiveExperienceAction
 .. autoscriptinfoclass:: tuxemon.event.actions.info.InfoAction
+.. autoscriptinfoclass:: tuxemon.event.actions.input_load.InputLoadAction
+.. autoscriptinfoclass:: tuxemon.event.actions.input_playback.InputPlaybackAction
+.. autoscriptinfoclass:: tuxemon.event.actions.input_record.InputRecordAction
+.. autoscriptinfoclass:: tuxemon.event.actions.input_save.InputSaveAction
 .. autoscriptinfoclass:: tuxemon.event.actions.input_variable.InputVariableAction
 .. autoscriptinfoclass:: tuxemon.event.actions.learn_tech_by_method.LearnTechByMethodAction
 .. autoscriptinfoclass:: tuxemon.event.actions.load_game.LoadGameAction

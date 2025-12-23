@@ -75,7 +75,7 @@ class TestSpriteRenderer(TestCase):
             self.assertIsInstance(anim, SurfaceAnimation)
 
     def test_calculate_frame_duration(self):
-        # * 1000 / prepare.CONFIG.player_walkrate: This calculates the time
+        # * 1000 / user_config.CONFIG.player_walkrate: This calculates the time
         #  (in milliseconds) it takes for a single "step" in the walking animation.
         # * / 3: The walking animation has 3 distinct frames (two walking poses
         #  and two identical idle poses), so we divide the step time by 3 to get

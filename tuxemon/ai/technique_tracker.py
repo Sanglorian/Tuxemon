@@ -6,8 +6,8 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon import prepare
 from tuxemon.formula import simple_damage_multiplier
+from tuxemon.platform.const.sizes import POWER_RANGE
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
@@ -92,7 +92,7 @@ def technique_score(
     # Power
     power_score = 0.0
     if config.power_weight:
-        normalized_power = technique.power / prepare.POWER_RANGE[1]
+        normalized_power = technique.power / POWER_RANGE[1]
         power_score = normalized_power * config.power_weight
     breakdown["power"] = power_score
 

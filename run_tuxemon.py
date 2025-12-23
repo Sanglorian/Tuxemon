@@ -3,7 +3,8 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from argparse import ArgumentParser, Namespace
 import sys
-from tuxemon import prepare, headless
+from tuxemon import headless, prepare
+from tuxemon.user_config import CONFIG
 
 
 def parse_args() -> Namespace:
@@ -43,7 +44,7 @@ def launch_game() -> None:
         init(platform="pygame")
 
     from tuxemon import main
-    config = prepare.CONFIG
+    config = CONFIG
 
     try:
         if args.mod:

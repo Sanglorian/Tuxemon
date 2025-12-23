@@ -7,13 +7,13 @@ import logging
 
 import yaml
 
-from tuxemon import config
+from tuxemon.config import TuxemonConfig
 from tuxemon.constants import paths
 
 logger = logging.getLogger(__name__)
 
 
-def setup_user_environment() -> config.TuxemonConfig:
+def setup_user_environment() -> TuxemonConfig:
     """Sets up user storage directories and loads/saves the game configuration."""
     logger.debug("Setting up user environment and config.")
     try:
@@ -25,7 +25,7 @@ def setup_user_environment() -> config.TuxemonConfig:
         logger.critical(f"Failed to create user directories: {e}")
         raise
 
-    loaded_config = config.TuxemonConfig(paths.USER_CONFIG_PATH)
+    loaded_config = TuxemonConfig(paths.USER_CONFIG_PATH)
 
     try:
         with paths.USER_CONFIG_PATH.open("w") as fp:
@@ -44,5 +44,4 @@ def setup_user_environment() -> config.TuxemonConfig:
     return loaded_config
 
 
-# The main part of the file runs this function to load the CONFIG object
 CONFIG = setup_user_environment()

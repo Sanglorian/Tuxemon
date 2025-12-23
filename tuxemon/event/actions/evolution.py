@@ -13,7 +13,7 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.monster import Monster
 from tuxemon.tools import get_valid_uuid, open_choice_dialog, open_dialog
-from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.menu_options import MenuOptions, create_yes_no_options
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
@@ -157,19 +157,11 @@ class EvolutionAction(EventAction):
         msg = T.format("evolution_confirmation", params)
         open_dialog(self.session.client, [msg])
 
-        options = [
-            ChoiceOption(
-                key="yes",
-                display_text=T.translate("yes"),
-                action=partial(self.confirm_evolution, monster, evolved),
-            ),
-            ChoiceOption(
-                key="no",
-                display_text=T.translate("no"),
-                action=partial(self.deny_evolution, monster),
-            ),
-        ]
-
+        options = create_yes_no_options(
+            yes_action=partial(self.confirm_evolution, monster, evolved),
+            no_action=partial(self.deny_evolution, monster),
+            reverse_order=True,
+        )
         open_choice_dialog(self.session.client, MenuOptions(options))
 
     def confirm_evolution(self, monster: Monster, evolved: Monster) -> None:

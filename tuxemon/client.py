@@ -148,6 +148,7 @@ class LocalPygameClient(BaseClient):
             time_delta: Elapsed time since last frame.
         """
         self.network_manager.update(time_delta)
+        self.input_cache.clear_frame_state()
         events = self.input_manager.process_events()
         self.input_manager.update(time_delta)
         self.key_events = list(self.event_manager.process_events(events))

@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
 from unittest.mock import MagicMock
+
+import pytest
 
 from tuxemon.camera.camera import CameraManager
 from tuxemon.client import LocalPygameClient
@@ -13,153 +14,179 @@ from tuxemon.platform.const import intentions
 from tuxemon.platform.input_manager import InputManager
 
 
-class TestMovementManager(unittest.TestCase):
+@pytest.fixture
+def mock_client():
+    client = MagicMock(spec=LocalPygameClient)
+    client.event_manager = MagicMock(spec=EventManager)
+    client.input_manager = MagicMock(spec=InputManager)
+    client.camera_manager = MagicMock(spec=CameraManager)
+    return client
 
-    def setUp(self):
-        self.mock_client = MagicMock(spec=LocalPygameClient)
-        self.mock_client.event_manager = MagicMock(spec=EventManager)
-        self.mock_client.input_manager = MagicMock(spec=InputManager)
-        self.mock_client.camera_manager = MagicMock(spec=CameraManager)
-        self.movement_manager = MovementManager(
-            self.mock_client.event_manager,
-            self.mock_client.input_manager,
-            self.mock_client.camera_manager,
-        )
-        self.mock_npc = MagicMock(spec=NPC)
-        self.mock_npc.slug = "npc_1"
-        self.mock_npc.mover = MagicMock()
 
-    def test_move_char(self):
-        self.movement_manager.move_char(self.mock_npc, Direction.up)
-        self.mock_npc.set_move_direction.assert_called_with(Direction.up)
+@pytest.fixture
+def movement_manager(mock_client):
+    return MovementManager(
+        mock_client.event_manager,
+        mock_client.input_manager,
+        mock_client.camera_manager,
+    )
 
-    def test_stop_char(self):
-        self.movement_manager.wants_to_move_char["npc_1"] = Direction.up
-        self.movement_manager.stop_char(self.mock_npc)
-        self.assertNotIn("npc_1", self.movement_manager.wants_to_move_char)
-        self.mock_client.event_manager.release_controls.assert_called_once()
-        self.mock_npc.cancel_movement.assert_called_once()
 
-    def test_unlock_controls(self):
-        self.movement_manager.wants_to_move_char["npc_1"] = Direction.down
-        self.movement_manager.unlock_controls(self.mock_npc)
-        self.assertIn("npc_1", self.movement_manager.allow_char_movement)
-        self.mock_npc.set_move_direction.assert_called_with(Direction.down)
+@pytest.fixture
+def mock_npc():
+    npc = MagicMock(spec=NPC)
+    npc.slug = "npc_1"
+    npc.mover = MagicMock()
+    return npc
 
-    def test_lock_controls(self):
-        self.movement_manager.allow_char_movement.add("npc_1")
-        self.movement_manager.lock_controls(self.mock_npc)
-        self.assertNotIn("npc_1", self.movement_manager.allow_char_movement)
 
-    def test_stop_and_reset_char(self):
-        self.movement_manager.wants_to_move_char["npc_1"] = Direction.left
-        self.movement_manager.stop_and_reset_char(self.mock_npc)
-        self.assertNotIn("npc_1", self.movement_manager.wants_to_move_char)
-        self.mock_client.event_manager.release_controls.assert_called_once()
-        self.mock_npc.abort_movement.assert_called_once()
+def test_move_char(movement_manager, mock_npc):
+    movement_manager.move_char(mock_npc, Direction.up)
+    mock_npc.set_move_direction.assert_called_with(Direction.up)
 
-    def test_is_movement_allowed(self):
-        self.movement_manager.allow_char_movement.add("npc_1")
-        result = self.movement_manager.is_movement_allowed(self.mock_npc)
-        self.assertTrue(result)
-        self.movement_manager.allow_char_movement.remove("npc_1")
-        result = self.movement_manager.is_movement_allowed(self.mock_npc)
-        self.assertFalse(result)
 
-    def test_has_pending_movement(self):
-        self.assertFalse(
-            self.movement_manager.has_pending_movement(self.mock_npc)
-        )
+def test_stop_char(movement_manager, mock_npc, mock_client):
+    movement_manager.wants_to_move_char["npc_1"] = Direction.up
 
-        self.movement_manager.wants_to_move_char["npc_1"] = Direction.up
-        self.assertTrue(
-            self.movement_manager.has_pending_movement(self.mock_npc)
-        )
+    movement_manager.stop_char(mock_npc)
 
-        del self.movement_manager.wants_to_move_char["npc_1"]
-        self.assertFalse(
-            self.movement_manager.has_pending_movement(self.mock_npc)
-        )
+    assert "npc_1" not in movement_manager.wants_to_move_char
+    mock_client.event_manager.release_controls.assert_called_once()
+    mock_npc.cancel_movement.assert_called_once()
 
-    def test_handle_directional_input_valid_and_allowed(self):
-        mock_camera = MagicMock()
-        mock_camera.is_following.return_value = True
-        self.mock_client.camera_manager.get_active_camera.return_value = (
-            mock_camera
-        )
-        self.movement_manager.allow_char_movement.add("npc_1")
 
-        event = MagicMock()
-        event.button = next(iter(self.movement_manager.direction_map))
-        event.held = True
-        event.pressed = True
+def test_unlock_controls(movement_manager, mock_npc):
+    movement_manager.wants_to_move_char["npc_1"] = Direction.down
 
-        result = self.movement_manager.handle_directional_input(
-            self.mock_npc, event
-        )
-        self.assertIsNone(result)
-        self.mock_npc.set_move_direction.assert_called_once()
+    movement_manager.unlock_controls(mock_npc)
 
-    def test_handle_directional_input_valid_but_not_allowed(self):
-        mock_camera = MagicMock()
-        mock_camera.is_following.return_value = True
-        self.mock_client.camera_manager.get_active_camera.return_value = (
-            mock_camera
-        )
+    assert "npc_1" in movement_manager.allow_char_movement
+    mock_npc.set_move_direction.assert_called_with(Direction.down)
 
-        event = MagicMock()
-        event.button = next(iter(self.movement_manager.direction_map))
-        event.held = True
-        event.pressed = True
 
-        result = self.movement_manager.handle_directional_input(
-            self.mock_npc, event
-        )
-        self.assertIsNone(result)
-        self.mock_npc.set_move_direction.assert_not_called()
+def test_lock_controls(movement_manager, mock_npc):
+    movement_manager.allow_char_movement.add("npc_1")
 
-    def test_handle_directional_input_camera_not_following(self):
-        mock_camera = MagicMock()
-        mock_camera.is_following.return_value = False
-        self.mock_client.camera_manager.get_active_camera.return_value = (
-            mock_camera
-        )
+    movement_manager.lock_controls(mock_npc)
 
-        event = MagicMock()
-        event.button = next(iter(self.movement_manager.direction_map))
-        event.held = True
-        event.pressed = True
+    assert "npc_1" not in movement_manager.allow_char_movement
 
-        self.movement_manager.handle_directional_input(self.mock_npc, event)
-        self.mock_client.camera_manager.handle_input.assert_called_with(event)
 
-    def test_handle_directional_input_release(self):
-        mock_camera = MagicMock()
-        mock_camera.is_following.return_value = True
-        self.mock_client.camera_manager.get_active_camera.return_value = (
-            mock_camera
-        )
+def test_stop_and_reset_char(movement_manager, mock_npc, mock_client):
+    movement_manager.wants_to_move_char["npc_1"] = Direction.left
 
-        self.movement_manager.wants_to_move_char["npc_1"] = Direction.down
+    movement_manager.stop_and_reset_char(mock_npc)
 
-        event = MagicMock()
-        event.button = intentions.DOWN
-        event.held = False
-        event.pressed = False
+    assert "npc_1" not in movement_manager.wants_to_move_char
+    mock_client.event_manager.release_controls.assert_called_once()
+    mock_npc.abort_movement.assert_called_once()
 
-        result = self.movement_manager.handle_directional_input(
-            self.mock_npc, event
-        )
-        self.assertIsNone(result)
-        self.mock_npc.cancel_movement.assert_called_once()
 
-    def test_handle_directional_input_invalid_button(self):
-        event = MagicMock()
-        event.button = 9999
-        event.held = True
-        event.pressed = True
+@pytest.mark.parametrize(
+    "allowed, expected",
+    [
+        (True, True),
+        (False, False),
+    ],
+)
+def test_is_movement_allowed(movement_manager, mock_npc, allowed, expected):
+    if allowed:
+        movement_manager.allow_char_movement.add("npc_1")
 
-        result = self.movement_manager.handle_directional_input(
-            self.mock_npc, event
-        )
-        self.assertEqual(result, event)
+    assert movement_manager.is_movement_allowed(mock_npc) is expected
+
+
+def test_has_pending_movement(movement_manager, mock_npc):
+    assert not movement_manager.has_pending_movement(mock_npc)
+
+    movement_manager.wants_to_move_char["npc_1"] = Direction.up
+    assert movement_manager.has_pending_movement(mock_npc)
+
+    del movement_manager.wants_to_move_char["npc_1"]
+    assert not movement_manager.has_pending_movement(mock_npc)
+
+
+def test_handle_directional_input_valid_and_allowed(
+    movement_manager, mock_npc, mock_client
+):
+    mock_camera = MagicMock()
+    mock_camera.is_following.return_value = True
+    mock_client.camera_manager.get_active_camera.return_value = mock_camera
+
+    movement_manager.allow_char_movement.add("npc_1")
+
+    event = MagicMock()
+    event.button = next(iter(movement_manager.direction_map))
+    event.held = True
+    event.pressed = True
+
+    result = movement_manager.handle_directional_input(mock_npc, event)
+
+    assert result is None
+    mock_npc.set_move_direction.assert_called_once()
+
+
+def test_handle_directional_input_valid_but_not_allowed(
+    movement_manager, mock_npc, mock_client
+):
+    mock_camera = MagicMock()
+    mock_camera.is_following.return_value = True
+    mock_client.camera_manager.get_active_camera.return_value = mock_camera
+
+    event = MagicMock()
+    event.button = next(iter(movement_manager.direction_map))
+    event.held = True
+    event.pressed = True
+
+    result = movement_manager.handle_directional_input(mock_npc, event)
+
+    assert result is None
+    mock_npc.set_move_direction.assert_not_called()
+
+
+def test_handle_directional_input_camera_not_following(
+    movement_manager, mock_npc, mock_client
+):
+    mock_camera = MagicMock()
+    mock_camera.is_following.return_value = False
+    mock_client.camera_manager.get_active_camera.return_value = mock_camera
+
+    event = MagicMock()
+    event.button = next(iter(movement_manager.direction_map))
+    event.held = True
+    event.pressed = True
+
+    movement_manager.handle_directional_input(mock_npc, event)
+
+    mock_client.camera_manager.handle_input.assert_called_with(event)
+
+
+def test_handle_directional_input_release(
+    movement_manager, mock_npc, mock_client
+):
+    mock_camera = MagicMock()
+    mock_camera.is_following.return_value = True
+    mock_client.camera_manager.get_active_camera.return_value = mock_camera
+
+    movement_manager.wants_to_move_char["npc_1"] = Direction.down
+
+    event = MagicMock()
+    event.button = intentions.DOWN
+    event.held = False
+    event.pressed = False
+
+    result = movement_manager.handle_directional_input(mock_npc, event)
+
+    assert result is None
+    mock_npc.cancel_movement.assert_called_once()
+
+
+def test_handle_directional_input_invalid_button(movement_manager, mock_npc):
+    event = MagicMock()
+    event.button = 9999
+    event.held = True
+    event.pressed = True
+
+    result = movement_manager.handle_directional_input(mock_npc, event)
+
+    assert result == event

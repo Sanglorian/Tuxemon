@@ -59,7 +59,7 @@ class GameLauncher:
         execute = self.client.event_engine
 
         # Teleport the player to the initial position
-        teleport = ["player", map_path, tile_pos[0], tile_pos[1]]
+        teleport = ["player", meta.starting_map, tile_pos[0], tile_pos[1]]
         execute.execute_action("teleport", teleport)
 
         # Set money

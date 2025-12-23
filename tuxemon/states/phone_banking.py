@@ -2,6 +2,7 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+from collections.abc import Callable
 from functools import partial
 from typing import TYPE_CHECKING, ClassVar
 
@@ -14,7 +15,10 @@ from tuxemon.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.tools import open_choice_dialog, open_dialog
-from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.menu_options import (
+    MenuOptions,
+    create_choice_options,
+)
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
@@ -59,42 +63,24 @@ class NuPhoneBanking(PygameMenuState):
         elements: list[int] = [1, 10, 50, 100, 500, 1000]
 
         def choice(op: str) -> None:
-            options = []
+            actions: dict[str, Callable[..., None]] = {}
+
             for ele in elements:
-                _ele = formatter.format(ele)
                 if op == "deposit" and ele <= wallet_player:
-                    options.append(
-                        ChoiceOption(
-                            key=_ele,
-                            display_text=_ele,
-                            action=partial(deposit, ele),
-                        )
-                    )
+                    actions[str(ele)] = partial(deposit, ele)
                 elif op == "withdraw" and ele <= bank_account:
-                    options.append(
-                        ChoiceOption(
-                            key=_ele,
-                            display_text=_ele,
-                            action=partial(withdraw, ele),
-                        )
-                    )
+                    actions[str(ele)] = partial(withdraw, ele)
                 elif op == "pay" and ele <= wallet_player:
-                    options.append(
-                        ChoiceOption(
-                            key=_ele,
-                            display_text=_ele,
-                            action=partial(pay, ele),
-                        )
-                    )
+                    actions[str(ele)] = partial(pay, ele)
                 elif op == "e_pay" and ele <= bank_account:
-                    options.append(
-                        ChoiceOption(
-                            key=_ele,
-                            display_text=_ele,
-                            action=partial(e_pay, ele),
-                        )
-                    )
-            if options:
+                    actions[str(ele)] = partial(e_pay, ele)
+
+            if actions:
+                options = create_choice_options(actions)
+
+                for opt in options:
+                    opt.display_text = formatter.format(int(opt.key))
+
                 menu = MenuOptions(options)
                 open_choice_dialog(self.client, menu, escape_key_exits=True)
             else:
@@ -103,27 +89,21 @@ class NuPhoneBanking(PygameMenuState):
                 open_dialog(self.client, [msg])
 
         def bill_manager(op: str, bill_name: str) -> None:
-            options = []
+            actions: dict[str, Callable[..., None]] = {}
 
             for ele in elements:
-                _ele = formatter.format(ele)
                 if op == "pay" and ele <= wallet_player:
-                    action = partial(pay, ele, bill_name)
-                    options.append(
-                        ChoiceOption(
-                            key="pay", display_text=_ele, action=action
-                        )
-                    )
+                    actions[str(ele)] = partial(pay, ele, bill_name)
                 elif op == "e_pay" and ele <= bank_account:
-                    action = partial(e_pay, ele, bill_name)
-                    options.append(
-                        ChoiceOption(
-                            key="e_pay", display_text=_ele, action=action
-                        )
-                    )
+                    actions[str(ele)] = partial(e_pay, ele, bill_name)
 
-            if options:
+            if actions:
                 self.client.remove_state_by_name("ChoiceState")
+                options = create_choice_options(actions)
+
+                for opt in options:
+                    opt.display_text = formatter.format(int(opt.key))
+
                 menu = MenuOptions(options)
                 open_choice_dialog(self.client, menu, escape_key_exits=True)
             else:
@@ -132,19 +112,18 @@ class NuPhoneBanking(PygameMenuState):
                 open_dialog(self.client, [msg])
 
         def bill(op: str) -> None:
-            options = []
-            for key, entry in money_manager.bills.items():
-                if entry.amount > 0:
-                    display = T.translate(key)
-                    action = partial(bill_manager, op, key)
-                    options.append(
-                        ChoiceOption(
-                            key=key,
-                            display_text=display,
-                            action=action,
-                        )
-                    )
-            if options:
+            actions = {
+                key: partial(bill_manager, op, key)
+                for key, entry in money_manager.bills.items()
+                if entry.amount > 0
+            }
+
+            if actions:
+                options = create_choice_options(actions)
+
+                for opt in options:
+                    opt.display_text = T.translate(opt.key)
+
                 menu = MenuOptions(options)
                 open_choice_dialog(self.client, menu, escape_key_exits=True)
             else:

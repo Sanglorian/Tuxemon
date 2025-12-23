@@ -23,7 +23,11 @@ from tuxemon.monster_dir.filter import MonsterFilter
 from tuxemon.sprite import Sprite
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.graphic_box import GraphicBox
-from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.menu_options import (
+    MenuOptions,
+    create_choice_options,
+    create_yes_no_options,
+)
 from tuxemon.ui.text import TextArea, draw_text
 
 if TYPE_CHECKING:
@@ -223,18 +227,12 @@ class MonsterMenuHandler:
         params = {"name": monster.name.upper()}
         msg = T.format("release_confirmation", params)
         open_dialog(self.client, [msg])
-        options = [
-            ChoiceOption(
-                key="no",
-                display_text=T.translate("no"),
-                action=self.negative_answer,
-            ),
-            ChoiceOption(
-                key="yes",
-                display_text=T.translate("yes"),
-                action=partial(self.positive_answer, monster),
-            ),
-        ]
+
+        options = create_yes_no_options(
+            yes_action=partial(self.positive_answer, monster),
+            no_action=self.negative_answer,
+        )
+
         menu = MenuOptions(options)
         open_choice_dialog(self.client, menu, escape_key_exits=False)
 
@@ -266,64 +264,33 @@ class MonsterMenuHandler:
     def open_monster_submenu(self, monster_menu: MonsterMenuState) -> None:
         """Opens a submenu for the selected monster."""
         original = monster_menu.get_selected_item()
-        if original and original.game_object:
-            mon = original.game_object
-            options: list[ChoiceOption] = []
+        if not (original and original.game_object):
+            return
 
-            options.append(
-                ChoiceOption(
-                    key="info",
-                    display_text=T.translate("monster_menu_info").upper(),
-                    action=partial(self.monster_stats, mon),
-                )
+        mon = original.game_object
+
+        actions: dict[str, Callable[..., None]] = {
+            "info": partial(self.monster_stats, mon),
+        }
+
+        if mon.moves.moves:
+            actions["tech"] = partial(self.monster_techs, mon)
+
+        if mon.held_item:
+            actions["item"] = partial(self.monster_item, mon)
+
+        if self.party.party_size > 1:
+            actions.update(
+                {
+                    "move": partial(self.select_monster, mon),
+                    "sort": lambda: self.open_sort_submenu(monster_menu),
+                    "release": partial(self.release_monster, mon),
+                }
             )
 
-            if mon.moves.moves:
-                options.append(
-                    ChoiceOption(
-                        key="tech",
-                        display_text=T.translate("monster_menu_tech").upper(),
-                        action=partial(self.monster_techs, mon),
-                    )
-                )
-
-            if mon.held_item:
-                options.append(
-                    ChoiceOption(
-                        key="item",
-                        display_text=T.translate("monster_menu_item").upper(),
-                        action=partial(self.monster_item, mon),
-                    )
-                )
-
-            if self.party.party_size > 1:
-                options.append(
-                    ChoiceOption(
-                        key="move",
-                        display_text=T.translate("monster_menu_move").upper(),
-                        action=partial(self.select_monster, mon),
-                    )
-                )
-                options.append(
-                    ChoiceOption(
-                        key="sort",
-                        display_text=T.translate("menu_sort").upper(),
-                        action=lambda: self.open_sort_submenu(monster_menu),
-                    )
-                )
-
-                options.append(
-                    ChoiceOption(
-                        key="release",
-                        display_text=T.translate(
-                            "monster_menu_release"
-                        ).upper(),
-                        action=partial(self.release_monster, mon),
-                    )
-                )
-
-            menu = MenuOptions(options)
-            open_choice_dialog(self.client, menu, escape_key_exits=True)
+        options = create_choice_options(actions)
+        menu = MenuOptions(options)
+        open_choice_dialog(self.client, menu, escape_key_exits=True)
 
     def handle_selection(
         self,
@@ -358,37 +325,22 @@ class MonsterMenuHandler:
 
     def open_sort_submenu(self, monster_menu: MonsterMenuState) -> None:
         """Opens a submenu with sorting options."""
-        sort_options = [
-            ChoiceOption(
-                key="level",
-                display_text=T.translate("sort_by_level").upper(),
-                action=lambda: self.sort_monsters(
-                    monster_menu, key=lambda m: m.level
-                ),
+        actions: dict[str, Callable[..., None]] = {
+            "level": lambda: self.sort_monsters(
+                monster_menu, key=lambda m: m.level
             ),
-            ChoiceOption(
-                key="hp",
-                display_text=T.translate("sort_by_hp").upper(),
-                action=lambda: self.sort_monsters(
-                    monster_menu, key=lambda m: m.hp_ratio, reverse=True
-                ),
+            "hp": lambda: self.sort_monsters(
+                monster_menu, key=lambda m: m.hp_ratio, reverse=True
             ),
-            ChoiceOption(
-                key="name",
-                display_text=T.translate("sort_by_name").upper(),
-                action=lambda: self.sort_monsters(
-                    monster_menu, key=lambda m: m.name.lower()
-                ),
+            "name": lambda: self.sort_monsters(
+                monster_menu, key=lambda m: m.name.lower()
             ),
-            ChoiceOption(
-                key="id",
-                display_text=T.translate("sort_by_id").upper(),
-                action=lambda: self.sort_monsters(
-                    monster_menu, key=lambda m: m.txmn_id
-                ),
+            "id": lambda: self.sort_monsters(
+                monster_menu, key=lambda m: m.txmn_id
             ),
-        ]
-        menu = MenuOptions(sort_options)
+        }
+        options = create_choice_options(actions)
+        menu = MenuOptions(options)
         open_choice_dialog(self.client, menu, escape_key_exits=True)
 
 

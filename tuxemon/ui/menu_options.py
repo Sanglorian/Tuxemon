@@ -2,9 +2,11 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Optional
+
+from tuxemon.locale import T
 
 
 def noop_action() -> None:
@@ -93,3 +95,51 @@ class MenuOptions:
             if opt.key == key:
                 opt.action = noop_action
                 break
+
+
+def create_choice_options(
+    actions: Mapping[str, Callable[..., None]],
+) -> list[ChoiceOption]:
+    """
+    Creates a list of ChoiceOption objects from a dictionary of choice keys and
+    actions.
+
+    The keys in the dictionary should map to translation keys
+    (e.g., 'no' -> T.translate('no')).
+    The list is generated in the order of the dictionary keys.
+
+    Parameters:
+        actions: A dictionary mapping choice keys (e.g., "yes", "no") to their
+            action callables.
+
+    Returns:
+        A list of ChoiceOption objects.
+    """
+    options: list[ChoiceOption] = []
+    for key, action in actions.items():
+        options.append(
+            ChoiceOption(
+                key=key,
+                display_text=T.translate(key).upper(),
+                action=action,
+            )
+        )
+    return options
+
+
+def create_yes_no_options(
+    yes_action: Callable[..., None],
+    no_action: Callable[..., None],
+    reverse_order: bool = False,
+) -> list[ChoiceOption]:
+    """
+    Specialized utility for Yes/No, often displayed as [NO, YES].
+    """
+    actions: dict[str, Callable[..., None]] = {
+        "no": no_action,
+        "yes": yes_action,
+    }
+    ordered_actions = (
+        actions if not reverse_order else {"yes": yes_action, "no": no_action}
+    )
+    return create_choice_options(ordered_actions)

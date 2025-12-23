@@ -322,3 +322,17 @@ def test_encode_decode_roundtrip(entries, event_bus):
         assert manager.data.get_caught(slug) == new_manager.data.get_caught(
             slug
         )
+
+
+def test_decode_with_raw_string_status(event_bus):
+    json_data = {
+        "rockitten": {
+            "status": "seen",
+            "appearance_count": 2,
+            "caught_count": 0,
+        }
+    }
+    manager = decode_tuxepedia(json_data, event_bus)
+    entry = manager.data.entries["rockitten"]
+    assert isinstance(entry.status, SeenStatus)
+    assert entry.status == SeenStatus.seen

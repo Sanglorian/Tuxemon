@@ -17,9 +17,9 @@ from pygame.surface import Surface
 from tuxemon import prepare
 from tuxemon.camera.camera import Camera
 from tuxemon.db import Direction
+from tuxemon.event.eventmiddleware import InputTranslatorMiddleware
 from tuxemon.faction.manager import FactionManager
 from tuxemon.platform.events import PlayerInput
-from tuxemon.platform.tools import translate_input_event
 from tuxemon.save_state import WorldSave
 from tuxemon.session import Session
 from tuxemon.state.state import State
@@ -45,6 +45,7 @@ class WorldState(State):
         yaml_name: Optional[str] = None,
     ) -> None:
         super().__init__()
+        self.input_translator_mw = InputTranslatorMiddleware()
         self.session = session
         self.session.set_world(self)
         self.tile_size = prepare.TILE_SIZE
@@ -95,10 +96,12 @@ class WorldState(State):
 
     def resume(self) -> None:
         """Called after returning focus to this state"""
+        self.client.event_manager.add_middleware(self.input_translator_mw)
         self.client.movement_manager.unlock_controls(self.player)
 
     def pause(self) -> None:
         """Called before another state gets focus"""
+        self.client.event_manager.remove_middleware(self.input_translator_mw)
         self.client.movement_manager.lock_controls(self.player)
         self.client.movement_manager.stop_char(self.player)
 
@@ -151,7 +154,6 @@ class WorldState(State):
             Passed events, if other states should process it, ``None``
             otherwise.
         """
-        event = translate_input_event(event)
         if self.player is None:
             return None
 

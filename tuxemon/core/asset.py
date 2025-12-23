@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from tuxemon.constants.paths import CORE_CONDITION_PATH, CORE_EFFECT_PATH
+from tuxemon.constants.paths import (
+    CORE_CONDITION_PATH,
+    CORE_EFFECT_PATH,
+    ROOT_PACKAGE_NAME,
+)
 from tuxemon.core.core_condition import CoreCondition
 from tuxemon.core.core_effect import CoreEffect
 from tuxemon.core.core_manager import ConditionManager, EffectManager
@@ -17,10 +21,12 @@ class CoreAssetManager:
         self.effect_manager = EffectManager(
             CoreEffect,
             CORE_EFFECT_PATH,
+            root_package_name=ROOT_PACKAGE_NAME,
         )
         self.condition_manager = ConditionManager(
             CoreCondition,
             CORE_CONDITION_PATH,
+            root_package_name=ROOT_PACKAGE_NAME,
         )
 
     def parse_effects(

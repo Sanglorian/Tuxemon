@@ -8,10 +8,10 @@ from dataclasses import dataclass, field, replace
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
 
-from tuxemon import prepare
 from tuxemon.event import get_npc
 from tuxemon.item.item import decode_items, encode_items
 from tuxemon.monster import decode_monsters, encode_monsters
+from tuxemon.prepare import TILE_SIZE
 from tuxemon.session import local_session
 from tuxemon.states import world_state as world
 
@@ -248,7 +248,7 @@ def update_client(
 
         # Handle tile position updates
         if item == "tile_pos":
-            tile_size = prepare.TILE_SIZE
+            tile_size = TILE_SIZE
             position = [
                 value[0] * tile_size[0],
                 value[1] * tile_size[1],

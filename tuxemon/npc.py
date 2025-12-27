@@ -23,7 +23,7 @@ from tuxemon.mission.manager import MissionManager
 from tuxemon.money.controller import MoneyController
 from tuxemon.monster import Monster
 from tuxemon.monster_dir.evolution_registry import EvolutionRegistry
-from tuxemon.prepare import PLAYER_NPC
+from tuxemon.platform.const.sizes import PLAYER_NPC
 from tuxemon.relationship import (
     Relationships,
     decode_relationships,

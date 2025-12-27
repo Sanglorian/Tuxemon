@@ -10,9 +10,9 @@ from typing import TYPE_CHECKING, Any, Optional
 
 from pygame.rect import Rect
 
-from tuxemon import prepare
 from tuxemon.math import Vector2
 from tuxemon.platform.const import intentions
+from tuxemon.prepare import SCREEN_SIZE, TILE_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.boundary import BoundaryChecker
@@ -24,15 +24,15 @@ logger = logging.getLogger(__name__)
 
 def project(position: Sequence[float]) -> tuple[int, int]:
     return (
-        int(position[0] * prepare.TILE_SIZE[0]),
-        int(position[1] * prepare.TILE_SIZE[1]),
+        int(position[0] * TILE_SIZE[0]),
+        int(position[1] * TILE_SIZE[1]),
     )
 
 
 def unproject(position: Sequence[float]) -> tuple[int, int]:
     return (
-        int(position[0] / prepare.TILE_SIZE[0]),
-        int(position[1] / prepare.TILE_SIZE[1]),
+        int(position[0] / TILE_SIZE[0]),
+        int(position[1] / TILE_SIZE[1]),
     )
 
 
@@ -288,7 +288,7 @@ class CameraEffects:
 
 class Camera:
     def __init__(self, entity: Entity[Any], boundary: BoundaryChecker):
-        self.view = CameraView(prepare.TILE_SIZE, prepare.SCREEN_SIZE)
+        self.view = CameraView(TILE_SIZE, SCREEN_SIZE)
         self.tracker = CameraTracker(self.view, entity)
         self.effects = CameraEffects(self.view)
         self.boundary = boundary

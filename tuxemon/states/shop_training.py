@@ -16,7 +16,7 @@ from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.quantity import QuantityAndCostMenu
 from tuxemon.monster import Monster
-from tuxemon.prepare import MAX_LEVEL
+from tuxemon.platform.const.sizes import MAX_LEVEL
 from tuxemon.states.shop_base import ShopMenuState
 
 logger = logging.getLogger(__name__)

@@ -8,10 +8,12 @@ from typing import TYPE_CHECKING, ClassVar, Optional
 import pygame
 from pygame.surface import Surface
 
-from tuxemon import prepare, tools
+from tuxemon import tools
 from tuxemon.graphics import load_sprite
 from tuxemon.locale import T
 from tuxemon.platform.const import buttons
+from tuxemon.platform.const.graphics import BLACK_COLOR, WHITE_COLOR
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 
 if TYPE_CHECKING:
@@ -70,7 +72,7 @@ class TradingTransition(State):
             4: self.received_sprite,
         }
 
-        screen_width, screen_height = prepare.SCREEN_SIZE
+        screen_width, screen_height = SCREEN_SIZE
         sprite_width, sprite_height = self.sent_sprite.image.get_size()
         self.sent_x = (screen_width // 4) - (sprite_width // 2)
         self.received_x = (3 * screen_width // 4) - (sprite_width // 2)
@@ -137,12 +139,12 @@ class TradingTransition(State):
             self.on_animation_complete()
 
     def draw(self, surface: Surface) -> None:
-        surface.fill(prepare.BLACK_COLOR)
+        surface.fill(BLACK_COLOR)
 
         # In phases 1 and 2, only the sent monster is displayed, centered
         if self.phase in (1, 2):
             sprite_image = self.sent_sprite.image
-            center_x = (prepare.SCREEN_SIZE[0] - sprite_image.get_width()) // 2
+            center_x = (SCREEN_SIZE[0] - sprite_image.get_width()) // 2
             surface.blit(sprite_image, (center_x, self.sprite_y))
         # In phases 3 and 4, both sprites are displayed at their respective positions
         elif self.phase in (3, 4):
@@ -161,7 +163,7 @@ class TradingTransition(State):
         for x in range(sprite.get_width()):
             for y in range(sprite.get_height()):
                 if sprite.get_at((x, y)).a != 0:
-                    sprite.set_at((x, y), prepare.WHITE_COLOR)
+                    sprite.set_at((x, y), WHITE_COLOR)
         return sprite
 
     def on_animation_complete(self) -> None:

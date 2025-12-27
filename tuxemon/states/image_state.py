@@ -6,9 +6,10 @@ from typing import ClassVar, Optional
 
 from pygame_menu.locals import ALIGN_CENTER
 
-from tuxemon import prepare
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.sizes import NATIVE_RESOLUTION
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCALE, SCREEN_SIZE
 
 
 class ImageState(PygameMenuState):
@@ -23,9 +24,9 @@ class ImageState(PygameMenuState):
         return None
 
     def __init__(self, background: str, image: Optional[str] = None) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         image_path = f"gfx/ui/background/{background}.png"
-        native = prepare.NATIVE_RESOLUTION
+        native = NATIVE_RESOLUTION
         self._setup_theme(image_path)
         bg_size = self._create_image(image_path).get_size()
         if bg_size[0] != native[0] or bg_size[1] != native[1]:
@@ -43,7 +44,7 @@ class ImageState(PygameMenuState):
                     f"{image} {image_size}: "
                     f"It must be less than the native resolution {native}"
                 )
-            new_image.scale(prepare.SCALE, prepare.SCALE)
+            new_image.scale(SCALE, SCALE)
             self.menu.add.image(
                 new_image,
                 align=ALIGN_CENTER,

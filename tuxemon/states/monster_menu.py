@@ -12,7 +12,7 @@ from pygame.font import Font
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon import prepare, tools
+from tuxemon import tools
 from tuxemon.animation import ScheduleType
 from tuxemon.graphics import ColorLike, load_and_scale, load_image
 from tuxemon.locale import T
@@ -20,6 +20,9 @@ from tuxemon.menu.interface import ExpBar, HpBar, MenuItem
 from tuxemon.menu.menu import Menu
 from tuxemon.monster import Monster
 from tuxemon.monster_dir.filter import MonsterFilter
+from tuxemon.platform.const.graphics import BG_MONSTERS, TRANSPARENT_COLOR
+from tuxemon.platform.const.sizes import PARTY_LIMIT
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.sprite import Sprite
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.graphic_box import GraphicBox
@@ -44,7 +47,7 @@ class MonsterMenuState(Menu[Optional[Monster]]):
     teach them moves, and switch them both in and out of combat.
     """
 
-    background_filename = prepare.BG_MONSTERS
+    background_filename = BG_MONSTERS
     draw_borders = False
 
     name: ClassVar[str] = "MonsterMenuState"
@@ -99,11 +102,11 @@ class MonsterMenuState(Menu[Optional[Monster]]):
         self.monster_portrait_display.animate_down()
 
         # position and animate the monster portrait
-        width = prepare.SCREEN_SIZE[0] // 2
-        height = prepare.SCREEN_SIZE[1] // int(prepare.PARTY_LIMIT * 1.5)
+        width = SCREEN_SIZE[0] // 2
+        height = SCREEN_SIZE[1] // int(PARTY_LIMIT * 1.5)
 
         # make 6 slots
-        for _ in range(prepare.PARTY_LIMIT):
+        for _ in range(PARTY_LIMIT):
             rect = Rect(0, 0, width, height)
             surface = Surface(rect.size, SRCALPHA)
             item = MenuItem(surface, None, None, None)
@@ -141,7 +144,7 @@ class MonsterMenuState(Menu[Optional[Monster]]):
         monster = self.monsters[index] if index < len(self.monsters) else None
         item.game_object = monster
         item.enabled = (monster is not None) and self.is_valid_entry(monster)
-        item.image.fill(prepare.TRANSPARENT_COLOR)
+        item.image.fill(TRANSPARENT_COLOR)
         item.in_focus = (index == self.selected_index) and item.enabled
         self.slot_renderer.render_slot(
             item.image, item.image.get_rect(), monster, item.in_focus
@@ -381,7 +384,7 @@ class MonsterStatsDisplay:
         )
 
         self.sprite.image = self.menu_state.shadow_text(text)
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         self.sprite.rect.topleft = (width // 10, height // 2 + 50)
 
 
@@ -398,7 +401,7 @@ class MonsterSpriteDisplay:
                 self.sprite = monster.get_sprite("menu", 0.25, 2.5)
                 self.menu_state.sprites.add(self.sprite)
             if self.sprite is not None:
-                width = prepare.SCREEN_SIZE[0]
+                width = SCREEN_SIZE[0]
                 margin = int(width * 0.005)
                 self.sprite.rect.x = width - (self.sprite.rect.width + margin)
                 self.sprite.rect.y = rect.y + tools.scale(10)
@@ -430,7 +433,7 @@ class MonsterPortraitDisplay:
         image = image or Surface((1, 1), SRCALPHA)
 
         self.portrait.image = image
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         self.portrait.rect = image.get_rect(
             centerx=width // 4,
             top=height // 12,

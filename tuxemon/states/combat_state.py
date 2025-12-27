@@ -39,7 +39,6 @@ from collections.abc import Sequence
 from functools import partial
 from typing import TYPE_CHECKING, ClassVar, Optional, Union
 
-from tuxemon import prepare
 from tuxemon.ai.manager import AIManager
 from tuxemon.animation import Animation, Task
 from tuxemon.animation_entity import AnimationManager
@@ -59,6 +58,7 @@ from tuxemon.menu.interface import MenuItem
 from tuxemon.monster import Monster
 from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
+from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.state.state import State
 from tuxemon.states.combat_animations import CombatAnimations
 from tuxemon.states.monster_menu import MonsterMenuState
@@ -649,7 +649,7 @@ class CombatState(CombatAnimations):
             success_header_text = ""
             if result_item.success:
                 success_header_text = T.translate("gotcha")
-                if len(user.monsters) >= prepare.PARTY_LIMIT:
+                if len(user.monsters) >= PARTY_LIMIT:
                     success_text = T.format(
                         "gotcha_kennel", {"name": target.name.upper()}
                     )

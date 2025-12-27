@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import MagicMock
 from uuid import uuid4
 
+from tuxemon.core.asset import init_assets
 from tuxemon.entity_dir.bag import BagHandler
 from tuxemon.item.item import Item
 
@@ -11,6 +12,7 @@ from tuxemon.item.item import Item
 class TestNPCBagHandler(unittest.TestCase):
 
     def setUp(self):
+        init_assets()
         self.handler = BagHandler(item_boxes=MagicMock(), owner=MagicMock())
         self.item = Item.test()
         self.item.slug = "test_item"

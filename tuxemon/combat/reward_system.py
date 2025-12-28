@@ -8,9 +8,9 @@ from typing import TYPE_CHECKING, Optional
 
 from tuxemon.combat.combat_context import CombatType
 from tuxemon.combat.experience_strategies import calculate_experience
+from tuxemon.formula import config_monster
 from tuxemon.locale import T
 from tuxemon.monster_dir.stats import BasicStats
-from tuxemon.platform.const.sizes import DEFAULT_TP_GAIN
 
 if TYPE_CHECKING:
     from tuxemon.combat.damage_tracker import DamageTracker
@@ -197,7 +197,9 @@ def calculate_money(loser: Monster, winner: Monster) -> int:
 
 
 def calculate_tps(
-    winner: Monster, loser: Monster, tp_gain: int = DEFAULT_TP_GAIN
+    winner: Monster,
+    loser: Monster,
+    tp_gain: int = config_monster.default_tp_gain,
 ) -> list[tuple[str, int]]:
     """
     Compares winner's stats to loser's.

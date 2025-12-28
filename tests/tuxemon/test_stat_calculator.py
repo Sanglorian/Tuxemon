@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from tuxemon.formula import config_monster
 from tuxemon.monster_dir.stats import (
     BasicStats,
     CustomStatBoosts,
@@ -12,7 +13,6 @@ from tuxemon.monster_dir.stats import (
     StatCalculator,
     TrainingPoints,
 )
-from tuxemon.platform.const.sizes import COEFF_STATS
 from tuxemon.shape import ShapeHandler
 from tuxemon.taste import Taste
 
@@ -72,7 +72,7 @@ def analyzer(calculator):
 # StatCalculator tests
 def test_apply_base_stat_calculation(calculator):
     level = calculator.level
-    multiplier = level + COEFF_STATS
+    multiplier = level + config_monster.coeff_stats
     stats = calculator.calculate_raw_stats(level=level)
     assert stats.armour == 2 * multiplier + 1
     assert stats.dodge == 3 * multiplier + 0
@@ -147,13 +147,13 @@ def test_calculate_at_level_invalid(calculator):
 def test_training_point_scaling(calculator):
     calculator.training_points.armour = 100
     stats = calculator.calculate_raw_stats(level=50)
-    assert stats.armour == (2 * (50 + COEFF_STATS)) + 50 + 1
+    assert stats.armour == (2 * (50 + config_monster.coeff_stats)) + 50 + 1
 
 
 def test_negative_modifier(calculator):
     calculator.custom_stats.hp = -10
     stats = calculator.calculate_raw_stats(level=calculator.level)
-    assert stats.hp < (5 * (calculator.level + COEFF_STATS))
+    assert stats.hp < (5 * (calculator.level + config_monster.coeff_stats))
 
 
 def test_high_level_scaling(calculator):

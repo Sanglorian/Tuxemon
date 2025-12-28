@@ -8,7 +8,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, fields
 from typing import Any, Optional
 
-from tuxemon.platform.const.sizes import COEFF_STATS
+from tuxemon.formula import config_monster
 from tuxemon.shape import ShapeHandler
 from tuxemon.taste import Taste
 
@@ -68,9 +68,9 @@ def randomize_ivs() -> IndividualValues:
     """
     Generates Individual Values (IVs) for all stats
     """
-    MIN_IV, MAX_IV = 0, 31
+    min_iv, max_iv = config_monster.iv_range
     random_data = {
-        name: random.randint(MIN_IV, MAX_IV) for name in BasicStats.names()
+        name: random.randint(min_iv, max_iv) for name in BasicStats.names()
     }
     return IndividualValues(**random_data)
 
@@ -147,7 +147,7 @@ class StatCalculator:
         """Calculates stats before taste modifiers are applied."""
         level = level if level is not None else self.level
         stats = BasicStats()
-        multiplier = level + COEFF_STATS
+        multiplier = level + config_monster.coeff_stats
         level_scale = level / 100
 
         for stat in BasicStats.names():
@@ -222,7 +222,7 @@ class StatAnalyzer:
     def get_breakdown(self) -> dict[str, dict[str, Any]]:
         """Returns a detailed breakdown of each stat's calculation."""
         breakdown = {}
-        multiplier = self.calculator.level + COEFF_STATS
+        multiplier = self.calculator.level + config_monster.coeff_stats
         level_scale = self.calculator.level / 100
         cold = Taste.get_taste(self.calculator.taste_cold)
         warm = Taste.get_taste(self.calculator.taste_warm)

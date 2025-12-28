@@ -48,11 +48,6 @@ from tuxemon.monster_dir.stats import (
     randomize_ivs,
 )
 from tuxemon.monster_dir.status import MonsterStatusHandler
-from tuxemon.platform.const.sizes import (
-    DEFAULT_TP_GAIN,
-    MAX_TOTAL_TPS,
-    MAX_TPS,
-)
 from tuxemon.prepare import SCALE
 from tuxemon.shape import ShapeHandler
 from tuxemon.sprite import Sprite
@@ -460,13 +455,15 @@ class Monster:
 
         return levels_earned
 
-    def give_tps(self, stat_name: str, value: int = DEFAULT_TP_GAIN) -> None:
+    def give_tps(
+        self, stat_name: str, value: int = config_monster.default_tp_gain
+    ) -> None:
         """
         Gives TP points to the monster's TrainingPoints after a battle,
         respecting the per-stat and total TP limits.
         """
-        max_tps = MAX_TPS
-        max_total_tps = MAX_TOTAL_TPS
+        max_tps = config_monster.max_tps
+        max_total_tps = config_monster.max_total_tps
         total_tps = sum(
             getattr(self.training_points, field.name)
             for field in fields(self.training_points)

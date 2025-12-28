@@ -53,9 +53,17 @@ class SaveGameAction(EventAction):
         except Exception as e:
             logger.error("Unable to save game!!")
             logger.exception(e)
-            open_dialog(session.client, [T.translate("save_failure")])
+            open_dialog(
+                session.client,
+                [T.translate("save_failure")],
+                dialog_speed="max",
+            )
         else:
             if self.index is not None:
-                open_dialog(session.client, [T.translate("save_success")])
+                open_dialog(
+                    session.client,
+                    [T.translate("save_success")],
+                    dialog_speed="max",
+                )
             else:
                 logger.info(T.translate("save_success"))

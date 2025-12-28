@@ -15,7 +15,7 @@ from tuxemon.db import SeenStatus
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster import Monster
-from tuxemon.prepare import PARTY_LIMIT
+from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.session import Session
 from tuxemon.time_handler import today_ordinal
 

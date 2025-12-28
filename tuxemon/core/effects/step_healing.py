@@ -18,15 +18,33 @@ if TYPE_CHECKING:
 @dataclass
 class StepHealingEffect(CoreEffect):
     """
-    This effect calculates healing to the target based on the combined
-    step count of the party. The healing is scaled using a specified
-    formula, which is logarithmic.
+    Applies the "step_healing" effect to a technique.
 
-    Parameters:
-        objectives: The targets for this effect, specified as a string
-            (e.g., "enemy_monster" or "enemy_monster:own_monster").
-        healing_factor: A factor used to scale the healing calculation.
-        scaling_constant: A constant used in the healing calculation formula.
+    This effect restores HP to one or more target monsters based on the
+    number of steps taken by the user's party. The healing scales
+    logarithmically, providing diminishing returns as the step count
+    increases. This mechanic ties exploration and movement directly into
+    combat recovery.
+
+    **Parameters**
+
+    - ``objectives``: Colon-separated string specifying which monsters are
+      healed. Examples:
+      - ``enemy_monster`` → heals only the enemy.
+      - ``own_monster`` → heals only the user.
+      - ``enemy_monster:own_monster`` → heals both the enemy and the user.
+    - ``healing_factor``: Float multiplier applied to the logarithmic healing
+      formula.
+    - ``scaling_constant``: Float divisor used in the healing formula to
+      normalize step counts.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "step_healing own_monster 1.2 100"
+        ]
     """
 
     name = "step_healing"

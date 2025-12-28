@@ -16,9 +16,19 @@ if TYPE_CHECKING:
 @dataclass
 class EmptyEffect(CoreEffect):
     """
-    "This effect lets the technique show the animation, but it also prevents
-    the technique from failing. Without it, the technique would automatically
-    fail, because the effect list is empty [] and success is False by default.
+    Applies the "empty" effect to a technique.
+
+    This effect allows a technique to display its animation without failing,
+    even if the effect list is empty. Normally, a technique with no effects
+    would automatically fail because success defaults to ``False``.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "empty"
+        ]
     """
 
     name = "empty"

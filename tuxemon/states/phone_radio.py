@@ -12,10 +12,12 @@ import pygame_menu
 import yaml
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 
-from tuxemon import prepare
 from tuxemon.constants import paths
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.graphics import BG_PHONE_CONTACTS
+from tuxemon.platform.const.sizes import UNKNOWN_MAP_SLUG
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
@@ -80,13 +82,12 @@ def _check_conditions(
     """Checks if the required conditions (map_slugs and variables) are met."""
     required_map_slug = conditions.get("map_slugs")
     if required_map_slug:
-        current_map_slug = radio_state.client.get_map_name().split(".")[0]
         required_map_slug = (
             [required_map_slug]
             if not isinstance(required_map_slug, list)
             else required_map_slug
         )
-        if current_map_slug not in required_map_slug:
+        if radio_state.current_map not in required_map_slug:
             return False
 
     required_vars = conditions.get("variables")
@@ -130,13 +131,17 @@ class NuPhoneRadioBase(PygameMenuState, ABC):
     name: ClassVar[str] = "NuPhoneRadioBase"
 
     def __init__(self, character: NPC) -> None:
-        width, height = prepare.SCREEN_SIZE
-        theme = self._setup_theme(prepare.BG_PHONE_CONTACTS)
+        width, height = SCREEN_SIZE
+        theme = self._setup_theme(BG_PHONE_CONTACTS)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
         theme.title = True
 
         self.char = character
+        if self.char.current_map:
+            self.current_map = self.char.current_map.split(".")[0]
+        else:
+            self.current_map = UNKNOWN_MAP_SLUG
 
         super().__init__(height=height, width=width)
         self.reset_theme()
@@ -164,6 +169,7 @@ class NuPhoneRadioBase(PygameMenuState, ABC):
             self.client,
             dialogue_text,
             on_complete=on_dialog_complete,
+            dialog_speed="max",
         )
 
     @abstractmethod
@@ -184,10 +190,8 @@ class NuPhoneRadioMenu(NuPhoneRadioBase):
 
     def add_menu_items(self, menu: pygame_menu.Menu) -> None:
         """Builds the menu with clickable station buttons based on map location."""
-        current_map_slug = self.client.get_map_name().split(".")[0]
-
         available_stations = RADIO_MAP_LISTS.get(
-            current_map_slug, RADIO_MAP_LISTS.get("all_maps", [])
+            self.current_map, RADIO_MAP_LISTS.get("all_maps", [])
         )
 
         if not available_stations:
@@ -247,8 +251,7 @@ class NuPhoneRadioTuner(NuPhoneRadioBase):
     def _get_signal_strength(self, dial_value: float) -> int:
         min_diff = float("inf")
 
-        current_map_slug = self.client.get_map_name().split(".")[0]
-        map_specific = RADIO_MAP_LISTS.get(current_map_slug, [])
+        map_specific = RADIO_MAP_LISTS.get(self.current_map, [])
         global_stations = RADIO_MAP_LISTS.get("all_maps", [])
         available_stations = set(map_specific + global_stations)
 
@@ -279,8 +282,7 @@ class NuPhoneRadioTuner(NuPhoneRadioBase):
             return T.translate("signal_none")
 
     def _get_available_stations(self) -> set[str]:
-        current_map_slug = self.client.get_map_name().split(".")[0]
-        map_specific = RADIO_MAP_LISTS.get(current_map_slug, [])
+        map_specific = RADIO_MAP_LISTS.get(self.current_map, [])
         global_stations = RADIO_MAP_LISTS.get("all_maps", [])
         return set(map_specific + global_stations)
 
@@ -311,8 +313,7 @@ class NuPhoneRadioTuner(NuPhoneRadioBase):
             self.signal_bar.set_value(signal_strength)
 
     def _get_best_station_slug(self, dial_value: float) -> str:
-        current_map_slug = self.client.get_map_name().split(".")[0]
-        map_specific = RADIO_MAP_LISTS.get(current_map_slug, [])
+        map_specific = RADIO_MAP_LISTS.get(self.current_map, [])
         global_stations = RADIO_MAP_LISTS.get("all_maps", [])
         available_stations = set(map_specific + global_stations)
 

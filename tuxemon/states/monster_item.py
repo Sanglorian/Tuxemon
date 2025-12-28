@@ -7,7 +7,6 @@ from typing import Any, ClassVar, Optional
 import pygame_menu
 from pygame_menu import locals
 
-from tuxemon import prepare
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.item.filter import ItemFilter
 from tuxemon.item.item import Item
@@ -17,6 +16,7 @@ from tuxemon.menu.menu import PygameMenuState
 from tuxemon.monster import Monster
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.states.item_menu import ItemMenuState
 
 
@@ -65,7 +65,7 @@ class MonsterItemState(PygameMenuState):
         else:
             label = f"{monster.name}: {held_item.name}"
             new_image = self._create_image(held_item.sprite)
-            new_image.scale(prepare.SCALE / 2, prepare.SCALE / 2)
+            new_image.scale(SCALE / 2, SCALE / 2)
             menu.add.image(
                 image_path=new_image.copy(), align=locals.ALIGN_CENTER
             )
@@ -108,7 +108,7 @@ class MonsterItemState(PygameMenuState):
             source = element["source"]
         if monster is None:
             raise ValueError("No monster")
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
         super().__init__(height=height, width=width)
         self._source = source

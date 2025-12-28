@@ -34,12 +34,12 @@ from typing import (
 )
 from uuid import UUID
 
-from tuxemon import prepare
 from tuxemon.compat.rect import ReadOnlyRect
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import Comparison
 from tuxemon.locale import T
-from tuxemon.math import Vector2
+from tuxemon.math import Point3, Vector2
+from tuxemon.prepare import SCALE, SCREEN_RECT
 from tuxemon.ui.dialogue import calc_dialog_rect
 from tuxemon.ui.text_alignment import DialogPosition
 from tuxemon.ui.text_formatter import TextFormatter
@@ -141,7 +141,7 @@ def scale_sequence(sequence: TVarSequence) -> TVarSequence:
     Returns:
         Scaled sequence.
     """
-    return type(sequence)(i * prepare.SCALE for i in sequence)
+    return type(sequence)(i * SCALE for i in sequence)
 
 
 def scale(number: int) -> int:
@@ -154,7 +154,7 @@ def scale(number: int) -> int:
     Returns:
         Scaled integer.
     """
-    return prepare.SCALE * number
+    return SCALE * number
 
 
 TEnum = TypeVar("TEnum", bound=Enum)
@@ -218,6 +218,7 @@ def open_dialog(
     target_coords: Optional[Union[tuple[int, int], Rect]] = None,
     custom_rect: Optional[Rect] = None,
     on_complete: Optional[Callable[[], None]] = None,
+    dialog_speed: Optional[str] = None,
 ) -> State:
     """
     Open a dialog with the standard window size or a custom size/position.
@@ -234,10 +235,12 @@ def open_dialog(
             Otherwise, it will be relative to the screen.
             This parameter is ignored if custom_rect is provided.
         target_coords: Optional. A tuple (x, y) representing a point, or a Pygame Rect.
-                       If provided, the 'position' will be relative to this point/rect.
-                       Ignored if custom_rect is provided.
+            If provided, the 'position' will be relative to this point/rect.
+            Ignored if custom_rect is provided.
         custom_rect: Optional. A Pygame Rect object specifying the exact area for the dialog.
-                     If provided, 'position' and 'target_coords' will be ignored.
+            If provided, 'position' and 'target_coords' will be ignored.
+        dialog_speed: Characters-per-frame delay for text rendering. If `None`, falls
+            back to the client's configured default. Use 'slow' for instant text display.
 
     Returns:
         The pushed dialog state.
@@ -247,7 +250,7 @@ def open_dialog(
         dialog_rect = custom_rect
     else:
         dialog_rect = calc_dialog_rect(
-            prepare.SCREEN_RECT, position, target_coords=target_coords
+            SCREEN_RECT, position, target_coords=target_coords
         )
 
     return client.push_state(
@@ -257,6 +260,7 @@ def open_dialog(
         rect=dialog_rect,
         box_style=box_style,
         on_complete=on_complete,
+        dialog_speed=dialog_speed,
     )
 
 
@@ -289,6 +293,14 @@ def open_choice_dialog(
 
 def vector2_to_tile_pos(vector: Vector2) -> tuple[int, int]:
     return (int(vector[0]), int(vector[1]))
+
+
+def tile_pos_to_point3(tile_pos: tuple[int, int]) -> Point3:
+    """
+    Converts a 2D integer tile position to the 3D world position
+    representing the tile's ground position (Z=0).
+    """
+    return Point3(tile_pos[0], tile_pos[1], 0.0)
 
 
 def number_or_variable(variables: dict[str, Any], value: str) -> float:

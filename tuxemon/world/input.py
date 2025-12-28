@@ -7,8 +7,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
-from tuxemon import prepare
 from tuxemon.platform.const import intentions
+from tuxemon.prepare import DEV_TOOLS
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -46,7 +46,7 @@ class WorldInputHandler:
 
     def handle_noclip(self, event: PlayerInput) -> Optional[PlayerInput]:
         """Toggles noclip mode for the player (dev tool)."""
-        if prepare.DEV_TOOLS and event.pressed:
+        if DEV_TOOLS and event.pressed:
             self.character.ignore_collisions = (
                 not self.character.ignore_collisions
             )
@@ -55,7 +55,7 @@ class WorldInputHandler:
 
     def handle_reload_map(self, event: PlayerInput) -> Optional[PlayerInput]:
         """Reloads the current map tiles (dev tool)."""
-        if prepare.DEV_TOOLS and event.pressed:
+        if DEV_TOOLS and event.pressed:
             assert self.client.map_manager.current_map
             self.client.map_manager.current_map.reload_tiles()
             return None

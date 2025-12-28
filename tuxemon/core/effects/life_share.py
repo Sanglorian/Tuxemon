@@ -17,13 +17,30 @@ if TYPE_CHECKING:
 @dataclass
 class LifeShareEffect(CoreEffect):
     """
-    Shares the current HP amounts of the two monsters.
+    Applies the "life_share" effect to a technique.
 
-    The direction of the sharing is determined by the `direction` attribute,
-    which can be either "user_to_target" or "target_to_user".
+    This effect redistributes HP between the user and the target based on
+    the specified direction and averaging method. It allows monsters to
+    share their current HP values in different ways, potentially balancing
+    health between them.
 
-    The method of the sharing is determined by the `method` attribute,
-    which can be either "weighted", "geometric" or "simple".
+    **Parameters**
+
+    - ``direction``: Determines the flow of HP sharing.
+      - ``user_to_target``: The user's HP is shared with the target.
+      - ``target_to_user``: The target's HP is shared with the user.
+    - ``method``: Determines how HP values are averaged.
+      - ``weighted``: Weighted average based on each monster's maximum HP.
+      - ``geometric``: Geometric mean, favoring lower HP values.
+      - ``simple``: Simple arithmetic average of both HP values.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "life_share user_to_target weighted"
+        ]
     """
 
     name = "life_share"

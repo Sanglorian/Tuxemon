@@ -8,11 +8,12 @@ from typing import TYPE_CHECKING, ClassVar, Optional
 
 import pygame_menu
 
-from tuxemon import prepare
 from tuxemon.animation import ScheduleType
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
+from tuxemon.platform.const.graphics import DIMGRAY_COLOR
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.states.monster_menu import MonsterMenuHandler
 
 if TYPE_CHECKING:
@@ -42,11 +43,11 @@ def add_menu_items_to_pygame_menu(
         else:
             menu.add.label(
                 label,
-                font_color=prepare.DIMGRAY_COLOR,
+                font_color=DIMGRAY_COLOR,
             )
         menu.add.vertical_fill()
 
-    width, height = prepare.SCREEN_SIZE
+    width, height = SCREEN_SIZE
     widgets_size = menu.get_size(widget=True)
     b_width, b_height = menu.get_scrollarea().get_border_size()
     menu.resize(
@@ -64,7 +65,7 @@ class WorldMenuState(PygameMenuState):
     def __init__(self, menu_manager: WorldMenuManager, character: NPC) -> None:
         """Initialize menu state and build menu separately."""
         self.char = character
-        super().__init__(height=prepare.SCREEN_SIZE[1])
+        super().__init__(height=SCREEN_SIZE[1])
         self.menu_manager = menu_manager
         self.menu_manager.set_menu_renderer(self)
         self.update_menu_from_manager()

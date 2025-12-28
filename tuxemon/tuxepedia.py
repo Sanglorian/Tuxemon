@@ -31,6 +31,13 @@ class MonsterEntry:
     appearance_count: int = 1
     caught_count: int = 0
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.status, SeenStatus):
+            try:
+                self.status = SeenStatus(self.status)
+            except ValueError:
+                self.status = SeenStatus.seen
+
     def update_status(self, status: SeenStatus) -> None:
         """Prevents status downgrade from caught to seen."""
         if self.status == SeenStatus.caught and status == SeenStatus.seen:
@@ -55,7 +62,7 @@ class MonsterEntry:
     def get_state(self) -> dict[str, Any]:
         """Returns state for serialization."""
         return {
-            "status": self.status,
+            "status": self.status.value,
             "appearance_count": self.appearance_count,
             "caught_count": self.caught_count,
         }

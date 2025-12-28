@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 import websockets
-from websockets.legacy.server import WebSocketServerProtocol
+from websockets.asyncio.server import ServerConnection
 
 from tuxemon.network.networking import EventType
 
@@ -25,7 +25,7 @@ class WebsocketServerWrapper:
     def __init__(self, game_server: ServerInterface) -> None:
         self.game_server = game_server
         self.incoming_queue: Queue[tuple[str, dict[str, Any]]] = Queue()
-        self.client_registry: dict[str, WebSocketServerProtocol] = {}
+        self.client_registry: dict[str, ServerConnection] = {}
         self.registry: dict[str, dict[str, Any]] = {}
 
     def start_listening(self, port: int) -> None:
@@ -34,6 +34,21 @@ class WebsocketServerWrapper:
             target=self._run_async_loop, args=("0.0.0.0", port), daemon=True
         )
         self.net_thread.start()
+
+    def stop_listening(self) -> None:
+        """Stops the server loop and disconnects all active clients."""
+        for cuuid, websocket in list(self.client_registry.items()):
+            asyncio.run_coroutine_threadsafe(websocket.close(), self.loop)
+            self.client_registry.pop(cuuid, None)
+            self.registry.pop(cuuid, None)
+
+        if self.loop and self.loop.is_running():
+            self.loop.call_soon_threadsafe(self.loop.stop)
+
+        if self.net_thread:
+            self.net_thread.join(timeout=1)
+
+        logger.info("WebSocket server stopped and all clients disconnected.")
 
     def get_incoming_events(self) -> list[tuple[str, dict[str, Any]]]:
         """Called by TuxemonServer.update() to pull all new client messages."""
@@ -74,9 +89,7 @@ class WebsocketServerWrapper:
 
         self.loop.run_until_complete(start())
 
-    async def _handler(
-        self, websocket: WebSocketServerProtocol, path: str
-    ) -> None:
+    async def _handler(self, websocket: ServerConnection, path: str) -> None:
         """Handles a single new client connection."""
         cuuid = str(uuid4())
         self.client_registry[cuuid] = websocket
@@ -94,7 +107,7 @@ class WebsocketServerWrapper:
             self._handle_disconnect(cuuid)
 
     async def _listen_to_client(
-        self, cuuid: str, websocket: WebSocketServerProtocol
+        self, cuuid: str, websocket: ServerConnection
     ) -> None:
         """Receives messages from a single connected client."""
         async for message in websocket:

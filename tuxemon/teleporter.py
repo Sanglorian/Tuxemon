@@ -166,6 +166,7 @@ class Teleporter:
         """
         self.prepare_teleport(character)
         self._switch_map_if_needed(map_name)
+        character.set_current_map(map_name)
         self._update_character_position(character, x, y)
         self.finalize_teleport(character)
 

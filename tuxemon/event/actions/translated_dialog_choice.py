@@ -13,7 +13,7 @@ from tuxemon.locale import T
 from tuxemon.npc import NPC
 from tuxemon.session import Session
 from tuxemon.tools import open_choice_dialog
-from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 from tuxemon.ui.text_formatter import TextFormatter
 
 logger = logging.getLogger(__name__)
@@ -52,14 +52,11 @@ class TranslatedDialogChoiceAction(EventAction):
 
         # make menu options for each string between the colons
         var_list: list[str] = choices.split(":")
-        options: list[ChoiceOption] = []
 
-        for val in var_list:
-            text = T.translate(val)
-            action = partial(_set_variable, val, player)
-            options.append(
-                ChoiceOption(key=val, display_text=text, action=action)
-            )
+        actions = {
+            val: partial(_set_variable, val, player) for val in var_list
+        }
+        options = create_choice_options(actions)
 
         open_choice_dialog(
             client=session.client,

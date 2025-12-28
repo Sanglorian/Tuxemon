@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from tuxemon.db import SpatialCondition
 from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
-from tuxemon.prepare import SURFACE_KEYS
+from tuxemon.platform.const.sizes import SURFACE_KEYS
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

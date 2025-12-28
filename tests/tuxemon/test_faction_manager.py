@@ -146,7 +146,7 @@ class TestFactionManager(unittest.TestCase):
 
     def test_set_state(self):
         npc_manager = Mock()
-        npc_manager.get_all_npc_slugs.return_value = ["npc1"]
+        npc_manager.get_all_slugs.return_value = ["npc1"]
 
         faction1 = Faction()
         faction1.slug = "faction1"

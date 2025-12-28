@@ -16,8 +16,19 @@ if TYPE_CHECKING:
 @dataclass
 class ExhaustedEffect(CoreEffect):
     """
-    Exhausted status
+    Applies the "exhausted" status to a monster.
 
+    This effect represents a state of fatigue where the monster clears its
+    current statuses and may trigger a follow-up condition when attempting
+    to perform a technique.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "exhausted"
+        ]
     """
 
     name = "exhausted"

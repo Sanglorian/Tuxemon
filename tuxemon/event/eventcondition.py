@@ -12,7 +12,7 @@ from tuxemon.constants.paths import (
     LIBDIR,
     get_plugin_paths,
 )
-from tuxemon.db import SpatialCondition
+from tuxemon.db import Operator, SpatialCondition
 from tuxemon.plugin import load_plugins
 from tuxemon.session import Session
 
@@ -95,7 +95,7 @@ class ConditionManager:
         #    return None
 
         # Set expected state
-        instance.is_expected = cond_data.operator == "is"
+        instance.is_expected = cond_data.operator == Operator.IS
         return instance
 
     def get_conditions(self) -> list[type[EventCondition]]:

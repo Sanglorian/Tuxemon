@@ -20,13 +20,25 @@ logger = logging.getLogger(__name__)
 @dataclass
 class LifeGiftEffect(CoreEffect):
     """
-    This effect has a chance to apply the lifegift status effect.
+    Applies the "lifegift" status effect.
 
-    Parameters:
-        user: The monster losing HPs.
-        target: The monster getting HPs.
-        divisor: The number by which target HP is to be divided.
+    This effect transfers HP from a linked monster to the host monster,
+    simulating a gift of life energy. The amount transferred is determined
+    by dividing the linked monster's HP by the specified divisor.
 
+    **Parameters**
+
+      - ``divisor``: Integer value used to calculate the HP transfer amount.
+      - The linked monster's HP is divided by this number to determine
+        how much HP is gifted.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "lifegift 2"
+        ]
     """
 
     name = "lifegift"

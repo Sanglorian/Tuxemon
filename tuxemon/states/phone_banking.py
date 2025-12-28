@@ -10,10 +10,11 @@ import pygame_menu
 from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon import prepare
 from tuxemon.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.graphics import BG_PHONE_BANKING
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import (
     MenuOptions,
@@ -86,7 +87,7 @@ class NuPhoneBanking(PygameMenuState):
             else:
                 params = {"operation": T.translate(op)}
                 msg = T.format("no_money_operation", params)
-                open_dialog(self.client, [msg])
+                open_dialog(self.client, [msg], dialog_speed="max")
 
         def bill_manager(op: str, bill_name: str) -> None:
             actions: dict[str, Callable[..., None]] = {}
@@ -109,7 +110,7 @@ class NuPhoneBanking(PygameMenuState):
             else:
                 params = {"operation": T.translate(op)}
                 msg = T.format("no_money_operation", params)
-                open_dialog(self.client, [msg])
+                open_dialog(self.client, [msg], dialog_speed="max")
 
         def bill(op: str) -> None:
             actions = {
@@ -129,7 +130,7 @@ class NuPhoneBanking(PygameMenuState):
             else:
                 params = {"operation": T.translate(op)}
                 msg = T.format("no_money_operation", params)
-                open_dialog(self.client, [msg])
+                open_dialog(self.client, [msg], dialog_speed="max")
 
         def deposit(amount: int) -> None:
             self.client.remove_state_by_name("ChoiceState")
@@ -204,9 +205,9 @@ class NuPhoneBanking(PygameMenuState):
         menu.set_title(T.translate("app_banking")).center_content()
 
     def __init__(self, character: NPC) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_PHONE_BANKING)
+        theme = self._setup_theme(BG_PHONE_BANKING)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
 

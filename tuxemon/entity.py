@@ -10,8 +10,8 @@ from uuid import UUID, uuid4
 from tuxemon.db import Direction
 from tuxemon.map.map import dirs3, proj
 from tuxemon.math import Point3, Vector3
-from tuxemon.prepare import CONFIG
 from tuxemon.tools import vector2_to_tile_pos
+from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.session import Session

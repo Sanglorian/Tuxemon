@@ -26,7 +26,7 @@ class TestTransition(TestCase):
         self.assertEqual(self.transition.transition_alpha, 0)
         self.assertFalse(self.transition.in_transition)
 
-    @patch("tuxemon.prepare.SCREEN_SIZE", (800, 600))
+    @patch("tuxemon.world.transition.SCREEN_SIZE", (800, 600))
     def test_set_transition_surface_size(self):
         color = (0, 0, 0, 255)
         self.transition.set_transition_surface(color)
@@ -50,7 +50,7 @@ class TestTransition(TestCase):
         self.transition.set_transition_state(False)
         self.assertFalse(self.transition.in_transition)
 
-    @patch("tuxemon.prepare.SCREEN_SIZE", (800, 600))
+    @patch("tuxemon.world.transition.SCREEN_SIZE", (800, 600))
     def test_set_transition_surface(self):
         mock_color = (255, 0, 0)
         self.transition.set_transition_surface(mock_color)

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pygame
 
-from tuxemon import prepare
+from tuxemon.platform.const.graphics import GREEN_COLOR, RED_COLOR
 from tuxemon.state.draw import EventDebugDrawer, Renderer, StateDrawer
 
 
@@ -164,8 +164,8 @@ class TestEventDebugDrawer(unittest.TestCase):
         self.assertEqual(event_debug_drawer.y_offset, 200)
         self.assertEqual(event_debug_drawer.initial_x, 4)
         self.assertEqual(event_debug_drawer.initial_y, 20)
-        self.assertEqual(event_debug_drawer.success_color, prepare.GREEN_COLOR)
-        self.assertEqual(event_debug_drawer.failure_color, prepare.RED_COLOR)
+        self.assertEqual(event_debug_drawer.success_color, GREEN_COLOR)
+        self.assertEqual(event_debug_drawer.failure_color, RED_COLOR)
 
     def test_draw_event_debug(self):
         screen = MagicMock()

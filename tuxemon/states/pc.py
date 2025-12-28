@@ -8,10 +8,10 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 import pygame_menu
 
-from tuxemon import prepare
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.sizes import KENNEL, LOCKER, MAX_LOCKER
 from tuxemon.state.state import State
 from tuxemon.tools import open_dialog
 
@@ -57,7 +57,9 @@ class PCMenuBuilder:
         return partial(self.client.replace_state, state, **kwargs)
 
     def _not_implemented_dialog(self) -> None:
-        open_dialog(self.client, [T.translate("not_implemented")])
+        open_dialog(
+            self.client, [T.translate("not_implemented")], dialog_speed="max"
+        )
 
     def build_menu_items(self) -> list[tuple[str, MenuGameObj]]:
         char = self.character
@@ -80,7 +82,7 @@ class PCMenuBuilder:
             )
 
         # Item box logic
-        if len(char.items) == prepare.MAX_LOCKER:
+        if len(char.items) == MAX_LOCKER:
             item_storage_callback = partial(
                 open_dialog,
                 self.client,
@@ -122,8 +124,8 @@ class PCState(PygameMenuState):
         self, character: NPC, menu_builder: Optional[PCMenuBuilder] = None
     ) -> None:
         super().__init__()
-        kennel = prepare.KENNEL
-        locker = prepare.LOCKER
+        kennel = KENNEL
+        locker = LOCKER
         char = character
 
         # it creates the kennel and locker (new players)

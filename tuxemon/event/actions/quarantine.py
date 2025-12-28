@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Optional, final
 from tuxemon.boxes import BoxMetadata
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
-from tuxemon.prepare import MAX_KENNEL
+from tuxemon.platform.const.sizes import MAX_KENNEL
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC

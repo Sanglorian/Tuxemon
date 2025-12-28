@@ -13,7 +13,6 @@ import pygame_menu
 from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon import prepare
 from tuxemon.animation import ScheduleType
 from tuxemon.item.filter import ItemFilter
 from tuxemon.item.item import Item
@@ -21,6 +20,8 @@ from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.quantity import QuantityMenu
+from tuxemon.platform.const.graphics import BG_PC_LOCKER
+from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.state.state import State
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.tools import fix_measure, open_choice_dialog, open_dialog
@@ -77,6 +78,7 @@ class ItemActionHandler:
                     {"name": item.name, "nr": quantity},
                 )
             ],
+            dialog_speed="max",
         )
 
     def move(
@@ -104,6 +106,7 @@ class ItemActionHandler:
                     {"name": item.name, "nr": quantity},
                 )
             ],
+            dialog_speed="max",
         )
 
     def _clear_states(self, *state_names: str) -> None:
@@ -120,9 +123,9 @@ class ItemTakeState(PygameMenuState):
     name: ClassVar[str] = "ItemTakeState"
 
     def __init__(self, box_name: str, character: NPC) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_PC_LOCKER)
+        theme = self._setup_theme(BG_PC_LOCKER)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
 
@@ -241,7 +244,7 @@ class ItemTakeState(PygameMenuState):
             label = T.translate(itm.name).upper() + " x" + str(itm.quantity)
             iid = itm.instance_id.hex
             new_image = self._create_image(itm.sprite)
-            new_image.scale(prepare.SCALE, prepare.SCALE)
+            new_image.scale(SCALE, SCALE)
             menu.add.banner(
                 new_image,
                 partial(self.locker_options, iid, handler),
@@ -266,7 +269,7 @@ class ItemBoxState(PygameMenuState):
     name: ClassVar[str] = "ItemBoxState"
 
     def __init__(self, character: NPC) -> None:
-        _, height = prepare.SCREEN_SIZE
+        _, height = SCREEN_SIZE
 
         super().__init__(height=height)
 
@@ -292,7 +295,7 @@ class ItemBoxState(PygameMenuState):
             menu.add.button(label, callback)
             menu.add.vertical_fill()
 
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         widgets_size = menu.get_size(widget=True)
         b_width, b_height = menu.get_scrollarea().get_border_size()
         menu.resize(

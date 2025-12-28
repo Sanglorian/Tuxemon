@@ -47,6 +47,7 @@ class DialogState(PopUpMenu[None]):
         close_after: Optional[float] = None,
         per_line_timeout: bool = False,
         advance_buttons: Optional[list[int]] = None,
+        dialog_speed: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -57,6 +58,7 @@ class DialogState(PopUpMenu[None]):
         self.close_after = close_after
         self.advance_buttons = advance_buttons or [buttons.A]
         self.per_line_timeout = per_line_timeout
+        self.dialog_speed = dialog_speed or self.client.config.dialog_speed
 
         self._elapsed_time: float = 0.0
         self._timer_active: bool = False
@@ -164,7 +166,11 @@ class DialogState(PopUpMenu[None]):
             if not text:
                 return self.next_text()
 
-            self.dialog.alert(text, self.dialog_box)
+            self.dialog.alert(
+                message=text,
+                text_area=self.dialog_box,
+                dialog_speed=self.dialog_speed,
+            )
             self._reset_timer()
             return text
 
@@ -179,7 +185,6 @@ class DialogState(PopUpMenu[None]):
     def close_dialog(self) -> None:
         """Close the dialog immediately and trigger the completion callback."""
         self._timer_active = False
-        self.client.pop_state(self)
         self.client.event_bus.publish(
             "DIALOG_CLOSED",
             payload={
@@ -193,6 +198,8 @@ class DialogState(PopUpMenu[None]):
                 self.on_complete()
             except Exception as e:
                 logger.error(f"Error in on_complete callback: {e}")
+
+        self.close()
 
     def _reset_timer(self) -> None:
         """Reset elapsed time and activate the timer if conditions are met."""

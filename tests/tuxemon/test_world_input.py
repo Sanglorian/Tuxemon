@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
-from tuxemon import prepare
 from tuxemon.platform.const import intentions
 from tuxemon.world.input import InputHandlerConfig, WorldInputHandler
 
@@ -17,8 +16,6 @@ class TestWorldInputHandler(unittest.TestCase):
             self.mock_player, self.mock_client, self.mock_menu_manager
         )
 
-        prepare.DEV_TOOLS = True
-
         self.event = MagicMock()
         self.event.held = True
         self.event.pressed = True
@@ -29,6 +26,7 @@ class TestWorldInputHandler(unittest.TestCase):
         self.mock_player.mover.update_movement_state.assert_called_with(True)
         self.assertEqual(result, self.event)
 
+    @patch("tuxemon.world.input.DEV_TOOLS", "True")
     def test_handle_noclip_toggle(self):
         self.mock_player.ignore_collisions = False
         result = self.handler.handle_noclip(self.event)
@@ -42,6 +40,7 @@ class TestWorldInputHandler(unittest.TestCase):
         self.assertFalse(self.mock_player.ignore_collisions)
         self.assertEqual(result, self.event)
 
+    @patch("tuxemon.world.input.DEV_TOOLS", "True")
     def test_handle_reload_map(self):
         mock_map = MagicMock()
         self.mock_client.map_manager.current_map = mock_map

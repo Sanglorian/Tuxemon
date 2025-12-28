@@ -16,13 +16,15 @@ from pygame.gfxdraw import box
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon import prepare
 from tuxemon.camera.camera import project
 from tuxemon.db import Direction
 from tuxemon.graphics import ColorLike, apply_cinema_bars, load_and_scale
 from tuxemon.map.map import get_pos_from_tilepos
 from tuxemon.math import Vector2
+from tuxemon.platform.const.graphics import BLACK_COLOR
+from tuxemon.prepare import SCREEN_SIZE, TILE_SIZE
 from tuxemon.surfanim import SurfaceAnimation, SurfaceAnimationCollection
+from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -266,7 +268,7 @@ class SpriteRenderer:
 
     def _calculate_frame_duration(
         self,
-        rate: float = prepare.CONFIG.player_walkrate,
+        rate: float = CONFIG.player_walkrate,
         time_scale: int = 1000,
         frame_divisor: int = 3,
         speed_factor: float = 2,
@@ -289,7 +291,7 @@ class SpriteRenderer:
         if ani not in animations:
             raise ValueError(f"Animation '{ani}' not found.")
         animation = animations[ani]
-        animation.rate = npc.moverate / prepare.CONFIG.player_walkrate
+        animation.rate = npc.moverate / CONFIG.player_walkrate
         return animation.get_current_frame()
 
     def get_facing_frame(
@@ -351,7 +353,7 @@ class NullRenderer(AbstractRenderer):
     def draw(
         self, surface: Surface, current_map: Optional[AbstractMap]
     ) -> None:
-        surface.fill(prepare.BLACK_COLOR)
+        surface.fill(BLACK_COLOR)
 
 
 class MapRenderer(AbstractRenderer):
@@ -367,7 +369,7 @@ class MapRenderer(AbstractRenderer):
         self.camera_manager = camera_manager
         self.npc_manager = npc_manager
         self.debug_renderer = debug_renderer
-        self.layer = Surface(prepare.SCREEN_SIZE, pygame.SRCALPHA)
+        self.layer = Surface(SCREEN_SIZE, pygame.SRCALPHA)
         self.layer_color: Optional[ColorLike] = None
         self.cinema_x_ratio: Optional[float] = None
         self.cinema_y_ratio: Optional[float] = None
@@ -392,7 +394,7 @@ class MapRenderer(AbstractRenderer):
         if self.layer_color:
             self._apply_effects(surface)
         self._apply_cinema_bars(surface)
-        if prepare.CONFIG.collision_map:
+        if CONFIG.collision_map:
             self.debug_renderer.draw_debug(current_map, surface)
 
     def update(self, time_delta: float) -> None:
@@ -478,7 +480,7 @@ class MapRenderer(AbstractRenderer):
             layer = frame.layer
             screen_position = get_pos_from_tilepos(current_map, position)
             rect = Rect(screen_position, surface.get_size())
-            if surface.get_height() > prepare.TILE_SIZE[1]:
+            if surface.get_height() > TILE_SIZE[1]:
                 rect.y -= surface.get_height() // 2
             screen_surfaces.append((surface, rect, layer))
         return screen_surfaces
@@ -614,8 +616,8 @@ def apply_bars(orientation: str, aspect_ratio: float, screen: Surface) -> None:
         aspect_ratio,
         screen,
         orientation,
-        prepare.SCREEN_SIZE,
-        prepare.BLACK_COLOR,
+        SCREEN_SIZE,
+        BLACK_COLOR,
     )
 
 
@@ -626,11 +628,11 @@ def collision_box_to_pgrect(
     Returns a Rect (in screen-coords) version of a collision box (in world-coords).
     """
     x, y = get_pos_from_tilepos(current_map, Vector2(box))
-    tw, th = prepare.TILE_SIZE
+    tw, th = TILE_SIZE
     return Rect(x, y, tw, th)
 
 
 def npc_to_pgrect(current_map: AbstractMap, npc: NPC) -> Rect:
     """Returns a Rect (in screen-coords) version of an NPC's bounding box."""
     pos = get_pos_from_tilepos(current_map, npc.position)
-    return Rect(pos, prepare.TILE_SIZE)
+    return Rect(pos, TILE_SIZE)

@@ -16,7 +16,7 @@ from tuxemon.map.map import (
     pairs,
 )
 from tuxemon.platform.const import intentions
-from tuxemon.prepare import CONFIG
+from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.boundary import BoundaryChecker

@@ -102,6 +102,8 @@ class Element:
 
 class ElementTypesHandler:
 
+    _multiplier_cache: dict[tuple[str, str], float] = {}
+
     def __init__(self, initial_types: Optional[Sequence[str]] = None):
         pre_types = (
             []
@@ -110,6 +112,53 @@ class ElementTypesHandler:
         )
         self._current_types = pre_types
         self._default_types = list(pre_types)
+
+    @classmethod
+    def calculate_affinity_score(
+        cls, user_types: Sequence[Element], target_types: Sequence[Element]
+    ) -> float:
+        """
+        Return cumulative offensive multiplier of user types against target types.
+        """
+        multiplier = 1.0
+        for _user in user_types:
+            for _target in target_types:
+                if _target and not (
+                    _user.slug == "aether" or _target.slug == "aether"
+                ):
+                    key = (_user.slug, _target.slug)
+                    if key not in cls._multiplier_cache:
+                        cls._multiplier_cache[key] = _user.lookup_multiplier(
+                            _target.slug
+                        )
+                    mult_value = cls._multiplier_cache[key]
+                    multiplier *= mult_value
+        return multiplier
+
+    @classmethod
+    def calculate_resistance_multiplier_for_types(
+        cls, defending_types: Sequence[Element], attacking_slug: str
+    ) -> float:
+        """
+        Return cumulative defensive multiplier of defending types against an
+        attacking type.
+        """
+        multiplier = 1.0
+        for defending_type in defending_types:
+            if defending_type.slug == "aether" or attacking_slug == "aether":
+                continue
+            key = (defending_type.slug, attacking_slug)
+            if key not in cls._multiplier_cache:
+                cls._multiplier_cache[key] = defending_type.lookup_multiplier(
+                    attacking_slug
+                )
+            mult_value = cls._multiplier_cache[key]
+            multiplier *= mult_value
+        return multiplier
+
+    @classmethod
+    def clear_cache(cls) -> None:
+        cls._multiplier_cache.clear()
 
     def set_types(self, new_types: list[Element]) -> None:
         self._current_types = new_types

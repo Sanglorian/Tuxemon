@@ -19,7 +19,7 @@ from tuxemon.combat.experience_strategies import (
     calculate_experience_base,
 )
 from tuxemon.db import EvolutionStage, ExperienceMethod
-from tuxemon.prepare import MAX_LEVEL
+from tuxemon.platform.const.sizes import MAX_LEVEL
 
 
 class DummyMonster:

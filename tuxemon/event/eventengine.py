@@ -8,8 +8,8 @@ from contextlib import contextmanager
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-from tuxemon import prepare
 from tuxemon.event.running import EventState, RunningCondition, RunningEvent
+from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.db import EventObject, ParameterizableRule, SpatialCondition
@@ -152,7 +152,7 @@ class EventEngine:
 
         This method wraps each condition in a RunningCondition, checks them
         using the evaluator, and determines whether the event should be
-        triggered. If debug mode is enabled via `prepare.CONFIG.collision_map`,
+        triggered. If debug mode is enabled via `self.config.collision_map`,
         the condition results are stored in `self.partial_events` for inspection
         or debugging.
 
@@ -234,7 +234,7 @@ class EventEngine:
         ]
         all_met = all(rc.check() for rc in running_conditions)
 
-        if prepare.CONFIG.collision_map:
+        if CONFIG.collision_map:
             self.partial_events.append(
                 [
                     (rc.result or False, rc.map_condition)

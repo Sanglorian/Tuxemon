@@ -7,8 +7,13 @@ from typing import TYPE_CHECKING, ClassVar, Optional
 
 from pygame.surface import Surface
 
-from tuxemon import prepare
+from tuxemon.platform.const.graphics import (
+    BLACK_COLOR,
+    CREATIVE_COMMONS,
+    PYGAME_LOGO,
+)
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 
 if TYPE_CHECKING:
@@ -32,20 +37,20 @@ class SplashState(State):
         self.task(self.fade_out, interval=self.default_duration)
         self.triggered = False
 
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
         # The space between the edge of the screen
-        splash_border = int(prepare.SCREEN_SIZE[0] / 20)
+        splash_border = int(SCREEN_SIZE[0] / 20)
 
         # Set up the splash screen logos
-        logo = self.load_sprite(prepare.PYGAME_LOGO)
+        logo = self.load_sprite(PYGAME_LOGO)
         logo.rect.topleft = (
             splash_border,
             height - splash_border - logo.rect.height,
         )
 
         # Set up the splash screen logos
-        cc = self.load_sprite(prepare.CREATIVE_COMMONS)
+        cc = self.load_sprite(CREATIVE_COMMONS)
         cc.rect.topleft = (
             width - splash_border - cc.rect.width,
             height - splash_border - cc.rect.height,
@@ -64,7 +69,7 @@ class SplashState(State):
 
     def draw(self, surface: Surface) -> None:
         if not self.triggered:
-            surface.fill(prepare.BLACK_COLOR)
+            surface.fill(BLACK_COLOR)
             self.sprites.draw(surface)
 
     def fade_out(self) -> None:

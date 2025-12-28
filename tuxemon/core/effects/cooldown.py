@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 from tuxemon.event.conditions.common import CommonCondition
-from tuxemon.prepare import RECHARGE_RANGE
+from tuxemon.platform.const.sizes import RECHARGE_RANGE
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster

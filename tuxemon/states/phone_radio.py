@@ -169,6 +169,7 @@ class NuPhoneRadioBase(PygameMenuState, ABC):
             self.client,
             dialogue_text,
             on_complete=on_dialog_complete,
+            dialog_speed="max",
         )
 
     @abstractmethod

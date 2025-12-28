@@ -185,7 +185,7 @@ class EvolutionTransition(State):
             "evolve": T.format(self.evolved),
         }
         msg = T.format("evolution_ended", param)
-        tools.open_dialog(self.client, [msg])
+        tools.open_dialog(self.client, [msg], dialog_speed="max")
         self.dialog_opened = True
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:

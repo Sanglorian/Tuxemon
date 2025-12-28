@@ -98,7 +98,7 @@ class SingleMissionState(PygameMenuState):
     ) -> None:
         def delete_mission() -> None:
             msg = T.translate("mission_deletion")
-            open_dialog(self.client, [msg])
+            open_dialog(self.client, [msg], dialog_speed="max")
 
             options = create_yes_no_options(
                 yes_action=confirm_deletion,

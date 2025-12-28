@@ -201,4 +201,6 @@ class MinigameState(PygameMenuState):
 
         else:
             self.streak = 0
-            open_dialog(self.client, [T.translate("generic_wrong")])
+            open_dialog(
+                self.client, [T.translate("generic_wrong")], dialog_speed="max"
+            )

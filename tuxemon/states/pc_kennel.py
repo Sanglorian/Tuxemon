@@ -67,6 +67,7 @@ class MonsterActionHandler:
         open_dialog(
             self.client,
             [T.format("menu_storage_take_monster", {"name": monster.name})],
+            dialog_speed="max",
         )
 
     def move(self, monster: Monster, box_ids: list[str]) -> None:
@@ -113,6 +114,7 @@ class MonsterActionHandler:
             open_dialog(
                 self.client,
                 [T.format("tuxemon_released", {"name": monster.name})],
+                dialog_speed="max",
             )
 
     def info(self, mon: Monster) -> None:
@@ -176,6 +178,7 @@ class MonsterActionHandler:
                     },
                 )
             ],
+            dialog_speed="max",
         )
 
     def _clear_states(self, *state_names: str) -> None:
@@ -499,6 +502,7 @@ class MonsterDropOff(MonsterMenuState):
             open_dialog(
                 self.client,
                 [T.translate("menu_storage_infected_monster")],
+                dialog_speed="max",
             )
             return
 

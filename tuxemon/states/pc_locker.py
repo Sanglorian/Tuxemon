@@ -78,6 +78,7 @@ class ItemActionHandler:
                     {"name": item.name, "nr": quantity},
                 )
             ],
+            dialog_speed="max",
         )
 
     def move(
@@ -105,6 +106,7 @@ class ItemActionHandler:
                     {"name": item.name, "nr": quantity},
                 )
             ],
+            dialog_speed="max",
         )
 
     def _clear_states(self, *state_names: str) -> None:

@@ -57,7 +57,9 @@ class PCMenuBuilder:
         return partial(self.client.replace_state, state, **kwargs)
 
     def _not_implemented_dialog(self) -> None:
-        open_dialog(self.client, [T.translate("not_implemented")])
+        open_dialog(
+            self.client, [T.translate("not_implemented")], dialog_speed="max"
+        )
 
     def build_menu_items(self) -> list[tuple[str, MenuGameObj]]:
         char = self.character

@@ -74,7 +74,7 @@ class TestCombatBars(unittest.TestCase):
     def test_create_rect_for_bar(self):
         hud = MagicMock()
         hud.image.get_width.return_value = 100
-        rect = self.combat_ui.create_rect_for_bar(hud, 70, 8, 0)
+        rect = self.combat_ui.create_rect_for_bar(hud, 70, 8, 0, 8)
         self.assertEqual(rect.width, scale(70))
         self.assertEqual(rect.height, scale(8))
         self.assertEqual(rect.right, hud.image.get_width() - scale(8))

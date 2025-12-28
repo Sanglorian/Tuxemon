@@ -691,7 +691,7 @@ class CombatAnimations(Menu[None], ABC):
         opp_home = self.hud_manager.get_rect(opponent, "home")
 
         battle_layout = env.get_battle_layout(
-            prepare.SCREEN_RECT.size, player_home, opp_home
+            SCREEN_RECT.size, player_home, opp_home
         )
         back_island = self.load_sprite(
             assets["island_back"], **battle_layout.back_island_pos

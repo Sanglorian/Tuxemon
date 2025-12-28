@@ -65,7 +65,9 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
             self.opponents[0]
         )
         self.itm_description: Optional[str] = None
-        params = {"player": monster.get_owner().name}
+        owner = self.client.get_monster_owner(monster)
+        name = "" if owner is None else owner.name
+        params = {"player": name}
         message = T.format("combat_player_choice", params)
         self.combat.dialog.alert(message, self.combat.text_area)
 

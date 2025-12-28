@@ -52,8 +52,8 @@ class RewardSystem:
     def apply_penalties(self, monster: Monster) -> None:
         """Applies defeat-related penalties to the specified monster."""
         monster.current_hp = 0
-        owner = monster.get_owner()
-        if owner.bag.find_item("friendship_scroll"):
+        owner = self.session.client.get_monster_owner(monster)
+        if owner and owner.bag.find_item("friendship_scroll"):
             monster.bond_handler.apply_bond_modifier("fainted")
 
     def award_rewards(

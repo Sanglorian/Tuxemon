@@ -12,6 +12,9 @@ def mock_session():
     session = MagicMock()
     session.client.combat_session.is_trainer_battle = True
     session.client.combat_session.is_double = True
+    session.client.get_monster_owner.return_value = MagicMock(
+        slug="trainer_slug"
+    )
     return session
 
 

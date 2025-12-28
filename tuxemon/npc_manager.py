@@ -164,10 +164,10 @@ class NPCManager:
         ]
 
     def get_monster_owner(self, monster: Monster) -> NPC | None:
-        for npc in self.npcs.values():
+        for npc in self._on_map.values():
             if monster in npc.monsters:
                 return npc
-        for npc in self.npcs_off_map.values():
+        for npc in self._off_map.values():
             if monster in npc.monsters:
                 return npc
         return None

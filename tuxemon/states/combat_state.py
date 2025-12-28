@@ -816,8 +816,8 @@ class CombatState(CombatAnimations):
                 params = {"name": winner.name.upper(), "tech": tech_list}
                 mex = T.format("tuxemon_new_tech", params)
                 self.text_anim.add_xp_message(mex)
-            owner = winner.get_owner()
-            if owner.is_player:
+            owner = self.client.get_monster_owner(winner)
+            if owner and owner.is_player:
                 self.task(partial(self.animate_exp, winner), interval=2.5)
                 self.task(
                     partial(self.update_hud, owner, False, True), interval=4.0

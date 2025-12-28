@@ -139,16 +139,23 @@ def test_check_ai_techs_returns_correct_config(mock_evaluator, mock_tracker):
         "trainer_slug": "trainerconfig",
     }
 
+    mock_session = MagicMock()
+    mock_session.client.get_monster_owner.return_value = MagicMock(
+        slug="trainer_slug"
+    )
+
     wild_monster = MagicMock(slug="wildslug", wild=True)
     trainer_monster = MagicMock(slug="trainer_slug", wild=False)
-    trainer_monster.get_owner.return_value = MagicMock(slug="trainer_slug")
 
     strategy = TrainerAIDecisionStrategy(
         mock_evaluator, mock_tracker, MagicMock(), MagicMock(), ai_techs
     )
 
-    assert strategy.check_ai_techs(wild_monster) == "wildconfig"
-    assert strategy.check_ai_techs(trainer_monster) == "trainerconfig"
+    assert strategy.check_ai_techs(mock_session, wild_monster) == "wildconfig"
+    assert (
+        strategy.check_ai_techs(mock_session, trainer_monster)
+        == "trainerconfig"
+    )
 
 
 # WildAIDecisionStrategy tests

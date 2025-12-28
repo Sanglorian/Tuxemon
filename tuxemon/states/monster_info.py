@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 import pygame_menu
 from pygame_menu import locals
@@ -21,6 +21,9 @@ from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.time_handler import today_ordinal
 from tuxemon.tools import fix_measure, transform_resource_filename
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 lookup_cache: dict[str, MonsterModel] = {}
 lookup_tastes: dict[str, TasteModel] = {}
@@ -412,8 +415,8 @@ class MonsterInfoState(PygameMenuState):
             minus.translate(x + fxw(36 / 256), y + (0.2 / 144))
 
         # bond icon
-        owner = monster.get_owner()
-        if owner.bag.find_item("friendship_scroll"):
+        owner = self.client.get_monster_owner(monster)
+        if owner and owner.bag.find_item("friendship_scroll"):
             bond_file = monster.bond_handler.get_bond_icon_path()
             if bond_file:
                 bond_icon = self._create_image(bond_file)
@@ -472,7 +475,7 @@ class MonsterInfoState(PygameMenuState):
             "MonsterMenuState",
             "MonsterTakeState",
         ]:
-            monsters = _get_monsters(self._monster, self._source)
+            monsters = _get_monsters(client, self._monster, self._source)
             slot = monsters.index(self._monster)
 
             if event.button == buttons.RIGHT and event.pressed:
@@ -501,8 +504,12 @@ def get_acquisition_reference(monster: Monster) -> str:
     return T.translate(msgid) if doc < 1 else T.format(msgid, {"doc": doc})
 
 
-def _get_monsters(monster: Monster, source: str) -> list[Monster]:
-    owner = monster.get_owner()
+def _get_monsters(
+    client: BaseClient, monster: Monster, source: str
+) -> list[Monster]:
+    owner = client.get_monster_owner(monster)
+    if owner is None:
+        return []
     if source == "MonsterTakeState":
         box = owner.monster_boxes.get_box_name(monster.instance_id)
         if box is None:

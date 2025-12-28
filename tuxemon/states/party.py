@@ -8,8 +8,8 @@ from typing import Any, ClassVar, Optional
 import pygame_menu
 from pygame_menu import locals
 
-from tuxemon.entity_dir.party import PartyHandler
 from tuxemon import formula
+from tuxemon.entity_dir.party import PartyHandler
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.monster import Monster

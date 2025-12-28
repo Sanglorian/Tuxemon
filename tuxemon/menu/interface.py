@@ -8,8 +8,18 @@ from pygame import draw as pg_draw
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon import prepare, tools
+from tuxemon import tools
 from tuxemon.graphics import ColorLike, load_and_scale
+from tuxemon.platform.const.graphics import (
+    BLACK_COLOR,
+    GFX_HP_BAR,
+    GFX_XP_BAR,
+    HP_COLOR_BG,
+    HP_COLOR_FG,
+    WHITE_COLOR,
+    XP_COLOR_BG,
+    XP_COLOR_FG,
+)
 from tuxemon.sprite import Sprite
 from tuxemon.ui.graphic_box import GraphicBox
 
@@ -27,8 +37,8 @@ class Bar:
         self,
         value: float,
         border_filename: str,
-        fg_color: ColorLike = prepare.WHITE_COLOR,
-        bg_color: Optional[ColorLike] = prepare.BLACK_COLOR,
+        fg_color: ColorLike = WHITE_COLOR,
+        bg_color: Optional[ColorLike] = BLACK_COLOR,
     ) -> None:
         """
         Initializes the bar with a given value, border filename, foreground color, and background color.
@@ -134,9 +144,9 @@ class HpBar(Bar):
         """
         super().__init__(
             max(0.0, min(1.0, value)),
-            prepare.GFX_HP_BAR,
-            prepare.HP_COLOR_FG,
-            prepare.HP_COLOR_BG,
+            GFX_HP_BAR,
+            HP_COLOR_FG,
+            HP_COLOR_BG,
         )
 
 
@@ -152,9 +162,9 @@ class ExpBar(Bar):
         """
         super().__init__(
             max(0.0, min(1.0, value)),
-            prepare.GFX_XP_BAR,
-            prepare.XP_COLOR_FG,
-            prepare.XP_COLOR_BG,
+            GFX_XP_BAR,
+            XP_COLOR_FG,
+            XP_COLOR_BG,
         )
 
 

@@ -16,11 +16,13 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 from pygame.transform import flip as pg_flip
 
-from tuxemon import graphics, prepare
+from tuxemon import graphics
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.combat.utils import build_hud_text
 from tuxemon.formula import config_combat
 from tuxemon.menu.menu import Menu
+from tuxemon.platform.const.sizes import PARTY_LIMIT
+from tuxemon.prepare import SCALE, SCREEN, SCREEN_RECT
 from tuxemon.sprite import CaptureDeviceSprite, HordeSprite, Sprite
 from tuxemon.tools import scale
 from tuxemon.ui.combat_bars import CombatBars
@@ -82,7 +84,7 @@ class CombatAnimations(Menu[None], ABC):
         _layout = prepare_layout(context.teams, layout_manager)
         self.hud_manager = CombatLayoutManager(_layout)
         self.status_icons = StatusIconManager(self, _layout, self.hud_manager)
-        self.combat_zone = CombatZone(prepare.SCREEN_RECT)
+        self.combat_zone = CombatZone(SCREEN_RECT)
         self.text_display = CombatTextDisplay(
             get_rect_func=self.hud_manager.get_rect,
             shadow_text_func=self.shadow_text,
@@ -106,7 +108,7 @@ class CombatAnimations(Menu[None], ABC):
     def show_combat_dialog(self) -> None:
         """Create and show the area where battle messages are displayed."""
         # make the border and area at the bottom of the screen for messages
-        rect_screen = prepare.SCREEN_RECT.copy()
+        rect_screen = SCREEN_RECT.copy()
         rect = Rect(0, 0, rect_screen.w, rect_screen.h // 4)
         rect.bottomright = rect_screen.w, rect_screen.h
         border = graphics.load_and_scale(self.borders_filename)
@@ -216,7 +218,7 @@ class CombatAnimations(Menu[None], ABC):
         self.sprite_map.add_sprite(monster, monster_sprite)
 
         # Position monster sprite off screen and animate it to final spot
-        monster_sprite.rect.top = prepare.SCREEN.get_height()
+        monster_sprite.rect.top = SCREEN.get_height()
         self.animate(
             monster_sprite.rect,
             bottom=feet[1],
@@ -575,9 +577,9 @@ class CombatAnimations(Menu[None], ABC):
 
         monster_count = player.party.party_size
         positions = (
-            [monster_count - i - 1 for i in range(prepare.PARTY_LIMIT)]
+            [monster_count - i - 1 for i in range(PARTY_LIMIT)]
             if h_align is HorizontalAlignment.LEFT
-            else list(range(prepare.PARTY_LIMIT))
+            else list(range(PARTY_LIMIT))
         )
 
         scaled_top = scale(1)
@@ -640,11 +642,11 @@ class CombatAnimations(Menu[None], ABC):
             self.background_sprite = None
 
         # Load and scale to SCALE only (no stretching to full screen)
-        surf = graphics.load_and_scale(bg_path, prepare.SCALE)
+        surf = graphics.load_and_scale(bg_path, SCALE)
 
         # Create a full-screen surface (black by default)
-        full_height = prepare.SCREEN_RECT.height
-        full_width = prepare.SCREEN_RECT.width
+        full_height = SCREEN_RECT.height
+        full_width = SCREEN_RECT.width
         full_surf = Surface((full_width, full_height))
         full_surf.fill((0, 0, 0))  # fill rest with black
 

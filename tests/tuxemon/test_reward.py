@@ -19,7 +19,7 @@ from tuxemon.monster import Monster
 from tuxemon.monster_dir.stats import BasicStats
 from tuxemon.monster_dir.status import MonsterStatusHandler
 from tuxemon.npc import NPC
-from tuxemon.prepare import MAX_LEVEL
+from tuxemon.platform.const.sizes import MAX_LEVEL
 
 
 class DummyItem:

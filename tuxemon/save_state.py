@@ -64,3 +64,4 @@ class SaveData(BaseModel):
     world_state: Optional[WorldSave] = Field(default=None)
     session_state: Optional[SessionSave] = Field(default=None)
     shop_stock: dict[str, dict[str, Any]] = Field(default_factory=dict)
+    persistent_state: list[NPCState] = Field(default_factory=list)

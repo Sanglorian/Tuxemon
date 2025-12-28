@@ -8,7 +8,7 @@ from typing import final
 
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
-from tuxemon.prepare import MOVERATE_RANGE
+from tuxemon.platform.const.sizes import MOVERATE_RANGE
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

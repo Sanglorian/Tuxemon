@@ -8,10 +8,11 @@ from typing import ClassVar
 from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon import prepare
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.sizes import PLAYER_NPC
 from tuxemon.player import Player
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import local_session
 
 DIFFICULTIES = ["beginner", "easy", "normal", "hard", "expert"]
@@ -25,7 +26,7 @@ class DifficultyBattleState(PygameMenuState):
     name: ClassVar[str] = "DifficultyBattleState"
 
     def __init__(self) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         super().__init__(height=height, width=width)
 
         self._build_menu()
@@ -54,7 +55,7 @@ class DifficultyBattleState(PygameMenuState):
             )
 
     def start_battle(self, difficulty: str) -> None:
-        Player.create(local_session, slug=prepare.PLAYER_NPC)
+        Player.create(local_session, slug=PLAYER_NPC)
         self.client.push_state(
             "WorldState", session=local_session, map_name=None
         )

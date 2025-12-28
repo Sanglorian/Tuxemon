@@ -12,13 +12,14 @@ import pygame_menu
 from pygame.surface import Surface
 from pygame_menu import locals
 
-from tuxemon import prepare
 from tuxemon.db import db
 from tuxemon.launcher import GameLauncher
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
+from tuxemon.platform.const.graphics import BG_START_SCREEN, BLACK_COLOR
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.save import get_index_of_latest_save
 from tuxemon.session import local_session
 from tuxemon.state.state import State
@@ -41,7 +42,7 @@ class BackgroundState(State):
     name: ClassVar[str] = "BackgroundState"
 
     def draw(self, surface: Surface) -> None:
-        surface.fill(prepare.BLACK_COLOR)
+        surface.fill(BLACK_COLOR)
 
 
 class StartState(PygameMenuState):
@@ -129,9 +130,9 @@ class StartState(PygameMenuState):
         )
 
     def __init__(self) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_START_SCREEN)
+        theme = self._setup_theme(BG_START_SCREEN)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
 
@@ -189,9 +190,9 @@ class ModsChoice(PygameMenuState):
 
     def __init__(self, mods: list[str]) -> None:
         self.mods = mods
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_START_SCREEN)
+        theme = self._setup_theme(BG_START_SCREEN)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
 

@@ -12,7 +12,7 @@ from tuxemon.monster_dir.stats import (
     StatCalculator,
     TrainingPoints,
 )
-from tuxemon.prepare import COEFF_STATS
+from tuxemon.platform.const.sizes import COEFF_STATS
 from tuxemon.shape import ShapeHandler
 from tuxemon.taste import Taste
 

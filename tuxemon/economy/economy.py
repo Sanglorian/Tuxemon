@@ -10,7 +10,7 @@ from tuxemon.db import EconomyItemModel, EconomyModel, EconomyMonsterModel, db
 from tuxemon.economy.price_policy import PricePolicy
 from tuxemon.item.item import Item
 from tuxemon.monster import Monster
-from tuxemon.prepare import GRAD_BLUE
+from tuxemon.platform.const.graphics import GRAD_BLUE
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC

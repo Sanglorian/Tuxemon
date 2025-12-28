@@ -17,7 +17,19 @@ if TYPE_CHECKING:
 @dataclass
 class LockdownEffect(CoreEffect):
     """
-    This effect has a chance to apply the lockdown status effect.
+    Applies the "lockdown" status effect.
+
+    This effect restricts the target monster's ability to use items during
+    combat. When triggered, it generates a translated message indicating
+    that the target is under lockdown.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "lockdown"
+        ]
     """
 
     name = "lockdown"

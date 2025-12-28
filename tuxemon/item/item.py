@@ -9,7 +9,7 @@ from uuid import UUID, uuid4
 
 from pygame.surface import Surface
 
-from tuxemon import graphics, prepare
+from tuxemon import graphics
 from tuxemon.core.asset import CoreAssetManager
 from tuxemon.core.core_effect import ItemEffectResult
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
@@ -28,6 +28,7 @@ from tuxemon.db import (
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
 from tuxemon.surfanim import FlipAxes
+from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
@@ -115,7 +116,7 @@ class Item:
     @property
     def wear_ratio(self) -> float:
         if self.max_wear == 0:
-            return 0.0  # Item doesn’t use wear, no ratio
+            return 0.0  # Item doesn't use wear, no ratio
         return min(max(self.wear / self.max_wear, 0.0), 1.0)
 
     def load(self, slug: str) -> None:
@@ -248,7 +249,7 @@ class Item:
             session=session, source=self, target=target
         )
         if session.client:
-            session.client.active_items.append(self)
+            session.client.active_effect_manager.add_item(self)
         self.consume_if_needed(user, result)
         return result
 
@@ -258,7 +259,7 @@ class Item:
         and if it's supposed to be consumed based on the result.
         """
         should_consume = (
-            prepare.CONFIG.items_consumed_on_failure or result.success
+            CONFIG.items_consumed_on_failure or result.success
         ) and self.behaviors.consumable
 
         if should_consume:

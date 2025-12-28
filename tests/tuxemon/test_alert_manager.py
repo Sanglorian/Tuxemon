@@ -7,8 +7,8 @@ import pygame
 
 from tuxemon.event.eventbus import EventBus
 from tuxemon.menu.alert import AlertManager
-from tuxemon.prepare import CONFIG
 from tuxemon.ui.text import TextArea
+from tuxemon.user_config import CONFIG
 
 
 class TestAlertManager(unittest.TestCase):

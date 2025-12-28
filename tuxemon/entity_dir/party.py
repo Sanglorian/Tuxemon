@@ -7,11 +7,11 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
-from tuxemon import prepare
 from tuxemon.boxes import MonsterBoxes
 from tuxemon.entity_dir.party_stats import PartyStats
 from tuxemon.entity_dir.routing import RoutingPolicy, RoutingPolicyRegistry
 from tuxemon.monster import Monster, decode_monsters, encode_monsters
+from tuxemon.platform.const.sizes import PARTY_LIMIT
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
@@ -31,7 +31,7 @@ class PartyHandler:
         monster_boxes: MonsterBoxes,
         owner: NPC,
         monsters: Optional[list[Monster]] = None,
-        party_limit: int = prepare.PARTY_LIMIT,
+        party_limit: int = PARTY_LIMIT,
         routing_policy_name: str = "default",
     ) -> None:
         self._monsters = monsters if monsters is not None else []

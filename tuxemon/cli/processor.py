@@ -15,10 +15,7 @@ from tuxemon.cli.context import InvokeContext
 from tuxemon.cli.exceptions import CommandNotFoundError, ParseError
 from tuxemon.cli.formatter import Formatter
 from tuxemon.constants.paths import get_active_mod_paths, mods_folder
-from tuxemon.plugin import (
-    get_available_classes,
-    load_directory,
-)
+from tuxemon.plugin import load_directory
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
@@ -152,17 +149,22 @@ class CommandProcessor:
 
             logger.info(f"Discovered plugin modules: {pm.modules}")
 
-            for cmd_class in get_available_classes(pm, interface=CLICommand):
+            for plugin in pm.get_all_plugins(interface=CLICommand):
+                cmd_class = plugin.plugin_object
+
                 if (
                     not inspect.isabstract(cmd_class)
                     and cmd_class.usable_from_root
                 ):
                     if cmd_class.name in command_dict:
                         logger.warning(
-                            f"Overwriting command '{cmd_class.name}' from {cmd_class.__module__}"
+                            f"Overwriting command '{cmd_class.name}' "
+                            f"from {cmd_class.__module__}"
                         )
+
                     command_dict[cmd_class.name] = cmd_class()
                     logger.info(f"Registered command: {cmd_class.name}")
+
         except Exception:
             logger.error(
                 "Error loading commands from mod folders", exc_info=True

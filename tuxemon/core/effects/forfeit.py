@@ -19,7 +19,19 @@ if TYPE_CHECKING:
 @dataclass
 class ForfeitEffect(CoreEffect):
     """
-    Represents a forfeit action in combat, allowing the player to surrender.
+    Applies the "forfeit" effect in combat.
+
+    This effect represents surrendering a battle. When triggered, it ends the
+    combat session, faints all monsters belonging to the forfeiting player,
+    and records the outcome as a forfeit.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "forfeit"
+        ]
     """
 
     name = "forfeit"

@@ -9,8 +9,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 from tuxemon.constants.dialog_speed import resolve_character_delay
-from tuxemon.prepare import CONFIG
 from tuxemon.ui.text import TextArea
+from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.event.eventbus import EventBus

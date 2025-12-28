@@ -8,12 +8,15 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional
 import pygame_menu
 from pygame_menu import locals
 
-from tuxemon import formula, prepare
+from tuxemon import formula
 from tuxemon.db import MonsterModel, db
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
+from tuxemon.platform.const.graphics import BG_JOURNAL_INFO, MISSING_IMAGE
+from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_LB
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
@@ -60,13 +63,13 @@ class JournalInfoState(PygameMenuState):
         if unit == "metric":
             mon_weight = round(monster.weight, 1)
             mon_height = round(monster.height, 1)
-            unit_weight = prepare.U_KG
-            unit_height = prepare.U_CM
+            unit_weight = U_KG
+            unit_height = U_CM
         else:
             mon_weight = formula.convert_lbs(monster.weight)
             mon_height = formula.convert_ft(monster.height)
-            unit_weight = prepare.U_LB
-            unit_height = prepare.U_FT
+            unit_weight = U_LB
+            unit_height = U_FT
         # name
         menu._auto_centering = False
         name = T.translate(monster.slug).upper()
@@ -101,11 +104,11 @@ class JournalInfoState(PygameMenuState):
         # type
         path1 = f"gfx/ui/icons/element/{monster.types[0]}_type_small.png"
         type_image_1 = self._create_image(path1)
-        type_image_1.scale(prepare.SCALE, prepare.SCALE)
+        type_image_1.scale(SCALE, SCALE)
         if len(monster.types) > 1:
             path2 = f"gfx/ui/icons/element/{monster.types[1]}_type_small.png"
             type_image_2 = self._create_image(path2)
-            type_image_2.scale(prepare.SCALE, prepare.SCALE)
+            type_image_2.scale(SCALE, SCALE)
             menu.add.image(type_image_1, float=True).translate(
                 fxw(11.4 / 256), fxh(47.8 / 144)
             )
@@ -225,9 +228,9 @@ class JournalInfoState(PygameMenuState):
                 f.pack(elements)
         # image
         _path = f"gfx/sprites/battle/{monster.slug}-front.png"
-        _path = _path if self.is_visible else prepare.MISSING_IMAGE
+        _path = _path if self.is_visible else MISSING_IMAGE
         new_image = self._create_image(_path)
-        new_image.scale(prepare.SCALE, prepare.SCALE)
+        new_image.scale(SCALE, SCALE)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
         image_widget.translate(fxw(53.6 / 256), fxh(10 / 144))
@@ -243,9 +246,9 @@ class JournalInfoState(PygameMenuState):
             _lookup_monsters()
         if monster is None:
             raise ValueError("No monster")
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_JOURNAL_INFO)
+        theme = self._setup_theme(BG_JOURNAL_INFO)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
 

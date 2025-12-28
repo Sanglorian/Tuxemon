@@ -16,11 +16,25 @@ if TYPE_CHECKING:
 @dataclass
 class HarpoonedEffect(CoreEffect):
     """
-    Harpooned: If the affected monster swaps out, it takes damage equal
-    to 1/8th of its maximum HP.
+    Applies the "harpooned" status to a monster.
 
-    Parameters:
-        divisor: The divisor.
+    This effect causes the affected monster to take damage when it is swapped
+    out of battle. The damage is calculated as the monster's maximum HP divided
+    by the specified divisor. If the monster faints as a result, its HP is set
+    to zero.
+
+    **Parameters**
+
+    - ``divisor``: The divisor used to calculate swap-out damage (e.g. 8 for
+      one-eighth of max HP).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "harpooned 8"
+        ]
     """
 
     name = "harpooned"

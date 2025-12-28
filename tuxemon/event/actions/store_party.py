@@ -8,7 +8,7 @@ from typing import Optional, final
 
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
-from tuxemon.prepare import KENNEL
+from tuxemon.platform.const.sizes import KENNEL
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

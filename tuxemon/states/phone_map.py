@@ -11,10 +11,11 @@ import pygame_menu
 import yaml
 from pygame_menu import locals
 
-from tuxemon import prepare
 from tuxemon.constants import paths
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.graphics import BG_PHONE_MAP
+from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
@@ -90,7 +91,7 @@ class NuPhoneMap(PygameMenuState):
         menu: pygame_menu.Menu,
     ) -> None:
         new_image = self._create_image(data.map_path)
-        new_image.scale(prepare.SCALE, prepare.SCALE)
+        new_image.scale(SCALE, SCALE)
         menu.add.image(image_path=new_image.copy())
         underline = False
         selectable = True
@@ -120,9 +121,9 @@ class NuPhoneMap(PygameMenuState):
         menu.set_title(title=T.translate("app_map")).center_content()
 
     def __init__(self, character: NPC) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_PHONE_MAP)
+        theme = self._setup_theme(BG_PHONE_MAP)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
 

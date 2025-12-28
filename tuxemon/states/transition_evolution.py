@@ -8,11 +8,13 @@ from typing import TYPE_CHECKING, ClassVar, Optional
 import pygame
 from pygame.surface import Surface
 
-from tuxemon import prepare, tools
+from tuxemon import tools
 from tuxemon.db import MonsterModel, db
 from tuxemon.graphics import load_sprite
 from tuxemon.locale import T
 from tuxemon.platform.const import buttons
+from tuxemon.platform.const.graphics import BLACK_COLOR, WHITE_COLOR
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 
 if TYPE_CHECKING:
@@ -73,7 +75,7 @@ class EvolutionTransition(State):
             4: self.evolved_sprite,
         }
 
-        screen_width, screen_height = prepare.SCREEN_SIZE
+        screen_width, screen_height = SCREEN_SIZE
         sprite_width, sprite_height = self.original_sprite.image.get_size()
         self.x = (screen_width - sprite_width) // 2
         self.y = (screen_height - sprite_height) // 2
@@ -139,7 +141,7 @@ class EvolutionTransition(State):
             self.on_animation_complete()
 
     def draw(self, surface: Surface) -> None:
-        surface.fill(prepare.BLACK_COLOR)
+        surface.fill(BLACK_COLOR)
         sprite = self.phase_sprites.get(self.phase, self.evolved_sprite)
         sprite_image = sprite.image
 
@@ -167,7 +169,7 @@ class EvolutionTransition(State):
         for x in range(sprite.get_width()):
             for y in range(sprite.get_height()):
                 if sprite.get_at((x, y)).a != 0:
-                    sprite.set_at((x, y), prepare.WHITE_COLOR)
+                    sprite.set_at((x, y), WHITE_COLOR)
         return sprite
 
     def on_animation_complete(self) -> None:
@@ -183,7 +185,7 @@ class EvolutionTransition(State):
             "evolve": T.format(self.evolved),
         }
         msg = T.format("evolution_ended", param)
-        tools.open_dialog(self.client, [msg])
+        tools.open_dialog(self.client, [msg], dialog_speed="max")
         self.dialog_opened = True
 
     def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:

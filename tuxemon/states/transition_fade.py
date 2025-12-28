@@ -9,9 +9,10 @@ from typing import ClassVar, Optional
 from pygame import SRCALPHA
 from pygame.surface import Surface
 
-from tuxemon import prepare
 from tuxemon.graphics import ColorLike
+from tuxemon.platform.const.graphics import BLACK_COLOR
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ class FadeTransitionBase(State):
         state_duration: Optional[float] = None,
         fade_duration: Optional[float] = None,
         caller: Optional[State] = None,
-        color: ColorLike = prepare.BLACK_COLOR,
+        color: ColorLike = BLACK_COLOR,
     ) -> None:
         """
         Parameters:
@@ -53,7 +54,7 @@ class FadeTransitionBase(State):
             self.fade_duration = fade_duration
 
         self.caller = caller
-        self.transition_surface = Surface(prepare.SCREEN_SIZE, SRCALPHA)
+        self.transition_surface = Surface(SCREEN_SIZE, SRCALPHA)
         self.transition_surface.fill(color)
         self.task(self.client.pop_state, interval=self.state_duration)
         self.create_fade_animation()

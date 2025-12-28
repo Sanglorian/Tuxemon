@@ -9,14 +9,15 @@ from typing import Any, ClassVar, Optional
 import pygame_menu
 from pygame_menu import locals
 
-from tuxemon import prepare
 from tuxemon.db import MissionStatus
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.mission.mission import Mission
 from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
+from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_yes_no_options
 
@@ -32,9 +33,9 @@ class MissionState(PygameMenuState):
 
     def __init__(self, character: NPC) -> None:
         self.character = character
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_MISSIONS)
+        theme = self._setup_theme(BG_MISSIONS)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
 
@@ -81,8 +82,8 @@ class SingleMissionState(PygameMenuState):
     def __init__(self, mission: Mission, character: NPC) -> None:
         self.mission = mission
         self.character = character
-        width, height = prepare.SCREEN_SIZE
-        theme = self._setup_theme(prepare.BG_MISSIONS)
+        width, height = SCREEN_SIZE
+        theme = self._setup_theme(BG_MISSIONS)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
         width = int(0.8 * width)
@@ -97,7 +98,7 @@ class SingleMissionState(PygameMenuState):
     ) -> None:
         def delete_mission() -> None:
             msg = T.translate("mission_deletion")
-            open_dialog(self.client, [msg])
+            open_dialog(self.client, [msg], dialog_speed="max")
 
             options = create_yes_no_options(
                 yes_action=confirm_deletion,

@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING
 
 from PIL import Image, UnidentifiedImageError
 
-from tuxemon import prepare
 from tuxemon.constants.asset_loader import (
     fetch_asset,
 )
 from tuxemon.locale import T
+from tuxemon.platform.const.sizes import NATIVE_RESOLUTION
 
 if TYPE_CHECKING:
     from tuxemon.database.data import ModData
@@ -70,7 +70,7 @@ class Validator:
         try:
             path = fetch_asset(file)
             with Image.open(path) as sprite:
-                native = prepare.NATIVE_RESOLUTION
+                native = NATIVE_RESOLUTION
                 if size == native:
                     if sprite.size[0] > size[0] or sprite.size[1] > size[1]:
                         return False

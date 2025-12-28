@@ -3,60 +3,56 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from argparse import ArgumentParser, Namespace
 import sys
-from tuxemon import main, prepare
+from tuxemon import headless, prepare
+from tuxemon.user_config import CONFIG
 
 
 def parse_args() -> Namespace:
     parser = ArgumentParser(description="Start the game or headless server.")
     parser.add_argument(
-        "-m",
-        "--mod",
-        dest="mod",
-        metavar="MOD_DIR",
-        type=str,
-        nargs="?",
-        default=None,
+        "-m", "--mod", dest="mod", metavar="MOD_DIR", type=str, nargs="?", default=None,
         help="Specify a custom mod directory to use",
     )
     parser.add_argument(
-        "-l",
-        "--load",
-        dest="slot",
-        metavar="SAVE_SLOT",
-        type=int,
-        nargs="?",
-        default=None,
+        "-l", "--load", dest="slot", metavar="SAVE_SLOT", type=int, nargs="?", default=None,
         help="Load a saved game from the specified slot",
     )
     parser.add_argument(
-        "-t",
-        "--test-map",
-        dest="test_map",
-        type=str,
-        nargs="?",
-        default=None,
+        "-t", "--test-map", dest="test_map", type=str, nargs="?", default=None,
         help="Load a map directly (skipping title screen)",
     )
     parser.add_argument(
-        "-s",
-        "--headless",
-        action="store_true",
-        default=False,
+        "-s", "--headless", action="store_true", default=False,
         help="Run in headless mode (no graphical interface). Defaults to False.",
     )
     return parser.parse_args()
 
+def init(platform: str = "pygame") -> None:
+    if platform == "pygame":
+        prepare.pygame_init()
+    elif platform == "headless":
+        headless.headless_init()
+    else:
+        raise ValueError(f"Unsupported platform: {platform}")
+
 def launch_game() -> None:
-    config = prepare.CONFIG
+    args = parse_args()
+
+    if args.headless:
+        init(platform="headless")
+    else:
+        init(platform="pygame")
+
+    from tuxemon import main
+    config = CONFIG
 
     try:
-        args = parse_args()
         if args.mod:
             config.mods.insert(0, args.mod)
         if args.test_map:
             config.skip_titlescreen = True
             config.splash = False
-        
+
         if args.headless:
             main.headless(config=config)
         else:
@@ -67,10 +63,9 @@ def launch_game() -> None:
         error_msg = f"Tuxemon Error: {e}"
         full_error = f"{error_msg}\n\nTraceback:\n{traceback.format_exc()}"
         print(full_error)
-        
+
         # Log error to file for debugging
         try:
-            import os
             from pathlib import Path
             error_log = Path.cwd() / "tuxemon_error.log"
             with open(error_log, "w") as f:
@@ -78,7 +73,7 @@ def launch_game() -> None:
             print(f"Error details saved to: {error_log}")
         except:
             pass
-        
+
         # Show error dialog on Windows GUI builds
         if sys.platform == "win32" and hasattr(sys, "frozen"):
             try:
@@ -87,7 +82,7 @@ def launch_game() -> None:
                 ctypes.windll.user32.MessageBoxW(0, msg, "Tuxemon Error", 1)
             except:
                 pass  # Fall back to console output only
-        
+
         sys.exit(1)
 
 if __name__ == "__main__":

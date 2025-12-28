@@ -13,7 +13,7 @@ from pygame.rect import Rect
 from pygame.sprite import Group
 from pygame.surface import Surface
 
-from tuxemon import graphics, prepare
+from tuxemon import graphics
 from tuxemon.animation import (
     Animation,
     ScheduledFunction,
@@ -24,6 +24,7 @@ from tuxemon.animation import (
 from tuxemon.event import get_event_bus
 from tuxemon.event.eventbus import Listener
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import local_session
 from tuxemon.sprite import Sprite, SpriteGroup
 
@@ -45,7 +46,7 @@ class State(ABC):
     """
 
     name: ClassVar[str] = "State"
-    rect = Rect((0, 0), prepare.SCREEN_SIZE)
+    rect = Rect((0, 0), SCREEN_SIZE)
     transparent = False  # ignore all background/borders
     force_draw = False  # draw even if completely under another state
 

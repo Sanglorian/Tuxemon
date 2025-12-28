@@ -6,8 +6,8 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon import prepare
 from tuxemon.event.eventaction import EventAction
+from tuxemon.platform.const.sizes import MUSIC_FADEOUT
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,5 @@ class FadeoutMusicAction(EventAction):
     duration: Optional[int] = None
 
     def start(self, session: Session) -> None:
-        duration = (
-            prepare.MUSIC_FADEOUT if self.duration is None else self.duration
-        )
+        duration = MUSIC_FADEOUT if self.duration is None else self.duration
         session.client.current_music.stop(duration)

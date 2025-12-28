@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, patch
 from pygame import SRCALPHA
 from pygame.surface import Surface
 
-from tuxemon import prepare
 from tuxemon.monster_dir.sprite import MonsterSpriteHandler
+from tuxemon.prepare import SCALE
 
 
 class TestMonsterSpriteHandler(unittest.TestCase):
@@ -88,10 +88,10 @@ class TestMonsterSpriteHandler(unittest.TestCase):
         self.assertIn("back", sprites)
         self.assertIn("menu01", sprites)
         self.assertIn("menu02", sprites)
-        mock_load_and_scale.assert_any_call(self.front_path, prepare.SCALE)
-        mock_load_and_scale.assert_any_call(self.back_path, prepare.SCALE)
-        mock_load_and_scale.assert_any_call(self.menu1_path, prepare.SCALE)
-        mock_load_and_scale.assert_any_call(self.menu2_path, prepare.SCALE)
+        mock_load_and_scale.assert_any_call(self.front_path, SCALE)
+        mock_load_and_scale.assert_any_call(self.back_path, SCALE)
+        mock_load_and_scale.assert_any_call(self.menu1_path, SCALE)
+        mock_load_and_scale.assert_any_call(self.menu2_path, SCALE)
 
         self.assertEqual(len(sprites), 4)
         self.assertIn("front", sprites)

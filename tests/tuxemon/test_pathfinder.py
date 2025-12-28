@@ -13,7 +13,7 @@ from tuxemon.map.map_region import RegionProperties
 from tuxemon.movement import Pathfinder
 from tuxemon.npc import NPC
 from tuxemon.npc_manager import NPCManager
-from tuxemon.prepare import CONFIG
+from tuxemon.user_config import CONFIG
 
 
 class TestPathfinder(unittest.TestCase):

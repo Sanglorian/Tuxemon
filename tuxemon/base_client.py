@@ -6,7 +6,6 @@ import logging
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from enum import Enum
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload
 
 from tuxemon.audio import MusicPlayerState, SoundManager
@@ -36,6 +35,7 @@ from tuxemon.npc_manager import NPCManager
 from tuxemon.park_tracker import ParkSession
 from tuxemon.platform.afk_manager import AFKManager
 from tuxemon.platform.input_manager import InputManager
+from tuxemon.platform.tools import ScriptInputCache
 from tuxemon.rumble import RumbleManager
 from tuxemon.session import local_session
 from tuxemon.state.loader import StateLoader
@@ -90,6 +90,7 @@ class BaseClient(ABC):
 
         # setup controls
         self.afk_manager = AFKManager()
+        self.input_cache = ScriptInputCache(self.event_bus)
         self.input_manager = InputManager(config, self.afk_manager)
 
         # Set up our networking for multiplayer.
@@ -98,7 +99,7 @@ class BaseClient(ABC):
 
         # Set up our game's event engine which executes actions based on
         # conditions defined in map files.
-        self.event_manager = EventManager(self.state_manager)
+        self.event_manager = EventManager(self.event_bus, self.state_manager)
         self.action_manager = ActionManager()
         self.condition_manager = ConditionManager()
         self.evaluator = ConditionEvaluator(
@@ -209,16 +210,8 @@ class BaseClient(ABC):
         self.active_effect_manager.update(local_session, time_delta)
 
     def get_map_name(self) -> str:
-        """
-        Gets the name of the current map.
-
-        Returns:
-            Name of the current map.
-        """
-        map_path = self.map_manager.get_map_filepath()
-        if map_path is None:
-            raise ValueError("Name of the map requested when no map is active")
-        return Path(map_path).name
+        """Gets the name of the current map."""
+        return self.map_manager.get_map_name()
 
     def set_renderer(self, renderer: AbstractRenderer) -> None:
         """Assigns a custom renderer to the client."""

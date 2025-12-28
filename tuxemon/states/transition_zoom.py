@@ -8,8 +8,8 @@ from typing import ClassVar, Optional
 from pygame.surface import Surface
 from pygame.transform import scale
 
-from tuxemon import prepare
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCREEN
 from tuxemon.state.state import State
 
 logger = logging.getLogger(__name__)
@@ -59,8 +59,8 @@ class ZoomOutTransition(State):
         )
         rect = scaled_image.get_rect(
             center=(
-                prepare.SCREEN.get_width() // 2,
-                prepare.SCREEN.get_height() // 2,
+                SCREEN.get_width() // 2,
+                SCREEN.get_height() // 2,
             )
         )
         surface.blit(scaled_image, rect)
@@ -113,8 +113,8 @@ class ZoomInTransition(State):
         )
         rect = scaled_image.get_rect(
             center=(
-                prepare.SCREEN.get_width() // 2,
-                prepare.SCREEN.get_height() // 2,
+                SCREEN.get_width() // 2,
+                SCREEN.get_height() // 2,
             )
         )
         surface.blit(scaled_image, rect)

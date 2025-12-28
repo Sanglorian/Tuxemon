@@ -8,11 +8,12 @@ from typing import TYPE_CHECKING, ClassVar, Optional
 import pygame_menu
 from pygame_menu import locals
 
-from tuxemon import prepare
 from tuxemon.constants import paths
 from tuxemon.item.crafting_system import CraftingSystem
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.graphics import BG_MISSIONS
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
@@ -33,9 +34,9 @@ class CraftMenuState(PygameMenuState):
         self.character = character
         self.file_yaml = file_yaml
         self.method = method
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_MISSIONS)
+        theme = self._setup_theme(BG_MISSIONS)
         theme.scrollarea_position = locals.POSITION_EAST
 
         width = int(0.8 * width)
@@ -87,9 +88,14 @@ class CraftMenuState(PygameMenuState):
                 open_dialog(
                     self.client,
                     [T.translate(result.revealed_content_slug)],
+                    dialog_speed="max",
                 )
             else:
-                open_dialog(self.client, [T.translate(result.message_slug)])
+                open_dialog(
+                    self.client,
+                    [T.translate(result.message_slug)],
+                    dialog_speed="max",
+                )
 
         menu.add.button(title=T.translate(slug), action=partial(craft, slug))
         if recipe.recipe_text:

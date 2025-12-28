@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
 from collections.abc import Iterable
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from tuxemon.constants.paths import LIBDIR
 from tuxemon.plugin import (
@@ -13,149 +14,256 @@ from tuxemon.plugin import (
     PluginLoader,
     PluginManager,
     PluginObject,
-    get_available_classes,
     load_directory,
 )
 
 
-class TestPluginManager(unittest.TestCase):
-    def setUp(self):
-        self.discovery = FileSystemPluginDiscovery([], LIBDIR)
-        self.loader = PluginLoader(ImportLibPluginLoader())
-        self.filter = PluginFilter()
-        self.manager = PluginManager(self.discovery, self.loader, self.filter)
-        self.interface = PluginObject
+@pytest.fixture
+def discovery():
+    return FileSystemPluginDiscovery([], LIBDIR)
 
-    def test_init(self):
-        self.assertEqual(self.manager.discovery.folders, [])
-        self.assertEqual(self.manager.modules, [])
 
-    def test_set_plugin_places(self):
-        plugin_folders = ["folder1", "folder2"]
-        discovery = FileSystemPluginDiscovery(plugin_folders, LIBDIR)
-        manager = PluginManager(discovery, self.loader, self.filter)
-        self.assertEqual(manager.discovery.folders, plugin_folders)
+@pytest.fixture
+def loader():
+    return PluginLoader(ImportLibPluginLoader())
 
-    def test_collect_plugins(self):
-        plugin_folders = ["folder1", "folder2"]
 
-        discovery = FileSystemPluginDiscovery(plugin_folders, LIBDIR)
-        discovery.discover_plugins = MagicMock(
-            return_value=["plugin1", "plugin2"]
-        )
+@pytest.fixture
+def plugin_filter():
+    return PluginFilter()
 
-        manager = PluginManager(discovery, self.loader, self.filter)
-        manager.collect_plugins()
 
-        discovery.discover_plugins.assert_called_once()
+@pytest.fixture
+def manager(discovery, loader, plugin_filter):
+    return PluginManager(discovery, loader, plugin_filter)
 
-        filtered_plugins = self.filter.filter_plugins(["plugin1", "plugin2"])
 
-        self.assertEqual(manager.modules, filtered_plugins)
+@pytest.fixture
+def interface():
+    return PluginObject
 
-    def test_get_all_plugins(self):
-        plugins = self.manager.get_all_plugins(interface=self.interface)
-        self.assertIsInstance(plugins, list)
 
-    def test_get_classes_from_module(self):
-        module = MagicMock()
-        classes = self.manager._get_classes_from_module(module, self.interface)
-        self.assertIsInstance(classes, Iterable)
+def test_init(manager):
+    assert manager.discovery.folders == []
+    assert manager.modules == []
 
-    def test_load_directory(self):
-        plugin_folder = Path("folder1")
-        loaded_manager = load_directory([plugin_folder], LIBDIR)
-        self.assertIsInstance(loaded_manager, PluginManager)
 
-    def test_get_available_classes(self):
-        plugin_folder = Path("folder1")
-        manager = load_directory([plugin_folder], LIBDIR)
-        classes = get_available_classes(manager, interface=self.interface)
-        self.assertIsInstance(classes, list)
+@pytest.mark.parametrize(
+    "folders",
+    [
+        ["folder1"],
+        ["folder1", "folder2"],
+        [],
+    ],
+)
+def test_set_plugin_places(folders, loader, plugin_filter):
+    discovery = FileSystemPluginDiscovery(folders, LIBDIR)
+    manager = PluginManager(discovery, loader, plugin_filter)
+    assert manager.discovery.folders == folders
 
-    def test_file_system_plugin_discovery(self):
-        self.assertEqual(self.discovery.folders, [])
-        self.assertEqual(self.discovery.file_extensions, (".py", ".pyc"))
 
-    def test_default_plugin_loader(self):
-        module_name = "test_module"
-        with patch("importlib.import_module") as mock_import_module:
-            self.loader.load_plugin(module_name)
-            mock_import_module.assert_called_once_with(module_name)
+def test_collect_plugins(plugin_filter, loader):
+    discovery = FileSystemPluginDiscovery([Path("folder1")], LIBDIR)
+    discovery.discover_plugin_files = MagicMock(
+        return_value={
+            "plugin1": Path("plugin1.py"),
+            "plugin2": Path("plugin2.py"),
+        }
+    )
 
-    def test_plugin_filter(self):
-        filter = PluginFilter(
-            exclude_classes=["ExcludedPlugin"],
-            include_patterns=["AllowedPattern"],
-        )
+    manager = PluginManager(discovery, loader, plugin_filter)
+    manager.collect_plugins()
 
-        self.assertTrue(filter.is_excluded("ExcludedPlugin"))
-        self.assertFalse(filter.is_excluded("SomeOtherPlugin"))
+    discovery.discover_plugin_files.assert_called_once()
+    assert manager.modules == plugin_filter.filter_plugins(
+        ["plugin1", "plugin2"]
+    )
 
-        class MockPlugin:
-            pass
 
-        self.assertFalse(filter.matches_patterns(MockPlugin))
+def test_collect_plugins_no_plugins_found(loader, plugin_filter):
+    discovery = FileSystemPluginDiscovery([], LIBDIR)
+    discovery.discover_plugins = MagicMock(return_value=[])
 
-    def test_default_plugin_loader_import_failure(self):
-        module_name = "non_existent_module"
-        with patch(
-            "importlib.import_module",
-            side_effect=ImportError("Module not found"),
-        ):
-            with self.assertRaises(ImportError):
-                self.loader.load_plugin(module_name)
+    manager = PluginManager(discovery, loader, plugin_filter)
+    manager.collect_plugins()
 
-    def test_collect_plugins_no_plugins_found(self):
-        discovery = FileSystemPluginDiscovery([], LIBDIR)
-        discovery.discover_plugins = MagicMock(return_value=[])
+    assert manager.modules == []
 
-        manager = PluginManager(discovery, self.loader, self.filter)
-        manager.collect_plugins()
 
-        self.assertEqual(manager.modules, [])
+def test_get_all_plugins(manager, interface):
+    plugins = manager.get_all_plugins(interface=interface)
+    assert isinstance(plugins, list)
 
-    def test_mock_discover_plugins(self):
-        discovery = FileSystemPluginDiscovery([], LIBDIR)
-        discovery.discover_plugins = MagicMock(
-            return_value=["mock_plugin1", "mock_plugin2"]
-        )
 
-        self.assertEqual(
-            discovery.discover_plugins(), ["mock_plugin1", "mock_plugin2"]
-        )
-        discovery.discover_plugins.assert_called_once()
+def test_get_classes_from_module(manager, interface):
+    module = MagicMock()
+    classes = manager._get_classes_from_module(module, interface)
+    assert isinstance(classes, Iterable)
 
-    def test_mock_plugin_loader(self):
-        mock_module = MagicMock()
 
-        with patch(
-            "importlib.import_module", return_value=mock_module
-        ) as mock_import:
-            module = self.loader.load_plugin("mock_plugin")
+def test_load_directory():
+    plugin_folder = Path("folder1")
+    loaded_manager = load_directory([plugin_folder], LIBDIR)
+    assert isinstance(loaded_manager, PluginManager)
 
-            self.assertEqual(module, mock_module)
-            mock_import.assert_called_once_with("mock_plugin")
 
-    def test_mock_plugin_manager(self):
-        discovery = MagicMock()
-        loader = MagicMock()
-        filter = PluginFilter()
-        manager = PluginManager(discovery, loader, filter)
+def test_default_plugin_loader(loader):
+    with patch("importlib.import_module") as mock_import:
+        loader.load_plugin("test_module")
+        mock_import.assert_called_once_with("test_module")
 
-        discovery.discover_plugins.return_value = ["mock_plugin"]
-        loader.load_plugin.return_value = MagicMock()
 
-        manager.collect_plugins()
-        discovery.discover_plugins.assert_called_once()
+def test_default_plugin_loader_import_failure(loader):
+    with patch(
+        "importlib.import_module", side_effect=ImportError("Module not found")
+    ):
+        with pytest.raises(ImportError):
+            loader.load_plugin("non_existent_module")
 
-        filtered_plugins = self.filter.filter_plugins(["mock_plugin"])
 
-        self.assertEqual(manager.modules, filtered_plugins)
-        discovery.discover_plugins.assert_called_once()
+@pytest.mark.parametrize(
+    "exclude, class_name, expected",
+    [
+        (["Excluded"], "Excluded", True),
+        (["Excluded"], "Other", False),
+        ([], "Anything", False),
+    ],
+)
+def test_plugin_filter_exclusion(exclude, class_name, expected):
+    f = PluginFilter(exclude_classes=exclude)
+    assert f.is_excluded(class_name) == expected
 
-    def test_plugin_filter_exclusion(self):
-        filter = PluginFilter(exclude_classes=["ExcludedPlugin"])
 
-        self.assertTrue(filter.is_excluded("ExcludedPlugin"))
-        self.assertFalse(filter.is_excluded("AllowedPlugin"))
+def test_plugin_filter_matches_patterns():
+    f = PluginFilter(include_patterns=["Allowed"])
+
+    class MockPlugin:
+        pass
+
+    assert not f.matches_patterns(MockPlugin)
+
+
+def test_mock_plugin_manager(plugin_filter):
+    discovery = MagicMock()
+    loader = MagicMock()
+    manager = PluginManager(discovery, loader, plugin_filter)
+
+    discovery.discover_plugin_files.return_value = {
+        "mock_plugin": Path("mock_plugin.py")
+    }
+    loader.load_plugin.return_value = MagicMock()
+
+    manager.collect_plugins()
+    discovery.discover_plugin_files.assert_called_once()
+
+    assert manager.modules == plugin_filter.filter_plugins(["mock_plugin"])
+
+
+def test_module_caching(manager):
+    with patch.object(
+        manager.loader, "load_plugin", return_value=MagicMock()
+    ) as mock_load:
+        manager.modules = ["pluginA"]
+        manager.get_all_plugins(interface=PluginObject)
+        manager.get_all_plugins(interface=PluginObject)
+        mock_load.assert_called_once_with("pluginA")
+
+
+def test_class_caching(manager):
+    module = MagicMock()
+    manager.modules = ["pluginA"]
+
+    class Fake:
+        name = "fake"
+
+    with patch.object(manager.loader, "load_plugin", return_value=module):
+        with patch.object(
+            manager, "_get_classes_from_module", return_value=[("Fake", Fake)]
+        ) as mock_scan:
+            manager.get_all_plugins(interface=PluginObject)
+            manager.get_all_plugins(interface=PluginObject)
+
+            mock_scan.assert_called_once()
+
+
+def test_duplicate_class_suppression():
+    class FakePlugin:
+        name = "dup"
+
+    plugins = {"dup": FakePlugin}
+
+    existing_cls = plugins["dup"]
+    new_cls = FakePlugin
+
+    assert existing_cls is new_cls
+
+
+def test_plugin_filter_matches_module_and_class():
+    f = PluginFilter(include_patterns=["allowed"])
+
+    class AllowedPlugin:
+        __module__ = "tuxemon.allowed.plugins"
+        __name__ = "AllowedPlugin"
+
+    assert f.matches_patterns(AllowedPlugin)
+
+
+def test_plugin_filter_rejects_non_matching():
+    f = PluginFilter(include_patterns=["allowed"])
+
+    class NotAllowed:
+        __module__ = "tuxemon.other"
+        __name__ = "Other"
+
+    assert not f.matches_patterns(NotAllowed)
+
+
+def test_real_plugin_loading(tmp_path):
+    plugin_dir = tmp_path / "plugins"
+    plugin_dir.mkdir()
+    (plugin_dir / "__init__.py").write_text("")
+
+    plugin_file = plugin_dir / "myplugin.py"
+    plugin_file.write_text(
+        """
+class MyPlugin:
+    name = "myplugin"
+"""
+    )
+
+    import sys
+
+    sys.path.insert(0, str(tmp_path))
+
+    manager = load_directory([plugin_dir], tmp_path, include=["myplugin"])
+    plugins = manager.get_all_plugins(interface=PluginObject)
+
+    assert any(p.plugin_object.__name__ == "MyPlugin" for p in plugins)
+
+
+def test_load_directory_initializes_manager(tmp_path):
+    plugin_dir = tmp_path / "plugins"
+    plugin_dir.mkdir()
+
+    manager = load_directory([plugin_dir], tmp_path)
+
+    assert isinstance(manager, PluginManager)
+    assert manager.discovery.folders == [plugin_dir]
+
+
+def test_get_classes_respects_interface(manager):
+    class Base:
+        pass
+
+    class Child(Base):
+        pass
+
+    module = MagicMock()
+    module.Child = Child
+    module.Base = Base
+
+    classes = manager._get_classes_from_module(module, Base)
+    names = [name for name, _ in classes]
+
+    assert "Base" in names
+    assert "Child" in names

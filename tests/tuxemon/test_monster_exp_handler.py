@@ -1,7 +1,7 @@
 import unittest
 
 from tuxemon.monster_dir.experience import MonsterExperience
-from tuxemon.prepare import MAX_LEVEL
+from tuxemon.platform.const.sizes import MAX_LEVEL
 
 
 class MockConfig:

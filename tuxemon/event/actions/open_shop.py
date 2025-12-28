@@ -3,17 +3,17 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from functools import partial
 from typing import Optional, final
 
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
 from tuxemon.npc import NPC
 from tuxemon.session import Session
 from tuxemon.tools import open_choice_dialog
-from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 
 logger = logging.getLogger(__name__)
 
@@ -88,69 +88,45 @@ class OpenShopAction(EventAction):
                 economy=economy,
             )
 
-        def wrap_choice_dialog(options: MenuOptions) -> None:
+        def wrap_choice_dialog(
+            actions: Mapping[str, Callable[..., None]],
+        ) -> None:
+            options = create_choice_options(actions)
             open_choice_dialog(
                 client=session.client,
-                menu=options,
+                menu=MenuOptions(options),
                 escape_key_exits=True,
             )
 
-        # Define menu option groups
-        items = MenuOptions(
-            [
-                ChoiceOption(
-                    key="buy",
-                    display_text=T.translate("buy"),
-                    action=partial(
-                        push_state,
-                        "ShopItemBuyMenuState",
-                        session.player,
-                        character,
-                    ),
-                ),
-                ChoiceOption(
-                    key="sell",
-                    display_text=T.translate("sell"),
-                    action=partial(
-                        push_state,
-                        "ShopItemSellMenuState",
-                        character,
-                        session.player,
-                    ),
-                ),
-            ]
-        )
+        item_actions = {
+            "buy": partial(
+                push_state, "ShopItemBuyMenuState", session.player, character
+            ),
+            "sell": partial(
+                push_state, "ShopItemSellMenuState", character, session.player
+            ),
+        }
 
-        monsters = MenuOptions(
-            [
-                ChoiceOption(
-                    key="buy",
-                    display_text=T.translate("buy"),
-                    action=partial(
-                        push_state,
-                        "ShopMonsterBuyMenuState",
-                        session.player,
-                        character,
-                    ),
-                ),
-                ChoiceOption(
-                    key="sell",
-                    display_text=T.translate("sell"),
-                    action=partial(
-                        push_state,
-                        "ShopMonsterSellMenuState",
-                        character,
-                        session.player,
-                    ),
-                ),
-            ]
-        )
+        monster_actions = {
+            "buy": partial(
+                push_state,
+                "ShopMonsterBuyMenuState",
+                session.player,
+                character,
+            ),
+            "sell": partial(
+                push_state,
+                "ShopMonsterSellMenuState",
+                character,
+                session.player,
+            ),
+        }
 
         # Dispatch based on menu mode
         if self.menu == "both_item":
-            wrap_choice_dialog(items)
+            wrap_choice_dialog(item_actions)
         elif self.menu == "both_monster":
-            wrap_choice_dialog(monsters)
+            wrap_choice_dialog(monster_actions)
         elif self.menu == "buy_item":
             push_state("ShopItemBuyMenuState", session.player, character)
         elif self.menu == "sell_item":

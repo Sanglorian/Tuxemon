@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
-from tuxemon import prepare
 from tuxemon.entity import Entity
 from tuxemon.map.collision_manager import CollisionManager
 from tuxemon.map.map_manager import MapManager
@@ -31,24 +30,30 @@ class TestCollisionManager(unittest.TestCase):
         )
         self.assertEqual(result, [(0, 0), (1, 1)])
 
+    @patch(
+        "tuxemon.map.collision_manager.SURFACE_KEYS",
+        ["label1", "label2", "label3"],
+    )
     def test_update_tile_property(self):
         surface_map = {
             (0, 0): {"label1": 1.0, "label2": 2.0},
             (1, 1): {"label1": 3.0, "label3": 4.0},
         }
         self.map_manager.surface_map = surface_map
-        prepare.SURFACE_KEYS = ["label1", "label2", "label3"]
         self.collision_manager.update_tile_property("label1", 5.0)
         self.assertEqual(self.map_manager.surface_map[(0, 0)]["label1"], 5.0)
         self.assertEqual(self.map_manager.surface_map[(1, 1)]["label1"], 5.0)
 
+    @patch(
+        "tuxemon.map.collision_manager.SURFACE_KEYS",
+        ["label1", "label2", "label3"],
+    )
     def test_all_tiles_modified(self):
         surface_map = {
             (0, 0): {"label1": 5.0, "label2": 2.0},
             (1, 1): {"label1": 5.0, "label3": 4.0},
         }
         self.map_manager.surface_map = surface_map
-        prepare.SURFACE_KEYS = ["label1", "label2", "label3"]
         self.assertTrue(
             self.collision_manager.all_tiles_modified("label1", 5.0)
         )

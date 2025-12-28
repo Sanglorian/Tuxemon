@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Any, Optional, TypedDict
 import pygame as pg
 
 from tuxemon.network.networking import (
-    ConnectionState,
     EventType,
     populate_client,
     update_client,
@@ -73,6 +72,26 @@ class TuxemonClient:
     @property
     def registry(self) -> dict[str, Any]:
         return self.client.registry
+
+    def connect_to_host(self, ip_address: str, port: int) -> None:
+        """
+        Sets up the client to attempt connection to a specified host/port.
+        """
+        self.selected_game = (ip_address, port)
+        self.enable_join_multiplayer = True
+        self.listening = True
+
+    def disconnect(self) -> None:
+        """Closes the client connection and resets its state."""
+        if not self.listening:
+            return
+
+        self.client.disconnect()
+        self.listening = False
+        self.enable_join_multiplayer = False
+        self.selected_game = None
+        self.client.registry = {}
+        self.server_list = []
 
     def update(self, time_delta: float) -> None:
         """Synchronizes game state and handles connection updates per frame."""
@@ -152,18 +171,10 @@ class EventDispatcher:
     def dispatch(self, event_dict: dict[str, Any]) -> None:
         try:
             event_data = EventData.from_dict(event_dict)
-            event_type_str = event_data.notify_type
-            if event_type_str is None:
-                logger.warning("Missing notify_type in event data.")
-                return
-            event_enum = EventType.from_notify(event_type_str)
+            event_enum = event_data.type
+
         except Exception as e:
             logger.warning(f"Failed to process incoming event: {e}")
-            return
-
-        if event_enum is None:
-            logger.warning(f"Unknown notify type: {event_type_str}")
-            logger.debug(f"Raw event data: {event_dict}")
             return
 
         euuid = "ws-event"
@@ -577,7 +588,6 @@ class ConnectionManager:
             self.retry_timer = 0
 
         if self.client.client.registered and not self.client.populated:
-            self.game.network_manager.set_state(ConnectionState.CLIENT)
             self.client.sync_manager.populate_player()
 
         if self.ping_timer >= 2:

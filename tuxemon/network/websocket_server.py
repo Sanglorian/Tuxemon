@@ -35,6 +35,21 @@ class WebsocketServerWrapper:
         )
         self.net_thread.start()
 
+    def stop_listening(self) -> None:
+        """Stops the server loop and disconnects all active clients."""
+        for cuuid, websocket in list(self.client_registry.items()):
+            asyncio.run_coroutine_threadsafe(websocket.close(), self.loop)
+            self.client_registry.pop(cuuid, None)
+            self.registry.pop(cuuid, None)
+
+        if self.loop and self.loop.is_running():
+            self.loop.call_soon_threadsafe(self.loop.stop)
+
+        if self.net_thread:
+            self.net_thread.join(timeout=1)
+
+        logger.info("WebSocket server stopped and all clients disconnected.")
+
     def get_incoming_events(self) -> list[tuple[str, dict[str, Any]]]:
         """Called by TuxemonServer.update() to pull all new client messages."""
         events = []

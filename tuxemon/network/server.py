@@ -96,6 +96,25 @@ class TuxemonServer:
             self.handle_client_disconnected_event,
         )
 
+    def shutdown(self) -> None:
+        """
+        Gracefully stops the server: closes the listening socket and
+        disconnects all active clients.
+        """
+
+        for cuuid in list(self.client_registry.registry.keys()):
+            self.server.disconnect_client(cuuid)
+            event_data = self.event_factory.create_event(
+                EventType.CLIENT_DISCONNECTED, cuuid
+            )
+            self.notify_client(cuuid, event_data)
+
+        self.client_registry.registry.clear()
+        self.listening = False
+        logger.info(
+            "TuxemonServer: Shutdown complete. Server is no longer listening."
+        )
+
     def get_next_event_number(self) -> int:
         """
         Generates and returns the next unique event number for sequencing
@@ -389,9 +408,7 @@ class NotificationManager:
         self.event_factory = event_factory
 
     def notify_client(self, cuuid: str, event_data: EventData) -> None:
-        updated_event = event_data.copy(
-            cuuid=cuuid, notify_type=event_data.type.notify()
-        )
+        updated_event = event_data.copy(cuuid=cuuid)
         json_data = json.dumps(updated_event.to_dict())
 
         for client_id in self.server.registry:
@@ -401,9 +418,7 @@ class NotificationManager:
     def notify_populate_client(
         self, cuuid: str, event_data: EventData
     ) -> None:
-        notify_type = event_data.type.notify()
-
-        event_data_1 = event_data.copy(cuuid=cuuid, notify_type=notify_type)
+        event_data_1 = event_data.copy(cuuid=cuuid)
         json_data_1 = json.dumps(event_data_1.to_dict())
 
         for client_id in self.server.registry:
@@ -418,7 +433,6 @@ class NotificationManager:
                 cuuid=client_id,
                 map_name=char["map_name"],
                 char_dict=char["char_dict"],
-                notify_type=notify_type,
             )
             json_data_2 = json.dumps(event_data_2.to_dict())
             self.server.notify(cuuid, json_data_2)
@@ -430,9 +444,7 @@ class NotificationManager:
             logger.warning(f"Invalid interaction event from CUUID: {cuuid}")
             return
 
-        updated_event = event_data.copy(
-            target=cuuid, notify_type=event_data.type.notify()
-        )
+        updated_event = event_data.copy(target=cuuid)
         json_data = json.dumps(updated_event.to_dict())
         self.server.notify(event_data.target, json_data)
 
@@ -455,7 +467,6 @@ class EventFactory:
         cuuid: str,
         map_name: str = "",
         char_dict: Optional[Union[dict[str, Any], CharData]] = None,
-        notify_type: Optional[str] = None,
         target: Optional[str] = None,
     ) -> EventData:
         return EventData(
@@ -468,6 +479,5 @@ class EventFactory:
                 if isinstance(char_dict, dict)
                 else char_dict
             ),
-            notify_type=notify_type or event_type.notify(),
             target=target,
         )

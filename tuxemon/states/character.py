@@ -9,14 +9,16 @@ import pygame_menu
 from pygame_menu import locals
 
 from tuxemon import formula
-from tuxemon import prepare as pre
 from tuxemon.db import MonsterModel, db
 from tuxemon.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
+from tuxemon.platform.const.graphics import BG_PLAYER1, BG_PLAYER2
+from tuxemon.platform.const.sizes import U_KM, U_MI
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.tools import fix_measure, format_playtime
 from tuxemon.tuxepedia import TuxepediaReporter
 
@@ -106,10 +108,10 @@ class CharacterState(PygameMenuState):
         unit = self.client.config.unit_measure
         if unit == "metric":
             walked = formula.convert_km(steps)
-            unit_walked = pre.U_KM
+            unit_walked = U_KM
         else:
             walked = formula.convert_mi(steps)
-            unit_walked = pre.U_MI
+            unit_walked = U_MI
         _msg_walked = {"distance": str(walked), "unit": unit_walked}
         msg_walked = T.format("player_walked", _msg_walked)
         # name
@@ -193,7 +195,7 @@ class CharacterState(PygameMenuState):
         combat_front = self.char.template.combat_front
         _path = f"gfx/sprites/player/{combat_front}.png"
         new_image = self._create_image(_path)
-        new_image.scale(pre.SCALE, pre.SCALE)
+        new_image.scale(SCALE, SCALE)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
         image_widget.translate(fxw(0.20), fxh(0.08))
@@ -206,14 +208,14 @@ class CharacterState(PygameMenuState):
             character = element["character"]
         if character is None:
             raise ValueError("No character found")
-        width, height = pre.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
         self.char = character
 
         bg = (
-            pre.BG_PLAYER2
+            BG_PLAYER2
             if self.char.monsters and self.char.is_player
-            else pre.BG_PLAYER1
+            else BG_PLAYER1
         )
 
         theme = self._setup_theme(bg)

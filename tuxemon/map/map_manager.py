@@ -6,6 +6,7 @@ import logging
 from collections import defaultdict
 from collections.abc import MutableMapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 
 import yaml
@@ -193,6 +194,13 @@ class MapManager:
         if self.current_map:
             return self.current_map.filename
         return None
+
+    def get_map_name(self) -> str:
+        """Returns the filepath of the current map."""
+        map_path = self.get_map_filepath()
+        if map_path is None:
+            raise ValueError("Name of the map requested when no map is active")
+        return Path(map_path).name
 
     def is_in_location_type(self, location_type: str) -> bool:
         """Checks if the current map type matches a given location type."""

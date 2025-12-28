@@ -10,9 +10,9 @@ from typing import Any, final
 
 import yaml
 
-from tuxemon import prepare
 from tuxemon.constants import paths
 from tuxemon.event.eventaction import EventAction
+from tuxemon.platform.const.sizes import MAX_MOVES
 from tuxemon.session import Session
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import get_valid_uuid
@@ -112,9 +112,9 @@ class ReplaceTechsFromYamlAction(EventAction):
             if "slug" in item
         ]
 
-        if len(move_slugs) > prepare.MAX_MOVES:
+        if len(move_slugs) > MAX_MOVES:
             moves_to_use = random.choices(
-                move_slugs, weights=weights, k=prepare.MAX_MOVES
+                move_slugs, weights=weights, k=MAX_MOVES
             )
         else:
             moves_to_use = move_slugs

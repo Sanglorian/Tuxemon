@@ -12,7 +12,7 @@ from pygame.font import Font
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon import prepare, tools
+from tuxemon import tools
 from tuxemon.animation import ScheduleType
 from tuxemon.graphics import ColorLike, load_and_scale, load_image
 from tuxemon.locale import T
@@ -20,10 +20,17 @@ from tuxemon.menu.interface import ExpBar, HpBar, MenuItem
 from tuxemon.menu.menu import Menu
 from tuxemon.monster import Monster
 from tuxemon.monster_dir.filter import MonsterFilter
+from tuxemon.platform.const.graphics import BG_MONSTERS, TRANSPARENT_COLOR
+from tuxemon.platform.const.sizes import PARTY_LIMIT
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.sprite import Sprite
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.graphic_box import GraphicBox
-from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.menu_options import (
+    MenuOptions,
+    create_choice_options,
+    create_yes_no_options,
+)
 from tuxemon.ui.text import TextArea, draw_text
 
 if TYPE_CHECKING:
@@ -40,7 +47,7 @@ class MonsterMenuState(Menu[Optional[Monster]]):
     teach them moves, and switch them both in and out of combat.
     """
 
-    background_filename = prepare.BG_MONSTERS
+    background_filename = BG_MONSTERS
     draw_borders = False
 
     name: ClassVar[str] = "MonsterMenuState"
@@ -95,11 +102,11 @@ class MonsterMenuState(Menu[Optional[Monster]]):
         self.monster_portrait_display.animate_down()
 
         # position and animate the monster portrait
-        width = prepare.SCREEN_SIZE[0] // 2
-        height = prepare.SCREEN_SIZE[1] // int(prepare.PARTY_LIMIT * 1.5)
+        width = SCREEN_SIZE[0] // 2
+        height = SCREEN_SIZE[1] // int(PARTY_LIMIT * 1.5)
 
         # make 6 slots
-        for _ in range(prepare.PARTY_LIMIT):
+        for _ in range(PARTY_LIMIT):
             rect = Rect(0, 0, width, height)
             surface = Surface(rect.size, SRCALPHA)
             item = MenuItem(surface, None, None, None)
@@ -137,7 +144,7 @@ class MonsterMenuState(Menu[Optional[Monster]]):
         monster = self.monsters[index] if index < len(self.monsters) else None
         item.game_object = monster
         item.enabled = (monster is not None) and self.is_valid_entry(monster)
-        item.image.fill(prepare.TRANSPARENT_COLOR)
+        item.image.fill(TRANSPARENT_COLOR)
         item.in_focus = (index == self.selected_index) and item.enabled
         self.slot_renderer.render_slot(
             item.image, item.image.get_rect(), monster, item.in_focus
@@ -222,19 +229,13 @@ class MonsterMenuHandler:
         self.client.remove_state_by_name("ChoiceState")
         params = {"name": monster.name.upper()}
         msg = T.format("release_confirmation", params)
-        open_dialog(self.client, [msg])
-        options = [
-            ChoiceOption(
-                key="no",
-                display_text=T.translate("no"),
-                action=self.negative_answer,
-            ),
-            ChoiceOption(
-                key="yes",
-                display_text=T.translate("yes"),
-                action=partial(self.positive_answer, monster),
-            ),
-        ]
+        open_dialog(self.client, [msg], dialog_speed="max")
+
+        options = create_yes_no_options(
+            yes_action=partial(self.positive_answer, monster),
+            no_action=self.negative_answer,
+        )
+
         menu = MenuOptions(options)
         open_choice_dialog(self.client, menu, escape_key_exits=False)
 
@@ -246,7 +247,7 @@ class MonsterMenuHandler:
             self.client.remove_state_by_name("DialogState")
             params = {"name": monster.name.upper()}
             msg = T.format("tuxemon_released", params)
-            open_dialog(self.client, [msg])
+            open_dialog(self.client, [msg], dialog_speed="max")
             self.monster_menu.remove_monster_sprite_display(monster)
 
             num_monsters = len(self.party.monsters)
@@ -256,7 +257,9 @@ class MonsterMenuHandler:
             self.monster_menu.refresh_menu_items()
             self.monster_menu.on_menu_selection_change()
         else:
-            open_dialog(self.client, [T.translate("cant_release")])
+            open_dialog(
+                self.client, [T.translate("cant_release")], dialog_speed="max"
+            )
 
     def negative_answer(self) -> None:
         """Handles rejection for releasing a monster."""
@@ -266,64 +269,33 @@ class MonsterMenuHandler:
     def open_monster_submenu(self, monster_menu: MonsterMenuState) -> None:
         """Opens a submenu for the selected monster."""
         original = monster_menu.get_selected_item()
-        if original and original.game_object:
-            mon = original.game_object
-            options: list[ChoiceOption] = []
+        if not (original and original.game_object):
+            return
 
-            options.append(
-                ChoiceOption(
-                    key="info",
-                    display_text=T.translate("monster_menu_info").upper(),
-                    action=partial(self.monster_stats, mon),
-                )
+        mon = original.game_object
+
+        actions: dict[str, Callable[..., None]] = {
+            "info": partial(self.monster_stats, mon),
+        }
+
+        if mon.moves.moves:
+            actions["tech"] = partial(self.monster_techs, mon)
+
+        if mon.held_item:
+            actions["item"] = partial(self.monster_item, mon)
+
+        if self.party.party_size > 1:
+            actions.update(
+                {
+                    "move": partial(self.select_monster, mon),
+                    "sort": lambda: self.open_sort_submenu(monster_menu),
+                    "release": partial(self.release_monster, mon),
+                }
             )
 
-            if mon.moves.moves:
-                options.append(
-                    ChoiceOption(
-                        key="tech",
-                        display_text=T.translate("monster_menu_tech").upper(),
-                        action=partial(self.monster_techs, mon),
-                    )
-                )
-
-            if mon.held_item:
-                options.append(
-                    ChoiceOption(
-                        key="item",
-                        display_text=T.translate("monster_menu_item").upper(),
-                        action=partial(self.monster_item, mon),
-                    )
-                )
-
-            if self.party.party_size > 1:
-                options.append(
-                    ChoiceOption(
-                        key="move",
-                        display_text=T.translate("monster_menu_move").upper(),
-                        action=partial(self.select_monster, mon),
-                    )
-                )
-                options.append(
-                    ChoiceOption(
-                        key="sort",
-                        display_text=T.translate("menu_sort").upper(),
-                        action=lambda: self.open_sort_submenu(monster_menu),
-                    )
-                )
-
-                options.append(
-                    ChoiceOption(
-                        key="release",
-                        display_text=T.translate(
-                            "monster_menu_release"
-                        ).upper(),
-                        action=partial(self.release_monster, mon),
-                    )
-                )
-
-            menu = MenuOptions(options)
-            open_choice_dialog(self.client, menu, escape_key_exits=True)
+        options = create_choice_options(actions)
+        menu = MenuOptions(options)
+        open_choice_dialog(self.client, menu, escape_key_exits=True)
 
     def handle_selection(
         self,
@@ -358,37 +330,22 @@ class MonsterMenuHandler:
 
     def open_sort_submenu(self, monster_menu: MonsterMenuState) -> None:
         """Opens a submenu with sorting options."""
-        sort_options = [
-            ChoiceOption(
-                key="level",
-                display_text=T.translate("sort_by_level").upper(),
-                action=lambda: self.sort_monsters(
-                    monster_menu, key=lambda m: m.level
-                ),
+        actions: dict[str, Callable[..., None]] = {
+            "level": lambda: self.sort_monsters(
+                monster_menu, key=lambda m: m.level
             ),
-            ChoiceOption(
-                key="hp",
-                display_text=T.translate("sort_by_hp").upper(),
-                action=lambda: self.sort_monsters(
-                    monster_menu, key=lambda m: m.hp_ratio, reverse=True
-                ),
+            "hp": lambda: self.sort_monsters(
+                monster_menu, key=lambda m: m.hp_ratio, reverse=True
             ),
-            ChoiceOption(
-                key="name",
-                display_text=T.translate("sort_by_name").upper(),
-                action=lambda: self.sort_monsters(
-                    monster_menu, key=lambda m: m.name.lower()
-                ),
+            "name": lambda: self.sort_monsters(
+                monster_menu, key=lambda m: m.name.lower()
             ),
-            ChoiceOption(
-                key="id",
-                display_text=T.translate("sort_by_id").upper(),
-                action=lambda: self.sort_monsters(
-                    monster_menu, key=lambda m: m.txmn_id
-                ),
+            "id": lambda: self.sort_monsters(
+                monster_menu, key=lambda m: m.txmn_id
             ),
-        ]
-        menu = MenuOptions(sort_options)
+        }
+        options = create_choice_options(actions)
+        menu = MenuOptions(options)
         open_choice_dialog(self.client, menu, escape_key_exits=True)
 
 
@@ -429,7 +386,7 @@ class MonsterStatsDisplay:
         )
 
         self.sprite.image = self.menu_state.shadow_text(text)
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         self.sprite.rect.topleft = (width // 10, height // 2 + 50)
 
 
@@ -446,7 +403,7 @@ class MonsterSpriteDisplay:
                 self.sprite = monster.get_sprite("menu", 0.25, 2.5)
                 self.menu_state.sprites.add(self.sprite)
             if self.sprite is not None:
-                width = prepare.SCREEN_SIZE[0]
+                width = SCREEN_SIZE[0]
                 margin = int(width * 0.005)
                 self.sprite.rect.x = width - (self.sprite.rect.width + margin)
                 self.sprite.rect.y = rect.y + tools.scale(10)
@@ -478,7 +435,7 @@ class MonsterPortraitDisplay:
         image = image or Surface((1, 1), SRCALPHA)
 
         self.portrait.image = image
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         self.portrait.rect = image.get_rect(
             centerx=width // 4,
             top=height // 12,

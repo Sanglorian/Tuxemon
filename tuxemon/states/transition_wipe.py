@@ -8,9 +8,10 @@ from typing import ClassVar, Optional
 from pygame import draw as pg_draw
 from pygame.surface import Surface
 
-from tuxemon import prepare
 from tuxemon.graphics import ColorLike
+from tuxemon.platform.const.graphics import BLACK_COLOR
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCREEN
 from tuxemon.state.state import State
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ class WipeTransition(State):
         image: Surface,
         direction: str,
         speed: int = 250,
-        color: ColorLike = prepare.BLACK_COLOR,
+        color: ColorLike = BLACK_COLOR,
     ) -> None:
         """
         Parameters:
@@ -45,8 +46,8 @@ class WipeTransition(State):
         self.wipe_y = 0.0
         self.color = color
         self.speed = speed
-        self.height = prepare.SCREEN.get_height()
-        self.width = prepare.SCREEN.get_width()
+        self.height = SCREEN.get_height()
+        self.width = SCREEN.get_width()
 
     def update(self, time_delta: float) -> None:
         self.update_wipe_position(time_delta)

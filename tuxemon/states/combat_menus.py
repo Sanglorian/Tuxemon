@@ -12,7 +12,7 @@ from pygame import SRCALPHA
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon import graphics, prepare, tools
+from tuxemon import graphics, tools
 from tuxemon.combat import utils
 from tuxemon.combat.menu_visibility import MenuProfiles
 from tuxemon.db import EffectPhase, SpeedLabel, State
@@ -21,6 +21,7 @@ from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu, PopUpMenu
 from tuxemon.monster import Monster
+from tuxemon.prepare import SCALE, SCREEN_RECT, SCREEN_SIZE
 from tuxemon.sprite import Sprite
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.states.monster_menu import MonsterMenuState
@@ -107,7 +108,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     self.sprites.remove(spr)
 
     def calculate_menu_rectangle(self) -> Rect:
-        rect_screen = prepare.SCREEN_RECT.copy()
+        rect_screen = SCREEN_RECT.copy()
         menu_width = fix_measure(rect_screen.w, 102 / 256)
         menu_height = fix_measure(rect_screen.h, 36 / 144)
         rect = Rect(0, 0, menu_width, menu_height)
@@ -176,7 +177,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 "status": message,
             }
             msg = T.format("combat_player_run_status", params)
-            tools.open_dialog(self.client, [msg])
+            tools.open_dialog(self.client, [msg], dialog_speed="max")
             return
         self.client.remove_state_by_name("MainCombatMenuState")
         self.combat_session.enqueue_action(
@@ -197,7 +198,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     "status": message,
                 }
                 msg = T.format("combat_player_swap_status", params)
-                tools.open_dialog(self.client, [msg])
+                tools.open_dialog(self.client, [msg], dialog_speed="max")
                 return
             self.combat_session.swap_tracker.register(added)
             self.combat_session.enqueue_action(self.monster, swap, added)
@@ -224,11 +225,13 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         menu.on_menu_selection = swap_it  # type: ignore[assignment]
         menu.is_valid_entry = validate  # type: ignore[assignment]
         menu.anchor("bottom", self.rect.top)
-        menu.anchor("right", prepare.SCREEN_RECT.right)
+        menu.anchor("right", SCREEN_RECT.right)
 
         if all(not validate_monster(mon) for mon in self.character.monsters):
             party_unselectable = T.translate("combat_party_unselectable")
-            tools.open_dialog(self.client, [party_unselectable])
+            tools.open_dialog(
+                self.client, [party_unselectable], dialog_speed="max"
+            )
 
     def open_item_menu(self) -> None:
         """Open menu to choose item to use."""
@@ -291,7 +294,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                         T.translate(extra) for extra in result_status.extras
                     ]
                     template = "\n".join(templates)
-                    tools.open_dialog(self.client, [template])
+                    tools.open_dialog(
+                        self.client, [template], dialog_speed="max"
+                    )
                     return
 
             # enqueue the item
@@ -347,7 +352,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
             # position the new menu
             menu.anchor("bottom", self.rect.top)
-            menu.anchor("right", prepare.SCREEN_RECT.right)
+            menu.anchor("right", SCREEN_RECT.right)
 
             # set next menu after the selection is made
             menu.on_menu_selection = choose_target  # type: ignore[assignment]
@@ -358,7 +363,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     "", self.combat.text_area, dialog_speed="max"
                 )
 
-                screen_w, screen_h = prepare.SCREEN_SIZE
+                screen_w, screen_h = SCREEN_SIZE
 
                 # --- Clear old sprites if they exist ---
                 if self.range_icon_sprite:
@@ -393,9 +398,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     for i, t in enumerate(technique.types.current[:2]):
                         path = f"gfx/ui/icons/element/{t.name.lower()}_type_small.png"
                         try:
-                            icon_surface = graphics.load_and_scale(
-                                path, prepare.SCALE
-                            )
+                            icon_surface = graphics.load_and_scale(path, SCALE)
                             spr = Sprite()
                             spr.image = icon_surface
                             spr.rect = spr.image.get_rect()
@@ -422,7 +425,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 # --- Draw range icon ---
                 path = f"gfx/ui/icons/range/{technique.range.name.lower()}.png"
                 try:
-                    surf = graphics.load_and_scale(path, prepare.SCALE)
+                    surf = graphics.load_and_scale(path, SCALE)
                     spr = Sprite()
                     spr.image = surf
                     spr.rect = surf.get_rect()
@@ -441,7 +444,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
                 path = f"gfx/ui/icons/speed/{speed_val}.png"
                 try:
-                    surf = graphics.load_and_scale(path, prepare.SCALE)
+                    surf = graphics.load_and_scale(path, SCALE)
                     spr = Sprite()
                     spr.image = surf
                     spr.rect = surf.get_rect()
@@ -546,7 +549,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             if not technique.validate_monster(self.session, target):
                 params = {"name": technique.name.upper()}
                 msg = T.format("cannot_use_tech_monster", params)
-                tools.open_dialog(self.client, [msg])
+                tools.open_dialog(self.client, [msg], dialog_speed="max")
                 return
 
             if (
@@ -555,7 +558,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             ):
                 params = {"name": technique.name.upper()}
                 msg = T.format("combat_target_itself", params)
-                tools.open_dialog(self.client, [msg])
+                tools.open_dialog(self.client, [msg], dialog_speed="max")
                 return
 
             # Pre-check the technique for validity
@@ -630,7 +633,7 @@ class CombatTargetMenuState(Menu[Monster]):
 
     def _create_menu(self) -> None:
         """Sets up the menu UI."""
-        rect_screen = prepare.SCREEN_RECT.copy()
+        rect_screen = SCREEN_RECT.copy()
         rect = Rect(0, 0, rect_screen.w // 2, rect_screen.h // 4)
         rect.bottomright = rect_screen.w, rect_screen.h
 

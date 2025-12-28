@@ -6,8 +6,12 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon import prepare
 from tuxemon.event.eventaction import EventAction
+from tuxemon.platform.const.sizes import (
+    ACCURACY_RANGE,
+    POTENCY_RANGE,
+    POWER_RANGE,
+)
 from tuxemon.session import Session
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import get_valid_uuid
@@ -63,9 +67,9 @@ class AddTechAction(EventAction):
         tech = Technique.create(self.technique)
 
         overrides = {
-            "power": (self.power, prepare.POWER_RANGE),
-            "potency": (self.potency, prepare.POTENCY_RANGE),
-            "accuracy": (self.accuracy, prepare.ACCURACY_RANGE),
+            "power": (self.power, POWER_RANGE),
+            "potency": (self.potency, POTENCY_RANGE),
+            "accuracy": (self.accuracy, ACCURACY_RANGE),
         }
 
         for attr, (val, bounds) in overrides.items():

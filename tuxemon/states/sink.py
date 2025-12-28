@@ -7,8 +7,8 @@ from typing import ClassVar, Optional
 from pygame.draw import circle
 from pygame.surface import Surface
 
+from tuxemon.platform.const.graphics import RED_COLOR
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import RED_COLOR
 from tuxemon.state.state import State
 
 

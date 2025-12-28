@@ -7,9 +7,9 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
-from tuxemon import prepare
 from tuxemon.boxes import ItemBoxes
 from tuxemon.item.item import decode_items, encode_items
+from tuxemon.platform.const.sizes import LOCKER, MAX_TYPES_BAG
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
@@ -27,7 +27,7 @@ class BagHandler:
         item_boxes: ItemBoxes,
         owner: NPC,
         items: Optional[list[Item]] = None,
-        bag_limit: int = prepare.MAX_TYPES_BAG,
+        bag_limit: int = MAX_TYPES_BAG,
     ) -> None:
         self._owner = owner
         self._items = items if items is not None else []
@@ -43,7 +43,7 @@ class BagHandler:
         return self._items
 
     def add_item(
-        self, item: Item, quantity: int = 1, locker: str = prepare.LOCKER
+        self, item: Item, quantity: int = 1, locker: str = LOCKER
     ) -> None:
         """
         Adds an item to the NPC's bag.

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Optional, final
 
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
-from tuxemon.prepare import KENNEL
+from tuxemon.platform.const.sizes import KENNEL
 from tuxemon.tools import parse_flag
 
 if TYPE_CHECKING:

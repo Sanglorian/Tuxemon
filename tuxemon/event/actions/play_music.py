@@ -6,8 +6,8 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon import prepare
 from tuxemon.event.eventaction import EventAction
+from tuxemon.platform.const.sizes import MUSIC_FADEIN, MUSIC_LOOP, MUSIC_RANGE
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -48,15 +48,13 @@ class PlayMusicAction(EventAction):
 
     def start(self, session: Session) -> None:
         client = session.client
-        loop = prepare.MUSIC_LOOP if self.loop is None else self.loop
-        fade_ms = (
-            prepare.MUSIC_FADEIN if self.fade_ms is None else self.fade_ms
-        )
+        loop = MUSIC_LOOP if self.loop is None else self.loop
+        fade_ms = MUSIC_FADEIN if self.fade_ms is None else self.fade_ms
         music_volume = client.config.music_volume
         if not self.volume:
             volume = music_volume
         else:
-            lower, upper = prepare.MUSIC_RANGE
+            lower, upper = MUSIC_RANGE
             if lower <= self.volume <= upper:
                 volume = self.volume * music_volume
             else:

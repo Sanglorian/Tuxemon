@@ -22,8 +22,9 @@ from pygame.transform import scale
 from pytmx.pytmx import TileFlags
 from pytmx.util_pygame import handle_transformation, smart_convert
 
-from tuxemon import prepare
 from tuxemon.db import MonsterModel, NpcModel, db
+from tuxemon.platform.const.graphics import FUCHSIA_COLOR
+from tuxemon.prepare import SCALE
 from tuxemon.session import Session
 from tuxemon.sprite import Sprite
 from tuxemon.surfanim import SurfaceAnimation
@@ -115,7 +116,7 @@ def cursor_from_image(image: Surface) -> Sequence[str]:
     return icon_string
 
 
-def load_and_scale(filename: str, scale: float = prepare.SCALE) -> Surface:
+def load_and_scale(filename: str, scale: float = SCALE) -> Surface:
     """
     Load an image and scale it according to game settings.
 
@@ -177,7 +178,7 @@ def load_sprite(filename: str, **rect_kwargs: Any) -> Sprite:
 def load_animated_sprite(
     filenames: Iterable[str],
     delay: float,
-    scale: float = prepare.SCALE,
+    scale: float = SCALE,
     loop: int = -1,
 ) -> Sprite:
     """
@@ -193,7 +194,7 @@ def load_animated_sprite(
         filenames: Filenames to load.
         delay: Frame interval; time between each frame.
         scale: A scaling factor applied to the images during loading.
-            Defaults to the 'prepare.SCALE' constant.
+            Defaults to the 'SCALE' constant.
 
     Returns:
         Loaded animated sprite.
@@ -305,7 +306,7 @@ def scale_sprite(sprite: Sprite, ratio: float) -> None:
 
 
 def convert_alpha_to_colorkey(
-    surface: Surface, colorkey: ColorLike = prepare.FUCHSIA_COLOR
+    surface: Surface, colorkey: ColorLike = FUCHSIA_COLOR
 ) -> Surface:
     """
     Convert image with per-pixel alpha to normal surface with colorkey.

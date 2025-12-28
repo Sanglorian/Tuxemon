@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Optional, final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.prepare import KENNEL
+from tuxemon.platform.const.sizes import KENNEL
 from tuxemon.session import Session
 from tuxemon.tools import get_valid_uuid
 

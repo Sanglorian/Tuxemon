@@ -8,8 +8,8 @@ import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, final
 
-from tuxemon import formula
 from tuxemon.db import Acquisition, EvolutionStage, StatType
+from tuxemon.element import ElementTypesHandler
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
@@ -136,7 +136,7 @@ class SpawnMonsterAction(EventAction):
 
         # Display a message to the player
         msg = T.format("got_new_tuxemon", {"monster_name": child.name})
-        open_dialog(session.client, [msg])
+        open_dialog(session.client, [msg], dialog_speed="max")
 
     def update(self, session: Session, dt: float) -> None:
         try:
@@ -185,8 +185,7 @@ def _determine_seed(mother: Monster, father: Monster) -> Monster:
     vitality_mother = mother.hp_ratio
     vitality_father = father.hp_ratio
     logger.debug(
-        "Vitality ratio "
-        f"Mother: {vitality_mother:.2f}, Father: {vitality_father:.2f}"
+        f"Vitality ratio Mother: {vitality_mother:.2f}, Father: {vitality_father:.2f}"
     )
 
     if vitality_mother > vitality_father:
@@ -196,10 +195,11 @@ def _determine_seed(mother: Monster, father: Monster) -> Monster:
         logger.debug("Seed chosen based on greater vitality: Father")
         return father
 
-    multiplier_mother = formula.calculate_multiplier(
+    # Offensive affinity
+    multiplier_mother = ElementTypesHandler.calculate_affinity_score(
         mother.types.current, father.types.current
     )
-    multiplier_father = formula.calculate_multiplier(
+    multiplier_father = ElementTypesHandler.calculate_affinity_score(
         father.types.current, mother.types.current
     )
     logger.debug(
@@ -213,6 +213,29 @@ def _determine_seed(mother: Monster, father: Monster) -> Monster:
         return mother
     elif multiplier_father > multiplier_mother:
         logger.debug("Seed chosen based on stronger type matchup: Father")
+        return father
+
+    # Defensive resistance
+    resistance_mother = (
+        ElementTypesHandler.calculate_resistance_multiplier_for_types(
+            mother.types.current, father.types.primary.slug
+        )
+    )
+    resistance_father = (
+        ElementTypesHandler.calculate_resistance_multiplier_for_types(
+            father.types.current, mother.types.primary.slug
+        )
+    )
+    logger.debug(
+        f"Resistance Mother vs Father: {resistance_mother:.2f} "
+        f"Father vs Mother: {resistance_father:.2f}"
+    )
+
+    if resistance_mother < resistance_father:
+        logger.debug("Seed chosen based on stronger resistance: Mother")
+        return mother
+    elif resistance_father < resistance_mother:
+        logger.debug("Seed chosen based on stronger resistance: Father")
         return father
 
     logger.debug("Seed chosen randomly: No clear biological dominance")

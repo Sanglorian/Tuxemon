@@ -6,7 +6,6 @@ import logging
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Sequence
 from enum import Enum
-from pathlib import Path
 from queue import Queue
 from threading import Thread
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload

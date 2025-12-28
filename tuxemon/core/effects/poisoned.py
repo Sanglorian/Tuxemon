@@ -19,19 +19,33 @@ from tuxemon.db import EffectPhase
 @dataclass
 class PoisonedEffect(CoreEffect):
     """
-    This effect has a chance to apply the poisoned status based on a calculated
-    damage multiplier.
+    Applies the "poisoned" status effect.
 
-    Parameters:
-        divisor: Determines how much HP is lost (damage is calculated as
-            target.hp / divisor).
-        mode: Specifies the strategy used to evaluate modifiers against
-            the target. Must be one of: "first", "weakest", "strongest",
-            "average", "cumulative".
+    This effect reduces the target's HP over time based on a calculated
+    damage multiplier. The amount of damage depends on the target's maximum
+    HP and the chosen modifier evaluation strategy. If the calculated damage
+    is greater than zero, the target becomes poisoned; otherwise, the status
+    fails to apply and is cleared.
 
-    The effect checks whether a damage multiplier applies to the target using
-    the given mode. If the calculated damage is greater than zero, the target
-    is poisoned and loses HP. Otherwise, the status fails to apply and is cleared.
+    **Parameters**
+
+    - ``divisor``: Integer value used to determine base damage.
+      - Damage is calculated as ``target.hp / divisor``.
+    - ``mode``: Strategy used to evaluate modifiers against the target.
+      Must be one of:
+      - ``first``: Uses the first applicable modifier.
+      - ``weakest``: Uses the weakest modifier.
+      - ``strongest``: Uses the strongest modifier.
+      - ``average``: Uses the average of all modifiers.
+      - ``cumulative``: Uses the cumulative effect of all modifiers.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "poisoned 4 strongest"
+        ]
     """
 
     name = "poisoned"
@@ -56,7 +70,10 @@ class PoisonedEffect(CoreEffect):
                 status.use_failure = T.format("combat_state_immune", params)
                 host.status.clear_status(session)
         if status.has_phase(EffectPhase.ON_STEP_INTERVAL):
-            host.current_hp = max(0, host.current_hp - status.step_damage)
-            return StatusEffectResult(name=status.name, success=True)
+            if status._step_hp_change != 0:
+                host.current_hp = max(
+                    0, host.current_hp + status._step_hp_change
+                )
+                return StatusEffectResult(name=status.name, success=True)
 
         return StatusEffectResult(name=status.name, success=poisoned)

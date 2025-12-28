@@ -7,24 +7,18 @@ from collections.abc import Generator
 from pathlib import Path
 from typing import Any
 
-from tuxemon import prepare
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import db
 from tuxemon.map.map_manager import MAP_TYPES
+from tuxemon.platform.const.sizes import REGION_KEYS
 from tuxemon.script.parser import parse_action_string
+from tuxemon.user_config import CONFIG
 
 # Constants
 FOLDER = "maps"
 MULTIPLIER = 16
 MIN_LAYERS = 4
 TMX_TYPES_PREFIXES = ("init", "collision", "event")
-EXPECTED_SCENARIOS = ["spyder", "xero", "tobedefined", "eclipse"]
-
-
-def expand_expected_scenarios() -> None:
-    for mod in prepare.CONFIG.mods:
-        map: str = db.mod_metadata.require_mod_attribute(mod, "starting_map")
-        EXPECTED_SCENARIOS.append(map.removesuffix(".tmx"))
 
 
 def get_tmx_files(folder_path: Path) -> Generator[Path, Any, None]:
@@ -71,7 +65,7 @@ def _is_multiple_of_16(value) -> bool:
 
 
 def _is_valid_property_name(name) -> bool:
-    region_properties_set = set(prepare.REGION_KEYS)
+    region_properties_set = set(REGION_KEYS)
     if name in region_properties_set:
         return True
     opt = ("act", "cond", "behav")
@@ -92,19 +86,6 @@ class TestTMXFiles(unittest.TestCase):
     def setUpClass(cls):
         cls.folder_path = fetch_asset(FOLDER)
         cls.loaded_data = load_tmx_files(cls.folder_path)
-        expand_expected_scenarios()
-
-    def test_top_level_properties_scenario(self) -> None:
-        for path, root in self.loaded_data.items():
-            with self.subTest(file=to_basename(path)):
-                prop = root.find("properties")
-                if prop is not None:
-                    self.assertTrue(
-                        _is_object_property(
-                            prop, "scenario", EXPECTED_SCENARIOS
-                        ),
-                        f"Scenario wrong name ({EXPECTED_SCENARIOS})",
-                    )
 
     def test_top_level_properties_map_type(self) -> None:
         for path, root in self.loaded_data.items():

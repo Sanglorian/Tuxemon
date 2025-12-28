@@ -24,24 +24,40 @@ from pygame.surface import Surface
 from pygame_menu import baseimage, locals, themes
 from pygame_menu.widgets.core.widget import Widget
 
-from tuxemon import graphics, prepare, tools
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.constants.asset_loader import fetch_asset
-from tuxemon.graphics import ColorLike
+from tuxemon.graphics import ColorLike, load_and_scale, load_image
 from tuxemon.menu.controller import MenuController
 from tuxemon.menu.cursor import MenuCursor, MenuCursorController
 from tuxemon.menu.events import playerinput_to_event
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.theme import get_sound_engine, get_theme
 from tuxemon.platform.const import buttons, intentions
+from tuxemon.platform.const.graphics import (
+    BACKGROUND_COLOR,
+    FONT_COLOR,
+    FONT_SHADOW_COLOR,
+    FONT_SIZE,
+    FONT_SIZE_BIG,
+    FONT_SIZE_BIGGER,
+    FONT_SIZE_BIGGEST,
+    FONT_SIZE_SMALL,
+    FONT_SIZE_SMALLER,
+    UNAVAILABLE_COLOR,
+    UNAVAILABLE_COLOR_SHOP,
+)
+from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCREEN_RECT
 from tuxemon.sprite import (
     RelativeGroup,
     SpriteGroup,
     VisualSpriteList,
 )
 from tuxemon.state.state import State
+from tuxemon.tools import scale, transform_resource_filename
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text_renderer import TextRenderer
+from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.menu.alert import AlertManager
@@ -52,12 +68,12 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class FontSettings:
-    smaller: int = prepare.SCALE * prepare.FONT_SIZE_SMALLER
-    small: int = prepare.SCALE * prepare.FONT_SIZE_SMALL
-    medium: int = prepare.SCALE * prepare.FONT_SIZE
-    big: int = prepare.SCALE * prepare.FONT_SIZE_BIG
-    bigger: int = prepare.SCALE * prepare.FONT_SIZE_BIGGER
-    biggest: int = prepare.SCALE * prepare.FONT_SIZE_BIGGEST
+    smaller: int = scale(FONT_SIZE_SMALLER)
+    small: int = scale(FONT_SIZE_SMALL)
+    medium: int = scale(FONT_SIZE)
+    big: int = scale(FONT_SIZE_BIG)
+    bigger: int = scale(FONT_SIZE_BIGGER)
+    biggest: int = scale(FONT_SIZE_BIGGEST)
 
 
 T = TypeVar("T", covariant=True)
@@ -127,7 +143,7 @@ class PygameMenuState(State):
 
         if sound_engine is None:
             sound_file = self.client.sound_manager.get_sound_filename(
-                prepare.CONFIG.menu_sound
+                self.client.config.menu_sound
             )
             sound_volume = self.client.config.sound_volume
             sound_engine = get_sound_engine(sound_volume, sound_file)
@@ -171,7 +187,7 @@ class PygameMenuState(State):
             pygame_menu.BaseImage: The created background image object.
         """
         return pygame_menu.BaseImage(
-            image_path=tools.transform_resource_filename(path),
+            image_path=transform_resource_filename(path),
             drawing_position=position,
         )
 
@@ -295,7 +311,7 @@ class PygameMenuState(State):
         """Reset to original theme (color, alignment, etc.)"""
         theme = get_theme()
         theme.scrollarea_position = locals.SCROLLAREA_POSITION_NONE
-        theme.background_color = prepare.BACKGROUND_COLOR
+        theme.background_color = BACKGROUND_COLOR
         theme.widget_alignment = locals.ALIGN_LEFT
         theme.title = False
 
@@ -340,18 +356,18 @@ class Menu(Generic[T], State):
     draw_borders = True
     background = None  # Image used to draw the background
     # The window's background color
-    background_color: ColorLike = prepare.BACKGROUND_COLOR
-    font_color: ColorLike = prepare.FONT_COLOR
-    font_shadow_color: ColorLike = prepare.FONT_SHADOW_COLOR
+    background_color: ColorLike = BACKGROUND_COLOR
+    font_color: ColorLike = FONT_COLOR
+    font_shadow_color: ColorLike = FONT_SHADOW_COLOR
     # Font color when the action is unavailable
-    unavailable_color: ColorLike = prepare.UNAVAILABLE_COLOR
-    unavailable_color_shop: ColorLike = prepare.UNAVAILABLE_COLOR_SHOP
+    unavailable_color: ColorLike = UNAVAILABLE_COLOR
+    unavailable_color_shop: ColorLike = UNAVAILABLE_COLOR_SHOP
     # File to load for image background
     background_filename: Optional[str] = None
-    menu_select_sound_filename = prepare.CONFIG.menu_sound
-    font_filename = prepare.CONFIG.locale.font_file
-    borders_filename = prepare.CONFIG.menu_border
-    cursor_filename = prepare.CONFIG.menu_cursor
+    menu_select_sound_filename = CONFIG.menu_sound
+    font_filename = CONFIG.locale.font_file
+    borders_filename = CONFIG.menu_border
+    cursor_filename = CONFIG.menu_cursor
     cursor_move_duration = 0.20
     shrink_to_items = False  # fit the border to contents
     escape_key_exits = True  # escape key closes menu
@@ -545,8 +561,8 @@ class Menu(Generic[T], State):
         # expand the bounding box by the border and some padding
         # TODO: do not hardcode these values
         # border is 12, padding is the rest
-        rect1.width += tools.scale(18)
-        rect1.height += tools.scale(19)
+        rect1.width += scale(18)
+        rect1.height += scale(19)
         rect1.topleft = 0, 0
 
         # set our rect and adjust the centers to match
@@ -582,12 +598,12 @@ class Menu(Generic[T], State):
             # load and scale the _background
             background = None
             if self.background_filename:
-                background = graphics.load_image(self.background_filename)
+                background = load_image(self.background_filename)
 
             # load and scale the menu borders
             border = None
             if self.draw_borders:
-                border = graphics.load_and_scale(self.borders_filename)
+                border = load_and_scale(self.borders_filename)
 
             # set the helper to draw the _background
             self.window = GraphicBox(border, background, self.background_color)
@@ -641,7 +657,7 @@ class Menu(Generic[T], State):
 
     def set_font(
         self,
-        size: int = prepare.FONT_SIZE,
+        size: int = FONT_SIZE,
         font: Optional[str] = None,
         line_spacing: int = 10,
     ) -> Font:
@@ -664,12 +680,12 @@ class Menu(Generic[T], State):
         if size < self.min_font_size:
             size = self.min_font_size
 
-        self.line_spacing = tools.scale(line_spacing)
+        self.line_spacing = scale(line_spacing)
 
-        if prepare.CONFIG.large_gui:
-            self.font_size = tools.scale(size + 1)
+        if self.client.config.large_gui:
+            self.font_size = scale(size + 1)
         else:
-            self.font_size = tools.scale(size)
+            self.font_size = scale(size)
 
         self.font = Font(font, self.font_size)
         return self.font
@@ -709,7 +725,9 @@ class Menu(Generic[T], State):
         self.selected_index = index
         self.menu_select_sound.play()
         selected = self.get_selected_item()
-        self.cursor_controller.update_selection_focus(previous, selected)
+        self.cursor_controller.update_selection_focus(
+            previous, selected, animate
+        )
         self.on_menu_selection_change()
 
     def search_items(self, target_object: Any) -> Optional[MenuItem[T]]:
@@ -945,7 +963,7 @@ class PopUpMenu(Menu[T]):
     def animate_open(self) -> Animation:
         # anchor the center of the popup
         final_rect = self.calc_final_rect()
-        self.anchor("center", prepare.SCREEN_RECT.center)
+        self.anchor("center", SCREEN_RECT.center)
 
         # set rect to a small size for the initial values of the animation
         self.rect = self._calculate_initial_rect(final_rect)

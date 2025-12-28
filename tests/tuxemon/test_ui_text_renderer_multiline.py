@@ -50,7 +50,7 @@ class TestMultilineTextRenderer(unittest.TestCase):
 
     def test_render_lines_max_width(self):
         lines = self.multiline_text_renderer.render_lines(
-            "Hello, World! This is a test.", 50
+            "Hello, World! This is a test.", 20
         )
         self.assertIsInstance(lines, list)
         self.assertGreater(len(lines), 1)

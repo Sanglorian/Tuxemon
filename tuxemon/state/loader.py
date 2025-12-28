@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tuxemon.constants.paths import get_active_mod_paths, mods_folder
-from tuxemon.plugin import get_available_classes, load_directory
+from tuxemon.plugin import load_directory
 from tuxemon.state.state import State
 
 if TYPE_CHECKING:
@@ -134,7 +134,8 @@ class StateLoader:
             exclude=["State"],
         )
 
-        for state_cls in get_available_classes(pm, interface=State):
+        for plugin in pm.get_all_plugins(interface=State):
+            state_cls = plugin.plugin_object
             try:
                 if not inspect.isabstract(state_cls):
                     repository.add_state(state_cls)

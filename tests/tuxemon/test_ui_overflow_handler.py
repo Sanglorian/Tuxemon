@@ -8,16 +8,15 @@ import pygame
 from pygame.font import Font
 from pygame.rect import Rect
 
-from tuxemon import prepare
 from tuxemon.constants.paths import mods_folder
+from tuxemon.platform.const.graphics import FONT_SIZE
 from tuxemon.tools import scale
 from tuxemon.ui.draw import OverflowHandler, RenderedChar, TextOverflow
 from tuxemon.ui.text_renderer import TextRenderer
+from tuxemon.user_config import CONFIG
 
-FONT_SIZE: int = prepare.FONT_SIZE
-FONT_PATH = (
-    mods_folder / "tuxemon/font" / Path(prepare.CONFIG.locale.font_file)
-)
+FONT_SIZE: int = FONT_SIZE
+FONT_PATH = mods_folder / "tuxemon/font" / Path(CONFIG.locale.font_file)
 
 
 class TestOverflowHandler(unittest.TestCase):
@@ -42,7 +41,7 @@ class TestOverflowHandler(unittest.TestCase):
         self.assertEqual(self.handler.rect, self.rect)
         self.assertEqual(self.handler.behavior, self.behavior)
         self.assertEqual(self.handler.ellipsis, "…")
-        self.assertEqual(self.handler.ellipsis_width, scale(prepare.FONT_SIZE))
+        self.assertEqual(self.handler.ellipsis_width, scale(FONT_SIZE))
 
     def test_get_ellipsis_char(self):
         top = 10
@@ -151,7 +150,7 @@ class TestOverflowHandler(unittest.TestCase):
 
     def test_ellipsis_exact_fit(self):
         current_x_position = self.rect.right - self.handler.ellipsis_width
-        segment_width = 50  # Doesn’t matter here
+        segment_width = 50  # Doesn't matter here
         top = 10
         fg = (255, 255, 255)
         bg = (0, 0, 0)

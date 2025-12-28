@@ -12,13 +12,15 @@ import yaml
 from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon import prepare
 from tuxemon.constants import paths
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.relationship import RELATIONSHIP_STRENGTH
+from tuxemon.platform.const.graphics import BG_PHONE_CONTACTS
+from tuxemon.platform.const.sizes import UNKNOWN_MAP_SLUG
+from tuxemon.prepare import SCREEN_SIZE
+from tuxemon.relationship import RelationshipConstants
 from tuxemon.tools import open_choice_dialog, open_dialog
-from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
@@ -66,8 +68,7 @@ class NuPhoneContacts(PygameMenuState):
         """
         required_map_slug = conditions.get("map_slug")
         if required_map_slug:
-            current_map_slug = self.client.get_map_name().split(".")[0]
-            if current_map_slug != required_map_slug:
+            if self.current_map != required_map_slug:
                 return False
 
         required_vars = conditions.get("variables")
@@ -101,23 +102,19 @@ class NuPhoneContacts(PygameMenuState):
 
         dialogue_text = [T.translate(msgid) for msgid in dialogue_msgids]
 
-        open_dialog(
-            self.client,
-            dialogue_text,
-        )
+        open_dialog(self.client, dialogue_text, dialog_speed="max")
 
     def choice(self, slug: str) -> None:
         """Opens the choice dialog to confirm the call."""
         self._current_call_slug = slug
         label = f"{T.translate('action_call')} {T.translate(slug).upper()}"
-
-        option = ChoiceOption(
-            key=slug, display_text=label, action=self._start_call
-        )
-
+        actions = {slug: self._start_call}
+        options = create_choice_options(actions)
+        for opt in options:
+            opt.display_text = label
         open_choice_dialog(
             self.client,
-            menu=MenuOptions([option]),
+            menu=MenuOptions(options),
             escape_key_exits=True,
         )
 
@@ -128,7 +125,7 @@ class NuPhoneContacts(PygameMenuState):
 
         T_RELATIONSHIP = T.translate("relation_relationship")
         T_STRENGTH = T.translate("relation_strength")
-        MAX_STRENGTH = RELATIONSHIP_STRENGTH[1]
+        MAX_STRENGTH = RelationshipConstants.STRENGTH[1]
 
         connections = self.char.relationships.get_all_connections()
         for slug, contact in connections.items():
@@ -163,22 +160,24 @@ class NuPhoneContacts(PygameMenuState):
         menu.set_title(T.translate("app_contacts")).center_content()
 
     def __init__(self, character: NPC) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_PHONE_CONTACTS)
+        theme = self._setup_theme(BG_PHONE_CONTACTS)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
         theme.title = True
 
         self.char = character
 
-        for relation in self.char.relationships.connections.values():
-            relation.apply_decay(self.char)
+        if self.char.current_map:
+            self.current_map = self.char.current_map.split(".")[0]
+        else:
+            self.current_map = UNKNOWN_MAP_SLUG
 
-        super().__init__(
-            height=height,
-            width=width,
-        )
+        for relation in self.char.relationships.connections.values():
+            relation.apply_decay(self.char.steps)
+
+        super().__init__(height=height, width=width)
 
         self.add_menu_items(self.menu)
         self.reset_theme()

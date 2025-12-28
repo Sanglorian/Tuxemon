@@ -20,12 +20,21 @@ if TYPE_CHECKING:
 @dataclass
 class RetaliateEffect(CoreEffect):
     """
-    Retaliate:
-    Accumulate all damage taken between entering this state and next dealing
-    damage. The accumulated damage is then added to your next attack, dealing
-    additional damage to the target.
+    Applies the "retaliate" status effect.
 
-    Note: The accumulated damage is reset after the next attack.
+    This effect causes the host monster to retaliate against attackers by
+    accumulating damage taken between entering the retaliate state and the
+    next time the host deals damage. The accumulated damage is then added
+    to the host's next attack, dealing additional damage to the attacker.
+    After the retaliatory strike, the accumulated damage is reset.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "retaliate"
+        ]
     """
 
     name = "retaliate"

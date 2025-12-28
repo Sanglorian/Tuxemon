@@ -13,7 +13,6 @@ import pygame_menu
 from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon import prepare
 from tuxemon.animation import ScheduleType
 from tuxemon.item.filter import ItemFilter
 from tuxemon.item.item import Item
@@ -21,10 +20,12 @@ from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.quantity import QuantityMenu
+from tuxemon.platform.const.graphics import BG_PC_LOCKER
+from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.state.state import State
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.tools import fix_measure, open_choice_dialog, open_dialog
-from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
+from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +78,7 @@ class ItemActionHandler:
                     {"name": item.name, "nr": quantity},
                 )
             ],
+            dialog_speed="max",
         )
 
     def move(
@@ -104,6 +106,7 @@ class ItemActionHandler:
                     {"name": item.name, "nr": quantity},
                 )
             ],
+            dialog_speed="max",
         )
 
     def _clear_states(self, *state_names: str) -> None:
@@ -120,9 +123,9 @@ class ItemTakeState(PygameMenuState):
     name: ClassVar[str] = "ItemTakeState"
 
     def __init__(self, box_name: str, character: NPC) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_PC_LOCKER)
+        theme = self._setup_theme(BG_PC_LOCKER)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
 
@@ -157,10 +160,76 @@ class ItemTakeState(PygameMenuState):
         self.add_menu_items(self.menu, menu_items_map)
         self.reset_theme()
 
+    def locker_options(
+        self, instance_id: str, handler: ItemActionHandler
+    ) -> None:
+        iid = UUID(instance_id)
+        itm = self.item_boxes.get_items_by_iid(iid)
+        if itm is None:
+            logger.error(f"Item {iid} not found")
+            return
+
+        box_ids = [
+            key
+            for key in self.item_boxes.item_boxes
+            if not self.item_boxes.is_box_hidden(key, "item")
+        ]
+        lockers = [key for key in box_ids if key != self.box_name]
+
+        def take_callback(quantity: int) -> None:
+            handler.take(itm, quantity)
+
+        def disband_callback(quantity: int) -> None:
+            handler.disband(itm, quantity)
+
+        def change_callback() -> None:
+            actions = {
+                box: partial(handler.move, itm, box, box_ids)
+                for box in lockers
+            }
+            options = create_choice_options(actions)
+            open_choice_dialog(
+                self.client,
+                menu=MenuOptions(options),
+                escape_key_exits=True,
+            )
+
+        def push_quantity_menu(
+            callback: Callable[[int], None], max_quantity: int
+        ) -> Callable[[], None]:
+            def inner() -> None:
+                self.client.state_manager.push_state(
+                    QuantityMenu(
+                        callback=callback,
+                        max_quantity=max_quantity,
+                        quantity=1,
+                        shrink_to_items=True,
+                    )
+                )
+
+            return inner
+
+        actions = {
+            "take": push_quantity_menu(take_callback, itm.quantity),
+            "change": change_callback,
+            "disband": push_quantity_menu(disband_callback, itm.quantity),
+        }
+
+        filtered_actions = {
+            action: func
+            for action, func in actions.items()
+            if not (action == "change" and len(box_ids) < 2)
+        }
+
+        menu_options = create_choice_options(filtered_actions)
+        open_choice_dialog(
+            self.client,
+            menu=MenuOptions(menu_options),
+            escape_key_exits=True,
+        )
+
     def add_menu_items(
-        self,
-        menu: pygame_menu.Menu,
-        items: Sequence[Item],
+        self, menu: pygame_menu.Menu, items: Sequence[Item]
     ) -> None:
         self.item_boxes = self.char.item_boxes
         self.box = self.item_boxes.get_items(self.box_name)
@@ -168,81 +237,6 @@ class ItemTakeState(PygameMenuState):
             self.client, self.char, self.box_name, self.name
         )
 
-        def locker_options(instance_id: str) -> None:
-            iid = UUID(instance_id)
-            itm = self.item_boxes.get_items_by_iid(iid)
-            if itm is None:
-                logger.error(f"Item {iid} not found")
-                return
-
-            box_ids = [
-                key
-                for key in self.item_boxes.item_boxes
-                if not self.item_boxes.is_box_hidden(key, "item")
-            ]
-            lockers = [key for key in box_ids if key != self.box_name]
-
-            def take_callback(quantity: int) -> None:
-                handler.take(itm, quantity)
-
-            def disband_callback(quantity: int) -> None:
-                handler.disband(itm, quantity)
-
-            def change_callback() -> None:
-                options = [
-                    ChoiceOption(
-                        key=box,
-                        display_text=T.translate(box).upper(),
-                        action=partial(handler.move, itm, box, box_ids),
-                    )
-                    for box in lockers
-                ]
-                open_choice_dialog(
-                    self.client,
-                    menu=MenuOptions(options),
-                    escape_key_exits=True,
-                )
-
-            def push_quantity_menu(
-                callback: Callable[[int], None], max_quantity: int
-            ) -> Callable[[], None]:
-                def inner() -> None:
-                    self.client.state_manager.push_state(
-                        QuantityMenu(
-                            callback=callback,
-                            max_quantity=max_quantity,
-                            quantity=1,
-                            shrink_to_items=True,
-                        )
-                    )
-
-                return inner
-
-            actions = {
-                "take": push_quantity_menu(take_callback, itm.quantity),
-                "change": change_callback,
-                "disband": push_quantity_menu(disband_callback, itm.quantity),
-            }
-
-            menu_options = []
-            for action, func in actions.items():
-                if action == "change" and len(box_ids) < 2:
-                    continue
-                menu_options.append(
-                    ChoiceOption(
-                        key=action,
-                        display_text=T.translate(action).upper(),
-                        action=func,
-                    )
-                )
-
-            open_choice_dialog(
-                self.client,
-                menu=MenuOptions(menu_options),
-                escape_key_exits=True,
-            )
-
-        # it prints items inside the screen: image + button
         _sorted = sorted(items, key=lambda x: x.slug)
         sum_total = []
         for itm in _sorted:
@@ -250,10 +244,10 @@ class ItemTakeState(PygameMenuState):
             label = T.translate(itm.name).upper() + " x" + str(itm.quantity)
             iid = itm.instance_id.hex
             new_image = self._create_image(itm.sprite)
-            new_image.scale(prepare.SCALE, prepare.SCALE)
+            new_image.scale(SCALE, SCALE)
             menu.add.banner(
                 new_image,
-                partial(locker_options, iid),
+                partial(self.locker_options, iid, handler),
                 selection_effect=HighlightSelection(),
             )
             menu.add.label(
@@ -264,7 +258,6 @@ class ItemTakeState(PygameMenuState):
                 selection_effect=HighlightSelection(),
             )
 
-        # menu
         box_label = T.translate(self.box_name).upper()
         label = f"{box_label} ({len(self.box)} types - {sum(sum_total)} items)"
         menu.set_title(label).center_content()
@@ -276,7 +269,7 @@ class ItemBoxState(PygameMenuState):
     name: ClassVar[str] = "ItemBoxState"
 
     def __init__(self, character: NPC) -> None:
-        _, height = prepare.SCREEN_SIZE
+        _, height = SCREEN_SIZE
 
         super().__init__(height=height)
 
@@ -302,7 +295,7 @@ class ItemBoxState(PygameMenuState):
             menu.add.button(label, callback)
             menu.add.vertical_fill()
 
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         widgets_size = menu.get_size(widget=True)
         b_width, b_height = menu.get_scrollarea().get_border_size()
         menu.resize(

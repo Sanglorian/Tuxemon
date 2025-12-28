@@ -7,9 +7,9 @@ from typing import Optional, Union
 
 from pygame import Rect
 
-from tuxemon import prepare
 from tuxemon.db import DialogueModel, db
 from tuxemon.ui.text_alignment import DialogPosition
+from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ SMALL_GUI_WIDTH_RATIO = 0.8
 def scale_dialog_size(rect: Rect) -> Rect:
     """Scales the dialog size based on GUI configuration settings."""
     new = rect.copy()
-    if prepare.CONFIG.large_gui:
+    if CONFIG.large_gui:
         new.height = int(rect.height * LARGE_GUI_HEIGHT_RATIO)
     else:
         new.height = int(rect.height * SMALL_GUI_HEIGHT_RATIO)

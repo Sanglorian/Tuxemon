@@ -7,10 +7,15 @@ from typing import TYPE_CHECKING, ClassVar, Optional
 
 from pygame.rect import Rect
 
-from tuxemon import prepare
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu
+from tuxemon.platform.const.graphics import (
+    BG_MOVES,
+    DIMGRAY_COLOR,
+    MISSING_IMAGE,
+)
+from tuxemon.prepare import SCREEN_RECT
 from tuxemon.session import local_session
 from tuxemon.sprite import Sprite
 from tuxemon.technique.controller import TechController
@@ -32,7 +37,7 @@ class TechniqueMenuState(Menu[Technique]):
     """The technique menu allows you to view and use techniques of your party."""
 
     name: ClassVar[str] = "TechniqueMenuState"
-    background_filename = prepare.BG_MOVES
+    background_filename = BG_MOVES
     draw_borders = False
 
     def __init__(
@@ -54,7 +59,7 @@ class TechniqueMenuState(Menu[Technique]):
         self.menu_items.line_spacing = scale(7)
 
         # this is the area where the technique description is displayed
-        rect = prepare.SCREEN_RECT.copy()
+        rect = SCREEN_RECT.copy()
         rect.top = scale(106)
         rect.left = scale(3)
         rect.width = scale(250)
@@ -121,7 +126,7 @@ class TechniqueMenuState(Menu[Technique]):
             if mon:
                 sprite = mon.sprite_handler.front_path
             else:
-                sprite = prepare.MISSING_IMAGE
+                sprite = MISSING_IMAGE
             self.load_sprite(
                 sprite,
                 center=self.backpack_center,
@@ -150,7 +155,7 @@ class TechniqueMenuState(Menu[Technique]):
     ) -> MenuItem[Technique]:
         name = tech.name
         types = " ".join(s.name for s in tech.types.current)
-        image = self.shadow_text(name, bg=prepare.DIMGRAY_COLOR)
+        image = self.shadow_text(name, bg=DIMGRAY_COLOR)
         label = T.format(
             "technique_description",
             {
@@ -159,7 +164,7 @@ class TechniqueMenuState(Menu[Technique]):
                 "acc": int(tech.accuracy * 100),
                 "pot": int(tech.potency * 100),
                 "pow": tech.power,
-                "rec": str(tech.recharge_length),
+                "rec": str(tech.cooldown_duration),
             },
         )
         if tech.description and tech.description != f"{tech.slug}_description":

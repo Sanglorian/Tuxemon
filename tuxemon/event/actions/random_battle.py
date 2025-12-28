@@ -7,7 +7,6 @@ import random
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon import prepare
 from tuxemon.combat.combat_context import (
     BattleMode,
     CombatContext,
@@ -18,6 +17,7 @@ from tuxemon.db import EnvironmentModel, MonsterModel, NpcModel, db
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster import Monster
+from tuxemon.platform.const.sizes import MAX_LEVEL, PARTY_LIMIT
 from tuxemon.session import Session
 from tuxemon.time_handler import today_ordinal
 
@@ -56,13 +56,13 @@ class RandomBattleAction(EventAction):
         self._start_battle(session)
 
     def _validate_parameters(self) -> None:
-        if not (1 <= self.nr_txmns <= prepare.PARTY_LIMIT):
+        if not (1 <= self.nr_txmns <= PARTY_LIMIT):
             raise ValueError(
-                f"Party size {self.nr_txmns} must be between 1 and {prepare.PARTY_LIMIT}"
+                f"Party size {self.nr_txmns} must be between 1 and {PARTY_LIMIT}"
             )
-        if not (1 <= self.max_level <= prepare.MAX_LEVEL):
+        if not (1 <= self.max_level <= MAX_LEVEL):
             raise ValueError(
-                f"Max level {self.max_level} must be between 1 and {prepare.MAX_LEVEL}"
+                f"Max level {self.max_level} must be between 1 and {MAX_LEVEL}"
             )
 
     def _prepare_opponent(self, session: Session) -> None:
@@ -121,11 +121,10 @@ class RandomBattleAction(EventAction):
             battle_mode=BattleMode.SINGLE,
         )
         session.client.push_state("CombatState", context=context)
-        sound = env.battle_music.battle
+        active_music = npc.get_active_battle_music(env.battle_music)
+        sound = active_music.battle
         if sound.music:
-            session.client.event_engine.execute_action(
-                "play_music", [sound.music, sound.volume], True
-            )
+            session.client.current_music.play(sound.music, sound.volume)
 
     def update(self, session: Session, dt: float) -> None:
         try:

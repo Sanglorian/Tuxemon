@@ -7,10 +7,10 @@ from collections.abc import Callable, Mapping, Sequence
 from functools import partial
 from typing import Optional
 
-from tuxemon import prepare
 from tuxemon.formula import convert_ft, convert_km, convert_lbs, convert_mi
 from tuxemon.locale import TranslatorManager
 from tuxemon.menu.formatter import CurrencyFormatter
+from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_KM, U_LB, U_MI
 from tuxemon.session import Session
 from tuxemon.ui.cipher_processor import CipherProcessor
 from tuxemon.ui.text_paginator import TextPaginator
@@ -92,18 +92,18 @@ class TextFormatter:
     def _register_unit_measure_replacements(self) -> None:
         """Registers replacements for units of measurement (metric vs. imperial)."""
         player = self.session.player
-        unit_measure = prepare.CONFIG.unit_measure
+        unit_measure = self.session.client.config.unit_measure
 
         unit_map = {}
         if unit_measure == "metric":
-            unit_map["${{length}}"] = lambda: prepare.U_KM
-            unit_map["${{weight}}"] = lambda: prepare.U_KG
-            unit_map["${{height}}"] = lambda: prepare.U_CM
+            unit_map["${{length}}"] = lambda: U_KM
+            unit_map["${{weight}}"] = lambda: U_KG
+            unit_map["${{height}}"] = lambda: U_CM
             unit_map["${{steps}}"] = lambda: str(convert_km(player.steps))
         else:  # Assuming "imperial" for non-metric
-            unit_map["${{length}}"] = lambda: prepare.U_MI
-            unit_map["${{weight}}"] = lambda: prepare.U_LB
-            unit_map["${{height}}"] = lambda: prepare.U_FT
+            unit_map["${{length}}"] = lambda: U_MI
+            unit_map["${{weight}}"] = lambda: U_LB
+            unit_map["${{height}}"] = lambda: U_FT
             unit_map["${{steps}}"] = lambda: str(convert_mi(player.steps))
 
         for placeholder, callable_func in unit_map.items():
@@ -112,7 +112,7 @@ class TextFormatter:
     def _register_monster_replacements(self) -> None:
         """Registers replacements for each monster in the player's party."""
         player = self.session.player
-        unit_measure = prepare.CONFIG.unit_measure
+        unit_measure = self.session.client.config.unit_measure
 
         # Define common monster attributes and their callables
         monster_attributes = {

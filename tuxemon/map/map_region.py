@@ -10,7 +10,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
 
 from tuxemon.db import Direction
-from tuxemon.prepare import REGION_KEYS
+from tuxemon.platform.const.sizes import REGION_KEYS
 
 if TYPE_CHECKING:
     from tuxemon.entity import Entity

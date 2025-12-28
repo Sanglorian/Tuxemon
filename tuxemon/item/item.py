@@ -9,14 +9,17 @@ from uuid import UUID, uuid4
 
 from pygame.surface import Surface
 
-from tuxemon import graphics, prepare
+from tuxemon import graphics
 from tuxemon.core.asset import CoreAssetManager
 from tuxemon.core.core_effect import ItemEffectResult
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
 from tuxemon.db import (
+    ExperienceMethod,
     ItemBehaviors,
     ItemCategory,
     ItemModel,
+    ItemRarity,
+    MenuAction,
     SoundProperties,
     State,
     VisualProperties,
@@ -25,6 +28,7 @@ from tuxemon.db import (
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
 from tuxemon.surfanim import FlipAxes
+from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
@@ -46,8 +50,6 @@ class Item:
         save_data = save_data or {}
 
         self.slug: str = ""
-        self.name: str = ""
-        self.description: str = ""
         self.instance_id: UUID = uuid4()
         self.quantity: int = 1
         self.visuals = VisualProperties(
@@ -61,6 +63,7 @@ class Item:
         self.surface: Optional[Surface] = None
         self.surface_size_original: tuple[int, int] = (0, 0)
 
+        self.rarity: ItemRarity = ItemRarity.COMMON
         self.sort: str = ""
         self.confirm_text: str = ""
         self.cancel_text: str = ""
@@ -70,11 +73,13 @@ class Item:
         self.usable_in: Sequence[State] = []
         self.immunity_to_status: Sequence[str] = []
         self.behaviors: ItemBehaviors
+        self.money_multiplier: float = 1.0
+        self.reward_method: ExperienceMethod = ExperienceMethod.DEFAULT
         self.cost: int = 0
         self.wear: int = 0
         self.max_wear: int = 0
         self.break_chance: float = 0.0
-        self.menu_actions_data: Sequence[Mapping[str, str]] = []
+        self.menu_actions_data: Sequence[MenuAction] = []
 
         self.core_assets = CoreAssetManager()
         self.effects: Sequence[PluginObject] = []
@@ -97,13 +102,21 @@ class Item:
         return method
 
     @property
+    def name(self) -> str:
+        return T.translate(self.slug)
+
+    @property
+    def description(self) -> str:
+        return T.translate(f"{self.slug}_description")
+
+    @property
     def has_wear(self) -> bool:
         return self.max_wear > 0
 
     @property
     def wear_ratio(self) -> float:
         if self.max_wear == 0:
-            return 0.0  # Item doesn’t use wear, no ratio
+            return 0.0  # Item doesn't use wear, no ratio
         return min(max(self.wear / self.max_wear, 0.0), 1.0)
 
     def load(self, slug: str) -> None:
@@ -117,8 +130,6 @@ class Item:
         """
         results = ItemModel.lookup(slug, db)
         self.slug = results.slug
-        self.name = T.translate(self.slug)
-        self.description = T.translate(f"{self.slug}_description")
         self.modifiers = ModifiersHandler(results.modifiers)
 
         # item use notifications (translated!)
@@ -132,8 +143,11 @@ class Item:
         self.dynamic_menu = results.dynamic_menu
         self.behaviors = results.behaviors
         self.cost = results.cost
+        self.money_multiplier = results.money_multiplier
+        self.reward_method = results.reward_method
         self.max_wear = results.max_wear
         self.break_chance = results.break_chance
+        self.rarity = results.rarity
         self.sort = results.sort
         self.immunity_to_status = results.immunity_to_status
         self.category = results.category
@@ -235,7 +249,7 @@ class Item:
             session=session, source=self, target=target
         )
         if session.client:
-            session.client.active_items.append(self)
+            session.client.active_effect_manager.add_item(self)
         self.consume_if_needed(user, result)
         return result
 
@@ -245,7 +259,7 @@ class Item:
         and if it's supposed to be consumed based on the result.
         """
         should_consume = (
-            prepare.CONFIG.items_consumed_on_failure or result.success
+            CONFIG.items_consumed_on_failure or result.success
         ) and self.behaviors.consumable
 
         if should_consume:

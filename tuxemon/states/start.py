@@ -12,13 +12,14 @@ import pygame_menu
 from pygame.surface import Surface
 from pygame_menu import locals
 
-from tuxemon import prepare
 from tuxemon.db import db
 from tuxemon.launcher import GameLauncher
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
+from tuxemon.platform.const.graphics import BG_START_SCREEN, BLACK_COLOR
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.save import get_index_of_latest_save
 from tuxemon.session import local_session
 from tuxemon.state.state import State
@@ -41,7 +42,7 @@ class BackgroundState(State):
     name: ClassVar[str] = "BackgroundState"
 
     def draw(self, surface: Surface) -> None:
-        surface.fill(prepare.BLACK_COLOR)
+        surface.fill(BLACK_COLOR)
 
 
 class StartState(PygameMenuState):
@@ -55,13 +56,14 @@ class StartState(PygameMenuState):
     ) -> None:
         # If there is a save, then move the cursor to "Load game" first
         index = get_index_of_latest_save()
-        config = prepare.CONFIG
 
         def new_game() -> None:
             launcher = GameLauncher(self.client)
             launcher.launch(
                 session=local_session,
-                meta=db.mod_metadata.get_mod_metadata(config.mods[0]),
+                meta=db.mod_metadata.get_mod_metadata(
+                    self.client.config.mods[0]
+                ),
                 remove_states=["StartState"],
             )
 
@@ -86,7 +88,7 @@ class StartState(PygameMenuState):
                 font_size=self.font_type.big,
                 button_id="menu_load",
             )
-        if len(config.mods) == 1:
+        if len(self.client.config.mods) == 1:
             menu.add.button(
                 title=T.translate("menu_new_game"),
                 action=new_game,
@@ -96,7 +98,9 @@ class StartState(PygameMenuState):
         else:
             menu.add.button(
                 title=T.translate("menu_new_game"),
-                action=change_state("ModsChoice", mods=config.mods),
+                action=change_state(
+                    "ModsChoice", mods=self.client.config.mods
+                ),
                 font_size=self.font_type.big,
                 button_id="menu_mod_choice",
             )
@@ -126,9 +130,9 @@ class StartState(PygameMenuState):
         )
 
     def __init__(self) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_START_SCREEN)
+        theme = self._setup_theme(BG_START_SCREEN)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
 
@@ -186,9 +190,9 @@ class ModsChoice(PygameMenuState):
 
     def __init__(self, mods: list[str]) -> None:
         self.mods = mods
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(prepare.BG_START_SCREEN)
+        theme = self._setup_theme(BG_START_SCREEN)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
 

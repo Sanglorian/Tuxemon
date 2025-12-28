@@ -19,16 +19,28 @@ if TYPE_CHECKING:
 @dataclass
 class HealEffect(CoreEffect):
     """
-    Heals the target by 'amount' hp.
+    Applies the "heal" effect to a monster.
 
-    Parameters:
-        amount: int or float, where:
-            - int: constant amount of hp to heal
-            - float: percentage of total hp to heal (e.g., 0.5 for 50%)
-        heal_type: indicating whether the amount is a fixed value or a percentage
+    This effect restores the target's HP by either a fixed amount or a
+    percentage of its maximum HP, depending on the specified heal type.
+    Healing may be blocked if the monster is affected by the "festering"
+    status and the item used is a potion.
 
-    Examples:
-        heal 0.5 > heals 50% of target's total hp
+    **Parameters**
+
+    - ``amount``: Integer or float value.
+      - If integer: constant HP to heal.
+      - If float: percentage of total HP to heal (e.g. ``0.5`` for 50%).
+    - ``heal_type``: Indicates whether the amount is ``fixed`` or
+      ``percentage``.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "heal 0.5 percentage"
+        ]
     """
 
     name = "heal"

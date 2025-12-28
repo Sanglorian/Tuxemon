@@ -16,11 +16,18 @@ if TYPE_CHECKING:
 @dataclass
 class LifeSwapEffect(CoreEffect):
     """
-    Swaps the current HP amounts of the two monsters.
+    Applies the "life_swap" effect to a technique.
 
-    Swaps the current HP amounts of the two monsters. The user receives
-    the target's HP (up to the user's max HP), and the target receives
-    the user's HP (up to the target's max HP).
+    This effect exchanges the current HP values of the user and the target.
+    Each monster receives the other's HP, capped at its own maximum HP.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "life_swap"
+        ]
     """
 
     name = "life_swap"

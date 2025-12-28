@@ -22,10 +22,24 @@ lookup_cache: dict[str, TechniqueModel] = {}
 @dataclass
 class LearnMmEffect(CoreEffect):
     """
-    Teaches the target a random technique of a specified element.
+    Applies the "learn_mm" effect to a monster.
 
-    Parameters:
-        element: Type of element (e.g., wood, water, etc.)
+    This effect teaches the target a random technique of the specified
+    element type. Techniques are chosen from the database, excluding
+    reserved categories and moves the monster already knows.
+
+    **Parameters**
+
+    - ``element``: The elemental type of the technique to learn
+      (e.g., ``wood``, ``water``, ``fire``).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "learn_mm water"
+        ]
     """
 
     name = "learn_mm"

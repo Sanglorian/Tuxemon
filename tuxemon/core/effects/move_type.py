@@ -16,23 +16,26 @@ if TYPE_CHECKING:
 @dataclass
 class MoveTypeEffect(CoreEffect):
     """
-    Move Type Effect:
-    This effect changes the type of a move to match the type of the monster
-    using it. For example, if a Fire-type monster uses a move with this effect,
-    the move becomes a Fire-type attack. This provides a reliable way for
-    monsters to deal damage of their own type, which can be beneficial in battle.
+    Applies the "move_type" effect to a technique.
 
-    The direction of this effect can be either "own_monster" (the monster using
-    the move) or "enemy_monster" (the target of the move). This determines whose
-    type the move will match.
-
-    Example:
-    A Fire-type monster uses a move with this effect.
-    The move becomes a Fire-type attack, dealing Fire-type damage and benefiting
+    This effect changes the type of a move to match the type of either the
+    user or the target monster. For example, if a Fire-type monster uses a
+    move with this effect, the move becomes a Fire-type attack, benefiting
     from same-type attack bonus (STAB).
 
-    Attributes:
-        direction: The direction, either "own_monster" or "enemy_monster".
+    **Parameters**
+
+    - ``direction``: Determines whose type the move will adopt.
+      - ``own_monster``: The move takes on the type(s) of the user monster.
+      - ``enemy_monster``: The move takes on the type(s) of the target monster.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "move_type own_monster"
+        ]
     """
 
     name = "move_type"

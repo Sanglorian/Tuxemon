@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, ClassVar, Optional
 
 from pygame.rect import Rect
 
-from tuxemon import prepare
 from tuxemon.db import ItemCategory
 from tuxemon.item.filter import ItemFilter
 from tuxemon.item.item import Item
@@ -17,6 +16,7 @@ from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu
 from tuxemon.monster import Monster
+from tuxemon.prepare import SCREEN_RECT
 from tuxemon.states.item_menu import ItemMenuState
 
 if TYPE_CHECKING:
@@ -70,7 +70,7 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
         self.combat.dialog.alert(message, self.combat.text_area)
 
     def calculate_menu_rectangle(self) -> Rect:
-        rect_screen = prepare.SCREEN_RECT.copy()
+        rect_screen = SCREEN_RECT.copy()
         menu_width = rect_screen.w // 2.5
         menu_height = rect_screen.h // 4
         rect = Rect(0, 0, menu_width, menu_height)

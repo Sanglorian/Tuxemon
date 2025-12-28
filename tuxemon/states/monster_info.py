@@ -8,14 +8,17 @@ from typing import Any, ClassVar, Optional
 import pygame_menu
 from pygame_menu import locals
 
-from tuxemon import formula, prepare
+from tuxemon import formula
 from tuxemon.db import MonsterModel, TasteModel, db
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.monster import Monster
 from tuxemon.platform.const import buttons
+from tuxemon.platform.const.graphics import INDIV_INFO
+from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_LB, U_M, U_T
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.time_handler import today_ordinal
 from tuxemon.tools import fix_measure, transform_resource_filename
 
@@ -59,8 +62,8 @@ class MonsterInfoState(PygameMenuState):
         fxh: Callable[[float], int] = lambda r: fix_measure(menu._height, r)
         menu._width = fxw(1)
 
-        background = self._create_image(prepare.INDIV_INFO)
-        background.scale(prepare.SCALE, prepare.SCALE)
+        background = self._create_image(INDIV_INFO)
+        background.scale(SCALE, SCALE)
         background_widget = menu.add.image(image_path=background)
         background_widget.set_float(origin_position=True)
         background_widget.translate(fxw(0 / 256), fxh(0 / 144))
@@ -76,20 +79,20 @@ class MonsterInfoState(PygameMenuState):
         unit = self.client.config.unit_measure
         if unit == "metric":
             if monster.weight >= 1000:
-                mon_weight = f"{monster.weight / 1000:.1f}{prepare.U_T}"
+                mon_weight = f"{monster.weight / 1000:.1f}{U_T}"
             else:
-                mon_weight = f"{round(monster.weight)}{prepare.U_KG}"
+                mon_weight = f"{round(monster.weight)}{U_KG}"
             if monster.height >= 100:
-                mon_height = f"{monster.height / 100:.1f}{prepare.U_M}"
+                mon_height = f"{monster.height / 100:.1f}{U_M}"
             else:
-                mon_height = f"{round(monster.height)}{prepare.U_CM}"
+                mon_height = f"{round(monster.height)}{U_CM}"
         else:
-            mon_weight = f"{formula.convert_lbs(monster.weight)}{prepare.U_LB}"
-            mon_height = f"{formula.convert_ft(monster.height)}{prepare.U_FT}"
+            mon_weight = f"{formula.convert_lbs(monster.weight)}{U_LB}"
+            mon_height = f"{formula.convert_ft(monster.height)}{U_FT}"
         # name
         menu._auto_centering = False
         thin_font_path = transform_resource_filename(
-            "font", prepare.CONFIG.locale.thin_font_file
+            "font", self.client.config.locale.thin_font_file
         )
         dark_color = (0x5D, 0x41, 0x07)
         light_color = (0x8A, 0x6F, 0x30)
@@ -267,7 +270,7 @@ class MonsterInfoState(PygameMenuState):
             type1_icon = self._create_image(
                 f"gfx/ui/icons/element/{types[0].slug}_type_watermark.png"
             )
-            type1_icon.scale(prepare.SCALE, prepare.SCALE)
+            type1_icon.scale(SCALE, SCALE)
             icon1_widget = menu.add.image(image_path=type1_icon)
             icon1_widget.set_float(origin_position=True)
             # Position of type 1 (set wherever you want)
@@ -277,7 +280,7 @@ class MonsterInfoState(PygameMenuState):
             type2_icon = self._create_image(
                 f"gfx/ui/icons/element/{types[1].slug}_type_watermark.png"
             )
-            type2_icon.scale(prepare.SCALE, prepare.SCALE)
+            type2_icon.scale(SCALE, SCALE)
             icon2_widget = menu.add.image(image_path=type2_icon)
             icon2_widget.set_float(origin_position=True)
             # Position of type 2 (independent from type 1)
@@ -377,8 +380,8 @@ class MonsterInfoState(PygameMenuState):
 
         plus_icon = self._create_image("gfx/ui/icons/plusminus/plus.png")
         minus_icon = self._create_image("gfx/ui/icons/plusminus/minus.png")
-        plus_icon.scale(prepare.SCALE, prepare.SCALE)
-        minus_icon.scale(prepare.SCALE, prepare.SCALE)
+        plus_icon.scale(SCALE, SCALE)
+        minus_icon.scale(SCALE, SCALE)
 
         # Helper: find which stat a taste affects
         def get_stat_for_taste(slug: str) -> str | None:
@@ -414,14 +417,14 @@ class MonsterInfoState(PygameMenuState):
             bond_file = monster.bond_handler.get_bond_icon_path()
             if bond_file:
                 bond_icon = self._create_image(bond_file)
-                bond_icon.scale(prepare.SCALE, prepare.SCALE)
+                bond_icon.scale(SCALE, SCALE)
                 bond_widget = menu.add.image(image_path=bond_icon)
                 bond_widget.set_float(origin_position=True)
                 bond_widget.translate(fxw(20 / 256), fxh(29 / 144))
 
         # image
         new_image = self._create_image(monster.sprite_handler.front_path)
-        new_image.scale(prepare.SCALE, prepare.SCALE)
+        new_image.scale(SCALE, SCALE)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
         image_widget.translate(fxw(16 / 256), fxh(27 / 144))
@@ -429,7 +432,7 @@ class MonsterInfoState(PygameMenuState):
         tuxeball = self._create_image(
             f"gfx/items/{monster.capture_device}.png"
         )
-        tuxeball.scale(prepare.SCALE, prepare.SCALE)
+        tuxeball.scale(SCALE, SCALE)
         capture_device = menu.add.image(image_path=tuxeball)
         capture_device.set_float(origin_position=True)
         capture_device.translate(fxw(17 / 256), fxh(110 / 144))
@@ -446,7 +449,7 @@ class MonsterInfoState(PygameMenuState):
             source = element["source"]
         if monster is None:
             raise ValueError("No monster")
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
 
         theme = get_theme().copy()
         theme.scrollarea_position = locals.POSITION_EAST

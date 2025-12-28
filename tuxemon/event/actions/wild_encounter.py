@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon import prepare
 from tuxemon.combat.combat_context import (
     BattleMode,
     CombatContext,
@@ -19,6 +18,7 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import ColorLike, string_to_colorlike
 from tuxemon.item.item import Item
 from tuxemon.monster import Monster
+from tuxemon.platform.const.graphics import WHITE_COLOR
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -107,16 +107,14 @@ class WildEncounterAction(EventAction):
         session.client.movement_manager.lock_controls(player)
         session.client.movement_manager.stop_char(player)
 
-        rgb: ColorLike = prepare.WHITE_COLOR
+        rgb: ColorLike = WHITE_COLOR
         if self.rgb:
             rgb = string_to_colorlike(self.rgb)
         session.client.push_state("FlashTransition", color=rgb)
 
         sound = environment.battle_music.battle
         if sound.music:
-            session.client.event_engine.execute_action(
-                "play_music", [sound.music, sound.volume], True
-            )
+            session.client.current_music.play(sound.music, sound.volume)
 
     def update(self, session: Session, dt: float) -> None:
         try:

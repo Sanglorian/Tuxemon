@@ -18,10 +18,11 @@ import yaml
 from pygame.image import tobytes
 from pygame.surface import Surface
 
-from tuxemon import prepare
 from tuxemon.constants import paths
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.save_state import TIME_FORMAT, SaveData
 from tuxemon.save_upgrader import SAVE_VERSION, upgrade_save
+from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
@@ -29,7 +30,7 @@ if TYPE_CHECKING:
 try:
     import cbor
 except ImportError:
-    prepare.CONFIG.save_method = "json"
+    CONFIG.save_method = "json"
 
 
 T = TypeVar("T")
@@ -38,7 +39,7 @@ T = TypeVar("T")
 logger = logging.getLogger(__name__)
 
 slot_number: Optional[int] = None
-config = prepare.CONFIG
+config = CONFIG
 
 
 class SaveMethod(Enum):
@@ -57,7 +58,7 @@ class SaveMethod(Enum):
 
 def capture_screenshot(session: Session) -> Surface:
     """Capture a screenshot."""
-    screenshot = Surface(prepare.SCREEN_SIZE)
+    screenshot = Surface(SCREEN_SIZE)
     session.world.draw(screenshot)
     return screenshot
 
@@ -76,6 +77,9 @@ def get_save_data(session: Session) -> SaveData:
     npc_state = session.player.get_state(session)
     world_state = session.world.get_state(session)
     session_state = session.get_state()
+    persistent_npcs = session.client.npc_manager.get_persistent_npc_states(
+        session
+    )
 
     return SaveData(
         screenshot=b64encode(tobytes(screenshot, "RGB")).decode(),
@@ -86,6 +90,8 @@ def get_save_data(session: Session) -> SaveData:
         npc_state=npc_state,
         world_state=world_state,
         session_state=session_state,
+        shop_stock=session.client.shop_manager.dump_to_dict(),
+        persistent_state=persistent_npcs,
     )
 
 

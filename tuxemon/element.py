@@ -18,7 +18,7 @@ class Element:
     _elements: dict[str, Element] = {}
 
     def __init__(self, slug: Optional[str] = None) -> None:
-        self.name: str = ""
+        self.slug: str = ""
         self.icon: str = ""
         self.types: Sequence[ElementItemModel] = []
 
@@ -31,30 +31,25 @@ class Element:
         if slug in Element._elements:
             cached_element = Element._elements[slug]
             self.slug = slug
-            self.name = cached_element.name
             self.types = cached_element.types
             self.icon = cached_element.icon
             return
 
         results = ElementModel.lookup(slug, db)
         self.slug = slug
-        self.name = T.translate(self.slug)
         self.types = results.types
         self.icon = results.icon
 
         Element._elements[slug] = self
 
+    @property
+    def name(self) -> str:
+        """Translated display name for this element."""
+        return T.translate(self.slug) if self.slug else ""
+
     @classmethod
     def get_element(cls, slug: str) -> Optional[Element]:
-        """
-        Retrieves a Element object by its slug.
-
-        Parameters:
-            slug: The unique identifier for the element.
-
-        Returns:
-            The Element object if found, otherwise None.
-        """
+        """Retrieves an Element object by its slug."""
         return cls._elements.get(slug)
 
     @classmethod
@@ -69,12 +64,7 @@ class Element:
 
     @classmethod
     def get_all_elements(cls) -> dict[str, Element]:
-        """
-        Returns all loaded elements.
-
-        Returns:
-            A dictionary of all loaded Element objects.
-        """
+        """Returns all loaded elements."""
         if not cls._elements:
             cls.load_all_elements()
         return cls._elements
@@ -85,7 +75,12 @@ class Element:
         cls._elements.clear()
 
     def __repr__(self) -> str:
-        return f"Element(slug={self.slug}, name={self.name}, types={self.types}, icon={self.icon})"
+        return (
+            f"Element(slug={self.slug}, "
+            f"name={self.name}, "
+            f"types={self.types}, "
+            f"icon={self.icon}, "
+        )
 
     def lookup_field(self, element: str, field: str) -> Optional[float]:
         """Looks up the element against for this element."""
@@ -99,14 +94,15 @@ class Element:
         mult = self.lookup_field(element, "multiplier")
         if mult is None:
             logger.error(
-                f"Multiplier for element '{element}' not found in "
-                f"this element '{self.slug}'"
+                f"Multiplier for element '{element}' not found in this element '{self.slug}'"
             )
             return 1.0
         return mult
 
 
 class ElementTypesHandler:
+
+    _multiplier_cache: dict[tuple[str, str], float] = {}
 
     def __init__(self, initial_types: Optional[Sequence[str]] = None):
         pre_types = (
@@ -116,6 +112,53 @@ class ElementTypesHandler:
         )
         self._current_types = pre_types
         self._default_types = list(pre_types)
+
+    @classmethod
+    def calculate_affinity_score(
+        cls, user_types: Sequence[Element], target_types: Sequence[Element]
+    ) -> float:
+        """
+        Return cumulative offensive multiplier of user types against target types.
+        """
+        multiplier = 1.0
+        for _user in user_types:
+            for _target in target_types:
+                if _target and not (
+                    _user.slug == "aether" or _target.slug == "aether"
+                ):
+                    key = (_user.slug, _target.slug)
+                    if key not in cls._multiplier_cache:
+                        cls._multiplier_cache[key] = _user.lookup_multiplier(
+                            _target.slug
+                        )
+                    mult_value = cls._multiplier_cache[key]
+                    multiplier *= mult_value
+        return multiplier
+
+    @classmethod
+    def calculate_resistance_multiplier_for_types(
+        cls, defending_types: Sequence[Element], attacking_slug: str
+    ) -> float:
+        """
+        Return cumulative defensive multiplier of defending types against an
+        attacking type.
+        """
+        multiplier = 1.0
+        for defending_type in defending_types:
+            if defending_type.slug == "aether" or attacking_slug == "aether":
+                continue
+            key = (defending_type.slug, attacking_slug)
+            if key not in cls._multiplier_cache:
+                cls._multiplier_cache[key] = defending_type.lookup_multiplier(
+                    attacking_slug
+                )
+            mult_value = cls._multiplier_cache[key]
+            multiplier *= mult_value
+        return multiplier
+
+    @classmethod
+    def clear_cache(cls) -> None:
+        cls._multiplier_cache.clear()
 
     def set_types(self, new_types: list[Element]) -> None:
         self._current_types = new_types

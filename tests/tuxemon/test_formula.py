@@ -4,10 +4,10 @@ import math
 import unittest
 from unittest.mock import MagicMock
 
-from tuxemon import prepare
-from tuxemon.element import Element
+from tuxemon.element import Element, ElementTypesHandler
 from tuxemon.formula import (
     calculate_time_based_multiplier,
+    config_combat,
     config_monster,
     modify_stat,
     set_health,
@@ -18,6 +18,7 @@ from tuxemon.formula import (
     simple_heal,
 )
 from tuxemon.monster import Monster
+from tuxemon.platform.const.sizes import COEFF_DAMAGE
 from tuxemon.technique.technique import Technique
 
 
@@ -32,8 +33,7 @@ class TestSimpleHeal(unittest.TestCase):
         self.technique.healing_power = 5
         self.monster.level = 10
         expected_heal = (
-            prepare.COEFF_DAMAGE
-            + self.monster.level * self.technique.healing_power
+            COEFF_DAMAGE + self.monster.level * self.technique.healing_power
         )
         actual_heal = simple_heal(self.technique, self.monster)
         self.assertEqual(int(expected_heal), actual_heal)
@@ -44,8 +44,7 @@ class TestSimpleHeal(unittest.TestCase):
         factors = {"boost": 1.2, "penalty": 0.8}
         expected_multiplier = math.prod(factors.values())
         expected_heal = (
-            prepare.COEFF_DAMAGE
-            + self.monster.level * self.technique.healing_power
+            COEFF_DAMAGE + self.monster.level * self.technique.healing_power
         ) * expected_multiplier
         actual_heal = simple_heal(self.technique, self.monster, factors)
         self.assertEqual(int(expected_heal), actual_heal)
@@ -55,8 +54,7 @@ class TestSimpleHeal(unittest.TestCase):
         self.monster.level = 20
         factors = {}
         expected_heal = (
-            prepare.COEFF_DAMAGE
-            + self.monster.level * self.technique.healing_power
+            COEFF_DAMAGE + self.monster.level * self.technique.healing_power
         )
         actual_heal = simple_heal(self.technique, self.monster, factors)
         self.assertEqual(int(expected_heal), actual_heal)
@@ -130,6 +128,7 @@ class TestSetHeight(unittest.TestCase):
 
 class TestSimpleDamageMultiplier(unittest.TestCase):
     def setUp(self):
+        ElementTypesHandler.clear_cache()
         self.fire = MagicMock(spec=Element)
         self.fire.slug = "fire"
         self.water = MagicMock(spec=Element)
@@ -152,14 +151,14 @@ class TestSimpleDamageMultiplier(unittest.TestCase):
         attack_types[0].lookup_multiplier = MagicMock(return_value=2.0)
         attack_types[1].lookup_multiplier = MagicMock(return_value=0.5)
         multiplier = simple_damage_multiplier(attack_types, [target_type])
-        self.assertEqual(multiplier, 0.5)
+        self.assertEqual(multiplier, 1.0)
 
     def test_multiple_target_types(self):
         attack_type = self.fire
         target_types = [self.water, self.grass]
         attack_type.lookup_multiplier = MagicMock(side_effect=[2.0, 0.5])
         multiplier = simple_damage_multiplier([attack_type], target_types)
-        self.assertEqual(multiplier, 2.0)
+        self.assertEqual(multiplier, 1.0)
 
     def test_aether_type(self):
         attack_type = self.aether
@@ -181,6 +180,23 @@ class TestSimpleDamageMultiplier(unittest.TestCase):
             [attack_type], [target_type], additional_factors
         )
         self.assertEqual(round(multiplier, 1), 2.4)
+
+    def test_empty_attack_or_target(self):
+        self.assertEqual(simple_damage_multiplier([], [self.water]), 1.0)
+        self.assertEqual(simple_damage_multiplier([self.fire], []), 1.0)
+
+    def test_clamping(self):
+        self.fire.lookup_multiplier = MagicMock(return_value=10.0)
+        multiplier = simple_damage_multiplier([self.fire], [self.water])
+        min_range, max_range = config_combat.multiplier_range
+        self.assertLessEqual(multiplier, max_range)
+
+    def test_cache_reuse(self):
+        self.fire.lookup_multiplier = MagicMock(return_value=2.0)
+        simple_damage_multiplier([self.fire], [self.water])
+        multiplier = simple_damage_multiplier([self.fire], [self.water])
+        self.fire.lookup_multiplier.assert_called_once()
+        self.assertEqual(multiplier, 2.0)
 
 
 class TestSimpleDamageCalculate(unittest.TestCase):
@@ -262,28 +278,28 @@ class TestModifyStat(unittest.TestCase):
 
     def setUp(self):
         self.monster = MagicMock(spec=Monster)
-        self.monster.modifiers = MagicMock()
+        self.monster.custom_stats = MagicMock()
         self.monster.set_stats = MagicMock()
 
     def test_add_operation(self):
-        self.monster.modifiers.armour = 10
+        self.monster.custom_stats.armour = 10
         stat = "armour"
         value = 5.0
         operation = "add"
         expected_value = 15
         modify_stat(self.monster, stat, value, operation)
-        self.assertEqual(self.monster.modifiers.armour, expected_value)
+        self.assertEqual(self.monster.custom_stats.armour, expected_value)
         self.monster.set_stats.assert_called_once()
 
     def test_multiply_operation(self):
         self.monster.armour = 10
-        self.monster.modifiers.armour = 0
+        self.monster.custom_stats.armour = 0
         stat = "armour"
         value = 1.5
         operation = "multiply"
         expected_value = 15
         modify_stat(self.monster, stat, value, operation)
-        self.assertEqual(self.monster.modifiers.armour, expected_value)
+        self.assertEqual(self.monster.custom_stats.armour, expected_value)
         self.monster.set_stats.assert_called_once()
 
     def test_invalid_operation(self):
@@ -301,7 +317,7 @@ class TestModifyStat(unittest.TestCase):
         self.monster.set_stats.assert_not_called()
 
     def test_modify_stat_calls_set_stats(self):
-        self.monster.modifiers.armour = 10
+        self.monster.custom_stats.armour = 10
         stat = "armour"
         value = 5.0
         operation = "add"

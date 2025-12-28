@@ -9,7 +9,7 @@ from dataclasses import fields
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID, uuid4
 
-from tuxemon import formula, prepare
+from tuxemon import formula
 from tuxemon.db import (
     Acquisition,
     EffectPhase,
@@ -24,6 +24,7 @@ from tuxemon.db import (
     db,
 )
 from tuxemon.element import ElementTypesHandler
+from tuxemon.formula import config_monster
 from tuxemon.fusion import Body
 from tuxemon.locale import T
 from tuxemon.monster_dir.bond import BondHandler
@@ -40,11 +41,17 @@ from tuxemon.monster_dir.sprite import (
 )
 from tuxemon.monster_dir.stats import (
     BasicStats,
+    CustomStatBoosts,
     StatCalculator,
-    TemporaryStatBoosts,
     TrainingPoints,
 )
 from tuxemon.monster_dir.status import MonsterStatusHandler
+from tuxemon.platform.const.sizes import (
+    DEFAULT_TP_GAIN,
+    MAX_TOTAL_TPS,
+    MAX_TPS,
+)
+from tuxemon.prepare import SCALE
 from tuxemon.shape import ShapeHandler
 from tuxemon.sprite import Sprite
 from tuxemon.taste import Taste
@@ -84,9 +91,7 @@ class Monster:
         save_data = save_data or {}
 
         self.slug: str = ""
-        self.name: str = ""
-        self.species_name: str = ""
-        self.description: str = ""
+        self._custom_name: Optional[str] = None
         self.instance_id: UUID = uuid4()
 
         self.base_stats: BasicStats = BasicStats()
@@ -95,7 +100,7 @@ class Monster:
         self.steps: float = 0.0
         self.bond_handler: BondHandler = BondHandler(save_data)
 
-        self.modifiers = TemporaryStatBoosts()
+        self.custom_stats = CustomStatBoosts()
         self.training_points = TrainingPoints()
 
         self.moves = MonsterMovesHandler()
@@ -177,6 +182,22 @@ class Monster:
         return monster
 
     @property
+    def name(self) -> str:
+        return self._custom_name or T.translate(self.slug)
+
+    @name.setter
+    def name(self, value: str) -> None:
+        self._custom_name = value
+
+    @property
+    def description(self) -> str:
+        return T.translate(f"{self.slug}_description")
+
+    @property
+    def species_name(self) -> str:
+        return T.translate(f"cat_{self.species}")
+
+    @property
     def held_item(self) -> Optional[Item]:
         return self.item_handler.held_item
 
@@ -253,10 +274,7 @@ class Monster:
         results = MonsterModel.lookup(slug, db)
         self.experience_handler.set_level(random.randint(2, 5))
         self.slug = results.slug
-        self.name = T.translate(results.slug)
-        self.description = T.translate(f"{results.slug}_description")
         self.species = results.species
-        self.species_name = T.translate(f"cat_{self.species}")
         self.shape = ShapeHandler(results.shape)
         self.stage = results.stage
         self.tags = results.tags
@@ -320,13 +338,13 @@ class Monster:
                 sfx=f"sound_{self.types.primary.slug}_faint", volume=1.5
             )
 
-    def load_sprites(self, scale: float = prepare.SCALE) -> None:
+    def load_sprites(self, scale: float = SCALE) -> None:
         """
         Delegates the task of loading sprites to the sprite handler.
 
         Parameters:
             scale: The scaling factor to resize the sprite images.
-                Defaults to the predefined scale value in 'prepare.SCALE'.
+                Defaults to the predefined scale value in 'SCALE'.
         """
         self.sprite_handler.load_sprites(scale)
 
@@ -348,11 +366,28 @@ class Monster:
         """Returns True if the monster was acquired via the specified method."""
         return self.acquisition == method
 
+    def get_experience_multiplier(self) -> float:
+        """
+        Retrieves the experience multiplier based on this monster's acquisition
+        method, reading from the global formula configuration.
+        """
+        exp_multiplier = 1.0
+        experience_multipliers = config_monster.experience_multipliers
+
+        if experience_multipliers:
+            method = self.acquisition.value
+            exp_multiplier = experience_multipliers.get(method, 1.0)
+            logger.debug(
+                f"Experience multiplier for {method}: {exp_multiplier}"
+            )
+
+        return exp_multiplier
+
     def get_sprite(
         self,
         sprite_type: str,
         frame_duration: float = 0.25,
-        scale: float = prepare.SCALE,
+        scale: float = SCALE,
         **kwargs: Any,
     ) -> Sprite:
         """
@@ -366,7 +401,7 @@ class Monster:
                 Defaults to 0.25 seconds.
             scale: A scaling factor applied to resize the sprite during retrieval.
                 (applicable only for 'menu')
-                Defaults to the `prepare.SCALE` constant.
+                Defaults to the `SCALE` constant.
             **kwargs: Additional arguments to pass to the sprite handler.
 
         Returns:
@@ -416,15 +451,13 @@ class Monster:
 
         return levels_earned
 
-    def give_tps(
-        self, stat_name: str, value: int = prepare.DEFAULT_TP_GAIN
-    ) -> None:
+    def give_tps(self, stat_name: str, value: int = DEFAULT_TP_GAIN) -> None:
         """
         Gives TP points to the monster's TrainingPoints after a battle,
         respecting the per-stat and total TP limits.
         """
-        max_tps = prepare.MAX_TPS
-        max_total_tps = prepare.MAX_TOTAL_TPS
+        max_tps = MAX_TPS
+        max_total_tps = MAX_TOTAL_TPS
         total_tps = sum(
             getattr(self.training_points, field.name)
             for field in fields(self.training_points)
@@ -464,7 +497,7 @@ class Monster:
             shape=self.shape,
             taste_cold=self.taste_cold,
             taste_warm=self.taste_warm,
-            modifiers=self.modifiers,
+            custom_stats=self.custom_stats,
             training_points=self.training_points,
         )
         self.base_stats = calculator.calculate()
@@ -505,6 +538,36 @@ class Monster:
             k=1,
         )[0]
 
+    def transfer_properties_from(self, old_monster: Monster) -> None:
+        """Copies essential state and identity properties from the pre-evolved monster."""
+        self.set_level(old_monster.level)
+        self.current_hp = min(old_monster.current_hp, self.hp)
+        self.moves = old_monster.moves
+        self.status = old_monster.status
+        self.instance_id = old_monster.instance_id
+
+        if old_monster.gender in self.gender_weights:
+            self.gender = old_monster.gender
+        else:  # Re-roll if incompatible
+            self.gender = self.assign_gender(self.gender_weights)
+
+        self.capture = old_monster.capture
+        self.capture_device = old_monster.capture_device
+        self.taste_cold = old_monster.taste_cold
+        self.taste_warm = old_monster.taste_warm
+        self.plague = old_monster.plague
+        self.steps = old_monster.steps
+        self.bond_handler = old_monster.bond_handler
+
+        if old_monster.name != T.translate(old_monster.slug):
+            self.name = old_monster.name
+
+        for flair_category, new_flair in self.flairs.items():
+            if flair_category in old_monster.flairs:
+                self.flairs[flair_category] = old_monster.flairs[
+                    flair_category
+                ]
+
     def get_state(self) -> Mapping[str, Any]:
         """
         Prepares a dictionary of the monster to be saved to a file.
@@ -538,7 +601,7 @@ class Monster:
         save_data["moves"] = self.moves.encode_moves()
         save_data["held_item"] = self.item_handler.encode_item()
         save_data["training_points"] = self.training_points.to_dict()
-        save_data["modifiers"] = self.modifiers.to_dict()
+        save_data["modifiers"] = self.custom_stats.to_dict()
         save_data["bond_dict"] = self.bond_handler.get_state()
         save_data["flair_slugs"] = list(self.flair_slugs)
         save_data["flairs"] = {
@@ -587,9 +650,9 @@ class Monster:
                 if item:
                     self.item_handler.set_item(item)
             elif key == "training_points" and value:
-                self.training_points.from_dict(value)
+                self.training_points = TrainingPoints.from_dict(value)
             elif key == "modifiers" and value:
-                self.modifiers.from_dict(value)
+                self.modifiers = CustomStatBoosts.from_dict(value)
             elif key == "flairs" and value:
                 self.flairs = {
                     category: Flair.from_state(flair_data)

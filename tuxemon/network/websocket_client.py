@@ -7,10 +7,10 @@ import json
 import logging
 import threading
 from queue import Empty, Queue
-from typing import Any, cast
+from typing import Any
 
 import websockets
-from websockets.legacy.protocol import WebSocketCommonProtocol
+from websockets.asyncio.client import ClientConnection
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +78,7 @@ class WebsocketClientWrapper:
     async def _connect_and_listen(self, ip: str, port: int) -> None:
         uri = f"ws://{ip}:{port}"
         try:
-            async with websockets.connect(uri) as raw_websocket:
-                websocket = cast(WebSocketCommonProtocol, raw_websocket)
+            async with websockets.connect(uri) as websocket:
                 logger.info(f"Connected to {uri}!")
                 self.registered = True
                 receive_task = self.loop.create_task(
@@ -95,7 +94,7 @@ class WebsocketClientWrapper:
             self.running.clear()
             logger.info("Connection closed.")
 
-    async def _receive_loop(self, websocket: WebSocketCommonProtocol) -> None:
+    async def _receive_loop(self, websocket: ClientConnection) -> None:
         """Continuously listens for messages from the server."""
         while self.running.is_set():
             try:
@@ -107,7 +106,7 @@ class WebsocketClientWrapper:
                 logger.error(f"Receive error: {e}")
                 break
 
-    async def _send_loop(self, websocket: WebSocketCommonProtocol) -> None:
+    async def _send_loop(self, websocket: ClientConnection) -> None:
         """Continuously checks the send queue and transmits data."""
         while self.running.is_set():
             try:

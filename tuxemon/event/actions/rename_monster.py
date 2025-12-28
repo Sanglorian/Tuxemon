@@ -6,10 +6,10 @@ import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon import prepare
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
+from tuxemon.platform.const.sizes import PLAYER_NAME_LIMIT
 from tuxemon.session import Session
 from tuxemon.tools import get_valid_uuid
 
@@ -59,7 +59,7 @@ class RenameMonsterAction(EventAction):
             callback=self.set_monster_name,
             escape_key_exits=False,
             initial=T.translate(self.monster.slug),
-            char_limit=prepare.PLAYER_NAME_LIMIT,
+            char_limit=PLAYER_NAME_LIMIT,
         )
 
     def update(self, session: Session, dt: float) -> None:

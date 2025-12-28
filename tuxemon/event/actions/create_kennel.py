@@ -9,7 +9,7 @@ from typing import Optional, final
 from tuxemon.boxes import BoxMetadata
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
-from tuxemon.prepare import MAX_KENNEL
+from tuxemon.platform.const.sizes import MAX_KENNEL
 from tuxemon.session import Session
 from tuxemon.tools import parse_flag
 
@@ -42,7 +42,7 @@ class CreateKennelAction(EventAction):
         hidden: Optional flag ("true"/"false", "1"/"0", "yes"/"no") for
             visibility.
         max_capacity: Optional integer for maximum capacity (defaults to
-            prepare.MAX_KENNEL).
+            MAX_KENNEL).
     """
 
     name = "create_kennel"

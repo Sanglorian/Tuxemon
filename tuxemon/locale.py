@@ -7,7 +7,6 @@ from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any, Optional
 
-from tuxemon import prepare
 from tuxemon.constants import paths
 from tuxemon.constants.asset_loader import (
     fetch_all_l18n_roots,
@@ -16,12 +15,13 @@ from tuxemon.constants.asset_loader import (
 from tuxemon.locale_dir.compiler import GettextCompiler
 from tuxemon.locale_dir.finder import LocaleFinder, LocaleInfo
 from tuxemon.locale_dir.translator import TranslatorPo
+from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
 
 FALLBACK_LOCALE = "en_US"
 LOCALE_DIR = "l18n"
-LOCALE_CONFIG = prepare.CONFIG.locale
+LOCALE_CONFIG = CONFIG.locale
 ONE_WEEK = 7 * 24 * 60 * 60  # seconds
 
 
@@ -392,7 +392,7 @@ class TranslatorManager:
             domain: The domain to check for the translation
                 (e.g., "base", "my_mod").
         """
-        _locale_mode = prepare.CONFIG.locale.translation_mode
+        _locale_mode = CONFIG.locale.translation_mode
         if _locale_mode == "none":
             return
         elif _locale_mode == "all":
@@ -464,7 +464,7 @@ class TranslatorManager:
         )
 
 
-fetch_mod_asset_roots(prepare.CONFIG)
+fetch_mod_asset_roots(CONFIG)
 all_l18n_mod_paths = fetch_all_l18n_roots()
 locale_finder = LocaleFinder(all_l18n_mod_paths)
 gettext_compiler = GettextCompiler(paths.CACHE_DIR)

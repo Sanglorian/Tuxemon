@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from typing import ClassVar, Optional
 
-from tuxemon import prepare
 from tuxemon.graphics import string_to_colorlike
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.platform.events import PlayerInput
+from tuxemon.prepare import SCREEN_SIZE
 
 
 class ColorState(PygameMenuState):
@@ -23,7 +23,7 @@ class ColorState(PygameMenuState):
         return None
 
     def __init__(self, color: str) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         _color = string_to_colorlike(color)
         theme = get_theme()
         if isinstance(_color, tuple) and len(_color) in (3, 4):

@@ -8,11 +8,16 @@ from typing import Optional, Protocol
 
 import pygame
 
-from tuxemon import prepare
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import MusicStatus, db
 from tuxemon.platform import mixer as mixer2
+from tuxemon.platform.const.sizes import (
+    MUSIC_FADEIN,
+    MUSIC_FADEOUT,
+    MUSIC_LOOP,
+)
 from tuxemon.tools import transform_resource_filename
+from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +43,9 @@ class MusicPlayerState:
     def play(
         self,
         song: str,
-        volume: float = prepare.CONFIG.music_volume,
-        loop: int = prepare.MUSIC_LOOP,
-        fade_ms: int = prepare.MUSIC_FADEIN,
+        volume: float = CONFIG.music_volume,
+        loop: int = MUSIC_LOOP,
+        fade_ms: int = MUSIC_FADEIN,
     ) -> None:
         if self.is_playing_same_song(song):
             return
@@ -77,7 +82,7 @@ class MusicPlayerState:
                 "Music cannot be unpaused, none is paused or not playing."
             )
 
-    def stop(self, fadeout_time: int = prepare.MUSIC_FADEOUT) -> None:
+    def stop(self, fadeout_time: int = MUSIC_FADEOUT) -> None:
         if self.status in (MusicStatus.playing, MusicStatus.paused):
             if fadeout_time > 0:
                 self.fadeout(fadeout_time)
@@ -177,7 +182,7 @@ class SoundManager:
         return path
 
     def load_sound(
-        self, slug: str, value: float = prepare.CONFIG.sound_volume
+        self, slug: str, value: float = CONFIG.sound_volume
     ) -> SoundProtocol:
         if slug in self.sounds:
             logger.debug(f"Sound '{slug}' loaded from cache.")
@@ -198,7 +203,7 @@ class SoundManager:
             return SoundWrapper()
 
     def play_sound(
-        self, slug: str, value: float = prepare.CONFIG.sound_volume
+        self, slug: str, value: float = CONFIG.sound_volume
     ) -> None:
         sound = self.load_sound(slug, value)
         sound.play()

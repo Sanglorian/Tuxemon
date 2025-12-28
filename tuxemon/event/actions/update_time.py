@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon import prepare
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -17,6 +16,7 @@ from tuxemon.time_handler import (
     get_current_time,
     is_leap_year,
 )
+from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -64,5 +64,5 @@ class UpdateTimeAction(EventAction):
             "stage_of_day", calculate_day_stage_of_day(current_time)
         )
         game_variables.set(
-            "season", determine_season(current_time, prepare.CONFIG.hemisphere)
+            "season", determine_season(current_time, CONFIG.hemisphere)
         )

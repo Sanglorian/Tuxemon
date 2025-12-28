@@ -12,9 +12,9 @@ import pyscroll
 from pytmx import pytmx
 from pytmx.pytmx import TiledMap
 
-from tuxemon import prepare
 from tuxemon.graphics import scaled_image_loader
 from tuxemon.locale import T
+from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.db import Direction, EventObject
@@ -305,7 +305,7 @@ class TuxemonMap(AbstractMap):
         clamp = self._config.edges == "clamped"
         self._renderer = pyscroll.BufferedRenderer(
             visual_data,
-            prepare.SCREEN_SIZE,
+            SCREEN_SIZE,
             clamp_camera=clamp,
             tall_sprites=self.SPRITE_LAYER_INDEX,
         )

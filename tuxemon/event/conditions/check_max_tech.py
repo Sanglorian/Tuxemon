@@ -9,7 +9,7 @@ from tuxemon.db import SpatialCondition
 from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.monster import Monster
-from tuxemon.prepare import MAX_MOVES
+from tuxemon.platform.const.sizes import MAX_MOVES
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

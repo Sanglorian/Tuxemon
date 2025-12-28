@@ -10,8 +10,9 @@ from pygame import SRCALPHA
 from pygame.font import Font
 from pygame.surface import Surface
 
-from tuxemon import prepare
 from tuxemon.graphics import ColorLike
+from tuxemon.platform.const.graphics import FONT_SHADOW_COLOR, FONT_SIZE
+from tuxemon.prepare import SCALE
 from tuxemon.tools import scale
 
 
@@ -24,7 +25,7 @@ def create_layout(
     return func
 
 
-layout = create_layout(prepare.SCALE)
+layout = create_layout(SCALE)
 
 
 class TextRenderer:
@@ -37,9 +38,9 @@ class TextRenderer:
     ) -> None:
         self.font_color = font_color
         if font_shadow_color is None:
-            font_shadow_color = prepare.FONT_SHADOW_COLOR
+            font_shadow_color = FONT_SHADOW_COLOR
         self.font_shadow_color = font_shadow_color
-        self.font = font or Font(font_filename, scale(prepare.FONT_SIZE))
+        self.font = font or Font(font_filename, scale(FONT_SIZE))
 
     def shadow_text(
         self,

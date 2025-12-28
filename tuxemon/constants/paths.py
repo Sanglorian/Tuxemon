@@ -22,6 +22,9 @@ PLUGIN_INCLUDE_PATTERNS = [
 LIBDIR = Path(__file__).resolve().parent.parent
 logger.debug(f"libdir: {LIBDIR}")
 
+ROOT_PACKAGE_NAME = LIBDIR.name
+logger.debug(f"root package name: {ROOT_PACKAGE_NAME}")
+
 # BASEDIR is where tuxemon was launched from
 BASEDIR = Path(sys.path[0]).resolve()
 logger.debug(f"basedir: {BASEDIR}")

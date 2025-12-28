@@ -2,7 +2,7 @@ babel
 cbor
 websockets
 pillow
-pygame-ce==2.5.3
+pygame-ce==2.5.6
 pyscroll>=2.31
 pytmx==3.32
 requests

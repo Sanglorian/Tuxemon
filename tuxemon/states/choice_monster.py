@@ -10,13 +10,13 @@ from typing import Any, ClassVar, Optional
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon import prepare
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.db import MonsterModel
 from tuxemon.database.bootstrap import db
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
+from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.session import local_session
 from tuxemon.ui.menu_options import MenuOptions
 
@@ -79,8 +79,8 @@ class ChoiceMonster(PygameMenuState):
         path = f"gfx/sprites/battle/{monster.slug}-front.png"
         image = self._create_image(path)
         image.scale(
-            prepare.SCALE * self.config.scale_sprite,
-            prepare.SCALE * self.config.scale_sprite,
+            SCALE * self.config.scale_sprite,
+            SCALE * self.config.scale_sprite,
         )
 
         self.menu.add.image(image, align=ALIGN_CENTER)
@@ -117,7 +117,7 @@ class ChoiceMonster(PygameMenuState):
         action.execute_action("clear_tuxepedia", [monster.slug], True)
 
     def update_animation_size(self) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         widgets_size = self.menu.get_size(widget=True)
 
         _width = widgets_size[0]

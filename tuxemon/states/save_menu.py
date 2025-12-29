@@ -13,10 +13,12 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 from pygame.transform import smoothscale
 
-from tuxemon import prepare, save
+from tuxemon import save
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu
+from tuxemon.platform.const.graphics import WHITE_COLOR
+from tuxemon.prepare import SCREEN_RECT
 from tuxemon.save import get_save_path
 from tuxemon.tools import open_choice_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options
@@ -57,7 +59,7 @@ class SaveMenuState(PopUpMenu[None]):
             )
 
     def initialize_items(self) -> None:
-        rect = prepare.SCREEN_RECT.copy()
+        rect = SCREEN_RECT.copy()
         slot_rect = Rect(
             0,
             0,
@@ -117,7 +119,7 @@ class SaveMenuState(PopUpMenu[None]):
         thumb_rect = rect.copy()
         thumb_rect.width //= 5
         thumb_image = Surface(thumb_rect.size)
-        thumb_image.fill(prepare.WHITE_COLOR)
+        thumb_image.fill(WHITE_COLOR)
         return thumb_image
 
     def _draw_slot_text(

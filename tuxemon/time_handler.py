@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from tuxemon import prepare
+from tuxemon.user_config import CONFIG
 
 
 def get_current_time() -> datetime:
@@ -62,7 +62,7 @@ def calculate_day_stage_of_day(time: datetime) -> str:
 
 
 def determine_season(
-    time: datetime, hemisphere: str = prepare.CONFIG.hemisphere
+    time: datetime, hemisphere: str = CONFIG.hemisphere
 ) -> str:
     """Determines the current season based on the time and hemisphere.
 

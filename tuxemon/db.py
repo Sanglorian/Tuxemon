@@ -28,11 +28,17 @@ from pydantic import (
     model_validator,
 )
 
-from tuxemon import prepare
+from tuxemon.constants.asset_loader import (
+    fetch_asset,
+    fetch_mod_asset_roots,
+)
+from tuxemon.constants.paths import mods_folder
 from tuxemon.database.config import EntryNotFoundError
 from tuxemon.database.data import ModData
 from tuxemon.formula import config_monster
+from tuxemon.platform.const import sizes
 from tuxemon.surfanim import FlipAxes
+from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -405,9 +411,9 @@ class PartyConditionsModel(BaseModel):
                     raise ValueError(
                         f"Monster slug '{slug}' does not exist in the database."
                     )
-                if not (0 <= count < prepare.PARTY_LIMIT):
+                if not (0 <= count < sizes.PARTY_LIMIT):
                     raise ValueError(
-                        f"Count for monster slug '{slug}' must be between 0 and {prepare.PARTY_LIMIT - 1}."
+                        f"Count for monster slug '{slug}' must be between 0 and {sizes.PARTY_LIMIT - 1}."
                     )
         return v
 
@@ -417,9 +423,9 @@ class PartyConditionsModel(BaseModel):
     ) -> Optional[dict[str, int]]:
         if v:
             for type_, count in v.items():
-                if not (0 <= count < prepare.PARTY_LIMIT):
+                if not (0 <= count < sizes.PARTY_LIMIT):
                     raise ValueError(
-                        f"Count for monster type '{type_}' must be between 0 and {prepare.PARTY_LIMIT - 1}."
+                        f"Count for monster type '{type_}' must be between 0 and {sizes.PARTY_LIMIT - 1}."
                     )
         return v
 
@@ -429,9 +435,9 @@ class PartyConditionsModel(BaseModel):
     ) -> Optional[dict[GenderType, int]]:
         if v:
             for gender, count in v.items():
-                if not (0 <= count < prepare.PARTY_LIMIT):
+                if not (0 <= count < sizes.PARTY_LIMIT):
                     raise ValueError(
-                        f"Count for gender '{gender}' must be between 0 and {prepare.PARTY_LIMIT - 1}."
+                        f"Count for gender '{gender}' must be between 0 and {sizes.PARTY_LIMIT - 1}."
                     )
         return v
 
@@ -561,8 +567,8 @@ class VisualProperties(BaseModel):
         technique_file = f"animations/technique/{v}_00.png"
 
         if has.db_entry("animation", v) and (
-            has.size(item_file, prepare.NATIVE_RESOLUTION)
-            or has.size(technique_file, prepare.NATIVE_RESOLUTION)
+            has.size(item_file, sizes.NATIVE_RESOLUTION)
+            or has.size(technique_file, sizes.NATIVE_RESOLUTION)
         ):
             return v
 
@@ -687,7 +693,7 @@ class ItemModel(BaseModel, BaseLookupModel):
     # Validate resources that should exist
     @field_validator("sprite")
     def file_exists(cls: ItemModel, v: str) -> str:
-        if has.file(v) and has.size(v, prepare.ITEM_SIZE):
+        if has.file(v) and has.size(v, sizes.ITEM_SIZE):
             return v
         raise ValueError(f"the sprite {v} doesn't exist in the db")
 
@@ -863,7 +869,7 @@ class MonsterEvolutionItemModel(BaseModel):
         default_factory=list,
         description="The techniques that the monster must have learned for the evolution to occur.",
         min_length=1,
-        max_length=prepare.MAX_MOVES,
+        max_length=sizes.MAX_MOVES,
     )
     bond: Optional[BondComparison] = Field(
         None,
@@ -1044,14 +1050,14 @@ class MonsterSpritesModel(BaseModel):
     # Validate resources that should exist
     @field_validator("front", "back")
     def battle_exists(cls: MonsterSpritesModel, v: str) -> str:
-        if has.file(f"{v}.png") and has.size(f"{v}.png", prepare.MONSTER_SIZE):
+        if has.file(f"{v}.png") and has.size(f"{v}.png", sizes.MONSTER_SIZE):
             return v
         raise ValueError(f"no resource exists with path: {v}")
 
     @field_validator("menu1", "menu2")
     def menu_exists(cls: MonsterSpritesModel, v: str) -> str:
         if has.file(f"{v}.png") and has.size(
-            f"{v}.png", prepare.MONSTER_SIZE_MENU
+            f"{v}.png", sizes.MONSTER_SIZE_MENU
         ):
             return v
         raise ValueError(f"no resource exists with path: {v}")
@@ -1097,8 +1103,8 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
     catch_rate: float = Field(
         ...,
         description="The catch rate of the monster",
-        ge=prepare.CATCH_RATE_RANGE[0],
-        le=prepare.CATCH_RATE_RANGE[1],
+        ge=sizes.CATCH_RATE_RANGE[0],
+        le=sizes.CATCH_RATE_RANGE[1],
     )
     gender_weights: dict[GenderType, float] = Field(
         ..., description="Weighted gender probabilities for this monster"
@@ -1106,14 +1112,14 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
     lower_catch_resistance: float = Field(
         ...,
         description="The lower catch resistance of the monster",
-        ge=prepare.CATCH_RESISTANCE_RANGE[0],
-        le=prepare.CATCH_RESISTANCE_RANGE[1],
+        ge=sizes.CATCH_RESISTANCE_RANGE[0],
+        le=sizes.CATCH_RESISTANCE_RANGE[1],
     )
     upper_catch_resistance: float = Field(
         ...,
         description="The upper catch resistance of the monster",
-        ge=prepare.CATCH_RESISTANCE_RANGE[0],
-        le=prepare.CATCH_RESISTANCE_RANGE[1],
+        ge=sizes.CATCH_RESISTANCE_RANGE[0],
+        le=sizes.CATCH_RESISTANCE_RANGE[1],
     )
     moveset: Sequence[MonsterMovesetItemModel] = Field(
         default_factory=list,
@@ -1464,8 +1470,8 @@ class TechniqueModel(BaseModel, BaseLookupModel):
     power: float = Field(
         ...,
         description="Power of the technique",
-        ge=prepare.POWER_RANGE[0],
-        le=prepare.POWER_RANGE[1],
+        ge=sizes.POWER_RANGE[0],
+        le=sizes.POWER_RANGE[1],
     )
     speed: SpeedLabel = Field(
         default=SpeedLabel.NORMAL,
@@ -1477,28 +1483,28 @@ class TechniqueModel(BaseModel, BaseLookupModel):
     healing_power: float = Field(
         0.0,
         description="Value of healing power.",
-        ge=prepare.HEALING_POWER_RANGE[0],
-        le=prepare.HEALING_POWER_RANGE[1],
+        ge=sizes.HEALING_POWER_RANGE[0],
+        le=sizes.HEALING_POWER_RANGE[1],
     )
     recharge: int = Field(
         0,
         description="Recharge of this technique",
-        ge=prepare.RECHARGE_RANGE[0],
-        le=prepare.RECHARGE_RANGE[1],
+        ge=sizes.RECHARGE_RANGE[0],
+        le=sizes.RECHARGE_RANGE[1],
     )
     range: Range = Field(..., description="The attack range of this technique")
     tech_id: int = Field(..., description="The id of this technique")
     accuracy: float = Field(
         ...,
         description="The accuracy of the technique",
-        ge=prepare.ACCURACY_RANGE[0],
-        le=prepare.ACCURACY_RANGE[1],
+        ge=sizes.ACCURACY_RANGE[0],
+        le=sizes.ACCURACY_RANGE[1],
     )
     potency: float = Field(
         ...,
         description="How potent the technique is",
-        ge=prepare.POTENCY_RANGE[0],
-        le=prepare.POTENCY_RANGE[1],
+        ge=sizes.POTENCY_RANGE[0],
+        le=sizes.POTENCY_RANGE[1],
     )
 
     @classmethod
@@ -1640,7 +1646,7 @@ class StatusModel(BaseModel, BaseLookupModel):
     # Validate resources that should exist
     @field_validator("icon")
     def file_exists(cls: StatusModel, v: str) -> str:
-        if has.file(v) and has.size(v, prepare.STATUS_ICON_SIZE):
+        if has.file(v) and has.size(v, sizes.STATUS_ICON_SIZE):
             return v
         raise ValueError(f"the icon {v} doesn't exist in the db")
 
@@ -1735,9 +1741,9 @@ class NpcTemplateModel(TemplateModel):
         sprite_obj: str = f"sprites_obj/{v}.png"
         if (
             has.file(sprite)
-            and has.size(sprite, prepare.SPRITE_SIZE)
+            and has.size(sprite, sizes.SPRITE_SIZE)
             or has.file(sprite_obj)
-            and has.size(sprite_obj, prepare.NATIVE_RESOLUTION)
+            and has.size(sprite_obj, sizes.NATIVE_RESOLUTION)
         ):
             return v
         raise ValueError(f"the sprite {v} doesn't exist in the db")
@@ -1836,6 +1842,10 @@ class NpcAudioModel(BaseModel):
 class NpcModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "npc"
     slug: str = Field(..., description="Slug of the name of the NPC")
+    persistence: bool = Field(
+        False,
+        description="Whether this NPC should be retained and saved across sessions.",
+    )
     template: NpcTemplateModel
     combat: NpcCombatModel
     monsters: Sequence[PartyMemberModel] = Field(
@@ -1921,7 +1931,7 @@ class BattleIconsModel(BaseModel):
         "icon_empty",
     )
     def file_exists(cls: BattleIconsModel, v: str) -> str:
-        if has.file(v) and has.size(v, prepare.ICON_SIZE):
+        if has.file(v) and has.size(v, sizes.ICON_SIZE):
             return v
         raise ValueError(f"no resource exists with path: {v}")
 
@@ -1938,13 +1948,13 @@ class BattleGraphicsModel(BaseModel):
 
     @field_validator("island_back", "island_front")
     def island_exists(cls: BattleGraphicsModel, v: str) -> str:
-        if has.file(v) and has.size(v, prepare.ISLAND_SIZE):
+        if has.file(v) and has.size(v, sizes.ISLAND_SIZE):
             return v
         raise ValueError(f"no resource exists with path: {v}")
 
     @field_validator("background")
     def background_exists(cls: BattleGraphicsModel, v: str) -> str:
-        if has.file(v) and has.size(v, prepare.BATTLE_BG_SIZE):
+        if has.file(v) and has.size(v, sizes.BATTLE_BG_SIZE):
             return v
         raise ValueError(f"no resource exists with path: {v}")
 
@@ -2162,7 +2172,7 @@ class DialogueModel(BaseModel, BaseLookupModel):
     @field_validator("border_slug")
     def file_exists(cls: DialogueModel, v: str) -> str:
         file: str = f"gfx/borders/{v}.png"
-        if has.file(file) and has.size(file, prepare.BORDERS_SIZE):
+        if has.file(file) and has.size(file, sizes.BORDERS_SIZE):
             return v
         raise ValueError(f"no resource exists with path: {file}")
 
@@ -2212,7 +2222,7 @@ class ElementModel(BaseModel, BaseLookupModel):
 
     @field_validator("icon")
     def file_exists(cls: ElementModel, v: str) -> str:
-        if has.file(v) and has.size(v, prepare.ELEMENT_SIZE):
+        if has.file(v) and has.size(v, sizes.ELEMENT_SIZE):
             return v
         raise ValueError(f"the icon {v} doesn't exist in the db")
 
@@ -2301,7 +2311,7 @@ class EconomyModel(BaseModel, BaseLookupModel):
 
     @field_validator("background")
     def background_exists(cls: EconomyModel, v: str) -> str:
-        if has.file(v) and has.size(v, prepare.NATIVE_RESOLUTION):
+        if has.file(v) and has.size(v, sizes.NATIVE_RESOLUTION):
             return v
         raise ValueError(f"no resource exists with path: {v}")
 

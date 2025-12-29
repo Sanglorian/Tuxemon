@@ -10,7 +10,7 @@ from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.running import ConditionEvaluator
 from tuxemon.event.eventengine import EventEngine
 from tuxemon.map.map_loader import TMXMapLoader
-from tuxemon.prepare import CONFIG
+from tuxemon.user_config import CONFIG
 from tuxemon.session import Session
 
 db.load("monster")

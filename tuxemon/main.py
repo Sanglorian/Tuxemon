@@ -5,11 +5,12 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Optional
 
-from tuxemon import log, prepare
+from tuxemon import log
 from tuxemon.client import LocalPygameClient
 from tuxemon.database.bootstrap import db
 from tuxemon.headless_client import HeadlessClient
 from tuxemon.launcher import GameLauncher
+from tuxemon.prepare import SCREEN
 from tuxemon.session import local_session
 
 if TYPE_CHECKING:
@@ -32,16 +33,13 @@ def main(config: TuxemonConfig, load_slot: Optional[int] = None) -> None:
         load_slot: Number of the save slot to load, if any.
     """
     log.configure()
-    prepare.init()
-    screen = prepare.SCREEN
+
+    screen = SCREEN
 
     import pygame
 
     client = LocalPygameClient.create(config, screen)
 
-    # global/singleton hack for now
-    setattr(prepare, "GLOBAL_CONTROL", client)
-    # WIP.  Will be more complete with game-view
     local_session.set_client(client)
 
     configure_game_states(client, config, load_slot)
@@ -108,7 +106,6 @@ def headless(config: TuxemonConfig) -> None:
         config: The Tuxemon configuration object containing game settings.
     """
     log.configure()
-    prepare.init(platform="headless")
     control = HeadlessClient(config)
     control.push_state("HeadlessServerState")
     control.main()

@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from tuxemon.formula import config_monster
-from tuxemon.prepare import MAX_LEVEL
+from tuxemon.platform.const.sizes import MAX_LEVEL
 
 logger = logging.getLogger(__name__)
 

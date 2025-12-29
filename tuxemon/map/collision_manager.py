@@ -7,8 +7,8 @@ from collections import defaultdict
 from collections.abc import Mapping, MutableMapping, Sequence
 from typing import TYPE_CHECKING, Any, DefaultDict, Optional, Union
 
-from tuxemon import prepare
 from tuxemon.map.map_region import RegionProperties
+from tuxemon.platform.const.sizes import SURFACE_KEYS
 
 if TYPE_CHECKING:
 
@@ -71,7 +71,7 @@ class CollisionManager:
             label: The property key to update (e.g., terrain type).
             moverate: The new movement rate value to assign.
         """
-        if label not in prepare.SURFACE_KEYS:
+        if label not in SURFACE_KEYS:
             return
 
         for coord in self.get_all_tile_properties(

@@ -10,7 +10,7 @@ from tuxemon.combat.combat_context import CombatType
 from tuxemon.combat.experience_strategies import calculate_experience
 from tuxemon.locale import T
 from tuxemon.monster_dir.stats import BasicStats
-from tuxemon.prepare import DEFAULT_TP_GAIN
+from tuxemon.platform.const.sizes import DEFAULT_TP_GAIN
 
 if TYPE_CHECKING:
     from tuxemon.combat.damage_tracker import DamageTracker

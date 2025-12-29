@@ -16,7 +16,7 @@ from tuxemon.db import EnvironmentModel
 from tuxemon.database.bootstrap import db
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
-from tuxemon.prepare import MONSTERS_DOUBLE
+from tuxemon.platform.const.sizes import MONSTERS_DOUBLE
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

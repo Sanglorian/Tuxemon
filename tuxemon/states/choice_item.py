@@ -9,11 +9,11 @@ from typing import Any, ClassVar, Optional
 from pygame_menu.locals import POSITION_EAST
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon import prepare
 from tuxemon.db import ItemModel
 from tuxemon.database.bootstrap import db
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
+from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.tools import fix_measure
 from tuxemon.ui.menu_options import MenuOptions
 
@@ -64,7 +64,7 @@ class ChoiceItem(PygameMenuState):
     def calculate_window_size(
         self, menu: MenuOptions
     ) -> tuple[int, int, float]:
-        _width, _height = prepare.SCREEN_SIZE
+        _width, _height = SCREEN_SIZE
 
         if len(menu.options) >= self.config.max_elements:
             height = _height * self.config.max_height_percentage
@@ -94,8 +94,8 @@ class ChoiceItem(PygameMenuState):
         item = ItemModel.lookup(slug, db)
         new_image = self._create_image(item.sprite)
         new_image.scale(
-            prepare.SCALE * self.config.scale_sprite,
-            prepare.SCALE * self.config.scale_sprite,
+            SCALE * self.config.scale_sprite,
+            SCALE * self.config.scale_sprite,
         )
         self.menu.add.image(new_image)
         self.menu.add.button(

@@ -6,7 +6,6 @@ import logging
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from enum import Enum
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload
 
 from tuxemon.audio import MusicPlayerState, SoundManager
@@ -211,16 +210,8 @@ class BaseClient(ABC):
         self.active_effect_manager.update(local_session, time_delta)
 
     def get_map_name(self) -> str:
-        """
-        Gets the name of the current map.
-
-        Returns:
-            Name of the current map.
-        """
-        map_path = self.map_manager.get_map_filepath()
-        if map_path is None:
-            raise ValueError("Name of the map requested when no map is active")
-        return Path(map_path).name
+        """Gets the name of the current map."""
+        return self.map_manager.get_map_name()
 
     def set_renderer(self, renderer: AbstractRenderer) -> None:
         """Assigns a custom renderer to the client."""

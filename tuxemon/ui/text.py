@@ -11,8 +11,8 @@ from pygame.font import Font
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon import prepare
 from tuxemon.graphics import ColorLike
+from tuxemon.platform.const.graphics import FONT_COLOR, FONT_SHADOW_COLOR
 from tuxemon.sprite import Sprite
 from tuxemon.ui.draw import (
     RenderedChar,
@@ -77,7 +77,7 @@ class TextArea(Sprite):
         self,
         font: Font,
         font_color: ColorLike,
-        font_shadow: ColorLike = prepare.FONT_SHADOW_COLOR,
+        font_shadow: ColorLike = FONT_SHADOW_COLOR,
         background_color: Optional[ColorLike] = None,
         background_image: Optional[Surface] = None,
         h_alignment: HorizontalAlignment = HorizontalAlignment.LEFT,
@@ -288,7 +288,7 @@ def draw_text(
         v_alignment: Vertical alignment preference (TOP, CENTER, BOTTOM).
         font: The Pygame Font object to use for rendering.
         font_size: (Optional) Not directly used if a Font object is provided, but kept for API.
-        font_color: (Optional) The color of the font. Defaults to prepare.FONT_COLOR if None.
+        font_color: (Optional) The color of the font. Defaults to FONT_COLOR if None.
         text_renderer: (Optional) An existing TextRenderer instance. If None, one will be created.
     """
     rect_obj = Rect(rect) if isinstance(rect, tuple) else rect
@@ -297,7 +297,7 @@ def draw_text(
         return
 
     if not font_color:
-        font_color = prepare.FONT_COLOR
+        font_color = FONT_COLOR
 
     if text_renderer is None:
         text_renderer = TextRenderer(font_color=font_color, font=font)

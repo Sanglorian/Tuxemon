@@ -10,11 +10,12 @@ import pygame_menu
 from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon import prepare
 from tuxemon.db import MonsterModel
 from tuxemon.database.bootstrap import db
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.graphics import BG_MINIGAME, MISSING_IMAGE
+from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.tools import fix_measure, open_dialog
 
 lookup_cache: dict[str, MonsterModel] = {}
@@ -40,7 +41,7 @@ class DifficultySelectState(PygameMenuState):
     name: ClassVar[str] = "DifficultySelectState"
 
     def __init__(self) -> None:
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         super().__init__(height=height, width=width)
 
         self._build_menu()
@@ -86,12 +87,12 @@ class MinigameState(PygameMenuState):
         if not lookup_cache:
             _lookup_monsters()
 
-        width, height = prepare.SCREEN_SIZE
+        width, height = SCREEN_SIZE
         self.difficulty = difficulty
         self.streak = streak
         self.score = score
 
-        theme = self._setup_theme(prepare.BG_MINIGAME)
+        theme = self._setup_theme(BG_MINIGAME)
         theme.scrollarea_position = locals.POSITION_EAST
         theme.widget_alignment = locals.ALIGN_CENTER
 
@@ -118,11 +119,11 @@ class MinigameState(PygameMenuState):
         if self.difficulty in ["easy", "normal"]:
             try:
                 image = self._create_image(image_path)
-                image.scale(prepare.SCALE, prepare.SCALE)
+                image.scale(SCALE, SCALE)
                 menu.add.image(image_path=image.copy())
             except Exception:
-                image = self._create_image(prepare.MISSING_IMAGE)
-                image.scale(prepare.SCALE, prepare.SCALE)
+                image = self._create_image(MISSING_IMAGE)
+                image.scale(SCALE, SCALE)
                 menu.add.image(image_path=image.copy())
 
         if self.difficulty == "hard":
@@ -201,4 +202,6 @@ class MinigameState(PygameMenuState):
 
         else:
             self.streak = 0
-            open_dialog(self.client, [T.translate("generic_wrong")])
+            open_dialog(
+                self.client, [T.translate("generic_wrong")], dialog_speed="max"
+            )

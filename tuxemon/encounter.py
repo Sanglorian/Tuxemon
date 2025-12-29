@@ -8,13 +8,13 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
-from tuxemon import prepare
 from tuxemon.db import (
     EncounterItemModel,
     EncounterModel,
     EncounterType,
 )
 from tuxemon.database.bootstrap import db
+from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
@@ -154,7 +154,7 @@ class Encounter:
             return None
 
         roll = random.uniform(0, ENCOUNTER_ROLL_MAX)
-        if roll > total_prob * prepare.CONFIG.encounter_rate_modifier:
+        if roll > total_prob * CONFIG.encounter_rate_modifier:
             return None
 
         chosen = random.choices(valid, weights=weights, k=1)[0]

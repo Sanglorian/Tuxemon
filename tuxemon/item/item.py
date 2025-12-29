@@ -9,7 +9,7 @@ from uuid import UUID, uuid4
 
 from pygame.surface import Surface
 
-from tuxemon import graphics, prepare
+from tuxemon import graphics
 from tuxemon.core.asset import CoreAssetManager
 from tuxemon.core.core_effect import ItemEffectResult
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
@@ -28,6 +28,7 @@ from tuxemon.database.bootstrap import db
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
 from tuxemon.surfanim import FlipAxes
+from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
@@ -258,7 +259,7 @@ class Item:
         and if it's supposed to be consumed based on the result.
         """
         should_consume = (
-            prepare.CONFIG.items_consumed_on_failure or result.success
+            CONFIG.items_consumed_on_failure or result.success
         ) and self.behaviors.consumable
 
         if should_consume:

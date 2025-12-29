@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.prepare import CAMERA_SHAKE_RANGE
+from tuxemon.platform.const.sizes import CAMERA_SHAKE_RANGE
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

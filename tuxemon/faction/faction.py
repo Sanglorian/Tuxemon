@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
 
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     FactionAlignment,
     FactionKind,
@@ -14,7 +15,6 @@ from tuxemon.db import (
     FactionRelationStatus,
     RankStep,
 )
-from tuxemon.database.bootstrap import db
 from tuxemon.locale import T
 
 if TYPE_CHECKING:

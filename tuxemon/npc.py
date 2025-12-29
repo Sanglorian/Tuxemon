@@ -7,8 +7,8 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Optional
 
 from tuxemon.boxes import ItemBoxes, MonsterBoxes
+from tuxemon.database.runtime import db
 from tuxemon.db import DialogueProfile, Direction, NpcModel
-from tuxemon.database.bootstrap import db
 from tuxemon.entity import Entity
 from tuxemon.entity_dir.bag import BagHandler
 from tuxemon.entity_dir.battle import BattlesHandler

@@ -7,8 +7,8 @@ from typing import Optional, Union
 
 from pygame import Rect
 
+from tuxemon.database.runtime import db
 from tuxemon.db import DialogueModel
-from tuxemon.database.bootstrap import db
 from tuxemon.ui.text_alignment import DialogPosition
 from tuxemon.user_config import CONFIG
 

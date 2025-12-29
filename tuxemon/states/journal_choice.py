@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING, Any, ClassVar
 import pygame_menu
 from pygame_menu import locals
 
+from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
-from tuxemon.database.bootstrap import db
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_JOURNAL_CHOICE, DIMGRAY_COLOR

@@ -7,8 +7,8 @@ import random
 from dataclasses import dataclass
 from typing import Optional, final
 
+from tuxemon.database.runtime import db
 from tuxemon.db import EvolutionStage, MonsterModel
-from tuxemon.database.bootstrap import db
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 

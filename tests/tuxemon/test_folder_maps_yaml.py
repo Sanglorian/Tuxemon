@@ -8,7 +8,7 @@ from typing import Any
 import yaml
 
 from tuxemon.constants.asset_loader import fetch_asset
-from tuxemon.database.bootstrap import db
+from tuxemon.database.runtime import db
 from tuxemon.script.parser import parse_action_string
 from tuxemon.user_config import CONFIG
 

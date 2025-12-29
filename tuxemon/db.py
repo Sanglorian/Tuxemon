@@ -28,21 +28,14 @@ from pydantic import (
     model_validator,
 )
 
-from tuxemon.constants.asset_loader import (
-    fetch_asset,
-    fetch_mod_asset_roots,
-)
-from tuxemon.constants.paths import mods_folder
 from tuxemon.database.config import EntryNotFoundError
 from tuxemon.database.data import ModData
+from tuxemon.database.registry import validator as has
 from tuxemon.formula import config_monster
 from tuxemon.platform.const import sizes
 from tuxemon.surfanim import FlipAxes
-from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
-
-from tuxemon.database.registry import validator as has
 
 
 class Direction(str, Enum):

@@ -22,8 +22,8 @@ from pygame.transform import scale
 from pytmx.pytmx import TileFlags
 from pytmx.util_pygame import handle_transformation, smart_convert
 
+from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel, NpcModel
-from tuxemon.database.bootstrap import db
 from tuxemon.platform.const.graphics import FUCHSIA_COLOR
 from tuxemon.prepare import SCALE
 from tuxemon.session import Session

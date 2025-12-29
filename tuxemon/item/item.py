@@ -13,6 +13,7 @@ from tuxemon import graphics
 from tuxemon.core.asset import CoreAssetManager
 from tuxemon.core.core_effect import ItemEffectResult
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     ExperienceMethod,
     ItemBehaviors,
@@ -24,7 +25,6 @@ from tuxemon.db import (
     State,
     VisualProperties,
 )
-from tuxemon.database.bootstrap import db
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
 from tuxemon.surfanim import FlipAxes

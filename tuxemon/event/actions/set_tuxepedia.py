@@ -6,8 +6,8 @@ import logging
 from dataclasses import dataclass
 from typing import final
 
+from tuxemon.database.runtime import db
 from tuxemon.db import SeenStatus
-from tuxemon.database.bootstrap import db
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T

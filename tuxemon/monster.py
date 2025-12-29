@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID, uuid4
 
 from tuxemon import formula
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     Acquisition,
     EffectPhase,
@@ -22,7 +23,6 @@ from tuxemon.db import (
     SoundProperties,
     StatType,
 )
-from tuxemon.database.bootstrap import db
 from tuxemon.element import ElementTypesHandler
 from tuxemon.formula import config_monster
 from tuxemon.fusion import Body

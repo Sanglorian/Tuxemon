@@ -7,8 +7,8 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID, uuid4
 
+from tuxemon.database.runtime import db
 from tuxemon.db import MissionModel, MissionStatus, MissionStepModel
-from tuxemon.database.bootstrap import db
 from tuxemon.locale import T
 
 if TYPE_CHECKING:

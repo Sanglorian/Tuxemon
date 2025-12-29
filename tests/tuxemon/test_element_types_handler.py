@@ -2,8 +2,8 @@
 # Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import pytest
 
+from tuxemon.database.runtime import db
 from tuxemon.db import ElementModel
-from tuxemon.database.bootstrap import db
 from tuxemon.element import Element, ElementTypesHandler
 
 

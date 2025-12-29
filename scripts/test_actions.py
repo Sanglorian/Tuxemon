@@ -5,7 +5,7 @@ Script to validate map actions
 from unittest.mock import MagicMock
 
 from tuxemon.constants import paths
-from tuxemon.database.bootstrap import db
+from tuxemon.database.runtime import db
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.running import ConditionEvaluator
 from tuxemon.event.eventengine import EventEngine

@@ -13,8 +13,8 @@ import yaml
 
 from tuxemon.constants import paths
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
+from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
-from tuxemon.database.bootstrap import db
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item

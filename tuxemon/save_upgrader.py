@@ -6,7 +6,6 @@ import logging
 from collections.abc import Callable
 from typing import Any
 
-from tuxemon.database.bootstrap import db
 from tuxemon.db import PlagueType
 from tuxemon.locale import T
 

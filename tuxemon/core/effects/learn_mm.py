@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
+from tuxemon.database.runtime import db
 from tuxemon.db import TechCategory, TechniqueModel
-from tuxemon.database.bootstrap import db
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:

@@ -3,8 +3,8 @@
 import unittest
 from unittest.mock import MagicMock
 
+from tuxemon.database.runtime import db
 from tuxemon.db import Modifier
-from tuxemon.database.bootstrap import db
 from tuxemon.monster import Monster
 from tuxemon.platform.const.sizes import COEFF_STATS, MAX_LEVEL
 from tuxemon.shape import ShapeHandler

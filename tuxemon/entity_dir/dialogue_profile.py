@@ -5,8 +5,8 @@ from __future__ import annotations
 import random
 from typing import Optional, Union
 
+from tuxemon.database.runtime import db
 from tuxemon.db import DialogueContent, DialogueProfile, NpcModel
-from tuxemon.database.bootstrap import db
 
 
 class DialogueProfileManager:

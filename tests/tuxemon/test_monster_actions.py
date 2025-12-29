@@ -3,11 +3,11 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     EvolutionStage,
     MonsterModel,
     TechniqueModel,
-    db,
 )
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventengine import EventEngine
@@ -16,7 +16,6 @@ from tuxemon.game_variables import GameVariablesManager
 from tuxemon.npc import PartyHandler
 from tuxemon.player import Player
 from tuxemon.session import local_session
-from tuxemon.surfanim import FlipAxes
 
 
 def mockPlayer(self) -> None:

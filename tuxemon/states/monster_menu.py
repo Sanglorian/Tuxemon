@@ -281,8 +281,7 @@ class MonsterMenuHandler:
         if mon.moves.moves:
             actions["tech"] = partial(self.monster_techs, mon)
 
-        if mon.held_item:
-            actions["item"] = partial(self.monster_item, mon)
+        actions["item"] = partial(self.monster_item, mon)
 
         if self.party.party_size > 1:
             actions.update(

@@ -366,6 +366,19 @@ class Monster:
         """Returns True if the monster was acquired via the specified method."""
         return self.acquisition == method
 
+    def equip_item(self, item: Item) -> bool:
+        result = self.item_handler.set_item(item)
+        if result:
+            self.moves.apply_item_techniques(item)
+        return result
+
+    def unequip_item(self) -> Item | None:
+        item = self.item_handler.take_item()
+        if item:
+            self.moves.remove_item_techniques(item)
+            return item
+        return None
+
     def get_experience_multiplier(self) -> float:
         """
         Retrieves the experience multiplier based on this monster's acquisition
@@ -648,7 +661,7 @@ class Monster:
             elif key == "held_item" and value:
                 item = self.item_handler.decode_item(value)
                 if item:
-                    self.item_handler.set_item(item)
+                    self.equip_item(item)
             elif key == "training_points" and value:
                 self.training_points = TrainingPoints.from_dict(value)
             elif key == "modifiers" and value:

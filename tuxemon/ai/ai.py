@@ -260,18 +260,6 @@ class AI:
         """
         self.decision_strategy.make_decision(self)
 
-    def get_available_moves(self) -> list[tuple[Technique, Monster]]:
-        """
-        Use TechniqueTracker to get valid moves.
-        """
-        return self.tracker.get_valid_moves(self.opponents)
-
-    def evaluate_best_opponent(self) -> Monster:
-        """
-        Use OpponentEvaluator to find the best target opponent.
-        """
-        return self.evaluator.get_best_target()
-
     def action_tech(self, technique: Technique, target: Monster) -> None:
         """
         Send action tech.

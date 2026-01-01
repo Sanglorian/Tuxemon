@@ -80,6 +80,7 @@ class Item:
         self.max_wear: int = 0
         self.break_chance: float = 0.0
         self.menu_actions_data: Sequence[MenuAction] = []
+        self.granted_techniques: Sequence[str] = []
 
         self.core_assets = CoreAssetManager()
         self.effects: Sequence[PluginObject] = []
@@ -158,6 +159,7 @@ class Item:
         self.condition_handler = ConditionProcessor(self.conditions)
         self.surface = graphics.load_and_scale(self.sprite)
         self.surface_size_original = self.surface.get_size()
+        self.granted_techniques = results.granted_techniques
 
         self.visuals = results.visuals
         self.sound = results.sound

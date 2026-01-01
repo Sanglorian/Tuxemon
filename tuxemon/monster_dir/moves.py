@@ -15,6 +15,7 @@ from tuxemon.platform.const.sizes import MAX_MOVES
 from tuxemon.technique.technique import Technique, decode_moves, encode_moves
 
 if TYPE_CHECKING:
+    from tuxemon.item.item import Item
     from tuxemon.monster import Monster
 
 
@@ -44,6 +45,21 @@ class MonsterMovesHandler:
         Adds a technique to this tuxemon's moveset.
         """
         self.moves.append(technique)
+
+    def apply_item_techniques(self, item: Item) -> None:
+        for tech_slug in item.granted_techniques:
+            if not self.has_move(tech_slug):
+                MAX_MOVES += 1
+                self.add_move(Technique.create(tech_slug))
+
+    def remove_item_techniques(self, item: Item) -> None:
+        granted = set(item.granted_techniques)
+        removed = sum(1 for m in self.moves if m.slug in granted)
+        self.moves = [m for m in self.moves if m.slug not in granted]
+
+        MAX_MOVES -= removed
+        if MAX_MOVES < 0:
+            MAX_MOVES = 0
 
     def learn(
         self,

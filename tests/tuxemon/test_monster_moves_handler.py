@@ -1,217 +1,232 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from unittest.mock import MagicMock, patch
 from uuid import UUID
+
+import pytest
 
 from tuxemon.db import EvolutionStage, LearningMethod
 from tuxemon.monster_dir.moves import MonsterMovesHandler
 
 
-class TestMonsterMovesHandler(unittest.TestCase):
+@pytest.fixture
+def handler():
+    return MonsterMovesHandler()
 
-    def setUp(self):
-        self.handler = MonsterMovesHandler()
-        self.technique = MagicMock()
-        self.technique.slug = "techniqueX"
-        self.technique.instance_id = UUID(
-            "00000000-0000-0000-0000-000000000001"
-        )
-        self.moveset = [MagicMock()]
-        self.moves = [MagicMock()]
-        self.monster_id = UUID("123e4567-e89b-12d3-a456-426655440000")
-        self.monster = MagicMock()
-        self.monster.level = 3
-        self.monster.stage = "basic"
-        self.monster.iid = self.monster_id
-        self.monster.slug = "testmon"
 
-    def test_init(self):
-        self.assertEqual(self.handler.moves, [])
-        self.assertEqual(self.handler.moveset, [])
-        handler = MonsterMovesHandler(self.moves, self.moveset)
-        self.assertEqual(handler.moves, self.moves)
-        self.assertEqual(handler.moveset, list(self.moveset))
+@pytest.fixture
+def technique():
+    tech = MagicMock()
+    tech.slug = "techniqueX"
+    tech.instance_id = UUID("00000000-0000-0000-0000-000000000001")
+    return tech
 
-    def test_set_moveset(self):
-        self.handler.set_moveset(self.moveset)
-        self.assertEqual(self.handler.moveset, list(self.moveset))
 
-    @patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
-    def test_learn(self, _mock_is_eligible):
-        self.handler.learn(self.monster, self.technique)
-        self.assertIn(self.technique, self.handler.moves)
+@pytest.fixture
+def monster():
+    m = MagicMock()
+    m.level = 3
+    m.stage = "basic"
+    m.iid = UUID("123e4567-e89b-12d3-a456-426655440000")
+    m.slug = "testmon"
+    return m
 
-    @patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
-    def test_forget(self, _mock_is_eligible):
-        self.handler.learn(self.monster, self.technique)
-        self.handler.forget(self.technique)
-        self.assertNotIn(self.technique, self.handler.moves)
 
-    @patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
-    def test_replace_move(self, _mock_is_eligible):
-        technique1 = MagicMock()
-        technique2 = MagicMock()
-        self.handler.learn(self.monster, technique1)
-        self.handler.replace_move(0, technique2)
-        self.assertEqual(self.handler.moves[0], technique2)
+def test_init(handler):
+    assert handler.moves == []
+    assert handler.moveset == []
 
-    def test_set_moves(self):
-        moveset = [
-            MagicMock(
-                level_learned=1,
-                technique="technique1",
-                evolution_stage_learned=None,
-                learning_method=LearningMethod.LEVEL_UP,
-            ),
-            MagicMock(
-                level_learned=2,
-                technique="technique2",
-                evolution_stage_learned=None,
-                learning_method=LearningMethod.LEVEL_UP,
-            ),
-        ]
-        with (
-            patch(
-                "tuxemon.technique.technique.Technique.create"
-            ) as mock_create,
-            patch.object(
-                MonsterMovesHandler,
-                "is_eligible",
-                side_effect=lambda m, slug, method=None: slug
-                in {"technique1", "technique2"},
-            ),
-        ):
-            mock_create.side_effect = lambda slug: MagicMock(slug=slug)
-            self.handler.set_moveset(moveset)
-            self.handler.set_moves(self.monster, 2)
-            self.assertEqual(
-                {m.slug for m in self.handler.moves},
-                {"technique1", "technique2"},
-            )
+    moves = [MagicMock()]
+    moveset = [MagicMock()]
+    h = MonsterMovesHandler(moves, moveset)
 
-    def test_update_moves(self):
-        moveset = [
-            MagicMock(
-                level_learned=1,
-                technique="technique1",
-                evolution_stage_learned=None,
-                learning_method=LearningMethod.LEVEL_UP,
-            ),
-            MagicMock(
-                level_learned=2,
-                technique="technique2",
-                evolution_stage_learned=None,
-                learning_method=LearningMethod.LEVEL_UP,
-            ),
-            MagicMock(
-                level_learned=3,
-                technique="technique3",
-                evolution_stage_learned=None,
-                learning_method=LearningMethod.LEVEL_UP,
-            ),
-        ]
-        with (
-            patch(
-                "tuxemon.technique.technique.Technique.create"
-            ) as mock_create,
-            patch.object(
-                MonsterMovesHandler, "is_eligible", return_value=True
-            ),
-        ):
-            mock_create.side_effect = lambda slug: MagicMock(slug=slug)
-            self.handler.set_moveset(moveset)
-            self.handler.set_moves(self.monster, 2)
-            self.monster.level = 3
-            new_techniques = self.handler.update_moves(self.monster, 1)
-            self.assertEqual([t.slug for t in new_techniques], ["technique3"])
+    assert h.moves == moves
+    assert h.moveset == list(moveset)
 
-    @patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
-    def test_recharge_moves(self, _mock_is_eligible):
-        self.handler.learn(self.monster, self.technique)
-        self.handler.recharge_moves()
 
-    @patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
-    def test_full_recharge_moves(self, _mock_is_eligible):
-        self.handler.learn(self.monster, self.technique)
-        self.handler.full_recharge_moves()
+def test_set_moveset(handler):
+    moveset = [MagicMock()]
+    handler.set_moveset(moveset)
+    assert handler.moveset == list(moveset)
 
-    @patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
-    def test_set_stats(self, _mock_is_eligible):
-        self.handler.learn(self.monster, self.technique)
-        self.handler.set_stats()
 
-    @patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
-    def test_find_tech_by_id(self, _mock_is_eligible):
-        self.handler.learn(self.monster, self.technique)
-        found_technique = self.handler.find_tech_by_id(
-            self.technique.instance_id
-        )
-        self.assertEqual(found_technique, self.technique)
+@pytest.mark.parametrize("method", ["learn", "forget"])
+@patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
+def test_learn_and_forget(_mock, handler, monster, technique, method):
+    handler.learn(monster, technique)
+    if method == "forget":
+        handler.forget(technique)
+        assert technique not in handler.moves
+    else:
+        assert technique in handler.moves
 
-    @patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
-    def test_has_moves(self, _mock_is_eligible):
-        self.assertFalse(self.handler.has_moves())
-        self.handler.learn(self.monster, self.technique)
-        self.assertTrue(self.handler.has_moves())
 
-    @patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
-    def test_has_move(self, _mock_is_eligible):
-        self.handler.learn(self.monster, self.technique)
-        self.assertTrue(self.handler.has_move(self.technique.slug))
+@patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
+def test_replace_move(_mock, handler, monster):
+    t1 = MagicMock()
+    t2 = MagicMock()
+    handler.learn(monster, t1)
+    handler.replace_move(0, t2)
+    assert handler.moves[0] is t2
 
-    @patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
-    def test_get_moves(self, _mock_is_eligible):
-        self.handler.learn(self.monster, self.technique)
-        moves = self.handler.get_moves()
-        self.assertIn(self.technique, moves)
 
-    def test_can_forget_true(self):
-        entry = MagicMock(technique="fireball", can_be_forgotten=True)
-        self.handler.set_moveset([entry])
-        self.assertTrue(self.handler.can_forget(MagicMock(slug="fireball")))
+def test_set_moves(handler, monster):
+    moveset = [
+        MagicMock(
+            level_learned=1,
+            technique="technique1",
+            evolution_stage_learned=None,
+            learning_method=LearningMethod.LEVEL_UP,
+        ),
+        MagicMock(
+            level_learned=2,
+            technique="technique2",
+            evolution_stage_learned=None,
+            learning_method=LearningMethod.LEVEL_UP,
+        ),
+    ]
 
-    def test_can_forget_false(self):
-        entry = MagicMock(technique="icewall", can_be_forgotten=False)
-        self.handler.set_moveset([entry])
-        self.assertFalse(self.handler.can_forget(MagicMock(slug="icewall")))
+    with (
+        patch("tuxemon.technique.technique.Technique.create") as mock_create,
+        patch.object(
+            MonsterMovesHandler,
+            "is_eligible",
+            side_effect=lambda m, slug, method=None: slug
+            in {"technique1", "technique2"},
+        ),
+    ):
+        mock_create.side_effect = lambda slug: MagicMock(slug=slug)
+        handler.set_moveset(moveset)
+        handler.set_moves(monster, 2)
 
-    @patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
-    def test_remove_forced(self, _mock_is_eligible):
-        self.technique.slug = "shockwave"
-        self.handler.learn(self.monster, self.technique)
-        removed = self.handler.remove_forced(self.technique)
-        self.assertTrue(removed)
-        self.assertNotIn(self.technique, self.handler.moves)
+        assert {m.slug for m in handler.moves} == {"technique1", "technique2"}
 
-    def test_is_eligible_stage_mismatch(self):
-        move = MagicMock(spec=True)
-        move.technique = "wave"
-        move.level_learned = 3
-        move.evolution_stage_learned = EvolutionStage.stage2
-        move.learning_method = LearningMethod.LEVEL_UP
 
-        self.handler.set_moveset([move])
-        self.monster.level = 4
-        self.monster.stage = EvolutionStage.basic
+def test_update_moves(handler, monster):
+    moveset = [
+        MagicMock(
+            level_learned=1,
+            technique="technique1",
+            evolution_stage_learned=None,
+            learning_method=LearningMethod.LEVEL_UP,
+        ),
+        MagicMock(
+            level_learned=2,
+            technique="technique2",
+            evolution_stage_learned=None,
+            learning_method=LearningMethod.LEVEL_UP,
+        ),
+        MagicMock(
+            level_learned=3,
+            technique="technique3",
+            evolution_stage_learned=None,
+            learning_method=LearningMethod.LEVEL_UP,
+        ),
+    ]
 
-        result = self.handler.is_eligible(
-            self.monster, "wave", method=LearningMethod.LEVEL_UP
-        )
-        self.assertFalse(result)
+    with (
+        patch("tuxemon.technique.technique.Technique.create") as mock_create,
+        patch.object(MonsterMovesHandler, "is_eligible", return_value=True),
+    ):
+        mock_create.side_effect = lambda slug: MagicMock(slug=slug)
 
-    def test_is_eligible_stage_match(self):
-        move = MagicMock(spec=True)
-        move.technique = "zap"
-        move.level_learned = 2
-        move.evolution_stage_learned = EvolutionStage.basic  # Use enum value
-        move.learning_method = LearningMethod.LEVEL_UP
+        handler.set_moveset(moveset)
+        handler.set_moves(monster, 2)
 
-        self.handler.set_moveset([move])
-        self.monster.level = 3
-        self.monster.stage = EvolutionStage.basic  # Use enum value
+        monster.level = 3
+        new = handler.update_moves(monster, 1)
 
-        result = self.handler.is_eligible(
-            self.monster, "zap", method=LearningMethod.LEVEL_UP
-        )
-        self.assertTrue(result)
+        assert [t.slug for t in new] == ["technique3"]
+
+
+@pytest.mark.parametrize(
+    "method", ["recharge_moves", "full_recharge_moves", "set_stats"]
+)
+@patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
+def test_recharge_and_stats(_mock, handler, monster, technique, method):
+    handler.learn(monster, technique)
+    getattr(handler, method)()
+
+
+@patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
+def test_find_tech_by_id(_mock, handler, monster, technique):
+    handler.learn(monster, technique)
+    found = handler.find_tech_by_id(technique.instance_id)
+    assert found is technique
+
+
+@patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
+def test_has_moves(_mock, handler, monster, technique):
+    assert not handler.has_moves()
+    handler.learn(monster, technique)
+    assert handler.has_moves()
+
+
+@patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
+def test_has_move(_mock, handler, monster, technique):
+    handler.learn(monster, technique)
+    assert handler.has_move(technique.slug)
+
+
+@patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
+def test_get_moves(_mock, handler, monster, technique):
+    handler.learn(monster, technique)
+    assert technique in handler.get_moves()
+
+
+@pytest.mark.parametrize(
+    "can_be_forgotten, expected",
+    [
+        (True, True),
+        (False, False),
+    ],
+)
+def test_can_forget(handler, can_be_forgotten, expected):
+    entry = MagicMock(
+        technique="fireball" if expected else "icewall",
+        can_be_forgotten=can_be_forgotten,
+    )
+    handler.set_moveset([entry])
+    tech = MagicMock(slug=entry.technique)
+    assert handler.can_forget(tech) is expected
+
+
+@patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
+def test_remove_forced(_mock, handler, monster, technique):
+    technique.slug = "shockwave"
+    handler.learn(monster, technique)
+    removed = handler.remove_forced(technique)
+    assert removed
+    assert technique not in handler.moves
+
+
+def test_is_eligible_stage_mismatch(handler, monster):
+    move = MagicMock(
+        technique="wave",
+        level_learned=3,
+        evolution_stage_learned=EvolutionStage.stage2,
+        learning_method=LearningMethod.LEVEL_UP,
+    )
+
+    handler.set_moveset([move])
+    monster.level = 4
+    monster.stage = EvolutionStage.basic
+
+    assert not handler.is_eligible(
+        monster, "wave", method=LearningMethod.LEVEL_UP
+    )
+
+
+def test_is_eligible_stage_match(handler, monster):
+    move = MagicMock(
+        technique="zap",
+        level_learned=2,
+        evolution_stage_learned=EvolutionStage.basic,
+        learning_method=LearningMethod.LEVEL_UP,
+    )
+
+    handler.set_moveset([move])
+    monster.level = 3
+    monster.stage = EvolutionStage.basic
+
+    assert handler.is_eligible(monster, "zap", method=LearningMethod.LEVEL_UP)

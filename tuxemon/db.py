@@ -673,6 +673,10 @@ class ItemModel(BaseModel, BaseLookupModel):
         default_factory=list,
         description="Statuses this item grants immunity to",
     )
+    granted_techniques: Sequence[str] = Field(
+        default_factory=list,
+        description="Technique slugs granted to the holder while this item is equipped.",
+    )
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> ItemModel:
@@ -710,6 +714,21 @@ class ItemModel(BaseModel, BaseLookupModel):
                     raise ValueError(
                         f"A status {status} doesn't exist in the db"
                     )
+        return v
+
+    @field_validator("granted_techniques")
+    def techniques_exist(cls, v: Sequence[str]) -> Sequence[str]:
+        for tech in v:
+            if not has.db_entry("technique", tech):
+                raise ValueError(
+                    f"Technique {tech} does not exist in the database"
+                )
+        return v
+
+    @field_validator("granted_techniques")
+    def validate_granted_techniques(cls, v: Sequence[str]) -> Sequence[str]:
+        if len(v) > sizes.MAX_MOVES:
+            raise ValueError("An item may grant at most 4 techniques")
         return v
 
 
@@ -873,8 +892,6 @@ class MonsterEvolutionItemModel(BaseModel):
     moves: Sequence[str] = Field(
         default_factory=list,
         description="The techniques that the monster must have learned for the evolution to occur.",
-        min_length=1,
-        max_length=sizes.MAX_MOVES,
     )
     bond: Optional[BondComparison] = Field(
         None,
@@ -910,6 +927,14 @@ class MonsterEvolutionItemModel(BaseModel):
                     raise ValueError(
                         f"A technique {element} doesn't exist in the db"
                     )
+        return v
+
+    @field_validator("moves")
+    def validate_moves(cls, v: Sequence[str]) -> Sequence[str]:
+        if len(v) < 1 or len(v) > sizes.MAX_MOVES:
+            raise ValueError(
+                f"moves must contain between 1 and {sizes.MAX_MOVES} techniques"
+            )
         return v
 
     @field_validator("tech")

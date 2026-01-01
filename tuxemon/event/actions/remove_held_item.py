@@ -45,7 +45,7 @@ class RemoveHeldItemAction(EventAction):
             logger.error("Monster not found")
             return
 
-        item = monster.item_handler.take_item()
+        item = monster.unequip_item()
         if item:
             logger.info(f"{item.name} has been removed from {monster.name}!")
         else:

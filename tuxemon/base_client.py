@@ -16,6 +16,7 @@ from tuxemon.constants import paths
 from tuxemon.core.active_effect import ActiveEffectManager
 from tuxemon.economy.shop_manager import ShopManager
 from tuxemon.encounter import EncounterManager
+from tuxemon.environment import EnvironmentManager
 from tuxemon.event import get_event_bus
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventcondition import ConditionManager
@@ -162,6 +163,7 @@ class BaseClient(ABC):
         self._map_renderer: AbstractRenderer = NullRenderer()
 
         # Various Sessions
+        self.environment_manager = EnvironmentManager()
         self.encounter_manager = EncounterManager()
         self.park_session = ParkSession()
         self.weather_manager = WorldWeatherManager()
@@ -202,6 +204,7 @@ class BaseClient(ABC):
             time_delta: Amount of time passed since last frame.
         """
         self.alert_manager.update(time_delta)
+        self.environment_manager.update(time_delta)
         self.weather_manager.update(time_delta)
         self.state_manager.update(time_delta)
         self.rumble_manager.update(time_delta)

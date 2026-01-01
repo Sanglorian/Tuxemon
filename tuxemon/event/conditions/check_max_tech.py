@@ -8,8 +8,8 @@ from dataclasses import dataclass
 from tuxemon.db import SpatialCondition
 from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
+from tuxemon.formula import config_monster
 from tuxemon.monster import Monster
-from tuxemon.platform.const.sizes import MAX_MOVES
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ class CheckMaxTechCondition(EventCondition):
             max_techs = (
                 int(condition.parameters[1])
                 if len(condition.parameters) > 1
-                else MAX_MOVES
+                else config_monster.max_moves
             )
         except ValueError:
             logger.error(

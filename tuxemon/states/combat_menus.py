@@ -335,7 +335,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 tech_enabled = True
 
                 if tech.is_recharging:
-                    tech_name = f"{tech.name} ({abs(tech.current_cooldown)})"
+                    tech_name = f"{tech.name} ({tech.cooldown.remaining})"
                     tech_color = self.unavailable_color
                     tech_enabled = False
 
@@ -463,7 +463,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
                 text_lines = {
                     "accuracy": f"{T.translate('technique_accuracy')} {int(technique.accuracy * 100)}%",
-                    "recharge": f"{T.translate('technique_recharge')} {technique.cooldown_duration} {T.translate('technique_turns')}",
+                    "recharge": f"{T.translate('technique_recharge')} {technique.cooldown.duration} {T.translate('technique_turns')}",
                 }
 
                 # Only add Power if it's not zero

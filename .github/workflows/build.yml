@@ -12,9 +12,8 @@ env:
 
 
 jobs:
-  appdata_validation:
-    uses: ./.github/workflows/appdata_validation.yml
-
+  metainfo_validation:
+    uses: ./.github/workflows/metainfo_validation.yml 
 
   flatpak:
     uses: ./.github/workflows/flatpak.yml 

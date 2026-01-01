@@ -13,7 +13,7 @@ from tuxemon.locale import T
 from tuxemon.world.menu_flags import MenuFlags
 
 if TYPE_CHECKING:
-    from tuxemon.client import LocalPygameClient
+    from tuxemon.base_client import BaseClient
     from tuxemon.npc import NPC
     from tuxemon.states.world_menus import WorldMenuState
 
@@ -34,7 +34,7 @@ class MenuItem:
 class WorldMenuManager:
     """Manages persistent menu items and builds the dynamic world menu."""
 
-    def __init__(self, client: LocalPygameClient) -> None:
+    def __init__(self, client: BaseClient) -> None:
         self.menu_flags = MenuFlags()
         self.menu_items: list[MenuItem] = []
         self.menu_renderer: Optional[WorldMenuState] = None

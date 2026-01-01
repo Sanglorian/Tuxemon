@@ -1,7 +1,7 @@
 import unittest
 
+from tuxemon.formula import config_monster
 from tuxemon.monster_dir.experience import MonsterExperience
-from tuxemon.platform.const.sizes import MAX_LEVEL
 
 
 class MockConfig:
@@ -38,8 +38,8 @@ class TestMonsterExperience(unittest.TestCase):
 
     def test_set_level_above_max(self):
         monster = MonsterExperience()
-        monster.set_level(MAX_LEVEL + 10)
-        self.assertEqual(monster.level, MAX_LEVEL)
+        monster.set_level(config_monster.level_range[1] + 10)
+        self.assertEqual(monster.level, config_monster.level_range[1])
 
     def test_experience_required_default_group(self):
         monster = MonsterExperience(level=5)
@@ -61,13 +61,13 @@ class TestMonsterExperience(unittest.TestCase):
         self.assertEqual(monster.level, 2)
 
     def test_give_experience_to_max_level(self):
-        monster = MonsterExperience(level=MAX_LEVEL - 1)
+        monster = MonsterExperience(level=config_monster.level_range[1] - 1)
         monster.give_experience(9999999)
-        self.assertEqual(monster.level, MAX_LEVEL)
+        self.assertEqual(monster.level, config_monster.level_range[1])
         self.assertTrue(monster.is_maxed_out)
 
     def test_excess_experience_at_max_level(self):
-        monster = MonsterExperience(level=MAX_LEVEL)
+        monster = MonsterExperience(level=config_monster.level_range[1])
         monster._total_experience = monster.experience_required() + 500
         excess = monster.excess_experience()
         self.assertEqual(excess, 500)
@@ -102,7 +102,7 @@ class TestMonsterExperience(unittest.TestCase):
         self.assertEqual(levels_gained, 4)
 
     def test_experience_required_at_max_level(self):
-        monster = MonsterExperience(level=MAX_LEVEL)
+        monster = MonsterExperience(level=config_monster.level_range[1])
         required = monster.experience_required(level_delta=1)
         self.assertGreater(required, 0)
         self.assertTrue(monster.is_maxed_out)
@@ -127,12 +127,14 @@ class TestMonsterExperience(unittest.TestCase):
         self.assertEqual(monster.level, 2)
 
     def test_is_maxed_out_property(self):
-        monster_low = MonsterExperience(level=MAX_LEVEL - 1)
+        monster_low = MonsterExperience(
+            level=config_monster.level_range[1] - 1
+        )
         self.assertFalse(monster_low.is_maxed_out)
-        monster_max = MonsterExperience(level=MAX_LEVEL)
+        monster_max = MonsterExperience(level=config_monster.level_range[1])
         self.assertTrue(monster_max.is_maxed_out)
         monster_set = MonsterExperience()
-        monster_set.set_level(MAX_LEVEL)
+        monster_set.set_level(config_monster.level_range[1])
         self.assertTrue(monster_set.is_maxed_out)
 
     def test_set_level_below_min(self):
@@ -179,7 +181,7 @@ class TestMonsterExperience(unittest.TestCase):
         monster = MonsterExperience(level=10)
         req_for_10 = monster.experience_required()
         monster._total_experience = req_for_10 + 500
-        if monster.level < MAX_LEVEL:
+        if monster.level < config_monster.level_range[1]:
             excess = monster.excess_experience()
             self.assertEqual(excess, 0)
 

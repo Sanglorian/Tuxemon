@@ -874,7 +874,7 @@ class MonsterEvolutionItemModel(BaseModel):
         default_factory=list,
         description="The techniques that the monster must have learned for the evolution to occur.",
         min_length=1,
-        max_length=sizes.MAX_MOVES,
+        max_length=config_monster.max_moves,
     )
     bond: Optional[BondComparison] = Field(
         None,
@@ -1108,8 +1108,8 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
     catch_rate: float = Field(
         ...,
         description="The catch rate of the monster",
-        ge=sizes.CATCH_RATE_RANGE[0],
-        le=sizes.CATCH_RATE_RANGE[1],
+        ge=config_monster.catch_rate_range[0],
+        le=config_monster.catch_rate_range[1],
     )
     gender_weights: dict[GenderType, float] = Field(
         ..., description="Weighted gender probabilities for this monster"
@@ -1117,14 +1117,14 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
     lower_catch_resistance: float = Field(
         ...,
         description="The lower catch resistance of the monster",
-        ge=sizes.CATCH_RESISTANCE_RANGE[0],
-        le=sizes.CATCH_RESISTANCE_RANGE[1],
+        ge=config_monster.catch_resistance_range[0],
+        le=config_monster.catch_resistance_range[1],
     )
     upper_catch_resistance: float = Field(
         ...,
         description="The upper catch resistance of the monster",
-        ge=sizes.CATCH_RESISTANCE_RANGE[0],
-        le=sizes.CATCH_RESISTANCE_RANGE[1],
+        ge=config_monster.catch_resistance_range[0],
+        le=config_monster.catch_resistance_range[1],
     )
     moveset: Sequence[MonsterMovesetItemModel] = Field(
         default_factory=list,
@@ -1890,6 +1890,7 @@ class BattleHudModel(BaseModel):
     tray_opponent: str = Field(
         ..., description="Sprite used for tray opponent background"
     )
+
     hp_bar_player: bool = Field(
         True, description="Whether draw or not player HP Bar"
     )
@@ -1900,13 +1901,52 @@ class BattleHudModel(BaseModel):
         True, description="Whether draw or not player EXP Bar"
     )
 
+    tray_center_offset: int = Field(
+        13, description="Horizontal offset for the tray center point"
+    )
+    icon_spacing_offset: int = Field(
+        8, description="Spacing offset between party icons"
+    )
+    animation_duration: float = Field(
+        2.0, description="Duration of the tray slide-in animation"
+    )
+    animation_delay: float = Field(
+        1.5, description="Delay before the tray starts sliding"
+    )
+    # Bars
+    hp_bar_width: int = Field(
+        70, ge=1, description="Default width (scaled units) of the HP bar."
+    )
+    hp_bar_height: int = Field(
+        8, ge=1, description="Default height (scaled units) of the HP bar."
+    )
+    hp_player_top: int = Field(
+        18,
+        description="Vertical offset from the top of the player's HUD sprite to place the HP bar.",
+    )
+    hp_opponent_top: int = Field(
+        12,
+        description="Vertical offset from the top of the opponent's HUD sprite to place the HP bar.",
+    )
+    exp_bar_height: int = Field(
+        6, ge=1, description="Default height (scaled units) of the EXP bar."
+    )
+    exp_bar_top: int = Field(
+        31,
+        description="Vertical offset from the top of the player's HUD sprite to place the EXP bar.",
+    )
+    bar_right_padding: int = Field(
+        8,
+        description="Horizontal padding between the right edge of the HUD sprite and the bar's right edge.",
+    )
+
     @field_validator(
         "hud_player",
         "hud_opponent",
         "tray_player",
         "tray_opponent",
     )
-    def file_exists(cls: BattleHudModel, v: str) -> str:
+    def file_exists(cls, v: str) -> str:
         if has.file(v):
             return v
         raise ValueError(f"no resource exists with path: {v}")
@@ -1935,7 +1975,7 @@ class BattleIconsModel(BaseModel):
         "icon_status",
         "icon_empty",
     )
-    def file_exists(cls: BattleIconsModel, v: str) -> str:
+    def file_exists(cls, v: str) -> str:
         if has.file(v) and has.size(v, sizes.ICON_SIZE):
             return v
         raise ValueError(f"no resource exists with path: {v}")
@@ -1950,21 +1990,40 @@ class BattleGraphicsModel(BaseModel):
     background: str = Field(..., description="Sprite used for background")
     hud: BattleHudModel
     icons: BattleIconsModel
+    island_offset_y: int = Field(
+        50, description="Vertical shift for islands relative to HUD home"
+    )
+    enemy_base_offset: int = Field(
+        12, description="Vertical offset for enemy relative to island bottom"
+    )
+    monster_base_offset: int = Field(
+        24,
+        description="Vertical offset for wild monsters relative to island bottom",
+    )
+    player_base_offset: int = Field(
+        6, description="Vertical offset for player relative to island center"
+    )
+    entry_jump_distance: int = Field(
+        50, description="Vertical 'bounce' during entry."
+    )
+    entry_duration: float = Field(
+        3.0, description="Seconds for the entry transition."
+    )
 
     @field_validator("island_back", "island_front")
-    def island_exists(cls: BattleGraphicsModel, v: str) -> str:
+    def island_exists(cls, v: str) -> str:
         if has.file(v) and has.size(v, sizes.ISLAND_SIZE):
             return v
         raise ValueError(f"no resource exists with path: {v}")
 
     @field_validator("background")
-    def background_exists(cls: BattleGraphicsModel, v: str) -> str:
+    def background_exists(cls, v: str) -> str:
         if has.file(v) and has.size(v, sizes.BATTLE_BG_SIZE):
             return v
         raise ValueError(f"no resource exists with path: {v}")
 
     @field_validator("menu")
-    def check_state(cls: BattleGraphicsModel, v: str) -> str:
+    def check_state(cls, v: str) -> str:
         states = [state.name for state in State]
         if v in states:
             return v

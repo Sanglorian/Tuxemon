@@ -4,17 +4,16 @@ from __future__ import annotations
 
 import logging
 import time
-from threading import Thread
+from collections.abc import Callable
+from queue import Empty
 
 import pygame
 from pygame.surface import Surface
 
 from tuxemon.base_client import BaseClient, ClientState
-from tuxemon.cli.processor import CommandProcessor
 from tuxemon.config import TuxemonConfig
 from tuxemon.map.map_tuxemon import NullMap
 from tuxemon.map.map_view import DebugRenderer, MapRenderer, NullRenderer
-from tuxemon.session import local_session
 from tuxemon.state.draw import EventDebugDrawer, Renderer, StateDrawer
 
 logger = logging.getLogger(__name__)
@@ -76,13 +75,6 @@ class LocalPygameClient(BaseClient):
             self.camera_manager, self.npc_manager, self.debug_renderer
         )
         self.set_renderer(map_renderer)
-
-        if self.config.cli:
-            local_session.set_client(self)
-            self.cli = CommandProcessor(local_session)
-            thread = Thread(target=self.cli.run)
-            thread.daemon = True
-            thread.start()
 
     def reset_renderer(self) -> None:
         current_map = self.map_manager.current_map
@@ -150,6 +142,16 @@ class LocalPygameClient(BaseClient):
         self.network_manager.update(time_delta)
         self.input_cache.clear_frame_state()
         events = self.input_manager.process_events()
+
+        while True:
+            try:
+                command = self.command_queue.get_nowait()
+            except Empty:
+                break
+            command()
+            self.command_queue.task_done()
+            logger.debug("Executed queued command.")
+
         self.input_manager.update(time_delta)
         self.key_events = list(self.event_manager.process_events(events))
         self.event_data = {}
@@ -159,6 +161,10 @@ class LocalPygameClient(BaseClient):
             logger.debug("Event Data:" + str(self.event_data))
 
         self.update_states(time_delta)
+
+    def queue_command(self, command: Callable[[], None]) -> None:
+        self.command_queue.put(command)
+        logger.debug("Queued command for execution in main thread.")
 
     def draw(self) -> None:
         """Centralized draw logic."""

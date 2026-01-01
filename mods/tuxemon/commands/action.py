@@ -76,7 +76,9 @@ class ActionCommand(CLICommand):
         line = f"{self.name} {line}"
         name, args = parse_action_string(line)
         try:
-            ctx.session.client.event_engine.execute_action(name, args)
+            ctx.session.client.queue_command(
+                lambda: ctx.session.client.event_engine.execute_action(name, args)
+            )
         except Exception as e:
             print(f"Error executing action {e}", file=sys.stderr)
             traceback.print_exc()

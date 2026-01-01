@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tuxemon.constants.paths import get_active_mod_paths, mods_folder
-from tuxemon.plugin import load_directory
+from tuxemon.plugin import PluginManager
 from tuxemon.state.state import State
 
 if TYPE_CHECKING:
@@ -124,13 +124,14 @@ class StateLoader:
         ]
         plugin_folders.extend(mod_state_folders)
 
-        # Load plugins from all valid folders
-        pm = load_directory(
+        pm = PluginManager.from_directory(
             plugin_folders=plugin_folders,
-            include=(
-                top_level_modules if plugin_folders[0] == state_folder else []
-            ),
             root_path=mods_folder.parent,
+            include=(
+                top_level_modules
+                if plugin_folders and plugin_folders[0] == state_folder
+                else []
+            ),
             exclude=["State"],
         )
 

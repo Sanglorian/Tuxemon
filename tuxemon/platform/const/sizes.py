@@ -72,16 +72,6 @@ U_FT: str = "ft"
 MAX_TYPES_BAG: int = 99
 MAX_MENU_ITEMS: int = 11
 
-# Monster Limits
-MAX_LEVEL: int = 100
-MAX_TPS: int = 150
-MAX_TOTAL_TPS: int = 300
-DEFAULT_TP_GAIN: int = 1
-MAX_MOVES: int = 4
-CATCH_RATE_RANGE: tuple[int, int] = (0, 100)
-CATCH_RESISTANCE_RANGE: tuple[float, float] = (0.0, 2.0)
-COEFF_STATS: int = 7  # Multiplier for stats calculation
-
 # Camera
 CAMERA_SHAKE_RANGE: tuple[float, float] = (0.0, 3.0)
 

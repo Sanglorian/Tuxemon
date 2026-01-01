@@ -16,8 +16,9 @@ from tuxemon.combat.utils import check_battle_legal
 from tuxemon.db import MonsterModel, NpcModel, db
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
+from tuxemon.formula import config_monster
 from tuxemon.monster import Monster
-from tuxemon.platform.const.sizes import MAX_LEVEL, PARTY_LIMIT
+from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.session import Session
 from tuxemon.time_handler import today_ordinal
 
@@ -60,9 +61,9 @@ class RandomBattleAction(EventAction):
             raise ValueError(
                 f"Party size {self.nr_txmns} must be between 1 and {PARTY_LIMIT}"
             )
-        if not (1 <= self.max_level <= MAX_LEVEL):
+        if not (1 <= self.max_level <= config_monster.level_range[1]):
             raise ValueError(
-                f"Max level {self.max_level} must be between 1 and {MAX_LEVEL}"
+                f"Max level {self.max_level} must be between 1 and {config_monster.level_range[1]}"
             )
 
     def _prepare_opponent(self, session: Session) -> None:

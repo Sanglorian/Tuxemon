@@ -1,12 +1,40 @@
-# Starting Bond value
+# Range level a monster can have
+level_range: [0, 100]
+
+# Maximum Training Points (TPs) a single stat can have
+max_tps: 150
+
+# Maximum total TPs a monster can accumulate across all stats
+max_total_tps: 300
+
+# Default TP gained per battle or training action
+default_tp_gain: 1
+
+# Maximum number of moves a monster can know at once
+max_moves: 4
+
+# Range for catch rate values (0 = impossible, 100 = guaranteed)
+catch_rate_range: [0, 100]
+
+# Range for catch resistance multipliers (higher = harder to catch)
+catch_resistance_range: [0.0, 2.0]
+
+# Starting bond value when a monster is first obtained
 starting_bond: 25
 
-# Defines the bond value range (0 = no bond, 100 = max bond)
+# Allowed bond range (0 = no bond, 100 = maximum bond)
 bond_range: [0, 100]
 
-# Bond modifiers triggered by specific monster events
+# Bond changes triggered by specific events
 bond_modifiers:
+  # Bond penalty when the monster faints in battle
   fainted: -10
+
+# Allowed range for Individual Values (IVs)
+iv_range: [0, 15]
+
+# Multiplier used in stat calculation formulas
+coeff_stats: 7
 
 # Defines a random interval for weight fluctuation (±10% variation)
 weight_range: [-0.1, 0.1]

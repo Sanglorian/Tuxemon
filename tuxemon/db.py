@@ -874,7 +874,7 @@ class MonsterEvolutionItemModel(BaseModel):
         default_factory=list,
         description="The techniques that the monster must have learned for the evolution to occur.",
         min_length=1,
-        max_length=sizes.MAX_MOVES,
+        max_length=config_monster.max_moves,
     )
     bond: Optional[BondComparison] = Field(
         None,
@@ -1108,8 +1108,8 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
     catch_rate: float = Field(
         ...,
         description="The catch rate of the monster",
-        ge=sizes.CATCH_RATE_RANGE[0],
-        le=sizes.CATCH_RATE_RANGE[1],
+        ge=config_monster.catch_rate_range[0],
+        le=config_monster.catch_rate_range[1],
     )
     gender_weights: dict[GenderType, float] = Field(
         ..., description="Weighted gender probabilities for this monster"
@@ -1117,14 +1117,14 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
     lower_catch_resistance: float = Field(
         ...,
         description="The lower catch resistance of the monster",
-        ge=sizes.CATCH_RESISTANCE_RANGE[0],
-        le=sizes.CATCH_RESISTANCE_RANGE[1],
+        ge=config_monster.catch_resistance_range[0],
+        le=config_monster.catch_resistance_range[1],
     )
     upper_catch_resistance: float = Field(
         ...,
         description="The upper catch resistance of the monster",
-        ge=sizes.CATCH_RESISTANCE_RANGE[0],
-        le=sizes.CATCH_RESISTANCE_RANGE[1],
+        ge=config_monster.catch_resistance_range[0],
+        le=config_monster.catch_resistance_range[1],
     )
     moveset: Sequence[MonsterMovesetItemModel] = Field(
         default_factory=list,

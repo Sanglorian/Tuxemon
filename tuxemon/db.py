@@ -725,12 +725,6 @@ class ItemModel(BaseModel, BaseLookupModel):
                 )
         return v
 
-    @field_validator("granted_techniques")
-    def validate_granted_techniques(cls, v: Sequence[str]) -> Sequence[str]:
-        if len(v) > sizes.MAX_MOVES:
-            raise ValueError("An item may grant at most 4 techniques")
-        return v
-
 
 class AttributesModel(BaseModel):
     armour: int = Field(..., description="Armour value")
@@ -931,10 +925,8 @@ class MonsterEvolutionItemModel(BaseModel):
 
     @field_validator("moves")
     def validate_moves(cls, v: Sequence[str]) -> Sequence[str]:
-        if len(v) < 1 or len(v) > sizes.MAX_MOVES:
-            raise ValueError(
-                f"moves must contain between 1 and {sizes.MAX_MOVES} techniques"
-            )
+        if not v:
+            raise ValueError(f"Moves must contain at least 1 technique")
         return v
 
     @field_validator("tech")
@@ -1168,6 +1160,11 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
     )
     sounds: MonsterSoundsModel = Field(
         description="The sounds this monster has"
+    )
+    max_moves: int = Field(
+        default=config_monster.max_moves,
+        description="Maximum number of moves this monster can know",
+        ge=1,
     )
 
     @classmethod

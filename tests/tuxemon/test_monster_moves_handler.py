@@ -9,6 +9,15 @@ from tuxemon.db import EvolutionStage, LearningMethod
 from tuxemon.monster_dir.moves import MonsterMovesHandler
 
 
+class DummyMonster:
+    def __init__(self, level=5, stage="basic", max_moves=4):
+        self.level = level
+        self.stage = stage
+        self.max_moves = max_moves
+        self.slug = "dummy"
+        self.iid = UUID("123e4567-e89b-12d3-a456-426655440000")
+
+
 @pytest.fixture
 def handler():
     return MonsterMovesHandler()
@@ -24,12 +33,7 @@ def technique():
 
 @pytest.fixture
 def monster():
-    m = MagicMock()
-    m.level = 3
-    m.stage = "basic"
-    m.iid = UUID("123e4567-e89b-12d3-a456-426655440000")
-    m.slug = "testmon"
-    return m
+    return DummyMonster()
 
 
 def test_init(handler):
@@ -230,3 +234,56 @@ def test_is_eligible_stage_match(handler, monster):
     monster.stage = EvolutionStage.basic
 
     assert handler.is_eligible(monster, "zap", method=LearningMethod.LEVEL_UP)
+
+
+def test_apply_item_techniques_adds_moves():
+    handler = MonsterMovesHandler()
+    monster = DummyMonster(max_moves=2)
+    item = MagicMock()
+    item.granted_techniques = ["fireball", "icebeam"]
+    with patch("tuxemon.technique.technique.Technique.create") as mock_create:
+        mock_create.side_effect = lambda slug: MagicMock(slug=slug)
+
+        handler.apply_item_techniques(monster, item)
+    assert {m.slug for m in handler.moves} == {"fireball", "icebeam"}
+    assert monster.max_moves == 4
+
+
+def test_remove_item_techniques_removes_moves_and_reduces_capacity():
+    handler = MonsterMovesHandler()
+    monster = DummyMonster(max_moves=4)
+    handler.moves = [
+        MagicMock(slug="fireball"),
+        MagicMock(slug="icebeam"),
+        MagicMock(slug="tackle"),
+    ]
+    item = MagicMock()
+    item.granted_techniques = ["fireball", "icebeam"]
+    handler.remove_item_techniques(monster, item)
+    assert {m.slug for m in handler.moves} == {"tackle"}
+    assert monster.max_moves == 2
+
+
+def test_apply_item_techniques_does_not_duplicate_moves():
+    handler = MonsterMovesHandler()
+    monster = DummyMonster(max_moves=3)
+    handler.moves = [MagicMock(slug="fireball")]
+    item = MagicMock()
+    item.granted_techniques = ["fireball", "icebeam"]
+    with patch("tuxemon.technique.technique.Technique.create") as mock_create:
+        mock_create.side_effect = lambda slug: MagicMock(slug=slug)
+
+        handler.apply_item_techniques(monster, item)
+
+    assert {m.slug for m in handler.moves} == {"fireball", "icebeam"}
+    assert monster.max_moves == 4
+
+
+def test_remove_item_techniques_never_negative_capacity():
+    handler = MonsterMovesHandler()
+    monster = DummyMonster(max_moves=1)
+    handler.moves = [MagicMock(slug="fireball")]
+    item = MagicMock()
+    item.granted_techniques = ["fireball"]
+    handler.remove_item_techniques(monster, item)
+    assert monster.max_moves == 0

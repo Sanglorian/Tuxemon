@@ -113,6 +113,7 @@ class Monster:
         self.experience_handler: MonsterExperience = MonsterExperience()
 
         self.money_modifier: float = 0.0
+        self.max_moves: int = 1
 
         self.types = ElementTypesHandler()
         self.shape: ShapeHandler = ShapeHandler()
@@ -290,6 +291,7 @@ class Monster:
         self.types = ElementTypesHandler(results.types)
 
         self.randomly = results.randomly
+        self.max_moves = results.max_moves
 
         self.txmn_id = results.txmn_id
         self.set_capture(self.capture)
@@ -373,13 +375,13 @@ class Monster:
     def equip_item(self, item: Item) -> bool:
         result = self.item_handler.set_item(item)
         if result:
-            self.moves.apply_item_techniques(item)
+            self.moves.apply_item_techniques(self, item)
         return result
 
     def unequip_item(self) -> Item | None:
         item = self.item_handler.take_item()
         if item:
-            self.moves.remove_item_techniques(item)
+            self.moves.remove_item_techniques(self, item)
             return item
         return None
 

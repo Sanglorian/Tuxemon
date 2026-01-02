@@ -16,6 +16,7 @@ from tuxemon.technique.technique import Technique, decode_moves, encode_moves
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
     from tuxemon.monster import Monster
+    from tuxemon.session import Session
 
 
 logger = logging.getLogger(__name__)
@@ -331,6 +332,15 @@ class MonsterMovesHandler:
 
     def get_moves(self) -> list[Technique]:
         return self.moves
+
+    def get_usable_moves(
+        self, session: Session, opponents: Sequence[Monster]
+    ) -> list[Technique]:
+        usable = []
+        for tech in self.moves:
+            if any(tech.can_use(session, target) for target in opponents):
+                usable.append(tech)
+        return usable
 
     def get_pending_moves(self, monster_iid: UUID) -> list[str]:
         return self.pending_moves.get(monster_iid, [])

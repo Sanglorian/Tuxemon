@@ -715,9 +715,9 @@ class Monster:
 
 
 def decode_monsters(
-    json_data: Optional[Sequence[Mapping[str, Any]]],
+    json_data: Sequence[Mapping[str, Any]] | None,
 ) -> list[Monster]:
-    return [Monster(save_data=mon) for mon in json_data or {}]
+    return [Monster(save_data=mon) for mon in (json_data or [])]
 
 
 def encode_monsters(mons: Sequence[Monster]) -> Sequence[Mapping[str, Any]]:

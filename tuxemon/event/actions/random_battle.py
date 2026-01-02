@@ -14,7 +14,7 @@ from tuxemon.combat.combat_context import (
 )
 from tuxemon.combat.utils import check_battle_legal
 from tuxemon.database.runtime import db
-from tuxemon.db import EnvironmentModel, MonsterModel, NpcModel
+from tuxemon.db import MonsterModel, NpcModel
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.formula import config_monster

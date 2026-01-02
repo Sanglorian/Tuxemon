@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -66,7 +66,7 @@ def test_make_decision_use_potion(mock_ai, mock_evaluator, mock_tracker):
 
 
 def test_make_decision_select_move(mock_ai, mock_evaluator, mock_tracker):
-    mock_tracker.get_valid_moves.return_value = [
+    mock_ai.get_available_moves.return_value = [
         (MagicMock(slug="tackle"), MagicMock(slug="enemy"))
     ]
     mock_tracker.evaluate_technique.return_value = 10.0
@@ -76,12 +76,12 @@ def test_make_decision_select_move(mock_ai, mock_evaluator, mock_tracker):
     )
     strategy.make_decision(mock_ai)
 
-    mock_tracker.get_valid_moves.assert_called_once_with(mock_ai.opponents)
+    mock_ai.get_available_moves.assert_called_once()
     mock_ai.action_tech.assert_called_once()
 
 
 def test_select_move_no_valid_actions(mock_ai, mock_evaluator, mock_tracker):
-    mock_tracker.get_valid_moves.return_value = []
+    mock_ai.get_available_moves.return_value = []
     target = MagicMock(slug="enemy")
 
     strategy = TrainerAIDecisionStrategy(
@@ -103,7 +103,7 @@ def test_handle_monster_config_executes_technique(
 ):
     technique = MagicMock(slug="fireball")
     opponent = MagicMock(slug="enemy")
-    mock_tracker.get_valid_moves.return_value = [(technique, opponent)]
+    mock_ai.get_available_moves.return_value = [(technique, opponent)]
 
     monster_config = MagicMock()
     monster_config.techniques = [
@@ -153,9 +153,10 @@ def test_check_ai_techs_returns_correct_config(mock_evaluator, mock_tracker):
 
 # WildAIDecisionStrategy tests
 def test_wild_ai_make_decision(mock_ai, mock_evaluator, mock_tracker):
-    mock_tracker.get_valid_moves.return_value = [
+    mock_ai.get_available_moves.return_value = [
         (MagicMock(slug="scratch"), MagicMock(slug="enemy"))
     ]
+    mock_ai.evaluate_technique.return_value = 5.0
     mock_tracker.evaluate_technique.return_value = 5.0
     mock_evaluator.get_best_target.return_value = MagicMock(slug="enemy")
 

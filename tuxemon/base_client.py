@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Sequence
 from enum import Enum
-from queue import Queue
+from queue import Empty, Queue
 from threading import Thread
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload
 
@@ -17,6 +17,7 @@ from tuxemon.cli.processor import CommandProcessor
 from tuxemon.combat.session import CombatSession
 from tuxemon.constants import paths
 from tuxemon.core.active_effect import ActiveEffectManager
+from tuxemon.core.asset import init_assets
 from tuxemon.economy.shop_manager import ShopManager
 from tuxemon.encounter import EncounterManager
 from tuxemon.environment import EnvironmentManager
@@ -39,6 +40,7 @@ from tuxemon.npc_manager import NPCManager
 from tuxemon.park_tracker import ParkSession
 from tuxemon.platform.afk_manager import AFKManager
 from tuxemon.platform.input_manager import InputManager
+from tuxemon.platform.input_recorder import InputRecorder
 from tuxemon.platform.tools import ScriptInputCache
 from tuxemon.rumble import RumbleManager
 from tuxemon.session import local_session
@@ -74,6 +76,7 @@ class BaseClient(ABC):
     """
 
     def __init__(self, config: TuxemonConfig) -> None:
+        init_assets()
         self.config = config
         self.active_effect_manager = ActiveEffectManager()
 
@@ -93,9 +96,12 @@ class BaseClient(ABC):
         self.current_time = 0.0
 
         # setup controls
+        self.input_recorder = InputRecorder()
         self.afk_manager = AFKManager()
         self.input_cache = ScriptInputCache(self.event_bus)
-        self.input_manager = InputManager(config, self.afk_manager)
+        self.input_manager = InputManager(
+            config, self.afk_manager, self.input_recorder
+        )
 
         # Set up our networking for multiplayer.
         self.network_manager = NetworkManager(self)
@@ -215,13 +221,37 @@ class BaseClient(ABC):
         Parameters:
             time_delta: Amount of time passed since last frame.
         """
+        self.network_manager.update(time_delta)
+        self.input_cache.clear_frame_state()
+        events = self.input_manager.process_events()
+
+        while True:
+            try:
+                command = self.command_queue.get_nowait()
+            except Empty:
+                break
+            command()
+            self.command_queue.task_done()
+            logger.debug("Executed queued command.")
+
+        self.input_manager.update(time_delta)
+        self.key_events = list(self.event_manager.process_events(events))
+
+        self.event_data = {}
+        self.event_engine.update(time_delta)
+
+        if self.event_data:
+            logger.debug(f"Event Data: {str(self.event_data)}")
+
         self.alert_manager.update(time_delta)
         self.environment_manager.update(time_delta)
         self.weather_manager.update(time_delta)
         self.state_manager.update(time_delta)
         self.rumble_manager.update(time_delta)
+
         if self.state_manager.current_state is None:
             self.state = ClientState.EXITING
+
         self.active_effect_manager.update(local_session, time_delta)
 
     def get_map_name(self) -> str:

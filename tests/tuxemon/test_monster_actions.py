@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
 from unittest.mock import MagicMock, patch
 
+from tuxemon.core.asset import init_assets
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     EvolutionStage,
     MonsterModel,
     TechniqueModel,
-    db,
 )
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventengine import EventEngine
@@ -16,7 +17,6 @@ from tuxemon.game_variables import GameVariablesManager
 from tuxemon.npc import PartyHandler
 from tuxemon.player import Player
 from tuxemon.session import local_session
-from tuxemon.surfanim import FlipAxes
 
 
 def mockPlayer(self) -> None:
@@ -27,6 +27,7 @@ def mockPlayer(self) -> None:
 
 
 class TestMonsterActions(unittest.TestCase):
+    init_assets()
     _dragon_attr = MagicMock(
         armour=7, dodge=5, hp=6, melee=6, ranged=6, speed=6
     )

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """This module contains the Start state."""
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import pygame_menu
 from pygame.surface import Surface
 from pygame_menu import locals
 
-from tuxemon.db import db
+from tuxemon.database.runtime import db
 from tuxemon.launcher import GameLauncher
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState

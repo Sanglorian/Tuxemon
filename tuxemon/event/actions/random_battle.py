@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -13,7 +13,8 @@ from tuxemon.combat.combat_context import (
     CombatType,
 )
 from tuxemon.combat.utils import check_battle_legal
-from tuxemon.db import MonsterModel, NpcModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import MonsterModel, NpcModel
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.formula import config_monster

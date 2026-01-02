@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -34,7 +34,7 @@ class CheckMaxTechCondition(EventCondition):
     Script parameters:
         character: Either "player" or NPC slug name (e.g. "npc_maple").
         nr: Optional integer specifying the minimum number of techniques.
-            Defaults to the constant MAX_MOVES.
+            Defaults to the config_monster.max_moves.
 
     Examples:
         - "is check_max_tech player"
@@ -67,15 +67,18 @@ class CheckMaxTechCondition(EventCondition):
 
         matching_monsters: list[Monster] = []
         for monster in target_character.monsters:
+            threshold = (
+                int(condition.parameters[1])
+                if len(condition.parameters) > 1
+                else monster.max_moves
+            )
+
             num_moves = len(monster.moves.current_moves)
             logger.debug(
                 f"Checking monster: {monster.name} (ID: {monster.instance_id}) with {num_moves} moves"
             )
 
-            if num_moves > max_techs:
-                logger.debug(
-                    f"  Monster '{monster.name}' exceeds technique threshold"
-                )
+            if num_moves > threshold:
                 matching_monsters.append(monster)
 
         session.client.event_data[self.name] = matching_monsters

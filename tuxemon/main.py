@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Optional
 
 from tuxemon import log
 from tuxemon.client import LocalPygameClient
-from tuxemon.db import db
+from tuxemon.database.runtime import db
 from tuxemon.headless_client import HeadlessClient
 from tuxemon.launcher import GameLauncher
 from tuxemon.prepare import SCREEN

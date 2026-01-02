@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -13,7 +13,6 @@ import yaml
 from tuxemon.constants import paths
 from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
-from tuxemon.formula import config_monster
 from tuxemon.session import Session
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import get_valid_uuid
@@ -113,9 +112,13 @@ class ReplaceTechsFromYamlAction(EventAction):
             if "slug" in item
         ]
 
-        if len(move_slugs) > config_monster.max_moves:
+        if len(move_slugs) > monster.max_moves:
+            logger.warning(
+                f"Moveset '{self.set_name}' contains more moves than allowed "
+                f"({len(move_slugs)} > {monster.max_moves}). Randomly selecting {monster.max_moves}."
+            )
             moves_to_use = random.choices(
-                move_slugs, weights=weights, k=config_monster.max_moves
+                move_slugs, weights=weights, k=monster.max_moves
             )
         else:
             moves_to_use = move_slugs

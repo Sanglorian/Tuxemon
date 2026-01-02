@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from collections.abc import Callable
 from typing import Any
 
-from tuxemon import db
+from tuxemon.db import PlagueType
 from tuxemon.locale import T
 
 logger = logging.getLogger(__name__)
@@ -226,9 +226,9 @@ def _handle_change_plague(save_data: dict[str, Any]) -> None:
     def change_plague(monster: dict[str, Any]) -> None:
         if not isinstance(monster["plague"], dict):
             if monster["plague"] == "infected":
-                monster["plague"] = {"spyderbite": db.PlagueType.infected}
+                monster["plague"] = {"spyderbite": PlagueType.infected}
             elif monster["plague"] == "inoculated":
-                monster["plague"] = {"spyderbite": db.PlagueType.inoculated}
+                monster["plague"] = {"spyderbite": PlagueType.inoculated}
             else:
                 monster["plague"] = {}
 

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -73,7 +73,7 @@ class WildEncounterAction(EventAction):
             current_monster.money_modifier = self.money
         if self.held_item is not None:
             item = Item.create(self.held_item)
-            output = current_monster.item_handler.set_item(item)
+            output = current_monster.equip_item(item)
             if not output:
                 return
         current_monster.wild = True

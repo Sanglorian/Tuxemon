@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from collections import OrderedDict
@@ -281,8 +281,7 @@ class MonsterMenuHandler:
         if mon.moves.moves:
             actions["tech"] = partial(self.monster_techs, mon)
 
-        if mon.held_item:
-            actions["item"] = partial(self.monster_item, mon)
+        actions["item"] = partial(self.monster_item, mon)
 
         if self.party.party_size > 1:
             actions.update(

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """Headless initialization for Tuxemon (no pygame dependency)."""
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ JOYSTICKS: list[Any] = []
 
 def headless_init() -> None:
     """Initializes game components for a headless environment."""
-    from tuxemon.db import db
+    from tuxemon.database.runtime import db
     from tuxemon.locale import T
 
     T.initialize_translations(recompile=CONFIG.recompile_translations)

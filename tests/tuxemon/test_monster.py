@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
 from unittest.mock import MagicMock
 
-from tuxemon.db import Modifier, db
+from tuxemon.database.runtime import db
+from tuxemon.db import Modifier
 from tuxemon.formula import config_monster
 from tuxemon.monster import Monster
 from tuxemon.monster_dir.stats import IndividualValues

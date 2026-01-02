@@ -1,19 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import json
 import logging
-from collections.abc import Callable
+from enum import Enum, auto
+from itertools import count
 from typing import TYPE_CHECKING, Any, Optional, TypedDict
 
 import pygame as pg
 
-from tuxemon.network.networking import (
-    EventType,
-    populate_client,
-    update_client,
-)
+from tuxemon.network.event_dispatcher import EventDispatcher
+from tuxemon.network.networking import EventData, update_client
 from tuxemon.network.websocket_client import WebsocketClientWrapper
 from tuxemon.npc import NPC
 from tuxemon.session import local_session
@@ -21,7 +18,6 @@ from tuxemon.states import world_state as world
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
-    from tuxemon.network.networking import EventData
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +28,12 @@ class GameEntry(TypedDict):
     name: str
 
 
+class ConnState(Enum):
+    DISCONNECTED = auto()
+    REGISTERING = auto()
+    READY = auto()
+
+
 class TuxemonClient:
     """Manages multiplayer networking and synchronization for a local game client."""
 
@@ -39,8 +41,6 @@ class TuxemonClient:
         self,
         game: BaseClient,
         server_port: int = 40081,
-        wait_delay: float = 0.25,
-        ping_time: float = 2.0,
     ) -> None:
         """
         Initializes the client with networking, event handling, and multiplayer
@@ -48,8 +48,7 @@ class TuxemonClient:
         """
         self.game = game
         self.server_port = server_port
-        self.wait_delay = wait_delay
-        self.ping_time = ping_time
+
         self.dispatcher = EventDispatcher(self)
         self.input_translator = InputEventTranslator(self)
         self.sync_manager = PlayerSyncManager(self)
@@ -60,26 +59,33 @@ class TuxemonClient:
         self.available_games: list[tuple[str, int]] = []
         self.server_list: list[str] = []
         self.selected_game: Optional[tuple[str, int]] = None
-        self.enable_join_multiplayer = False
 
-        self.populated = False
-        self.listening = False
-        self.event_list: dict[str, int] = {}
+        self.populated: bool = False
+        self.listening: bool = False
+        self.event_counter = count(start=1)
 
-        self.client = WebsocketClientWrapper(port=self.server_port)
-        self.client.registry = {}
+        # Networking wrapper: handles loop, JSON, ping.
+        self.client = WebsocketClientWrapper(
+            port=self.server_port,
+            ping_interval=2.0,
+        )
 
     @property
     def registry(self) -> dict[str, Any]:
         return self.client.registry
 
+    def send_event(self, event_data: dict[str, Any]) -> None:
+        """Helper to send a high-level event dict over the network."""
+        self.client.send_event(event_data)
+
     def connect_to_host(self, ip_address: str, port: int) -> None:
         """
-        Sets up the client to attempt connection to a specified host/port.
+        Sets up the client to attempt connection to a specified host/port
+        and kicks off connection immediately.
         """
         self.selected_game = (ip_address, port)
-        self.enable_join_multiplayer = True
         self.listening = True
+        self.connection_manager.connect_to_host(ip_address, port)
 
     def disconnect(self) -> None:
         """Closes the client connection and resets its state."""
@@ -87,15 +93,16 @@ class TuxemonClient:
             return
 
         self.client.disconnect()
+        self.connection_manager.disconnect()
         self.listening = False
-        self.enable_join_multiplayer = False
         self.selected_game = None
         self.client.registry = {}
         self.server_list = []
+        self.populated = False
 
-    def update(self, time_delta: float) -> None:
+    def update(self) -> None:
         """Synchronizes game state and handles connection updates per frame."""
-        self.connection_manager.update(time_delta)
+        self.connection_manager.update()
         self.check_notify()
 
     def check_notify(self) -> None:
@@ -120,12 +127,18 @@ class TuxemonClient:
         self.sync_manager.update_player(direction, event_type)
 
     def set_key_condition(self, event: Any) -> None:
-        """Translates and sends input events to the server."""
-        self.input_translator.translate(event)
+        """Translates input events into network events."""
+        payload = self.input_translator.translate(event)
+        if payload is not None:
+            self.send_event(payload)
 
     def update_client_map(self, cuuid: str, event_data: EventData) -> None:
         """Updates a remote client's map and character state from server data."""
-        sprite = self.client.registry[cuuid]["sprite"]
+        entry = self.client.registry.get(cuuid)
+        if not entry:
+            logger.warning(f"Unknown client {cuuid} in CLIENT_MAP_UPDATE")
+            return
+        sprite = entry["sprite"]
         self.client.registry[cuuid]["map_name"] = event_data.map_name
         update_client(sprite, event_data.char_dict, self.game)
 
@@ -147,194 +160,30 @@ class TuxemonClient:
         """Handles routing of combat-related events."""
         self.interaction_manager.route_combat(event)
 
-    def send_ping(self) -> None:
-        """Sends a ping to the server to maintain connection activity."""
-        self.sync_manager.send_ping()
-
-
-class EventDispatcher:
-    def __init__(self, client: TuxemonClient):
-        self.client = client
-        self.game = client.game
-        self.handlers: dict[EventType, Callable[[EventData, str], None]] = {
-            EventType.CLIENT_DISCONNECTED: self.handle_client_disconnected,
-            EventType.PUSH_SELF: self.handle_push_self,
-            EventType.CLIENT_MOVE_START: self.handle_client_move_start,
-            EventType.CLIENT_MOVE_COMPLETE: self.handle_client_move_complete,
-            EventType.CLIENT_KEYDOWN: self.handle_keydown,
-            EventType.CLIENT_KEYUP: self.handle_keyup,
-            EventType.CLIENT_FACING: self.handle_client_facing,
-            EventType.CLIENT_INTERACTION: self.handle_interaction,
-            EventType.CLIENT_START_BATTLE: self.handle_client_start_battle,
-        }
-
-    def dispatch(self, event_dict: dict[str, Any]) -> None:
-        try:
-            event_data = EventData.from_dict(event_dict)
-            event_enum = event_data.type
-
-        except Exception as e:
-            logger.warning(f"Failed to process incoming event: {e}")
-            return
-
-        euuid = "ws-event"
-
-        if event_enum == EventType.CLIENT_MAP_UPDATE:
-            if event_data.cuuid is None:
-                logger.warning(
-                    f"Missing cuuid in CLIENT_MAP_UPDATE event: {euuid}"
-                )
-                return
-            self.client.update_client_map(event_data.cuuid, event_data)
-            return
-
-        handler = self.handlers.get(event_enum)
-        if handler:
-            logger.debug(f"Dispatching {event_enum} for {euuid}")
-            handler(event_data, euuid)
-        else:
-            logger.warning(f"No handler defined for event type: {event_enum}")
-            logger.debug(f"Unhandled event payload: {event_data.to_dict()}")
-
-    def handle_client_disconnected(
-        self, event_data: EventData, euuid: str
-    ) -> None:
-        cuuid = event_data.cuuid
-        if cuuid is None:
-            logger.warning(
-                f"Missing cuuid in CLIENT_DISCONNECTED event: {euuid}"
-            )
-            return
-
-        self.client.registry.pop(cuuid, None)
-        logger.info(f"Client {cuuid} disconnected.")
-
-    def handle_push_self(self, event_data: EventData, euuid: str) -> None:
-        cuuid = event_data.cuuid
-        if cuuid is None:
-            logger.warning(f"Missing cuuid in PUSH_SELF event: {euuid}")
-            return
-
-        self.client.registry.setdefault(cuuid, {})
-        sprite = populate_client(
-            cuuid, event_data, self.game, self.client.registry
-        )
-        update_client(sprite, event_data.char_dict, self.game)
-        logger.info(f"Processed PUSH_SELF event for client {cuuid}.")
-
-    def handle_client_move_start(
-        self, event_data: EventData, euuid: str
-    ) -> None:
-        cuuid = event_data.cuuid
-        direction = event_data.direction
-        if cuuid is None or direction is None:
-            logger.warning(f"Missing data in CLIENT_MOVE_START event: {euuid}")
-            return
-
-        sprite = self.client.registry.get(cuuid, {}).get("sprite")
-        if sprite:
-            sprite.facing = direction
-            for d in sprite.direction:
-                sprite.direction[d] = d == direction
-        logger.info(f"Client {cuuid} started moving {direction}.")
-
-    def handle_client_move_complete(
-        self, event_data: EventData, euuid: str
-    ) -> None:
-        cuuid = event_data.cuuid
-        if cuuid is None or event_data.char_dict is None:
-            logger.warning(
-                f"Missing data in CLIENT_MOVE_COMPLETE event: {euuid}"
-            )
-            return
-
-        sprite = self.client.registry.get(cuuid, {}).get("sprite")
-        if sprite:
-            sprite.final_move_dest = event_data.char_dict.tile_pos
-            for d in sprite.direction:
-                sprite.direction[d] = False
-        logger.info(f"Client {cuuid} completed their move.")
-
-    def handle_keydown(self, event_data: EventData, euuid: str) -> None:
-        cuuid = event_data.cuuid
-        kb_key = event_data.kb_key
-        if cuuid is None or kb_key is None:
-            logger.warning(f"Missing data in CLIENT_KEYDOWN event: {euuid}")
-            return
-
-        sprite = self.client.registry.get(cuuid, {}).get("sprite")
-        if sprite and kb_key == "SHIFT":
-            sprite.running = True
-        logger.info(f"Client {cuuid} pressed {kb_key}.")
-
-    def handle_keyup(self, event_data: EventData, euuid: str) -> None:
-        cuuid = event_data.cuuid
-        kb_key = event_data.kb_key
-        if cuuid is None or kb_key is None:
-            logger.warning(f"Missing data in CLIENT_KEYUP event: {euuid}")
-            return
-
-        sprite = self.client.registry.get(cuuid, {}).get("sprite")
-        if sprite and kb_key == "SHIFT":
-            sprite.running = False
-        logger.info(f"Client {cuuid} released {kb_key}.")
-
-    def handle_client_facing(self, event_data: EventData, euuid: str) -> None:
-        cuuid = event_data.cuuid
-        if cuuid is None or event_data.char_dict is None:
-            logger.warning(f"Missing data in CLIENT_FACING event: {euuid}")
-            return
-
-        sprite = self.client.registry.get(cuuid, {}).get("sprite")
-        if sprite and not sprite.moving:
-            sprite.facing = event_data.char_dict.facing
-        logger.info(f"Client {cuuid} updated facing direction.")
-
-    def handle_interaction(self, event_data: EventData, euuid: str) -> None:
-        cuuid = event_data.cuuid
-        if cuuid is None:
-            logger.warning(
-                f"Missing cuuid in CLIENT_INTERACTION event: {euuid}"
-            )
-            return
-
-        world_state = self.game.get_state_by_name(world.WorldState)
-        world_state.handle_interaction(event_data, self.client.registry)
-        logger.info(f"Processed interaction for client {cuuid}.")
-
-    def handle_client_start_battle(
-        self, event_data: EventData, euuid: str
-    ) -> None:
-        cuuid = event_data.cuuid
-        if cuuid is None or event_data.char_dict is None:
-            logger.warning(
-                f"Missing data in CLIENT_START_BATTLE event: {euuid}"
-            )
-            return
-
-        sprite = self.client.registry.get(cuuid, {}).get("sprite")
-        if sprite:
-            sprite.running = False
-            sprite.final_move_dest = event_data.char_dict.tile_pos
-            for d in sprite.direction:
-                sprite.direction[d] = False
-        logger.info(f"Client {cuuid} started a battle.")
-
 
 class InputEventTranslator:
+    """
+    Pure translator: converts pygame events into high-level network event dicts.
+    It does NOT perform any sending; that is the caller's responsibility.
+    """
+
     def __init__(self, client: TuxemonClient):
         self.client = client
 
-    def translate(self, event: Any) -> None:
+    def translate(self, event: Any) -> dict[str, Any] | None:
+        """
+        Returns a dict ready to be sent over the network via
+        TuxemonClient.send_event, or None if no event should be sent.
+        """
         if (
             self.client.game.current_state
             != self.client.game.get_state_by_name(world.WorldState)
         ):
             logger.debug("Input ignored: not in WorldState.")
-            return
+            return None
 
-        event_type = None
-        kb_key = None
+        event_type: str | None = None
+        kb_key: str | None = None
 
         if event.type == pg.KEYDOWN:
             event_type = "CLIENT_KEYDOWN"
@@ -343,13 +192,33 @@ class InputEventTranslator:
             event_type = "CLIENT_KEYUP"
             kb_key = self._map_key(event.key)
 
-        if kb_key in {"up", "down", "left", "right"}:
+        if event.type == pg.KEYDOWN and kb_key in {
+            "up",
+            "down",
+            "left",
+            "right",
+        }:
             event_type = "CLIENT_FACING"
 
         logger.debug(f"Translated input: type={event_type}, key={kb_key}")
 
-        if event_type and kb_key:
-            self._send_event(event_type, kb_key)
+        if not event_type or not kb_key:
+            return None
+
+        event_data_dict: dict[str, Any] = {
+            "type": event_type,
+            "event_number": next(self.client.event_counter),
+        }
+
+        if event_type == "CLIENT_FACING":
+            if self.client.game.network_manager.is_connected():
+                event_data_dict["char_dict"] = {"facing": kb_key}
+            else:
+                return None
+        else:
+            event_data_dict["kb_key"] = kb_key
+
+        return EventData.from_dict(event_data_dict).to_dict()
 
     def _map_key(self, key: int) -> Optional[str]:
         key_map = {
@@ -366,27 +235,6 @@ class InputEventTranslator:
         }
         return key_map.get(key)
 
-    def _send_event(self, event_type: str, kb_key: str) -> None:
-        if event_type not in self.client.event_list:
-            self.client.event_list[event_type] = 0
-
-        event_data_dict = {
-            "type": event_type,
-            "event_number": self.client.event_list[event_type],
-        }
-
-        if event_type == "CLIENT_FACING":
-            if self.client.game.network_manager.is_connected():
-                event_data_dict["char_dict"] = {"facing": kb_key}
-        else:
-            event_data_dict["kb_key"] = kb_key
-
-        event_data_obj = EventData.from_dict(event_data_dict)
-        json_data = json.dumps(event_data_obj.to_dict())
-
-        self.client.event_list[event_type] += 1
-        self.client.client.send(json_data)
-
 
 class PlayerSyncManager:
     """
@@ -397,73 +245,52 @@ class PlayerSyncManager:
         self.client = client
         self.game = client.game
 
+    def _send_event(self, event_type: str, **fields: Any) -> None:
+        """
+        Helper for building and sending typed events with an incrementing
+        event_number. Centralizes the boilerplate.
+        """
+        payload: dict[str, Any] = {
+            "type": event_type,
+            "event_number": next(self.client.event_counter),
+        }
+        payload.update(fields)
+        event_data_obj = EventData.from_dict(payload)
+        self.client.send_event(event_data_obj.to_dict())
+
     def populate_player(self, event_type: str = "PUSH_SELF") -> None:
         """Sends client character to the server."""
-        if event_type not in self.client.event_list:
-            self.client.event_list[event_type] = 0
-
         player_data = local_session.player.__dict__
         map_name = self.game.get_map_name()
 
-        event_data_dict = {
-            "type": event_type,
-            "event_number": self.client.event_list[event_type],
-            "map_name": map_name,
-            "char_dict": {
-                "tile_pos": player_data.get("tile_pos", [0, 0]),
-                "name": player_data.get("name", "Unnamed Player"),
-                "facing": player_data.get("facing", "down"),
-            },
+        char_dict = {
+            "tile_pos": player_data.get("tile_pos", [0, 0]),
+            "name": player_data.get("name", "Unnamed Player"),
+            "facing": player_data.get("facing", "down"),
         }
 
-        event_data_obj = EventData.from_dict(event_data_dict)
-        json_data = json.dumps(event_data_obj.to_dict())
-
-        self.client.event_list[event_type] += 1
-        self.client.client.send(json_data)
+        self._send_event(
+            event_type,
+            map_name=map_name,
+            char_dict=char_dict,
+        )
         self.client.populated = True
 
     def update_player(
         self, direction: str, event_type: str = "CLIENT_MAP_UPDATE"
     ) -> None:
         """Sends client's current map and location to the server."""
-        if event_type not in self.client.event_list:
-            self.client.event_list[event_type] = 0
-
         pd = local_session.player.__dict__
         map_name = self.game.get_map_name()
 
-        event_data_dict = {
-            "type": event_type,
-            "event_number": self.client.event_list[event_type],
-            "map_name": map_name,
-            "direction": direction,
-            "char_dict": {"tile_pos": pd["tile_pos"]},
-        }
+        char_dict = {"tile_pos": pd["tile_pos"]}
 
-        event_data_obj = EventData.from_dict(event_data_dict)
-        json_data = json.dumps(event_data_obj.to_dict())
-
-        self.client.event_list[event_type] += 1
-        self.client.client.send(json_data)
-
-    def send_ping(self) -> None:
-        """Sends server a ping to let it know that it is still alive."""
-        event_type = "PING"
-        if event_type not in self.client.event_list:
-            self.client.event_list[event_type] = 1
-        else:
-            self.client.event_list[event_type] += 1
-
-        event_data_dict = {
-            "type": event_type,
-            "event_number": self.client.event_list[event_type],
-        }
-
-        event_data_obj = EventData.from_dict(event_data_dict)
-        json_data = json.dumps(event_data_obj.to_dict())
-
-        self.client.client.send(json_data)
+        self._send_event(
+            event_type,
+            map_name=map_name,
+            direction=direction,
+            char_dict=char_dict,
+        )
 
 
 class MultiplayerDiscovery:
@@ -520,19 +347,8 @@ class InteractionManager:
     ) -> None:
         """
         Sends client-to-client interaction request to the server.
-
-        Parameters:
-            sprite: The character sprite that the player is interacting with.
-            interaction: The type of interaction being performed
-                (e.g., "TALK", "TRADE", "BATTLE").
-            event_type: The type of event being triggered.
-            response: Additional data or feedback from the interaction,
-                if applicable.
         """
-        if event_type not in self.client.event_list:
-            self.client.event_list[event_type] = 1
-
-        cuuid = None
+        cuuid: str | None = None
         for client_id, data in self.client.registry.items():
             if data.get("sprite") == sprite:
                 cuuid = client_id
@@ -542,7 +358,7 @@ class InteractionManager:
 
         event_data = {
             "type": event_type,
-            "event_number": self.client.event_list[event_type],
+            "event_number": next(self.client.event_counter),
             "interaction": interaction,
             "target": cuuid,
             "response": response,
@@ -552,76 +368,47 @@ class InteractionManager:
             },
         }
 
-        self.client.event_list[event_type] += 1
-        self.client.client.event(event_data)
+        self.client.send_event(EventData.from_dict(event_data).to_dict())
 
     def route_combat(self, event: Any) -> None:
-        """
-        Handles routing of combat-related events.
-        """
+        """Handles routing of combat-related events."""
         logger.debug(f"Combat event received: {event}")
 
 
 class ConnectionManager:
     """
-    Manages connection lifecycle and server communication for multiplayer
-    sessions.
+    Minimal connection manager: delegates lifecycle to WebsocketClientWrapper,
+    and only coordinates registration and "ready" state for gameplay.
     """
 
     def __init__(self, client: TuxemonClient):
         self.client = client
-        self.game = client.game
-        self.ping_timer = client.ping_time
-        self.retry_timer = 0.0
-        self.retry_interval = 5.0  # seconds between retry attempts
+        self.state = ConnState.DISCONNECTED
 
-    def update(self, time_delta: float) -> None:
+    def update(self) -> None:
         """
-        Updates connection state and sends periodic pings.
+        Checks registration state and transitions into READY when the
+        underlying WebsocketClientWrapper reports registration.
         """
-        if self.client.enable_join_multiplayer:
-            self.retry_timer += time_delta
-            if self.retry_timer >= self.retry_interval:
-                self.retry_timer = 0
-                self.retry_join_multiplayer()
-        else:
-            self.retry_timer = 0
+        if self.state is ConnState.DISCONNECTED:
+            return
 
-        if self.client.client.registered and not self.client.populated:
-            self.client.sync_manager.populate_player()
+        if self.state is ConnState.REGISTERING:
+            if self.client.client.registered and not self.client.populated:
+                self.client.sync_manager.populate_player()
+                self.state = ConnState.READY
 
-        if self.ping_timer >= 2:
-            self.ping_timer = 0
-            self.client.sync_manager.send_ping()
-        else:
-            self.ping_timer += time_delta
-
-    def join_multiplayer(self) -> bool:
+    def connect_to_host(self, ip: str, port: int) -> None:
         """
-        Attempts to connect to the selected multiplayer server.
-        Returns True if a connection attempt was made, False otherwise.
+        Attempts to connect to the selected multiplayer server immediately.
         """
-        if self.game.network_manager.is_host():
-            self.client.enable_join_multiplayer = False
-            return False
+        if self.client.game.network_manager.is_host():
+            logger.info("Skipping client connection: running as host.")
+            return
 
-        if self.client.client.registered:
-            self.client.enable_join_multiplayer = False
-            return False
+        logger.info(f"Connecting to WS server: {ip}:{port}")
+        self.client.client.start_connection(ip, port)
+        self.state = ConnState.REGISTERING
 
-        if self.client.selected_game:
-            ip, port = self.client.selected_game
-            logger.info(f"Attempting to connect to WS server: {ip}:{port}")
-            self.client.client.start_connection(ip, port)
-            self.client.enable_join_multiplayer = False
-            return True
-
-        return False
-
-    def retry_join_multiplayer(self) -> None:
-        """
-        Attempts to reconnect to the server after retry interval has elapsed.
-        """
-        success = self.join_multiplayer()
-        if not success:
-            logger.warning("Retry failed — will try again later.")
+    def disconnect(self) -> None:
+        self.state = ConnState.DISCONNECTED

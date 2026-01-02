@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import logging
 import sys
 from pathlib import Path
@@ -70,6 +70,10 @@ logger.debug(f"user game data: {USER_GAME_DATA_DIR}")
 # game savegame dir
 USER_GAME_SAVE_DIR = USER_STORAGE_DIR / "saves"
 logger.debug(f"save games: {USER_GAME_SAVE_DIR}")
+
+# game recording dir
+USER_RECORDING_DIR = USER_STORAGE_DIR / "recordings"
+logger.debug(f"recordings: {USER_RECORDING_DIR}")
 
 # game cache dir
 CACHE_DIR = USER_STORAGE_DIR / "cache"

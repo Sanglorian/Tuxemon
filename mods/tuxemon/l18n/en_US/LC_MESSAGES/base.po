@@ -3659,6 +3659,14 @@ msgstr ""
 msgid "slime"
 msgstr "Slime"
 
+msgid "snowball_description"
+msgstr ""
+"The user hurls a compact ball of snow at the target, dealing light damage "
+"and chilling them slightly."
+
+msgid "snowball"
+msgstr "Snowball"
+
 msgid "snowstorm_description"
 msgstr ""
 "A blizzard engulfs the opponent, inflicting cold damage and leaving them "
@@ -3668,7 +3676,9 @@ msgid "snowstorm"
 msgstr "Snowstorm"
 
 msgid "sockpuppet_description"
-msgstr "Tobedefined."
+msgstr ""
+"The user whips out a quirky sock puppet that mimics its movements, confusing "
+"the foe and shielding the user from tricks and status moves for several turns."
 
 msgid "sockpuppet"
 msgstr "Sockpuppet"

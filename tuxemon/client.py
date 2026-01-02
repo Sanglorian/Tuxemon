@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 import time
 from collections.abc import Callable
-from queue import Empty
 
 import pygame
 from pygame.surface import Surface
@@ -131,35 +130,9 @@ class LocalPygameClient(BaseClient):
         """
         Main loop for entire game.
 
-        This method gets update every frame
-        by Asteria Networking's "listen()" function. Every frame we get the
-        amount of time that has passed each frame, check game conditions,
-        and draw the game to the screen.
-
         Parameters:
             time_delta: Elapsed time since last frame.
         """
-        self.network_manager.update(time_delta)
-        self.input_cache.clear_frame_state()
-        events = self.input_manager.process_events()
-
-        while True:
-            try:
-                command = self.command_queue.get_nowait()
-            except Empty:
-                break
-            command()
-            self.command_queue.task_done()
-            logger.debug("Executed queued command.")
-
-        self.input_manager.update(time_delta)
-        self.key_events = list(self.event_manager.process_events(events))
-        self.event_data = {}
-        self.event_engine.update(time_delta)
-
-        if self.event_data:
-            logger.debug("Event Data:" + str(self.event_data))
-
         self.update_states(time_delta)
 
     def queue_command(self, command: Callable[[], None]) -> None:

@@ -28,26 +28,14 @@ from pydantic import (
     model_validator,
 )
 
-from tuxemon.constants.asset_loader import (
-    fetch_asset,
-    fetch_mod_asset_roots,
-)
-from tuxemon.constants.paths import mods_folder
 from tuxemon.database.config import EntryNotFoundError
 from tuxemon.database.data import ModData
-from tuxemon.database.loader import ModelLoader
-from tuxemon.database.utils import load_config
-from tuxemon.database.validator import Validator
+from tuxemon.database.registry import validator as has
 from tuxemon.formula import config_monster
-from tuxemon.locale import T
 from tuxemon.platform.const import sizes
 from tuxemon.surfanim import FlipAxes
-from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
-
-# Load the default translator for data validation
-T.initialize_translations()
 
 
 class Direction(str, Enum):
@@ -672,6 +660,10 @@ class ItemModel(BaseModel, BaseLookupModel):
         default_factory=list,
         description="Statuses this item grants immunity to",
     )
+    granted_techniques: Sequence[str] = Field(
+        default_factory=list,
+        description="Technique slugs granted to the holder while this item is equipped.",
+    )
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> ItemModel:
@@ -707,6 +699,15 @@ class ItemModel(BaseModel, BaseLookupModel):
                     raise ValueError(
                         f"A status {status} doesn't exist in the db"
                     )
+        return v
+
+    @field_validator("granted_techniques")
+    def techniques_exist(cls, v: Sequence[str]) -> Sequence[str]:
+        for tech in v:
+            if not has.db_entry("technique", tech):
+                raise ValueError(
+                    f"Technique {tech} does not exist in the database"
+                )
         return v
 
 
@@ -869,8 +870,6 @@ class MonsterEvolutionItemModel(BaseModel):
     moves: Sequence[str] = Field(
         default_factory=list,
         description="The techniques that the monster must have learned for the evolution to occur.",
-        min_length=1,
-        max_length=config_monster.max_moves,
     )
     bond: Optional[BondComparison] = Field(
         None,
@@ -904,6 +903,12 @@ class MonsterEvolutionItemModel(BaseModel):
                     raise ValueError(
                         f"A technique {element} doesn't exist in the db"
                     )
+        return v
+
+    @field_validator("moves")
+    def validate_moves(cls, v: Sequence[str]) -> Sequence[str]:
+        if not v:
+            raise ValueError(f"Moves must contain at least 1 technique")
         return v
 
     @field_validator("tech")
@@ -1127,6 +1132,11 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
     )
     sounds: MonsterSoundsModel = Field(
         description="The sounds this monster has"
+    )
+    max_moves: int = Field(
+        default=config_monster.max_moves,
+        description="Maximum number of moves this monster can know",
+        ge=1,
     )
 
     @classmethod
@@ -2952,14 +2962,3 @@ def load_model_map(
         module = import_module(module_name)
         model_map[table] = getattr(module, class_name)
     return model_map
-
-
-fetch_mod_asset_roots(CONFIG)
-path = fetch_asset(mods_folder.as_posix(), "db_config.yaml")
-config = load_config(path)
-model_map = load_model_map(config.model_map)
-loader = ModelLoader(model_map)
-# Global database container
-db = ModData(config, loader)
-# Validator container
-has = Validator(db)

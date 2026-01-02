@@ -9,7 +9,8 @@ from typing import Any, ClassVar, Optional
 from pygame_menu.locals import POSITION_EAST
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon.db import ItemModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import ItemModel
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.prepare import SCALE, SCREEN_SIZE

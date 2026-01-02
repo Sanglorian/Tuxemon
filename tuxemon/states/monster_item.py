@@ -44,14 +44,14 @@ class MonsterItemState(PygameMenuState):
 
         def choose_target(menu_item: MenuItem[Item]) -> None:
             item = menu_item.game_object
-            monster.item_handler.set_item(item)
+            monster.equip_item(item)
             owner.bag.remove_item(item)
             self.client.remove_state_by_name("ItemMenuState")
             self.client.remove_state_by_name("MonsterItemState")
             self.client.remove_state_by_name("MonsterMenuState")
 
         def remove_item() -> None:
-            item = monster.item_handler.take_item()
+            item = monster.unequip_item()
             if item:
                 owner.bag.add_item(item)
             self.client.remove_state_by_name("MonsterItemState")

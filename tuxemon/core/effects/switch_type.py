@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
-from tuxemon.db import db
+from tuxemon.database.runtime import db
 from tuxemon.element import Element
 
 if TYPE_CHECKING:

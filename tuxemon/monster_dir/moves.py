@@ -11,10 +11,10 @@ from tuxemon.db import (
     LearningMethod,
     MonsterMovesetItemModel,
 )
-from tuxemon.formula import config_monster
 from tuxemon.technique.technique import Technique, decode_moves, encode_moves
 
 if TYPE_CHECKING:
+    from tuxemon.item.item import Item
     from tuxemon.monster import Monster
     from tuxemon.session import Session
 
@@ -46,12 +46,27 @@ class MonsterMovesHandler:
         """
         self.moves.append(technique)
 
+    def apply_item_techniques(self, monster: Monster, item: Item) -> None:
+        for tech_slug in item.granted_techniques:
+            if not self.has_move(tech_slug):
+                monster.max_moves += 1
+                self.add_move(Technique.create(tech_slug))
+
+    def remove_item_techniques(self, monster: Monster, item: Item) -> None:
+        granted = set(item.granted_techniques)
+        removed = sum(1 for m in self.moves if m.slug in granted)
+        self.moves = [m for m in self.moves if m.slug not in granted]
+
+        monster.max_moves -= removed
+        if monster.max_moves < 0:
+            monster.max_moves = 0
+
     def learn(
         self,
         monster: Monster,
         technique: Technique,
-        max_moves: int = config_monster.max_moves,
-        method: Optional[LearningMethod] = None,
+        max_moves: int | None = None,
+        method: LearningMethod | None = None,
         ignore_eligibility: bool = False,
     ) -> bool:
         """
@@ -67,6 +82,9 @@ class MonsterMovesHandler:
         Returns:
             True if the technique was learned, False otherwise.
         """
+        if max_moves is None:
+            max_moves = monster.max_moves
+
         if not ignore_eligibility and not self.is_technique_eligible(
             monster, technique, method
         ):
@@ -196,8 +214,8 @@ class MonsterMovesHandler:
     def set_moves(
         self,
         monster: Monster,
-        max_moves: int = config_monster.max_moves,
-        method: LearningMethod = LearningMethod.LEVEL_UP,
+        max_moves: int | None = None,
+        method: LearningMethod | None = None,
     ) -> None:
         """
         Set monster moves according to its current level and evolution stage.
@@ -207,6 +225,12 @@ class MonsterMovesHandler:
             max_moves: The maximum number of moves the monster can have at once.
             method: The method by which the monster learns moves.
         """
+        if max_moves is None:
+            max_moves = monster.max_moves
+
+        if method is None:
+            method = LearningMethod.LEVEL_UP
+
         eligible_moves = [
             move.technique
             for move in self.moveset

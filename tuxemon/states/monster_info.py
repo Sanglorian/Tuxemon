@@ -9,7 +9,8 @@ import pygame_menu
 from pygame_menu import locals
 
 from tuxemon import formula
-from tuxemon.db import MonsterModel, TasteModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import MonsterModel, TasteModel
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme

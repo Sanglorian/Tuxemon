@@ -45,7 +45,7 @@ JOYSTICKS: list[Any] = []
 
 def headless_init() -> None:
     """Initializes game components for a headless environment."""
-    from tuxemon.db import db
+    from tuxemon.database.runtime import db
     from tuxemon.locale import T
 
     T.initialize_translations(recompile=CONFIG.recompile_translations)

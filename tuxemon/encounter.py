@@ -8,11 +8,11 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     EncounterItemModel,
     EncounterModel,
     EncounterType,
-    db,
 )
 from tuxemon.user_config import CONFIG
 

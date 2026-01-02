@@ -10,6 +10,7 @@ from uuid import UUID, uuid4
 from tuxemon.core.asset import get_assets
 from tuxemon.core.core_effect import StatusEffectResult
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     CategoryStatus,
     EffectPhase,
@@ -21,7 +22,6 @@ from tuxemon.db import (
     StatusModel,
     StepEffectType,
     VisualProperties,
-    db,
 )
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler

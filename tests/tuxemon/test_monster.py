@@ -3,7 +3,8 @@
 import unittest
 from unittest.mock import MagicMock
 
-from tuxemon.db import Modifier, db
+from tuxemon.database.runtime import db
+from tuxemon.db import Modifier
 from tuxemon.formula import config_monster
 from tuxemon.monster import Monster
 from tuxemon.monster_dir.stats import IndividualValues

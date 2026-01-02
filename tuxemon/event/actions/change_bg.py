@@ -8,7 +8,7 @@ from typing import Optional, final
 
 from pygame_menu import locals
 
-from tuxemon.db import db
+from tuxemon.database.runtime import db
 from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.theme import get_theme
 from tuxemon.platform.const.graphics import BACKGROUND_COLOR

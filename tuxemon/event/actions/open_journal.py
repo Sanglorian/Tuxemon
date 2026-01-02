@@ -6,7 +6,8 @@ import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.db import MonsterModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import MonsterModel
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 

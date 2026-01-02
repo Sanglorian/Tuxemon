@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-from tuxemon.db import AttributesModel, ShapeModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import AttributesModel, ShapeModel
 
 logger = logging.getLogger(__name__)
 

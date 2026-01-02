@@ -9,7 +9,8 @@ from typing import Optional, Protocol
 import pygame
 
 from tuxemon.constants.asset_loader import fetch_asset
-from tuxemon.db import MusicStatus, db
+from tuxemon.database.runtime import db
+from tuxemon.db import MusicStatus
 from tuxemon.platform import mixer as mixer2
 from tuxemon.platform.const.sizes import (
     MUSIC_FADEIN,

@@ -48,10 +48,11 @@ def pygame_init() -> None:
 
     import pygame as pg
 
-    from tuxemon.db import db
     from tuxemon.locale import T
 
     T.initialize_translations(recompile=CONFIG.recompile_translations)
+    from tuxemon.database.runtime import db
+
     db.load()
 
     logger.debug("pygame init")

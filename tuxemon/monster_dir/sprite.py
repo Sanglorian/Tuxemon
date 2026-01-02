@@ -11,7 +11,8 @@ from typing import Any, Optional
 from pygame.surface import Surface
 
 from tuxemon import graphics, tools
-from tuxemon.db import ColorModel, FlairModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import ColorModel, FlairModel
 from tuxemon.platform.const.graphics import MISSING_IMAGE
 from tuxemon.prepare import SCALE
 from tuxemon.sprite import Sprite

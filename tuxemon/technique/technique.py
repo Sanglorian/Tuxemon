@@ -10,6 +10,7 @@ from uuid import UUID, uuid4
 from tuxemon.core.asset import get_assets
 from tuxemon.core.core_effect import TechEffectResult
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     MenuAction,
     Range,
@@ -17,7 +18,6 @@ from tuxemon.db import (
     TechBehaviors,
     TechniqueModel,
     VisualProperties,
-    db,
 )
 from tuxemon.element import ElementTypesHandler
 from tuxemon.locale import T

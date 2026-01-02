@@ -10,7 +10,8 @@ import pygame_menu
 from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
-from tuxemon.db import MonsterModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import MonsterModel
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MINIGAME, MISSING_IMAGE

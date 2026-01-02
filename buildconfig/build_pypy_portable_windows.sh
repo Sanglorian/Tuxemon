@@ -5,7 +5,7 @@
 # Depends on coreutils, curl, p7zip-full and wine
 PYPY_VERSION="pypy3.10"
 PYPY_BUILD="pypy3.10-v7.3.14-win64"
-PYGAME_VERSION="2.2.0"
+PYGAME_VERSION="2.5.6"
 ROOT_FOLDER="$(dirname "$(readlink -f "$0")")/../"
 BUILD_DIR="build/pypy-win-64bit"
 PYPY_ARCHIVE="$PYPY_BUILD.zip"

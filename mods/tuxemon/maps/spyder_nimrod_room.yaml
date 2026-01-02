@@ -43,9 +43,9 @@ events:
     type: event
   Environment:
     actions:
-    - set_variable environment:interior
+    - set_environment interior
     conditions:
-    - not variable_set environment:interior
+    - not environment_is interior
     type: event
   FlashBack Zircon and Argon:
     actions:

@@ -264,21 +264,6 @@ def pairs(direction: Direction) -> Direction:
     return opposite
 
 
-def proj(point: Vector3) -> Vector2:
-    """
-    Project 3d coordinates to 2d.
-
-    Not necessarily for use on a screen.
-
-    Parameters:
-        point: The 3d vector to project.
-
-    Returns:
-        2d projection vector.
-    """
-    return Vector2(point.x, point.y)
-
-
 def tiles_inside_rect(
     rect: ReadOnlyRect,
     grid_size: tuple[int, int],

@@ -34,7 +34,7 @@ from tuxemon.ui.menu_options import (
 from tuxemon.ui.text import TextArea, draw_text
 
 if TYPE_CHECKING:
-    from tuxemon.client import LocalPygameClient
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity_dir.party import PartyHandler
     from tuxemon.monster import Monster
 
@@ -178,7 +178,7 @@ class MonsterMenuState(Menu[Optional[Monster]]):
 class MonsterMenuHandler:
     """Handles interactions within the monster menu."""
 
-    def __init__(self, client: LocalPygameClient, party: PartyHandler) -> None:
+    def __init__(self, client: BaseClient, party: PartyHandler) -> None:
         """Initialize with client and character."""
         self.name = "WorldMenuState"
         self.client = client

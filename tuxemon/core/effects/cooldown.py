@@ -49,7 +49,7 @@ class CoolDownEffect(CoreEffect):
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
 
-        if not _is_next_use_valid(self.current_cooldown):
+        if not RECHARGE_RANGE[0] <= self.current_cooldown <= RECHARGE_RANGE[1]:
             raise ValueError(
                 f"{self.name}: {self.current_cooldown} must be between {RECHARGE_RANGE}"
             )
@@ -82,21 +82,17 @@ class CoolDownEffect(CoreEffect):
 
         _update_moves(moves_to_update, self.current_cooldown)
         if self.current_cooldown > 0:
-            tech.current_cooldown -= 1
+            tech.cooldown.tick()
 
         return TechEffectResult(name=tech.name, success=True)
 
 
-def _is_next_use_valid(current_cooldown: int) -> bool:
-    return RECHARGE_RANGE[0] <= current_cooldown <= RECHARGE_RANGE[1]
-
-
 def _update_moves(moves: list[Technique], current_cooldown: int) -> None:
     for move in moves:
+        cd = move.cooldown
+
         if current_cooldown == 0:
-            move.current_cooldown -= 1
+            cd.tick()
         else:
-            if move.current_cooldown <= move.cooldown_duration:
-                move.current_cooldown = min(
-                    move.current_cooldown + current_cooldown, RECHARGE_RANGE[1]
-                )
+            if cd.remaining <= cd.duration:
+                cd.add(current_cooldown, RECHARGE_RANGE[1])

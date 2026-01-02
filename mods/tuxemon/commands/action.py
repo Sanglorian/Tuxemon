@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import sys
@@ -76,7 +76,9 @@ class ActionCommand(CLICommand):
         line = f"{self.name} {line}"
         name, args = parse_action_string(line)
         try:
-            ctx.session.client.event_engine.execute_action(name, args)
+            ctx.session.client.queue_command(
+                lambda: ctx.session.client.event_engine.execute_action(name, args)
+            )
         except Exception as e:
             print(f"Error executing action {e}", file=sys.stderr)
             traceback.print_exc()

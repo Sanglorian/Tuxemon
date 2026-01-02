@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -10,7 +10,8 @@ from pygame_menu import locals
 from pygame_menu.widgets.widget.label import Label
 from pygame_menu.widgets.widget.progressbar import ProgressBar
 
-from tuxemon.db import MonsterModel, SpeedLabel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import MonsterModel, SpeedLabel
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
@@ -164,7 +165,7 @@ class MonsterMovesState(PygameMenuState):
             {
                 "id": technique.tech_id,
                 "types": types_text,
-                "rec": str(technique.cooldown_duration),
+                "rec": str(technique.cooldown.duration),
             },
         )
 

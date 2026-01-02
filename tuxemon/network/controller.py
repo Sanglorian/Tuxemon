@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """This module contains the Tuxemon server and client."""
 from __future__ import annotations
 
@@ -8,12 +8,14 @@ import logging
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Protocol
 
+from tuxemon.network.networking import EventType
 from tuxemon.network.websocket_server import WebsocketServerWrapper
 from tuxemon.platform.const import buttons
+from tuxemon.platform.events import PlayerInput
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
-    from tuxemon.platform.events import PlayerInput
+
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +38,11 @@ class WebsocketSControllerWrapper(ServerInterface):
         """Starts the underlying WebSocket server."""
         self.server.start_listening(self.port)
 
-    def get_incoming_events(self) -> Sequence[str | dict[str, Any]]:
+    def get_incoming_events(
+        self,
+    ) -> Sequence[tuple[str, str | dict[str, Any]]]:
         """Returns all incoming controller events."""
-        return [payload for _, payload in self.server.get_incoming_events()]
+        return self.server.get_incoming_events()
 
     def get_next_event_number(self) -> int:
         return self.controller_server.get_next_event_number()
@@ -85,10 +89,6 @@ class ControllerServer:
         return self._event_counter
 
     def net_controller_loop(self) -> Sequence[PlayerInput]:
-        """
-        Processes all network events from controllers by pulling them from the
-        WebSocket wrapper's receive queue.
-        """
         event_map = {
             "KEYDOWN:up": PlayerInput(button=buttons.UP, value=1),
             "KEYUP:up": PlayerInput(button=buttons.UP, value=0),
@@ -103,20 +103,24 @@ class ControllerServer:
             "KEYDOWN:esc": PlayerInput(button=buttons.BACK, value=1),
             "KEYUP:esc": PlayerInput(button=buttons.BACK, value=0),
         }
+
         events: list[PlayerInput] = []
 
-        for raw_payload in self.server.get_incoming_events():
+        for cuuid, raw_payload in self.server.get_incoming_events():
             try:
                 if isinstance(raw_payload, str):
                     payload_dict = json.loads(raw_payload)
                 else:
                     payload_dict = raw_payload
 
-                # e.g., {"type": "KEYDOWN:up"}
                 event_data_key = payload_dict.get("type", "")
 
             except json.JSONDecodeError:
                 logger.warning(f"Invalid JSON from controller: {raw_payload}")
+                continue
+
+            if event_data_key == EventType.CLIENT_DISCONNECTED.value:
+                logger.info(f"Controller {cuuid} disconnected")
                 continue
 
             event = event_map.get(event_data_key)

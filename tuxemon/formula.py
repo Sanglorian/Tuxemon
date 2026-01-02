@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -14,7 +14,6 @@ import yaml
 
 from tuxemon.constants import paths
 from tuxemon.platform.const.sizes import (
-    CATCH_RATE_RANGE,
     COEFF_DAMAGE,
     COEFF_FEET,
     COEFF_MILES,
@@ -90,10 +89,19 @@ class CaptureConfig:
 @dataclass
 class MonsterConfig:
     starting_bond: int = 25
+    max_moves: int = 4
+    max_tps: int = 150
+    max_total_tps: int = 300
+    default_tp_gain: int = 1
+    coeff_stats: int = 7
     bond_range: tuple[int, int] = (0, 100)
-    bond_modifiers: dict[str, int] = field(default_factory=dict)
+    iv_range: tuple[int, int] = (0, 31)
+    level_range: tuple[int, int] = (0, 100)
+    catch_rate_range: tuple[int, int] = (0, 100)
+    catch_resistance_range: tuple[float, float] = (0.0, 2.0)
     weight_range: tuple[float, float] = (-0.1, 0.1)
     height_range: tuple[float, float] = (-0.1, 0.1)
+    bond_modifiers: dict[str, int] = field(default_factory=dict)
     bond_sentiments: dict[str, tuple[int, int]] = field(default_factory=dict)
     bond_strings: dict[str, str] = field(default_factory=dict)
     bond_icons: dict[str, str] = field(default_factory=dict)
@@ -517,7 +525,7 @@ def shake_check(
         The shake_check value.
     """
     config_capture = Loader.get_config_capture("config_capture.yaml")
-    max_catch_rate = CATCH_RATE_RANGE[1]
+    max_catch_rate = config_monster.catch_rate_range[1]
     shake_constant = config_capture.shake_constant
     shake_denominator = config_capture.shake_denominator
     shake_divisor = config_capture.shake_divisor

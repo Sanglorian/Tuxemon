@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from collections.abc import Generator
@@ -164,7 +164,7 @@ class TechniqueMenuState(Menu[Technique]):
                 "acc": int(tech.accuracy * 100),
                 "pot": int(tech.potency * 100),
                 "pow": tech.power,
-                "rec": str(tech.cooldown_duration),
+                "rec": str(tech.cooldown.duration),
             },
         )
         if tech.description and tech.description != f"{tech.slug}_description":

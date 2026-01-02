@@ -15,9 +15,9 @@ events:
     type: event
   Environment:
     actions:
-    - set_variable environment:cave
+    - set_environment cave
     conditions:
-    - not variable_set environment:cave
+    - not environment_is cave
     type: event
   Route:
     actions:

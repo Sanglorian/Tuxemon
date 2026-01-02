@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from collections.abc import Iterable
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -14,7 +14,6 @@ from tuxemon.plugin import (
     PluginLoader,
     PluginManager,
     PluginObject,
-    load_directory,
 )
 
 
@@ -95,15 +94,15 @@ def test_get_all_plugins(manager, interface):
     assert isinstance(plugins, list)
 
 
-def test_get_classes_from_module(manager, interface):
+def test_scan_classes(manager, interface):
     module = MagicMock()
-    classes = manager._get_classes_from_module(module, interface)
+    classes = manager._scan_classes(module, interface)
     assert isinstance(classes, Iterable)
 
 
 def test_load_directory():
     plugin_folder = Path("folder1")
-    loaded_manager = load_directory([plugin_folder], LIBDIR)
+    loaded_manager = PluginManager.from_directory([plugin_folder], LIBDIR)
     assert isinstance(loaded_manager, PluginManager)
 
 
@@ -178,7 +177,7 @@ def test_class_caching(manager):
 
     with patch.object(manager.loader, "load_plugin", return_value=module):
         with patch.object(
-            manager, "_get_classes_from_module", return_value=[("Fake", Fake)]
+            manager, "_scan_classes", return_value=[("Fake", Fake)]
         ) as mock_scan:
             manager.get_all_plugins(interface=PluginObject)
             manager.get_all_plugins(interface=PluginObject)
@@ -235,7 +234,9 @@ class MyPlugin:
 
     sys.path.insert(0, str(tmp_path))
 
-    manager = load_directory([plugin_dir], tmp_path, include=["myplugin"])
+    manager = PluginManager.from_directory(
+        [plugin_dir], tmp_path, include=["myplugin"]
+    )
     plugins = manager.get_all_plugins(interface=PluginObject)
 
     assert any(p.plugin_object.__name__ == "MyPlugin" for p in plugins)
@@ -245,7 +246,7 @@ def test_load_directory_initializes_manager(tmp_path):
     plugin_dir = tmp_path / "plugins"
     plugin_dir.mkdir()
 
-    manager = load_directory([plugin_dir], tmp_path)
+    manager = PluginManager.from_directory([plugin_dir], tmp_path)
 
     assert isinstance(manager, PluginManager)
     assert manager.discovery.folders == [plugin_dir]
@@ -262,8 +263,50 @@ def test_get_classes_respects_interface(manager):
     module.Child = Child
     module.Base = Base
 
-    classes = manager._get_classes_from_module(module, Base)
+    classes = manager._scan_classes(module, Base)
     names = [name for name, _ in classes]
 
     assert "Base" in names
     assert "Child" in names
+
+
+def test_reload(manager):
+    manager._loaded_modules = {"pluginA": MagicMock()}
+    manager._class_cache = {("pluginA", PluginObject): [("Fake", MagicMock())]}
+
+    with patch.object(manager, "collect_plugins") as mock_collect:
+        manager.reload()
+
+    assert manager._loaded_modules == {}
+    assert manager._class_cache == {}
+    mock_collect.assert_called_once()
+
+
+def test_refresh_folders(manager):
+    new_folders = [Path("new_folder")]
+
+    with patch.object(manager.discovery, "set_folders") as mock_set:
+        with patch.object(manager, "reload") as mock_reload:
+            manager.refresh_folders(new_folders)
+
+    mock_set.assert_called_once_with(new_folders)
+    mock_reload.assert_called_once()
+
+
+def test_reload_does_not_reload_modules(manager):
+    manager._loaded_modules = {"pluginA": MagicMock()}
+
+    with patch("importlib.reload") as mock_reload:
+        with patch.object(manager, "collect_plugins"):
+            manager.reload()
+
+    mock_reload.assert_not_called()
+
+
+def test_reload_preserves_modules(manager):
+    manager.modules = ["pluginA", "pluginB"]
+
+    with patch.object(manager, "collect_plugins"):
+        manager.reload()
+
+    assert manager.modules == ["pluginA", "pluginB"]

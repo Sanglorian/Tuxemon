@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -10,7 +10,7 @@ from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.player import Player
 
 if TYPE_CHECKING:
-    from tuxemon.client import LocalPygameClient
+    from tuxemon.base_client import BaseClient
     from tuxemon.database.config import ModMetadata
     from tuxemon.session import Session
 
@@ -23,7 +23,7 @@ class GameLauncher:
     Handles map loading, spawn position, state transitions, and initial game variables.
     """
 
-    def __init__(self, client: LocalPygameClient) -> None:
+    def __init__(self, client: BaseClient) -> None:
         """
         Parameters:
             client: The game client responsible for managing states and events.

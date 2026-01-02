@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -8,7 +8,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, fields
 from typing import Any, Optional
 
-from tuxemon.platform.const.sizes import COEFF_STATS
+from tuxemon.formula import config_monster
 from tuxemon.shape import ShapeHandler
 from tuxemon.taste import Taste
 
@@ -46,6 +46,35 @@ class BasicStats:
 
 
 @dataclass
+class IndividualValues(BasicStats):
+    """
+    Inherent, unchangeable statistical potential assigned upon a monster's
+    creation, typically ranging from 0 to 31 for each stat.
+    """
+
+    def to_dict(self) -> Mapping[str, int]:
+        return {
+            field.name: getattr(self, field.name) for field in fields(self)
+        }
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, int]) -> IndividualValues:
+        valid_fields = {field.name for field in fields(cls)}
+        filtered_data = {k: v for k, v in data.items() if k in valid_fields}
+        return cls(**filtered_data)
+
+
+def randomize_ivs() -> IndividualValues:
+    """
+    Generates Individual Values (IVs) for all stats
+    """
+    min_iv, max_iv = config_monster.iv_range
+    random_data = {
+        name: random.randint(min_iv, max_iv) for name in BasicStats.names()
+    }
+    return IndividualValues(**random_data)
+
+
 class CustomStatBoosts(BasicStats):
     """
     Persistent, user- or modder-defined additive boosts to a monster's base
@@ -95,6 +124,7 @@ class StatCalculator:
         taste_warm: str,
         custom_stats: CustomStatBoosts,
         training_points: TrainingPoints,
+        individual_values: IndividualValues,
     ):
         self.base_stats = base_stats
         self.level = level
@@ -103,6 +133,7 @@ class StatCalculator:
         self.taste_warm = taste_warm
         self.custom_stats = custom_stats
         self.training_points = training_points
+        self.individual_values = individual_values
 
     def calculate(self) -> BasicStats:
         """Compute final stats from shape, level, taste, and modifiers."""
@@ -116,15 +147,16 @@ class StatCalculator:
         """Calculates stats before taste modifiers are applied."""
         level = level if level is not None else self.level
         stats = BasicStats()
-        multiplier = level + COEFF_STATS
+        multiplier = level + config_monster.coeff_stats
         level_scale = level / 100
 
         for stat in BasicStats.names():
             base_value = getattr(self.shape.attributes, stat) * multiplier
-            raw_tp = getattr(self.training_points, stat)
+            iv_value = getattr(self.individual_values, stat, 0)
+            raw_tp = getattr(self.training_points, stat, 0)
             scaled_tp = int(raw_tp * level_scale)
             modifier = getattr(self.custom_stats, stat, 0)
-            total = base_value + scaled_tp + modifier
+            total = base_value + iv_value + scaled_tp + modifier
             setattr(stats, stat, total)
         return stats
 
@@ -190,7 +222,7 @@ class StatAnalyzer:
     def get_breakdown(self) -> dict[str, dict[str, Any]]:
         """Returns a detailed breakdown of each stat's calculation."""
         breakdown = {}
-        multiplier = self.calculator.level + COEFF_STATS
+        multiplier = self.calculator.level + config_monster.coeff_stats
         level_scale = self.calculator.level / 100
         cold = Taste.get_taste(self.calculator.taste_cold)
         warm = Taste.get_taste(self.calculator.taste_warm)
@@ -200,13 +232,16 @@ class StatAnalyzer:
                 getattr(self.calculator.shape.attributes, stat_name)
                 * multiplier
             )
-            raw_tp = getattr(self.calculator.training_points, stat_name)
+            iv_value = getattr(self.calculator.individual_values, stat_name, 0)
+            raw_tp = getattr(self.calculator.training_points, stat_name, 0)
             scaled_tp = int(raw_tp * level_scale)
             modifier_value = getattr(
                 self.calculator.custom_stats, stat_name, 0
             )
 
-            pre_taste_total = base_value + scaled_tp + modifier_value
+            pre_taste_total = (
+                base_value + iv_value + scaled_tp + modifier_value
+            )
 
             taste_multiplier = 1.0
             for taste in (cold, warm):
@@ -219,6 +254,7 @@ class StatAnalyzer:
 
             breakdown[stat_name] = {
                 "base_value": int(base_value),
+                "individual_value": iv_value,
                 "training_points_raw": raw_tp,
                 "training_points_scaled": scaled_tp,
                 "temporary_modifier": modifier_value,

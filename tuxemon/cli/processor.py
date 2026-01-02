@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import inspect
@@ -15,7 +15,7 @@ from tuxemon.cli.context import InvokeContext
 from tuxemon.cli.exceptions import CommandNotFoundError, ParseError
 from tuxemon.cli.formatter import Formatter
 from tuxemon.constants.paths import get_active_mod_paths, mods_folder
-from tuxemon.plugin import load_directory
+from tuxemon.plugin import PluginManager
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
@@ -139,8 +139,7 @@ class CommandProcessor:
         command_dict = {}
 
         try:
-            # Load plugins from discovered folders
-            pm = load_directory(
+            pm = PluginManager.from_directory(
                 plugin_folders=existing_command_folders,
                 root_path=mods_folder.parent,
                 include=["commands"],

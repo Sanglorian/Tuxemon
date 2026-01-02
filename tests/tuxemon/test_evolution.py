@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
@@ -410,7 +410,7 @@ def test_held_item_conditions(
     mon, _, _ = setup_evolution
     if held_item_slug is not None:
         item = MagicMock(slug=held_item_slug)
-        mon.item_handler.set_item(item)
+        mon.equip_item(item)
     evo = MonsterEvolutionItemModel(
         monster_slug="rockat", held_item=evo_item_slug
     )

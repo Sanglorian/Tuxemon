@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import re
 import unittest
 import xml.etree.ElementTree as ET
@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from tuxemon.constants.asset_loader import fetch_asset
-from tuxemon.db import db
+from tuxemon.database.runtime import db
 from tuxemon.map.map_manager import MAP_TYPES
 from tuxemon.platform.const.sizes import REGION_KEYS
 from tuxemon.script.parser import parse_action_string

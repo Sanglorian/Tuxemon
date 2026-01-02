@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Callable
 from uuid import UUID
 
 from tuxemon.boxes import MonsterBoxes
@@ -30,7 +30,7 @@ class PartyHandler:
         self,
         monster_boxes: MonsterBoxes,
         owner: NPC,
-        monsters: Optional[list[Monster]] = None,
+        monsters: list[Monster] | None = None,
         party_limit: int = PARTY_LIMIT,
         routing_policy_name: str = "default",
     ) -> None:
@@ -60,33 +60,30 @@ class PartyHandler:
 
     @property
     def monsters(self) -> list[Monster]:
-        """Returns the list of monsters in the party."""
         return self._monsters
 
     @property
     def party_size(self) -> int:
-        """Returns the current number of monsters in the party."""
         return len(self._monsters)
 
     @property
     def party_limit(self) -> int:
-        """Returns the maximum number of monsters allowed in the party."""
         return self._party_limit
 
     @property
-    def level_lowest(self) -> Optional[int]:
+    def level_lowest(self) -> int | None:
         return PartyStats.calculate_level_lowest(self._monsters)
 
     @property
-    def level_highest(self) -> Optional[int]:
+    def level_highest(self) -> int | None:
         return PartyStats.calculate_level_highest(self._monsters)
 
     @property
-    def level_average(self) -> Optional[int]:
+    def level_average(self) -> int | None:
         return PartyStats.calculate_level_average(self._monsters)
 
     @property
-    def alignment(self) -> Optional[str]:
+    def alignment(self) -> str | None:
         return PartyStats.get_alignment(self._monsters)
 
     @property
@@ -101,22 +98,61 @@ class PartyHandler:
     def alive(self) -> list[Monster]:
         return PartyStats.alive(self._monsters)
 
-    def has_type(self, element_slug: str) -> bool:
-        return PartyStats.has_type(self._monsters, element_slug)
-
     def has_tech(self, tech_slug: str) -> bool:
         return PartyStats.has_tech(self._monsters, tech_slug)
 
-    def apply_nickname_rules(self, monster: Monster) -> None:
-        policy = self.routing_policy
-        base_name = monster.name
-        rules = policy.nickname_rules
-        nick = f"{rules.get('prefix', '')}{base_name}{rules.get('suffix', '')}"
-        monster.name = nick
+    def _resolve_policy(self, override: str | None) -> RoutingPolicy:
+        return (
+            RoutingPolicyRegistry.get(override)
+            if override
+            else self.routing_policy
+        )
 
-    def should_send_to_box(
-        self, policy: Optional[RoutingPolicy] = None
-    ) -> bool:
+    def _assign_owner(self, monster: Monster) -> None:
+        monster.set_owner(self._owner)
+
+    def _validate_index(self, index: int) -> None:
+        if not (0 <= index < self.party_size):
+            raise IndexError("Index out of bounds for party size.")
+
+    def _find(self, predicate: Callable[[Monster], bool]) -> Monster | None:
+        return next((m for m in self._monsters if predicate(m)), None)
+
+    def _compute_party_and_overflow(
+        self, monsters: list[Monster], policy: RoutingPolicy
+    ) -> tuple[list[Monster], list[Monster]]:
+        if policy.max_party_size == -1:
+            return monsters, []
+        limit = policy.max_party_size or self._party_limit
+        return monsters[:limit], monsters[limit:]
+
+    def _route_monster(
+        self,
+        monster: Monster,
+        slot: int | None,
+        policy: RoutingPolicy,
+        kennel: str | None,
+    ) -> None:
+        if self.should_send_to_box(policy):
+            self.send_monster_to_box(monster, kennel)
+        else:
+            self.insert_monster_to_party(monster, slot)
+
+    def apply_nickname_rules(
+        self, monster: Monster, policy: RoutingPolicy | None = None
+    ) -> None:
+        policy = policy or self.routing_policy
+        rules = policy.nickname_rules
+
+        if not rules:
+            return
+
+        base_name = monster.name
+        monster.name = (
+            f"{rules.get('prefix', '')}{base_name}{rules.get('suffix', '')}"
+        )
+
+    def should_send_to_box(self, policy: RoutingPolicy | None = None) -> bool:
         policy = policy or self.routing_policy
 
         is_unlimited = (
@@ -135,15 +171,15 @@ class PartyHandler:
         )
 
     def send_monster_to_box(
-        self, monster: Monster, kennel: Optional[str] = None
+        self, monster: Monster, kennel: str | None = None
     ) -> bool:
         policy = self.routing_policy
         return self._monster_boxes.attempt_add_monster(monster, policy, kennel)
 
     def insert_monster_to_party(
-        self, monster: Monster, slot: Optional[int] = None
+        self, monster: Monster, slot: int | None = None
     ) -> None:
-        monster.set_owner(self._owner)
+        self._assign_owner(monster)
         if slot is None:
             self._monsters.append(monster)
         elif 0 <= slot <= self.party_size:
@@ -156,224 +192,113 @@ class PartyHandler:
     def add_monster(
         self,
         monster: Monster,
-        slot: Optional[int] = None,
-        kennel: Optional[str] = None,
-        override_policy_name: Optional[str] = None,
+        slot: int | None = None,
+        kennel: str | None = None,
+        override_policy_name: str | None = None,
     ) -> None:
-        """
-        Adds a monster to the party. If the party is full, it sends the monster
-        to the monster boxes (PCState archive).
-
-        Parameters:
-            monster: The monster to add.
-            slot: Optional. The index to insert the monster at. If None or
-                party is full, it's added to the end or sent to boxes.
-            override_policy_name: Optional. A temporary policy name to use for
-                this call.
-        """
-        policy_to_use = (
-            RoutingPolicyRegistry.get(override_policy_name)
-            if override_policy_name
-            else self.routing_policy
-        )
+        policy = self._resolve_policy(override_policy_name)
         logger.debug(
-            f"Adding monster '{monster}' using policy '{policy_to_use.name}'"
+            f"Adding monster '{monster}' using policy '{policy.name}'"
         )
+        self.apply_nickname_rules(monster, policy)
+        self._assign_owner(monster)
+        self._route_monster(monster, slot, policy, kennel)
 
-        self.apply_nickname_rules(monster)
-        monster.set_owner(self._owner)
+    def find_monster(self, monster_slug: str) -> Monster | None:
+        return self._find(lambda m: m.slug == monster_slug)
 
-        if self.should_send_to_box(policy_to_use):
-            self.send_monster_to_box(monster, kennel)
-        else:
-            self.insert_monster_to_party(monster, slot)
+    def find_monster_by_id(self, instance_id: UUID) -> Monster | None:
+        return self._find(lambda m: m.instance_id == instance_id)
 
-    def find_monster(self, monster_slug: str) -> Optional[Monster]:
-        """
-        Finds a monster in the party by its slug.
-
-        Parameters:
-            monster_slug: The slug name of the monster.
-
-        Returns:
-            Monster found, or None.
-        """
-        return next(
-            (m for m in self._monsters if m.slug == monster_slug), None
-        )
-
-    def find_monster_by_id(self, instance_id: UUID) -> Optional[Monster]:
-        """
-        Finds a monster in the party by its instance ID.
-
-        Parameters:
-            instance_id: The instance_id of the monster.
-
-        Returns:
-            Monster found, or None.
-        """
-        return next(
-            (m for m in self._monsters if m.instance_id == instance_id), None
-        )
-
-    def find_monster_by_tech_id(self, instance_id: UUID) -> Optional[Monster]:
-        """
-        Finds a monster in the party by its technique instance ID.
-
-        Parameters:
-            instance_id: The instance_id of the technique.
-
-        Returns:
-            Monster found, or None.
-        """
-        return next(
-            (
-                monster
-                for monster in self._monsters
-                if monster.moves.find_tech_by_id(instance_id)
-            ),
-            None,
+    def find_monster_by_tech_id(self, instance_id: UUID) -> Monster | None:
+        return self._find(
+            lambda m: m.moves.find_tech_by_id(instance_id) is not None
         )
 
     def release_monster(self, monster: Monster) -> bool:
-        """
-        Releases a monster from this party. Used to release into the wild.
-        Prevents releasing the last monster if the party is not empty.
-
-        Parameters:
-            monster: Monster to release into the wild.
-
-        Returns:
-            True if the monster was successfully released, False otherwise.
-        """
         if self.party_size <= 1:
             return False
-
-        if monster in self._monsters:
-            self.remove_monster(monster)
-            monster.owner = None
-            return True
-        else:
+        if monster not in self._monsters:
             return False
 
-    def remove_monster(self, monster: Monster) -> None:
-        """
-        Removes a monster from this party.
+        self.remove_monster(monster)
+        monster.owner = None
+        return True
 
-        Parameters:
-            monster: Monster to remove from the party.
-        """
+    def remove_monster(self, monster: Monster) -> None:
         if monster in self._monsters:
             self._monsters.remove(monster)
 
     def switch_monsters(self, index_1: int, index_2: int) -> None:
-        """
-        Swaps two monsters in this party by their indices.
-
-        Parameters:
-            index_1: The index of the first monster.
-            index_2: The index of the second monster.
-        """
-        if not (
-            0 <= index_1 < self.party_size and 0 <= index_2 < self.party_size
-        ):
-            raise IndexError("Indices out of bounds for party size.")
-
+        self._validate_index(index_1)
+        self._validate_index(index_2)
         self._monsters[index_1], self._monsters[index_2] = (
             self._monsters[index_2],
             self._monsters[index_1],
         )
 
     def has_monster(self, monster: Monster) -> bool:
-        """
-        Checks if a given monster is in the party.
-
-        Parameters:
-            monster: The monster to check.
-
-        Returns:
-            True if the monster is in the party, False otherwise.
-        """
         return monster in self._monsters
 
     def replace_monster(
         self, old_monster: Monster, new_monster: Monster
     ) -> bool:
-        """
-        Replaces an existing monster in the party with a new one.
-
-        Parameters:
-            old_monster: The monster to replace.
-            new_monster: The new monster.
-
-        Returns:
-            True if successful, False otherwise.
-        """
-        if old_monster in self._monsters:
-            index = self._monsters.index(old_monster)
-            self._monsters[index] = new_monster
-            new_monster.owner = self._owner
-            return True
-        return False
+        if old_monster not in self._monsters:
+            return False
+        index = self._monsters.index(old_monster)
+        self._monsters[index] = new_monster
+        self._assign_owner(new_monster)
+        return True
 
     def clear_party(self) -> None:
-        """
-        Removes all monsters from the party and clears their ownership.
-        """
-        if self._monsters:
-            for monster in self._monsters:
-                monster.owner = None
+        for monster in self._monsters:
+            monster.owner = None
         self._monsters.clear()
 
     def replace_party(
         self,
         new_monsters: list[Monster],
         add_overflow_to_box: bool = True,
-        override_policy_name: Optional[str] = None,
+        override_policy_name: str | None = None,
     ) -> None:
-        """
-        Replaces the entire party with a new list of monsters, handling overflow
-        based on the current or an overridden routing policy.
-        """
         self.clear_party()
 
-        policy = (
-            RoutingPolicyRegistry.get(override_policy_name)
-            if override_policy_name
-            else self.routing_policy
+        policy = self._resolve_policy(override_policy_name)
+        party_monsters, overflow = self._compute_party_and_overflow(
+            new_monsters, policy
         )
 
-        if policy.max_party_size == -1:
-            party_monsters = new_monsters
-            overflow = []
-        else:
-            party_limit = policy.max_party_size or self._party_limit
-            party_monsters = new_monsters[:party_limit]
-            overflow = new_monsters[party_limit:]
-
         for monster in party_monsters:
-            monster.set_owner(self._owner)
+            self._assign_owner(monster)
 
         self._monsters.extend(party_monsters)
 
         if add_overflow_to_box and overflow:
-            kennel_for_overflow = policy.get_kennel()
+            kennel = policy.get_kennel()
             for monster in overflow:
-                monster.set_owner(self._owner)
-                self.send_monster_to_box(monster, kennel_for_overflow)
+                self._assign_owner(monster)
+                self.send_monster_to_box(monster, kennel)
 
     def transfer_monster_to_box(
-        self, monster: Monster, kennel: Optional[str] = None
+        self, monster: Monster, kennel: str | None = None
     ) -> bool:
         if not self.has_monster(monster):
             logger.error(f"Monster '{monster}' not found in party.")
             return False
 
+        success = self.send_monster_to_box(monster, kennel)
+        if not success:
+            logger.warning(
+                f"Failed to transfer monster '{monster}' to box; "
+                "leaving party unchanged."
+            )
+            return False
+
         self.remove_monster(monster)
-        return self.send_monster_to_box(monster, kennel)
+        return True
 
     def transfer_monster_to_party(
-        self, monster: Monster, slot: Optional[int] = None
+        self, monster: Monster, slot: int | None = None
     ) -> bool:
         if self.should_send_to_box():
             logger.warning(
@@ -388,8 +313,11 @@ class PartyHandler:
     def encode_party(self) -> Sequence[Mapping[str, Any]]:
         return encode_monsters(self._monsters)
 
-    def decode_party(self, json_data: Optional[NPCState]) -> None:
+    def decode_party(self, json_data: NPCState | None) -> None:
         self.clear_party()
-        if json_data and json_data.monsters is not None:
-            for mon in decode_monsters(json_data.monsters):
-                self.add_monster(mon, self.party_size)
+        if not json_data or not json_data.monsters:
+            return
+
+        for mon in decode_monsters(json_data.monsters):
+            mon.set_owner(self._owner)
+            self._monsters.append(mon)

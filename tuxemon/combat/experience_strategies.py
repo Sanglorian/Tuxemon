@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from tuxemon.db import EvolutionStage, ExperienceMethod
-from tuxemon.platform.const.sizes import MAX_LEVEL
+from tuxemon.formula import config_monster
 
 if TYPE_CHECKING:
     from tuxemon.combat.damage_tracker import DamageTracker
@@ -332,7 +332,7 @@ def calculate_experience(
     loser: Monster, winner: Monster, damages: DamageTracker
 ) -> tuple[int, int]:
     """Main entry point for XP calculation."""
-    if winner.level >= MAX_LEVEL:
+    if winner.level >= config_monster.level_range[1]:
         return 0, 0
     exp_multiplier = winner.get_experience_multiplier()
     method = (

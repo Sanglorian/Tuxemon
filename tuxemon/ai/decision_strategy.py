@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -94,7 +94,7 @@ class TrainerAIDecisionStrategy(AIDecisionStrategy):
         if self.handle_monster_config(ai, monster_config):
             return
 
-        valid_actions = self.tracker.get_valid_moves(ai.opponents)
+        valid_actions = ai.get_available_moves()
         random_action = random.choice(valid_actions)
         ai.action_tech(random_action[0], random_action[1])
 
@@ -111,7 +111,7 @@ class TrainerAIDecisionStrategy(AIDecisionStrategy):
             ):
                 continue
 
-            valid_actions = self.tracker.get_valid_moves(ai.opponents)
+            valid_actions = ai.get_available_moves()
             for valid_technique, opponent in valid_actions:
                 if valid_technique.slug == technique:
                     ai.action_tech(valid_technique, opponent)
@@ -133,7 +133,7 @@ class TrainerAIDecisionStrategy(AIDecisionStrategy):
         self, ai: AI, target: Monster
     ) -> tuple[Technique, Monster]:
         """Select the most effective move and target."""
-        valid_actions = self.tracker.get_valid_moves(ai.opponents)
+        valid_actions = ai.get_available_moves()
 
         if not valid_actions:
             skip = Technique.create("skip")
@@ -147,9 +147,7 @@ class TrainerAIDecisionStrategy(AIDecisionStrategy):
         highest_score = 0.0
 
         for technique, opponent in valid_actions:
-            score = self.tracker.evaluate_technique(
-                ai.monster, technique, opponent, config
-            )
+            score = ai.evaluate_technique(technique, opponent, config)
             logger.debug(
                 f"Score: {score}, Technique: {technique.slug}, Opponent: {opponent.slug}"
             )
@@ -160,7 +158,7 @@ class TrainerAIDecisionStrategy(AIDecisionStrategy):
         return best_action or random.choice(valid_actions)
 
     def default_decision(self, ai: AI) -> None:
-        target = self.evaluator.get_best_target()
+        target = ai.evaluate_best_opponent()
         technique, target = self.select_move(ai, target)
         ai.action_tech(technique, target)
 
@@ -168,7 +166,7 @@ class TrainerAIDecisionStrategy(AIDecisionStrategy):
 class WildAIDecisionStrategy(AIDecisionStrategy):
     def make_decision(self, ai: AI) -> None:
         """Wild encounter decision-making: focus on moves."""
-        target = self.evaluator.get_best_target()
+        target = ai.evaluate_best_opponent()
         technique, target = self.select_move(ai, target)
         ai.action_tech(technique, target)
 
@@ -176,7 +174,7 @@ class WildAIDecisionStrategy(AIDecisionStrategy):
         self, ai: AI, target: Monster
     ) -> tuple[Technique, Monster]:
         """Select the most effective move and target."""
-        valid_actions = self.tracker.get_valid_moves(ai.opponents)
+        valid_actions = ai.get_available_moves()
 
         if not valid_actions:
             skip = Technique.create("skip")
@@ -190,9 +188,7 @@ class WildAIDecisionStrategy(AIDecisionStrategy):
         highest_score = 0.0
 
         for technique, opponent in valid_actions:
-            score = self.tracker.evaluate_technique(
-                ai.monster, technique, opponent, config
-            )
+            score = ai.evaluate_technique(technique, opponent, config)
             if score > highest_score:
                 highest_score = score
                 best_action = (technique, opponent)

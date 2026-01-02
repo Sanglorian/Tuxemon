@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -18,9 +18,8 @@ from pygame.surface import Surface
 
 from tuxemon.camera.camera import project
 from tuxemon.db import Direction
-from tuxemon.entity import EntityState
 from tuxemon.graphics import ColorLike, apply_cinema_bars, load_and_scale
-from tuxemon.map.map import get_pos_from_tilepos, proj
+from tuxemon.map.map import get_pos_from_tilepos
 from tuxemon.math import Vector2
 from tuxemon.platform.const.graphics import BLACK_COLOR
 from tuxemon.prepare import SCREEN_SIZE, TILE_SIZE
@@ -124,9 +123,7 @@ class SpriteController:
 
     def update(self, time_delta: float) -> None:
         """Update the sprite renderer."""
-        self.sprite_renderer.set_position(
-            self.npc.tile_pos, self.npc.body.position.z
-        )
+        self.sprite_renderer.set_position(self.npc.tile_pos)
         self.sprite_renderer.update(time_delta)
 
     def update_template(self, template: NpcTemplateModel) -> None:
@@ -279,11 +276,9 @@ class SpriteRenderer:
         """Calculate the frame duration for walking animations."""
         return (time_scale / rate) / frame_divisor / time_scale * speed_factor
 
-    def set_position(
-        self, position: tuple[int, int], z_offset: float = 0.0
-    ) -> None:
+    def set_position(self, position: tuple[int, int]) -> None:
         """Set the position of the sprite, optionally offset by vertical jump."""
-        self.rect.topleft = (position[0], position[1] - int(z_offset))
+        self.rect.topleft = position
 
     def update(self, time_delta: float) -> None:
         """Update the sprite animation."""
@@ -494,11 +489,7 @@ class MapRenderer(AbstractRenderer):
         """Retrieves sprite surfaces for an NPC."""
         sprite_renderer = npc.sprite_controller.get_sprite_renderer()
 
-        if npc.mover.state in (
-            EntityState.WALKING,
-            EntityState.RUNNING,
-            EntityState.JUMPING,
-        ):
+        if npc.mover.is_moving_state:
             ani_key = sprite_renderer.ANIMATION_MAPPING[npc.mover.state.value][
                 npc.facing.value
             ]
@@ -511,10 +502,8 @@ class MapRenderer(AbstractRenderer):
                 sprite_renderer.standing,
             )
 
-        pixel_x, pixel_y = proj(npc.position)
-        z_offset = npc.body.position.z if npc.is_airborne else 0.0
-        adjusted_y = pixel_y - z_offset
-        return [WorldSurfaces(frame, Vector2(pixel_x, adjusted_y), layer)]
+        pixel_x, pixel_y = npc.position
+        return [WorldSurfaces(frame, Vector2(pixel_x, pixel_y), layer)]
 
 
 class BubbleManager:
@@ -645,5 +634,5 @@ def collision_box_to_pgrect(
 
 def npc_to_pgrect(current_map: AbstractMap, npc: NPC) -> Rect:
     """Returns a Rect (in screen-coords) version of an NPC's bounding box."""
-    pos = get_pos_from_tilepos(current_map, proj(npc.position))
+    pos = get_pos_from_tilepos(current_map, npc.position)
     return Rect(pos, TILE_SIZE)

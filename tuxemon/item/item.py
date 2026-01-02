@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -10,9 +10,10 @@ from uuid import UUID, uuid4
 from pygame.surface import Surface
 
 from tuxemon import graphics
-from tuxemon.core.asset import CoreAssetManager
+from tuxemon.core.asset import get_assets
 from tuxemon.core.core_effect import ItemEffectResult
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     ExperienceMethod,
     ItemBehaviors,
@@ -23,7 +24,6 @@ from tuxemon.db import (
     SoundProperties,
     State,
     VisualProperties,
-    db,
 )
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
@@ -80,8 +80,9 @@ class Item:
         self.max_wear: int = 0
         self.break_chance: float = 0.0
         self.menu_actions_data: Sequence[MenuAction] = []
+        self.granted_techniques: Sequence[str] = []
 
-        self.core_assets = CoreAssetManager()
+        self.core_assets = get_assets()
         self.effects: Sequence[PluginObject] = []
         self.conditions: Sequence[PluginObject] = []
 
@@ -158,6 +159,7 @@ class Item:
         self.condition_handler = ConditionProcessor(self.conditions)
         self.surface = graphics.load_and_scale(self.sprite)
         self.surface_size_original = self.surface.get_size()
+        self.granted_techniques = results.granted_techniques
 
         self.visuals = results.visuals
         self.sound = results.sound

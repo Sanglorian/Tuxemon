@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -13,7 +13,8 @@ import yaml
 
 from tuxemon.constants import paths
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
-from tuxemon.db import MonsterModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import MonsterModel
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item

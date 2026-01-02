@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -7,7 +7,6 @@ from collections.abc import Mapping
 from typing import Any
 
 from tuxemon.formula import config_monster
-from tuxemon.platform.const.sizes import MAX_LEVEL
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +80,7 @@ class MonsterExperience:
 
     @property
     def is_maxed_out(self) -> bool:
-        return self._level >= MAX_LEVEL
+        return self._level >= config_monster.level_range[1]
 
     @property
     def experience_current_level(self) -> int:
@@ -166,10 +165,9 @@ class MonsterExperience:
         effective_amount = int(amount * self._experience_modifier)
         self._total_experience += effective_amount
 
-        while (
-            self._level < MAX_LEVEL
-            and self._total_experience >= self.experience_required(1)
-        ):
+        while self._level < config_monster.level_range[
+            1
+        ] and self._total_experience >= self.experience_required(1):
             self._level_up()
             levels += 1
 
@@ -177,7 +175,7 @@ class MonsterExperience:
         return levels
 
     def _clamp_level(self, level: int) -> int:
-        return max(1, min(level, MAX_LEVEL))
+        return max(1, min(level, config_monster.level_range[1]))
 
     def _level_up(self) -> None:
         """Increases a Monster's level by one."""

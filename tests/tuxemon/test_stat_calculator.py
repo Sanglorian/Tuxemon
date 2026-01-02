@@ -1,17 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from unittest.mock import MagicMock
 
 import pytest
 
+from tuxemon.formula import config_monster
 from tuxemon.monster_dir.stats import (
     BasicStats,
     CustomStatBoosts,
+    IndividualValues,
     StatAnalyzer,
     StatCalculator,
     TrainingPoints,
 )
-from tuxemon.platform.const.sizes import COEFF_STATS
 from tuxemon.shape import ShapeHandler
 from tuxemon.taste import Taste
 
@@ -50,6 +51,7 @@ def calculator(mock_shape, mock_tastes):
     )
     base_stats = BasicStats()
     training_points = TrainingPoints()
+    individual_values = IndividualValues()
     return StatCalculator(
         base_stats=base_stats,
         level=5,
@@ -58,6 +60,7 @@ def calculator(mock_shape, mock_tastes):
         taste_warm="warm",
         custom_stats=custom_stats,
         training_points=training_points,
+        individual_values=individual_values,
     )
 
 
@@ -69,7 +72,7 @@ def analyzer(calculator):
 # StatCalculator tests
 def test_apply_base_stat_calculation(calculator):
     level = calculator.level
-    multiplier = level + COEFF_STATS
+    multiplier = level + config_monster.coeff_stats
     stats = calculator.calculate_raw_stats(level=level)
     assert stats.armour == 2 * multiplier + 1
     assert stats.dodge == 3 * multiplier + 0
@@ -144,13 +147,13 @@ def test_calculate_at_level_invalid(calculator):
 def test_training_point_scaling(calculator):
     calculator.training_points.armour = 100
     stats = calculator.calculate_raw_stats(level=50)
-    assert stats.armour == (2 * (50 + COEFF_STATS)) + 50 + 1
+    assert stats.armour == (2 * (50 + config_monster.coeff_stats)) + 50 + 1
 
 
 def test_negative_modifier(calculator):
     calculator.custom_stats.hp = -10
     stats = calculator.calculate_raw_stats(level=calculator.level)
-    assert stats.hp < (5 * (calculator.level + COEFF_STATS))
+    assert stats.hp < (5 * (calculator.level + config_monster.coeff_stats))
 
 
 def test_high_level_scaling(calculator):

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -24,86 +24,76 @@ class CombatBars:
     A class responsible for drawing the combat UI, including HP and EXP bars.
     """
 
-    def __init__(self, graphics: BattleGraphicsModel) -> None:
-        self.graphics = graphics
+    def __init__(self) -> None:
         self._hp_bars: MutableMapping[Monster, HpBar] = {}
         self._exp_bars: MutableMapping[Monster, ExpBar] = {}
 
-    def draw_hp_bars(
+    def draw_bars(
         self,
         hud: MutableMapping[Monster, Sprite],
+        graphics: BattleGraphicsModel,
     ) -> None:
-        """
-        Redraws the HP bars for each monster in the hud dictionary.
-
-        Parameters:
-            graphics: The graphics model for the battle.
-            hud: A dictionary of monsters to sprites.
-        """
-        show_player_hp = self.graphics.hud.hp_bar_player
-        show_opponent_hp = self.graphics.hud.hp_bar_opponent
+        """Called every time the HUD needs a refresh."""
+        gh = graphics.hud
 
         for monster, _sprite in hud.items():
-            if _sprite.player and show_player_hp:
-                rect = self.create_rect_for_bar(_sprite, 70, 8, 18)
-            elif not _sprite.player and show_opponent_hp:
-                rect = self.create_rect_for_bar(_sprite, 70, 8, 12)
-            else:
-                continue
-            self._hp_bars[monster].draw(_sprite.image, rect)
+            # Always draw HP bar if graphics available
+            if gh.hp_bar_player or gh.hp_bar_opponent:
+                top_offset = (
+                    gh.hp_player_top if _sprite.player else gh.hp_opponent_top
+                )
 
-    def draw_exp_bars(
-        self,
-        hud: MutableMapping[Monster, Sprite],
-    ) -> None:
-        """
-        Redraws the EXP bars for each player monster in the hud dictionary.
+                rect = self.create_rect_for_bar(
+                    _sprite,
+                    gh.hp_bar_width,
+                    gh.hp_bar_height,
+                    top_offset,
+                    gh.bar_right_padding,
+                )
+                self.get_hp_bar(monster).draw(_sprite.image, rect)
 
-        Parameters:
-            graphics: The graphics model for the battle.
-            hud: A dictionary of monsters to sprites.
-        """
-        show_player_exp = self.graphics.hud.exp_bar_player
-
-        for monster, _sprite in hud.items():
-            if _sprite.player and show_player_exp:
-                rect = self.create_rect_for_bar(_sprite, 70, 6, 31)
-                self._exp_bars[monster].draw(_sprite.image, rect)
+            # Always draw EXP bar for player if graphics available
+            if _sprite.player and gh.exp_bar_player:
+                rect = self.create_rect_for_bar(
+                    _sprite,
+                    gh.hp_bar_width,
+                    gh.exp_bar_height,
+                    gh.exp_bar_top,
+                    gh.bar_right_padding,
+                )
+                self.get_exp_bar(monster).draw(_sprite.image, rect)
 
     def create_rect_for_bar(
-        self, hud: Sprite, width: int, height: int, top_offset: int = 0
+        self,
+        hud: Sprite,
+        width: int,
+        height: int,
+        top_offset: int,
+        right_padding: int,
     ) -> Rect:
-        """
-        Creates a Rect object for a bar.
-
-        Parameters:
-            hud: The sprite for the monster.
-            width: The width of the bar.
-            height: The height of the bar.
-            top_offset: The top offset of the bar. Defaults to 0.
-
-        Returns:
-            A Rect object representing the bar.
-        """
         rect = Rect(0, 0, scale(width), scale(height))
-        rect.right = hud.image.get_width() - scale(8)
+        rect.right = hud.image.get_width() - scale(right_padding)
         rect.top += scale(top_offset)
         return rect
 
-    def draw_bars(self, hud: MutableMapping[Monster, Sprite]) -> None:
-        """
-        Redraws all the UI elements, including HP and EXP bars.
-
-        Parameters:
-            hud: A dictionary of monsters to sprites.
-        """
-        self.draw_hp_bars(hud)
-        self.draw_exp_bars(hud)
-
     def get_hp_bar(self, monster: Monster) -> HpBar:
-        """Returns the HP bar for a given monster."""
-        return self._hp_bars.setdefault(monster, HpBar(0))
+        return self._hp_bars.setdefault(monster, HpBar(monster.hp_ratio))
 
     def get_exp_bar(self, monster: Monster) -> ExpBar:
-        """Returns the EXP bar for a given monster."""
-        return self._exp_bars.setdefault(monster, ExpBar(0))
+        return self._exp_bars.setdefault(
+            monster, ExpBar(monster.experience_progress_percent)
+        )
+
+    def remove_monster(self, monster: Monster) -> None:
+        if monster in self._hp_bars:
+            logger.debug("Removing HP bar for %s", monster.name)
+            self._hp_bars.pop(monster, None)
+
+        if monster in self._exp_bars:
+            logger.debug("Removing EXP bar for %s", monster.name)
+            self._exp_bars.pop(monster, None)
+
+    def clear_all(self) -> None:
+        logger.debug("Clearing all combat bars.")
+        self._hp_bars.clear()
+        self._exp_bars.clear()

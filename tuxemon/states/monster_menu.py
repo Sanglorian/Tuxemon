@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from collections import OrderedDict
@@ -34,7 +34,7 @@ from tuxemon.ui.menu_options import (
 from tuxemon.ui.text import TextArea, draw_text
 
 if TYPE_CHECKING:
-    from tuxemon.client import LocalPygameClient
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity_dir.party import PartyHandler
     from tuxemon.monster import Monster
 
@@ -178,7 +178,7 @@ class MonsterMenuState(Menu[Optional[Monster]]):
 class MonsterMenuHandler:
     """Handles interactions within the monster menu."""
 
-    def __init__(self, client: LocalPygameClient, party: PartyHandler) -> None:
+    def __init__(self, client: BaseClient, party: PartyHandler) -> None:
         """Initialize with client and character."""
         self.name = "WorldMenuState"
         self.client = client
@@ -281,8 +281,7 @@ class MonsterMenuHandler:
         if mon.moves.moves:
             actions["tech"] = partial(self.monster_techs, mon)
 
-        if mon.held_item:
-            actions["item"] = partial(self.monster_item, mon)
+        actions["item"] = partial(self.monster_item, mon)
 
         if self.party.party_size > 1:
             actions.update(

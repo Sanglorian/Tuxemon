@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID, uuid4
 
 from tuxemon import formula
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     Acquisition,
     EffectPhase,
@@ -21,7 +22,6 @@ from tuxemon.db import (
     MonsterSpritesModel,
     SoundProperties,
     StatType,
-    db,
 )
 from tuxemon.element import ElementTypesHandler
 from tuxemon.formula import config_monster
@@ -42,15 +42,12 @@ from tuxemon.monster_dir.sprite import (
 from tuxemon.monster_dir.stats import (
     BasicStats,
     CustomStatBoosts,
+    IndividualValues,
     StatCalculator,
     TrainingPoints,
+    randomize_ivs,
 )
 from tuxemon.monster_dir.status import MonsterStatusHandler
-from tuxemon.platform.const.sizes import (
-    DEFAULT_TP_GAIN,
-    MAX_TOTAL_TPS,
-    MAX_TPS,
-)
 from tuxemon.prepare import SCALE
 from tuxemon.shape import ShapeHandler
 from tuxemon.sprite import Sprite
@@ -116,6 +113,7 @@ class Monster:
         self.experience_handler: MonsterExperience = MonsterExperience()
 
         self.money_modifier: float = 0.0
+        self.max_moves: int = 1
 
         self.types = ElementTypesHandler()
         self.shape: ShapeHandler = ShapeHandler()
@@ -161,6 +159,13 @@ class Monster:
 
         # Set up our sprites.
         self.sprite_handler = MonsterSpriteHandler()
+
+        if save_data.get("individual_values"):
+            self.individual_values = IndividualValues.from_dict(
+                save_data["individual_values"]
+            )
+        else:
+            self.individual_values = randomize_ivs()
 
         self.set_state(save_data)
         self.set_stats()
@@ -286,6 +291,7 @@ class Monster:
         self.types = ElementTypesHandler(results.types)
 
         self.randomly = results.randomly
+        self.max_moves = results.max_moves
 
         self.txmn_id = results.txmn_id
         self.set_capture(self.capture)
@@ -365,6 +371,19 @@ class Monster:
     def has_acquisition(self, method: Acquisition) -> bool:
         """Returns True if the monster was acquired via the specified method."""
         return self.acquisition == method
+
+    def equip_item(self, item: Item) -> bool:
+        result = self.item_handler.set_item(item)
+        if result:
+            self.moves.apply_item_techniques(self, item)
+        return result
+
+    def unequip_item(self) -> Item | None:
+        item = self.item_handler.take_item()
+        if item:
+            self.moves.remove_item_techniques(self, item)
+            return item
+        return None
 
     def get_experience_multiplier(self) -> float:
         """
@@ -451,13 +470,15 @@ class Monster:
 
         return levels_earned
 
-    def give_tps(self, stat_name: str, value: int = DEFAULT_TP_GAIN) -> None:
+    def give_tps(
+        self, stat_name: str, value: int = config_monster.default_tp_gain
+    ) -> None:
         """
         Gives TP points to the monster's TrainingPoints after a battle,
         respecting the per-stat and total TP limits.
         """
-        max_tps = MAX_TPS
-        max_total_tps = MAX_TOTAL_TPS
+        max_tps = config_monster.max_tps
+        max_total_tps = config_monster.max_total_tps
         total_tps = sum(
             getattr(self.training_points, field.name)
             for field in fields(self.training_points)
@@ -499,6 +520,7 @@ class Monster:
             taste_warm=self.taste_warm,
             custom_stats=self.custom_stats,
             training_points=self.training_points,
+            individual_values=self.individual_values,
         )
         self.base_stats = calculator.calculate()
 
@@ -601,6 +623,7 @@ class Monster:
         save_data["moves"] = self.moves.encode_moves()
         save_data["held_item"] = self.item_handler.encode_item()
         save_data["training_points"] = self.training_points.to_dict()
+        save_data["individual_values"] = self.individual_values.to_dict()
         save_data["modifiers"] = self.custom_stats.to_dict()
         save_data["bond_dict"] = self.bond_handler.get_state()
         save_data["flair_slugs"] = list(self.flair_slugs)
@@ -648,11 +671,13 @@ class Monster:
             elif key == "held_item" and value:
                 item = self.item_handler.decode_item(value)
                 if item:
-                    self.item_handler.set_item(item)
+                    self.equip_item(item)
             elif key == "training_points" and value:
                 self.training_points = TrainingPoints.from_dict(value)
             elif key == "modifiers" and value:
                 self.modifiers = CustomStatBoosts.from_dict(value)
+            elif key == "individual_values" and value:
+                self.individual_values = IndividualValues.from_dict(value)
             elif key == "flairs" and value:
                 self.flairs = {
                     category: Flair.from_state(flair_data)

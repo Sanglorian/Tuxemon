@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -16,7 +16,7 @@ from tuxemon.state.state import State
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
-    from tuxemon.client import LocalPygameClient
+    from tuxemon.base_client import BaseClient
     from tuxemon.npc import NPC
 
 MenuGameObj = Callable[[], object]
@@ -33,7 +33,7 @@ def add_menu_items(
 
 class MenuProvider:
     def get_menu_items(
-        self, client: LocalPygameClient, character: NPC
+        self, client: BaseClient, character: NPC
     ) -> list[tuple[str, MenuGameObj]]:
         raise NotImplementedError
 
@@ -43,7 +43,7 @@ class PCMenuBuilder:
 
     def __init__(
         self,
-        client: LocalPygameClient,
+        client: BaseClient,
         character: NPC,
         menu_providers: Optional[list[MenuProvider]] = None,
     ) -> None:

@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Callable
 
 from tuxemon.base_client import BaseClient, ClientState
 from tuxemon.config import TuxemonConfig
@@ -49,27 +50,15 @@ class HeadlessClient(BaseClient):
                 self.perform_cleanup()
                 self.state = ClientState.DONE
 
+    def queue_command(self, command: Callable[[], None]) -> None:
+        self.command_queue.put(command)
+        logger.debug("Queued command for execution in main thread.")
+
     def update(self, time_delta: float) -> None:
         """
         Main loop for entire game.
 
-        This method gets update every frame
-        by Asteria Networking's "listen()" function. Every frame we get the
-        amount of time that has passed each frame, check game conditions,
-        and update the game state.
-
         Parameters:
             time_delta: Elapsed time since last frame.
         """
-        # self.network_manager.update(time_delta)
-        self.input_cache.clear_frame_state()
-        events = self.input_manager.process_events()
-        self.input_manager.update(time_delta)
-        self.key_events = list(self.event_manager.process_events(events))
-        self.event_data = {}
-        self.event_engine.update(time_delta)
-
-        if self.event_data:
-            logger.debug("Event Data:" + str(self.event_data))
-
         self.update_states(time_delta)

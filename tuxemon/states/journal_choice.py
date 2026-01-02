@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import math
@@ -10,7 +10,8 @@ from typing import TYPE_CHECKING, Any, ClassVar
 import pygame_menu
 from pygame_menu import locals
 
-from tuxemon.db import MonsterModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import MonsterModel
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_JOURNAL_CHOICE, DIMGRAY_COLOR

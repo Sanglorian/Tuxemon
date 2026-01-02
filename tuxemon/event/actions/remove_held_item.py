@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -44,7 +44,7 @@ class RemoveHeldItemAction(EventAction):
             logger.error("Monster not found")
             return
 
-        item = monster.item_handler.take_item()
+        item = monster.unequip_item()
         if item:
             logger.info(f"{item.name} has been removed from {monster.name}!")
         else:

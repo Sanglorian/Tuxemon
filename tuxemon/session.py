@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -14,7 +14,6 @@ from tuxemon.save_state import TIME_FORMAT, NPCState, SessionSave, WorldSave
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
-    from tuxemon.client import LocalPygameClient
     from tuxemon.player import Player
     from tuxemon.save_state import SaveData
     from tuxemon.states.world_state import WorldState
@@ -115,14 +114,14 @@ class AbstractSession(ABC, Generic[ClientType]):
         self._total_playtime = save_data.total_playtime or 0.0
 
 
-class Session(AbstractSession["LocalPygameClient"]):
+class Session(AbstractSession["BaseClient"]):
     """
     Contains Client, World, and Player.
     This is the concrete local session implementation.
     """
 
     @property
-    def client(self) -> LocalPygameClient:
+    def client(self) -> BaseClient:
         if self._client is None:
             raise ValueError("Client is not initialized")
         return self._client

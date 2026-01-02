@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -13,11 +13,13 @@ from tuxemon.combat.combat_context import (
     CombatType,
 )
 from tuxemon.combat.utils import check_battle_legal
-from tuxemon.db import EnvironmentModel, MonsterModel, NpcModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import MonsterModel, NpcModel
 from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
+from tuxemon.formula import config_monster
 from tuxemon.monster import Monster
-from tuxemon.platform.const.sizes import MAX_LEVEL, PARTY_LIMIT
+from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.session import Session
 from tuxemon.time_handler import today_ordinal
 
@@ -60,9 +62,9 @@ class RandomBattleAction(EventAction):
             raise ValueError(
                 f"Party size {self.nr_txmns} must be between 1 and {PARTY_LIMIT}"
             )
-        if not (1 <= self.max_level <= MAX_LEVEL):
+        if not (1 <= self.max_level <= config_monster.level_range[1]):
             raise ValueError(
-                f"Max level {self.max_level} must be between 1 and {MAX_LEVEL}"
+                f"Max level {self.max_level} must be between 1 and {config_monster.level_range[1]}"
             )
 
     def _prepare_opponent(self, session: Session) -> None:
@@ -108,21 +110,23 @@ class RandomBattleAction(EventAction):
             logger.warning("Battle is not legal, won't start.")
             return
 
-        env_slug = player.game_variables.get("environment", "grass")
-        env = EnvironmentModel.lookup(env_slug, db)
+        environment = session.client.environment_manager
+        env = environment.get_active_environment()
+        if env is None:
+            logger.error(
+                "No environment defined. Use 'set_environment' before starting combat."
+            )
+            return
 
         logger.info(f"Starting battle with '{npc.name}'!")
         context = CombatContext(
             session=session,
             teams=[player, npc],
             combat_type=CombatType.TRAINER,
-            graphics=env.battle_graphics,
-            music=env.battle_music,
             battle_mode=BattleMode.SINGLE,
         )
         session.client.push_state("CombatState", context=context)
-        active_music = npc.get_active_battle_music(env.battle_music)
-        sound = active_music.battle
+        sound = env.get_battle_music().battle
         if sound.music:
             session.client.current_music.play(sound.music, sound.volume)
 

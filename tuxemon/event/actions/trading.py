@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, final
 
-from tuxemon.db import db
+from tuxemon.database.runtime import db
 from tuxemon.event.eventaction import EventAction
 from tuxemon.tools import get_valid_uuid
 from tuxemon.trade_manager import TradeManager, TradeResult

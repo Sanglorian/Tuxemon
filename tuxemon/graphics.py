@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """
 
 General "tools" code for pygame graphics operations that don't
@@ -22,7 +22,8 @@ from pygame.transform import scale
 from pytmx.pytmx import TileFlags
 from pytmx.util_pygame import handle_transformation, smart_convert
 
-from tuxemon.db import MonsterModel, NpcModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import MonsterModel, NpcModel
 from tuxemon.platform.const.graphics import FUCHSIA_COLOR
 from tuxemon.prepare import SCALE
 from tuxemon.session import Session

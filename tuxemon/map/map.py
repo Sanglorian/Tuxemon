@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -262,21 +262,6 @@ def pairs(direction: Direction) -> Direction:
     if opposite is None:
         raise ValueError(f"{direction} doesn't exist.")
     return opposite
-
-
-def proj(point: Vector3) -> Vector2:
-    """
-    Project 3d coordinates to 2d.
-
-    Not necessarily for use on a screen.
-
-    Parameters:
-        point: The 3d vector to project.
-
-    Returns:
-        2d projection vector.
-    """
-    return Vector2(point.x, point.y)
 
 
 def tiles_inside_rect(

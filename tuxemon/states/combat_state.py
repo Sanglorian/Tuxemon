@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """
 
 General guidelines of the combat module
@@ -379,8 +379,16 @@ class CombatState(CombatAnimations):
         Parameters:
             monster: Monster to choose an action for.
         """
+        env = self.client.environment_manager.get_active_environment()
+        if env is None:
+            raise RuntimeError(
+                "Environment not set. Use set_environment before proceeding."
+            )
         self.client.push_state(
-            self.graphics.menu, session=self.session, cmb=self, monster=monster
+            env.get_battle_graphics().menu,
+            session=self.session,
+            cmb=self,
+            monster=monster,
         )
 
     def process_combat_message(self, message: str) -> None:
@@ -819,9 +827,15 @@ class CombatState(CombatAnimations):
             owner = self.client.get_monster_owner(winner)
             if owner and owner.is_player:
                 self.task(partial(self.animate_exp, winner), interval=2.5)
-                self.task(
-                    partial(self.update_hud, owner, False, True), interval=4.0
-                )
+                self.task(self.refresh_ui, interval=3.0)
+                hud = self.hud_manager.get_hud(winner)
+                if hud:
+                    self.task(
+                        partial(
+                            self._update_hud_details, winner, hud, hud.player
+                        ),
+                        interval=4.0,
+                    )
 
     def animate_party_status(self) -> None:
         """
@@ -907,8 +921,9 @@ class CombatState(CombatAnimations):
         self.award_experience_and_money(monster)
         # Remove monster from damage map
         self.client.combat_session.damage_tracker.remove_monster(monster)
-        if len(self.client.combat_session.remaining_players) <= 1:
-            play_outcome_music(self.session, self.music, monster)
+        env = self.client.environment_manager.get_active_environment()
+        if env and len(self.client.combat_session.remaining_players) <= 1:
+            play_outcome_music(self.session, env.get_battle_music(), monster)
 
     def clean_combat(self) -> None:
         """Clean combat."""

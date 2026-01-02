@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -53,14 +53,14 @@ class MonsterItemState(PygameMenuState):
 
         def choose_target(menu_item: MenuItem[Item]) -> None:
             item = menu_item.game_object
-            monster.item_handler.set_item(item)
+            monster.equip_item(item)
             owner.bag.remove_item(item)
             self.client.remove_state_by_name("ItemMenuState")
             self.client.remove_state_by_name("MonsterItemState")
             self.client.remove_state_by_name("MonsterMenuState")
 
         def remove_item() -> None:
-            item = monster.item_handler.take_item()
+            item = monster.unequip_item()
             if item:
                 owner.bag.add_item(item)
             self.client.remove_state_by_name("MonsterItemState")

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -7,13 +7,13 @@ from collections.abc import Mapping, Sequence
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
 
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     FactionAlignment,
     FactionKind,
     FactionModel,
     FactionRelationStatus,
     RankStep,
-    db,
 )
 from tuxemon.locale import T
 

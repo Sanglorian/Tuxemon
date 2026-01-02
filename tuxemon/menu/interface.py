@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from typing import Any, Generic, Optional, TypeVar
@@ -49,8 +49,7 @@ class Bar:
             fg_color: The foreground color of the bar.
             bg_color: The background color of the bar.
         """
-        self._value = 0.0
-        self.value = value
+        self._value = max(0.0, min(1.0, value))
         self.border_filename = border_filename
         self.fg_color = fg_color
         self.bg_color = bg_color
@@ -143,7 +142,12 @@ class HpBar(Bar):
         Parameters:
             value: The initial value of the HP bar.
         """
-        super().__init__(value, GFX_HP_BAR, HP_COLOR_FG, HP_COLOR_BG)
+        super().__init__(
+            max(0.0, min(1.0, value)),
+            GFX_HP_BAR,
+            HP_COLOR_FG,
+            HP_COLOR_BG,
+        )
 
 
 class ExpBar(Bar):
@@ -156,7 +160,12 @@ class ExpBar(Bar):
         Parameters:
             value: The initial value of the EXP bar.
         """
-        super().__init__(value, GFX_XP_BAR, XP_COLOR_FG, XP_COLOR_BG)
+        super().__init__(
+            max(0.0, min(1.0, value)),
+            GFX_XP_BAR,
+            XP_COLOR_FG,
+            XP_COLOR_BG,
+        )
 
 
 T = TypeVar("T", covariant=True)

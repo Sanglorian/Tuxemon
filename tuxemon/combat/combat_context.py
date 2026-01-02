@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -8,7 +8,6 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from tuxemon.db import BattleGraphicsModel, BattleMusicModel
     from tuxemon.npc import NPC
     from tuxemon.session import Session
 
@@ -30,8 +29,6 @@ class BattleMode(Enum):
 class CombatContext:
     session: Session
     teams: list[NPC]
-    graphics: BattleGraphicsModel
-    music: BattleMusicModel
     combat_type: CombatType
     battle_mode: BattleMode
 

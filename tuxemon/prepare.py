@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """This module initializes the display, pygame, translations, and databases."""
 from __future__ import annotations
 
@@ -48,10 +48,11 @@ def pygame_init() -> None:
 
     import pygame as pg
 
-    from tuxemon.db import db
     from tuxemon.locale import T
 
     T.initialize_translations(recompile=CONFIG.recompile_translations)
+    from tuxemon.database.runtime import db
+
     db.load()
 
     logger.debug("pygame init")

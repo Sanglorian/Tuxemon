@@ -60,6 +60,10 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.get_player_monster.GetPlayerMonsterAction
 .. autoscriptinfoclass:: tuxemon.event.actions.give_experience.GiveExperienceAction
 .. autoscriptinfoclass:: tuxemon.event.actions.info.InfoAction
+.. autoscriptinfoclass:: tuxemon.event.actions.input_load.InputLoadAction
+.. autoscriptinfoclass:: tuxemon.event.actions.input_playback.InputPlaybackAction
+.. autoscriptinfoclass:: tuxemon.event.actions.input_record.InputRecordAction
+.. autoscriptinfoclass:: tuxemon.event.actions.input_save.InputSaveAction
 .. autoscriptinfoclass:: tuxemon.event.actions.input_variable.InputVariableAction
 .. autoscriptinfoclass:: tuxemon.event.actions.learn_tech_by_method.LearnTechByMethodAction
 .. autoscriptinfoclass:: tuxemon.event.actions.load_game.LoadGameAction
@@ -123,6 +127,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.set_char_attribute.SetCharAttributeAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_cipher.SetCipherAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_economy.SetEconomyAction
+.. autoscriptinfoclass:: tuxemon.event.actions.set_environment.SetEnvironmentAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_kennel_visible.SetKennelVisibleAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_layer.SetLayerAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_mission.SetMissionAction

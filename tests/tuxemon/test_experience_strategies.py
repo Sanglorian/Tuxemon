@@ -19,7 +19,7 @@ from tuxemon.combat.experience_strategies import (
     calculate_experience_base,
 )
 from tuxemon.db import EvolutionStage, ExperienceMethod
-from tuxemon.platform.const.sizes import MAX_LEVEL
+from tuxemon.formula import config_monster
 
 
 class DummyMonster:
@@ -104,7 +104,7 @@ def test_calculate_experience_default(setup_combat):
 
 def test_calculate_experience_max_level(setup_combat):
     loser, winner, _, damages = setup_combat
-    winner.level = MAX_LEVEL
+    winner.level = config_monster.level_range[1]
     exp, non = calculate_experience(loser, winner, damages)
     assert (exp, non) == (0, 0)
 

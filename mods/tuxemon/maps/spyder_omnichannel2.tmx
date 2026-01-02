@@ -89,8 +89,8 @@
   </object>
   <object id="14" name="Environment" type="event" x="16" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:interior"/>
-    <property name="cond1" value="not variable_set environment:interior"/>
+    <property name="act1" value="set_environment interior"/>
+    <property name="cond1" value="not environment_is interior"/>
    </properties>
   </object>
   <object id="24" name="Create Bettger" type="event" x="192" y="160" width="16" height="16">

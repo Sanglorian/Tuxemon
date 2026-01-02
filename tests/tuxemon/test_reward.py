@@ -15,11 +15,11 @@ from tuxemon.combat.reward_system import (
     calculate_tps,
 )
 from tuxemon.db import Acquisition, ExperienceMethod
+from tuxemon.formula import config_monster
 from tuxemon.monster import Monster
 from tuxemon.monster_dir.stats import BasicStats
 from tuxemon.monster_dir.status import MonsterStatusHandler
 from tuxemon.npc import NPC
-from tuxemon.platform.const.sizes import MAX_LEVEL
 
 
 class DummyItem:
@@ -129,7 +129,7 @@ def test_calculate_experience_methods(setup_combat, item, expected_func):
 
 def test_calculate_experience_max_level_returns_zero(setup_combat):
     loser, winner, damage_tracker, _, _, _, _ = setup_combat
-    winner.set_level(MAX_LEVEL)
+    winner.set_level(config_monster.level_range[1])
     exp = calculate_experience(loser, winner, damage_tracker)
     assert exp == (0, 0)
 

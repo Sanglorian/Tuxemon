@@ -4,7 +4,7 @@ monsters:
   held_items: []
   level_range:
   - 1
-  - 999
+  - 100
   monster: f7u1t3ra
   variables: []
 - encounter_rate: 0.5

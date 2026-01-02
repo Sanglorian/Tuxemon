@@ -372,7 +372,7 @@ class StatsComparison(BaseComparison):
         ...,
         description="The primary stat being evaluated for the evolution condition (e.g., speed, defense).",
     )
-    target_stat: Optional[StatType] = Field(
+    target_stat: StatType | None = Field(
         None,
         description="An optional secondary stat to compare against the primary stat (e.g., compare speed to defense).",
     )
@@ -388,15 +388,15 @@ class BondComparison(BaseComparison):
 
 
 class PartyConditionsModel(BaseModel):
-    monster_slugs: Optional[dict[str, int]] = Field(
+    monster_slugs: dict[str, int] | None = Field(
         None,
         description="A dictionary specifying required monsters and their minimum counts by slug.",
     )
-    monster_types: Optional[dict[str, int]] = Field(
+    monster_types: dict[str, int] | None = Field(
         None,
         description="A dictionary specifying required monster types and their minimum counts.",
     )
-    genders: Optional[dict[GenderType, int]] = Field(
+    genders: dict[GenderType, int] | None = Field(
         None,
         description="A dictionary specifying required genders and their minimum counts.",
     )
@@ -2080,7 +2080,7 @@ class EncounterItemModel(BaseModel):
         None,
         description="Offset (+/- levels) to apply to the monster's level.",
     )
-    level_offset_range: Optional[tuple[int, int]] = Field(
+    level_offset_range: tuple[int, int] | None = Field(
         None,
         description="Range of offset (+/- levels) to apply randomly to base level.",
     )
@@ -2100,7 +2100,7 @@ class EncounterItemModel(BaseModel):
         False,
         description="If true, allows scaling to override a monster's declared level_range and match party average directly.",
     )
-    scaling_offset_range: Optional[tuple[int, int]] = Field(
+    scaling_offset_range: tuple[int, int] | None = Field(
         None,
         description="Range used for random offset when scaling level overrides are applied (e.g. [-3, +4])",
     )
@@ -2111,20 +2111,132 @@ class EncounterItemModel(BaseModel):
             return v
         raise ValueError(f"the monster {v} doesn't exist in the db")
 
+    @field_validator("level_range")
+    def validate_level_range(cls, v: tuple[int, int]) -> tuple[int, int]:
+        min_allowed, max_allowed = config_monster.level_range
+        min_level, max_level = v
+
+        if min_level > max_level:
+            raise ValueError("level_range must be (min, max) with min <= max")
+
+        if min_level < min_allowed or max_level > max_allowed:
+            raise ValueError(
+                f"level_range {v} must be within allowed range "
+                f"{config_monster.level_range}"
+            )
+
+        return v
+
+    @field_validator("level_offset_range")
+    def validate_level_offset_range(
+        cls, v: tuple[int, int] | None
+    ) -> tuple[int, int] | None:
+        if v is None:
+            return v
+
+        min_allowed, max_allowed = config_monster.level_range
+        off_min, off_max = v
+
+        if off_min > off_max:
+            raise ValueError(
+                "level_offset_range must be (min, max) with min <= max"
+            )
+
+        if off_min < -(max_allowed - min_allowed) or off_max > (
+            max_allowed - min_allowed
+        ):
+            raise ValueError(
+                f"level_offset_range {v} would push levels outside allowed range "
+                f"{config_monster.level_range}"
+            )
+
+        return v
+
+    @field_validator("scaling_offset_range")
+    def validate_scaling_offset_range(
+        cls, v: tuple[int, int] | None
+    ) -> tuple[int, int] | None:
+        if v is None:
+            return v
+
+        off_min, off_max = v
+
+        if off_min > off_max:
+            raise ValueError(
+                "scaling_offset_range must be (min, max) with min <= max"
+            )
+
+        return v
+
+    @model_validator(mode="after")
+    def validate_scaling_logic(self) -> EncounterItemModel:
+        """
+        Ensures scaling + offsets cannot produce levels outside allowed range.
+        """
+        min_allowed, max_allowed = config_monster.level_range
+
+        if not self.scaling_enabled:
+            return self
+
+        if self.override_level_range:
+            if self.scaling_offset_range:
+                off_min, off_max = self.scaling_offset_range
+                if off_min < -(max_allowed - min_allowed) or off_max > (
+                    max_allowed - min_allowed
+                ):
+                    raise ValueError(
+                        f"scaling_offset_range {self.scaling_offset_range} would push "
+                        f"scaled levels outside allowed range {config_monster.level_range}"
+                    )
+            return self
+
+        min_level, max_level = self.level_range
+        if min_level < min_allowed or max_level > max_allowed:
+            raise ValueError(
+                f"scaling cannot use level_range {self.level_range} because it exceeds "
+                f"allowed global range {config_monster.level_range}"
+            )
+
+        return self
+
 
 class HordeEncounterModel(BaseModel):
     monsters: Sequence[EncounterItemModel] = Field(
         ..., description="The list of monsters that make up this horde."
     )
-    horde_level_range: Optional[tuple[int, int]] = Field(
+    horde_level_range: tuple[int, int] | None = Field(
         None,
-        description="Optional: A base level range for the entire horde. If set, individual monster `level_range` can be ignored or used as a modification.",
+        description="Optional: A base level range for the entire horde. "
+        "Monsters may have their own level ranges that differ.",
     )
     horde_exp_mod: float | None = Field(
         None,
         description="Optional: A modifier for the experience points of the entire horde.",
         gt=0.0,
     )
+
+    @field_validator("horde_level_range")
+    def validate_horde_level_range(
+        cls, v: tuple[int, int] | None
+    ) -> tuple[int, int] | None:
+        if v is None:
+            return v
+
+        min_allowed, max_allowed = config_monster.level_range
+        min_level, max_level = v
+
+        if min_level > max_level:
+            raise ValueError(
+                "horde_level_range must be (min, max) with min <= max"
+            )
+
+        if min_level < min_allowed or max_level > max_allowed:
+            raise ValueError(
+                f"horde_level_range {v} must be within allowed range "
+                f"{config_monster.level_range}"
+            )
+
+        return v
 
 
 class EncounterType(str, Enum):
@@ -2144,14 +2256,14 @@ class EncounterModel(BaseModel, BaseLookupModel):
     monsters: Sequence[EncounterItemModel] = Field(
         default_factory=list, description="Monsters encounterable"
     )
-    horde: Optional[HordeEncounterModel] = Field(
+    horde: HordeEncounterModel | None = Field(
         None, description="Horde data (for horde encounters)"
     )
     scaling_zone: bool = Field(
         False,
         description="If true, this zone applies level scaling to all monsters",
     )
-    scale_offset_range: Optional[tuple[int, int]] = Field(
+    scale_offset_range: tuple[int, int] | None = Field(
         None,
         description="Custom offset range applied when scaling override is active (e.g. -3 to +5)",
     )
@@ -2185,6 +2297,73 @@ class EncounterModel(BaseModel, BaseLookupModel):
             raise ValueError(
                 "Encounter must define either 'monsters' or 'horde'."
             )
+        return self
+
+    @model_validator(mode="after")
+    def validate_encounter_type(self) -> EncounterModel:
+        if self.encounter_type == EncounterType.HORDE:
+            if not self.horde:
+                raise ValueError(
+                    "EncounterType.HORDE requires a 'horde' definition"
+                )
+        else:
+            if not self.monsters:
+                raise ValueError(
+                    "EncounterType.SINGLE requires 'monsters' to be defined"
+                )
+
+        return self
+
+    @field_validator("scale_offset_range")
+    def validate_scale_offset_range(
+        cls, v: tuple[int, int] | None
+    ) -> tuple[int, int] | None:
+        if v is None:
+            return v
+
+        off_min, off_max = v
+        if off_min > off_max:
+            raise ValueError(
+                "scale_offset_range must be (min, max) with min <= max"
+            )
+
+        min_allowed, max_allowed = config_monster.level_range
+        max_offset = max_allowed - min_allowed
+
+        if off_min < -max_offset or off_max > max_offset:
+            raise ValueError(
+                f"scale_offset_range {v} would push scaled levels outside allowed range "
+                f"{config_monster.level_range}"
+            )
+
+        return v
+
+    @model_validator(mode="after")
+    def validate_scaling_zone_logic(self) -> EncounterModel:
+        min_allowed, max_allowed = config_monster.level_range
+
+        if not self.scaling_zone:
+            return self
+
+        if self.override_level_range:
+            if self.scale_offset_range:
+                off_min, off_max = self.scale_offset_range
+                max_offset = max_allowed - min_allowed
+                if off_min < -max_offset or off_max > max_offset:
+                    raise ValueError(
+                        f"scale_offset_range {self.scale_offset_range} would push "
+                        f"scaled levels outside allowed range {config_monster.level_range}"
+                    )
+            return self
+
+        for m in self.monsters:
+            min_level, max_level = m.level_range
+            if min_level < min_allowed or max_level > max_allowed:
+                raise ValueError(
+                    f"Monster {m.monster} has level_range {m.level_range} outside "
+                    f"global allowed range {config_monster.level_range} while scaling_zone=True"
+                )
+
         return self
 
 
@@ -2395,17 +2574,17 @@ class RankRequirement(BaseModel):
 class RankStep(BaseModel):
     title: str
     threshold: int
-    requirement: Optional[RankRequirement] = None
+    requirement: RankRequirement | None = None
 
 
 class FactionModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "faction"
 
     slug: str = Field(..., description="Unique ID of the faction")
-    kind: Optional[FactionKind] = Field(
+    kind: FactionKind | None = Field(
         FactionKind.TEAM, description="Faction type (gym, team, league, etc.)"
     )
-    alignment: Optional[FactionAlignment] = Field(
+    alignment: FactionAlignment | None = Field(
         None, description="Faction alignment: heroic, villainous, rogue, etc."
     )
     badge_id: str | None = Field(

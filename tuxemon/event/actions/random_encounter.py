@@ -84,7 +84,7 @@ class RandomEncounterAction(EventAction):
 
         if results.held_item is not None:
             item = Item.create(results.held_item)
-            output = current_monster.item_handler.set_item(item)
+            output = current_monster.equip_item(item)
             if not output:
                 return
 

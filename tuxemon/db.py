@@ -660,6 +660,10 @@ class ItemModel(BaseModel, BaseLookupModel):
         default_factory=list,
         description="Statuses this item grants immunity to",
     )
+    granted_techniques: Sequence[str] = Field(
+        default_factory=list,
+        description="Technique slugs granted to the holder while this item is equipped.",
+    )
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> ItemModel:
@@ -695,6 +699,15 @@ class ItemModel(BaseModel, BaseLookupModel):
                     raise ValueError(
                         f"A status {status} doesn't exist in the db"
                     )
+        return v
+
+    @field_validator("granted_techniques")
+    def techniques_exist(cls, v: Sequence[str]) -> Sequence[str]:
+        for tech in v:
+            if not has.db_entry("technique", tech):
+                raise ValueError(
+                    f"Technique {tech} does not exist in the database"
+                )
         return v
 
 
@@ -857,8 +870,6 @@ class MonsterEvolutionItemModel(BaseModel):
     moves: Sequence[str] = Field(
         default_factory=list,
         description="The techniques that the monster must have learned for the evolution to occur.",
-        min_length=1,
-        max_length=config_monster.max_moves,
     )
     bond: Optional[BondComparison] = Field(
         None,
@@ -892,6 +903,12 @@ class MonsterEvolutionItemModel(BaseModel):
                     raise ValueError(
                         f"A technique {element} doesn't exist in the db"
                     )
+        return v
+
+    @field_validator("moves")
+    def validate_moves(cls, v: Sequence[str]) -> Sequence[str]:
+        if not v:
+            raise ValueError(f"Moves must contain at least 1 technique")
         return v
 
     @field_validator("tech")
@@ -1115,6 +1132,11 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
     )
     sounds: MonsterSoundsModel = Field(
         description="The sounds this monster has"
+    )
+    max_moves: int = Field(
+        default=config_monster.max_moves,
+        description="Maximum number of moves this monster can know",
+        ge=1,
     )
 
     @classmethod

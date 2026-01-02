@@ -113,6 +113,7 @@ class Monster:
         self.experience_handler: MonsterExperience = MonsterExperience()
 
         self.money_modifier: float = 0.0
+        self.max_moves: int = 1
 
         self.types = ElementTypesHandler()
         self.shape: ShapeHandler = ShapeHandler()
@@ -290,6 +291,7 @@ class Monster:
         self.types = ElementTypesHandler(results.types)
 
         self.randomly = results.randomly
+        self.max_moves = results.max_moves
 
         self.txmn_id = results.txmn_id
         self.set_capture(self.capture)
@@ -369,6 +371,19 @@ class Monster:
     def has_acquisition(self, method: Acquisition) -> bool:
         """Returns True if the monster was acquired via the specified method."""
         return self.acquisition == method
+
+    def equip_item(self, item: Item) -> bool:
+        result = self.item_handler.set_item(item)
+        if result:
+            self.moves.apply_item_techniques(self, item)
+        return result
+
+    def unequip_item(self) -> Item | None:
+        item = self.item_handler.take_item()
+        if item:
+            self.moves.remove_item_techniques(self, item)
+            return item
+        return None
 
     def get_experience_multiplier(self) -> float:
         """
@@ -656,7 +671,7 @@ class Monster:
             elif key == "held_item" and value:
                 item = self.item_handler.decode_item(value)
                 if item:
-                    self.item_handler.set_item(item)
+                    self.equip_item(item)
             elif key == "training_points" and value:
                 self.training_points = TrainingPoints.from_dict(value)
             elif key == "modifiers" and value:

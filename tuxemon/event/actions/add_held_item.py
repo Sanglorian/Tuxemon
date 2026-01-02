@@ -56,6 +56,6 @@ class AddHeldItemAction(EventAction):
             return
 
         item = Item.create(self.item)
-        output = monster.item_handler.set_item(item)
+        output = monster.equip_item(item)
         if not output:
             return

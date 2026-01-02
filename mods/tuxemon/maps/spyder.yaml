@@ -169,11 +169,11 @@ events:
     type: event
   Swim Day Environment:
     actions:
-    - set_variable environment:ocean
+    - set_environment ocean
     conditions:
     - is char_sprite player,swimmer
     - not variable_set stage_of_day:night
-    - not variable_set environment:ocean
+    - not environment_is ocean
     type: event
   Swim Encounters Day:
     actions:
@@ -182,7 +182,7 @@ events:
     - is char_sprite player,swimmer
     - is current_state WorldState
     - is check_char_parameter player,moving,1
-    - is variable_set environment:ocean
+    - is environment_is ocean
     type: event
   Swim Encounters Night:
     actions:
@@ -191,15 +191,15 @@ events:
     - is char_sprite player,swimmer
     - is current_state WorldState
     - is check_char_parameter player,moving,1
-    - is variable_set environment:night_ocean
+    - is environment_is night_ocean
     type: event
   Swim Night Environment:
     actions:
-    - set_variable environment:night_ocean
+    - set_environment night_ocean
     conditions:
     - is char_sprite player,swimmer
     - is variable_set stage_of_day:night
-    - not variable_set environment:night_ocean
+    - not environment_is night_ocean
     type: event
   Teleport Faint:
     actions:

@@ -23,6 +23,7 @@ from tuxemon.element import ElementTypesHandler
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
 from tuxemon.surfanim import FlipAxes
+from tuxemon.technique.cooldown import Cooldown
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
@@ -49,19 +50,18 @@ class Technique:
         self.counter: int = 0
         self.tech_id: int = 0
         self.accuracy: float = 0.0
+        self.cooldown = Cooldown()
         self.visuals = VisualProperties(
             animation=None, flip_axes=FlipAxes.NONE, loop=-1
         )
         self.hit: bool = False
         self.speed: int = 0
-        self.current_cooldown: int = 0
         self.potency: float = 0.0
         self.power: float = 1.0
         self.default_potency: float = 0.0
         self.default_power: float = 1.0
         self.range: Range = Range.melee
         self.healing_power: float = 0.0
-        self.cooldown_duration: int = 0
         self.sound = SoundProperties(sfx=None, volume=1.5)
         self.sort: str = ""
         self.slug: str = ""
@@ -100,7 +100,7 @@ class Technique:
     @property
     def is_recharging(self) -> bool:
         """Returns whether the technique is currently recharging."""
-        return self.current_cooldown > 0
+        return self.cooldown.is_recharging
 
     def load(self, slug: str) -> None:
         """
@@ -135,7 +135,7 @@ class Technique:
         self.speed = results.speed.numeric_value
         self.behaviors = results.behaviors
         self.healing_power = results.healing_power
-        self.cooldown_duration = results.recharge
+        self.cooldown.duration = results.recharge
         self.range = results.range
         self.tech_id = results.tech_id
         self.menu_actions_data = results.menu_actions
@@ -163,12 +163,11 @@ class Technique:
         """
         return self.condition_handler.validate(session=session, target=target)
 
-    def recharge(self) -> None:
-        if self.current_cooldown > 0:
-            self.current_cooldown -= 1
+    def recharge(self, amount: int = 1) -> None:
+        self.cooldown.tick(amount)
 
     def full_recharge(self) -> None:
-        self.current_cooldown = 0
+        self.cooldown.reset()
 
     def use(
         self, session: Session, user: Monster, target: Monster
@@ -184,7 +183,7 @@ class Technique:
             user=user,
             target=target,
         )
-        self.current_cooldown = self.cooldown_duration
+        self.cooldown.trigger()
         if session.client:
             session.client.active_effect_manager.add_technique(self)
         return result

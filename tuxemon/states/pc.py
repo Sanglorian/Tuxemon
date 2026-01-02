@@ -16,7 +16,7 @@ from tuxemon.state.state import State
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
-    from tuxemon.client import LocalPygameClient
+    from tuxemon.base_client import BaseClient
     from tuxemon.npc import NPC
 
 MenuGameObj = Callable[[], object]
@@ -33,7 +33,7 @@ def add_menu_items(
 
 class MenuProvider:
     def get_menu_items(
-        self, client: LocalPygameClient, character: NPC
+        self, client: BaseClient, character: NPC
     ) -> list[tuple[str, MenuGameObj]]:
         raise NotImplementedError
 
@@ -43,7 +43,7 @@ class PCMenuBuilder:
 
     def __init__(
         self,
-        client: LocalPygameClient,
+        client: BaseClient,
         character: NPC,
         menu_providers: Optional[list[MenuProvider]] = None,
     ) -> None:

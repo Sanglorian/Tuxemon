@@ -58,6 +58,7 @@ class WildEncounterAction(EventAction):
 
     def start(self, session: Session) -> None:
         player = session.player
+        environment = session.client.environment_manager
 
         if not check_battle_legal(player):
             logger.warning("battle is not legal, won't start")
@@ -91,16 +92,17 @@ class WildEncounterAction(EventAction):
         # NOTE: random battles are implemented as trainer battles.
         #       this is a hack. remove this once trainer/random battlers are fixed
 
-        env_var = player.game_variables.get("environment", "grass")
-        env = env_var if self.env is None else self.env
-        environment = EnvironmentModel.lookup(env, db)
+        env = environment.get_active_environment()
+        if env is None:
+            logger.error(
+                "No environment defined. Use 'set_environment' before starting combat."
+            )
+            return
 
         context = CombatContext(
             session=session,
             teams=[player, npc],
             combat_type=CombatType.MONSTER,
-            graphics=environment.battle_graphics,
-            music=environment.battle_music,
             battle_mode=BattleMode.SINGLE,
         )
         session.client.queue_state("CombatState", context=context)
@@ -113,7 +115,7 @@ class WildEncounterAction(EventAction):
             rgb = string_to_colorlike(self.rgb)
         session.client.push_state("FlashTransition", color=rgb)
 
-        sound = environment.battle_music.battle
+        sound = env.get_battle_music().battle
         if sound.music:
             session.client.current_music.play(sound.music, sound.volume)
 

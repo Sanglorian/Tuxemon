@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """Loads and manages the user's game configuration."""
 from __future__ import annotations
 
@@ -20,6 +20,7 @@ def setup_user_environment() -> TuxemonConfig:
         paths.USER_STORAGE_DIR.mkdir(parents=True, exist_ok=True)
         paths.USER_GAME_DATA_DIR.mkdir(parents=True, exist_ok=True)
         paths.USER_GAME_SAVE_DIR.mkdir(parents=True, exist_ok=True)
+        paths.USER_RECORDING_DIR.mkdir(parents=True, exist_ok=True)
         logger.info("User directories ensured.")
     except OSError as e:
         logger.critical(f"Failed to create user directories: {e}")

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -112,7 +112,16 @@ class AddComboAction(EventAction):
                     buttons=button_sequence,
                     callback=make_callback(combo.get("event_name")),
                     delays_s=delays_s,
-                    description=f"YAML-defined combo for {combo['name']}",
+                    description=combo.get(
+                        "description",
+                        f"YAML-defined combo for {combo['name']}",
+                    ),
+                    character=combo.get("character"),
+                    difficulty=int(combo.get("difficulty", 1)),
+                    priority=int(combo.get("priority", 0)),
+                    trigger_on_release=bool(
+                        combo.get("trigger_on_release", False)
+                    ),
                 )
 
                 session.client.input_manager.combo_manager.detector.add_combo(

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from collections.abc import Sequence
@@ -14,6 +14,23 @@ from tuxemon.core.core_effect import CoreEffect
 from tuxemon.core.core_manager import ConditionManager, EffectManager
 from tuxemon.db import LogicCondition, ParameterizableRule
 from tuxemon.plugin import PluginObject
+
+_manager: CoreAssetManager | None = None
+
+
+def init_assets() -> CoreAssetManager:
+    global _manager
+    if _manager is None:
+        _manager = CoreAssetManager()
+    return _manager
+
+
+def get_assets() -> CoreAssetManager:
+    if _manager is None:
+        raise RuntimeError(
+            "CoreAssetManager not initialized. Call init_assets() first."
+        )
+    return _manager
 
 
 class CoreAssetManager:

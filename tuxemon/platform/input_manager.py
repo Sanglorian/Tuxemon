@@ -18,7 +18,6 @@ from tuxemon.platform.input_device import (
     MouseSetup,
 )
 from tuxemon.platform.input_history import InputHistory
-from tuxemon.platform.input_recorder import InputRecorder
 from tuxemon.platform.input_visualizer import InputVisualizer
 from tuxemon.platform.platform_pygame.events import (
     PygameEventQueueHandler,
@@ -29,6 +28,7 @@ if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
     from tuxemon.platform.afk_manager import AFKManager
     from tuxemon.platform.events import PlayerInput
+    from tuxemon.platform.input_recorder import InputRecorder
 
 logger = logging.getLogger(__name__)
 
@@ -38,14 +38,19 @@ class InputManager:
     Manages the input devices for the game.
     """
 
-    def __init__(self, config: TuxemonConfig, afk_manager: AFKManager) -> None:
+    def __init__(
+        self,
+        config: TuxemonConfig,
+        afk_manager: AFKManager,
+        recorder: InputRecorder,
+    ) -> None:
         """
         Initializes the input manager with the given config.
         """
         self.afk_manager = afk_manager
         self.config = config
+        self.recorder = recorder
         self.event_queue = PygameEventQueueHandler()
-        self.recorder = InputRecorder()
         self.input_history = InputHistory(config)
         self.combo_manager = ComboManager()
         self.input_visualizer = InputVisualizer(SCREEN_SIZE)
@@ -73,18 +78,27 @@ class InputManager:
 
     def process_events(self) -> Generator[PlayerInput, None, None]:
         """Processes the input events."""
+        # Playback mode
         if self.recorder._is_playing_back:
+            self.event_queue.set_event_filter(lambda e: False)
+            # Only yield playback events
             event = self.recorder.next_playback_event()
             if event:
                 yield event
             return
 
-        # Live Mode (Recording or Standard Play)
+        # Live input mode
+        if self.event_queue.filter_active:
+            self.event_queue.clear_event_filter()
+
         for event in self.event_queue.process_events():
             self.afk_manager.reset()
             self.input_history.record_input(event)
             self.combo_manager.process(event)
-            self.recorder.record_event(event)
+
+            if self.recorder._is_recording:
+                self.recorder.record_event(event)
+
             yield event
 
     def update(self, time_delta: float) -> None:
@@ -99,10 +113,12 @@ class InputManager:
     def draw_visualizer(self, screen: Surface) -> None:
         if not self.config.controller.show_input_visualizer:
             return
+
         all_inputs = {}
         for handler in self.event_queue.get_input_handlers():
             for button_id, player_input in handler.buttons.items():
                 all_inputs[button_id] = player_input
+
         self.input_visualizer.draw(screen, all_inputs)
 
     def draw_inputs(self, screen: Surface) -> None:

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import json
@@ -7,11 +7,11 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 
+from tuxemon.event import get_event_bus
 from tuxemon.platform.events import PlayerInput
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
-from tuxemon.event import get_event_bus
 
 logger = logging.getLogger(__name__)
 

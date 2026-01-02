@@ -278,11 +278,20 @@ class PlayerInput:
         Converts the essential state of the input into a dictionary for
         serialization.
         """
+
+        def safe(v: Any) -> int | float | str:
+            if isinstance(v, (int, float)):
+                return v
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return str(v)
+
         return {
             "button": self.button,
-            "value": self.value,
+            "value": safe(self.value),
             "hold_time": self.hold_time,
-            "previous_value": self.previous_value,
+            "previous_value": safe(self.previous_value),
             "timestamp": self.timestamp,
             "hold_duration": self.hold_duration,
         }

@@ -16,6 +16,7 @@ from tuxemon.constants.paths import (
     USER_CONFIG_PATH,
     USER_GAME_DATA_DIR,
     USER_GAME_SAVE_DIR,
+    USER_RECORDING_DIR,
     get_active_mod_paths,
     get_mod_name_from_path,
     get_plugin_paths,
@@ -36,6 +37,7 @@ def core_paths():
         USER_GAME_SAVE_DIR,
         CACHE_DIR,
         L18N_MO_FILES,
+        USER_RECORDING_DIR,
     ]
 
 

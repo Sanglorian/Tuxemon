@@ -71,6 +71,10 @@ logger.debug(f"user game data: {USER_GAME_DATA_DIR}")
 USER_GAME_SAVE_DIR = USER_STORAGE_DIR / "saves"
 logger.debug(f"save games: {USER_GAME_SAVE_DIR}")
 
+# game recording dir
+USER_RECORDING_DIR = USER_STORAGE_DIR / "recordings"
+logger.debug(f"recordings: {USER_RECORDING_DIR}")
+
 # game cache dir
 CACHE_DIR = USER_STORAGE_DIR / "cache"
 logger.debug(f"cache: {CACHE_DIR}")

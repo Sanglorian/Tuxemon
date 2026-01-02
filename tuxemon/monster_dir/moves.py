@@ -311,6 +311,13 @@ class MonsterMovesHandler:
     def get_pending_moves(self, monster_iid: UUID) -> list[str]:
         return self.pending_moves.get(monster_iid, [])
 
+    def get_fallback_moves(self) -> list[Technique]:
+        return [
+            Technique.create(m.technique)
+            for m in self.moveset
+            if m.learning_method == LearningMethod.FALLBACK
+        ]
+
     def clear_pending_moves(self, monster_iid: UUID) -> None:
         self.pending_moves.pop(monster_iid, None)
 

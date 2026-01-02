@@ -751,6 +751,7 @@ class LearningMethod(str, Enum):
     TM = "tm"
     EVENT = "event"
     EVOLUTION = "evolution"
+    FALLBACK = "fallback"
 
 
 class MonsterMovesetItemModel(BaseModel):
@@ -1233,6 +1234,12 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
                         f"the flair '{flair}' doesn't exist in the db"
                     )
         return v
+
+    @model_validator(mode="after")
+    def must_have_fallback(self) -> MonsterModel:
+        if not any(m.learning_method == LearningMethod.FALLBACK for m in self.moveset):
+            raise ValueError("Monster must define at least one fallback technique.")
+        return self
 
 
 class StatModel(BaseModel):

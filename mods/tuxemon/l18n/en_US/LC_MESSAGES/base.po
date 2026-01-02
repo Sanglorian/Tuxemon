@@ -3790,6 +3790,12 @@ msgstr "The user delivers a powerful, focused blow."
 msgid "strike"
 msgstr "Strike"
 
+msgid "struggle_description"
+msgstr "They fight back with raw instinct when no other options remain."
+
+msgid "struggle"
+msgstr "Struggle"
+
 msgid "suck_poison_description"
 msgstr ""
 "The user draws out the poison from their own body and infects their enemy "

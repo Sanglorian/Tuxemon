@@ -4,6 +4,11 @@
   "moveset": [
     {
       "level_learned": 1,
+      "technique": "struggle",
+      "learning_method": "fallback"
+    },
+    {
+      "level_learned": 1,
       "technique": "roll"
     },
     {

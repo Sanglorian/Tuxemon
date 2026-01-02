@@ -13,6 +13,7 @@ from tuxemon import graphics
 from tuxemon.core.asset import get_assets
 from tuxemon.core.core_effect import ItemEffectResult
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     ExperienceMethod,
     ItemBehaviors,
@@ -23,7 +24,6 @@ from tuxemon.db import (
     SoundProperties,
     State,
     VisualProperties,
-    db,
 )
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler

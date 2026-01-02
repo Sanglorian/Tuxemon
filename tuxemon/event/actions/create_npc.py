@@ -7,11 +7,11 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Optional, final
 
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     DialogueContent,
     DialogueProfile,
     NpcModel,
-    db,
 )
 from tuxemon.event.eventaction import EventAction
 from tuxemon.item.item import Item

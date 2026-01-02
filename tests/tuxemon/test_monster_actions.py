@@ -4,11 +4,11 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from tuxemon.core.asset import init_assets
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     EvolutionStage,
     MonsterModel,
     TechniqueModel,
-    db,
 )
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventengine import EventEngine

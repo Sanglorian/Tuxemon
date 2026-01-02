@@ -7,13 +7,13 @@ from collections.abc import Mapping, Sequence
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
 
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     FactionAlignment,
     FactionKind,
     FactionModel,
     FactionRelationStatus,
     RankStep,
-    db,
 )
 from tuxemon.locale import T
 

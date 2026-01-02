@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-from tuxemon.db import Modifier, TerrainModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import Modifier, TerrainModel
 
 logger = logging.getLogger(__name__)
 

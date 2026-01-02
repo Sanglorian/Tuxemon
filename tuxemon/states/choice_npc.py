@@ -11,7 +11,8 @@ from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.animation import Animation, ScheduleType
-from tuxemon.db import NpcModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import NpcModel
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.prepare import SCALE, SCREEN_SIZE

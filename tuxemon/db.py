@@ -28,26 +28,14 @@ from pydantic import (
     model_validator,
 )
 
-from tuxemon.constants.asset_loader import (
-    fetch_asset,
-    fetch_mod_asset_roots,
-)
-from tuxemon.constants.paths import mods_folder
 from tuxemon.database.config import EntryNotFoundError
 from tuxemon.database.data import ModData
-from tuxemon.database.loader import ModelLoader
-from tuxemon.database.utils import load_config
-from tuxemon.database.validator import Validator
+from tuxemon.database.registry import validator as has
 from tuxemon.formula import config_monster
-from tuxemon.locale import T
 from tuxemon.platform.const import sizes
 from tuxemon.surfanim import FlipAxes
-from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
-
-# Load the default translator for data validation
-T.initialize_translations()
 
 
 class Direction(str, Enum):
@@ -2952,14 +2940,3 @@ def load_model_map(
         module = import_module(module_name)
         model_map[table] = getattr(module, class_name)
     return model_map
-
-
-fetch_mod_asset_roots(CONFIG)
-path = fetch_asset(mods_folder.as_posix(), "db_config.yaml")
-config = load_config(path)
-model_map = load_model_map(config.model_map)
-loader = ModelLoader(model_map)
-# Global database container
-db = ModData(config, loader)
-# Validator container
-has = Validator(db)

@@ -9,7 +9,8 @@ import pygame
 from pygame.surface import Surface
 
 from tuxemon import tools
-from tuxemon.db import MonsterModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import MonsterModel
 from tuxemon.graphics import load_sprite
 from tuxemon.locale import T
 from tuxemon.platform.const import buttons

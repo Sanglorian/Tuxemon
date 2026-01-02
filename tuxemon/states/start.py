@@ -12,7 +12,7 @@ import pygame_menu
 from pygame.surface import Surface
 from pygame_menu import locals
 
-from tuxemon.db import db
+from tuxemon.database.runtime import db
 from tuxemon.launcher import GameLauncher
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState

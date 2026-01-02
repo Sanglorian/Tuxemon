@@ -11,7 +11,7 @@ from tuxemon.db import (
     LearningMethod,
     MonsterMovesetItemModel,
 )
-from tuxemon.platform.const.sizes import MAX_MOVES
+from tuxemon.formula import config_monster
 from tuxemon.technique.technique import Technique, decode_moves, encode_moves
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ class MonsterMovesHandler:
         self,
         monster: Monster,
         technique: Technique,
-        max_moves: int = MAX_MOVES,
+        max_moves: int = config_monster.max_moves,
         method: Optional[LearningMethod] = None,
         ignore_eligibility: bool = False,
     ) -> bool:
@@ -195,7 +195,7 @@ class MonsterMovesHandler:
     def set_moves(
         self,
         monster: Monster,
-        max_moves: int = MAX_MOVES,
+        max_moves: int = config_monster.max_moves,
         method: LearningMethod = LearningMethod.LEVEL_UP,
     ) -> None:
         """

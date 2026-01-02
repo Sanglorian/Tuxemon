@@ -4,19 +4,23 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from enum import Enum
+from queue import Queue
+from threading import Thread
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload
 
 from tuxemon.audio import MusicPlayerState, SoundManager
 from tuxemon.boundary import BoundaryChecker
 from tuxemon.camera.camera import CameraManager
+from tuxemon.cli.processor import CommandProcessor
 from tuxemon.combat.session import CombatSession
 from tuxemon.constants import paths
 from tuxemon.core.active_effect import ActiveEffectManager
 from tuxemon.core.asset import init_assets
 from tuxemon.economy.shop_manager import ShopManager
 from tuxemon.encounter import EncounterManager
+from tuxemon.environment import EnvironmentManager
 from tuxemon.event import get_event_bus
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventcondition import ConditionManager
@@ -164,12 +168,22 @@ class BaseClient(ABC):
         self._map_renderer: AbstractRenderer = NullRenderer()
 
         # Various Sessions
+        self.environment_manager = EnvironmentManager()
         self.encounter_manager = EncounterManager()
         self.park_session = ParkSession()
         self.weather_manager = WorldWeatherManager()
         self.cipher_processor: Optional[CipherProcessor] = None
         self.alert_manager = AlertManager(self.event_bus)
         self.shop_manager = ShopManager()
+
+        self.command_queue: Queue[Callable[[], None]] = Queue()
+
+        if self.config.cli:
+            local_session.set_client(self)
+            self.cli = CommandProcessor(local_session)
+            thread = Thread(target=self.cli.run)
+            thread.daemon = True
+            thread.start()
 
     @property
     def is_running(self) -> bool:
@@ -204,6 +218,7 @@ class BaseClient(ABC):
             time_delta: Amount of time passed since last frame.
         """
         self.alert_manager.update(time_delta)
+        self.environment_manager.update(time_delta)
         self.weather_manager.update(time_delta)
         self.state_manager.update(time_delta)
         self.rumble_manager.update(time_delta)
@@ -237,6 +252,19 @@ class BaseClient(ABC):
         Parameters:
             time_delta: Elapsed time since last frame.
         """
+
+    @abstractmethod
+    def queue_command(self, command: Callable[[], None]) -> None:
+        """
+        Queues a callable command (a function to be run) to be executed
+        safely in the main thread during the next update cycle.
+
+        Parameters:
+            command: A function with no arguments that performs the desired action.
+        """
+
+    def reset_renderer(self) -> None:
+        """Optional override for clients that support rendering."""
 
     """
     The following methods provide an interface to the state stack

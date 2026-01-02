@@ -25,7 +25,7 @@ class WhereAmICommand(CLICommand):
         """
         current_map = ctx.session.client.event_engine.current_map
         if current_map:
-            name = current_map.data.filename
+            name = current_map.filename
             print(name)
         else:
             print("Cannot get filename from the game.", file=sys.stderr)

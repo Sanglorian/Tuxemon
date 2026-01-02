@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Callable
+from queue import Empty
 
 from tuxemon.base_client import BaseClient, ClientState
 from tuxemon.config import TuxemonConfig
@@ -49,6 +51,10 @@ class HeadlessClient(BaseClient):
                 self.perform_cleanup()
                 self.state = ClientState.DONE
 
+    def queue_command(self, command: Callable[[], None]) -> None:
+        self.command_queue.put(command)
+        logger.debug("Queued command for execution in main thread.")
+
     def update(self, time_delta: float) -> None:
         """
         Main loop for entire game.
@@ -61,9 +67,19 @@ class HeadlessClient(BaseClient):
         Parameters:
             time_delta: Elapsed time since last frame.
         """
-        # self.network_manager.update(time_delta)
+        self.network_manager.update(time_delta)
         self.input_cache.clear_frame_state()
         events = self.input_manager.process_events()
+
+        while True:
+            try:
+                command = self.command_queue.get_nowait()
+            except Empty:
+                break
+            command()
+            self.command_queue.task_done()
+            logger.debug("Executed queued command.")
+
         self.input_manager.update(time_delta)
         self.key_events = list(self.event_manager.process_events(events))
         self.event_data = {}

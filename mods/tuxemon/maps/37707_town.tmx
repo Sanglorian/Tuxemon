@@ -119,8 +119,8 @@
   </object>
   <object id="182" name="Environment" type="event" x="16" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="set_variable environment:grass"/>
-    <property name="cond10" value="not variable_set environment:grass"/>
+    <property name="act10" value="set_environment grass"/>
+    <property name="cond10" value="not environment_is grass"/>
    </properties>
   </object>
   <object id="183" name="Random Battle 1" type="event" x="96" y="96" width="112" height="64">

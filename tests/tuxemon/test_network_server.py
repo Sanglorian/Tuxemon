@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from unittest.mock import MagicMock
 
 import pytest
@@ -32,11 +32,8 @@ def test_shutdown_clears_registry_and_stops_listening(server):
 
 
 def test_get_next_event_number_increments(server):
-    start = server._event_counter
-    n1 = server.get_next_event_number()
-    n2 = server.get_next_event_number()
-    assert n1 == start + 1
-    assert n2 == start + 2
+    assert server.get_next_event_number() == 1
+    assert server.get_next_event_number() == 2
 
 
 def test_server_event_handler_routes_event(server):
@@ -171,9 +168,7 @@ def test_update_handles_client_timeout(server):
     server.notify_client = MagicMock()
     server.client_registry.remove_client = MagicMock()
 
-    result = server.update()
-
-    assert result is False
+    assert server.update() is None
 
     server.server.disconnect_client.assert_called_once_with("abc")
     server.notify_client.assert_called_once_with(

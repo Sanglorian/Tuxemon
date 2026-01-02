@@ -8,6 +8,7 @@ from dataclasses import dataclass, field, replace
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
 
+from tuxemon.db import Direction
 from tuxemon.event import get_npc
 from tuxemon.item.item import decode_items, encode_items
 from tuxemon.monster import decode_monsters, encode_monsters
@@ -17,7 +18,6 @@ from tuxemon.states import world_state as world
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
-    from tuxemon.db import Direction
     from tuxemon.item.item import Item
     from tuxemon.monster import Monster
     from tuxemon.npc import NPC
@@ -38,6 +38,7 @@ class EventType(str, Enum):
     CLIENT_START_BATTLE = "CLIENT_START_BATTLE"
     CLIENT_DISCONNECTED = "CLIENT_DISCONNECTED"
     PING = "PING"
+    SERVER_SHUTDOWN = "SERVER_SHUTDOWN"
 
 
 @dataclass

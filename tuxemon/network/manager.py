@@ -30,9 +30,9 @@ class NetworkManager:
         self.server = TuxemonServer(self.parent)
         self.client = TuxemonClient(self.parent)
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         if self.client and self.client.listening:
-            self.client.update(time_delta)
+            self.client.update()
             current_map = self.parent.get_map_name()
             self.parent.npc_manager.add_clients_to_map(
                 self.client.registry, current_map

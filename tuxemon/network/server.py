@@ -7,6 +7,7 @@ import logging
 from collections.abc import Callable
 from dataclasses import asdict, replace
 from datetime import datetime
+from itertools import count
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 from tuxemon.db import Direction
@@ -47,10 +48,11 @@ class TuxemonServer:
         self.listening = False
         self.interfaces: dict[str, Any] = {}
         self.ips: list[str] = []
-        self._event_counter = 0
+        self._event_counter = count(start=1)
         self.server_timestamp: datetime = datetime.now()
 
         self.server = WebsocketServerWrapper(self)
+        self.server.max_clients = 32
         self.server.start_listening(self.server_port)
         self.listening = True
         self.client_registry = ClientRegistry(timeout=self.timeout)
@@ -59,7 +61,10 @@ class TuxemonServer:
         )
         self.event_factory = EventFactory(self.get_next_event_number)
         self.notification_manager = NotificationManager(
-            self.server, self.get_next_event_number, self.event_factory
+            self.server,
+            self.get_next_event_number,
+            self.event_factory,
+            self.client_registry,
         )
         self._register_event_handlers()
 
@@ -101,6 +106,13 @@ class TuxemonServer:
         Gracefully stops the server: closes the listening socket and
         disconnects all active clients.
         """
+        shutdown_event = self.event_factory.create_event(
+            EventType.SERVER_SHUTDOWN,
+            cuuid="SERVER",
+        )
+
+        for cuuid in list(self.client_registry.registry.keys()):
+            self.notify_client(cuuid, shutdown_event)
 
         for cuuid in list(self.client_registry.registry.keys()):
             self.server.disconnect_client(cuuid)
@@ -117,41 +129,34 @@ class TuxemonServer:
 
     def get_next_event_number(self) -> int:
         """
-        Generates and returns the next unique event number for sequencing
-        events.
+        Generates and returns the next unique event number using itertools.
         """
-        self._event_counter += 1
-        return self._event_counter
+        return next(self._event_counter)
 
-    def update(self) -> Optional[bool]:
-        """
-        Processes incoming events from clients, routes them to handlers, and
-        checks for client timeouts.
-        Returns False if a client times out and is disconnected, otherwise None.
-        """
+    def update(self) -> None:
         self.server_timestamp = datetime.now()
 
-        for cuuid, event_dict in self.server.get_incoming_events():
+        incoming = self.server.get_incoming_events()
+        for cuuid, event_dict in incoming:
             try:
                 event_data = EventData.from_dict(event_dict)
                 self.server_event_handler(cuuid, event_data)
+            except Exception:
+                logger.exception(f"Critical error handling event from {cuuid}")
 
-            except Exception as e:
-                logger.error(f"Error handling event from CUUID {cuuid}: {e}")
+        timed_out = self.client_registry.check_timeouts(self.server_timestamp)
+        for cuuid in timed_out:
+            self._handle_timeout_disconnection(cuuid)
 
-        for cuuid in self.client_registry.check_timeouts(
-            self.server_timestamp
-        ):
-            logger.info(f"Client Disconnected (Timeout). CUUID: {cuuid}")
-            event_data = self.event_factory.create_event(
-                EventType.CLIENT_DISCONNECTED, cuuid
-            )
-            self.server.disconnect_client(cuuid)
-            self.notify_client(cuuid, event_data)
-            self.client_registry.remove_client(cuuid)
-            return False
-
-        return None
+    def _handle_timeout_disconnection(self, cuuid: str) -> None:
+        """Internal helper to clean up a timed-out client."""
+        logger.info(f"Client Timeout: {cuuid}")
+        event_data = self.event_factory.create_event(
+            EventType.CLIENT_DISCONNECTED, cuuid
+        )
+        self.notify_client(cuuid, event_data)
+        self.server.disconnect_client(cuuid)
+        self.client_registry.remove_client(cuuid)
 
     def server_event_handler(self, cuuid: str, event_data: EventData) -> None:
         """
@@ -182,9 +187,19 @@ class TuxemonServer:
         Registers a new client or updates an existing one with initial map
         and character data, then notifies others.
         """
-        self.client_registry.register_client(
-            cuuid, event_data.map_name, event_data.char_dict
-        )
+        if cuuid in self.client_registry.registry:
+            # Reconnection logic
+            self.client_registry.set_client_data(cuuid, "is_away", False)
+            self.client_registry.set_client_data(
+                cuuid, "ping_timestamp", datetime.now()
+            )
+            logger.info(f"Player {cuuid} has returned to the world.")
+        else:
+            # New player logic
+            self.client_registry.register_client(
+                cuuid, event_data.map_name, event_data.char_dict
+            )
+
         self.notify_populate_client(cuuid, event_data)
 
     def handle_ping_event(self, cuuid: str, event_data: EventData) -> None:
@@ -313,19 +328,20 @@ class EventRouter:
             logger.warning(f"CUUID {cuuid} not found in registry.")
             return
 
+        event_key = event_data.type.value  # use string key consistently
         event_list = self.registry[cuuid].setdefault("event_list", {})
-        last_event_number = event_list.get(event_data.type, -1)
+        last_event_number = event_list.get(event_key, -1)
 
         if event_data.event_number <= last_event_number:
             return
 
-        event_list[event_data.type] = event_data.event_number
+        event_list[event_key] = event_data.event_number
 
-        handler = self.handlers.get(event_data.type.value)
+        handler = self.handlers.get(event_key)
         if handler:
             handler(cuuid, event_data)
         else:
-            logger.warning(f"Unhandled event type: {event_data.type.value}")
+            logger.warning(f"Unhandled event type: {event_key}")
 
 
 class ClientRegistry:
@@ -333,9 +349,10 @@ class ClientRegistry:
     Manages client connection state, character data, and timeout handling.
     """
 
-    def __init__(self, timeout: int) -> None:
+    def __init__(self, timeout: int, grace_period: int = 60) -> None:
         self.registry: dict[str, dict[str, Any]] = {}
-        self.timeout = timeout
+        self.timeout = timeout  # Heartbeat timeout
+        self.grace_period = grace_period
 
     def set_client_data(self, cuuid: str, key: str, value: Any) -> None:
         if cuuid in self.registry:
@@ -359,12 +376,24 @@ class ClientRegistry:
         }
 
     def update_char_field(self, cuuid: str, key: str, value: Any) -> None:
-        if cuuid in self.registry and "char_dict" in self.registry[cuuid]:
-            self.registry[cuuid]["char_dict"][key] = value
+        if cuuid not in self.registry:
+            return
+
+        existing = self.registry[cuuid].get("char_dict")
+
+        if isinstance(existing, CharData):
+            self.registry[cuuid]["char_dict"] = replace(
+                existing, **{key: value}
+            )
+        elif isinstance(existing, dict):
+            existing[key] = value
 
     def update_char_dict(
         self, cuuid: str, char_data: Optional[CharData]
     ) -> None:
+        if cuuid not in self.registry:
+            return
+
         if char_data is None:
             logger.warning(f"No character data provided for CUUID: {cuuid}")
             return
@@ -375,8 +404,9 @@ class ClientRegistry:
         if isinstance(existing, dict):
             existing.update(char_data_dict)
         elif isinstance(existing, CharData):
-            updated = replace(existing, **char_data_dict)
-            self.registry[cuuid]["char_dict"] = updated
+            self.registry[cuuid]["char_dict"] = replace(
+                existing, **char_data_dict
+            )
         else:
             self.registry[cuuid]["char_dict"] = char_data
 
@@ -385,11 +415,18 @@ class ClientRegistry:
             del self.registry[cuuid]
 
     def check_timeouts(self, now: datetime) -> list[str]:
-        timed_out = []
+        to_permanently_remove = []
         for cuuid, data in self.registry.items():
-            if (now - data.get("ping_timestamp", now)).seconds > self.timeout:
-                timed_out.append(cuuid)
-        return timed_out
+            last_ping = data.get("ping_timestamp", now)
+            # If they are currently disconnected (no active socket)
+            if data.get("is_away", False):
+                if (now - last_ping).seconds > self.grace_period:
+                    to_permanently_remove.append(cuuid)
+            # Normal heartbeat check for active clients
+            elif (now - last_ping).seconds > self.timeout:
+                data["is_away"] = True
+
+        return to_permanently_remove
 
 
 class NotificationManager:
@@ -402,40 +439,38 @@ class NotificationManager:
         server: WebsocketServerWrapper,
         get_next_event_number: Callable[[], int],
         event_factory: EventFactory,
+        client_registry: ClientRegistry,
     ) -> None:
         self.server = server
         self.get_next_event_number = get_next_event_number
         self.event_factory = event_factory
+        self.client_registry = client_registry
 
     def notify_client(self, cuuid: str, event_data: EventData) -> None:
+        """Serializes once and broadcasts to all other clients."""
         updated_event = event_data.copy(cuuid=cuuid)
         json_data = json.dumps(updated_event.to_dict())
-
-        for client_id in self.server.registry:
-            if client_id != cuuid:
-                self.server.notify(client_id, json_data)
+        self.server.notify_broadcast(exclude_cuuid=cuuid, json_data=json_data)
 
     def notify_populate_client(
         self, cuuid: str, event_data: EventData
     ) -> None:
-        event_data_1 = event_data.copy(cuuid=cuuid)
-        json_data_1 = json.dumps(event_data_1.to_dict())
+        new_client_event = json.dumps(event_data.copy(cuuid=cuuid).to_dict())
+        self.server.notify_broadcast(
+            exclude_cuuid=cuuid, json_data=new_client_event
+        )
 
-        for client_id in self.server.registry:
+        for client_id, data in self.client_registry.registry.items():
             if client_id == cuuid:
                 continue
 
-            self.server.notify(client_id, json_data_1)
-
-            char = self.server.registry[client_id]
-            event_data_2 = self.event_factory.create_event(
+            existing_client_event = self.event_factory.create_event(
                 event_type=event_data.type,
                 cuuid=client_id,
-                map_name=char["map_name"],
-                char_dict=char["char_dict"],
+                map_name=data["map_name"],
+                char_dict=data["char_dict"],
             )
-            json_data_2 = json.dumps(event_data_2.to_dict())
-            self.server.notify(cuuid, json_data_2)
+            self.send_notification(cuuid, existing_client_event)
 
     def notify_client_interaction(
         self, cuuid: str, event_data: EventData
@@ -444,7 +479,7 @@ class NotificationManager:
             logger.warning(f"Invalid interaction event from CUUID: {cuuid}")
             return
 
-        updated_event = event_data.copy(target=cuuid)
+        updated_event = event_data.copy(cuuid=cuuid)
         json_data = json.dumps(updated_event.to_dict())
         self.server.notify(event_data.target, json_data)
 
@@ -469,15 +504,24 @@ class EventFactory:
         char_dict: Optional[Union[dict[str, Any], CharData]] = None,
         target: Optional[str] = None,
     ) -> EventData:
+
+        if isinstance(char_dict, dict):
+            base = asdict(
+                CharData(
+                    tile_pos=(0, 0),
+                    name="",
+                    facing=Direction.down,
+                    running=False,
+                )
+            )
+            merged = {**base, **char_dict}
+            char_dict = CharData(**merged)
+
         return EventData(
             type=event_type,
             event_number=self.get_next_event_number(),
             cuuid=cuuid,
             map_name=map_name,
-            char_dict=(
-                CharData(**char_dict)
-                if isinstance(char_dict, dict)
-                else char_dict
-            ),
+            char_dict=char_dict,
             target=target,
         )

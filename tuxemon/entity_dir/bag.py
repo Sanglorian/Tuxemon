@@ -134,6 +134,6 @@ class BagHandler:
         return encode_items(self._items)
 
     def decode_items(self, json_data: Optional[NPCState]) -> None:
-        if json_data and json_data.items is not None:
-            logger.debug("Decoding items from save data.")
-            self._items = list(decode_items(json_data.items))
+        if not json_data or not json_data.items:
+            return
+        self._items = list(decode_items(json_data.items))

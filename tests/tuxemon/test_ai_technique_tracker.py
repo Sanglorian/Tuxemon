@@ -104,7 +104,9 @@ def test_get_valid_moves_filters_recharging_and_invalid():
     session = MagicMock()
     valid_tech = MagicMock(is_recharging=False)
     valid_tech.validate_monster.return_value = True
+    valid_tech.can_use.return_value = True
     invalid_tech = MagicMock(is_recharging=True)
+    invalid_tech.can_use.return_value = False
     tracker = TechniqueTracker(session, [valid_tech, invalid_tech])
     opponent = MagicMock()
     moves = tracker.get_valid_moves([opponent])

@@ -36,9 +36,8 @@ class TechniqueTracker:
         return [
             (mov, opponent)
             for mov in self.moves
-            if not mov.is_recharging
             for opponent in opponents
-            if mov.validate_monster(self.session, opponent)
+            if mov.can_use(self.session, opponent)
         ]
 
     def evaluate_technique(

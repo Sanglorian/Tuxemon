@@ -34,7 +34,9 @@ logger = logging.getLogger(__name__)
 
 SIMPLE_PERSISTANCE_ATTRIBUTES = (
     "slug",
-    "counter",
+    "attempts",
+    "successes",
+    "failures",
 )
 
 
@@ -47,7 +49,6 @@ class Technique:
         save_data = save_data or {}
 
         self.instance_id: UUID = uuid4()
-        self.counter: int = 0
         self.tech_id: int = 0
         self.accuracy: float = 0.0
         self.cooldown = Cooldown()
@@ -78,6 +79,13 @@ class Technique:
         self.core_assets = CoreAssetManager()
         self.effects: Sequence[PluginObject] = []
         self.conditions: Sequence[PluginObject] = []
+
+        # attempts: total times the technique was invoked
+        # successes: number of successful uses
+        # failures: number of failed uses
+        self.attempts: int = 0
+        self.successes: int = 0
+        self.failures: int = 0
 
         self.set_state(save_data)
 
@@ -151,11 +159,10 @@ class Technique:
         self.visuals = results.visuals
         self.sound = results.sound
 
-    def advance_round(self) -> None:
-        """
-        Advance the counter for this technique if used.
-        """
-        self.counter += 1
+    def can_use(self, session: Session, target: Monster) -> bool:
+        if self.is_recharging:
+            return False
+        return self.validate_monster(session, target)
 
     def validate_monster(self, session: Session, target: Monster) -> bool:
         """
@@ -175,6 +182,7 @@ class Technique:
         """
         Applies the technique's effects using EffectProcessor and returns the results.
         """
+        self.attempts += 1
         self.effects = self.core_assets.parse_effects(self.effect_defs)
         self.effect_handler = EffectProcessor(self.effects)
         result = self.effect_handler.process_tech(
@@ -186,6 +194,10 @@ class Technique:
         self.cooldown.trigger()
         if session.client:
             session.client.active_effect_manager.add_technique(self)
+        if result.success:
+            self.successes += 1
+        else:
+            self.failures += 1
         return result
 
     def has_type(self, type_slug: str) -> bool:
@@ -232,9 +244,9 @@ class Technique:
 
 
 def decode_moves(
-    json_data: Optional[Sequence[Mapping[str, Any]]],
+    json_data: Sequence[Mapping[str, Any]] | None,
 ) -> list[Technique]:
-    return [Technique(save_data=tech) for tech in json_data or {}]
+    return [Technique(save_data=tech) for tech in (json_data or [])]
 
 
 def encode_moves(techs: Sequence[Technique]) -> Sequence[Mapping[str, Any]]:

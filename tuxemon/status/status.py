@@ -194,9 +194,6 @@ class Status:
     def advance_round(self) -> None:
         """Advance the counter for this status if used."""
         self.counter += 1
-        logger.debug(
-            f"[Status Counter] {self.slug} used {self.counter} times."
-        )
 
     def is_use_expired(self, max_uses: int = 1) -> bool:
         """
@@ -344,12 +341,10 @@ class Status:
 
 
 def decode_status(
-    json_data: Optional[Sequence[Mapping[str, Any]]], monster: Monster
+    json_data: Sequence[Mapping[str, Any]] | None, monster: Monster
 ) -> list[Status]:
-    return [Status(host=monster, save_data=cond) for cond in json_data or {}]
+    return [Status(host=monster, save_data=cond) for cond in (json_data or [])]
 
 
-def encode_status(
-    conds: Sequence[Status],
-) -> Sequence[Mapping[str, Any]]:
+def encode_status(conds: Sequence[Status]) -> Sequence[Mapping[str, Any]]:
     return [cond.get_state() for cond in conds]

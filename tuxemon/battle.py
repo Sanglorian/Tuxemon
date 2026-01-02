@@ -76,7 +76,7 @@ def decode_battle(
     json_data: Optional[Sequence[Mapping[str, Any]]],
 ) -> list[Battle]:
     """Converts saved battle data into Battle instances."""
-    return [Battle.from_save_data(battle) for battle in json_data or []]
+    return [Battle.from_save_data(battle) for battle in (json_data or [])]
 
 
 def encode_battle(battles: Sequence[Battle]) -> Sequence[Mapping[str, Any]]:

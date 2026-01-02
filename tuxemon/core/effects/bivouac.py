@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -58,7 +58,7 @@ class BivouacEffect(CoreEffect):
         return ItemEffectResult(name=item.name, success=True)
 
     def update(self, session: Session, dt: float) -> None:
-        session.client.movement_manager.lock_controls(session.player)
+        session.client.push_state("SinkState")
         self._elapsed += dt
 
         if (
@@ -76,7 +76,7 @@ class BivouacEffect(CoreEffect):
             self._elapsed = 0.0
             session.client.event_engine.execute_action("set_monster_health")
             session.client.event_engine.execute_action("set_monster_status")
-            session.client.movement_manager.unlock_controls(session.player)
+            session.client.remove_state_by_name("SinkState")
             self.stage = BivouacStage.DONE
             self._finished = True
 

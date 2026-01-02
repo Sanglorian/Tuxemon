@@ -22,7 +22,7 @@ sys.path.append(str(Path(__file__).parent.resolve() / "ext"))
 # -- Project information -----------------------------------------------------
 
 project = "Tuxemon"
-copyright = "2015-2025, William Edwards"
+copyright = "2015-2026, William Edwards"
 author = "William Edwards"
 release = "alpha"
 

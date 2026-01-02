@@ -7,7 +7,7 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID, uuid4
 
-from tuxemon.core.asset import CoreAssetManager
+from tuxemon.core.asset import get_assets
 from tuxemon.core.core_effect import TechEffectResult
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
 from tuxemon.db import (
@@ -75,7 +75,7 @@ class Technique:
         self.cancel_text: str = ""
         self.menu_actions_data: Sequence[MenuAction] = []
 
-        self.core_assets = CoreAssetManager()
+        self.core_assets = get_assets()
         self.effects: Sequence[PluginObject] = []
         self.conditions: Sequence[PluginObject] = []
 

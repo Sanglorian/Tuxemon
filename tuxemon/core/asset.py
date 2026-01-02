@@ -15,6 +15,23 @@ from tuxemon.core.core_manager import ConditionManager, EffectManager
 from tuxemon.db import LogicCondition, ParameterizableRule
 from tuxemon.plugin import PluginObject
 
+_manager: CoreAssetManager | None = None
+
+
+def init_assets() -> CoreAssetManager:
+    global _manager
+    if _manager is None:
+        _manager = CoreAssetManager()
+    return _manager
+
+
+def get_assets() -> CoreAssetManager:
+    if _manager is None:
+        raise RuntimeError(
+            "CoreAssetManager not initialized. Call init_assets() first."
+        )
+    return _manager
+
 
 class CoreAssetManager:
     def __init__(self) -> None:

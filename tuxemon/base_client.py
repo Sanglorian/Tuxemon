@@ -17,6 +17,7 @@ from tuxemon.cli.processor import CommandProcessor
 from tuxemon.combat.session import CombatSession
 from tuxemon.constants import paths
 from tuxemon.core.active_effect import ActiveEffectManager
+from tuxemon.core.asset import init_assets
 from tuxemon.economy.shop_manager import ShopManager
 from tuxemon.encounter import EncounterManager
 from tuxemon.environment import EnvironmentManager
@@ -75,6 +76,7 @@ class BaseClient(ABC):
     """
 
     def __init__(self, config: TuxemonConfig) -> None:
+        init_assets()
         self.config = config
         self.active_effect_manager = ActiveEffectManager()
 

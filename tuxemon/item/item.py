@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 from pygame.surface import Surface
 
 from tuxemon import graphics
-from tuxemon.core.asset import CoreAssetManager
+from tuxemon.core.asset import get_assets
 from tuxemon.core.core_effect import ItemEffectResult
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
 from tuxemon.db import (
@@ -81,7 +81,7 @@ class Item:
         self.break_chance: float = 0.0
         self.menu_actions_data: Sequence[MenuAction] = []
 
-        self.core_assets = CoreAssetManager()
+        self.core_assets = get_assets()
         self.effects: Sequence[PluginObject] = []
         self.conditions: Sequence[PluginObject] = []
 

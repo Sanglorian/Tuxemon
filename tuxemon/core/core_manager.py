@@ -7,24 +7,26 @@ import logging
 import sys
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Generic, Optional
+from typing import Generic, Optional, TypeVar
 
 from tuxemon import plugin
 from tuxemon.constants.paths import LIBDIR, get_plugin_paths
 from tuxemon.core.core_condition import CoreCondition
 from tuxemon.core.core_effect import CoreEffect
 from tuxemon.db import LogicCondition, Operator, ParameterizableRule
-from tuxemon.plugin import InterfaceValue
+from tuxemon.plugin import PluginObject
 
 logger = logging.getLogger(__name__)
 
+LocalInterfaceValue = TypeVar("LocalInterfaceValue", bound=PluginObject)
 
-class CoreManager(Generic[InterfaceValue]):
+
+class CoreManager(Generic[LocalInterfaceValue]):
     """Core class for managing the loading and unloading of plugins."""
 
     def __init__(
         self,
-        interface: type[InterfaceValue],
+        interface: type[LocalInterfaceValue],
         path: Path,
         category: str,
         root_package_name: str,
@@ -32,12 +34,12 @@ class CoreManager(Generic[InterfaceValue]):
     ) -> None:
         self.category = category
         self.root_package_name = root_package_name
-        self.classes: dict[str, type[InterfaceValue]] = {}
+        self.classes: dict[str, type[LocalInterfaceValue]] = {}
         self.load_plugins(interface, path, category, root_path)
 
     def load_plugins(
         self,
-        interface: type[InterfaceValue],
+        interface: type[LocalInterfaceValue],
         path: Path,
         category: str,
         root_path: Optional[Path],

@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 from tuxemon.db import Acquisition, SeenStatus
@@ -17,7 +17,7 @@ from tuxemon.time_handler import today_ordinal
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
-    from tuxemon.session import Session
+    from tuxemon.npc_manager import NPCManager
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class TradeOffer:
     timestamp: datetime = field(
         default_factory=lambda: datetime.now(timezone.utc)
     )
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
 
 
 @dataclass
@@ -85,68 +85,55 @@ class TradeRecord:
 
 
 class TradeManager:
-    def __init__(self) -> None:
+    def __init__(self, npc_manager: NPCManager) -> None:
+        self.npc_manager = npc_manager
         self.global_trade_log: list[TradeRecord] = []
         self.pending_offers: list[TradeOffer] = []
         self.event_bus = get_event_bus()
 
-    def execute_trade(
-        self, monster_a: Monster, monster_b: Monster
-    ) -> TradeResult:
-        player_a = monster_a.get_owner()
-        player_b = monster_b.get_owner()
+    def _find_owner(self, monster: Monster) -> NPC | None:
+        return self.npc_manager.get_monster_owner(monster)
 
-        if player_a == player_b:
-            logger.warning(
-                "Attempted to trade two monsters from the same owner."
-            )
-            return TradeResult.SAME_OWNER
-
-        try:
-            slot_a = player_a.party.monsters.index(monster_a)
-            slot_b = player_b.party.monsters.index(monster_b)
-        except ValueError:
-            logger.error(
-                "One of the monsters was not found in its owner's party during trade."
-            )
+    def _require_owners(
+        self, a: NPC | None, b: NPC | None
+    ) -> tuple[NPC, NPC] | TradeResult:
+        """Validate owners and return typed NPCs."""
+        if a is None or b is None:
             return TradeResult.NOT_FOUND
+        if a is b:
+            return TradeResult.SAME_OWNER
+        return (a, b)
 
+    def _find_party_slot(self, player: NPC, monster: Monster) -> int | None:
+        try:
+            return player.party.monsters.index(monster)
+        except ValueError:
+            return None
+
+    def _swap_monsters(
+        self,
+        player_a: NPC,
+        player_b: NPC,
+        monster_a: Monster,
+        monster_b: Monster,
+        slot_a: int,
+        slot_b: int,
+    ) -> None:
         player_a.party.remove_monster(monster_a)
         player_b.party.remove_monster(monster_b)
 
         player_a.party.insert_monster_to_party(monster_b, slot_a)
         player_b.party.insert_monster_to_party(monster_a, slot_b)
 
-        monster_a.set_owner(player_b)
-        monster_b.set_owner(player_a)
-
-        monster_a.set_acquisition(Acquisition.TRADED)
-        monster_b.set_acquisition(Acquisition.TRADED)
-
+    def _award_tuxepedia(
+        self,
+        player_a: NPC,
+        player_b: NPC,
+        monster_a: Monster,
+        monster_b: Monster,
+    ) -> None:
         player_a.tuxepedia.add_entry(monster_b.slug, SeenStatus.caught)
         player_b.tuxepedia.add_entry(monster_a.slug, SeenStatus.caught)
-
-        record_a = self._create_trade_record(
-            from_player=player_a,
-            to_player=player_b,
-            given_monster=monster_a,
-            received_monster=monster_b,
-        )
-        record_b = self._create_trade_record(
-            from_player=player_b,
-            to_player=player_a,
-            given_monster=monster_b,
-            received_monster=monster_a,
-        )
-
-        self.event_bus.publish("trade_completed", [record_a, record_b])
-
-        self.global_trade_log.extend([record_a, record_b])
-
-        logger.info(f"{player_a.name} welcomes {monster_b.name}!")
-        logger.info(f"{player_b.name} welcomes {monster_a.name}!")
-
-        return TradeResult.SUCCESS
 
     def _create_trade_record(
         self,
@@ -166,25 +153,76 @@ class TradeManager:
             monster_received_id=received_monster.instance_id,
         )
 
+    def _create_trade_pair(
+        self,
+        player_a: NPC,
+        player_b: NPC,
+        monster_a: Monster,
+        monster_b: Monster,
+    ) -> list[TradeRecord]:
+        return [
+            self._create_trade_record(
+                player_a, player_b, monster_a, monster_b
+            ),
+            self._create_trade_record(
+                player_b, player_a, monster_b, monster_a
+            ),
+        ]
+
+    def execute_trade(
+        self, monster_a: Monster, monster_b: Monster
+    ) -> TradeResult:
+        owner_a = self._find_owner(monster_a)
+        owner_b = self._find_owner(monster_b)
+
+        owners = self._require_owners(owner_a, owner_b)
+        if isinstance(owners, TradeResult):
+            return owners
+
+        player_a, player_b = owners  # fully typed NPCs
+
+        slot_a = self._find_party_slot(player_a, monster_a)
+        slot_b = self._find_party_slot(player_b, monster_b)
+        if slot_a is None or slot_b is None:
+            return TradeResult.NOT_FOUND
+
+        self._swap_monsters(
+            player_a, player_b, monster_a, monster_b, slot_a, slot_b
+        )
+
+        monster_a.set_acquisition(Acquisition.TRADED)
+        monster_b.set_acquisition(Acquisition.TRADED)
+
+        self._award_tuxepedia(player_a, player_b, monster_a, monster_b)
+
+        records = self._create_trade_pair(
+            player_a, player_b, monster_a, monster_b
+        )
+        self.global_trade_log.extend(records)
+        self.event_bus.publish("trade_completed", records)
+
+        return TradeResult.SUCCESS
+
     def execute_scripted_trade(
         self, player_monster: Monster, added_slug: str
     ) -> TradeResult:
-        player = player_monster.get_owner()
+        owner = self._find_owner(player_monster)
+        if owner is None:
+            return TradeResult.NOT_FOUND
 
         new_monster = Monster.spawn_base(added_slug, player_monster.level)
         new_monster.set_capture(today_ordinal())
         new_monster.set_acquisition(Acquisition.TRADED)
 
-        if not player.party.replace_monster(player_monster, new_monster):
-            logger.error("Player's monster not found in party.")
+        if not owner.party.replace_monster(player_monster, new_monster):
             return TradeResult.NOT_FOUND
 
-        player.tuxepedia.add_entry(new_monster.slug, SeenStatus.caught)
+        owner.tuxepedia.add_entry(new_monster.slug, SeenStatus.caught)
 
         record = TradeRecord(
-            from_player=player.name,
+            from_player=owner.name,
             to_player="NPC",
-            from_player_id=player.instance_id,
+            from_player_id=owner.instance_id,
             to_player_id=UUID(int=0),
             monster_given=player_monster.slug,
             monster_received=added_slug,
@@ -195,84 +233,72 @@ class TradeManager:
         self.global_trade_log.append(record)
         self.event_bus.publish("trade_completed", [record])
 
-        logger.info(
-            f"{player.name} traded {player_monster.name} for {new_monster.name} (scripted trade)."
-        )
         return TradeResult.SUCCESS
 
     def propose_trade(
         self, proposing_monster: Monster, requested_monster: Monster
     ) -> TradeResult:
-        """Creates a trade offer for a monster and adds it to the list of pending offers."""
-        proposing_player = proposing_monster.get_owner()
-        receiving_player = requested_monster.get_owner()
+        owner_a = self._find_owner(proposing_monster)
+        owner_b = self._find_owner(requested_monster)
 
-        if proposing_player == receiving_player:
-            logger.warning(
-                f"Attempted to propose a trade with a monster from the same owner: {proposing_player.name}."
-            )
-            return TradeResult.SAME_OWNER
+        owners = self._require_owners(owner_a, owner_b)
+        if isinstance(owners, TradeResult):
+            return owners
 
-        try:
-            proposing_player.party.monsters.index(proposing_monster)
-            receiving_player.party.monsters.index(requested_monster)
-        except ValueError:
-            logger.error(
-                "One of the monsters was not found in its owner's party during trade proposal."
-            )
+        player_a, player_b = owners
+
+        if (
+            self._find_party_slot(player_a, proposing_monster) is None
+            or self._find_party_slot(player_b, requested_monster) is None
+        ):
             return TradeResult.NOT_FOUND
 
-        new_offer = TradeOffer(
-            proposing_player_id=proposing_player.instance_id,
+        offer = TradeOffer(
+            proposing_player_id=player_a.instance_id,
             proposing_monster_id=proposing_monster.instance_id,
-            receiving_player_id=receiving_player.instance_id,
+            receiving_player_id=player_b.instance_id,
             requested_monster_id=requested_monster.instance_id,
         )
 
-        self.pending_offers.append(new_offer)
-        logger.info(
-            f"Trade offer from {proposing_player.name} to {receiving_player.name} proposed."
-        )
-        self.event_bus.publish("trade_offer_proposed", new_offer)
+        self.pending_offers.append(offer)
+        self.event_bus.publish("trade_offer_proposed", offer)
         return TradeResult.SUCCESS
 
-    def accept_trade(self, session: Session, offer_id: UUID) -> TradeResult:
-        """Accepts a pending trade offer, executing the trade if valid."""
-        offer: Optional[TradeOffer] = None
-        try:
-            offer = next(
-                o for o in self.pending_offers if o.offer_id == offer_id
-            )
-        except StopIteration:
-            logger.error(f"Trade offer with ID {offer_id} not found.")
+    def accept_trade(self, offer_id: UUID) -> TradeResult:
+        offer = next(
+            (o for o in self.pending_offers if o.offer_id == offer_id), None
+        )
+        if offer is None:
             return TradeResult.NOT_FOUND
 
         if offer.expires_at and datetime.now(timezone.utc) > offer.expires_at:
-            logger.warning(f"Trade offer {offer_id} has expired.")
             self.pending_offers.remove(offer)
             return TradeResult.EXPIRED
 
-        proposing_monster = session.client.get_monster_by_iid(
+        proposing_monster = self.npc_manager.get_monster_by_iid(
             offer.proposing_monster_id
         )
-        requested_monster = session.client.get_monster_by_iid(
+        requested_monster = self.npc_manager.get_monster_by_iid(
             offer.requested_monster_id
         )
 
-        if not proposing_monster or not requested_monster:
-            logger.error(
-                "One or both monsters in the trade offer no longer exist."
-            )
+        if proposing_monster is None or requested_monster is None:
             self.pending_offers.remove(offer)
             return TradeResult.NOT_FOUND
 
+        owner_a = self._find_owner(proposing_monster)
+        owner_b = self._find_owner(requested_monster)
+
+        if owner_a is None or owner_b is None:
+            self.pending_offers.remove(offer)
+            return TradeResult.NOT_FOUND
+
+        player_a, player_b = owner_a, owner_b
+
         if (
-            proposing_monster.get_owner().instance_id
-            != offer.proposing_player_id
-            or requested_monster.get_owner().instance_id
-            != offer.receiving_player_id
+            player_a.instance_id != offer.proposing_player_id
+            or player_b.instance_id != offer.receiving_player_id
         ):
-            logger.error("Trade offer invalid: monster ownership has changed.")
             self.pending_offers.remove(offer)
             return TradeResult.NOT_FOUND
 
@@ -280,11 +306,6 @@ class TradeManager:
 
         if result == TradeResult.SUCCESS:
             self.pending_offers.remove(offer)
-            logger.info(f"Trade offer {offer_id} accepted and completed.")
-        else:
-            logger.error(
-                f"Trade offer {offer_id} failed to complete with result: {result.value}."
-            )
 
         return result
 
@@ -302,18 +323,18 @@ class TradeManager:
             for record in self.global_trade_log
         )
 
-    def get_trade_history(
-        self, player_name: Optional[str] = None
-    ) -> list[str]:
+    def get_trade_history(self, player_name: str | None = None) -> list[str]:
         records = self.global_trade_log
-        if player_name:
+        if player_name is not None:
             records = [
                 r
                 for r in records
                 if r.from_player == player_name or r.to_player == player_name
             ]
         return [
-            f"{r.timestamp.strftime('%Y-%m-%d %H:%M')} — {r.from_player} traded {r.monster_given} for {r.monster_received} with {r.to_player}"
+            f"{r.timestamp.strftime('%Y-%m-%d %H:%M')} — "
+            f"{r.from_player} traded {r.monster_given} for "
+            f"{r.monster_received} with {r.to_player}"
             for r in records
         ]
 

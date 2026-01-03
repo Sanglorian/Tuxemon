@@ -384,10 +384,12 @@ class CombatState(CombatAnimations):
             raise RuntimeError(
                 "Environment not set. Use set_environment before proceeding."
             )
+        owner = monster.get_owner()
         self.client.push_state(
             env.get_battle_graphics().menu,
             session=self.session,
             cmb=self,
+            character=owner,
             monster=monster,
         )
 
@@ -824,8 +826,8 @@ class CombatState(CombatAnimations):
                 params = {"name": winner.name.upper(), "tech": tech_list}
                 mex = T.format("tuxemon_new_tech", params)
                 self.text_anim.add_xp_message(mex)
-            owner = self.client.get_monster_owner(winner)
-            if owner and owner.is_player:
+            owner = winner.get_owner()
+            if owner.is_player:
                 self.task(partial(self.animate_exp, winner), interval=2.5)
                 self.task(self.refresh_ui, interval=3.0)
                 hud = self.hud_manager.get_hud(winner)

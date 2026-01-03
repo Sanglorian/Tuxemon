@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import final
 
 from tuxemon.db import Direction
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.map.map import get_direction
 from tuxemon.session import Session
@@ -37,14 +36,14 @@ class CharFaceAction(EventAction):
     direction: str
 
     def start(self, session: Session) -> None:
-        character = get_npc(session, self.character)
+        character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return
 
         # "player" isn't among the Directions (map_loader.py)
         if self.direction not in list(Direction):
-            target = get_npc(session, self.direction)
+            target = session.get_npc(self.direction)
             if target is None:
                 logger.error(f"{self.direction} not found")
                 return

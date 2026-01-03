@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.event import get_npc
 from tuxemon.event.actions.common import CommonAction
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -35,7 +34,7 @@ class SetCharAttributeAction(EventAction):
     value: str
 
     def start(self, session: Session) -> None:
-        character = get_npc(session, self.character)
+        character = session.get_npc(self.character)
         assert character
         CommonAction.set_entity_attribute(
             character, self.attribute, self.value

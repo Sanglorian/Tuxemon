@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import Optional, final
 
 from tuxemon.db import Direction
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.map.map import get_coord_direction, get_direction, pairs
 from tuxemon.session import Session
@@ -47,9 +46,9 @@ class PathfindToCharAction(EventAction):
 
     def start(self, session: Session) -> None:
         client = session.client
-        target_entity = get_npc(session, self.target_entity)
+        target_entity = session.get_npc(self.target_entity)
         assert target_entity
-        self.moving_entity = get_npc(session, self.entity)
+        self.moving_entity = session.get_npc(self.entity)
         assert self.moving_entity
 
         distance = max(1, self.distance or 1)

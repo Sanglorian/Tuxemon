@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from functools import partial
 from typing import final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.npc import NPC
@@ -47,7 +46,7 @@ class TranslatedDialogChoiceAction(EventAction):
 
         # perform text substitutions
         choices = TextFormatter.replace_text(session, self.choices, T)
-        player = get_npc(session, "player")
+        player = session.get_npc("player")
         assert player
 
         # make menu options for each string between the colons

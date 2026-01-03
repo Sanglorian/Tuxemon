@@ -2,7 +2,6 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -15,8 +14,6 @@ if TYPE_CHECKING:
     from tuxemon.npc import NPC
     from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -43,11 +40,7 @@ class ForfeitEffect(CoreEffect):
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
         self.client = session.client
-
-        player = session.client.get_monster_owner(user)
-        if player is None:
-            logger.error(f"{user.name}'s owner not found")
-            return TechEffectResult(name=tech.name)
+        player = user.get_owner()
 
         set_var(session, "battle_last_result", self.name)
         self.client.combat_session.set_variable("run", True)

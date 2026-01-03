@@ -44,10 +44,7 @@ class OpponentEvaluator:
         ):
             return 1.0
 
-        owner = self.session.client.get_monster_owner(self.user)
-
-        if owner is None:
-            return 1.0
+        owner = self.user.get_owner()
 
         config = self.ai_opponent.rules.get(
             owner.slug, self.ai_opponent.rules.get("default")

@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 
 from tuxemon.db import SpatialCondition
-from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 from tuxemon.tools import compare
@@ -44,7 +43,7 @@ class FactionReputationCondition(EventCondition):
         )
         threshold = int(threshold_raw)
 
-        char = get_npc(session, character_slug)
+        char = session.get_npc(character_slug)
         if not char:
             logger.error(
                 f"[Condition] Character '{character_slug}' not found."

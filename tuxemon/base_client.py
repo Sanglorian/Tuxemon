@@ -8,7 +8,7 @@ from collections.abc import Callable, Sequence
 from enum import Enum
 from queue import Empty, Queue
 from threading import Thread
-from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, TypeVar, overload
 from uuid import UUID
 
 from tuxemon.audio import MusicPlayerState, SoundManager
@@ -50,6 +50,7 @@ from tuxemon.state.manager import StateManager
 from tuxemon.state.repository import StateRepository
 from tuxemon.state.state import State
 from tuxemon.teleporter import Teleporter
+from tuxemon.trade_manager import TradeManager
 from tuxemon.world.weather import WorldWeatherManager
 
 if TYPE_CHECKING:
@@ -175,11 +176,12 @@ class BaseClient(ABC):
         self._map_renderer: AbstractRenderer = NullRenderer()
 
         # Various Sessions
+        self.trade_manager = TradeManager(self.npc_manager)
         self.environment_manager = EnvironmentManager()
         self.encounter_manager = EncounterManager()
         self.park_session = ParkSession()
         self.weather_manager = WorldWeatherManager()
-        self.cipher_processor: Optional[CipherProcessor] = None
+        self.cipher_processor: CipherProcessor | None = None
         self.alert_manager = AlertManager(self.event_bus)
         self.shop_manager = ShopManager()
 
@@ -314,7 +316,7 @@ class BaseClient(ABC):
 
     def get_state_by_name(
         self,
-        state_name: Union[str, type[State]],
+        state_name: str | type[State],
     ) -> State:
         """
         Query the state stack for a state by the name supplied.
@@ -331,7 +333,7 @@ class BaseClient(ABC):
         """Queue a state"""
         self.state_manager.queue_state(state_name, **kwargs)
 
-    def pop_state(self, state: Optional[State] = None) -> None:
+    def pop_state(self, state: State | None = None) -> None:
         """Pop current state, or another"""
         self.state_manager.pop_state(state)
 
@@ -353,7 +355,7 @@ class BaseClient(ABC):
 
     def push_state(
         self,
-        state_name: Union[str, StateType],
+        state_name: str | StateType,
         **kwargs: Any,
     ) -> State:
         """Push new state, by name"""
@@ -373,7 +375,7 @@ class BaseClient(ABC):
 
     def replace_state(
         self,
-        state_name: Union[str, State],
+        state_name: str | State,
         **kwargs: Any,
     ) -> State:
         """Replace current state with new one"""
@@ -381,7 +383,7 @@ class BaseClient(ABC):
 
     def push_state_with_timeout(
         self,
-        state_name: Union[str, StateType],
+        state_name: str | StateType,
         updates: int = 1,
     ) -> None:
         """Push new state, by name, by with timeout"""
@@ -393,7 +395,7 @@ class BaseClient(ABC):
         return self.state_manager.active_states
 
     @property
-    def current_state(self) -> Optional[State]:
+    def current_state(self) -> State | None:
         """Current State object, or None"""
         return self.state_manager.current_state
 
@@ -402,30 +404,18 @@ class BaseClient(ABC):
         """List of names of active states"""
         return self.state_manager.get_active_state_names()
 
-    def get_monster_by_iid(self, iid: UUID) -> Optional[Monster]:
-        """
-        Gets a monster object by iid among all the entities.
-
-        Parameters:
-            iid: The iid of the monster that exists on the current map.
-
-        Returns:
-            The monster object or None if the monster is not found.
-        """
+    def get_monster_by_iid(self, iid: UUID) -> Monster | None:
+        """Gets a monster object by iid among all the entities."""
         return self.npc_manager.get_monster_by_iid(iid)
 
-    def get_monster_owner(self, monster: Monster) -> Optional[NPC]:
-        """
-        Finds the NPC that currently owns the given monster.
-
-        Ownership is determined by checking all NPCs managed by this client's
-        NPCManager and returning the one whose party/monster list contains
-        the specified monster.
-
-        Parameters:
-            monster: The Monster instance whose owner should be resolved.
-
-        Returns:
-            The owning NPC if found, otherwise None.
-        """
+    def get_monster_owner(self, monster: Monster) -> NPC | None:
+        """Finds the NPC that currently owns the given monster."""
         return self.npc_manager.get_monster_owner(monster)
+
+    def get_npc_pos(self, pos: tuple[int, int]) -> NPC | None:
+        """Gets an NPC object by location (x,y)."""
+        return self.npc_manager.get_entity_pos(pos)
+
+    def get_npc(self, slug: str) -> NPC | None:
+        """Gets an NPC object by slug."""
+        return self.npc_manager.get_npc(slug)

@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, final
 
 from tuxemon.db import Acquisition, EvolutionStage, StatType
 from tuxemon.element import ElementTypesHandler
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.monster import Monster
@@ -128,7 +127,7 @@ class SpawnMonsterAction(EventAction):
         child.father_iid = father_id
 
         # Add the child to the character's monsters
-        character = get_npc(session, self.character)
+        character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return

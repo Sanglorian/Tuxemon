@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.tools import get_valid_uuid
 
@@ -42,7 +41,7 @@ class ToggleEvolutionBlockAction(EventAction):
 
     def start(self, session: Session) -> None:
         self.session = session
-        character = get_npc(session, self.npc_slug)
+        character = session.get_npc(self.npc_slug)
 
         if character is None:
             logger.error(f"Character '{self.npc_slug}' not found.")

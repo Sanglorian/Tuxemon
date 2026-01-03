@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 from tuxemon.tools import get_valid_uuid
@@ -55,7 +54,7 @@ class WithdrawMonsterAction(EventAction):
 
         player.monster_boxes.remove_from_box("monster", None, monster)
 
-        character = get_npc(session, self.character)
+        character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return

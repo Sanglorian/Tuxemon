@@ -124,10 +124,7 @@ class StatusIconManager:
     def get_icon_position(
         self, monster: Monster, index: int
     ) -> tuple[float, float]:
-        owner = self._state.client.get_monster_owner(monster)
-        if not owner:
-            logger.warning(f"{monster.name}'s owner not found.")
-            return (0, 0)
+        owner = monster.get_owner()
         layout_data = self._layouts.get(owner, {})
         key = f"monster_status_icon_slot_{index}"
         rects = layout_data.get(key, [])

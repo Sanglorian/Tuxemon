@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import load_and_scale
 from tuxemon.session import Session
@@ -40,7 +39,7 @@ class SetBubbleAction(EventAction):
 
     def start(self, session: Session) -> None:
         client = session.client
-        npc = get_npc(session, self.npc_slug)
+        npc = session.get_npc(self.npc_slug)
 
         if npc is None:
             raise ValueError(f"NPC '{self.npc_slug}' not found.")

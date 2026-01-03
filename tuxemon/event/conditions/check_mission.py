@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 
 from tuxemon.db import MissionStatus, SpatialCondition
-from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -49,7 +48,7 @@ class CheckMissionCondition(EventCondition):
         _character, _mission, _status = params[:3]
         _mode = params[3].lower() if len(params) > 3 else "any"
 
-        character = get_npc(session, _character)
+        character = session.get_npc(_character)
         if character is None:
             logger.error(f"Character '{_character}' not found.")
             return False

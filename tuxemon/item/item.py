@@ -307,9 +307,9 @@ class Item:
 
 
 def decode_items(
-    json_data: Optional[Sequence[Mapping[str, Any]]],
+    json_data: Sequence[Mapping[str, Any]] | None,
 ) -> list[Item]:
-    return [Item(save_data=itm) for itm in json_data or {}]
+    return [Item(save_data=itm) for itm in (json_data or [])]
 
 
 def encode_items(itms: Sequence[Item]) -> Sequence[Mapping[str, Any]]:

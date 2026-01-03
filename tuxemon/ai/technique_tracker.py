@@ -105,19 +105,16 @@ def technique_score(
     healing_score = 0.0
     health_priority = config.health_priority_threshold
     healing_penalty = config.healing_penalty_threshold
-    if health_priority:
-        if technique.healing_power > 0.0 or technique.power == 0.0:
-            if user.hp_ratio < health_priority and config.healing_weight:
-                healing_score = technique.healing_power * config.healing_weight
-    if healing_penalty:
-        if technique.healing_power > 0.0 or technique.power == 0.0:
-            if (
-                user.hp_ratio > healing_penalty
-                and config.healing_penalty_weight
-            ):
-                healing_score = (
-                    -technique.healing_power * config.healing_penalty_weight
-                )
+    is_healing_move = technique.healing_power > 0.0 or technique.power == 0.0
+
+    if health_priority and is_healing_move:
+        if user.hp_ratio < health_priority and config.healing_weight:
+            healing_score = technique.healing_power * config.healing_weight
+    if healing_penalty and is_healing_move:
+        if user.hp_ratio > healing_penalty and config.healing_penalty_weight:
+            healing_score = (
+                -technique.healing_power * config.healing_penalty_weight
+            )
     breakdown["healing"] = healing_score
 
     total_score = sum(breakdown.values())

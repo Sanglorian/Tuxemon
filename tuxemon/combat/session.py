@@ -567,7 +567,6 @@ class CombatSession:
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> tuple[TechEffectResult, Optional[StatusEffectResult]]:
         result = tech.use(session, user, target)
-        tech.advance_round()
         logger.debug(
             f"{user.name} used {tech.slug} on {target.name} > success={result.success}"
         )

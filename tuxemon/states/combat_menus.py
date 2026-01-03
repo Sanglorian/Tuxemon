@@ -313,35 +313,46 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         """Open menus to choose a Technique to use."""
 
         def choose_technique() -> None:
-            available_techniques = [
-                tech
-                for tech in self.monster.moves.get_moves()
-                if not tech.is_recharging
-            ]
+            usable_moves = self.monster.moves.get_usable_moves(
+                self.session, self.opponents
+            )
 
-            # open menu to choose technique
             menu = self.client.push_state(Menu())
             menu.shrink_to_items = True
 
-            if not available_techniques:
+            # No usable moves → show only fallback/skip
+            if not usable_moves:
                 skip = Technique.create("skip")
                 skip_image = self.shadow_text(skip.name)
                 tech_skip = MenuItem(skip_image, None, None, skip)
                 menu.add(tech_skip)
 
-            for tech in self.monster.moves.get_moves():
-                tech_name = tech.name
-                tech_color = None
-                tech_enabled = True
+            # Normal case → show all moves with enabled/disabled state
+            else:
+                for tech in self.monster.moves.get_moves():
 
-                if tech.is_recharging:
-                    tech_name = f"{tech.name} ({tech.cooldown.remaining})"
-                    tech_color = self.unavailable_color
-                    tech_enabled = False
+                    usable = any(
+                        tech.can_use(self.session, opponent)
+                        for opponent in self.opponents
+                    )
 
-                tech_image = self.shadow_text(tech_name, fg=tech_color)
-                item = MenuItem(tech_image, None, None, tech, tech_enabled)
-                menu.add(item)
+                    if not usable:
+                        if tech.is_recharging:
+                            tech_name = (
+                                f"{tech.name} ({tech.cooldown.remaining})"
+                            )
+                        else:
+                            tech_name = tech.name
+                        tech_color = self.unavailable_color
+                        tech_enabled = False
+                    else:
+                        tech_name = tech.name
+                        tech_color = None
+                        tech_enabled = True
+
+                    tech_image = self.shadow_text(tech_name, fg=tech_color)
+                    item = MenuItem(tech_image, None, None, tech, tech_enabled)
+                    menu.add(item)
 
             # Update selected_index to the first enabled item
             enabled_items = [

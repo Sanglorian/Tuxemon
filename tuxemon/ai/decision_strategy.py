@@ -24,7 +24,6 @@ if TYPE_CHECKING:
     from tuxemon.ai.technique_tracker import TechniqueTracker
     from tuxemon.item.item import Item
     from tuxemon.monster import Monster
-    from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -54,16 +53,12 @@ class AIDecisionStrategy(ABC):
     ) -> tuple[Technique, Monster]:
         pass
 
-    def check_ai_techs(
-        self, session: Session, user: Monster
-    ) -> Optional[SingleTechnique]:
+    def check_ai_techs(self, user: Monster) -> Optional[SingleTechnique]:
         _config = self.ai_techs
         if user.wild:
             config = _config.techniques.get(user.slug)
         else:
-            owner = session.client.get_monster_owner(user)
-            if owner is None:
-                return None
+            owner = user.get_owner()
             config = _config.techniques.get(owner.slug)
         return config
 
@@ -139,7 +134,7 @@ class TrainerAIDecisionStrategy(AIDecisionStrategy):
             skip = Technique.create("skip")
             return skip, target
 
-        config = self.check_ai_techs(ai.session, ai.monster)
+        config = self.check_ai_techs(ai.monster)
         if config is None:
             return random.choice(valid_actions)
 
@@ -180,7 +175,7 @@ class WildAIDecisionStrategy(AIDecisionStrategy):
             skip = Technique.create("skip")
             return skip, target
 
-        config = self.check_ai_techs(ai.session, ai.monster)
+        config = self.check_ai_techs(ai.monster)
         if config is None:
             return random.choice(valid_actions)
 

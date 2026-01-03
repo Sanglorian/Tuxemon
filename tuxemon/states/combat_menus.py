@@ -324,10 +324,11 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             menu.shrink_to_items = True
 
             if not available_techniques:
-                skip = Technique.create("skip")
-                skip_image = self.shadow_text(skip.name)
-                tech_skip = MenuItem(skip_image, None, None, skip)
-                menu.add(tech_skip)
+                fallback_moves = self.monster.moves.get_fallback_moves()
+                for fb in fallback_moves:
+                    menu.add(
+                        MenuItem(self.shadow_text(fb.name), None, None, fb)
+                    )
 
             for tech in self.monster.moves.get_moves():
                 tech_name = tech.name

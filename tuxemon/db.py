@@ -1227,8 +1227,12 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
 
     @model_validator(mode="after")
     def must_have_fallback(self) -> MonsterModel:
-        if not any(m.learning_method == LearningMethod.FALLBACK for m in self.moveset):
-            raise ValueError("Monster must define at least one fallback technique.")
+        if not any(
+            m.learning_method == LearningMethod.FALLBACK for m in self.moveset
+        ):
+            raise ValueError(
+                "Monster must define at least one fallback technique."
+            )
         return self
 
 

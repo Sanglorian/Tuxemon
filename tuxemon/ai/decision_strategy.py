@@ -131,8 +131,9 @@ class TrainerAIDecisionStrategy(AIDecisionStrategy):
         valid_actions = ai.get_available_moves()
 
         if not valid_actions:
-            skip = Technique.create("skip")
-            return skip, target
+            fallback_moves = ai.monster.moves.get_fallback_moves()
+            fallback = random.choice(fallback_moves)
+            return fallback, target
 
         config = self.check_ai_techs(ai.monster)
         if config is None:
@@ -172,8 +173,9 @@ class WildAIDecisionStrategy(AIDecisionStrategy):
         valid_actions = ai.get_available_moves()
 
         if not valid_actions:
-            skip = Technique.create("skip")
-            return skip, target
+            fallback_moves = ai.monster.moves.get_fallback_moves()
+            fallback = random.choice(fallback_moves)
+            return fallback, target
 
         config = self.check_ai_techs(ai.monster)
         if config is None:

@@ -83,18 +83,15 @@ def test_make_decision_select_move(mock_ai, mock_evaluator, mock_tracker):
 def test_select_move_no_valid_actions(mock_ai, mock_evaluator, mock_tracker):
     mock_ai.get_available_moves.return_value = []
     target = MagicMock(slug="enemy")
+    mock_fallback = MagicMock(slug="skip")
+    mock_ai.monster.moves.get_fallback_moves.return_value = [mock_fallback]
 
     strategy = TrainerAIDecisionStrategy(
         mock_evaluator, mock_tracker, MagicMock(), MagicMock(), MagicMock()
     )
 
-    with patch(
-        "tuxemon.technique.technique.Technique.create",
-        return_value=MagicMock(slug="skip"),
-    ):
-        technique, chosen_target = strategy.select_move(mock_ai, target)
-
-    assert technique.slug == "skip"
+    technique, chosen_target = strategy.select_move(mock_ai, target)
+    assert technique == mock_fallback
     assert chosen_target == target
 
 

@@ -48,7 +48,7 @@ events:
     type: event
   Go Outside:
     actions:
-    - transition_teleport spyder_cotton_town.tmx,20,27,0.3
+    - transition_teleport player,spyder_cotton_town.tmx,20,27,0.3
     - char_face player,down
     conditions:
     - is char_at player

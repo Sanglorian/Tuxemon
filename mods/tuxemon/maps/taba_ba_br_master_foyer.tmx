@@ -46,14 +46,14 @@
  <objectgroup color="#fffb00" id="6" name="Events">
   <object id="9" name="teleport to stairwell 2" type="event" x="32" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport taba_ba_stairwell_2.tmx,8,1,0.5"/>
+    <property name="act1" value="transition_teleport player,taba_ba_stairwell_2.tmx,8,1,0.5"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
    </properties>
   </object>
   <object id="10" name="teleport to stairwell 2-2" type="event" x="48" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport taba_ba_stairwell_2.tmx,9,1,0.5"/>
+    <property name="act1" value="transition_teleport player,taba_ba_stairwell_2.tmx,9,1,0.5"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
    </properties>

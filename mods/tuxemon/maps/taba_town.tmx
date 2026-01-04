@@ -111,7 +111,7 @@
  <objectgroup color="#ffff00" id="7" name="Events">
   <object id="67" name="Go to Player's house" type="event" x="688" y="720" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport player_house_downstairs.tmx,4,6,0.3"/>
+    <property name="act10" value="transition_teleport player,player_house_downstairs.tmx,4,6,0.3"/>
     <property name="cond10" value="is char_at player"/>
    </properties>
   </object>
@@ -123,7 +123,7 @@
   </object>
   <object id="69" name="Go to Test house" type="event" x="528" y="688" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport maple_house.tmx,6,10,0.3"/>
+    <property name="act10" value="transition_teleport player,maple_house.tmx,6,10,0.3"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
    </properties>
@@ -203,21 +203,21 @@
   </object>
   <object id="80" name="Teleport to Route 1" type="event" x="128" y="176" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route1.tmx,50,11"/>
+    <property name="act10" value="transition_teleport player,route1.tmx,50,11"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,left"/>
    </properties>
   </object>
   <object id="81" name="Teleport to Route 1" type="event" x="128" y="192" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route1.tmx,50,12"/>
+    <property name="act10" value="transition_teleport player,route1.tmx,50,12"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,left"/>
    </properties>
   </object>
   <object id="95" name="Go to Professor's Lab" type="event" x="704" y="832" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport professor_lab.tmx,6,17,0.3"/>
+    <property name="act10" value="transition_teleport player,professor_lab.tmx,6,17,0.3"/>
     <property name="cond10" value="is char_at player"/>
    </properties>
   </object>
@@ -230,14 +230,14 @@
   </object>
   <object id="98" name="Teleport to healing center" type="event" x="640" y="48" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport healing_center.tmx,6,10,0.3"/>
+    <property name="act10" value="transition_teleport player,healing_center.tmx,6,10,0.3"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
    </properties>
   </object>
   <object id="108" name="Enter mart" type="event" x="480" y="176" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport tuxe_mart_taba.tmx,6,10,0.3"/>
+    <property name="act10" value="transition_teleport player,tuxe_mart_taba.tmx,6,10,0.3"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
    </properties>
@@ -565,7 +565,7 @@
     <property name="act10" value="pathfind player,43,45"/>
     <property name="act12" value="unlock_controls"/>
     <property name="act15" value="set_variable comeinside:done"/>
-    <property name="act16" value="transition_teleport player_house_downstairs.tmx,4,6,0.3"/>
+    <property name="act16" value="transition_teleport player,player_house_downstairs.tmx,4,6,0.3"/>
     <property name="cond1" value="is variable_set comeinside:yes"/>
    </properties>
   </object>
@@ -797,34 +797,34 @@
     <property name="act30" value="char_face player,up"/>
     <property name="act35" value="unlock_controls"/>
     <property name="act36" value="set_variable moveplayer:false"/>
-    <property name="act40" value="transition_teleport player_house_downstairs.tmx,4,6,0.3"/>
+    <property name="act40" value="transition_teleport player,player_house_downstairs.tmx,4,6,0.3"/>
     <property name="cond1" value="is variable_set moveplayer:true"/>
    </properties>
   </object>
   <object id="163" name="Teleport to house1" type="event" x="784" y="96" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport taba_house1.tmx,7,6,0.3"/>
+    <property name="act10" value="transition_teleport player,taba_house1.tmx,7,6,0.3"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
    </properties>
   </object>
   <object id="170" name="Teleport to house2" type="event" x="640" y="176" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport taba_house2.tmx,7,6,0.3"/>
+    <property name="act10" value="transition_teleport player,taba_house2.tmx,7,6,0.3"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
    </properties>
   </object>
   <object id="171" name="Teleport to house3" type="event" x="528" y="48" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport taba_house3.tmx,7,6,0.3"/>
+    <property name="act10" value="transition_teleport player,taba_house3.tmx,7,6,0.3"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
    </properties>
   </object>
   <object id="172" name="Teleport to house4" type="event" x="400" y="48" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport taba_house4.tmx,7,6,0.3"/>
+    <property name="act10" value="transition_teleport player,taba_house4.tmx,7,6,0.3"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
    </properties>
@@ -873,21 +873,21 @@
   </object>
   <object id="196" name="Teleport to Dryadsgrove" type="event" x="928" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport dryadsgrove.tmx,5,19"/>
+    <property name="act10" value="transition_teleport player,dryadsgrove.tmx,5,19"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
    </properties>
   </object>
   <object id="197" name="Teleport to Dryadsgrove" type="event" x="944" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport dryadsgrove.tmx,5,19"/>
+    <property name="act10" value="transition_teleport player,dryadsgrove.tmx,5,19"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
    </properties>
   </object>
   <object id="198" name="Teleport to Dryadsgrove" type="event" x="960" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport dryadsgrove.tmx,6,19"/>
+    <property name="act10" value="transition_teleport player,dryadsgrove.tmx,6,19"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
    </properties>

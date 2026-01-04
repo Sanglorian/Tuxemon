@@ -13,7 +13,7 @@ events:
     type: event
   Teleport to Bank 2:
     actions:
-    - transition_teleport eclipse_crystal_bank2.tmx,2,10,0.3
+    - transition_teleport player,eclipse_crystal_bank2.tmx,2,10,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -167,7 +167,7 @@ events:
     - unlock_controls
     - set_variable eclipse_bank_zircon:yes
     - char_face player,down
-    - transition_teleport eclipse_crystal_center.tmx,6,7,0.3
+    - transition_teleport player,eclipse_crystal_center.tmx,6,7,0.3
     conditions:
     - is battle_outcome player,draw,eclipse_zircon
     - is current_state WorldState
@@ -187,7 +187,7 @@ events:
     - unlock_controls
     - set_variable eclipse_bank_zircon:yes
     - char_face player,down
-    - transition_teleport eclipse_crystal_center.tmx,6,7,0.3
+    - transition_teleport player,eclipse_crystal_center.tmx,6,7,0.3
     conditions:
     - is battle_outcome player,won,eclipse_zircon
     - is current_state WorldState

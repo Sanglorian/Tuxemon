@@ -1,7 +1,7 @@
 events:
   Teleport to Park:
     actions:
-    - transition_teleport eclipse_park.tmx,39,27,0.3
+    - transition_teleport player,eclipse_park.tmx,39,27,0.3
     - char_face player,left
     conditions:
     - is char_at player
@@ -11,7 +11,7 @@ events:
     type: event
   Teleport to Power:
     actions:
-    - transition_teleport eclipse_routei.tmx,26,10,0.3
+    - transition_teleport player,eclipse_routei.tmx,26,10,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -21,7 +21,7 @@ events:
     type: event
   Teleport to Route:
     actions:
-    - transition_teleport eclipse_routeh.tmx,37,0,0.3
+    - transition_teleport player,eclipse_routeh.tmx,37,0,0.3
     - char_face player,down
     conditions:
     - is char_at player

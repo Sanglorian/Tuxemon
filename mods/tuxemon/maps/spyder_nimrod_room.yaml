@@ -37,7 +37,7 @@ events:
     - set_layer 0:0:0:255
     - unlock_controls
     - char_face player,right
-    - transition_teleport spyder_wayfarer_inn1.tmx,9,6
+    - transition_teleport player,spyder_wayfarer_inn1.tmx,9,6
     conditions:
     - is variable_set enforcers_response:yes
     type: event
@@ -81,13 +81,13 @@ events:
     - set_variable flashback:off
     - set_layer 0:0:0:255
     - unlock_controls
-    - transition_teleport spyder_nimrod_middle.tmx,14,10
+    - transition_teleport player,spyder_nimrod_middle.tmx,14,10
     conditions:
     - is variable_set zircon_argon:yes
     type: event
   Go Outside:
     actions:
-    - transition_teleport spyder_nimrod_bottom.tmx,0,3,0.3
+    - transition_teleport player,spyder_nimrod_bottom.tmx,0,3,0.3
     - char_face player,right
     conditions:
     - is char_at player

@@ -27,7 +27,7 @@ events:
     type: event
   Steps:
     actions:
-    - transition_teleport eclipse_park_entrance.tmx,5,4,0.3
+    - transition_teleport player,eclipse_park_entrance.tmx,5,4,0.3
     - char_face player,up
     - add_item tuxeball_park,-25
     - park_experience stop
@@ -43,7 +43,7 @@ events:
     type: event
   Teleport 1:
     actions:
-    - transition_teleport eclipse_park.tmx,38,13,0.3
+    - transition_teleport player,eclipse_park.tmx,38,13,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -53,7 +53,7 @@ events:
     y: 12
   Teleport 2:
     actions:
-    - transition_teleport eclipse_park.tmx,18,13,0.3
+    - transition_teleport player,eclipse_park.tmx,18,13,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -63,7 +63,7 @@ events:
     y: 12
   Teleport 3:
     actions:
-    - transition_teleport eclipse_park.tmx,11,9,0.3
+    - transition_teleport player,eclipse_park.tmx,11,9,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -73,7 +73,7 @@ events:
     y: 8
   Tuxeball:
     actions:
-    - transition_teleport eclipse_park_entrance.tmx,5,4,0.3
+    - transition_teleport player,eclipse_park_entrance.tmx,5,4,0.3
     - char_face player,up
     - park_experience stop
     conditions:

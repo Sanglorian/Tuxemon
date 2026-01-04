@@ -222,7 +222,7 @@ events:
     type: event
   Teleport Mountain High 1:
     actions:
-    - transition_teleport eclipse_lion_mountain_high.tmx,2,39,0.3
+    - transition_teleport player,eclipse_lion_mountain_high.tmx,2,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -232,7 +232,7 @@ events:
     type: event
   Teleport Mountain High 2:
     actions:
-    - transition_teleport eclipse_lion_mountain_high.tmx,19,39,0.3
+    - transition_teleport player,eclipse_lion_mountain_high.tmx,19,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -242,7 +242,7 @@ events:
     type: event
   Teleport Mountain High 3:
     actions:
-    - transition_teleport eclipse_lion_mountain_high.tmx,23,39,0.3
+    - transition_teleport player,eclipse_lion_mountain_high.tmx,23,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -252,7 +252,7 @@ events:
     type: event
   Teleport Mountain High 4:
     actions:
-    - transition_teleport eclipse_lion_mountain_high.tmx,6,39,0.3
+    - transition_teleport player,eclipse_lion_mountain_high.tmx,6,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -262,7 +262,7 @@ events:
     type: event
   Teleport Mountain High 5:
     actions:
-    - transition_teleport eclipse_lion_mountain_high.tmx,7,39,0.3
+    - transition_teleport player,eclipse_lion_mountain_high.tmx,7,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -272,7 +272,7 @@ events:
     type: event
   Teleport Mountain Low 1:
     actions:
-    - transition_teleport eclipse_lion_mountain_low.tmx,34,0,0.3
+    - transition_teleport player,eclipse_lion_mountain_low.tmx,34,0,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -282,7 +282,7 @@ events:
     type: event
   Teleport Mountain Low 2a:
     actions:
-    - transition_teleport eclipse_lion_mountain_low.tmx,11,0,0.3
+    - transition_teleport player,eclipse_lion_mountain_low.tmx,11,0,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -292,7 +292,7 @@ events:
     type: event
   Teleport Mountain Low 2b:
     actions:
-    - transition_teleport eclipse_lion_mountain_low.tmx,12,0,0.3
+    - transition_teleport player,eclipse_lion_mountain_low.tmx,12,0,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -302,7 +302,7 @@ events:
     type: event
   Teleport Mountain Low 3a:
     actions:
-    - transition_teleport eclipse_lion_mountain_low.tmx,1,0,0.3
+    - transition_teleport player,eclipse_lion_mountain_low.tmx,1,0,0.3
     - char_face player,down
     conditions:
     - is char_at player

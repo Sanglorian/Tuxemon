@@ -56,28 +56,28 @@
  <objectgroup color="#ffff00" id="3" name="Events">
   <object id="3" name="Teleport to Omnichannel 2" type="event" x="16" y="208" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_omnichannel2.tmx,1,10,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_omnichannel2.tmx,1,10,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="4" name="Teleport to Omnichannel 2" type="event" x="32" y="208" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_omnichannel2.tmx,2,10,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_omnichannel2.tmx,2,10,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="5" name="Teleport to Omnichannel 4" type="event" x="16" y="144" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_omnichannel4.tmx,1,12,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_omnichannel4.tmx,1,12,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="6" name="Teleport to Omnichannel 4" type="event" x="32" y="144" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_omnichannel4.tmx,2,12,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_omnichannel4.tmx,2,12,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
    </properties>

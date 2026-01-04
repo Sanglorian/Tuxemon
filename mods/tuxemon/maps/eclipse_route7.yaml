@@ -598,7 +598,7 @@ events:
     type: event
   Teleport Crystal 1:
     actions:
-    - transition_teleport eclipse_crystal_town.tmx,35,19,0.3
+    - transition_teleport player,eclipse_crystal_town.tmx,35,19,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -608,7 +608,7 @@ events:
     type: event
   Teleport Crystal 2:
     actions:
-    - transition_teleport eclipse_crystal_town.tmx,36,19,0.3
+    - transition_teleport player,eclipse_crystal_town.tmx,36,19,0.3
     - char_face player,up
     conditions:
     - is char_at player

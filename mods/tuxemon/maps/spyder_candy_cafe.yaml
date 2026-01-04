@@ -47,14 +47,14 @@ events:
     type: event
   Flashback Yes:
     actions:
-    - transition_teleport spyder_greenwash_level3.tmx,13,2
+    - transition_teleport player,spyder_greenwash_level3.tmx,13,2
     - set_variable flashback:on
     conditions:
     - is variable_set incident_greenwash:yes
     type: event
   Go Outside:
     actions:
-    - transition_teleport spyder_candy_town.tmx,4,19,0.3
+    - transition_teleport player,spyder_candy_town.tmx,4,19,0.3
     - char_face player,down
     conditions:
     - is char_at player

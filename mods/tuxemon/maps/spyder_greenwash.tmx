@@ -83,7 +83,7 @@
   </object>
   <object id="46" name="Teleport to Greenhouse" type="event" x="240" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash_greenhouse.tmx,1,7,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash_greenhouse.tmx,1,7,0.3"/>
     <property name="act2" value="char_face player,right"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,right"/>
@@ -91,7 +91,7 @@
   </object>
   <object id="51" name="Teleport to Greenhouse" type="event" x="240" y="320" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash_greenhouse.tmx,1,8,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash_greenhouse.tmx,1,8,0.3"/>
     <property name="act2" value="char_face player,right"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,right"/>
@@ -99,7 +99,7 @@
   </object>
   <object id="52" name="Teleport to Candy Town" type="event" x="80" y="496" width="48" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_candy_town.tmx,25,24,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_candy_town.tmx,25,24,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -108,7 +108,7 @@
   </object>
   <object id="68" name="Teleport to Level 2" type="event" x="16" y="32" width="16" height="32">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash_level2.tmx,1,4,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash_level2.tmx,1,4,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -275,7 +275,7 @@
   </object>
   <object id="96" name="Teleport to Level 2" type="event" x="32" y="32" width="16" height="32">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash_level2.tmx,2,4,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash_level2.tmx,2,4,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>

@@ -48,7 +48,7 @@ events:
     type: event
   Teleport to Flower City:
     actions:
-    - transition_teleport spyder_flower_city.tmx,23,18,0.3
+    - transition_teleport player,spyder_flower_city.tmx,23,18,0.3
     - char_face player,down
     conditions:
     - is char_at player

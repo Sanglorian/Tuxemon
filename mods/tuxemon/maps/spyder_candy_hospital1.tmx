@@ -84,14 +84,14 @@
   </object>
   <object id="62" name="Choice Floor Ground" type="event" x="128" y="192" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport spyder_candy_center.tmx,14,5,0.3"/>
+    <property name="act10" value="transition_teleport player,spyder_candy_center.tmx,14,5,0.3"/>
     <property name="act20" value="set_variable choice_floor:null"/>
     <property name="cond1" value="is variable_set choice_floor:0floor"/>
    </properties>
   </object>
   <object id="63" name="Choice Floor 2nd" type="event" x="144" y="192" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport spyder_candy_hospital2.tmx,11,15,0.3"/>
+    <property name="act10" value="transition_teleport player,spyder_candy_hospital2.tmx,11,15,0.3"/>
     <property name="act20" value="set_variable choice_floor:null"/>
     <property name="cond1" value="is variable_set choice_floor:2floor"/>
    </properties>

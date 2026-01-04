@@ -37,7 +37,7 @@ events:
     - set_layer 0:0:0:255
     - unlock_controls
     - set_variable flashback:off
-    - transition_teleport spyder_paper_rival_downstairs.tmx,7,9
+    - transition_teleport player,spyder_paper_rival_downstairs.tmx,7,9
     - char_face player,right
     conditions:
     - is variable_set billie_grandma:yes
@@ -191,7 +191,7 @@ events:
     type: event
   Teleport to Back:
     actions:
-    - transition_teleport spyder_paper_town.tmx,22,3,0.3
+    - transition_teleport player,spyder_paper_town.tmx,22,3,0.3
     - char_face player,right
     conditions:
     - is char_at player
@@ -201,7 +201,7 @@ events:
     y: 7
   Teleport to Cotton Town:
     actions:
-    - transition_teleport spyder_paper_town.tmx,20,5,0.3
+    - transition_teleport player,spyder_paper_town.tmx,20,5,0.3
     - char_face player,down
     conditions:
     - is char_at player

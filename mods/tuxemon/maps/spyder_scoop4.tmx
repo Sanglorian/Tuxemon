@@ -62,7 +62,7 @@
   <object id="1" name="Play Music" type="event" x="0" y="0" width="16" height="16"/>
   <object id="2" name="Teleport to Scoop 3" type="event" x="144" y="336" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_scoop3.tmx,5,3,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_scoop3.tmx,5,3,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="act3" value="set_teleport_faint player,spyder_scoop2.tmx,4,4"/>
     <property name="cond1" value="is char_at player"/>
@@ -71,7 +71,7 @@
   </object>
   <object id="3" name="Teleport to Timber Town" type="event" x="176" y="48" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_timber_town.tmx,17,20,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_timber_town.tmx,17,20,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,right"/>

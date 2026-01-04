@@ -63,8 +63,10 @@ class TeleportItemEffect(CoreEffect):
             x = self.coord_x
             y = self.coord_y
 
-        logger.debug(f"Teleporting to map: {map_name}, x: {x}, y: {y}")
+        logger.debug(
+            f"Teleporting to map: {character.name} to {map_name}, x: {x}, y: {y}"
+        )
         session.client.event_engine.execute_action(
-            "transition_teleport", [map_name, x, y]
+            "transition_teleport", ["player", map_name, x, y]
         )
         return ItemEffectResult(name=item.name, success=True)

@@ -260,7 +260,7 @@ events:
     type: event
   Teleport to Cotton Town:
     actions:
-    - transition_teleport spyder_cotton_town.tmx,2,36,0.3
+    - transition_teleport player,spyder_cotton_town.tmx,2,36,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -270,7 +270,7 @@ events:
     y: 3
   Teleport to Dragon's Cave:
     actions:
-    - transition_teleport spyder_dragonscave.tmx,16,5,0.3
+    - transition_teleport player,spyder_dragonscave.tmx,16,5,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -281,7 +281,7 @@ events:
     y: 16
   Teleport to Dryad's Grove:
     actions:
-    - transition_teleport spyder_dryadsgrove.tmx,36,36,0.3
+    - transition_teleport player,spyder_dryadsgrove.tmx,36,36,0.3
     - char_face player,down
     conditions:
     - is char_at player

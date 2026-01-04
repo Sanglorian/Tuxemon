@@ -8,7 +8,7 @@ events:
     type: event
   Go outside:
     actions:
-    - transition_teleport eclipse_park_south.tmx,6,35,0.3
+    - transition_teleport player,eclipse_park_south.tmx,6,35,0.3
     - char_face player,down
     conditions:
     - is char_at player

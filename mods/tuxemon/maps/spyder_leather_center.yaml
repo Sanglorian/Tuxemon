@@ -9,7 +9,7 @@ events:
     type: event
   Go Outside:
     actions:
-    - transition_teleport spyder_leather_town.tmx,23,10,0.3
+    - transition_teleport player,spyder_leather_town.tmx,23,10,0.3
     - char_face player,down
     conditions:
     - is char_at player

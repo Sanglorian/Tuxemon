@@ -22,7 +22,7 @@ events:
   Destination - Candy:
     actions:
     - set_variable rivergoto:nothing
-    - transition_teleport spyder_candy_port.tmx,37,13,0.3
+    - transition_teleport player,spyder_candy_port.tmx,37,13,0.3
     - char_face player,down
     conditions:
     - is variable_set rivergoto:candy_port
@@ -31,14 +31,14 @@ events:
     actions:
     - set_variable rivergoto:nothing
     - char_face player,up
-    - transition_teleport spyder_flower_city.tmx,17,30,0.3
+    - transition_teleport player,spyder_flower_city.tmx,17,30,0.3
     conditions:
     - is variable_set rivergoto:flower_city
     type: event
   Destination - Leather:
     actions:
     - set_variable rivergoto:nothing
-    - transition_teleport spyder_leather_town.tmx,17,19,0.3
+    - transition_teleport player,spyder_leather_town.tmx,17,19,0.3
     - char_face player,right
     conditions:
     - is variable_set rivergoto:leather_town
@@ -46,7 +46,7 @@ events:
   Destination - Paper:
     actions:
     - set_variable rivergoto:nothing
-    - transition_teleport spyder_paper_town.tmx,4,13,0.3
+    - transition_teleport player,spyder_paper_town.tmx,4,13,0.3
     - char_face player,up
     conditions:
     - is variable_set rivergoto:paper_town
@@ -54,7 +54,7 @@ events:
   Destination - Timber:
     actions:
     - set_variable rivergoto:nothing
-    - transition_teleport spyder_timber_town.tmx,8,21,0.3
+    - transition_teleport player,spyder_timber_town.tmx,8,21,0.3
     - char_face player,up
     conditions:
     - is variable_set rivergoto:timber_town
@@ -88,7 +88,7 @@ events:
     type: event
   Teleport to Candy Inn:
     actions:
-    - transition_teleport spyder_candy_inn1.tmx,11,10,0.3
+    - transition_teleport player,spyder_candy_inn1.tmx,11,10,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -98,7 +98,7 @@ events:
     y: 4
   Teleport to Candy Town1:
     actions:
-    - transition_teleport spyder_candy_town.tmx,11,39,0.3
+    - transition_teleport player,spyder_candy_town.tmx,11,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -108,7 +108,7 @@ events:
     y: 0
   Teleport to Candy Town2:
     actions:
-    - transition_teleport spyder_candy_town.tmx,37,39,0.3
+    - transition_teleport player,spyder_candy_town.tmx,37,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -118,7 +118,7 @@ events:
     y: 0
   Teleport to Hill1:
     actions:
-    - transition_teleport spyder_diamond_hill.tmx,19,51,0.3
+    - transition_teleport player,spyder_diamond_hill.tmx,19,51,0.3
     - char_face player,left
     conditions:
     - is char_at player
@@ -128,7 +128,7 @@ events:
     y: 11
   Teleport to Hill2:
     actions:
-    - transition_teleport spyder_diamond_hill.tmx,19,52,0.3
+    - transition_teleport player,spyder_diamond_hill.tmx,19,52,0.3
     - char_face player,left
     conditions:
     - is char_at player
@@ -138,7 +138,7 @@ events:
     y: 12
   Teleport to Hill3:
     actions:
-    - transition_teleport spyder_diamond_hill.tmx,19,55,0.3
+    - transition_teleport player,spyder_diamond_hill.tmx,19,55,0.3
     - char_face player,left
     conditions:
     - is char_at player
@@ -150,7 +150,7 @@ events:
     y: 13
   Teleport to Sea:
     actions:
-    - transition_teleport spyder_routec.tmx,0,35,0.3
+    - transition_teleport player,spyder_routec.tmx,0,35,0.3
     - char_face player,right
     conditions:
     - is char_at player

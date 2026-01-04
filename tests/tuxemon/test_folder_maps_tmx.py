@@ -182,10 +182,10 @@ class TestTMXFiles(unittest.TestCase):
                                         prop.attrib["value"]
                                     )
                                     if action == "transition_teleport":
-                                        fetch_asset(FOLDER, params[0])
+                                        fetch_asset(FOLDER, params[1])
                                 except OSError:
                                     self.fail(
-                                        f"Map '{params[0]}' does not exist"
+                                        f"Map '{params[1]}' does not exist"
                                     )
 
     def test_object_width(self):

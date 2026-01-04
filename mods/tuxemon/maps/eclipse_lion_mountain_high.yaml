@@ -243,7 +243,7 @@ events:
     type: event
   Teleport Obsidian Town 2:
     actions:
-    - transition_teleport eclipse_obsidian_town.tmx,0,13,0.3
+    - transition_teleport player,eclipse_obsidian_town.tmx,0,13,0.3
     - char_face player,right
     conditions:
     - is char_at player
@@ -253,7 +253,7 @@ events:
     type: event
   Teleport Obsidian Town 2:
     actions:
-    - transition_teleport eclipse_obsidian_town.tmx,0,14,0.3
+    - transition_teleport player,eclipse_obsidian_town.tmx,0,14,0.3
     - char_face player,right
     conditions:
     - is char_at player
@@ -263,7 +263,7 @@ events:
     type: event
   Teleport Mountain Middle 1:
     actions:
-    - transition_teleport eclipse_lion_mountain_middle.tmx,2,0,0.3
+    - transition_teleport player,eclipse_lion_mountain_middle.tmx,2,0,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -273,7 +273,7 @@ events:
     type: event
   Teleport Mountain Middle 2:
     actions:
-    - transition_teleport eclipse_lion_mountain_middle.tmx,19,0,0.3
+    - transition_teleport player,eclipse_lion_mountain_middle.tmx,19,0,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -283,7 +283,7 @@ events:
     type: event
   Teleport Mountain Middle 3:
     actions:
-    - transition_teleport eclipse_lion_mountain_middle.tmx,23,0,0.3
+    - transition_teleport player,eclipse_lion_mountain_middle.tmx,23,0,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -293,7 +293,7 @@ events:
     type: event
   Teleport Mountain Middle 4:
     actions:
-    - transition_teleport eclipse_lion_mountain_middle.tmx,6,0,0.3
+    - transition_teleport player,eclipse_lion_mountain_middle.tmx,6,0,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -303,7 +303,7 @@ events:
     type: event
   Teleport Mountain Middle 5:
     actions:
-    - transition_teleport eclipse_lion_mountain_middle.tmx,7,0,0.3
+    - transition_teleport player,eclipse_lion_mountain_middle.tmx,7,0,0.3
     - char_face player,down
     conditions:
     - is char_at player

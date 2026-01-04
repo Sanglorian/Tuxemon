@@ -49,14 +49,14 @@
  <objectgroup color="#ffff00" id="4" name="Events">
   <object id="18" name="Teleport to Omnichannel 1" type="event" x="16" y="144" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport omnichannel1.tmx,1,3,0.3"/>
+    <property name="act10" value="transition_teleport player,omnichannel1.tmx,1,3,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
    </properties>
   </object>
   <object id="19" name="Teleport to Omnichannel 1" type="event" x="32" y="144" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport omnichannel1.tmx,2,3,0.3"/>
+    <property name="act10" value="transition_teleport player,omnichannel1.tmx,2,3,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
    </properties>

@@ -30,9 +30,14 @@ class BehaviorAction(EventAction):
             _character = values[1]
             _action["char_face"] = [_character, "player"]
         elif behavior == "door":
-            _destination, _x, _y, _direction = values[2:6]
-            _action["transition_teleport"] = [_destination, int(_x), int(_y)]
-            _action["char_face"] = ["player", _direction]
+            _character, _destination, _x, _y, _direction = values[2:7]
+            _action["transition_teleport"] = [
+                _character,
+                _destination,
+                int(_x),
+                int(_y),
+            ]
+            _action["char_face"] = [_character, _direction]
         if _action:
             client = session.client.event_engine
             for _act, _params in _action.items():

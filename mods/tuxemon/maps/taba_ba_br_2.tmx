@@ -57,14 +57,14 @@
   </object>
   <object id="15" name="back to passageway" type="event" x="112" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport taba_ba_passageway_2.tmx,14,17,0.5"/>
+    <property name="act1" value="transition_teleport player,taba_ba_passageway_2.tmx,14,17,0.5"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
    </properties>
   </object>
   <object id="16" name="back to passageway-2" type="event" x="128" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport taba_ba_passageway_2.tmx,15,17,0.5"/>
+    <property name="act1" value="transition_teleport player,taba_ba_passageway_2.tmx,15,17,0.5"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,right"/>
    </properties>
@@ -161,7 +161,7 @@
   </object>
   <object id="22" name="teleport to main room" type="event" x="96" y="240" width="64" height="16">
    <properties>
-    <property name="act1" value="transition_teleport taba_ba_main.tmx,1,6,1"/>
+    <property name="act1" value="transition_teleport player,taba_ba_main.tmx,1,6,1"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
    </properties>

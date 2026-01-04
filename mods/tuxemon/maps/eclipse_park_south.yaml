@@ -180,7 +180,7 @@ events:
     y: 5
   Steps:
     actions:
-    - transition_teleport eclipse_park_entrance.tmx,5,4,0.3
+    - transition_teleport player,eclipse_park_entrance.tmx,5,4,0.3
     - char_face player,up
     - add_item tuxeball_park,-25
     - park_experience stop
@@ -190,7 +190,7 @@ events:
     type: event
   Teleport Cabin:
     actions:
-    - transition_teleport eclipse_park_cabin.tmx,6,5,0.3
+    - transition_teleport player,eclipse_park_cabin.tmx,6,5,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -200,7 +200,7 @@ events:
     y: 34
   Teleport Park:
     actions:
-    - transition_teleport eclipse_park.tmx,38,39,0.3
+    - transition_teleport player,eclipse_park.tmx,38,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -210,7 +210,7 @@ events:
     y: 0
   Teleport RiverA:
     actions:
-    - transition_teleport eclipse_routeh.tmx,0,8,0.3
+    - transition_teleport player,eclipse_routeh.tmx,0,8,0.3
     - char_face player,left
     conditions:
     - is char_at player
@@ -220,7 +220,7 @@ events:
     y: 8
   Teleport RiverB:
     actions:
-    - transition_teleport eclipse_routeh.tmx,0,9,0.3
+    - transition_teleport player,eclipse_routeh.tmx,0,9,0.3
     - char_face player,left
     conditions:
     - is char_at player
@@ -230,7 +230,7 @@ events:
     y: 9
   Teleport RiverC:
     actions:
-    - transition_teleport eclipse_routeh.tmx,0,10,0.3
+    - transition_teleport player,eclipse_routeh.tmx,0,10,0.3
     - char_face player,left
     conditions:
     - is char_at player
@@ -240,7 +240,7 @@ events:
     y: 10
   Teleport RiverD:
     actions:
-    - transition_teleport eclipse_routeh.tmx,0,11,0.3
+    - transition_teleport player,eclipse_routeh.tmx,0,11,0.3
     - char_face player,left
     conditions:
     - is char_at player
@@ -250,7 +250,7 @@ events:
     y: 11
   Tuxeball:
     actions:
-    - transition_teleport eclipse_park_entrance.tmx,5,4,0.3
+    - transition_teleport player,eclipse_park_entrance.tmx,5,4,0.3
     - char_face player,up
     - park_experience stop
     conditions:

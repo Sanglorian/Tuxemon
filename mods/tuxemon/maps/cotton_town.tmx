@@ -108,7 +108,7 @@
  <objectgroup color="#ffff00" id="5" name="Events">
   <object id="144" name="Teleport to Route 2" type="event" x="0" y="464" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route2.tmx,39,9,0.3"/>
+    <property name="act10" value="transition_teleport player,route2.tmx,39,9,0.3"/>
     <property name="act20" value="char_face player,left"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,left"/>
@@ -116,7 +116,7 @@
   </object>
   <object id="145" name="Teleport to Route 1" type="event" x="160" y="624" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route1_sanglorian.tmx,10,0,0.3"/>
+    <property name="act10" value="transition_teleport player,route1_sanglorian.tmx,10,0,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -124,7 +124,7 @@
   </object>
   <object id="146" name="Teleport to Cotton Cathedral" type="event" x="304" y="416" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport cotton_cathedral.tmx,6,10,0.3"/>
+    <property name="act10" value="transition_teleport player,cotton_cathedral.tmx,6,10,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -132,7 +132,7 @@
   </object>
   <object id="147" name="Teleport to Cotton Mart" type="event" x="144" y="544" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport cotton_scoop.tmx,5,10,0.3"/>
+    <property name="act10" value="transition_teleport player,cotton_scoop.tmx,5,10,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -154,7 +154,7 @@
   </object>
   <object id="149" name="Teleport to Dryad's Grove" type="event" x="624" y="112" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport dryadsgrove.tmx,0,7,0.3"/>
+    <property name="act10" value="transition_teleport player,dryadsgrove.tmx,0,7,0.3"/>
     <property name="act20" value="char_face player,right"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -162,7 +162,7 @@
   </object>
   <object id="160" name="Teleport to Route 1" type="event" x="176" y="624" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route1_sanglorian.tmx,11,0,0.3"/>
+    <property name="act10" value="transition_teleport player,route1_sanglorian.tmx,11,0,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -170,7 +170,7 @@
   </object>
   <object id="161" name="Teleport to Route 1" type="event" x="192" y="624" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route1_sanglorian.tmx,12,0,0.3"/>
+    <property name="act10" value="transition_teleport player,route1_sanglorian.tmx,12,0,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -178,7 +178,7 @@
   </object>
   <object id="162" name="Teleport to Route 1" type="event" x="208" y="624" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route1_sanglorian.tmx,13,0,0.3"/>
+    <property name="act10" value="transition_teleport player,route1_sanglorian.tmx,13,0,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -186,7 +186,7 @@
   </object>
   <object id="163" name="Teleport to Route 1" type="event" x="224" y="624" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route1_sanglorian.tmx,14,0,0.3"/>
+    <property name="act10" value="transition_teleport player,route1_sanglorian.tmx,14,0,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -194,7 +194,7 @@
   </object>
   <object id="164" name="Teleport to Route 1" type="event" x="240" y="624" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route1_sanglorian.tmx,15,0,0.3"/>
+    <property name="act10" value="transition_teleport player,route1_sanglorian.tmx,15,0,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -202,7 +202,7 @@
   </object>
   <object id="165" name="Teleport to Route 1" type="event" x="256" y="624" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route1_sanglorian.tmx,16,0,0.3"/>
+    <property name="act10" value="transition_teleport player,route1_sanglorian.tmx,16,0,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -210,7 +210,7 @@
   </object>
   <object id="166" name="Teleport to Route 1" type="event" x="272" y="624" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route1_sanglorian.tmx,17,0,0.3"/>
+    <property name="act10" value="transition_teleport player,route1_sanglorian.tmx,17,0,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -218,7 +218,7 @@
   </object>
   <object id="167" name="Teleport to Route 1" type="event" x="288" y="624" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route1_sanglorian.tmx,18,0,0.3"/>
+    <property name="act10" value="transition_teleport player,route1_sanglorian.tmx,18,0,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -226,7 +226,7 @@
   </object>
   <object id="232" name="Teleport to Route 2" type="event" x="0" y="448" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route2.tmx,39,8,0.3"/>
+    <property name="act10" value="transition_teleport player,route2.tmx,39,8,0.3"/>
     <property name="act20" value="char_face player,left"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,left"/>
@@ -240,7 +240,7 @@
   </object>
   <object id="239" name="Teleport to Dryad's Grove" type="event" x="624" y="128" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport dryadsgrove.tmx,0,8,0.3"/>
+    <property name="act10" value="transition_teleport player,dryadsgrove.tmx,0,8,0.3"/>
     <property name="act20" value="char_face player,right"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -269,7 +269,7 @@
   </object>
   <object id="249" name="Teleport to Cafe" type="event" x="160" y="256" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport cotton_cafe.tmx,8,11,0.3"/>
+    <property name="act10" value="transition_teleport player,cotton_cafe.tmx,8,11,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -316,7 +316,7 @@
   </object>
   <object id="260" name="enter_daycare" type="event" x="112" y="128" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport cotton_daycare.tmx,2,7,0.3"/>
+    <property name="act10" value="transition_teleport player,cotton_daycare.tmx,2,7,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -441,7 +441,7 @@
   </object>
   <object id="283" name="Teleport to Misa House" type="event" x="368" y="256" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport cotton_misa_house.tmx,7,6,0.3"/>
+    <property name="act10" value="transition_teleport player,cotton_misa_house.tmx,7,6,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -456,7 +456,7 @@
   </object>
   <object id="288" name="reenter_daycare" type="event" x="96" y="80" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport cotton_daycare.tmx,4,3,0.3"/>
+    <property name="act10" value="transition_teleport player,cotton_daycare.tmx,4,3,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>

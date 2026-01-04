@@ -9,7 +9,7 @@ events:
     type: event
   Go Outside:
     actions:
-    - transition_teleport eclipse_obsidian_town.tmx,16,9,0.3
+    - transition_teleport player,eclipse_obsidian_town.tmx,16,9,0.3
     - char_face player,down
     conditions:
     - is char_at player

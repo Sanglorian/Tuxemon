@@ -71,3 +71,4 @@ class TeleportAction(EventAction):
             logger.info(
                 f"Teleported '{char.slug}' to {self.map_name} ({self.x}, {self.y})"
             )
+        session.client.movement_manager.unlock_controls(char)

@@ -308,6 +308,12 @@ class SpatialCondition(LogicCondition):
     )
 
 
+class Behavior(BaseModel):
+    type: str = Field(..., description="Behavior type identifier.")
+    args: Sequence[str] = Field(default_factory=list)
+    name: str = Field("unnamed_behavior")
+
+
 class EventObject(BaseModel):
     """The main container entity for a game/map event."""
 
@@ -341,6 +347,10 @@ class EventObject(BaseModel):
     acts: Sequence[ParameterizableRule] = Field(
         default_factory=list,
         description="A sequence of actions/effects to execute when conditions are met.",
+    )
+    behavs: Sequence[Behavior] = Field(
+        default_factory=list,
+        description="Behavior definitions attached to this event.",
     )
 
 

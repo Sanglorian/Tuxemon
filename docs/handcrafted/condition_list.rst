@@ -1,7 +1,6 @@
 .. autoscriptinfoclass:: tuxemon.event.conditions.afk_state.AFKStateCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.battle_outcome.BattleOutcomeCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.battle_outcome_count.BattleOutcomeCountCondition
-.. autoscriptinfoclass:: tuxemon.event.conditions.behavior.BehaviorCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.bill_exists.BillExistsCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.bill_is.BillIsCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.button_combo.ButtonComboCondition

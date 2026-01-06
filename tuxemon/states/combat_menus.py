@@ -327,10 +327,11 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
             # No usable moves → show only fallback/skip
             if not usable_moves:
-                skip = Technique.create("skip")
-                skip_image = self.shadow_text(skip.name)
-                tech_skip = MenuItem(skip_image, None, None, skip)
-                menu.add(tech_skip)
+                fallback_moves = self.monster.moves.get_fallback_moves()
+                for fb in fallback_moves:
+                    menu.add(
+                        MenuItem(self.shadow_text(fb.name), None, None, fb)
+                    )
 
             # Normal case → show all moves with enabled/disabled state
             else:

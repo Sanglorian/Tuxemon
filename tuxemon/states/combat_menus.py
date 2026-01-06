@@ -6,7 +6,7 @@ import logging
 from collections import defaultdict
 from collections.abc import Callable, Generator
 from functools import partial
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar
 
 from pygame import SRCALPHA
 from pygame.rect import Rect
@@ -31,9 +31,9 @@ from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
+    from tuxemon.combat.renderer import CombatAnimations
     from tuxemon.item.item import Item
     from tuxemon.session import Session
-    from tuxemon.states.combat_state import CombatState
 
 logger = logging.getLogger(__name__)
 
@@ -54,13 +54,16 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
     columns = 2
 
     def __init__(
-        self, session: Session, cmb: CombatState, monster: Monster
+        self,
+        session: Session,
+        view: CombatAnimations,
+        monster: Monster,
     ) -> None:
         super().__init__()
         self.rect = self.calculate_menu_rectangle()
         self.session = session
         self.combat_session = self.client.combat_session
-        self.combat = cmb
+        self.view = view
         self.character = monster.get_owner()
         self.monster = monster
         self.party = self.combat_session.field_monsters.get_monsters(
@@ -78,12 +81,12 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             )
         params = {"name": monster.name}
         message = T.format("combat_monster_choice", params)
-        self.combat.dialog.alert(message, self.combat.text_area)
+        self.dialog.alert(message, self.view.text_area)
 
         self.type_icon_sprites: list[Sprite] = []
         self.text_sprites: dict[str, Sprite] = {}
-        self.range_icon_sprite: Optional[Sprite] = None
-        self.speed_icon_sprite: Optional[Sprite] = None
+        self.range_icon_sprite: Sprite | None = None
+        self.speed_icon_sprite: Sprite | None = None
 
     def _clear_tech_overlay(self) -> None:
         """Remove technique icons/text from the overlay."""
@@ -267,7 +270,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     state.is_valid_entry = partial(validate, item)  # type: ignore[method-assign]
                     state.on_menu_selection = partial(enqueue_item, item)  # type: ignore[method-assign]
 
-        def validate_item(item: Optional[Item]) -> bool:
+        def validate_item(item: Item | None) -> bool:
             if item and item.behaviors.throwable:
                 for opponent in self.opponents:
                     if not item.validate_monster(self.session, opponent):
@@ -370,9 +373,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
             def show() -> None:
                 # Clear the combat dialog so the old "What will X do?" text disappears
-                self.combat.dialog.alert(
-                    "", self.combat.text_area, dialog_speed="max"
-                )
+                self.dialog.alert("", self.view.text_area, dialog_speed="max")
 
                 screen_w, screen_h = SCREEN_SIZE
 
@@ -516,8 +517,8 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 # Restore the original combat prompt
                 params = {"name": self.monster.name}
                 message = T.format("combat_monster_choice", params)
-                self.combat.dialog.alert(
-                    message, self.combat.text_area, dialog_speed="max"
+                self.dialog.alert(
+                    message, self.view.text_area, dialog_speed="max"
                 )
 
             menu.on_menu_selection_change_callback = show
@@ -533,7 +534,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             if len(self.opponents) > 1:
                 state = self.client.push_state(
                     CombatTargetMenuState(
-                        combat_state=self.combat,
+                        view=self.view,
                         monster=self.monster,
                         technique=technique,
                     )
@@ -597,11 +598,11 @@ class CombatTargetMenuState(Menu[Monster]):
     transparent = True
 
     def __init__(
-        self, combat_state: CombatState, monster: Monster, technique: Technique
+        self, view: CombatAnimations, monster: Monster, technique: Technique
     ) -> None:
         super().__init__()
         self.monster = monster
-        self.combat_state = combat_state
+        self.view = view
         self.combat_session = self.client.combat_session
         self.character = monster.get_owner()
         self.technique = technique
@@ -634,7 +635,7 @@ class CombatTargetMenuState(Menu[Monster]):
 
     def _create_menu_item(self, monster: Monster) -> MenuItem[Monster]:
         """Creates a menu item for a given monster."""
-        sprite = self.combat_state.sprite_map.get_sprite(monster)
+        sprite = self.view.sprite_map.get_sprite(monster)
         if sprite is None:
             raise KeyError(f"Sprite not found for entity: {monster.name}")
         item = MenuItem(self.surface, None, monster.name, monster)
@@ -689,7 +690,7 @@ class CombatTargetMenuState(Menu[Monster]):
 
         if selected := self.get_selected_item():
             monster = selected.game_object
-            pos = self.combat_state.sprite_map.get_sprite(monster)
+            pos = self.view.sprite_map.get_sprite(monster)
             if pos is None:
                 return
 

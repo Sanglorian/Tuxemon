@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import random
 from collections.abc import Iterable, Sequence
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from tuxemon.combat.action_queue import ActionQueue, EnqueuedAction
 from tuxemon.combat.combat_context import CombatType
@@ -46,7 +46,7 @@ class CombatSession:
         self._prize: int = 0
         self._is_double: bool = False
         self._players: list[NPC] = []
-        self._combat_type: Optional[CombatType] = None
+        self._combat_type: CombatType | None = None
         self._random_tech_hit: dict[Monster, float] = {}
         self._combat_variables: dict[str, Any] = {}
         self.field_monsters = FieldMonsters()
@@ -342,7 +342,7 @@ class CombatSession:
 
     # Random tech hit
     def set_tech_hit(
-        self, monster: Monster, value: Optional[float] = None
+        self, monster: Monster, value: float | None = None
     ) -> None:
         if value is None:
             value = random.random()
@@ -363,7 +363,7 @@ class CombatSession:
         self._combat_variables[key] = value
         logger.debug(f"Variable set: {key} = {value}")
 
-    def get_variable(self, key: str) -> Optional[Any]:
+    def get_variable(self, key: str) -> Any | None:
         value = self._combat_variables.get(key)
         logger.debug(f"Variable retrieved: {key} = {value}")
         return value
@@ -374,8 +374,8 @@ class CombatSession:
 
     def enqueue_action(
         self,
-        user: Union[NPC, Monster, None],
-        technique: Union[Item, Technique, Status, None],
+        user: NPC | Monster | None,
+        technique: Item | Technique | Status | None,
         target: Monster,
     ) -> None:
         """
@@ -507,7 +507,7 @@ class CombatSession:
         session: Session,
         player: NPC,
         monster: Monster,
-        removed: Optional[Monster] = None,
+        removed: Monster | None = None,
     ) -> None:
         self.field_monsters.add_monster(player, monster)
 
@@ -565,7 +565,7 @@ class CombatSession:
 
     def apply_technique(
         self, session: Session, tech: Technique, user: Monster, target: Monster
-    ) -> tuple[TechEffectResult, Optional[StatusEffectResult]]:
+    ) -> tuple[TechEffectResult, StatusEffectResult | None]:
         result = tech.use(session, user, target)
         logger.debug(
             f"{user.name} used {tech.slug} on {target.name} > success={result.success}"
@@ -586,7 +586,7 @@ class CombatSession:
         session: Session,
         item: Item,
         user: NPC,
-        target: Optional[Monster],
+        target: Monster | None,
     ) -> ItemEffectResult:
         result = item.use(session, user, target)
         logger.debug(

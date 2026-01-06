@@ -81,6 +81,7 @@ class Item:
         self.break_chance: float = 0.0
         self.menu_actions_data: Sequence[MenuAction] = []
         self.granted_techniques: Sequence[str] = []
+        self.granted_statuses: Sequence[str] = []
 
         self.core_assets = get_assets()
         self.effects: Sequence[PluginObject] = []
@@ -160,6 +161,7 @@ class Item:
         self.surface = graphics.load_and_scale(self.sprite)
         self.surface_size_original = self.surface.get_size()
         self.granted_techniques = results.granted_techniques
+        self.granted_statuses = results.granted_statuses
 
         self.visuals = results.visuals
         self.sound = results.sound

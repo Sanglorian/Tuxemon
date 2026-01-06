@@ -351,6 +351,7 @@ class MonsterMovesHandler:
     def encode_moves(self) -> Sequence[Mapping[str, Any]]:
         return encode_moves(self.moves)
 
-    def decode_moves(self, json_data: Optional[Mapping[str, Any]]) -> None:
-        if json_data and "moves" in json_data:
-            self.moves = [mov for mov in decode_moves(json_data["moves"])]
+    def decode_moves(self, json_data: Mapping[str, Any] | None) -> None:
+        if json_data is None or "moves" not in json_data:
+            return
+        self.moves = [mov for mov in decode_moves(json_data["moves"])]

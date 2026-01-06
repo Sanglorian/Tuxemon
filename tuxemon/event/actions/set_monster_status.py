@@ -40,10 +40,10 @@ class SetMonsterStatusAction(EventAction):
 
     @staticmethod
     def set_status(
-        monster: Monster, value: Optional[str], steps: float
+        session: Session, monster: Monster, value: Optional[str], steps: float
     ) -> None:
         if not value:
-            monster.status.remove_status()
+            monster.status.clear_status(session)
         else:
             status = Status.create(value, monster, steps)
             monster.status.add_status(status)
@@ -56,7 +56,7 @@ class SetMonsterStatusAction(EventAction):
 
         if self.variable is None:
             for mon in player.monsters:
-                self.set_status(mon, self.status, steps)
+                self.set_status(session, mon, self.status, steps)
         else:
             monster_id = get_valid_uuid(player.game_variables, self.variable)
             if monster_id is None:
@@ -68,4 +68,4 @@ class SetMonsterStatusAction(EventAction):
             if monster is None:
                 logger.error("Monster not found")
                 return
-            self.set_status(monster, self.status, steps)
+            self.set_status(session, monster, self.status, steps)

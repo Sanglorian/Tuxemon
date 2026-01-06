@@ -6,7 +6,7 @@ import logging
 import random
 from collections.abc import Mapping, Sequence
 from dataclasses import fields
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 from tuxemon import formula
@@ -84,11 +84,11 @@ class Monster:
     a Tuxemon, fetching its details from a database.
     """
 
-    def __init__(self, save_data: Optional[Mapping[str, Any]] = None) -> None:
+    def __init__(self, save_data: Mapping[str, Any] | None = None) -> None:
         save_data = save_data or {}
 
         self.slug: str = ""
-        self._custom_name: Optional[str] = None
+        self._custom_name: str | None = None
         self.instance_id: UUID = uuid4()
 
         self.base_stats: BasicStats = BasicStats()
@@ -107,7 +107,7 @@ class Monster:
         self.stage: EvolutionStage = EvolutionStage.standalone
         self.flair_slugs: set[str] = set()
         self.flairs: dict[str, Flair] = {}
-        self.owner: Optional[NPC] = None
+        self.owner: NPC | None = None
         self.gender_weights: dict[GenderType, float] = {}
         self.item_handler = MonsterItemHandler()
         self.experience_handler: MonsterExperience = MonsterExperience()
@@ -133,8 +133,8 @@ class Monster:
         self.height: float = 0.0
         self.weight: float = 0.0
 
-        self.mother_iid: Optional[UUID] = None
-        self.father_iid: Optional[UUID] = None
+        self.mother_iid: UUID | None = None
+        self.father_iid: UUID | None = None
 
         # The multiplier for checks when a monster ball is thrown this should be a value between 0-100 meaning that
         # 0 is 0% capture rate and 100 has a very good chance of capture. This numbers are based on the capture system
@@ -172,7 +172,7 @@ class Monster:
 
     @classmethod
     def create(
-        cls, slug: str, save_data: Optional[Mapping[str, Any]] = None
+        cls, slug: str, save_data: Mapping[str, Any] | None = None
     ) -> Monster:
         method = cls(save_data)
         method.load(slug)
@@ -203,7 +203,7 @@ class Monster:
         return T.translate(f"cat_{self.species}")
 
     @property
-    def held_item(self) -> Optional[Item]:
+    def held_item(self) -> Item | None:
         return self.item_handler.held_item
 
     @property
@@ -360,7 +360,7 @@ class Monster:
             raise ValueError("No character is linked to this monster.")
         return self.owner
 
-    def set_owner(self, character: Optional[NPC]) -> None:
+    def set_owner(self, character: NPC | None) -> None:
         """Sets the NPC associated with this monster."""
         self.owner = character
 
@@ -376,12 +376,14 @@ class Monster:
         result = self.item_handler.set_item(item)
         if result:
             self.moves.apply_item_techniques(self, item)
+            self.status.apply_item_statuses(self, item)
         return result
 
     def unequip_item(self) -> Item | None:
         item = self.item_handler.take_item()
         if item:
             self.moves.remove_item_techniques(self, item)
+            self.status.remove_item_statuses(item)
             return item
         return None
 
@@ -704,11 +706,11 @@ class Monster:
                 current_status
                 and not current_status.behaviors.persists_after_combat
             ):
-                self.status.remove_status()
+                self.status.clear_status(session)
 
         if self.is_fainted:
             self.current_hp = 0
-            self.status.apply_faint(self)
+            self.status.apply_faint(session, self)
             current = self.status.current_status
             if current:
                 current.use(session, EffectPhase.ON_FAINT)

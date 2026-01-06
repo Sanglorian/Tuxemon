@@ -128,6 +128,10 @@ class Status:
     def steps(self) -> float:
         return self._steps
 
+    @steps.setter
+    def steps(self, value: float) -> None:
+        self._steps = value
+
     @property
     def linked_monster(self) -> Optional[Monster]:
         """Returns the monster linked to this status effect."""

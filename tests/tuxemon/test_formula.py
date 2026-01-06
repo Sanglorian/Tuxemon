@@ -330,8 +330,6 @@ class TestSetHealth(unittest.TestCase):
         self.monster = MagicMock(
             spec=Monster, hp=100, current_hp=100, is_fainted=False
         )
-        self.monster.status = MagicMock()
-        self.monster.status.apply_faint = MagicMock()
 
     def test_set_health_direct(self):
         set_health(self.monster, 50)

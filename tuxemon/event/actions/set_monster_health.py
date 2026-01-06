@@ -49,6 +49,8 @@ class SetMonsterHealthAction(EventAction):
         if self.variable is None:
             for mon in player.monsters:
                 set_health(mon, monster_health)
+                if mon.is_fainted:
+                    mon.status.apply_faint(session, mon)
         else:
             monster_id = get_valid_uuid(player.game_variables, self.variable)
             if monster_id is None:
@@ -61,3 +63,5 @@ class SetMonsterHealthAction(EventAction):
                 logger.error("Monster not found")
                 return
             set_health(monster, monster_health)
+            if monster.is_fainted:
+                monster.status.apply_faint(session, monster)

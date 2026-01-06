@@ -66,5 +66,7 @@ class HealEffect(CoreEffect):
                 f"Invalid heal type '{self.heal_type}'. Must be either 'fixed' or 'percentage'."
             )
         set_health(target, value, adjust=True)
+        if target.is_fainted:
+            target.status.apply_faint(session, target)
 
         return ItemEffectResult(name=item.name, success=True)

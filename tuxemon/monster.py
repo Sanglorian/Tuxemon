@@ -430,27 +430,18 @@ class Monster:
             sprite_type, frame_duration, scale, **kwargs
         )
 
-    def return_stat(self, stat: StatType) -> int:
+    def return_stat(self, stat: StatType | str) -> int:
         """
         Returns a monster stat (eg. melee, armour, etc.).
-
-        Parameters:
-            stat: The stat for the monster to return.
-
-        Returns:
-            value: The stat.
-
+        Accepts either a StatType enum or a string.
         """
-        stat_map: dict[StatType, int] = {
-            StatType.armour: self.armour,
-            StatType.dodge: self.dodge,
-            StatType.hp: self.hp,
-            StatType.melee: self.melee,
-            StatType.ranged: self.ranged,
-            StatType.speed: self.speed,
-        }
+        if isinstance(stat, str):
+            try:
+                stat = StatType(stat.lower())
+            except ValueError:
+                return 0
 
-        return stat_map.get(stat, 0)
+        return getattr(self, stat.value, 0)
 
     def has_type(self, type_slug: str) -> bool:
         """
@@ -523,6 +514,41 @@ class Monster:
             individual_values=self.individual_values,
         )
         self.base_stats = calculator.calculate()
+
+    def get_combat_stats(self) -> BasicStats:
+        """Calculates effective stats for the current combat turn."""
+        combined_temporary_boosts = BasicStats()
+
+        for status in self.status.get_statuses():
+            combined_temporary_boosts += status.temporary_stat_boosts
+
+        held_item = self.item_handler.held_item
+        if held_item:
+            combined_temporary_boosts += held_item.temporary_stat_boosts
+
+        for move in self.moves.get_moves():
+            combined_temporary_boosts += move.temporary_stat_boosts
+
+        calculator = StatCalculator(
+            base_stats=self.base_stats,
+            level=self.level,
+            shape=self.shape,
+            taste_cold=self.taste_cold,
+            taste_warm=self.taste_warm,
+            custom_stats=self.custom_stats,
+            training_points=self.training_points,
+            individual_values=self.individual_values,
+        )
+
+        return calculator.calculate(temporary_boosts=combined_temporary_boosts)
+
+    def clear_all_temporary_boosts(self) -> None:
+        for status in self.status.get_statuses():
+            status.temporary_stat_boosts = BasicStats()
+        for move in self.moves.get_moves():
+            move.temporary_stat_boosts = BasicStats()
+        if self.item_handler.held_item:
+            self.item_handler.held_item.temporary_stat_boosts = BasicStats()
 
     def set_capture(self, amount: int) -> int:
         """
@@ -695,6 +721,9 @@ class Monster:
         """
         Ends combat, recharges all moves and heals statuses.
         """
+        self.clear_all_temporary_boosts()
+        self.types.reset_to_default()
+        self.moves.set_stats()
         self.out_of_range = False
         self.moves.full_recharge_moves()
 

@@ -881,6 +881,7 @@ class CombatState(CombatAnimations):
             self.client.combat_session.field_monsters.get_all_monsters().values()
         ):
             for monster in monster_party:
+                monster.get_combat_stats()
                 self.animate_hp(monster)
                 self.apply_status_effects(monster)
                 if monster.is_fainted:
@@ -929,13 +930,7 @@ class CombatState(CombatAnimations):
         """Clean combat."""
         for player in self.client.combat_session.players:
             for mon in player.monsters:
-                # reset status stats
-                mon.set_stats()
                 mon.end_combat(self.session)
-                # reset type
-                mon.types.reset_to_default()
-                # reset technique stats
-                mon.moves.set_stats()
 
         self.ai_manager.clear_ai()
 

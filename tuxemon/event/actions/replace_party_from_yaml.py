@@ -12,7 +12,6 @@ import yaml
 
 from tuxemon.constants import paths
 from tuxemon.db import SeenStatus
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster import Monster
 from tuxemon.platform.const.sizes import PARTY_LIMIT
@@ -88,7 +87,7 @@ class ReplacePartyFromYamlAction(EventAction):
 
     def start(self, session: Session) -> None:
 
-        character = get_npc(session, self.character)
+        character = session.get_npc(self.character)
         if character is None:
             logger.error("'wild_encounter' not found")
             return

@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 
 from tuxemon.db import SpatialCondition
-from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -39,7 +38,7 @@ class CheckEvolutionCondition(EventCondition):
             f"EvolutionCondition.test() called with target_name='{target_name}'"
         )
 
-        target_character = get_npc(session, target_name)
+        target_character = session.get_npc(target_name)
         if target_character is None:
             logger.error(f"Character '{target_name}' not found.")
             return False

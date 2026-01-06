@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 
 from tuxemon.db import SpatialCondition
-from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -48,7 +47,7 @@ class MonsterFlairCondition(EventCondition):
         category = condition.parameters[1]
         name = condition.parameters[2]
 
-        character = get_npc(session, _character)
+        character = session.get_npc(_character)
         if character is None:
             logger.error(f"{_character} not found")
             return False

@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_condition import CoreCondition
-from tuxemon.event import get_npc_pos
 from tuxemon.map.map import get_coords, get_direction
 
 if TYPE_CHECKING:
@@ -46,7 +45,7 @@ class FacingSpriteCondition(CoreCondition):
         facing_directions = {
             get_direction(player.tile_pos, npc.tile_pos)
             for coords in tiles
-            if (npc := get_npc_pos(session, coords))
+            if (npc := session.get_npc_pos(coords))
             and npc.template.sprite_name == self.sprite
         }
 

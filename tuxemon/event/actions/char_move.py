@@ -7,7 +7,6 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any, final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.map.map import parse_path_parameters
 from tuxemon.session import Session
@@ -54,7 +53,7 @@ class CharMoveAction(EventAction):
             return
 
         character_name = self.raw_parameters[0]
-        self.character = get_npc(session, character_name)
+        self.character = session.get_npc(character_name)
 
         if self.character is None:
             logger.error(f"Character '{character_name}' not found")

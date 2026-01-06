@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 from tuxemon.teleporter import TeleportRequest
@@ -44,7 +43,7 @@ class TeleportAction(EventAction):
     def start(self, session: Session) -> None:
         teleport_queue = session.client.teleporter.teleport_queue
 
-        char = get_npc(session, self.character)
+        char = session.get_npc(self.character)
         if char is None:
             logger.error(
                 f"TeleportAction: Character '{self.character}' not found."

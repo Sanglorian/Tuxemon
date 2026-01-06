@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import final
 
 from tuxemon.animation_entity import setup_and_play_animation
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 
@@ -43,7 +42,7 @@ class PlayMapAnimationAction(EventAction):
     character: str
 
     def start(self, session: Session) -> None:
-        character = get_npc(session, self.character)
+        character = session.get_npc(self.character)
 
         if character is None:
             logger.error(f"Character '{self.character}' not found")

@@ -7,10 +7,9 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, final
 
 from tuxemon.database.runtime import db
-from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 from tuxemon.tools import get_valid_uuid
-from tuxemon.trade_manager import TradeManager, TradeResult
+from tuxemon.trade_manager import TradeResult
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
@@ -44,7 +43,6 @@ class TradingAction(EventAction):
     added: str
 
     def start(self, session: Session) -> None:
-        trade_manager = TradeManager()
         player = session.player
         player_monster_id = get_valid_uuid(
             player.game_variables, self.variable
@@ -55,14 +53,14 @@ class TradingAction(EventAction):
             )
             return  # Exit early if no valid UUID
 
-        player_monster = get_monster_by_iid(session, player_monster_id)
+        player_monster = session.client.get_monster_by_iid(player_monster_id)
         if player_monster is None:
             logger.error("Player's monster not found.")
             return
 
         if self.added in db.database["monster"]:
             # Trade for a new monster from the database
-            result = trade_manager.execute_scripted_trade(
+            result = session.client.trade_manager.execute_scripted_trade(
                 player_monster, self.added
             )
 
@@ -86,12 +84,14 @@ class TradingAction(EventAction):
                 )
                 return  # Exit early if no valid UUID
 
-            other_monster = get_monster_by_iid(session, other_monster_id)
+            other_monster = session.client.get_monster_by_iid(other_monster_id)
             if other_monster is None:
                 logger.error("Other monster not found.")
                 return
 
-            result = trade_manager.execute_trade(player_monster, other_monster)
+            result = session.client.trade_manager.execute_trade(
+                player_monster, other_monster
+            )
 
             if result == TradeResult.SUCCESS:
                 logger.info("Trade completed successfully!")

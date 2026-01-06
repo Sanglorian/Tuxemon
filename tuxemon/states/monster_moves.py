@@ -22,6 +22,7 @@ from tuxemon.technique.technique import Technique
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.monster import Monster
     from tuxemon.platform.events import PlayerInput
 
@@ -367,7 +368,7 @@ class MonsterMovesState(PygameMenuState):
             "MonsterMenuState",
             "MonsterTakeState",
         ]:
-            monsters = _get_monsters(self._monster, self._source)
+            monsters = _get_monsters(client, self._monster, self._source)
             slot = monsters.index(self._monster)
 
             if event.button == buttons.RIGHT and event.pressed:
@@ -390,8 +391,12 @@ class MonsterMovesState(PygameMenuState):
         return None
 
 
-def _get_monsters(monster: Monster, source: str) -> list[Monster]:
-    owner = monster.get_owner()
+def _get_monsters(
+    client: BaseClient, monster: Monster, source: str
+) -> list[Monster]:
+    owner = client.get_monster_owner(monster)
+    if owner is None:
+        return []
     if source == "MonsterTakeState":
         box = owner.monster_boxes.get_box_name(monster.instance_id)
         if box is None:

@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 
 from tuxemon.db import SpatialCondition
-from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 from tuxemon.tools import compare
@@ -41,7 +40,7 @@ class HasItemCondition(EventCondition):
             return compare(op, itm_qty, qty)
 
         npc_slug, itm_slug = condition.parameters[:2]
-        npc = get_npc(session, npc_slug)
+        npc = session.get_npc(npc_slug)
         if npc is None:
             logger.error(f"{npc_slug} doesn't exist.")
             return False

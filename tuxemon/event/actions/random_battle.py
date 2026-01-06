@@ -15,7 +15,6 @@ from tuxemon.combat.combat_context import (
 from tuxemon.combat.utils import check_battle_legal
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel, NpcModel
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.formula import config_monster
 from tuxemon.monster import Monster
@@ -84,7 +83,7 @@ class RandomBattleAction(EventAction):
         )
 
     def _start_battle(self, session: Session) -> None:
-        npc = get_npc(session, self.opponent.slug)
+        npc = session.get_npc(self.opponent.slug)
         if npc is None:
             logger.error(f"{self.opponent.slug} not found after creation.")
             return

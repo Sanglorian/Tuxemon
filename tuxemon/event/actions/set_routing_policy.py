@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 
@@ -40,7 +39,7 @@ class SetRoutingPolicyAction(EventAction):
     policy_name: Optional[str] = None
 
     def start(self, session: Session) -> None:
-        trainer = get_npc(session, self.npc_slug)
+        trainer = session.get_npc(self.npc_slug)
         if not trainer:
             raise ValueError(f"NPC '{self.npc_slug}' not found")
 

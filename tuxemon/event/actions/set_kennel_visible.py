@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional, final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.platform.const.sizes import KENNEL
 from tuxemon.tools import parse_flag
@@ -48,7 +47,7 @@ class SetKennelVisibleAction(EventAction):
     visible: Optional[str] = None
 
     def start(self, session: Session) -> None:
-        character = get_npc(session, self.npc_slug)
+        character = session.get_npc(self.npc_slug)
         if character is None:
             logger.error(f"{self.npc_slug} not found")
             return

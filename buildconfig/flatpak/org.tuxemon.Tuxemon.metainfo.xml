@@ -59,6 +59,7 @@
   </screenshots>
 
   <url type="homepage">https://www.tuxemon.org/</url>
+  <url type="vcs-browser">https://github.com/Tuxemon/Tuxemon</url>
 
   <provides>
     <binary>Tuxemon</binary>

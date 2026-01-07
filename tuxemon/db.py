@@ -664,6 +664,10 @@ class ItemModel(BaseModel, BaseLookupModel):
         default_factory=list,
         description="Technique slugs granted to the holder while this item is equipped.",
     )
+    granted_statuses: Sequence[str] = Field(
+        default_factory=list,
+        description="Status slugs granted to the holder while this item is equipped.",
+    )
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> ItemModel:
@@ -707,6 +711,15 @@ class ItemModel(BaseModel, BaseLookupModel):
             if not has.db_entry("technique", tech):
                 raise ValueError(
                     f"Technique {tech} does not exist in the database"
+                )
+        return v
+
+    @field_validator("granted_statuses")
+    def statuses_exist(cls, v: Sequence[str]) -> Sequence[str]:
+        for status in v:
+            if not has.db_entry("status", status):
+                raise ValueError(
+                    f"Status {status} does not exist in the database"
                 )
         return v
 
@@ -1596,14 +1609,14 @@ class StatusModel(BaseModel, BaseLookupModel):
         description="The type of effect triggered by the step interval.",
     )
     modifiers: list[Modifier] = Field(..., description="Various modifiers")
-    category: Optional[CategoryStatus] = Field(
+    category: CategoryStatus | None = Field(
         None, description="Category status: positive or negative"
     )
-    on_positive_status: Optional[ResponseStatus] = Field(
+    on_positive_status: ResponseStatus | None = Field(
         None,
         description="Determines the response when a positive status is applied",
     )
-    on_negative_status: Optional[ResponseStatus] = Field(
+    on_negative_status: ResponseStatus | None = Field(
         None,
         description="Determines the response when a negative status is applied",
     )

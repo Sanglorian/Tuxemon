@@ -8,11 +8,11 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum, auto
 from math import cos, pi, sin, sqrt
-from typing import Any, Optional, Union, cast
+from typing import Any, cast
 from weakref import ref
 
 from pygame.rect import Rect
-from pygame.sprite import Group, Sprite
+from pygame.sprite import Sprite
 
 __all__ = ("Task", "Animation", "remove_animations_of")
 
@@ -70,27 +70,6 @@ def check_number(value: Any) -> float:
         raise ValueError
 
 
-def remove_animations_of(
-    target: object, group: Group[Union[Task, Animation]]
-) -> None:
-    """
-    Removes animations associated with a given target.
-
-    Parameters:
-        target: The object whose animations should be removed.
-        group: A Pygame group containing `Animation` instances.
-    """
-    animations = {ani for ani in group if isinstance(ani, Animation)}
-    to_remove = [
-        ani
-        for ani in animations
-        if any(td.target_ref() == target for td in ani.targets)
-    ]
-    if not to_remove:
-        logger.debug(f"No animations found for target: {target}")
-    group.remove(*to_remove)
-
-
 class TaskBase(Sprite):
     _valid_schedules: Sequence[ScheduleType] = []
 
@@ -104,7 +83,7 @@ class TaskBase(Sprite):
     def schedule(
         self,
         func: ScheduledFunction,
-        when: Optional[ScheduleType] = None,
+        when: ScheduleType | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -483,9 +462,9 @@ class Animation(TaskBase):
         *targets: object,
         delay: float = 0,
         round_values: bool = False,
-        duration: Optional[float] = None,
-        transition: Union[str, Callable[[float], float], None] = None,
-        initial: Union[float, Callable[[], float], None] = None,
+        duration: float | None = None,
+        transition: str | Callable[[float], float] | None = None,
+        initial: float | Callable[[], float] | None = None,
         relative: bool = False,
         yoyo: bool = False,
         yoyo_loops: int = -1,
@@ -531,7 +510,7 @@ class Animation(TaskBase):
             self.start(*targets)
 
     def _resolve_transition(
-        self, transition: Union[str, Callable[[float], float], None] = None
+        self, transition: str | Callable[[float], float] | None = None
     ) -> Callable[[float], float]:
         if transition is None:
             transition = self.default_transition

@@ -7,7 +7,7 @@ import random
 from abc import ABC
 from collections.abc import Callable
 from functools import partial
-from typing import Any, ClassVar, Optional, Union
+from typing import Any, ClassVar
 
 from pygame.rect import Rect
 from pygame.sprite import Group
@@ -19,7 +19,6 @@ from tuxemon.animation import (
     ScheduledFunction,
     ScheduleType,
     Task,
-    remove_animations_of,
 )
 from tuxemon.event import get_event_bus
 from tuxemon.event.eventbus import Listener
@@ -27,6 +26,7 @@ from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import local_session
 from tuxemon.sprite import Sprite, SpriteGroup
+from tuxemon.state.animation_group import AnimationGroup
 
 logger = logging.getLogger(__name__)
 
@@ -63,17 +63,15 @@ class State(ABC):
         self.start_time = 0.0
         self.current_time = 0.0
 
-        # Only animations and tasks
-        self.animations: Group[Union[Task, Animation]] = Group()
+        self.anim = AnimationGroup()
 
         # All sprites that draw on the screen
         self.sprites: SpriteGroup[Sprite] = SpriteGroup()
 
-        # TODO: fix local session
         self.client = local_session.client
         self.event_bus = get_event_bus()
 
-        self._scheduled_task: Optional[Task] = None
+        self._scheduled_task: Task | None = None
 
     def __init_subclass__(cls: type[State], **kwargs: Any) -> None:
         """Ensure subclasses define a class variable 'name'."""
@@ -83,6 +81,10 @@ class State(ABC):
             raise TypeError(
                 f"{cls.__name__} must define a class variable 'name'"
             )
+
+    @property
+    def animations(self) -> Group[Task | Animation]:
+        return self.anim._group
 
     def load_sprite(self, filename: str, **kwargs: Any) -> Sprite:
         """
@@ -114,15 +116,14 @@ class State(ABC):
         Returns:
             Resulting animation.
         """
-        ani = Animation(*targets, **kwargs)
-        self.animations.add(ani)
-        return ani
+        return self.anim.animate(*targets, **kwargs)
 
     def task(
         self,
         func: ScheduledFunction,
-        on_finish: Optional[ScheduledFunction] = None,
-        on_update: Optional[ScheduledFunction] = None,
+        *,
+        on_finish: ScheduledFunction | None = None,
+        on_update: ScheduledFunction | None = None,
         interval: float = 0,
         times: int = 1,
         **kwargs: Any,
@@ -145,40 +146,14 @@ class State(ABC):
         Returns:
             The created task.
         """
-        if not callable(func):
-            raise ValueError("Must provide a function to be called")
-
-        task = Task(func, interval=interval, times=times)
-        self.animations.add(task)
-
-        callbacks_to_schedule = {}
-        if on_finish is not None:
-            callbacks_to_schedule[ScheduleType.ON_FINISH] = on_finish
-        if on_update is not None:
-            callbacks_to_schedule[ScheduleType.ON_UPDATE] = on_update
-
-        for key, value in kwargs.items():
-            try:
-                schedule_type = ScheduleType(key)
-                if schedule_type in task._valid_schedules:
-                    if callable(value):
-                        callbacks_to_schedule[schedule_type] = value
-                    else:
-                        raise TypeError(
-                            f"Callback for '{key}' must be callable."
-                        )
-                else:
-                    raise ValueError
-            except ValueError:
-                raise ValueError(
-                    f"Invalid callback trigger: '{key}'. "
-                    f"Valid options: {[s.value for s in task._valid_schedules]}"
-                )
-
-        for when, callback in callbacks_to_schedule.items():
-            task.schedule(callback, when)
-
-        return task
+        return self.anim.task(
+            func,
+            on_finish=on_finish,
+            on_update=on_update,
+            interval=interval,
+            times=times,
+            **kwargs,
+        )
 
     def chain_animations(
         self, *fns: Callable[[], Animation], start_delay: float = 0.0
@@ -211,9 +186,9 @@ class State(ABC):
         Parameters:
             target: Object whose animations should be removed.
         """
-        remove_animations_of(target, self.animations)
+        self.anim.remove_of(target)
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         """
         Handles player input events.
 
@@ -243,7 +218,7 @@ class State(ABC):
         Parameters:
             time_delta: Amount of time in fractional seconds since last update.
         """
-        self.animations.update(time_delta)
+        self.anim.update(time_delta)
         self.sprites.update(time_delta)
         self.publish("state_update", time_delta)
 
@@ -361,5 +336,11 @@ class State(ABC):
             self.event_bus.publish(event_name, *args, **kwargs)
 
     def replace_events(self, event_name: str, events: list[Listener]) -> None:
-        if self.event_bus.has_listeners_for_event(event_name):
-            self.event_bus._listeners[event_name] = events
+        self.event_bus.clear_event(event_name)
+
+        for listener in events:
+            self.event_bus.subscribe(
+                event_name,
+                listener.callback,
+                priority=listener.priority,
+            )

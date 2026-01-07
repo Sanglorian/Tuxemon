@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional, final
 
 from tuxemon.boxes import BoxMetadata
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.platform.const.sizes import MAX_KENNEL
 
@@ -105,7 +104,7 @@ class QuarantineAction(EventAction):
                 logger.warning(f"Failed to release {monster} to party")
 
     def start(self, session: Session) -> None:
-        character = get_npc(session, self.npc_slug)
+        character = session.get_npc(self.npc_slug)
         if character is None:
             logger.error(f"{self.npc_slug} not found")
             return

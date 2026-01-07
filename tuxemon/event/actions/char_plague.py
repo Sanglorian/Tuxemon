@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional, final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster_dir.plague import InfectionResult, InoculationResult
 from tuxemon.tools import parse_flag
@@ -46,7 +45,7 @@ class CharPlagueAction(EventAction):
 
     def start(self, session: Session) -> None:
         target = self.character or "player"
-        character = get_npc(session, target)
+        character = session.get_npc(target)
 
         if character is None:
             logger.error(f"{self.character} not found")

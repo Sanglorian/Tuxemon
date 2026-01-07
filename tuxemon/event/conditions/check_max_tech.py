@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 
 from tuxemon.db import SpatialCondition
-from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.formula import config_monster
 from tuxemon.monster import Monster
@@ -46,7 +45,7 @@ class CheckMaxTechCondition(EventCondition):
     def test(self, session: Session, condition: SpatialCondition) -> bool:
         target_name = condition.parameters[0]
 
-        target_character = get_npc(session, target_name)
+        target_character = session.get_npc(target_name)
         if target_character is None:
             logger.error(f"Character '{target_name}' not found.")
             return False

@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from typing import Optional, final
 
 from tuxemon.db import Direction
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 from tuxemon.states.world_state import WorldState
@@ -47,7 +46,7 @@ class CharLookAction(EventAction):
     directions: Optional[str] = None
 
     def start(self, session: Session) -> None:
-        character = get_npc(session, self.character)
+        character = session.get_npc(self.character)
         world = session.client.get_state_by_name(WorldState)
 
         if not character:

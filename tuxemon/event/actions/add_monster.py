@@ -7,7 +7,6 @@ from typing import Optional, final
 
 from tuxemon.database.runtime import db
 from tuxemon.db import SeenStatus
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster import Monster
 from tuxemon.session import Session
@@ -45,7 +44,7 @@ class AddMonsterAction(EventAction):
     def start(self, session: Session) -> None:
         player = session.player
         self.npc_slug = self.npc_slug or "player"
-        trainer = get_npc(session, self.npc_slug)
+        trainer = session.get_npc(self.npc_slug)
         if not trainer:
             raise ValueError(f"NPC '{self.npc_slug}' not found")
 

@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.relationship import Connection
@@ -49,7 +48,7 @@ class AddContactsAction(EventAction):
     decay_threshold: Optional[int] = None
 
     def start(self, session: Session) -> None:
-        character = get_npc(session, self.character)
+        character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return

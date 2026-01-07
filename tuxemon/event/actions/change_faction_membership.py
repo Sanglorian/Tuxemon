@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 
@@ -39,7 +38,7 @@ class ChangeFactionMembershipAction(EventAction):
         if self.status not in {"join", "leave"}:
             raise ValueError(f"{self.status} must be 'join' or 'leave'")
 
-        char = get_npc(session, self.character)
+        char = session.get_npc(self.character)
         if not char:
             logger.error(f"[Membership] NPC '{self.character}' not found.")
             return

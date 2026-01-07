@@ -2,7 +2,8 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import Any, ClassVar, Optional
+import logging
+from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 import pygame_menu
 from pygame_menu import locals
@@ -19,6 +20,11 @@ from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.states.item_menu import ItemMenuState
 
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+
+logger = logging.getLogger(__name__)
+
 
 class MonsterItemState(PygameMenuState):
     """
@@ -32,7 +38,10 @@ class MonsterItemState(PygameMenuState):
         menu: pygame_menu.Menu,
         monster: Monster,
     ) -> None:
-        owner = monster.get_owner()
+        owner = self.client.get_monster_owner(monster)
+        if owner is None:
+            logger.error(f"{monster.name} has no owner.")
+            return
 
         def add_item() -> None:
             items_filtered = ItemFilter(owner.items)
@@ -88,7 +97,6 @@ class MonsterItemState(PygameMenuState):
                 align=locals.ALIGN_CENTER,
             )
         else:
-            owner = monster.get_owner()
             holdable = [
                 item for item in owner.items if item.behaviors.holdable
             ]
@@ -125,7 +133,7 @@ class MonsterItemState(PygameMenuState):
             "MonsterMenuState",
             "MonsterTakeState",
         ]:
-            monsters = _get_monsters(self._monster, self._source)
+            monsters = _get_monsters(client, self._monster, self._source)
             slot = monsters.index(self._monster)
 
             if event.button == buttons.RIGHT and event.pressed:
@@ -164,8 +172,12 @@ class MonsterItemState(PygameMenuState):
         return ani
 
 
-def _get_monsters(monster: Monster, source: str) -> list[Monster]:
-    owner = monster.get_owner()
+def _get_monsters(
+    client: BaseClient, monster: Monster, source: str
+) -> list[Monster]:
+    owner = client.get_monster_owner(monster)
+    if owner is None:
+        return []
     if source == "MonsterTakeState":
         box = owner.monster_boxes.get_box_name(monster.instance_id)
         if box is None:

@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 
 from tuxemon.db import SpatialCondition
-from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -43,7 +42,7 @@ class BattleOutcomeCondition(EventCondition):
             logger.error(f"Invalid outcome '{outcome}'")
             return False
 
-        character = get_npc(session, fighter)
+        character = session.get_npc(fighter)
         if character is None:
             logger.error(f"Character '{fighter}' not found")
             return False

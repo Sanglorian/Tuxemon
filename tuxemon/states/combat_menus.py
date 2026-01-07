@@ -33,6 +33,7 @@ from tuxemon.ui.text import TextArea
 if TYPE_CHECKING:
     from tuxemon.combat.renderer import CombatAnimations
     from tuxemon.item.item import Item
+    from tuxemon.npc import NPC
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -57,6 +58,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         self,
         session: Session,
         view: CombatAnimations,
+        character: NPC,
         monster: Monster,
     ) -> None:
         super().__init__()
@@ -64,7 +66,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         self.session = session
         self.combat_session = self.client.combat_session
         self.view = view
-        self.character = monster.get_owner()
+        self.character = character
         self.monster = monster
         self.party = self.combat_session.field_monsters.get_monsters(
             self.character
@@ -325,10 +327,11 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
             # No usable moves → show only fallback/skip
             if not usable_moves:
-                skip = Technique.create("skip")
-                skip_image = self.shadow_text(skip.name)
-                tech_skip = MenuItem(skip_image, None, None, skip)
-                menu.add(tech_skip)
+                fallback_moves = self.monster.moves.get_fallback_moves()
+                for fb in fallback_moves:
+                    menu.add(
+                        MenuItem(self.shadow_text(fb.name), None, None, fb)
+                    )
 
             # Normal case → show all moves with enabled/disabled state
             else:
@@ -535,6 +538,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 state = self.client.push_state(
                     CombatTargetMenuState(
                         view=self.view,
+                        character=self.character,
                         monster=self.monster,
                         technique=technique,
                     )
@@ -598,13 +602,13 @@ class CombatTargetMenuState(Menu[Monster]):
     transparent = True
 
     def __init__(
-        self, view: CombatAnimations, monster: Monster, technique: Technique
+        self, view: CombatAnimations, character: NPC, monster: Monster, technique: Technique
     ) -> None:
         super().__init__()
+        self.character = character
         self.monster = monster
         self.view = view
         self.combat_session = self.client.combat_session
-        self.character = monster.get_owner()
         self.technique = technique
         self.targeting_map: defaultdict[str, list[Monster]] = defaultdict(list)
 

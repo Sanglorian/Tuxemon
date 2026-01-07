@@ -12,7 +12,6 @@ from tuxemon.combat.combat_context import (
     CombatType,
 )
 from tuxemon.combat.utils import check_battle_legal
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import ColorLike, string_to_colorlike
 from tuxemon.item.item import Item
@@ -81,7 +80,7 @@ class WildEncounterAction(EventAction):
         event_engine = session.client.event_engine
         event_engine.execute_action("create_npc", [self.name, 0, 0], True)
 
-        npc = get_npc(session, self.name)
+        npc = session.get_npc(self.name)
         if npc is None:
             logger.error(f"{self.name} not found")
             return

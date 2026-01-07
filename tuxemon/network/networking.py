@@ -9,7 +9,6 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
 
 from tuxemon.db import Direction
-from tuxemon.event import get_npc
 from tuxemon.item.item import decode_items, encode_items
 from tuxemon.monster import decode_monsters, encode_monsters
 from tuxemon.prepare import TILE_SIZE
@@ -179,7 +178,7 @@ def populate_client(
     game.event_engine.execute_action(
         "create_npc", [char_name, tile_pos_x, tile_pos_y]
     )
-    char = get_npc(local_session, char_name)
+    char = local_session.get_npc(char_name)
     if char is None:
         raise RuntimeError(f"Failed to create or retrieve NPC for {char_name}")
 

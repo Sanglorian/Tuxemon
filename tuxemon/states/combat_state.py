@@ -413,10 +413,12 @@ class CombatState(Menu[None]):
         Parameters:
             monster: Monster to choose an action for.
         """
+        owner = monster.get_owner()
         self.client.push_state(
             self.env.get_battle_graphics().menu,
             session=self.session,
             view=self.view,
+            character=owner,
             monster=monster,
         )
 

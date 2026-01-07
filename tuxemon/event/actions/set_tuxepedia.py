@@ -8,7 +8,6 @@ from typing import final
 
 from tuxemon.database.runtime import db
 from tuxemon.db import SeenStatus
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.session import Session
@@ -40,7 +39,7 @@ class SetTuxepediaAction(EventAction):
     label: str
 
     def start(self, session: Session) -> None:
-        character = get_npc(session, self.character)
+        character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return

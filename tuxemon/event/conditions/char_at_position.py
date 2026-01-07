@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 
 from tuxemon.db import SpatialCondition
-from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -32,7 +31,7 @@ class CharAtPositionCondition(EventCondition):
     name = "char_at_position"
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        character = get_npc(session, condition.parameters[0])
+        character = session.get_npc(condition.parameters[0])
         if character is None:
             logger.error(f"{condition.parameters[0]} not found")
             return False

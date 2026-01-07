@@ -14,6 +14,7 @@ from tuxemon.save_state import TIME_FORMAT, NPCState, SessionSave, WorldSave
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
+    from tuxemon.npc import NPC
     from tuxemon.player import Player
     from tuxemon.save_state import SaveData
     from tuxemon.states.world_state import WorldState
@@ -160,6 +161,20 @@ class Session(AbstractSession["BaseClient"]):
         save.slot_number = slot
 
         return save_data
+
+    def get_npc_pos(self, pos: tuple[int, int]) -> NPC | None:
+        """Gets an NPC object by location (x,y)."""
+        player = self.player
+        if player.tile_pos == pos:
+            return self.player
+        return self.client.get_npc_pos(pos)
+
+    def get_npc(self, slug: str) -> NPC | None:
+        """Gets an NPC object by slug."""
+        if slug == "player":
+            return self.player
+
+        return self.client.get_npc(slug)
 
 
 local_session = Session()

@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 
 from tuxemon.db import SpatialCondition
-from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.graphics import string_to_colorlike
 from tuxemon.session import Session
@@ -51,7 +50,7 @@ class CheckWorldCondition(EventCondition):
         if params[0] == "bubble":
             if len(params) < 2:
                 return False
-            char = get_npc(session, params[1])
+            char = session.get_npc(params[1])
             if char is None:
                 logger.error(f"{params[1]} not found")
                 return False

@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 from tuxemon.states.phone_radio import MAX_FREQ, MIN_FREQ
@@ -64,7 +63,7 @@ class TuneRadioAction(EventAction):
             )
             return
 
-        character = get_npc(self.session, self.character_slug)
+        character = self.session.get_npc(self.character_slug)
         if character is None:
             logger.error(
                 f"Character '{self.character_slug}' not found for radio tuning."

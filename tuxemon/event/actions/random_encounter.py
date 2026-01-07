@@ -12,7 +12,6 @@ from tuxemon.combat.combat_context import (
     CombatType,
 )
 from tuxemon.combat.utils import check_battle_legal, check_repellent
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import ColorLike, string_to_colorlike
 from tuxemon.item.item import Item
@@ -95,7 +94,7 @@ class RandomEncounterAction(EventAction):
             "create_npc", ["wild_encounter", 0, 0], True
         )
 
-        npc = get_npc(session, "wild_encounter")
+        npc = session.get_npc("wild_encounter")
         if npc is None:
             logger.error("'wild_encounter' not found")
             return

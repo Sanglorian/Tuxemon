@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon import formula
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
+from tuxemon.formula import simple_damage_calculate
 from tuxemon.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
 
@@ -46,7 +46,7 @@ class MoneyEffect(CoreEffect):
         hit = session.client.combat_session.get_tech_hit(user)
         tech.hit = tech.accuracy >= hit
 
-        damage = formula.simple_damage_calculate(tech, user, target)[0]
+        damage = simple_damage_calculate(tech, user, target)[0]
 
         if tech.hit:
             amount = damage

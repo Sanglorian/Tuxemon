@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from itertools import product
 from typing import Optional, final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.map.map import get_coords, get_direction
 from tuxemon.session import Session
@@ -52,7 +51,7 @@ class CharWanderAction(EventAction):
     def start(self, session: Session) -> None:
         player = session.player
         client = session.client
-        character = get_npc(session, self.character)
+        character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return

@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Optional, final
 from uuid import UUID
 
 from tuxemon.db import EffectPhase
-from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 
 if TYPE_CHECKING:
@@ -53,8 +52,8 @@ class TriggerStatusAction(EventAction):
                 return
 
             monster_id = UUID(player.game_variables.get(variable))
-            monster = get_monster_by_iid(
-                session, monster_id
+            monster = session.client.get_monster_by_iid(
+                monster_id
             ) or player.monster_boxes.get_monsters_by_iid(monster_id)
             if monster is None:
                 logger.error("Monster not found")

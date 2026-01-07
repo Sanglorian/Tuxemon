@@ -15,12 +15,13 @@ from tuxemon.item.item import Item
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu
-from tuxemon.monster import Monster
 from tuxemon.prepare import SCREEN_RECT
 from tuxemon.states.item_menu import ItemMenuState
 
 if TYPE_CHECKING:
     from tuxemon.combat.renderer import CombatAnimations
+    from tuxemon.monster import Monster
+    from tuxemon.npc import NPC
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -46,12 +47,14 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
         self,
         session: Session,
         view: CombatAnimations,
+        character: NPC,
         monster: Monster,
     ) -> None:
         super().__init__()
         self.rect = self.calculate_menu_rectangle()
         self.session = session
         self.view = view
+        self.character = character
         self.player = session.client.combat_session.left_player  # human
         self.enemy = session.client.combat_session.right_player  # ai
         self.monster = monster
@@ -68,8 +71,7 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
             self.opponents[0]
         )
         self.itm_description: str | None = None
-        params = {"player": monster.get_owner().name}
-        message = T.format("combat_player_choice", params)
+        message = T.format("combat_player_choice", {"player": self.character.name})
         self.dialog.alert(message, self.view.text_area)
         env = self.client.environment_manager.get_active_environment()
         if env is None:

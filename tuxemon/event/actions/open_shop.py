@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from functools import partial
 from typing import Optional, final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.npc import NPC
 from tuxemon.session import Session
@@ -67,7 +66,7 @@ class OpenShopAction(EventAction):
                 f"Invalid menu: '{self.menu}'. Must be one of: {', '.join(sorted(valid_menus))}"
             )
 
-        character = get_npc(session, self.npc_slug)
+        character = session.get_npc(self.npc_slug)
         if character is None:
             logger.error(f"NPC '{self.npc_slug}' not found.")
             return

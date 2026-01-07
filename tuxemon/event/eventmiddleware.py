@@ -4,11 +4,24 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any
 
-from tuxemon.platform.const import events
+from tuxemon.db import Direction
+from tuxemon.platform.const import events, intentions
 from tuxemon.platform.events import PlayerInput
 from tuxemon.platform.tools import keymap, unicode_map
+from tuxemon.prepare import DEV_TOOLS
+
+if TYPE_CHECKING:
+    from tuxemon.camera.camera import CameraManager
+    from tuxemon.event.eventmanager import EventManager
+    from tuxemon.map.map_manager import MapManager
+    from tuxemon.movement import MovementManager
+    from tuxemon.npc import NPC
+    from tuxemon.platform.input_manager import InputManager
+    from tuxemon.state.manager import StateManager
+    from tuxemon.world.manager import WorldMenuManager
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +30,7 @@ class EventMiddleware(ABC):
     """Base class for event processing middleware."""
 
     @abstractmethod
-    def preprocess(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def preprocess(self, event: PlayerInput) -> PlayerInput | None:
         """
         Called before state propagation.
 
@@ -27,8 +40,8 @@ class EventMiddleware(ABC):
 
     @abstractmethod
     def postprocess(
-        self, processed_event: Optional[PlayerInput]
-    ) -> Optional[PlayerInput]:
+        self, processed_event: PlayerInput | None
+    ) -> PlayerInput | None:
         """
         Called after state propagation.
 
@@ -39,11 +52,12 @@ class EventMiddleware(ABC):
 
 class InputTranslatorMiddleware(EventMiddleware):
 
-    def preprocess(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def preprocess(self, event: PlayerInput) -> PlayerInput | None:
         new_button_id = event.button
 
         if event.button in keymap:
             new_button_id = keymap[event.button]
+
         elif event.button == events.UNICODE and event.value in unicode_map:
             new_button_id = unicode_map[event.value]
 
@@ -57,8 +71,8 @@ class InputTranslatorMiddleware(EventMiddleware):
         )
 
     def postprocess(
-        self, processed_event: Optional[PlayerInput]
-    ) -> Optional[PlayerInput]:
+        self, processed_event: PlayerInput | None
+    ) -> PlayerInput | None:
         return processed_event
 
 
@@ -70,7 +84,7 @@ class ButtonFilterMiddleware(EventMiddleware):
     they are translated into game intentions.
     """
 
-    def __init__(self, initially_blocked_buttons: Optional[set[int]] = None):
+    def __init__(self, initially_blocked_buttons: set[int] | None = None):
         self._blocked_buttons: set[int] = (
             initially_blocked_buttons if initially_blocked_buttons else set()
         )
@@ -85,7 +99,7 @@ class ButtonFilterMiddleware(EventMiddleware):
         self._blocked_buttons.discard(button_id)
         logger.debug(f"Button filter unblocking ID: {button_id}")
 
-    def preprocess(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def preprocess(self, event: PlayerInput) -> PlayerInput | None:
         raw_button_id = event.button
 
         if raw_button_id in self._blocked_buttons:
@@ -97,8 +111,8 @@ class ButtonFilterMiddleware(EventMiddleware):
         return event
 
     def postprocess(
-        self, processed_event: Optional[PlayerInput]
-    ) -> Optional[PlayerInput]:
+        self, processed_event: PlayerInput | None
+    ) -> PlayerInput | None:
         return processed_event
 
 
@@ -132,7 +146,7 @@ class IntentionFilterMiddleware(EventMiddleware):
                 f"Intention Gate updated. Allowed actions: {self.allowed_actions}"
             )
 
-    def preprocess(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def preprocess(self, event: PlayerInput) -> PlayerInput | None:
         if self.OPEN_GATE in self.allowed_actions:
             return event
 
@@ -151,6 +165,190 @@ class IntentionFilterMiddleware(EventMiddleware):
         return event
 
     def postprocess(
-        self, processed_event: Optional[PlayerInput]
-    ) -> Optional[PlayerInput]:
+        self, processed_event: PlayerInput | None
+    ) -> PlayerInput | None:
+        return processed_event
+
+
+class MovementMiddleware(EventMiddleware):
+    """
+    Handles directional and run inputs, delegating to the MovementManager.
+    Consumes the event if it successfully queues or initiates movement.
+    """
+
+    def __init__(
+        self,
+        character: NPC,
+        movement_manager: MovementManager,
+        camera_manager: CameraManager,
+    ):
+        self.character = character
+        self.movement_manager = movement_manager
+        self.camera_manager = camera_manager
+
+        self.direction_map: Mapping[int, Direction] = {
+            intentions.UP: Direction.up,
+            intentions.DOWN: Direction.down,
+            intentions.LEFT: Direction.left,
+            intentions.RIGHT: Direction.right,
+        }
+
+    def preprocess(self, event: PlayerInput) -> PlayerInput | None:
+        btn = event.button
+        direction = self.direction_map.get(btn)
+
+        if btn == intentions.RUN:
+            self.character.mover.update_movement_state(event.held)
+            return event
+
+        # Check if directional input is for camera control
+        camera = self.camera_manager.get_active_camera()
+        if camera and not camera.is_following():
+            return event  # Pass to CameraControlMiddleware
+
+        # Handle directional movement
+        if direction:
+            if event.held:
+                self.movement_manager.queue_movement(
+                    self.character.slug, direction
+                )
+                if self.movement_manager.is_movement_allowed(self.character):
+                    self.movement_manager.move_char(self.character, direction)
+                return None
+
+            if (
+                not event.pressed
+                and self.movement_manager.has_pending_movement(self.character)
+            ):
+                self.movement_manager.stop_char(self.character)
+                return None
+
+        return event
+
+    def postprocess(
+        self, processed_event: PlayerInput | None
+    ) -> PlayerInput | None:
+        return processed_event
+
+
+class WorldCommandMiddleware(EventMiddleware):
+    """
+    Handles menu, interaction, and developer commands within the EventMiddleware pipeline.
+    """
+
+    def __init__(
+        self,
+        character: NPC,
+        state_manager: StateManager,
+        input_manager: InputManager,
+        event_manager: EventManager,
+        menu_manager: WorldMenuManager,
+    ):
+        self.character = character
+        self.state_manager = state_manager
+        self.input_manager = input_manager
+        self.event_manager = event_manager
+        self.menu_manager = menu_manager
+
+    def preprocess(self, event: PlayerInput) -> PlayerInput | None:
+        btn = event.button
+
+        if btn == intentions.INTERACT:
+            return event
+
+        if btn == intentions.WORLD_MENU:
+            if event.pressed:
+                self.event_manager.release_controls(self.input_manager)
+                self.state_manager.push_state(
+                    "WorldMenuState",
+                    menu_manager=self.menu_manager,
+                    character=self.character,
+                )
+                return None
+            return event
+
+        return event
+
+    def postprocess(
+        self, processed_event: PlayerInput | None
+    ) -> PlayerInput | None:
+        return processed_event
+
+
+class CameraControlMiddleware(EventMiddleware):
+    """
+    Handles directional input for moving a detached camera.
+    Must be placed before MovementMiddleware.
+    """
+
+    def __init__(self, camera_manager: CameraManager):
+        self.camera_manager = camera_manager
+
+    def preprocess(self, event: PlayerInput) -> PlayerInput | None:
+        btn = event.button
+
+        if btn in (
+            intentions.UP,
+            intentions.DOWN,
+            intentions.LEFT,
+            intentions.RIGHT,
+        ):
+            camera = self.camera_manager.get_active_camera()
+
+            if camera and not camera.is_following():
+                result = self.camera_manager.handle_input(event)
+
+                if result is None:
+                    return None
+
+                return result
+
+        return event
+
+    def postprocess(
+        self, processed_event: PlayerInput | None
+    ) -> PlayerInput | None:
+        return processed_event
+
+
+class DevToolsMiddleware(EventMiddleware):
+    """
+    Handles developer-only commands such as noclip and map reload.
+    Should be enabled only when DEV_TOOLS is True.
+    """
+
+    def __init__(
+        self,
+        character: NPC,
+        map_manager: MapManager,
+        event_manager: EventManager,
+        input_manager: InputManager,
+    ):
+        self.character = character
+        self.map_manager = map_manager
+        self.event_manager = event_manager
+        self.input_manager = input_manager
+
+    def preprocess(self, event: PlayerInput) -> PlayerInput | None:
+        if not DEV_TOOLS:
+            return event
+
+        btn = event.button
+
+        if btn == intentions.NOCLIP and event.pressed:
+            self.character.ignore_collisions = (
+                not self.character.ignore_collisions
+            )
+            return None
+
+        if btn == intentions.RELOAD_MAP and event.pressed:
+            assert self.map_manager.current_map
+            self.map_manager.current_map.reload_tiles()
+            return None
+
+        return event
+
+    def postprocess(
+        self, processed_event: PlayerInput | None
+    ) -> PlayerInput | None:
         return processed_event

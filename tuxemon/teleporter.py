@@ -6,7 +6,7 @@ import logging
 from collections import deque
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import Direction
@@ -15,7 +15,6 @@ if TYPE_CHECKING:
     from tuxemon.boundary import BoundaryChecker
     from tuxemon.map.map_manager import MapManager
     from tuxemon.map.map_transition import MapTransition
-    from tuxemon.movement import MovementManager
     from tuxemon.npc import NPC
     from tuxemon.npc_manager import NPCManager
     from tuxemon.save_state import NPCState
@@ -68,14 +67,14 @@ class TeleportFaint:
 
 @dataclass
 class TeleportRequest:
-    char: Optional[NPC]
+    char: NPC | None
     mapname: str
     x: int
     y: int
-    facing: Optional[Direction] = None
-    source_map: Optional[str] = None
-    source_x: Optional[int] = None
-    source_y: Optional[int] = None
+    facing: Direction | None = None
+    source_map: str | None = None
+    source_x: int | None = None
+    source_y: int | None = None
 
 
 class TeleportQueue:
@@ -85,10 +84,10 @@ class TeleportQueue:
     def enqueue(self, request: TeleportRequest) -> None:
         self.queue.append(request)
 
-    def dequeue(self) -> Optional[TeleportRequest]:
+    def dequeue(self) -> TeleportRequest | None:
         return self.queue.popleft() if self.queue else None
 
-    def peek(self) -> Optional[TeleportRequest]:
+    def peek(self) -> TeleportRequest | None:
         return self.queue[0] if self.queue else None
 
     def clear(self) -> None:
@@ -113,18 +112,16 @@ class Teleporter:
         boundary: BoundaryChecker,
         map_manager: MapManager,
         map_transition: MapTransition,
-        movement_manager: MovementManager,
         npc_manager: NPCManager,
         state_manager: StateManager,
     ) -> None:
         self.boundary = boundary
         self.map_manager = map_manager
         self.map_transition = map_transition
-        self.movement_manager = movement_manager
         self.npc_manager = npc_manager
         self.state_manager = state_manager
         self.teleport_queue = TeleportQueue()
-        self.last_teleport_request: Optional[TeleportRequest] = None
+        self.last_teleport_request: TeleportRequest | None = None
 
     def handle_next_teleport(self, character: NPC) -> None:
         request = self.teleport_queue.dequeue()
@@ -179,12 +176,10 @@ class Teleporter:
             character: The character to prepare for teleportation.
         """
         logger.debug(f"Preparing {character.slug} for teleportation...")
-        self.movement_manager.stop_char(character)
 
         if len(self.state_manager.active_states) == 2:
             self.state_manager.push_state_with_timeout("TeleporterState", 15)
 
-        self.movement_manager.lock_controls(character)
         logger.info(f"{character.slug} is prepared for teleportation.")
 
     def finalize_teleport(self, character: NPC) -> None:
@@ -196,7 +191,6 @@ class Teleporter:
             character: The character to finalize teleportation for.
         """
         logger.debug(f"Finalizing teleportation for {character.slug}...")
-        self.movement_manager.unlock_controls(character)
         logger.info(f"{character.slug} has completed teleportation.")
         self.npc_manager.add_npc(character)
 

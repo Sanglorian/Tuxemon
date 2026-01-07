@@ -147,7 +147,7 @@ class BaseClient(ABC):
         # self.combat_router = CombatRouter(self, self.combat_engine)
 
         self.movement_manager = MovementManager(
-            self.event_manager, self.input_manager, self.camera_manager
+            self.event_manager, self.input_manager
         )
         self.collision_manager = CollisionManager(
             self.map_manager, self.npc_manager
@@ -169,7 +169,6 @@ class BaseClient(ABC):
             self.boundary,
             self.map_manager,
             self.map_transition,
-            self.movement_manager,
             self.npc_manager,
             self.state_manager,
         )

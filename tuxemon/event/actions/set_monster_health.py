@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, Union, final
 
-from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
 from tuxemon.formula import set_health
 from tuxemon.session import Session
@@ -56,7 +55,7 @@ class SetMonsterHealthAction(EventAction):
                     f"No valid monster selected for variable '{self.variable}'"
                 )
                 return  # Exit early if no valid UUID
-            monster = get_monster_by_iid(session, monster_id)
+            monster = session.client.get_monster_by_iid(monster_id)
             if monster is None:
                 logger.error("Monster not found")
                 return

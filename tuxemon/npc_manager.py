@@ -75,38 +75,37 @@ class NPCRepository:
 
 class NPCManager:
     def __init__(self) -> None:
-        # Internal repositories
         self._on_map = NPCRepository()
         self._off_map = NPCRepository()
 
-        # Public backward-compatible dicts
-        self.npcs: dict[str, NPC] = {}
-        self.npcs_off_map: dict[str, NPC] = {}
+    @property
+    def npcs(self) -> dict[str, NPC]:
+        return self._on_map.export_public()
 
-    def _sync_public_dicts(self) -> None:
-        self.npcs = self._on_map.export_public()
-        self.npcs_off_map = self._off_map.export_public()
+    @property
+    def npcs_off_map(self) -> dict[str, NPC]:
+        return self._off_map.export_public()
+
+    def _move(
+        self, npc: NPC, source: NPCRepository, dest: NPCRepository
+    ) -> None:
+        dest.add(npc)
+        source.remove(npc.slug, cleanup=False)
 
     def npc_exists(self, slug: str) -> bool:
-        return slug in self.npcs
+        return slug in self._on_map._data
 
     def add_npc(self, npc: NPC) -> None:
-        self._on_map.add(npc)
-        self._off_map.remove(npc.slug, cleanup=False)
-        self._sync_public_dicts()
+        self._move(npc, self._off_map, self._on_map)
 
     def add_npc_off_map(self, npc: NPC) -> None:
-        self._off_map.add(npc)
-        self._on_map.remove(npc.slug, cleanup=False)
-        self._sync_public_dicts()
+        self._move(npc, self._on_map, self._off_map)
 
     def remove_npc(self, slug: str) -> None:
         self._on_map.remove(slug)
-        self._sync_public_dicts()
 
     def remove_npc_off_map(self, slug: str) -> None:
         self._off_map.remove(slug)
-        self._sync_public_dicts()
 
     def get_npc(self, slug: str) -> NPC | None:
         return self._on_map.get(slug)
@@ -151,7 +150,6 @@ class NPCManager:
     def clear_npcs(self) -> None:
         self._on_map.keep_persistent()
         self._off_map.keep_persistent()
-        self._sync_public_dicts()
 
     def get_all_entities(self) -> Sequence[NPC]:
         return list(self._on_map.values())
@@ -163,6 +161,13 @@ class NPCManager:
             for monster in npc.monsters
         ]
 
+    def get_monster_owner(self, monster: Monster) -> NPC | None:
+        for repo in (self._on_map, self._off_map):
+            for npc in repo.values():
+                if monster in npc.monsters:
+                    return npc
+        return None
+
     def get_monster_by_iid(self, iid: UUID) -> Monster | None:
         return next(
             (
@@ -173,29 +178,6 @@ class NPCManager:
             ),
             None,
         )
-
-    def add_clients_to_map(
-        self,
-        registry: dict[str, Any],
-        current_map: str,
-    ) -> None:
-        self.clear_npcs()
-
-        for client in registry.values():
-            if "sprite" not in client:
-                continue
-
-            sprite = client["sprite"]
-            client_map = client.get("map_name")
-
-            if client_map == current_map:
-                self._on_map.add(sprite)
-                self._off_map.remove(sprite.slug, cleanup=False)
-            else:
-                self._off_map.add(sprite)
-                self._on_map.remove(sprite.slug, cleanup=False)
-
-        self._sync_public_dicts()
 
     def get_all_slugs(self) -> list[str]:
         return list(self._on_map._data.keys()) + list(
@@ -220,7 +202,7 @@ class NPCManager:
         self.update_npcs_off_map(0.0, client)
 
     def get_persistent_npc_states(self, session: Session) -> list[NPCState]:
-        states = []
+        states: list[NPCState] = []
         player_slug = session.player.slug
 
         for npc in (*self._on_map.values(), *self._off_map.values()):
@@ -229,15 +211,12 @@ class NPCManager:
                     states.append(npc.get_state(npc.session))
                 else:
                     logger.warning(
-                        f"Cannot save persistent NPC {npc.slug}: missing session",
+                        f"Cannot save persistent NPC {npc.slug}: missing session"
                     )
-
         return states
 
     def load_persistent_npc_states(
-        self,
-        session: Session,
-        npc_states: list[NPCState],
+        self, session: Session, npc_states: list[NPCState]
     ) -> None:
         if not npc_states:
             return
@@ -252,10 +231,23 @@ class NPCManager:
             npc.set_state(session, state)
 
             if state.current_map == current_map:
-                self._on_map.add(npc)
-                self._off_map.remove(npc.slug, cleanup=False)
+                self.add_npc(npc)
             else:
-                self._off_map.add(npc)
-                self._on_map.remove(npc.slug, cleanup=False)
+                self.add_npc_off_map(npc)
 
-        self._sync_public_dicts()
+    def add_clients_to_map(
+        self, registry: dict[str, Any], current_map: str
+    ) -> None:
+        self.clear_npcs()
+
+        for client in registry.values():
+            if "sprite" not in client:
+                continue
+
+            sprite = client["sprite"]
+            client_map = client.get("map_name")
+
+            if client_map == current_map:
+                self.add_npc(sprite)
+            else:
+                self.add_npc_off_map(sprite)

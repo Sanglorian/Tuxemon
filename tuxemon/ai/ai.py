@@ -268,14 +268,6 @@ class AI:
         """Use OpponentEvaluator to find the best target opponent."""
         return self.evaluator.get_best_target()
 
-    def evaluate_technique(
-        self, technique: Technique, opponent: Monster, config: SingleTechnique
-    ) -> float:
-        """Evaluate a technique against a target using the tracker."""
-        return self.tracker.evaluate_technique(
-            self.monster, technique, opponent, config
-        )
-
     def action_tech(self, technique: Technique, target: Monster) -> None:
         """
         Send action tech.

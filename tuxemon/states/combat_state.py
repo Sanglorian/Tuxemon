@@ -384,10 +384,12 @@ class CombatState(CombatAnimations):
             raise RuntimeError(
                 "Environment not set. Use set_environment before proceeding."
             )
+        owner = monster.get_owner()
         self.client.push_state(
             env.get_battle_graphics().menu,
             session=self.session,
             cmb=self,
+            character=owner,
             monster=monster,
         )
 

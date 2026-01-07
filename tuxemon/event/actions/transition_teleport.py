@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import ColorLike, string_to_colorlike
 from tuxemon.platform.const.graphics import BLACK_COLOR
@@ -46,7 +45,7 @@ class TransitionTeleportAction(EventAction):
 
     def start(self, session: Session) -> None:
 
-        char = get_npc(session, "player")
+        char = session.get_npc("player")
         if char is None:
             return
 

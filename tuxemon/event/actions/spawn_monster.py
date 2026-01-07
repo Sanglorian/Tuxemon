@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, final
 
 from tuxemon.db import Acquisition, EvolutionStage, StatType
 from tuxemon.element import ElementTypesHandler
-from tuxemon.event import get_monster_by_iid, get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.monster import Monster
@@ -69,15 +68,15 @@ class SpawnMonsterAction(EventAction):
             )
             return  # Exit early if either UUID is invalid
 
-        mother = get_monster_by_iid(
-            session, mother_id
+        mother = session.client.get_monster_by_iid(
+            mother_id
         ) or player.monster_boxes.get_monsters_by_iid(mother_id)
         if mother is None:
             logger.error(f"Mother {mother_id} not found.")
             return
 
-        father = get_monster_by_iid(
-            session, father_id
+        father = session.client.get_monster_by_iid(
+            father_id
         ) or player.monster_boxes.get_monsters_by_iid(father_id)
         if father is None:
             logger.error(f"Father {father_id} not found.")
@@ -128,7 +127,7 @@ class SpawnMonsterAction(EventAction):
         child.father_iid = father_id
 
         # Add the child to the character's monsters
-        character = get_npc(session, self.character)
+        character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return

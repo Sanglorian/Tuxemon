@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 
@@ -56,7 +55,7 @@ class SetTemplateAction(EventAction):
     combat_front: Optional[str] = None
 
     def start(self, session: Session) -> None:
-        character = get_npc(session, self.character)
+        character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return

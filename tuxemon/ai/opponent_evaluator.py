@@ -45,6 +45,7 @@ class OpponentEvaluator:
             return 1.0
 
         owner = self.user.get_owner()
+
         config = self.ai_opponent.rules.get(
             owner.slug, self.ai_opponent.rules.get("default")
         )

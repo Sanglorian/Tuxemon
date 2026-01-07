@@ -12,7 +12,6 @@ from tuxemon.combat.combat_context import (
     CombatType,
 )
 from tuxemon.combat.utils import check_battle_legal
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 
@@ -44,8 +43,8 @@ class StartBattleAction(EventAction):
     def start(self, session: Session) -> None:
         self.character2 = self.character2 or "player"
 
-        character1 = get_npc(session, self.character1)
-        character2 = get_npc(session, self.character2)
+        character1 = session.get_npc(self.character1)
+        character2 = session.get_npc(self.character2)
 
         if not character1 or not character2:
             _char = self.character1 if not character1 else self.character2

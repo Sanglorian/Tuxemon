@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
-from tuxemon.event import get_npc_pos
 from tuxemon.map.map import get_coords, get_direction
 
 if TYPE_CHECKING:
@@ -42,7 +41,7 @@ class RemoveEntityEffect(CoreEffect):
         tiles = get_coords(player.tile_pos, client.map_manager.map_size)
 
         for coords in tiles:
-            npc = get_npc_pos(session, coords)
+            npc = session.get_npc_pos(coords)
             if npc:
                 facing = get_direction(player.tile_pos, npc.tile_pos)
                 if player.facing == facing:

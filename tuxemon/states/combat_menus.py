@@ -32,6 +32,7 @@ from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
+    from tuxemon.npc import NPC
     from tuxemon.session import Session
     from tuxemon.states.combat_state import CombatState
 
@@ -54,14 +55,18 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
     columns = 2
 
     def __init__(
-        self, session: Session, cmb: CombatState, monster: Monster
+        self,
+        session: Session,
+        cmb: CombatState,
+        character: NPC,
+        monster: Monster,
     ) -> None:
         super().__init__()
         self.rect = self.calculate_menu_rectangle()
         self.session = session
         self.combat_session = self.client.combat_session
         self.combat = cmb
-        self.character = monster.get_owner()
+        self.character = character
         self.monster = monster
         self.party = self.combat_session.field_monsters.get_monsters(
             self.character
@@ -322,10 +327,11 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
             # No usable moves → show only fallback/skip
             if not usable_moves:
-                skip = Technique.create("skip")
-                skip_image = self.shadow_text(skip.name)
-                tech_skip = MenuItem(skip_image, None, None, skip)
-                menu.add(tech_skip)
+                fallback_moves = self.monster.moves.get_fallback_moves()
+                for fb in fallback_moves:
+                    menu.add(
+                        MenuItem(self.shadow_text(fb.name), None, None, fb)
+                    )
 
             # Normal case → show all moves with enabled/disabled state
             else:
@@ -534,6 +540,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 state = self.client.push_state(
                     CombatTargetMenuState(
                         combat_state=self.combat,
+                        character=self.character,
                         monster=self.monster,
                         technique=technique,
                     )
@@ -597,13 +604,17 @@ class CombatTargetMenuState(Menu[Monster]):
     transparent = True
 
     def __init__(
-        self, combat_state: CombatState, monster: Monster, technique: Technique
+        self,
+        combat_state: CombatState,
+        character: NPC,
+        monster: Monster,
+        technique: Technique,
     ) -> None:
         super().__init__()
+        self.character = character
         self.monster = monster
         self.combat_state = combat_state
         self.combat_session = self.client.combat_session
-        self.character = monster.get_owner()
         self.technique = technique
         self.targeting_map: defaultdict[str, list[Monster]] = defaultdict(list)
 

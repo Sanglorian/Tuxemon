@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import final
 
 from tuxemon.db import OutputBattle
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 
@@ -46,7 +45,7 @@ class SetBattleAction(EventAction):
                 f"{self.outcome} isn't among {list(OutputBattle)}"
             )
 
-        character = get_npc(session, self.fighter_slug)
+        character = session.get_npc(self.fighter_slug)
         if character is None:
             logger.error(f"Character '{self.fighter_slug}' not found")
             return

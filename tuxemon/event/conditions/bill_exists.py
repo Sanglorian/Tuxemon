@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 
 from tuxemon.db import SpatialCondition
-from tuxemon.event import get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -34,7 +33,7 @@ class BillExistsCondition(EventCondition):
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
         character_name, bill_slug = condition.parameters[:2]
-        character = get_npc(session, character_name)
+        character = session.get_npc(character_name)
         if character is None:
             logger.error(f"Character '{character_name}' not found")
             return False

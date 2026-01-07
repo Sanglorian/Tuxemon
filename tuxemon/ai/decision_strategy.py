@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import random
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.technique.technique import Technique
 
@@ -49,23 +49,68 @@ class AIDecisionStrategy(ABC):
 
     @abstractmethod
     def select_move(
-        self, ai: AI, target: Monster
+        self,
+        ai: AI,
+        target: Monster,
+        valid_actions: list[tuple[Technique, Monster]],
     ) -> tuple[Technique, Monster]:
         pass
 
-    def check_ai_techs(self, user: Monster) -> Optional[SingleTechnique]:
-        _config = self.ai_techs
-        if user.wild:
-            config = _config.techniques.get(user.slug)
-        else:
-            owner = user.get_owner()
-            config = _config.techniques.get(owner.slug)
-        return config
+    def check_ai_techs(self, user: Monster) -> SingleTechnique | None:
+        slug = user.slug if user.wild else user.get_owner().slug
+        return self.ai_techs.techniques.get(slug)
+
+    def get_fallback_action(
+        self, ai: AI, target: Monster
+    ) -> tuple[Technique, Monster]:
+        fallback_moves = ai.monster.moves.get_fallback_moves()
+        fallback = random.choice(fallback_moves)
+        return fallback, target
+
+    def choose_action(
+        self,
+        ai: AI,
+        valid_actions: list[tuple[Technique, Monster]],
+    ) -> tuple[Technique, Monster]:
+        config = self.check_ai_techs(ai.monster)
+        if config is None:
+            return random.choice(valid_actions)
+        return self.choose_best_scored_move(ai, valid_actions, config)
+
+    def choose_best_scored_move(
+        self,
+        ai: AI,
+        valid_actions: list[tuple[Technique, Monster]],
+        config: SingleTechnique,
+    ) -> tuple[Technique, Monster]:
+        """
+        Given a list of (technique, opponent) pairs and a technique config,
+        return the highest-scoring action according to tracker.evaluate_technique().
+        Falls back to a random valid action if all scores are zero or negative.
+        """
+        best_action = None
+        highest_score = float("-inf")
+
+        for technique, opponent in valid_actions:
+            score = ai.tracker.evaluate_technique(
+                ai.monster, technique, opponent, config
+            )
+
+            logger.debug(
+                f"AI scoring: {technique.slug} vs {opponent.slug} = {score}"
+            )
+
+            if score > highest_score:
+                highest_score = score
+                best_action = (technique, opponent)
+
+        return best_action or random.choice(valid_actions)
 
 
 class TrainerAIDecisionStrategy(AIDecisionStrategy):
     def make_decision(self, ai: AI) -> None:
         """Trainer battle decision-making"""
+        valid_actions = ai.get_available_moves()
         character_slug = ai.character.slug
         config = self.ai_trainers.trainers.get(character_slug)
 
@@ -77,25 +122,30 @@ class TrainerAIDecisionStrategy(AIDecisionStrategy):
                     return
 
         if config is None:
-            self.default_decision(ai)
+            self.default_decision(ai, valid_actions)
             return
 
         monster_config = config.get(ai.monster.slug)
 
         if monster_config is None:
-            self.default_decision(ai)
+            self.default_decision(ai, valid_actions)
             return
 
-        if self.handle_monster_config(ai, monster_config):
+        action = self.handle_monster_config(ai, monster_config, valid_actions)
+        if action:
+            technique, target = action
+            ai.action_tech(technique, target)
             return
 
-        valid_actions = ai.get_available_moves()
-        random_action = random.choice(valid_actions)
-        ai.action_tech(random_action[0], random_action[1])
+        technique, target = random.choice(valid_actions)
+        ai.action_tech(technique, target)
 
     def handle_monster_config(
-        self, ai: AI, monster_config: MonsterEntry
-    ) -> bool:
+        self,
+        ai: AI,
+        monster_config: MonsterEntry,
+        valid_actions: list[tuple[Technique, Monster]],
+    ) -> tuple[Technique, Monster] | None:
         """Handle decision-making logic for a specific monster configuration."""
         for technique_entry in monster_config.techniques:
             technique = technique_entry.technique
@@ -106,13 +156,11 @@ class TrainerAIDecisionStrategy(AIDecisionStrategy):
             ):
                 continue
 
-            valid_actions = ai.get_available_moves()
             for valid_technique, opponent in valid_actions:
                 if valid_technique.slug == technique:
-                    ai.action_tech(valid_technique, opponent)
-                    return True
+                    return (valid_technique, opponent)
 
-        return False
+        return None
 
     def need_healing(self, ai: AI, item: Item) -> bool:
         """
@@ -125,70 +173,46 @@ class TrainerAIDecisionStrategy(AIDecisionStrategy):
         return check_item_conditions(item_entry, ai)
 
     def select_move(
-        self, ai: AI, target: Monster
+        self,
+        ai: AI,
+        target: Monster,
+        valid_actions: list[tuple[Technique, Monster]],
     ) -> tuple[Technique, Monster]:
         """Select the most effective move and target."""
-        valid_actions = ai.get_available_moves()
 
         if not valid_actions:
-            skip = Technique.create("skip")
-            return skip, target
+            return self.get_fallback_action(ai, target)
 
-        config = self.check_ai_techs(ai.monster)
-        if config is None:
-            return random.choice(valid_actions)
+        return self.choose_action(ai, valid_actions)
 
-        best_action = None
-        highest_score = 0.0
-
-        for technique, opponent in valid_actions:
-            score = ai.evaluate_technique(technique, opponent, config)
-            logger.debug(
-                f"Score: {score}, Technique: {technique.slug}, Opponent: {opponent.slug}"
-            )
-            if score > highest_score:
-                highest_score = score
-                best_action = (technique, opponent)
-
-        return best_action or random.choice(valid_actions)
-
-    def default_decision(self, ai: AI) -> None:
+    def default_decision(
+        self, ai: AI, valid_actions: list[tuple[Technique, Monster]]
+    ) -> None:
         target = ai.evaluate_best_opponent()
-        technique, target = self.select_move(ai, target)
+        technique, target = self.select_move(ai, target, valid_actions)
         ai.action_tech(technique, target)
 
 
 class WildAIDecisionStrategy(AIDecisionStrategy):
     def make_decision(self, ai: AI) -> None:
         """Wild encounter decision-making: focus on moves."""
+        valid_actions = ai.get_available_moves()
         target = ai.evaluate_best_opponent()
-        technique, target = self.select_move(ai, target)
+        technique, target = self.select_move(ai, target, valid_actions)
         ai.action_tech(technique, target)
 
     def select_move(
-        self, ai: AI, target: Monster
+        self,
+        ai: AI,
+        target: Monster,
+        valid_actions: list[tuple[Technique, Monster]],
     ) -> tuple[Technique, Monster]:
         """Select the most effective move and target."""
-        valid_actions = ai.get_available_moves()
 
         if not valid_actions:
-            skip = Technique.create("skip")
-            return skip, target
+            return self.get_fallback_action(ai, target)
 
-        config = self.check_ai_techs(ai.monster)
-        if config is None:
-            return random.choice(valid_actions)
-
-        best_action = None
-        highest_score = 0.0
-
-        for technique, opponent in valid_actions:
-            score = ai.evaluate_technique(technique, opponent, config)
-            if score > highest_score:
-                highest_score = score
-                best_action = (technique, opponent)
-
-        return best_action or random.choice(valid_actions)
+        return self.choose_action(ai, valid_actions)
 
 
 def check_item_conditions(item_entry: ItemEntry, ai: AI) -> bool:

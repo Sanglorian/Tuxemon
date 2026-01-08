@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 PLUGIN_INCLUDE_PATTERNS = [
     "event.actions",
     "event.conditions",
+    "event.behaviors",
     "core.effects",
     "core.conditions",
 ]
@@ -47,6 +48,7 @@ logger.debug(f"Mods subfolders: {mods_subfolders}")
 # action/condition plugins (eventually move out of lib folder)
 CONDITIONS_PATH = LIBDIR / "event" / "conditions"
 ACTIONS_PATH = LIBDIR / "event" / "actions"
+BEHAVS_PATH = LIBDIR / "event" / "behaviors"
 
 CORE_EFFECT_PATH = LIBDIR / "core" / "effects"
 CORE_CONDITION_PATH = LIBDIR / "core" / "conditions"

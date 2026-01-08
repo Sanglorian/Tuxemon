@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 from tuxemon.core.asset import get_assets
@@ -15,6 +15,7 @@ from tuxemon.db import (
     MenuAction,
     Range,
     SoundProperties,
+    StatModel,
     TechBehaviors,
     TechniqueModel,
     VisualProperties,
@@ -22,6 +23,7 @@ from tuxemon.db import (
 from tuxemon.element import ElementTypesHandler
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
+from tuxemon.monster_dir.stats import BasicStats
 from tuxemon.surfanim import FlipAxes
 from tuxemon.technique.cooldown import Cooldown
 
@@ -45,7 +47,7 @@ class Technique:
     Particular skill that tuxemon monsters can use in battle.
     """
 
-    def __init__(self, save_data: Optional[Mapping[str, Any]] = None) -> None:
+    def __init__(self, save_data: Mapping[str, Any] | None = None) -> None:
         save_data = save_data or {}
 
         self.instance_id: UUID = uuid4()
@@ -79,6 +81,8 @@ class Technique:
         self.core_assets = get_assets()
         self.effects: Sequence[PluginObject] = []
         self.conditions: Sequence[PluginObject] = []
+        self.stat_modifiers: dict[str, StatModel] = {}
+        self.temporary_stat_boosts: BasicStats = BasicStats()
 
         # attempts: total times the technique was invoked
         # successes: number of successful uses
@@ -91,7 +95,7 @@ class Technique:
 
     @classmethod
     def create(
-        cls, slug: str, save_data: Optional[Mapping[str, Any]] = None
+        cls, slug: str, save_data: Mapping[str, Any] | None = None
     ) -> Technique:
         method = cls(save_data)
         method.load(slug)
@@ -148,6 +152,7 @@ class Technique:
         self.tech_id = results.tech_id
         self.menu_actions_data = results.menu_actions
         self.tags = results.tags
+        self.stat_modifiers = results.stat_modifiers
 
         self.effect_defs = results.effects
         self.conditions = self.core_assets.parse_conditions(results.conditions)

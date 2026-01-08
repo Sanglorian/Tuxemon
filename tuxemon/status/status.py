@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 from tuxemon.core.asset import get_assets
@@ -25,6 +25,7 @@ from tuxemon.db import (
 )
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
+from tuxemon.monster_dir.stats import BasicStats
 from tuxemon.surfanim import FlipAxes
 
 if TYPE_CHECKING:
@@ -52,12 +53,12 @@ class Status:
         self,
         host: Monster,
         steps: float = 0.0,
-        save_data: Optional[Mapping[str, Any]] = None,
+        save_data: Mapping[str, Any] | None = None,
     ) -> None:
         save_data = save_data or {}
         self._host: Monster = host
         self._steps: float = steps
-        self._linked_monster: Optional[Monster] = None
+        self._linked_monster: Monster | None = None
         self._nr_turn: int = 0
 
         self._effect_applied: set[str] = set()
@@ -66,7 +67,7 @@ class Status:
         self.bond: bool = False
         self.counter: int = 0
         self.cond_id: int = 0
-        self.category: Optional[CategoryStatus] = None
+        self.category: CategoryStatus | None = None
         self.visuals = VisualProperties(
             animation=None, flip_axes=FlipAxes.NONE, loop=-1
         )
@@ -80,10 +81,10 @@ class Status:
         self.step_effect_value: float = 0.0
         self.step_effect_type: StepEffectType = StepEffectType.NONE
         self._step_hp_change: int = 0
-        self.on_positive_status: Optional[ResponseStatus] = None
-        self.on_negative_status: Optional[ResponseStatus] = None
-        self.on_tech_use: Optional[str] = None
-        self.on_item_use: Optional[str] = None
+        self.on_positive_status: ResponseStatus | None = None
+        self.on_negative_status: ResponseStatus | None = None
+        self.on_tech_use: str | None = None
+        self.on_item_use: str | None = None
         self.sound = SoundProperties(sfx=None, volume=1.5)
         self.sort: str = ""
         self.slug: str = ""
@@ -96,6 +97,7 @@ class Status:
         self.core_assets = get_assets()
         self.effects: Sequence[PluginObject] = []
         self.conditions: Sequence[PluginObject] = []
+        self.temporary_stat_boosts: BasicStats = BasicStats()
 
         self.set_state(save_data)
 
@@ -105,7 +107,7 @@ class Status:
         slug: str,
         host: Monster,
         steps: float = 0.0,
-        save_data: Optional[Mapping[str, Any]] = None,
+        save_data: Mapping[str, Any] | None = None,
     ) -> Status:
         method = cls(host, steps, save_data)
         method.load(slug)
@@ -128,8 +130,12 @@ class Status:
     def steps(self) -> float:
         return self._steps
 
+    @steps.setter
+    def steps(self, value: float) -> None:
+        self._steps = value
+
     @property
-    def linked_monster(self) -> Optional[Monster]:
+    def linked_monster(self) -> Monster | None:
         """Returns the monster linked to this status effect."""
         return self._linked_monster
 
@@ -287,7 +293,7 @@ class Status:
 
     def tick_steps(
         self, session: Session, steps: float
-    ) -> Optional[StatusEffectResult]:
+    ) -> StatusEffectResult | None:
         """
         Advance the step counter and trigger the status effect if the interval
         is reached. Returns the result if the effect was triggered.
@@ -311,6 +317,14 @@ class Status:
             return self.use(session, EffectPhase.ON_STEP_INTERVAL)
 
         return None
+
+    def is_already_applied(self, effect_name: str) -> bool:
+        """Check if a specific core effect has already been triggered for this status."""
+        return effect_name in self._effect_applied
+
+    def mark_applied(self, effect_name: str) -> None:
+        """Mark a core effect as applied so it doesn't run again."""
+        self._effect_applied.add(effect_name)
 
     def get_state(self) -> Mapping[str, Any]:
         """

@@ -28,3 +28,23 @@ jobs:
       run: |
         flatpak-builder --run build-dir buildconfig/flatpak/org.tuxemon.Tuxemon.yaml \
           appstreamcli validate /app/share/metainfo/org.tuxemon.Tuxemon.metainfo.xml
+
+    - name: Smoke test game startup
+      run: |
+        flatpak-builder --run build-dir buildconfig/flatpak/org.tuxemon.Tuxemon.yaml \
+          sh -c "org.tuxemon.Tuxemon --version || true"
+
+    - name: Validate all mod tables and files
+      run: |
+        flatpak-builder --run build-dir buildconfig/flatpak/org.tuxemon.Tuxemon.yaml \
+          sh -c 'TUXEMON_MOD_PATH=/app/share/Tuxemon/mods python3 -c "from tuxemon.database.validate_mod_data import validate_mod_data; validate_mod_data()"'
+
+    - name: Test mod copy (wrapper script)
+      run: |
+        flatpak-builder --run build-dir buildconfig/flatpak/org.tuxemon.Tuxemon.yaml \
+          sh -c "ls -R ~/.tuxemon || true"
+
+    - name: Check that mod.yaml is detected
+      run: |
+        flatpak-builder --run build-dir buildconfig/flatpak/org.tuxemon.Tuxemon.yaml \
+          sh -c "test -f ~/.tuxemon/mods/tuxemon/mod.yaml || (echo 'mod.yaml missing' && exit 1)"

@@ -8,7 +8,6 @@ from typing import (
     TYPE_CHECKING,
     Any,
     ClassVar,
-    Optional,
     no_type_check,
 )
 
@@ -16,14 +15,19 @@ from pygame.surface import Surface
 
 from tuxemon.camera.camera import Camera
 from tuxemon.db import Direction
-from tuxemon.event.eventmiddleware import InputTranslatorMiddleware
+from tuxemon.event.eventmiddleware import (
+    CameraControlMiddleware,
+    DevToolsMiddleware,
+    InputTranslatorMiddleware,
+    MovementMiddleware,
+    WorldCommandMiddleware,
+)
 from tuxemon.faction.manager import FactionManager
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import TILE_SIZE
+from tuxemon.prepare import DEV_TOOLS, TILE_SIZE
 from tuxemon.save_state import WorldSave
 from tuxemon.session import Session
 from tuxemon.state.state import State
-from tuxemon.world.input import InputRouter, WorldInputHandler
 from tuxemon.world.manager import WorldMenuManager
 from tuxemon.world.transition import WorldTransition
 
@@ -41,11 +45,18 @@ class WorldState(State):
     def __init__(
         self,
         session: Session,
-        map_name: Optional[str] = None,
-        yaml_name: Optional[str] = None,
+        map_name: str | None = None,
+        yaml_name: str | None = None,
     ) -> None:
         super().__init__()
-        self.input_translator_mw = InputTranslatorMiddleware()
+        mw = self.client.event_manager.get_middleware_instance(
+            InputTranslatorMiddleware
+        )
+        if mw is None:
+            mw = InputTranslatorMiddleware()
+            self.client.event_manager.add_middleware(mw, priority=0)
+
+        self.input_translator_mw = mw
         self.session = session
         self.session.set_world(self)
         self.tile_size = TILE_SIZE
@@ -57,9 +68,35 @@ class WorldState(State):
         self.camera = Camera(self.player, self.client.boundary)
         self.client.camera_manager.add_camera(self.player.slug, self.camera)
         self.faction_manager = FactionManager(self.client.event_bus)
-        self.register_input_handlers()
         self.client.map_transition.change_map(map_name, yaml_name)
         self.client.reset_renderer()
+
+        self.command_mw = WorldCommandMiddleware(
+            self.player,
+            self.client.state_manager,
+            self.client.input_manager,
+            self.client.event_manager,
+            self.menu_manager,
+        )
+        self.camera_mw = CameraControlMiddleware(self.client.camera_manager)
+        self.movement_mw = MovementMiddleware(
+            self.player,
+            self.client.movement_manager,
+            self.client.camera_manager,
+        )
+        self.devtools_mw = DevToolsMiddleware(
+            self.player,
+            self.client.map_manager,
+            self.client.event_manager,
+            self.client.input_manager,
+        )
+        self.client.event_manager.add_middleware(self.camera_mw, priority=5)
+        self.client.event_manager.add_middleware(self.movement_mw, priority=10)
+        if DEV_TOOLS:
+            self.client.event_manager.add_middleware(
+                self.devtools_mw, priority=20
+            )
+        self.client.event_manager.add_middleware(self.command_mw, priority=30)
 
     def get_state(self, session: Session) -> WorldSave:
         """Returns a WorldSave model representing the current world state."""
@@ -75,15 +112,6 @@ class WorldState(State):
         self.faction_manager.get_state(save_data.factions_manager)
         self.menu_manager.menu_flags.import_flags(save_data.menu_flags)
 
-    def register_input_handlers(self) -> None:
-        self.input_handler = WorldInputHandler(
-            self.player, self.client, self.menu_manager
-        )
-        self.input_router = InputRouter()
-
-        for button, config in self.input_handler.get_handlers().items():
-            self.input_router.register(button, config)
-
     def prepare_for_teleport(self) -> None:
         """
         Stops all WorldState background activity and locks player controls
@@ -96,8 +124,9 @@ class WorldState(State):
 
     def resume(self) -> None:
         """Called after returning focus to this state"""
-        self.client.event_manager.add_middleware(self.input_translator_mw)
-        self.client.movement_manager.unlock_controls(self.player)
+        self.client.event_manager.add_middleware(
+            self.input_translator_mw, priority=0
+        )
 
     def pause(self) -> None:
         """Called before another state gets focus"""
@@ -133,7 +162,7 @@ class WorldState(State):
         )
         self.transition_manager.draw(surface)
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         """
         Handles player input events.
 
@@ -156,14 +185,7 @@ class WorldState(State):
         """
         if self.player is None:
             return None
-
-        routed = self.input_router.route(event)
-        if routed is None:
-            return None
-
-        return self.client.movement_manager.handle_directional_input(
-            self.player, routed
-        )
+        return event
 
     @no_type_check  # only used by multiplayer which is disabled
     def check_interactable_space(self) -> bool:

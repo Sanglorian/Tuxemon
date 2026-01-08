@@ -242,23 +242,21 @@ class StateManager:
                 state.shutdown()
 
     @overload
-    def push_state(
-        self, state_name: str, **kwargs: Optional[dict[str, Any]]
-    ) -> State:
+    def push_state(self, state_name: str, **kwargs: Any) -> State:
         pass
 
     @overload
     def push_state(
         self,
         state_name: StateType,
-        **kwargs: Optional[dict[str, Any]],
+        **kwargs: Any,
     ) -> StateType:
         pass
 
     def push_state(
         self,
         state_name: Union[str, StateType],
-        **kwargs: Optional[dict[str, Any]],
+        **kwargs: Any,
     ) -> State:
         """
         Pause currently running state and start new one.
@@ -296,23 +294,21 @@ class StateManager:
         return instance
 
     @overload
-    def replace_state(
-        self, state_name: str, **kwargs: Optional[dict[str, Any]]
-    ) -> State:
+    def replace_state(self, state_name: str, **kwargs: Any) -> State:
         pass
 
     @overload
     def replace_state(
         self,
         state_name: StateType,
-        **kwargs: Optional[dict[str, Any]],
+        **kwargs: Any,
     ) -> StateType:
         pass
 
     def replace_state(
         self,
         state_name: Union[str, State],
-        **kwargs: Optional[dict[str, Any]],
+        **kwargs: Any,
     ) -> State:
         """
         Replace the currently running state with a new one.

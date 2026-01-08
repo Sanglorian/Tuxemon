@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 from pygame.surface import Surface
@@ -23,10 +23,12 @@ from tuxemon.db import (
     MenuAction,
     SoundProperties,
     State,
+    StatModel,
     VisualProperties,
 )
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
+from tuxemon.monster_dir.stats import BasicStats
 from tuxemon.surfanim import FlipAxes
 from tuxemon.user_config import CONFIG
 
@@ -46,7 +48,7 @@ INFINITE_ITEMS: int = -1
 class Item:
     """An item object is an item that can be used either in or out of combat."""
 
-    def __init__(self, save_data: Optional[Mapping[str, Any]] = None) -> None:
+    def __init__(self, save_data: Mapping[str, Any] | None = None) -> None:
         save_data = save_data or {}
 
         self.slug: str = ""
@@ -60,7 +62,7 @@ class Item:
         # The path to the sprite to load.
         self.sprite: str = ""
         self.category: ItemCategory = ItemCategory.none
-        self.surface: Optional[Surface] = None
+        self.surface: Surface | None = None
         self.surface_size_original: tuple[int, int] = (0, 0)
 
         self.rarity: ItemRarity = ItemRarity.COMMON
@@ -81,23 +83,26 @@ class Item:
         self.break_chance: float = 0.0
         self.menu_actions_data: Sequence[MenuAction] = []
         self.granted_techniques: Sequence[str] = []
+        self.granted_statuses: Sequence[str] = []
 
         self.core_assets = get_assets()
         self.effects: Sequence[PluginObject] = []
         self.conditions: Sequence[PluginObject] = []
+        self.stat_modifiers: dict[str, StatModel] = {}
+        self.temporary_stat_boosts: BasicStats = BasicStats()
 
         self.set_state(save_data)
 
     @classmethod
     def create(
-        cls, slug: str, save_data: Optional[Mapping[str, Any]] = None
+        cls, slug: str, save_data: Mapping[str, Any] | None = None
     ) -> Item:
         method = cls(save_data)
         method.load(slug)
         return method
 
     @classmethod
-    def test(cls, save_data: Optional[Mapping[str, Any]] = None) -> Item:
+    def test(cls, save_data: Mapping[str, Any] | None = None) -> Item:
         """Creates an Item instance for testing purposes."""
         method = cls(save_data)
         return method
@@ -154,12 +159,14 @@ class Item:
         self.category = results.category
         self.sprite = results.sprite
         self.usable_in = results.usable_in
+        self.stat_modifiers = results.stat_modifiers
         self.effect_defs = results.effects
         self.conditions = self.core_assets.parse_conditions(results.conditions)
         self.condition_handler = ConditionProcessor(self.conditions)
         self.surface = graphics.load_and_scale(self.sprite)
         self.surface_size_original = self.surface.get_size()
         self.granted_techniques = results.granted_techniques
+        self.granted_statuses = results.granted_statuses
 
         self.visuals = results.visuals
         self.sound = results.sound
@@ -240,7 +247,7 @@ class Item:
         return self.condition_handler.validate(session=session, target=target)
 
     def use(
-        self, session: Session, user: NPC, target: Optional[Monster]
+        self, session: Session, user: NPC, target: Monster | None
     ) -> ItemEffectResult:
         """
         Applies the item's effects using EffectProcessor and returns the results.

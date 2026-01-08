@@ -458,7 +458,6 @@ def set_health(
 
     if monster.is_fainted:
         monster.current_hp = 0
-        monster.status.apply_faint(monster)
 
 
 def set_weight(monster: Monster, value: float) -> float:

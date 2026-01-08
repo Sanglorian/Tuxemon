@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 
 from tuxemon.entity import Body, Mover
 from tuxemon.event.eventaction import ActionManager
+from tuxemon.event.eventbehavior import BehaviorManager
 from tuxemon.event.eventbus import EventBus
 from tuxemon.event.eventengine import EventEngine
 from tuxemon.event.running import ConditionEvaluator
@@ -29,9 +30,12 @@ class TestVariableActions(unittest.TestCase):
     def setUp(self):
         action = ActionManager()
         evaluator = ConditionEvaluator(MagicMock(), MagicMock())
+        behavior = BehaviorManager()
         self.mock_screen = MagicMock()
         with patch.object(Player, "__init__", mockPlayer):
-            self.action = EventEngine(local_session, action, evaluator)
+            self.action = EventEngine(
+                local_session, action, evaluator, behavior
+            )
             local_session.set_player(Player())
             self.player = local_session.player
 
@@ -161,9 +165,12 @@ class TestActionsSetPlayer(unittest.TestCase):
     def setUp(self):
         action = ActionManager()
         evaluator = ConditionEvaluator(MagicMock(), MagicMock())
+        behavior = BehaviorManager()
         self.mock_screen = MagicMock()
         with patch.object(Player, "__init__", mockPlayer):
-            self.action = EventEngine(local_session, action, evaluator)
+            self.action = EventEngine(
+                local_session, action, evaluator, behavior
+            )
             local_session.set_player(Player())
             self.player = local_session.player
 
@@ -180,10 +187,13 @@ class TestCharacterActions(unittest.TestCase):
     def setUp(self):
         action = ActionManager()
         evaluator = ConditionEvaluator(MagicMock(), MagicMock())
+        behavior = BehaviorManager()
         self.mock_screen = MagicMock()
         local_session.set_client(MagicMock())
         with patch.object(Player, "__init__", mockPlayer):
-            self.action = EventEngine(local_session, action, evaluator)
+            self.action = EventEngine(
+                local_session, action, evaluator, behavior
+            )
             local_session.set_player(Player())
             self.player = local_session.player
 

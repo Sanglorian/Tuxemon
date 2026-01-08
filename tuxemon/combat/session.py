@@ -512,7 +512,7 @@ class CombatSession:
         self.field_monsters.add_monster(player, monster)
 
         for mon in self.active_monsters:
-            mon.status.remove_bonded_statuses()
+            mon.status.remove_bonded_statuses(session)
 
         phase = EffectPhase.SWAP_MONSTER
 

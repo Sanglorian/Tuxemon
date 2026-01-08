@@ -13,6 +13,7 @@ from tuxemon.db import (
     TechniqueModel,
 )
 from tuxemon.event.eventaction import ActionManager
+from tuxemon.event.eventbehavior import BehaviorManager
 from tuxemon.event.eventengine import EventEngine
 from tuxemon.event.running import ConditionEvaluator
 from tuxemon.game_variables import GameVariablesManager
@@ -162,7 +163,8 @@ def game_env(monkeypatch, base_models):
 
     action = ActionManager()
     evaluator = ConditionEvaluator(MagicMock(), MagicMock())
-    engine = EventEngine(local_session, action, evaluator)
+    behavior = BehaviorManager()
+    engine = EventEngine(local_session, action, evaluator, behavior)
     local_session.client.event_engine = engine
 
     local_session.set_player(Player())

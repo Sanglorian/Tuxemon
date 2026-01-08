@@ -24,6 +24,7 @@ from tuxemon.encounter import EncounterManager
 from tuxemon.environment import EnvironmentManager
 from tuxemon.event import get_event_bus
 from tuxemon.event.eventaction import ActionManager
+from tuxemon.event.eventbehavior import BehaviorManager
 from tuxemon.event.eventcondition import ConditionManager
 from tuxemon.event.eventengine import EventEngine
 from tuxemon.event.eventmanager import EventManager
@@ -119,8 +120,12 @@ class BaseClient(ABC):
         self.evaluator = ConditionEvaluator(
             local_session, self.condition_manager
         )
+        self.behavior_manager = BehaviorManager()
         self.event_engine = EventEngine(
-            local_session, self.action_manager, self.evaluator
+            local_session,
+            self.action_manager,
+            self.evaluator,
+            self.behavior_manager,
         )
         self.event_persist = EventPersist()
 
@@ -147,7 +152,7 @@ class BaseClient(ABC):
         # self.combat_router = CombatRouter(self, self.combat_engine)
 
         self.movement_manager = MovementManager(
-            self.event_manager, self.input_manager, self.camera_manager
+            self.event_manager, self.input_manager
         )
         self.collision_manager = CollisionManager(
             self.map_manager, self.npc_manager
@@ -169,7 +174,6 @@ class BaseClient(ABC):
             self.boundary,
             self.map_manager,
             self.map_transition,
-            self.movement_manager,
             self.npc_manager,
             self.state_manager,
         )

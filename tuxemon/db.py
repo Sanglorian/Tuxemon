@@ -308,6 +308,12 @@ class SpatialCondition(LogicCondition):
     )
 
 
+class Behavior(BaseModel):
+    type: str = Field(..., description="Behavior type identifier.")
+    args: Sequence[str] = Field(default_factory=list)
+    name: str = Field("unnamed_behavior")
+
+
 class EventObject(BaseModel):
     """The main container entity for a game/map event."""
 
@@ -341,6 +347,10 @@ class EventObject(BaseModel):
     acts: Sequence[ParameterizableRule] = Field(
         default_factory=list,
         description="A sequence of actions/effects to execute when conditions are met.",
+    )
+    behavs: Sequence[Behavior] = Field(
+        default_factory=list,
+        description="Behavior definitions attached to this event.",
     )
 
 
@@ -656,6 +666,10 @@ class ItemModel(BaseModel, BaseLookupModel):
         le=1.0,
     )
     modifiers: list[Modifier] = Field(..., description="Various modifiers")
+    stat_modifiers: dict[str, StatModel] = Field(
+        default_factory=dict,
+        description="Dictionary of stat modifiers keyed by stat name (e.g., 'speed', 'hp')",
+    )
     immunity_to_status: Sequence[str] = Field(
         default_factory=list,
         description="Statuses this item grants immunity to",
@@ -663,6 +677,10 @@ class ItemModel(BaseModel, BaseLookupModel):
     granted_techniques: Sequence[str] = Field(
         default_factory=list,
         description="Technique slugs granted to the holder while this item is equipped.",
+    )
+    granted_statuses: Sequence[str] = Field(
+        default_factory=list,
+        description="Status slugs granted to the holder while this item is equipped.",
     )
 
     @classmethod
@@ -707,6 +725,15 @@ class ItemModel(BaseModel, BaseLookupModel):
             if not has.db_entry("technique", tech):
                 raise ValueError(
                     f"Technique {tech} does not exist in the database"
+                )
+        return v
+
+    @field_validator("granted_statuses")
+    def statuses_exist(cls, v: Sequence[str]) -> Sequence[str]:
+        for status in v:
+            if not has.db_entry("status", status):
+                raise ValueError(
+                    f"Status {status} does not exist in the database"
                 )
         return v
 
@@ -1244,8 +1271,6 @@ class StatModel(BaseModel):
     step: int | None = Field(
         None,
         description="Optional step delta to apply (e.g., +2 step to speed)",
-        ge=-6,
-        le=6,
     )
     max_deviation: int = Field(
         0,
@@ -1267,6 +1292,14 @@ class StatModel(BaseModel):
         "nonlinear",
         description="Defines how step scaling is applied: 'linear' for base*(1+step), 'nonlinear' for tiered scaling",
     )
+
+    @field_validator("step")
+    def validate_step(cls, v: int | None) -> int | None:
+        if v is None:
+            return None
+        if not (-6 <= v <= 6):
+            raise ValueError("step must be between -6 and 6")
+        return v
 
 
 class Range(str, Enum):
@@ -1444,6 +1477,10 @@ class TechniqueModel(BaseModel, BaseLookupModel):
         ..., description="Configuration for the technique's sound playback."
     )
     modifiers: list[Modifier] = Field(..., description="Various modifiers")
+    stat_modifiers: dict[str, StatModel] = Field(
+        default_factory=dict,
+        description="Dictionary of stat modifiers keyed by stat name (e.g., 'speed', 'hp')",
+    )
     use_tech: str | None = Field(
         None,
         description="Slug of what string to display when technique is used",
@@ -1596,14 +1633,14 @@ class StatusModel(BaseModel, BaseLookupModel):
         description="The type of effect triggered by the step interval.",
     )
     modifiers: list[Modifier] = Field(..., description="Various modifiers")
-    category: Optional[CategoryStatus] = Field(
+    category: CategoryStatus | None = Field(
         None, description="Category status: positive or negative"
     )
-    on_positive_status: Optional[ResponseStatus] = Field(
+    on_positive_status: ResponseStatus | None = Field(
         None,
         description="Determines the response when a positive status is applied",
     )
-    on_negative_status: Optional[ResponseStatus] = Field(
+    on_negative_status: ResponseStatus | None = Field(
         None,
         description="Determines the response when a negative status is applied",
     )

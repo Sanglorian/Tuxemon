@@ -1,85 +1,285 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
-from tuxemon.db import CategoryStatus, ResponseStatus
+import pytest
+
+from tuxemon.core.asset import init_assets
+from tuxemon.db import CategoryStatus, EffectPhase, ResponseStatus
 from tuxemon.monster import Monster
-from tuxemon.monster_dir.held_item import MonsterItemHandler
 from tuxemon.monster_dir.status import MonsterStatusHandler
 
 
-class TestMonsterStatusHandler(unittest.TestCase):
+@pytest.fixture
+def session():
+    init_assets()
+    return MagicMock()
 
-    def setUp(self):
-        self.session = MagicMock()
-        self.monster = MagicMock(spec=Monster)
-        self.monster.name = "Rockitten"
-        self.status = MagicMock(slug="test")
-        self.status.host = self.monster
-        self.basic = MonsterStatusHandler()
-        self.handler = MonsterStatusHandler([self.status])
-        self.mock_item = MagicMock()
-        self.mock_item.is_immune.return_value = False
 
-    def test_init(self):
-        self.assertEqual(self.basic.status, [])
+@pytest.fixture
+def monster():
+    m = MagicMock(spec=Monster)
+    m.name = "Rockitten"
+    return m
 
-    def test_init_with_status(self):
-        self.assertEqual(self.handler.status, [self.status])
 
-    def test_apply_status(self):
-        self.monster.held_item = self.mock_item
-        self.basic.apply_status(self.session, self.status)
-        self.assertEqual(self.basic.status, [self.status])
+@pytest.fixture
+def basic_handler():
+    return MonsterStatusHandler()
 
-    def test_apply_status_replace(self):
-        status1 = MagicMock(
-            category=CategoryStatus.positive,
-            on_positive_status=ResponseStatus.replaced,
-        )
-        status1.host = self.monster
-        status2 = MagicMock(on_positive_status=ResponseStatus.replaced)
-        status2.host = self.monster
-        self.monster.held_item = self.mock_item
-        handler = MonsterStatusHandler([status1])
-        handler.apply_status(self.session, status2)
-        self.assertEqual(len(handler.status), 1)
-        self.assertNotEqual(handler.status[0], status1)
 
-    def test_apply_status_remove(self):
-        status1 = MagicMock(category=CategoryStatus.positive)
-        status1.host = self.monster
-        status2 = MagicMock(on_positive_status=ResponseStatus.removed)
-        status2.host = self.monster
-        self.monster.held_item = self.mock_item
-        handler = MonsterStatusHandler([status1])
-        handler.apply_status(self.session, status2)
-        self.assertEqual(handler.status, [])
+@pytest.fixture
+def status(monster):
+    s = MagicMock(slug="test")
+    s.host = monster
+    return s
 
-    def test_clear_status(self):
-        self.handler.clear_status(self.session)
-        self.assertEqual(self.handler.status, [])
 
-    def test_get_statuses(self):
-        self.assertEqual(self.handler.get_statuses(), [self.status])
+def test_init(basic_handler):
+    assert basic_handler.status == []
 
-    def test_has_status(self):
-        self.assertTrue(self.handler.has_status("test"))
 
-    def test_has_status_not(self):
-        self.assertFalse(self.handler.has_status("test2"))
+def test_init_with_status(status):
+    handler = MonsterStatusHandler([status])
+    assert handler.status == [status]
 
-    def test_status_exists(self):
-        self.assertTrue(self.handler.status_exists())
 
-    def test_status_exists_not(self):
-        self.assertFalse(self.basic.status_exists())
+def test_apply_status(session, monster, status):
+    monster.held_item = MagicMock()
+    monster.held_item.is_immune.return_value = False
+    handler = MonsterStatusHandler()
+    handler.apply_status(session, status)
+    assert handler.status == [status]
 
-    def test_remove_bonded_statuses(self):
-        status1 = MagicMock(bond=True)
-        status2 = MagicMock(bond=False)
-        handler = MonsterStatusHandler([status1, status2])
-        handler.remove_bonded_statuses()
-        self.assertEqual(len(handler.status), 1)
-        self.assertEqual(handler.status[0], status2)
+
+def test_clear_status(session, status):
+    handler = MonsterStatusHandler([status])
+    handler.clear_status(session)
+    assert handler.status == []
+
+
+def test_get_statuses(status):
+    handler = MonsterStatusHandler([status])
+    assert handler.get_statuses() == [status]
+
+
+def test_status_exists(status):
+    handler = MonsterStatusHandler([status])
+    assert handler.status_exists()
+
+
+def test_status_exists_not(basic_handler):
+    assert not basic_handler.status_exists()
+
+
+def test_remove_bonded_statuses(session):
+    s1 = MagicMock(bond=True)
+    s2 = MagicMock(bond=False)
+    handler = MonsterStatusHandler([s1, s2])
+    handler.remove_bonded_statuses(session)
+    assert handler.status == [s2]
+
+
+def test_immunity_blocks_status(session, monster, status):
+    monster.held_item = MagicMock()
+    monster.held_item.is_immune.return_value = True
+    handler = MonsterStatusHandler()
+    result = handler.apply_status(session, status)
+    assert not result.applied
+    assert result.blocked_reason.name == "IMMUNE_BY_ITEM"
+    assert handler.status == []
+
+
+def test_stack_called_on_duplicate_status(session, monster):
+    s1 = MagicMock(slug="burn")
+    s1.host = monster
+    s1.stack = MagicMock()
+    s2 = MagicMock(slug="burn")
+    s2.host = monster
+    monster.held_item = MagicMock()
+    monster.held_item.is_immune.return_value = False
+    handler = MonsterStatusHandler([s1])
+    handler.apply_status(session, s2)
+    s1.stack.assert_called_once()
+
+
+def test_on_start_called(session, monster):
+    s = MagicMock(slug="burn")
+    s.host = monster
+    monster.held_item = MagicMock()
+    monster.held_item.is_immune.return_value = False
+    handler = MonsterStatusHandler()
+    handler.apply_status(session, s)
+    s.use.assert_called_with(session, EffectPhase.ON_START)
+
+
+def test_on_end_called(session, monster):
+    s1 = MagicMock(slug="burn")
+    s1.host = monster
+    s2 = MagicMock(slug="freeze")
+    s2.host = monster
+    monster.held_item = MagicMock()
+    monster.held_item.is_immune.return_value = False
+    handler = MonsterStatusHandler([s1])
+    handler.apply_status(session, s2)
+    s1.use.assert_any_call(session, EffectPhase.ON_END)
+
+
+def test_tick_statuses_on_steps(monster, session):
+    s = MagicMock()
+    s.tick_steps.return_value = "result"
+    handler = MonsterStatusHandler([s])
+    results = handler.tick_statuses_on_steps(session, 5)
+    assert results == ["result"]
+    s.tick_steps.assert_called_once()
+
+
+def test_check_and_clear_use_expiry(monster, session):
+    s = MagicMock()
+    s.host = monster
+    s.is_use_expired.return_value = True
+    handler = MonsterStatusHandler([s])
+    cleared = handler.check_and_clear_use_expiry(session)
+    assert cleared
+    assert handler.status == []
+
+
+@patch("tuxemon.status.status.StatusModel.lookup")
+def test_apply_item_statuses(mock_lookup, monster):
+    mock_lookup.return_value = MagicMock(
+        slug="enraged",
+        sort=None,
+        gain_cond=None,
+        use_success=None,
+        use_failure=None,
+        icon="",
+        modifiers=[],
+        behaviors=MagicMock(),
+        step_interval=0,
+        step_effect_value=0,
+        step_effect_type=0,
+        stat_modifiers={},
+        duration=0,
+        bond=False,
+        category=None,
+        on_negative_status=None,
+        on_positive_status=None,
+        on_tech_use=None,
+        on_item_use=None,
+        cond_id=0,
+        effects=[],
+        conditions=[],
+        visuals=MagicMock(),
+        sound=MagicMock(),
+    )
+    item = MagicMock()
+    item.granted_statuses = ["enraged"]
+    handler = MonsterStatusHandler()
+    handler.apply_item_statuses(monster, item)
+    assert len(handler.status) == 1
+    assert handler.status[0].slug == "enraged"
+
+
+def test_remove_item_statuses(monster):
+    s1 = MagicMock(slug="enraged")
+    s2 = MagicMock(slug="burn")
+    item = MagicMock()
+    item.granted_statuses = ["enraged"]
+    handler = MonsterStatusHandler([s1, s2])
+    handler.remove_item_statuses(item)
+    assert handler.status == [s2]
+
+
+@patch("tuxemon.status.status.StatusModel.lookup")
+def test_decode_status(mock_lookup, monster):
+    mock_lookup.return_value = MagicMock(
+        slug="burn",
+        sort=None,
+        gain_cond=None,
+        use_success=None,
+        use_failure=None,
+        icon="",
+        modifiers=[],
+        behaviors=MagicMock(),
+        step_interval=0,
+        step_effect_value=0,
+        step_effect_type=0,
+        stat_modifiers={},
+        duration=0,
+        bond=False,
+        category=None,
+        on_negative_status=None,
+        on_positive_status=None,
+        on_tech_use=None,
+        on_item_use=None,
+        cond_id=0,
+        effects=[],
+        conditions=[],
+        visuals=MagicMock(),
+        sound=MagicMock(),
+    )
+    json_data = {
+        "status": [
+            {"slug": "burn", "steps": 0},
+            {"slug": "freeze", "steps": 0},
+        ]
+    }
+    handler = MonsterStatusHandler()
+    handler.decode_status(json_data, monster)
+    assert len(handler.status) == 2
+
+
+@pytest.mark.parametrize(
+    "slug, expected",
+    [
+        ("test", True),
+        ("other", False),
+    ],
+)
+def test_has_status_param(monster, slug, expected):
+    s = MagicMock(slug="test")
+    s.host = monster
+    handler = MonsterStatusHandler([s])
+    assert handler.has_status(slug) == expected
+
+
+@pytest.mark.parametrize(
+    "current_category, transition, expect_applied, expect_empty",
+    [
+        # Positive category
+        (CategoryStatus.positive, ResponseStatus.replaced, True, False),
+        (CategoryStatus.positive, ResponseStatus.removed, False, True),
+        # Negative category
+        (CategoryStatus.negative, ResponseStatus.replaced, True, False),
+        (CategoryStatus.negative, ResponseStatus.removed, False, True),
+        # Neutral category defaults to replaced
+        (None, ResponseStatus.replaced, True, False),
+    ],
+)
+def test_apply_status_transitions(
+    session,
+    monster,
+    current_category,
+    transition,
+    expect_applied,
+    expect_empty,
+):
+    status1 = MagicMock(category=current_category)
+    status1.host = monster
+
+    status2 = MagicMock()
+    status2.host = monster
+
+    if current_category == CategoryStatus.positive:
+        status2.on_positive_status = transition
+    elif current_category == CategoryStatus.negative:
+        status2.on_negative_status = transition
+
+    monster.held_item = MagicMock()
+    monster.held_item.is_immune.return_value = False
+
+    handler = MonsterStatusHandler([status1])
+    result = handler.apply_status(session, status2)
+
+    assert result.applied == expect_applied
+    assert (handler.status == []) == expect_empty

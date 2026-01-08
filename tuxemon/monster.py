@@ -6,7 +6,7 @@ import logging
 import random
 from collections.abc import Mapping, Sequence
 from dataclasses import fields
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 from tuxemon import formula
@@ -84,11 +84,11 @@ class Monster:
     a Tuxemon, fetching its details from a database.
     """
 
-    def __init__(self, save_data: Optional[Mapping[str, Any]] = None) -> None:
+    def __init__(self, save_data: Mapping[str, Any] | None = None) -> None:
         save_data = save_data or {}
 
         self.slug: str = ""
-        self._custom_name: Optional[str] = None
+        self._custom_name: str | None = None
         self.instance_id: UUID = uuid4()
 
         self.base_stats: BasicStats = BasicStats()
@@ -107,7 +107,7 @@ class Monster:
         self.stage: EvolutionStage = EvolutionStage.standalone
         self.flair_slugs: set[str] = set()
         self.flairs: dict[str, Flair] = {}
-        self.owner: Optional[NPC] = None
+        self.owner: NPC | None = None
         self.gender_weights: dict[GenderType, float] = {}
         self.item_handler = MonsterItemHandler()
         self.experience_handler: MonsterExperience = MonsterExperience()
@@ -133,8 +133,8 @@ class Monster:
         self.height: float = 0.0
         self.weight: float = 0.0
 
-        self.mother_iid: Optional[UUID] = None
-        self.father_iid: Optional[UUID] = None
+        self.mother_iid: UUID | None = None
+        self.father_iid: UUID | None = None
 
         # The multiplier for checks when a monster ball is thrown this should be a value between 0-100 meaning that
         # 0 is 0% capture rate and 100 has a very good chance of capture. This numbers are based on the capture system
@@ -172,7 +172,7 @@ class Monster:
 
     @classmethod
     def create(
-        cls, slug: str, save_data: Optional[Mapping[str, Any]] = None
+        cls, slug: str, save_data: Mapping[str, Any] | None = None
     ) -> Monster:
         method = cls(save_data)
         method.load(slug)
@@ -203,7 +203,7 @@ class Monster:
         return T.translate(f"cat_{self.species}")
 
     @property
-    def held_item(self) -> Optional[Item]:
+    def held_item(self) -> Item | None:
         return self.item_handler.held_item
 
     @property
@@ -360,7 +360,7 @@ class Monster:
             raise ValueError("No character is linked to this monster.")
         return self.owner
 
-    def set_owner(self, character: Optional[NPC]) -> None:
+    def set_owner(self, character: NPC | None) -> None:
         """Sets the NPC associated with this monster."""
         self.owner = character
 
@@ -376,12 +376,14 @@ class Monster:
         result = self.item_handler.set_item(item)
         if result:
             self.moves.apply_item_techniques(self, item)
+            self.status.apply_item_statuses(self, item)
         return result
 
     def unequip_item(self) -> Item | None:
         item = self.item_handler.take_item()
         if item:
             self.moves.remove_item_techniques(self, item)
+            self.status.remove_item_statuses(item)
             return item
         return None
 
@@ -430,27 +432,18 @@ class Monster:
             sprite_type, frame_duration, scale, **kwargs
         )
 
-    def return_stat(self, stat: StatType) -> int:
+    def return_stat(self, stat: StatType | str) -> int:
         """
         Returns a monster stat (eg. melee, armour, etc.).
-
-        Parameters:
-            stat: The stat for the monster to return.
-
-        Returns:
-            value: The stat.
-
+        Accepts either a StatType enum or a string.
         """
-        stat_map: dict[StatType, int] = {
-            StatType.armour: self.armour,
-            StatType.dodge: self.dodge,
-            StatType.hp: self.hp,
-            StatType.melee: self.melee,
-            StatType.ranged: self.ranged,
-            StatType.speed: self.speed,
-        }
+        if isinstance(stat, str):
+            try:
+                stat = StatType(stat.lower())
+            except ValueError:
+                return 0
 
-        return stat_map.get(stat, 0)
+        return getattr(self, stat.value, 0)
 
     def has_type(self, type_slug: str) -> bool:
         """
@@ -523,6 +516,41 @@ class Monster:
             individual_values=self.individual_values,
         )
         self.base_stats = calculator.calculate()
+
+    def get_combat_stats(self) -> BasicStats:
+        """Calculates effective stats for the current combat turn."""
+        combined_temporary_boosts = BasicStats()
+
+        for status in self.status.get_statuses():
+            combined_temporary_boosts += status.temporary_stat_boosts
+
+        held_item = self.item_handler.held_item
+        if held_item:
+            combined_temporary_boosts += held_item.temporary_stat_boosts
+
+        for move in self.moves.get_moves():
+            combined_temporary_boosts += move.temporary_stat_boosts
+
+        calculator = StatCalculator(
+            base_stats=self.base_stats,
+            level=self.level,
+            shape=self.shape,
+            taste_cold=self.taste_cold,
+            taste_warm=self.taste_warm,
+            custom_stats=self.custom_stats,
+            training_points=self.training_points,
+            individual_values=self.individual_values,
+        )
+
+        return calculator.calculate(temporary_boosts=combined_temporary_boosts)
+
+    def clear_all_temporary_boosts(self) -> None:
+        for status in self.status.get_statuses():
+            status.temporary_stat_boosts = BasicStats()
+        for move in self.moves.get_moves():
+            move.temporary_stat_boosts = BasicStats()
+        if self.item_handler.held_item:
+            self.item_handler.held_item.temporary_stat_boosts = BasicStats()
 
     def set_capture(self, amount: int) -> int:
         """
@@ -695,6 +723,9 @@ class Monster:
         """
         Ends combat, recharges all moves and heals statuses.
         """
+        self.clear_all_temporary_boosts()
+        self.types.reset_to_default()
+        self.moves.set_stats()
         self.out_of_range = False
         self.moves.full_recharge_moves()
 
@@ -704,11 +735,11 @@ class Monster:
                 current_status
                 and not current_status.behaviors.persists_after_combat
             ):
-                self.status.remove_status()
+                self.status.clear_status(session)
 
         if self.is_fainted:
             self.current_hp = 0
-            self.status.apply_faint(self)
+            self.status.apply_faint(session, self)
             current = self.status.current_status
             if current:
                 current.use(session, EffectPhase.ON_FAINT)

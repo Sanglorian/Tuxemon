@@ -78,14 +78,14 @@ class RemoveEffect(CoreEffect):
                         self.status == "positive"
                         and current_status.category == CategoryStatus.positive
                     ):
-                        monster.status.remove_status()
+                        monster.status.clear_status(session)
                     elif (
                         self.status == "negative"
                         and current_status.category == CategoryStatus.negative
                     ):
-                        monster.status.remove_status()
+                        monster.status.clear_status(session)
                 elif current_status and self.status == current_status.slug:
-                    monster.status.remove_status()
+                    monster.status.clear_status(session)
 
         if monsters:
             event_bus = session.client.event_bus

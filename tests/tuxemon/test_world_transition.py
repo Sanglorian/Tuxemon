@@ -1,176 +1,252 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-from unittest import TestCase
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call
+
+import pytest
 
 from tuxemon.client import LocalPygameClient
 from tuxemon.movement import MovementManager
 from tuxemon.world.transition import WorldTransition
 
 
-class TestTransition(TestCase):
-    def setUp(self):
-        self.mock_world = MagicMock()
-        self.mock_world.client = MagicMock(spec=LocalPygameClient)
-        self.mock_world.client.movement_manager = MagicMock(
-            spec=MovementManager
+@pytest.fixture
+def mock_world():
+    world = MagicMock()
+    world.client = MagicMock(spec=LocalPygameClient)
+    world.client.movement_manager = MagicMock(spec=MovementManager)
+    world.player = MagicMock()
+    return world
+
+
+@pytest.fixture
+def transition(mock_world):
+    return WorldTransition(mock_world, mock_world.client.movement_manager)
+
+
+@pytest.fixture
+def fake_surface(monkeypatch):
+    mock_surface = MagicMock()
+    monkeypatch.setattr(
+        "pygame.Surface",
+        lambda *args, **kwargs: mock_surface,
+    )
+    return mock_surface
+
+
+def test_initial_state(transition):
+    assert transition.transition_surface is None
+    assert transition.transition_alpha == 0
+    assert transition.in_transition is False
+
+
+@pytest.mark.parametrize("state", [True, False])
+def test_transition_state_changes(transition, state):
+    transition.set_transition_state(state)
+    assert transition.in_transition is state
+
+
+@pytest.mark.parametrize(
+    "color",
+    [
+        (0, 0, 0, 255),
+        (255, 0, 0, 255),
+    ],
+)
+def test_set_transition_surface(monkeypatch, transition, color):
+    monkeypatch.setattr("tuxemon.world.transition.SCREEN_SIZE", (800, 600))
+    transition.set_transition_surface(color)
+    assert transition.transition_surface is not None
+    assert transition.transition_surface.get_size() == (800, 600)
+    assert transition.transition_surface.get_at((0, 0)) == color
+
+
+def test_draw_no_action_when_not_in_transition(transition):
+    surface = MagicMock()
+    transition.set_transition_state(False)
+    transition.transition_alpha = 128
+    transition.draw(surface)
+    surface.blit.assert_not_called()
+
+
+def test_draw_with_transition(transition, fake_surface):
+    surface = MagicMock()
+    transition.set_transition_surface((0, 0, 0, 255))
+    transition.set_transition_state(True)
+    transition.transition_surface = fake_surface
+    transition.transition_alpha = 100
+    transition.draw(surface)
+    fake_surface.set_alpha.assert_called_with(100)
+    surface.blit.assert_called_with(fake_surface, (0, 0))
+
+
+def test_draw_with_zero_alpha_does_not_blit(transition, fake_surface):
+    surface = MagicMock()
+    transition.set_transition_surface((0, 0, 0, 255))
+    transition.set_transition_state(True)
+    transition.transition_surface = fake_surface
+    transition.transition_alpha = 0
+    transition.draw(surface)
+    fake_surface.set_alpha.assert_called_with(0)
+    surface.blit.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "method, initial, final",
+    [
+        ("fade_out", 0, 255),
+        ("fade_in", 255, 0),
+    ],
+)
+def test_fade_alpha_animation(
+    monkeypatch, transition, mock_world, method, initial, final
+):
+    monkeypatch.setattr("pygame.Surface", MagicMock())
+    color = (0, 0, 0, 255)
+    getattr(transition, method)(1.0, color)
+    mock_world.animate.assert_called_with(
+        transition,
+        transition_alpha=final,
+        initial=initial,
+        duration=1.0,
+        round_values=True,
+    )
+
+
+@pytest.mark.parametrize(
+    "duration",
+    [1.0, 0.0, -1.0],
+)
+@pytest.mark.parametrize(
+    "with_character",
+    [True, False],
+)
+def test_fade_out_edge_cases(
+    monkeypatch, transition, mock_world, duration, with_character
+):
+    monkeypatch.setattr("pygame.Surface", MagicMock())
+    color = (0, 0, 0, 255)
+    character = mock_world.player if with_character else None
+    transition.fade_out(duration, color, character)
+    mock_world.animate.assert_called_with(
+        transition,
+        transition_alpha=255,
+        initial=0,
+        duration=duration,
+        round_values=True,
+    )
+    if with_character:
+        mm = mock_world.client.movement_manager
+        mm.stop_char.assert_called_with(character)
+        mm.lock_controls.assert_called_with(character)
+    else:
+        mm = mock_world.client.movement_manager
+        mm.stop_char.assert_not_called()
+        mm.lock_controls.assert_not_called()
+    assert transition.in_transition is True
+
+
+@pytest.mark.parametrize(
+    "duration",
+    [1.0, 0.0, -1.0],
+)
+@pytest.mark.parametrize(
+    "with_character",
+    [True, False],
+)
+def test_fade_in_edge_cases(
+    monkeypatch, transition, mock_world, duration, with_character
+):
+    monkeypatch.setattr("pygame.Surface", MagicMock())
+    color = (0, 0, 0, 255)
+    character = mock_world.player if with_character else None
+    transition.fade_in(duration, color, character)
+    mock_world.animate.assert_called_with(
+        transition,
+        transition_alpha=0,
+        initial=255,
+        duration=duration,
+        round_values=True,
+    )
+    assert mock_world.task.call_count == 1
+    _, kwargs = mock_world.task.call_args_list[0]
+    assert kwargs["interval"] == max(duration, 0)
+    assert transition.in_transition is False
+
+
+def test_fade_out_call_order(monkeypatch, transition, mock_world):
+    monkeypatch.setattr("pygame.Surface", MagicMock())
+    color = (0, 0, 0, 255)
+    character = mock_world.player
+    transition.fade_out(1.0, color, character)
+    mm = mock_world.client.movement_manager
+    filtered = [
+        c
+        for c in mock_world.mock_calls
+        if c[0]
+        in (
+            "animate",
+            "client.movement_manager.stop_char",
+            "client.movement_manager.lock_controls",
         )
-        self.mock_world.player = MagicMock()
-
-        self.transition = WorldTransition(
-            self.mock_world, self.mock_world.client.movement_manager
-        )
-
-    def test_transition_initialization(self):
-        self.assertIsNone(self.transition.transition_surface)
-        self.assertEqual(self.transition.transition_alpha, 0)
-        self.assertFalse(self.transition.in_transition)
-
-    @patch("tuxemon.world.transition.SCREEN_SIZE", (800, 600))
-    def test_set_transition_surface_size(self):
-        color = (0, 0, 0, 255)
-        self.transition.set_transition_surface(color)
-
-        self.assertEqual(
-            self.transition.transition_surface.get_size(), (800, 600)
-        )
-
-    def test_draw_no_action(self):
-        mock_surface = MagicMock()
-
-        self.transition.set_transition_state(False)
-        self.transition.draw(mock_surface)
-
-        mock_surface.blit.assert_not_called()
-
-    def test_transition_state_changes(self):
-        self.transition.set_transition_state(True)
-        self.assertTrue(self.transition.in_transition)
-
-        self.transition.set_transition_state(False)
-        self.assertFalse(self.transition.in_transition)
-
-    @patch("tuxemon.world.transition.SCREEN_SIZE", (800, 600))
-    def test_set_transition_surface(self):
-        mock_color = (255, 0, 0)
-        self.transition.set_transition_surface(mock_color)
-
-        self.assertIsNotNone(self.transition.transition_surface)
-        self.assertEqual(
-            self.transition.transition_surface.get_size(), (800, 600)
-        )
-        self.assertEqual(
-            self.transition.transition_surface.get_at((0, 0)), mock_color
-        )
-
-    def test_set_transition_state(self):
-        self.transition.set_transition_state(True)
-        self.assertTrue(self.transition.in_transition)
-
-        self.transition.set_transition_state(False)
-        self.assertFalse(self.transition.in_transition)
-
-    @patch("pygame.Surface")
-    def test_draw_with_transition(self, MockSurface):
-        mock_surface = MagicMock()
-        mock_transition_surface = MockSurface.return_value
-        self.transition.set_transition_surface((0, 0, 0, 255))
-        self.transition.set_transition_state(True)
-
-        self.transition.transition_surface = MockSurface()
-        self.transition.transition_alpha = 100
-        self.transition.draw(mock_surface)
-
-        mock_transition_surface.set_alpha.assert_called_with(100)
-        mock_surface.blit.assert_called_with(mock_transition_surface, (0, 0))
-
-    @patch("pygame.Surface")
-    def test_alpha_change_during_fade(self, MockSurface):
-        color = (0, 0, 0, 255)
-        self.transition.fade_out(1.0, color)
-
-        self.mock_world.animate.assert_called_with(
-            self.transition,
+    ]
+    expected = [
+        call.animate(
+            transition,
             transition_alpha=255,
             initial=0,
             duration=1.0,
             round_values=True,
-        )
+        ),
+        call.client.movement_manager.stop_char(character),
+        call.client.movement_manager.lock_controls(character),
+    ]
+    assert filtered == expected
 
-    @patch("pygame.Surface")
-    def test_fade_out(self, MockSurface):
-        mock_color = (0, 0, 0, 255)
-        self.transition.fade_out(1.0, mock_color, self.mock_world.player)
 
-        self.mock_world.animate.assert_called_with(
-            self.transition,
-            transition_alpha=255,
-            initial=0,
-            duration=1.0,
-            round_values=True,
-        )
-        self.mock_world.client.movement_manager.stop_char.assert_called_with(
-            self.mock_world.player
-        )
-        self.mock_world.client.movement_manager.lock_controls.assert_called_with(
-            self.mock_world.player
-        )
-        self.assertTrue(self.transition.in_transition)
+def test_fade_in_call_order(monkeypatch, transition, mock_world):
+    monkeypatch.setattr("pygame.Surface", MagicMock())
+    color = (0, 0, 0, 255)
+    character = mock_world.player
+    transition.fade_in(1.0, color, character)
+    assert mock_world.animate.call_count == 1
+    assert mock_world.task.call_count == 1
+    animate_call_index = next(
+        i for i, c in enumerate(mock_world.mock_calls) if c[0] == "animate"
+    )
+    task_call_indices = [
+        i for i, c in enumerate(mock_world.mock_calls) if c[0] == "task"
+    ]
+    assert all(animate_call_index < idx for idx in task_call_indices)
 
-    @patch("pygame.Surface")
-    def test_fade_in(self, MockSurface):
-        mock_color = (0, 0, 0, 255)
-        self.transition.fade_in(1.0, mock_color)
 
-        self.mock_world.animate.assert_called_with(
-            self.transition,
-            transition_alpha=0,
-            initial=255,
-            duration=1.0,
-            round_values=True,
-        )
-        self.mock_world.task.assert_called()
-        self.assertFalse(self.transition.in_transition)
+def test_fade_and_teleport_call_order(monkeypatch, transition, mock_world):
+    monkeypatch.setattr("pygame.Surface", MagicMock())
+    color = (0, 0, 0, 255)
+    teleport = MagicMock()
+    transition.fade_and_teleport(1.0, color, mock_world.player, teleport)
+    mock_world.animate.assert_called_with(
+        transition,
+        transition_alpha=255,
+        initial=0,
+        duration=1.0,
+        round_values=True,
+    )
+    mock_world.task.assert_called_with(teleport, interval=1.0)
+    chained = mock_world.task.return_value.chain
+    chained.assert_called()
+    task_call_index = next(
+        i for i, c in enumerate(mock_world.mock_calls) if c[0] == "task"
+    )
+    chain_call_index = next(
+        i
+        for i, c in enumerate(mock_world.task.return_value.mock_calls)
+        if c[0] == "chain"
+    )
+    assert chain_call_index >= 0
 
-    @patch("pygame.Surface")
-    def test_fade_and_teleport(self, MockSurface):
-        mock_color = (0, 0, 0, 255)
-        mock_teleport = MagicMock()
-        self.transition.fade_and_teleport(
-            1.0, mock_color, self.mock_world.player, mock_teleport
-        )
 
-        self.mock_world.animate.assert_called_with(
-            self.transition,
-            transition_alpha=255,
-            initial=0,
-            duration=1.0,
-            round_values=True,
-        )
-        self.mock_world.task.assert_called_with(mock_teleport, interval=1.0)
-
-        chained_task = self.mock_world.task.return_value.chain
-        chained_task.assert_called()
-
-    @patch("pygame.Surface")
-    def test_draw(self, MockSurface):
-        mock_surface = MagicMock()
-        mock_transition_surface = MockSurface.return_value
-        self.transition.set_transition_surface((0, 0, 0, 255))
-        self.transition.set_transition_state(True)
-
-        self.transition.transition_surface = MockSurface()
-        self.transition.transition_alpha = 128
-
-        self.transition.draw(mock_surface)
-
-        mock_transition_surface.set_alpha.assert_called_with(128)
-        mock_surface.blit.assert_called_with(mock_transition_surface, (0, 0))
-
-    def test_no_draw_when_not_in_transition(self):
-        mock_surface = MagicMock()
-        self.transition.set_transition_state(False)
-
-        self.transition.draw(mock_surface)
-
-        mock_surface.blit.assert_not_called()
+def test_no_draw_when_not_in_transition(transition):
+    surface = MagicMock()
+    transition.set_transition_state(False)
+    transition.draw(surface)
+    surface.blit.assert_not_called()

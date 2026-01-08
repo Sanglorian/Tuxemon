@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from heapq import heappop, heappush
 from typing import TYPE_CHECKING, Optional
 
@@ -15,19 +15,16 @@ from tuxemon.map.map import (
     get_explicit_tile_exits,
     pairs,
 )
-from tuxemon.platform.const import intentions
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.boundary import BoundaryChecker
-    from tuxemon.camera.camera import CameraManager
     from tuxemon.db import Direction
     from tuxemon.event.eventmanager import EventManager
     from tuxemon.map.collision_manager import CollisionManager, CollisionMap
     from tuxemon.map.map_manager import MapManager
     from tuxemon.npc import NPC
     from tuxemon.npc_manager import NPCManager
-    from tuxemon.platform.events import PlayerInput
     from tuxemon.platform.input_manager import InputManager
 
 logger = logging.getLogger(__name__)
@@ -96,20 +93,11 @@ class MovementManager:
         self,
         event_manager: EventManager,
         input_manager: InputManager,
-        camera_manager: CameraManager,
     ) -> None:
         self.event_manager = event_manager
         self.input_manager = input_manager
-        self.camera_manager = camera_manager
         self.wants_to_move_char: dict[str, Direction] = {}
         self.allow_char_movement: set[str] = set()
-
-        self.direction_map: Mapping[int, Direction] = {
-            intentions.UP: Direction.up,
-            intentions.DOWN: Direction.down,
-            intentions.LEFT: Direction.left,
-            intentions.RIGHT: Direction.right,
-        }
 
     def queue_movement(self, char_slug: str, direction: Direction) -> None:
         """Queues the movement request for a character."""
@@ -152,32 +140,6 @@ class MovementManager:
         Checks if the specified character has a pending movement request.
         """
         return character.slug in self.wants_to_move_char
-
-    def handle_directional_input(
-        self,
-        character: NPC,
-        event: PlayerInput,
-    ) -> Optional[PlayerInput]:
-        """Processes directional input and moves the character if allowed."""
-        direction = self.direction_map.get(event.button)
-        if direction is None:
-            return event
-
-        camera = self.camera_manager.get_active_camera()
-        if camera and not camera.is_following():
-            return self.camera_manager.handle_input(event)
-
-        if event.held:
-            self.queue_movement(character.slug, direction)
-            if self.is_movement_allowed(character):
-                self.move_char(character, direction)
-            return None
-
-        if not event.pressed and self.has_pending_movement(character):
-            self.stop_char(character)
-            return None
-
-        return event
 
 
 class Pathfinder:

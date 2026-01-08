@@ -167,10 +167,10 @@ def test_multiple_middleware_chain(event_manager, state_manager):
 def test_add_and_remove_middleware(event_manager):
     mw = Mock()
     event_manager.add_middleware(mw)
-    assert mw in event_manager.middleware.values()
+    assert any(inst is mw for _, inst in event_manager.middleware.values())
 
     event_manager.remove_middleware(mw)
-    assert mw not in event_manager.middleware.values()
+    assert all(inst is not mw for _, inst in event_manager.middleware.values())
 
 
 def test_empty_event_list(event_manager):

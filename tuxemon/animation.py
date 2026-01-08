@@ -7,14 +7,15 @@ from collections import defaultdict
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum, auto
-from math import cos, pi, sin, sqrt
 from typing import Any, cast
 from weakref import ref
 
 from pygame.rect import Rect
 from pygame.sprite import Sprite
 
-__all__ = ("Task", "Animation", "remove_animations_of")
+from tuxemon.state.animation_transition import AnimationTransition
+
+__all__ = ("Task", "Animation")
 
 
 ScheduledFunction = Callable[[], Any]
@@ -106,9 +107,30 @@ class TaskBase(Sprite):
             args: Positional arguments to pass to the callback.
             kwargs: Keyword arguments to pass to the callback.
         """
+        if not callable(func):
+            raise TypeError(
+                f"Scheduled callback must be callable, got {type(func).__name__}"
+            )
+
+        # Normalize string schedule types
+        if isinstance(when, str):
+            try:
+                when = ScheduleType(when)
+            except ValueError:
+                raise ValueError(
+                    f"Invalid time to schedule a callback: '{when}'. "
+                    f"Valid options: {[s.value for s in self._valid_schedules]}"
+                )
+
+        # Default schedule type
         if when is None:
+            if not self._valid_schedules:
+                raise RuntimeError(
+                    f"{self.__class__.__name__} defines no valid schedule types"
+                )
             when = self._valid_schedules[0]
 
+        # Validate schedule type
         if when not in self._valid_schedules:
             raise ValueError(
                 f"Invalid time to schedule a callback: '{when.value}'. "
@@ -181,6 +203,7 @@ class Task(TaskBase):
     """
 
     _valid_schedules = (
+        ScheduleType.ON_UPDATE,
         ScheduleType.ON_INTERVAL,
         ScheduleType.ON_FINISH,
         ScheduleType.ON_ABORT,
@@ -193,22 +216,22 @@ class Task(TaskBase):
         times: int = 1,
     ) -> None:
         if not callable(callback):
-            raise ValueError("callback must be callable")
-
+            raise TypeError("callback must be callable")
         if interval < 0:
-            raise ValueError("interval must be non negative")
-
+            raise ValueError("interval must be non-negative")
         if times < -1 or times == 0:
             raise ValueError(
                 "times must be -1 for infinite loops, or a positive integer (>= 1)"
             )
 
         super().__init__()
+
         self._interval = interval
         self._loops = times
-        self._duration: float = 0
+        self._duration: float = 0.0
         self._chain: list[Task] = []
         self._state = AnimationState.RUNNING
+
         self.schedule(callback, ScheduleType.ON_INTERVAL)
 
     def chain(
@@ -216,7 +239,7 @@ class Task(TaskBase):
         callback: ScheduledFunction,
         interval: float = 0,
         times: int = 1,
-    ) -> None:
+    ) -> Task:
         """
         Schedule a callback to execute when this one is finished
 
@@ -231,7 +254,9 @@ class Task(TaskBase):
             interval: Time between callbacks.
             times: Number of intervals.
         """
-        self.chain_task(Task(callback, interval, times))
+        next_task = Task(callback, interval, times)
+        self.chain_task(next_task)
+        return next_task
 
     def chain_task(self, *others: Task) -> Sequence[Task]:
         """
@@ -248,10 +273,12 @@ class Task(TaskBase):
         """
         if self._loops == -1:
             raise RuntimeError("Cannot chain a task to an infinite loop task.")
+
         for task in others:
             if not isinstance(task, Task):
                 raise TypeError(f"Expected Task, got {type(task).__name__}")
             self._chain.append(task)
+
         return others
 
     def update(self, dt: float) -> None:
@@ -268,6 +295,9 @@ class Task(TaskBase):
         Parameters:
             dt: Time passed since last update.
         """
+        if dt < 0:
+            return
+
         if self._state is not AnimationState.RUNNING:
             raise RuntimeError(
                 f"Task cannot proceed: expected state "
@@ -276,29 +306,31 @@ class Task(TaskBase):
 
         self._duration += dt
         self._execute_callbacks(ScheduleType.ON_UPDATE)
+
         if self._duration >= self._interval:
             self._duration -= self._interval
+
             if self._loops > 0:
                 self._loops -= 1
+                self._execute_callbacks(ScheduleType.ON_INTERVAL)
+
                 if self._loops == 0:
                     self.finish()
-                else:
-                    self._execute_callbacks(ScheduleType.ON_INTERVAL)
+                    return
+
             elif self._loops == -1:
+                # Infinite loop
                 self._execute_callbacks(ScheduleType.ON_INTERVAL)
 
     def finish(self) -> None:
         """Force task to finish, while executing callbacks."""
-        if self._state is AnimationState.RUNNING:
-            self._state = AnimationState.FINISHED
-            self._execute_callbacks(ScheduleType.ON_INTERVAL)
-            self._execute_callbacks(ScheduleType.ON_FINISH)
-            self._execute_chain()
-            self._cleanup()
-        else:
-            logger.debug(
-                "Task already finished or not running, cannot finish again."
-            )
+        if self._state is not AnimationState.RUNNING:
+            return
+
+        self._state = AnimationState.FINISHED
+        self._execute_callbacks(ScheduleType.ON_FINISH)
+        self._execute_chain()
+        self._cleanup()
 
     def is_finish(self) -> bool:
         """
@@ -318,19 +350,20 @@ class Task(TaskBase):
         time_left = self._interval - self._duration
         if new_delay > time_left:
             self._interval = new_delay
-            self._duration = 0
+            self._duration = 0.0
 
     def abort(self) -> None:
         """Force task to finish, without executing 'on interval' callbacks."""
         if self._state is AnimationState.FINISHED:
             return
 
-        self._state = AnimationState.FINISHED
+        self._state = AnimationState.ABORTED
         self._execute_callbacks(ScheduleType.ON_ABORT)
         self._cleanup()
 
     def _cleanup(self) -> None:
-        self._chain = []
+        self._chain.clear()
+        self._callbacks.clear()
         self.kill()
 
     def _execute_chain(self) -> None:
@@ -582,6 +615,19 @@ class Animation(TaskBase):
         if p >= 1:
             self.finish()
 
+    def _reverse_cycle(self) -> None:
+        """
+        Reverse the animation direction by swapping initial and final values
+        for every animated property. This preserves the existing yoyo behavior.
+        """
+        for target_data in self.targets:
+            for prop_data in target_data.properties.values():
+                prop_data.initial, prop_data.final = (
+                    prop_data.final,
+                    prop_data.initial,
+                )
+        self._is_yoyo_reverse = not self._is_yoyo_reverse
+
     def finish(self) -> None:
         if self._state is not AnimationState.RUNNING:
             return
@@ -591,8 +637,6 @@ class Animation(TaskBase):
             if target:
                 for name, prop_data in target_data.properties.items():
                     self._set_value(target, name, prop_data.final)
-
-        self._execute_callbacks(ScheduleType.ON_UPDATE)
 
         if self._yoyo:
             self._half_cycle_count += 1
@@ -615,13 +659,7 @@ class Animation(TaskBase):
                 return
 
             self._elapsed = 0.0
-            self._is_yoyo_reverse = not self._is_yoyo_reverse
-            for target_data in self.targets:
-                for prop_data in target_data.properties.values():
-                    prop_data.initial, prop_data.final = (
-                        prop_data.final,
-                        prop_data.initial,
-                    )
+            self._reverse_cycle()
             return
 
         # Non-yoyo finish
@@ -713,233 +751,3 @@ class Animation(TaskBase):
                 continue
             for name, prop_data in target_data.properties.items():
                 self._set_value(target, name, prop_data.initial)
-
-
-class AnimationTransition:
-    """
-    Collection of animation functions to be used with the Animation object.
-
-    Easing Functions ported to Kivy from the Clutter Project
-    http://www.clutter-project.org/docs/clutter/stable/ClutterAlpha.html
-
-    The `progress` parameter in each animation function is in the range 0-1.
-    """
-
-    @staticmethod
-    def linear(progress: float) -> float:
-        return progress
-
-    @staticmethod
-    def in_quad(progress: float) -> float:
-        return progress * progress
-
-    @staticmethod
-    def out_quad(progress: float) -> float:
-        return -1.0 * progress * (progress - 2.0)
-
-    @staticmethod
-    def in_out_quad(progress: float) -> float:
-        p = progress * 2
-        if p < 1:
-            return 0.5 * p * p
-        p -= 1.0
-        return -0.5 * (p * (p - 2.0) - 1.0)
-
-    @staticmethod
-    def in_cubic(progress: float) -> float:
-        return progress * progress * progress
-
-    @staticmethod
-    def out_cubic(progress: float) -> float:
-        p = progress - 1.0
-        return p * p * p + 1.0
-
-    @staticmethod
-    def in_out_cubic(progress: float) -> float:
-        p = progress * 2
-        if p < 1:
-            return 0.5 * p * p * p
-        p -= 2
-        return 0.5 * (p * p * p + 2.0)
-
-    @staticmethod
-    def in_quart(progress: float) -> float:
-        return progress * progress * progress * progress
-
-    @staticmethod
-    def out_quart(progress: float) -> float:
-        p = progress - 1.0
-        return -1.0 * (p * p * p * p - 1.0)
-
-    @staticmethod
-    def in_out_quart(progress: float) -> float:
-        p = progress * 2
-        if p < 1:
-            return 0.5 * p * p * p * p
-        p -= 2
-        return -0.5 * (p * p * p * p - 2.0)
-
-    @staticmethod
-    def in_quint(progress: float) -> float:
-        return progress * progress * progress * progress * progress
-
-    @staticmethod
-    def out_quint(progress: float) -> float:
-        p = progress - 1.0
-        return p * p * p * p * p + 1.0
-
-    @staticmethod
-    def in_out_quint(progress: float) -> float:
-        p = progress * 2
-        if p < 1:
-            return 0.5 * p * p * p * p * p
-        p -= 2.0
-        return 0.5 * (p * p * p * p * p + 2.0)
-
-    @staticmethod
-    def in_sine(progress: float) -> float:
-        return -1.0 * cos(progress * (pi / 2.0)) + 1.0
-
-    @staticmethod
-    def out_sine(progress: float) -> float:
-        return sin(progress * (pi / 2.0))
-
-    @staticmethod
-    def in_out_sine(progress: float) -> float:
-        return -0.5 * (cos(pi * progress) - 1.0)
-
-    @staticmethod
-    def in_expo(progress: float) -> float:
-        if progress == 0:
-            return 0.0
-        value = pow(2, 10 * (progress - 1.0))
-        return float(value)
-
-    @staticmethod
-    def out_expo(progress: float) -> float:
-        if progress == 1.0:
-            return 1.0
-        value = -pow(2, -10 * progress) + 1.0
-        return float(value)
-
-    @staticmethod
-    def in_out_expo(progress: float) -> float:
-        if progress == 0:
-            return 0.0
-        if progress == 1.0:
-            return 1.0
-        p = progress * 2
-        if p < 1:
-            value = 0.5 * pow(2, 10 * (p - 1.0))
-            return float(value)
-        p -= 1.0
-        value = 0.5 * (-pow(2, -10 * p) + 2.0)
-        return float(value)
-
-    @staticmethod
-    def in_circ(progress: float) -> float:
-        return -1.0 * (sqrt(1.0 - progress * progress) - 1.0)
-
-    @staticmethod
-    def out_circ(progress: float) -> float:
-        p = progress - 1.0
-        return sqrt(1.0 - p * p)
-
-    @staticmethod
-    def in_out_circ(progress: float) -> float:
-        p = progress * 2
-        if p < 1:
-            return -0.5 * (sqrt(1.0 - p * p) - 1.0)
-        p -= 2.0
-        return 0.5 * (sqrt(1.0 - p * p) + 1.0)
-
-    @staticmethod
-    def in_elastic(progress: float) -> float:
-        p = 0.3
-        s = p / 4.0
-        q = progress
-        if q == 1:
-            return 1.0
-        q -= 1.0
-        value = -(pow(2, 10 * q) * sin((q - s) * (2 * pi) / p))
-        return float(value)
-
-    @staticmethod
-    def out_elastic(progress: float) -> float:
-        p = 0.3
-        s = p / 4.0
-        q = progress
-        if q == 1:
-            return 1.0
-        value = pow(2, -10 * q) * sin((q - s) * (2 * pi) / p) + 1.0
-        return float(value)
-
-    @staticmethod
-    def in_out_elastic(progress: float) -> float:
-        p = 0.3 * 1.5
-        s = p / 4.0
-        q = progress * 2
-        if q == 2:
-            return 1.0
-        if q < 1:
-            q -= 1.0
-            value = -0.5 * (pow(2, 10 * q) * sin((q - s) * (2.0 * pi) / p))
-            return float(value)
-        else:
-            q -= 1.0
-            value = pow(2, -10 * q) * sin((q - s) * (2.0 * pi) / p) * 0.5 + 1.0
-            return float(value)
-
-    @staticmethod
-    def in_back(progress: float) -> float:
-        return progress * progress * ((1.70158 + 1.0) * progress - 1.70158)
-
-    @staticmethod
-    def out_back(progress: float) -> float:
-        p = progress - 1.0
-        return p * p * ((1.70158 + 1) * p + 1.70158) + 1.0
-
-    @staticmethod
-    def in_out_back(progress: float) -> float:
-        p = progress * 2.0
-        s = 1.70158 * 1.525
-        if p < 1:
-            return 0.5 * (p * p * ((s + 1.0) * p - s))
-        p -= 2.0
-        return 0.5 * (p * p * ((s + 1.0) * p + s) + 2.0)
-
-    @staticmethod
-    def _out_bounce_internal(t: float, d: float) -> float:
-        p = t / d
-        if p < (1.0 / 2.75):
-            return 7.5625 * p * p
-        elif p < (2.0 / 2.75):
-            p -= 1.5 / 2.75
-            return 7.5625 * p * p + 0.75
-        elif p < (2.5 / 2.75):
-            p -= 2.25 / 2.75
-            return 7.5625 * p * p + 0.9375
-        else:
-            p -= 2.625 / 2.75
-            return 7.5625 * p * p + 0.984375
-
-    @staticmethod
-    def _in_bounce_internal(t: float, d: float) -> float:
-        return 1.0 - AnimationTransition._out_bounce_internal(d - t, d)
-
-    @staticmethod
-    def in_bounce(progress: float) -> float:
-        return AnimationTransition._in_bounce_internal(progress, 1.0)
-
-    @staticmethod
-    def out_bounce(progress: float) -> float:
-        return AnimationTransition._out_bounce_internal(progress, 1.0)
-
-    @staticmethod
-    def in_out_bounce(progress: float) -> float:
-        p = progress * 2.0
-        if p < 1.0:
-            return AnimationTransition._in_bounce_internal(p, 1.0) * 0.5
-        return (
-            AnimationTransition._out_bounce_internal(p - 1.0, 1.0) * 0.5 + 0.5
-        )

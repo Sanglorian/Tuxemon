@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from typing import Any
 
 from pygame.sprite import Group
@@ -37,12 +38,22 @@ class AnimationGroup:
         **kwargs: Any,
     ) -> Task:
         """
-        Mirror the original State.task behavior:
+        Create a task for this state.
 
-        - require `func` to be callable
-        - support on_finish / on_update
-        - support additional callbacks via keyword names that match ScheduleType
-        - validate schedule types and callables
+        Tasks are processed even while state is inactive.
+        If you want to pass positional arguments, use functools.partial.
+
+        Parameters:
+            func: Function to be called.
+            on_finish: Optional callback to execute when the task finishes.
+            on_update: Optional callback to execute on every update.
+            interval: Time between callbacks.
+            times: Number of intervals.
+            kwargs: Additional keyword parameters to schedule other callbacks
+                (e.g., 'on abort').
+
+        Returns:
+            The created task.
         """
         if not callable(func):
             raise ValueError("Must provide a function to be called")
@@ -113,3 +124,33 @@ class AnimationGroup:
             )
 
         self._group.remove(*to_remove)
+
+    def chain_animations(
+        self, *fns: Callable[[], Animation], start_delay: float = 0.0
+    ) -> None:
+        """
+        Chains a sequence of animations together using callbacks.
+
+        Each function in `fns` should be a factory that returns a new
+        Animation instance.
+
+        Parameters:
+            fns: A series of callables, each returning an Animation instance.
+            start_delay: A delay in milliseconds before the first animation starts.
+        """
+        if not fns:
+            logger.warning(
+                "Attempted to chain an empty sequence of functions."
+            )
+            return
+
+        def chain(index: int = 0) -> None:
+            if index >= len(fns):
+                return
+
+            anim = fns[index]()
+            anim.schedule(
+                lambda: chain(index + 1), when=ScheduleType.ON_FINISH
+            )
+
+        self.task(lambda: chain(0), interval=start_delay, times=1)

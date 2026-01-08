@@ -7,26 +7,28 @@ import random
 from abc import ABC
 from collections.abc import Callable
 from functools import partial
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.rect import Rect
-from pygame.sprite import Group
-from pygame.surface import Surface
 
-from tuxemon import graphics
-from tuxemon.animation import (
-    Animation,
-    ScheduledFunction,
-    ScheduleType,
-    Task,
-)
 from tuxemon.event import get_event_bus
 from tuxemon.event.eventbus import Listener
-from tuxemon.platform.events import PlayerInput
+from tuxemon.graphics import load_sprite
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import local_session
 from tuxemon.sprite import Sprite, SpriteGroup
 from tuxemon.state.animation_group import AnimationGroup
+
+if TYPE_CHECKING:
+    from pygame.sprite import Group
+    from pygame.surface import Surface
+
+    from tuxemon.animation import (
+        Animation,
+        ScheduledFunction,
+        Task,
+    )
+    from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +101,7 @@ class State(ABC):
             Loaded sprite.
         """
         layer = kwargs.pop("layer", 0)
-        sprite = graphics.load_sprite(filename, **kwargs)
+        sprite = load_sprite(filename, **kwargs)
         self.sprites.add(sprite, layer=layer)
         return sprite
 
@@ -128,24 +130,6 @@ class State(ABC):
         times: int = 1,
         **kwargs: Any,
     ) -> Task:
-        """
-        Create a task for this state.
-
-        Tasks are processed even while state is inactive.
-        If you want to pass positional arguments, use functools.partial.
-
-        Parameters:
-            func: Function to be called.
-            on_finish: Optional callback to execute when the task finishes.
-            on_update: Optional callback to execute on every update.
-            interval: Time between callbacks.
-            times: Number of intervals.
-            kwargs: Additional keyword parameters to schedule other callbacks
-                (e.g., 'on abort').
-
-        Returns:
-            The created task.
-        """
         return self.anim.task(
             func,
             on_finish=on_finish,
@@ -158,26 +142,7 @@ class State(ABC):
     def chain_animations(
         self, *fns: Callable[[], Animation], start_delay: float = 0.0
     ) -> None:
-        """
-        Chains a sequence of animations together using callbacks.
-
-        Each function in `fns` should be a factory that returns a new
-        Animation instance.
-
-        Parameters:
-            fns: A series of callables, each returning an Animation instance.
-            start_delay: A delay in milliseconds before the first animation starts.
-        """
-
-        def chain(index: int = 0) -> None:
-            if index >= len(fns):
-                return
-            anim = fns[index]()
-            anim.schedule(
-                lambda: chain(index + 1), when=ScheduleType.ON_FINISH
-            )
-
-        self.task(lambda: chain(0), interval=start_delay)
+        self.anim.chain_animations(*fns, start_delay=start_delay)
 
     def remove_animations_of(self, target: Any) -> None:
         """

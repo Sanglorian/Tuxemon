@@ -177,7 +177,7 @@ class Teleporter:
         """
         logger.debug(f"Preparing {character.slug} for teleportation...")
 
-        if len(self.state_manager.active_states) == 2:
+        if self.state_manager.is_in_base_map_state():
             self.state_manager.push_state_with_timeout("TeleporterState", 15)
 
         logger.info(f"{character.slug} is prepared for teleportation.")

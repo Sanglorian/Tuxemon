@@ -137,6 +137,7 @@ def test_prepare_teleport_pushes_state(
     teleporter, mock_state_manager, mock_character
 ):
     mock_state_manager.active_states = ["WorldState", "OtherState"]
+    mock_state_manager.is_in_base_map_state.return_value = True
     teleporter.prepare_teleport(mock_character)
     mock_state_manager.push_state_with_timeout.assert_called_once_with(
         "TeleporterState", 15
@@ -147,6 +148,7 @@ def test_prepare_teleport_no_push_when_many_states(
     teleporter, mock_state_manager, mock_character
 ):
     mock_state_manager.active_states = ["A", "B", "C"]
+    mock_state_manager.is_in_base_map_state.return_value = False
     teleporter.prepare_teleport(mock_character)
     mock_state_manager.push_state_with_timeout.assert_not_called()
 

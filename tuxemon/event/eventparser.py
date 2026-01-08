@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from tuxemon.db import (
+    Behavior,
     BoundingBox,
     EventObject,
     Operator,
@@ -56,32 +57,17 @@ class EventParser:
         # Parse behaviors first, as they add both conditions and actions
         # NOTE: Conditions use structured lists; actions require joined strings.
         # This reflects how the engine parses behavior logic.
-        behavs = event_data.get("behav") or []
-        for key, value in enumerate(behavs, start=1):
-            logger.debug(f"Parsing behavior {key}: {value}")
+        behavs_raw = event_data.get("behav") or []
+        behaviors: list[Behavior] = []
+
+        for key, value in enumerate(behavs_raw, start=1):
             behav_type, args = parse_behav_string(value)
-            logger.debug(f" → type: {behav_type}, args: {args}")
-
-            # Create a behavior condition
-            conditions.insert(
-                0,
-                SpatialCondition(
-                    type="behav",
-                    parameters=[behav_type, *args],
-                    box=box,
-                    operator=Operator.IS,
+            behaviors.append(
+                Behavior(
+                    type=behav_type,
+                    args=args,
                     name=f"behav{key * 10}",
-                ),
-            )
-
-            # Behavior action
-            actions.insert(
-                0,
-                ParameterizableRule(
-                    type="behav",
-                    parameters=[":".join([behav_type, *args])],
-                    name=f"behav{key * 10}",
-                ),
+                )
             )
 
         # Parse conditions
@@ -129,4 +115,5 @@ class EventParser:
             delay=delay,
             conds=conditions,
             acts=actions,
+            behavs=behaviors,
         )

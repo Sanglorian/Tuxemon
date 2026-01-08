@@ -1,111 +1,80 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
 from unittest.mock import MagicMock
+
+import pytest
 
 from tuxemon.client import LocalPygameClient
 from tuxemon.db import BoundingBox, EventObject
 from tuxemon.event.eventaction import ActionManager
+from tuxemon.event.eventbehavior import BehaviorManager
 from tuxemon.event.eventengine import EventEngine
 from tuxemon.event.running import ConditionEvaluator
 from tuxemon.map.map_manager import MapManager
 from tuxemon.session import Session, local_session
 
 
-class TestEventEngine(unittest.TestCase):
-    def setUp(self):
-        self.box = BoundingBox(x=0, y=0, width=1, height=1)
-        action = MagicMock(spec=ActionManager)
-        evaluator = MagicMock(spec=ConditionEvaluator)
-        self.eng = EventEngine(local_session, action, evaluator)
+@pytest.fixture
+def event_engine():
+    box = BoundingBox(x=0, y=0, width=1, height=1)
+    action = MagicMock(spec=ActionManager)
+    evaluator = MagicMock(spec=ConditionEvaluator)
+    behavior = MagicMock(spec=BehaviorManager)
+    eng = EventEngine(local_session, action, evaluator, behavior)
+    eng._test_box = box
+    return eng
 
-    def test_init(self):
-        self.assertIsNone(self.eng.current_map)
-        self.assertEqual(self.eng.running_events, {})
-        self.assertEqual(self.eng.partial_events, [])
 
-    def test_reset(self):
-        self.eng.running_events = {1: "event1", 2: "event2"}
-        self.eng.current_map = "map1"
-        self.eng.reset()
-        self.assertIsNone(self.eng.current_map)
-        self.assertEqual(self.eng.running_events, {})
+def make_event(event_id, box):
+    return EventObject(
+        id=event_id,
+        name="",
+        priority=0,
+        box=box,
+        conds=[],
+        acts=[],
+    )
 
-    def test_start_event(self):
-        event = EventObject(
-            id=1,
-            name="",
-            priority=0,
-            box=self.box,
-            conds=[],
-            acts=[],
-        )
-        self.eng.session = MagicMock(spec=Session)
-        self.eng.session.client = MagicMock(spec=LocalPygameClient)
-        self.eng.session.client.map_manager = MagicMock(spec=MapManager)
-        self.eng.session.client.map_manager.inits = []
-        self.eng.start_event(event)
-        self.assertIn(1, self.eng.running_events)
 
-    def test_register_global_event_prevents_duplicates(self):
-        event = EventObject(
-            id=99,
-            name="",
-            priority=0,
-            box=self.box,
-            conds=[],
-            acts=[],
-        )
-        self.eng.global_events = [event]
-        result = self.eng.register_global_event(event)
-        self.assertFalse(result)
+def test_init(event_engine):
+    assert event_engine.current_map is None
+    assert event_engine.running_events == {}
+    assert event_engine.partial_events == []
 
-    def test_unregister_global_event_removes_event(self):
-        event = EventObject(
-            id=77,
-            name="",
-            priority=0,
-            box=self.box,
-            conds=[],
-            acts=[],
-        )
-        self.eng.global_events = [event]
-        self.eng.triggered_global_events = {77}
 
-        result = self.eng.unregister_global_event(77)
+def test_reset(event_engine):
+    event_engine.running_events = {1: "event1", 2: "event2"}
+    event_engine.current_map = "map1"
+    event_engine.reset()
+    assert event_engine.current_map is None
+    assert event_engine.running_events == {}
 
-        self.assertTrue(result)
-        self.assertNotIn(event, self.eng.global_events)
-        self.assertNotIn(77, self.eng.triggered_global_events)
 
-    def test_register_global_event_prevents_duplicates(self):
-        event = EventObject(
-            id=303,
-            name="",
-            priority=0,
-            box=self.box,
-            conds=[],
-            acts=[],
-        )
-        self.eng.global_events = [event]
-        result = self.eng.register_global_event(event)
-        self.assertFalse(result)
-        self.assertEqual(len(self.eng.global_events), 1)
+def test_start_event(event_engine):
+    event = make_event(1, event_engine._test_box)
+    event_engine.session = MagicMock(spec=Session)
+    event_engine.session.client = MagicMock(spec=LocalPygameClient)
+    event_engine.session.client.map_manager = MagicMock(spec=MapManager)
+    event_engine.session.client.map_manager.inits = []
+    event_engine.start_event(event)
+    assert 1 in event_engine.running_events
 
-    def test_unregister_global_event_removes_event_and_flag(self):
-        event = EventObject(
-            id=404,
-            name="",
-            priority=0,
-            box=self.box,
-            conds=[],
-            acts=[],
-        )
-        self.eng.global_events = [event]
-        self.eng.triggered_global_events = {404}
 
-        result = self.eng.unregister_global_event(404)
+@pytest.mark.parametrize("event_id", [99, 303])
+def test_register_global_event_prevents_duplicates(event_engine, event_id):
+    event = make_event(event_id, event_engine._test_box)
+    event_engine.global_events = [event]
+    result = event_engine.register_global_event(event)
+    assert result is False
+    assert len(event_engine.global_events) == 1
 
-        self.assertTrue(result)
-        self.assertNotIn(event, self.eng.global_events)
-        self.assertNotIn(404, self.eng.triggered_global_events)
+
+@pytest.mark.parametrize("event_id", [77, 404])
+def test_unregister_global_event(event_engine, event_id):
+    event = make_event(event_id, event_engine._test_box)
+    event_engine.global_events = [event]
+    event_engine.triggered_global_events = {event_id}
+    result = event_engine.unregister_global_event(event_id)
+    assert result is True
+    assert event not in event_engine.global_events
+    assert event_id not in event_engine.triggered_global_events

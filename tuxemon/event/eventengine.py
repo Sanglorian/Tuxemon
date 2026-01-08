@@ -8,12 +8,17 @@ from contextlib import contextmanager
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Optional, Union
 
+from tuxemon.event.eventbehavior import (
+    expand_behavior_actions,
+    expand_behavior_conditions,
+)
 from tuxemon.event.running import EventState, RunningCondition, RunningEvent
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.db import EventObject, ParameterizableRule, SpatialCondition
     from tuxemon.event.eventaction import ActionManager
+    from tuxemon.event.eventbehavior import BehaviorManager
     from tuxemon.event.running import ConditionEvaluator
     from tuxemon.map.map_tuxemon import AbstractMap
     from tuxemon.session import Session
@@ -43,10 +48,12 @@ class EventEngine:
         session: Session,
         action: ActionManager,
         evaluator: ConditionEvaluator,
+        behavior_manager: BehaviorManager,
     ) -> None:
         self.session = session
         self.action_manager = action
         self.evaluator = evaluator
+        self.behavior_manager = behavior_manager
 
         self.running_events: dict[int, RunningEvent] = dict()
         self.name = "Event"
@@ -134,10 +141,12 @@ class EventEngine:
             map_event: Event whose actions will be executed.
         """
         if map_event.id not in self.running_events:
-            logger.debug(f"Starting map event: {map_event.id}")
-            logger.debug("Executing action list")
-            logger.debug(map_event)
+            behav_acts = expand_behavior_actions(
+                map_event, self.behavior_manager
+            )
+            map_event.acts = behav_acts + list(map_event.acts)
 
+            logger.debug(f"Starting map event: {map_event.id}")
             token = RunningEvent(map_event)
             token.running()
             self.running_events[map_event.id] = token
@@ -229,8 +238,14 @@ class EventEngine:
     def _evaluate_and_queue_event(
         self, event: EventObject, is_global: bool = False
     ) -> None:
+        behav_conds = expand_behavior_conditions(event, self.behavior_manager)
+        all_conditions = list(event.conds) + behav_conds
+
+        if not all_conditions:
+            return
+
         running_conditions = [
-            RunningCondition(cond, self.evaluator) for cond in event.conds
+            RunningCondition(cond, self.evaluator) for cond in all_conditions
         ]
         all_met = all(rc.check() for rc in running_conditions)
 

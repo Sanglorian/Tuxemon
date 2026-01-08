@@ -137,9 +137,7 @@ class RandomHordeAction(EventAction):
             battle_mode=BattleMode.SINGLE,
         )
         session.client.queue_state("CombatState", context=context)
-
-        session.client.movement_manager.lock_controls(player)
-        session.client.movement_manager.stop_char(player)
+        player.cancel_movement()
 
         rgb: ColorLike = WHITE_COLOR
         if self.rgb:

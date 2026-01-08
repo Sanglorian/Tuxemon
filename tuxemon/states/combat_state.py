@@ -44,7 +44,6 @@ from tuxemon.animation import Animation, Task
 from tuxemon.animation_entity import AnimationManager
 from tuxemon.combat.combat_context import CombatContext
 from tuxemon.combat.machine import CombatMachine, CombatPhase
-from tuxemon.combat.renderer import CombatAnimations
 from tuxemon.combat.reward_system import RewardSystem
 from tuxemon.combat.utils import play_outcome_music, track_battles
 from tuxemon.db import (
@@ -56,12 +55,12 @@ from tuxemon.formula import config_combat
 from tuxemon.item.item import Item
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
-from tuxemon.menu.menu import Menu
 from tuxemon.monster import Monster
 from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.state.state import State
+from tuxemon.states.combat_animations import CombatAnimations
 from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.status.status import Status
 from tuxemon.technique.technique import Technique
@@ -71,8 +70,6 @@ from tuxemon.ui.method_animation import MethodAnimationCache
 from tuxemon.ui.text_alignment import HorizontalAlignment
 
 if TYPE_CHECKING:
-    from pygame.surface import Surface
-
     from tuxemon.platform.events import PlayerInput
     from tuxemon.sprite import Sprite
 
@@ -105,7 +102,7 @@ class WaitForInputState(State):
         return None
 
 
-class CombatState(Menu[None]):
+class CombatState(CombatAnimations):
     """The state-menu responsible for all combat related tasks and functions.
         .. image:: images/combat/monster_drawing01.png
 
@@ -131,13 +128,10 @@ class CombatState(Menu[None]):
         self._method_cache = MethodAnimationCache(AnimationManager())
         self.text_anim = TextAnimationManager()
         self._decision_queue: list[Monster] = []
+        self._captured_mon: Monster | None = None
         # player => home areas on screen
-        super().__init__()
-        self.session = context.session
+        super().__init__(context=context)
         self.combat_session = self.client.combat_session
-        self.view = CombatAnimations(
-            self.session, self, self.combat_session, context.teams
-        )
         self.unregister_event_handlers()
         self.register_event_handlers()
         self.machine = CombatMachine(self.combat_session)
@@ -145,7 +139,7 @@ class CombatState(Menu[None]):
         self.combat_session.set_battle_format(context.is_double_battle)
         self.combat_session.set_players(context.teams)
         self._lock_update = self.client.config.combat_click_to_continue
-        self.view.show_combat_dialog()
+        self.show_combat_dialog()
         self.transition_phase(CombatPhase.BEGIN)
         self.task(
             partial(setattr, self, "phase", CombatPhase.READY), interval=3
@@ -163,10 +157,6 @@ class CombatState(Menu[None]):
                 "Environment not set. Use set_environment before proceeding."
             )
         self.env = env
-        self._captured_mon: Monster | None = None
-
-    def animate_open(self) -> None:
-        self.view.transition_none_normal(self.env)
 
     @staticmethod
     def is_task_finished(task: Task | Animation) -> bool:
@@ -210,9 +200,6 @@ class CombatState(Menu[None]):
         self.text_anim.update_text_animation(time_delta)
         self.update_combat_phase()
 
-    def draw(self, surface: Surface) -> None:
-        super().draw(surface)
-
     def transition_phase(self, phase: CombatPhase) -> None:
         """
         Change from one phase from another.
@@ -244,7 +231,7 @@ class CombatState(Menu[None]):
 
         elif phase == CombatPhase.DECISION:
             self.update_icons_for_monsters()
-            self.view.animate_update_party_hud()
+            self.animate_update_party_hud()
             c_session.check_decisions(self.session)
             if not self._decision_queue:
                 c_session.initialize_hit_chances()
@@ -332,7 +319,7 @@ class CombatState(Menu[None]):
             self.perform_action(action.user, action.method, action.target)
             self.task(self.check_party_hp, interval=1)
             self.task(self.animate_party_status, interval=3)
-            self.notifier.trigger_xp_and_wait_for_input(self.view.text_area)
+            self.notifier.trigger_xp_and_wait_for_input(self.text_area)
 
     def ask_player_for_monster(self, player: NPC) -> None:
         """
@@ -361,9 +348,9 @@ class CombatState(Menu[None]):
         state = self.client.push_state(MonsterMenuState(player.monsters))
         state.task(
             partial(
-                state.dialog.alert,
+                self.dialog.alert,
                 T.translate("combat_replacement"),
-                self.view.text_area,
+                self.text_area,
             ),
             interval=0,
         )
@@ -390,19 +377,19 @@ class CombatState(Menu[None]):
             raise ValueError(f"Sprite not found for item {capture_device}")
 
         # Animate release and update HUD
-        self.view.animate_monster_release(player, monster, sprite)
-        self.view.update_hud(self.env, player, True, True)
+        self.animate_monster_release(player, monster, sprite)
+        self.update_hud(player, True, True)
 
         # Show combat swap message if not first turn
         if self.combat_session.turn > 1:
             message = self.combat_session.get_message_swap(player, monster)
             self.text_anim.add_text_animation(
-                partial(self.dialog.alert, message, self.view.text_area), 0
+                partial(self.dialog.alert, message, self.text_area), 0
             )
 
     def update_icons_for_monsters(self) -> None:
         """Update/reset status icons for monsters."""
-        self.view.status_icons.update_icons_for_monsters(
+        self.status_icons.update_icons_for_monsters(
             self.combat_session.active_monsters,
         )
 
@@ -417,7 +404,7 @@ class CombatState(Menu[None]):
         self.client.push_state(
             self.env.get_battle_graphics().menu,
             session=self.session,
-            view=self.view,
+            cmb=self,
             character=owner,
             monster=monster,
         )
@@ -427,9 +414,7 @@ class CombatState(Menu[None]):
         Handles combat messages by triggering text animation and blocking input
         until the message has been processed.
         """
-        self.notifier.show_message_and_wait_for_input(
-            message, self.view.text_area
-        )
+        self.notifier.show_message_and_wait_for_input(message, self.text_area)
 
     def track_battle_results(
         self,
@@ -494,7 +479,7 @@ class CombatState(Menu[None]):
         """
         self.combat_session.swap_tracker.clear()
         self.remove_monster_actions_from_queue(monster)
-        self.view.animate_monster_faint(monster)
+        self.animate_monster_faint(monster)
 
     def remove_monster_actions_from_queue(self, monster: Monster) -> None:
         """
@@ -505,8 +490,8 @@ class CombatState(Menu[None]):
         Parameters:
             monster: Monster whose actions will be removed.
         """
-        self.view.hud_manager.unassign(monster.get_owner(), monster)
-        self.view.status_icons.recalculate_icon_positions()
+        self.hud_manager.unassign(monster.get_owner(), monster)
+        self.status_icons.recalculate_icon_positions()
         action_queue = self.combat_session.action_queue.queue
         action_queue[:] = [
             action
@@ -548,7 +533,7 @@ class CombatState(Menu[None]):
     ) -> None:
         action_time = 0.0
         # animate action; target sprite is None if off-screen
-        target_sprite = self.view.sprite_map.get_sprite(target)
+        target_sprite = self.sprite_map.get_sprite(target)
         # slightly delay the monster shake, so technique animation
         # is synchronized with the damage shake motion
         hit_delay = 0.0
@@ -600,24 +585,24 @@ class CombatState(Menu[None]):
         # animation own_monster, technique doesn't tackle
         hit_delay += 0.5
         if method.target["own_monster"]:
-            target_sprite = self.view.sprite_map.get_sprite(user)
+            target_sprite = self.sprite_map.get_sprite(user)
 
         if result_tech.should_tackle:
-            user_sprite = self.view.sprite_map.get_sprite(user)
+            user_sprite = self.sprite_map.get_sprite(user)
 
             if user_sprite:
-                self.view.animate_sprite_tackle(user_sprite)
+                self.animate_sprite_tackle(user_sprite)
 
             if target_sprite:
                 self.task(
                     partial(
-                        self.view.animate_sprite_take_damage,
+                        self.animate_sprite_take_damage,
                         target_sprite,
                     ),
                     interval=hit_delay + 0.2,
                 )
                 self.task(
-                    partial(self.view.blink, target_sprite),
+                    partial(self.blink, target_sprite),
                     interval=hit_delay + 0.6,
                 )
 
@@ -645,8 +630,7 @@ class CombatState(Menu[None]):
                     )
 
         self.text_anim.add_text_animation(
-            partial(self.dialog.alert, message, self.view.text_area),
-            action_time,
+            partial(self.dialog.alert, message, self.text_area), action_time
         )
 
         is_flipped = False
@@ -658,7 +642,7 @@ class CombatState(Menu[None]):
                 break
 
         if result_tech.success:
-            self.view.play_sound_effect(method.sound.sfx, method.sound.volume)
+            self.play_sound_effect(method.sound.sfx, method.sound.volume)
             self.play_animation(
                 method, target, target_sprite, action_time, is_flipped
             )
@@ -705,8 +689,8 @@ class CombatState(Menu[None]):
                     f"captured_failed_{result_item.num_shakes}"
                 )
 
-            self.view.play_sound_effect(item.sound.sfx, item.sound.volume)
-            self.view.animate_capture_monster(
+            self.play_sound_effect(item.sound.sfx, item.sound.volume)
+            self.animate_capture_monster(
                 result_item,
                 target,
                 item,
@@ -715,7 +699,7 @@ class CombatState(Menu[None]):
             )
         else:
             if item.behaviors.throwable:
-                sprite = self.view.animate_throwing(target, item)
+                sprite = self.animate_throwing(target, item)
                 self.task(sprite.kill, interval=1.5)
             msg_type = "use_success" if result_item.success else "use_failure"
             template = getattr(item, msg_type)
@@ -729,13 +713,11 @@ class CombatState(Menu[None]):
             if template:
                 message += "\n" + tmpl
                 action_time += self.text_anim.compute_text_anim_time(message)
-
-            self.view.play_sound_effect(item.sound.sfx, item.sound.volume)
+            self.play_sound_effect(item.sound.sfx, item.sound.volume)
             self.play_animation(item, target, None, action_time)
 
         self.text_anim.add_text_animation(
-            partial(self.dialog.alert, message, self.view.text_area),
-            action_time,
+            partial(self.dialog.alert, message, self.text_area), action_time
         )
 
     def _handle_status(self, status: Status, target: Monster) -> None:
@@ -769,11 +751,11 @@ class CombatState(Menu[None]):
         if message:
             action_time += self.text_anim.compute_text_anim_time(message)
             self.text_anim.add_text_animation(
-                partial(self.dialog.alert, message, self.view.text_area),
+                partial(self.dialog.alert, message, self.text_area),
                 action_time,
             )
         if result.success:
-            self.view.play_sound_effect(status.sound.sfx, status.sound.volume)
+            self.play_sound_effect(status.sound.sfx, status.sound.volume)
             self.play_animation(status, target, None, action_time)
 
     def play_animation(
@@ -795,7 +777,7 @@ class CombatState(Menu[None]):
             is_flipped: Whether the animation should be flipped.
         """
         if target_sprite is None:
-            target_sprite = self.view.sprite_map.get_sprite(target)
+            target_sprite = self.sprite_map.get_sprite(target)
 
         animation = self._method_cache.get(method, is_flipped)
 
@@ -828,7 +810,7 @@ class CombatState(Menu[None]):
 
         for data in rewards.winners:
             if data.levels_gained > 0:
-                self.view.monsters_just_leveled_up[data.winner.slug] = True
+                self.monsters_just_leveled_up[data.winner.slug] = True
 
         # Update combat state with rewards
         self.combat_session.add_prize(rewards.prize)
@@ -858,22 +840,13 @@ class CombatState(Menu[None]):
                 self.text_anim.add_xp_message(mex)
             owner = winner.get_owner()
             if owner.is_player:
-                self.task(
-                    partial(self.view.animate_exp, self.env, winner),
-                    interval=2.5,
-                )
-                self.task(
-                    partial(self.view.refresh_ui, self.env), interval=3.0
-                )
-                hud = self.view.hud_manager.get_hud(winner)
+                self.task(partial(self.animate_exp, winner), interval=2.5)
+                self.task(self.refresh_ui, interval=3.0)
+                hud = self.hud_manager.get_hud(winner)
                 if hud:
                     self.task(
                         partial(
-                            self.view._update_hud_details,
-                            self.env,
-                            winner,
-                            hud,
-                            hud.player,
+                            self._update_hud_details, winner, hud, hud.player
                         ),
                         interval=4.0,
                     )
@@ -894,10 +867,10 @@ class CombatState(Menu[None]):
                     params = {"name": monster.name.upper()}
                     msg = T.format("combat_fainted", params)
                     self.text_anim.add_text_animation(
-                        partial(self.dialog.alert, msg, self.view.text_area),
+                        partial(self.dialog.alert, msg, self.text_area),
                         config_combat.action_time,
                     )
-                    self.view.animate_monster_faint(monster)
+                    self.animate_monster_faint(monster)
 
     def check_party_hp(self) -> None:
         """
@@ -918,7 +891,8 @@ class CombatState(Menu[None]):
             monster_party
         ) in self.combat_session.field_monsters.get_all_monsters().values():
             for monster in monster_party:
-                self.view.animate_hp(self.env, monster)
+                monster.get_combat_stats()
+                self.animate_hp(monster)
                 self.apply_status_effects(monster)
                 if monster.is_fainted:
                     self.handle_monster_defeat(monster)
@@ -942,7 +916,7 @@ class CombatState(Menu[None]):
                 extra = "\n".join(templates)
                 action_time = self.text_anim.compute_text_anim_time(extra)
                 self.text_anim.add_text_animation(
-                    partial(self.dialog.alert, extra, self.view.text_area),
+                    partial(self.dialog.alert, extra, self.text_area),
                     action_time,
                 )
 
@@ -967,13 +941,7 @@ class CombatState(Menu[None]):
         """Clean combat."""
         for player in self.combat_session.players:
             for mon in player.monsters:
-                # reset status stats
-                mon.set_stats()
                 mon.end_combat(self.session)
-                # reset type
-                mon.types.reset_to_default()
-                # reset technique stats
-                mon.moves.set_stats()
 
         self.ai_manager.clear_ai()
 
@@ -1001,19 +969,19 @@ class CombatState(Menu[None]):
         else:
             self.client.push_state("FadeOutTransition", caller=self)
 
-    def register_event_handlers(self) -> None:
-        for event in EVENTS:
-            handler = getattr(self, f"_on_{event}", None)
-            if handler is None:
-                raise RuntimeError(f"Missing handler for event: {event}")
-            self.client.event_bus.subscribe(event, handler)
-
     def unregister_event_handlers(self) -> None:
         for event in EVENTS:
             handler = getattr(self, f"_on_{event}", None)
             if handler is None:
                 raise RuntimeError(f"Missing handler for event: {event}")
             self.client.event_bus.unsubscribe(event, handler)
+
+    def register_event_handlers(self) -> None:
+        for event in EVENTS:
+            handler = getattr(self, f"_on_{event}", None)
+            if handler is None:
+                raise RuntimeError(f"Missing handler for event: {event}")
+            self.client.event_bus.subscribe(event, handler)
 
     def _on_monster_added(
         self,
@@ -1042,8 +1010,8 @@ class CombatState(Menu[None]):
     def _on_update_sprite_position(
         self, player: NPC, monster: Monster
     ) -> None:
-        new_feet = self.view.hud_manager.get_feet_position(player, monster)
-        self.view.sprite_map.update_sprite_position(monster, new_feet)
+        new_feet = self.hud_manager.get_feet_position(player, monster)
+        self.sprite_map.update_sprite_position(monster, new_feet)
 
     def _on_clean_combat(self) -> None:
         self.clean_combat()
@@ -1052,15 +1020,15 @@ class CombatState(Menu[None]):
         self.update_icons_for_monsters()
 
     def _on_update_party_hud(self) -> None:
-        self.view.animate_update_party_hud()
+        self.animate_update_party_hud()
 
     def _on_monster_disappeared(self, user: Monster) -> None:
-        user_sprite = self.view.sprite_map.get_sprite(user)
+        user_sprite = self.sprite_map.get_sprite(user)
         if user_sprite and user_sprite.is_visible():
             user_sprite.toggle_visible()
 
     def _on_monster_appeared(self, user: Monster) -> None:
-        user_sprite = self.view.sprite_map.get_sprite(user)
+        user_sprite = self.sprite_map.get_sprite(user)
         if user_sprite and not user_sprite.is_visible():
             user_sprite.toggle_visible()
 
@@ -1093,8 +1061,8 @@ class CombatState(Menu[None]):
         - "user_to_target": Replace target sprite with user-facing sprite.
         - "target_to_user": Replace user sprite with target-facing sprite.
         """
-        user_sprite = self.view.sprite_map.get_sprite(user)
-        target_sprite = self.view.sprite_map.get_sprite(target)
+        user_sprite = self.sprite_map.get_sprite(user)
+        target_sprite = self.sprite_map.get_sprite(target)
 
         assert user_sprite and target_sprite
 
@@ -1107,31 +1075,31 @@ class CombatState(Menu[None]):
             )
             self.sprites.add(front_user)
             self.sprites.add(back_target)
-            self.view.sprite_map.add_sprite(user, back_target)
-            self.view.sprite_map.add_sprite(target, front_user)
+            self.sprite_map.add_sprite(user, back_target)
+            self.sprite_map.add_sprite(target, front_user)
             self.sprites.remove(user_sprite)
             self.sprites.remove(target_sprite)
 
         elif direction == "user_to_target":
-            _, h_align = self.view.combat_zone.get_zone(user_sprite.rect)
+            _, h_align = self.combat_zone.get_zone(user_sprite.rect)
             side = "front" if h_align is HorizontalAlignment.LEFT else "back"
 
             front_user = user.get_sprite(
                 side, midbottom=target_sprite.rect.midbottom
             )
             self.sprites.add(front_user)
-            self.view.sprite_map.add_sprite(target, front_user)
+            self.sprite_map.add_sprite(target, front_user)
             self.sprites.remove(target_sprite)
 
         elif direction == "target_to_user":
-            _, h_align = self.view.combat_zone.get_zone(user_sprite.rect)
+            _, h_align = self.combat_zone.get_zone(user_sprite.rect)
             side = "back" if h_align is HorizontalAlignment.LEFT else "front"
 
             back_target = target.get_sprite(
                 side, midbottom=user_sprite.rect.midbottom
             )
             self.sprites.add(back_target)
-            self.view.sprite_map.add_sprite(user, back_target)
+            self.sprite_map.add_sprite(user, back_target)
             self.sprites.remove(user_sprite)
 
     def _on_capture_finished(
@@ -1152,4 +1120,4 @@ class CombatState(Menu[None]):
             self.combat_session.reset()
 
         else:
-            self.notifier.trigger_xp_and_wait_for_input(self.view.text_area)
+            self.notifier.trigger_xp_and_wait_for_input(self.text_area)

@@ -19,10 +19,10 @@ from tuxemon.prepare import SCREEN_RECT
 from tuxemon.states.item_menu import ItemMenuState
 
 if TYPE_CHECKING:
-    from tuxemon.combat.renderer import CombatAnimations
     from tuxemon.monster import Monster
     from tuxemon.npc import NPC
     from tuxemon.session import Session
+    from tuxemon.states.combat_state import CombatState
 
 logger = logging.getLogger(__name__)
 
@@ -46,14 +46,14 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
     def __init__(
         self,
         session: Session,
-        view: CombatAnimations,
+        cmb: CombatState,
         character: NPC,
         monster: Monster,
     ) -> None:
         super().__init__()
         self.rect = self.calculate_menu_rectangle()
         self.session = session
-        self.view = view
+        self.combat = cmb
         self.character = character
         self.player = session.client.combat_session.left_player  # human
         self.enemy = session.client.combat_session.right_player  # ai
@@ -71,14 +71,9 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
             self.opponents[0]
         )
         self.itm_description: str | None = None
-        message = T.format("combat_player_choice", {"player": self.character.name})
-        self.dialog.alert(message, self.view.text_area)
-        env = self.client.environment_manager.get_active_environment()
-        if env is None:
-            raise RuntimeError(
-                "Environment not set. Use set_environment before proceeding."
-            )
-        self.env = env
+        params = {"player": self.character.name}
+        message = T.format("combat_player_choice", params)
+        self.dialog.alert(message, self.combat.text_area)
 
     def calculate_menu_rectangle(self) -> Rect:
         rect_screen = SCREEN_RECT.copy()
@@ -89,8 +84,8 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
         return rect
 
     def initialize_items(self) -> Generator[MenuItem[MenuGameObj], None, None]:
-        self.view.hud_manager.delete_hud(self.monster)
-        self.view.update_hud(self.env, self.player, False, True)
+        self.combat.hud_manager.delete_hud(self.monster)
+        self.combat.update_hud(self.player, False, True)
 
         menu_items_map = (
             (ParkMenuKeys.BALL, "menu_ball", self.throw_tuxeball),
@@ -130,7 +125,7 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
             yield menu
 
     def run(self) -> None:
-        # self.combat.clean_combat()
+        self.combat.clean_combat()
         self.client.combat_session.reset()
 
     def check_category(self, cat_slug: str) -> int:

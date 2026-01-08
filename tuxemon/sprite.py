@@ -11,9 +11,7 @@ from typing import (
     Final,
     Generic,
     Literal,
-    Optional,
     TypeVar,
-    Union,
     overload,
 )
 
@@ -41,15 +39,15 @@ logger = logging.getLogger()
 
 class Sprite(DirtySprite):
     _dummy_image: Surface = Surface((0, 0))
-    _original_image: Optional[Surface]
-    _image: Optional[Surface]
+    _original_image: Surface | None
+    _image: Surface | None
     _rect: Rect
 
     def __init__(
         self,
         *args: Group,
-        image: Optional[Surface] = None,
-        animation: Optional[SurfaceAnimation] = None,
+        image: Surface | None = None,
+        animation: SurfaceAnimation | None = None,
     ) -> None:
         super().__init__(*args)
         self.visible: bool = True
@@ -62,7 +60,7 @@ class Sprite(DirtySprite):
         self._needs_rescale: bool = False
         self._needs_update: bool = False
         self.player: bool = False
-        self.base_image: Optional[Surface] = None
+        self.base_image: Surface | None = None
 
     def update(self, time_delta: float = 0, *args: Any, **kwargs: Any) -> None:
         """
@@ -78,7 +76,7 @@ class Sprite(DirtySprite):
         if self.animation is not None:
             self.animation.update(time_delta)
 
-    def draw(self, surface: Surface, rect: Optional[Rect] = None) -> Rect:
+    def draw(self, surface: Surface, rect: Rect | None = None) -> Rect:
         """
         Draw the sprite to the surface.
 
@@ -125,7 +123,7 @@ class Sprite(DirtySprite):
         return self._rect
 
     @rect.setter
-    def rect(self, rect: Optional[Union[FRect, Rect]]) -> None:
+    def rect(self, rect: FRect | Rect | None) -> None:
         """
         Set the rectangle of the sprite.
 
@@ -164,7 +162,7 @@ class Sprite(DirtySprite):
         )
 
     @image.setter
-    def image(self, image: Optional[Surface]) -> None:
+    def image(self, image: Surface | None) -> None:
         """
         Set the image of the sprite.
 
@@ -181,7 +179,7 @@ class Sprite(DirtySprite):
         self._needs_update = True
 
     @property
-    def animation(self) -> Optional[SurfaceAnimation]:
+    def animation(self) -> SurfaceAnimation | None:
         """
         Get the animation of the sprite.
 
@@ -191,7 +189,7 @@ class Sprite(DirtySprite):
         return self._animation
 
     @animation.setter
-    def animation(self, animation: Optional[SurfaceAnimation]) -> None:
+    def animation(self, animation: SurfaceAnimation | None) -> None:
         """
         Set the animation of the sprite.
 
@@ -207,7 +205,7 @@ class Sprite(DirtySprite):
         """
         Update the image of the sprite.
         """
-        image: Optional[Surface] = None
+        image: Surface | None = None
         if self._original_image is not None and self._needs_rescale:
             w = self.rect.width if self._width is None else self._width
             h = self.rect.height if self._height is None else self._height
@@ -406,7 +404,7 @@ class CaptureDeviceSprite(Sprite):
         self,
         *,
         tray: Sprite,
-        monster: Optional[Monster],
+        monster: Monster | None,
         sprite: Sprite,
         icon: BattleIconsModel,
     ) -> None:
@@ -471,7 +469,7 @@ class SpriteGroup(LayeredUpdates, Generic[_GroupElement]):
     def __init__(self, *, default_layer: int = 0) -> None:
         super().__init__(default_layer=default_layer)
 
-    def add(self, *sprites: Union[PySprite, Any], **kwargs: Any) -> None:
+    def add(self, *sprites: PySprite | Any, **kwargs: Any) -> None:
         return LayeredUpdates.add(self, *sprites, **kwargs)
 
     def __iter__(self) -> Iterator[_GroupElement]:
@@ -500,8 +498,8 @@ class SpriteGroup(LayeredUpdates, Generic[_GroupElement]):
 
     def __getitem__(
         self,
-        item: Union[int, slice],
-    ) -> Union[_GroupElement, Sequence[_GroupElement]]:
+        item: int | slice,
+    ) -> _GroupElement | Sequence[_GroupElement]:
         # patch in indexing / slicing support
         return self.sprites()[item]
 
@@ -591,7 +589,7 @@ class RelativeGroup(MenuSpriteGroup[_MenuElement]):
     def __init__(
         self,
         *,
-        parent: Union[RelativeGroup[Any], Callable[[], Rect]],
+        parent: RelativeGroup[Any] | Callable[[], Rect],
         **kwargs: Any,
     ) -> None:
         self.parent = parent
@@ -610,7 +608,7 @@ class RelativeGroup(MenuSpriteGroup[_MenuElement]):
         else:
             self.rect = Rect(self.parent.rect)
 
-    def draw(self, surface: Surface) -> list[Union[FRect, Rect]]:
+    def draw(self, surface: Surface) -> list[FRect | Rect]:
         self.update_rect_from_parent()
         topleft = self.rect.topleft
 
@@ -647,8 +645,8 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
         super().__init__(**kwargs)
         self._needs_arrange = False
         self._columns = 1
-        self.line_spacing: Optional[int] = None
-        self.max_width_per_column: Optional[int] = None
+        self.line_spacing: int | None = None
+        self.max_width_per_column: int | None = None
 
     @property
     def columns(self) -> int:
@@ -664,7 +662,7 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
             self.arrange_menu_items()
         return super().calc_bounding_rect()
 
-    def add(self, *sprites: Union[PySprite, Any], **kwargs: Any) -> None:
+    def add(self, *sprites: PySprite | Any, **kwargs: Any) -> None:
         """
         Add something to the stacker.
 
@@ -676,7 +674,7 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
         super().add(*sprites, **kwargs)
         self._needs_arrange = True
 
-    def remove(self, *items: Union[PySprite, Any]) -> None:
+    def remove(self, *items: PySprite | Any) -> None:
         super().remove(*items)
         self._needs_arrange = True
 
@@ -687,7 +685,7 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
             super().remove(i)
         self._needs_arrange = True
 
-    def draw(self, surface: Surface) -> list[Union[FRect, Rect]]:
+    def draw(self, surface: Surface) -> list[FRect | Rect]:
         if self._needs_arrange:
             self.arrange_menu_items()
         dirty = super().draw(surface)

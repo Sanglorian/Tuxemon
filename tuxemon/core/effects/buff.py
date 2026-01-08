@@ -41,27 +41,12 @@ class BuffEffect(CoreEffect):
     def apply_item_target(
         self, session: Session, item: Item, target: Monster
     ) -> ItemEffectResult:
+
         if self.statistic not in list(StatType):
             raise ValueError(f"{self.statistic} isn't among {list(StatType)}")
 
-        amount = target.return_stat(StatType(self.statistic))
-        value = int(amount * self.percentage)
-
-        target.base_stats.armour += (
-            value if self.statistic == StatType.armour else 0
-        )
-        target.base_stats.dodge += (
-            value if self.statistic == StatType.dodge else 0
-        )
-        target.base_stats.hp += value if self.statistic == StatType.hp else 0
-        target.base_stats.melee += (
-            value if self.statistic == StatType.melee else 0
-        )
-        target.base_stats.speed += (
-            value if self.statistic == StatType.speed else 0
-        )
-        target.base_stats.ranged += (
-            value if self.statistic == StatType.ranged else 0
-        )
-
+        current_value = target.return_stat(self.statistic)
+        boost_value = int(current_value * self.percentage)
+        stat_name = self.statistic.value  # e.g. "speed", "armour", etc.
+        setattr(item.temporary_stat_boosts, stat_name, boost_value)
         return ItemEffectResult(name=item.name, success=True)

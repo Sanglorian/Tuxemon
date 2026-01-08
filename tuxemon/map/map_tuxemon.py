@@ -26,10 +26,10 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MapConfig:
     slug: str = ""
-    edges: Optional[str] = None
+    edges: str | None = None
     inside: bool = False
-    scenario: Optional[str] = None
-    map_type: Optional[str] = None
+    scenario: str | None = None
+    map_type: str | None = None
     cardinal_directions: dict[str, str] = field(
         default_factory=lambda: {
             "north": "-",
@@ -67,7 +67,7 @@ class AbstractMap(ABC):
 
     @property
     @abstractmethod
-    def map_type(self) -> Optional[str]: ...
+    def map_type(self) -> str | None: ...
 
     @property
     @abstractmethod
@@ -127,7 +127,7 @@ class AbstractMap(ABC):
 
     @property
     @abstractmethod
-    def scenario(self) -> Optional[str]: ...
+    def scenario(self) -> str | None: ...
 
     @abstractmethod
     def initialize_renderer(self) -> None: ...
@@ -165,7 +165,7 @@ class TuxemonMap(AbstractMap):
         inits: Sequence[EventObject],
         surface_map: MutableMapping[tuple[int, int], dict[str, float]],
         collision_map: MutableMapping[
-            tuple[int, int], Optional[RegionProperties]
+            tuple[int, int], RegionProperties | None
         ],
         collisions_lines_map: set[tuple[tuple[int, int], Direction]],
         tiled_map: TiledMap,
@@ -233,7 +233,7 @@ class TuxemonMap(AbstractMap):
     @property
     def collision_map(
         self,
-    ) -> MutableMapping[tuple[int, int], Optional[RegionProperties]]:
+    ) -> MutableMapping[tuple[int, int], RegionProperties | None]:
         return self._collision_map
 
     @property
@@ -293,11 +293,11 @@ class TuxemonMap(AbstractMap):
         return T.translate(f"{self._config.slug}_description")
 
     @property
-    def scenario(self) -> Optional[str]:
+    def scenario(self) -> str | None:
         return self._config.scenario
 
     @property
-    def map_type(self) -> Optional[str]:
+    def map_type(self) -> str | None:
         return self._config.map_type
 
     def initialize_renderer(self) -> None:
@@ -373,7 +373,7 @@ class NullMap(AbstractMap):
         return False
 
     @property
-    def map_type(self) -> Optional[str]:
+    def map_type(self) -> str | None:
         return "notype"
 
     @property
@@ -429,7 +429,7 @@ class NullMap(AbstractMap):
         return 2
 
     @property
-    def scenario(self) -> Optional[str]:
+    def scenario(self) -> str | None:
         return None
 
     def initialize_renderer(self) -> None:

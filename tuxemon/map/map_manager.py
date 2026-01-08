@@ -7,7 +7,7 @@ from collections import defaultdict
 from collections.abc import MutableMapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import yaml
 
@@ -63,9 +63,9 @@ class MapManager:
 
     def __init__(self) -> None:
         """Initializes the manager state with no map loaded."""
-        self.current_map: Optional[AbstractMap] = None
+        self.current_map: AbstractMap | None = None
         self.maps: dict[str, Any] = {}
-        self._map_type_slug: Optional[str] = None
+        self._map_type_slug: str | None = None
 
     @property
     def map_slug(self) -> str:
@@ -109,7 +109,7 @@ class MapManager:
     @property
     def collision_map(
         self,
-    ) -> MutableMapping[tuple[int, int], Optional[RegionProperties]]:
+    ) -> MutableMapping[tuple[int, int], RegionProperties | None]:
         """Map of tile coordinates to collision/region properties."""
         return self.current_map.collision_map if self.current_map else {}
 
@@ -189,7 +189,7 @@ class MapManager:
             updated.remove(event)
             self.current_map.add_inits(updated)
 
-    def get_map_filepath(self) -> Optional[str]:
+    def get_map_filepath(self) -> str | None:
         """Returns the filepath of the current map."""
         if self.current_map:
             return self.current_map.filename

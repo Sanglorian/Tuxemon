@@ -56,12 +56,10 @@ class CreateNpcAction(EventAction):
             return
 
         npc = NPC(slug, session=session)
-        session.client.npc_manager.add_npc(npc)
-
-        client = session.client.event_engine
-        client.execute_action(
-            "char_position", [slug, self.tile_pos_x, self.tile_pos_y], True
+        session.client.npc_manager.place_npc_on_map(
+            npc, slug, self.tile_pos_x, self.tile_pos_y
         )
+
         npc.behavior = self.behavior
         npc_details = load_party(slug)
         npc.template = npc_details.template

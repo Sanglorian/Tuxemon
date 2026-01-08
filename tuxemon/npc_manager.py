@@ -251,3 +251,11 @@ class NPCManager:
                 self.add_npc(sprite)
             else:
                 self.add_npc_off_map(sprite)
+
+    def place_npc_on_map(
+        self, npc: NPC, map_name: str, x: int, y: int
+    ) -> None:
+        npc.set_current_map(map_name)
+        npc.cancel_path()
+        npc.set_position((x, y))
+        self.add_npc(npc)

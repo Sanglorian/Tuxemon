@@ -131,7 +131,6 @@ class WorldState(State):
     def pause(self) -> None:
         """Called before another state gets focus"""
         self.client.event_manager.remove_middleware(self.input_translator_mw)
-        self.client.movement_manager.lock_controls(self.player)
         self.client.movement_manager.stop_char(self.player)
 
     def broadcast_player_teleport_change(self) -> None:

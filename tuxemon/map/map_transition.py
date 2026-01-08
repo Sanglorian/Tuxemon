@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.map.map_tuxemon import AbstractMap
 
@@ -36,17 +36,29 @@ class MapTransition:
         self.event_engine = event_engine
 
     def change_map(
-        self, map_name: Optional[str] = None, yaml_path: Optional[str] = None
+        self, map_name: str | None = None, yaml_path: str | None = None
     ) -> None:
         """Loads the new map or a NullMap and updates relevant game components."""
+        current = self.map_manager.current_map
         self._clear_npcs()
+
         if map_name:
-            map_data = self.map_loader.load_map_data(map_name)
+            if current is None or map_name != current.filename:
+                map_data = self.map_loader.load_map_data(map_name)
+            else:
+                map_data = current
         else:
             map_data = self.map_loader.load_null_map(yaml_path)
+
         self._reset_events(map_data)
         self._update_map_state(map_data)
         self._update_boundaries()
+
+    def validate_coordinates(self, x: int, y: int) -> None:
+        if not self.boundary.is_within_boundaries((x, y)):
+            raise ValueError(
+                f"Coordinates ({x}, {y}) are out of map boundaries."
+            )
 
     def _reset_events(self, map_data: AbstractMap) -> None:
         """Resets and updates event engine for the new map."""

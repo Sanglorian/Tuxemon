@@ -23,19 +23,19 @@ class DoorBehavior(EventBehavior):
         event: EventObject,
         behavior: Behavior,
     ) -> tuple[list[SpatialCondition], list[ParameterizableRule]]:
-        facing, destination, x, y, direction = behavior.args
+        character, destination, x, y, direction = behavior.args
 
         conds = [
             SpatialCondition(
                 type="char_at",
-                parameters=["player"],
+                parameters=[character],
                 box=event.box,
                 operator=Operator.IS,
                 name=f"{behavior.name}_at",
             ),
             SpatialCondition(
                 type="char_facing",
-                parameters=["player", facing],
+                parameters=[character, direction],
                 box=event.box,
                 operator=Operator.IS,
                 name=f"{behavior.name}_facing",
@@ -45,12 +45,12 @@ class DoorBehavior(EventBehavior):
         acts = [
             ParameterizableRule(
                 type="transition_teleport",
-                parameters=[destination, x, y],
+                parameters=[character, destination, x, y],
                 name=f"{behavior.name}_teleport",
             ),
             ParameterizableRule(
                 type="char_face",
-                parameters=["player", direction],
+                parameters=[character, direction],
                 name=f"{behavior.name}_face",
             ),
         ]

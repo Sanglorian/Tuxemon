@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections import defaultdict
 from collections.abc import Mapping, MutableMapping, Sequence
-from typing import TYPE_CHECKING, Any, DefaultDict, Optional, Union
+from typing import TYPE_CHECKING, Any, DefaultDict
 
 from tuxemon.map.map_region import RegionProperties
 from tuxemon.platform.const.sizes import SURFACE_KEYS
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 CollisionMap = Mapping[
     tuple[int, int],
-    Optional[RegionProperties],
+    RegionProperties | None,
 ]
 
 
@@ -102,7 +102,7 @@ class CollisionManager:
     def check_collision_zones(
         self,
         collision_map: MutableMapping[
-            tuple[int, int], Optional[RegionProperties]
+            tuple[int, int], RegionProperties | None
         ],
         label: str,
     ) -> list[tuple[int, int]]:
@@ -176,7 +176,7 @@ class CollisionManager:
             A dictionary of collision tiles.
         """
         collision_dict: DefaultDict[
-            tuple[int, int], Optional[RegionProperties]
+            tuple[int, int], RegionProperties | None
         ] = defaultdict(RegionProperties)
 
         # Get all the NPCs' tile positions
@@ -200,7 +200,7 @@ class CollisionManager:
         return dict(collision_dict)
 
     def _get_region_properties(
-        self, coords: tuple[int, int], entity_or_label: Union[NPC, str]
+        self, coords: tuple[int, int], entity_or_label: NPC | str
     ) -> RegionProperties:
         """
         Constructs a RegionProperties object for the given tile coordinates,

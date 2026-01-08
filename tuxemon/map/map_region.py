@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from tuxemon.db import Direction
 from tuxemon.platform.const.sizes import REGION_KEYS
@@ -52,25 +52,25 @@ class RegionProperties:
             "description": "Directions from which an entity can remain in this region."
         },
     )
-    entity: Optional[Entity[Any]] = field(
+    entity: Entity[Any] | None = field(
         default=None,
         metadata={
             "description": "Optional entity associated with this region."
         },
     )
-    key: Optional[str] = field(
+    key: str | None = field(
         default=None,
         metadata={
             "description": "Region behavior key (e.g., 'slide', 'push_tile')."
         },
     )
-    push_effect: Optional[PushEffect] = field(
+    push_effect: PushEffect | None = field(
         default=None,
         metadata={
             "description": "Push effect applied when entering this region."
         },
     )
-    speed_modifier: Optional[float] = field(
+    speed_modifier: float | None = field(
         default=None,
         metadata={
             "description": "Multiplier for movement speed within this region."
@@ -119,7 +119,7 @@ class RegionPropertiesStrategy(ABC):
 
     @classmethod
     @abstractmethod
-    def create(cls, parsed_data: dict[str, Any]) -> Optional[RegionProperties]:
+    def create(cls, parsed_data: dict[str, Any]) -> RegionProperties | None:
         pass
 
 
@@ -196,8 +196,8 @@ class PushTileStrategy(RegionPropertiesStrategy):
 
 
 def _parse_raw_properties(
-    properties: Mapping[str, Optional[str]],
-) -> Optional[dict[str, Any]]:
+    properties: Mapping[str, str | None],
+) -> dict[str, Any] | None:
     if not properties:
         return None
 
@@ -259,7 +259,7 @@ def _parse_raw_properties(
 
 def create_region_properties(
     parsed_data: dict[str, Any],
-) -> Optional[RegionProperties]:
+) -> RegionProperties | None:
     key_str = (parsed_data.get("key") or "").lower()
     try:
         key = RegionKey(key_str)
@@ -276,8 +276,8 @@ def create_region_properties(
 
 
 def extract_region_properties(
-    properties: Mapping[str, Optional[str]],
-) -> Optional[RegionProperties]:
+    properties: Mapping[str, str | None],
+) -> RegionProperties | None:
     """
     Given a dictionary from Tiled properties, return a dictionary
     suitable for collision detection.
@@ -317,7 +317,7 @@ def extract_region_properties(
     return region
 
 
-def direction_to_list(direction: Optional[str]) -> list[Direction]:
+def direction_to_list(direction: str | None) -> list[Direction]:
     if direction is None:
         return []
 
@@ -336,7 +336,7 @@ def direction_to_list(direction: Optional[str]) -> list[Direction]:
         raise ValueError(f"Invalid direction list: {direction}") from e
 
 
-def direction_to_single(direction: Optional[str]) -> Optional[Direction]:
+def direction_to_single(direction: str | None) -> Direction | None:
     if direction is None:
         return None
 

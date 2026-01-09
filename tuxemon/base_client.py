@@ -391,6 +391,12 @@ class BaseClient(ABC):
         """Push new state, by name, by with timeout"""
         self.state_manager.push_state_with_timeout(state_name, updates)
 
+    def is_in_base_map_state(self, base_count: int | None = None) -> bool:
+        return self.state_manager.is_in_base_map_state(base_count)
+
+    def has_extra_states(self, base_count: int | None = None) -> bool:
+        return self.state_manager.has_extra_states(base_count)
+
     @property
     def active_states(self) -> Sequence[State]:
         """List of active states"""

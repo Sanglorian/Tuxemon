@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_BASE_STATE_COUNT: int = 2  # BackgroundState + WorldState
 
 StateType = TypeVar("StateType", bound="State")
 
@@ -87,6 +88,16 @@ class StateManager:
         name = state.__name__
         logger.debug(f"loading state: {name}")
         self.state_repository.add_state(state)
+
+    def is_in_base_map_state(self, base_count: int | None = None) -> bool:
+        """Return True if the active state count matches the base map state count."""
+        base_count = base_count or DEFAULT_BASE_STATE_COUNT
+        return len(self.active_states) == base_count
+
+    def has_extra_states(self, base_count: int | None = None) -> bool:
+        """Return True if more than the base map states are active."""
+        base_count = base_count or DEFAULT_BASE_STATE_COUNT
+        return len(self.active_states) > base_count
 
     def update(self, time_delta: float) -> None:
         """

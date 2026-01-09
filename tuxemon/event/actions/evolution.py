@@ -19,8 +19,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-MAX_ACTIVE_STATES: int = 2
-
 
 @final
 @dataclass
@@ -56,7 +54,7 @@ class EvolutionAction(EventAction):
 
         self.char = character
 
-        if len(self.client.active_states) > MAX_ACTIVE_STATES:
+        if self.client.has_extra_states():
             return
 
         self._pending_map: dict[UUID, str] = {}

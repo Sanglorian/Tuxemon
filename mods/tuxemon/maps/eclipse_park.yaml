@@ -240,7 +240,7 @@ events:
   Interrupt (Y):
     actions:
     - set_variable park_out:null
-    - transition_teleport eclipse_park_entrance.tmx,5,4,0.3
+    - transition_teleport player,eclipse_park_entrance.tmx,5,4,0.3
     - char_face player,up
     - add_item tuxeball_park,-25
     - remove_step_tracker player,steps_park
@@ -265,7 +265,7 @@ events:
     y: 35
   Steps:
     actions:
-    - transition_teleport eclipse_park_entrance.tmx,5,4,0.3
+    - transition_teleport player,eclipse_park_entrance.tmx,5,4,0.3
     - char_face player,up
     - add_item tuxeball_park,-25
     - park_experience stop
@@ -303,7 +303,7 @@ events:
     type: event
   Teleport 1:
     actions:
-    - transition_teleport eclipse_park_cave.tmx,32,12,0.3
+    - transition_teleport player,eclipse_park_cave.tmx,32,12,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -313,7 +313,7 @@ events:
     y: 12
   Teleport 2:
     actions:
-    - transition_teleport eclipse_park_cave.tmx,9,12,0.3
+    - transition_teleport player,eclipse_park_cave.tmx,9,12,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -323,7 +323,7 @@ events:
     y: 12
   Teleport 3:
     actions:
-    - transition_teleport eclipse_park_cave.tmx,2,8,0.3
+    - transition_teleport player,eclipse_park_cave.tmx,2,8,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -333,7 +333,7 @@ events:
     y: 8
   Teleport RiverA:
     actions:
-    - transition_teleport eclipse_routei.tmx,0,24,0.3
+    - transition_teleport player,eclipse_routei.tmx,0,24,0.3
     - char_face player,left
     conditions:
     - is char_at player
@@ -343,7 +343,7 @@ events:
     y: 24
   Teleport RiverB:
     actions:
-    - transition_teleport eclipse_routei.tmx,0,25,0.3
+    - transition_teleport player,eclipse_routei.tmx,0,25,0.3
     - char_face player,left
     conditions:
     - is char_at player
@@ -353,7 +353,7 @@ events:
     y: 25
   Teleport RiverC:
     actions:
-    - transition_teleport eclipse_routei.tmx,0,26,0.3
+    - transition_teleport player,eclipse_routei.tmx,0,26,0.3
     - char_face player,left
     conditions:
     - is char_at player
@@ -363,7 +363,7 @@ events:
     y: 26
   Teleport RiverD:
     actions:
-    - transition_teleport eclipse_routei.tmx,0,27,0.3
+    - transition_teleport player,eclipse_routei.tmx,0,27,0.3
     - char_face player,left
     conditions:
     - is char_at player
@@ -373,7 +373,7 @@ events:
     y: 27
   Teleport South:
     actions:
-    - transition_teleport eclipse_park_south.tmx,58,0,0.3
+    - transition_teleport player,eclipse_park_south.tmx,58,0,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -383,7 +383,7 @@ events:
     y: 39
   Tuxeball:
     actions:
-    - transition_teleport eclipse_park_entrance.tmx,5,4,0.3
+    - transition_teleport player,eclipse_park_entrance.tmx,5,4,0.3
     - char_face player,up
     - park_experience stop
     conditions:

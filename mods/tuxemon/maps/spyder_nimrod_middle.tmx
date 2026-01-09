@@ -46,7 +46,7 @@
  <objectgroup color="#ffff00" id="4" name="Events">
   <object id="1" name="Teleport to Nimrod Bottom" type="event" x="256" y="288" width="16" height="32">
    <properties>
-    <property name="act1" value="transition_teleport spyder_nimrod_bottom.tmx,16,19,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_nimrod_bottom.tmx,16,19,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,right"/>
@@ -54,7 +54,7 @@
   </object>
   <object id="2" name="Teleport to Nimrod Top" type="event" x="0" y="288" width="32" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_nimrod_top.tmx,0,17,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_nimrod_top.tmx,0,17,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -62,7 +62,7 @@
   </object>
   <object id="7" name="Teleport to Nimrod Bottom" type="event" x="80" y="240" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_nimrod_bottom.tmx,2,15,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_nimrod_bottom.tmx,2,15,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
@@ -349,7 +349,7 @@
   </object>
   <object id="52" name="Flashback Trigger Yes" type="event" x="256" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_nimrod_room.tmx,8,6"/>
+    <property name="act1" value="transition_teleport player,spyder_nimrod_room.tmx,8,6"/>
     <property name="cond1" value="is variable_set zircon_argon:yes"/>
    </properties>
   </object>

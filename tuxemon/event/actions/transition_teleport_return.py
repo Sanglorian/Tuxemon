@@ -84,6 +84,7 @@ class TransitionTeleportReturnAction(EventAction):
         session.client.event_engine.execute_action(
             "transition_teleport",
             [
+                self.character,
                 request.source_map,
                 request.source_x,
                 request.source_y,

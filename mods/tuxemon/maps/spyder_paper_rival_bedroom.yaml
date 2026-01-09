@@ -23,7 +23,7 @@ events:
     y: 2
   Go Downstairs:
     actions:
-    - transition_teleport spyder_paper_rival_downstairs.tmx,3,3,0.3
+    - transition_teleport player,spyder_paper_rival_downstairs.tmx,3,3,0.3
     - char_face player,left
     conditions:
     - is char_at player

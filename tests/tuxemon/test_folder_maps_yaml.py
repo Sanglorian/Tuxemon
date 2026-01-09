@@ -143,10 +143,10 @@ class TestYAMLFiles(unittest.TestCase):
                             if command == "transition_teleport":
                                 with self.subTest(action=action):
                                     try:
-                                        fetch_asset(FOLDER, params[0])
+                                        fetch_asset(FOLDER, params[1])
                                     except OSError:
                                         self.fail(
-                                            f"Map '{params[0]}' does not exist."
+                                            f"Map '{params[1]}' does not exist."
                                         )
 
     def test_conditions_structure(self):

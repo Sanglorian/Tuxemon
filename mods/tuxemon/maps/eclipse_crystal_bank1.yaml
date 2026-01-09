@@ -33,7 +33,7 @@ events:
     type: event
   Teleport to Bank 2:
     actions:
-    - transition_teleport eclipse_crystal_bank2.tmx,2,15,0.3
+    - transition_teleport player,eclipse_crystal_bank2.tmx,2,15,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -43,7 +43,7 @@ events:
     type: event
   Teleport to Crystal Town:
     actions:
-    - transition_teleport eclipse_crystal_town.tmx,6,8,0.3
+    - transition_teleport player,eclipse_crystal_town.tmx,6,8,0.3
     - char_face player,down
     conditions:
     - is char_at player

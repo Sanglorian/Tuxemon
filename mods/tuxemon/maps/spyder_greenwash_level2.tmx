@@ -56,7 +56,7 @@
  <objectgroup color="#ffff00" id="4" name="Events">
   <object id="51" name="Fall to Lower Floor" type="event" x="16" y="432" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash.tmx,1,27,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash.tmx,1,27,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -64,7 +64,7 @@
   </object>
   <object id="68" name="Teleport to Level 2" type="event" x="16" y="32" width="16" height="32">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash.tmx,1,4,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash.tmx,1,4,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -72,7 +72,7 @@
   </object>
   <object id="77" name="Fall to Lower Floor" type="event" x="48" y="432" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash.tmx,3,27,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash.tmx,3,27,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -80,7 +80,7 @@
   </object>
   <object id="79" name="Fall to Lower Floor" type="event" x="32" y="432" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash.tmx,2,27,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash.tmx,2,27,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -88,7 +88,7 @@
   </object>
   <object id="80" name="Fall to Lower Floor" type="event" x="64" y="432" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash.tmx,4,27,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash.tmx,4,27,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -96,7 +96,7 @@
   </object>
   <object id="81" name="Fall to Lower Floor" type="event" x="80" y="432" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash.tmx,5,27,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash.tmx,5,27,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -343,7 +343,7 @@
   </object>
   <object id="127" name="Teleport to Level 2" type="event" x="32" y="32" width="16" height="32">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash.tmx,2,4,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash.tmx,2,4,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -351,7 +351,7 @@
   </object>
   <object id="130" name="Teleport to Level 3" type="event" x="80" y="32" width="16" height="32">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash_level3.tmx,2,4,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash_level3.tmx,2,4,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -359,7 +359,7 @@
   </object>
   <object id="131" name="Teleport to Level 3" type="event" x="64" y="32" width="16" height="32">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash_level3.tmx,1,4,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash_level3.tmx,1,4,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -383,13 +383,13 @@
   </object>
   <object id="134" name="Trigger Fossilator" type="event" x="160" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash_level3.tmx,1,5"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash_level3.tmx,1,5"/>
     <property name="cond1" value="is variable_set unveildefossilator:yes"/>
    </properties>
   </object>
   <object id="135" name="Trigger Dempsey" type="event" x="224" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_greenwash_level3.tmx,11,3"/>
+    <property name="act1" value="transition_teleport player,spyder_greenwash_level3.tmx,11,3"/>
     <property name="cond1" value="is variable_set dempsey_flashback:yes"/>
    </properties>
   </object>

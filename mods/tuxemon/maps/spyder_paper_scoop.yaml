@@ -158,7 +158,7 @@ events:
     - wait 0.5
     - char_face spyder_dante,down
     - pathfind player,6,10
-    - transition_teleport spyder_bedroom.tmx,3,4,0.3
+    - transition_teleport player,spyder_bedroom.tmx,3,4,0.3
     - remove_npc spyder_shopkeeper
     - remove_npc spyder_dante
     - set_variable intro_scoop:done
@@ -211,7 +211,7 @@ events:
     type: event
   Go Outside:
     actions:
-    - transition_teleport spyder_paper_town.tmx,19,13,0.3
+    - transition_teleport player,spyder_paper_town.tmx,19,13,0.3
     conditions:
     - is char_at player
     - is char_facing player,down

@@ -9,7 +9,7 @@ events:
     type: event
   Go Downstairs:
     actions:
-    - transition_teleport player_house_downstairs.tmx,0,2,0.3
+    - transition_teleport player,player_house_downstairs.tmx,0,2,0.3
     - char_face player,down
     conditions:
     - is char_at player

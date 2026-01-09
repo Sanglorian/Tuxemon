@@ -39,7 +39,7 @@
  <objectgroup color="#ffff00" id="6" name="Events">
   <object id="13" name="Teleport to Cotton Town" type="event" x="16" y="160" width="32" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_cotton_town.tmx,16,17,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_cotton_town.tmx,16,17,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>

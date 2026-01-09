@@ -117,7 +117,7 @@ events:
     type: event
   Teleport Mountain Middle 1:
     actions:
-    - transition_teleport eclipse_lion_mountain_middle.tmx,34,39,0.3
+    - transition_teleport player,eclipse_lion_mountain_middle.tmx,34,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -127,7 +127,7 @@ events:
     type: event
   Teleport Mountain Middle 2a:
     actions:
-    - transition_teleport eclipse_lion_mountain_middle.tmx,11,39,0.3
+    - transition_teleport player,eclipse_lion_mountain_middle.tmx,11,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -137,7 +137,7 @@ events:
     type: event
   Teleport Mountain Middle 2b:
     actions:
-    - transition_teleport eclipse_lion_mountain_middle.tmx,12,39,0.3
+    - transition_teleport player,eclipse_lion_mountain_middle.tmx,12,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -147,7 +147,7 @@ events:
     type: event
   Teleport Mountain Middle 3:
     actions:
-    - transition_teleport eclipse_lion_mountain_middle.tmx,1,39,0.3
+    - transition_teleport player,eclipse_lion_mountain_middle.tmx,1,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -157,7 +157,7 @@ events:
     type: event
   Teleport Park:
     actions:
-    - transition_teleport eclipse_park_entrance.tmx,4,3,0.3
+    - transition_teleport player,eclipse_park_entrance.tmx,4,3,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -169,7 +169,7 @@ events:
     type: event
   Teleport Town:
     actions:
-    - transition_teleport eclipse_crystal_town.tmx,39,10,0.3
+    - transition_teleport player,eclipse_crystal_town.tmx,39,10,0.3
     - char_face player,left
     conditions:
     - is char_at player

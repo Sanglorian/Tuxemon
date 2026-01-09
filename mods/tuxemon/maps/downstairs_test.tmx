@@ -54,14 +54,14 @@
   </object>
   <object id="26" name="Go Upstairs" type="event" x="0" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport bedroom_test.tmx,8,2,0.3"/>
+    <property name="act1" value="transition_teleport player,bedroom_test.tmx,8,2,0.3"/>
     <property name="act2" value="char_face down"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="27" name="Go Outside" type="event" x="64" y="96" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport manhattan_beach.tmx,27,38,0.3"/>
+    <property name="act1" value="transition_teleport player,manhattan_beach.tmx,27,38,0.3"/>
     <property name="act2" value="char_face left"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>

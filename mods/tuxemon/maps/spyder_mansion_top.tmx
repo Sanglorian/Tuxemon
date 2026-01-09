@@ -64,7 +64,7 @@
  <objectgroup color="#ffff00" id="4" name="Events">
   <object id="25" name="Teleport to Middle" type="event" x="16" y="272" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_mansion.tmx,1,2,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_mansion.tmx,1,2,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -72,7 +72,7 @@
   </object>
   <object id="26" name="Teleport to Middle" type="event" x="32" y="272" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_mansion.tmx,2,2,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_mansion.tmx,2,2,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -224,7 +224,7 @@
   </object>
   <object id="58" name="Teleport to Middle" type="event" x="112" y="288" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_routea.tmx,5,7,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_routea.tmx,5,7,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -232,7 +232,7 @@
   </object>
   <object id="59" name="Teleport to Middle" type="event" x="160" y="288" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_routea.tmx,8,7,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_routea.tmx,8,7,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>

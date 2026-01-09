@@ -60,7 +60,7 @@
  <objectgroup color="#ffff00" id="6" name="Events">
   <object id="118" name="Teleport to Cotton Town" type="event" x="336" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_cotton_town.tmx,21,39,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_cotton_town.tmx,21,39,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -74,7 +74,7 @@
   </object>
   <object id="129" name="Teleport to Route1" type="event" x="224" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_paper_town.tmx,14,0,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_paper_town.tmx,14,0,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -82,7 +82,7 @@
   </object>
   <object id="130" name="Teleport to Route1" type="event" x="208" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_paper_town.tmx,13,0,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_paper_town.tmx,13,0,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -129,7 +129,7 @@
   </object>
   <object id="172" name="Teleport to Cotton Town" type="event" x="352" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_cotton_town.tmx,22,39,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_cotton_town.tmx,22,39,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -137,7 +137,7 @@
   </object>
   <object id="174" name="Teleport to Cotton Town" type="event" x="368" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_cotton_town.tmx,23,39,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_cotton_town.tmx,23,39,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -145,7 +145,7 @@
   </object>
   <object id="175" name="Teleport to Cotton Town" type="event" x="384" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_cotton_town.tmx,24,39,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_cotton_town.tmx,24,39,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -153,7 +153,7 @@
   </object>
   <object id="176" name="Teleport to Cotton Town" type="event" x="400" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_cotton_town.tmx,25,39,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_cotton_town.tmx,25,39,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -161,7 +161,7 @@
   </object>
   <object id="177" name="Teleport to Cotton Town" type="event" x="416" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_cotton_town.tmx,26,39,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_cotton_town.tmx,26,39,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -169,7 +169,7 @@
   </object>
   <object id="178" name="Teleport to Cotton Town" type="event" x="432" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_cotton_town.tmx,27,39,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_cotton_town.tmx,27,39,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -205,7 +205,7 @@
   </object>
   <object id="193" name="Teleport to Brideswood B" type="event" x="624" y="80" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_brideswood.tmx,0,5,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_brideswood.tmx,0,5,0.3"/>
     <property name="act2" value="char_face player,right"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,right"/>
@@ -213,7 +213,7 @@
   </object>
   <object id="194" name="Teleport to Brideswood A" type="event" x="624" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_brideswood.tmx,0,4,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_brideswood.tmx,0,4,0.3"/>
     <property name="act2" value="char_face player,right"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,right"/>
@@ -221,7 +221,7 @@
   </object>
   <object id="208" name="Teleport to Sea 1" type="event" x="0" y="96" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_routec.tmx,39,6,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_routec.tmx,39,6,0.3"/>
     <property name="act2" value="char_face player,left"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,left"/>
@@ -229,7 +229,7 @@
   </object>
   <object id="209" name="Teleport to Sea 2" type="event" x="0" y="112" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_routec.tmx,39,7,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_routec.tmx,39,7,0.3"/>
     <property name="act2" value="char_face player,left"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,left"/>

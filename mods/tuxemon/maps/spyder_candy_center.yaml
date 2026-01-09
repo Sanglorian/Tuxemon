@@ -1,14 +1,14 @@
 events:
   Choice Floor 1st:
     actions:
-    - transition_teleport spyder_candy_hospital1.tmx,7,15,0.3
+    - transition_teleport player,spyder_candy_hospital1.tmx,7,15,0.3
     - set_variable choice_floor:null
     conditions:
     - is variable_set choice_floor:1floor
     type: event
   Choice Floor 2nd:
     actions:
-    - transition_teleport spyder_candy_hospital2.tmx,11,15,0.3
+    - transition_teleport player,spyder_candy_hospital2.tmx,11,15,0.3
     - set_variable choice_floor:null
     conditions:
     - is variable_set choice_floor:2floor
@@ -45,7 +45,7 @@ events:
     y: 4
   Go Outside:
     actions:
-    - transition_teleport spyder_candy_town.tmx,14,35,0.3
+    - transition_teleport player,spyder_candy_town.tmx,14,35,0.3
     - char_face player,down
     conditions:
     - is char_at player

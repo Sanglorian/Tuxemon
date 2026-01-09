@@ -54,14 +54,14 @@
  <objectgroup color="#fffb00" id="6" name="Events">
   <object id="18" name="back to main" type="event" x="144" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport taba_ba_main.tmx,13,13,0.5"/>
+    <property name="act1" value="transition_teleport player,taba_ba_main.tmx,13,13,0.5"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
    </properties>
   </object>
   <object id="19" name="back to main2" type="event" x="160" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport taba_ba_main.tmx,14,13,0.5"/>
+    <property name="act1" value="transition_teleport player,taba_ba_main.tmx,14,13,0.5"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
    </properties>
@@ -145,14 +145,14 @@
   </object>
   <object id="30" name="to battle room" type="event" x="304" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport taba_ba_br_3.tmx,1,3,0.5"/>
+    <property name="act1" value="transition_teleport player,taba_ba_br_3.tmx,1,3,0.5"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,right"/>
    </properties>
   </object>
   <object id="31" name="to battle room" type="event" x="304" y="272" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport taba_ba_br_3.tmx,1,4,0.5"/>
+    <property name="act1" value="transition_teleport player,taba_ba_br_3.tmx,1,4,0.5"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,right"/>
    </properties>

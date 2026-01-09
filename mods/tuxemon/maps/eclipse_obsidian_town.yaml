@@ -25,7 +25,7 @@ events:
     type: event
   Teleport House:
     actions:
-    - transition_teleport eclipse_obsidian_town_house.tmx,4,7,0.3
+    - transition_teleport player,eclipse_obsidian_town_house.tmx,4,7,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -35,7 +35,7 @@ events:
     y: 8
   Teleport Mountain High 1:
     actions:
-    - transition_teleport eclipse_lion_mountain_high.tmx,39,13,0.3
+    - transition_teleport player,eclipse_lion_mountain_high.tmx,39,13,0.3
     - char_face player,left
     conditions:
     - is char_at player
@@ -45,7 +45,7 @@ events:
     type: event
   Teleport Mountain High 2:
     actions:
-    - transition_teleport eclipse_lion_mountain_high.tmx,39,14,0.3
+    - transition_teleport player,eclipse_lion_mountain_high.tmx,39,14,0.3
     - char_face player,left
     conditions:
     - is char_at player
@@ -64,7 +64,7 @@ events:
     y: 12
   Tuxecenter:
     actions:
-    - transition_teleport eclipse_obsidian_center.tmx,6,10,0.3
+    - transition_teleport player,eclipse_obsidian_center.tmx,6,10,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -74,7 +74,7 @@ events:
     y: 8
 #  Blind Shaft:
 #    actions:
-#    - transition_teleport eclipse_blind_shaft.tmx,6,10,0.3
+#    - transition_teleport player,eclipse_blind_shaft.tmx,6,10,0.3
 #    - char_face player,up
 #    conditions:
 #    - is char_at player

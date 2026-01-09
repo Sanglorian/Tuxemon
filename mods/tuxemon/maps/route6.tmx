@@ -84,7 +84,7 @@
   </object>
   <object id="56" name="Teleport to Tunnel" type="event" x="624" y="64" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport tunnel.tmx,0,4,0.3"/>
+    <property name="act10" value="transition_teleport player,tunnel.tmx,0,4,0.3"/>
     <property name="act20" value="char_face player,right"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -92,7 +92,7 @@
   </object>
   <object id="57" name="Teleport to Tunnel" type="event" x="624" y="80" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport tunnel.tmx,0,5,0.3"/>
+    <property name="act10" value="transition_teleport player,tunnel.tmx,0,5,0.3"/>
     <property name="act20" value="char_face player,right"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -100,7 +100,7 @@
   </object>
   <object id="58" name="Teleport to Tunnel" type="event" x="624" y="96" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport tunnel.tmx,0,6,0.3"/>
+    <property name="act10" value="transition_teleport player,tunnel.tmx,0,6,0.3"/>
     <property name="act20" value="char_face player,right"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -108,7 +108,7 @@
   </object>
   <object id="59" name="Teleport to Tunnel" type="event" x="624" y="112" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport tunnel.tmx,0,7,0.3"/>
+    <property name="act10" value="transition_teleport player,tunnel.tmx,0,7,0.3"/>
     <property name="act20" value="char_face player,right"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -116,7 +116,7 @@
   </object>
   <object id="60" name="Teleport to Tunnel" type="event" x="624" y="128" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport tunnel.tmx,0,8,0.3"/>
+    <property name="act10" value="transition_teleport player,tunnel.tmx,0,8,0.3"/>
     <property name="act20" value="char_face player,right"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -124,7 +124,7 @@
   </object>
   <object id="61" name="Teleport to Candy Town" type="event" x="112" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport candy_town.tmx,7,39,0.3"/>
+    <property name="act10" value="transition_teleport player,candy_town.tmx,7,39,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -132,7 +132,7 @@
   </object>
   <object id="63" name="Teleport to Candy Town" type="event" x="128" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport candy_town.tmx,8,39,0.3"/>
+    <property name="act10" value="transition_teleport player,candy_town.tmx,8,39,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -140,7 +140,7 @@
   </object>
   <object id="64" name="Teleport to Candy Town" type="event" x="144" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport candy_town.tmx,9,39,0.3"/>
+    <property name="act10" value="transition_teleport player,candy_town.tmx,9,39,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -148,7 +148,7 @@
   </object>
   <object id="65" name="Teleport to Candy Town" type="event" x="160" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport candy_town.tmx,10,39,0.3"/>
+    <property name="act10" value="transition_teleport player,candy_town.tmx,10,39,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -156,7 +156,7 @@
   </object>
   <object id="66" name="Teleport to Candy Town" type="event" x="176" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport candy_town.tmx,11,39,0.3"/>
+    <property name="act10" value="transition_teleport player,candy_town.tmx,11,39,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -164,7 +164,7 @@
   </object>
   <object id="67" name="Teleport to Candy Town" type="event" x="192" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport candy_town.tmx,12,39,0.3"/>
+    <property name="act10" value="transition_teleport player,candy_town.tmx,12,39,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -172,7 +172,7 @@
   </object>
   <object id="68" name="Teleport to Candy Town" type="event" x="208" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport candy_town.tmx,13,39,0.3"/>
+    <property name="act10" value="transition_teleport player,candy_town.tmx,13,39,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -194,7 +194,7 @@
   </object>
   <object id="73" name="Teleport to Tunnel" type="event" x="624" y="144" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport tunnel.tmx,0,9"/>
+    <property name="act10" value="transition_teleport player,tunnel.tmx,0,9"/>
     <property name="act20" value="char_face player,right"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -202,7 +202,7 @@
   </object>
   <object id="74" name="Teleport to Tunnel" type="event" x="624" y="160" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport tunnel.tmx,0,10"/>
+    <property name="act10" value="transition_teleport player,tunnel.tmx,0,10"/>
     <property name="act20" value="char_face player,right"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -210,7 +210,7 @@
   </object>
   <object id="75" name="Teleport to Candy Town" type="event" x="80" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport candy_town.tmx,5,39,0.3"/>
+    <property name="act10" value="transition_teleport player,candy_town.tmx,5,39,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -218,7 +218,7 @@
   </object>
   <object id="76" name="Teleport to Candy Town" type="event" x="96" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport candy_town.tmx,6,39,0.3"/>
+    <property name="act10" value="transition_teleport player,candy_town.tmx,6,39,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>

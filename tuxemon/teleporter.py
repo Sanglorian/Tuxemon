@@ -8,12 +8,9 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import Direction
 
 if TYPE_CHECKING:
-    from tuxemon.boundary import BoundaryChecker
-    from tuxemon.map.map_manager import MapManager
     from tuxemon.map.map_transition import MapTransition
     from tuxemon.npc import NPC
     from tuxemon.npc_manager import NPCManager
@@ -109,14 +106,10 @@ class Teleporter:
 
     def __init__(
         self,
-        boundary: BoundaryChecker,
-        map_manager: MapManager,
         map_transition: MapTransition,
         npc_manager: NPCManager,
         state_manager: StateManager,
     ) -> None:
-        self.boundary = boundary
-        self.map_manager = map_manager
         self.map_transition = map_transition
         self.npc_manager = npc_manager
         self.state_manager = state_manager
@@ -162,10 +155,10 @@ class Teleporter:
             the new map.
         """
         self.prepare_teleport(character)
-        self._switch_map_if_needed(map_name)
-        character.set_current_map(map_name)
-        self._update_character_position(character, x, y)
-        self.finalize_teleport(character)
+        self.map_transition.change_map(map_name)
+        self.map_transition.validate_coordinates(x, y)
+        self.npc_manager.place_npc_on_map(character, map_name, x, y)
+        logger.debug(f"{character.slug} has completed teleportation.")
 
     def prepare_teleport(self, character: NPC) -> None:
         """
@@ -181,35 +174,3 @@ class Teleporter:
             self.state_manager.push_state_with_timeout("TeleporterState", 15)
 
         logger.info(f"{character.slug} is prepared for teleportation.")
-
-    def finalize_teleport(self, character: NPC) -> None:
-        """
-        Finalize the teleportation process by unlocking controls and resetting
-        the character's state.
-
-        Parameters:
-            character: The character to finalize teleportation for.
-        """
-        logger.debug(f"Finalizing teleportation for {character.slug}...")
-        logger.info(f"{character.slug} has completed teleportation.")
-        self.npc_manager.add_npc(character)
-
-    def _switch_map_if_needed(self, map_name: str) -> None:
-        if (
-            self.map_manager.current_map is None
-            or map_name != self.map_manager.current_map.filename
-        ):
-            target_map = fetch_asset("maps", map_name)
-            if not target_map:
-                raise ValueError(f"Map '{map_name}' does not exist.")
-            self.map_transition.change_map(target_map)
-
-    def _update_character_position(
-        self, character: NPC, x: int, y: int
-    ) -> None:
-        if not self.boundary.is_within_boundaries((x, y)):
-            raise ValueError(
-                f"Coordinates ({x}, {y}) are out of map boundaries."
-            )
-        character.cancel_path()
-        character.set_position((x, y))

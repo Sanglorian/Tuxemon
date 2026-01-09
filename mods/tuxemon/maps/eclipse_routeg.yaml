@@ -1,7 +1,7 @@
 events:
   Teleport to Routef1:
     actions:
-    - transition_teleport eclipse_routef.tmx,24,0,0.3
+    - transition_teleport player,eclipse_routef.tmx,24,0,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -12,7 +12,7 @@ events:
     type: event
   Teleport to Routef2:
     actions:
-    - transition_teleport eclipse_routef.tmx,25,0,0.3
+    - transition_teleport player,eclipse_routef.tmx,25,0,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -23,7 +23,7 @@ events:
     type: event
   Teleport to Routef3:
     actions:
-    - transition_teleport eclipse_routef.tmx,26,0,0.3
+    - transition_teleport player,eclipse_routef.tmx,26,0,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -34,7 +34,7 @@ events:
     type: event
   Teleport to Routef4:
     actions:
-    - transition_teleport eclipse_routef.tmx,27,0,0.3
+    - transition_teleport player,eclipse_routef.tmx,27,0,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -45,7 +45,7 @@ events:
     type: event
   Teleport to Routeh1:
     actions:
-    - transition_teleport eclipse_routeh.tmx,23,39,0.3
+    - transition_teleport player,eclipse_routeh.tmx,23,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -56,7 +56,7 @@ events:
     type: event
   Teleport to Routeh2:
     actions:
-    - transition_teleport eclipse_routeh.tmx,24,39,0.3
+    - transition_teleport player,eclipse_routeh.tmx,24,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -67,7 +67,7 @@ events:
     type: event
   Teleport to Routeh3:
     actions:
-    - transition_teleport eclipse_routeh.tmx,25,39,0.3
+    - transition_teleport player,eclipse_routeh.tmx,25,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -78,7 +78,7 @@ events:
     type: event
   Teleport to Routeh4:
     actions:
-    - transition_teleport eclipse_routeh.tmx,26,39,0.3
+    - transition_teleport player,eclipse_routeh.tmx,26,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -89,7 +89,7 @@ events:
     type: event
   Teleport to Routeh5:
     actions:
-    - transition_teleport eclipse_routeh.tmx,36,39,0.3
+    - transition_teleport player,eclipse_routeh.tmx,36,39,0.3
     - char_face player,up
     conditions:
     - is char_at player
@@ -100,7 +100,7 @@ events:
     type: event
   Teleport to Routeh6:
     actions:
-    - transition_teleport eclipse_routeh.tmx,37,39,0.3
+    - transition_teleport player,eclipse_routeh.tmx,37,39,0.3
     - char_face player,up
     conditions:
     - is char_at player

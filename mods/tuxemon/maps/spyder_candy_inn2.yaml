@@ -15,7 +15,7 @@ events:
     - wait 0.5
     - set_bubble player
     - set_variable beeevent:stung
-    - transition_teleport spyder_candy_inn2.tmx,5,6,0.3
+    - transition_teleport player,spyder_candy_inn2.tmx,5,6,0.3
     - wait 0.1
     - remove_npc spyder_candyinn_monk
     - char_face player,down
@@ -93,7 +93,7 @@ events:
     type: event
   Go downstairs:
     actions:
-    - transition_teleport spyder_candy_inn1.tmx,3,2,0.3
+    - transition_teleport player,spyder_candy_inn1.tmx,3,2,0.3
     - char_face player,left
     conditions:
     - is char_at player

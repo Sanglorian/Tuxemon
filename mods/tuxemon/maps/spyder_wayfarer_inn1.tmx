@@ -65,7 +65,7 @@
  <objectgroup color="#ffff00" id="6" name="Events">
   <object id="34" name="Go upstairs" type="event" x="64" y="32" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_wayfarer_inn2.tmx,5,2,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_wayfarer_inn2.tmx,5,2,0.3"/>
     <property name="act2" value="char_face player,right"/>
     <property name="act3" value="set_teleport_faint player,spyder_wayfarer_inn1.tmx,11,9"/>
     <property name="cond1" value="is char_at player"/>
@@ -74,7 +74,7 @@
   </object>
   <object id="35" name="Go to the other upstairs" type="event" x="160" y="48" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_wayfarer_inn2.tmx,9,3,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_wayfarer_inn2.tmx,9,3,0.3"/>
     <property name="act2" value="char_face player,left"/>
     <property name="act3" value="set_teleport_faint player,spyder_wayfarer_inn1.tmx,11,9"/>
     <property name="cond1" value="is char_at player"/>
@@ -83,7 +83,7 @@
   </object>
   <object id="39" name="Teleport to Route 3" type="event" x="160" y="160" width="48" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_route3.tmx,4,5,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_route3.tmx,4,5,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -91,7 +91,7 @@
   </object>
   <object id="40" name="Teleport to Route 3" type="event" x="176" y="16" width="32" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_route3.tmx,2,3,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_route3.tmx,2,3,0.3"/>
     <property name="act2" value="char_face player,left"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -422,7 +422,7 @@
   </object>
   <object id="90" name="Trigger Flashback" type="event" x="160" y="80" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_nimrod_room.tmx,8,6"/>
+    <property name="act1" value="transition_teleport player,spyder_nimrod_room.tmx,8,6"/>
     <property name="cond1" value="is variable_set enforcers_response:yes"/>
    </properties>
   </object>

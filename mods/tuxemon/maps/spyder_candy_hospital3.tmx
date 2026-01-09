@@ -110,14 +110,14 @@
   </object>
   <object id="58" name="2nd floor1" type="event" x="80" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_candy_hospital2.tmx,17,2,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_candy_hospital2.tmx,17,2,0.3"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
    </properties>
   </object>
   <object id="59" name="2nd floor2" type="event" x="96" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_candy_hospital2.tmx,18,2,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_candy_hospital2.tmx,18,2,0.3"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
    </properties>

@@ -50,7 +50,7 @@
   </object>
   <object id="29" name="Go Outside" type="event" x="112" y="176" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_timber_town.tmx,31,8,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_timber_town.tmx,31,8,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -58,7 +58,7 @@
   </object>
   <object id="47" name="Room2" type="event" x="112" y="32" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_timber_walledgarden2.tmx,7,19,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_timber_walledgarden2.tmx,7,19,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -66,7 +66,7 @@
   </object>
   <object id="48" name="Room1" type="event" x="32" y="32" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_timber_walledgarden2.tmx,2,19,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_timber_walledgarden2.tmx,2,19,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -74,7 +74,7 @@
   </object>
   <object id="49" name="Room3" type="event" x="208" y="32" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_timber_walledgarden2.tmx,13,19,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_timber_walledgarden2.tmx,13,19,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -82,7 +82,7 @@
   </object>
   <object id="50" name="Go Outside" type="event" x="128" y="176" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_timber_town.tmx,32,8,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_timber_town.tmx,32,8,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -90,7 +90,7 @@
   </object>
   <object id="51" name="Room2" type="event" x="128" y="32" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_timber_walledgarden2.tmx,8,19,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_timber_walledgarden2.tmx,8,19,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>

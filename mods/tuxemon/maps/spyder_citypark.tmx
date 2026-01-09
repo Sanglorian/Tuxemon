@@ -128,7 +128,7 @@
   </object>
   <object id="38" name="Teleport to Route 2" type="event" x="176" y="624" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_route2.tmx,11,0,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_route2.tmx,11,0,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -136,7 +136,7 @@
   </object>
   <object id="39" name="Teleport to Route 2" type="event" x="160" y="624" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_route2.tmx,10,0,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_route2.tmx,10,0,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -144,7 +144,7 @@
   </object>
   <object id="40" name="Teleport to Leather Town" type="event" x="0" y="192" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_leather_town.tmx,39,32,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_leather_town.tmx,39,32,0.3"/>
     <property name="act2" value="char_face player,left"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,left"/>
@@ -152,7 +152,7 @@
   </object>
   <object id="41" name="Teleport to Leather Town" type="event" x="0" y="208" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_leather_town.tmx,39,33,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_leather_town.tmx,39,33,0.3"/>
     <property name="act2" value="char_face player,left"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,left"/>
@@ -566,7 +566,7 @@
   </object>
   <object id="289" name="Teleport to Maniac House" type="event" x="576" y="48" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_citypark_house1.tmx,6,7,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_citypark_house1.tmx,6,7,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>

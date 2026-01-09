@@ -25,9 +25,10 @@ class TransitionTeleportAction(EventAction):
     Script usage:
         .. code-block::
 
-            transition_teleport <map_name>,<x>,<y>[,trans_time][,rgb]
+            transition_teleport <character>,<map_name>,<x>,<y>[,trans_time][,rgb]
 
     Script parameters:
+        character: Slug of the character to teleport.
         map_name: Name of the map to teleport to.
         x: X coordinate of the map to teleport to.
         y: Y coordinate of the map to teleport to.
@@ -37,6 +38,7 @@ class TransitionTeleportAction(EventAction):
     """
 
     name = "transition_teleport"
+    character: str
     map_name: str
     x: int
     y: int
@@ -45,7 +47,7 @@ class TransitionTeleportAction(EventAction):
 
     def start(self, session: Session) -> None:
 
-        char = session.get_npc("player")
+        char = session.get_npc(self.character)
         if char is None:
             return
 

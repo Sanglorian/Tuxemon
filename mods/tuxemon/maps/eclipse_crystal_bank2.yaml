@@ -13,7 +13,7 @@ events:
     type: event
   Teleport to Bank 1:
     actions:
-    - transition_teleport eclipse_crystal_bank1.tmx,1,10,0.3
+    - transition_teleport player,eclipse_crystal_bank1.tmx,1,10,0.3
     - char_face player,down
     conditions:
     - is char_at player
@@ -23,7 +23,7 @@ events:
     type: event
   Teleport to Bank 3:
     actions:
-    - transition_teleport eclipse_crystal_bank3.tmx,2,12,0.3
+    - transition_teleport player,eclipse_crystal_bank3.tmx,2,12,0.3
     - char_face player,up
     conditions:
     - is char_at player

@@ -44,7 +44,7 @@
  <objectgroup color="#ffff00" id="6" name="Events">
   <object id="13" name="Teleport to Timber City" type="event" x="80" y="160" width="32" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_timber_town.tmx,14,12,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_timber_town.tmx,14,12,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>

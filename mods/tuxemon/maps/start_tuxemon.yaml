@@ -31,7 +31,7 @@ events:
     - change_bg gradient_blue,choice_gender,image
     - translated_dialog_choice white_female:black_male:white_male:black_female:gender_enby:gender_whatever,race_choice
     - change_bg gradient_blue
-    - transition_teleport spyder_bedroom.tmx,4,4,0.3
+    - transition_teleport player,spyder_bedroom.tmx,4,4,0.3
     conditions:
     - is variable_set scenario_choice:spyder_campaign
     - not variable_set gender_choice
@@ -62,7 +62,7 @@ events:
     - change_bg gradient_blue,choice_gender,image
     - translated_dialog_choice white_female:black_male:white_male:black_female:gender_enby:gender_whatever,race_choice
     - change_bg gradient_blue
-    - transition_teleport player_house_bedroom.tmx,4,4,0.3
+    - transition_teleport player,player_house_bedroom.tmx,4,4,0.3
     conditions:
     - is variable_set scenario_choice:xero_campaign
     - not variable_set gender_choice

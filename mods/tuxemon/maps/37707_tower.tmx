@@ -58,7 +58,7 @@
  <objectgroup color="#ffff00" id="6" name="Events">
   <object id="27" name="Go Outside" type="event" x="192" y="352" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport 37707_town.tmx,24,6,0.5"/>
+    <property name="act10" value="transition_teleport player,37707_town.tmx,24,6,0.5"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
     <property name="cond30" value="not variable_set 37707_tower:activated"/>
@@ -75,7 +75,7 @@
   </object>
   <object id="54" name="Go Outside Glitched" type="event" x="192" y="352" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport 37707_town_missing.tmx,24,6,0.5"/>
+    <property name="act10" value="transition_teleport player,37707_town_missing.tmx,24,6,0.5"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
     <property name="cond30" value="is variable_set 37707_tower:activated"/>

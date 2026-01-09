@@ -7,7 +7,7 @@ from collections import OrderedDict, defaultdict
 from collections.abc import Generator, MutableMapping
 from math import cos, pi, sin
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import pytmx
 import yaml
@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 RegionTile = tuple[
     tuple[int, int],
-    Optional[RegionProperties],
+    RegionProperties | None,
 ]
 
 
@@ -62,7 +62,7 @@ class MapLoader:
     """
 
     def __init__(
-        self, cache_size: Optional[int] = None, enable_cache: bool = True
+        self, cache_size: int | None = None, enable_cache: bool = True
     ) -> None:
         """
         Initializes the MapLoader with optional cache configuration.
@@ -87,7 +87,13 @@ class MapLoader:
         Parameters:
             path: Path to the TMX map file.
         """
-        normalized_path = str(Path(path).resolve())
+        name = Path(path).stem
+
+        resolved = fetch_asset("maps", f"{name}.tmx")
+        if not resolved:
+            raise FileNotFoundError(f"Map '{name}' not found in assets.")
+
+        normalized_path = str(Path(resolved).resolve())
 
         if self.enable_cache:
             cached = self.get_cached_map(normalized_path)
@@ -103,7 +109,7 @@ class MapLoader:
 
         return txmn_map
 
-    def load_null_map(self, yaml_path: Optional[str]) -> AbstractMap:
+    def load_null_map(self, yaml_path: str | None) -> AbstractMap:
         logger.debug("Loading NullMap with optional events.")
         null_map = NullMap()
         if yaml_path:
@@ -111,7 +117,7 @@ class MapLoader:
             self.process_and_merge_events(null_map, [file])
         return null_map
 
-    def get_cached_map(self, normalized_path: str) -> Optional[AbstractMap]:
+    def get_cached_map(self, normalized_path: str) -> AbstractMap | None:
         if normalized_path in self._cache:
             logger.debug(f"Cache hit for map '{normalized_path}'.")
             map_data = self._cache.pop(normalized_path)
@@ -158,7 +164,7 @@ class MapLoader:
         self._merge_events(txmn_map, yaml_collision, events)
 
     def _process_events(self, yaml_files: list[Path]) -> tuple[
-        MutableMapping[tuple[int, int], Optional[RegionProperties]],
+        MutableMapping[tuple[int, int], RegionProperties | None],
         defaultdict[str, list[EventObject]],
     ]:
         """
@@ -171,7 +177,7 @@ class MapLoader:
             Tuple containing collision map and event dictionary.
         """
         yaml_collision: MutableMapping[
-            tuple[int, int], Optional[RegionProperties]
+            tuple[int, int], RegionProperties | None
         ] = {}
         events: defaultdict[str, list[EventObject]] = defaultdict(list)
 
@@ -202,7 +208,7 @@ class MapLoader:
         self,
         txmn_map: AbstractMap,
         yaml_collision: MutableMapping[
-            tuple[int, int], Optional[RegionProperties]
+            tuple[int, int], RegionProperties | None
         ],
         events: dict[str, list[EventObject]],
     ) -> None:
@@ -276,7 +282,7 @@ class YAMLEventLoader:
 
     def load_collision(
         self, path: Path
-    ) -> MutableMapping[tuple[int, int], Optional[RegionProperties]]:
+    ) -> MutableMapping[tuple[int, int], RegionProperties | None]:
         """
         Load collision data from a YAML file.
 
@@ -293,7 +299,7 @@ class YAMLEventLoader:
         yaml_data: dict[str, list[dict[str, Any]]] = parse_yaml(path)
 
         collision_dict: MutableMapping[
-            tuple[int, int], Optional[RegionProperties]
+            tuple[int, int], RegionProperties | None
         ] = {}
 
         if "collisions" in yaml_data:
@@ -422,10 +428,10 @@ class TMXMapLoader:
     def load_collision_data(
         self, data: pytmx.TiledMap, tile_size: tuple[int, int]
     ) -> tuple[
-        dict[tuple[int, int], Optional[RegionProperties]],
+        dict[tuple[int, int], RegionProperties | None],
         set[tuple[tuple[int, int], Direction]],
     ]:
-        collision_map: dict[tuple[int, int], Optional[RegionProperties]] = {}
+        collision_map: dict[tuple[int, int], RegionProperties | None] = {}
         collision_lines_map: set[tuple[tuple[int, int], Direction]] = set()
         gids_with_props = {}
         gids_with_colliders = {}
@@ -507,7 +513,7 @@ class TMXMapLoader:
         self,
         obj: pytmx.TiledObject,
         tile_size: tuple[int, int],
-        collision_map: dict[tuple[int, int], Optional[RegionProperties]],
+        collision_map: dict[tuple[int, int], RegionProperties | None],
         collision_lines_map: set[tuple[tuple[int, int], Direction]],
         x: int,
         y: int,

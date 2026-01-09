@@ -69,6 +69,7 @@ class TeleportFaintAction(EventAction):
         action.execute_action(
             "transition_teleport",
             [
+                self.character,
                 teleport.map_name,
                 teleport.x,
                 teleport.y,

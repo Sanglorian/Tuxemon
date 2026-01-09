@@ -171,8 +171,6 @@ class BaseClient(ABC):
             self.event_engine,
         )
         self.teleporter = Teleporter(
-            self.boundary,
-            self.map_manager,
             self.map_transition,
             self.npc_manager,
             self.state_manager,

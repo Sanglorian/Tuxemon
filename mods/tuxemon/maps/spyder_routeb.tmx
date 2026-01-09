@@ -49,7 +49,7 @@
  <objectgroup color="#ffff00" id="4" name="Events">
   <object id="51" name="Teleport to Side Route E 1" type="event" x="0" y="576" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_routee.tmx,19,16,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_routee.tmx,19,16,0.3"/>
     <property name="act2" value="char_face player,left"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,left"/>
@@ -57,7 +57,7 @@
   </object>
   <object id="52" name="Teleport to Side Route E 2" type="event" x="0" y="592" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_routee.tmx,19,17,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_routee.tmx,19,17,0.3"/>
     <property name="act2" value="char_face player,left"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,left"/>
@@ -65,7 +65,7 @@
   </object>
   <object id="68" name="Teleport to Datacenter" type="event" x="96" y="48" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_datacenter.tmx,2,19,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_datacenter.tmx,2,19,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>

@@ -6,7 +6,7 @@ import logging
 import random
 from collections.abc import Mapping
 from dataclasses import dataclass, fields
-from typing import Any, Optional
+from typing import Any
 
 from tuxemon.formula import config_monster
 from tuxemon.shape import ShapeHandler
@@ -135,15 +135,25 @@ class StatCalculator:
         self.training_points = training_points
         self.individual_values = individual_values
 
-    def calculate(self) -> BasicStats:
+    def calculate(
+        self, temporary_boosts: BasicStats | None = None
+    ) -> BasicStats:
         """Compute final stats from shape, level, taste, and modifiers."""
         raw_stats = self.calculate_raw_stats()
         cold = Taste.get_taste(self.taste_cold)
         warm = Taste.get_taste(self.taste_warm)
         final_stats = self.apply_stat_updates(raw_stats, cold, warm)
+
+        if temporary_boosts:
+            for stat in BasicStats.names():
+                boosted = getattr(final_stats, stat) + getattr(
+                    temporary_boosts, stat
+                )
+                setattr(final_stats, stat, boosted)
+
         return final_stats
 
-    def calculate_raw_stats(self, level: Optional[int] = None) -> BasicStats:
+    def calculate_raw_stats(self, level: int | None = None) -> BasicStats:
         """Calculates stats before taste modifiers are applied."""
         level = level if level is not None else self.level
         stats = BasicStats()
@@ -163,8 +173,8 @@ class StatCalculator:
     def apply_stat_updates(
         self,
         stats: BasicStats,
-        taste_cold: Optional[Taste],
-        taste_warm: Optional[Taste],
+        taste_cold: Taste | None,
+        taste_warm: Taste | None,
     ) -> BasicStats:
         """Returns a new BasicStats object with taste modifiers applied."""
         updated = BasicStats()
@@ -184,8 +194,8 @@ class StatCalculator:
         self,
         stat_name: str,
         stat_value: int,
-        taste_cold: Optional[Taste],
-        taste_warm: Optional[Taste],
+        taste_cold: Taste | None,
+        taste_warm: Taste | None,
     ) -> int:
         """Applies taste modifiers to a single stat value."""
         modified_stat = float(stat_value)

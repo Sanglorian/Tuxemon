@@ -308,6 +308,12 @@ class SpatialCondition(LogicCondition):
     )
 
 
+class Behavior(BaseModel):
+    type: str = Field(..., description="Behavior type identifier.")
+    args: Sequence[str] = Field(default_factory=list)
+    name: str = Field("unnamed_behavior")
+
+
 class EventObject(BaseModel):
     """The main container entity for a game/map event."""
 
@@ -341,6 +347,10 @@ class EventObject(BaseModel):
     acts: Sequence[ParameterizableRule] = Field(
         default_factory=list,
         description="A sequence of actions/effects to execute when conditions are met.",
+    )
+    behavs: Sequence[Behavior] = Field(
+        default_factory=list,
+        description="Behavior definitions attached to this event.",
     )
 
 
@@ -656,6 +666,10 @@ class ItemModel(BaseModel, BaseLookupModel):
         le=1.0,
     )
     modifiers: list[Modifier] = Field(..., description="Various modifiers")
+    stat_modifiers: dict[str, StatModel] = Field(
+        default_factory=dict,
+        description="Dictionary of stat modifiers keyed by stat name (e.g., 'speed', 'hp')",
+    )
     immunity_to_status: Sequence[str] = Field(
         default_factory=list,
         description="Statuses this item grants immunity to",
@@ -1257,8 +1271,6 @@ class StatModel(BaseModel):
     step: int | None = Field(
         None,
         description="Optional step delta to apply (e.g., +2 step to speed)",
-        ge=-6,
-        le=6,
     )
     max_deviation: int = Field(
         0,
@@ -1280,6 +1292,14 @@ class StatModel(BaseModel):
         "nonlinear",
         description="Defines how step scaling is applied: 'linear' for base*(1+step), 'nonlinear' for tiered scaling",
     )
+
+    @field_validator("step")
+    def validate_step(cls, v: int | None) -> int | None:
+        if v is None:
+            return None
+        if not (-6 <= v <= 6):
+            raise ValueError("step must be between -6 and 6")
+        return v
 
 
 class Range(str, Enum):
@@ -1457,6 +1477,10 @@ class TechniqueModel(BaseModel, BaseLookupModel):
         ..., description="Configuration for the technique's sound playback."
     )
     modifiers: list[Modifier] = Field(..., description="Various modifiers")
+    stat_modifiers: dict[str, StatModel] = Field(
+        default_factory=dict,
+        description="Dictionary of stat modifiers keyed by stat name (e.g., 'speed', 'hp')",
+    )
     use_tech: str | None = Field(
         None,
         description="Slug of what string to display when technique is used",

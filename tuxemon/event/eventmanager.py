@@ -3,52 +3,63 @@
 from __future__ import annotations
 
 import logging
-from collections import OrderedDict
 from collections.abc import Generator, Iterable
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, TypeVar, cast
 
+from tuxemon.event.eventmiddleware import EventMiddleware
 from tuxemon.platform.events import PlayerInput
 
 if TYPE_CHECKING:
     from tuxemon.event.eventbus import EventBus
-    from tuxemon.event.eventmiddleware import EventMiddleware
     from tuxemon.platform.input_manager import InputManager
     from tuxemon.state.manager import StateManager
 
 logger = logging.getLogger(__name__)
+
+T = TypeVar("T", bound=EventMiddleware)
 
 
 class EventManager:
     def __init__(self, event_bus: EventBus, state_manager: StateManager):
         self._event_bus = event_bus
         self._state_manager = state_manager
-        self.middleware: OrderedDict[
-            type[EventMiddleware], EventMiddleware
-        ] = OrderedDict()
+        self.middleware: dict[
+            type[EventMiddleware], tuple[int, EventMiddleware]
+        ] = {}
 
-    def add_middleware(self, middleware_instance: EventMiddleware) -> None:
+    def add_middleware(
+        self, middleware_instance: EventMiddleware, priority: int = 100
+    ) -> None:
+        """
+        Registers middleware with a priority.
+        Lower priority = runs earlier in preprocess.
+        Higher priority = runs later.
+        """
         mw_type = type(middleware_instance)
+
         if mw_type in self.middleware:
             logger.warning(
                 f"Middleware type {mw_type.__name__} already registered. Overwriting."
             )
-        self.middleware[mw_type] = middleware_instance
+
+        self.middleware[mw_type] = (priority, middleware_instance)
+
+        self.middleware = dict(
+            sorted(self.middleware.items(), key=lambda item: item[1][0])
+        )
 
     def remove_middleware(self, middleware_instance: EventMiddleware) -> None:
         mw_type = type(middleware_instance)
-        if (
-            mw_type in self.middleware
-            and self.middleware[mw_type] is middleware_instance
-        ):
-            del self.middleware[mw_type]
+        if mw_type in self.middleware:
+            _, inst = self.middleware[mw_type]
+            if inst is middleware_instance:
+                del self.middleware[mw_type]
 
-    def get_middleware_instance(
-        self, middleware_type: type[EventMiddleware]
-    ) -> Optional[EventMiddleware]:
-        """
-        Retrieves a registered middleware instance by its class type.
-        """
-        return self.middleware.get(middleware_type)
+    def get_middleware_instance(self, middleware_type: type[T]) -> T | None:
+        entry = self.middleware.get(middleware_type)
+        if entry is None:
+            return None
+        return cast(T, entry[1])
 
     def process_events(
         self, events: Iterable[PlayerInput]
@@ -78,25 +89,25 @@ class EventManager:
         Yields:
             Events that were not consumed by middleware or states.
         """
-        event: Optional[PlayerInput] = None
+        event: PlayerInput | None = None
         for raw_event in events:
             event = raw_event
 
-            # Preprocess
-            for mw in self.middleware.values():
+            # PREPROCESS (in priority order)
+            for _, mw in self.middleware.values():
                 event = mw.preprocess(event)
                 if event is None:
                     break
             if event is None:
                 continue
 
-            # State propagation
+            # STATE PROCESSING
             event = self.propagate_event(event)
             if event is None:
                 continue
 
-            # Postprocess
-            for mw in self.middleware.values():
+            # POSTPROCESS (reverse priority order)
+            for _, mw in reversed(self.middleware.values()):
                 event = mw.postprocess(event)
                 if event is None:
                     break
@@ -105,9 +116,7 @@ class EventManager:
                 self._event_bus.publish("PLAYER_INPUT", event)
                 yield event
 
-    def propagate_event(
-        self, game_event: PlayerInput
-    ) -> Optional[PlayerInput]:
+    def propagate_event(self, game_event: PlayerInput) -> PlayerInput | None:
         """
         Propagates an event through active game states.
 

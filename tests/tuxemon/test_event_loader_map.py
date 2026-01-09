@@ -1,36 +1,55 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
 from pathlib import Path
+
+import pytest
 
 from tuxemon.map.map_loader import YAMLEventLoader, parse_yaml
 
 
-class TestYAMLEventLoader(unittest.TestCase):
+@pytest.fixture
+def yaml_path():
+    return Path("tests/tuxemon") / "test_event_loader_map.yaml"
 
-    def setUp(self):
-        self.loader = YAMLEventLoader()
-        self.valid_yaml_path = (
-            Path("tests/tuxemon") / "test_event_loader_map.yaml"
-        )
 
-    def test_parse_yaml_success(self):
-        result = parse_yaml(self.valid_yaml_path)
-        self.assertIsInstance(result, dict)
-        self.assertIn("events", result)
+@pytest.fixture
+def loader():
+    return YAMLEventLoader()
 
-    def test_load_events(self):
-        result = self.loader.load_events(self.valid_yaml_path, "event")
-        self.assertIn("event", result)
-        self.assertIsInstance(result["event"], list)
-        self.assertGreater(len(result["event"]), 0)
-        event = result["event"][0]
-        self.assertEqual(event.name, "test_event")
-        self.assertEqual(event.box.x, 1)
-        self.assertEqual(event.box.y, 2)
 
-    def test_load_collision(self):
-        result = self.loader.load_collision(self.valid_yaml_path)
-        self.assertIn((2, 4), result)
-        self.assertIn((3, 5), result)
-        self.assertIsNone(result[(2, 4)])
+def test_parse_yaml_success(yaml_path):
+    result = parse_yaml(yaml_path)
+    assert isinstance(result, dict)
+    assert "events" in result
+    assert isinstance(result["events"], dict)
+    assert "test_event" in result["events"]
+
+
+def test_load_events(loader, yaml_path):
+    result = loader.load_events(yaml_path, "event")
+    assert "event" in result
+    events = result["event"]
+    assert isinstance(events, list)
+    assert events, "Expected at least one event"
+    event = events[0]
+    assert event.name == "test_event"
+    assert event.box.x == 1
+    assert event.box.y == 2
+    assert event.box.width == 3
+    assert event.box.height == 4
+    assert hasattr(event, "acts")
+    assert hasattr(event, "conds")
+    assert hasattr(event, "behavs")
+    assert len(event.acts) > 0
+    assert len(event.conds) > 0
+    assert len(event.behavs) > 0
+
+
+def test_load_collision(loader, yaml_path):
+    result = loader.load_collision(yaml_path)
+    expected_tiles = {(2, 4), (3, 4), (2, 5), (3, 5)}
+
+    for tile in expected_tiles:
+        assert tile in result
+
+    assert result[(2, 4)] is None

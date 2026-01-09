@@ -127,7 +127,7 @@ class GetPlayerMonsterAction(EventAction):
                 elif filter_name == "current_hp":
                     field = target.current_hp
                 elif filter_name in list(StatType):
-                    field = target.return_stat(StatType(filter_name))
+                    field = target.return_stat(filter_name)
                 extra = int(self.extra)
                 if value_name in list(Comparison):
                     self.result = compare(value_name, field, extra)

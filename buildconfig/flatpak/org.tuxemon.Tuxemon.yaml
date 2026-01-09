@@ -21,16 +21,18 @@ modules:
   # Needed by the rumble manager
   - libshake.json
   - python3-requirements.json
+
   - name: tuxemon
     buildsystem: simple
     build-commands:
       # Create the necessary directories and copy files
       - install -d /app/share/Tuxemon
       - cp -r tuxemon /app/share/Tuxemon
-      - cp -r mods /app/share/Tuxemon/mods
+      - install -d /app/share/Tuxemon/mods
+      - cp -r mods/* /app/share/Tuxemon/mods/
       - install -Dm755 run_tuxemon.py /app/share/Tuxemon/org.tuxemon.Tuxemon.py
-      - install -Dm755 org.tuxemon.Tuxemon /app/bin
-      - ln -s /app/share/Tuxemon/org.tuxemon.Tuxemon.py /app/bin/org.tuxemon.Tuxemon.py
+      - install -Dm755 org.tuxemon.Tuxemon /app/bin/org.tuxemon.Tuxemon
+
     post-install:
       - desktop-file-install --dir=/app/share/applications buildconfig/flatpak/org.tuxemon.Tuxemon.desktop
       - install -Dm644 buildconfig/flatpak/org.tuxemon.Tuxemon.metainfo.xml /app/share/metainfo/org.tuxemon.Tuxemon.metainfo.xml
@@ -41,10 +43,13 @@ modules:
 
     sources:
       - type: git
-        tag: development
         url: https://github.com/Tuxemon/Tuxemon.git
+        tag: development
+
       - type: script
         dest-filename: org.tuxemon.Tuxemon
         commands:
-          - MY_PATH="$(dirname "$0")"
-          - python3 "$MY_PATH/org.tuxemon.Tuxemon.py"
+          - PERSIST="$HOME/.tuxemon/mods"
+          - BUNDLED="/app/share/Tuxemon/mods"
+          - if [ ! -d "$PERSIST" ] || [ -z "$(ls -A "$PERSIST")" ]; then mkdir -p "$PERSIST"; cp -r "$BUNDLED"/* "$PERSIST"; fi
+          - exec python3 /app/share/Tuxemon/org.tuxemon.Tuxemon.py "$@"

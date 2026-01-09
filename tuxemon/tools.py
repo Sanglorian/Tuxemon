@@ -17,7 +17,7 @@ from decimal import Decimal
 from enum import Enum
 from fractions import Fraction
 from functools import lru_cache
-from operator import add, eq, floordiv, ge, gt, le, lt, mul, ne, sub
+from operator import add, eq, ge, gt, le, lt, mul, ne, sub
 from types import UnionType
 from typing import (
     TYPE_CHECKING,
@@ -73,11 +73,18 @@ ValidParameterTypes = Union[
     Sequence[ValidParameterSingleType],
 ]
 
+
+def safe_floordiv(a: float, b: float) -> int:
+    if b == 0:
+        return int(a)  # no-op fallback
+    return int(a // b)
+
+
 ops_dict: Mapping[str, Callable[[float, float], int]] = {
     "+": add,
     "-": sub,
     "*": mul,
-    "/": floordiv,
+    "/": safe_floordiv,
 }
 
 

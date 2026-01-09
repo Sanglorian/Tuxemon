@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import random
 from abc import ABC
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -13,7 +13,7 @@ from pygame.rect import Rect
 
 from tuxemon.event import get_event_bus
 from tuxemon.event.eventbus import Listener
-from tuxemon.graphics import load_sprite
+from tuxemon.graphics import load_animated_sprite, load_sprite
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import local_session
 from tuxemon.sprite import Sprite, SpriteGroup
@@ -89,19 +89,18 @@ class State(ABC):
         return self.anim._group
 
     def load_sprite(self, filename: str, **kwargs: Any) -> Sprite:
-        """
-        Load a sprite and add it to this state.
-
-        Parameters:
-            filename: Filename, relative to the resources folder.
-            kwargs: Keyword arguments to pass to the Rect constructor. Can be
-                any value used by Rect, or layer.
-
-        Returns:
-            Loaded sprite.
-        """
+        """Load a sprite and add it to this state."""
         layer = kwargs.pop("layer", 0)
         sprite = load_sprite(filename, **kwargs)
+        self.sprites.add(sprite, layer=layer)
+        return sprite
+
+    def load_animated_sprite(
+        self, filenames: Iterable[str], delay: float, **kwargs: Any
+    ) -> Sprite:
+        """Load an animated sprite and add it to this state."""
+        layer = kwargs.pop("layer", 0)
+        sprite = load_animated_sprite(filenames, delay, **kwargs)
         self.sprites.add(sprite, layer=layer)
         return sprite
 
@@ -185,7 +184,6 @@ class State(ABC):
         """
         self.anim.update(time_delta)
         self.sprites.update(time_delta)
-        self.publish("state_update", time_delta)
 
     def draw(self, surface: Surface) -> None:
         """
@@ -198,7 +196,6 @@ class State(ABC):
         Parameters:
             surface: Surface to be rendered onto.
         """
-        self.publish("state_draw", surface)
 
     def resume(self) -> None:
         """

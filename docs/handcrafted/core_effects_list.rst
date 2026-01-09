@@ -6,6 +6,7 @@
 .. autoscriptinfoclass:: tuxemon.core.effects.capture.CaptureEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.capture_combined.CaptureCombinedEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.change_stat.ChangeStatEffect
+.. autoscriptinfoclass:: tuxemon.core.effects.charge.ChargeEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.chargedup.ChargedUpEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.charging.ChargingEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.charmed.CharmedEffect
@@ -40,6 +41,7 @@
 .. autoscriptinfoclass:: tuxemon.core.effects.lifegift.LifeGiftEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.lifeleech.LifeLeechEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.lockdown.LockdownEffect
+.. autoscriptinfoclass:: tuxemon.core.effects.locked.LockedMoveEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.mirror.MirrorEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.money.MoneyEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.move_type.MoveTypeEffect
@@ -52,7 +54,9 @@
 .. autoscriptinfoclass:: tuxemon.core.effects.prickly.PricklyBackEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.prop_damage.PropDamageEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.prop_healing.PropHealingEffect
+.. autoscriptinfoclass:: tuxemon.core.effects.ramp.RampEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.recover.RecoverEffect
+.. autoscriptinfoclass:: tuxemon.core.effects.release.ReleaseEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.remove.RemoveEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.remove_entity.RemoveEntityEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.repellent.RepellentEffect

@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pygame.rect import Rect
 
@@ -27,7 +27,7 @@ class Side(Enum):
 class MonsterUI:
     slot_index: int = 0
     layout_key: str = "home"
-    hud_sprite: Optional[Sprite] = None
+    hud_sprite: Sprite | None = None
     status_icons: list[Sprite] = field(default_factory=list)
     feet_pos: tuple[int, int] = (0, 0)
 
@@ -105,7 +105,7 @@ class CombatLayoutManager:
     def assign_hud(self, monster: Monster, sprite: Sprite) -> None:
         self._hud_sprites[monster] = sprite
 
-    def get_hud(self, monster: Monster) -> Optional[Sprite]:
+    def get_hud(self, monster: Monster) -> Sprite | None:
         return self._hud_sprites.get(monster)
 
     def delete_hud(self, monster: Monster) -> None:

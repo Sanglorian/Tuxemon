@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable, Generator
 from enum import Enum, auto
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar
 
 from pygame.rect import Rect
 
@@ -70,10 +70,10 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
         self.encounter = session.client.park_session.start_encounter(
             self.opponents[0]
         )
-        self.itm_description: Optional[str] = None
+        self.itm_description: str | None = None
         params = {"player": self.character.name}
         message = T.format("combat_player_choice", params)
-        self.combat.dialog.alert(message, self.combat.text_area)
+        self.dialog.alert(message, self.combat.text_area)
 
     def calculate_menu_rectangle(self) -> Rect:
         rect_screen = SCREEN_RECT.copy()
@@ -163,7 +163,7 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
             menu.is_valid_entry = validate  # type: ignore[method-assign]
             menu.on_menu_selection = choose_target  # type: ignore[method-assign]
 
-        def validate(item: Optional[Item]) -> bool:
+        def validate(item: Item | None) -> bool:
             """Validates if the selected item from the sub-menu is allowed."""
             ret = False
             if item:

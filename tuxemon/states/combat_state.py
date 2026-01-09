@@ -37,7 +37,7 @@ import logging
 import random
 from collections.abc import Sequence
 from functools import partial
-from typing import TYPE_CHECKING, ClassVar, Optional, Union
+from typing import TYPE_CHECKING, ClassVar
 
 from tuxemon.ai.manager import AIManager
 from tuxemon.animation import Animation, Task
@@ -75,13 +75,28 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+EVENTS: list[str] = [
+    "monster_disappeared",
+    "monster_appeared",
+    "monster_swapped_out",
+    "monster_swapped_in",
+    "mirror_effect",
+    "status_applied",
+    "update_party_hud",
+    "clean_combat",
+    "monster_needed",
+    "update_sprite_position",
+    "monster_added",
+    "capture_finished",
+]
+
 
 class WaitForInputState(State):
     """Just wait for input blocking everything"""
 
     name: ClassVar[str] = "WaitForInputState"
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         if event.pressed and event.button == buttons.A:
             self.client.pop_state(self)
         return None
@@ -109,18 +124,20 @@ class CombatState(CombatAnimations):
     escape_key_exits = False
 
     def __init__(self, context: CombatContext) -> None:
-        self.phase: Optional[CombatPhase] = None
+        self.phase: CombatPhase | None = None
         self._method_cache = MethodAnimationCache(AnimationManager())
         self.text_anim = TextAnimationManager()
         self._decision_queue: list[Monster] = []
+        self._captured_mon: Monster | None = None
         # player => home areas on screen
         super().__init__(context=context)
+        self.combat_session = self.client.combat_session
         self.unregister_event_handlers()
         self.register_event_handlers()
-        self.machine = CombatMachine(self.client.combat_session)
-        self.client.combat_session.set_combat_type(context.combat_type)
-        self.client.combat_session.set_battle_format(context.is_double_battle)
-        self.client.combat_session.set_players(context.teams)
+        self.machine = CombatMachine(self.combat_session)
+        self.combat_session.set_combat_type(context.combat_type)
+        self.combat_session.set_battle_format(context.is_double_battle)
+        self.combat_session.set_players(context.teams)
         self._lock_update = self.client.config.combat_click_to_continue
         self.show_combat_dialog()
         self.transition_phase(CombatPhase.BEGIN)
@@ -134,9 +151,15 @@ class CombatState(CombatAnimations):
             alert_manager=self.dialog,
             lock_update=self._lock_update,
         )
+        env = self.client.environment_manager.get_active_environment()
+        if env is None:
+            raise RuntimeError(
+                "Environment not set. Use set_environment before proceeding."
+            )
+        self.env = env
 
     @staticmethod
-    def is_task_finished(task: Union[Task, Animation]) -> bool:
+    def is_task_finished(task: Task | Animation) -> bool:
         """
         Check if the task is finished or not.
         In case the task is in fact an animation, it's considered as finished
@@ -190,7 +213,7 @@ class CombatState(CombatAnimations):
         Parameters:
             phase: Name of phase to transition to.
         """
-        c_session = self.client.combat_session
+        c_session = self.combat_session
 
         if (
             phase == CombatPhase.BEGIN
@@ -267,7 +290,7 @@ class CombatState(CombatAnimations):
         if self.phase == CombatPhase.DECISION:
             # show monster action menu for human players
             if self._decision_queue:
-                if self.client.combat_session.is_double:
+                if self.combat_session.is_double:
                     self.handle_pending_actions(self._decision_queue, 2)
                 else:
                     self.handle_pending_actions(self._decision_queue, 1)
@@ -291,8 +314,8 @@ class CombatState(CombatAnimations):
 
     def handle_action_queue(self) -> None:
         """Take one action from the queue and do it."""
-        if not self.client.combat_session.action_queue.is_empty():
-            action = self.client.combat_session.action_queue.pop()
+        if not self.combat_session.action_queue.is_empty():
+            action = self.combat_session.action_queue.pop()
             self.perform_action(action.user, action.method, action.target)
             self.task(self.check_party_hp, interval=1)
             self.task(self.animate_party_status, interval=3)
@@ -308,7 +331,7 @@ class CombatState(CombatAnimations):
 
         def add(menuitem: MenuItem[Monster]) -> None:
             monster = menuitem.game_object
-            self.client.combat_session.add_monster_into_play(
+            self.combat_session.add_monster_into_play(
                 self.session, player, monster
             )
             self.client.remove_state_by_name("MonsterMenuState")
@@ -317,7 +340,7 @@ class CombatState(CombatAnimations):
             if isinstance(menu_item, Monster):
                 if menu_item.is_fainted:
                     return False
-                if menu_item in self.client.combat_session.active_monsters:
+                if menu_item in self.combat_session.active_monsters:
                     return False
                 return True
             return False
@@ -325,7 +348,7 @@ class CombatState(CombatAnimations):
         state = self.client.push_state(MonsterMenuState(player.monsters))
         state.task(
             partial(
-                state.dialog.alert,
+                self.dialog.alert,
                 T.translate("combat_replacement"),
                 self.text_area,
             ),
@@ -358,10 +381,8 @@ class CombatState(CombatAnimations):
         self.update_hud(player, True, True)
 
         # Show combat swap message if not first turn
-        if self.client.combat_session.turn > 1:
-            message = self.client.combat_session.get_message_swap(
-                player, monster
-            )
+        if self.combat_session.turn > 1:
+            message = self.combat_session.get_message_swap(player, monster)
             self.text_anim.add_text_animation(
                 partial(self.dialog.alert, message, self.text_area), 0
             )
@@ -369,7 +390,7 @@ class CombatState(CombatAnimations):
     def update_icons_for_monsters(self) -> None:
         """Update/reset status icons for monsters."""
         self.status_icons.update_icons_for_monsters(
-            self.client.combat_session.active_monsters,
+            self.combat_session.active_monsters,
         )
 
     def show_monster_action_menu(self, monster: Monster) -> None:
@@ -379,14 +400,9 @@ class CombatState(CombatAnimations):
         Parameters:
             monster: Monster to choose an action for.
         """
-        env = self.client.environment_manager.get_active_environment()
-        if env is None:
-            raise RuntimeError(
-                "Environment not set. Use set_environment before proceeding."
-            )
         owner = monster.get_owner()
         self.client.push_state(
-            env.get_battle_graphics().menu,
+            self.env.get_battle_graphics().menu,
             session=self.session,
             cmb=self,
             character=owner,
@@ -404,7 +420,7 @@ class CombatState(CombatAnimations):
         self,
         result_type: OutputBattle,
         players: Sequence[NPC],
-        opponents: Optional[Sequence[NPC]] = None,
+        opponents: Sequence[NPC] | None = None,
     ) -> str:
         """
         Tracks battle results based on the given type (draw, won, lost).
@@ -419,10 +435,10 @@ class CombatState(CombatAnimations):
                 output=result_type,
                 character=player,
                 opponents=opponents if opponents else players,
-                turns=self.client.combat_session.turn,
-                combat_type=self.client.combat_session.combat_type,
+                turns=self.combat_session.turn,
+                combat_type=self.combat_session.combat_type,
                 prize=(
-                    self.client.combat_session.prize
+                    self.combat_session.prize
                     if result_type == OutputBattle.won
                     else 0
                 ),
@@ -436,15 +452,13 @@ class CombatState(CombatAnimations):
         """
         self._decision_queue = []
 
-        for monster in self.client.combat_session.active_monsters:
-            char = (
-                self.client.combat_session.field_monsters.get_npc_for_monster(
-                    monster
-                )
+        for monster in self.combat_session.active_monsters:
+            char = self.combat_session.field_monsters.get_npc_for_monster(
+                monster
             )
             monster.moves.recharge_moves()
 
-            if char in self.client.combat_session.human_players:
+            if char in self.combat_session.human_players:
                 # Still add to queue for menu interaction
                 self._decision_queue.append(monster)
             else:
@@ -463,7 +477,7 @@ class CombatState(CombatAnimations):
         * Will remove actions as well
         * currently for 'swap' technique
         """
-        self.client.combat_session.swap_tracker.clear()
+        self.combat_session.swap_tracker.clear()
         self.remove_monster_actions_from_queue(monster)
         self.animate_monster_faint(monster)
 
@@ -478,7 +492,7 @@ class CombatState(CombatAnimations):
         """
         self.hud_manager.unassign(monster.get_owner(), monster)
         self.status_icons.recalculate_icon_positions()
-        action_queue = self.client.combat_session.action_queue.queue
+        action_queue = self.combat_session.action_queue.queue
         action_queue[:] = [
             action
             for action in action_queue
@@ -488,8 +502,8 @@ class CombatState(CombatAnimations):
 
     def perform_action(
         self,
-        user: Union[Monster, NPC, None],
-        method: Union[Technique, Item, Status, None],
+        user: Monster | NPC | None,
+        method: Technique | Item | Status | None,
         target: Monster,
     ) -> None:
         """
@@ -502,10 +516,14 @@ class CombatState(CombatAnimations):
         """
         if isinstance(method, Technique) and isinstance(user, Monster):
             self._handle_monster_technique(user, method, target)
-        if isinstance(method, Item) and isinstance(user, NPC):
+        elif isinstance(method, Item) and isinstance(user, NPC):
             self._handle_npc_item(user, method, target)
-        if isinstance(method, Status):
+        elif isinstance(method, Status):
             self._handle_status(method, target)
+        else:
+            logger.warning(
+                f"No combat handler found for method={type(method)}, user={type(user)}"
+            )
 
     def _handle_monster_technique(
         self,
@@ -520,10 +538,8 @@ class CombatState(CombatAnimations):
         # is synchronized with the damage shake motion
         hit_delay = 0.0
         # monster uses move
-        result_tech, status_result = (
-            self.client.combat_session.apply_technique(
-                self.session, method, user, target
-            )
+        result_tech, status_result = self.combat_session.apply_technique(
+            self.session, method, user, target
         )
         context = {
             "user": user.name,
@@ -549,10 +565,10 @@ class CombatState(CombatAnimations):
                 user.status.apply_status(self.session, status)
 
         if result_tech.success and method.use_success:
-            template = getattr(method, "use_success")
+            template = method.use_success
             m = T.format(template, context)
         elif not result_tech.success and method.use_failure:
-            template = getattr(method, "use_failure")
+            template = method.use_failure
             m = T.format(template, context)
         else:
             m = None
@@ -590,7 +606,7 @@ class CombatState(CombatAnimations):
                     interval=hit_delay + 0.6,
                 )
 
-            self.client.combat_session.enqueue_damage(
+            self.combat_session.enqueue_damage(
                 user, target, result_tech.damage
             )
 
@@ -618,16 +634,15 @@ class CombatState(CombatAnimations):
         )
 
         is_flipped = False
-        for trainer in self.client.combat_session.ai_players:
-            if user in self.client.combat_session.field_monsters.get_monsters(
+        for trainer in self.combat_session.ai_players:
+            if user in self.combat_session.field_monsters.get_monsters(
                 trainer
             ):
                 is_flipped = True
                 break
 
         if result_tech.success:
-            if method.sound.sfx:
-                self.play_sound_effect(method.sound.sfx, method.sound.volume)
+            self.play_sound_effect(method.sound.sfx, method.sound.volume)
             self.play_animation(
                 method, target, target_sprite, action_time, is_flipped
             )
@@ -639,7 +654,7 @@ class CombatState(CombatAnimations):
         target: Monster,
     ) -> None:
         action_time = 0.0
-        result_item = self.client.combat_session.apply_item(
+        result_item = self.combat_session.apply_item(
             self.session, item, user, target
         )
         context = {
@@ -674,8 +689,7 @@ class CombatState(CombatAnimations):
                     f"captured_failed_{result_item.num_shakes}"
                 )
 
-            if item.sound.sfx:
-                self.play_sound_effect(item.sound.sfx, item.sound.volume)
+            self.play_sound_effect(item.sound.sfx, item.sound.volume)
             self.animate_capture_monster(
                 result_item,
                 target,
@@ -699,8 +713,7 @@ class CombatState(CombatAnimations):
             if template:
                 message += "\n" + tmpl
                 action_time += self.text_anim.compute_text_anim_time(message)
-            if item.sound.sfx:
-                self.play_sound_effect(item.sound.sfx, item.sound.volume)
+            self.play_sound_effect(item.sound.sfx, item.sound.volume)
             self.play_animation(item, target, None, action_time)
 
         self.text_anim.add_text_animation(
@@ -709,7 +722,7 @@ class CombatState(CombatAnimations):
 
     def _handle_status(self, status: Status, target: Monster) -> None:
         action_time = 0.0
-        result = self.client.combat_session.apply_status(
+        result = self.combat_session.apply_status(
             self.session, status, target, EffectPhase.PERFORM_STATUS
         )
         context = {
@@ -720,17 +733,17 @@ class CombatState(CombatAnimations):
         # successful statuses
         if result.success:
             if status.use_success:
-                template = getattr(status, "use_success")
+                template = status.use_success
                 message = T.format(template, context)
             # first turn status
             if status.nr_turn == 1 and status.gain_cond:
-                first_turn = getattr(status, "gain_cond")
+                first_turn = status.gain_cond
                 first = T.format(first_turn, context)
                 message = first + "\n" + message
         # not successful statuses
         if not result.success:
             if status.use_failure:
-                template = getattr(status, "use_failure")
+                template = status.use_failure
                 message = T.format(template, context)
         if result.extras:
             templates = [T.translate(extra) for extra in result.extras]
@@ -742,15 +755,14 @@ class CombatState(CombatAnimations):
                 action_time,
             )
         if result.success:
-            if status.sound.sfx:
-                self.play_sound_effect(status.sound.sfx, status.sound.volume)
+            self.play_sound_effect(status.sound.sfx, status.sound.volume)
             self.play_animation(status, target, None, action_time)
 
     def play_animation(
         self,
-        method: Union[Technique, Status, Item],
+        method: Technique | Status | Item,
         target: Monster,
-        target_sprite: Optional[Sprite],
+        target_sprite: Sprite | None,
         action_time: float,
         is_flipped: bool = False,
     ) -> None:
@@ -790,8 +802,8 @@ class CombatState(CombatAnimations):
         Parameters:
             monster: Monster that was fainted.
         """
-        combat_type = self.client.combat_session.combat_type
-        calculator = self.client.combat_session.get_calculator(combat_type)
+        combat_type = self.combat_session.combat_type
+        calculator = self.combat_session.get_calculator(combat_type)
         reward_system = RewardSystem(self.session, combat_type, calculator)
         reward_system.apply_penalties(monster)
         rewards = reward_system.award_rewards(monster)
@@ -801,7 +813,7 @@ class CombatState(CombatAnimations):
                 self.monsters_just_leveled_up[data.winner.slug] = True
 
         # Update combat state with rewards
-        self.client.combat_session.add_prize(rewards.prize)
+        self.combat_session.add_prize(rewards.prize)
         for message in rewards.messages:
             self.text_anim.add_xp_message(message)
 
@@ -820,7 +832,7 @@ class CombatState(CombatAnimations):
             winner: Monster that won the battle.
             techniques: List of learned techniques.
         """
-        if winner in self.client.combat_session.monsters_in_play_right:
+        if winner in self.combat_session.monsters_in_play_right:
             if techniques:
                 tech_list = ", ".join(tech.name.upper() for tech in techniques)
                 params = {"name": winner.name.upper(), "tech": tech_list}
@@ -849,9 +861,7 @@ class CombatState(CombatAnimations):
         for (
             _,
             party,
-        ) in (
-            self.client.combat_session.field_monsters.get_all_monsters().items()
-        ):
+        ) in self.combat_session.field_monsters.get_all_monsters().items():
             for monster in party:
                 if monster.is_fainted:
                     params = {"name": monster.name.upper()}
@@ -879,9 +889,7 @@ class CombatState(CombatAnimations):
         """
         for (
             monster_party
-        ) in (
-            self.client.combat_session.field_monsters.get_all_monsters().values()
-        ):
+        ) in self.combat_session.field_monsters.get_all_monsters().values():
             for monster in monster_party:
                 monster.get_combat_stats()
                 self.animate_hp(monster)
@@ -923,14 +931,15 @@ class CombatState(CombatAnimations):
         self.remove_monster_actions_from_queue(monster)
         self.award_experience_and_money(monster)
         # Remove monster from damage map
-        self.client.combat_session.damage_tracker.remove_monster(monster)
-        env = self.client.environment_manager.get_active_environment()
-        if env and len(self.client.combat_session.remaining_players) <= 1:
-            play_outcome_music(self.session, env.get_battle_music(), monster)
+        self.combat_session.damage_tracker.remove_monster(monster)
+        if len(self.combat_session.remaining_players) <= 1:
+            play_outcome_music(
+                self.session, self.env.get_battle_music(), monster
+            )
 
     def clean_combat(self) -> None:
         """Clean combat."""
-        for player in self.client.combat_session.players:
+        for player in self.combat_session.players:
             for mon in player.monsters:
                 mon.end_combat(self.session)
 
@@ -946,85 +955,44 @@ class CombatState(CombatAnimations):
     def end_combat(self) -> None:
         """End the combat."""
         self.clean_combat()
-        new_entry = self.client.combat_session.get_variable("new_tuxepedia")
-        new_monster = self.client.combat_session.get_variable("captured_mon")
-        self.client.combat_session.reset()
+        new_entry = self.combat_session.get_variable("new_tuxepedia")
+        self.combat_session.reset()
         self.unregister_event_handlers()
         self.client.current_music.stop()
         self.clear_combat_states()
         self.phase = None
 
-        if new_entry and new_monster:
+        if new_entry and self._captured_mon:
             self.client.remove_state_by_name("CombatState")
-            params = {"monster": new_monster, "source": self.name}
+            params = {"monster": self._captured_mon, "source": self.name}
             self.client.push_state("MonsterInfoState", kwargs=params)
         else:
             self.client.push_state("FadeOutTransition", caller=self)
 
     def unregister_event_handlers(self) -> None:
-        """
-        Unregisters all event bus handlers for combat-related events.
-        """
-        if not hasattr(self.client, "event_bus"):
-            raise RuntimeError("Client event bus is not initialized")
-
-        event_bus = self.client.event_bus
-        event_bus.unsubscribe(
-            "monster_disappeared", self._on_monster_disappeared
-        )
-        event_bus.unsubscribe("monster_appeared", self._on_monster_appeared)
-        event_bus.unsubscribe(
-            "monster_swapped_out", self._on_monster_swapped_out
-        )
-        event_bus.unsubscribe(
-            "monster_swapped_in", self._on_monster_swapped_in
-        )
-        event_bus.unsubscribe("mirror_effect", self._on_mirror_effect)
-        event_bus.unsubscribe("status_applied", self._on_status_applied)
-        event_bus.unsubscribe("update_party_hud", self._on_update_party_hud)
-        event_bus.unsubscribe("clean_combat", self._on_clean_combat)
-        event_bus.unsubscribe("monster_needed", self._on_monster_needed)
-        event_bus.unsubscribe(
-            "update_sprite_position", self._on_update_sprite_position
-        )
-        event_bus.unsubscribe("monster_added", self._on_monster_added)
+        for event in EVENTS:
+            handler = getattr(self, f"_on_{event}", None)
+            if handler is None:
+                raise RuntimeError(f"Missing handler for event: {event}")
+            self.client.event_bus.unsubscribe(event, handler)
 
     def register_event_handlers(self) -> None:
-        """
-        Registers all event bus handlers for combat-related events.
-        """
-        if not hasattr(self.client, "event_bus"):
-            raise RuntimeError("Client event bus is not initialized")
-
-        event_bus = self.client.event_bus
-        event_bus.subscribe(
-            "monster_disappeared", self._on_monster_disappeared
-        )
-        event_bus.subscribe("monster_appeared", self._on_monster_appeared)
-        event_bus.subscribe(
-            "monster_swapped_out", self._on_monster_swapped_out
-        )
-        event_bus.subscribe("monster_swapped_in", self._on_monster_swapped_in)
-        event_bus.subscribe("mirror_effect", self._on_mirror_effect)
-        event_bus.subscribe("status_applied", self._on_status_applied)
-        event_bus.subscribe("update_party_hud", self._on_update_party_hud)
-        event_bus.subscribe("clean_combat", self._on_clean_combat)
-        event_bus.subscribe("monster_needed", self._on_monster_needed)
-        event_bus.subscribe(
-            "update_sprite_position", self._on_update_sprite_position
-        )
-        event_bus.subscribe("monster_added", self._on_monster_added)
+        for event in EVENTS:
+            handler = getattr(self, f"_on_{event}", None)
+            if handler is None:
+                raise RuntimeError(f"Missing handler for event: {event}")
+            self.client.event_bus.subscribe(event, handler)
 
     def _on_monster_added(
         self,
         player: NPC,
         monster: Monster,
-        removed: Optional[Monster] = None,
+        removed: Monster | None = None,
     ) -> None:
         self.handle_monster_entry(player, monster)
 
     def _on_monster_needed(self, player: NPC, ask: bool = False) -> None:
-        session = self.client.combat_session
+        session = self.combat_session
         positions_available = session.get_available_positions(player)
 
         for _ in range(positions_available):
@@ -1075,7 +1043,7 @@ class CombatState(CombatAnimations):
             logger.debug(
                 f"Swap add triggered: replacing {removed.name} with {added.name}"
             )
-            self.client.combat_session.add_monster_into_play(
+            self.combat_session.add_monster_into_play(
                 self.session, player, added, removed
             )
 
@@ -1133,3 +1101,23 @@ class CombatState(CombatAnimations):
             self.sprites.add(back_target)
             self.sprite_map.add_sprite(user, back_target)
             self.sprites.remove(user_sprite)
+
+    def _on_capture_finished(
+        self, monster: Monster, is_captured: bool
+    ) -> None:
+        """
+        Callback triggered after the ball stops shaking.
+        Handles logic and data changes.
+        """
+        if is_captured:
+            owner = monster.get_owner()
+            self._captured_mon = monster
+
+            if owner:
+                self.combat_session.field_monsters.remove_npc(owner)
+                self.combat_session.remove_player(owner)
+
+            self.combat_session.reset()
+
+        else:
+            self.notifier.trigger_xp_and_wait_for_input(self.text_area)

@@ -6,7 +6,7 @@ import logging
 from collections import defaultdict
 from collections.abc import Callable, Generator
 from functools import partial
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar
 
 from pygame import SRCALPHA
 from pygame.rect import Rect
@@ -83,12 +83,12 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             )
         params = {"name": monster.name}
         message = T.format("combat_monster_choice", params)
-        self.combat.dialog.alert(message, self.combat.text_area)
+        self.dialog.alert(message, self.combat.text_area)
 
         self.type_icon_sprites: list[Sprite] = []
         self.text_sprites: dict[str, Sprite] = {}
-        self.range_icon_sprite: Optional[Sprite] = None
-        self.speed_icon_sprite: Optional[Sprite] = None
+        self.range_icon_sprite: Sprite | None = None
+        self.speed_icon_sprite: Sprite | None = None
 
     def _clear_tech_overlay(self) -> None:
         """Remove technique icons/text from the overlay."""
@@ -272,7 +272,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     state.is_valid_entry = partial(validate, item)  # type: ignore[method-assign]
                     state.on_menu_selection = partial(enqueue_item, item)  # type: ignore[method-assign]
 
-        def validate_item(item: Optional[Item]) -> bool:
+        def validate_item(item: Item | None) -> bool:
             if item and item.behaviors.throwable:
                 for opponent in self.opponents:
                     if not item.validate_monster(self.session, opponent):
@@ -376,7 +376,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
             def show() -> None:
                 # Clear the combat dialog so the old "What will X do?" text disappears
-                self.combat.dialog.alert(
+                self.dialog.alert(
                     "", self.combat.text_area, dialog_speed="max"
                 )
 
@@ -522,7 +522,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 # Restore the original combat prompt
                 params = {"name": self.monster.name}
                 message = T.format("combat_monster_choice", params)
-                self.combat.dialog.alert(
+                self.dialog.alert(
                     message, self.combat.text_area, dialog_speed="max"
                 )
 

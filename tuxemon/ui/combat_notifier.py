@@ -6,7 +6,7 @@ import logging
 from collections import deque
 from collections.abc import Callable
 from functools import partial
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.formula import config_combat
 
@@ -27,7 +27,7 @@ class TextAnimationManager:
         self.text_queue: deque[tuple[Callable[[], None], float]] = deque()
         self._text_time_left: float = 0
         self._xp_messages: list[str] = []
-        self._pending_xp_duration: Optional[float] = None
+        self._pending_xp_duration: float | None = None
 
     @staticmethod
     def compute_text_anim_time(message: str) -> float:
@@ -104,7 +104,7 @@ class CombatNotifier:
         self,
         message: str,
         text_area: TextArea,
-        override_lock: Optional[bool] = None,
+        override_lock: bool | None = None,
     ) -> None:
         """
         Displays a combat message and, if configured, pushes a state to wait for player input.

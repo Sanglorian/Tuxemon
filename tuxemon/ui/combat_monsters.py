@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import MutableMapping
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 from tuxemon.sprite import Sprite
 
@@ -17,26 +17,26 @@ if TYPE_CHECKING:
 
 class MonsterSpriteMap:
     def __init__(self) -> None:
-        self.sprite_map: MutableMapping[Union[NPC, Monster], Sprite] = {}
+        self.sprite_map: MutableMapping[NPC | Monster, Sprite] = {}
 
-    def get_sprite(self, entity: Union[NPC, Monster]) -> Optional[Sprite]:
+    def get_sprite(self, entity: NPC | Monster) -> Sprite | None:
         """Retrieves the sprite for the given entity, raising an error if not found."""
         if entity not in self.sprite_map:
             return None
         return self.sprite_map[entity]
 
-    def add_sprite(self, entity: Union[NPC, Monster], sprite: Sprite) -> None:
+    def add_sprite(self, entity: NPC | Monster, sprite: Sprite) -> None:
         """Associates a sprite with the given entity."""
         self.sprite_map[entity] = sprite
 
-    def remove_sprite(self, entity: Union[NPC, Monster]) -> None:
+    def remove_sprite(self, entity: NPC | Monster) -> None:
         """Removes and cleans up the sprite associated with the given entity."""
         if entity in self.sprite_map:
             self.sprite_map[entity].kill()
             del self.sprite_map[entity]
 
     def update_sprite_position(
-        self, entity: Union[NPC, Monster], new_feet: tuple[int, int]
+        self, entity: NPC | Monster, new_feet: tuple[int, int]
     ) -> None:
         """Updates the position of the given entity's sprite to match the new feet position."""
         if entity not in self.sprite_map:

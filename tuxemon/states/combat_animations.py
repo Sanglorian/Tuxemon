@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 from abc import ABC
 from functools import partial
-from typing import TYPE_CHECKING, ClassVar, Optional, Union
+from typing import TYPE_CHECKING, ClassVar
 
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -50,8 +50,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-sprite_layer = 0
-hud_layer = 100
+HUD_LAYER = 100
 
 
 def toggle_visible(sprite: Sprite) -> None:
@@ -76,9 +75,10 @@ class CombatAnimations(Menu[None], ABC):
     def __init__(self, context: CombatContext) -> None:
         super().__init__()
         self.session = context.session
+        self.combat_session = self.client.combat_session
         self.sprite_map = MonsterSpriteMap()
         self.capdevs: list[CaptureDeviceSprite] = []
-        self.horde_sprite: Optional[HordeSprite] = None
+        self.horde_sprite: HordeSprite | None = None
         self.bars = CombatBars()
         layout_manager = LayoutManager(scaled_layouts, layout_groups)
         _layout = prepare_layout(context.teams, layout_manager)
@@ -89,20 +89,21 @@ class CombatAnimations(Menu[None], ABC):
             get_rect_func=self.hud_manager.get_rect,
             shadow_text_func=self.shadow_text,
         )
-        self.background_sprite: Optional[Sprite] = None
+        self.background_sprite: Sprite | None = None
         self.monsters_just_leveled_up: dict[str, bool] = {}
+        env = self.client.environment_manager.get_active_environment()
+        if env is None:
+            raise RuntimeError(
+                "Environment not set. Use set_environment before proceeding."
+            )
+        self.env = env
 
     def draw(self, surface: Surface) -> None:
         super().draw(surface)
 
     def refresh_ui(self) -> None:
         """Call this whenever HP or EXP changes."""
-        env = self.client.environment_manager.get_active_environment()
-        if env is None:
-            raise RuntimeError(
-                "Environment not set. Use set_environment before proceeding."
-            )
-        current_graphics = env.get_battle_graphics()
+        current_graphics = self.env.get_battle_graphics()
         self.bars.draw_bars(self.hud_manager.hud_map, current_graphics)
 
     def show_combat_dialog(self) -> None:
@@ -114,14 +115,14 @@ class CombatAnimations(Menu[None], ABC):
         border = graphics.load_and_scale(self.borders_filename)
         self.dialog_box = GraphicBox(border, None, self.background_color)
         self.dialog_box.rect = rect
-        self.sprites.add(self.dialog_box, layer=100)
+        self.sprites.add(self.dialog_box, layer=HUD_LAYER)
 
         # make a text area to show messages
         self.text_area = TextArea(self.font, self.font_color)
         self.text_area.rect = self.dialog_box.calc_inner_rect(
             self.dialog_box.rect,
         )
-        self.sprites.add(self.text_area, layer=100)
+        self.sprites.add(self.text_area, layer=HUD_LAYER)
 
     def animate_open(self) -> None:
         self.transition_none_normal()
@@ -133,15 +134,15 @@ class CombatAnimations(Menu[None], ABC):
         for player, layout in self.hud_manager.layout.items():
             self.animate_party_hud_in(player, layout["party"][0])
 
-        for player in self.client.combat_session.players[
-            : 2 if self.client.combat_session.is_trainer_battle else 1
+        for player in self.combat_session.players[
+            : 2 if self.combat_session.is_trainer_battle else 1
         ]:
             self.task(partial(self.animate_trainer_leave, player), interval=3)
 
     def blink(self, sprite: Sprite) -> None:
         self.task(partial(toggle_visible, sprite), interval=0.20, times=8)
 
-    def animate_trainer_leave(self, trainer: Union[NPC, Monster]) -> None:
+    def animate_trainer_leave(self, trainer: NPC | Monster) -> None:
         """Animate the trainer leaving the screen."""
         sprite = self.sprite_map.get_sprite(trainer)
         if sprite is None:
@@ -165,9 +166,11 @@ class CombatAnimations(Menu[None], ABC):
         monster sprite moving into position, and the capture device opening animation.
         It also plays the combat call sound.
         """
-        session = self.client.combat_session
         self.hud_manager.assign(
-            session.count_players, npc, monster, session.is_double
+            self.combat_session.count_players,
+            npc,
+            monster,
+            self.combat_session.is_double,
         )
         feet = self.hud_manager.get_feet_position(npc, monster)
 
@@ -211,7 +214,7 @@ class CombatAnimations(Menu[None], ABC):
 
         # Load monster sprite and set final position
         monster_sprite = monster.get_sprite(
-            "back" if npc == session.left_player else "front"
+            "back" if npc == self.combat_session.left_player else "front"
         )
         monster_sprite.rect.midbottom = feet
         self.sprites.add(monster_sprite)
@@ -234,10 +237,9 @@ class CombatAnimations(Menu[None], ABC):
         self.task(partial(self.sprites.add, sprite), interval=1.3)
 
         # Load and play combat call sound
-        if monster.combat_call.sfx:
-            self.play_sound_effect(
-                monster.combat_call.sfx, monster.combat_call.volume
-            )
+        self.play_sound_effect(
+            monster.combat_call.sfx, monster.combat_call.volume
+        )
 
     def animate_sprite_tackle(self, attacker: Sprite) -> None:
         duration = 0.3
@@ -271,9 +273,7 @@ class CombatAnimations(Menu[None], ABC):
 
         for (
             monsters
-        ) in (
-            self.client.combat_session.field_monsters.get_all_monsters().values()
-        ):
+        ) in self.combat_session.field_monsters.get_all_monsters().values():
             if monster in monsters:
                 monsters.remove(monster)
 
@@ -371,8 +371,7 @@ class CombatAnimations(Menu[None], ABC):
             if monster.current_hp > 0
             else monster.faint_call
         )
-        if cry.sfx:
-            self.play_sound_effect(cry.sfx, cry.volume)
+        self.play_sound_effect(cry.sfx, cry.volume)
         self.animate(sprite.rect, x=x_offset, relative=True, duration=2)
         self.status_icons.animate_icons(monster, self.animate)
 
@@ -382,21 +381,17 @@ class CombatAnimations(Menu[None], ABC):
         """
         Gathers data and delegates drawing of text labels to CombatTextDisplay.
         """
-        env = self.client.environment_manager.get_active_environment()
-        if env is None:
-            return
-
         owner = monster.get_owner()
-        trainer_battle = self.client.combat_session.is_trainer_battle
+        trainer_battle = self.combat_session.is_trainer_battle
 
         symbol = False
         if not is_player:
-            left_player = self.client.combat_session.left_player
+            left_player = self.combat_session.left_player
             if left_player.tuxepedia.is_caught(monster.slug):
                 symbol = True
 
         label_data = build_hud_text(
-            env.get_battle_graphics().menu,
+            self.env.get_battle_graphics().menu,
             monster,
             is_player,
             trainer_battle,
@@ -420,7 +415,7 @@ class CombatAnimations(Menu[None], ABC):
         """
         sprite = self.hud_manager.get_hud(monster)
         if sprite is None:
-            sprite = self.load_sprite(filename, layer=hud_layer)
+            sprite = self.load_sprite(filename, layer=HUD_LAYER)
 
         return sprite
 
@@ -430,12 +425,6 @@ class CombatAnimations(Menu[None], ABC):
         """
         Builds the HUD for a monster, focusing on creation and animation.
         """
-        env = self.client.environment_manager.get_active_environment()
-        if env is None:
-            raise RuntimeError(
-                "Environment not set. Use set_environment before proceeding."
-            )
-
         owner = monster.get_owner()
         hud_rect = self.hud_manager.get_rect(owner, hud_position)
 
@@ -443,9 +432,9 @@ class CombatAnimations(Menu[None], ABC):
         is_player = h_align is HorizontalAlignment.RIGHT
 
         hud_graphics = (
-            env.get_battle_graphics().hud.hud_player
+            self.env.get_battle_graphics().hud.hud_player
             if is_player
-            else env.get_battle_graphics().hud.hud_opponent
+            else self.env.get_battle_graphics().hud.hud_opponent
         )
 
         hud = self.check_hud(monster, hud_graphics)
@@ -485,21 +474,15 @@ class CombatAnimations(Menu[None], ABC):
 
     def animate_party_hud_left(
         self, home: Rect
-    ) -> tuple[Optional[Sprite], int, int]:
+    ) -> tuple[Sprite | None, int, int]:
         if not (
-            self.client.combat_session.is_trainer_battle
-            and not self.client.combat_session.is_double
+            self.combat_session.is_trainer_battle
+            and not self.combat_session.is_double
         ):
             return None, home.right - scale(13), scale(8)
 
-        env = self.client.environment_manager.get_active_environment()
-        if env is None:
-            raise RuntimeError(
-                "Environment not set. Use set_environment before proceeding."
-            )
-
-        hud_data = env.data.get_battle_graphics().hud
-        party_layout = env.get_party_layout("opponent", home, hud_layer)
+        hud_data = self.env.data.get_battle_graphics().hud
+        party_layout = self.env.get_party_layout("opponent", home, HUD_LAYER)
 
         tray = self._load_sprite(party_layout.path, party_layout.init_pos)
         self.animate(
@@ -512,14 +495,8 @@ class CombatAnimations(Menu[None], ABC):
         return tray, party_layout.centerx, party_layout.offset
 
     def animate_party_hud_right(self, home: Rect) -> tuple[Sprite, int, int]:
-        env = self.client.environment_manager.get_active_environment()
-        if env is None:
-            raise RuntimeError(
-                "Environment not set. Use set_environment before proceeding."
-            )
-
-        hud_data = env.data.get_battle_graphics().hud
-        party_layout = env.get_party_layout("player", home, hud_layer)
+        hud_data = self.env.data.get_battle_graphics().hud
+        party_layout = self.env.get_party_layout("player", home, HUD_LAYER)
 
         tray = self._load_sprite(party_layout.path, party_layout.init_pos)
         self.animate(
@@ -539,17 +516,11 @@ class CombatAnimations(Menu[None], ABC):
             player: The player whose HUD is being animated.
             home: Location and size of the HUD.
         """
-        env = self.client.environment_manager.get_active_environment()
-        if env is None:
-            raise RuntimeError(
-                "Environment not set. Use set_environment before proceeding."
-            )
-
         _, h_align = self.combat_zone.get_zone(home)
 
         is_opponent_horde = (
-            player is self.client.combat_session.right_player
-            and self.client.combat_session.is_horde_battle
+            player is self.combat_session.right_player
+            and self.combat_session.is_horde_battle
         )
 
         if is_opponent_horde:
@@ -561,7 +532,7 @@ class CombatAnimations(Menu[None], ABC):
                 shadow_text_func=self.shadow_text,
                 scale_func=scale,
             )
-            self.sprites.add(self.horde_sprite, layer=hud_layer)
+            self.sprites.add(self.horde_sprite, layer=HUD_LAYER)
 
             animate_func = partial(self.animate, duration=2.0, delay=1.5)
             self.horde_sprite.animate_in(animate_func)
@@ -589,11 +560,11 @@ class CombatAnimations(Menu[None], ABC):
             centerx_pos = centerx - (pos if monster else index) * offset
 
             sprite = self._load_sprite(
-                env.get_battle_graphics().icons.icon_empty,
+                self.env.get_battle_graphics().icons.icon_empty,
                 {
                     "top": tray.rect.top + scaled_top,
                     "centerx": centerx_pos,
-                    "layer": hud_layer,
+                    "layer": HUD_LAYER,
                 },
             )
 
@@ -601,7 +572,7 @@ class CombatAnimations(Menu[None], ABC):
                 sprite=sprite,
                 tray=tray,
                 monster=monster,
-                icon=env.get_battle_graphics().icons,
+                icon=self.env.get_battle_graphics().icons,
             )
             self.capdevs.append(capdev)
             animate = partial(
@@ -626,7 +597,7 @@ class CombatAnimations(Menu[None], ABC):
         """
         Update the horde HUD to reflect the horde.
         """
-        if self.client.combat_session.is_horde_battle and self.horde_sprite:
+        if self.combat_session.is_horde_battle and self.horde_sprite:
             if self.horde_sprite.update_count_display():
                 animate_func = partial(self.animate, duration=2.0, delay=1.5)
                 self.horde_sprite.animate_in(animate_func)
@@ -636,7 +607,7 @@ class CombatAnimations(Menu[None], ABC):
 
     def update_background(self, bg_path: str) -> None:
         # Clear old
-        if hasattr(self, "background_sprite") and self.background_sprite:
+        if self.background_sprite:
             if self.background_sprite in self.sprites:
                 self.sprites.remove(self.background_sprite)
             self.background_sprite = None
@@ -671,26 +642,22 @@ class CombatAnimations(Menu[None], ABC):
 
     def animate_parties_in(self) -> None:
         """Animate the parties entering the battle scene."""
-        session = self.client.combat_session
-        env = self.client.environment_manager.get_active_environment()
-        if env is None:
-            raise RuntimeError(
-                "Environment not set. Use set_environment before proceeding."
-            )
-
-        assets = env.get_battle_assets()
+        assets = self.env.get_battle_assets()
         self.update_background(assets["background"])
 
         # Get player and opponent
-        player, opponent = session.players
+        player, opponent = self.combat_session.players
         opp_mon = opponent.monsters[0]
         self.hud_manager.assign(
-            session.count_players, opponent, opp_mon, session.is_double
+            self.combat_session.count_players,
+            opponent,
+            opp_mon,
+            self.combat_session.is_double,
         )
         player_home = self.hud_manager.get_rect(player, "home")
         opp_home = self.hud_manager.get_rect(opponent, "home")
 
-        battle_layout = env.get_battle_layout(
+        battle_layout = self.env.get_battle_layout(
             SCREEN_RECT.size, player_home, opp_home
         )
         back_island = self.load_sprite(
@@ -701,7 +668,7 @@ class CombatAnimations(Menu[None], ABC):
         )
 
         # Load and animate opponent
-        if session.is_trainer_battle:
+        if self.combat_session.is_trainer_battle:
             sprite_name = opponent.template.combat_front
             enemy = self.load_sprite(
                 f"gfx/sprites/player/{sprite_name}.png",
@@ -717,7 +684,7 @@ class CombatAnimations(Menu[None], ABC):
             )
             enemy.rect.centerx = back_island.rect.centerx
             self.sprite_map.add_sprite(opp_mon, enemy)
-            session.field_monsters.add_monster(opponent, opp_mon)
+            self.combat_session.field_monsters.add_monster(opponent, opp_mon)
             self.update_hud(opponent, True, True)
 
         self.sprites.add(enemy)
@@ -734,12 +701,13 @@ class CombatAnimations(Menu[None], ABC):
         self.flip_sprites(enemy, player_back)
         self.animate_sprites(enemy, back_island, front_island, player_back)
 
-        if not session.is_trainer_battle:
-            sound = session.right_player.monsters[0].combat_call
-            if sound.sfx:
-                self.play_sound_effect(sound.sfx, sound.volume)
+        if not self.combat_session.is_trainer_battle:
+            sound = self.combat_session.right_player.monsters[0].combat_call
+            self.play_sound_effect(sound.sfx, sound.volume)
 
-        self.dialog.alert(session.get_start_message(), self.text_area)
+        self.dialog.alert(
+            self.combat_session.get_start_message(), self.text_area
+        )
 
     def flip_sprites(self, enemy: Sprite, player_back: Sprite) -> None:
         """Flip the sprites horizontally."""
@@ -759,13 +727,7 @@ class CombatAnimations(Menu[None], ABC):
         player_back: Sprite,
     ) -> None:
         """Animate the sprites."""
-        session = self.client.combat_session
-        env = self.client.environment_manager.get_active_environment()
-        if env is None:
-            raise RuntimeError(
-                "Environment not set. Use set_environment before proceeding."
-            )
-        graphics = env.get_battle_graphics()
+        graphics = self.env.get_battle_graphics()
 
         y_mod = scale(graphics.entry_jump_distance)
         duration = graphics.entry_duration
@@ -775,7 +737,9 @@ class CombatAnimations(Menu[None], ABC):
         )
 
         # Opponent side
-        pos_opp = self.hud_manager.get_rect(session.right_player, "home")
+        pos_opp = self.hud_manager.get_rect(
+            self.combat_session.right_player, "home"
+        )
         animate(enemy.rect, back_island.rect, centerx=pos_opp.centerx)
         animate(
             enemy.rect,
@@ -786,7 +750,9 @@ class CombatAnimations(Menu[None], ABC):
         )
 
         # Player side
-        pos_pla = self.hud_manager.get_rect(session.left_player, "home")
+        pos_pla = self.hud_manager.get_rect(
+            self.combat_session.left_player, "home"
+        )
         animate(player_back.rect, front_island.rect, centerx=pos_pla.centerx)
         animate(
             player_back.rect,
@@ -797,10 +763,14 @@ class CombatAnimations(Menu[None], ABC):
         )
 
     def play_sound_effect(
-        self, sound: str, value: Optional[float] = None
+        self, sound: str | None, value: float | None = None
     ) -> None:
         """Play the sound effect."""
-        volume = value or self.client.config.sound_volume
+        if sound is None:
+            return
+        volume = (
+            value if value is not None else self.client.config.sound_volume
+        )
         self.client.sound_manager.play_sound(sound, volume)
 
     def animate_throwing(
@@ -851,101 +821,125 @@ class CombatAnimations(Menu[None], ABC):
         """
         num_shakes = result.num_shakes
         is_captured = result.success
-        success_header_text, success_text, failure_text = texts
+        success_header, success_body, failure_text = texts
         monster_sprite = self.sprite_map.get_sprite(monster)
         if monster_sprite is None:
             raise KeyError(f"Sprite not found for entity: {monster.name}")
-        capdev = self.animate_throwing(monster, item)
-        animate = partial(
-            self.animate, capdev.rect, transition="in_quad", duration=1.0
-        )
-        self.task(partial(toggle_visible, monster_sprite), interval=1.0)
 
-        # TODO: cache this sprite from the first time it's used.
-        assert sprite.animation
-        self.task(sprite.animation.play, interval=1.0)
-        self.task(partial(self.sprites.add, sprite), interval=1.0)
+        capdev = self.animate_throwing(monster, item)
+        hit_time = 1.0
+        self.task(partial(toggle_visible, monster_sprite), interval=hit_time)
+
+        if sprite.animation:
+            self.task(sprite.animation.play, interval=hit_time)
+            self.task(partial(self.sprites.add, sprite), interval=hit_time)
+
         sprite.rect.midbottom = monster_sprite.rect.midbottom
 
-        def kill_monster() -> None:
-            self.sprite_map.remove_sprite(monster)
-            self.hud_manager.delete_hud(monster)
-
-        def shake_ball(initial_delay: float) -> None:
-            # Define reusable shake animation functions
-            def shake_up() -> Animation:
-                return animate(
-                    capdev.rect, y=scale(3), relative=True, duration=0.1
-                )
-
-            def shake_down() -> Animation:
-                return animate(
-                    capdev.rect, y=-scale(6), relative=True, duration=0.2
-                )
-
-            self.chain_animations(
-                shake_up, shake_down, shake_up, start_delay=initial_delay
+        def shake_up() -> Animation:
+            return self.animate(
+                capdev.rect,
+                y=scale(3),
+                relative=True,
+                duration=0.1,
+                transition="in_quad",
             )
 
-        # Perform shakes with delays
+        def shake_down() -> Animation:
+            return self.animate(
+                capdev.rect,
+                y=-scale(6),
+                relative=True,
+                duration=0.2,
+                transition="in_quad",
+            )
+
+        def shake_up2() -> Animation:
+            return self.animate(
+                capdev.rect,
+                y=scale(3),
+                relative=True,
+                duration=0.1,
+                transition="in_quad",
+            )
+
         for i in range(num_shakes):
-            shake_ball(1.8 + i * 1.0)
+            start = 1.8 + i * 1.0
+            self.chain_animations(
+                shake_up, shake_down, shake_up2, start_delay=start
+            )
 
-        if is_captured and monster.owner:
-            event_bus = self.client.event_bus
-            self.client.combat_session.set_variable("captured_mon", monster)
+        breakout_time = 1.8 + num_shakes * 1.0
 
-            def show_success(delay: float) -> None:
-                self.task(
-                    partial(event_bus.publish, "clean_combat"),
-                    interval=delay + 4,
-                )
-                full_text = success_header_text + "\n" + success_text
-                delay += len(full_text) * config_combat.letter_time
-                self.task(
-                    partial(self.dialog.alert, full_text, self.text_area),
-                    interval=delay,
-                )
+        # SUCCESS CASE
+        if is_captured:
+
+            def kill_monster() -> None:
+                self.sprite_map.remove_sprite(monster)
+                self.hud_manager.delete_hud(monster)
 
             self.task(kill_monster, interval=2 + num_shakes)
-            delay = num_shakes / 2
-            self.task(partial(show_success, delay), interval=num_shakes)
-            self.client.combat_session.field_monsters.remove_npc(
-                monster.get_owner()
+
+            full_msg = f"{success_header}\n{success_body}"
+
+            msg_delay = num_shakes / 2
+            dialog_delay = (
+                num_shakes
+                + msg_delay
+                + len(full_msg) * config_combat.letter_time
             )
-            self.client.combat_session.remove_player(monster.get_owner())
-            self.client.combat_session.reset()
+
+            def show_success() -> None:
+                self.dialog.alert(full_msg, self.text_area)
+
+            self.task(show_success, interval=dialog_delay)
+
+            self.task(
+                partial(self.event_bus.publish, "clean_combat"),
+                interval=dialog_delay + 4,
+            )
+
+        # FAILURE CASE
         else:
-            breakout_delay = 1.8 + num_shakes * 1.0
 
-            def show_monster(delay: float) -> None:
-                self.task(
-                    partial(toggle_visible, monster_sprite), interval=delay
-                )
-                if monster.combat_call.sfx:
-                    self.play_sound_effect(
-                        monster.combat_call.sfx, monster.combat_call.volume
-                    )
-
-            def capture_capsule(delay: float) -> None:
-                assert sprite.animation
-                self.task(sprite.animation.play, interval=delay)
-                self.task(capdev.kill, interval=delay)
-
-            def blink_monster(delay: float) -> None:
-                self.task(partial(self.blink, sprite), interval=delay + 0.5)
-
-            def show_failure(delay: float) -> None:
-                delay += len(failure_text) * config_combat.letter_time
-                self.task(
-                    partial(self.dialog.alert, failure_text, self.text_area),
-                    interval=delay,
+            def show_monster() -> None:
+                toggle_visible(monster_sprite)
+                self.play_sound_effect(
+                    monster.combat_call.sfx, monster.combat_call.volume
                 )
 
-            show_monster(breakout_delay)
-            capture_capsule(breakout_delay)
-            blink_monster(breakout_delay)
-            show_failure(breakout_delay)
+            def capture_capsule() -> None:
+                if sprite.animation:
+                    sprite.animation.play()
+                capdev.kill()
+
+            def blink_monster() -> None:
+                self.blink(sprite)
+
+            def show_failure() -> None:
+                self.dialog.alert(failure_text, self.text_area)
+
+            self.task(show_monster, interval=breakout_time)
+            self.task(capture_capsule, interval=breakout_time)
+            self.task(blink_monster, interval=breakout_time + 0.5)
+
+            failure_delay = (
+                breakout_time + len(failure_text) * config_combat.letter_time
+            )
+            self.task(show_failure, interval=failure_delay)
+
+            full_msg = failure_text
+
+        callback_delay = (
+            breakout_time + len(full_msg) * config_combat.letter_time + 1.0
+        )
+
+        self.task(
+            lambda: self.event_bus.publish(
+                "capture_finished", monster=monster, is_captured=is_captured
+            ),
+            interval=callback_delay,
+        )
 
     def update_hud(self, character: NPC, animate: bool, delete: bool) -> None:
         """
@@ -956,34 +950,20 @@ class CombatAnimations(Menu[None], ABC):
             animate: Whether to animate HUD transitions.
             delete: Whether to delete existing HUDs before updating.
         """
-        monsters = self.client.combat_session.field_monsters.get_monsters(
-            character
-        )
+        monsters = self.combat_session.field_monsters.get_monsters(character)
         if not monsters:
             return
 
+        # Cleanup old HUDs if requested
         if delete:
-            self._delete_monster_huds(monsters)
+            for monster in monsters:
+                self.hud_manager.delete_hud(monster)
 
-        alive_members = character.party.alive
-        if len(monsters) > 1 and len(monsters) <= len(alive_members):
-            self._update_multiple_huds(monsters, animate)
-        else:
-            self._update_single_hud(monsters[0], animate)
+        # Assign and Build HUDs
+        # If there is only 1 monster, we use the ID "hud".
+        # If there are multiple, we use "hud0", "hud1", etc.
+        is_multi = len(monsters) > 1
 
-    def _delete_monster_huds(self, monsters: list[Monster]) -> None:
-        """Deletes the HUDs of all given monsters."""
-        for monster in monsters:
-            self.hud_manager.delete_hud(monster)
-
-    def _update_multiple_huds(
-        self, monsters: list[Monster], animate: bool
-    ) -> None:
-        """Updates HUDs for multiple monsters with indexed HUD positions."""
         for i, monster in enumerate(monsters):
-            hud_id = f"hud{i}"
+            hud_id = f"hud{i}" if is_multi else "hud"
             self.build_hud(monster, hud_id, animate)
-
-    def _update_single_hud(self, monster: Monster, animate: bool) -> None:
-        """Updates the HUD for a single monster using a default HUD ID."""
-        self.build_hud(monster, "hud", animate)

@@ -12,7 +12,7 @@ import logging
 import re
 from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Any, Optional, Protocol, Union
+from typing import Any, Protocol
 
 from pygame.color import Color
 from pygame.image import load
@@ -34,14 +34,14 @@ from tuxemon.tools import scale_sequence, transform_resource_filename
 logger = logging.getLogger(__name__)
 
 
-ColorLike = Union[Color, tuple[int, int, int], tuple[int, int, int, int]]
+ColorLike = Color | tuple[int, int, int] | tuple[int, int, int, int]
 
 
 class LoaderProtocol(Protocol):
     def __call__(
         self,
-        rect: Optional[tuple[int, int, int, int]] = None,
-        flags: Optional[TileFlags] = None,
+        rect: tuple[int, int, int, int] | None = None,
+        flags: TileFlags | None = None,
     ) -> Surface:
         pass
 
@@ -181,40 +181,42 @@ def load_animated_sprite(
     delay: float,
     scale: float = SCALE,
     loop: int = -1,
+    **rect_kwargs: Any,
 ) -> Sprite:
     """
     Load a set of images and return an animated sprite.
 
-    Image name will be transformed and converted.
-    Rect attribute will be set.
-
-    Any keyword arguments will be passed to the get_rect method
-    of the image for positioning the rect.
-
     Parameters:
-        filenames: Filenames to load.
-        delay: Frame interval; time between each frame.
-        scale: A scaling factor applied to the images during loading.
-            Defaults to the 'SCALE' constant.
+        filenames: Iterable of image filenames.
+        delay: Time between frames.
+        scale: Scaling factor.
+        loop: Number of animation loops (-1 = infinite).
+        rect_kwargs: Passed to get_rect() for positioning.
 
     Returns:
-        Loaded animated sprite.
+        Sprite with a SurfaceAnimation.
     """
-    anim = []
+    frames = []
+
     for filename in filenames:
         path = Path(filename)
-        if path.exists():
-            image = load_and_scale(path.as_posix(), scale)
-            anim.append((image, delay))
-        else:
+        if not path.exists():
             logger.error(f"File not found: {path}")
+            continue
 
-    if not anim:
+        image = load_and_scale(path.as_posix(), scale)
+        frames.append((image, delay))
+
+    if not frames:
         raise ValueError("Cannot create animated sprite: no valid frames.")
 
-    tech = SurfaceAnimation(anim, loop)
-    tech.play()
-    return Sprite(animation=tech)
+    animation = SurfaceAnimation(frames, loop)
+    animation.play()
+
+    sprite = Sprite(animation=animation)
+    first_image = frames[0][0]
+    sprite.rect = first_image.get_rect(**rect_kwargs)
+    return sprite
 
 
 def scale_surface(surface: Surface, factor: float) -> Surface:
@@ -332,7 +334,7 @@ def convert_alpha_to_colorkey(
 
 def scaled_image_loader(
     filename: str,
-    colorkey: Optional[str],
+    colorkey: str | None,
     *,
     pixelalpha: bool = True,
     **kwargs: Any,
@@ -361,8 +363,8 @@ def scaled_image_loader(
     image = scale(image, scaled_size)
 
     def load_image(
-        rect: Optional[tuple[int, int, int, int]] = None,
-        flags: Optional[TileFlags] = None,
+        rect: tuple[int, int, int, int] | None = None,
+        flags: TileFlags | None = None,
     ) -> Surface:
         if rect:
             # scale the rect to match the scaled image
@@ -384,7 +386,7 @@ def scaled_image_loader(
     return load_image
 
 
-def get_avatar(session: Session, avatar: str) -> Optional[Sprite]:
+def get_avatar(session: Session, avatar: str) -> Sprite | None:
     """
     Retrieves the avatar sprite of a monster or NPC.
 

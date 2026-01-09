@@ -5,20 +5,17 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar
 
 from pygame.surface import Surface
 
-from tuxemon.graphics import load_animated_sprite
 from tuxemon.locale import T
 from tuxemon.menu.menu import PopUpMenu
 from tuxemon.platform.const.graphics import BLACK_COLOR
-from tuxemon.platform.events import PlayerInput
-from tuxemon.sprite import Sprite
 from tuxemon.tools import transform_resource_filename
 
 if TYPE_CHECKING:
-    pass
+    from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
 MenuGameObj = Callable[[], None]
@@ -34,15 +31,15 @@ class IntroState(PopUpMenu[MenuGameObj]):
     def __init__(self) -> None:
         super().__init__()
 
-        self.triggered: bool = False
+        self.triggered = False
 
         if IntroState._cached_sprites is None:
-            IntroState._cached_sprites = self._load_sprites()
-        if IntroState._cached_sprites:
-            self.sprites.add(IntroState._cached_sprites)
+            IntroState._cached_sprites = self._load_sprite_files()
 
-    def _load_sprites(self) -> Optional[Sprite]:
-        """Helper function to load the animation sprites dynamically using pathlib."""
+        if IntroState._cached_sprites:
+            self.load_animated_sprite(IntroState._cached_sprites, 0.07)
+
+    def _load_sprite_files(self) -> list[str] | None:
         folder_path = Path(transform_resource_filename("animations/intro"))
 
         if not folder_path.is_dir():
@@ -51,11 +48,7 @@ class IntroState(PopUpMenu[MenuGameObj]):
             return None
 
         sprite_files = sorted(
-            [
-                str(file_path)
-                for file_path in folder_path.glob("intro_*.png")
-                if file_path.is_file()
-            ]
+            str(p) for p in folder_path.glob("intro_*.png") if p.is_file()
         )
 
         if not sprite_files:
@@ -63,16 +56,10 @@ class IntroState(PopUpMenu[MenuGameObj]):
             self.client.replace_state("StartState")
             return None
 
-        try:
-            sprite = load_animated_sprite(sprite_files, 0.07)
-            self.client.current_music.play("music_main_theme")
-            return sprite
-        except ValueError as e:
-            logger.error(f"Failed to load animated sprite: {e}")
-            self.client.replace_state("StartState")
-            return None
+        self.client.current_music.play("music_main_theme")
+        return sprite_files
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         if event.pressed and not self.triggered:
             self.client.replace_state("StartState")
         return None

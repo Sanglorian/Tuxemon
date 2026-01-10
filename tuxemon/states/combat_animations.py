@@ -19,10 +19,11 @@ from pygame.transform import flip as pg_flip
 from tuxemon import graphics
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.combat.utils import build_hud_text
+from tuxemon.environment import BattleLayout
 from tuxemon.formula import config_combat
 from tuxemon.menu.menu import Menu
 from tuxemon.platform.const.sizes import PARTY_LIMIT
-from tuxemon.prepare import SCALE, SCREEN, SCREEN_RECT
+from tuxemon.prepare import SCREEN, SCREEN_RECT
 from tuxemon.sprite import CaptureDeviceSprite, HordeSprite, Sprite
 from tuxemon.tools import scale
 from tuxemon.ui.combat_bars import CombatBars
@@ -148,10 +149,11 @@ class CombatAnimations(Menu[None], ABC):
         if sprite is None:
             raise KeyError(f"Sprite not found for entity: {trainer.name}")
 
-        x_offset = self.combat_zone.get_horizontal_offset(
-            sprite.rect, scale(-150)
-        )
-        self.animate(sprite.rect, x=x_offset, relative=True, duration=0.8)
+        graphics = self.env.get_battle_graphics()
+        dist = scale(-graphics.trainer_exit_offset)
+        duration = graphics.trainer_exit_duration
+        x_offset = self.combat_zone.get_horizontal_offset(sprite.rect, dist)
+        self.animate(sprite.rect, x=x_offset, relative=True, duration=duration)
 
     def animate_monster_release(
         self,
@@ -605,49 +607,26 @@ class CombatAnimations(Menu[None], ABC):
                 self.task(self.horde_sprite.kill, interval=2)
                 self.horde_sprite = None
 
-    def update_background(self, bg_path: str) -> None:
-        # Clear old
+    def render_background(self) -> None:
         if self.background_sprite:
-            if self.background_sprite in self.sprites:
-                self.sprites.remove(self.background_sprite)
-            self.background_sprite = None
+            self.background_sprite.kill()
 
-        # Load and scale to SCALE only (no stretching to full screen)
-        surf = graphics.load_and_scale(bg_path, SCALE)
-
-        # Create a full-screen surface (black by default)
-        full_height = SCREEN_RECT.height
-        full_width = SCREEN_RECT.width
-        full_surf = Surface((full_width, full_height))
-        full_surf.fill((0, 0, 0))  # fill rest with black
-
-        # Blit background onto the top of the full surface
-        full_surf.blit(surf, (0, 0))
-
-        # Extend last row of background downward to fill gap
-        last_row = surf.subsurface(
-            Rect(0, surf.get_height() - 1, surf.get_width(), 1)
-        )
-        for y in range(surf.get_height(), full_height):
-            full_surf.blit(last_row, (0, y))
-
-        # Wrap in sprite
+        full_surf = self.env.prepare_background(SCREEN_RECT.size)
         spr = Sprite()
         spr.image = full_surf
         spr.rect = full_surf.get_rect()
         spr.rect.topleft = (0, 0)
-
         self.sprites.add(spr, layer=0)
         self.background_sprite = spr
 
     def animate_parties_in(self) -> None:
         """Animate the parties entering the battle scene."""
-        assets = self.env.get_battle_assets()
-        self.update_background(assets["background"])
+        self.render_background()
 
-        # Get player and opponent
         player, opponent = self.combat_session.players
         opp_mon = opponent.monsters[0]
+
+        # Setup Layout
         self.hud_manager.assign(
             self.combat_session.count_players,
             opponent,
@@ -656,50 +635,50 @@ class CombatAnimations(Menu[None], ABC):
         )
         player_home = self.hud_manager.get_rect(player, "home")
         opp_home = self.hud_manager.get_rect(opponent, "home")
-
-        battle_layout = self.env.get_battle_layout(
+        layout = self.env.get_battle_layout(
             SCREEN_RECT.size, player_home, opp_home
         )
+
+        # Spawn Islands
+        assets = self.env.get_battle_assets()
         back_island = self.load_sprite(
-            assets["island_back"], **battle_layout.back_island_pos
+            assets["island_back"], **layout.back_island_pos
         )
         front_island = self.load_sprite(
-            assets["island_front"], **battle_layout.front_island_pos
+            assets["island_front"], **layout.front_island_pos
         )
 
-        # Load and animate opponent
+        # Spawn Entities
         if self.combat_session.is_trainer_battle:
-            sprite_name = opponent.template.combat_front
+            enemy_pos = layout.get_combatant_pos("enemy", back_island.rect)
             enemy = self.load_sprite(
-                f"gfx/sprites/player/{sprite_name}.png",
-                bottom=back_island.rect.bottom
-                - battle_layout.offsets["enemy_y"],
-                centerx=back_island.rect.centerx,
+                f"gfx/sprites/player/{opponent.template.combat_front}.png",
+                **enemy_pos,
             )
             self.sprite_map.add_sprite(opponent, enemy)
         else:
+            monster_pos = layout.get_combatant_pos("monster", back_island.rect)
             enemy = opp_mon.get_sprite("front")
-            enemy.rect.bottom = (
-                back_island.rect.bottom - battle_layout.offsets["monster_y"]
+            enemy.rect.midbottom = (
+                monster_pos["centerx"],
+                monster_pos["bottom"],
             )
-            enemy.rect.centerx = back_island.rect.centerx
             self.sprite_map.add_sprite(opp_mon, enemy)
             self.combat_session.field_monsters.add_monster(opponent, opp_mon)
             self.update_hud(opponent, True, True)
 
-        self.sprites.add(enemy)
-
-        # Load and animate player
+        player_pos = layout.get_combatant_pos("player", front_island.rect)
         player_back = self.load_sprite(
             f"gfx/sprites/player/{player.template.combat_front}.png",
-            bottom=front_island.rect.centery
-            + battle_layout.offsets["player_y"],
-            centerx=front_island.rect.centerx,
+            **player_pos,
         )
 
+        self.sprites.add(enemy, player_back)
         self.sprite_map.add_sprite(player, player_back)
         self.flip_sprites(enemy, player_back)
-        self.animate_sprites(enemy, back_island, front_island, player_back)
+        self.animate_sprites(
+            layout, enemy, back_island, front_island, player_back
+        )
 
         if not self.combat_session.is_trainer_battle:
             sound = self.combat_session.right_player.monsters[0].combat_call
@@ -721,22 +700,21 @@ class CombatAnimations(Menu[None], ABC):
 
     def animate_sprites(
         self,
+        layout: BattleLayout,
         enemy: Sprite,
         back_island: Sprite,
         front_island: Sprite,
         player_back: Sprite,
     ) -> None:
         """Animate the sprites."""
-        graphics = self.env.get_battle_graphics()
-
-        y_mod = scale(graphics.entry_jump_distance)
-        duration = graphics.entry_duration
+        y_mod = layout.entry_jump_distance
+        duration = layout.entry_duration
 
         animate = partial(
             self.animate, transition="out_quad", duration=duration
         )
 
-        # Opponent side
+        # Move islands/sprites to their HUD home positions
         pos_opp = self.hud_manager.get_rect(
             self.combat_session.right_player, "home"
         )
@@ -749,7 +727,6 @@ class CombatAnimations(Menu[None], ABC):
             relative=True,
         )
 
-        # Player side
         pos_pla = self.hud_manager.get_rect(
             self.combat_session.left_player, "home"
         )

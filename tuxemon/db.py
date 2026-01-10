@@ -2044,6 +2044,12 @@ class BattleGraphicsModel(BaseModel):
     entry_duration: float = Field(
         3.0, description="Seconds for the entry transition."
     )
+    trainer_exit_offset: int = Field(
+        150, description="Pixels to move trainer when leaving"
+    )
+    trainer_exit_duration: float = Field(
+        0.8, description="Duration of trainer exit animation"
+    )
 
     @field_validator("island_back", "island_front")
     def island_exists(cls, v: str) -> str:

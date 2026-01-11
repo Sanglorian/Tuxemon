@@ -27,6 +27,7 @@ if TYPE_CHECKING:
         Animation,
         ScheduledFunction,
         Task,
+        TaskBase,
     )
     from tuxemon.platform.events import PlayerInput
 
@@ -85,7 +86,7 @@ class State(ABC):
             )
 
     @property
-    def animations(self) -> Group[Task | Animation]:
+    def animations(self) -> Group[TaskBase]:
         return self.anim._group
 
     def load_sprite(self, filename: str, **kwargs: Any) -> Sprite:

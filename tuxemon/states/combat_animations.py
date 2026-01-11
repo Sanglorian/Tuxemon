@@ -19,6 +19,7 @@ from pygame.transform import flip as pg_flip
 from tuxemon import graphics
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.combat.utils import build_hud_text
+from tuxemon.constants.paths import mods_folder
 from tuxemon.formula import config_combat
 from tuxemon.menu.menu import Menu
 from tuxemon.platform.const.sizes import PARTY_LIMIT
@@ -27,12 +28,7 @@ from tuxemon.sprite import CaptureDeviceSprite, HordeSprite, Sprite
 from tuxemon.tools import scale
 from tuxemon.ui.combat_bars import CombatBars
 from tuxemon.ui.combat_hud import CombatLayoutManager
-from tuxemon.ui.combat_layout import (
-    LayoutManager,
-    layout_groups,
-    prepare_layout,
-    scaled_layouts,
-)
+from tuxemon.ui.combat_layout import LayoutManager
 from tuxemon.ui.combat_monsters import MonsterSpriteMap
 from tuxemon.ui.combat_status import StatusIconManager
 from tuxemon.ui.combat_text_display import CombatTextDisplay
@@ -42,7 +38,6 @@ from tuxemon.ui.text import TextArea
 from tuxemon.ui.text_alignment import HorizontalAlignment
 
 if TYPE_CHECKING:
-    from tuxemon.combat.combat_context import CombatContext
     from tuxemon.core.core_effect import ItemEffectResult
     from tuxemon.item.item import Item
     from tuxemon.monster import Monster
@@ -72,16 +67,15 @@ class CombatAnimations(Menu[None], ABC):
 
     name: ClassVar[str] = "CombatAnimations"
 
-    def __init__(self, context: CombatContext) -> None:
+    def __init__(self, teams: list[NPC]) -> None:
         super().__init__()
-        self.session = context.session
         self.combat_session = self.client.combat_session
         self.sprite_map = MonsterSpriteMap()
         self.capdevs: list[CaptureDeviceSprite] = []
         self.horde_sprite: HordeSprite | None = None
         self.bars = CombatBars()
-        layout_manager = LayoutManager(scaled_layouts, layout_groups)
-        _layout = prepare_layout(context.teams, layout_manager)
+        layout_manager = LayoutManager(mods_folder / "combat_layouts.yaml")
+        _layout = layout_manager.prepare_all(teams)
         self.hud_manager = CombatLayoutManager(_layout)
         self.status_icons = StatusIconManager(self, _layout, self.hud_manager)
         self.combat_zone = CombatZone(SCREEN_RECT)
@@ -237,8 +231,10 @@ class CombatAnimations(Menu[None], ABC):
         self.task(partial(self.sprites.add, sprite), interval=1.3)
 
         # Load and play combat call sound
-        self.play_sound_effect(
-            monster.combat_call.sfx, monster.combat_call.volume
+        self.event_bus.publish(
+            "play_sound_combat",
+            sound=monster.combat_call.sfx,
+            value=monster.combat_call.volume,
         )
 
     def animate_sprite_tackle(self, attacker: Sprite) -> None:
@@ -371,7 +367,9 @@ class CombatAnimations(Menu[None], ABC):
             if monster.current_hp > 0
             else monster.faint_call
         )
-        self.play_sound_effect(cry.sfx, cry.volume)
+        self.event_bus.publish(
+            "play_sound_combat", sound=cry.sfx, value=cry.volume
+        )
         self.animate(sprite.rect, x=x_offset, relative=True, duration=2)
         self.status_icons.animate_icons(monster, self.animate)
 
@@ -703,7 +701,9 @@ class CombatAnimations(Menu[None], ABC):
 
         if not self.combat_session.is_trainer_battle:
             sound = self.combat_session.right_player.monsters[0].combat_call
-            self.play_sound_effect(sound.sfx, sound.volume)
+            self.event_bus.publish(
+                "play_sound_combat", sound=sound.sfx, value=sound.volume
+            )
 
         self.dialog.alert(
             self.combat_session.get_start_message(), self.text_area
@@ -761,17 +761,6 @@ class CombatAnimations(Menu[None], ABC):
             transition="out_back",
             relative=True,
         )
-
-    def play_sound_effect(
-        self, sound: str | None, value: float | None = None
-    ) -> None:
-        """Play the sound effect."""
-        if sound is None:
-            return
-        volume = (
-            value if value is not None else self.client.config.sound_volume
-        )
-        self.client.sound_manager.play_sound(sound, volume)
 
     def animate_throwing(
         self,
@@ -904,8 +893,10 @@ class CombatAnimations(Menu[None], ABC):
 
             def show_monster() -> None:
                 toggle_visible(monster_sprite)
-                self.play_sound_effect(
-                    monster.combat_call.sfx, monster.combat_call.volume
+                self.event_bus.publish(
+                    "play_sound_combat",
+                    sound=monster.combat_call.sfx,
+                    value=monster.combat_call.volume,
                 )
 
             def capture_capsule() -> None:

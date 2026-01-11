@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any, Optional, Union
 
-from tuxemon.formula import config_monster
+from tuxemon.database.rules import config_monster
 
 
 class BondHandler:

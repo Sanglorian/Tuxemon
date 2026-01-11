@@ -5,12 +5,9 @@ from collections.abc import Generator
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 from tuxemon.constants.asset_loader import fetch_asset
-from tuxemon.database.runtime import db
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.script.parser import parse_action_string
-from tuxemon.user_config import CONFIG
 
 FOLDER = "maps"
 EVENTS_KEY = "events"
@@ -36,13 +33,14 @@ def get_yaml_files(folder_path: Path) -> Generator[Path, Any, None]:
 
 
 def load_yaml_files(folder_path: str) -> dict[Path, dict]:
-    loaded_data = {}
+    loaded_data: dict[Path, dict] = {}
+
     for file_path in get_yaml_files(Path(folder_path)):
         try:
-            with file_path.open("r") as f:
-                loaded_data[file_path] = yaml.safe_load(f)
-        except yaml.YAMLError as e:
+            loaded_data[file_path] = load_yaml(file_path)
+        except Exception as e:
             raise ValueError(f"Failed to load YAML file: {file_path}") from e
+
     return loaded_data
 
 

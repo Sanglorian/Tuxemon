@@ -46,12 +46,12 @@ from tuxemon.combat.combat_context import CombatContext
 from tuxemon.combat.machine import CombatMachine, CombatPhase
 from tuxemon.combat.reward_system import RewardSystem
 from tuxemon.combat.utils import play_outcome_music, track_battles
+from tuxemon.database.rules import config_combat
 from tuxemon.db import (
     EffectPhase,
     ItemCategory,
     OutputBattle,
 )
-from tuxemon.formula import config_combat
 from tuxemon.item.item import Item
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem

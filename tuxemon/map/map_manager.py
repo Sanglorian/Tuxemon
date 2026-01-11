@@ -9,9 +9,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 
-import yaml
-
 from tuxemon.constants import paths
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.db import Direction
 
 if TYPE_CHECKING:
@@ -30,24 +29,27 @@ class MapType:
 def load_map_types(filename: str) -> defaultdict[str, MapType]:
     """Loads map types from a YAML file and returns a defaultdict mapping name -> MapType."""
     yaml_path = paths.mods_folder / filename
+
     try:
-        with yaml_path.open(encoding="utf-8") as file:
-            data = yaml.safe_load(file)
-            return defaultdict(
-                lambda: MapType(name="notype"),
-                {
-                    entry["name"]: MapType(**entry)
-                    for entry in data.get("map_types", [])
-                    if "name" in entry
-                },
-            )
+        data = load_yaml(yaml_path)
+
+        return defaultdict(
+            lambda: MapType(name="notype"),
+            {
+                entry["name"]: MapType(**entry)
+                for entry in data.get("map_types", [])
+                if "name" in entry
+            },
+        )
+
     except FileNotFoundError:
         logger.warning(f"Map types file not found at {yaml_path}")
     except Exception as e:
         logger.error(f"Error loading map types: {e}")
 
     return defaultdict(
-        lambda: MapType(name="notype"), {"notype": MapType(name="notype")}
+        lambda: MapType(name="notype"),
+        {"notype": MapType(name="notype")},
     )
 
 

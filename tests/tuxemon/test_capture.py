@@ -3,8 +3,8 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
+from tuxemon.database.rules import config_capture
 from tuxemon.formula import (
-    Loader,
     calculate_status_modifier,
     capture,
     shake_check,
@@ -84,7 +84,6 @@ class TestShakeCheck(unittest.TestCase):
 
 class TestCapture(unittest.TestCase):
     def setUp(self):
-        config_capture = Loader.get_config_capture("config_capture.yaml")
         self.max_shake_rate = config_capture.shake_divisor
         self.total_shake = config_capture.total_shakes
 

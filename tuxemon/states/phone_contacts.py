@@ -4,15 +4,14 @@ from __future__ import annotations
 
 import logging
 from functools import partial
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 import pygame_menu
-import yaml
 from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.constants import paths
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_CONTACTS
@@ -26,18 +25,6 @@ if TYPE_CHECKING:
     from tuxemon.npc import NPC
 
 logger = logging.getLogger(__name__)
-
-
-def load_yaml(filepath: Path) -> Any:
-    try:
-        with filepath.open() as file:
-            return yaml.safe_load(file)
-    except FileNotFoundError:
-        logger.error(f"Config file not found: {filepath}")
-        raise
-    except yaml.YAMLError as exc:
-        logger.error(f"Error parsing YAML file: {exc}")
-        raise exc
 
 
 class Loader:

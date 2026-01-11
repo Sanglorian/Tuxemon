@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Optional
 
 from tuxemon.combat.combat_context import CombatType
 from tuxemon.combat.experience_strategies import calculate_experience
-from tuxemon.formula import config_monster
+from tuxemon.database.rules import config_monster
 from tuxemon.locale import T
 from tuxemon.monster_dir.stats import BasicStats
 

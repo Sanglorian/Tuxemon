@@ -19,7 +19,7 @@ from pygame.transform import flip as pg_flip
 from tuxemon import graphics
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.combat.utils import build_hud_text
-from tuxemon.formula import config_combat
+from tuxemon.database.rules import config_combat
 from tuxemon.menu.menu import Menu
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.prepare import SCALE, SCREEN, SCREEN_RECT

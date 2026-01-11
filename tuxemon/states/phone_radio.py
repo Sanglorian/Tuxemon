@@ -5,14 +5,13 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from functools import partial
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 import pygame_menu
-import yaml
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 
 from tuxemon.constants import paths
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_CONTACTS
@@ -29,18 +28,6 @@ MIN_FREQ = 88.0
 MAX_FREQ = 108.0
 INITIAL_FREQ = 98.0
 TUNING_TOLERANCE = 0.2
-
-
-def load_yaml(filepath: Path) -> Any:
-    try:
-        with filepath.open() as file:
-            return yaml.safe_load(file)
-    except FileNotFoundError:
-        logger.error(f"Config file not found: {filepath}")
-        raise
-    except yaml.YAMLError as exc:
-        logger.error(f"Error parsing YAML file: {exc}")
-        raise exc
 
 
 class Loader:

@@ -6,9 +6,8 @@ import logging
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Optional
 
-import yaml
-
 from tuxemon.constants.paths import mods_folder
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.platform.const.sizes import KENNEL, LOCKER
 
 if TYPE_CHECKING:
@@ -23,8 +22,7 @@ class RoutingPolicyRegistry:
     @classmethod
     def load_from_file(cls, path: str = "routing_policies.yaml") -> None:
         yaml_path = mods_folder / path
-        with yaml_path.open() as f:
-            raw = yaml.safe_load(f)
+        raw = load_yaml(yaml_path)
         cls._policies = raw
 
     @classmethod

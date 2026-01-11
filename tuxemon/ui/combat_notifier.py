@@ -8,7 +8,7 @@ from collections.abc import Callable
 from functools import partial
 from typing import TYPE_CHECKING, Optional
 
-from tuxemon.formula import config_combat
+from tuxemon.database.rules import config_combat
 
 if TYPE_CHECKING:
     from tuxemon.menu.alert import AlertManager

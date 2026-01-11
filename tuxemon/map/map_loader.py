@@ -10,12 +10,12 @@ from pathlib import Path
 from typing import Any, Optional
 
 import pytmx
-import yaml
 from natsort import natsorted
 
 from tuxemon.compat import Rect
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.constants.paths import mods_folder
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.db import BoundingBox, Direction, EventObject, Orientation
 from tuxemon.event.eventparser import EventParser
 from tuxemon.graphics import scaled_image_loader
@@ -43,17 +43,6 @@ RegionTile = tuple[
     tuple[int, int],
     Optional[RegionProperties],
 ]
-
-
-def parse_yaml(path: Path) -> Any:
-    """
-    Parses a large YAML file efficiently using a streaming loader.
-    """
-    with path.open() as fp:
-        try:
-            return yaml.load(fp.read(), Loader=yaml.SafeLoader)
-        except yaml.YAMLError as e:
-            raise ValueError(f"Error parsing YAML file: {e}")
 
 
 class MapLoader:
@@ -290,7 +279,7 @@ class YAMLEventLoader:
         Returns:
             A dictionary with collision coordinates as keys.
         """
-        yaml_data: dict[str, list[dict[str, Any]]] = parse_yaml(path)
+        yaml_data: dict[str, list[dict[str, Any]]] = load_yaml(path)
 
         collision_dict: MutableMapping[
             tuple[int, int], Optional[RegionProperties]
@@ -327,7 +316,7 @@ class YAMLEventLoader:
             of EventObject instances.
         """
         event_parser = EventParser()
-        yaml_data: dict[str, dict[str, dict[str, Any]]] = parse_yaml(path)
+        yaml_data: dict[str, dict[str, dict[str, Any]]] = load_yaml(path)
         events_dict: dict[str, list[EventObject]] = {"event": [], "init": []}
 
         for name, event_data in yaml_data["events"].items():

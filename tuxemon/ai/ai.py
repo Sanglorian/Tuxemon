@@ -4,10 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
-
-import yaml
+from typing import TYPE_CHECKING, Optional
 
 from tuxemon.ai.decision_strategy import (
     TrainerAIDecisionStrategy,
@@ -16,6 +13,7 @@ from tuxemon.ai.decision_strategy import (
 from tuxemon.ai.opponent_evaluator import OpponentEvaluator
 from tuxemon.ai.technique_tracker import TechniqueTracker
 from tuxemon.constants import paths
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
@@ -112,18 +110,6 @@ class SingleTechnique:
 @dataclass
 class AITechniques:
     techniques: dict[str, SingleTechnique]
-
-
-def load_yaml(filepath: Path) -> Any:
-    try:
-        with filepath.open() as file:
-            return yaml.safe_load(file)
-    except FileNotFoundError:
-        logger.error(f"Config file not found: {filepath}")
-        raise
-    except yaml.YAMLError as exc:
-        logger.error(f"Error parsing YAML file: {exc}")
-        raise exc
 
 
 class AIConfigLoader:

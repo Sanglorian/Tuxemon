@@ -9,8 +9,7 @@ from typing import TYPE_CHECKING
 import yaml
 from pygame.rect import Rect
 
-from tuxemon.constants.paths import mods_folder
-from tuxemon.tools import scale_sequence
+from tuxemon.scaling import DefaultScaling, ScalingStrategy
 
 logger = logging.getLogger(__name__)
 
@@ -46,124 +45,82 @@ def load_layouts_from_yaml(
     }
 
 
-def scale_layouts(
-    layouts: dict[str, dict[str, tuple[int, ...]]],
-) -> dict[str, dict[str, tuple[int, ...]]]:
-    """
-    Scales all position values in layout dictionaries using the configured scale factor.
-    """
-    scaled_layouts = {}
+class LayoutRepository:
+    def __init__(
+        self,
+        yaml_path: Path,
+        scaling: ScalingStrategy | None = None,  # <-- NEW
+    ):
+        self.raw_layouts = load_layouts_from_yaml(yaml_path)
+        self.groups = load_layout_groups(yaml_path)
+        self.scaling = scaling or DefaultScaling()  # <-- NEW
 
-    for layout_name, layout in layouts.items():
-        scaled_items = {}
-        for key, coords in layout.items():
-            scaled_items[key] = scale_sequence(coords)
-        scaled_layouts[layout_name] = scaled_items
+    def get_raw_layout(self, name: str) -> dict[str, tuple[int, ...]]:
+        if name not in self.raw_layouts:
+            raise KeyError(f"Layout '{name}' not found in YAML")
+        return self.raw_layouts[name]
 
-    return scaled_layouts
+    def get_scaled_layout(self, name: str) -> dict[str, tuple[int, ...]]:
+        raw = self.get_raw_layout(name)
+        return {
+            k: self.scaling.scale_tuple(v)  # <-- NEW (no scale_sequence)
+            for k, v in raw.items()
+        }
 
 
-layouts = load_layouts_from_yaml(mods_folder / "combat_layouts.yaml")
-scaled_layouts = scale_layouts(layouts)
-layout_groups = load_layout_groups(mods_folder / "combat_layouts.yaml")
+class LayoutSelector:
+    def __init__(self, repo: LayoutRepository):
+        self.repo = repo
+
+    def select(
+        self, player_index: int, total_players: int
+    ) -> dict[str, tuple[int, ...]]:
+        if total_players not in self.repo.groups:
+            raise ValueError(
+                f"No layout group defined for {total_players} players"
+            )
+
+        layout_names = self.repo.groups[total_players]
+
+        if not (0 <= player_index < len(layout_names)):
+            raise IndexError(
+                f"Player index {player_index} out of range for {total_players} players "
+                f"(expected 0-{len(layout_names)-1})"
+            )
+
+        layout_name = layout_names[player_index]
+        return self.repo.get_scaled_layout(layout_name)
+
+
+class LayoutRectFactory:
+    def to_rects(
+        self, layout: dict[str, tuple[int, ...]]
+    ) -> dict[str, list[Rect]]:
+        return {key: [Rect(coords)] for key, coords in layout.items()}
 
 
 class LayoutManager:
-    """
-    Manages the combat layout coordinates for multiple players.
-    Provides specific layouts based on the total number of players
-    and the individual player's index.
-    """
-
     def __init__(
         self,
-        scaled_layouts: dict[str, dict[str, tuple[int, ...]]],
-        layout_groups: dict[int, list[str]],
-    ) -> None:
-        self._layouts_by_player_count = {
-            count: [scaled_layouts.get(name, {}) for name in layout_names]
-            for count, layout_names in layout_groups.items()
-        }
+        yaml_path: Path,
+        scaling: ScalingStrategy | None = None,  # <-- NEW
+    ):
+        self.repo = LayoutRepository(yaml_path, scaling=scaling)
+        self.selector = LayoutSelector(self.repo)
+        self.rect_factory = LayoutRectFactory()
 
-    def get_raw_layout_for_player(
-        self, player_index: int, total_players: int
-    ) -> dict[str, tuple[int, ...]]:
-        """
-        Retrieves the raw (unscaled) coordinate dictionary for a given player
-        based on their index and the total number of players.
+    def set_scaling(self, scaling: ScalingStrategy):  # <-- NEW
+        self.repo.scaling = scaling
 
-        Parameters:
-            player_index: The 0-based index of the player in the list.
-            total_players: The total number of players in the current combat.
-
-        Returns:
-            A dictionary containing the raw coordinate tuples for the player's layout.
-
-        Raises:
-            ValueError: If a layout is not defined for the given total number of players
-                        or if the player index is out of bounds for the defined layouts.
-        """
-        if total_players not in self._layouts_by_player_count:
-            raise ValueError(
-                f"Combat layout not defined for {total_players} players."
-            )
-
-        specific_layouts = self._layouts_by_player_count[total_players]
-
-        if not (0 <= player_index < len(specific_layouts)):
-            raise IndexError(
-                f"Player index {player_index} out of bounds for {total_players} player layout. "
-                f"Expected index between 0 and {len(specific_layouts) - 1}."
-            )
-
-        return specific_layouts[player_index]
-
-    def prepare_all_player_layouts(
+    def prepare_all(
         self, players: list[NPC]
     ) -> dict[NPC, dict[str, list[Rect]]]:
-        """
-        Prepares the scaled Rect layouts for all given players based on the
-        current number of players.
-
-        Parameters:
-            players: A list of NPC objects representing the players in combat.
-
-        Returns:
-            A dictionary mapping each NPC player to their designated layout,
-            where each layout component is a list of scaled Rect objects.
-        """
-        all_layouts_for_players = {}
-        total_players = len(players)
+        total = len(players)
+        layouts = {}
 
         for index, player in enumerate(players):
-            try:
-                raw_layout = self.get_raw_layout_for_player(
-                    index, total_players
-                )
-                scaled_layout = {
-                    key: [Rect(value)] for key, value in raw_layout.items()
-                }
-                all_layouts_for_players[player] = scaled_layout
-            except (ValueError, IndexError) as e:
-                logger.error(
-                    f"Error preparing layout for player {index}/{total_players}: {e}"
-                )
-                raise
+            coords = self.selector.select(index, total)
+            rects = self.rect_factory.to_rects(coords)
+            layouts[player] = rects
 
-        return all_layouts_for_players
-
-
-def prepare_layout(
-    players: list[NPC], layout_manager: LayoutManager
-) -> dict[NPC, dict[str, list[Rect]]]:
-    """
-    Arranges player positions for combat using a dedicated layout manager.
-
-    Parameters:
-        players: list of NPCs to be positioned.
-        layout_manager: An instance of LayoutManager to determine layouts.
-
-    Returns:
-        A dictionary mapping each player to their designated layout.
-    """
-    return layout_manager.prepare_all_player_layouts(players)
+        return layouts

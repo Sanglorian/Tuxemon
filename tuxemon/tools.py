@@ -25,7 +25,6 @@ from typing import (
     Literal,
     NoReturn,
     Optional,
-    Protocol,
     TypeVar,
     Union,
     get_args,
@@ -39,7 +38,8 @@ from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import Comparison
 from tuxemon.locale import T
 from tuxemon.math import Vector2
-from tuxemon.prepare import SCALE, SCREEN_RECT
+from tuxemon.prepare import SCREEN_RECT
+from tuxemon.scaling import DefaultScaling, ScalingStrategy
 from tuxemon.ui.dialogue import calc_dialog_rect
 from tuxemon.ui.text_alignment import DialogPosition
 from tuxemon.ui.text_formatter import TextFormatter
@@ -65,7 +65,7 @@ logger = logging.getLogger(__name__)
 Never = NoReturn
 
 TVar = TypeVar("TVar")
-TVarSequence = TypeVar("TVarSequence", bound=tuple[int, ...])
+
 
 ValidParameterSingleType = Optional[type[Any]]
 ValidParameterTypes = Union[
@@ -86,17 +86,6 @@ ops_dict: Mapping[str, Callable[[float, float], int]] = {
     "*": mul,
     "/": safe_floordiv,
 }
-
-
-class NamedTupleProtocol(Protocol):
-    """Protocol for arbitrary NamedTuple objects."""
-
-    @property
-    def _fields(self) -> tuple[str, ...]:
-        pass
-
-
-NamedTupleTypeVar = TypeVar("NamedTupleTypeVar", bound=NamedTupleProtocol)
 
 
 def get_cell_coordinates(
@@ -138,20 +127,7 @@ def get_screen_rect(sprite: Sprite, internal_rect: Rect) -> Rect:
     return internal_rect.move(sprite.rect.topleft)
 
 
-def scale_sequence(sequence: TVarSequence) -> TVarSequence:
-    """
-    Scale a sequence of integers by the configured scale factor.
-
-    Parameters:
-        sequence: Sequence to scale.
-
-    Returns:
-        Scaled sequence.
-    """
-    return type(sequence)(i * SCALE for i in sequence)
-
-
-def scale(number: int) -> int:
+def scale(number: int, scaling: ScalingStrategy | None = None) -> int:
     """
     Scale an integer by the configured scale factor.
 
@@ -161,7 +137,8 @@ def scale(number: int) -> int:
     Returns:
         Scaled integer.
     """
-    return SCALE * number
+    scaling = scaling or DefaultScaling()
+    return scaling.scale_int(number)
 
 
 TEnum = TypeVar("TEnum", bound=Enum)

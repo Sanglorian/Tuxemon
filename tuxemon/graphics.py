@@ -26,10 +26,11 @@ from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel, NpcModel
 from tuxemon.platform.const.graphics import FUCHSIA_COLOR
 from tuxemon.prepare import SCALE
+from tuxemon.scaling import DefaultScaling, ScalingStrategy
 from tuxemon.session import Session
 from tuxemon.sprite import Sprite
 from tuxemon.surfanim import SurfaceAnimation
-from tuxemon.tools import scale_sequence, transform_resource_filename
+from tuxemon.tools import transform_resource_filename
 
 logger = logging.getLogger(__name__)
 
@@ -337,6 +338,7 @@ def scaled_image_loader(
     colorkey: str | None,
     *,
     pixelalpha: bool = True,
+    scaling: ScalingStrategy | None = None,
     **kwargs: Any,
 ) -> LoaderProtocol:
     """
@@ -353,13 +355,14 @@ def scaled_image_loader(
     Returns:
         The loader to use.
     """
+    scaling = scaling or DefaultScaling()
     colorkey_color = Color(f"#{colorkey}") if colorkey else None
 
     # load the tileset image
     image = load(filename)
 
     # scale the tileset image to match game scale
-    scaled_size = scale_sequence(image.get_size())
+    scaled_size = scaling.scale_tuple(image.get_size())
     image = scale(image, scaled_size)
 
     def load_image(
@@ -368,7 +371,7 @@ def scaled_image_loader(
     ) -> Surface:
         if rect:
             # scale the rect to match the scaled image
-            rect = scale_sequence(rect)
+            rect = scaling.scale_tuple(rect)
             try:
                 tile = image.subsurface(rect)
             except ValueError:

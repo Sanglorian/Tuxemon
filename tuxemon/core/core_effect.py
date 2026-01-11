@@ -27,6 +27,7 @@ class TechEffectResult(EffectResult):
     damage: int = 0
     element_multiplier: float = 0.0
     should_tackle: bool = False
+    hit_count: int = 1
 
 
 @dataclass

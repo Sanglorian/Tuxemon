@@ -655,6 +655,13 @@ class Menu(Generic[T], State):
 
         self.sprites.draw(surface)
 
+    def set_transparent(self, is_transparent: bool) -> None:
+        """Sets the menu's transparency state."""
+        self.transparent = is_transparent
+
+        if not self.transparent:
+            self.load_graphics()
+
     def set_font(
         self,
         size: int = FONT_SIZE,

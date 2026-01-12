@@ -144,7 +144,7 @@ def test_update_moves(handler, monster):
 
 
 @pytest.mark.parametrize(
-    "method", ["recharge_moves", "full_recharge_moves", "set_stats"]
+    "method", ["recharge_moves", "full_recharge_moves", "reset_current_stats"]
 )
 @patch.object(MonsterMovesHandler, "is_eligible", return_value=True)
 def test_recharge_and_stats(_mock, handler, monster, technique, method):

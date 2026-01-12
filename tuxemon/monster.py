@@ -725,7 +725,7 @@ class Monster:
         """
         self.clear_all_temporary_boosts()
         self.types.reset_to_default()
-        self.moves.set_stats()
+        self.moves.reset_current_stats()
         self.out_of_range = False
         self.moves.full_recharge_moves()
 

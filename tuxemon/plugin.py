@@ -17,11 +17,12 @@ from typing import (
     Generic,
     Protocol,
     TypeVar,
-    overload,
     runtime_checkable,
 )
 
-from tuxemon.constants.paths import PLUGIN_INCLUDE_PATTERNS
+from tuxemon.constants.paths import (
+    PLUGIN_INCLUDE_PATTERNS,
+)
 
 logger = logging.getLogger(__name__)
 log_hdlr = logging.StreamHandler(sys.stdout)
@@ -232,12 +233,13 @@ class PluginManager:
         plugin_folders: list[Path],
         root_path: Path,
         exclude: list[str] = ["IPlugin"],
-        include: list[str] = PLUGIN_INCLUDE_PATTERNS,
+        include: list[str] | None = None,
     ) -> PluginManager:
         discovery = FileSystemPluginDiscovery(plugin_folders, root_path)
         loader = PluginLoader(ImportLibPluginLoader())
         filter = PluginFilter(
-            exclude_classes=exclude, include_patterns=include
+            exclude_classes=exclude,
+            include_patterns=include or PLUGIN_INCLUDE_PATTERNS,
         )
 
         manager = cls(discovery, loader, filter)
@@ -347,83 +349,49 @@ class PluginManager:
         self.discovery.set_folders(folders)
         self.reload()
 
+    def get_class_map(
+        self,
+        interface: type[InterfaceValue] | type[PluginObject] = PluginObject,
+    ) -> Mapping[str, type]:
+        """
+        Return a mapping of plugin keys → plugin classes.
+        Includes:
+        - fully qualified plugin name (module.Class)
+        - short plugin name (cls.name), if present
+        """
+        classes: dict[str, type] = {}
 
-# Overloads until https://github.com/python/mypy/issues/3737 is fixed
+        for plugin in self.get_all_plugins(interface=interface):
+            cls = plugin.plugin_object
 
+            fq_key = plugin.name
+            short_key = getattr(cls, "name", None)
 
-@overload
-def load_plugins(
-    paths: list[Path],
-    root_path: Path,
-    category: str = "plugins",
-) -> Mapping[str, type[PluginObject]]:
-    pass
+            if interface is PluginObject and short_key is None:
+                logger.error(
+                    f"Class {cls.__name__} ({fq_key}) does not have a required `name` attribute."
+                )
+                continue
 
-
-@overload
-def load_plugins(
-    paths: list[Path],
-    root_path: Path,
-    category: str = "plugins",
-    *,
-    interface: type[InterfaceValue],
-) -> Mapping[str, type[InterfaceValue]]:
-    pass
-
-
-def load_plugins(
-    paths: list[Path],
-    root_path: Path,
-    category: str = "plugins",
-    *,
-    interface: type[InterfaceValue] | type[PluginObject] = PluginObject,
-) -> Mapping[str, type[InterfaceValue] | type[PluginObject]]:
-    """
-    Load plugins from a directory and return them by both:
-      - their declared short name (cls.name)
-      - their fully qualified plugin name (plugin.name)
-    """
-    classes: dict[str, type[InterfaceValue] | type[PluginObject]] = {}
-
-    manager = PluginManager.from_directory(
-        plugin_folders=paths,
-        root_path=root_path,
-    )
-
-    for plugin in manager.get_all_plugins(interface=interface):
-        cls = plugin.plugin_object
-
-        fq_key = plugin.name
-        short_key = getattr(cls, "name", None)
-
-        if interface is PluginObject and short_key is None:
-            logger.error(
-                f"Class {cls.__name__} ({fq_key}) does not have a required `name` attribute."
-            )
-            continue
-
-        if fq_key not in classes:
-            classes[fq_key] = cls
-        else:
-            logger.warning(
-                f"Duplicate fully qualified plugin key '{fq_key}'. Skipping."
-            )
-
-        if short_key:
-            if short_key not in classes:
-                classes[short_key] = cls
+            # Fully qualified key
+            if fq_key not in classes:
+                classes[fq_key] = cls
             else:
-                existing_cls = classes[short_key]
-                if existing_cls is not cls:
-                    logger.warning(
-                        f"Duplicate short plugin key '{short_key}'. "
-                        f"Existing: {existing_cls.__module__}.{existing_cls.__name__}, "
-                        f"New: {cls.__module__}.{cls.__name__}. Keeping existing."
-                    )
+                logger.warning(
+                    f"Duplicate fully qualified plugin key '{fq_key}'. Skipping."
+                )
 
-        logger.debug(
-            f"Loaded {category}: {short_key or cls.__name__} "
-            f"(Keys: {fq_key}{', ' + short_key if short_key else ''})"
-        )
+            # Short key
+            if short_key:
+                if short_key not in classes:
+                    classes[short_key] = cls
+                else:
+                    existing_cls = classes[short_key]
+                    if existing_cls is not cls:
+                        logger.warning(
+                            f"Duplicate short plugin key '{short_key}'. "
+                            f"Existing: {existing_cls.__module__}.{existing_cls.__name__}, "
+                            f"New: {cls.__module__}.{cls.__name__}. Keeping existing."
+                        )
 
-    return classes
+        return classes

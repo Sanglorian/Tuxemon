@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from functools import partial
@@ -29,10 +28,12 @@ from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.graphics import ColorLike, load_and_scale, load_image
 from tuxemon.menu.controller import MenuController
 from tuxemon.menu.cursor import MenuCursor, MenuCursorController
-from tuxemon.menu.events import playerinput_to_event
+from tuxemon.menu.input_handler import (
+    MenuInputHandler,
+    PygameMenuInputHandler,
+)
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.theme import get_sound_engine, get_theme
-from tuxemon.platform.const import buttons, intentions
 from tuxemon.platform.const.graphics import (
     BACKGROUND_COLOR,
     FONT_COLOR,
@@ -46,7 +47,6 @@ from tuxemon.platform.const.graphics import (
     UNAVAILABLE_COLOR,
     UNAVAILABLE_COLOR_SHOP,
 )
-from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_RECT
 from tuxemon.sprite import (
     RelativeGroup,
@@ -101,6 +101,7 @@ class PygameMenuState(State):
         theme = theme or get_theme()
         self._initialize_attributes()
         self._create_menu(width, height, theme, sound_engine, **kwargs)
+        self._input_handler = PygameMenuInputHandler(self)
 
     def _initialize_attributes(self) -> None:
         """
@@ -207,26 +208,7 @@ class PygameMenuState(State):
         Returns:
             Optional[PlayerInput]: The processed event or None if it's not handled.
         """
-        if (
-            not self.state_controller.is_interactive()
-            or not self.menu.is_enabled()
-        ):
-            return event
-
-        if (
-            event.button in {buttons.B, buttons.BACK, intentions.MENU_CANCEL}
-            and not self.escape_key_exits
-        ):
-            return None
-
-        try:
-            pygame_event = playerinput_to_event(event)
-            if self.open and event.pressed and pygame_event is not None:
-                self.menu.update([pygame_event])
-                self.selected_widget = self.menu.get_selected_widget()
-        except Exception as e:
-            logger.error(f"Unexpected error in menu event processing: {e}")
-        return event if pygame_event is None else None
+        return self._input_handler.handle_event(event)
 
     def draw(self, surface: Surface) -> None:
         """
@@ -400,7 +382,7 @@ class Menu(Generic[T], State):
         self.font = self.set_font()  # load default font
         self.load_graphics()  # load default graphics
         self.reload_sounds()  # load default sounds
-        self._input_handler: InputHandler = MenuInputHandler(self)
+        self._input_handler = MenuInputHandler(self)
         self._text_renderer = TextRenderer(
             font=self.font,
             font_filename=self.font_filename,
@@ -420,13 +402,6 @@ class Menu(Generic[T], State):
     @property
     def dialog(self) -> AlertManager:
         return self.client.alert_manager
-
-    def set_input_handler(self, handler: InputHandler) -> None:
-        """
-        Sets a new input handler for the menu, enabling dynamic replacement
-        of input processing logic.
-        """
-        self._input_handler = handler
 
     def create_new_menu_items_group(self) -> None:
         """
@@ -984,165 +959,3 @@ class PopUpMenu(Menu[T]):
             ScheduleType.ON_UPDATE,
         )
         return ani
-
-
-class InputHandler(ABC):
-    @abstractmethod
-    def handle_event(self, event: PlayerInput) -> Optional[PlayerInput]:
-        pass
-
-
-class MenuInputHandler(InputHandler):
-    """
-    Handles input events for a Menu instance.
-    """
-
-    def __init__(self, menu: Menu[T]) -> None:
-        self._menu = menu
-
-    def handle_event(self, event: PlayerInput) -> Optional[PlayerInput]:
-        """
-        Processes a single player input event.
-
-        This function is only called when the player provides input such
-        as pressing a key or clicking the mouse.
-
-        Since this is part of a chain of event handlers, the return value
-        from this method becomes input for the next one. Returning None
-        signifies that this method has dealt with an event and wants it
-        exclusively. Return the event and others can use it as well.
-
-        You should return None if you have handled input here.
-
-        Returns:
-            Passed input if not handled here. ``None`` otherwise.
-        """
-        if self._handle_escape_key(event):
-            return None
-        if self._handle_selection_confirm(event):
-            return None
-        if self._handle_cursor_movement(event):
-            return None
-        if self._handle_mouse_selection(event):
-            return None
-        return event
-
-    def _handle_escape_key(self, event: PlayerInput) -> bool:
-        """Handles events related to closing the menu."""
-        if event.button in (buttons.B, buttons.BACK, intentions.MENU_CANCEL):
-            if event.pressed and self._menu.escape_key_exits:
-                self._menu.close()
-            return True
-        return False
-
-    def _get_valid_change_condition(self, event: PlayerInput) -> bool:
-        """Determines if a menu change is currently valid."""
-        menu_items = self._menu.menu_items
-        disabled = all(not i.enabled for i in menu_items)
-        return (
-            event.pressed
-            and self._menu.state_controller.is_enabled()
-            and not disabled
-            and len(menu_items) > 0
-        )
-
-    def _handle_selection_confirm(self, event: PlayerInput) -> bool:
-        """Handles events related to confirming a menu selection."""
-        if event.button in (buttons.A, intentions.SELECT):
-            if self._get_valid_change_condition(event):
-                self._menu.menu_select_sound.play()
-                selected = self._menu.get_selected_item()
-                if selected:
-                    self._menu.on_menu_selection(selected)
-            return True
-        return False
-
-    def _handle_cursor_movement(self, event: PlayerInput) -> bool:
-        """Handles events related to moving the menu cursor."""
-        if event.button in (
-            buttons.UP,
-            buttons.DOWN,
-            buttons.LEFT,
-            buttons.RIGHT,
-        ):
-            if self._get_valid_change_condition(event):
-                index = self._menu.menu_items.determine_cursor_movement(
-                    self._menu.selected_index,
-                    event,
-                )
-                if self._menu.selected_index != index:
-                    self._menu.change_selection(index)
-            return True
-        return False
-
-    def _handle_mouse_selection(self, event: PlayerInput) -> bool:
-        """
-        Handles events related to mouse/touch selection of menu items.
-
-        TODOs:
-        - Handle click/drag interactions
-        - Add support for screen scaling
-        - Consider generalizing into a widget system
-
-        Parameters:
-            event: A PlayerInput event corresponding to MOUSELEFT.
-
-        Returns:
-            True if the event was handled, False otherwise.
-        """
-        if event.button == buttons.MOUSELEFT:
-            if self._menu.touch_aware and self._get_valid_change_condition(
-                event
-            ):
-                mouse_pos = event.value
-                if (
-                    not isinstance(mouse_pos, (list, tuple))
-                    or len(mouse_pos) != 2
-                ):
-                    raise ValueError(
-                        f"Invalid mouse_pos received: {mouse_pos}"
-                    )
-                if mouse_pos is None:
-                    logger.warning(
-                        f"Received unexpected mouse_pos value: {mouse_pos}"
-                    )
-                    return True  # Still consume the event, but log a warning
-
-                if hasattr(self._menu.menu_items, "update_rect_from_parent"):
-                    self._menu.menu_items.update_rect_from_parent()
-                else:
-                    logger.debug(
-                        "menu_items does not implement update_rect_from_parent"
-                    )
-                    return True  # Gracefully skip processing, but log a debug message
-
-                # Adjust mouse position relative to menu_items group
-                mouse_pos = [
-                    a - b
-                    for a, b in zip(
-                        mouse_pos,
-                        self._menu.menu_items.rect.topleft,
-                    )
-                ]
-
-                if not self._menu.menu_items.rect.collidepoint(mouse_pos):
-                    logger.debug(
-                        "Mouse click was outside the bounds of menu items."
-                    )
-                    return True
-
-                for index, item in enumerate(
-                    [i for i in self._menu.menu_items if i.enabled]
-                ):
-                    if item.rect.collidepoint(mouse_pos):
-                        self._menu.change_selection(index)
-                        selected = self._menu.get_selected_item()
-                        if selected:
-                            self._menu.on_menu_selection(selected)
-                        else:
-                            raise RuntimeError(
-                                "Menu selection was None despite enabled item being clicked"
-                            )
-                        return True
-            return True  # Mouse click occurred but not processed
-        return False

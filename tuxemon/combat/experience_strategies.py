@@ -5,8 +5,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from tuxemon.database.rules import config_monster
 from tuxemon.db import EvolutionStage, ExperienceMethod
-from tuxemon.formula import config_monster
 
 if TYPE_CHECKING:
     from tuxemon.combat.damage_tracker import DamageTracker

@@ -6,14 +6,12 @@ import logging
 import random
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
-from typing import TYPE_CHECKING, Any
-
-import yaml
+from typing import TYPE_CHECKING
 
 from tuxemon.constants import paths
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
 from tuxemon.database.runtime import db
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.db import MonsterModel
 
 if TYPE_CHECKING:
@@ -71,18 +69,6 @@ def _lookup_monsters() -> None:
         for mon_name in db.database["monster"]
         if (result := MonsterModel.lookup(mon_name, db)).txmn_id > 0
     }
-
-
-def load_yaml(filepath: Path) -> Any:
-    try:
-        with filepath.open() as file:
-            return yaml.safe_load(file)
-    except FileNotFoundError:
-        logger.error(f"Config file not found: {filepath}")
-        raise
-    except yaml.YAMLError as exc:
-        logger.error(f"Error parsing YAML file: {exc}")
-        raise exc
 
 
 class Loader:

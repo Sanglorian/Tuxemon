@@ -13,9 +13,11 @@ DO NOT RUN FROM A VENV.  YOU WILL BE MET WITH INSURMOUNTABLE SORROW.
 import logging
 import os
 import sys
+from pathlib import Path
 
-import yaml
 from cx_Freeze import Executable, setup
+
+from tuxemon.database.yaml_utils import load_yaml
 
 # required so that the tuxemon folder can be found
 # when run from the buildconfig folder
@@ -27,17 +29,17 @@ logger = logging.getLogger(__name__)
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 os.environ["SDL_AUDIODRIVER"] = "disk"
 
-def load_config(config_file="build_config.yaml"):
+
+def load_config(config_file: str = "build_config.yaml"):
     try:
-        with open(config_file) as f:
-            config = yaml.safe_load(f)
-        return config
+        return load_yaml(Path(config_file))
     except FileNotFoundError:
         logger.error(f"Configuration file not found: {config_file}")
         sys.exit(1)
-    except yaml.YAMLError as e:
-        logger.error(f"Error parsing YAML file: {e}")
+    except Exception as e:
+        logger.error(f"Error loading configuration: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     config = load_config()

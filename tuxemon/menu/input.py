@@ -8,10 +8,10 @@ from collections.abc import Callable, Generator
 from functools import partial
 from typing import Any, ClassVar, Optional
 
-import yaml
 from pygame.rect import Rect
 
 from tuxemon.constants import paths
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu
@@ -50,8 +50,7 @@ class NameDataLoader:
     def _load_names(self, file_path: str) -> Any:
         """Loads name data from a YAML file."""
         yaml_path = paths.mods_folder / file_path
-        with yaml_path.open() as file:
-            return yaml.safe_load(file)
+        return load_yaml(yaml_path)
 
     def get_random_name(
         self, gender: str, language: str, fallback_language: str

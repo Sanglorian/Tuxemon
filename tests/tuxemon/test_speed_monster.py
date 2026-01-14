@@ -5,7 +5,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tuxemon.formula import config_combat, speed_monster
+from tuxemon.database.rules import config_combat
+from tuxemon.formula import speed_monster
 from tuxemon.monster import Monster
 from tuxemon.technique.technique import Technique
 

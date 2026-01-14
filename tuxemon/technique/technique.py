@@ -9,7 +9,11 @@ from uuid import UUID, uuid4
 
 from tuxemon.core.asset import get_assets
 from tuxemon.core.core_effect import TechEffectResult
-from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
+from tuxemon.core.core_processor import (
+    ConditionProcessor,
+    ConditionValidationResult,
+    EffectProcessor,
+)
 from tuxemon.database.runtime import db
 from tuxemon.db import (
     MenuAction,
@@ -173,7 +177,17 @@ class Technique:
         """
         Check if the target meets all conditions that the technique has on its use.
         """
-        return self.condition_handler.validate(session=session, target=target)
+        return self.condition_handler.validate_monster(
+            session=session, target=target
+        ).passed
+
+    def debug_validate_monster(
+        self, session: Session, target: Monster
+    ) -> ConditionValidationResult:
+        """Developer API: returns full structured validation result."""
+        return self.condition_handler.validate_monster(
+            session=session, target=target
+        )
 
     def recharge(self, amount: int = 1) -> None:
         self.cooldown.tick(amount)

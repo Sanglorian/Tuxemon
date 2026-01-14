@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional, Union
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Optional
 
 from tuxemon.core.core_condition import CoreCondition
 from tuxemon.core.core_effect import (
@@ -17,6 +18,7 @@ from tuxemon.core.core_effect import (
 from tuxemon.plugin import PluginObject
 
 if TYPE_CHECKING:
+    from tuxemon.db import SpatialCondition
     from tuxemon.item.item import Item
     from tuxemon.monster import Monster
     from tuxemon.session import Session
@@ -24,6 +26,13 @@ if TYPE_CHECKING:
     from tuxemon.technique.technique import Technique
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class ConditionValidationResult:
+    passed: bool
+    missing_methods: list[str]
+    errors: list[str]
 
 
 class EffectProcessor:
@@ -166,41 +175,74 @@ class ConditionProcessor:
     def __init__(self, conditions: Sequence[PluginObject]) -> None:
         self.conditions = conditions
 
-    def _validate_condition(
+    def _call(
         self,
         session: Session,
-        condition: PluginObject,
-        target: Union[Monster, Item, Status, Technique],
+        condition: CoreCondition,
+        method_name: str,
+        target: object,
     ) -> bool:
-        """
-        Validate conditions dynamically based on the target's attributes.
-        """
-        if not isinstance(condition, CoreCondition):
-            return False
-
-        target_type = target.__class__.__name__.lower()
-        test_method_name = f"test_with_{target_type}"
-
-        try:
-            test_method = getattr(condition, test_method_name)
-            return condition.is_expected == bool(test_method(session, target))
-        except AttributeError:
+        method = getattr(condition, method_name, None)
+        if method is None:
             logger.error(
-                f"Missing required method: {test_method_name} for {target_type}"
+                f"Missing required method: {method_name} in {condition}"
             )
             return False
+        return condition.is_expected == bool(method(session, target))
 
-    def validate(
+    def _validate(
         self,
         session: Session,
-        target: Optional[Union[Monster, Item, Status, Technique]],
-    ) -> bool:
-        if not self.conditions:
-            return True
-        if target is None:
-            return False
+        target: object,
+        method_name: str,
+    ) -> ConditionValidationResult:
+        result = ConditionValidationResult(True, [], [])
 
-        return all(
-            self._validate_condition(session, condition, target)
-            for condition in self.conditions
-        )
+        for cond in self.conditions:
+            if not isinstance(cond, CoreCondition):
+                result.passed = False
+                result.errors.append("Condition is not a CoreCondition")
+                continue
+
+            method = getattr(cond, method_name, None)
+            if method is None:
+                result.passed = False
+                result.missing_methods.append(method_name)
+                continue
+
+            try:
+                ok = bool(method(session, target))
+            except Exception as e:
+                result.passed = False
+                result.errors.append(str(e))
+                continue
+
+            if cond.is_expected != ok:
+                result.passed = False
+
+        return result
+
+    def validate(
+        self, session: Session, target: SpatialCondition | None
+    ) -> ConditionValidationResult:
+        return self._validate(session, target, "test")
+
+    def validate_monster(
+        self, session: Session, target: Monster | None
+    ) -> ConditionValidationResult:
+        return self._validate(session, target, "test_with_monster")
+
+    def validate_item(
+        self, session: Session, target: Item | None
+    ) -> ConditionValidationResult:
+        return self._validate(session, target, "test_with_item")
+
+    def validate_tech(
+        self, session: Session, target: Technique | None
+    ) -> ConditionValidationResult:
+        return self._validate(session, target, "test_with_tech")
+
+    def validate_status(
+        self, session: Session, target: Status | None
+    ) -> ConditionValidationResult:
+        return self._validate(session, target, "test_with_status")

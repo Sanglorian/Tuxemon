@@ -7,11 +7,11 @@ from unittest.mock import MagicMock
 from tuxemon.constants import paths
 from tuxemon.database.runtime import db
 from tuxemon.event.eventaction import ActionManager
-from tuxemon.event.running import ConditionEvaluator
 from tuxemon.event.eventengine import EventEngine
+from tuxemon.event.running import ConditionEvaluator
 from tuxemon.map.map_loader import TMXMapLoader
-from tuxemon.user_config import CONFIG
 from tuxemon.session import Session
+from tuxemon.user_config import CONFIG
 
 db.load("monster")
 action = ActionManager()

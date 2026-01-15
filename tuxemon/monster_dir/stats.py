@@ -8,7 +8,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, fields
 from typing import Any
 
-from tuxemon.formula import config_monster
+from tuxemon.database.rules import config_monster
 from tuxemon.shape import ShapeHandler
 from tuxemon.taste import Taste
 

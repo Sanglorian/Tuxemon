@@ -14,11 +14,11 @@ from operator import itemgetter
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, TypeVar
 
-import yaml
 from pygame.image import tobytes
 from pygame.surface import Surface
 
 from tuxemon.constants import paths
+from tuxemon.database.yaml_utils import dump_yaml_io, load_yaml
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.save_state import TIME_FORMAT, SaveData
 from tuxemon.save_upgrader import SAVE_VERSION, upgrade_save
@@ -145,17 +145,21 @@ def dump_data(
         serializer_kwargs: Mapping[str, Any],
     ) -> None:
         serializable_obj = obj.model_dump()
+
         if save_method == SaveMethod.JSON:
             json.dump(serializable_obj, file, **serializer_kwargs)
+
         elif save_method == SaveMethod.CBOR:
             cbor.dump(serializable_obj, file, **serializer_kwargs)
+
         elif save_method == SaveMethod.YAML:
-            yaml.dump(
-                serializable_obj,
+            dump_yaml_io(
                 file,
+                serializable_obj,
                 default_flow_style=False,
                 **serializer_kwargs,
             )
+
         else:
             raise ValueError(f"Unsupported save method: {save_method}")
 
@@ -207,7 +211,7 @@ def load_data(
         elif save_method == SaveMethod.CBOR:
             return cbor.load(file, **serializer_kwargs)
         elif save_method == SaveMethod.YAML:
-            return yaml.safe_load(file)
+            return load_yaml(path)
         else:
             raise ValueError(f"Unsupported save method: {save_method}")
 

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from tuxemon.formula import config_combat, speed_monster
+from tuxemon.database.rules import config_combat
+from tuxemon.formula import speed_monster
 from tuxemon.monster import Monster
 from tuxemon.npc import NPC
 from tuxemon.technique.technique import Technique

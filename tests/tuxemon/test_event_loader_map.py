@@ -4,7 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from tuxemon.map.map_loader import YAMLEventLoader, parse_yaml
+from tuxemon.database.yaml_utils import load_yaml
+from tuxemon.map.map_loader import YAMLEventLoader
 
 
 @pytest.fixture
@@ -18,7 +19,7 @@ def loader():
 
 
 def test_parse_yaml_success(yaml_path):
-    result = parse_yaml(yaml_path)
+    result = load_yaml(yaml_path)
     assert isinstance(result, dict)
     assert "events" in result
     assert isinstance(result["events"], dict)

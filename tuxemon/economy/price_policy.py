@@ -6,10 +6,10 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, Union
 
-import yaml
 from pydantic import BaseModel, Field
 
 from tuxemon.constants import paths
+from tuxemon.database.yaml_utils import load_yaml
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +37,7 @@ def load_policy(
     slug: str, filename: str = "price_policies.yaml"
 ) -> Optional[PricePolicyData]:
     yaml_path = paths.mods_folder / filename
-    with yaml_path.open("r") as f:
-        raw_yaml = yaml.safe_load(f)
+    raw_yaml = load_yaml(yaml_path)
 
     raw_data = raw_yaml.get(slug)
     if not raw_data:

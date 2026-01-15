@@ -34,7 +34,7 @@ import logging
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-import yaml
+from tuxemon.database.yaml_utils import dump_yaml_io
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__file__)
@@ -62,7 +62,7 @@ def process_collisions(tmx_filename: Path):
     for object_group in root.findall(".//objectgroup[@name='Collisions']"):
         for obj in object_group.findall("object"):
             collision_data = {
-                "x": int(float(obj.get("x", 0))) // 16,  # Dividing by tile size
+                "x": int(float(obj.get("x", 0))) // 16,
                 "y": int(float(obj.get("y", 0))) // 16,
                 "width": int(float(obj.get("width", 0))) // 16,
                 "height": int(float(obj.get("height", 0))) // 16,
@@ -70,11 +70,10 @@ def process_collisions(tmx_filename: Path):
             }
             yaml_doc["collisions"].append(collision_data)
 
-    with yaml_filename.open("w") as yaml_file:
-        yaml.dump(
-            yaml_doc,
+    with yaml_filename.open("w", encoding="utf-8") as yaml_file:
+        dump_yaml_io(
             yaml_file,
-            Dumper=yaml.SafeDumper,
+            yaml_doc,
             default_flow_style=False,
             sort_keys=False,
         )

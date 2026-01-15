@@ -5,9 +5,9 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
+from tuxemon.database.rules import config_monster
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
-from tuxemon.formula import config_monster
 from tuxemon.monster import Monster
 from tuxemon.session import Session
 

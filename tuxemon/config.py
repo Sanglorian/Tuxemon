@@ -7,10 +7,10 @@ from pathlib import Path
 from typing import Any, Literal, Optional
 
 import pygame
-import yaml
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from tuxemon.animation import Animation
+from tuxemon.database.yaml_utils import dump_yaml_io, load_yaml
 from tuxemon.platform.const import buttons, events
 
 Animation.default_transition = "out_quint"
@@ -139,8 +139,7 @@ class TuxemonConfig:
         config_data: dict[str, Any] = TuxemonFullConfig().model_dump()
 
         if config_path and config_path.exists():
-            with config_path.open() as yaml_file:
-                loaded_config = yaml.safe_load(yaml_file) or {}
+            loaded_config = load_yaml(config_path) or {}
 
             for category, defaults in config_data.items():
                 if category in loaded_config and isinstance(defaults, dict):
@@ -148,22 +147,22 @@ class TuxemonConfig:
                 elif category in loaded_config:
                     config_data[category] = loaded_config[category]
 
+        # Validate merged config
         try:
             self.config_model = TuxemonFullConfig.model_validate(config_data)
         except ValidationError as e:
             print(
                 f"Configuration validation failed. Falling back to defaults: {e}"
             )
-            self.config_model = (
-                TuxemonFullConfig()
-            )  # Fallback to clean defaults
+            self.config_model = TuxemonFullConfig()
 
+        # Load attributes
         self.load_config_attributes()
 
-        self.input: InputConfig = InputConfig(self.config_model)
-        self.logging: LoggingConfig = LoggingConfig(self.config_model)
-        self.locale: LocaleConfig = LocaleConfig(self.config_model)
-        self.controller: ControllerConfig = ControllerConfig(self.config_model)
+        self.input = InputConfig(self.config_model)
+        self.logging = LoggingConfig(self.config_model)
+        self.locale = LocaleConfig(self.config_model)
+        self.controller = ControllerConfig(self.config_model)
         self.mods = ["tuxemon"]
 
     def save_config(self) -> None:
@@ -173,9 +172,12 @@ class TuxemonConfig:
 
         config_dict = self.config_model.model_dump()
 
-        with self.config_path.open("w") as yaml_file:
-            yaml.dump(
-                config_dict, yaml_file, default_flow_style=False, indent=4
+        with self.config_path.open("w", encoding="utf-8") as yaml_file:
+            dump_yaml_io(
+                yaml_file,
+                config_dict,
+                default_flow_style=False,
+                indent=4,
             )
 
     def load_config_attributes(self) -> None:
@@ -241,10 +243,10 @@ class TuxemonConfig:
                 "No path specified for reloading configuration."
             )
 
-        with self.config_path.open() as yaml_file:
-            loaded_config = yaml.safe_load(yaml_file) or {}
+        loaded_config = load_yaml(self.config_path) or {}
 
         current_config = self.config_model.model_dump()
+
         for category, defaults in current_config.items():
             if category in loaded_config and isinstance(defaults, dict):
                 defaults.update(loaded_config[category])

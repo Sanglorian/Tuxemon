@@ -6,7 +6,7 @@ import logging
 from collections.abc import Mapping
 from typing import Any
 
-from tuxemon.formula import config_monster
+from tuxemon.database.rules import config_monster
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tuxemon.formula import config_monster
+from tuxemon.database.rules import config_monster
 from tuxemon.monster_dir.stats import (
     BasicStats,
     CustomStatBoosts,

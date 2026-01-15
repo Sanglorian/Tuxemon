@@ -14,8 +14,8 @@ from tuxemon.combat.reward_system import (
     calculate_money,
     calculate_tps,
 )
+from tuxemon.database.rules import config_monster
 from tuxemon.db import Acquisition, ExperienceMethod
-from tuxemon.formula import config_monster
 from tuxemon.monster import Monster
 from tuxemon.monster_dir.stats import BasicStats
 from tuxemon.monster_dir.status import MonsterStatusHandler

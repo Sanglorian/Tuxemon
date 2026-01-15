@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 
 from pygame.rect import Rect
 
-from tuxemon.constants.paths import mods_folder
 from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.scaling import DefaultScaling, ScalingStrategy
 

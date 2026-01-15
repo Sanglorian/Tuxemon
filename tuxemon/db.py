@@ -31,7 +31,7 @@ from pydantic import (
 from tuxemon.database.config import EntryNotFoundError
 from tuxemon.database.data import ModData
 from tuxemon.database.registry import validator as has
-from tuxemon.formula import config_monster
+from tuxemon.database.rules import config_monster
 from tuxemon.platform.const import sizes
 from tuxemon.surfanim import FlipAxes
 

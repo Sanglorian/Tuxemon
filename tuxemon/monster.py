@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 from tuxemon import formula
+from tuxemon.database.rules import config_monster
 from tuxemon.database.runtime import db
 from tuxemon.db import (
     Acquisition,
@@ -24,7 +25,6 @@ from tuxemon.db import (
     StatType,
 )
 from tuxemon.element import ElementTypesHandler
-from tuxemon.formula import config_monster
 from tuxemon.fusion import Body
 from tuxemon.locale import T
 from tuxemon.monster_dir.bond import BondHandler

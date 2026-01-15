@@ -21,9 +21,11 @@ Get help/usage information:
 """
 
 import json
-import yaml
 from argparse import ArgumentParser
 from pathlib import Path
+
+from tuxemon.database.yaml_utils import dump_yaml_io
+
 
 def convert_json_to_yaml(json_filepath: Path, force: bool = False) -> None:
     """
@@ -56,19 +58,28 @@ def convert_json_to_yaml(json_filepath: Path, force: bool = False) -> None:
 
     try:
         with yaml_filepath.open("w", encoding="utf-8") as f:
-            yaml.dump(data, f, Dumper=yaml.SafeDumper, sort_keys=False)
+            dump_yaml_io(
+                f,
+                data,
+                sort_keys=False,
+                default_flow_style=False,
+            )
         print(f"Successfully converted '{json_filepath}' → '{yaml_filepath}'.")
     except Exception as e:
         print(f"Error writing YAML to '{yaml_filepath}': {e}")
 
 
-def convert_json_in_directory(directory_path: Path, recursive: bool, force: bool) -> None:
+def convert_json_in_directory(
+    directory_path: Path, recursive: bool, force: bool
+) -> None:
     """
     Walks through a directory and converts all .json files to YAML.
     """
     print(f"Searching for JSON files in '{directory_path}'...")
     found_files = False
-    iterator = directory_path.rglob("*.json") if recursive else directory_path.glob("*.json")
+    iterator = (
+        directory_path.rglob("*.json") if recursive else directory_path.glob("*.json")
+    )
 
     for file_path in iterator:
         found_files = True

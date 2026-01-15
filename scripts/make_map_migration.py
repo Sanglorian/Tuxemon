@@ -1,26 +1,28 @@
 """
-
-Create mapping between tilesets for migrations
-
-duct tape.
+Create mapping between tilesets for migrations.
 
 * Run with a source tileset, destination, and the output filename.
-* The current tile to map *from* is a highlighted with a red box
-* Click the matching time on the destination side, the cursor will advance
-* Use the arrow arrows to move the cursor
-* File is saved after each click
-* The mapping can be verified visually
+* The current tile to map *from* is highlighted with a red box.
+* Click the matching tile on the destination side; the cursor will advance.
+* Use the arrow keys to move the cursor.
+* File is saved after each click.
+* The mapping can be verified visually.
 
 Example:
 
-python scripts/make_map_migration.py mods/tuxemon/gfx/tilesets/My_tuxemon_sheet.png mods/tuxemon/gfx/tilesets/core_outdoor.png txmn-core.yaml
-
+python scripts/make_map_migration.py \
+    mods/tuxemon/gfx/tilesets/My_tuxemon_sheet.png \
+    mods/tuxemon/gfx/tilesets/core_outdoor.png \
+    txmn-core.yaml
 """
 
-import click
+import argparse
+from pathlib import Path
+
 import pygame
 import pygame.gfxdraw
-import yaml
+
+from tuxemon.database.yaml_utils import dump_yaml_path, load_yaml
 
 tilewidth = 16
 tileheight = 16
@@ -49,28 +51,37 @@ def get_tile_by_index(rect, index):
 
 
 def main(src_filepath, dst_filepath, output_filepath):
+    src_filepath = Path(src_filepath)
+    dst_filepath = Path(dst_filepath)
+    output_filepath = Path(output_filepath)
+
     src = pygame.image.load(src_filepath)
     dst = pygame.image.load(dst_filepath)
+
     dst_rect = dst.get_rect()
     dst_rect.right = screen_width
+
     src_rect = src.get_rect()
     src_rect.left = screen_width // 2
+
     tiles_per_row = src_rect.width // tilewidth
     total_tiles = (tiles_per_row * (src_rect.height // tileheight)) - 1
+
     preview_tile_size = (
         tilewidth * preview_scale_factor,
         tileheight * preview_scale_factor,
     )
+
     screen = pygame.display.set_mode((screen_width, screen_height))
     hover = None
     running = True
     src_index = 0
 
+    # Load mapping using your YAML utility
     try:
-        with open(output_filepath, "r") as fp:
-            mapping = yaml.load(fp, yaml.SafeLoader)
+        mapping = load_yaml(output_filepath) or {}
     except FileNotFoundError:
-        mapping = dict()
+        mapping = {}
 
     while running:
         for e in pygame.event.get():
@@ -92,9 +103,17 @@ def main(src_filepath, dst_filepath, output_filepath):
                     source, screen_rect, surf_rect = hover
                     y = (surf_rect[1] // tileheight) * (dst_rect.width // tilewidth)
                     dst_index = (surf_rect[0] // tilewidth) + y
-                    with open(output_filepath, "w") as fp:
-                        yaml.dump(mapping, fp, yaml.SafeDumper)
+
                     mapping[src_index] = dst_index
+
+                    # Save using your YAML utility
+                    dump_yaml_path(
+                        output_filepath,
+                        mapping,
+                        sort_keys=False,
+                        default_flow_style=False,
+                    )
+
                     src_index = min(total_tiles, src_index + 1)
 
             if e.type == pygame.KEYDOWN:
@@ -106,6 +125,7 @@ def main(src_filepath, dst_filepath, output_filepath):
                     src_index = max(0, src_index - tiles_per_row)
                 elif e.key == pygame.K_DOWN:
                     src_index = min(total_tiles, src_index + tiles_per_row)
+
                 dst_index = mapping.get(src_index)
                 if dst_index is None:
                     hover = None
@@ -142,13 +162,14 @@ def main(src_filepath, dst_filepath, output_filepath):
         pygame.display.flip()
 
 
-@click.command()
-@click.argument("source")
-@click.argument("destination")
-@click.argument("output")
-def click_shim(source, destination, output):
-    main(source, destination, output)
+def parse_args():
+    parser = argparse.ArgumentParser(description="Create tileset migration mapping.")
+    parser.add_argument("source", help="Source tileset image")
+    parser.add_argument("destination", help="Destination tileset image")
+    parser.add_argument("output", help="Output YAML mapping file")
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
-    click_shim()
+    args = parse_args()
+    main(args.source, args.destination, args.output)

@@ -1,6 +1,6 @@
 import unittest
 
-from tuxemon.formula import config_monster
+from tuxemon.database.rules import config_monster
 from tuxemon.monster_dir.experience import MonsterExperience
 
 

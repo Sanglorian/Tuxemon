@@ -5,11 +5,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from tuxemon.database.rules import config_combat, config_monster
 from tuxemon.element import Element, ElementTypesHandler
 from tuxemon.formula import (
     calculate_time_based_multiplier,
-    config_combat,
-    config_monster,
     modify_monster_custom_stat,
     modify_technique_custom_stat,
     set_health,

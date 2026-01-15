@@ -8,10 +8,10 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import yaml
 from pydantic import ValidationError
 
 from tuxemon.database.config import DatabaseConfig
+from tuxemon.database.yaml_utils import load_yaml
 
 if TYPE_CHECKING:
     from tuxemon.db import DataModel
@@ -67,14 +67,13 @@ def load_files(
         return preloaded_data
 
     for entry in directory_path.iterdir():
-        if entry.is_file() and any(entry.suffix == ext for ext in extensions):
+        if entry.is_file() and entry.suffix in extensions:
             try:
-                with entry.open() as fp:
-                    item = (
-                        json.load(fp)
-                        if entry.suffix == ".json"
-                        else yaml.safe_load(fp)
-                    )
+                if entry.suffix == ".json":
+                    with entry.open(encoding="utf-8") as fp:
+                        item = json.load(fp)
+                else:
+                    item = load_yaml(entry)
 
                 if isinstance(item, list):
                     for sub_item in item:
@@ -88,7 +87,6 @@ def load_files(
 
             except (
                 json.JSONDecodeError,
-                yaml.YAMLError,
                 FileNotFoundError,
             ) as e:
                 logger.error(f"Error loading file '{entry}': {e}")

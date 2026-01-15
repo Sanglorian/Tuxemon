@@ -1,8 +1,9 @@
-from pathlib import Path
 import json
 from collections import defaultdict
+from pathlib import Path
 
 MONSTER_FOLDER = Path.home() / "Tuxemon/mods/tuxemon/db/monster"
+
 
 def load_monsters(folder: Path):
     monsters = {}
@@ -11,6 +12,7 @@ def load_monsters(folder: Path):
             data = json.load(f)
             monsters[data["slug"]] = data
     return monsters
+
 
 def validate_monsters(monsters):
     errors = []
@@ -32,23 +34,32 @@ def validate_monsters(monsters):
 
             for ref in entry.get("evolves_from", []):
                 if ref not in all_slugs:
-                    errors.append(f"{slug}: evolves_from references unknown monster '{ref}'")
+                    errors.append(
+                        f"{slug}: evolves_from references unknown monster '{ref}'"
+                    )
 
             for ref in entry.get("evolves_into", []):
                 if ref not in all_slugs:
-                    errors.append(f"{slug}: evolves_into references unknown monster '{ref}'")
+                    errors.append(
+                        f"{slug}: evolves_into references unknown monster '{ref}'"
+                    )
 
         # Validate stage progression
         for evo in data.get("evolutions", []):
             target_slug = evo["monster_slug"]
             if target_slug in monsters:
                 from_stage = stage_order.get(data.get("stage", "basic"), -1)
-                to_stage = stage_order.get(monsters[target_slug].get("stage", "basic"), -1)
+                to_stage = stage_order.get(
+                    monsters[target_slug].get("stage", "basic"), -1
+                )
                 if to_stage <= from_stage:
-                    errors.append(f"{slug}: evolves into '{target_slug}' with equal or lower stage ({data.get('stage')} → {monsters[target_slug].get('stage')})")
+                    errors.append(
+                        f"{slug}: evolves into '{target_slug}' with equal or lower stage ({data.get('stage')} → {monsters[target_slug].get('stage')})"
+                    )
 
         # Detect circular evolution
         visited = set()
+
         def dfs(current, path):
             if current in path:
                 cycle = " → ".join(path + [current])
@@ -65,6 +76,7 @@ def validate_monsters(monsters):
 
     return errors
 
+
 def main():
     monsters = load_monsters(MONSTER_FOLDER)
     issues = validate_monsters(monsters)
@@ -75,6 +87,7 @@ def main():
             print(" -", issue)
     else:
         print("\n All monster files passed validation!")
+
 
 if __name__ == "__main__":
     main()

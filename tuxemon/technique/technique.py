@@ -64,7 +64,7 @@ class Technique:
         # Custom: Persistent boosts from save file (additive layer)
         self.custom_boosts: TechniqueCustomBoosts = TechniqueCustomBoosts()
         # Current: Dynamic stats used in battle (mutable)
-        self.stats: TechniqueCurrentStats = TechniqueCurrentStats()
+        self.stats = self.compute_stats()
 
         self.cooldown = Cooldown()
         self.visuals = VisualProperties(
@@ -159,15 +159,7 @@ class Technique:
         Returns the baseline stats (base + custom boosts),
         without any temporary battle modifiers.
         """
-        return TechniqueCurrentStats(
-            power=self.base_stats.power + self.custom_boosts.power,
-            potency=self.base_stats.potency + self.custom_boosts.potency,
-            accuracy=self.base_stats.accuracy + self.custom_boosts.accuracy,
-            healing_power=(
-                self.base_stats.healing_power
-                + self.custom_boosts.healing_power
-            ),
-        )
+        return self.compute_stats()
 
     def load(self, slug: str) -> None:
         """
@@ -218,6 +210,15 @@ class Technique:
 
         self.visuals = results.visuals
         self.sound = results.sound
+
+    def compute_stats(self) -> TechniqueCurrentStats:
+        return TechniqueCurrentStats(
+            power=self.base_stats.power + self.custom_boosts.power,
+            potency=self.base_stats.potency + self.custom_boosts.potency,
+            accuracy=self.base_stats.accuracy + self.custom_boosts.accuracy,
+            healing_power=self.base_stats.healing_power
+            + self.custom_boosts.healing_power,
+        )
 
     def can_use(self, session: Session, target: Monster) -> bool:
         if self.is_recharging:
@@ -271,15 +272,7 @@ class Technique:
         Reset current stats to Base + Custom Boosts.
         Called after battle or when technique is refreshed.
         """
-        self.stats = TechniqueCurrentStats(
-            power=self.base_stats.power + self.custom_boosts.power,
-            potency=self.base_stats.potency + self.custom_boosts.potency,
-            accuracy=self.base_stats.accuracy + self.custom_boosts.accuracy,
-            healing_power=(
-                self.base_stats.healing_power
-                + self.custom_boosts.healing_power
-            ),
-        )
+        self.stats = self.compute_stats()
 
     def get_state(self) -> Mapping[str, Any]:
         """

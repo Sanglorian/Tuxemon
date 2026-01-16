@@ -148,6 +148,10 @@ class Technique:
         self.behaviors = results.behaviors
         self.healing_power = results.healing_power
         self.cooldown.duration = results.recharge
+        self.cooldown.min_remaining = results.min_recharge
+        self.cooldown.delay_turns = results.initial_delay
+        self.cooldown.charge = results.starting_charge
+        self.cooldown.multiplier = results.cooldown_multiplier
         self.range = results.range
         self.tech_id = results.tech_id
         self.menu_actions_data = results.menu_actions

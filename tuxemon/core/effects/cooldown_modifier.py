@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class CoolDownEffect(CoreEffect):
+class CooldownModifierEffect(CoreEffect):
     """
     Applies a cooldown to a monster's techniques, delaying their availability
     within a specified recharge range.
@@ -35,11 +35,11 @@ class CoolDownEffect(CoreEffect):
     .. code-block:: json
 
         "effects": [
-            "cooldown enemy_monster 2 category animal"
+            "cooldown_modifier enemy_monster 2 category animal"
         ]
     """
 
-    name = "cooldown"
+    name = "cooldown_modifier"
     objectives: str
     current_cooldown: int
     parameter: str
@@ -91,8 +91,20 @@ def _update_moves(moves: list[Technique], current_cooldown: int) -> None:
     for move in moves:
         cd = move.cooldown
 
+        if cd.locked:
+            continue
+
         if current_cooldown == 0:
-            cd.tick()
-        else:
-            if cd.remaining <= cd.duration:
-                cd.add(current_cooldown, RECHARGE_RANGE[1])
+            if cd.delay_turns > 0:
+                continue
+
+            tick_amount = int(1 * cd.multiplier)
+            cd.remaining = max(cd.min_remaining, cd.remaining - tick_amount)
+            continue
+
+        if cd.remaining <= cd.duration:
+            added = int(current_cooldown * cd.multiplier)
+
+            cd.remaining = max(
+                cd.min_remaining, min(cd.remaining + added, RECHARGE_RANGE[1])
+            )

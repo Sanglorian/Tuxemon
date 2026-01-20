@@ -10,6 +10,7 @@ To build the package on Windows, run the following command on Windows:
 
 DO NOT RUN FROM A VENV.  YOU WILL BE MET WITH INSURMOUNTABLE SORROW.
 """
+
 import logging
 import os
 import sys

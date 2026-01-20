@@ -3,6 +3,7 @@
 """
 Math utilities that can be used without Pygame.
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

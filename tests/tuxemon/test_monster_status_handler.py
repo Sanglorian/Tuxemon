@@ -247,13 +247,13 @@ def test_has_status_param(monster, slug, expected):
     "current_category, transition, expect_applied, expect_empty",
     [
         # Positive category
-        (CategoryStatus.positive, ResponseStatus.replaced, True, False),
-        (CategoryStatus.positive, ResponseStatus.removed, False, True),
+        (CategoryStatus.POSITIVE, ResponseStatus.REPLACED, True, False),
+        (CategoryStatus.POSITIVE, ResponseStatus.REMOVED, False, True),
         # Negative category
-        (CategoryStatus.negative, ResponseStatus.replaced, True, False),
-        (CategoryStatus.negative, ResponseStatus.removed, False, True),
+        (CategoryStatus.NEGATIVE, ResponseStatus.REPLACED, True, False),
+        (CategoryStatus.NEGATIVE, ResponseStatus.REMOVED, False, True),
         # Neutral category defaults to replaced
-        (None, ResponseStatus.replaced, True, False),
+        (None, ResponseStatus.REPLACED, True, False),
     ],
 )
 def test_apply_status_transitions(
@@ -270,9 +270,9 @@ def test_apply_status_transitions(
     status2 = MagicMock()
     status2.host = monster
 
-    if current_category == CategoryStatus.positive:
+    if current_category == CategoryStatus.POSITIVE:
         status2.on_positive_status = transition
-    elif current_category == CategoryStatus.negative:
+    elif current_category == CategoryStatus.NEGATIVE:
         status2.on_negative_status = transition
 
     monster.held_item = MagicMock()

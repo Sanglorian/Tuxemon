@@ -21,15 +21,6 @@ from tuxemon.state.animation_mixin import AnimationMixin
 from tuxemon.state.render_mixin import RenderMixin
 
 if TYPE_CHECKING:
-    from pygame.sprite import Group
-    from pygame.surface import Surface
-
-    from tuxemon.animation import (
-        Animation,
-        ScheduledFunction,
-        Task,
-        TaskBase,
-    )
     from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
@@ -82,10 +73,6 @@ class State(AnimationMixin, RenderMixin, ABC):
             raise TypeError(
                 f"{cls.__name__} must define a class variable 'name'"
             )
-
-    @property
-    def animations(self) -> Group[TaskBase]:
-        return self.anim._group
 
     def load_sprite(self, filename: str, **kwargs: Any) -> Sprite:
         """Load a sprite and add it to this state."""

@@ -19,6 +19,7 @@ from pygame.transform import flip as pg_flip
 from tuxemon import graphics
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.combat.utils import build_hud_text
+from tuxemon.constants.paths import mods_folder
 from tuxemon.database.rules import config_combat
 from tuxemon.environment import BattleLayout
 from tuxemon.menu.menu import Menu

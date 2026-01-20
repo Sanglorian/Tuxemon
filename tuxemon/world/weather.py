@@ -7,10 +7,11 @@ import random
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
 
+from tuxemon.database.runtime import db
 from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.db import Temperature, Wind
 from tuxemon.weather import Weather
@@ -48,28 +49,28 @@ class WeatherTransitionRule(BaseModel):
         ..., description="The weather slug to transition to."
     )
     trigger_chance: float = Field(..., ge=0.0, le=1.0)
-    min_duration_seconds: Optional[int] = Field(
+    min_duration_seconds: int | None = Field(
         None,
         ge=0,
         description="Minimum duration in seconds before this transition is allowed. If None, transition is instantly eligible.",
     )
-    max_duration_seconds: Optional[int] = Field(
+    max_duration_seconds: int | None = Field(
         None,
         ge=0,
         description="Maximum duration in seconds after which this transition is no longer allowed.",
     )
-    required_temperature: Optional[Temperature] = Field(
+    required_temperature: Temperature | None = Field(
         None,
         description="The *current* temperature must match this to be eligible.",
     )
-    required_wind: Optional[Wind] = Field(
+    required_wind: Wind | None = Field(
         None, description="The *current* wind must match this to be eligible."
     )
-    temperature: Optional[Temperature] = Field(
+    temperature: Temperature | None = Field(
         None,
         description="General temperature category for the *next* weather.",
     )
-    wind: Optional[Wind] = Field(
+    wind: Wind | None = Field(
         None, description="Wind intensity level for the *next* weather."
     )
 
@@ -120,15 +121,13 @@ class WorldWeatherManager:
     def __init__(
         self,
         initial_slug: str = "sunny",
-        rules_model: Optional[WeatherTransitionRulesModel] = None,
-        seed: Optional[int] = None,
+        rules_model: WeatherTransitionRulesModel | None = None,
+        seed: int | None = None,
     ) -> None:
-        self._current_weather: Optional[Weather] = None
+        self._current_weather: Weather | None = None
         self._elapsed_duration_seconds: float = 0.0
-        self._transition_rules_model: Optional[WeatherTransitionRulesModel] = (
-            None
-        )
-        self._last_transition_rule: Optional[WeatherTransitionRule] = None
+        self._transition_rules_model: WeatherTransitionRulesModel | None = None
+        self._last_transition_rule: WeatherTransitionRule | None = None
         self.transition_history: list[WeatherTransitionRecord] = []
         self._rng = (
             random.Random(seed) if seed is not None else random.Random()
@@ -141,15 +140,15 @@ class WorldWeatherManager:
         self.set_weather(initial_slug)
 
     @property
-    def current_weather(self) -> Optional[Weather]:
+    def current_weather(self) -> Weather | None:
         return self._current_weather
 
     @property
-    def current_slug(self) -> Optional[str]:
+    def current_slug(self) -> str | None:
         return self._current_weather.slug if self._current_weather else None
 
     @property
-    def last_transition(self) -> Optional[WeatherTransitionRule]:
+    def last_transition(self) -> WeatherTransitionRule | None:
         return self._last_transition_rule
 
     @property
@@ -158,16 +157,28 @@ class WorldWeatherManager:
 
     def load_rules_model(self, model: WeatherTransitionRulesModel) -> None:
         self._transition_rules_model = model
+        self.validate_rules()
         logger.info(
             f"Loaded transition rules model with {len(model.transitions)} weather states."
         )
 
+    def validate_rules(self) -> None:
+        if not self._transition_rules_model:
+            return
+
+        for slug, rules in self._transition_rules_model.transitions.items():
+            for r in rules:
+                if r.next_slug not in db.database["weather"]:
+                    logger.warning(
+                        f"Transition rule points to unknown weather slug '{r.next_slug}'"
+                    )
+
     def set_weather(
-        self, slug: str, rule: Optional[WeatherTransitionRule] = None
+        self, slug: str, rule: WeatherTransitionRule | None = None
     ) -> bool:
         """Sets the current weather state."""
         try:
-            new_weather = Weather(slug)
+            new_weather = Weather.get(slug)
         except Exception:
             logger.warning(f"Weather slug '{slug}' not found or invalid.")
             return False
@@ -177,6 +188,48 @@ class WorldWeatherManager:
         self._last_transition_rule = rule
         logger.info(f"Weather set to: {self._current_weather.slug}")
         return True
+
+    def advance_time(self, seconds: float) -> None:
+        """Advances simulation time and processes transitions."""
+        if seconds < 0:
+            raise ValueError("Time cannot go backwards.")
+        self._elapsed_duration_seconds += seconds
+        self.advance_turn()
+
+    def get_eligible_transitions(self) -> list[WeatherTransitionRule]:
+        """Returns all transition rules currently eligible to trigger."""
+        if not self._current_weather or not self._transition_rules_model:
+            return []
+
+        slug = self._current_weather.slug
+        elapsed = self._elapsed_duration_seconds
+
+        rules = self._transition_rules_model.transitions.get(slug, [])
+        temp = self._current_weather.current_temperature
+        wind = self._current_weather.current_wind
+
+        eligible: list[WeatherTransitionRule] = []
+        for r in rules:
+            if (
+                r.min_duration_seconds is not None
+                and elapsed < r.min_duration_seconds
+            ):
+                continue
+            if (
+                r.max_duration_seconds is not None
+                and elapsed > r.max_duration_seconds
+            ):
+                continue
+            if (
+                r.required_temperature is not None
+                and r.required_temperature != temp
+            ):
+                continue
+            if r.required_wind is not None and r.required_wind != wind:
+                continue
+            eligible.append(r)
+
+        return eligible
 
     def force_transition(self, new_slug: str) -> None:
         """Forces an immediate weather transition and records it."""
@@ -205,62 +258,27 @@ class WorldWeatherManager:
         if not self._current_weather or not self._transition_rules_model:
             return
 
-        current_slug = self._current_weather.slug
-        elapsed = self._elapsed_duration_seconds
-
-        if current_slug not in self._transition_rules_model.transitions:
-            logger.warning(
-                f"No transition rules found for current weather '{current_slug}'. Weather is stuck."
-            )
+        eligible = self.get_eligible_transitions()
+        if not eligible:
             return
 
-        rules = self._transition_rules_model.transitions[current_slug]
+        total = sum(r.trigger_chance for r in eligible)
+        roll = self._rng.random()
 
-        current_temp = self._current_weather.current_temperature
-        current_wind = self._current_weather.current_wind
+        if roll < total:
+            weights = [r.trigger_chance for r in eligible]
+            chosen = self._rng.choices(eligible, weights=weights, k=1)[0]
+            current_slug = self._current_weather.slug
+            elapsed_before = self._elapsed_duration_seconds
+            self.set_weather(chosen.next_slug, rule=chosen)
 
-        eligible: list[WeatherTransitionRule] = []
-        for r in rules:
-            is_time_eligible = (
-                r.min_duration_seconds is None
-                or elapsed >= r.min_duration_seconds
-            ) and (
-                r.max_duration_seconds is None
-                or elapsed <= r.max_duration_seconds
-            )
-
-            is_temp_eligible = (
-                r.required_temperature is None
-                or r.required_temperature == current_temp
-            )
-            is_wind_eligible = (
-                r.required_wind is None or r.required_wind == current_wind
-            )
-
-            if is_time_eligible and is_temp_eligible and is_wind_eligible:
-                eligible.append(r)
-
-        if eligible:
-            total_transition_chance = sum(r.trigger_chance for r in eligible)
-
-            if self._rng.random() < total_transition_chance:
-                weights = [r.trigger_chance for r in eligible]
-                chosen = self._rng.choices(eligible, weights=weights, k=1)[0]
-
-                logger.info(
-                    f"Transition triggered from '{current_slug}' to '{chosen.next_slug}'"
+            self.transition_history.append(
+                WeatherTransitionRecord(
+                    from_slug=current_slug,
+                    to_slug=chosen.next_slug,
+                    sim_time=elapsed_before,
                 )
-
-                elapsed_before = self._elapsed_duration_seconds
-                self.set_weather(chosen.next_slug, rule=chosen)
-
-                self.transition_history.append(
-                    WeatherTransitionRecord(
-                        from_slug=current_slug,
-                        to_slug=chosen.next_slug,
-                        sim_time=elapsed_before,
-                    )
-                )
+            )
 
     def get_transition_history(self) -> list[WeatherTransitionRecord]:
         return self.transition_history

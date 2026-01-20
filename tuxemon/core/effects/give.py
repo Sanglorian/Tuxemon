@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
+from tuxemon.db import BlockedReason
 from tuxemon.locale import T
-from tuxemon.monster_dir.status import BlockedReason
 from tuxemon.status.status import Status
 
 if TYPE_CHECKING:

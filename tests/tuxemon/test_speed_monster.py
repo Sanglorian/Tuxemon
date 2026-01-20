@@ -156,7 +156,7 @@ def test_min_speed_modifier_reset(
     config_combat.min_speed_modifier = 0
     result = speed_monster(monster, technique)
     assert result >= 1
-    assert config_combat.min_speed_modifier == 1
+    assert config_combat.min_speed_modifier == 0
 
 
 def test_negative_dodge_is_clamped(make_monster, make_technique):
@@ -182,3 +182,12 @@ def test_random_seed_reproducibility(make_monster, make_technique):
     random.seed(123)
     r2 = run_speed(monster, technique, n=10)
     assert r1 == r2
+
+
+def test_speed_monster_does_not_mutate_config(make_monster, make_technique):
+    monster = make_monster(0, 0)
+    technique = make_technique(0)
+    config_combat.min_speed_modifier = 0
+    before = config_combat.min_speed_modifier
+    speed_monster(monster, technique)
+    assert config_combat.min_speed_modifier == before

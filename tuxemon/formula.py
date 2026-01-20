@@ -632,27 +632,20 @@ def speed_monster(monster: Monster, technique: Technique) -> int:
     """
     Calculate the speed modifier for the given monster / technique.
     """
-    # Ensure min_speed_modifier is greater than 0
-    if config_combat.min_speed_modifier <= 0:
-        config_combat.min_speed_modifier = 1
+    min_mod = max(config_combat.min_speed_modifier, 1)
+    base_speed = float(max(monster.speed, 0))
 
-    base_speed = float(
-        max(monster.speed, 0)
-    )  # Ensure base_speed is not negative
-
-    # Calculate speed bonus based on technique speed
+    # Calculate modifier based on technique speed
     speed_adjustment = technique.speed * config_combat.speed_factor
     speed_bonus = config_combat.base_speed_bonus + speed_adjustment
+
+    # Base calculation
     speed_modifier = base_speed * speed_bonus
 
-    # Add a controlled random element
-    speed_offset = config_combat.speed_offset
-    random_offset = random.uniform(-speed_offset, speed_offset)
-    speed_modifier += random_offset
+    # Ensure minimum bound
+    speed_modifier = max(speed_modifier, min_mod)
 
-    # Ensure the speed modifier is not negative
-    speed_modifier = max(speed_modifier, config_combat.min_speed_modifier)
-    # Use dodge as a tiebreaker, ensure dodge is not negative
+    # Use dodge as a strategic tiebreaker
     speed_modifier += (
         max(float(monster.dodge), 0) * config_combat.dodge_modifier
     )

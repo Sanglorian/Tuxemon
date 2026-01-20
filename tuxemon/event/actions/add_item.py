@@ -2,6 +2,7 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Optional, final
 
@@ -9,6 +10,8 @@ from tuxemon.database.runtime import db
 from tuxemon.event.eventaction import EventAction
 from tuxemon.item.item import Item
 from tuxemon.session import Session
+
+logger = logging.getLogger(__name__)
 
 
 @final
@@ -41,27 +44,34 @@ class AddItemAction(EventAction):
         if not trainer:
             raise ValueError(f"NPC '{self.npc_slug}' not found")
 
-        # check item existence
-        item_id: str = ""
-        if self.item_slug not in db.database["item"]:
-            if player.game_variables.has(self.item_slug):
-                item_id = player.game_variables.get(self.item_slug)
-            else:
-                raise ValueError(
-                    f"{self.item_slug} doesn't exist (item or variable)."
-                )
-        else:
+        if self.item_slug in db.database["item"]:
             item_id = self.item_slug
+        elif player.game_variables.has(self.item_slug):
+            item_id = player.game_variables.get(self.item_slug)
+        else:
+            raise ValueError(
+                f"{self.item_slug} doesn't exist (item or variable)."
+            )
 
-        existing = trainer.bag.find_item(item_id)
+        bag = trainer.bag
+        existing = bag.find_item(item_id)
+
+        qty = self.quantity if self.quantity is not None else 1
 
         if existing:
-            if self.quantity is None or self.quantity == 0:
-                existing.increase_quantity()
-            elif self.quantity > 0:
-                existing.increase_quantity(self.quantity)
-            elif self.quantity < 0:
-                trainer.bag.remove_item(existing, abs(self.quantity))
-        elif self.quantity is None or self.quantity > 0:
+            if qty > 0:
+                existing.increase_quantity(qty)
+            elif qty < 0:
+                bag.remove_item(existing, abs(qty))
+            # qty == 0 → do nothing
+            return
+
+        # No existing item
+        if qty > 0:
             itm = Item.create(item_id)
-            trainer.bag.add_item(itm, self.quantity or 1)
+            success = bag.add_item(itm, qty)
+            if not success:
+                logger.warning(
+                    f"AddItemAction: Ignored invalid quantity {qty} for item '{item_id}' "
+                    f"when adding to NPC '{trainer.slug}'."
+                )

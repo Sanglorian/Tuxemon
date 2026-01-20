@@ -117,7 +117,7 @@ def load_party_items(
         if npc_item.variables and check_variables(
             npc_item.variables, game_variables
         ):
-            item = Item.create(npc_item.slug, npc_item.model_dump())
+            item = Item.create(npc_item.slug)
             npc.bag.add_item(item, npc_item.quantity)
 
 

@@ -491,6 +491,13 @@ class ItemBehaviors(Behaviors):
         False, description="Whether this can be repaired."
     )
     craftable: bool = Field(False, description="Whether this can be crafted.")
+    destroy_on_break: bool = Field(
+        False,
+        description="Whether the item is removed from the inventory when it breaks.",
+    )
+    wear_on_use: bool = Field(
+        False, description="Whether using this item increases its wear."
+    )
 
 
 class TechBehaviors(Behaviors):
@@ -682,6 +689,9 @@ class ItemModel(BaseModel, BaseLookupModel):
         default_factory=list,
         description="Status slugs granted to the holder while this item is equipped.",
     )
+    break_into_item: str | None = Field(
+        None, description="Slug of the item created when this one breaks."
+    )
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> ItemModel:
@@ -735,6 +745,16 @@ class ItemModel(BaseModel, BaseLookupModel):
                 raise ValueError(
                     f"Status {status} does not exist in the database"
                 )
+        return v
+
+    @field_validator("break_into_item")
+    def break_item_exists(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        if not has.db_entry("item", v):
+            raise ValueError(
+                f"Break-into item '{v}' does not exist in the database"
+            )
         return v
 
 

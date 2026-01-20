@@ -18,6 +18,7 @@ Example (moving in scripts folder):
 Get help/usage information:
     python json_beautifier.py --help
 """
+
 import json
 from argparse import ArgumentParser
 from pathlib import Path

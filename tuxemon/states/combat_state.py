@@ -31,6 +31,7 @@ add new code like it.  Consider it a priority to remove it when you are
 able to.
 
 """
+
 from __future__ import annotations
 
 import logging
@@ -223,10 +224,10 @@ class CombatState(CombatAnimations):
             pass
 
         elif phase == CombatPhase.HOUSEKEEPING:
-            c_session.next_turn()
-
+            new_turn = c_session.next_turn()
+            c_session.action_queue.set_current_turn(new_turn)
             # fill all battlefield positions, but on round 1, don't ask
-            c_session.fill_battlefield_positions(ask=c_session.turn > 1)
+            c_session.fill_battlefield_positions(ask=new_turn > 1)
             c_session.track_enemy_monsters(self.session)
 
         elif phase == CombatPhase.DECISION:
@@ -492,12 +493,7 @@ class CombatState(CombatAnimations):
         """
         self.hud_manager.unassign(monster.get_owner(), monster)
         self.status_icons.recalculate_icon_positions()
-        action_queue = self.combat_session.action_queue.queue
-        action_queue[:] = [
-            action
-            for action in action_queue
-            if action.user is not monster and action.target is not monster
-        ]
+        self.combat_session.action_queue.remove_monster_actions(monster)
         self.ai_manager.remove_ai(monster)
 
     def perform_action(

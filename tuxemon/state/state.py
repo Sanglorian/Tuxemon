@@ -17,23 +17,18 @@ from tuxemon.graphics import load_animated_sprite, load_sprite
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import local_session
 from tuxemon.sprite import Sprite, SpriteGroup
-from tuxemon.state.animation_group import AnimationGroup
+from tuxemon.state.animation_mixin import AnimationMixin
+from tuxemon.state.render_mixin import RenderMixin
 
 if TYPE_CHECKING:
-    from pygame.sprite import Group
-    from pygame.surface import Surface
+    pass
 
-    from tuxemon.animation import (
-        Animation,
-        ScheduledFunction,
-        Task,
-    )
     from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
 
 
-class State(ABC):
+class State(AnimationMixin, RenderMixin, ABC):
     """This is a prototype class for States.
 
     All states should inherit from it. No direct instances of this
@@ -62,18 +57,15 @@ class State(ABC):
 
         Important!  The state must be ready to be drawn after this is called.
         """
+        super().__init__()
         self.start_time = 0.0
         self.current_time = 0.0
-
-        self.anim = AnimationGroup()
 
         # All sprites that draw on the screen
         self.sprites: SpriteGroup[Sprite] = SpriteGroup()
 
         self.client = local_session.client
         self.event_bus = get_event_bus()
-
-        self._scheduled_task: Task | None = None
 
     def __init_subclass__(cls: type[State], **kwargs: Any) -> None:
         """Ensure subclasses define a class variable 'name'."""
@@ -83,10 +75,6 @@ class State(ABC):
             raise TypeError(
                 f"{cls.__name__} must define a class variable 'name'"
             )
-
-    @property
-    def animations(self) -> Group[Task | Animation]:
-        return self.anim._group
 
     def load_sprite(self, filename: str, **kwargs: Any) -> Sprite:
         """Load a sprite and add it to this state."""
@@ -103,54 +91,6 @@ class State(ABC):
         sprite = load_animated_sprite(filenames, delay, **kwargs)
         self.sprites.add(sprite, layer=layer)
         return sprite
-
-    def animate(self, *targets: Any, **kwargs: Any) -> Animation:
-        """
-        Animate something in this state.
-
-        Animations are processed even while state is inactive.
-
-        Parameters:
-            targets: Targets of the Animation.
-            kwargs: Attributes and their final value.
-
-        Returns:
-            Resulting animation.
-        """
-        return self.anim.animate(*targets, **kwargs)
-
-    def task(
-        self,
-        func: ScheduledFunction,
-        *,
-        on_finish: ScheduledFunction | None = None,
-        on_update: ScheduledFunction | None = None,
-        interval: float = 0,
-        times: int = 1,
-        **kwargs: Any,
-    ) -> Task:
-        return self.anim.task(
-            func,
-            on_finish=on_finish,
-            on_update=on_update,
-            interval=interval,
-            times=times,
-            **kwargs,
-        )
-
-    def chain_animations(
-        self, *fns: Callable[[], Animation], start_delay: float = 0.0
-    ) -> None:
-        self.anim.chain_animations(*fns, start_delay=start_delay)
-
-    def remove_animations_of(self, target: Any) -> None:
-        """
-        Given and object, remove any animations that it is used with.
-
-        Parameters:
-            target: Object whose animations should be removed.
-        """
-        self.anim.remove_of(target)
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         """
@@ -182,20 +122,8 @@ class State(ABC):
         Parameters:
             time_delta: Amount of time in fractional seconds since last update.
         """
-        self.anim.update(time_delta)
+        self.update_animations(time_delta)
         self.sprites.update(time_delta)
-
-    def draw(self, surface: Surface) -> None:
-        """
-        Render the state to the surface passed. Must be overloaded in children.
-
-        Do not change the state of any game entities. Every draw should be the
-        same for a given game time. Any game changes should be done during
-        update.
-
-        Parameters:
-            surface: Surface to be rendered onto.
-        """
 
     def resume(self) -> None:
         """

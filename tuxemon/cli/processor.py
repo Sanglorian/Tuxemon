@@ -14,7 +14,7 @@ from tuxemon.cli.clicommand import CLICommand
 from tuxemon.cli.context import InvokeContext
 from tuxemon.cli.exceptions import CommandNotFoundError, ParseError
 from tuxemon.cli.formatter import Formatter
-from tuxemon.constants.paths import get_active_mod_paths, mods_folder
+from tuxemon.constants.paths import get_plugin_paths, mods_folder
 from tuxemon.plugin import PluginManager
 
 if TYPE_CHECKING:
@@ -125,12 +125,11 @@ class CommandProcessor:
         """
         Use plugins to load CLICommand classes from all mod folders.
         """
-        command_folders_to_search = [
-            mod_dir / "commands" for mod_dir in get_active_mod_paths()
-        ]
-        existing_command_folders = [
-            folder for folder in command_folders_to_search if folder.is_dir()
-        ]
+        existing_command_folders = get_plugin_paths(
+            base_path=mods_folder,
+            category="commands",
+            subfolder=None,
+        )
 
         if not existing_command_folders:
             logger.debug("No existing command folders to search.")

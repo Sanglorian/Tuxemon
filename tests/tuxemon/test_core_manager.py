@@ -26,6 +26,20 @@ def temp_dir():
     d.rmdir()
 
 
+@pytest.fixture(autouse=True)
+def no_mod_paths(monkeypatch):
+    monkeypatch.setattr(
+        "tuxemon.constants.paths.get_active_mod_paths", lambda: []
+    )
+
+
+@pytest.fixture(autouse=True)
+def fake_mods_folder(monkeypatch, temp_dir):
+    fake_mods = temp_dir / "mods"
+    fake_mods.mkdir(exist_ok=True)
+    monkeypatch.setattr("tuxemon.core.core_manager.mods_folder", fake_mods)
+
+
 @pytest.fixture
 def core_manager(temp_dir):
     path = temp_dir / "tuxemon"
@@ -46,7 +60,6 @@ def effect_manager(temp_dir):
         effect_class,
         path,
         "tuxemon",
-        category="effects",
         root_path=temp_dir.parent,
     )
 
@@ -59,15 +72,16 @@ def condition_manager(temp_dir):
         condition_class,
         path,
         "tuxemon",
-        category="conditions",
         root_path=temp_dir.parent,
     )
 
 
 # CoreManager tests
-@patch("tuxemon.plugin.load_plugins")
-def test_load_plugins(mock_load_plugins, core_manager, temp_dir):
-    mock_load_plugins.return_value = {"TestPlugin": MagicMock()}
+@patch("tuxemon.plugin.PluginManager.from_directory")
+def test_load_plugins(mock_from_directory, core_manager, temp_dir):
+    fake_manager = MagicMock()
+    fake_manager.get_class_map.return_value = {"TestPlugin": MagicMock()}
+    mock_from_directory.return_value = fake_manager
     core_manager.load_plugins(
         core_manager.plugin_interface,
         core_manager.path,

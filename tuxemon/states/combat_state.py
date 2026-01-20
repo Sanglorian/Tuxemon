@@ -46,12 +46,12 @@ from tuxemon.combat.combat_context import CombatContext
 from tuxemon.combat.machine import CombatMachine, CombatPhase
 from tuxemon.combat.reward_system import RewardSystem
 from tuxemon.combat.utils import play_outcome_music, track_battles
+from tuxemon.database.rules import config_combat
 from tuxemon.db import (
     EffectPhase,
     ItemCategory,
     OutputBattle,
 )
-from tuxemon.formula import config_combat
 from tuxemon.item.item import Item
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
@@ -223,10 +223,10 @@ class CombatState(CombatAnimations):
             pass
 
         elif phase == CombatPhase.HOUSEKEEPING:
-            c_session.next_turn()
-
+            new_turn = c_session.next_turn()
+            c_session.action_queue.set_current_turn(new_turn)
             # fill all battlefield positions, but on round 1, don't ask
-            c_session.fill_battlefield_positions(ask=c_session.turn > 1)
+            c_session.fill_battlefield_positions(ask=new_turn > 1)
             c_session.track_enemy_monsters(self.session)
 
         elif phase == CombatPhase.DECISION:
@@ -498,12 +498,7 @@ class CombatState(CombatAnimations):
         """
         self.hud_manager.unassign(monster.get_owner(), monster)
         self.status_icons.recalculate_icon_positions()
-        action_queue = self.combat_session.action_queue.queue
-        action_queue[:] = [
-            action
-            for action in action_queue
-            if action.user is not monster and action.target is not monster
-        ]
+        self.combat_session.action_queue.remove_monster_actions(monster)
         self.ai_manager.remove_ai(monster)
 
     def perform_action(

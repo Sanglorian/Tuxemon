@@ -9,9 +9,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
-import yaml
 from pydantic import BaseModel, Field, model_validator
 
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.db import Temperature, Wind
 from tuxemon.weather import Weather
 
@@ -31,15 +31,8 @@ def load_weather_transition_rules(
 ) -> WeatherTransitionRulesModel:
     """Loads and validates the weather transition rules from a YAML file."""
     try:
-        with filepath.open() as file:
-            data = yaml.safe_load(file)
-            return WeatherTransitionRulesModel(**data)
-    except FileNotFoundError:
-        logger.error(f"Config file not found: {filepath}")
-        raise
-    except yaml.YAMLError as exc:
-        logger.error(f"Error parsing YAML file: {exc}")
-        raise
+        data = load_yaml(filepath)
+        return WeatherTransitionRulesModel(**data)
     except Exception as exc:
         logger.error(f"Error loading WeatherTransitionRulesModel: {exc}")
         raise

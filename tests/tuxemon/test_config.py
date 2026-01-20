@@ -18,11 +18,12 @@ from tuxemon.config import (
     TuxemonConfig,
     TuxemonFullConfig,
 )
+from tuxemon.database.yaml_utils import dump_yaml_path
 
 
 def write_yaml(dir_path: Path, data) -> Path:
     p = dir_path / "tuxemon.yaml"
-    p.write_text(yaml.safe_dump(data))
+    dump_yaml_path(p, data)
     return p
 
 

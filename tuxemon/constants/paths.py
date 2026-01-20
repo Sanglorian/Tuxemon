@@ -9,13 +9,6 @@ from tuxemon.platform import get_system_storage_dirs, get_user_storage_dir
 
 logger = logging.getLogger(__name__)
 
-PLUGIN_INCLUDE_PATTERNS = [
-    "event.actions",
-    "event.conditions",
-    "event.behaviors",
-    "core.effects",
-    "core.conditions",
-]
 
 # --- Core Game Paths ---
 
@@ -45,13 +38,23 @@ logger.debug(f"mods: {mods_folder}")
 mods_subfolders = [f.name for f in mods_folder.iterdir() if f.is_dir()]
 logger.debug(f"Mods subfolders: {mods_subfolders}")
 
-# action/condition plugins (eventually move out of lib folder)
-CONDITIONS_PATH = LIBDIR / "event" / "conditions"
-ACTIONS_PATH = LIBDIR / "event" / "actions"
-BEHAVS_PATH = LIBDIR / "event" / "behaviors"
+PLUGIN_CATEGORY_MAP = {
+    "event_actions": ("event", "actions"),
+    "event_conditions": ("event", "conditions"),
+    "event_behaviors": ("event", "behaviors"),
+    "core_effects": ("core", "effects"),
+    "core_conditions": ("core", "conditions"),
+}
+PLUGIN_INCLUDE_PATTERNS = [
+    ".".join(parts) for parts in PLUGIN_CATEGORY_MAP.values()
+]
 
-CORE_EFFECT_PATH = LIBDIR / "core" / "effects"
-CORE_CONDITION_PATH = LIBDIR / "core" / "conditions"
+CONDITIONS_PATH = LIBDIR.joinpath(*PLUGIN_CATEGORY_MAP["event_conditions"])
+ACTIONS_PATH = LIBDIR.joinpath(*PLUGIN_CATEGORY_MAP["event_actions"])
+BEHAVS_PATH = LIBDIR.joinpath(*PLUGIN_CATEGORY_MAP["event_behaviors"])
+
+CORE_EFFECT_PATH = LIBDIR.joinpath(*PLUGIN_CATEGORY_MAP["core_effects"])
+CORE_CONDITION_PATH = LIBDIR.joinpath(*PLUGIN_CATEGORY_MAP["core_conditions"])
 
 # --- User Data Paths ---
 

@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from tuxemon import formula
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
+from tuxemon.database.rules import config_capdev
 from tuxemon.db import Acquisition, SeenStatus
 
 if TYPE_CHECKING:
@@ -82,7 +83,7 @@ class CaptureCombinedEffect(CoreEffect):
         Calculate the status effectiveness modifier based on the opponent's
         status.
         """
-        capdev_modifier = formula.config_capdev.capdev_modifier
+        capdev_modifier = config_capdev.capdev_modifier
         our_monster = self.client.combat_session.field_monsters.get_monsters(
             self.session.player
         )

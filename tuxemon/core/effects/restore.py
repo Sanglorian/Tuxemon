@@ -55,8 +55,8 @@ class RestoreEffect(CoreEffect):
     ) -> ItemEffectResult:
         if self.category:
             if (
-                self.category == CategoryStatus.positive
-                or self.category == CategoryStatus.negative
+                self.category == CategoryStatus.POSITIVE
+                or self.category == CategoryStatus.NEGATIVE
             ):
                 checking = [
                     ele

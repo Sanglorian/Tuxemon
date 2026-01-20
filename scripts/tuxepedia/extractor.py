@@ -5,6 +5,7 @@
     author: Andy Mender <andymenderunix@gmail.com>
     license: GPLv3
 """
+
 import logging
 import os
 import os.path

@@ -6,15 +6,12 @@ import logging
 import random
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from enum import Enum
 from typing import TYPE_CHECKING, Any
 
-from tuxemon.db import (
-    CategoryStatus,
-    EffectPhase,
-    ResponseStatus,
-)
+from tuxemon.db import BlockedReason, EffectPhase, ResponseStatus
+from tuxemon.status.immunity_engine import ImmunityEngine
 from tuxemon.status.status import Status, decode_status, encode_status
+from tuxemon.status.transition_engine import TransitionEngine
 
 if TYPE_CHECKING:
     from tuxemon.core.core_effect import StatusEffectResult
@@ -24,11 +21,6 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
-
-
-class BlockedReason(Enum):
-    IMMUNE_BY_ITEM = "immune_by_item"
-    ALREADY_PRESENT = "already_present"
 
 
 @dataclass
@@ -41,6 +33,8 @@ class StatusApplyResult:
 class MonsterStatusHandler:
     def __init__(self, status: list[Status] | None = None):
         self.status = status if status is not None else []
+        self.transition_engine = TransitionEngine()
+        self.immunity_engine = ImmunityEngine()
 
     @property
     def is_fainted(self) -> bool:
@@ -52,84 +46,63 @@ class MonsterStatusHandler:
             return None
         return self.status[0]
 
-    def is_blocked(self, monster: Monster, status_slug: str) -> str | None:
-        """Check if the monster's held item grants immunity to the given status."""
-        item = monster.held_item
-        if item and item.is_immune(status_slug):
-            logger.debug(
-                f"Item '{item.name}' blocks status '{status_slug}' for monster '{monster.name}'."
-            )
-            return item.name
-        return None
-
     def apply_status(
         self,
         session: Session,
         new_status: Status,
     ) -> StatusApplyResult:
         """
-        Apply a status effect to a monster during combat by replacing or removing
-        the previous status effect. Handles transition rules, immunity, stacking,
-        and ON_START/ON_END effect phases.
+        Apply a status effect to a monster during combat.
         """
         host = new_status.host
         logger.debug(
             f"Trying to apply status '{new_status.slug}' to monster '{host.name}'."
         )
 
-        blocked_by = self.is_blocked(host, new_status.slug)
-        if blocked_by:
-            logger.debug(
-                f"Status '{new_status.slug}' blocked by '{blocked_by}'."
-            )
+        immunity = self.immunity_engine.check(host, new_status)
+        if immunity.immune:
             return StatusApplyResult(
                 applied=False,
-                blocked_by=blocked_by,
-                blocked_reason=BlockedReason.IMMUNE_BY_ITEM,
+                blocked_by=immunity.blocked_by,
+                blocked_reason=immunity.reason,
             )
 
         current_status = self.current_status
 
-        if current_status is None:
-            logger.debug("No current status, applying new status directly.")
+        result = self.transition_engine.resolve(current_status, new_status)
+
+        if result.outcome == ResponseStatus.STACKED:
+            if current_status:
+                current_status.stack()
+                return StatusApplyResult(
+                    applied=False,
+                    blocked_by=current_status.name,
+                    blocked_reason=result.reason,
+                )
+
+        if result.outcome == ResponseStatus.REPLACED:
+            if current_status:
+                current_status.use(session, EffectPhase.ON_END)
+
             self.add_status(new_status)
             new_status.tick_turn()
             new_status.use(session, EffectPhase.ON_START)
+
             return StatusApplyResult(applied=True)
 
-        if self.has_status(new_status.slug):
-            logger.debug(
-                f"Monster already has status '{new_status.slug}', skipping."
-            )
-            current_status.stack()
+        if result.outcome == ResponseStatus.REMOVED:
+            self.clear_status(session)
             return StatusApplyResult(
                 applied=False,
-                blocked_by=current_status.name,
-                blocked_reason=BlockedReason.ALREADY_PRESENT,
+                blocked_by=current_status.name if current_status else None,
+                blocked_reason=result.reason,
             )
 
-        if current_status.category == CategoryStatus.positive:
-            transition = new_status.on_positive_status
-        elif current_status.category == CategoryStatus.negative:
-            transition = new_status.on_negative_status
-        else:
-            transition = ResponseStatus.replaced
-
-        if transition == ResponseStatus.replaced:
-            current_status.use(session, EffectPhase.ON_END)
-
-        new_status.tick_turn()
-        new_status.use(session, EffectPhase.ON_START)
-
-        if transition == ResponseStatus.replaced:
-            self.add_status(new_status)
-            return StatusApplyResult(applied=True)
-
-        if transition == ResponseStatus.removed:
-            self.clear_status(session)
-            return StatusApplyResult(applied=False)
-
-        return StatusApplyResult(applied=False)
+        return StatusApplyResult(
+            applied=False,
+            blocked_by=None,
+            blocked_reason=result.reason,
+        )
 
     def add_status(self, status: Status) -> None:
         if self.has_status(status.slug):

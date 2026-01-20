@@ -30,7 +30,7 @@ from pathlib import Path
 from typing import Any, DefaultDict
 from xml.etree.ElementTree import Element
 
-import yaml
+from tuxemon.database.yaml_utils import dump_yaml_io, load_yaml
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__file__)
@@ -68,8 +68,7 @@ def extract_events(filename: Path) -> None:
     yaml_filename = filename.with_suffix(".yaml")
 
     try:
-        with yaml_filename.open() as fp:
-            yaml_doc = yaml.load(fp, Loader=yaml.SafeLoader)
+        yaml_doc = load_yaml(yaml_filename)
     except FileNotFoundError:
         yaml_doc = {"events": {}}
 
@@ -84,6 +83,7 @@ def extract_events(filename: Path) -> None:
 
     def process_event(obj: Element) -> None:
         event_node = {}
+
         for names, divisor in [[["x", "width"], tw], [["y", "height"], th]]:
             for name in names:
                 value = obj.attrib.get(name)
@@ -109,8 +109,13 @@ def extract_events(filename: Path) -> None:
     for obj in root.findall(".//object[@type='event']"):
         process_event(obj)
 
-    with yaml_filename.open("w") as fp:
-        yaml.dump(yaml_doc, fp, Dumper=yaml.SafeDumper, sort_keys=False)
+    with yaml_filename.open("w", encoding="utf-8") as fp:
+        dump_yaml_io(
+            fp,
+            yaml_doc,
+            sort_keys=False,
+            default_flow_style=False,
+        )
 
 
 if __name__ == "__main__":

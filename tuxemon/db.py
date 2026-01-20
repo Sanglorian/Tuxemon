@@ -31,7 +31,7 @@ from pydantic import (
 from tuxemon.database.config import EntryNotFoundError
 from tuxemon.database.data import ModData
 from tuxemon.database.registry import validator as has
-from tuxemon.formula import config_monster
+from tuxemon.database.rules import config_monster
 from tuxemon.platform.const import sizes
 from tuxemon.surfanim import FlipAxes
 
@@ -2043,6 +2043,12 @@ class BattleGraphicsModel(BaseModel):
     )
     entry_duration: float = Field(
         3.0, description="Seconds for the entry transition."
+    )
+    trainer_exit_offset: int = Field(
+        150, description="Pixels to move trainer when leaving"
+    )
+    trainer_exit_duration: float = Field(
+        0.8, description="Duration of trainer exit animation"
     )
 
     @field_validator("island_back", "island_front")

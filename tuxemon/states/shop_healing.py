@@ -4,14 +4,13 @@ from __future__ import annotations
 
 import logging
 from functools import partial
-from pathlib import Path
 from typing import Any, ClassVar, Literal, Optional
 
-import yaml
 from pydantic import BaseModel, Field
 from pygame.surface import Surface
 
 from tuxemon.constants import paths
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.quantity import QuantityAndCostMenu
@@ -20,18 +19,6 @@ from tuxemon.session import local_session
 from tuxemon.states.shop_base import ShopMenuState
 
 logger = logging.getLogger(__name__)
-
-
-def load_yaml(filepath: Path) -> Any:
-    try:
-        with filepath.open() as file:
-            return yaml.safe_load(file)
-    except FileNotFoundError:
-        logger.error(f"Config file not found: {filepath}")
-        raise
-    except yaml.YAMLError as exc:
-        logger.error(f"Error parsing YAML file: {exc}")
-        raise exc
 
 
 class HealingShopConfig(BaseModel):

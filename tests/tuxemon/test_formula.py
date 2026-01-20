@@ -4,11 +4,10 @@ import math
 import unittest
 from unittest.mock import MagicMock
 
+from tuxemon.database.rules import config_combat, config_monster
 from tuxemon.element import Element, ElementTypesHandler
 from tuxemon.formula import (
     calculate_time_based_multiplier,
-    config_combat,
-    config_monster,
     modify_stat,
     set_health,
     set_height,

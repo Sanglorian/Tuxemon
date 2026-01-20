@@ -18,8 +18,8 @@ from tuxemon.combat.experience_strategies import (
     calculate_experience,
     calculate_experience_base,
 )
+from tuxemon.database.rules import config_monster
 from tuxemon.db import EvolutionStage, ExperienceMethod
-from tuxemon.formula import config_monster
 
 
 class DummyMonster:

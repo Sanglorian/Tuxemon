@@ -6,14 +6,12 @@ import logging
 import random
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
-from typing import TYPE_CHECKING, Any
-
-import yaml
+from typing import TYPE_CHECKING
 
 from tuxemon.constants import paths
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
 from tuxemon.database.runtime import db
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.db import MonsterModel
 
 if TYPE_CHECKING:
@@ -54,18 +52,6 @@ class ActionConfig:
             raise ValueError("Bounds must be non-negative.")
         if self.level_bounds[0] > self.level_bounds[1]:
             raise ValueError("Lower bound cannot exceed upper bound.")
-
-
-def load_yaml(filepath: Path) -> Any:
-    try:
-        with filepath.open() as file:
-            return yaml.safe_load(file)
-    except FileNotFoundError:
-        logger.error(f"Config file not found: {filepath}")
-        raise
-    except yaml.YAMLError as exc:
-        logger.error(f"Error parsing YAML file: {exc}")
-        raise exc
 
 
 class Loader:

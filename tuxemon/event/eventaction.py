@@ -5,14 +5,14 @@ from __future__ import annotations
 import logging
 import time
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import TracebackType
 from typing import Any, ClassVar, Optional
 
 from tuxemon.constants.paths import ACTIONS_PATH, LIBDIR, get_plugin_paths
-from tuxemon.plugin import load_plugins
+from tuxemon.plugin import PluginManager
 from tuxemon.session import Session
 from tuxemon.tools import cast_dataclass_parameters
 
@@ -278,11 +278,13 @@ class ActionManager:
             ACTIONS_PATH, "actions", subfolder="event"
         )
 
-        self.actions = load_plugins(
-            paths=plugin_folders,
+        manager = PluginManager.from_directory(
+            plugin_folders=plugin_folders,
             root_path=root_path,
-            category="actions",
-            interface=EventAction,  # type: ignore[type-abstract]
+        )
+
+        self.actions: Mapping[str, type[EventAction]] = manager.get_class_map(
+            interface=EventAction
         )
 
     def get_action(

@@ -4,12 +4,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, final
-
-import yaml
+from typing import final
 
 from tuxemon.constants import paths
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.session import Session
@@ -23,18 +21,6 @@ MAX_LENGTH: int = 365
 class CelestialCycle:
     name: str
     phase_data: list[tuple[int, str]]
-
-
-def load_yaml(filepath: Path) -> Any:
-    try:
-        with filepath.open() as file:
-            return yaml.safe_load(file)
-    except FileNotFoundError:
-        logger.error(f"Config file not found: {filepath}")
-        raise
-    except yaml.YAMLError as exc:
-        logger.error(f"Error parsing YAML file: {exc}")
-        raise exc
 
 
 class Loader:

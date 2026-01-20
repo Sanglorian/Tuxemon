@@ -6,13 +6,12 @@ import logging
 import random
 from collections.abc import Mapping
 from enum import Enum, auto
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 
-import yaml
 from pydantic import BaseModel, Field
 
 from tuxemon.constants import paths
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.db import PlagueType
 from tuxemon.locale import T
 
@@ -37,18 +36,6 @@ class InoculationResult(Enum):
     ALREADY_INOCULATED = auto()
     UNKNOWN_PLAGUE = auto()
     NOT_ELIGIBLE = auto()
-
-
-def load_yaml(filepath: Path) -> Any:
-    try:
-        with filepath.open() as file:
-            return yaml.safe_load(file)
-    except FileNotFoundError:
-        logger.error(f"Config file not found: {filepath}")
-        raise
-    except yaml.YAMLError as exc:
-        logger.error(f"Error parsing YAML file: {exc}")
-        raise exc
 
 
 class InoculationData(BaseModel):

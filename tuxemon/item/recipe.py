@@ -6,8 +6,7 @@ import logging
 from pathlib import Path
 from typing import Any, Optional
 
-import yaml
-
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.locale import T
 
 logger = logging.getLogger(__name__)
@@ -48,9 +47,10 @@ class Recipe:
         Loads a list of Recipe objects from a YAML file.
         """
         recipes: list[Recipe] = []
+
         try:
-            with filepath.open() as file:
-                data = yaml.safe_load(file)
+            data = load_yaml(filepath)
+
             if isinstance(data, list):
                 for recipe_data in data:
                     if isinstance(recipe_data, dict):
@@ -61,14 +61,11 @@ class Recipe:
                         )
             else:
                 logger.debug(
-                    f"Error: YAML file does not contain a list of recipes. Found type: {type(data)}"
+                    f"Error: YAML file does not contain a list of recipes. "
+                    f"Found type: {type(data)}"
                 )
-        except FileNotFoundError:
-            logger.debug(f"Error: The file '{filepath}' was not found.")
-        except yaml.YAMLError as e:
-            logger.debug(f"Error parsing YAML file '{filepath}': {e}")
+
         except Exception as e:
-            logger.debug(
-                f"An unexpected error occurred while loading recipes: {e}"
-            )
+            logger.debug(f"Failed to load recipes from '{filepath}': {e}")
+
         return recipes

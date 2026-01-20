@@ -6,9 +6,11 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import yaml
 from pygame.rect import Rect
 
+
+from tuxemon.constants.paths import mods_folder
+from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.tools import scale_sequence
 
 logger = logging.getLogger(__name__)
@@ -18,27 +20,26 @@ if TYPE_CHECKING:
 
 
 def load_layout_groups(path: Path) -> dict[int, list[str]]:
-    with path.open("r", encoding="utf-8") as file:
-        data = yaml.safe_load(file)
+    data = load_yaml(path)
     raw_groups = data.get("LAYOUT_GROUPS", {})
 
-    layout_groups = {}
+    layout_groups: dict[int, list[str]] = {}
     for key, layout_keys in raw_groups.items():
         try:
             num_players = int(key.split("_")[0])
             layout_groups[num_players] = layout_keys
         except (ValueError, IndexError):
             logger.warning(f"Invalid layout group key: '{key}'")
+
     return layout_groups
 
 
 def load_layouts_from_yaml(
     path: Path,
 ) -> dict[str, dict[str, tuple[int, ...]]]:
-    with path.open("r", encoding="utf-8") as file:
-        data = yaml.safe_load(file)
-
+    data = load_yaml(path)
     raw_layouts = data.get("LAYOUT_COORDINATES", {})
+
     return {
         layout_name: {key: tuple(value) for key, value in layout.items()}
         for layout_name, layout in raw_layouts.items()

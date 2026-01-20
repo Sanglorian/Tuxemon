@@ -16,7 +16,7 @@ from tuxemon.db import (
     ParameterizableRule,
     SpatialCondition,
 )
-from tuxemon.plugin import load_plugins
+from tuxemon.plugin import PluginManager
 
 logger = logging.getLogger(__name__)
 
@@ -48,11 +48,13 @@ class BehaviorManager:
             BEHAVS_PATH, "behaviors", subfolder="event"
         )
 
-        self.behaviors: Mapping[str, type[EventBehavior]] = load_plugins(
-            paths=plugin_folders,
+        manager = PluginManager.from_directory(
+            plugin_folders=plugin_folders,
             root_path=root_path,
-            category="behaviors",
-            interface=EventBehavior,  # type: ignore[type-abstract]
+        )
+
+        self.behaviors: Mapping[str, type[EventBehavior]] = (
+            manager.get_class_map(interface=EventBehavior)
         )
 
     def get_behavior(self, name: str) -> EventBehavior | None:

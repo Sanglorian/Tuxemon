@@ -1407,14 +1407,24 @@ class TechSort(str, Enum):
 
 
 class CategoryStatus(str, Enum):
-    negative = "negative"
-    positive = "positive"
-    neutral = "neutral"
+    NEGATIVE = "negative"
+    POSITIVE = "positive"
+    NEUTRAL = "neutral"
 
 
 class ResponseStatus(str, Enum):
-    replaced = "replaced"
-    removed = "removed"
+    REPLACED = "replaced"
+    REMOVED = "removed"
+    STACKED = "stacked"
+
+
+class BlockedReason(str, Enum):
+    IMMUNE = "immune"
+    IMMUNE_BY_ITEM = "immune_by_item"
+    ALREADY_PRESENT = "already_present"
+    REPLACED = "replaced"
+    REMOVED = "removed"
+    NO_EFFECT = "no_effect"
 
 
 class TargetModel(BaseModel):
@@ -1668,6 +1678,9 @@ class StatusModel(BaseModel, BaseLookupModel):
     stat_modifiers: dict[str, StatModel] = Field(
         default_factory=dict,
         description="Dictionary of stat modifiers keyed by stat name (e.g., 'speed', 'hp')",
+    )
+    max_stacks: int = Field(
+        5, description="Maximum number of stacks this status can accumulate"
     )
 
     @classmethod
@@ -2043,6 +2056,12 @@ class BattleGraphicsModel(BaseModel):
     )
     entry_duration: float = Field(
         3.0, description="Seconds for the entry transition."
+    )
+    trainer_exit_offset: int = Field(
+        150, description="Pixels to move trainer when leaving"
+    )
+    trainer_exit_duration: float = Field(
+        0.8, description="Duration of trainer exit animation"
     )
 
     @field_validator("island_back", "island_front")

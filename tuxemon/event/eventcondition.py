@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar, Optional
@@ -13,7 +14,7 @@ from tuxemon.constants.paths import (
     get_plugin_paths,
 )
 from tuxemon.db import Operator, SpatialCondition
-from tuxemon.plugin import load_plugins
+from tuxemon.plugin import PluginManager
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -54,11 +55,13 @@ class ConditionManager:
             CONDITIONS_PATH, "conditions", subfolder="event"
         )
 
-        self.conditions = load_plugins(
-            paths=plugin_folders,
+        manager = PluginManager.from_directory(
+            plugin_folders=plugin_folders,
             root_path=root_path,
-            category="conditions",
-            interface=EventCondition,
+        )
+
+        self.conditions: Mapping[str, type[EventCondition]] = (
+            manager.get_class_map(interface=EventCondition)
         )
 
     def get_condition(

@@ -18,6 +18,13 @@ Below is the list of all actions usable inside scripts, along with a description
 
 .. include:: action_list.rst
 
+Behaviors
+---------
+
+Below is the list of all behaviors usable inside scripts, along with a description of their parameters, if any.
+
+.. include:: behavior_list.rst
+
 Core Effects
 ---------------
 

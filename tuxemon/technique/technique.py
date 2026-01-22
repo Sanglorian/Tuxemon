@@ -26,6 +26,11 @@ from tuxemon.modifiers import ModifiersHandler
 from tuxemon.monster_dir.stats import BasicStats
 from tuxemon.surfanim import FlipAxes
 from tuxemon.technique.cooldown import Cooldown
+from tuxemon.technique.stats import (
+    TechniqueBaseStats,
+    TechniqueCurrentStats,
+    TechniqueCustomBoosts,
+)
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
@@ -52,19 +57,22 @@ class Technique:
 
         self.instance_id: UUID = uuid4()
         self.tech_id: int = 0
-        self.accuracy: float = 0.0
+
+        # Technique Stats
+        # Base: Immutable stats from DB (source of truth)
+        self.base_stats: TechniqueBaseStats = TechniqueBaseStats()
+        # Custom: Persistent boosts from save file (additive layer)
+        self.custom_boosts: TechniqueCustomBoosts = TechniqueCustomBoosts()
+        # Current: Dynamic stats used in battle (mutable)
+        self.stats = self.compute_stats()
+
         self.cooldown = Cooldown()
         self.visuals = VisualProperties(
             animation=None, flip_axes=FlipAxes.NONE, loop=-1
         )
         self.hit: bool = False
         self.speed: int = 0
-        self.potency: float = 0.0
-        self.power: float = 1.0
-        self.default_potency: float = 0.0
-        self.default_power: float = 1.0
         self.range: Range = Range.melee
-        self.healing_power: float = 0.0
         self.sound = SoundProperties(sfx=None, volume=1.5)
         self.sort: str = ""
         self.slug: str = ""
@@ -90,7 +98,6 @@ class Technique:
         self.attempts: int = 0
         self.successes: int = 0
         self.failures: int = 0
-
         self.set_state(save_data)
 
     @classmethod
@@ -114,6 +121,46 @@ class Technique:
         """Returns whether the technique is currently recharging."""
         return self.cooldown.is_recharging
 
+    @property
+    def power(self) -> float:
+        return self.stats.power
+
+    @power.setter
+    def power(self, value: float) -> None:
+        self.stats.power = value
+
+    @property
+    def potency(self) -> float:
+        return self.stats.potency
+
+    @potency.setter
+    def potency(self, value: float) -> None:
+        self.stats.potency = value
+
+    @property
+    def accuracy(self) -> float:
+        return self.stats.accuracy
+
+    @accuracy.setter
+    def accuracy(self, value: float) -> None:
+        self.stats.accuracy = value
+
+    @property
+    def healing_power(self) -> float:
+        return self.stats.healing_power
+
+    @healing_power.setter
+    def healing_power(self, value: float) -> None:
+        self.stats.healing_power = value
+
+    @property
+    def default_stats(self) -> TechniqueCurrentStats:
+        """
+        Returns the baseline stats (base + custom boosts),
+        without any temporary battle modifiers.
+        """
+        return self.compute_stats()
+
     def load(self, slug: str) -> None:
         """
         Loads and sets this technique's attributes from the technique
@@ -136,17 +183,17 @@ class Technique:
 
         # types
         self.types = ElementTypesHandler(results.types)
-        # technique stats
-        self.accuracy = results.accuracy
-        self.potency = results.potency
-        self.power = results.power
 
-        self.default_potency = results.potency
-        self.default_power = results.power
+        self.base_stats = TechniqueBaseStats(
+            accuracy=results.accuracy,
+            potency=results.potency,
+            power=results.power,
+            healing_power=results.healing_power,
+        )
+        self.reset_current_stats()
 
         self.speed = results.speed.numeric_value
         self.behaviors = results.behaviors
-        self.healing_power = results.healing_power
         self.cooldown.duration = results.recharge
         self.range = results.range
         self.tech_id = results.tech_id
@@ -163,6 +210,15 @@ class Technique:
 
         self.visuals = results.visuals
         self.sound = results.sound
+
+    def compute_stats(self) -> TechniqueCurrentStats:
+        return TechniqueCurrentStats(
+            power=self.base_stats.power + self.custom_boosts.power,
+            potency=self.base_stats.potency + self.custom_boosts.potency,
+            accuracy=self.base_stats.accuracy + self.custom_boosts.accuracy,
+            healing_power=self.base_stats.healing_power
+            + self.custom_boosts.healing_power,
+        )
 
     def can_use(self, session: Session, target: Monster) -> bool:
         if self.is_recharging:
@@ -211,12 +267,12 @@ class Technique:
         """
         return self.types.has_type(type_slug)
 
-    def set_stats(self) -> None:
+    def reset_current_stats(self) -> None:
         """
-        Reset technique stats default value.
+        Reset current stats to Base + Custom Boosts.
+        Called after battle or when technique is refreshed.
         """
-        self.potency = self.default_potency
-        self.power = self.default_power
+        self.stats = self.compute_stats()
 
     def get_state(self) -> Mapping[str, Any]:
         """
@@ -230,6 +286,10 @@ class Technique:
 
         save_data["instance_id"] = self.instance_id.hex
 
+        boosts_data = self.custom_boosts.to_dict()
+        if any(boosts_data.values()):
+            save_data["custom_boosts"] = boosts_data
+
         return save_data
 
     def set_state(self, save_data: Mapping[str, Any]) -> None:
@@ -240,6 +300,12 @@ class Technique:
             return
 
         self.load(save_data["slug"])
+
+        if "custom_boosts" in save_data:
+            self.custom_boosts = TechniqueCustomBoosts.from_dict(
+                save_data["custom_boosts"]
+            )
+        self.reset_current_stats()
 
         for key, value in save_data.items():
             if key == "instance_id" and value:

@@ -7,7 +7,8 @@
     "template": {
       "sprite_name": "tuxeball_green",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   },
   {
@@ -18,7 +19,8 @@
     "template": {
       "sprite_name": "tuxeball_red",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   },
   {
@@ -29,7 +31,8 @@
     "template": {
       "sprite_name": "tuxeball_violet",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   },
   {
@@ -40,7 +43,8 @@
     "template": {
       "sprite_name": "tuxeball_yellow",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   },
   {
@@ -51,7 +55,8 @@
     "template": {
       "sprite_name": "tuxeball",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   }
 ]

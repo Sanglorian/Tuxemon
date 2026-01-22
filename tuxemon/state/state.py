@@ -21,8 +21,6 @@ from tuxemon.state.animation_mixin import AnimationMixin
 from tuxemon.state.render_mixin import RenderMixin
 
 if TYPE_CHECKING:
-    pass
-
     from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)

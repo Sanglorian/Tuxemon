@@ -456,6 +456,12 @@ class CombatState(CombatAnimations):
             )
             monster.moves.recharge_moves()
 
+            if monster.locked_turns_left > 0:
+                continue
+
+            if monster.is_charging:
+                continue
+
             if char in self.combat_session.human_players:
                 # Still add to queue for menu interaction
                 self._decision_queue.append(monster)

@@ -41,7 +41,7 @@ from functools import partial
 from typing import TYPE_CHECKING, ClassVar
 
 from tuxemon.ai.manager import AIManager
-from tuxemon.animation import Animation, Task
+from tuxemon.animation import Task, TaskBase
 from tuxemon.animation_entity import AnimationManager
 from tuxemon.combat.combat_context import CombatContext
 from tuxemon.combat.machine import CombatMachine, CombatPhase
@@ -160,7 +160,7 @@ class CombatState(CombatAnimations):
         self.env = env
 
     @staticmethod
-    def is_task_finished(task: Task | Animation) -> bool:
+    def is_task_finished(task: TaskBase) -> bool:
         """
         Check if the task is finished or not.
         In case the task is in fact an animation, it's considered as finished

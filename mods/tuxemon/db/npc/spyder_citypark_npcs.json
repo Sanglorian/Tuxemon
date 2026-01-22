@@ -122,7 +122,8 @@
     "template": {
       "sprite_name": "box",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   },
   {
@@ -133,7 +134,8 @@
     "template": {
       "sprite_name": "box",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   },
   {
@@ -144,7 +146,8 @@
     "template": {
       "sprite_name": "box",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   },
   {
@@ -155,7 +158,8 @@
     "template": {
       "sprite_name": "box",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   },
   {
@@ -166,7 +170,8 @@
     "template": {
       "sprite_name": "box",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   },
   {

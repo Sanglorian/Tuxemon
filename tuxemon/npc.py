@@ -240,7 +240,7 @@ class NPC(Entity[NPCState]):
             self.template.combat_front = save_data.template.get(
                 "combat_front", ""
             )
-            self.sprite_controller.load_sprites(self.template)
+            self.sprite_controller.update_template(self.template)
 
     def get_active_battle_music(
         self, default_music: BattleMusicModel

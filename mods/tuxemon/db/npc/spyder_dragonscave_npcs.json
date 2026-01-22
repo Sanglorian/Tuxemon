@@ -220,7 +220,8 @@
     "template": {
       "sprite_name": "drokoro",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   },
   {

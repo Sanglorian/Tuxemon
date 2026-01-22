@@ -145,6 +145,9 @@ class Vector3(Vector):
             f"Unsupported operand type(s) for -: '{type(other).__name__}' and 'Vector3'"
         )
 
+    def copy(self) -> Vector3:
+        return Vector3(self.x, self.y, self.z)
+
     def __repr__(self) -> str:
         return f"Vector3({self.x}, {self.y}, {self.z})"
 
@@ -220,6 +223,9 @@ class Vector2(Vector):
         raise TypeError(
             f"Unsupported operand type(s) for -: '{type(other).__name__}' and 'Vector2'"
         )
+
+    def copy(self) -> Vector2:
+        return Vector2(self.x, self.y)
 
     def __repr__(self) -> str:
         return f"Vector3({self.x}, {self.y})"

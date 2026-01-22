@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from tuxemon.event import get_event_bus
 from tuxemon.monster_dir.listener import monster_update_listener
 
 if TYPE_CHECKING:
+    from tuxemon.entity import Entity
     from tuxemon.monster import Monster
     from tuxemon.session import Session
     from tuxemon.step_tracker import StepTrackerManager
@@ -34,6 +35,11 @@ class StepManager:
     ) -> None:
         self.session = session
         self.step_tracker = step_tracker_manager
+        session.client.event_bus.subscribe(
+            "entity_moved",
+            self._on_entity_moved,
+            priority=10,
+        )
 
     def handle_steps(
         self,
@@ -59,4 +65,25 @@ class StepManager:
             steps=steps_moved,
             monsters=monsters_in_party,
             session=self.session,
+        )
+
+    def _on_entity_moved(
+        self,
+        entity: Entity,
+        diff_x: float,
+        diff_y: float,
+        steps: float,
+        **kwargs: Any,
+    ) -> None:
+        from tuxemon.player import Player
+
+        if not isinstance(entity, Player):
+            return
+
+        entity.steps += steps
+        self.handle_steps(
+            diff_x=diff_x,
+            diff_y=diff_y,
+            steps_moved=steps,
+            monsters_in_party=entity.monsters,
         )

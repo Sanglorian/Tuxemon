@@ -55,7 +55,7 @@ class CreateNpcAction(EventAction):
         if session.client.npc_manager.npc_exists(slug):
             return
 
-        npc = NPC(slug, session=session)
+        npc = NPC.create(session, slug)
         session.client.npc_manager.place_npc_on_map(
             npc, slug, self.tile_pos_x, self.tile_pos_y
         )

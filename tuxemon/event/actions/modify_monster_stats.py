@@ -9,7 +9,7 @@ from typing import Optional, Union, final
 
 from tuxemon.db import StatType
 from tuxemon.event.eventaction import EventAction
-from tuxemon.formula import modify_stat
+from tuxemon.formula import modify_monster_custom_stat
 from tuxemon.monster import Monster
 from tuxemon.session import Session
 from tuxemon.tools import get_valid_uuid
@@ -73,7 +73,7 @@ class ModifyMonsterStatsAction(EventAction):
             monster: Monster, stat: StatType, amount: float
         ) -> None:
             method = "multiply" if isinstance(amount, float) else "add"
-            modify_stat(monster, stat.value, amount, method)
+            modify_monster_custom_stat(monster, stat.value, amount, method)
 
         if self.variable is None:
             for mon in player.monsters:

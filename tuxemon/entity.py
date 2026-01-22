@@ -7,7 +7,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Generic, Optional, TypeVar
 from uuid import UUID, uuid4
 
-from tuxemon.db import Direction
+from tuxemon.db import Direction, FacingMode
 from tuxemon.map.map import dirs2
 from tuxemon.math import Vector2
 from tuxemon.tools import vector2_to_tile_pos
@@ -80,12 +80,14 @@ class Mover:
         self,
         body: Body,
         facing: Direction = Direction.down,
+        facing_mode: FacingMode = FacingMode.FOLLOW_MOVEMENT,
         base_moverate: float = CONFIG.player_walkrate,
         moverate_modifier: float = 1.0,
     ) -> None:
         self.state = EntityState.IDLE
         self.body = body
         self.facing = facing
+        self.facing_mode = facing_mode
         self.base_moverate = base_moverate
         self.moverate_modifier = moverate_modifier
         self.move_direction: Optional[Direction] = None
@@ -106,7 +108,8 @@ class Mover:
         """Applies movement in a given direction."""
         direction_vector = dirs2[direction]  # 2D direction table
         self.body.velocity = direction_vector * self.moverate
-        self.facing = direction
+        if self.facing_mode == FacingMode.FOLLOW_MOVEMENT:
+            self.facing = direction
 
         new_state = (
             EntityState.RUNNING
@@ -280,6 +283,10 @@ class Entity(Generic[SaveDict]):
         """
         self.mover.facing = direction
 
+    def set_facing_mode(self, facing_mode: FacingMode) -> None:
+        """Sets the entity's facing mode."""
+        self.mover.facing_mode = facing_mode
+
     def set_move_direction(
         self, direction: Optional[Direction] = None
     ) -> None:
@@ -338,6 +345,10 @@ class Entity(Generic[SaveDict]):
     @property
     def facing(self) -> Direction:
         return self.mover.facing
+
+    @property
+    def facing_mode(self) -> FacingMode:
+        return self.mover.facing_mode
 
     @property
     def move_direction(self) -> Optional[Direction]:

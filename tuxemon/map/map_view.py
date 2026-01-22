@@ -17,7 +17,7 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 
 from tuxemon.camera.camera import project
-from tuxemon.db import Direction
+from tuxemon.db import Direction, FacingMode
 from tuxemon.graphics import ColorLike, apply_cinema_bars, load_and_scale
 from tuxemon.map.map import get_pos_from_tilepos
 from tuxemon.math import Vector2
@@ -156,9 +156,16 @@ class SpriteController:
         """Load sprite graphics based on the template."""
         self.sprite_renderer.load_sprites(template, self.npc.tile_pos)
 
-    def play_animation(self) -> None:
-        """Play the sprite animation."""
-        self.sprite_renderer.play()
+    def play_animation(self, move_dir: Direction) -> None:
+        if self.npc.facing_mode != FacingMode.FOLLOW_MOVEMENT:
+            facing = self.npc.facing.value
+            ani_key = SpriteRenderer.ANIMATION_MAPPING["walking"][facing]
+        else:
+            ani_key = SpriteRenderer.ANIMATION_MAPPING["walking"][
+                move_dir.value
+            ]
+
+        self.sprite_renderer.play(ani_key)
 
     def stop_animation(self) -> None:
         """Stop the sprite animation."""
@@ -302,8 +309,17 @@ class SpriteRenderer:
             raise ValueError(f"Facing '{facing}' not found.")
         return sprites[facing]
 
-    def play(self) -> None:
-        """Play the sprite animation."""
+    def play(self, ani_key: str | None = None) -> None:
+        """Play the sprite animation.
+
+        If ani_key is provided, switch to that animation first.
+        Otherwise, just resume whatever is currently active.
+        """
+        if ani_key is not None:
+            animation = self.sprite[ani_key]
+            self.surface_animations.clear()
+            self.surface_animations.add(animation)
+
         self.surface_animations.play()
 
     def stop(self) -> None:

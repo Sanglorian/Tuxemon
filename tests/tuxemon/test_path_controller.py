@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tuxemon.db import Direction
+from tuxemon.db import Direction, FacingMode
 from tuxemon.entity_dir.path import PathController, tile_distance
 from tuxemon.map.map import dirs2
 from tuxemon.math import Vector2
@@ -56,6 +56,7 @@ def mk_npc_with_mocks():
         mover = MagicMock()
         mover.move = MagicMock()
         npc.mover = mover
+        npc.facing_mode = FacingMode.FOLLOW_MOVEMENT
         sprite = MagicMock()
         sprite.play_animation = MagicMock()
         sprite.stop_animation = MagicMock()

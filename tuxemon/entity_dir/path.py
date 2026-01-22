@@ -7,7 +7,7 @@ from collections.abc import Iterable
 from math import hypot
 from typing import TYPE_CHECKING, Optional
 
-from tuxemon.db import Direction
+from tuxemon.db import Direction, FacingMode
 from tuxemon.map.map import dirs2, get_direction
 from tuxemon.math import Vector2
 from tuxemon.tools import vector2_to_tile_pos
@@ -144,8 +144,10 @@ class PathController:
             return
 
         target = self.path[-1]
-        direction = get_direction(self.owner.position, target)
-        self.owner.set_facing(direction)
+        move_dir = get_direction(self.owner.tile_pos, target)
+        if self.owner.facing_mode == FacingMode.FOLLOW_MOVEMENT:
+            direction = get_direction(self.owner.position, target)
+            self.owner.set_facing(direction)
 
         try:
             if self._pathfinder.is_tile_traversable(
@@ -165,9 +167,9 @@ class PathController:
                 # To fully resolve this issue, the game will eventually need
                 # a dedicated global clock—not reliant on wall time—to eliminate
                 # visual glitches and ensure frame accuracy.
-                self.owner.sprite_controller.play_animation()
+                self.owner.sprite_controller.play_animation(move_dir)
                 self.path_origin = self.owner.tile_pos
-                self.owner.mover.move(self.owner.facing)
+                self.owner.mover.move(move_dir)
                 self.owner.remove_collision()
             else:
                 self.owner.stop_moving()
@@ -264,7 +266,8 @@ class PathController:
             direction: The direction in which to move.
             strength: The maximum number of tiles to attempt moving through.
         """
-        self.owner.set_facing(direction)
+        if self.owner.facing_mode == FacingMode.FOLLOW_MOVEMENT:
+            self.owner.set_facing(direction)
 
         origin = self.path[-1] if self.path else self.owner.tile_pos
         steps = []

@@ -2,8 +2,10 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, Union
+import logging
+import random
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from tuxemon.combat.sort_manager import SortManager
 from tuxemon.monster import Monster
@@ -14,12 +16,15 @@ from tuxemon.technique.technique import Technique
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class EnqueuedAction:
-    user: Union[Monster, NPC, None]
-    method: Union[Technique, Item, Status, None]
+    user: Monster | NPC | None
+    method: Technique | Item | Status | None
     target: Monster
+    sub_priority: float = field(default_factory=random.random)
 
     def __repr__(self) -> str:
         return f"EnqueuedAction(user={self.user}, method={self.method}, target={self.target})"
@@ -53,7 +58,7 @@ class ActionHistory:
         """Returns the total number of actions recorded in history."""
         return len(self.history)
 
-    def get_last_action(self) -> Optional[EnqueuedAction]:
+    def get_last_action(self) -> EnqueuedAction | None:
         """Retrieves the last action recorded in history."""
         return self.history[-1][1] if self.history else None
 
@@ -73,6 +78,7 @@ class ActionQueue:
         self._action_queue: list[EnqueuedAction] = []
         self._pending_queue: list[tuple[int, EnqueuedAction]] = []
         self._action_history = ActionHistory()
+        self.current_turn = 0
 
     @property
     def queue(self) -> list[EnqueuedAction]:
@@ -89,6 +95,9 @@ class ActionQueue:
         """Returns the pending actions."""
         return self._pending_queue
 
+    def set_current_turn(self, turn: int) -> None:
+        self.current_turn = turn
+
     def enqueue(self, action: EnqueuedAction, turn: int) -> None:
         """Adds an action to the end of the queue and history."""
         self._action_queue.append(action)
@@ -99,40 +108,47 @@ class ActionQueue:
         self._pending_queue.append((turn, action))
 
     def autoclean_pending(self) -> None:
-        """Removes actions from the pending queue under certain conditions."""
-        self._pending_queue = [
-            (turn, pend)
-            for turn, pend in self._pending_queue
-            if not (
-                (
-                    pend.user
-                    and isinstance(pend.user, Monster)
-                    and pend.user.is_fainted
-                )
-                or pend.target.is_fainted
+        """Remove pending actions that are outdated or involve fainted monsters."""
+        current = self.current_turn
+        cleaned = []
+
+        for turn, action in self._pending_queue:
+            user_fainted = (
+                isinstance(action.user, Monster) and action.user.is_fainted
             )
-        ]
+            target_fainted = action.target and action.target.is_fainted
+
+            if turn >= current and not (user_fainted or target_fainted):
+                cleaned.append((turn, action))
+
+        self._pending_queue = cleaned
 
     def from_pending_to_action(self, turn: int) -> None:
         """
         Removes actions from the pending queue and implements them in the
         action queue.
         """
-        for _turn, pend in self._pending_queue[:]:
-            if _turn == turn:
-                self.enqueue(pend, turn)
-                self._pending_queue.remove((turn, pend))
+        to_move = [pend for t, pend in self._pending_queue if t == turn]
+        self._pending_queue = [
+            (t, p) for t, p in self._pending_queue if t != turn
+        ]
+
+        for action in to_move:
+            self.enqueue(action, turn)
 
     def dequeue(self, action: EnqueuedAction) -> None:
         """Removes an action from the queue if it exists."""
         try:
             self._action_queue.remove(action)
+            self.remove_from_history(action)
         except ValueError:
             raise ValueError(f"Action {action} not found in queue")
 
     def pop(self) -> EnqueuedAction:
         """Removes and returns the last action from the queue."""
-        return self._action_queue.pop()
+        action = self._action_queue.pop()
+        self.remove_from_history(action)
+        return action
 
     def is_empty(self) -> bool:
         """Returns True if the queue is empty, False otherwise."""
@@ -140,6 +156,9 @@ class ActionQueue:
 
     def clear_queue(self) -> None:
         """Clears the entire queue."""
+        for _, action in list(self._action_history.history):
+            if action in self._action_queue:
+                self.remove_from_history(action)
         self._action_queue.clear()
 
     def clear_history(self) -> None:
@@ -151,45 +170,54 @@ class ActionQueue:
         self._pending_queue.clear()
 
     def sort(self) -> None:
-        """
-        Sorts the queue based on the action's sort key (game rules).
-        * Techniques that damage are sorted by monster speed (fastest monsters first)
-        * Items are sorted by trainer speed (fastest trainers first)
-        * Actions are ordered from lowest to highest priority, with the highest priority
-        actions last in the queue.
-        """
-        self._action_queue.sort(
-            key=SortManager.get_action_sort_key, reverse=True
-        )
+        """Sort the action queue using cached sort keys for efficiency."""
+        key_cache = {
+            id(action): SortManager.get_action_sort_key(action)
+            for action in self._action_queue
+        }
+
+        self._action_queue.sort(key=lambda a: key_cache[id(a)], reverse=True)
+
+        # Tie-breaker logging
+        for a, b in zip(self._action_queue, self._action_queue[1:]):
+            ka = key_cache[id(a)]
+            kb = key_cache[id(b)]
+
+            if (
+                ka.primary_order == kb.primary_order
+                and ka.speed == kb.speed
+                and a.user
+                and b.user
+            ):
+                logger.debug(
+                    f"Speed Tie: {a.user.name} vs {b.user.name} resolved by tie-breaker."
+                )
 
     def swap(self, old: Monster, new: Monster) -> None:
-        """Swaps the target of all actions in the queue from old to new."""
-        for index, action in enumerate(self._action_queue):
-            if action.target == old:
-                self.__replace(index, action.user, action.method, new)
+        """Redirect all actions targeting 'old' to target 'new'."""
+        for action in self._action_queue:
+            if action.target is old:
+                action.target = new
 
     def rewrite(
-        self, monster: Monster, method: Union[Technique, Item, Status]
+        self, monster: Monster, method: Technique | Item | Status
     ) -> None:
-        """Rewrites the method of all actions in the queue for the given monster."""
-        for index, action in enumerate(self._action_queue):
-            if action.user == monster:
-                self.__replace(index, monster, method, action.target)
+        """Rewrite the method of all actions performed by the given monster."""
+        for action in self._action_queue:
+            if action.user is monster:
+                action.method = method
 
-    def __replace(
-        self,
-        index: int,
-        user: Union[Monster, NPC, None],
-        method: Union[Technique, Item, Status, None],
-        target: Monster,
-    ) -> None:
-        """Replaces an action in the queue at the given index."""
-        new_action = EnqueuedAction(user, method, target)
-        self._action_queue[index] = new_action
+    def remove_from_history(self, action: EnqueuedAction) -> None:
+        """Remove the exact action instance from history."""
+        self._action_history.history = [
+            (t, a)
+            for (t, a) in self._action_history.history
+            if a is not action
+        ]
 
     def get_last_action(
         self, turn: int, monster: Monster, field: str
-    ) -> Optional[EnqueuedAction]:
+    ) -> EnqueuedAction | None:
         """
         Retrieves the last action involving the specified monster in the given turn.
 
@@ -224,3 +252,36 @@ class ActionQueue:
             A list of actions that occurred in the specified turn.
         """
         return self._action_history.get_actions_by_turn(turn)
+
+    def remove_monster_actions(self, monster: Monster) -> None:
+        """Remove all actions involving the given monster from queue, pending, and history."""
+
+        # Remove from main queue
+        self._action_queue = [
+            action
+            for action in self._action_queue
+            if action.user is not monster and action.target is not monster
+        ]
+
+        # Remove from pending queue
+        self._pending_queue = [
+            (t, action)
+            for (t, action) in self._pending_queue
+            if action.user is not monster and action.target is not monster
+        ]
+
+        # Remove from history
+        self._action_history.history = [
+            (t, action)
+            for (t, action) in self._action_history.history
+            if action.user is not monster and action.target is not monster
+        ]
+
+    def schedule_action_in_turns(
+        self, action: EnqueuedAction, turns: int
+    ) -> None:
+        target_turn = self.current_turn + turns
+        self.add_pending(action, target_turn)
+
+    def has_pending_for(self, monster: Monster) -> bool:
+        return any(action.user is monster for _, action in self._pending_queue)

@@ -299,9 +299,9 @@ class MonsterMovesHandler:
         for move in self.moves:
             move.full_recharge()
 
-    def set_stats(self) -> None:
+    def reset_current_stats(self) -> None:
         for move in self.moves:
-            move.set_stats()
+            move.reset_current_stats()
 
     def find_tech_by_id(self, instance_id: UUID) -> Optional[Technique]:
         """Finds a technique among the monster's moves which has the given id."""

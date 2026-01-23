@@ -45,7 +45,7 @@ def persistent_npcs(session):
         ("map_b", "npcs_off_map"),  # NPC off current map
     ],
 )
-@patch("tuxemon.npc_manager.NPC")
+@patch("tuxemon.npc_manager.NPC.from_save")
 def test_load_persistent_npc_states(
     MockNPC, npc_manager, session, map_name, expected_location
 ):
@@ -71,7 +71,7 @@ def test_load_persistent_npc_states_skips_none_slug(npc_manager, session):
     assert npc_manager.npcs_off_map == {}
 
 
-@patch("tuxemon.npc_manager.NPC")
+@patch("tuxemon.npc_manager.NPC.from_save")
 def test_persistence_round_trip(
     MockNPC, npc_manager, session, persistent_npcs
 ):
@@ -92,7 +92,7 @@ def test_persistence_round_trip(
     assert "npc_2" not in npc_manager.npcs
 
 
-@patch("tuxemon.npc_manager.NPC")
+@patch("tuxemon.npc_manager.NPC.from_save")
 def test_load_persistent_overwrites_duplicate_slugs(
     MockNPC, npc_manager, session
 ):
@@ -125,7 +125,7 @@ def test_get_persistent_npc_states_ignores_non_persistent(
     assert states == []
 
 
-@patch("tuxemon.npc_manager.NPC")
+@patch("tuxemon.npc_manager.NPC.from_save")
 def test_load_persistent_mixed_valid_invalid(MockNPC, npc_manager, session):
     valid = MagicMock(player_slug="npc_ok", current_map="map_a")
     invalid = MagicMock(player_slug=None, current_map="map_a")
@@ -136,7 +136,7 @@ def test_load_persistent_mixed_valid_invalid(MockNPC, npc_manager, session):
     assert npc_manager.npcs_off_map == {}
 
 
-@patch("tuxemon.npc_manager.NPC")
+@patch("tuxemon.npc_manager.NPC.from_save")
 def test_load_persistent_does_not_clear_existing(
     MockNPC, npc_manager, session
 ):
@@ -215,7 +215,7 @@ def test_get_entity_pos_only_checks_on_map(npc_manager):
     assert npc_manager.get_entity_pos((1, 1)) is npc_on
 
 
-@patch("tuxemon.npc_manager.NPC")
+@patch("tuxemon.npc_manager.NPC.from_save")
 def test_load_persistent_does_not_clear_existing(
     MockNPC, npc_manager, session
 ):

@@ -58,10 +58,11 @@ class GrabbedEffect(CoreEffect):
         if status.has_phase(EffectPhase.PERFORM_STATUS):
             done = True
         elif status.has_phase(EffectPhase.ON_END):
-            host.moves.set_stats()
+            host.moves.reset_current_stats()
 
         if done and moves:
             for move in moves:
-                move.potency = move.default_potency / self.divisor
-                move.power = move.default_power / self.divisor
+                move.stats.potency = move.default_stats.potency / self.divisor
+                move.stats.power = move.default_stats.power / self.divisor
+
         return StatusEffectResult(name=status.name, success=done)

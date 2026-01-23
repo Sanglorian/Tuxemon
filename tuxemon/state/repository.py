@@ -6,6 +6,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from tuxemon.state.loader import StateLoader
     from tuxemon.state.state import State
 
 logger = logging.getLogger(__name__)
@@ -14,6 +15,12 @@ logger = logging.getLogger(__name__)
 class StateRepository:
     def __init__(self) -> None:
         self._state_dict: dict[str, type[State]] = {}
+
+    @classmethod
+    def from_loader(cls, loader: StateLoader) -> StateRepository:
+        repo = cls()
+        loader.auto_state_discovery(repo)
+        return repo
 
     def add_state(self, state: type[State], strict: bool = False) -> None:
         """

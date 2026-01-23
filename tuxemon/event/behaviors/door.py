@@ -16,6 +16,35 @@ from tuxemon.event.eventbehavior import EventBehavior
 
 @dataclass
 class DoorBehavior(EventBehavior):
+    """
+    Expand a `door` behavior into the conditions and actions required
+    to transition a character through a doorway or portal.
+
+    This behavior triggers when:
+        - The character is standing on the door tile.
+        - The character is facing the required direction.
+
+    Once triggered, the character is teleported to the specified
+    destination coordinates and oriented to the given direction.
+
+    Script usage:
+        .. code-block::
+
+            door <character>,<destination>,<x>,<y>,<direction>
+
+    Script parameters:
+        character: The character slug (e.g. "player" or an NPC).
+        destination: The map slug to teleport to.
+        x: X-coordinate on the destination map.
+        y: Y-coordinate on the destination map.
+        direction: The direction the character must face to activate
+            the door, and the direction they will face after teleporting.
+
+    Examples:
+        door player,house_interior,5,3,up
+        door npc_guard,town_square,10,12,right
+    """
+
     name = "door"
 
     def expand(

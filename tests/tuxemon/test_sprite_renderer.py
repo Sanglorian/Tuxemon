@@ -1,155 +1,204 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-from pathlib import Path
-from unittest import TestCase
-from unittest.mock import MagicMock, patch
+from unittest.mock import Mock
 
 import pygame
-from pygame.surface import Surface
+import pytest
 
-from tuxemon.map.map_view import EntityFacing, SpriteController
-from tuxemon.npc import NPC
-from tuxemon.surfanim import SurfaceAnimation
+from tuxemon.map.map_view import EntityFacing, SpriteRenderer
+from tuxemon.prepare import SCREEN_SIZE, TILE_SIZE
+from tuxemon.user_config import CONFIG
+
+pygame.display.init()
 
 
-class TestSpriteRenderer(TestCase):
+def make_frame(w=16, h=32):
+    return pygame.Surface((w, h))
 
-    @classmethod
-    def setUpClass(cls):
-        pygame.init()
-        pygame.display.set_mode((1, 1))
 
-    @classmethod
-    def tearDownClass(cls):
-        pygame.quit()
+def fake_sheet(rows=4, cols=3, w=16, h=32):
+    return [make_frame(w, h) for _ in range(rows * cols)]
 
-    def setUp(self):
-        self.npc_template = MagicMock()
-        self.npc_template.sprite_name = "adventurer"
-        self.npc_template.slug = "adventurer"
-        self.npc = MagicMock(spec=NPC)
-        self.npc.template = self.npc_template
-        self.npc.tile_pos = (10, 20)
-        self.npc.moving = False
-        self.npc.moverate = 1.0
-        self.sprite_controller = SpriteController(self.npc)
-        self.sprite_renderer = self.sprite_controller.get_sprite_renderer()
 
-    @patch("tuxemon.graphics.load_and_scale")
-    def test_load_sprites_npc(self, mock_load_and_scale):
-        mock_surface = MagicMock(spec=Surface)
-        mock_surface.get_size.return_value = (32, 32)
-        mock_load_and_scale.return_value = mock_surface
-        self.sprite_controller.load_sprites(self.npc.template)
+def test_load_static_prop(monkeypatch):
+    npc = Mock()
+    npc.template = Mock(
+        is_static_prop=True,
+        sprite_name="sign",
+        frame_divisor=3,
+        speed_factor=1.0,
+        animation_speed=1.0,
+    )
+    npc.moverate = 1.0
+    npc.tile_pos = (100, 200)
 
-        self.assertEqual(len(self.sprite_renderer.standing), 4)
-        self.assertEqual(len(self.sprite_renderer.sprite), 4)
-        self.assertEqual(self.sprite_renderer.player_width, 80)
-        self.assertEqual(self.sprite_renderer.player_height, 160)
-        self.assertEqual(self.sprite_renderer.rect.topleft, (10, 20))
+    fake_surface = make_frame(32, 32)
 
-    @patch("tuxemon.graphics.load_and_scale")
-    def test_load_sprites_interactive_object(self, mock_load_and_scale):
-        self.npc_template = MagicMock()
-        self.npc_template.sprite_name = "screen"
-        self.npc_template.slug = "interactive_obj"
-        mock_surface = MagicMock(spec=Surface)
-        mock_surface.get_size.return_value = (32, 32)
-        mock_load_and_scale.return_value = mock_surface
-        self.sprite_controller.load_sprites(self.npc.template)
+    monkeypatch.setattr(
+        "tuxemon.map.map_view.load_and_scale_with_cache",
+        lambda p: fake_surface,
+    )
 
-        self.assertEqual(len(self.sprite_renderer.standing), 4)
-        self.assertEqual(len(self.sprite_renderer.sprite), 4)
-        self.assertEqual(self.sprite_renderer.player_width, 80)
-        self.assertEqual(self.sprite_renderer.player_height, 160)
-        self.assertEqual(self.sprite_renderer.rect.topleft, (10, 20))
+    renderer = SpriteRenderer(npc)
+    renderer.load_sprites(npc.template)
 
-    @patch("tuxemon.graphics.load_and_scale")
-    def test_load_walking_animations(self, mock_load_and_scale):
-        mock_surface = MagicMock(spec=Surface)
-        mock_load_and_scale.return_value = mock_surface
-        self.sprite_renderer._load_walking_animations(self.npc.template)
+    assert renderer.standing[EntityFacing.front] is fake_surface
+    assert renderer.sprite == {}  # no animations
 
-        self.assertEqual(len(self.sprite_renderer.sprite), 4)
-        for anim in self.sprite_renderer.sprite.values():
-            self.assertIsInstance(anim, SurfaceAnimation)
 
-    def test_calculate_frame_duration(self):
-        # * 1000 / user_config.CONFIG.player_walkrate: This calculates the time
-        #  (in milliseconds) it takes for a single "step" in the walking animation.
-        # * / 3: The walking animation has 3 distinct frames (two walking poses
-        #  and two identical idle poses), so we divide the step time by 3 to get
-        # the time per frame.
-        # * / 1000: This converts the time from milliseconds to seconds.
-        # * * 2: Because the idle frame is repeated, we multiply by 2 to account
-        # for the total time spent showing all the frames in the animation.
-        rate = 2.0
-        duration = self.sprite_renderer._calculate_frame_duration(rate=rate)
-        self.assertEqual(duration, 1 / 3)
+def test_load_from_sheet(monkeypatch):
+    npc = Mock()
+    npc.template = Mock(
+        is_static_prop=False,
+        sprite_name="hero",
+        frame_width=16,
+        frame_height=32,
+        rows=4,
+        columns=3,
+        frame_divisor=3,
+        speed_factor=2.0,
+        animation_speed=1.0,
+    )
+    npc.moverate = 1.0
+    npc.tile_pos = (0, 0)
 
-    def test_get_facing_frame_standing(self):
-        mock_standing_surface = Surface((80, 160))
-        self.sprite_renderer.standing[EntityFacing.front] = (
-            mock_standing_surface
-        )
+    monkeypatch.setattr(
+        "tuxemon.map.map_view.slice_spritesheet",
+        lambda *args, **kwargs: fake_sheet(),
+    )
 
-        frame = self.sprite_renderer.get_facing_frame(
-            EntityFacing.front,
-            self.sprite_renderer.standing,
-        )
+    renderer = SpriteRenderer(npc)
+    renderer.load_sprites(npc.template)
 
-        self.assertEqual(frame, mock_standing_surface)
+    assert len(renderer.standing) == 4
 
-    def test_get_animation_frame_walking(self):
-        mock_surface = MagicMock(spec=Surface)
-        mock_anim = MagicMock(spec=SurfaceAnimation)
-        mock_anim.get_current_frame.return_value = mock_surface
+    assert "front" in renderer.sprite
+    assert "left" in renderer.sprite
+    assert "right" in renderer.sprite
+    assert "back" in renderer.sprite
 
-        self.sprite_renderer.sprite["front_walk"] = mock_anim
+    assert "front_walk" in renderer.sprite
+    assert "left_walk" in renderer.sprite
+    assert "right_walk" in renderer.sprite
+    assert "back_walk" in renderer.sprite
 
-        frame = self.sprite_renderer.get_animation_frame(
-            "front_walk",
-            self.sprite_renderer.sprite,
-            self.npc,
-        )
 
-        self.assertEqual(frame, mock_surface)
+def test_walking_animation_pattern(monkeypatch):
+    npc = Mock()
+    npc.template = Mock(
+        is_static_prop=False,
+        sprite_name="hero",
+        frame_width=16,
+        frame_height=32,
+        rows=4,
+        columns=3,
+        frame_divisor=3,
+        speed_factor=2.0,
+        animation_speed=1.0,
+    )
+    npc.moverate = 1.0
+    npc.tile_pos = (0, 0)
 
-    def test_get_animation_frame_not_found(self):
-        with self.assertRaises(ValueError):
-            self.sprite_renderer.get_animation_frame(
-                "nonexistent_animation",
-                self.sprite_renderer.sprite,
-                self.npc,
-            )
+    frames = fake_sheet()
+    monkeypatch.setattr(
+        "tuxemon.map.map_view.slice_spritesheet",
+        lambda *args, **kwargs: frames,
+    )
 
-    @patch("tuxemon.graphics.load_and_scale")
-    def adventurer_loading_paths(self, mock_load_and_scale):
-        mock_load_and_scale.return_value = Surface((1, 1))
-        self.sprite_controller.load_sprites(self.npc.template)
-        expected_paths = [
-            Path("sprites") / "adventurer_front.png",
-            Path("sprites") / "adventurer_back.png",
-            Path("sprites") / "adventurer_left.png",
-            Path("sprites") / "adventurer_right.png",
-            Path("sprites") / "adventurer_front_walk.000.png",
-            Path("sprites") / "adventurer_front.png",
-            Path("sprites") / "adventurer_front_walk.001.png",
-            Path("sprites") / "adventurer_front.png",
-            Path("sprites") / "adventurer_back_walk.000.png",
-            Path("sprites") / "adventurer_back.png",
-            Path("sprites") / "adventurer_back_walk.001.png",
-            Path("sprites") / "adventurer_back.png",
-            Path("sprites") / "adventurer_left_walk.000.png",
-            Path("sprites") / "adventurer_left.png",
-            Path("sprites") / "adventurer_left_walk.001.png",
-            Path("sprites") / "adventurer_left.png",
-            Path("sprites") / "adventurer_right_walk.000.png",
-            Path("sprites") / "adventurer_right.png",
-            Path("sprites") / "adventurer_right_walk.001.png",
-            Path("sprites") / "adventurer_right.png",
-        ]
-        actual_paths = [
-            call[0][0] for call in mock_load_and_scale.call_args_list
-        ]
-        self.assertEqual(actual_paths, expected_paths)
+    renderer = SpriteRenderer(npc)
+    renderer.load_sprites(npc.template)
+
+    walk = renderer.sprite["front_walk"]
+    images = walk._frame_manager.images
+
+    assert images[0] is frames[1]
+    assert images[1] is frames[0]
+    assert images[2] is frames[1]
+    assert images[3] is frames[2]
+
+
+def test_tall_sprite_offset(monkeypatch):
+    npc = Mock()
+    npc.template = Mock(
+        is_static_prop=False,
+        sprite_name="hero",
+        frame_width=16,
+        frame_height=64,
+        rows=4,
+        columns=3,
+        frame_divisor=3,
+        speed_factor=2.0,
+        animation_speed=1.0,
+    )
+    npc.moverate = 1.0
+    npc.tile_pos = (100, 200)
+
+    # Real pygame surfaces
+    frames = [pygame.Surface((16, 64)) for _ in range(12)]
+
+    monkeypatch.setattr(
+        "tuxemon.map.map_view.slice_spritesheet",
+        lambda *args, **kwargs: frames,
+    )
+
+    monkeypatch.setattr("tuxemon.user_config.CONFIG.player_walkrate", 1.0)
+
+    renderer = SpriteRenderer(npc)
+    renderer.load_sprites(npc.template)
+
+    expected_offset = 64 - TILE_SIZE[1]
+    assert renderer.rect.y == 200 - expected_offset
+
+
+def test_frame_duration():
+    template = Mock(
+        frame_divisor=3,
+        speed_factor=2.0,
+        animation_speed=1.0,
+    )
+
+    npc = Mock(template=template, moverate=1.0)
+
+    renderer = SpriteRenderer(npc)
+    duration = renderer.frame_duration
+
+    expected = (1000 / 1.0) / 3 / 1000 * 2.0 * 1.0
+    assert duration == expected
+
+
+def test_get_animation_frame_updates_rate(monkeypatch):
+    monkeypatch.setattr("tuxemon.user_config.CONFIG.player_walkrate", 1.0)
+
+    npc = Mock(moverate=2.0)
+    npc.template = Mock(
+        frame_divisor=3,
+        speed_factor=2.0,
+        animation_speed=1.0,
+    )
+
+    renderer = SpriteRenderer(npc)
+
+    anim = Mock()
+    anim.get_current_frame.return_value = "FRAME"
+
+    renderer.sprite = {"front_walk": anim}
+
+    frame = renderer.get_animation_frame("front_walk", renderer.sprite, npc)
+
+    assert anim.rate == npc.moverate / CONFIG.player_walkrate
+    assert frame == "FRAME"
+
+
+def test_missing_animation_raises(monkeypatch):
+    monkeypatch.setattr("tuxemon.user_config.CONFIG.player_walkrate", 1.0)
+    npc = Mock(moverate=1.0)
+    npc.template = Mock(
+        frame_divisor=3,
+        speed_factor=2.0,
+        animation_speed=1.0,
+    )
+
+    renderer = SpriteRenderer(npc)
+
+    with pytest.raises(ValueError):
+        renderer.get_animation_frame("does_not_exist", {}, npc)

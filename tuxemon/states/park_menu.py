@@ -125,7 +125,7 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
             yield menu
 
     def run(self) -> None:
-        self.combat.clean_combat()
+        self.event_bus.publish("clean_combat")
         self.client.combat_session.reset()
 
     def check_category(self, cat_slug: str) -> int:

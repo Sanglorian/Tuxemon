@@ -10,17 +10,24 @@ from tuxemon.event.running import ConditionEvaluator
 
 
 @pytest.fixture
-def mock_load_plugins():
-    with patch("tuxemon.plugin.load_plugins") as mock:
+def mock_plugin_manager():
+    with patch("tuxemon.plugin.PluginManager.from_directory") as mock:
         yield mock
 
 
 @pytest.fixture
-def condition_manager(mock_load_plugins):
-    mock_condition_class = MagicMock()
-    mock_load_plugins.return_value = {"char_at": mock_condition_class}
+def condition_manager(mock_plugin_manager):
+
+    class DummyCondition(EventCondition):
+        name = "char_at"
+
+        def test(self, session, condition_data):
+            return True
+
+    fake_manager = MagicMock()
+    fake_manager.get_class_map.return_value = {"char_at": DummyCondition}
+    mock_plugin_manager.return_value = fake_manager
     manager = ConditionManager()
-    manager._mock_condition_class = mock_condition_class
     return manager
 
 
@@ -46,7 +53,6 @@ def test_get_condition_with_parameters(condition_manager):
     mock_cond_data.type = "char_at"
     mock_cond_data.operator = "is"
     mock_cond_data.parameters = ["hero", 0, "H"]
-    condition_manager._mock_condition_class.return_value = MagicMock()
     condition = condition_manager.get_condition(mock_cond_data)
     assert condition is not None
     assert condition.is_expected is True

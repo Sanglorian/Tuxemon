@@ -223,10 +223,13 @@ def test_real_plugin_loading(tmp_path):
     (plugin_dir / "__init__.py").write_text("")
 
     plugin_file = plugin_dir / "myplugin.py"
-    plugin_file.write_text("""
+
+    plugin_code = """\
 class MyPlugin:
     name = "myplugin"
-""")
+"""
+
+    plugin_file.write_text(plugin_code)
 
     import sys
 

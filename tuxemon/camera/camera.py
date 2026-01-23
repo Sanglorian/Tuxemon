@@ -6,7 +6,7 @@ import logging
 import math
 import random
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Optional
 
 from pygame.rect import Rect
 
@@ -187,7 +187,7 @@ class CameraView:
 class CameraTracker:
     """Manages camera tracking and smooth transitions to target positions."""
 
-    def __init__(self, view: CameraView, entity: Entity[Any]):
+    def __init__(self, view: CameraView, entity: Entity):
         """
         Initializes the tracker with a camera view and target entity.
         """
@@ -239,7 +239,7 @@ class CameraTracker:
             self.view.position.x += step * (dx / distance)
             self.view.position.y += step * (dy / distance)
 
-    def set_entity(self, entity: Entity[Any], reset: bool = False) -> None:
+    def set_entity(self, entity: Entity, reset: bool = False) -> None:
         """
         Sets the tracker to follow the given entity, optionally snapping
         immediately.
@@ -287,7 +287,7 @@ class CameraEffects:
 
 
 class Camera:
-    def __init__(self, entity: Entity[Any], boundary: BoundaryChecker):
+    def __init__(self, entity: Entity, boundary: BoundaryChecker):
         self.view = CameraView(TILE_SIZE, SCREEN_SIZE)
         self.tracker = CameraTracker(self.view, entity)
         self.effects = CameraEffects(self.view)
@@ -355,7 +355,7 @@ class Camera:
         self.tracker.pending_follow = True
 
     def switch_entity(
-        self, new_entity: Optional[Entity[Any]] = None, reset: bool = False
+        self, new_entity: Optional[Entity] = None, reset: bool = False
     ) -> None:
         """
         Switches the camera's target to a new entity, or restores the original

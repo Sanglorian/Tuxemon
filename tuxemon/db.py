@@ -1775,44 +1775,72 @@ class TemplateModel(BaseModel):
 
 class NpcTemplateModel(TemplateModel):
     sprite_name: str = Field(
-        ..., description="Name of the overworld sprite filename"
+        ...,
+        description="Base filename of the overworld sprite sheet (without extension)",
+    )
+    frame_width: int = Field(
+        16,
+        description="Width of a single animation frame in the sheet",
+    )
+    frame_height: int = Field(
+        32,
+        description="Height of a single animation frame in the sheet",
+    )
+    rows: int = Field(
+        4,
+        description="Number of directional rows (front, left, right, back)",
+    )
+    columns: int = Field(
+        3,
+        description="Frames per row (walk1, idle, walk2)",
+    )
+    is_static_prop: bool = Field(
+        False,
+        description="If True, this NPC uses a single static sprite instead of a sheet",
+    )
+    animation_speed: float = Field(
+        1.0,
+        description="Multiplier for animation playback speed",
+    )
+    frame_divisor: int = Field(
+        3,
+        description="How many frames per movement cycle",
+    )
+    speed_factor: float = Field(
+        2.0,
+        description="Additional speed scaling for this NPC",
     )
     combat_front: str = Field(
-        ..., description="Name of the battle front sprite filename"
+        ...,
+        description="Filename of the battle front sprite (without extension)",
     )
 
+    @field_validator("sprite_name")
+    def validate_sheet_exists(cls, v: str) -> str:
+        """
+        Validate that either:
+        - sprites/<name>.png exists (sheet), OR
+        - sprites_obj/<name>.png exists (static prop)
+        """
+        sheet = f"sprites/{v}.png"
+        static_obj = f"sprites_obj/{v}.png"
+
+        if has.file(sheet):
+            return v
+
+        if has.file(static_obj):
+            return v
+
+        raise ValueError(
+            f"Neither sprite sheet '{sheet}' nor static prop '{static_obj}' exists"
+        )
+
     @field_validator("combat_front")
-    def combat_file_exists(cls, v: str) -> str:
+    def validate_combat_sprite(cls, v: str) -> str:
         file = f"gfx/sprites/player/{v}.png"
         if has.file(file):
             return v
-        raise ValueError(f"{file} doesn't exist in the db")
-
-    @field_validator("sprite_name")
-    def sprite_exists(cls, v: str) -> str:
-        front = f"sprites/{v}_front.png"
-        back = f"sprites/{v}_back.png"
-        right = f"sprites/{v}_right.png"
-        left = f"sprites/{v}_left.png"
-
-        sprite_obj = f"sprites_obj/{v}.png"
-
-        directional_ok = (
-            has.file(front)
-            and has.file(back)
-            and has.file(right)
-            and has.file(left)
-            and has.size(front, sizes.SPRITE_SIZE)
-        )
-
-        object_ok = has.file(sprite_obj) and has.size(
-            sprite_obj, sizes.NATIVE_RESOLUTION
-        )
-
-        if directional_ok or object_ok:
-            return v
-
-        raise ValueError(f"the sprite {v} doesn't exist in the db")
+        raise ValueError(f"Combat sprite '{file}' does not exist")
 
 
 class DialogueContent(BaseModel):

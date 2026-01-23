@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Optional
+from uuid import UUID
 
 from tuxemon.boxes import ItemBoxes, MonsterBoxes
 from tuxemon.database.runtime import db
-from tuxemon.db import DialogueProfile, Direction, NpcModel
+from tuxemon.db import DialogueProfile, NpcModel
 from tuxemon.entity import Entity
 from tuxemon.entity_dir.bag import BagHandler
 from tuxemon.entity_dir.battle import BattlesHandler
@@ -52,7 +53,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class NPC(Entity[NPCState]):
+class NPC(Entity):
     """
     Class for humanoid type game objects, NPC, Players, etc.
 
@@ -68,13 +69,14 @@ class NPC(Entity[NPCState]):
     def __init__(
         self,
         npc_slug: str,
-        *,
+        npc_data: NpcModel,
         session: Session,
+        instance_id: Optional[UUID] = None,
     ) -> None:
-        super().__init__(slug=npc_slug, session=session)
+        super().__init__(
+            slug=npc_slug, session=session, instance_id=instance_id
+        )
 
-        # load initial data from the npc database
-        npc_data = NpcModel.lookup(npc_slug, db)
         self.template = npc_data.template
         self.combat = npc_data.combat
         self.persistence = npc_data.persistence
@@ -120,6 +122,19 @@ class NPC(Entity[NPCState]):
         )
         self.final_move_dest: tuple[int, int] = (0, 0)
 
+    @classmethod
+    def create(cls, session: Session, npc_slug: str) -> NPC:
+        npc_data = NpcModel.lookup(npc_slug, db)
+        return cls(npc_slug, npc_data, session)
+
+    @classmethod
+    def from_save(cls, session: Session, save_data: NPCState) -> NPC:
+        slug = save_data.player_slug or PLAYER_NPC
+        npc_data = NpcModel.lookup(slug, db)
+        npc = cls(slug, npc_data, session)
+        npc.set_state(session, save_data)
+        return npc
+
     @property
     def name(self) -> str:
         return self._custom_name or T.translate(self.slug)
@@ -162,39 +177,37 @@ class NPC(Entity[NPCState]):
         Returns:
             Dictionary containing all the information about the npc.
         """
+        base = super().get_state(session)
+
         monster_boxes_state = self.monster_boxes.get_state()
         item_boxes_state = self.item_boxes.get_state()
 
-        state: dict[str, Any] = {
-            "current_map": self.current_map,
-            "facing": self.facing.value,
-            "game_variables": self._variables.get_player_state(),
-            "battles": self.battle_handler.encode_battle(),
-            "tuxepedia": encode_tuxepedia(self.tuxepedia),
-            "relationships": encode_relationships(self.relationships),
-            "money": self.money_controller.save(),
-            "items": self.bag.encode_items(),
-            "template": self.template.model_dump(),
-            "missions": self.mission_controller.encode_missions(),
-            "monsters": self.party.encode_party(),
-            "player_slug": self.slug,
-            "player_name": self.name,
-            "player_steps": self.steps,
-            "monster_boxes": monster_boxes_state["monster_boxes"],
-            "monster_box_metadata": monster_boxes_state[
-                "monster_box_metadata"
-            ],
-            "item_boxes": item_boxes_state["item_boxes"],
-            "item_box_metadata": item_boxes_state["item_box_metadata"],
-            "tile_pos": self.tile_pos,
-            "teleport_faint": self.teleport_faint.to_dict(),
-            "tracker": encode_tracking(self.tracker),
-            "step_tracker": encode_steps(self.step_tracker),
-            "unlocked_letters": encode_cipher(self.unlocked_letters),
-            "evolution_registry": self.evolution_registry.encode_registry(),
-            "routing_policy": self.party.routing_policy.to_dict(),
-        }
-        return NPCState(**state)
+        base.current_map = self.current_map
+        base.facing = self.facing.value
+        base.game_variables = self._variables.get_player_state()
+        base.battles = self.battle_handler.encode_battle()
+        base.tuxepedia = encode_tuxepedia(self.tuxepedia)
+        base.relationships = encode_relationships(self.relationships)
+        base.money = self.money_controller.save()
+        base.items = self.bag.encode_items()
+        base.template = self.template.model_dump()
+        base.missions = self.mission_controller.encode_missions()
+        base.monsters = self.party.encode_party()
+        base.player_slug = self.slug
+        base.player_name = self.name
+        base.player_steps = self.steps
+        base.monster_boxes = monster_boxes_state["monster_boxes"]
+        base.monster_box_metadata = monster_boxes_state["monster_box_metadata"]
+        base.item_boxes = item_boxes_state["item_boxes"]
+        base.item_box_metadata = item_boxes_state["item_box_metadata"]
+        base.teleport_faint = self.teleport_faint.to_dict()
+        base.tracker = encode_tracking(self.tracker)
+        base.step_tracker = encode_steps(self.step_tracker)
+        base.unlocked_letters = encode_cipher(self.unlocked_letters)
+        base.evolution_registry = self.evolution_registry.encode_registry()
+        base.routing_policy = self.party.routing_policy.to_dict()
+
+        return base
 
     def set_state(self, session: Session, save_data: NPCState) -> None:
         """
@@ -204,8 +217,8 @@ class NPC(Entity[NPCState]):
             session: Game session.
             save_data: Data used to recreate the NPC.
         """
-        self.set_current_map(save_data.current_map)
-        self.set_facing(Direction(save_data.facing or "down"))
+        super().set_state(session, save_data)
+
         self._variables.set_player_state(save_data.game_variables)
         self.tuxepedia = decode_tuxepedia(
             save_data.tuxepedia, session.client.event_bus
@@ -217,7 +230,6 @@ class NPC(Entity[NPCState]):
         self.bag.decode_items(save_data)
         self.party.decode_party(save_data)
         self.mission_controller.decode_missions(save_data.missions)
-        self.slug = save_data.player_slug or PLAYER_NPC
         self.name = save_data.player_name or "Player"
         self.steps = save_data.player_steps or 0.0
         self.money_controller.load(save_data)
@@ -240,7 +252,7 @@ class NPC(Entity[NPCState]):
             self.template.combat_front = save_data.template.get(
                 "combat_front", ""
             )
-            self.sprite_controller.load_sprites(self.template)
+            self.sprite_controller.update_template(self.template)
 
     def get_active_battle_music(
         self, default_music: BattleMusicModel

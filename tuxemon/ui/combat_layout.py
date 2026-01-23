@@ -62,10 +62,7 @@ class LayoutRepository:
 
     def get_scaled_layout(self, name: str) -> dict[str, tuple[int, ...]]:
         raw = self.get_raw_layout(name)
-        return {
-            k: self.scaling.scale_tuple(v)
-            for k, v in raw.items()
-        }
+        return {k: self.scaling.scale_tuple(v) for k, v in raw.items()}
 
 
 class LayoutSelector:
@@ -109,7 +106,7 @@ class LayoutManager:
         self.selector = LayoutSelector(self.repo)
         self.rect_factory = LayoutRectFactory()
 
-    def set_scaling(self, scaling: ScalingStrategy):
+    def set_scaling(self, scaling: ScalingStrategy) -> None:
         self.repo.scaling = scaling
 
     def prepare_all(

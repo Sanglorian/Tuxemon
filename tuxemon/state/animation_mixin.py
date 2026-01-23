@@ -14,6 +14,7 @@ if TYPE_CHECKING:
         Animation,
         ScheduledFunction,
         Task,
+        TaskBase,
     )
 
 
@@ -29,7 +30,7 @@ class AnimationMixin:
         self._scheduled_task: Task | None = None
 
     @property
-    def animations(self) -> Group[Task | Animation]:
+    def animations(self) -> Group[TaskBase]:
         return self.anim._group
 
     def animate(self, *targets: Any, **kwargs: Any) -> Animation:

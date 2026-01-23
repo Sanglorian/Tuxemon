@@ -178,6 +178,15 @@ def test_schedule_none_with_no_valid_schedules_raises():
     class EmptyTask(TaskBase):
         _valid_schedules = ()
 
+        def update(self, dt):
+            pass
+
+        def finish(self):
+            pass
+
+        def abort(self):
+            pass
+
     t = EmptyTask()
     with pytest.raises(RuntimeError):
         t.schedule(lambda: None)

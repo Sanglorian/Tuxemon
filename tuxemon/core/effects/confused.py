@@ -47,9 +47,8 @@ class ConfusedEffect(CoreEffect):
     def apply_status(
         self, session: Session, status: Status
     ) -> StatusEffectResult:
-        CONFUSED_KEY = self.name
+
         host = status.host
-        var = session.client.combat_session.get_variable(CONFUSED_KEY)
 
         if not 0 <= self.chance <= 1:
             raise ValueError(f"{self.chance} must be between 0 and 1")
@@ -57,30 +56,24 @@ class ConfusedEffect(CoreEffect):
         extra: list[str] = []
         tech: list[Technique] = []
 
-        if (
-            status.has_phase(EffectPhase.PRE_CHECKING)
-            and random.random() > self.chance
-        ):
-            if var:
-                session.client.combat_session.set_variable(CONFUSED_KEY, "off")
-            session.client.combat_session.set_variable(CONFUSED_KEY, "on")
-            available_techniques = _get_available_techniques(host)
-            if available_techniques:
-                chosen_technique = random.choice(available_techniques)
-                tech = [chosen_technique]
-            elif status.on_tech_use:
-                replacement_technique = Technique.create(status.on_tech_use)
-                tech = [replacement_technique]
+        if status.has_phase(EffectPhase.PRE_CHECKING):
 
-        if status.has_phase(EffectPhase.PERFORM_TECH):
-            if var:
-                session.client.combat_session.set_variable(CONFUSED_KEY, "off")
-            if var and str(var) == "on":
-                action = session.client.combat_session.get_variable(
-                    "action_tech"
-                )
-                replacement = Technique.create(str(action) or "skip")
-                extra = _get_extra_message(host, replacement)
+            if random.random() < self.chance:
+                host.is_confused = True
+
+                available = _get_available_techniques(host)
+                if available:
+                    tech = [random.choice(available)]
+                elif status.on_tech_use:
+                    tech = [Technique.create(status.on_tech_use)]
+            else:
+                host.is_confused = False
+
+        if status.has_phase(EffectPhase.PERFORM_TECH) and host.is_confused:
+            action = session.client.combat_session.get_variable("action_tech")
+            replacement = Technique.create(str(action) or "skip")
+            extra = _get_extra_message(host, replacement)
+            host.is_confused = False
 
         return StatusEffectResult(
             name=status.name,

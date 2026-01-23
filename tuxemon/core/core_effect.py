@@ -27,6 +27,7 @@ class TechEffectResult(EffectResult):
     damage: int = 0
     element_multiplier: float = 0.0
     should_tackle: bool = False
+    hit_count: int = 1
 
 
 @dataclass
@@ -51,6 +52,37 @@ class CoreEffect:
         pass
 
     def is_finished(self) -> bool:
+        return True
+
+    def should_run_global(
+        self,
+        session: Session,
+    ) -> bool:
+        return True
+
+    def should_run_tech(
+        self,
+        session: Session,
+        tech: Technique,
+        user: Monster | None,
+        target: Monster | None,
+    ) -> bool:
+        return True
+
+    def should_run_item(
+        self,
+        session: Session,
+        item: Item,
+        user: Monster | None,
+        target: Monster | None,
+    ) -> bool:
+        return True
+
+    def should_run_status(
+        self,
+        session: Session,
+        tech: Status,
+    ) -> bool:
         return True
 
     def apply_globally(self, session: Session) -> EffectResult:

@@ -55,7 +55,7 @@ class CreateNpcAction(EventAction):
         if session.client.npc_manager.npc_exists(slug):
             return
 
-        npc = NPC(slug, session=session)
+        npc = NPC.create(session, slug)
         session.client.npc_manager.place_npc_on_map(
             npc, slug, self.tile_pos_x, self.tile_pos_y
         )
@@ -70,7 +70,7 @@ class CreateNpcAction(EventAction):
             load_party_monsters(npc, npc_details, game_variables)
         if npc_details.items:
             load_party_items(npc, npc_details, game_variables)
-        npc.sprite_controller.load_sprites(npc.template)
+        npc.sprite_controller.update_template(npc.template)
         npc.dialogue = merge_dialogue(npc_details.speech.profile, None)
 
 

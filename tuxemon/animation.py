@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import logging
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from collections.abc import Callable, Mapping, Sequence
+from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any, cast
@@ -15,10 +17,19 @@ from pygame.sprite import Sprite
 
 from tuxemon.state.animation_transition import AnimationTransition
 
-__all__ = ("Task", "Animation")
+__all__ = (
+    "Task",
+    "Animation",
+    "TaskSequence",
+    "TaskParallel",
+    "ConditionalTask",
+    "LoopTask",
+    "RetryTask",
+    "RaceTask",
+    "DelayTask",
+)
 
-
-ScheduledFunction = Callable[[], Any]
+ScheduledFunction = Callable[..., Any]
 
 logger = logging.getLogger(__name__)
 
@@ -71,15 +82,37 @@ def check_number(value: Any) -> float:
         raise ValueError
 
 
-class TaskBase(Sprite):
+class TaskBase(Sprite, ABC):
     _valid_schedules: Sequence[ScheduleType] = []
 
     def __init__(self) -> None:
         super().__init__()
+        self._state: AnimationState = AnimationState.NOT_STARTED
         self._callbacks: defaultdict[
             ScheduleType,
             list[tuple[ScheduledFunction, tuple[Any, ...], dict[str, Any]]],
         ] = defaultdict(list)
+
+    @abstractmethod
+    def update(self, dt: float) -> None:
+        """Subclasses must implement update to handle their own timing logic."""
+
+    @abstractmethod
+    def finish(self) -> None:
+        """Define how the task cleans up when completing normally."""
+
+    @abstractmethod
+    def abort(self) -> None:
+        """Define how the task cleans up when interrupted."""
+
+    def start(self) -> None:
+        """
+        Public method to explicitly start a task.
+        Sets the state to RUNNING if it was NOT_STARTED.
+        Subclasses like Animation should override this for custom logic.
+        """
+        if self._state is AnimationState.NOT_STARTED:
+            self._state = AnimationState.RUNNING
 
     def schedule(
         self,
@@ -145,7 +178,14 @@ class TaskBase(Sprite):
         """
         if when in self._callbacks:
             for func, args, kwargs in self._callbacks[when]:
-                func(*args, **kwargs)
+                try:
+                    func(*args, **kwargs)
+                except Exception:
+                    logger.exception("Scheduled callback failed")
+
+    def kill(self) -> None:
+        """Ensure we clear callbacks when the sprite is removed."""
+        super().kill()
 
 
 class Task(TaskBase):
@@ -354,7 +394,7 @@ class Task(TaskBase):
 
     def abort(self) -> None:
         """Force task to finish, without executing 'on interval' callbacks."""
-        if self._state is AnimationState.FINISHED:
+        if self._state in (AnimationState.FINISHED, AnimationState.ABORTED):
             return
 
         self._state = AnimationState.ABORTED
@@ -364,7 +404,7 @@ class Task(TaskBase):
     def _cleanup(self) -> None:
         self._chain.clear()
         self._callbacks.clear()
-        self.kill()
+        super().kill()
 
     def _execute_chain(self) -> None:
         groups = self.groups()
@@ -509,7 +549,6 @@ class Animation(TaskBase):
         self._targets: Sequence[ref[object]] = []
 
         self.delay = delay
-        self._state = AnimationState.NOT_STARTED
         self._round_values = round_values
 
         if duration is not None and duration < 0:
@@ -751,3 +790,787 @@ class Animation(TaskBase):
                 continue
             for name, prop_data in target_data.properties.items():
                 self._set_value(target, name, prop_data.initial)
+
+    def kill(self) -> None:
+        self.targets.clear()
+        self._targets = []
+        self.props.clear()
+        super().kill()
+
+
+class TaskSequence(TaskBase):
+    """
+    Executes a list of tasks one after another.
+
+    A TaskSequence takes any number of TaskBase instances (e.g. Task,
+    Animation, TaskParallel) and runs them in order. Each task runs until it
+    reaches FINISHED or ABORTED, after which the sequence automatically
+    advances to the next task. When all tasks complete, the sequence itself
+    finishes.
+
+    Tasks that require an explicit start() call (such as Animation) are
+    automatically started when they become the active task.
+
+    Examples
+    --------
+    Running simple Tasks in sequence:
+
+        seq = TaskSequence(
+            Task(lambda: print("Step 1"), interval=0.5, times=1),
+            Task(lambda: print("Step 2"), interval=0.5, times=1),
+            Task(lambda: print("Step 3"), interval=0.5, times=1),
+        )
+        group.add(seq)
+
+    Mixing Tasks and Animations:
+
+        move = Animation(sprite, x=200, duration=1.0)
+        fade = Animation(sprite, alpha=0, duration=0.5)
+
+        seq = TaskSequence(
+            move,   # starts automatically when sequence begins
+            fade,   # starts after move finishes
+        )
+        group.add(seq)
+
+    Using with TaskParallel:
+
+        seq = TaskSequence(
+            TaskParallel(
+                Animation(sprite, x=200, duration=1.0),
+                Animation(sprite, y=100, duration=1.0),
+            ),
+            Task(lambda: print("Both animations finished")),
+        )
+        group.add(seq)
+
+    Notes
+    -----
+    - A TaskSequence finishes when all internal tasks finish or abort.
+    - If a task aborts, the sequence immediately advances to the next task.
+    - The sequence itself can be aborted, which aborts the current task.
+    """
+
+    _valid_schedules = (
+        ScheduleType.ON_UPDATE,
+        ScheduleType.ON_FINISH,
+        ScheduleType.ON_ABORT,
+    )
+
+    def __init__(self, *tasks: TaskBase):
+        super().__init__()
+        self._queue = list(tasks)
+        self._current_task: TaskBase | None = None
+
+        if not self._queue:
+            # Empty sequence: nothing to run, consider it finished.
+            self._state = AnimationState.FINISHED
+        else:
+            self._state = AnimationState.NOT_STARTED
+
+    def start(self) -> None:
+        super().start()
+        self._advance()
+
+    def _advance(self) -> None:
+        """Start the next task in the queue."""
+        if self._queue:
+            self._current_task = self._queue.pop(0)
+            self._current_task.start()
+        else:
+            self._current_task = None
+            self.finish()
+
+    def update(self, dt: float) -> None:
+        if self._state is AnimationState.NOT_STARTED:
+            self.start()
+
+        if self._state is not AnimationState.RUNNING:
+            return
+
+        if not self._current_task:
+            return
+
+        self._current_task.update(dt)
+        self._execute_callbacks(ScheduleType.ON_UPDATE)
+
+        # Advance on FINISHED or ABORTED
+        if self._current_task._state in (
+            AnimationState.FINISHED,
+            AnimationState.ABORTED,
+        ):
+            self._advance()
+
+            if self._current_task and self._state == AnimationState.RUNNING:
+                self._current_task.update(dt)
+
+    def finish(self) -> None:
+        if self._state is AnimationState.FINISHED:
+            return
+        self._state = AnimationState.FINISHED
+        self._execute_callbacks(ScheduleType.ON_FINISH)
+        self.kill()
+
+    def abort(self) -> None:
+        if self._current_task is None and self._queue:
+            first = self._queue[0]
+            if first._state == AnimationState.RUNNING:
+                first.abort()
+            else:
+                first._state = AnimationState.ABORTED
+                first._execute_callbacks(ScheduleType.ON_ABORT)
+
+        elif (
+            self._current_task
+            and self._current_task._state == AnimationState.RUNNING
+        ):
+            self._current_task.abort()
+
+        self._state = AnimationState.ABORTED
+        self._execute_callbacks(ScheduleType.ON_ABORT)
+        self.kill()
+
+    def kill(self) -> None:
+        self._queue.clear()
+        self._current_task = None
+        super().kill()
+
+
+class TaskParallel(TaskBase):
+    """
+    Executes multiple tasks simultaneously.
+
+    A TaskParallel takes any number of TaskBase instances (e.g. Task,
+    Animation, TaskSequence) and runs them at the same time. The parallel
+    group finishes only when *all* internal tasks have either finished or
+    aborted. Tasks that require an explicit start() call (such as Animation)
+    are automatically started when the parallel group begins updating.
+
+    Examples
+    --------
+    Running multiple Tasks in parallel:
+
+        parallel = TaskParallel(
+            Task(lambda: print("Tick A"), interval=0.5, times=3),
+            Task(lambda: print("Tick B"), interval=1.0, times=2),
+        )
+        group.add(parallel)
+
+    Running multiple Animations together:
+
+        move = Animation(sprite, x=200, duration=1.0)
+        fade = Animation(sprite, alpha=0, duration=1.0)
+
+        parallel = TaskParallel(move, fade)
+        group.add(parallel)
+
+    Mixing Tasks, Animations, and Sequences:
+
+        seq = TaskSequence(
+            Animation(sprite, x=300, duration=0.5),
+            Task(lambda: print("Sequence finished")),
+        )
+
+        parallel = TaskParallel(
+            seq,
+            Animation(sprite, y=150, duration=1.0),
+        )
+        group.add(parallel)
+
+    Notes
+    -----
+    - A TaskParallel finishes only when *all* internal tasks finish or abort.
+    - If a task aborts, the parallel group continues running until all tasks
+      have reached a terminal state.
+    - Aborting the TaskParallel aborts all currently running internal tasks.
+    """
+
+    _valid_schedules = (
+        ScheduleType.ON_UPDATE,
+        ScheduleType.ON_FINISH,
+        ScheduleType.ON_ABORT,
+    )
+
+    def __init__(self, *tasks: TaskBase) -> None:
+        super().__init__()
+        self._tasks = list(tasks)
+
+        if not self._tasks:
+            self._state = AnimationState.FINISHED
+            self._execute_callbacks(ScheduleType.ON_FINISH)
+        else:
+            self._state = AnimationState.RUNNING
+
+    def update(self, dt: float) -> None:
+        if self._state is not AnimationState.RUNNING:
+            return
+
+        # Start NOT_STARTED tasks (e.g., Animation)
+        for task in self._tasks:
+            if task._state == AnimationState.NOT_STARTED:
+                task.start()
+
+        # Update all running tasks
+        for task in self._tasks:
+            if task._state == AnimationState.RUNNING:
+                task.update(dt)
+
+        self._execute_callbacks(ScheduleType.ON_UPDATE)
+
+        # Check if all tasks are finished or aborted
+        all_done = all(
+            task._state in (AnimationState.FINISHED, AnimationState.ABORTED)
+            for task in self._tasks
+        )
+
+        if all_done:
+            self.finish()
+
+    def finish(self) -> None:
+        if self._state is AnimationState.FINISHED:
+            return
+        self._state = AnimationState.FINISHED
+        self._execute_callbacks(ScheduleType.ON_FINISH)
+        self.kill()
+
+    def abort(self) -> None:
+        for task in self._tasks:
+            if task._state == AnimationState.RUNNING:
+                task.abort()
+        self._state = AnimationState.ABORTED
+        self._execute_callbacks(ScheduleType.ON_ABORT)
+        self.kill()
+
+    def kill(self) -> None:
+        self._tasks.clear()
+        super().kill()
+
+
+class ConditionalTask(TaskBase):
+    """
+    Executes one of two tasks based on a boolean predicate.
+
+    The predicate is evaluated once when the task starts. If it returns True,
+    the `true_task` is executed; otherwise, the `false_task` is executed.
+    Only the selected task runs. When that task finishes or aborts, the
+    ConditionalTask finishes as well.
+
+    This is useful for branching logic inside a TaskSequence or TaskParallel.
+
+    Examples
+    --------
+    Basic branching:
+
+        cond = ConditionalTask(
+            lambda: player.hp > 0,
+            Task(lambda: print("Player is alive")),
+            Task(lambda: print("Player is dead")),
+        )
+        group.add(cond)
+
+    Using inside a sequence:
+
+        seq = TaskSequence(
+            Animation(sprite, x=200, duration=1.0),
+            ConditionalTask(
+                lambda: sprite.x > 150,
+                Task(lambda: print("Reached target")),
+                Task(lambda: print("Did not reach target")),
+            ),
+        )
+        group.add(seq)
+
+    Notes
+    -----
+    - Only one of the two tasks ever runs.
+    - The predicate is evaluated once at start(), not every frame.
+    - The ConditionalTask finishes when the chosen task finishes or aborts.
+    """
+
+    _valid_schedules = (
+        ScheduleType.ON_UPDATE,
+        ScheduleType.ON_FINISH,
+        ScheduleType.ON_ABORT,
+    )
+
+    def __init__(
+        self,
+        predicate: Callable[[], bool],
+        true_task: TaskBase,
+        false_task: TaskBase,
+    ) -> None:
+        super().__init__()
+        self._predicate = predicate
+        self._true_task = true_task
+        self._false_task = false_task
+        self._active_task: TaskBase | None = None
+
+    def start(self) -> None:
+        super().start()
+
+        # Select the task once at start time
+        self._active_task = (
+            self._true_task if self._predicate() else self._false_task
+        )
+
+        # Start the chosen task
+        self._active_task.start()
+
+    def update(self, dt: float) -> None:
+        if self._state is not AnimationState.RUNNING:
+            return
+
+        if not self._active_task:
+            return
+
+        self._active_task.update(dt)
+        self._execute_callbacks(ScheduleType.ON_UPDATE)
+
+        if self._active_task._state in (
+            AnimationState.FINISHED,
+            AnimationState.ABORTED,
+        ):
+            self.finish()
+
+    def finish(self) -> None:
+        if self._state is AnimationState.FINISHED:
+            return
+        self._state = AnimationState.FINISHED
+        self._execute_callbacks(ScheduleType.ON_FINISH)
+        self.kill()
+
+    def abort(self) -> None:
+        if (
+            self._active_task
+            and self._active_task._state == AnimationState.RUNNING
+        ):
+            self._active_task.abort()
+
+        self._state = AnimationState.ABORTED
+        self._execute_callbacks(ScheduleType.ON_ABORT)
+        self.kill()
+
+    def kill(self) -> None:
+        self._active_task = None
+        super().kill()
+
+
+class LoopTask(TaskBase):
+    """
+    Repeats a child task a fixed number of times.
+
+    Before each iteration, the child task is cloned (deep-copied by default)
+    to ensure it starts fresh. This is especially important for container
+    tasks such as TaskSequence or TaskParallel, which maintain internal state.
+
+    The LoopTask finishes only after all iterations complete. If the child
+    task aborts, the loop still continues to the next iteration.
+
+    Examples
+    --------
+    Looping a simple task:
+
+        loop = LoopTask(
+            Task(lambda: print("Tick"), interval=0.5, times=1),
+            times=5,
+        )
+        group.add(loop)
+
+    Looping a sequence:
+
+        seq = TaskSequence(
+            Animation(sprite, x=200, duration=1.0),
+            Animation(sprite, x=100, duration=1.0),
+        )
+
+        loop = LoopTask(seq, times=3)
+        group.add(loop)
+
+    Notes
+    -----
+    - Each iteration receives a fresh copy of the original task.
+    - The loop continues even if an iteration aborts.
+    - Override clone_task() if deepcopy is not appropriate.
+    """
+
+    _valid_schedules = (
+        ScheduleType.ON_UPDATE,
+        ScheduleType.ON_FINISH,
+        ScheduleType.ON_ABORT,
+    )
+
+    def __init__(self, task: TaskBase, times: int) -> None:
+        if times <= 0:
+            raise ValueError("times must be a positive integer (>= 1)")
+
+        super().__init__()
+        self._original_task = task
+        self._total_loops = times
+        self._current_loop = 0
+        self._active_task: TaskBase | None = None
+
+    def clone_task(self) -> TaskBase:
+        """Override this if deepcopy is not appropriate for a task type."""
+        return deepcopy(self._original_task)
+
+    def start(self) -> None:
+        super().start()
+        self._start_next_loop()
+
+    def _start_next_loop(self) -> None:
+        if self._current_loop >= self._total_loops:
+            self.finish()
+            return
+
+        self._current_loop += 1
+        self._active_task = self.clone_task()
+        self._active_task.start()
+
+    def update(self, dt: float) -> None:
+        if self._state is not AnimationState.RUNNING:
+            return
+        if not self._active_task:
+            return
+
+        self._active_task.update(dt)
+        self._execute_callbacks(ScheduleType.ON_UPDATE)
+
+        if self._active_task._state in (
+            AnimationState.FINISHED,
+            AnimationState.ABORTED,
+        ):
+            self._start_next_loop()
+
+    def finish(self) -> None:
+        if self._state is AnimationState.FINISHED:
+            return
+        self._state = AnimationState.FINISHED
+        self._execute_callbacks(ScheduleType.ON_FINISH)
+        self.kill()
+
+    def abort(self) -> None:
+        if (
+            self._active_task
+            and self._active_task._state == AnimationState.RUNNING
+        ):
+            self._active_task.abort()
+
+        self._state = AnimationState.ABORTED
+        self._execute_callbacks(ScheduleType.ON_ABORT)
+        self.kill()
+
+    def kill(self) -> None:
+        self._active_task = None
+        super().kill()
+
+
+class RetryTask(TaskBase):
+    """
+    Retries a child task up to `max_attempts` times if it aborts.
+
+    The child task is cloned before each attempt to ensure a clean reset.
+    If the child task finishes normally, the RetryTask finishes successfully.
+    If all attempts abort, the RetryTask aborts.
+
+    This is useful for tasks that may fail due to temporary conditions
+    (e.g., pathfinding, network checks, resource availability).
+
+    Examples
+    --------
+    Retrying a failing task:
+
+        def flaky():
+            if random.random() < 0.7:
+                raise AbortTask()
+            print("Success!")
+
+        retry = RetryTask(Task(flaky, interval=0.1, times=1), max_attempts=5)
+        group.add(retry)
+
+    Using inside a sequence:
+
+        seq = TaskSequence(
+            RetryTask(Animation(sprite, x=200, duration=1.0), max_attempts=3),
+            Task(lambda: print("Move succeeded or gave up")),
+        )
+        group.add(seq)
+
+    Notes
+    -----
+    - A successful finish ends the RetryTask immediately.
+    - An aborted attempt triggers another attempt until max_attempts is reached.
+    - Override clone_task() if deepcopy is not appropriate.
+    """
+
+    _valid_schedules = (
+        ScheduleType.ON_UPDATE,
+        ScheduleType.ON_FINISH,
+        ScheduleType.ON_ABORT,
+    )
+
+    def __init__(self, task: TaskBase, max_attempts: int) -> None:
+        if max_attempts <= 0:
+            raise ValueError("max_attempts must be >= 1")
+
+        super().__init__()
+        self._original_task = task
+        self._max_attempts = max_attempts
+        self._current_attempt = 0
+        self._active_task: TaskBase | None = None
+
+    def clone_task(self) -> TaskBase:
+        return self._original_task
+
+    def start(self) -> None:
+        super().start()
+        self._run_attempt()
+
+    def _run_attempt(self) -> None:
+        if self._current_attempt >= self._max_attempts:
+            self.abort()
+            return
+
+        self._current_attempt += 1
+        self._active_task = self.clone_task()
+        self._active_task.start()
+
+    def update(self, dt: float) -> None:
+        if self._state is not AnimationState.RUNNING or not self._active_task:
+            return
+
+        self._active_task.update(dt)
+        self._execute_callbacks(ScheduleType.ON_UPDATE)
+
+        if self._active_task._state is AnimationState.FINISHED:
+            self.finish()
+        elif self._active_task._state is AnimationState.ABORTED:
+            self._run_attempt()
+
+    def finish(self) -> None:
+        if self._state is AnimationState.FINISHED:
+            return
+        self._state = AnimationState.FINISHED
+        self._execute_callbacks(ScheduleType.ON_FINISH)
+        self.kill()
+
+    def abort(self) -> None:
+        if (
+            self._active_task
+            and self._active_task._state is AnimationState.RUNNING
+        ):
+            self._active_task.abort()
+
+        self._state = AnimationState.ABORTED
+        self._execute_callbacks(ScheduleType.ON_ABORT)
+        self.kill()
+
+    def kill(self) -> None:
+        self._active_task = None
+        super().kill()
+
+
+class RaceTask(TaskBase):
+    """
+    Runs multiple tasks simultaneously and finishes as soon as any one of them
+    reaches a terminal state (FINISHED or ABORTED).
+
+    The first task to finish becomes the "winner". All other running tasks are
+    immediately aborted. The RaceTask adopts the winner's state: if the winner
+    finished normally, the RaceTask finishes; if the winner aborted, the
+    RaceTask aborts.
+
+    This is useful for timeouts, fallback behaviors, or "whichever finishes
+    first" logic.
+
+    Examples
+    --------
+    Timeout behavior:
+
+        race = RaceTask(
+            Animation(sprite, x=200, duration=3.0),
+            DelayTask(1.0),  # timeout after 1 second
+        )
+        group.add(race)
+
+    First animation to finish:
+
+        race = RaceTask(
+            Animation(sprite, x=200, duration=1.0),
+            Animation(sprite, y=100, duration=0.5),  # finishes first
+        )
+        group.add(race)
+
+    Using inside a sequence:
+
+        seq = TaskSequence(
+            RaceTask(
+                Animation(sprite, x=200, duration=2.0),
+                Task(lambda: print("User clicked"), interval=0.1, times=-1),
+            ),
+            Task(lambda: print("Race ended")),
+        )
+        group.add(seq)
+
+    Notes
+    -----
+    - All tasks start simultaneously.
+    - The first task to finish or abort determines the outcome.
+    - All other tasks are aborted immediately.
+    """
+
+    _valid_schedules = (
+        ScheduleType.ON_UPDATE,
+        ScheduleType.ON_FINISH,
+        ScheduleType.ON_ABORT,
+    )
+
+    def __init__(self, *tasks: TaskBase) -> None:
+        super().__init__()
+        self._tasks = list(tasks)
+        self._winner: TaskBase | None = None
+
+    def start(self) -> None:
+        super().start()
+        for task in self._tasks:
+            task.start()
+
+    def update(self, dt: float) -> None:
+        if self._state is not AnimationState.RUNNING:
+            return
+
+        for task in self._tasks:
+            if task._state is AnimationState.RUNNING:
+                task.update(dt)
+
+        self._execute_callbacks(ScheduleType.ON_UPDATE)
+
+        for task in self._tasks:
+            if task._state in (
+                AnimationState.FINISHED,
+                AnimationState.ABORTED,
+            ):
+                self._winner = task
+                self._end_race(task._state)
+                return
+
+    def _end_race(self, final_state: AnimationState) -> None:
+        for task in self._tasks:
+            if (
+                task is not self._winner
+                and task._state != AnimationState.ABORTED
+            ):
+                task.abort()
+
+        if final_state is AnimationState.FINISHED:
+            self.finish()
+        else:
+            self.abort()
+
+    def finish(self) -> None:
+        if self._state is AnimationState.FINISHED:
+            return
+        self._state = AnimationState.FINISHED
+        self._execute_callbacks(ScheduleType.ON_FINISH)
+        self.kill()
+
+    def abort(self) -> None:
+        self._state = AnimationState.ABORTED
+        self._execute_callbacks(ScheduleType.ON_ABORT)
+        self.kill()
+
+    def kill(self) -> None:
+        self._tasks.clear()
+        super().kill()
+
+
+class DelayTask(TaskBase):
+    """
+    A simple task that waits for a specified duration before finishing.
+
+    This is the cleanest way to insert pauses inside TaskSequence or
+    TaskParallel. It behaves like a timer: once the elapsed time reaches
+    the duration, the task finishes.
+
+    Examples
+    --------
+    Basic delay:
+
+        wait = DelayTask(1.0)  # wait 1 second
+        group.add(wait)
+
+    Using inside a sequence:
+
+        seq = TaskSequence(
+            Animation(sprite, x=200, duration=1.0),
+            DelayTask(0.5),
+            Animation(sprite, alpha=0, duration=0.5),
+        )
+        group.add(seq)
+
+    Using in a race (timeout):
+
+        race = RaceTask(
+            Animation(sprite, x=200, duration=3.0),
+            DelayTask(1.0),  # timeout after 1 second
+        )
+        group.add(race)
+
+    Notes
+    -----
+    - Duration must be non-negative.
+    - A duration of 0 finishes immediately on start().
+    - Useful for pacing sequences or implementing timeouts.
+    """
+
+    _valid_schedules = (
+        ScheduleType.ON_UPDATE,
+        ScheduleType.ON_FINISH,
+        ScheduleType.ON_ABORT,
+    )
+
+    def __init__(self, duration: float) -> None:
+        if duration < 0:
+            raise ValueError("Duration must be non-negative")
+
+        super().__init__()
+        self._duration = duration
+        self._elapsed: float = 0.0
+        self._state = AnimationState.NOT_STARTED
+
+    def start(self) -> None:
+        super().start()
+
+        # If duration is zero, finish immediately
+        if self._duration == 0.0 and self._state is AnimationState.RUNNING:
+            self.finish()
+
+    def update(self, dt: float) -> None:
+        if self._state is not AnimationState.RUNNING:
+            return
+
+        self._elapsed += dt
+        self._execute_callbacks(ScheduleType.ON_UPDATE)
+
+        if self._elapsed >= self._duration:
+            self.finish()
+
+    def finish(self) -> None:
+        if self._state is AnimationState.FINISHED:
+            return
+
+        self._state = AnimationState.FINISHED
+        self._execute_callbacks(ScheduleType.ON_FINISH)
+        self.kill()
+
+    def abort(self) -> None:
+        self._state = AnimationState.ABORTED
+        self._execute_callbacks(ScheduleType.ON_ABORT)
+        self.kill()
+
+    def kill(self) -> None:
+        if self._state not in (
+            AnimationState.FINISHED,
+            AnimationState.ABORTED,
+        ):
+            self._state = AnimationState.ABORTED
+        super().kill()

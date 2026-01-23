@@ -118,9 +118,17 @@ class Monster:
         self.types = ElementTypesHandler()
         self.shape: ShapeHandler = ShapeHandler()
         self.randomly: bool = True
-        self.out_of_range: bool = False
         self.acquisition: Acquisition = Acquisition.UNKNOWN
         self.wild: bool = False
+
+        # Combat Attributes
+        self.out_of_range: bool = False
+        self.is_charging: bool = False
+        self.charged_technique: str | None = None
+        self.locked_turns_left: int = 0
+        self.locked_move: str | None = None
+        self.ramp_counter: int = 0
+        self.is_confused: bool = False
 
         self.status = MonsterStatusHandler()
         self.plague = MonsterPlagueHandler()
@@ -725,7 +733,7 @@ class Monster:
         """
         self.clear_all_temporary_boosts()
         self.types.reset_to_default()
-        self.moves.set_stats()
+        self.moves.reset_current_stats()
         self.out_of_range = False
         self.moves.full_recharge_moves()
 

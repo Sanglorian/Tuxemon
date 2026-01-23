@@ -9,12 +9,15 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Generic, Optional, TypeVar
 
-from tuxemon import plugin
-from tuxemon.constants.paths import LIBDIR, get_plugin_paths
+from tuxemon.constants.paths import (
+    LIBDIR,
+    get_plugin_paths,
+    mods_folder,
+)
 from tuxemon.core.core_condition import CoreCondition
 from tuxemon.core.core_effect import CoreEffect
 from tuxemon.db import LogicCondition, Operator, ParameterizableRule
-from tuxemon.plugin import PluginObject
+from tuxemon.plugin import PluginManager, PluginObject
 
 logger = logging.getLogger(__name__)
 
@@ -48,16 +51,42 @@ class CoreManager(Generic[LocalInterfaceValue]):
         if root_path is None:
             root_path = LIBDIR.parent
 
-        plugin_folders = get_plugin_paths(path, category, subfolder="core")
+        core_folders = get_plugin_paths(path, category, subfolder="core")
 
-        self.classes.update(
-            plugin.load_plugins(
-                paths=plugin_folders,
-                root_path=root_path,
-                category=category,
-                interface=interface,
-            )
+        mod_folders = get_plugin_paths(
+            base_path=mods_folder,
+            category=category,
+            subfolder=None,
         )
+
+        # Load core plugins
+        core_manager = PluginManager.from_directory(
+            plugin_folders=core_folders,
+            root_path=root_path,
+            include=[
+                f.stem
+                for folder in core_folders
+                for f in folder.glob("*.py")
+                if f.stem != "__init__"
+            ],
+        )
+        core_plugins = core_manager.get_class_map(interface=interface)
+
+        # Load mod plugins
+        mod_manager = PluginManager.from_directory(
+            plugin_folders=mod_folders,
+            root_path=root_path,
+            include=[
+                f.stem
+                for folder in mod_folders
+                for f in folder.glob("*.py")
+                if f.stem != "__init__"
+            ],
+        )
+        mod_plugins = mod_manager.get_class_map(interface=interface)
+
+        self.classes.update(core_plugins)
+        self.classes.update(mod_plugins)
 
     def load_plugin(self, name: str) -> None:
         """Dynamically load a specific plugin by name."""

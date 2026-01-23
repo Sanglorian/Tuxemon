@@ -7,7 +7,8 @@
     "template": {
       "sprite_name": "statue_blue",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   },
   {
@@ -18,7 +19,8 @@
     "template": {
       "sprite_name": "statue_red",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   },
   {
@@ -29,7 +31,8 @@
     "template": {
       "sprite_name": "statue_orange",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   },
   {
@@ -40,7 +43,8 @@
     "template": {
       "sprite_name": "statue_grey",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   },
   {
@@ -51,7 +55,8 @@
     "template": {
       "sprite_name": "statue_green",
       "combat_front": "noclass",
-      "slug": "interactive_obj"
+      "slug": "noclass",
+      "is_static_prop": true
     }
   }
 ]

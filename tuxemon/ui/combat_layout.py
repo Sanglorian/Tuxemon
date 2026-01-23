@@ -45,14 +45,15 @@ def load_layouts_from_yaml(
 
 
 class LayoutRepository:
+
     def __init__(
         self,
         yaml_path: Path,
-        scaling: ScalingStrategy | None = None,  # <-- NEW
+        scaling: ScalingStrategy | None = None,
     ):
         self.raw_layouts = load_layouts_from_yaml(yaml_path)
         self.groups = load_layout_groups(yaml_path)
-        self.scaling = scaling or DefaultScaling()  # <-- NEW
+        self.scaling = scaling or DefaultScaling()
 
     def get_raw_layout(self, name: str) -> dict[str, tuple[int, ...]]:
         if name not in self.raw_layouts:
@@ -62,7 +63,7 @@ class LayoutRepository:
     def get_scaled_layout(self, name: str) -> dict[str, tuple[int, ...]]:
         raw = self.get_raw_layout(name)
         return {
-            k: self.scaling.scale_tuple(v)  # <-- NEW (no scale_sequence)
+            k: self.scaling.scale_tuple(v)
             for k, v in raw.items()
         }
 
@@ -102,13 +103,13 @@ class LayoutManager:
     def __init__(
         self,
         yaml_path: Path,
-        scaling: ScalingStrategy | None = None,  # <-- NEW
+        scaling: ScalingStrategy | None = None,
     ):
         self.repo = LayoutRepository(yaml_path, scaling=scaling)
         self.selector = LayoutSelector(self.repo)
         self.rect_factory = LayoutRectFactory()
 
-    def set_scaling(self, scaling: ScalingStrategy):  # <-- NEW
+    def set_scaling(self, scaling: ScalingStrategy):
         self.repo.scaling = scaling
 
     def prepare_all(

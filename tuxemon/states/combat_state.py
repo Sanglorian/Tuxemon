@@ -31,6 +31,7 @@ add new code like it.  Consider it a priority to remove it when you are
 able to.
 
 """
+
 from __future__ import annotations
 
 import logging
@@ -40,7 +41,7 @@ from functools import partial
 from typing import TYPE_CHECKING, ClassVar
 
 from tuxemon.ai.manager import AIManager
-from tuxemon.animation import Animation, Task
+from tuxemon.animation import Task, TaskBase
 from tuxemon.animation_entity import AnimationManager
 from tuxemon.combat.combat_context import CombatContext
 from tuxemon.combat.machine import CombatMachine, CombatPhase
@@ -88,6 +89,8 @@ EVENTS: list[str] = [
     "update_sprite_position",
     "monster_added",
     "capture_finished",
+    "play_sound_combat",
+    "play_animation_combat",
 ]
 
 
@@ -124,13 +127,14 @@ class CombatState(CombatAnimations):
     escape_key_exits = False
 
     def __init__(self, context: CombatContext) -> None:
+        self.session = context.session
         self.phase: CombatPhase | None = None
         self._method_cache = MethodAnimationCache(AnimationManager())
         self.text_anim = TextAnimationManager()
         self._decision_queue: list[Monster] = []
         self._captured_mon: Monster | None = None
         # player => home areas on screen
-        super().__init__(context=context)
+        super().__init__(teams=context.teams)
         self.combat_session = self.client.combat_session
         self.unregister_event_handlers()
         self.register_event_handlers()
@@ -159,7 +163,7 @@ class CombatState(CombatAnimations):
         self.env = env
 
     @staticmethod
-    def is_task_finished(task: Task | Animation) -> bool:
+    def is_task_finished(task: TaskBase) -> bool:
         """
         Check if the task is finished or not.
         In case the task is in fact an animation, it's considered as finished
@@ -223,15 +227,15 @@ class CombatState(CombatAnimations):
             pass
 
         elif phase == CombatPhase.HOUSEKEEPING:
-            c_session.next_turn()
-
+            new_turn = c_session.next_turn()
+            c_session.action_queue.set_current_turn(new_turn)
             # fill all battlefield positions, but on round 1, don't ask
-            c_session.fill_battlefield_positions(ask=c_session.turn > 1)
+            c_session.fill_battlefield_positions(ask=new_turn > 1)
             c_session.track_enemy_monsters(self.session)
 
         elif phase == CombatPhase.DECISION:
-            self.update_icons_for_monsters()
-            self.animate_update_party_hud()
+            self.event_bus.publish("status_applied")
+            self.event_bus.publish("update_party_hud")
             c_session.check_decisions(self.session)
             if not self._decision_queue:
                 c_session.initialize_hit_chances()
@@ -387,12 +391,6 @@ class CombatState(CombatAnimations):
                 partial(self.dialog.alert, message, self.text_area), 0
             )
 
-    def update_icons_for_monsters(self) -> None:
-        """Update/reset status icons for monsters."""
-        self.status_icons.update_icons_for_monsters(
-            self.combat_session.active_monsters,
-        )
-
     def show_monster_action_menu(self, monster: Monster) -> None:
         """
         Show the main window for choosing player actions.
@@ -458,6 +456,12 @@ class CombatState(CombatAnimations):
             )
             monster.moves.recharge_moves()
 
+            if monster.locked_turns_left > 0:
+                continue
+
+            if monster.is_charging:
+                continue
+
             if char in self.combat_session.human_players:
                 # Still add to queue for menu interaction
                 self._decision_queue.append(monster)
@@ -492,12 +496,7 @@ class CombatState(CombatAnimations):
         """
         self.hud_manager.unassign(monster.get_owner(), monster)
         self.status_icons.recalculate_icon_positions()
-        action_queue = self.combat_session.action_queue.queue
-        action_queue[:] = [
-            action
-            for action in action_queue
-            if action.user is not monster and action.target is not monster
-        ]
+        self.combat_session.action_queue.remove_monster_actions(monster)
         self.ai_manager.remove_ai(monster)
 
     def perform_action(
@@ -642,9 +641,18 @@ class CombatState(CombatAnimations):
                 break
 
         if result_tech.success:
-            self.play_sound_effect(method.sound.sfx, method.sound.volume)
-            self.play_animation(
-                method, target, target_sprite, action_time, is_flipped
+            self.event_bus.publish(
+                "play_sound_combat",
+                sound=method.sound.sfx,
+                value=method.sound.volume,
+            )
+            self.event_bus.publish(
+                "play_animation_combat",
+                method,
+                target,
+                target_sprite,
+                action_time,
+                is_flipped,
             )
 
     def _handle_npc_item(
@@ -689,7 +697,11 @@ class CombatState(CombatAnimations):
                     f"captured_failed_{result_item.num_shakes}"
                 )
 
-            self.play_sound_effect(item.sound.sfx, item.sound.volume)
+            self.event_bus.publish(
+                "play_sound_combat",
+                sound=item.sound.sfx,
+                value=item.sound.volume,
+            )
             self.animate_capture_monster(
                 result_item,
                 target,
@@ -713,8 +725,14 @@ class CombatState(CombatAnimations):
             if template:
                 message += "\n" + tmpl
                 action_time += self.text_anim.compute_text_anim_time(message)
-            self.play_sound_effect(item.sound.sfx, item.sound.volume)
-            self.play_animation(item, target, None, action_time)
+            self.event_bus.publish(
+                "play_sound_combat",
+                sound=item.sound.sfx,
+                value=item.sound.volume,
+            )
+            self.event_bus.publish(
+                "play_animation_combat", item, target, None, action_time
+            )
 
         self.text_anim.add_text_animation(
             partial(self.dialog.alert, message, self.text_area), action_time
@@ -755,45 +773,14 @@ class CombatState(CombatAnimations):
                 action_time,
             )
         if result.success:
-            self.play_sound_effect(status.sound.sfx, status.sound.volume)
-            self.play_animation(status, target, None, action_time)
-
-    def play_animation(
-        self,
-        method: Technique | Status | Item,
-        target: Monster,
-        target_sprite: Sprite | None,
-        action_time: float,
-        is_flipped: bool = False,
-    ) -> None:
-        """
-        Play an animation for the given method and target.
-
-        Parameters:
-            method: The method to play the animation for.
-            target: The target monster.
-            target_sprite: The sprite for the target monster.
-            action_time: The time to play the animation for.
-            is_flipped: Whether the animation should be flipped.
-        """
-        if target_sprite is None:
-            target_sprite = self.sprite_map.get_sprite(target)
-
-        animation = self._method_cache.get(method, is_flipped)
-
-        if target_sprite and animation:
-            animation.rect.center = target_sprite.rect.center
-            assert animation.animation
-            start_delay = 0.6
-            self.task(animation.animation.play, interval=start_delay)
-            self.task(
-                partial(self.sprites.add, animation, layer=50),
-                interval=start_delay,
+            self.event_bus.publish(
+                "play_sound_combat",
+                sound=status.sound.sfx,
+                value=status.sound.volume,
             )
-            safe_action_time = max(
-                action_time, animation.animation.duration + start_delay
+            self.event_bus.publish(
+                "play_animation_combat", status, target, None, action_time
             )
-            self.task(animation.kill, interval=safe_action_time)
 
     def award_experience_and_money(self, monster: Monster) -> None:
         """
@@ -937,14 +924,6 @@ class CombatState(CombatAnimations):
                 self.session, self.env.get_battle_music(), monster
             )
 
-    def clean_combat(self) -> None:
-        """Clean combat."""
-        for player in self.combat_session.players:
-            for mon in player.monsters:
-                mon.end_combat(self.session)
-
-        self.ai_manager.clear_ai()
-
     def clear_combat_states(self) -> None:
         """
         Removes any states stacked on top of the combat state
@@ -954,7 +933,7 @@ class CombatState(CombatAnimations):
 
     def end_combat(self) -> None:
         """End the combat."""
-        self.clean_combat()
+        self.event_bus.publish("clean_combat")
         new_entry = self.combat_session.get_variable("new_tuxepedia")
         self.combat_session.reset()
         self.unregister_event_handlers()
@@ -1014,10 +993,16 @@ class CombatState(CombatAnimations):
         self.sprite_map.update_sprite_position(monster, new_feet)
 
     def _on_clean_combat(self) -> None:
-        self.clean_combat()
+        for player in self.combat_session.players:
+            for mon in player.monsters:
+                mon.end_combat(self.session)
+
+        self.ai_manager.clear_ai()
 
     def _on_status_applied(self) -> None:
-        self.update_icons_for_monsters()
+        self.status_icons.update_icons_for_monsters(
+            self.combat_session.active_monsters,
+        )
 
     def _on_update_party_hud(self) -> None:
         self.animate_update_party_hud()
@@ -1121,3 +1106,51 @@ class CombatState(CombatAnimations):
 
         else:
             self.notifier.trigger_xp_and_wait_for_input(self.text_area)
+
+    def _on_play_sound_combat(
+        self, sound: str | None, value: float | None = None
+    ) -> None:
+        """Play the sound effect."""
+        if sound is None:
+            return
+        volume = (
+            value if value is not None else self.client.config.sound_volume
+        )
+        self.client.sound_manager.play_sound(sound, volume)
+
+    def _on_play_animation_combat(
+        self,
+        method: Technique | Status | Item,
+        target: Monster,
+        target_sprite: Sprite | None,
+        action_time: float,
+        is_flipped: bool = False,
+    ) -> None:
+        """
+        Play an animation for the given method and target.
+
+        Parameters:
+            method: The method to play the animation for.
+            target: The target monster.
+            target_sprite: The sprite for the target monster.
+            action_time: The time to play the animation for.
+            is_flipped: Whether the animation should be flipped.
+        """
+        if target_sprite is None:
+            target_sprite = self.sprite_map.get_sprite(target)
+
+        animation = self._method_cache.get(method, is_flipped)
+
+        if target_sprite and animation:
+            animation.rect.center = target_sprite.rect.center
+            assert animation.animation
+            start_delay = 0.6
+            self.task(animation.animation.play, interval=start_delay)
+            self.task(
+                partial(self.sprites.add, animation, layer=50),
+                interval=start_delay,
+            )
+            safe_action_time = max(
+                action_time, animation.animation.duration + start_delay
+            )
+            self.task(animation.kill, interval=safe_action_time)

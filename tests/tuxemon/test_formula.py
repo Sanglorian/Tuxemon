@@ -1,14 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import math
-import unittest
 from unittest.mock import MagicMock
+
+import pytest
 
 from tuxemon.database.rules import config_combat, config_monster
 from tuxemon.element import Element, ElementTypesHandler
 from tuxemon.formula import (
     calculate_time_based_multiplier,
-    modify_stat,
+    modify_monster_custom_stat,
+    modify_technique_custom_stat,
     set_health,
     set_height,
     set_weight,
@@ -17,363 +19,462 @@ from tuxemon.formula import (
     simple_heal,
 )
 from tuxemon.monster import Monster
+from tuxemon.monster_dir.stats import CustomStatBoosts
 from tuxemon.platform.const.sizes import COEFF_DAMAGE
+from tuxemon.technique.stats import (
+    TechniqueBaseStats,
+    TechniqueCustomBoosts,
+)
 from tuxemon.technique.technique import Technique
 
 
-class TestSimpleHeal(unittest.TestCase):
-    def setUp(self):
-        self.monster = MagicMock(spec=Monster)
-        self.monster.level = 0.0
-        self.technique = MagicMock(spec=Technique)
-        self.technique.healing_power = 0.0
-
-    def test_simple_heal_no_factors(self):
-        self.technique.healing_power = 5
-        self.monster.level = 10
-        expected_heal = (
-            COEFF_DAMAGE + self.monster.level * self.technique.healing_power
-        )
-        actual_heal = simple_heal(self.technique, self.monster)
-        self.assertEqual(int(expected_heal), actual_heal)
-
-    def test_simple_heal_with_factors(self):
-        self.technique.healing_power = 3
-        self.monster.level = 15
-        factors = {"boost": 1.2, "penalty": 0.8}
-        expected_multiplier = math.prod(factors.values())
-        expected_heal = (
-            COEFF_DAMAGE + self.monster.level * self.technique.healing_power
-        ) * expected_multiplier
-        actual_heal = simple_heal(self.technique, self.monster, factors)
-        self.assertEqual(int(expected_heal), actual_heal)
-
-    def test_simple_heal_empty_factors(self):
-        self.technique.healing_power = 2
-        self.monster.level = 20
-        factors = {}
-        expected_heal = (
-            COEFF_DAMAGE + self.monster.level * self.technique.healing_power
-        )
-        actual_heal = simple_heal(self.technique, self.monster, factors)
-        self.assertEqual(int(expected_heal), actual_heal)
-
-
-class TestCalculateTimeBasedMultiplier(unittest.TestCase):
-    def test_mid_peak(self):
-        result = calculate_time_based_multiplier(12, 12, 1.5, 8, 20)
-        self.assertEqual(result, 1.5)
-
-    def test_peak_off(self):
-        result = calculate_time_based_multiplier(2, 12, 1.5, 8, 20)
-        self.assertEqual(result, 0.0)
-
-    def test_negative_hours(self):
-        result = calculate_time_based_multiplier(-5, -10, 1.5, -8, -2)
-        self.assertEqual(result, 0.0)
-
-    def test_zero_max_multiplier(self):
-        result = calculate_time_based_multiplier(12, 12, 0, 8, 20)
-        self.assertEqual(result, 0.0)
-
-
-class TestSetWeight(unittest.TestCase):
-    def setUp(self):
-        self.monster = MagicMock(spec=Monster, weight=0)
-        self.minor, self.major = config_monster.weight_range
-
-    def test_set_weight_zero(self):
-        weight = set_weight(self.monster, 0)
-        self.assertEqual(weight, 0)
-
-    def test_set_weight_positive(self):
-        weight = set_weight(self.monster, 100)
-        self.assertGreaterEqual(weight, 100 * (1 + self.minor))
-        self.assertLessEqual(weight, 100 * (1 + self.major))
-
-    def test_set_weight_negative(self):
-        weight = set_weight(self.monster, -50)
-        self.assertGreaterEqual(weight, -50 * (1 + self.major))
-        self.assertLessEqual(weight, -50 * (1 + self.minor))
-
-    def test_set_weight_randomness(self):
-        weights = [set_weight(self.monster, 75) for _ in range(100)]
-        self.assertGreaterEqual(len(set(weights)), 1)
-
-
-class TestSetHeight(unittest.TestCase):
-    def setUp(self):
-        self.monster = MagicMock(spec=Monster, height=0)
-        self.minor, self.major = config_monster.height_range
-
-    def test_set_height_zero(self):
-        height = set_height(self.monster, 0)
-        self.assertEqual(height, 0)
-
-    def test_set_height_positive(self):
-        height = set_height(self.monster, 100)
-        self.assertGreaterEqual(height, 100 * (1 + self.minor))
-        self.assertLessEqual(height, 100 * (1 + self.major))
-
-    def test_set_height_negative(self):
-        height = set_height(self.monster, -50)
-        self.assertGreaterEqual(height, -50 * (1 + self.major))
-        self.assertLessEqual(height, -50 * (1 + self.minor))
-
-    def test_set_height_randomness(self):
-        heights = [set_height(self.monster, 75) for _ in range(100)]
-        self.assertGreaterEqual(len(set(heights)), 1)
-
-
-class TestSimpleDamageMultiplier(unittest.TestCase):
-    def setUp(self):
-        ElementTypesHandler.clear_cache()
-        self.fire = MagicMock(spec=Element)
-        self.fire.slug = "fire"
-        self.water = MagicMock(spec=Element)
-        self.water.slug = "water"
-        self.grass = MagicMock(spec=Element)
-        self.grass.slug = "grass"
-        self.aether = MagicMock(spec=Element)
-        self.aether.slug = "aether"
-
-    def test_basic_multiplier(self):
-        attack_type = self.fire
-        target_type = self.water
-        attack_type.lookup_multiplier = MagicMock(return_value=2.0)
-        multiplier = simple_damage_multiplier([attack_type], [target_type])
-        self.assertEqual(multiplier, 2.0)
-
-    def test_multiple_attack_types(self):
-        attack_types = [self.fire, self.grass]
-        target_type = self.water
-        attack_types[0].lookup_multiplier = MagicMock(return_value=2.0)
-        attack_types[1].lookup_multiplier = MagicMock(return_value=0.5)
-        multiplier = simple_damage_multiplier(attack_types, [target_type])
-        self.assertEqual(multiplier, 1.0)
-
-    def test_multiple_target_types(self):
-        attack_type = self.fire
-        target_types = [self.water, self.grass]
-        attack_type.lookup_multiplier = MagicMock(side_effect=[2.0, 0.5])
-        multiplier = simple_damage_multiplier([attack_type], target_types)
-        self.assertEqual(multiplier, 1.0)
-
-    def test_aether_type(self):
-        attack_type = self.aether
-        target_type = self.water
-        multiplier = simple_damage_multiplier([attack_type], [target_type])
-        self.assertEqual(multiplier, 1.0)
-
-        attack_type = self.fire
-        target_type = self.aether
-        multiplier = simple_damage_multiplier([attack_type], [target_type])
-        self.assertEqual(multiplier, 1.0)
-
-    def test_additional_factors(self):
-        attack_type = self.fire
-        target_type = self.water
-        attack_type.lookup_multiplier = MagicMock(return_value=2.0)
-        additional_factors = {"boost": 1.5, "nerf": 0.8}
-        multiplier = simple_damage_multiplier(
-            [attack_type], [target_type], additional_factors
-        )
-        self.assertEqual(round(multiplier, 1), 2.4)
-
-    def test_empty_attack_or_target(self):
-        self.assertEqual(simple_damage_multiplier([], [self.water]), 1.0)
-        self.assertEqual(simple_damage_multiplier([self.fire], []), 1.0)
-
-    def test_clamping(self):
-        self.fire.lookup_multiplier = MagicMock(return_value=10.0)
-        multiplier = simple_damage_multiplier([self.fire], [self.water])
-        min_range, max_range = config_combat.multiplier_range
-        self.assertLessEqual(multiplier, max_range)
-
-    def test_cache_reuse(self):
-        self.fire.lookup_multiplier = MagicMock(return_value=2.0)
-        simple_damage_multiplier([self.fire], [self.water])
-        multiplier = simple_damage_multiplier([self.fire], [self.water])
-        self.fire.lookup_multiplier.assert_called_once()
-        self.assertEqual(multiplier, 2.0)
-
-
-class TestSimpleDamageCalculate(unittest.TestCase):
-    def setUp(self):
-        self.mock_technique = MagicMock()
-        self.mock_user = MagicMock()
-        self.mock_target = MagicMock()
-
-        self.fire = MagicMock(spec=Element)
-        self.fire.slug = "fire"
-        self.water = MagicMock(spec=Element)
-        self.water.slug = "water"
-
-        self.mock_user.level = 10
-        self.mock_technique.power = 50
-
-        self.mock_technique.types.current = [self.fire]
-        self.fire.lookup_multiplier = MagicMock(return_value=2.0)
-
-        self.mock_target.types.current = [self.water]
-        self.fire.lookup_multiplier = MagicMock(return_value=2.0)
-
-    def test_valid_melee_damage(self):
-        self.mock_technique.range = "melee"
-        self.mock_user.melee = 30
-        self.mock_target.armour = 20
-
-        damage, multiplier = simple_damage_calculate(
-            self.mock_technique, self.mock_user, self.mock_target
-        )
-
-        self.assertIsInstance(damage, int)
-        self.assertGreater(damage, 0)
-        self.assertGreater(multiplier, 0.0)
-
-    def test_valid_touch_damage(self):
-        self.mock_technique.range = "touch"
-        self.mock_user.melee = 25
-        self.mock_target.dodge = 10
-
-        damage, multiplier = simple_damage_calculate(
-            self.mock_technique, self.mock_user, self.mock_target
-        )
-
-        self.assertGreater(damage, 0)
-        self.assertGreater(multiplier, 0.0)
-
-    def test_additional_factors_applied(self):
-        self.mock_technique.range = "ranged"
-        self.mock_user.ranged = 40
-        self.mock_target.dodge = 15
-
-        additional_factors = {"weather_bonus": 0.2}
-
-        damage, multiplier = simple_damage_calculate(
-            self.mock_technique,
-            self.mock_user,
-            self.mock_target,
-            additional_factors=additional_factors,
-        )
-
-        self.assertGreater(damage, 0)
-        self.assertAlmostEqual(multiplier, 0.2, delta=0.2)
-
-    def test_level_based_damage(self):
-        self.mock_technique.range = "reliable"
-        self.mock_user.level = 15
-        self.mock_target.resist = 3
-
-        damage, multiplier = simple_damage_calculate(
-            self.mock_technique, self.mock_user, self.mock_target
-        )
-
-        self.assertGreater(damage, 0)
-        self.assertGreater(multiplier, 0.0)
-
-
-class TestModifyStat(unittest.TestCase):
-
-    def setUp(self):
-        self.monster = MagicMock(spec=Monster)
-        self.monster.custom_stats = MagicMock()
-        self.monster.set_stats = MagicMock()
-
-    def test_add_operation(self):
-        self.monster.custom_stats.armour = 10
-        stat = "armour"
-        value = 5.0
-        operation = "add"
-        expected_value = 15
-        modify_stat(self.monster, stat, value, operation)
-        self.assertEqual(self.monster.custom_stats.armour, expected_value)
-        self.monster.set_stats.assert_called_once()
-
-    def test_multiply_operation(self):
-        self.monster.armour = 10
-        self.monster.custom_stats.armour = 0
-        stat = "armour"
-        value = 1.5
-        operation = "multiply"
-        expected_value = 15
-        modify_stat(self.monster, stat, value, operation)
-        self.assertEqual(self.monster.custom_stats.armour, expected_value)
-        self.monster.set_stats.assert_called_once()
-
-    def test_invalid_operation(self):
-        stat = "armour"
-        value = 5.0
-        operation = "invalid"
-        with self.assertRaises(ValueError):
-            modify_stat(self.monster, stat, value, operation)
-
-    def test_unrecognized_stat(self):
-        stat = "unknown"
-        value = 5.0
-        operation = "add"
-        modify_stat(self.monster, stat, value, operation)
-        self.monster.set_stats.assert_not_called()
-
-    def test_modify_stat_calls_set_stats(self):
-        self.monster.custom_stats.armour = 10
-        stat = "armour"
-        value = 5.0
-        operation = "add"
-        modify_stat(self.monster, stat, value, operation)
-        self.monster.set_stats.assert_called_once()
-
-
-class TestSetHealth(unittest.TestCase):
-    def setUp(self):
-        self.monster = MagicMock(
-            spec=Monster, hp=100, current_hp=100, is_fainted=False
-        )
-
-    def test_set_health_direct(self):
-        set_health(self.monster, 50)
-        self.assertEqual(self.monster.current_hp, 50)
-
-    def test_set_health_percentage(self):
-        set_health(self.monster, 0.5)
-        self.assertEqual(self.monster.current_hp, 50)
-
-    def test_adjust_health_add(self):
-        set_health(self.monster, 10, adjust=True)
-        self.assertEqual(self.monster.current_hp, 100)
-
-    def test_adjust_health_subtract(self):
-        set_health(self.monster, -30, adjust=True)
-        self.assertEqual(self.monster.current_hp, 70)
-
-    def test_hp_max_limit(self):
-        for value in [1.5, 9999]:
-            set_health(self.monster, value)
-            self.assertEqual(self.monster.current_hp, self.monster.hp)
-
-    def test_faint_triggered_on_zero_hp(self):
-        set_health(self.monster, -200, adjust=True)
-        self.assertEqual(self.monster.current_hp, 0)
-
-    def test_set_health_to_zero(self):
-        self.monster.is_fainted = True
-        set_health(self.monster, 0)
-        self.assertEqual(self.monster.current_hp, 0)
-
-    def test_hp_min_limit(self):
-        for value in [-100, -200]:
-            self.monster.is_fainted = True
-            set_health(self.monster, value, adjust=True)
-            self.assertEqual(self.monster.current_hp, 0)
-
-    def test_set_health_percentage(self):
-        for value in [0.5, 0.25]:
-            set_health(self.monster, value)
-            self.assertEqual(
-                self.monster.current_hp, int(self.monster.hp * value)
-            )
-
-    def test_adjust_health_cap(self):
-        for value in [50, 200]:
-            set_health(self.monster, value, adjust=True)
-            self.assertEqual(self.monster.current_hp, self.monster.hp)
+# TestSimpleHeal
+@pytest.fixture
+def heal_env():
+    monster = MagicMock(spec=Monster)
+    technique = MagicMock(spec=Technique)
+    monster.level = 0.0
+    technique.healing_power = 0.0
+    return technique, monster
+
+
+def test_simple_heal_no_factors(heal_env):
+    tech, mon = heal_env
+    tech.healing_power = 5
+    mon.level = 10
+    expected = COEFF_DAMAGE + mon.level * tech.healing_power
+    assert simple_heal(tech, mon) == int(expected)
+
+
+def test_simple_heal_with_factors(heal_env):
+    tech, mon = heal_env
+    tech.healing_power = 3
+    mon.level = 15
+    factors = {"boost": 1.2, "penalty": 0.8}
+    expected = (COEFF_DAMAGE + mon.level * tech.healing_power) * math.prod(
+        factors.values()
+    )
+    assert simple_heal(tech, mon, factors) == int(expected)
+
+
+def test_simple_heal_empty_factors(heal_env):
+    tech, mon = heal_env
+    tech.healing_power = 2
+    mon.level = 20
+    expected = COEFF_DAMAGE + mon.level * tech.healing_power
+    assert simple_heal(tech, mon, {}) == int(expected)
+
+
+# TestCalculateTimeBasedMultiplier
+@pytest.mark.parametrize(
+    "args,expected",
+    [
+        ((12, 12, 1.5, 8, 20), 1.5),
+        ((2, 12, 1.5, 8, 20), 0.0),
+        ((-5, -10, 1.5, -8, -2), 0.0),
+        ((12, 12, 0, 8, 20), 0.0),
+    ],
+)
+def test_time_based_multiplier(args, expected):
+    assert calculate_time_based_multiplier(*args) == expected
+
+
+# TestSetWeight
+@pytest.fixture
+def weight_env():
+    monster = MagicMock(spec=Monster, weight=0)
+    minor, major = config_monster.weight_range
+    return monster, minor, major
+
+
+def test_set_weight_zero(weight_env):
+    mon, minor, major = weight_env
+    assert set_weight(mon, 0) == 0
+
+
+def test_set_weight_positive(weight_env):
+    mon, minor, major = weight_env
+    w = set_weight(mon, 100)
+    assert w >= 100 * (1 + minor)
+    assert w <= 100 * (1 + major)
+
+
+def test_set_weight_negative(weight_env):
+    mon, minor, major = weight_env
+    w = set_weight(mon, -50)
+    assert w >= -50 * (1 + major)
+    assert w <= -50 * (1 + minor)
+
+
+def test_set_weight_randomness(weight_env):
+    mon, minor, major = weight_env
+    weights = [set_weight(mon, 75) for _ in range(100)]
+    assert len(set(weights)) >= 1
+
+
+# TestSetHeight
+@pytest.fixture
+def height_env():
+    monster = MagicMock(spec=Monster, height=0)
+    minor, major = config_monster.height_range
+    return monster, minor, major
+
+
+def test_set_height_zero(height_env):
+    mon, minor, major = height_env
+    assert set_height(mon, 0) == 0
+
+
+def test_set_height_positive(height_env):
+    mon, minor, major = height_env
+    h = set_height(mon, 100)
+    assert h >= 100 * (1 + minor)
+    assert h <= 100 * (1 + major)
+
+
+def test_set_height_negative(height_env):
+    mon, minor, major = height_env
+    h = set_height(mon, -50)
+    assert h >= -50 * (1 + major)
+    assert h <= -50 * (1 + minor)
+
+
+def test_set_height_randomness(height_env):
+    mon, minor, major = height_env
+    heights = [set_height(mon, 75) for _ in range(100)]
+    assert len(set(heights)) >= 1
+
+
+# TestSimpleDamageMultiplier
+@pytest.fixture
+def elements():
+    ElementTypesHandler.clear_cache()
+    fire = MagicMock(spec=Element)
+    fire.slug = "fire"
+    water = MagicMock(spec=Element)
+    water.slug = "water"
+    grass = MagicMock(spec=Element)
+    grass.slug = "grass"
+    aether = MagicMock(spec=Element)
+    aether.slug = "aether"
+    return fire, water, grass, aether
+
+
+def test_basic_multiplier(elements):
+    fire, water, *_ = elements
+    fire.lookup_multiplier = MagicMock(return_value=2.0)
+    assert simple_damage_multiplier([fire], [water]) == 2.0
+
+
+@pytest.mark.parametrize(
+    "vals,expected",
+    [
+        ((2.0, 0.5), 1.0),
+    ],
+)
+def test_multiple_attack_types(elements, vals, expected):
+    fire, water, grass, _ = elements
+    fire.lookup_multiplier = MagicMock(return_value=vals[0])
+    grass.lookup_multiplier = MagicMock(return_value=vals[1])
+    assert simple_damage_multiplier([fire, grass], [water]) == expected
+
+
+def test_multiple_target_types(elements):
+    fire, water, grass, _ = elements
+    fire.lookup_multiplier = MagicMock(side_effect=[2.0, 0.5])
+    assert simple_damage_multiplier([fire], [water, grass]) == 1.0
+
+
+def test_aether_type(elements):
+    fire, water, _, aether = elements
+    assert simple_damage_multiplier([aether], [water]) == 1.0
+    assert simple_damage_multiplier([fire], [aether]) == 1.0
+
+
+def test_additional_factors(elements):
+    fire, water, *_ = elements
+    fire.lookup_multiplier = MagicMock(return_value=2.0)
+    factors = {"boost": 1.5, "nerf": 0.8}
+    assert round(simple_damage_multiplier([fire], [water], factors), 1) == 2.4
+
+
+@pytest.mark.parametrize(
+    "atk,tgt",
+    [
+        ([], ["water"]),
+        (["fire"], []),
+    ],
+)
+def test_empty_attack_or_target(elements, atk, tgt):
+    fire, water, *_ = elements
+    atk = [fire] if atk else []
+    tgt = [water] if tgt else []
+    assert simple_damage_multiplier(atk, tgt) == 1.0
+
+
+def test_clamping(elements):
+    fire, water, *_ = elements
+    fire.lookup_multiplier = MagicMock(return_value=10.0)
+    mult = simple_damage_multiplier([fire], [water])
+    _, max_range = config_combat.multiplier_range
+    assert mult <= max_range
+
+
+def test_cache_reuse(elements):
+    fire, water, *_ = elements
+    fire.lookup_multiplier = MagicMock(return_value=2.0)
+    simple_damage_multiplier([fire], [water])
+    mult = simple_damage_multiplier([fire], [water])
+    fire.lookup_multiplier.assert_called_once()
+    assert mult == 2.0
+
+
+# TestSimpleDamageCalculate
+@pytest.fixture
+def dmg_env():
+    tech = MagicMock()
+    user = MagicMock()
+    target = MagicMock()
+
+    fire = MagicMock(spec=Element)
+    fire.slug = "fire"
+    water = MagicMock(spec=Element)
+    water.slug = "water"
+
+    user.level = 10
+    tech.power = 50
+
+    tech.types.current = [fire]
+    fire.lookup_multiplier = MagicMock(return_value=2.0)
+
+    target.types.current = [water]
+    fire.lookup_multiplier = MagicMock(return_value=2.0)
+
+    return tech, user, target
+
+
+def test_valid_melee_damage(dmg_env):
+    tech, user, target = dmg_env
+    tech.range = "melee"
+    user.melee = 30
+    target.armour = 20
+    dmg, mult = simple_damage_calculate(tech, user, target)
+    assert isinstance(dmg, int)
+    assert dmg > 0
+    assert mult > 0.0
+
+
+def test_valid_touch_damage(dmg_env):
+    tech, user, target = dmg_env
+    tech.range = "touch"
+    user.melee = 25
+    target.dodge = 10
+    dmg, mult = simple_damage_calculate(tech, user, target)
+    assert dmg > 0
+    assert mult > 0.0
+
+
+def test_additional_factors_applied(dmg_env):
+    tech, user, target = dmg_env
+    tech.range = "ranged"
+    user.ranged = 40
+    target.dodge = 15
+    factors = {"weather_bonus": 0.2}
+    dmg, mult = simple_damage_calculate(
+        tech, user, target, additional_factors=factors
+    )
+    assert dmg > 0
+    assert pytest.approx(mult, abs=0.2) == 0.2
+
+
+def test_level_based_damage(dmg_env):
+    tech, user, target = dmg_env
+    tech.range = "reliable"
+    user.level = 15
+    target.resist = 3
+    dmg, mult = simple_damage_calculate(tech, user, target)
+    assert dmg > 0
+    assert mult > 0.0
+
+
+# TestModifyMonsterCustomStat
+@pytest.fixture
+def monster():
+    m = MagicMock(spec=Monster)
+    m.custom_stats = CustomStatBoosts()
+    m.set_stats = MagicMock()
+    return m
+
+
+@pytest.mark.parametrize(
+    "initial,amount,op,expected",
+    [
+        (10, 5.0, "add", 15),
+    ],
+)
+def test_add_operation(monster, initial, amount, op, expected):
+    monster.custom_stats.armour = initial
+    modify_monster_custom_stat(monster, "armour", amount, op)
+    assert monster.custom_stats.armour == expected
+    monster.set_stats.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "base,initial,amount,op,expected",
+    [
+        (10, 0, 1.5, "multiply", 15),
+    ],
+)
+def test_multiply_operation(monster, base, initial, amount, op, expected):
+    monster.armour = base
+    monster.custom_stats.armour = initial
+    modify_monster_custom_stat(monster, "armour", amount, op)
+    assert monster.custom_stats.armour == expected
+    monster.set_stats.assert_called_once()
+
+
+def test_invalid_operation(monster):
+    with pytest.raises(ValueError):
+        modify_monster_custom_stat(monster, "armour", 5.0, "invalid")
+
+
+def test_unrecognized_stat(monster):
+    with pytest.raises(AttributeError):
+        modify_monster_custom_stat(monster, "unknown", 5.0, "add")
+
+
+def test_modify_monster_custom_stat_calls_set_stats(monster):
+    monster.custom_stats.armour = 10
+    modify_monster_custom_stat(monster, "armour", 5.0, "add")
+    monster.set_stats.assert_called_once()
+
+
+# TestModifyTechniqueCustomStat
+@pytest.fixture
+def tech():
+    t = MagicMock(spec=Technique)
+    t.custom_boosts = TechniqueCustomBoosts()
+    t.base_stats = TechniqueBaseStats(
+        power=10.0,
+        potency=5.0,
+        accuracy=0.8,
+        healing_power=3.0,
+    )
+    t.reset_current_stats = MagicMock()
+    return t
+
+
+@pytest.mark.parametrize(
+    "initial,amount,op,expected",
+    [
+        (10.0, 5.0, "add", 15.0),
+    ],
+)
+def test_add_operation_tech(tech, initial, amount, op, expected):
+    tech.custom_boosts.power = initial
+    modify_technique_custom_stat(tech, "power", amount, op)
+    assert tech.custom_boosts.power == expected
+    tech.reset_current_stats.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "initial,amount,op,expected",
+    [
+        (0.0, 1.5, "multiply", 15.0),
+    ],
+)
+def test_multiply_operation_tech(tech, initial, amount, op, expected):
+    tech.custom_boosts.power = initial
+    modify_technique_custom_stat(tech, "power", amount, op)
+    assert tech.custom_boosts.power == expected
+    tech.reset_current_stats.assert_called_once()
+
+
+def test_invalid_operation_tech(tech):
+    with pytest.raises(ValueError):
+        modify_technique_custom_stat(tech, "power", 5.0, "invalid")
+
+
+def test_unrecognized_stat_tech(tech):
+    with pytest.raises(AttributeError):
+        modify_technique_custom_stat(tech, "unknown", 5.0, "add")
+
+
+def test_modify_technique_custom_stat_calls_reset(tech):
+    tech.custom_boosts.power = 10.0
+    modify_technique_custom_stat(tech, "power", 5.0, "add")
+    tech.reset_current_stats.assert_called_once()
+
+
+# TestSetHealth
+@pytest.fixture
+def monster_hp():
+    return MagicMock(spec=Monster, hp=100, current_hp=100, is_fainted=False)
+
+
+def test_set_health_direct(monster_hp):
+    set_health(monster_hp, 50)
+    assert monster_hp.current_hp == 50
+
+
+def test_set_health_percentage(monster_hp):
+    set_health(monster_hp, 0.5)
+    assert monster_hp.current_hp == 50
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        (10, 100),
+    ],
+)
+def test_adjust_health_add(monster_hp, value, expected):
+    set_health(monster_hp, value, adjust=True)
+    assert monster_hp.current_hp == expected
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        (-30, 70),
+    ],
+)
+def test_adjust_health_subtract(monster_hp, value, expected):
+    set_health(monster_hp, value, adjust=True)
+    assert monster_hp.current_hp == expected
+
+
+@pytest.mark.parametrize("value", [1.5, 9999])
+def test_hp_max_limit(monster_hp, value):
+    set_health(monster_hp, value)
+    assert monster_hp.current_hp == monster_hp.hp
+
+
+def test_faint_triggered_on_zero_hp(monster_hp):
+    set_health(monster_hp, -200, adjust=True)
+    assert monster_hp.current_hp == 0
+
+
+def test_set_health_to_zero(monster_hp):
+    monster_hp.is_fainted = True
+    set_health(monster_hp, 0)
+    assert monster_hp.current_hp == 0
+
+
+@pytest.mark.parametrize("value", [-100, -200])
+def test_hp_min_limit(monster_hp, value):
+    monster_hp.is_fainted = True
+    set_health(monster_hp, value, adjust=True)
+    assert monster_hp.current_hp == 0
+
+
+@pytest.mark.parametrize("value", [0.5, 0.25])
+def test_set_health_percentage_param(monster_hp, value):
+    set_health(monster_hp, value)
+    assert monster_hp.current_hp == int(monster_hp.hp * value)
+
+
+@pytest.mark.parametrize("value", [50, 200])
+def test_adjust_health_cap(monster_hp, value):
+    set_health(monster_hp, value, adjust=True)
+    assert monster_hp.current_hp == monster_hp.hp

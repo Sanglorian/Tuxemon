@@ -86,11 +86,9 @@ class BaseClient(ABC):
         self.active_effect_manager = ActiveEffectManager()
 
         self.event_bus = get_event_bus()
-        self.state_repository = StateRepository()
-        loader = StateLoader(
-            base_package="tuxemon.states", lib_dir=paths.LIBDIR
+        self.state_repository = StateRepository.from_loader(
+            StateLoader("tuxemon.states", paths.LIBDIR)
         )
-        loader.auto_state_discovery(self.state_repository)
         self.state_manager = StateManager(
             package="tuxemon.states",
             event=self.event_bus,

@@ -11,35 +11,18 @@ from tuxemon.core.asset import get_assets
 from tuxemon.core.core_effect import StatusEffectResult
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
 from tuxemon.database.runtime import db
-from tuxemon.db import (
-    CategoryStatus,
-    EffectPhase,
-    Range,
-    ResponseStatus,
-    SoundProperties,
-    StatModel,
-    StatusBehaviors,
-    StatusModel,
-    StepEffectType,
-    VisualProperties,
-)
+from tuxemon.db import EffectPhase, StatusModel
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
 from tuxemon.monster_dir.stats import BasicStats
-from tuxemon.surfanim import FlipAxes
+from tuxemon.status.lifecycle import Lifecycle
+from tuxemon.status.step_effect_engine import StepEffectEngine
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
-    from tuxemon.plugin import PluginObject
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
-
-
-SIMPLE_PERSISTANCE_ATTRIBUTES = (
-    "slug",
-    "steps",
-)
 
 
 class Status:
@@ -47,71 +30,75 @@ class Status:
     Particular status that tuxemon monsters can be affected.
     """
 
-    MAX_STACKS: int = 5
-
     def __init__(
         self,
         host: Monster,
+        db_data: StatusModel,
+        instance_id: UUID | None = None,
         steps: float = 0.0,
-        save_data: Mapping[str, Any] | None = None,
     ) -> None:
-        save_data = save_data or {}
-        self._host: Monster = host
-        self._steps: float = steps
-        self._linked_monster: Monster | None = None
-        self._nr_turn: int = 0
+        self._host = host
+        self.slug = db_data.slug
+        self.instance_id: UUID = instance_id or uuid4()
 
-        self._effect_applied: set[str] = set()
-
-        self.instance_id: UUID = uuid4()
-        self.bond: bool = False
-        self.counter: int = 0
-        self.cond_id: int = 0
-        self.category: CategoryStatus | None = None
-        self.visuals = VisualProperties(
-            animation=None, flip_axes=FlipAxes.NONE, loop=-1
-        )
-        self.gain_cond: str = ""
-        self.icon: str = ""
-        self.duration: int = 0
-        self.phase: EffectPhase = EffectPhase.DEFAULT
-        self.range: Range = Range.melee
-        self.stack_level: int = 1
-        self.step_interval: int = 0
-        self.step_effect_value: float = 0.0
-        self.step_effect_type: StepEffectType = StepEffectType.NONE
-        self._step_hp_change: int = 0
-        self.on_positive_status: ResponseStatus | None = None
-        self.on_negative_status: ResponseStatus | None = None
-        self.on_tech_use: str | None = None
-        self.on_item_use: str | None = None
-        self.sound = SoundProperties(sfx=None, volume=1.5)
-        self.sort: str = ""
-        self.slug: str = ""
-        self.use_success: str = ""
-        self.use_failure: str = ""
-        self.modifiers: ModifiersHandler = ModifiersHandler()
-        self.behaviors: StatusBehaviors
-        self.stat_modifiers: dict[str, StatModel] = {}
+        self.sort = db_data.sort
+        self.icon = db_data.icon
+        self.behaviors = db_data.behaviors
+        self.bond = db_data.bond
+        self.category = db_data.category
+        self.cond_id = db_data.cond_id
+        self.visuals = db_data.visuals
+        self.sound = db_data.sound
+        self.on_tech_use = db_data.on_tech_use
+        self.on_item_use = db_data.on_item_use
+        self.on_positive_status = db_data.on_positive_status
+        self.on_negative_status = db_data.on_negative_status
 
         self.core_assets = get_assets()
-        self.effects: Sequence[PluginObject] = []
-        self.conditions: Sequence[PluginObject] = []
-        self.temporary_stat_boosts: BasicStats = BasicStats()
+        self.conditions = self.core_assets.parse_conditions(db_data.conditions)
+        self.condition_handler = ConditionProcessor(self.conditions)
+        self.effect_defs = db_data.effects
 
-        self.set_state(save_data)
+        self.lifecycle = Lifecycle()
+        self.lifecycle.duration = db_data.duration
+        self.lifecycle.max_stacks = db_data.max_stacks
+
+        self.step_engine = StepEffectEngine(initial_steps=steps)
+        self.step_engine.interval = db_data.step_interval
+        self.step_engine.effect_type = db_data.step_effect_type
+        self.step_engine.value = db_data.step_effect_value
+        self.stat_modifiers = db_data.stat_modifiers
+
+        self.modifiers = ModifiersHandler(db_data.modifiers)
+        self.temporary_stat_boosts = BasicStats()
+        self._effect_applied: set[str] = set()
+        self._linked_monster: Monster | None = None
+        self.phase: EffectPhase = EffectPhase.DEFAULT
+
+        self.gain_cond = T.maybe_translate(db_data.gain_cond)
+        self.use_success = T.maybe_translate(db_data.use_success)
+        self.use_failure = T.maybe_translate(db_data.use_failure)
 
     @classmethod
-    def create(
-        cls,
-        slug: str,
-        host: Monster,
-        steps: float = 0.0,
-        save_data: Mapping[str, Any] | None = None,
-    ) -> Status:
-        method = cls(host, steps, save_data)
-        method.load(slug)
-        return method
+    def create(cls, slug: str, host: Monster, steps: float = 0.0) -> Status:
+        db_data = StatusModel.lookup(slug, db)
+        return cls(host=host, db_data=db_data, steps=steps)
+
+    @classmethod
+    def from_save(cls, host: Monster, save_data: Mapping[str, Any]) -> Status:
+        slug = save_data["slug"]
+        db_data = StatusModel.lookup(slug, db)
+
+        instance_id = None
+        if "instance_id" in save_data:
+            instance_id = UUID(save_data["instance_id"])
+
+        return cls(
+            host=host,
+            db_data=db_data,
+            instance_id=instance_id,
+            steps=save_data.get("steps", 0.0),
+        )
 
     @property
     def name(self) -> str:
@@ -128,11 +115,11 @@ class Status:
 
     @property
     def steps(self) -> float:
-        return self._steps
+        return self.step_engine.steps
 
     @steps.setter
     def steps(self, value: float) -> None:
-        self._steps = value
+        self.step_engine.steps = value
 
     @property
     def linked_monster(self) -> Monster | None:
@@ -141,53 +128,7 @@ class Status:
 
     @property
     def nr_turn(self) -> int:
-        return self._nr_turn
-
-    def load(self, slug: str) -> None:
-        """
-        Loads and sets this status's attributes from the status
-        database. The status is looked up in the database by slug.
-
-        Parameters:
-            The slug of the status to look up in the database.
-        """
-        results = StatusModel.lookup(slug, db)
-        self.slug = results.slug
-
-        self.sort = results.sort
-
-        # status use notifications (translated!)
-        self.gain_cond = T.maybe_translate(results.gain_cond)
-        self.use_success = T.maybe_translate(results.use_success)
-        self.use_failure = T.maybe_translate(results.use_failure)
-
-        self.icon = results.icon
-
-        self.modifiers = ModifiersHandler(results.modifiers)
-        self.behaviors = results.behaviors
-        self.step_interval = results.step_interval
-        self.step_effect_value = results.step_effect_value
-        self.step_effect_type = results.step_effect_type
-        # monster stats
-        self.stat_modifiers = results.stat_modifiers
-
-        # status fields
-        self.duration = results.duration
-        self.bond = results.bond
-        self.category = results.category
-        self.on_negative_status = results.on_negative_status
-        self.on_positive_status = results.on_positive_status
-        self.on_tech_use = results.on_tech_use
-        self.on_item_use = results.on_item_use
-
-        self.cond_id = results.cond_id
-
-        self.effect_defs = results.effects
-        self.conditions = self.core_assets.parse_conditions(results.conditions)
-        self.condition_handler = ConditionProcessor(self.conditions)
-
-        self.visuals = results.visuals
-        self.sound = results.sound
+        return self.lifecycle.turn
 
     def has_phase(self, phase: EffectPhase) -> bool:
         """Returns True if the current phase is equal to the provided phase, False otherwise."""
@@ -199,13 +140,13 @@ class Status:
 
     def advance_round(self) -> None:
         """Advance the counter for this status if used."""
-        self.counter += 1
+        self.lifecycle.advance_use()
 
     def is_use_expired(self, max_uses: int = 1) -> bool:
         """
         Checks if the status has reached its use-based expiration threshold.
         """
-        return self.counter >= max_uses
+        return self.lifecycle.is_use_expired(max_uses)
 
     def validate_monster(self, session: Session, target: Monster) -> bool:
         """
@@ -219,7 +160,7 @@ class Status:
 
     def has_exceeded_duration(self) -> bool:
         """Checks if the status has lasted beyond its intended duration."""
-        return self._nr_turn > self.duration
+        return self.lifecycle.has_exceeded_duration()
 
     def use(self, session: Session, phase: EffectPhase) -> StatusEffectResult:
         """
@@ -237,86 +178,36 @@ class Status:
         return result
 
     def tick_turn(self) -> None:
-        """
-        Advance the turn counter for this status.
-        Only increments nr_turn if the status has a defined duration (> 0).
-        """
-        if self.duration > 0:
-            self._nr_turn += 1
-            logger.debug(
-                f"[Status Duration] {self.slug} turn {self._nr_turn} "
-                f"of {self.duration} at stack {self.stack_level}."
-            )
-
-    def stack(self) -> None:
-        """
-        Increments the status stack level up to MAX_STACKS and
-        resets the turn counter (nr_turn) and the use counter (counter)
-        to refresh the duration and uses.
-        """
-        old_stack = self.stack_level
-        self.stack_level = min(old_stack + 1, self.MAX_STACKS)
-        self._nr_turn = 0
-        self.counter = 0
+        self.lifecycle.tick_turn()
         logger.debug(
-            f"Status '{self.slug}' stacked from {old_stack} to {self.stack_level}. "
-            f"Duration/Uses refreshed."
+            f"[Status Duration] {self.slug} turn {self.lifecycle.turn} "
+            f"of {self.lifecycle.duration} at stack {self.lifecycle.stack_level}."
         )
 
-    def _calculate_step_hp_change(self, ticks: int) -> int:
-        """
-        Calculates the total HP change (damage or heal) applied by the
-        status for the given number of steps/intervals (ticks).
-        """
-        if (
-            self.step_effect_type == StepEffectType.NONE
-            or self.step_effect_value == 0.0
-        ):
-            return 0
-
-        value = self.step_effect_value
-        monster = self.host
-        hp_change_per_tick: float = 0.0
-
-        if self.step_effect_type == StepEffectType.FLAT_DAMAGE:
-            hp_change_per_tick = -value
-        elif self.step_effect_type == StepEffectType.PERCENT_MAX_HP_DAMAGE:
-            hp_change_per_tick = -(monster.hp * (value / 100))
-        elif self.step_effect_type == StepEffectType.PERCENT_CURRENT_HP_DAMAGE:
-            hp_change_per_tick = -(monster.current_hp * (value / 100))
-        elif self.step_effect_type == StepEffectType.PERCENT_MAX_HP_HEAL:
-            hp_change_per_tick = monster.hp * (value / 100)
-        elif self.step_effect_type == StepEffectType.PERCENT_CURRENT_HP_HEAL:
-            hp_change_per_tick = monster.current_hp * (value / 100)
-
-        return round(hp_change_per_tick * ticks)
+    def stack(self) -> None:
+        old, new = self.lifecycle.stack()
+        logger.debug(
+            f"Status '{self.slug}' stacked from {old} to {new}. "
+            f"Duration/Uses refreshed."
+        )
 
     def tick_steps(
         self, session: Session, steps: float
     ) -> StatusEffectResult | None:
         """
-        Advance the step counter and trigger the status effect if the interval
-        is reached. Returns the result if the effect was triggered.
+        Advance step counter and trigger effect if interval reached.
         """
-        if self.step_interval <= 0:
+        ticks = self.step_engine.add_steps(steps)
+        if ticks <= 0:
             return None
 
-        old_steps = self._steps
-        self._steps += steps
+        logger.debug(
+            f"[Status Step Tick] {self.slug} triggered for {ticks} ticks."
+        )
 
-        old_interval_count = old_steps // self.step_interval
-        new_interval_count = self._steps // self.step_interval
+        self.step_engine.compute_hp_change(self.host, ticks)
 
-        if new_interval_count > old_interval_count:
-            ticks = int(new_interval_count - old_interval_count)
-            logger.debug(
-                f"[Status Step Tick] {self.slug} triggered after "
-                f"{new_interval_count} intervals. Ticking {ticks} times."
-            )
-            self._step_hp_change = self._calculate_step_hp_change(ticks)
-            return self.use(session, EffectPhase.ON_STEP_INTERVAL)
-
-        return None
+        return self.use(session, EffectPhase.ON_STEP_INTERVAL)
 
     def is_already_applied(self, effect_name: str) -> bool:
         """Check if a specific core effect has already been triggered for this status."""
@@ -327,37 +218,20 @@ class Status:
         self._effect_applied.add(effect_name)
 
     def get_state(self) -> Mapping[str, Any]:
-        """
-        Prepares a dictionary of the status to be saved to a file.
-        """
-        save_data = {
-            attr: getattr(self, attr)
-            for attr in SIMPLE_PERSISTANCE_ATTRIBUTES
-            if getattr(self, attr)
+        """Prepares a dictionary of the status to be saved."""
+        return {
+            "slug": self.slug,
+            "steps": self.steps,
+            "instance_id": self.instance_id.hex,
         }
-
-        save_data["instance_id"] = self.instance_id.hex
-
-        return save_data
-
-    def set_state(self, save_data: Mapping[str, Any]) -> None:
-        """Loads information from saved data."""
-        if not save_data:
-            return
-
-        self.load(save_data["slug"])
-
-        for key, value in save_data.items():
-            if key == "instance_id" and value:
-                self.instance_id = UUID(value)
-            elif key in SIMPLE_PERSISTANCE_ATTRIBUTES:
-                setattr(self, key, value)
 
 
 def decode_status(
     json_data: Sequence[Mapping[str, Any]] | None, monster: Monster
 ) -> list[Status]:
-    return [Status(host=monster, save_data=cond) for cond in (json_data or [])]
+    if not json_data:
+        return []
+    return [Status.from_save(host=monster, save_data=s) for s in json_data]
 
 
 def encode_status(conds: Sequence[Status]) -> Sequence[Mapping[str, Any]]:

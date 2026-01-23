@@ -6,6 +6,7 @@ General "tools" code for pygame graphics operations that don't
 have a home in any specific place.
 
 """
+
 from __future__ import annotations
 
 import logging

@@ -3,6 +3,7 @@
 """
 Module mainly used for the mod_manager.py
 """
+
 import os
 from typing import Any
 

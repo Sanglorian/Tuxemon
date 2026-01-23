@@ -207,8 +207,8 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 return
             self.combat_session.swap_tracker.register(added)
             self.combat_session.enqueue_action(self.monster, swap, added)
-            self.client.remove_state_by_name("MonsterMenuState")
-            self.client.remove_state_by_name("MainCombatMenuState")
+            self.client.pop_state()
+            self.client.pop_state()
 
         def validate_monster(menu_item: Monster) -> bool:
             if menu_item.is_fainted:

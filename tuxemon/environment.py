@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+
+from pygame.rect import Rect
+from pygame.surface import Surface
 
 from tuxemon.database.runtime import db
 from tuxemon.db import (
@@ -13,10 +15,9 @@ from tuxemon.db import (
     BattleMusicModel,
     EnvironmentModel,
 )
+from tuxemon.graphics import load_and_scale
+from tuxemon.prepare import SCALE
 from tuxemon.tools import scale
-
-if TYPE_CHECKING:
-    from pygame.rect import Rect
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +68,8 @@ class BattleLayout:
     back_island_pos: dict[str, int]
     front_island_pos: dict[str, int]
     offsets: dict[str, int]
+    entry_jump_distance: int
+    entry_duration: float
 
     @classmethod
     def create(
@@ -87,7 +90,30 @@ class BattleLayout:
                 "monster_y": scale(graphics.monster_base_offset),
                 "player_y": scale(graphics.player_base_offset),
             },
+            entry_jump_distance=scale(graphics.entry_jump_distance),
+            entry_duration=graphics.entry_duration,
         )
+
+    def get_combatant_pos(
+        self, role: str, island_rect: Rect
+    ) -> dict[str, int]:
+        """Returns the bottom/centerx anchor for a sprite based on its role."""
+        if role == "enemy":
+            return {
+                "bottom": island_rect.bottom - self.offsets["enemy_y"],
+                "centerx": island_rect.centerx,
+            }
+        elif role == "monster":
+            return {
+                "bottom": island_rect.bottom - self.offsets["monster_y"],
+                "centerx": island_rect.centerx,
+            }
+        elif role == "player":
+            return {
+                "bottom": island_rect.centery + self.offsets["player_y"],
+                "centerx": island_rect.centerx,
+            }
+        return {}
 
 
 class EnvironmentManager:
@@ -98,7 +124,7 @@ class EnvironmentManager:
     """
 
     def __init__(self) -> None:
-        self._active_handler: Optional[Environment] = None
+        self._active_handler: Environment | None = None
         logger.debug("EnvironmentManager initialized.")
 
     def update(self, dt: float) -> None:
@@ -125,7 +151,7 @@ class EnvironmentManager:
         self._active_handler = None
         logger.debug("Environment unloaded.")
 
-    def get_active_environment(self) -> Optional[Environment]:
+    def get_active_environment(self) -> Environment | None:
         """Returns the currently active Environment, or None if none is loaded."""
         return self._active_handler
 
@@ -168,7 +194,7 @@ class Environment:
         self.data = environment_data
         self.elapsed_time = 0.0
         self._party_layouts: dict[str, PartyLayout] = {}
-        self._battle_layout: Optional[BattleLayout] = None
+        self._battle_layout: BattleLayout | None = None
         logger.debug(f"Environment initialized for slug: {self.data.slug}")
 
     def update(self, dt: float) -> None:
@@ -207,3 +233,23 @@ class Environment:
                 graphics, screen_rect, player_home, opp_home
             )
         return self._battle_layout
+
+    def prepare_background(self, screen_size: tuple[int, int]) -> Surface:
+        """Processes the background sprite to fit the screen dimensions."""
+        bg_path = self.get_battle_assets()["background"]
+        surf = load_and_scale(bg_path, SCALE)
+
+        full_width, full_height = screen_size
+        full_surf = Surface((full_width, full_height))
+        full_surf.fill((0, 0, 0))
+        full_surf.blit(surf, (0, 0))
+
+        # Stretch the last row to fill the bottom (for dialog area)
+        if surf.get_height() < full_height:
+            last_row = surf.subsurface(
+                Rect(0, surf.get_height() - 1, surf.get_width(), 1)
+            )
+            for y in range(surf.get_height(), full_height):
+                full_surf.blit(last_row, (0, y))
+
+        return full_surf

@@ -53,15 +53,15 @@ events:
     - translated_dialog spyder_intro00
     - change_bg gradient_blue,spyder_tumble,image
     - translated_dialog spyder_intro01
-    - change_bg gradient_blue,dollfin,monster
+    - change_bg_monster gradient_blue,dollfin
     - translated_dialog dollfin,,,center,center
-    - change_bg gradient_blue,ignibus,monster
+    - change_bg_monster gradient_blue,ignibus
     - translated_dialog ignibus,,,center,center
-    - change_bg gradient_blue,memnomnom,monster
+    - change_bg_monster gradient_blue,memnomnom
     - translated_dialog memnomnom,,,center,center
-    - change_bg gradient_blue,budaye,monster
+    - change_bg_monster gradient_blue,budaye
     - translated_dialog budaye,,,center,center
-    - change_bg gradient_blue,grintot,monster
+    - change_bg_monster gradient_blue,grintot
     - translated_dialog grintot,,,center,center
     - change_bg gradient_blue,spyder_monsters,image
     - translated_dialog spyder_intro02

@@ -19,14 +19,25 @@ class MoneyManager:
         self.bills: dict[str, BillEntry] = {}
         self.portfolio_manager: PortfolioManager = PortfolioManager()
 
+    def set_money(self, amount: int) -> None:
+        if amount < 0:
+            raise AttributeError(f"{amount} must be >= 0")
+        self.money = amount
+
     def add_money(self, amount: int) -> None:
         self.money += amount
         if self.money < 0:
+            logger.warning(
+                f"Money underflow: clamped to 0 after subtracting {amount}"
+            )
             self.money = 0
 
     def remove_money(self, amount: int) -> None:
         self.money -= amount
         if self.money < 0:
+            logger.warning(
+                f"Money underflow: clamped to 0 after subtracting {amount}"
+            )
             self.money = 0
 
     def get_money(self) -> int:
@@ -73,8 +84,8 @@ class MoneyManager:
                 f"Method 'remove_bill' failed. No such bill: {bill_name}"
             )
 
-        self.bills[bill_name].amount += amount
-        if self.bills[bill_name].amount < 0:
+        self.bills[bill_name].amount -= amount
+        if self.bills[bill_name].amount <= 0:
             del self.bills[bill_name]
 
     def pay_bill_with_money(self, bill_name: str, amount: int) -> None:
@@ -87,7 +98,7 @@ class MoneyManager:
         payment = min(amount, bill.amount)
 
         self.remove_money(payment)
-        self.remove_bill(bill_name, -payment)
+        self.remove_bill(bill_name, payment)
 
     def pay_bill_with_deposit(self, bill_name: str, amount: int) -> None:
         if bill_name not in self.bills:
@@ -99,7 +110,7 @@ class MoneyManager:
         payment = min(amount, bill.amount)
 
         self.withdraw_from_bank(payment)
-        self.remove_bill(bill_name, -payment)
+        self.remove_bill(bill_name, payment)
 
     def get_bills(self) -> dict[str, BillEntry]:
         return self.bills

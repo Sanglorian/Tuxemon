@@ -47,21 +47,36 @@ class ModifyMoneyAction(EventAction):
 
         player = session.player
         money_manager = character.money_controller.money_manager
+
         if self.amount is None:
             if self.variable:
-                _amount = player.game_variables.get(self.variable, 0)
-                if isinstance(_amount, int):
-                    amount = int(_amount)
-                elif isinstance(_amount, float):
-                    _value = float(_amount)
-                    _wallet = money_manager.get_money()
-                    amount = int(_wallet * _value)
+                raw_value = player.game_variables.get(self.variable, 0)
+
+                if isinstance(raw_value, int):
+                    amount = raw_value
+
+                elif isinstance(raw_value, float):
+                    wallet = money_manager.get_money()
+                    amount = int(wallet * raw_value)
+
                 else:
-                    raise ValueError("It must be float or int")
+                    raise ValueError(
+                        f"Variable '{self.variable}' must be int or float, got {type(raw_value).__name__}"
+                    )
             else:
                 amount = 0
         else:
             amount = self.amount
 
+        current_money = money_manager.get_money()
+        if amount < 0 and current_money + amount < 0:
+            raise ValueError(
+                f"Cannot remove {abs(amount)} money: only {current_money} available"
+            )
+
         money_manager.add_money(amount)
-        logger.info(f"{character.name}'s money changed by {amount}")
+
+        logger.debug(
+            f"{character.name}'s money changed by {amount}. "
+            f"New balance: {money_manager.get_money()}"
+        )

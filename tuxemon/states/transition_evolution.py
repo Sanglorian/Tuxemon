@@ -11,8 +11,8 @@ from pygame.surface import Surface
 from tuxemon import tools
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
-from tuxemon.graphics import load_sprite
 from tuxemon.locale import T
+from tuxemon.monster_dir.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BLACK_COLOR, WHITE_COLOR
 from tuxemon.prepare import SCREEN_SIZE
@@ -52,8 +52,8 @@ class EvolutionTransition(State):
         self.original = original
         self.evolved = evolved
 
-        self.original_sprite = self._load_sprite(self.original_monster.slug)
-        self.evolved_sprite = self._load_sprite(self.evolved_monster.slug)
+        self.original_sprite = self._load_sprite(self.original_monster)
+        self.evolved_sprite = self._load_sprite(self.evolved_monster)
 
         self.transition_start_time = pygame.time.get_ticks()
         self.dialog_opened = False
@@ -160,11 +160,20 @@ class EvolutionTransition(State):
         results = MonsterModel.lookup(slug, db)
         return results
 
-    def _load_sprite(self, slug: str) -> Sprite:
-        path = tools.transform_resource_filename(
-            f"gfx/sprites/battle/{slug}-front.png"
+    def _load_sprite(self, model: MonsterModel) -> Sprite:
+        loader = SpriteLoader()
+        sprites = model.sprites
+        assert sprites
+        handler = MonsterSpriteHandler(
+            slug=model.slug,
+            sheet_path=loader.resolve_path(sprites.sheet),
+            front_rect=sprites.front_rect,
+            back_rect=sprites.back_rect,
+            menu1_rect=sprites.menu1_rect,
+            menu2_rect=sprites.menu2_rect,
         )
-        return load_sprite(path)
+        assert handler
+        return handler.get_sprite("front")
 
     def _white_image(self, sprite: Surface) -> Surface:
         for x in range(sprite.get_width()):

@@ -27,10 +27,11 @@ from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel, NpcModel
 from tuxemon.platform.const.graphics import FUCHSIA_COLOR
 from tuxemon.prepare import SCALE
+from tuxemon.scaling import DefaultScaling, ScalingStrategy
 from tuxemon.session import Session
 from tuxemon.sprite import Sprite
 from tuxemon.surfanim import SurfaceAnimation
-from tuxemon.tools import scale_sequence, transform_resource_filename
+from tuxemon.tools import transform_resource_filename
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +96,39 @@ def strip_coords_from_sheet(
     for coord in coords:
         location = (coord[0] * size[0], coord[1] * size[1])
         frames.append(sheet.subsurface(Rect(location, size)))
+    return frames
+
+
+def slice_spritesheet(
+    file_path: str,
+    frame_width: int,
+    frame_height: int,
+) -> list[Surface]:
+    """
+    Load a sprite sheet and slice it into individual frames.
+
+    The sheet is assumed to be a grid of equally sized frames.
+    """
+    real_path = transform_resource_filename(file_path)
+    full_sheet = load(real_path).convert_alpha()
+
+    sheet_w, sheet_h = full_sheet.get_size()
+
+    if sheet_w % frame_width != 0 or sheet_h % frame_height != 0:
+        raise ValueError(
+            f"Sheet '{file_path}' has invalid dimensions "
+            f"({sheet_w}x{sheet_h}) for frame size "
+            f"{frame_width}x{frame_height}"
+        )
+
+    frames = []
+    for y in range(0, sheet_h, frame_height):
+        for x in range(0, sheet_w, frame_width):
+            rect = Rect(x, y, frame_width, frame_height)
+            frame = full_sheet.subsurface(rect)
+            scaled = scale_surface(frame, SCALE)
+            frames.append(scaled)
+
     return frames
 
 
@@ -214,7 +248,7 @@ def load_animated_sprite(
     Returns:
         Sprite with a SurfaceAnimation.
     """
-    frames = []
+    surfaces: list[Surface] = []
 
     for filename in filenames:
         path = Path(filename)
@@ -223,17 +257,38 @@ def load_animated_sprite(
             continue
 
         image = load_and_scale(path.as_posix(), scale)
-        frames.append((image, delay))
+        surfaces.append(image)
 
-    if not frames:
+    if not surfaces:
         raise ValueError("Cannot create animated sprite: no valid frames.")
+
+    animation = create_animation(surfaces, delay, loop)
+    animation.play()
+
+    sprite = Sprite(animation=animation)
+    sprite.rect = surfaces[0].get_rect(**rect_kwargs)
+    return sprite
+
+
+def load_animated_frames(
+    surfaces: list[Surface],
+    delay: float,
+    loop: int = -1,
+    **rect_kwargs: Any,
+) -> Sprite:
+    """
+    Create an animated sprite from already-loaded surfaces.
+    """
+    if not surfaces:
+        raise ValueError("Cannot create animated sprite: no frames provided.")
+
+    frames = [(surf, delay) for surf in surfaces]
 
     animation = SurfaceAnimation(frames, loop)
     animation.play()
 
     sprite = Sprite(animation=animation)
-    first_image = frames[0][0]
-    sprite.rect = first_image.get_rect(**rect_kwargs)
+    sprite.rect = surfaces[0].get_rect(**rect_kwargs)
     return sprite
 
 
@@ -355,6 +410,7 @@ def scaled_image_loader(
     colorkey: str | None,
     *,
     pixelalpha: bool = True,
+    scaling: ScalingStrategy | None = None,
     **kwargs: Any,
 ) -> LoaderProtocol:
     """
@@ -371,13 +427,14 @@ def scaled_image_loader(
     Returns:
         The loader to use.
     """
+    scaling = scaling or DefaultScaling()
     colorkey_color = Color(f"#{colorkey}") if colorkey else None
 
     # load the tileset image
     image = load(filename)
 
     # scale the tileset image to match game scale
-    scaled_size = scale_sequence(image.get_size())
+    scaled_size = scaling.scale_tuple(image.get_size())
     image = scale(image, scaled_size)
 
     def load_image(
@@ -386,7 +443,7 @@ def scaled_image_loader(
     ) -> Surface:
         if rect:
             # scale the rect to match the scaled image
-            rect = scale_sequence(rect)
+            rect = scaling.scale_tuple(rect)
             try:
                 tile: Surface = image.subsurface(rect)
             except ValueError:
@@ -415,30 +472,28 @@ def get_avatar(session: Session, avatar: str) -> Sprite | None:
     Returns:
         The sprite for the monster or NPC avatar, or None if not found.
     """
+    from tuxemon.monster_dir.sprite import MonsterSpriteHandler, SpriteLoader
+
     if avatar.isdigit():
-        try:
-            monster = session.player.monsters[int(avatar)]
-            return monster.get_sprite("menu")
-        except IndexError:
-            logger.debug(f"Invalid avatar monster slot: {avatar}")
-            return None
+        monster = session.player.monsters[int(avatar)]
+        return monster.get_sprite("menu")
 
     if avatar in db.database.get("monster", {}):
-        monster_data = MonsterModel.lookup(avatar, db)
-        if not monster_data.sprites:
-            logger.error(f"Monster '{avatar}' has no sprites")
+        model = MonsterModel.lookup(avatar, db)
+        loader = SpriteLoader()
+        sprites = model.sprites
+        assert sprites
+        handler = MonsterSpriteHandler(
+            slug=model.slug,
+            sheet_path=loader.resolve_path(sprites.sheet),
+            front_rect=sprites.front_rect,
+            back_rect=sprites.back_rect,
+            menu1_rect=sprites.menu1_rect,
+            menu2_rect=sprites.menu2_rect,
+        )
+        if handler is None:
             return None
-
-        # Replace MonsterSpriteHandler with direct logic
-        menu_sprites = [
-            transform_resource_filename(f"{monster_data.sprites.menu1}.png"),
-            transform_resource_filename(f"{monster_data.sprites.menu2}.png"),
-        ]
-        try:
-            return load_animated_sprite(menu_sprites, 0.25)
-        except ValueError as e:
-            logger.error(f"Failed to load animated sprite for '{avatar}': {e}")
-            return None
+        return handler.get_sprite("menu")
 
     if avatar in db.database.get("npc", {}):
         from tuxemon.entity_dir.sheet import get_combat_sheet

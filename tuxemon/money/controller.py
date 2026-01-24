@@ -33,27 +33,50 @@ class MoneyController:
         self.money_manager = decode_money(save_data.money or {})
 
     def transfer_money_to(self, amount: int, recipient: NPC) -> None:
+        if amount <= 0:
+            raise ValueError("Transfer amount must be positive")
+
+        if self.money_manager.get_money() < amount:
+            raise ValueError(
+                f"Insufficient funds: tried to transfer {amount}, "
+                f"but only {self.money_manager.get_money()} available"
+            )
+
         self.money_manager.remove_money(amount)
         recipient.money_controller.money_manager.add_money(amount)
 
     def transfer_bank_to(self, amount: int, recipient: NPC) -> None:
+        if amount <= 0:
+            raise ValueError("Transfer amount must be positive")
+
+        if self.money_manager.get_bank_balance() < amount:
+            raise ValueError(
+                f"Insufficient bank funds: tried to transfer {amount}, "
+                f"but only {self.money_manager.get_bank_balance()} available"
+            )
+
         self.money_manager.withdraw_from_bank(amount)
         recipient.money_controller.money_manager.deposit_to_bank(amount)
 
 
 def decode_money(json_data: Mapping[str, Any]) -> MoneyManager:
     money_manager = MoneyManager()
-    if json_data:
-        money_manager.money = json_data.get("money", 0)
-        money_manager.bank_account = json_data.get("bank_account", 0)
-        bills = json_data.get("bills", {})
-        portfolio_data = json_data.get("portfolio", {})
-        for bill_name, bill_data in bills.items():
-            entry = BillEntry(**bill_data)
-            money_manager.bills[bill_name] = entry
-            money_manager.portfolio_manager = PortfolioManager.from_state(
-                portfolio_data
-            )
+    if not json_data:
+        return money_manager
+
+    money_manager.money = json_data.get("money", 0)
+    money_manager.bank_account = json_data.get("bank_account", 0)
+
+    bills = json_data.get("bills", {})
+    for bill_name, bill_data in bills.items():
+        entry = BillEntry(**bill_data)
+        money_manager.bills[bill_name] = entry
+
+    portfolio_data = json_data.get("portfolio", {})
+    money_manager.portfolio_manager = PortfolioManager.from_state(
+        portfolio_data
+    )
+
     return money_manager
 
 

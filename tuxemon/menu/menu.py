@@ -17,6 +17,7 @@ from typing import (
 )
 
 import pygame_menu
+from pygame import image
 from pygame.font import Font
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -189,6 +190,18 @@ class PygameMenuState(State):
         """
         return pygame_menu.BaseImage(
             image_path=transform_resource_filename(path),
+            drawing_position=position,
+        )
+
+    def _create_image_from_surface(
+        self, surface: Surface, position=locals.POSITION_CENTER
+    ) -> baseimage.BaseImage:
+        temp_path = "/tmp/tuxemon_sprite.png"
+        image.save(surface, temp_path)
+
+        return pygame_menu.BaseImage(
+            image_path=temp_path,
+            load_from_file=True,
             drawing_position=position,
         )
 

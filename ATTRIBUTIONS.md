@@ -312,7 +312,7 @@ is licensed under [XYG Open Source License v1.1](http://kelvinshadewing.net/?id=
 ["LPC Floors"](https://opengameart.org/content/lpc-floors)
 by bluecarrot16, Lanea Zimmerman (Sharm), William Thompson (William.Thompsonj),Hyptosis, SpiderDave, Cougarmint, Stephen Challener (Redshrike), Bonsaiheldin, Tyler Olsen (Roots), Jetrel, jestan, the Open Surge team (http://opensnc.sourceforge.net), Gaurav Munjal, Reemax, Silveira Neto, bleutailfly, Casper Nilsson, NaRNeRZz, Buch, keith karnage, Arthur Carvalho, Guilherme Vieira (n2liquid), Chris Hamons (maintainer).
 is licensed under CC BY-SA 4.0
-tuxemon-themed walls are based on: fruitera-front.png, rockitten-front.png and ghosteeth-front.png
+tuxemon-themed walls are based on: fruitera-sheet.png, rockitten-sheet.png and ghosteeth-sheet.png
 is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
 * ["Core Indoor Stairs"]
@@ -471,7 +471,7 @@ is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/
 
 ### Tuxemon
 
-* ["Bamboon"](https://git.tuxemon.org:3000/tuxemon/tuxemon/blob/development/resources/gfx/sprites/battle/bamboon-front.png)
+* ["Bamboon"](https://git.tuxemon.org:3000/tuxemon/tuxemon/blob/development/resources/gfx/sprites/battle/bamboon-sheet.png)
 by [Mike Bramson](mailto:mnbramson@gmail.com) is licensed under
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
@@ -787,7 +787,7 @@ is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/
 design and front sprite by [Tricoelacanth](https://twitter.com/@tricoelacanth),
 back and menu sprites by ultidonki based on the design by Tricoelacanth, all released under CC-BY-SA 4.0
 
-* ["Teddisun"](https://www.github.com/Tuxemon/Tuxemon/tree/development/mods/tuxemon/gfx/sprites/battle/teddisun-front.png)
+* ["Teddisun"](https://www.github.com/Tuxemon/Tuxemon/tree/development/mods/tuxemon/gfx/sprites/battle/teddisun-sheet.png)
 Character created by Leo (from Discord) and released under the CC-BY-SA 4.0+ license. Front, back, and menu sprites drawn by ultidonki, also released under the CC-BY-SA 4.0+ license based on the design by Leo (from Discord).
 
 ### Bubbles

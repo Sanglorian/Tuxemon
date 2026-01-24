@@ -49,3 +49,4 @@ class ImageState(PygameMenuState):
                 new_image,
                 align=ALIGN_CENTER,
             )
+        self.reset_theme()

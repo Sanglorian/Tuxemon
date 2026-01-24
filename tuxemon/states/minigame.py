@@ -14,6 +14,7 @@ from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.monster_dir.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const.graphics import BG_MINIGAME, MISSING_IMAGE
 from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.tools import fix_measure, open_dialog
@@ -115,11 +116,23 @@ class MinigameState(PygameMenuState):
         self.tuxemon = tuxemon
 
         # Image Display Based on Difficulty
-        image_path = f"gfx/sprites/battle/{tuxemon.slug}-front.png"
+        loader = SpriteLoader()
+        sprites = tuxemon.sprites
+        assert sprites
+        handler = MonsterSpriteHandler(
+            slug=tuxemon.slug,
+            sheet_path=loader.resolve_path(sprites.sheet),
+            front_rect=sprites.front_rect,
+            back_rect=sprites.back_rect,
+            menu1_rect=sprites.menu1_rect,
+            menu2_rect=sprites.menu2_rect,
+        )
+        if handler is None:
+            return
+        sprite = handler.get_sprite("front", scale=SCALE)
         if self.difficulty in ["easy", "normal"]:
             try:
-                image = self._create_image(image_path)
-                image.scale(SCALE, SCALE)
+                image = self._create_image_from_surface(sprite.image)
                 menu.add.image(image_path=image.copy())
             except Exception:
                 image = self._create_image(MISSING_IMAGE)

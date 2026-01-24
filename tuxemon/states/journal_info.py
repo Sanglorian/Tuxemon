@@ -13,8 +13,9 @@ from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.monster_dir.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const import buttons
-from tuxemon.platform.const.graphics import BG_JOURNAL_INFO, MISSING_IMAGE
+from tuxemon.platform.const.graphics import BG_JOURNAL_INFO
 from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_LB
 from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCALE, SCREEN_SIZE
@@ -228,10 +229,21 @@ class JournalInfoState(PygameMenuState):
             for elements in labels:
                 f.pack(elements)
         # image
-        _path = f"gfx/sprites/battle/{monster.slug}-front.png"
-        _path = _path if self.is_visible else MISSING_IMAGE
-        new_image = self._create_image(_path)
-        new_image.scale(SCALE, SCALE)
+        loader = SpriteLoader()
+        sprites = monster.sprites
+        assert sprites
+        handler = MonsterSpriteHandler(
+            slug=monster.slug,
+            sheet_path=loader.resolve_path(sprites.sheet),
+            front_rect=sprites.front_rect,
+            back_rect=sprites.back_rect,
+            menu1_rect=sprites.menu1_rect,
+            menu2_rect=sprites.menu2_rect,
+        )
+        if handler is None:
+            return
+        sprite = handler.get_sprite("front", scale=SCALE)
+        new_image = self._create_image_from_surface(sprite.image)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
         image_widget.translate(fxw(53.6 / 256), fxh(10 / 144))

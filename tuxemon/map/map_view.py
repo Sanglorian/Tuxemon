@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING, Optional
 from pygame import SRCALPHA
 from pygame.draw import line
 from pygame.gfxdraw import box
-from pygame.image import load
 from pygame.rect import Rect
 from pygame.surface import Surface
 
@@ -22,14 +21,13 @@ from tuxemon.graphics import (
     ColorLike,
     apply_cinema_bars,
     load_and_scale,
-    scale_surface,
+    slice_spritesheet,
 )
 from tuxemon.map.map import get_pos_from_tilepos
 from tuxemon.math import Vector2
 from tuxemon.platform.const.graphics import BLACK_COLOR
-from tuxemon.prepare import SCALE, SCREEN_SIZE, TILE_SIZE
+from tuxemon.prepare import SCREEN_SIZE, TILE_SIZE
 from tuxemon.surfanim import SurfaceAnimation, SurfaceAnimationCollection
-from tuxemon.tools import transform_resource_filename
 from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
@@ -86,39 +84,6 @@ def load_and_scale_with_cache(file_path: str) -> Surface:
             logger.error(f"Failed to load sprite: {file_path} - {e}")
             raise
     return sprite_cache[file_path]
-
-
-def slice_spritesheet(
-    file_path: str,
-    frame_width: int,
-    frame_height: int,
-) -> list[Surface]:
-    """
-    Load a sprite sheet and slice it into individual frames.
-
-    The sheet is assumed to be a grid of equally sized frames.
-    """
-    real_path = transform_resource_filename(file_path)
-    full_sheet = load(real_path).convert_alpha()
-
-    sheet_w, sheet_h = full_sheet.get_size()
-
-    if sheet_w % frame_width != 0 or sheet_h % frame_height != 0:
-        raise ValueError(
-            f"Sheet '{file_path}' has invalid dimensions "
-            f"({sheet_w}x{sheet_h}) for frame size "
-            f"{frame_width}x{frame_height}"
-        )
-
-    frames = []
-    for y in range(0, sheet_h, frame_height):
-        for x in range(0, sheet_w, frame_width):
-            rect = Rect(x, y, frame_width, frame_height)
-            frame = full_sheet.subsurface(rect)
-            scaled = scale_surface(frame, SCALE)
-            frames.append(scaled)
-
-    return frames
 
 
 class SpriteController:

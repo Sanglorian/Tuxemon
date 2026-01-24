@@ -16,6 +16,7 @@ from tuxemon.db import MonsterModel
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
+from tuxemon.monster_dir.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.session import local_session
 from tuxemon.ui.menu_options import MenuOptions
@@ -76,13 +77,23 @@ class ChoiceMonster(PygameMenuState):
         pick_callback: Callable[[], None],
     ) -> None:
         monster = MonsterModel.lookup(slug, db)
-        path = f"gfx/sprites/battle/{monster.slug}-front.png"
-        image = self._create_image(path)
-        image.scale(
-            SCALE * self.config.scale_sprite,
-            SCALE * self.config.scale_sprite,
+        loader = SpriteLoader()
+        sprites = monster.sprites
+        assert sprites
+        handler = MonsterSpriteHandler(
+            slug=monster.slug,
+            sheet_path=loader.resolve_path(sprites.sheet),
+            front_rect=sprites.front_rect,
+            back_rect=sprites.back_rect,
+            menu1_rect=sprites.menu1_rect,
+            menu2_rect=sprites.menu2_rect,
         )
-
+        if handler is None:
+            return
+        sprite = handler.get_sprite(
+            "front", scale=SCALE * self.config.scale_sprite
+        )
+        image = self._create_image_from_surface(sprite.image)
         self.menu.add.image(image, align=ALIGN_CENTER)
 
         self.menu.add.button(

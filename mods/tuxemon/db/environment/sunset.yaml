@@ -10,8 +10,7 @@ battle_graphics:
     icon_empty: gfx/ui/icons/party/party_empty.png
     icon_faint: gfx/ui/icons/party/party_icon03.png
     icon_status: gfx/ui/icons/party/party_icon02.png
-  island_back: gfx/ui/combat/terra_back_island.png
-  island_front: gfx/ui/combat/terra_front_island.png
+  island_sheet: gfx/ui/island_sheet/terra_island_sheet.png
 battle_music:
   battle:
     music: music_battle_loop

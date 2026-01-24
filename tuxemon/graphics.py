@@ -177,6 +177,22 @@ def load_sprite(filename: str, **rect_kwargs: Any) -> Sprite:
     return sprite
 
 
+def load_raw_image(filename: str) -> Surface:
+    """
+    Load an image from disk WITHOUT scaling or smart conversion.
+    Used for sprite sheets where slicing must happen before scaling.
+    """
+    filename = transform_resource_filename(filename)
+    return load(filename)
+
+
+def load_surface(surface: Surface, **rect_kwargs: Any) -> Sprite:
+    """Load a surface and return a sprite."""
+    sprite = Sprite(image=surface)
+    sprite.rect = sprite.image.get_rect(**rect_kwargs)
+    return sprite
+
+
 def load_animated_sprite(
     filenames: Iterable[str],
     delay: float,

@@ -152,7 +152,8 @@ def load_image(filename: str) -> Surface:
         Loaded image.
     """
     filename = transform_resource_filename(filename)
-    return smart_convert(load(filename), None, True)
+    img: Surface = smart_convert(load(filename), None, True)
+    return img
 
 
 def load_sprite(filename: str, **rect_kwargs: Any) -> Sprite:
@@ -173,6 +174,22 @@ def load_sprite(filename: str, **rect_kwargs: Any) -> Sprite:
         Loaded sprite.
     """
     sprite = Sprite(image=load_and_scale(filename))
+    sprite.rect = sprite.image.get_rect(**rect_kwargs)
+    return sprite
+
+
+def load_raw_image(filename: str) -> Surface:
+    """
+    Load an image from disk WITHOUT scaling or smart conversion.
+    Used for sprite sheets where slicing must happen before scaling.
+    """
+    filename = transform_resource_filename(filename)
+    return load(filename)
+
+
+def load_surface(surface: Surface, **rect_kwargs: Any) -> Sprite:
+    """Load a surface and return a sprite."""
+    sprite = Sprite(image=surface)
     sprite.rect = sprite.image.get_rect(**rect_kwargs)
     return sprite
 
@@ -371,7 +388,7 @@ def scaled_image_loader(
             # scale the rect to match the scaled image
             rect = scale_sequence(rect)
             try:
-                tile = image.subsurface(rect)
+                tile: Surface = image.subsurface(rect)
             except ValueError:
                 logger.error("Tile bounds outside bounds of tileset image")
                 raise
@@ -424,9 +441,12 @@ def get_avatar(session: Session, avatar: str) -> Sprite | None:
             return None
 
     if avatar in db.database.get("npc", {}):
+        from tuxemon.entity_dir.sheet import get_combat_sheet
+
         npc_data = NpcModel.lookup(avatar, db)
-        path = f"gfx/sprites/player/{npc_data.template.combat_front}.png"
-        sprite = load_sprite(path)
+        sheet = get_combat_sheet(npc_data.template)
+        surface = sheet.front()
+        sprite = load_surface(surface)
         scale_sprite(sprite, 0.5)
         return sprite
 

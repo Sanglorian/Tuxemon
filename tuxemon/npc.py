@@ -16,6 +16,7 @@ from tuxemon.entity_dir.battle import BattlesHandler
 from tuxemon.entity_dir.party import PartyHandler
 from tuxemon.entity_dir.path import PathController
 from tuxemon.entity_dir.routing import RoutingPolicy
+from tuxemon.entity_dir.sheet import CombatSheet, get_combat_sheet
 from tuxemon.entity_dir.steps import StepManager
 from tuxemon.game_variables import GameVariablesManager, PlayerVariablesManager
 from tuxemon.locale import T
@@ -167,6 +168,9 @@ class NPC(Entity):
         """Returns the NPC's current movement destination tile, if any."""
         return self.path_controller.move_destination
 
+    def combat_sheet(self) -> CombatSheet:
+        return get_combat_sheet(self.template)
+
     def get_state(self, session: Session) -> NPCState:
         """
         Prepares a dictionary of the npc to be saved to a file.
@@ -249,7 +253,7 @@ class NPC(Entity):
             self.template.sprite_name = save_data.template.get(
                 "sprite_name", ""
             )
-            self.template.combat_front = save_data.template.get(
+            self.template.combat_sheet = save_data.template.get(
                 "combat_front", ""
             )
             self.sprite_controller.update_template(self.template)

@@ -6,7 +6,7 @@
     "audio": {},
     "template": {
       "sprite_name": "magician_fiery",
-      "combat_front": "magician",
+      "combat_sheet": "magician",
       "slug": "magician"
     }
   },
@@ -17,7 +17,7 @@
     "audio": {},
     "template": {
       "sprite_name": "homemaker_fiery",
-      "combat_front": "heroine",
+      "combat_sheet": "heroine",
       "slug": "homemaker"
     }
   },
@@ -28,7 +28,7 @@
     "audio": {},
     "template": {
       "sprite_name": "barmaid_red",
-      "combat_front": "barmaid",
+      "combat_sheet": "barmaid",
       "slug": "barmaid"
     }
   },
@@ -39,7 +39,7 @@
     "audio": {},
     "template": {
       "sprite_name": "granny",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "granny"
     }
   },
@@ -50,7 +50,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac_green",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "maniac"
     }
   },
@@ -61,7 +61,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk_orange",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   },
@@ -72,7 +72,7 @@
     "audio": {},
     "template": {
       "sprite_name": "tennisplayer",
-      "combat_front": "tennisplayer",
+      "combat_sheet": "tennisplayer",
       "slug": "tennisplayer"
     }
   },
@@ -83,7 +83,7 @@
     "audio": {},
     "template": {
       "sprite_name": "shopassistant_black",
-      "combat_front": "shopassistant",
+      "combat_sheet": "shopassistant",
       "slug": "shopassistant"
     }
   },
@@ -94,7 +94,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   },
@@ -105,7 +105,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   },
@@ -116,7 +116,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "enforcer_rookie"
     }
   }

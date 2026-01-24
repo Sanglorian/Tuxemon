@@ -6,7 +6,7 @@
     "audio": {},
     "template": {
       "sprite_name": "ceo",
-      "combat_front": "ceo",
+      "combat_sheet": "ceo",
       "slug": "ceo"
     }
   },
@@ -26,7 +26,7 @@
     "audio": {},
     "template": {
       "sprite_name": "rogue",
-      "combat_front": "rogue",
+      "combat_sheet": "rogue",
       "slug": "rogue"
     }
   },
@@ -46,7 +46,7 @@
     "audio": {},
     "template": {
       "sprite_name": "warrior",
-      "combat_front": "warrior",
+      "combat_sheet": "warrior",
       "slug": "warrior"
     }
   },
@@ -66,7 +66,7 @@
     "audio": {},
     "template": {
       "sprite_name": "beachcomber_black",
-      "combat_front": "yellowbelt",
+      "combat_sheet": "yellowbelt",
       "slug": "yellowbelt"
     }
   },
@@ -86,7 +86,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderrookie",
-      "combat_front": "spyder_rookie",
+      "combat_sheet": "spyder_rookie",
       "slug": "spyder_rookie"
     }
   },
@@ -97,7 +97,7 @@
     "audio": {},
     "template": {
       "sprite_name": "37707_female",
-      "combat_front": "ceo",
+      "combat_sheet": "ceo",
       "slug": "ceo"
     }
   },
@@ -108,7 +108,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "enforcer_rookie"
     }
   },
@@ -119,7 +119,7 @@
     "audio": {},
     "template": {
       "sprite_name": "rogue_red",
-      "combat_front": "rogue",
+      "combat_sheet": "rogue",
       "slug": "rogue"
     }
   },
@@ -139,7 +139,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderboss",
-      "combat_front": "spyder_boss",
+      "combat_sheet": "spyder_boss",
       "slug": "spyder_boss"
     }
   },
@@ -159,7 +159,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderrookie",
-      "combat_front": "spyder_rookie",
+      "combat_sheet": "spyder_rookie",
       "slug": "spyder_rookie"
     }
   },
@@ -179,7 +179,7 @@
     "audio": {},
     "template": {
       "sprite_name": "cooldude",
-      "combat_front": "cooldude",
+      "combat_sheet": "cooldude",
       "slug": "cooldude"
     }
   },
@@ -199,7 +199,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor_green",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -219,7 +219,7 @@
     "audio": {},
     "template": {
       "sprite_name": "rogue_copper",
-      "combat_front": "rogue",
+      "combat_sheet": "rogue",
       "slug": "rogue"
     }
   },
@@ -230,7 +230,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderrookie",
-      "combat_front": "spyder_rookie",
+      "combat_sheet": "spyder_rookie",
       "slug": "spyder_rookie"
     }
   },
@@ -241,7 +241,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderrookie",
-      "combat_front": "spyder_rookie",
+      "combat_sheet": "spyder_rookie",
       "slug": "spyder_rookie"
     }
   },
@@ -252,7 +252,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   },
@@ -263,7 +263,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac_yellow",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "maniac"
     }
   }

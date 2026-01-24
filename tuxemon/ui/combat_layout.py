@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from pygame.rect import Rect
 
 from tuxemon.database.yaml_utils import load_yaml
-from tuxemon.tools import scale_sequence
+from tuxemon.scaling import DefaultScaling, ScalingStrategy
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +45,15 @@ def load_layouts_from_yaml(
 
 
 class LayoutRepository:
-    def __init__(self, yaml_path: Path):
+
+    def __init__(
+        self,
+        yaml_path: Path,
+        scaling: ScalingStrategy | None = None,
+    ):
         self.raw_layouts = load_layouts_from_yaml(yaml_path)
         self.groups = load_layout_groups(yaml_path)
+        self.scaling = scaling or DefaultScaling()
 
     def get_raw_layout(self, name: str) -> dict[str, tuple[int, ...]]:
         if name not in self.raw_layouts:
@@ -56,7 +62,7 @@ class LayoutRepository:
 
     def get_scaled_layout(self, name: str) -> dict[str, tuple[int, ...]]:
         raw = self.get_raw_layout(name)
-        return {k: scale_sequence(v) for k, v in raw.items()}
+        return {k: self.scaling.scale_tuple(v) for k, v in raw.items()}
 
 
 class LayoutSelector:
@@ -91,10 +97,17 @@ class LayoutRectFactory:
 
 
 class LayoutManager:
-    def __init__(self, yaml_path: Path):
-        self.repo = LayoutRepository(yaml_path)
+    def __init__(
+        self,
+        yaml_path: Path,
+        scaling: ScalingStrategy | None = None,
+    ):
+        self.repo = LayoutRepository(yaml_path, scaling=scaling)
         self.selector = LayoutSelector(self.repo)
         self.rect_factory = LayoutRectFactory()
+
+    def set_scaling(self, scaling: ScalingStrategy) -> None:
+        self.repo.scaling = scaling
 
     def prepare_all(
         self, players: list[NPC]

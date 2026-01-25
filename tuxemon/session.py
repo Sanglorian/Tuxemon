@@ -70,6 +70,7 @@ class AbstractSession(ABC, Generic[ClientType]):
     def set_player(self, player: Player) -> None:
         """Sets the player. Can be overridden, but is provided for local convenience."""
         self._player = player
+        player.is_player = True
         logger.debug("Player initialized successfully.")
 
     def has_player(self) -> bool:

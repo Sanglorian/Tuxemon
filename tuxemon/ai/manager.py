@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import random
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.ai.ai import AI
 from tuxemon.db import StatType
@@ -46,7 +46,7 @@ class AIManager:
         logger.debug("Clearing all AI instances.")
         self.active_ais.clear()
 
-    def choose_replacement_monster(self, character: NPC) -> Optional[Monster]:
+    def choose_replacement_monster(self, character: NPC) -> Monster | None:
         """
         AI logic to select a replacement monster to send out.
 

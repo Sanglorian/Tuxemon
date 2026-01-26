@@ -35,7 +35,7 @@ from tuxemon.save_state import NPCState
 from tuxemon.step_tracker import StepTrackerManager, decode_steps, encode_steps
 from tuxemon.teleporter import TeleportFaint
 from tuxemon.tracker import TrackingData, decode_tracking, encode_tracking
-from tuxemon.tuxepedia import (
+from tuxemon.tuxepedia.manager import (
     TuxepediaManager,
     decode_tuxepedia,
     encode_tuxepedia,

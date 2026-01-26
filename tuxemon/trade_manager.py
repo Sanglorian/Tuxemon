@@ -10,7 +10,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
-from tuxemon.db import Acquisition, SeenStatus
+from tuxemon.db import Acquisition
 from tuxemon.event import get_event_bus
 from tuxemon.monster import Monster
 from tuxemon.time_handler import today_ordinal
@@ -132,8 +132,8 @@ class TradeManager:
         monster_a: Monster,
         monster_b: Monster,
     ) -> None:
-        player_a.tuxepedia.add_entry(monster_b.slug, SeenStatus.caught)
-        player_b.tuxepedia.add_entry(monster_a.slug, SeenStatus.caught)
+        player_a.tuxepedia.register_caught(monster_b.slug)
+        player_b.tuxepedia.register_caught(monster_a.slug)
 
     def _create_trade_record(
         self,
@@ -217,7 +217,7 @@ class TradeManager:
         if not owner.party.replace_monster(player_monster, new_monster):
             return TradeResult.NOT_FOUND
 
-        owner.tuxepedia.add_entry(new_monster.slug, SeenStatus.caught)
+        owner.tuxepedia.register_caught(new_monster.slug)
 
         record = TradeRecord(
             from_player=owner.name,

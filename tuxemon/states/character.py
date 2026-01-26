@@ -21,7 +21,7 @@ from tuxemon.platform.const.sizes import U_KM, U_MI
 from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.tools import fix_measure, format_playtime
-from tuxemon.tuxepedia import TuxepediaReporter
+from tuxemon.tuxepedia.reporter import TuxepediaReporter
 
 MenuGameObj = Callable[[], object]
 lookup_cache: dict[str, MonsterModel] = {}

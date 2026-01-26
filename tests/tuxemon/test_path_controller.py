@@ -39,6 +39,9 @@ class SimpleNPC:
         self.position = Vector2(float(pos[0]), float(pos[1]))
         self.tile_pos = vector2_to_tile_pos(self.position)
 
+    def on_tile_changed(self):
+        pass
+
     def remove_collision(self):
         pass
 

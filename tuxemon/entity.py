@@ -105,17 +105,13 @@ class Mover:
 
     def move(self, direction: Direction) -> None:
         """Applies movement in a given direction."""
-        direction_vector = dirs2[direction]  # 2D direction table
+        direction_vector = dirs2[direction]
         self.body.velocity = direction_vector * self.moverate
         if self.facing_mode == FacingMode.FOLLOW_MOVEMENT:
             self.facing = direction
 
-        new_state = (
-            EntityState.RUNNING
-            if self.base_moverate == CONFIG.player_runrate
-            else EntityState.WALKING
-        )
-        self.set_state(new_state)
+        if self.state == EntityState.IDLE:
+            self.set_state(EntityState.WALKING)
 
     def stop(self) -> None:
         """Stops movement and transitions to IDLE."""
@@ -196,7 +192,7 @@ class Entity:
         self.update_location: bool = False
         self.is_player: bool = False
         self.ignore_collisions: bool = False
-        self._movement_accumulator: float = 0.0
+        self._last_tile_pos = self.tile_pos
 
     @classmethod
     def create(cls, session: Session, slug: str) -> Entity:
@@ -220,7 +216,6 @@ class Entity:
         self.network_notify_location_change()
 
     def network_notify_start_moving(self, direction: Direction) -> None:
-        r"""WIP guesswork ¯\_(ツ)_/¯"""
         if self.network.is_connected():
             assert self.network.client
             self.network.client.update_player(
@@ -228,7 +223,6 @@ class Entity:
             )
 
     def network_notify_stop_moving(self) -> None:
-        r"""WIP guesswork ¯\_(ツ)_/¯"""
         if self.network.is_connected():
             assert self.network.client
             self.network.client.update_player(
@@ -236,32 +230,27 @@ class Entity:
             )
 
     def network_notify_location_change(self) -> None:
-        r"""WIP guesswork ¯\_(ツ)_/¯"""
         self.update_location = True
 
     def update_physics(self, dt: float) -> None:
         """Move the entity according to the movement vector."""
-        before = self.body.position.copy()
+        before_tile = self._last_tile_pos
+
         self.body.update(dt)
-        after = self.body.position
-        diff = after - before
-        dist = diff.magnitude
 
-        if dist < 0.01:
-            self.pos_update()
-            return
+        after_tile = self.tile_pos
+        self._last_tile_pos = after_tile
 
-        self._movement_accumulator += dist
+        if after_tile != before_tile:
+            dx = after_tile[0] - before_tile[0]
+            dy = after_tile[1] - before_tile[1]
 
-        if self._movement_accumulator >= 1.0:
-            steps = int(self._movement_accumulator)
-            self._movement_accumulator -= steps
             self.event_bus.publish(
                 "entity_moved",
                 entity=self,
-                diff_x=abs(diff.x),
-                diff_y=abs(diff.y),
-                steps=steps,
+                diff_x=dx,
+                diff_y=dy,
+                steps=1,
             )
 
         self.pos_update()
@@ -269,7 +258,15 @@ class Entity:
     def set_position(self, pos: Sequence[float]) -> None:
         """Set the entity's position in the game world."""
         self.body.position = Vector2(*pos)
-        self.add_collision(pos)
+        self.pos_update()
+
+    def on_tile_changed(self) -> None:
+        """
+        Call this only when the entity enters a new tile
+        (path step, teleport, warp, snap-back, spawn).
+        Do NOT call from set_position() or physics.
+        """
+        self.add_collision(self.tile_pos)
         self.pos_update()
 
     def set_current_map(self, map_slug: str | None) -> None:
@@ -296,9 +293,9 @@ class Entity:
         """Sets the move direction of the entity."""
         self.mover.move_direction = direction
 
-    def add_collision(self, pos: Sequence[float]) -> None:
+    def add_collision(self, tile_pos: tuple[int, int]) -> None:
         """Set the entity's wandering position in the collision zone."""
-        self.client.collision_manager.add_collision(self, pos)
+        self.client.collision_manager.add_collision(self, tile_pos)
 
     def remove_collision(self) -> None:
         """Remove the entity's wandering position from the collision zone."""
@@ -358,10 +355,6 @@ class Entity:
         """
         return self.mover.move_direction
 
-    def jump(self) -> None:
-        """Triggers a jump for the entity."""
-        self.mover.jump()
-
     def get_state(self, session: Session) -> NPCState:
         state = NPCState(
             instance_id=self.instance_id.hex,
@@ -385,3 +378,4 @@ class Entity:
 
         self.set_current_map(save_data.current_map)
         self.is_player = save_data.is_player
+        self._last_tile_pos = self.tile_pos

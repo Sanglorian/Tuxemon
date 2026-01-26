@@ -379,7 +379,7 @@ class SpriteRenderer:
             animation = self.sprite[ani_key]
             self.surface_animations.clear()
             self.surface_animations.add(animation)
- 
+
         self.surface_animations.play()
 
     def stop(self) -> None:

@@ -120,7 +120,6 @@ class NPC(Entity):
             self.client.map_manager,
             self.client.npc_manager,
         )
-        self.final_move_dest: tuple[int, int] = (0, 0)
 
     @classmethod
     def create(cls, session: Session, npc_slug: str) -> NPC:

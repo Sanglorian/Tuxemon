@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Iterable
 from math import hypot
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.db import Direction, FacingMode
 from tuxemon.map.map import dirs2, get_direction
@@ -42,11 +42,11 @@ class PathController:
         self._npc_manager = npc_manager
         self._repath_cooldown: float = 0.0
         self.path: list[tuple[int, int]] = []
-        self.pathfinding: Optional[tuple[int, int]] = None
-        self.path_origin: Optional[tuple[int, int]] = None
+        self.pathfinding: tuple[int, int] | None = None
+        self.path_origin: tuple[int, int] | None = None
 
     @property
-    def move_destination(self) -> Optional[tuple[int, int]]:
+    def move_destination(self) -> tuple[int, int] | None:
         """Only used for the char_moved condition."""
         return self.path[-1] if self.path else None
 
@@ -198,6 +198,7 @@ class PathController:
         traveled = tile_distance(self.owner.position, self.path_origin)
         if traveled >= expected:
             self.owner.set_position(target)
+            self.owner.on_tile_changed()
             self.path.pop()
             self.path_origin = None
             self._apply_tile_effects()
@@ -266,6 +267,9 @@ class PathController:
             direction: The direction in which to move.
             strength: The maximum number of tiles to attempt moving through.
         """
+        if strength <= 0:
+            return
+
         if self.owner.facing_mode == FacingMode.FOLLOW_MOVEMENT:
             self.owner.set_facing(direction)
 
@@ -319,14 +323,26 @@ class PathController:
         destination, it retains the last waypoint to avoid abrupt stopping.
         Otherwise, all movement is halted and pathfinding is cleared.
         """
-        if self.owner.position == self.path_origin:
+        at_origin = (
+            self.path_origin is not None
+            and self.owner.position == self.path_origin
+        )
+        mid_movement = self.path and self.owner.moving
+
+        if at_origin:
+            # Movement started but hasn't progressed
             self.abort_movement(preserve_position=True)
-        elif self.path and self.owner.moving:
+            return
+
+        if mid_movement:
+            # Keep last waypoint so NPC finishes the tile cleanly
             self.path = [self.path[-1]]
             self.pathfinding = None
             self.owner.set_move_direction()
-        else:
-            self.abort_movement()
+            return
+
+        # Default: fully stop and clear everything
+        self.abort_movement()
 
     def abort_movement(self, preserve_position: bool = False) -> None:
         """
@@ -339,6 +355,7 @@ class PathController:
         """
         if not preserve_position and self.path_origin is not None:
             self.owner.set_position(self.path_origin)
+            self.owner.on_tile_changed()
         self.owner.set_move_direction()
         self.owner.stop_moving()
         self.cancel_path()

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from collections.abc import Mapping, MutableMapping, Sequence
+from collections.abc import Mapping, MutableMapping
 from typing import TYPE_CHECKING, DefaultDict
 
 from tuxemon.map.map_region import RegionProperties
@@ -125,7 +125,7 @@ class CollisionManager:
     def add_collision(
         self,
         entity: Entity,
-        pos: Sequence[float],
+        coords: tuple[int, int],
     ) -> None:
         """
         Registers the given entity's position within the collision zone.
@@ -134,7 +134,6 @@ class CollisionManager:
             entity: The entity object to be added to the collision zone.
             pos: The X, Y coordinates (as floats) indicating the entity's position.
         """
-        coords = (int(pos[0]), int(pos[1]))
         region = (
             self._map_manager.collision_map.get(coords) or RegionProperties()
         )

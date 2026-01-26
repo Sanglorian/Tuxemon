@@ -55,9 +55,8 @@ class SetFacingModeAction(EventAction):
         elif mode_str == "scripted":
             npc.set_facing_mode(FacingMode.SCRIPTED)
         else:
-            logger.warning(
+            raise ValueError(
                 f"Invalid facing mode '{self.mode}' for NPC '{self.npc_slug}'."
             )
-            return
 
         self.stop()

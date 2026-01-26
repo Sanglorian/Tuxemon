@@ -30,7 +30,7 @@ events:
   Intro No:
     actions:
     - translated_dialog xero_intro_question
-    - rename_player random
+    - rename_player player,random
     - change_bg
     - set_variable xero_intro:done
     conditions:
@@ -47,7 +47,7 @@ events:
     - change_bg_monster gradient_blue,rockitten
     - translated_dialog xero_intro_3
     - translated_dialog xero_intro_question
-    - rename_player random
+    - rename_player player,random
     - change_bg
     - set_variable xero_intro:done
     conditions:

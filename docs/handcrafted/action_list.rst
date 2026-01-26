@@ -140,7 +140,6 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.set_monster_status.SetMonsterStatusAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_party_attribute.SetPartyAttributeAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_party_status.SetPartyStatusAction
-.. autoscriptinfoclass:: tuxemon.event.actions.set_player_name.SetPlayerNameAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_price_policy.SetPricePolicyAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_random_variable.SetRandomVariableAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_routing_policy.SetRoutingPolicyAction

@@ -13,9 +13,7 @@ from typing import (
     Any,
     ClassVar,
     Literal,
-    Optional,
     TypeVar,
-    Union,
     cast,
 )
 
@@ -217,6 +215,11 @@ class ExperienceMethod(Enum):
     XP_SURVIVOR = "xp_survivor"
 
 
+class LoopMode(Enum):
+    INFINITE = -1  # loop forever
+    NO_LOOP = 0  # play once
+
+
 # TODO: Automatically generate state enum through discovery
 State = Enum(
     "State",
@@ -405,8 +408,8 @@ class PartyConditionsModel(BaseModel):
 
     @field_validator("monster_slugs")
     def validate_monster_slugs(
-        cls, v: Optional[dict[str, int]]
-    ) -> Optional[dict[str, int]]:
+        cls, v: dict[str, int] | None
+    ) -> dict[str, int] | None:
         if v:
             for slug, count in v.items():
                 if not has.db_entry("monster", slug):
@@ -421,8 +424,8 @@ class PartyConditionsModel(BaseModel):
 
     @field_validator("monster_types")
     def validate_monster_types(
-        cls, v: Optional[dict[str, int]]
-    ) -> Optional[dict[str, int]]:
+        cls, v: dict[str, int] | None
+    ) -> dict[str, int] | None:
         if v:
             for type_, count in v.items():
                 if not (0 <= count < sizes.PARTY_LIMIT):
@@ -433,8 +436,8 @@ class PartyConditionsModel(BaseModel):
 
     @field_validator("genders")
     def validate_genders(
-        cls, v: Optional[dict[GenderType, int]]
-    ) -> Optional[dict[GenderType, int]]:
+        cls, v: dict[GenderType, int] | None
+    ) -> dict[GenderType, int] | None:
         if v:
             for gender, count in v.items():
                 if not (0 <= count < sizes.PARTY_LIMIT):
@@ -560,17 +563,23 @@ class VisualProperties(BaseModel):
         ),
     )
 
+    def loop_mode(self) -> LoopMode | int:
+        if self.loop == -1:
+            return LoopMode.INFINITE
+        if self.loop == 0:
+            return LoopMode.NO_LOOP
+        return self.loop  # positive integer = loop N times
+
     @field_validator("animation")
     def animation_exists(cls, v: str | None) -> str | None:
         if not v:
             return v
 
-        item_file = f"animations/item/{v}_00.png"
-        technique_file = f"animations/technique/{v}_00.png"
+        item_file = f"animations/item/{v}.png"
+        technique_file = f"animations/technique/{v}.png"
 
         if has.db_entry("animation", v) and (
-            has.size(item_file, sizes.NATIVE_RESOLUTION)
-            or has.size(technique_file, sizes.NATIVE_RESOLUTION)
+            has.file(item_file) or has.file(technique_file)
         ):
             return v
 
@@ -636,7 +645,7 @@ class ItemModel(BaseModel, BaseLookupModel):
     sound: SoundProperties = Field(
         ..., description="Configuration for the item's sound playback."
     )
-    dynamic_menu: Optional[DynamicMenuEntry] = Field(
+    dynamic_menu: DynamicMenuEntry | None = Field(
         None,
         description="Item adds a button to a specific menu (world, phone, etc.).",
     )
@@ -787,7 +796,7 @@ class MonsterMovesetItemModel(BaseModel):
         ...,
         description="Name of the technique for this moveset item",
     )
-    evolution_stage_learned: Optional[EvolutionStage] = Field(
+    evolution_stage_learned: EvolutionStage | None = Field(
         None,
         description="Evolution stage at which this technique is learned. If None, not tied to a specific evolution stage beyond level.",
     )
@@ -823,9 +832,7 @@ class MonsterHistoryItemModel(BaseModel):
     )
 
     @field_validator("slug", "evolves_from", "evolves_into")
-    def validate_monsters_exist(
-        cls, v: Union[str, list[str]]
-    ) -> Union[str, list[str]]:
+    def validate_monsters_exist(cls, v: str | list[str]) -> str | list[str]:
         if isinstance(v, str):
             if has.db_entry("monster", v):
                 return v
@@ -853,11 +860,11 @@ class MonsterEvolutionItemModel(BaseModel):
         None,
         description="The element type that the monster must match to evolve.",
     )
-    gender: Optional[GenderType] = Field(
+    gender: GenderType | None = Field(
         None,
         description="The required gender of the monster for evolution.",
     )
-    item: Optional[dict[str, float]] = Field(
+    item: dict[str, float] | None = Field(
         None,
         description=(
             "A dictionary of item slugs and their associated evolution weights. "
@@ -865,11 +872,11 @@ class MonsterEvolutionItemModel(BaseModel):
             "Each item must exist in the database and have a non-negative weight."
         ),
     )
-    inside: Optional[bool] = Field(
+    inside: bool | None = Field(
         None,
         description="Whether the monster must be inside to evolve.",
     )
-    acquisition: Optional[Acquisition] = Field(
+    acquisition: Acquisition | None = Field(
         None,
         description="How the monster was obtained (e.g. caught, bred, traded, gifted).",
     )
@@ -878,7 +885,7 @@ class MonsterEvolutionItemModel(BaseModel):
         description="The game variables that must exist and match a specific value for the monster to evolve.",
         min_length=1,
     )
-    stats: Optional[StatsComparison] = Field(
+    stats: StatsComparison | None = Field(
         None,
         description=(
             "Defines a condition where one monster stat must compare to another stat or value "
@@ -899,7 +906,7 @@ class MonsterEvolutionItemModel(BaseModel):
         default_factory=list,
         description="The techniques that the monster must have learned for the evolution to occur.",
     )
-    bond: Optional[BondComparison] = Field(
+    bond: BondComparison | None = Field(
         None,
         description=(
             "Defines a condition where the monster's bond must meet a specific comparison to evolve. "
@@ -907,7 +914,7 @@ class MonsterEvolutionItemModel(BaseModel):
             "For example, 'bond must be greater than 50'."
         ),
     )
-    tastes: Optional[dict[str, str]] = Field(
+    tastes: dict[str, str] | None = Field(
         None,
         description="A dictionary of taste values required for the monster to evolve (e.g., {'cold': 'value', 'warm': 'value'}).",
     )
@@ -918,7 +925,7 @@ class MonsterEvolutionItemModel(BaseModel):
     held_item: str | None = Field(
         None, description="Item slug the monster must be holding to evolve."
     )
-    party_conditions: Optional[PartyConditionsModel] = Field(
+    party_conditions: PartyConditionsModel | None = Field(
         None,
         description="Complex conditions based on the player's party required for evolution.",
     )
@@ -947,8 +954,8 @@ class MonsterEvolutionItemModel(BaseModel):
 
     @field_validator("tastes")
     def validate_tastes(
-        cls, v: Optional[dict[str, str]]
-    ) -> Optional[dict[str, str]]:
+        cls, v: dict[str, str] | None
+    ) -> dict[str, str] | None:
         if v:
             for taste_value in v.values():
                 if not has.db_entry("taste", taste_value):
@@ -971,8 +978,8 @@ class MonsterEvolutionItemModel(BaseModel):
 
     @field_validator("item")
     def validate_item_and_weights(
-        cls, v: Optional[dict[str, float]]
-    ) -> Optional[dict[str, float]]:
+        cls, v: dict[str, float] | None
+    ) -> dict[str, float] | None:
         if v is None:
             return v
 
@@ -1031,7 +1038,7 @@ class FlairModel(BaseModel, BaseLookupModel):
         None,
         description="The vertical offset of the flair from the sprite's origin.",
     )
-    sprite_type: Optional[set[str]] = Field(
+    sprite_type: set[str] | None = Field(
         None,
         description="Specifies which sprite type this flair applies to (e.g., 'front', 'back', 'menu01'). If None, applies to all.",
     )
@@ -1039,7 +1046,7 @@ class FlairModel(BaseModel, BaseLookupModel):
         None,
         description="Overrides the default sprite type used in the file path (e.g., 'universal').",
     )
-    color: Optional[ColorModel] = Field(
+    color: ColorModel | None = Field(
         None, description="The color tint to apply to the flair sprite."
     )
 
@@ -1090,10 +1097,10 @@ class MonsterSpritesModel(BaseModel):
 
 
 class MonsterSoundsModel(BaseModel):
-    combat_call: Optional[SoundProperties] = Field(
+    combat_call: SoundProperties | None = Field(
         None, description="Sound configuration used when entering combat"
     )
-    faint_call: Optional[SoundProperties] = Field(
+    faint_call: SoundProperties | None = Field(
         None, description="Sound configuration used when the monster faints"
     )
 
@@ -1113,7 +1120,7 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
         description="Whether or not this monster will be picked by random",
     )
     sprites: Annotated[
-        Optional[MonsterSpritesModel], Field(validate_default=True)
+        MonsterSpritesModel | None, Field(validate_default=True)
     ] = None
     terrains: Sequence[str] = Field(
         ..., description="The terrains of the monster"
@@ -1179,7 +1186,7 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
     @field_validator("sprites")
     def set_default_sprites(
         cls,
-        v: Optional[MonsterSpritesModel],
+        v: MonsterSpritesModel | None,
         info: ValidationInfo,
     ) -> MonsterSpritesModel:
         slug = info.data.get("slug")
@@ -1836,32 +1843,30 @@ class NpcTemplateModel(TemplateModel):
 
 
 class DialogueContent(BaseModel):
-    greeting: Optional[Union[str, list[str]]] = Field(
+    greeting: str | list[str] | None = Field(
         None, description="Greeting dialogue"
     )
-    idle: Optional[Union[str, list[str]]] = Field(
-        None, description="Idle chatter"
-    )
-    farewell: Optional[Union[str, list[str]]] = Field(
+    idle: str | list[str] | None = Field(None, description="Idle chatter")
+    farewell: str | list[str] | None = Field(
         None, description="Dialogue when saying goodbye"
     )
-    pre_battle: Optional[Union[str, list[str]]] = Field(
+    pre_battle: str | list[str] | None = Field(
         None, description="Dialogue before a battle"
     )
-    post_battle_win: Optional[Union[str, list[str]]] = Field(
+    post_battle_win: str | list[str] | None = Field(
         None, description="Dialogue if NPC wins"
     )
-    post_battle_lose: Optional[Union[str, list[str]]] = Field(
+    post_battle_lose: str | list[str] | None = Field(
         None, description="Dialogue if NPC loses"
     )
-    post_battle_draw: Optional[Union[str, list[str]]] = Field(
+    post_battle_draw: str | list[str] | None = Field(
         None, description="Dialogue if battle is a draw"
     )
 
     @field_validator("*")
     def translation_exists(
-        cls, v: Optional[Union[str, list[str]]]
-    ) -> Optional[Union[str, list[str]]]:
+        cls, v: str | list[str] | None
+    ) -> str | list[str] | None:
         if not v:
             return v
 
@@ -1912,7 +1917,7 @@ class NpcCombatModel(BaseModel):
 
 
 class NpcAudioModel(BaseModel):
-    battle_music: Optional[BattleMusicModel] = Field(
+    battle_music: BattleMusicModel | None = Field(
         None,
         description="Battle music configuration for the NPC; defaults to empty if not set",
     )
@@ -2927,6 +2932,8 @@ class AnimationModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "animation"
     slug: str = Field(..., description="Unique slug for the animation")
     file: str = Field(..., description="File of the animation")
+    frame_x: int = Field(..., description="Width of each frame in the sheet")
+    frame_y: int = Field(..., description="Height of each frame in the sheet")
     duration: float = Field(
         default=0.1,
         description="Duration (in seconds) for each frame of the animation.",
@@ -2959,10 +2966,12 @@ class AnimationModel(BaseModel, BaseLookupModel):
     @field_validator("file")
     def file_exists(cls, v: str, info: ValidationInfo) -> str:
         slug = info.data.get("slug")
-        file: str = f"animations/{v}/{slug}_00.png"
-        if has.file(file):
+        sheet_path = f"animations/{v}/{slug}.png"
+
+        if has.file(sheet_path):
             return v
-        raise ValueError(f"the animation {v} doesn't exist in the db")
+
+        raise ValueError(f"Animation sheet '{sheet_path}' does not exist")
 
     @field_validator("duration")
     def validate_duration(cls, v: float) -> float:
@@ -3021,29 +3030,29 @@ class WeatherModel(BaseModel, BaseLookupModel):
         raise ValueError(f"no translation exists with msgid: {v}")
 
 
-DataModel = Union[
-    EconomyModel,
-    ElementModel,
-    TasteModel,
-    ShapeModel,
-    TerrainModel,
-    WeatherModel,
-    TemplateModel,
-    MissionModel,
-    EncounterModel,
-    DialogueModel,
-    EnvironmentModel,
-    ItemModel,
-    MonsterModel,
-    FlairModel,
-    MusicModel,
-    AnimationModel,
-    NpcModel,
-    SoundModel,
-    StatusModel,
-    TechniqueModel,
-    FactionModel,
-]
+DataModel = (
+    EconomyModel
+    | ElementModel
+    | TasteModel
+    | ShapeModel
+    | TerrainModel
+    | WeatherModel
+    | TemplateModel
+    | MissionModel
+    | EncounterModel
+    | DialogueModel
+    | EnvironmentModel
+    | ItemModel
+    | MonsterModel
+    | FlairModel
+    | MusicModel
+    | AnimationModel
+    | NpcModel
+    | SoundModel
+    | StatusModel
+    | TechniqueModel
+    | FactionModel
+)
 
 
 def load_model_map(

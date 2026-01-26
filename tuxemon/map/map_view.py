@@ -15,6 +15,7 @@ from pygame.gfxdraw import box
 from pygame.rect import Rect
 from pygame.surface import Surface
 
+from tuxemon.animation_entity import AnimationManager
 from tuxemon.camera.camera import project
 from tuxemon.db import Direction
 from tuxemon.graphics import (
@@ -54,13 +55,6 @@ DIRECTION_TO_FACING: dict[Direction, EntityFacing] = {
     Direction.left: EntityFacing.left,
     Direction.right: EntityFacing.right,
 }
-
-
-@dataclass
-class AnimationInfo:
-    animation: SurfaceAnimation
-    position: tuple[int, int]
-    layer: int
 
 
 @dataclass
@@ -342,7 +336,7 @@ class AbstractRenderer(ABC):
     bubble_manager: BubbleManager
     cinema_x_ratio: Optional[float]
     cinema_y_ratio: Optional[float]
-    map_animations: dict[str, AnimationInfo]
+    map_animations: AnimationManager
 
     @property
     @abstractmethod
@@ -397,7 +391,7 @@ class MapRenderer(AbstractRenderer):
         self.layer_color: Optional[ColorLike] = None
         self.cinema_x_ratio: Optional[float] = None
         self.cinema_y_ratio: Optional[float] = None
-        self.map_animations: dict[str, AnimationInfo] = {}
+        self.map_animations = AnimationManager()
         self.bubble_manager = BubbleManager()
 
     @property
@@ -424,8 +418,7 @@ class MapRenderer(AbstractRenderer):
     def update(self, time_delta: float) -> None:
         """Update the map animations."""
         self.camera_manager.update(time_delta)
-        for anim_data in self.map_animations.values():
-            anim_data.animation.update(time_delta)
+        self.map_animations.update_all(time_delta)
 
     def _prepare_map_rendering(self, current_map: AbstractMap) -> None:
         """Prepares the map renderer for drawing."""
@@ -488,7 +481,7 @@ class MapRenderer(AbstractRenderer):
             WorldSurfaces(
                 anim.get_current_frame(), Vector2(data.position), data.layer
             )
-            for data in self.map_animations.values()
+            for data in self.map_animations._cache.values()
             for anim in [data.animation]
             if not anim.is_finished() and anim.visibility
         ]

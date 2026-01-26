@@ -297,7 +297,8 @@ class MonsterTakeState(PygameMenuState):
         for monster in _sorted:
             label = T.translate(monster.name).upper()
             iid = monster.instance_id.hex
-            new_image = self._create_image(monster.sprite_handler.front_path)
+            surface = monster.get_sprite("front").image
+            new_image = self._create_image_from_surface(surface)
             new_image.scale(SCALE * 0.5, SCALE * 0.5)
             menu.add.banner(
                 new_image,

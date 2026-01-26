@@ -10,9 +10,17 @@ from pygame.sprite import Group
 
 from tuxemon.animation import (
     Animation,
+    ConditionalTask,
+    DelayTask,
+    LoopTask,
+    RaceTask,
+    RetryTask,
     ScheduledFunction,
     ScheduleType,
     Task,
+    TaskBase,
+    TaskParallel,
+    TaskSequence,
 )
 
 logger = logging.getLogger(__name__)
@@ -20,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 class AnimationGroup:
     def __init__(self) -> None:
-        self._group: Group[Task | Animation] = Group()
+        self._group: Group[TaskBase] = Group()
 
     def animate(self, *targets: Any, **kwargs: Any) -> Animation:
         ani = Animation(*targets, **kwargs)
@@ -154,3 +162,147 @@ class AnimationGroup:
             )
 
         self.task(lambda: chain(0), interval=start_delay, times=1)
+
+    def sequence(self, *tasks: TaskBase) -> TaskSequence:
+        """
+        Creates and adds a TaskSequence to the group.
+
+        The sequence executes the provided tasks one after another,
+        finishing when the last task is complete.
+
+        Parameters:
+            *tasks: TaskBase instances (Task, Animation, TaskParallel, etc.).
+
+        Returns:
+            The created TaskSequence.
+        """
+        if not tasks:
+            logger.warning("Attempted to create an empty TaskSequence.")
+            seq = TaskSequence()
+            self._group.add(seq)
+            return seq
+
+        seq = TaskSequence(*tasks)
+        self._group.add(seq)
+        return seq
+
+    def parallel(self, *tasks: TaskBase) -> TaskParallel:
+        """
+        Creates and adds a TaskParallel to the group.
+
+        The parallel group executes all provided tasks simultaneously,
+        finishing only when ALL tasks are complete (finished or aborted).
+
+        Parameters:
+            *tasks: TaskBase instances (Task, Animation, TaskSequence, etc.).
+
+        Returns:
+            The created TaskParallel.
+        """
+        if not tasks:
+            logger.warning("Attempted to create an empty TaskParallel.")
+            para = TaskParallel()
+            self._group.add(para)
+            return para
+
+        para = TaskParallel(*tasks)
+        self._group.add(para)
+        return para
+
+    def loop(self, task: TaskBase, times: int) -> LoopTask:
+        """
+        Creates and adds a LoopTask to the group.
+
+        The child task will be repeated the specified number of times.
+
+        Parameters:
+            task: The TaskBase instance to repeat.
+            times: The number of times to repeat the task (must be >= 1).
+
+        Returns:
+            The created LoopTask.
+        """
+        loop_task = LoopTask(task, times=times)
+        self._group.add(loop_task)
+        return loop_task
+
+    def retry(self, task: TaskBase, max_attempts: int) -> RetryTask:
+        """
+        Creates and adds a RetryTask to the group.
+
+        The child task will be re-executed if it aborts, up to max_attempts.
+        Finishes successfully only if the child task finishes normally.
+
+        Parameters:
+            task: The TaskBase instance to attempt.
+            max_attempts: The maximum number of times to run the task.
+
+        Returns:
+            The created RetryTask.
+        """
+        retry_task = RetryTask(task, max_attempts=max_attempts)
+        self._group.add(retry_task)
+        return retry_task
+
+    def conditional(
+        self,
+        predicate: Callable[[], bool],
+        true_task: TaskBase,
+        false_task: TaskBase,
+    ) -> ConditionalTask:
+        """
+        Creates and adds a ConditionalTask to the group.
+
+        Executes either the true_task or false_task based on the result
+        of the predicate function.
+
+        Parameters:
+            predicate: A function that returns True or False.
+            true_task: Task to run if the predicate is True.
+            false_task: Task to run if the predicate is False.
+
+        Returns:
+            The created ConditionalTask.
+        """
+        cond_task = ConditionalTask(predicate, true_task, false_task)
+        self._group.add(cond_task)
+        return cond_task
+
+    def race(self, *tasks: TaskBase) -> RaceTask:
+        """
+        Creates and adds a RaceTask to the group.
+
+        Runs all tasks simultaneously, finishing as soon as the first
+        task reaches a terminal state (FINISHED or ABORTED). The others are aborted.
+
+        Parameters:
+            *tasks: TaskBase instances to race against each other.
+
+        Returns:
+            The created RaceTask.
+        """
+        if len(tasks) < 2:
+            logger.warning(
+                "RaceTask needs at least two tasks to be effective."
+            )
+
+        race_task = RaceTask(*tasks)
+        self._group.add(race_task)
+        return race_task
+
+    def delay(self, duration: float) -> DelayTask:
+        """
+        Creates and adds a DelayTask to the group.
+
+        This is a semantic helper for inserting pauses inside sequences
+        or parallel groups.
+
+        Parameters:
+            duration: The time in seconds to wait.
+
+        Returns:
+            The created DelayTask.
+        """
+        delay_task = DelayTask(duration)
+        self._group.add(delay_task)
+        return delay_task

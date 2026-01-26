@@ -118,9 +118,17 @@ class Monster:
         self.types = ElementTypesHandler()
         self.shape: ShapeHandler = ShapeHandler()
         self.randomly: bool = True
-        self.out_of_range: bool = False
         self.acquisition: Acquisition = Acquisition.UNKNOWN
         self.wild: bool = False
+
+        # Combat Attributes
+        self.out_of_range: bool = False
+        self.is_charging: bool = False
+        self.charged_technique: str | None = None
+        self.locked_turns_left: int = 0
+        self.locked_move: str | None = None
+        self.ramp_counter: int = 0
+        self.is_confused: bool = False
 
         self.status = MonsterStatusHandler()
         self.plague = MonsterPlagueHandler()
@@ -158,7 +166,6 @@ class Monster:
         self.body = Body()
 
         # Set up our sprites.
-        self.sprite_handler = MonsterSpriteHandler()
 
         if save_data.get("individual_values"):
             self.individual_values = IndividualValues.from_dict(
@@ -308,21 +315,17 @@ class Monster:
         self.history.extend(results.history or [])
 
         # Look up the monster's sprite image paths
-        sprites = results.sprites or MonsterSpritesModel(
-            front=f"gfx/sprites/battle/{slug}-front",
-            back=f"gfx/sprites/battle/{slug}-back",
-            menu1=f"gfx/sprites/battle/{slug}-menu01",
-            menu2=f"gfx/sprites/battle/{slug}-menu02",
-        )
+        sprites = results.sprites or MonsterSpritesModel(sheet=f"gfx/sprites/battle/{slug}-sheet")  # type: ignore[call-arg]
         self.flair_slugs = results.flairs
         self.flairs = FlairApplier.create(self.flair_slugs)
         loader = SpriteLoader()
         self.sprite_handler = MonsterSpriteHandler(
             slug=slug,
-            front_path=loader.resolve_path(sprites.front),
-            back_path=loader.resolve_path(sprites.back),
-            menu1_path=loader.resolve_path(sprites.menu1),
-            menu2_path=loader.resolve_path(sprites.menu2),
+            sheet_path=loader.resolve_path(sprites.sheet),
+            front_rect=sprites.front_rect,
+            back_rect=sprites.back_rect,
+            menu1_rect=sprites.menu1_rect,
+            menu2_rect=sprites.menu2_rect,
             flairs=self.flairs,
         )
 
@@ -413,23 +416,12 @@ class Monster:
     ) -> Sprite:
         """
         Retrieves a specific sprite via the sprite handler.
-
-        Parameters:
-            sprite_type: The type of sprite to retrieve. Valid options are 'front',
-                'back', 'menu01', and 'menu02'.
-            frame_duration: The duration of each animation frame
-                (applicable only for 'menu')
-                Defaults to 0.25 seconds.
-            scale: A scaling factor applied to resize the sprite during retrieval.
-                (applicable only for 'menu')
-                Defaults to the `SCALE` constant.
-            **kwargs: Additional arguments to pass to the sprite handler.
-
-        Returns:
-            Sprite: The requested sprite object.
         """
         return self.sprite_handler.get_sprite(
-            sprite_type, frame_duration, scale, **kwargs
+            sprite_type=sprite_type,
+            scale=scale,
+            frame_duration=frame_duration,
+            **kwargs,
         )
 
     def return_stat(self, stat: StatType | str) -> int:
@@ -725,7 +717,7 @@ class Monster:
         """
         self.clear_all_temporary_boosts()
         self.types.reset_to_default()
-        self.moves.set_stats()
+        self.moves.reset_current_stats()
         self.out_of_range = False
         self.moves.full_recharge_moves()
 

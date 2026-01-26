@@ -9,8 +9,10 @@ import pygame
 from pygame.surface import Surface
 
 from tuxemon import tools
-from tuxemon.graphics import load_sprite
+from tuxemon.database.runtime import db
+from tuxemon.db import MonsterModel
 from tuxemon.locale import T
+from tuxemon.monster_dir.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BLACK_COLOR, WHITE_COLOR
 from tuxemon.prepare import SCREEN_SIZE
@@ -154,10 +156,20 @@ class TradingTransition(State):
             )
 
     def _load_sprite(self, slug: str) -> Sprite:
-        path = tools.transform_resource_filename(
-            f"gfx/sprites/battle/{slug}-front.png"
+        monster = MonsterModel.lookup(slug, db)
+        loader = SpriteLoader()
+        sprites = monster.sprites
+        assert sprites
+        handler = MonsterSpriteHandler(
+            slug=slug,
+            sheet_path=loader.resolve_path(sprites.sheet),
+            front_rect=sprites.front_rect,
+            back_rect=sprites.back_rect,
+            menu1_rect=sprites.menu1_rect,
+            menu2_rect=sprites.menu2_rect,
         )
-        return load_sprite(path)
+        assert handler
+        return handler.get_sprite("front")
 
     def _white_image(self, sprite: Surface) -> Surface:
         for x in range(sprite.get_width()):

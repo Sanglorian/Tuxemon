@@ -64,10 +64,17 @@ class EffectProcessor:
         meta_result = EffectResult()
         if not self.effects:
             return meta_result
+
         for effect in self.effects:
             if isinstance(effect, CoreEffect):
-                result = effect.apply_globally(session)
-                self._merge_results_global(meta_result, result)
+                if effect.should_run_global(session):
+                    result = effect.apply_globally(session)
+                    self._merge_results_global(meta_result, result)
+                else:
+                    logger.debug(
+                        f"Global effect {effect.name} skipped by should_run()"
+                    )
+
         return meta_result
 
     def process_tech(
@@ -80,16 +87,32 @@ class EffectProcessor:
         meta_result = TechEffectResult(name=source.name)
         if not self.effects:
             return meta_result
+
         for effect in self.effects:
             if isinstance(effect, CoreEffect):
+
+                # Technique with target
                 if user and target:
-                    result = effect.apply_tech_target(
-                        session, source, user, target
-                    )
-                    self._merge_results_technique(meta_result, result)
-                if user is None and target is None:
-                    result = effect.apply_tech(session, source)
-                    self._merge_results_technique(meta_result, result)
+                    if effect.should_run_tech(session, source, user, target):
+                        result = effect.apply_tech_target(
+                            session, source, user, target
+                        )
+                        self._merge_results_technique(meta_result, result)
+                    else:
+                        logger.debug(
+                            f"Tech effect {effect.name} skipped by should_run()"
+                        )
+
+                # Technique without target
+                elif user is None and target is None:
+                    if effect.should_run_tech(session, source, None, None):
+                        result = effect.apply_tech(session, source)
+                        self._merge_results_technique(meta_result, result)
+                    else:
+                        logger.debug(
+                            f"Tech effect {effect.name} (no target) skipped by should_run()"
+                        )
+
         return meta_result
 
     def process_item(
@@ -101,13 +124,30 @@ class EffectProcessor:
         meta_result = ItemEffectResult(name=source.name)
         if not self.effects:
             return meta_result
+
         for effect in self.effects:
             if isinstance(effect, CoreEffect):
+
                 if target:
-                    result = effect.apply_item_target(session, source, target)
+                    if effect.should_run_item(session, source, target, target):
+                        result = effect.apply_item_target(
+                            session, source, target
+                        )
+                        self._merge_results_item(meta_result, result)
+                    else:
+                        logger.debug(
+                            f"Item effect {effect.name} skipped by should_run()"
+                        )
+
                 else:
-                    result = effect.apply_item(session, source)
-                self._merge_results_item(meta_result, result)
+                    if effect.should_run_item(session, source, None, None):
+                        result = effect.apply_item(session, source)
+                        self._merge_results_item(meta_result, result)
+                    else:
+                        logger.debug(
+                            f"Item effect {effect.name} (no target) skipped by should_run()"
+                        )
+
         return meta_result
 
     def process_status(
@@ -118,10 +158,18 @@ class EffectProcessor:
         meta_result = StatusEffectResult(name=source.name)
         if not self.effects:
             return meta_result
+
         for effect in self.effects:
             if isinstance(effect, CoreEffect):
-                result = effect.apply_status(session, source)
-                self._merge_results_status(meta_result, result)
+
+                if effect.should_run_status(session, source):
+                    result = effect.apply_status(session, source)
+                    self._merge_results_status(meta_result, result)
+                else:
+                    logger.debug(
+                        f"Status effect {effect.name} skipped by should_run()"
+                    )
+
         return meta_result
 
     @staticmethod

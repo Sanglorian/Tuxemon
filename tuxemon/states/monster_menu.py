@@ -23,6 +23,7 @@ from tuxemon.monster_dir.filter import MonsterFilter
 from tuxemon.platform.const.graphics import BG_MONSTERS, TRANSPARENT_COLOR
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.prepare import SCREEN_SIZE
+from tuxemon.scaling import DefaultScaling
 from tuxemon.sprite import Sprite
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.graphic_box import GraphicBox
@@ -58,12 +59,13 @@ class MonsterMenuState(Menu[Optional[Monster]]):
         monster_filter: Optional[MonsterFilter] = None,
     ) -> None:
         super().__init__()
+        self.scaling = DefaultScaling()
         self.monster_filter = monster_filter or MonsterFilter()
         self.monsters = self.monster_filter.get_filtered_monsters(monsters)
 
         # make a text area to show messages
         self.text_area = TextArea(self.font, self.font_color, (96, 96, 96))
-        self.text_area.rect = Rect(tools.scale_sequence((20, 80, 80, 100)))
+        self.text_area.rect = Rect(self.scaling.scale_tuple((20, 80, 80, 100)))
         self.sprites.add(self.text_area, layer=100)
         self.monster_stats_display = MonsterStatsDisplay(self)
         self.monster_sprite_displays: list[MonsterSpriteDisplay] = []

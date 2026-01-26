@@ -653,7 +653,7 @@ def speed_monster(monster: Monster, technique: Technique) -> int:
     return int(speed_modifier)
 
 
-def modify_stat(
+def modify_monster_custom_stat(
     monster: Monster, stat: str, value: float, operation: str
 ) -> None:
     """
@@ -665,29 +665,53 @@ def modify_stat(
         value: The value to apply.
         operation: "add" for integer addition, "multiply" for float scaling.
     """
-    logger.info(f"{value} {operation} operation on {stat}")
+    logger.debug(f"{value} {operation} operation on {stat}")
 
-    stat_map = {
-        "armour": "armour",
-        "dodge": "dodge",
-        "hp": "hp",
-        "melee": "melee",
-        "speed": "speed",
-        "ranged": "ranged",
-    }
+    if not hasattr(monster.custom_stats, stat):
+        raise AttributeError(f"Unknown stat '{stat}'")
 
-    stat_attr = stat_map.get(stat)
+    current_value = getattr(monster.custom_stats, stat)
 
-    if stat_attr:
-        current_value = getattr(monster.custom_stats, stat_attr, 0)
+    if operation == "add":
+        new_value = current_value + int(value)
+    elif operation == "multiply":
+        base_value = getattr(monster, stat) * value
+        new_value = current_value + int(base_value)
+    else:
+        raise ValueError(f"Invalid operation: {operation}")
 
-        if operation == "add":
-            new_value = current_value + int(value)
-        elif operation == "multiply":
-            base_value = getattr(monster, stat_attr) * value
-            new_value = current_value + int(base_value)
-        else:
-            raise ValueError(f"Invalid operation: {operation}")
+    setattr(monster.custom_stats, stat, new_value)
+    monster.set_stats()
 
-        setattr(monster.custom_stats, stat_attr, new_value)
-        monster.set_stats()
+
+def modify_technique_custom_stat(
+    tech: Technique, stat: str, value: float, operation: str
+) -> None:
+    """
+    Permanently modify a technique's custom boosts.
+
+    Parameters:
+        tech: The Technique instance.
+        stat: One of: "power", "potency", "accuracy", "healing_power".
+        value: The value to apply.
+        operation: "add" or "multiply".
+    """
+    logger.debug(
+        f"{value} {operation} operation on technique custom stat '{stat}'"
+    )
+
+    if not hasattr(tech.custom_boosts, stat):
+        raise AttributeError(f"Unknown stat '{stat}'")
+
+    current_value = getattr(tech.custom_boosts, stat)
+
+    if operation == "add":
+        new_value = current_value + value
+    elif operation == "multiply":
+        base_value = getattr(tech.base_stats, stat)
+        new_value = current_value + (base_value * value)
+    else:
+        raise ValueError(f"Invalid operation: {operation}")
+
+    setattr(tech.custom_boosts, stat, new_value)
+    tech.reset_current_stats()

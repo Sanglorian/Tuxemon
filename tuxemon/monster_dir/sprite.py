@@ -6,7 +6,7 @@ import logging
 import random
 from collections import defaultdict
 from collections.abc import Sequence
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from pygame.surface import Surface
 
@@ -17,13 +17,15 @@ from tuxemon.platform.const.graphics import MISSING_IMAGE
 from tuxemon.prepare import SCALE
 from tuxemon.sprite import Sprite
 
+if TYPE_CHECKING:
+    from tuxemon.db import MonsterModel
+
 logger = logging.getLogger(__name__)
 
 
 class SpriteLoader:
     def __init__(self) -> None:
         self.sprite_cache: dict[str, Surface] = {}
-        self.animated_sprite_cache: dict[str, Sprite] = {}
 
     def resolve_path(self, sprite: str) -> str:
         try:
@@ -44,17 +46,10 @@ class SpriteLoader:
             ).image
         return self.sprite_cache[path]
 
-    def load_animated(
-        self, paths: list[str], frame_duration: float, scale: float
+    def load_animated_frames(
+        self, frames: list[Surface], frame_duration: float
     ) -> Sprite:
-        resolved = [self.resolve_path(p) for p in paths]
-        key = f"{'-'.join(resolved)}:{frame_duration}"
-        if key not in self.animated_sprite_cache:
-            sprite = graphics.load_animated_sprite(
-                resolved, frame_duration, scale
-            )
-            self.animated_sprite_cache[key] = sprite
-        return self.animated_sprite_cache[key]
+        return graphics.load_animated_frames(frames, frame_duration)
 
     def load_and_scale(self, path: str, scale: float) -> Surface:
         cache_key = f"{path}:scale:{scale}"
@@ -74,9 +69,9 @@ class Flair:
         layer_order: int = 0,
         x_offset: int = 0,
         y_offset: int = 0,
-        sprite_type_override: Optional[str] = None,
-        sprite_type: Optional[set[str]] = None,
-        color: Optional[ColorModel] = None,
+        sprite_type_override: str | None = None,
+        sprite_type: set[str] | None = None,
+        color: ColorModel | None = None,
     ) -> None:
         self.category = category
         self.slug = slug
@@ -231,7 +226,7 @@ def group_by_category(
 
 def select_weighted_flair(
     flairs: Sequence[FlairModel],
-) -> Optional[FlairModel]:
+) -> FlairModel | None:
     if not flairs:
         return None
 
@@ -276,54 +271,100 @@ def apply_color_tint(surface: Surface, color: ColorModel) -> Surface:
 
 
 class MonsterSpriteHandler:
-    """Manages the loading, caching, and retrieval of monster sprites."""
+    """Manages loading and slicing of a combined monster sprite sheet."""
 
     def __init__(
         self,
-        slug: str = "",
-        front_path: str = "",
-        back_path: str = "",
-        menu1_path: str = "",
-        menu2_path: str = "",
-        flairs: Optional[dict[str, Flair]] = None,
+        slug: str,
+        sheet_path: str,
+        front_rect: tuple[int, int, int, int],
+        back_rect: tuple[int, int, int, int],
+        menu1_rect: tuple[int, int, int, int],
+        menu2_rect: tuple[int, int, int, int],
+        flairs: dict[str, Flair] | None = None,
     ):
         self.loader = SpriteLoader()
         self.slug = slug
-        self.front_path = front_path
-        self.back_path = back_path
-        self.menu1_path = menu1_path
-        self.menu2_path = menu2_path
+        self.sheet_path = sheet_path
+
+        self.rects = {
+            "front": front_rect,
+            "back": back_rect,
+            "menu01": menu1_rect,
+            "menu02": menu2_rect,
+        }
+
         self.flairs = flairs.copy() if flairs else {}
         self._flair_cache: dict[str, Surface] = {}
+        self.sheet = graphics.load_raw_image(self.sheet_path)
+
+    @classmethod
+    def from_model(cls, model: MonsterModel) -> MonsterSpriteHandler | None:
+        if model.sprites is None:
+            return None
+
+        return cls(
+            slug=model.slug,
+            sheet_path=model.sprites.sheet,
+            front_rect=model.sprites.front_rect,
+            back_rect=model.sprites.back_rect,
+            menu1_rect=model.sprites.menu1_rect,
+            menu2_rect=model.sprites.menu2_rect,
+        )
+
+    def _slice(self, sprite_type: str) -> Surface:
+        """Extracts a subsurface from the sheet."""
+        if sprite_type not in self.rects:
+            raise ValueError(f"Unknown sprite type: {sprite_type}")
+
+        rect = self.rects[sprite_type]
+        return self.sheet.subsurface(rect)
 
     def get_sprite(
         self,
         sprite_type: str,
-        frame_duration: float = 0.25,
         scale: float = SCALE,
+        frame_duration: float = 0.25,
         **kwargs: Any,
     ) -> Sprite:
-        """Returns a Sprite object, applying flairs if necessary."""
-        if sprite_type == "front":
-            sprite_path = self.front_path
-        elif sprite_type == "back":
-            sprite_path = self.back_path
-        elif sprite_type == "menu01":
-            sprite_path = self.menu1_path
-        elif sprite_type == "menu02":
-            sprite_path = self.menu2_path
-        elif sprite_type == "menu":
-            return self.loader.load_animated(
-                [self.menu1_path, self.menu2_path], frame_duration, scale
-            )
-        else:
-            raise ValueError(f"Cannot find sprite for: {sprite_type}")
+        """
+        Returns a Sprite object from the sheet.
+        Handles static sprites and animated menu sprites.
+        """
+        if sprite_type == "menu":
+            frame1 = self._slice("menu01")
+            frame2 = self._slice("menu02")
 
-        cache_key = f"{sprite_type}:{hash(frozenset(self.flairs.items()))}"
+            if scale != 1:
+                frame1 = graphics.scale_surface(frame1, scale)
+                frame2 = graphics.scale_surface(frame2, scale)
+
+            if self.flairs:
+                frame1 = FlairApplier.apply(
+                    frame1, self.flairs, "menu01", self.loader, **kwargs
+                )
+                frame2 = FlairApplier.apply(
+                    frame2, self.flairs, "menu02", self.loader, **kwargs
+                )
+
+            return self.loader.load_animated_frames(
+                [frame1, frame2], frame_duration=frame_duration
+            )
+
+        flair_key: frozenset[tuple[str, tuple[tuple[str, Any], ...]]] = (
+            frozenset(
+                (k, tuple(sorted(v.get_state().items())))
+                for k, v in self.flairs.items()
+            )
+        )
+        cache_key = f"{sprite_type}:{hash(flair_key)}:{scale}"
         if cache_key in self._flair_cache:
             return Sprite(image=self._flair_cache[cache_key])
 
-        image = self.loader.load(sprite_path, **kwargs)
+        image = self._slice(sprite_type)
+
+        if scale != 1:
+            image = graphics.scale_surface(image, scale)
 
         if self.flairs:
             image = FlairApplier.apply(
@@ -334,18 +375,9 @@ class MonsterSpriteHandler:
         return Sprite(image=image)
 
     def load_sprites(self, scale: float = SCALE) -> dict[str, Surface]:
-        """Loads all monster sprites and caches them."""
-        sprite_paths = {
-            "front": self.front_path,
-            "back": self.back_path,
-            "menu01": self.menu1_path,
-            "menu02": self.menu2_path,
-        }
-
         return {
-            key: self.loader.load_and_scale(path, scale)
-            for key, path in sprite_paths.items()
-            if path
+            key: graphics.scale_surface(self._slice(key), scale)
+            for key in self.rects
         }
 
     def refresh_flairs(self, new_flairs: dict[str, Flair]) -> None:

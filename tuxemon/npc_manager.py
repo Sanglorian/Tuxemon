@@ -227,8 +227,7 @@ class NPCManager:
             if not state.player_slug:
                 continue
 
-            npc = NPC(npc_slug=state.player_slug, session=session)
-            npc.set_state(session, state)
+            npc = NPC.from_save(session, state)
 
             if state.current_map == current_map:
                 self.add_npc(npc)

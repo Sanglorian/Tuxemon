@@ -4,20 +4,19 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from enum import Enum
-from typing import TYPE_CHECKING, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from tuxemon.db import Direction
 from tuxemon.map.map import dirs2
 from tuxemon.math import Vector2
+from tuxemon.save_state import NPCState
 from tuxemon.tools import vector2_to_tile_pos
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
+    from tuxemon.network.manager import NetworkManager
     from tuxemon.session import Session
-
-
-SaveDict = TypeVar("SaveDict")
 
 
 class EntityState(Enum):
@@ -35,8 +34,8 @@ class Body:
     def __init__(
         self,
         position: Vector2,
-        velocity: Optional[Vector2] = None,
-        acceleration: Optional[Vector2] = None,
+        velocity: Vector2 | None = None,
+        acceleration: Vector2 | None = None,
     ) -> None:
         self.position = position
         self.velocity = velocity or Vector2(0, 0)
@@ -88,7 +87,7 @@ class Mover:
         self.facing = facing
         self.base_moverate = base_moverate
         self.moverate_modifier = moverate_modifier
-        self.move_direction: Optional[Direction] = None
+        self.move_direction: Direction | None = None
 
     @property
     def moverate(self) -> float:
@@ -165,7 +164,7 @@ class Mover:
             self.stop()
 
 
-class Entity(Generic[SaveDict]):
+class Entity:
     """
     Entity in the game.
 
@@ -179,19 +178,34 @@ class Entity(Generic[SaveDict]):
     def __init__(
         self,
         *,
-        slug: str = "",
         session: Session,
-    ) -> None:
+        slug: str = "",
+        instance_id: UUID | None = None,
+    ):
         self.slug = slug
         self.session = session
         self.client = session.client
-        self.instance_id: UUID = uuid4()
+        self.event_bus = session.client.event_bus
+        self.instance_id = instance_id or uuid4()
         self.body = Body(position=Vector2(0, 0))
         self.mover = Mover(self.body)
-        self._current_map: Optional[str] = None
+        self._current_map: str | None = None
         self.update_location: bool = False
         self.is_player: bool = False
         self.ignore_collisions: bool = False
+        self._movement_accumulator: float = 0.0
+
+    @classmethod
+    def create(cls, session: Session, slug: str) -> Entity:
+        return cls(session=session, slug=slug)
+
+    @classmethod
+    def from_save(cls, session: Session, save_data: NPCState) -> Entity:
+        iid = save_data.instance_id
+        instance_id = UUID(iid) if iid else None
+        entity = cls(session=session, instance_id=instance_id)
+        entity.set_state(session, save_data)
+        return entity
 
     # === PHYSICS START =======================================================
     def stop_moving(self) -> None:
@@ -204,7 +218,6 @@ class Entity(Generic[SaveDict]):
 
     def network_notify_start_moving(self, direction: Direction) -> None:
         r"""WIP guesswork ¯\_(ツ)_/¯"""
-        self.network = self.client.network_manager
         if self.network.is_connected():
             assert self.network.client
             self.network.client.update_player(
@@ -213,7 +226,6 @@ class Entity(Generic[SaveDict]):
 
     def network_notify_stop_moving(self) -> None:
         r"""WIP guesswork ¯\_(ツ)_/¯"""
-        self.network = self.client.network_manager
         if self.network.is_connected():
             assert self.network.client
             self.network.client.update_player(
@@ -224,14 +236,33 @@ class Entity(Generic[SaveDict]):
         r"""WIP guesswork ¯\_(ツ)_/¯"""
         self.update_location = True
 
-    def update_physics(self, td: float) -> None:
+    def update_physics(self, dt: float) -> None:
         """
         Move the entity according to the movement vector.
-
-        Parameters:
-            td: Time delta (elapsed time).
         """
-        self.body.update(td)
+        before = self.body.position.copy()
+        self.body.update(dt)
+        after = self.body.position
+        diff = after - before
+        dist = diff.magnitude
+
+        if dist < 0.01:
+            self.pos_update()
+            return
+
+        self._movement_accumulator += dist
+
+        if self._movement_accumulator >= 1.0:
+            steps = int(self._movement_accumulator)
+            self._movement_accumulator -= steps
+            self.event_bus.publish(
+                "entity_moved",
+                entity=self,
+                diff_x=abs(diff.x),
+                diff_y=abs(diff.y),
+                steps=steps,
+            )
+
         self.pos_update()
 
     def set_position(self, pos: Sequence[float]) -> None:
@@ -245,7 +276,7 @@ class Entity(Generic[SaveDict]):
         self.add_collision(pos)
         self.pos_update()
 
-    def set_current_map(self, map_slug: Optional[str]) -> None:
+    def set_current_map(self, map_slug: str | None) -> None:
         """
         Set the entity's map in the game world.
 
@@ -280,9 +311,7 @@ class Entity(Generic[SaveDict]):
         """
         self.mover.facing = direction
 
-    def set_move_direction(
-        self, direction: Optional[Direction] = None
-    ) -> None:
+    def set_move_direction(self, direction: Direction | None = None) -> None:
         """
         Sets the move direction of the entity.
 
@@ -306,12 +335,16 @@ class Entity(Generic[SaveDict]):
     # === PHYSICS END =========================================================
 
     @property
+    def network(self) -> NetworkManager:
+        return self.client.network_manager
+
+    @property
     def tile_pos(self) -> tuple[int, int]:
         """Return the tile position of the entity."""
         return vector2_to_tile_pos(self.body.position)
 
     @property
-    def current_map(self) -> Optional[str]:
+    def current_map(self) -> str | None:
         """Return the current map of the entity."""
         return self._current_map
 
@@ -340,7 +373,7 @@ class Entity(Generic[SaveDict]):
         return self.mover.facing
 
     @property
-    def move_direction(self) -> Optional[Direction]:
+    def move_direction(self) -> Direction | None:
         """
         Move direction allows other functions to move the entity in a
         controlled way. To move the entity, change the value to one of
@@ -353,25 +386,26 @@ class Entity(Generic[SaveDict]):
         """Triggers a jump for the entity."""
         self.mover.jump()
 
-    def get_state(self, session: Session) -> SaveDict:
-        """
-        Get Entities internal state for saving/loading.
+    def get_state(self, session: Session) -> NPCState:
+        state = NPCState(
+            instance_id=self.instance_id.hex,
+            position=[self.position.x, self.position.y],
+            tile_pos=self.tile_pos,
+            facing=self.facing.value,
+            current_map=self.current_map,
+            is_player=self.is_player,
+        )
+        return state
 
-        Parameters:
-            session: Game session.
-        """
-        raise NotImplementedError
+    def set_state(self, session: Session, save_data: NPCState) -> None:
+        if save_data.position:
+            self.set_position(save_data.position)
+        elif save_data.tile_pos:
+            x, y = save_data.tile_pos
+            self.set_position((float(x), float(y)))
 
-    def set_state(
-        self,
-        session: Session,
-        save_data: SaveDict,
-    ) -> None:
-        """
-        Recreates entity from saved data.
+        if save_data.facing:
+            self.set_facing(Direction(save_data.facing))
 
-        Parameters:
-            session: Game session.
-            save_data: Data used to recreate the Entity.
-        """
-        raise NotImplementedError
+        self.set_current_map(save_data.current_map)
+        self.is_player = save_data.is_player

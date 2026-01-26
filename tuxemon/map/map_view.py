@@ -7,10 +7,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from itertools import chain
-from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
-import pygame
+from pygame import SRCALPHA
 from pygame.draw import line
 from pygame.gfxdraw import box
 from pygame.rect import Rect
@@ -18,7 +17,12 @@ from pygame.surface import Surface
 
 from tuxemon.camera.camera import project
 from tuxemon.db import Direction
-from tuxemon.graphics import ColorLike, apply_cinema_bars, load_and_scale
+from tuxemon.graphics import (
+    ColorLike,
+    apply_cinema_bars,
+    load_and_scale,
+    slice_spritesheet,
+)
 from tuxemon.map.map import get_pos_from_tilepos
 from tuxemon.math import Vector2
 from tuxemon.platform.const.graphics import BLACK_COLOR
@@ -67,7 +71,6 @@ class WorldSurfaces:
 
 
 sprite_cache: dict[str, Surface] = {}
-standing_sprite_cache: dict[str, dict[EntityFacing, Surface]] = {}
 
 
 def load_and_scale_with_cache(file_path: str) -> Surface:
@@ -83,78 +86,54 @@ def load_and_scale_with_cache(file_path: str) -> Surface:
     return sprite_cache[file_path]
 
 
-def load_walking_animations_with_cache(
-    template: NpcTemplateModel, facing: EntityFacing, frame_duration: float
-) -> SurfaceAnimation:
-    """
-    Load walking animations without caching.
-    """
-    logger.info(
-        f"Loading new walking animation for: {template.sprite_name}, {facing.value}"
-    )
-    images: list[str] = [
-        f"sprites/{template.sprite_name}_{facing.value}_walk.{str(0).zfill(3)}.png",
-        f"sprites/{template.sprite_name}_{facing.value}.png",
-        f"sprites/{template.sprite_name}_{facing.value}_walk.{str(1).zfill(3)}.png",
-        f"sprites/{template.sprite_name}_{facing.value}.png",
-    ]
-    frames: list[tuple[Surface, float]] = [
-        (load_and_scale_with_cache(image), frame_duration) for image in images
-    ]
-    return SurfaceAnimation(frames)
-
-
-def clear_standing_cache(cache_key: str) -> None:
-    """Clears a specific item from the standing cache."""
-    if cache_key in standing_sprite_cache:
-        del standing_sprite_cache[cache_key]
-        logger.info(f"Cleared cache for: {cache_key}")
-    else:
-        logger.info(f"No cache found for: {cache_key}")
-
-
 class SpriteController:
-    """Manages the sprite rendering, updates, and animation states for an NPC."""
+    """
+    Manages sprite rendering, updates, and animation states for an NPC.
+    This controller never loads PNGs directly — all sprite logic lives
+    in SpriteRenderer.
+    """
 
     def __init__(self, npc: NPC) -> None:
         self.npc = npc
-        self.sprite_renderer = SpriteRenderer()
-        self.sprite_renderer.load_sprites(self.npc.template, self.npc.tile_pos)
+        self.sprite_renderer = SpriteRenderer(npc)
+        self.sprite_renderer.load_sprites(npc.template)
 
     def update(self, time_delta: float) -> None:
-        """Update the sprite renderer."""
+        """
+        Update the sprite renderer and reposition the sprite
+        based on the NPC's current tile position.
+        """
         self.sprite_renderer.set_position(self.npc.tile_pos)
         self.sprite_renderer.update(time_delta)
 
     def update_template(self, template: NpcTemplateModel) -> None:
-        """Update the NPC template and reload sprites."""
-        self.sprite_renderer.load_sprites(template, self.npc.tile_pos)
+        """
+        Update the NPC template and reload all sprites from the sheet.
+        """
+        self.sprite_renderer.load_sprites(template)
         self.sprite_renderer.stop()
         self.sprite_renderer.surface_animations.clear()
-        self.sprite_renderer.surface_animations.add(
-            self.sprite_renderer.sprite
-        )
+
+        for anim in self.sprite_renderer.sprite.values():
+            if isinstance(anim, SurfaceAnimation):
+                self.sprite_renderer.surface_animations.add(anim)
+
         self.sprite_renderer.play()
 
     def get_animation_frame(self, ani: str) -> Surface:
-        """Returns the current animation frame for the given animation key."""
+        """Return the current animation frame for the given animation key."""
         return self.sprite_renderer.get_animation_frame(
-            ani, self.sprite_renderer.sprite, self.npc
+            ani,
+            self.sprite_renderer.sprite,
+            self.npc,
         )
 
     def get_facing_frame(self, facing: EntityFacing) -> Surface:
-        """Returns the static sprite frame for the given facing direction."""
+        """Return the static standing frame for the given facing direction."""
         return self.sprite_renderer.get_facing_frame(
-            facing, self.sprite_renderer.standing
+            facing,
+            self.sprite_renderer.standing,
         )
-
-    def get_sprite_renderer(self) -> SpriteRenderer:
-        """Returns the sprite renderer."""
-        return self.sprite_renderer
-
-    def load_sprites(self, template: NpcTemplateModel) -> None:
-        """Load sprite graphics based on the template."""
-        self.sprite_renderer.load_sprites(template, self.npc.tile_pos)
 
     def play_animation(self) -> None:
         """Play the sprite animation."""
@@ -163,6 +142,10 @@ class SpriteController:
     def stop_animation(self) -> None:
         """Stop the sprite animation."""
         self.sprite_renderer.stop()
+
+    def get_sprite_renderer(self) -> SpriteRenderer:
+        """Return the underlying sprite renderer."""
+        return self.sprite_renderer
 
 
 class SpriteRenderer:
@@ -195,93 +178,134 @@ class SpriteRenderer:
         },
     }
 
-    def __init__(self) -> None:
-        """Initialize the SpriteRenderer."""
+    def __init__(self, npc: NPC) -> None:
+        self.npc = npc
         self.standing: dict[EntityFacing, Surface] = {}
         self.sprite: dict[str, SurfaceAnimation] = {}
         self.surface_animations = SurfaceAnimationCollection()
         self.player_width = 0
         self.player_height = 0
         self.rect = Rect(0, 0, 0, 0)
-        self.frame_duration = self._calculate_frame_duration()
 
-    def load_sprites(
-        self, template: NpcTemplateModel, tile_pos: tuple[int, int]
-    ) -> None:
-        self._load_standing_sprites(template)
-        self._load_walking_sprites(template)
-        self._set_sprite_position(tile_pos)
+        self.frame_duration = self._calculate_frame_duration(
+            npc.template, npc.moverate
+        )
 
-    def _load_standing_sprites(self, template: NpcTemplateModel) -> None:
-        """Loads the static standing sprites for different facings of an NPC."""
-        if template.sprite_name not in standing_sprite_cache:
-            is_interactive_object = template.slug == "interactive_obj"
-            sprite_dict = {}
-            for facing in EntityFacing:
-                filename = (
-                    f"{template.sprite_name}.png"
-                    if is_interactive_object
-                    else f"{template.sprite_name}_{facing.value}.png"
-                )
-                path = (
-                    Path("sprites_obj" if is_interactive_object else "sprites")
-                    / filename
-                )
-                sprite_dict[facing] = load_and_scale_with_cache(
-                    path.as_posix()
-                )
-            standing_sprite_cache[template.sprite_name] = sprite_dict
+    def load_sprites(self, template: NpcTemplateModel) -> None:
+        """
+        Load overworld sprites for this NPC.
+        Uses a sprite sheet for animated NPCs and a single image for static props.
+        """
+        self.standing.clear()
+        self.sprite.clear()
+        self.surface_animations.clear()
+
+        if template.is_static_prop:
+            self._load_static_prop(template)
         else:
-            logger.info(
-                f"Using cached standing sprites: {template.sprite_name}"
+            self._load_from_sheet(template)
+
+        self._set_sprite_position(self.npc.tile_pos)
+
+    def _load_static_prop(self, template: NpcTemplateModel) -> None:
+        """Load a single static sprite for props."""
+        path = f"sprites_obj/{template.sprite_name}.png"
+        surf = load_and_scale_with_cache(path)
+
+        self.standing = {
+            EntityFacing.front: surf,
+            EntityFacing.back: surf,
+            EntityFacing.left: surf,
+            EntityFacing.right: surf,
+        }
+        self.sprite = {}
+
+    def _load_from_sheet(self, template: NpcTemplateModel) -> None:
+        """
+        Load standing frames and walking animations from a sprite sheet.
+        Sheet layout:
+          rows: directions (front, left, right, back)
+          columns: frames (walk1, idle, walk2)
+        """
+        sheet_path = f"sprites/{template.sprite_name}.png"
+
+        all_frames = slice_spritesheet(
+            sheet_path,
+            template.frame_width,
+            template.frame_height,
+        )
+
+        expected_frames = template.rows * template.columns
+        if len(all_frames) != expected_frames:
+            raise ValueError(
+                f"Sprite sheet '{sheet_path}' has {len(all_frames)} frames, "
+                f"but expected {expected_frames} ({template.rows}x{template.columns})"
             )
 
-        self.standing = standing_sprite_cache[template.sprite_name]
+        row_map = {
+            EntityFacing.front: 0,
+            EntityFacing.left: 1,
+            EntityFacing.right: 2,
+            EntityFacing.back: 3,
+        }
 
-    def _load_walking_sprites(self, template: NpcTemplateModel) -> None:
-        """Loads walking animations for the NPC based on the given template."""
-        if template.slug != "interactive_obj":
-            self._load_walking_animations(template)
+        for facing, row_index in row_map.items():
+            start = row_index * template.columns
+            end = start + template.columns
+            frames = all_frames[start:end]
+
+            idle_frame = frames[1]
+            self.standing[facing] = idle_frame
+
+            idle_anim = SurfaceAnimation([(idle_frame, 999999)])
+            self.sprite[f"{facing.value}"] = idle_anim
+
+            anim_frames = [
+                (frames[1], self.frame_duration),
+                (frames[0], self.frame_duration),
+                (frames[1], self.frame_duration),
+                (frames[2], self.frame_duration),
+            ]
+            walk_anim = SurfaceAnimation(anim_frames)
+            self.sprite[f"{facing.value}_walk"] = walk_anim
+            self.surface_animations.add(walk_anim)
 
     def _set_sprite_position(self, tile_pos: tuple[int, int]) -> None:
-        """Sets the sprite's position and dimensions based on tile coordinates."""
+        """Sets the sprite's position with an offset for tall sprites."""
         self.player_width, self.player_height = self.standing[
             EntityFacing.front
         ].get_size()
+
+        y_offset = max(0, self.player_height - TILE_SIZE[1])
+
         self.rect = Rect(
-            (
-                tile_pos[0],
-                tile_pos[1],
-                self.player_width,
-                self.player_height,
-            )
+            tile_pos[0],
+            tile_pos[1] - y_offset,
+            self.player_width,
+            self.player_height,
         )
 
-    def _load_walking_animations(self, template: NpcTemplateModel) -> None:
-        """Loads and initializes the walking animation frames for the NPC."""
-        for facing in EntityFacing:
-            animation = load_walking_animations_with_cache(
-                template, facing, self.frame_duration
-            )
-            self.sprite[f"{facing.value}_walk"] = animation
-        self.surface_animations.add(self.sprite)
+    def set_position(self, position: tuple[int, int]) -> None:
+        """Set the position of the sprite."""
+        self.rect.topleft = position
 
     def _calculate_frame_duration(
         self,
+        template: NpcTemplateModel,
         rate: float = CONFIG.player_walkrate,
         time_scale: int = 1000,
-        frame_divisor: int = 3,
-        speed_factor: float = 2,
     ) -> float:
-        """Calculate the frame duration for walking animations."""
-        return (time_scale / rate) / frame_divisor / time_scale * speed_factor
-
-    def set_position(self, position: tuple[int, int]) -> None:
-        """Set the position of the sprite, optionally offset by vertical jump."""
-        self.rect.topleft = position
+        """Calculate frame duration using NPC-specific animation parameters."""
+        return (
+            (time_scale / rate)
+            / template.frame_divisor
+            / time_scale
+            * template.speed_factor
+            * template.animation_speed
+        )
 
     def update(self, time_delta: float) -> None:
-        """Update the sprite animation."""
+        """Update all registered animations."""
         self.surface_animations.update(time_delta)
 
     def get_animation_frame(
@@ -303,11 +327,11 @@ class SpriteRenderer:
         return sprites[facing]
 
     def play(self) -> None:
-        """Play the sprite animation."""
+        """Play all sprite animations."""
         self.surface_animations.play()
 
     def stop(self) -> None:
-        """Stop the sprite animation."""
+        """Stop all sprite animations."""
         self.surface_animations.stop()
 
 
@@ -369,7 +393,7 @@ class MapRenderer(AbstractRenderer):
         self.camera_manager = camera_manager
         self.npc_manager = npc_manager
         self.debug_renderer = debug_renderer
-        self.layer = Surface(SCREEN_SIZE, pygame.SRCALPHA)
+        self.layer = Surface(SCREEN_SIZE, SRCALPHA)
         self.layer_color: Optional[ColorLike] = None
         self.cinema_x_ratio: Optional[float] = None
         self.cinema_y_ratio: Optional[float] = None

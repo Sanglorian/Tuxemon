@@ -14,9 +14,6 @@
       "parameters": [
         "5"
       ]
-    },
-    {
-      "type": "damage"
     }
   ],
   "speed": "normal",

@@ -52,7 +52,7 @@ class RegionProperties:
             "description": "Directions from which an entity can remain in this region."
         },
     )
-    entity: Entity[Any] | None = field(
+    entity: Entity | None = field(
         default=None,
         metadata={
             "description": "Optional entity associated with this region."

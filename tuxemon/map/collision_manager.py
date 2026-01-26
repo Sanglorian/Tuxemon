@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections import defaultdict
 from collections.abc import Mapping, MutableMapping, Sequence
-from typing import TYPE_CHECKING, Any, DefaultDict
+from typing import TYPE_CHECKING, DefaultDict
 
 from tuxemon.map.map_region import RegionProperties
 from tuxemon.platform.const.sizes import SURFACE_KEYS
@@ -124,7 +124,7 @@ class CollisionManager:
 
     def add_collision(
         self,
-        entity: Entity[Any],
+        entity: Entity,
         pos: Sequence[float],
     ) -> None:
         """

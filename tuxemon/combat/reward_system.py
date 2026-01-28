@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.combat.combat_context import CombatType
 from tuxemon.combat.experience_strategies import calculate_experience
@@ -57,7 +57,7 @@ class RewardSystem:
             monster.bond_handler.apply_bond_modifier("fainted")
 
     def award_rewards(
-        self, loser: Monster, winners: Optional[set[Monster]] = None
+        self, loser: Monster, winners: set[Monster] | None = None
     ) -> RewardData:
         """Calculate and distribute rewards to winners."""
         if winners is None:

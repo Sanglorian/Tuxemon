@@ -10,7 +10,9 @@ from typing import TYPE_CHECKING, Generic, Optional, TypeVar
 from uuid import UUID, uuid4
 
 from tuxemon import save
+from tuxemon.celestial_handler import CelestialHandler
 from tuxemon.save_state import TIME_FORMAT, NPCState, SessionSave, WorldSave
+from tuxemon.time_handler import TimeHandler
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -33,6 +35,8 @@ class AbstractSession(ABC, Generic[ClientType]):
 
     def __init__(self) -> None:
         self._uuid: UUID = uuid4()
+        self.time = TimeHandler()
+        self.celestial = CelestialHandler.from_session(self)
         self._start_time: datetime = datetime.now()
         self._start_timestamp: float = time.time()
         self._total_playtime: float = 0.0

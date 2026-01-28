@@ -20,7 +20,6 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.camera_move.CameraMoveAction
 .. autoscriptinfoclass:: tuxemon.event.actions.camera_position.CameraPositionAction
 .. autoscriptinfoclass:: tuxemon.event.actions.camera_shake.CameraShakeAction
-.. autoscriptinfoclass:: tuxemon.event.actions.celestial_cycles.CelestialCyclesAction
 .. autoscriptinfoclass:: tuxemon.event.actions.change_bg.ChangeBgAction
 .. autoscriptinfoclass:: tuxemon.event.actions.change_bg_monster.ChangeBgMonsterAction
 .. autoscriptinfoclass:: tuxemon.event.actions.change_faction_membership.ChangeFactionMembershipAction

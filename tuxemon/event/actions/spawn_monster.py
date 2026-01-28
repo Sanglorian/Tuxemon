@@ -14,7 +14,6 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.monster import Monster
 from tuxemon.taste import Taste
-from tuxemon.time_handler import today_ordinal
 from tuxemon.tools import get_valid_uuid, open_dialog
 
 if TYPE_CHECKING:
@@ -104,7 +103,7 @@ class SpawnMonsterAction(EventAction):
 
         # Create a new child monster
         child = Monster.spawn_base(seed_slug, level)
-        child.set_capture(today_ordinal())
+        child.set_capture(session.time.get_ordinal())
         child.name = name
         child.set_acquisition(Acquisition.BRED)
 

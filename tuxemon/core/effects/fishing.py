@@ -161,7 +161,7 @@ class FishingEffect(CoreEffect):
                 exp_req_mod = self._fish.exp_req_mod
                 environment = (
                     self._fish.environment.get("night")
-                    if session.player.game_variables.get("stage_of_day")
+                    if session.time.get_time_variables().stage_of_day
                     == "night"
                     else self._fish.environment.get("default")
                 )

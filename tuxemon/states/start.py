@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from functools import partial
-from typing import Any, ClassVar, Optional, Union
+from typing import Any, ClassVar
 
 import pygame_menu
 from pygame.surface import Surface
@@ -19,7 +19,9 @@ from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_START_SCREEN, BLACK_COLOR
+from tuxemon.platform.const.sizes import PLAYER_NPC
 from tuxemon.platform.events import PlayerInput
+from tuxemon.player import Player
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.save import get_index_of_latest_save
 from tuxemon.session import local_session
@@ -69,7 +71,7 @@ class StartState(PygameMenuState):
             )
 
         def change_state(
-            state: Union[State, str], **kwargs: Any
+            state: State | str, **kwargs: Any
         ) -> Callable[[], None]:
             def _change() -> None:
                 self.unsubscribe(
@@ -107,13 +109,19 @@ class StartState(PygameMenuState):
             )
         menu.add.button(
             title=T.translate("menu_battle"),
-            action=change_state("DifficultyBattleState"),
+            action=change_state(
+                "DifficultyPickState", on_pick=self.start_battle
+            ),
             font_size=self.font_type.big,
             button_id="menu_battle",
         )
         menu.add.button(
             title=T.translate("menu_minigame"),
-            action=change_state("DifficultySelectState"),
+            action=change_state(
+                "DifficultyPickState",
+                on_pick=self.start_minigame,
+                difficulties=["easy", "normal", "hard"],
+            ),
             font_size=self.font_type.big,
             button_id="menu_minigame",
         )
@@ -153,7 +161,7 @@ class StartState(PygameMenuState):
         self.unsubscribe("afk.threshold_reached", self._on_afk_threshold)
         super().shutdown()
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         if (
             event.button in (buttons.HOME, buttons.BACK, buttons.B)
             and event.pressed
@@ -161,6 +169,24 @@ class StartState(PygameMenuState):
             return None
         else:
             return super().process_event(event)
+
+    def start_battle(self, difficulty: str) -> None:
+        Player.create(local_session, slug=PLAYER_NPC)
+        self.client.push_state(
+            "WorldState", session=local_session, map_name=None
+        )
+        self.client.event_engine.execute_action(
+            "set_variable", [f"difficulty:{difficulty}"]
+        )
+        self.client.event_engine.execute_action("load_yaml", ["battle_menu"])
+
+    def start_minigame(self, difficulty: str) -> None:
+        self.client.push_state(
+            "MinigameState",
+            difficulty=difficulty,
+            streak=0,
+            score=0,
+        )
 
 
 class ModsChoice(PygameMenuState):

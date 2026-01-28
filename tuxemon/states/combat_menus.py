@@ -12,10 +12,10 @@ from pygame import SRCALPHA
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon import graphics, tools
 from tuxemon.combat import utils
 from tuxemon.combat.menu_visibility import MenuProfiles
 from tuxemon.db import EffectPhase, SpeedLabel, State
+from tuxemon.graphics import load_and_scale
 from tuxemon.item.filter import ItemFilter
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
@@ -26,7 +26,7 @@ from tuxemon.sprite import Sprite
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.technique.technique import Technique
-from tuxemon.tools import fix_measure
+from tuxemon.tools import fix_measure, open_dialog, scale
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text import TextArea
 
@@ -128,14 +128,13 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
     def initialize_items(self) -> Generator[MenuItem[MenuGameObj], None, None]:
         menu_map, default_visibility = self.get_menu_profile()
-
         visibility_map = default_visibility.copy()
-
         visibility_map.update(self.combat_session.menu_visibility_map)
 
         if self.enemy.combat.forfeit:
             visibility_map["menu_forfeit"] = True
 
+        # Hide Item if no usable items
         items_filtered = ItemFilter(self.character.items)
         items_filtered.set_filter_combat_targets(
             self.session, self.character.monsters, self.opponents
@@ -143,9 +142,11 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         if not items_filtered.items:
             visibility_map["menu_item"] = False
 
-        if self.character.party.party_size == 1:
+        # Hide Swap if no valid swap targets
+        if not self.can_swap_any(self.character):
             visibility_map["menu_monster"] = False
 
+        # Yield menu items
         for key, method_name in menu_map.items():
             callback = getattr(self, method_name)
             visible = visibility_map.get(key, False)
@@ -182,12 +183,32 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 "status": message,
             }
             msg = T.format("combat_player_run_status", params)
-            tools.open_dialog(self.client, [msg], dialog_speed="max")
+            open_dialog(self.client, [msg], dialog_speed="max")
             return
         self.client.remove_state_by_name("MainCombatMenuState")
         self.combat_session.enqueue_action(
             self.party[0], run, self.opponents[0]
         )
+
+    def can_swap_any(self, character: NPC) -> bool:
+        """Return True if the character has at least one valid swap target."""
+        active = self.combat_session.active_monsters
+        tracker = self.combat_session.swap_tracker
+
+        # If all monsters are active, no swap is possible
+        if len(character.monsters) <= len(active):
+            return False
+
+        for mon in character.monsters:
+            if mon.is_fainted:
+                continue
+            if mon in active:
+                continue
+            if not tracker.can_swap(mon):
+                continue
+            return True
+
+        return False
 
     def open_swap_menu(self) -> None:
         """Open menus to swap monsters in party."""
@@ -197,25 +218,27 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             swap = Technique.create("swap")
             status = self.monster.status.current_status
             message = status.name.lower() if status else ""
+
             if not swap.validate_monster(self.session, self.monster):
                 params = {
                     "monster": self.monster.name.upper(),
                     "status": message,
                 }
                 msg = T.format("combat_player_swap_status", params)
-                tools.open_dialog(self.client, [msg], dialog_speed="max")
+                open_dialog(self.client, [msg], dialog_speed="max")
                 return
+
             self.combat_session.swap_tracker.register(added)
             self.combat_session.enqueue_action(self.monster, swap, added)
             self.client.pop_state()
             self.client.pop_state()
 
-        def validate_monster(menu_item: Monster) -> bool:
-            if menu_item.is_fainted:
+        def validate_monster(mon: Monster) -> bool:
+            if mon.is_fainted:
                 return False
-            if menu_item in self.combat_session.active_monsters:
+            if mon in self.combat_session.active_monsters:
                 return False
-            if not self.combat_session.swap_tracker.can_swap(menu_item):
+            if not self.combat_session.swap_tracker.can_swap(mon):
                 return False
             return True
 
@@ -231,12 +254,6 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         menu.is_valid_entry = validate  # type: ignore[assignment]
         menu.anchor("bottom", self.rect.top)
         menu.anchor("right", SCREEN_RECT.right)
-
-        if all(not validate_monster(mon) for mon in self.character.monsters):
-            party_unselectable = T.translate("combat_party_unselectable")
-            tools.open_dialog(
-                self.client, [party_unselectable], dialog_speed="max"
-            )
 
     def open_item_menu(self) -> None:
         """Open menu to choose item to use."""
@@ -299,9 +316,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                         T.translate(extra) for extra in result_status.extras
                     ]
                     template = "\n".join(templates)
-                    tools.open_dialog(
-                        self.client, [template], dialog_speed="max"
-                    )
+                    open_dialog(self.client, [template], dialog_speed="max")
                     return
 
             # enqueue the item
@@ -415,7 +430,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     for i, t in enumerate(technique.types.current[:2]):
                         path = f"gfx/ui/icons/element/{t.name.lower()}_type_small.png"
                         try:
-                            icon_surface = graphics.load_and_scale(path, SCALE)
+                            icon_surface = load_and_scale(path, SCALE)
                             spr = Sprite()
                             spr.image = icon_surface
                             spr.rect = spr.image.get_rect()
@@ -442,7 +457,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 # --- Draw range icon ---
                 path = f"gfx/ui/icons/range/{technique.range.name.lower()}.png"
                 try:
-                    surf = graphics.load_and_scale(path, SCALE)
+                    surf = load_and_scale(path, SCALE)
                     spr = Sprite()
                     spr.image = surf
                     spr.rect = surf.get_rect()
@@ -461,7 +476,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
                 path = f"gfx/ui/icons/speed/{speed_val}.png"
                 try:
-                    surf = graphics.load_and_scale(path, SCALE)
+                    surf = load_and_scale(path, SCALE)
                     spr = Sprite()
                     spr.image = surf
                     spr.rect = surf.get_rect()
@@ -567,7 +582,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             if not technique.validate_monster(self.session, target):
                 params = {"name": technique.name.upper()}
                 msg = T.format("cannot_use_tech_monster", params)
-                tools.open_dialog(self.client, [msg], dialog_speed="max")
+                open_dialog(self.client, [msg], dialog_speed="max")
                 return
 
             if (
@@ -576,7 +591,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             ):
                 params = {"name": technique.name.upper()}
                 msg = T.format("combat_target_itself", params)
-                tools.open_dialog(self.client, [msg], dialog_speed="max")
+                open_dialog(self.client, [msg], dialog_speed="max")
                 return
 
             # Pre-check the technique for validity
@@ -650,7 +665,7 @@ class CombatTargetMenuState(Menu[Monster]):
             raise KeyError(f"Sprite not found for entity: {monster.name}")
         item = MenuItem(self.surface, None, monster.name, monster)
         item.rect = sprite.rect.copy()
-        item.rect.inflate_ip(tools.scale(1), tools.scale(1))
+        item.rect.inflate_ip(scale(1), scale(1))
         return item
 
     def _create_menu(self) -> None:
@@ -660,7 +675,7 @@ class CombatTargetMenuState(Menu[Monster]):
         rect.bottomright = rect_screen.w, rect_screen.h
 
         self.window = GraphicBox(
-            graphics.load_and_scale(self.borders_filename),
+            load_and_scale(self.borders_filename),
             None,
             self.background_color,
         )
@@ -673,7 +688,7 @@ class CombatTargetMenuState(Menu[Monster]):
 
         self.surface = Surface(self.window.rect.size, SRCALPHA)
         self.border = GraphicBox(
-            graphics.load_and_scale(self.borders_filename), None, None
+            load_and_scale(self.borders_filename), None, None
         )
 
     def determine_target(self) -> None:
@@ -705,7 +720,7 @@ class CombatTargetMenuState(Menu[Monster]):
                 return
 
             selected.image = Surface(selected.rect.size, SRCALPHA)
-            BORDER_OFFSET = tools.scale(12)
+            BORDER_OFFSET = scale(12)
             selected.rect.center = (
                 pos.rect.centerx - BORDER_OFFSET,
                 pos.rect.centery - BORDER_OFFSET,

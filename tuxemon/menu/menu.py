@@ -11,9 +11,7 @@ from typing import (
     Any,
     ClassVar,
     Generic,
-    Optional,
     TypeVar,
-    Union,
 )
 
 import pygame_menu
@@ -92,9 +90,9 @@ class PygameMenuState(State):
         self,
         width: int = 1,
         height: int = 1,
-        theme: Optional[pygame_menu.Theme] = None,
-        sound_engine: Optional[pygame_menu.Sound] = None,
-        font_settings: Optional[FontSettings] = None,
+        theme: pygame_menu.Theme | None = None,
+        sound_engine: pygame_menu.Sound | None = None,
+        font_settings: FontSettings | None = None,
         **kwargs: Any,
     ) -> None:
         self.font_type = font_settings or FontSettings()
@@ -114,14 +112,14 @@ class PygameMenuState(State):
         self.state_controller = MenuController()
         self.open = False
         self.escape_key_exits = True
-        self.selected_widget: Optional[Widget] = None
+        self.selected_widget: Widget | None = None
 
     def _create_menu(
         self,
         width: int,
         height: int,
         theme: pygame_menu.Theme,
-        sound_engine: Optional[pygame_menu.Sound],
+        sound_engine: pygame_menu.Sound | None,
         **kwargs: Any,
     ) -> None:
         """
@@ -211,7 +209,7 @@ class PygameMenuState(State):
         """
         self.selected_widget = self.menu.get_selected_widget()
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         """
         Processes a player input event.
 
@@ -219,7 +217,7 @@ class PygameMenuState(State):
             event: The player input event.
 
         Returns:
-            Optional[PlayerInput]: The processed event or None if it's not handled.
+            PlayerInput | None: The processed event or None if it's not handled.
         """
         return self._input_handler.handle_event(event)
 
@@ -310,22 +308,12 @@ class PygameMenuState(State):
         theme.widget_alignment = locals.ALIGN_LEFT
         theme.title = False
 
-    def animate_open(self) -> Optional[Animation]:
-        """
-        Animates the menu opening.
-
-        Returns:
-            Optional[Animation]: The animation or None if not implemented.
-        """
+    def animate_open(self) -> Animation | None:
+        """Animates the menu opening."""
         return None
 
-    def animate_close(self) -> Optional[Animation]:
-        """
-        Animates the menu closing.
-
-        Returns:
-            Optional[Animation]: The animation or None if not implemented.
-        """
+    def animate_close(self) -> Animation | None:
+        """Animates the menu closing."""
         return None
 
 
@@ -358,7 +346,7 @@ class Menu(Generic[T], State):
     unavailable_color: ColorLike = UNAVAILABLE_COLOR
     unavailable_color_shop: ColorLike = UNAVAILABLE_COLOR_SHOP
     # File to load for image background
-    background_filename: Optional[str] = None
+    background_filename: str | None = None
     menu_select_sound_filename = CONFIG.menu_sound
     font_filename = CONFIG.locale.font_file
     borders_filename = CONFIG.menu_border
@@ -379,17 +367,17 @@ class Menu(Generic[T], State):
         self.state_controller = MenuController()
         self._show_contents = False
         self._needs_refresh = False
-        self._anchors: dict[str, Union[int, tuple[int, int]]] = {}
+        self._anchors: list[tuple[str, int | tuple[int, int]]] = []
         self.__dict__.update(kwargs)
 
         # holds sprites representing menu items
         self.create_new_menu_items_group()
 
         # callbacks
-        self.on_close_callback: Optional[Callable[[], None]] = None
-        self.on_menu_selection_change_callback: Optional[
-            Callable[[], None]
-        ] = None
+        self.on_close_callback: Callable[[], None] | None = None
+        self.on_menu_selection_change_callback: Callable[[], None] | None = (
+            None
+        )
 
         self.font_filename = fetch_asset("font", self.font_filename)
         self.font = self.set_font()  # load default font
@@ -446,7 +434,15 @@ class Menu(Generic[T], State):
         del self.menu_sprites
         del self.cursor_controller
 
-    def initialize_items(self) -> Optional[Iterable[MenuItem[T]]]:
+    def invalidate_layout(self, reason: str = "") -> None:
+        self._needs_refresh = True
+        logger.debug(reason)
+
+    def validate_layout(self, reason: str = "") -> None:
+        self._needs_refresh = False
+        logger.debug(reason)
+
+    def initialize_items(self) -> Iterable[MenuItem[T]] | None:
         """
         Advanced way to fill in menu items.
 
@@ -475,10 +471,11 @@ class Menu(Generic[T], State):
         Empty all items in the menu and re-add them.
         Only works if initialize_items is used.
         """
-        self._needs_refresh = True
+        self.invalidate_layout("items changed")
         items = self.initialize_items()
 
-        if not items:
+        if items is None:
+            # No change requested
             return
 
         self.menu_items.empty()
@@ -509,7 +506,7 @@ class Menu(Generic[T], State):
         self: Menu[Callable[[], object]],
         label: str,
         callback: Callable[[], object],
-        icon: Optional[Surface] = None,
+        icon: Surface | None = None,
     ) -> None:
         """
         Create a menu item and add it to the menu.
@@ -531,12 +528,12 @@ class Menu(Generic[T], State):
             menu_item: Menu item to add.
         """
         self.menu_items.add(menu_item)
-        self._needs_refresh = True
+        self.invalidate_layout("item added")
 
     def clear(self) -> None:
         """Clears all menu items."""
         self.menu_items.clear()
-        self._needs_refresh = True
+        self.invalidate_layout("items cleared")
 
     def fit_border(self) -> None:
         """Resize the window border to fit the contents of the menu."""
@@ -570,7 +567,7 @@ class Menu(Generic[T], State):
         self,
         text: str,
         bg: ColorLike = font_shadow_color,
-        fg: Optional[ColorLike] = None,
+        fg: ColorLike | None = None,
         offset: tuple[float, float] = (0.5, 0.5),
     ) -> Surface:
         """Renders text with a drop shadow using the configured text renderer."""
@@ -623,6 +620,8 @@ class Menu(Generic[T], State):
         if self.shrink_to_items:
             self.fit_border()
 
+        self.validate_layout("refresh layout")
+
     def draw(self, surface: Surface) -> None:
         """
         Draws the menu object to a pygame surface.
@@ -632,7 +631,6 @@ class Menu(Generic[T], State):
         """
         if self._needs_refresh:
             self.refresh_layout()
-            self._needs_refresh = False
 
         if not self.transparent:
             self.window.draw(surface, self.rect)
@@ -653,7 +651,7 @@ class Menu(Generic[T], State):
     def set_font(
         self,
         size: int = FONT_SIZE,
-        font: Optional[str] = None,
+        font: str | None = None,
         line_spacing: int = 10,
     ) -> Font:
         """
@@ -696,7 +694,7 @@ class Menu(Generic[T], State):
         """
         return self.window.calc_inner_rect(self.rect)
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         """
         Delegates player input event handling to the MenuInputHandler.
 
@@ -710,6 +708,9 @@ class Menu(Generic[T], State):
         """
         return self._input_handler.handle_event(event)
 
+    def set_selected_index(self, index: int) -> None:
+        self.selected_index = index
+
     def change_selection(self, index: int, animate: bool = True) -> None:
         """
         Force the menu to be evaluated.
@@ -717,7 +718,7 @@ class Menu(Generic[T], State):
         Move also cursor and trigger focus changes.
         """
         previous = self.get_selected_item()
-        self.selected_index = index
+        self.set_selected_index(index)
         self.menu_select_sound.play()
         selected = self.get_selected_item()
         self.cursor_controller.update_selection_focus(
@@ -725,7 +726,7 @@ class Menu(Generic[T], State):
         )
         self.on_menu_selection_change()
 
-    def search_items(self, target_object: Any) -> Optional[MenuItem[T]]:
+    def search_items(self, target_object: Any) -> MenuItem[T] | None:
         """
         Non-optimised search through menu_items for a particular thing.
 
@@ -744,7 +745,7 @@ class Menu(Generic[T], State):
             None,
         )
 
-    def get_selected_item(self) -> Optional[MenuItem[T]]:
+    def get_selected_item(self) -> MenuItem[T] | None:
         """
         Get the Menu Item that is currently selected.
 
@@ -799,9 +800,7 @@ class Menu(Generic[T], State):
             else:
                 self.client.pop_state()
 
-    def anchor(
-        self, attribute: str, value: Union[int, tuple[int, int]]
-    ) -> None:
+    def anchor(self, attribute: str, value: int | tuple[int, int]) -> None:
         """
         Set an anchor for the menu window.
 
@@ -820,14 +819,13 @@ class Menu(Generic[T], State):
             attribute: Rect attribute to specify.
             value: Value of the attribute.
         """
-        if value is None:
-            del self._anchors[attribute]
-        else:
-            self._anchors[attribute] = value
+        self._anchors = [(a, v) for (a, v) in self._anchors if a != attribute]
+        if value is not None:
+            self._anchors.append((attribute, value))
 
     def position_rect(self) -> None:
         """Reposition rect taking in account the anchors"""
-        for attribute, value in self._anchors.items():
+        for attribute, value in self._anchors:
             setattr(self.rect, attribute, value)
 
     # ============================================================================
@@ -901,7 +899,7 @@ class Menu(Generic[T], State):
         if self.on_menu_selection_change_callback:
             self.on_menu_selection_change_callback()
 
-    def animate_open(self) -> Optional[Animation]:
+    def animate_open(self) -> Animation | None:
         """
         Called when menu is going to open.
 
@@ -917,7 +915,7 @@ class Menu(Generic[T], State):
         """
         return None
 
-    def animate_close(self) -> Optional[Animation]:
+    def animate_close(self) -> Animation | None:
         """
         Called when menu is going to open.
 
@@ -965,7 +963,7 @@ class PopUpMenu(Menu[T]):
 
         # if this statement were removed, then the menu would
         # refresh and the size animation would be lost
-        self._needs_refresh = False
+        self.validate_layout("animate_open")
 
         # create animation to open window with
         ani = self.animate(

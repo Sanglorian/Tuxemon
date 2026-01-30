@@ -49,10 +49,10 @@ class EntityFacing(str, Enum):
 
 
 DIRECTION_TO_FACING: dict[Direction, EntityFacing] = {
-    Direction.up: EntityFacing.back,
-    Direction.down: EntityFacing.front,
-    Direction.left: EntityFacing.left,
-    Direction.right: EntityFacing.right,
+    Direction.UP: EntityFacing.back,
+    Direction.DOWN: EntityFacing.front,
+    Direction.LEFT: EntityFacing.left,
+    Direction.RIGHT: EntityFacing.right,
 }
 
 

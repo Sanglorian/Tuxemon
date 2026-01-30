@@ -25,16 +25,16 @@ RectTypeVar = TypeVar("RectTypeVar", bound=ReadOnlyRect)
 
 # direction => vector
 dirs3: Mapping[Direction, Vector3] = {
-    Direction.up: Vector3(0, -1, 0),
-    Direction.down: Vector3(0, 1, 0),
-    Direction.left: Vector3(-1, 0, 0),
-    Direction.right: Vector3(1, 0, 0),
+    Direction.UP: Vector3(0, -1, 0),
+    Direction.DOWN: Vector3(0, 1, 0),
+    Direction.LEFT: Vector3(-1, 0, 0),
+    Direction.RIGHT: Vector3(1, 0, 0),
 }
 dirs2: Mapping[Direction, Vector2] = {
-    Direction.up: Vector2(0, -1),
-    Direction.down: Vector2(0, 1),
-    Direction.left: Vector2(-1, 0),
-    Direction.right: Vector2(1, 0),
+    Direction.UP: Vector2(0, -1),
+    Direction.DOWN: Vector2(0, 1),
+    Direction.LEFT: Vector2(-1, 0),
+    Direction.RIGHT: Vector2(1, 0),
 }
 # just the first letter of the direction => vector
 short_dirs = {d[0]: dirs2[d] for d in dirs2}
@@ -237,9 +237,9 @@ def get_direction(
     look_on_y_axis = abs(y_offset) >= abs(x_offset)
 
     if look_on_y_axis:
-        return Direction.up if y_offset > 0 else Direction.down
+        return Direction.UP if y_offset > 0 else Direction.DOWN
     else:
-        return Direction.left if x_offset > 0 else Direction.right
+        return Direction.LEFT if x_offset > 0 else Direction.RIGHT
 
 
 def pairs(direction: Direction) -> Direction:
@@ -253,10 +253,10 @@ def pairs(direction: Direction) -> Direction:
         Complimentary direction.
     """
     opposites = {
-        Direction.up: Direction.down,
-        Direction.down: Direction.up,
-        Direction.left: Direction.right,
-        Direction.right: Direction.left,
+        Direction.UP: Direction.DOWN,
+        Direction.DOWN: Direction.UP,
+        Direction.LEFT: Direction.RIGHT,
+        Direction.RIGHT: Direction.LEFT,
     }
     opposite = opposites.get(direction)
     if opposite is None:
@@ -404,9 +404,9 @@ def orientation_by_angle(angle: float) -> Orientation:
         Whether the orientation is horizontal or vertical.
     """
     if angle in {0.0, 2 * pi}:
-        return Orientation.horizontal
+        return Orientation.HORIZONTAL
     elif angle in {pi / 2, 3 * pi / 2}:
-        return Orientation.vertical
+        return Orientation.VERTICAL
     else:
         raise ValueError("A collision line must be aligned to an axis")
 

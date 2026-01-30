@@ -213,7 +213,7 @@ def test_random_monster_evolution(game_env):
     engine.execute_action(
         "random_monster", [5, None, None, None, None, "basic"]
     )
-    assert player.monsters[0].stage == EvolutionStage.basic
+    assert player.monsters[0].stage == EvolutionStage.BASIC
 
 
 def test_give_experience_no_change(game_env):

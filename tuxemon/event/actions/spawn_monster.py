@@ -95,7 +95,7 @@ class SpawnMonsterAction(EventAction):
             basic_forms = [
                 element.slug
                 for element in seed.history
-                if element.stage == EvolutionStage.basic
+                if element.stage == EvolutionStage.BASIC
             ]
             if basic_forms:
                 seed_slug = random.choice(basic_forms)
@@ -151,9 +151,9 @@ def _determine_seed(mother: Monster, father: Monster) -> Monster:
     """
 
     stage_order: dict[EvolutionStage, int] = {
-        EvolutionStage.stage2: 3,
-        EvolutionStage.stage1: 2,
-        EvolutionStage.standalone: 1,
+        EvolutionStage.STAGE2: 3,
+        EvolutionStage.STAGE1: 2,
+        EvolutionStage.STANDALONE: 1,
     }
     stage_mother = stage_order.get(mother.stage, 0)
     stage_father = stage_order.get(father.stage, 0)

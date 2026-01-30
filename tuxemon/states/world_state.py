@@ -208,13 +208,13 @@ class WorldState(State):
         else:
             for direction in collisions:
                 if self.player.facing == direction:
-                    if direction == Direction.up:
+                    if direction == Direction.UP:
                         tile = (player_tile_pos[0], player_tile_pos[1] - 1)
-                    elif direction == Direction.down:
+                    elif direction == Direction.DOWN:
                         tile = (player_tile_pos[0], player_tile_pos[1] + 1)
-                    elif direction == Direction.left:
+                    elif direction == Direction.LEFT:
                         tile = (player_tile_pos[0] - 1, player_tile_pos[1])
-                    elif direction == Direction.right:
+                    elif direction == Direction.RIGHT:
                         tile = (player_tile_pos[0] + 1, player_tile_pos[1])
                     for npc in self.client.npc_manager.npcs:
                         tile_pos = (

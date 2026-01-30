@@ -39,42 +39,42 @@ logger = logging.getLogger(__name__)
 
 
 class Direction(str, Enum):
-    up = "up"
-    down = "down"
-    left = "left"
-    right = "right"
+    UP = "up"
+    DOWN = "down"
+    LEFT = "left"
+    RIGHT = "right"
 
 
 class Orientation(str, Enum):
-    horizontal = "horizontal"
-    vertical = "vertical"
+    HORIZONTAL = "horizontal"
+    VERTICAL = "vertical"
 
 
 class ItemSort(str, Enum):
-    potion = "potion"
-    utility = "utility"
-    quest = "quest"
+    POTION = "potion"
+    UTILITY = "utility"
+    QUEST = "quest"
 
 
 class PlagueType(str, Enum):
-    inoculated = "inoculated"
-    infected = "infected"
-    carrier = "carrier"
-    recovered = "recovered"
+    INOCULATED = "inoculated"
+    INFECTED = "infected"
+    CARRIER = "carrier"
+    RECOVERED = "recovered"
 
 
 class GenderType(str, Enum):
-    neuter = "neuter"
-    male = "male"
-    female = "female"
+    NEUTER = "neuter"
+    MALE = "male"
+    FEMALE = "female"
 
 
 class SkinSprite(str, Enum):
-    light = "light"
-    tanned = "tanned"
-    dark = "dark"
-    albino = "albino"
-    orc = "orc"
+    LIGHT = "light"
+    TANNED = "tanned"
+    DARK = "dark"
+    ALBINO = "albino"
+    ORC = "orc"
 
 
 class ItemRarity(str, Enum):
@@ -86,26 +86,26 @@ class ItemRarity(str, Enum):
 
 
 class ItemCategory(str, Enum):
-    none = "none"
-    badge = "badge"
-    elements = "elements"
-    fossil = "fossil"
-    morph = "morph"
-    potion = "potion"
-    technique = "technique"
-    phone = "phone"
-    fish = "fish"
-    destroy = "destroy"
-    capture = "capture"
-    stats = "stats"
-    food = "food"
-    doll = "doll"
+    NONE = "none"
+    BADGE = "badge"
+    ELEMENTS = "elements"
+    FOSSIL = "fossil"
+    MORPH = "morph"
+    POTION = "potion"
+    TECHNIQUE = "technique"
+    PHONE = "phone"
+    FISH = "fish"
+    DESTROY = "destroy"
+    CAPTURE = "capture"
+    STATS = "stats"
+    FOOD = "food"
+    DOLL = "doll"
 
 
 class OutputBattle(str, Enum):
-    won = "won"
-    lost = "lost"
-    draw = "draw"
+    WON = "won"
+    LOST = "lost"
+    DRAW = "draw"
 
 
 class SeenStatus(str, Enum):
@@ -115,19 +115,19 @@ class SeenStatus(str, Enum):
 
 
 class StatType(str, Enum):
-    armour = "armour"
-    dodge = "dodge"
-    hp = "hp"
-    melee = "melee"
-    ranged = "ranged"
-    speed = "speed"
+    ARMOUR = "armour"
+    DODGE = "dodge"
+    HP = "hp"
+    MELEE = "melee"
+    RANGED = "ranged"
+    SPEED = "speed"
 
 
 class EvolutionStage(str, Enum):
-    standalone = "standalone"
-    basic = "basic"
-    stage1 = "stage1"
-    stage2 = "stage2"
+    STANDALONE = "standalone"
+    BASIC = "basic"
+    STAGE1 = "stage1"
+    STAGE2 = "stage2"
 
 
 class MissionStatus(str, Enum):
@@ -138,27 +138,27 @@ class MissionStatus(str, Enum):
 
 
 class MusicStatus(str, Enum):
-    playing = "playing"
-    paused = "paused"
-    stopped = "stopped"
+    PLAYING = "playing"
+    PAUSED = "paused"
+    STOPPED = "stopped"
 
 
 class Comparison(str, Enum):
-    less_than = "less_than"
-    less_or_equal = "less_or_equal"
-    greater_than = "greater_than"
-    greater_or_equal = "greater_or_equal"
-    equals = "equals"
-    not_equals = "not_equals"
+    LESS_THAN = "less_than"
+    LESS_OR_EQUAL = "less_or_equal"
+    GREATER_THAN = "greater_than"
+    GREATER_OR_EQUAL = "greater_or_equal"
+    EQUALS = "equals"
+    NOT_EQUALS = "not_equals"
 
 
 class TargetType(str, Enum):
-    enemy_monster = "enemy_monster"
-    own_monster = "own_monster"
-    enemy_team = "enemy_team"
-    own_team = "own_team"
-    enemy_trainer = "enemy_trainer"
-    own_trainer = "own_trainer"
+    ENEMY_MONSTER = "enemy_monster"
+    OWN_MONSTER = "own_monster"
+    ENEMY_TEAM = "enemy_team"
+    OWN_TEAM = "own_team"
+    ENEMY_TRAINER = "enemy_trainer"
+    OWN_TRAINER = "own_trainer"
 
 
 class Temperature(str, Enum):

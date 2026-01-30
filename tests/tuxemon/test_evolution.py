@@ -223,14 +223,14 @@ def test_taste_conditions(
     [
         (
             {"hp": 30, "melee": 20},
-            Comparison.greater_or_equal,
-            StatType.melee,
+            Comparison.GREATER_OR_EQUAL,
+            StatType.MELEE,
             True,
         ),
         (
             {"speed": 5, "armour": 10},
-            Comparison.greater_or_equal,
-            StatType.armour,
+            Comparison.GREATER_OR_EQUAL,
+            StatType.ARMOUR,
             False,
         ),
     ],
@@ -309,7 +309,7 @@ def test_bond_conditions(setup_evolution, bond_value, evo_value, expected):
     evo = MonsterEvolutionItemModel(
         monster_slug="rockat",
         bond=BondComparison(
-            comparison=Comparison.greater_or_equal, value=evo_value
+            comparison=Comparison.GREATER_OR_EQUAL, value=evo_value
         ),
     )
     context = {"map_inside": True}
@@ -445,13 +445,13 @@ def test_party_alignment_conditions(
     "party_genders,evo_genders,expected",
     [
         (
-            [GenderType.male, GenderType.male],
-            {GenderType.male: 1},
+            [GenderType.MALE, GenderType.MALE],
+            {GenderType.MALE: 1},
             True,
         ),  # match
         (
-            [GenderType.female, GenderType.female],
-            {GenderType.male: 1},
+            [GenderType.FEMALE, GenderType.FEMALE],
+            {GenderType.MALE: 1},
             False,
         ),  # mismatch
     ],

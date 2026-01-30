@@ -61,7 +61,7 @@ class Item:
         self.modifiers: ModifiersHandler = ModifiersHandler()
         # The path to the sprite to load.
         self.sprite: str = ""
-        self.category: ItemCategory = ItemCategory.none
+        self.category: ItemCategory = ItemCategory.NONE
         self.surface: Surface | None = None
         self.surface_size_original: tuple[int, int] = (0, 0)
 

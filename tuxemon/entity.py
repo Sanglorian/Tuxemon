@@ -78,7 +78,7 @@ class Mover:
     def __init__(
         self,
         body: Body,
-        facing: Direction = Direction.down,
+        facing: Direction = Direction.DOWN,
         base_moverate: float = CONFIG.player_walkrate,
         moverate_modifier: float = 1.0,
     ) -> None:

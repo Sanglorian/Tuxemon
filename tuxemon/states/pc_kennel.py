@@ -131,18 +131,10 @@ class MonsterActionHandler:
             kwargs={"monster": mon, "source": self.source_state},
         )
 
-    def item(self, mon: Monster) -> None:
-        self._clear_states("ChoiceState")
-        self.client.state_manager.push_state(
-            "MonsterItemState",
-            kwargs={"monster": mon, "source": self.source_state},
-        )
-
     def description_dialog(self, mon: Monster) -> None:
         actions = {
             "info": partial(self.info, mon),
             "tech": partial(self.tech, mon),
-            "item": partial(self.item, mon),
         }
 
         options = create_choice_options(actions)

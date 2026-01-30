@@ -445,13 +445,13 @@ def test_party_alignment_conditions(
     "party_genders,evo_genders,expected",
     [
         (
-            [GenderType.male, GenderType.male],
-            {GenderType.male: 1},
+            [GenderType.MALE, GenderType.MALE],
+            {GenderType.MALE: 1},
             True,
         ),  # match
         (
-            [GenderType.female, GenderType.female],
-            {GenderType.male: 1},
+            [GenderType.FEMALE, GenderType.FEMALE],
+            {GenderType.MALE: 1},
             False,
         ),  # mismatch
     ],

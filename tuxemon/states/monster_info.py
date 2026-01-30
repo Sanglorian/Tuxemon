@@ -191,16 +191,9 @@ class MonsterInfoState(PygameMenuState):
         )
         exp_label.translate(fxw(79 / 256), fxh(78.8 / 144))
 
-        # gender
-        gender_symbol = ""
-        if monster.gender == "male":
-            gender_symbol = "\u2642"  # ♂
-        elif monster.gender == "female":
-            gender_symbol = "\u2640"  # ♀
-
-        if gender_symbol:
+        if monster.gender_symbol:
             lab_gender: Any = menu.add.label(
-                title=gender_symbol,
+                title=monster.gender_symbol,
                 label_id="gender",
                 font_size=self.font_type.biggest,
                 align=locals.ALIGN_LEFT,

@@ -64,9 +64,9 @@ class PlagueType(str, Enum):
 
 
 class GenderType(str, Enum):
-    neuter = "neuter"
-    male = "male"
-    female = "female"
+    NEUTER = "neuter"
+    MALE = "male"
+    FEMALE = "female"
 
 
 class SkinSprite(str, Enum):

@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.combat.combat_context import CombatType
-from tuxemon.db import BattleMusicModel, GenderType, OutputBattle
+from tuxemon.db import BattleMusicModel, OutputBattle
 from tuxemon.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.technique.technique import Technique
@@ -113,7 +113,7 @@ def battlefield(session: Session, monster: Monster) -> None:
 
 def get_battle_outcome_music(
     session: Session, default_music: BattleMusicModel, monster: Monster
-) -> Optional[tuple[str, float]]:
+) -> tuple[str, float] | None:
     """
     Return the appropriate music track based on outcome and participants.
     Player-centric: only trigger music if a player is involved.
@@ -345,17 +345,11 @@ def build_hud_text(
         quantity = item.quantity if item else 0
         return {"line1": f"{ball}: {quantity}", "line2": ""}
 
-    icon = ""
-    if monster.gender == GenderType.male:
-        icon = "♂"
-    elif monster.gender == GenderType.female:
-        icon = "♀"
-
     symbol = ""
     if not is_trainer and is_status and not is_right:
         symbol = "◉"
 
     return {
-        "line1": f"{monster.name}{icon} Lv.{monster.level}{symbol}",
+        "line1": f"{monster.name}{monster.gender_symbol} Lv.{monster.level}{symbol}",
         "line2": "",
     }

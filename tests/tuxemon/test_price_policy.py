@@ -120,3 +120,23 @@ def test_sell_monster_with_policy(
     final, change = policy.apply_resell_modifiers(base, qty, mock_monster.slug)
     assert final == expected_final
     assert change == expected_change
+
+
+def test_boundary_conditions(policy):
+    # Test 1: Free Item (Base 0)
+    # (0 * 1.1 tax) * 0.8 discount + 5 fee = 5
+    final_free, _ = policy.apply_modifiers(0, 1, "free-item")
+    assert final_free == 5
+
+    # Test 2: 100% Discount (Price should only be the fee)
+    data_free = PricePolicyData(
+        discount=1.0,
+        tax=0.1,
+        fee=5,
+        resell_bonus=0,
+        resell_tax=0,
+        seller_fee=0,
+    )
+    policy_free = StaticYamlPolicy(data_free)
+    final_discounted, _ = policy_free.apply_modifiers(100, 1, "gift")
+    assert final_discounted == 5

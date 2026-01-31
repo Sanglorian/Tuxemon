@@ -6,7 +6,7 @@ import logging
 from dataclasses import asdict, dataclass
 from typing import Any, Optional
 
-from tuxemon.item.item import INFINITE_ITEMS
+from tuxemon.item.stock import INFINITE_ITEMS
 
 logger = logging.getLogger(__name__)
 

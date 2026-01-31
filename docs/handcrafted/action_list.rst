@@ -21,11 +21,13 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.camera_position.CameraPositionAction
 .. autoscriptinfoclass:: tuxemon.event.actions.camera_shake.CameraShakeAction
 .. autoscriptinfoclass:: tuxemon.event.actions.change_bg.ChangeBgAction
+.. autoscriptinfoclass:: tuxemon.event.actions.change_bg_char.ChangeBgNpcAction
 .. autoscriptinfoclass:: tuxemon.event.actions.change_bg_monster.ChangeBgMonsterAction
 .. autoscriptinfoclass:: tuxemon.event.actions.change_faction_membership.ChangeFactionMembershipAction
 .. autoscriptinfoclass:: tuxemon.event.actions.change_state.ChangeStateAction
 .. autoscriptinfoclass:: tuxemon.event.actions.change_taste.ChangeTasteAction
 .. autoscriptinfoclass:: tuxemon.event.actions.char_face.CharFaceAction
+.. autoscriptinfoclass:: tuxemon.event.actions.char_face_player.CharFacePlayerAction
 .. autoscriptinfoclass:: tuxemon.event.actions.char_look.CharLookAction
 .. autoscriptinfoclass:: tuxemon.event.actions.char_move.CharMoveAction
 .. autoscriptinfoclass:: tuxemon.event.actions.char_patrol.CharPatrolAction
@@ -127,6 +129,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.set_cipher.SetCipherAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_economy.SetEconomyAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_environment.SetEnvironmentAction
+.. autoscriptinfoclass:: tuxemon.event.actions.set_facing_mode.SetFacingModeAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_kennel_visible.SetKennelVisibleAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_layer.SetLayerAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_mission.SetMissionAction
@@ -139,7 +142,6 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.set_monster_status.SetMonsterStatusAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_party_attribute.SetPartyAttributeAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_party_status.SetPartyStatusAction
-.. autoscriptinfoclass:: tuxemon.event.actions.set_player_name.SetPlayerNameAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_price_policy.SetPricePolicyAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_random_variable.SetRandomVariableAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_routing_policy.SetRoutingPolicyAction

@@ -49,7 +49,7 @@ events:
     y: 2
   Spyder Intro:
     actions:
-    - change_bg gradient_blue,ceo,template
+    - change_bg_char gradient_blue,spyder_omnichannel_beaverbrook
     - translated_dialog spyder_intro00
     - change_bg gradient_blue,spyder_tumble,image
     - translated_dialog spyder_intro01

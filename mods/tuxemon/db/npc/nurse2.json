@@ -5,7 +5,7 @@
   "audio": {},
   "template": {
     "sprite_name": "nurse",
-    "combat_front": "nurse",
+    "combat_sheet": "nurse",
     "slug": "heroine"
   }
 }

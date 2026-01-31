@@ -16,7 +16,7 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 
 from tuxemon.camera.camera import project
-from tuxemon.db import Direction
+from tuxemon.db import Direction, FacingMode
 from tuxemon.graphics import (
     ColorLike,
     apply_cinema_bars,
@@ -135,9 +135,17 @@ class SpriteController:
             self.sprite_renderer.standing,
         )
 
-    def play_animation(self) -> None:
+    def play_animation(self, move_dir: Direction) -> None:
         """Play the sprite animation."""
-        self.sprite_renderer.play()
+        if self.npc.facing_mode != FacingMode.FOLLOW_MOVEMENT:
+            facing = self.npc.facing.value
+            ani_key = SpriteRenderer.ANIMATION_MAPPING["walking"][facing]
+        else:
+            ani_key = SpriteRenderer.ANIMATION_MAPPING["walking"][
+                move_dir.value
+            ]
+
+        self.sprite_renderer.play(ani_key)
 
     def stop_animation(self) -> None:
         """Stop the sprite animation."""
@@ -326,8 +334,17 @@ class SpriteRenderer:
             raise ValueError(f"Facing '{facing}' not found.")
         return sprites[facing]
 
-    def play(self) -> None:
-        """Play all sprite animations."""
+    def play(self, ani_key: str | None = None) -> None:
+        """Play the sprite animation.
+
+        If ani_key is provided, switch to that animation first.
+        Otherwise, just resume whatever is currently active.
+        """
+        if ani_key is not None:
+            animation = self.sprite[ani_key]
+            self.surface_animations.clear()
+            self.surface_animations.add(animation)
+
         self.surface_animations.play()
 
     def stop(self) -> None:

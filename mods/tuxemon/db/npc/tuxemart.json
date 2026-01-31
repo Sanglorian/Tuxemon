@@ -5,7 +5,7 @@
   "audio": {},
   "template": {
     "sprite_name": "shopassistant",
-    "combat_front": "adventurer",
+    "combat_sheet": "adventurer",
     "slug": "shopassistant"
   }
 }

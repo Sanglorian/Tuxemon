@@ -245,8 +245,8 @@ def _determine_tastes(mother: Monster, father: Monster) -> tuple[str, str]:
     warm_slug = random.choice([mother.taste_warm, father.taste_warm])
     cold_slug = random.choice([mother.taste_cold, father.taste_cold])
 
-    taste_warm = Taste.get_taste(warm_slug)
-    taste_cold = Taste.get_taste(cold_slug)
+    taste_warm = Taste.get(warm_slug)
+    taste_cold = Taste.get(cold_slug)
 
     if not taste_warm:
         raise ValueError(

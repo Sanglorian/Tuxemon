@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_blue",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -35,7 +35,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_green",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -55,7 +55,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_red",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -75,7 +75,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_yellow",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -95,7 +95,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -115,7 +115,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_blue",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -135,7 +135,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_green",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -155,7 +155,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_red",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -175,7 +175,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_yellow",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -195,7 +195,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -206,7 +206,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_fiery",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -217,7 +217,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight_green",
-      "combat_front": "enforcer_agent",
+      "combat_sheet": "enforcer_agent",
       "slug": "enforcer_agent"
     }
   },
@@ -228,7 +228,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   },
@@ -239,7 +239,7 @@
     "audio": {},
     "template": {
       "sprite_name": "landrace",
-      "combat_front": "sludgehog",
+      "combat_sheet": "sludgehog",
       "slug": "noclass"
     }
   }

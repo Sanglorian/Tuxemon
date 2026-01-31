@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 from tuxemon.database.runtime import db
-from tuxemon.element import Element
 from tuxemon.locale import T
 
 if TYPE_CHECKING:
@@ -67,9 +66,8 @@ class SwitchEffect(CoreEffect):
         hit = session.client.combat_session.get_tech_hit(user)
 
         tech.hit = tech.accuracy >= hit
-
         if not tech.hit:
-            return TechEffectResult(name=tech.name, success=tech.hit)
+            return TechEffectResult(name=tech.name, success=False)
 
         objectives = self.objectives.split(":")
         monsters = session.client.combat_session.get_target_monsters(
@@ -77,33 +75,33 @@ class SwitchEffect(CoreEffect):
         )
 
         if self.element == "random":
-            new_type = Element(random.choice(elements))
+            new_slug = random.choice(elements)
         else:
-            new_type = Element(self.element)
+            new_slug = self.element
 
         messages = []
         for monster in monsters:
-            if monster.has_type(new_type.slug):
-                messages.append(get_failure_message(monster, new_type))
+            if monster.has_type(new_slug):
+                messages.append(get_failure_message(monster, new_slug))
             else:
-                monster.types.set_types([new_type])
-                messages.append(get_extra_message(monster, new_type))
+                monster.types.set_types([new_slug])
+                messages.append(get_extra_message(monster, new_slug))
 
         extra = ["\n".join(messages)]
-        return TechEffectResult(name=tech.name, success=tech.hit, extras=extra)
+        return TechEffectResult(name=tech.name, success=True, extras=extra)
 
 
-def get_extra_message(monster: Monster, new_type: Element) -> str:
+def get_extra_message(monster: Monster, slug: str) -> str:
     params = {
         "target": monster.name.upper(),
-        "types": T.translate(new_type.slug).upper(),
+        "types": T.translate(slug).upper(),
     }
     return T.format("combat_state_switch", params)
 
 
-def get_failure_message(monster: Monster, new_type: Element) -> str:
+def get_failure_message(monster: Monster, slug: str) -> str:
     params = {
         "target": monster.name.upper(),
-        "type": T.translate(new_type.slug).upper(),
+        "type": T.translate(slug).upper(),
     }
     return T.format("combat_state_switch_fail", params)

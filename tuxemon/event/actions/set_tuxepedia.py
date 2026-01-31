@@ -52,5 +52,10 @@ class SetTuxepediaAction(EventAction):
             raise ValueError(f"{self.monster_slug} isn't a monster")
 
         monster_name = T.translate(self.monster_slug)
-        character.tuxepedia.add_entry(self.monster_slug, label)
+
+        if label == SeenStatus.SEEN:
+            character.tuxepedia.register_seen(self.monster_slug)
+        elif label == SeenStatus.CAUGHT:
+            character.tuxepedia.register_caught(self.monster_slug)
+
         logger.info(f"Tuxepedia: {monster_name} is registered as {label}!")

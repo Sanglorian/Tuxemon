@@ -246,7 +246,7 @@ events:
     - pathfind spyder_dante,7,7
     - char_face spyder_dante,left
     - translated_dialog spyder_intro_question_name
-    - rename_player random
+    - rename_player player,random
     - set_variable choice_phase:yes
     - unlock_controls
     conditions:

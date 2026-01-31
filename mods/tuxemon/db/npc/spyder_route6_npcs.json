@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist_brown",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   },
@@ -35,7 +35,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -55,7 +55,7 @@
     "audio": {},
     "template": {
       "sprite_name": "picnicker",
-      "combat_front": "picnicker",
+      "combat_sheet": "picnicker",
       "slug": "picnicker"
     }
   },
@@ -75,7 +75,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_fiery",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -95,7 +95,7 @@
     "audio": {},
     "template": {
       "sprite_name": "magician_grey",
-      "combat_front": "magician",
+      "combat_sheet": "magician",
       "slug": "magician"
     }
   },
@@ -115,7 +115,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_yellow",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -135,7 +135,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "enforcer_rookie"
     }
   },
@@ -155,7 +155,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_brown",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -175,7 +175,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor_blue",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   }

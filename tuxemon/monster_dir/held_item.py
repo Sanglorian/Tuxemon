@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from typing import Any, Optional
+from typing import Any
 
 from tuxemon.item.item import Item
 
@@ -12,11 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 class MonsterItemHandler:
-    def __init__(self, item: Optional[Item] = None):
+    def __init__(self, item: Item | None = None):
         self._item = item
 
     @property
-    def held_item(self) -> Optional[Item]:
+    def held_item(self) -> Item | None:
         return self._item
 
     def set_item(self, item: Item) -> bool:
@@ -27,7 +27,7 @@ class MonsterItemHandler:
             logger.error(f"{item.name} can't be held")
             return False
 
-    def take_item(self) -> Optional[Item]:
+    def take_item(self) -> Item | None:
         item = self._item
         self._item = None
         return item
@@ -41,7 +41,5 @@ class MonsterItemHandler:
     def encode_item(self) -> Mapping[str, Any]:
         return self._item.get_state() if self._item is not None else {}
 
-    def decode_item(
-        self, json_data: Optional[Mapping[str, Any]]
-    ) -> Optional[Item]:
-        return Item(save_data=json_data) if json_data is not None else None
+    def decode_item(self, json_data: Mapping[str, Any] | None) -> Item | None:
+        return Item.from_save(json_data) if json_data is not None else None

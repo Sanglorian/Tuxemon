@@ -4338,8 +4338,8 @@ msgstr "From ${{map_name}} to ${{east}}"
 msgid "menu_alphabet"
 msgstr "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890.-!"
 
-msgid "dont_care"
-msgstr "RANDOM"
+msgid "random"
+msgstr "Random"
 
 # Monster Menu notifications
 msgid "monster_menu_info"
@@ -9174,6 +9174,53 @@ msgstr "Woodland"
 
 msgid "terrain_other"
 msgstr "Other"
+
+# Date Picker
+msgid "select_month"
+msgstr "Select Month"
+
+msgid "select_day"
+msgstr "Select Day"
+
+msgid "back_months"
+msgstr "Back Months"
+
+# Months
+msgid "month_jan"
+msgstr "January"
+
+msgid "month_feb"
+msgstr "February"
+
+msgid "month_mar"
+msgstr "March"
+
+msgid "month_apr"
+msgstr "April"
+
+msgid "month_may"
+msgstr "May"
+
+msgid "month_jun"
+msgstr "June"
+
+msgid "month_jul"
+msgstr "July"
+
+msgid "month_aug"
+msgstr "August"
+
+msgid "month_sep"
+msgstr "September"
+
+msgid "month_oct"
+msgstr "October"
+
+msgid "month_nov"
+msgstr "November"
+
+msgid "month_dec"
+msgstr "December"
 
 # Weathers
 msgid "weather_misty"

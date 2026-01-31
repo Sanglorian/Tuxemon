@@ -126,6 +126,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.set_bill.SetBillAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_bubble.SetBubbleAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_char_attribute.SetCharAttributeAction
+.. autoscriptinfoclass:: tuxemon.event.actions.set_char_birthday.SetPlayerBirthdayAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_cipher.SetCipherAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_economy.SetEconomyAction
 .. autoscriptinfoclass:: tuxemon.event.actions.set_environment.SetEnvironmentAction

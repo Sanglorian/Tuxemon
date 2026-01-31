@@ -114,6 +114,7 @@ class NPC(Entity):
         self.steps: float = 0.0
         self.dialogue: DialogueProfile | None = None
         self.sprite_controller = SpriteController(self)
+        self.birthdate: tuple[int, int] | None = None
 
         # PathController manages all path/pathfinding state & logic.
         self.path_controller = PathController(

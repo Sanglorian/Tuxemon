@@ -351,7 +351,7 @@ class InputMenu(Menu[InputMenuObj]):
 
         if self.random:
             yield MenuItem(
-                self.shadow_text(T.translate("dont_care")),
+                self.shadow_text(T.translate("random").upper()),
                 None,
                 None,
                 InputMenuObj(self.dont_care),

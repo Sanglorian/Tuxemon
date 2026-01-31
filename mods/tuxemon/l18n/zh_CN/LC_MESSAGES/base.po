@@ -7014,7 +7014,7 @@ msgstr "白人男性"
 msgid "black_male"
 msgstr "黑人男性"
 
-msgid "dont_care"
+msgid "random"
 msgstr "随机"
 
 msgid "spyder_papertown_rival"

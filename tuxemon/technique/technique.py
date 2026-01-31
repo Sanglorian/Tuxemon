@@ -16,19 +16,12 @@ from tuxemon.core.core_processor import (
 )
 from tuxemon.database.runtime import db
 from tuxemon.db import (
-    MenuAction,
-    Range,
-    SoundProperties,
-    StatModel,
-    TechBehaviors,
     TechniqueModel,
-    VisualProperties,
 )
 from tuxemon.element import ElementTypesHandler
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
 from tuxemon.monster_dir.stats import BasicStats
-from tuxemon.surfanim import FlipAxes
 from tuxemon.technique.cooldown import Cooldown
 from tuxemon.technique.stats import (
     TechniqueBaseStats,
@@ -38,17 +31,9 @@ from tuxemon.technique.stats import (
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
-    from tuxemon.plugin import PluginObject
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
-
-SIMPLE_PERSISTANCE_ATTRIBUTES = (
-    "slug",
-    "attempts",
-    "successes",
-    "failures",
-)
 
 
 class Technique:
@@ -56,61 +41,101 @@ class Technique:
     Particular skill that tuxemon monsters can use in battle.
     """
 
-    def __init__(self, save_data: Mapping[str, Any] | None = None) -> None:
-        save_data = save_data or {}
+    def __init__(
+        self,
+        slug: str,
+        db_data: TechniqueModel,
+        instance_id: UUID | None = None,
+        *,
+        custom_boosts: TechniqueCustomBoosts | None = None,
+        attempts: int = 0,
+        successes: int = 0,
+        failures: int = 0,
+    ) -> None:
+        self.slug = slug
+        self.instance_id = instance_id or uuid4()
 
-        self.instance_id: UUID = uuid4()
-        self.tech_id: int = 0
+        self.tech_id = db_data.tech_id
+        self.sort = db_data.sort
+        self.tags = db_data.tags
+        self.range = db_data.range
+        self.behaviors = db_data.behaviors
+        self.stat_modifiers = db_data.stat_modifiers
+        self.target = db_data.target.model_dump()
+        self.menu_actions_data = db_data.menu_actions
 
-        # Technique Stats
-        # Base: Immutable stats from DB (source of truth)
-        self.base_stats: TechniqueBaseStats = TechniqueBaseStats()
-        # Custom: Persistent boosts from save file (additive layer)
-        self.custom_boosts: TechniqueCustomBoosts = TechniqueCustomBoosts()
-        # Current: Dynamic stats used in battle (mutable)
+        self.speed = db_data.speed.numeric_value
+
+        self.base_stats = TechniqueBaseStats(
+            accuracy=db_data.accuracy,
+            potency=db_data.potency,
+            power=db_data.power,
+            healing_power=db_data.healing_power,
+        )
+
+        self.custom_boosts = custom_boosts or TechniqueCustomBoosts()
+
         self.stats = self.compute_stats()
 
-        self.cooldown = Cooldown()
-        self.visuals = VisualProperties(
-            animation=None, flip_axes=FlipAxes.NONE, loop=-1
-        )
-        self.hit: bool = False
-        self.speed: int = 0
-        self.range: Range = Range.melee
-        self.sound = SoundProperties(sfx=None, volume=1.5)
-        self.sort: str = ""
-        self.slug: str = ""
-        self.types: ElementTypesHandler = ElementTypesHandler()
-        self.modifiers: ModifiersHandler = ModifiersHandler()
-        self.behaviors: TechBehaviors
-        self.use_success: str = ""
-        self.use_failure: str = ""
-        self.use_tech: str = ""
-        self.confirm_text: str = ""
-        self.cancel_text: str = ""
-        self.menu_actions_data: Sequence[MenuAction] = []
-
         self.core_assets = get_assets()
-        self.effects: Sequence[PluginObject] = []
-        self.conditions: Sequence[PluginObject] = []
-        self.stat_modifiers: dict[str, StatModel] = {}
-        self.temporary_stat_boosts: BasicStats = BasicStats()
+        self.types = ElementTypesHandler(db_data.types)
+        self.modifiers = ModifiersHandler(db_data.modifiers)
 
-        # attempts: total times the technique was invoked
-        # successes: number of successful uses
-        # failures: number of failed uses
-        self.attempts: int = 0
-        self.successes: int = 0
-        self.failures: int = 0
-        self.set_state(save_data)
+        self.effect_defs = db_data.effects
+        self.conditions = self.core_assets.parse_conditions(db_data.conditions)
+        self.condition_handler = ConditionProcessor(self.conditions)
+
+        self.cooldown = Cooldown()
+        self._configure_cooldown(db_data)
+
+        self.visuals = db_data.visuals
+        self.sound = db_data.sound
+
+        self.use_tech = T.maybe_translate(db_data.use_tech)
+        self.use_success = T.maybe_translate(db_data.use_success)
+        self.use_failure = T.maybe_translate(db_data.use_failure)
+        self.confirm_text = T.translate(db_data.confirm_text)
+        self.cancel_text = T.translate(db_data.cancel_text)
+
+        self.attempts = attempts
+        self.successes = successes
+        self.failures = failures
+        self.hit: bool = False
+        self.temporary_stat_boosts = BasicStats()
 
     @classmethod
-    def create(
-        cls, slug: str, save_data: Mapping[str, Any] | None = None
-    ) -> Technique:
-        method = cls(save_data)
-        method.load(slug)
-        return method
+    def create(cls, slug: str) -> Technique:
+        """Standard creation from DB."""
+        db_data = TechniqueModel.lookup(slug, db)
+        return cls(slug, db_data)
+
+    @classmethod
+    def from_save(cls, save_data: Mapping[str, Any]) -> Technique:
+        """Reconstructs a technique from saved state."""
+        slug = save_data["slug"]
+        db_data = TechniqueModel.lookup(slug, db)
+
+        instance_id = (
+            UUID(save_data["instance_id"])
+            if "instance_id" in save_data
+            else None
+        )
+
+        custom_boosts = None
+        if "custom_boosts" in save_data:
+            custom_boosts = TechniqueCustomBoosts.from_dict(
+                save_data["custom_boosts"]
+            )
+
+        return cls(
+            slug,
+            db_data,
+            instance_id=instance_id,
+            custom_boosts=custom_boosts,
+            attempts=save_data.get("attempts", 0),
+            successes=save_data.get("successes", 0),
+            failures=save_data.get("failures", 0),
+        )
 
     @property
     def name(self) -> str:
@@ -165,55 +190,12 @@ class Technique:
         """
         return self.compute_stats()
 
-    def load(self, slug: str) -> None:
-        """
-        Loads and sets this technique's attributes from the technique
-        database. The technique is looked up in the database by slug.
-
-        Parameters:
-            The slug of the technique to look up in the database.
-        """
-        results = TechniqueModel.lookup(slug, db)
-        self.slug = results.slug  # a short English identifier
-
-        self.sort = results.sort
-
-        # technique use notifications (translated!)
-        self.use_tech = T.maybe_translate(results.use_tech)
-        self.use_success = T.maybe_translate(results.use_success)
-        self.use_failure = T.maybe_translate(results.use_failure)
-        self.confirm_text = T.translate(results.confirm_text)
-        self.cancel_text = T.translate(results.cancel_text)
-
-        # types
-        self.types = ElementTypesHandler(results.types)
-
-        self.base_stats = TechniqueBaseStats(
-            accuracy=results.accuracy,
-            potency=results.potency,
-            power=results.power,
-            healing_power=results.healing_power,
-        )
-        self.reset_current_stats()
-
-        self.speed = results.speed.numeric_value
-        self.behaviors = results.behaviors
-        self.cooldown.duration = results.recharge
-        self.range = results.range
-        self.tech_id = results.tech_id
-        self.menu_actions_data = results.menu_actions
-        self.tags = results.tags
-        self.stat_modifiers = results.stat_modifiers
-
-        self.effect_defs = results.effects
-        self.conditions = self.core_assets.parse_conditions(results.conditions)
-
-        self.condition_handler = ConditionProcessor(self.conditions)
-        self.target = results.target.model_dump()
-        self.modifiers = ModifiersHandler(results.modifiers)
-
-        self.visuals = results.visuals
-        self.sound = results.sound
+    def _configure_cooldown(self, db_data: TechniqueModel) -> None:
+        self.cooldown.duration = db_data.recharge
+        self.cooldown.min_remaining = db_data.min_recharge
+        self.cooldown.delay_turns = db_data.initial_delay
+        self.cooldown.charge = db_data.starting_charge
+        self.cooldown.multiplier = db_data.cooldown_multiplier
 
     def compute_stats(self) -> TechniqueCurrentStats:
         return TechniqueCurrentStats(
@@ -250,6 +232,19 @@ class Technique:
 
     def full_recharge(self) -> None:
         self.cooldown.reset()
+
+    def has_effect(self, effect_type: str) -> bool:
+        return any(e.type == effect_type for e in self.effect_defs)
+
+    def has_effect_param(self, effect_type: str, param_value: str) -> bool:
+        """
+        Returns True if the technique has an effect of the given type
+        whose parameters contain the given value.
+        """
+        return any(
+            rule.type == effect_type and param_value in rule.parameters
+            for rule in self.effect_defs
+        )
 
     def use(
         self, session: Session, user: Monster, target: Monster
@@ -292,46 +287,27 @@ class Technique:
         """
         Prepares a dictionary of the technique to be saved to a file.
         """
-        save_data = {
-            attr: getattr(self, attr)
-            for attr in SIMPLE_PERSISTANCE_ATTRIBUTES
-            if getattr(self, attr)
+        data = {
+            "slug": self.slug,
+            "instance_id": self.instance_id.hex,
+            "attempts": self.attempts,
+            "successes": self.successes,
+            "failures": self.failures,
         }
 
-        save_data["instance_id"] = self.instance_id.hex
+        boosts = self.custom_boosts.to_dict()
+        if any(boosts.values()):
+            data["custom_boosts"] = boosts
 
-        boosts_data = self.custom_boosts.to_dict()
-        if any(boosts_data.values()):
-            save_data["custom_boosts"] = boosts_data
-
-        return save_data
-
-    def set_state(self, save_data: Mapping[str, Any]) -> None:
-        """
-        Loads information from saved data.
-        """
-        if not save_data:
-            return
-
-        self.load(save_data["slug"])
-
-        if "custom_boosts" in save_data:
-            self.custom_boosts = TechniqueCustomBoosts.from_dict(
-                save_data["custom_boosts"]
-            )
-        self.reset_current_stats()
-
-        for key, value in save_data.items():
-            if key == "instance_id" and value:
-                self.instance_id = UUID(value)
-            elif key in SIMPLE_PERSISTANCE_ATTRIBUTES:
-                setattr(self, key, value)
+        return data
 
 
 def decode_moves(
     json_data: Sequence[Mapping[str, Any]] | None,
 ) -> list[Technique]:
-    return [Technique(save_data=tech) for tech in (json_data or [])]
+    if not json_data:
+        return []
+    return [Technique.from_save(entry) for entry in json_data]
 
 
 def encode_moves(techs: Sequence[Technique]) -> Sequence[Mapping[str, Any]]:

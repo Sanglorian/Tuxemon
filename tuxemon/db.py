@@ -1537,9 +1537,29 @@ class TechniqueModel(BaseModel, BaseLookupModel):
     )
     recharge: int = Field(
         0,
-        description="Recharge of this technique",
+        description="The base number of turns it takes to recharge after use.",
         ge=sizes.RECHARGE_RANGE[0],
         le=sizes.RECHARGE_RANGE[1],
+    )
+    min_recharge: int = Field(
+        0,
+        description="The absolute floor for recharge time (haste/multipliers cannot go below this).",
+        ge=0,
+    )
+    initial_delay: int = Field(
+        0,
+        description="Number of turns the technique is unavailable at the start of a battle.",
+        ge=0,
+    )
+    starting_charge: int = Field(
+        0,
+        description="Allows a move to be used multiple times before entering cooldown (if logic supports it).",
+        ge=0,
+    )
+    cooldown_multiplier: float = Field(
+        1.0,
+        description="A static modifier for how fast this specific tech recharges.",
+        ge=0.0,
     )
     range: Range = Field(..., description="The attack range of this technique")
     tech_id: int = Field(..., description="The id of this technique")

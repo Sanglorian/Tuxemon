@@ -159,11 +159,11 @@ def track_battles(
     location = character.current_map or "unknown"
     opponents = [op for op in opponents if op.slug != character.slug]
 
-    if output == OutputBattle.won:
+    if output == OutputBattle.WON:
         return _handle_win(
             session, character, opponents, turns, location, prize, combat_type
         )
-    elif output == OutputBattle.lost:
+    elif output == OutputBattle.LOST:
         return _handle_loss(
             session, character, opponents, turns, location, combat_type
         )
@@ -189,13 +189,13 @@ def _handle_win(
         for loser in losers:
             winner.battle_handler.record_battle(
                 opponent=loser.slug,
-                outcome=OutputBattle.won,
+                outcome=OutputBattle.WON,
                 location=location,
                 turns=turns,
             )
 
         if winner.is_player:
-            set_var(session, "battle_last_result", OutputBattle.won.value)
+            set_var(session, "battle_last_result", OutputBattle.WON.value)
             set_var(session, "battle_last_winner", "player")
             money_manager = winner.money_controller.money_manager
             remaining = money_manager.apply_all_battle_shares(prize)
@@ -231,7 +231,7 @@ def _handle_loss(
 
     if combat_type == CombatType.TRAINER:
         if loser.is_player:
-            set_var(session, "battle_last_result", OutputBattle.lost.value)
+            set_var(session, "battle_last_result", OutputBattle.LOST.value)
             set_var(session, "battle_last_loser", "player")
         else:
             set_var(session, "battle_last_loser", loser.slug)
@@ -240,7 +240,7 @@ def _handle_loss(
         for winner in winners:
             loser.battle_handler.record_battle(
                 opponent=winner.slug,
-                outcome=OutputBattle.lost,
+                outcome=OutputBattle.LOST,
                 location=location,
                 turns=turns,
             )
@@ -261,12 +261,12 @@ def _handle_draw(
     defeat.remove(player)
 
     if combat_type == CombatType.TRAINER:
-        set_var(session, "battle_last_result", OutputBattle.draw.value)
+        set_var(session, "battle_last_result", OutputBattle.DRAW.value)
         for player_defeated in defeat:
             set_var(session, "battle_last_trainer", player_defeated.slug)
             player.battle_handler.record_battle(
                 opponent=player_defeated.slug,
-                outcome=OutputBattle.draw,
+                outcome=OutputBattle.DRAW,
                 location=location,
                 turns=turns,
             )
@@ -313,9 +313,9 @@ def build_hud_text(
         return {"line1": f"{ball}: {quantity}", "line2": ""}
 
     icon = ""
-    if monster.gender == GenderType.male:
+    if monster.gender == GenderType.MALE:
         icon = "♂"
-    elif monster.gender == GenderType.female:
+    elif monster.gender == GenderType.FEMALE:
         icon = "♀"
 
     symbol = ""

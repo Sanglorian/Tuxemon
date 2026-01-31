@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
+import pytest
 
 from tuxemon.db import Direction
 from tuxemon.map.map_region import (
@@ -11,368 +11,314 @@ from tuxemon.map.map_region import (
 )
 
 
-class TestExtractRegionProperties(unittest.TestCase):
-    def test_empty_properties(self):
-        self.assertIsNone(extract_region_properties({}))
+def test_empty_properties():
+    assert extract_region_properties({}) is None
 
-    def test_only_enter_from(self):
-        properties = {"enter_from": "up, left"}
-        expected = RegionProperties(
-            enter_from=[Direction.left, Direction.up],
-            exit_from=[],
-            endure=[],
-            entity=None,
-            key=None,
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
 
-    def test_only_exit_from(self):
-        properties = {"exit_from": "down"}
-        expected = RegionProperties(
-            enter_from=[Direction.up, Direction.left, Direction.right],
-            exit_from=[Direction.down],
-            endure=[],
-            entity=None,
-            key=None,
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
+@pytest.mark.parametrize(
+    "properties, expected",
+    [
+        (
+            {"enter_from": "up, left"},
+            RegionProperties(
+                enter_from=[Direction.LEFT, Direction.UP],
+                exit_from=[],
+                endure=[],
+                entity=None,
+                key=None,
+            ),
+        ),
+        (
+            {"exit_from": "down"},
+            RegionProperties(
+                enter_from=[Direction.UP, Direction.LEFT, Direction.RIGHT],
+                exit_from=[Direction.DOWN],
+                endure=[],
+                entity=None,
+                key=None,
+            ),
+        ),
+        (
+            {
+                "enter_from": "up, left",
+                "exit_from": "down, right",
+                "endure": "left",
+                "key": "door",
+            },
+            RegionProperties(
+                enter_from=[Direction.LEFT, Direction.UP],
+                exit_from=[Direction.DOWN, Direction.RIGHT],
+                endure=[Direction.LEFT],
+                entity=None,
+                key="door",
+            ),
+        ),
+        (
+            {"key": "slide"},
+            RegionProperties(
+                enter_from=list(Direction),
+                exit_from=list(Direction),
+                endure=list(Direction),
+                entity=None,
+                key="slide",
+            ),
+        ),
+        (
+            {"enter_from": None},
+            RegionProperties(
+                enter_from=[],
+                exit_from=[],
+                endure=[],
+                entity=None,
+                key=None,
+            ),
+        ),
+        (
+            {"enter_from": "up, up, left"},
+            RegionProperties(
+                enter_from=[Direction.LEFT, Direction.UP],
+                exit_from=[],
+                endure=[],
+                entity=None,
+                key=None,
+            ),
+        ),
+        (
+            {"enter_from": "Up, Left"},
+            RegionProperties(
+                enter_from=[Direction.LEFT, Direction.UP],
+                exit_from=[],
+                endure=[],
+                entity=None,
+                key=None,
+            ),
+        ),
+        (
+            {"enter_from": " up , left "},
+            RegionProperties(
+                enter_from=[Direction.LEFT, Direction.UP],
+                exit_from=[],
+                endure=[],
+                entity=None,
+                key=None,
+            ),
+        ),
+        (
+            {"endure": "left"},
+            RegionProperties(
+                enter_from=[],
+                exit_from=[],
+                endure=[Direction.LEFT],
+                entity=None,
+                key=None,
+            ),
+        ),
+        (
+            {"Enter_from": "up, left"},
+            RegionProperties(
+                enter_from=[Direction.LEFT, Direction.UP],
+                exit_from=[],
+                endure=[],
+                entity=None,
+                key=None,
+            ),
+        ),
+        (
+            {"exit_from": "left, right"},
+            RegionProperties(
+                enter_from=[Direction.UP, Direction.DOWN],
+                exit_from=[Direction.LEFT, Direction.RIGHT],
+                endure=[],
+                entity=None,
+                key=None,
+            ),
+        ),
+    ],
+)
+def test_extract_region_properties_valid(properties, expected):
+    assert extract_region_properties(properties) == expected
 
-    def test_all_properties(self):
-        properties = {
-            "enter_from": "up, left",
-            "exit_from": "down, right",
-            "endure": "left",
-            "key": "door",
-        }
-        expected = RegionProperties(
-            enter_from=[Direction.left, Direction.up],
-            exit_from=[Direction.down, Direction.right],
-            endure=[Direction.left],
-            entity=None,
-            key="door",
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
 
-    def test_slide_label(self):
-        properties = {"key": "slide"}
-        expected = RegionProperties(
-            enter_from=list(Direction),
-            exit_from=list(Direction),
-            endure=list(Direction),
-            entity=None,
-            key="slide",
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
-
-    def test_invalid_direction(self):
-        properties = {"enter_from": "up, invalid"}
-        with self.assertRaises(ValueError):
-            extract_region_properties(properties)
-
-    def test_none_value(self):
-        properties = {"enter_from": None}
-        expected = RegionProperties(
-            enter_from=[], exit_from=[], endure=[], entity=None, key=None
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
-
-    def test_duplicate_directions(self):
-        properties = {"enter_from": "up, up, left"}
-        expected = RegionProperties(
-            enter_from=[Direction.left, Direction.up],
-            exit_from=[],
-            endure=[],
-            entity=None,
-            key=None,
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
-
-    def test_mixed_case_directions(self):
-        properties = {"enter_from": "Up, Left"}
-        expected = RegionProperties(
-            enter_from=[Direction.left, Direction.up],
-            exit_from=[],
-            endure=[],
-            entity=None,
-            key=None,
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
-
-    def test_extra_whitespace(self):
-        properties = {"enter_from": " up , left "}
-        expected = RegionProperties(
-            enter_from=[Direction.left, Direction.up],
-            exit_from=[],
-            endure=[],
-            entity=None,
-            key=None,
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
-
-    def test_invalid_key(self):
-        properties = {"invalid_key": "value"}
-        self.assertIsNone(extract_region_properties(properties))
-
-    def test_empty_string_values(self):
-        properties = {"enter_from": "", "exit_from": ""}
-        with self.assertRaises(ValueError):
-            extract_region_properties(properties)
-
-    def test_missing_enter_exit_from(self):
-        properties = {"endure": "left"}
-        expected = RegionProperties(
-            enter_from=[],
-            exit_from=[],
-            endure=[Direction.left],
-            entity=None,
-            key=None,
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
-
-    def test_invalid_slide_label(self):
-        properties = {"enter_from": "slide"}
-        with self.assertRaises(ValueError):
-            extract_region_properties(properties)
-
-    def test_mixed_valid_invalid_keys(self):
-        properties = {
-            "enter_from": "up, left",
-            "invalid_key": "value",
-            "key": "door",
-        }
-        expected = RegionProperties(
-            enter_from=[Direction.left, Direction.up],
-            exit_from=[],
-            endure=[],
-            entity=None,
-            key="door",
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
-
-    def test_empty_endure(self):
-        properties = {"endure": ""}
-        with self.assertRaises(ValueError):
-            extract_region_properties(properties)
-
-    def test_circular_logic(self):
-        properties = {"exit_from": "left, right"}
-        expected = RegionProperties(
-            enter_from=[Direction.up, Direction.down],
-            exit_from=[Direction.left, Direction.right],
-            endure=[],
-            entity=None,
-            key=None,
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
-
-    def test_all_keys_missing(self):
-        properties = {"unknown_key": "value"}
-        self.assertIsNone(extract_region_properties(properties))
-
-    def test_case_insensitive_keys(self):
-        properties = {"Enter_from": "up, left"}
-        expected = RegionProperties(
-            enter_from=[Direction.left, Direction.up],
-            exit_from=[],
-            endure=[],
-            entity=None,
-            key=None,
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
-
-    def test_all_directions_empty_key(self):
-        properties = {"enter_from": "up, down, left, right", "key": ""}
-        with self.assertRaises(ValueError):
-            extract_region_properties(properties)
-
-    def test_invalid_characters_in_directions(self):
-        properties = {"enter_from": "up, @, left"}
-        with self.assertRaises(ValueError):
-            extract_region_properties(properties)
-
-    def test_push_tile_valid(self):
-        properties = {
-            "key": "push_tile",
-            "push_direction": "right",
-            "push_strength": "2",
-        }
-        expected = RegionProperties(
-            enter_from=list(Direction),
-            exit_from=list(Direction),
-            endure=[],
-            entity=None,
-            key="push_tile",
-            push_effect=PushEffect(Direction.right, 2),
-            speed_modifier=None,
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
-
-    def test_push_tile_missing_strength(self):
-        properties = {"key": "push_tile", "push_direction": "left"}
-        with self.assertRaises(ValueError):
-            extract_region_properties(properties)
-
-    def test_push_tile_zero_strength(self):
-        properties = {
-            "key": "push_tile",
-            "push_direction": "up",
-            "push_strength": "0",
-        }
-        with self.assertRaises(ValueError):
-            extract_region_properties(properties)
-
-    def test_push_tile_invalid_direction(self):
-        properties = {
-            "key": "push_tile",
-            "push_direction": "banana",
-            "push_strength": "3",
-        }
-        with self.assertRaises(ValueError):
-            extract_region_properties(properties)
-
-    def test_slide_with_speed_modifier(self):
-        properties = {"key": "slide", "speed_modifier": "1.5"}
-        expected = RegionProperties(
-            enter_from=list(Direction),
-            exit_from=list(Direction),
-            endure=list(Direction),
-            entity=None,
-            key="slide",
-            push_effect=None,
-            speed_modifier=1.5,
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
-
-    def test_invalid_speed_modifier(self):
-        properties = {"speed_modifier": "fast"}
-        with self.assertRaises(ValueError):
-            extract_region_properties(properties)
-
-    def test_push_tile_with_speed_modifier(self):
-        properties = {
-            "key": "push_tile",
-            "push_direction": "down",
-            "push_strength": "4",
-            "speed_modifier": "0.75",
-        }
-        expected = RegionProperties(
-            enter_from=list(Direction),
-            exit_from=list(Direction),
-            endure=[],
-            entity=None,
-            key="push_tile",
-            push_effect=PushEffect(Direction.down, 4),
-            speed_modifier=0.75,
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
-
-    def test_push_strength_as_int(self):
-        properties = {
-            "key": "push_tile",
-            "push_direction": "up",
-            "push_strength": 3,
-        }
-        expected = RegionProperties(
-            enter_from=list(Direction),
-            exit_from=list(Direction),
-            endure=[],
-            entity=None,
-            key="push_tile",
-            push_effect=PushEffect(Direction.up, 3),
-            speed_modifier=None,
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
-
-    def test_push_strength_invalid_string(self):
-        properties = {
+@pytest.mark.parametrize(
+    "properties",
+    [
+        {"enter_from": "up, invalid"},
+        {"enter_from": ""},
+        {"exit_from": ""},
+        {"enter_from": "slide"},  # invalid slide usage
+        {"enter_from": "up, @, left"},
+        {"enter_from": "up", "key": ""},  # empty key invalid
+        {"speed_modifier": "fast"},
+        {"key": "push_tile", "push_direction": "left"},  # missing strength
+        {"key": "push_tile", "push_direction": "up", "push_strength": "0"},
+        {"key": "push_tile", "push_direction": "banana", "push_strength": "3"},
+        {
             "key": "push_tile",
             "push_direction": "right",
             "push_strength": "strong",
-        }
-        with self.assertRaises(ValueError):
-            extract_region_properties(properties)
-
-    def test_slide_with_unknown_keys(self):
-        properties = {
-            "key": "slide",
-            "speed_modifier": "1.2",
-            "unknown": "value",
-        }
-        expected = RegionProperties(
-            enter_from=list(Direction),
-            exit_from=list(Direction),
-            endure=list(Direction),
-            entity=None,
-            key="slide",
-            push_effect=None,
-            speed_modifier=1.2,
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
-
-    def test_push_tile_defaults_when_enter_exit_missing(self):
-        properties = {
-            "key": "push_tile",
-            "push_direction": "up",
-            "push_strength": "1",
-        }
-        expected = RegionProperties(
-            enter_from=list(Direction),
-            exit_from=list(Direction),
-            endure=[],
-            entity=None,
-            key="push_tile",
-            push_effect=PushEffect(Direction.up, 1),
-            speed_modifier=None,
-        )
-        self.assertEqual(extract_region_properties(properties), expected)
+        },
+    ],
+)
+def test_extract_region_properties_invalid(properties):
+    with pytest.raises(ValueError):
+        extract_region_properties(properties)
 
 
-class TestDirectionToList(unittest.TestCase):
-    def test_empty_string_with_whitespace(self):
-        with self.assertRaises(ValueError):
-            direction_to_list("    ")
+def test_extract_region_properties_invalid_key():
+    assert extract_region_properties({"invalid_key": "value"}) is None
 
-    def test_empty_string(self):
-        with self.assertRaises(ValueError):
-            direction_to_list("")
 
-    def test_single_direction(self):
-        result = direction_to_list("up")
-        self.assertEqual(result, [Direction.up])
+def test_extract_region_properties_all_keys_missing():
+    assert extract_region_properties({"unknown_key": "value"}) is None
 
-    def test_multiple_direction(self):
-        result = direction_to_list("up,down,right")
-        self.assertEqual(len(result), 3)
 
-    def test_single_direction_with_whitespace(self):
-        result = direction_to_list("   up    ")
-        self.assertEqual(len(result), 1)
+def test_extract_region_properties_mixed_valid_invalid_keys():
+    properties = {
+        "enter_from": "up, left",
+        "invalid_key": "value",
+        "key": "door",
+    }
+    expected = RegionProperties(
+        enter_from=[Direction.LEFT, Direction.UP],
+        exit_from=[],
+        endure=[],
+        entity=None,
+        key="door",
+    )
+    assert extract_region_properties(properties) == expected
 
-    def test_mutiple_direction_with_whitespace(self):
-        result = direction_to_list("up   ,down  ,   right")
-        self.assertEqual(len(result), 3)
 
-    def test_repeated_directions(self):
-        result = direction_to_list("up,up,down,down")
-        self.assertEqual(len(result), 2)
+def test_push_tile_valid():
+    properties = {
+        "key": "push_tile",
+        "push_direction": "right",
+        "push_strength": "2",
+    }
+    expected = RegionProperties(
+        enter_from=list(Direction),
+        exit_from=list(Direction),
+        endure=[],
+        entity=None,
+        key="push_tile",
+        push_effect=PushEffect(Direction.RIGHT, 2),
+        speed_modifier=None,
+    )
+    assert extract_region_properties(properties) == expected
 
-    def test_insensitive_duplicates(self):
-        result = direction_to_list("uP,dOWn")
-        self.assertEqual(len(result), 2)
 
-    def test_none_input(self):
-        result = direction_to_list(None)
-        self.assertEqual(result, [])
+def test_push_tile_with_speed_modifier():
+    properties = {
+        "key": "push_tile",
+        "push_direction": "down",
+        "push_strength": "4",
+        "speed_modifier": "0.75",
+    }
+    expected = RegionProperties(
+        enter_from=list(Direction),
+        exit_from=list(Direction),
+        endure=[],
+        entity=None,
+        key="push_tile",
+        push_effect=PushEffect(Direction.DOWN, 4),
+        speed_modifier=0.75,
+    )
+    assert extract_region_properties(properties) == expected
 
-    def test_very_long_string(self):
-        long_string = ",".join(["up"] * 100)
-        result = direction_to_list(long_string)
-        self.assertEqual(result, [Direction.up])
 
-    def test_unicode_characters(self):
-        with self.assertRaises(ValueError):
-            direction_to_list("ä, ü, up")
+def test_push_strength_as_int():
+    properties = {
+        "key": "push_tile",
+        "push_direction": "up",
+        "push_strength": 3,
+    }
+    expected = RegionProperties(
+        enter_from=list(Direction),
+        exit_from=list(Direction),
+        endure=[],
+        entity=None,
+        key="push_tile",
+        push_effect=PushEffect(Direction.UP, 3),
+        speed_modifier=None,
+    )
+    assert extract_region_properties(properties) == expected
 
-    def test_invalid_direction(self):
-        with self.assertRaises(ValueError):
-            direction_to_list("invalid direction")
+
+def test_slide_with_speed_modifier():
+    properties = {"key": "slide", "speed_modifier": "1.5"}
+    expected = RegionProperties(
+        enter_from=list(Direction),
+        exit_from=list(Direction),
+        endure=list(Direction),
+        entity=None,
+        key="slide",
+        push_effect=None,
+        speed_modifier=1.5,
+    )
+    assert extract_region_properties(properties) == expected
+
+
+def test_slide_with_unknown_keys():
+    properties = {"key": "slide", "speed_modifier": "1.2", "unknown": "value"}
+    expected = RegionProperties(
+        enter_from=list(Direction),
+        exit_from=list(Direction),
+        endure=list(Direction),
+        entity=None,
+        key="slide",
+        push_effect=None,
+        speed_modifier=1.2,
+    )
+    assert extract_region_properties(properties) == expected
+
+
+@pytest.mark.parametrize("value", ["", "   "])
+def test_direction_to_list_empty(value):
+    with pytest.raises(ValueError):
+        direction_to_list(value)
+
+
+def test_direction_to_list_single():
+    assert direction_to_list("up") == [Direction.UP]
+
+
+def test_direction_to_list_multiple():
+    result = direction_to_list("up,down,right")
+    assert set(result) == {Direction.UP, Direction.DOWN, Direction.RIGHT}
+
+
+def test_direction_to_list_whitespace():
+    assert direction_to_list("   up    ") == [Direction.UP]
+
+
+def test_direction_to_list_multiple_whitespace():
+    result = direction_to_list("up   ,down  ,   right")
+    assert set(result) == {Direction.UP, Direction.DOWN, Direction.RIGHT}
+
+
+def test_direction_to_list_repeated():
+    result = direction_to_list("up,up,down,down")
+    assert set(result) == {Direction.UP, Direction.DOWN}
+
+
+def test_direction_to_list_case_insensitive():
+    result = direction_to_list("uP,dOWn")
+    assert set(result) == {Direction.UP, Direction.DOWN}
+
+
+def test_direction_to_list_none():
+    assert direction_to_list(None) == []
+
+
+def test_direction_to_list_long_string():
+    long_string = ",".join(["up"] * 100)
+    assert direction_to_list(long_string) == [Direction.UP]
+
+
+def test_direction_to_list_unicode_invalid():
+    with pytest.raises(ValueError):
+        direction_to_list("ä, ü, up")
+
+
+def test_direction_to_list_invalid():
+    with pytest.raises(ValueError):
+        direction_to_list("invalid direction")

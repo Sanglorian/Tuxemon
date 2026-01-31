@@ -118,9 +118,9 @@ class BattlesHandler:
 
         return {
             "total": total_battles,
-            "won": battle_outcomes[OutputBattle.won],
-            "lost": battle_outcomes[OutputBattle.lost],
-            "draw": battle_outcomes[OutputBattle.draw],
+            "won": battle_outcomes[OutputBattle.WON],
+            "lost": battle_outcomes[OutputBattle.LOST],
+            "draw": battle_outcomes[OutputBattle.DRAW],
             "average_turns": round(average_turns),
         }
 

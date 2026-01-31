@@ -657,17 +657,17 @@ def compare(
     Returns:
         boolean: true / false
     """
-    if key == Comparison.less_than or key == "<":
+    if key == Comparison.LESS_THAN or key == "<":
         return bool(lt(value1, value2))
-    elif key == Comparison.less_or_equal or key == "<=":
+    elif key == Comparison.LESS_OR_EQUAL or key == "<=":
         return bool(le(value1, value2))
-    elif key == Comparison.greater_than or key == ">":
+    elif key == Comparison.GREATER_THAN or key == ">":
         return bool(gt(value1, value2))
-    elif key == Comparison.greater_or_equal or key == ">=":
+    elif key == Comparison.GREATER_OR_EQUAL or key == ">=":
         return bool(ge(value1, value2))
-    elif key == Comparison.equals or key == "==":
+    elif key == Comparison.EQUALS or key == "==":
         return bool(eq(value1, value2))
-    elif key == Comparison.not_equals or key == "!=":
+    elif key == Comparison.NOT_EQUALS or key == "!=":
         return bool(ne(value1, value2))
     else:
         raise ValueError(f"{key} isn't among {list(Comparison)}")

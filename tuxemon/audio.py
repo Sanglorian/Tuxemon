@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 class MusicPlayerState:
     def __init__(self) -> None:
-        self.status = MusicStatus.stopped
+        self.status = MusicStatus.STOPPED
         self.current_song: Optional[str] = None
         self.previous_song: Optional[str] = None
         self.cache: dict[str, str] = {}
@@ -51,7 +51,7 @@ class MusicPlayerState:
         if self.is_playing_same_song(song):
             return
         self.previous_song = self.current_song
-        self.status = MusicStatus.playing
+        self.status = MusicStatus.PLAYING
         self.current_song = song
         self.load(song, volume, loop, fade_ms)
 
@@ -64,19 +64,19 @@ class MusicPlayerState:
             return path
 
     def pause(self) -> None:
-        if self.status == MusicStatus.playing:
-            self.status = MusicStatus.paused
+        if self.status == MusicStatus.PLAYING:
+            self.status = MusicStatus.PAUSED
             mixer2.music.pause()
-        elif self.status == MusicStatus.paused:
+        elif self.status == MusicStatus.PAUSED:
             logger.warning("Music is already paused.")
         else:
             logger.warning("Music cannot be paused, none is playing.")
 
     def unpause(self) -> None:
-        if self.status == MusicStatus.paused:
-            self.status = MusicStatus.playing
+        if self.status == MusicStatus.PAUSED:
+            self.status = MusicStatus.PLAYING
             mixer2.music.unpause()
-        elif self.status == MusicStatus.stopped:
+        elif self.status == MusicStatus.STOPPED:
             logger.warning("Music is stopped, cannot unpause.")
         else:
             logger.warning(
@@ -84,10 +84,10 @@ class MusicPlayerState:
             )
 
     def stop(self, fadeout_time: int = MUSIC_FADEOUT) -> None:
-        if self.status in (MusicStatus.playing, MusicStatus.paused):
+        if self.status in (MusicStatus.PLAYING, MusicStatus.PAUSED):
             if fadeout_time > 0:
                 self.fadeout(fadeout_time)
-            self.status = MusicStatus.stopped
+            self.status = MusicStatus.STOPPED
             self.current_song = None
             mixer2.music.stop()
         else:
@@ -100,16 +100,16 @@ class MusicPlayerState:
         return bool(mixer2.music.get_busy())
 
     def is_playing_same_song(self, song: str) -> bool:
-        return self.status == MusicStatus.playing and self.current_song == song
+        return self.status == MusicStatus.PLAYING and self.current_song == song
 
     def set_volume(self, volume: float) -> None:
-        if self.status == MusicStatus.playing:
+        if self.status == MusicStatus.PLAYING:
             mixer2.music.set_volume(volume)
         else:
             logger.warning("Music is not playing, set volume not applied.")
 
     def decrease_volume(self, amount: float = 0.1) -> None:
-        if self.status == MusicStatus.playing:
+        if self.status == MusicStatus.PLAYING:
             current_volume = mixer2.music.get_volume()
             new_volume = max(0.0, current_volume - amount)
             self.set_volume(new_volume)
@@ -119,7 +119,7 @@ class MusicPlayerState:
             )
 
     def increase_volume(self, amount: float = 0.1) -> None:
-        if self.status == MusicStatus.playing:
+        if self.status == MusicStatus.PLAYING:
             current_volume = mixer2.music.get_volume()
             new_volume = min(1.0, current_volume + amount)
             self.set_volume(new_volume)
@@ -129,7 +129,7 @@ class MusicPlayerState:
             )
 
     def get_volume(self) -> Optional[float]:
-        if self.status == MusicStatus.playing:
+        if self.status == MusicStatus.PLAYING:
             return float(mixer2.music.get_volume())
         else:
             logger.warning("Music is not playing, cannot get volume.")

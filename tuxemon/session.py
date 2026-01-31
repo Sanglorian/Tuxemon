@@ -6,7 +6,7 @@ import logging
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import TYPE_CHECKING, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 from uuid import UUID, uuid4
 
 from tuxemon import save
@@ -37,9 +37,9 @@ class AbstractSession(ABC, Generic[ClientType]):
         self._start_timestamp: float = time.time()
         self._total_playtime: float = 0.0
 
-        self._client: Optional[ClientType] = None
-        self._world: Optional[WorldState] = None
-        self._player: Optional[Player] = None
+        self._client: ClientType | None = None
+        self._world: WorldState | None = None
+        self._player: Player | None = None
         self._session_state: SessionSave = SessionSave()
 
     @property

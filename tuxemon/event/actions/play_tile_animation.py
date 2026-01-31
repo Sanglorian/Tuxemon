@@ -6,7 +6,7 @@ import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.animation_entity import setup_and_play_animation
+from tuxemon.db import LoopMode
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 
@@ -44,13 +44,19 @@ class PlayTileAnimationAction(EventAction):
 
     def start(self, session: Session) -> None:
         position = (self.tile_pos_x, self.tile_pos_y)
-        animations = session.client.map_renderer.map_animations
 
-        setup_and_play_animation(
-            animation_name=self.animation_name,
+        if self.loop == "loop":
+            loop_mode = LoopMode.INFINITE
+        elif self.loop == "noloop":
+            loop_mode = LoopMode.NO_LOOP
+        else:
+            raise ValueError(f"{self.loop} value must be 'loop' or 'noloop'")
+
+        manager = session.client.map_renderer.map_animations
+        manager.setup_and_play(
+            slug=self.animation_name,
             duration=self.duration,
-            loop=self.loop,
+            loop=loop_mode,
             position=position,
-            animations=animations,
             layer=4,
         )

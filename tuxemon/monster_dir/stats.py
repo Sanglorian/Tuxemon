@@ -140,8 +140,8 @@ class StatCalculator:
     ) -> BasicStats:
         """Compute final stats from shape, level, taste, and modifiers."""
         raw_stats = self.calculate_raw_stats()
-        cold = Taste.get_taste(self.taste_cold)
-        warm = Taste.get_taste(self.taste_warm)
+        cold = Taste.get(self.taste_cold)
+        warm = Taste.get(self.taste_warm)
         final_stats = self.apply_stat_updates(raw_stats, cold, warm)
 
         if temporary_boosts:
@@ -218,8 +218,8 @@ class StatCalculator:
             raise ValueError("Target level must be a positive integer.")
 
         raw_stats = self.calculate_raw_stats(level=target_level)
-        cold = Taste.get_taste(self.taste_cold)
-        warm = Taste.get_taste(self.taste_warm)
+        cold = Taste.get(self.taste_cold)
+        warm = Taste.get(self.taste_warm)
         return self.apply_stat_updates(raw_stats, cold, warm)
 
 
@@ -234,8 +234,8 @@ class StatAnalyzer:
         breakdown = {}
         multiplier = self.calculator.level + config_monster.coeff_stats
         level_scale = self.calculator.level / 100
-        cold = Taste.get_taste(self.calculator.taste_cold)
-        warm = Taste.get_taste(self.calculator.taste_warm)
+        cold = Taste.get(self.calculator.taste_cold)
+        warm = Taste.get(self.calculator.taste_warm)
 
         for stat_name in BasicStats.names():
             base_value = (

@@ -30,14 +30,14 @@ class TestPlagueHandlerCore(unittest.TestCase):
         self.handler.infect("plague1")
         self.assertIn("plague1", self.handler.current_plagues)
         self.assertEqual(
-            self.handler.get_plague_type("plague1"), PlagueType.infected
+            self.handler.get_plague_type("plague1"), PlagueType.INFECTED
         )
 
     def test_inoculate(self):
         self.handler.inoculate("plague1")
         self.assertIn("plague1", self.handler.current_plagues)
         self.assertEqual(
-            self.handler.get_plague_type("plague1"), PlagueType.inoculated
+            self.handler.get_plague_type("plague1"), PlagueType.INOCULATED
         )
 
     def test_remove_plague(self):
@@ -59,7 +59,7 @@ class TestPlagueHandlerCore(unittest.TestCase):
     def test_get_plague_type(self):
         self.handler.infect("plague1")
         self.assertEqual(
-            self.handler.get_plague_type("plague1"), PlagueType.infected
+            self.handler.get_plague_type("plague1"), PlagueType.INFECTED
         )
         self.assertIsNone(
             self.handler.get_plague_type("plague2")

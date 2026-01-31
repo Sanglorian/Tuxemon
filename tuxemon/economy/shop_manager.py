@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import logging
 from dataclasses import asdict, dataclass
-from typing import Any, Optional
+from typing import Any
 
-from tuxemon.item.item import INFINITE_ITEMS
+from tuxemon.item.stock import INFINITE_ITEMS
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class ShopManager:
     """
 
     def __init__(
-        self, stock_data: Optional[dict[str, StockEntry]] = None
+        self, stock_data: dict[str, StockEntry] | None = None
     ) -> None:
         self._stock: dict[str, StockEntry] = (
             stock_data if stock_data is not None else {}

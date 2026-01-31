@@ -29,7 +29,7 @@ class Battle:
         self.instance_id: UUID = uuid4()
         self.fighter: str = ""
         self.opponent: str = ""
-        self.outcome: OutputBattle = OutputBattle.draw
+        self.outcome: OutputBattle = OutputBattle.DRAW
         self.timestamp: float = time.time()
         self.location: str = ""
         self.turns: int = 1

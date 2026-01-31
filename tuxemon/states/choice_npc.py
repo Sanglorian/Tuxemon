@@ -13,6 +13,8 @@ from pygame_menu.widgets.selection.highlight import HighlightSelection
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.database.runtime import db
 from tuxemon.db import NpcModel
+from tuxemon.entity_dir.sheet import get_combat_sheet
+from tuxemon.graphics import scale_surface
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.prepare import SCALE, SCREEN_SIZE
@@ -75,12 +77,10 @@ class ChoiceNpc(PygameMenuState):
         callback: Callable[[], None],
     ) -> None:
         npc = NpcModel.lookup(slug, db)
-        path = f"gfx/sprites/player/{npc.template.combat_front}.png"
-        new_image = self._create_image(path)
-        new_image.scale(
-            SCALE * self.config.scale_sprite,
-            SCALE * self.config.scale_sprite,
-        )
+        sheet = get_combat_sheet(npc.template)
+        surface = sheet.front()
+        scaled = scale_surface(surface, SCALE * self.config.scale_sprite)
+        new_image = self._create_image_from_surface(scaled)
         self.menu.add.image(new_image, align=ALIGN_CENTER)
         # replace slug not translated
         if name == slug:

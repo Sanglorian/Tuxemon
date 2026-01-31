@@ -14,7 +14,6 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.monster import Monster
 from tuxemon.taste import Taste
-from tuxemon.time_handler import today_ordinal
 from tuxemon.tools import get_valid_uuid, open_dialog
 
 if TYPE_CHECKING:
@@ -95,7 +94,7 @@ class SpawnMonsterAction(EventAction):
             basic_forms = [
                 element.slug
                 for element in seed.history
-                if element.stage == EvolutionStage.basic
+                if element.stage == EvolutionStage.BASIC
             ]
             if basic_forms:
                 seed_slug = random.choice(basic_forms)
@@ -104,7 +103,7 @@ class SpawnMonsterAction(EventAction):
 
         # Create a new child monster
         child = Monster.spawn_base(seed_slug, level)
-        child.set_capture(today_ordinal())
+        child.set_capture(session.time.get_ordinal())
         child.name = name
         child.set_acquisition(Acquisition.BRED)
 
@@ -151,9 +150,9 @@ def _determine_seed(mother: Monster, father: Monster) -> Monster:
     """
 
     stage_order: dict[EvolutionStage, int] = {
-        EvolutionStage.stage2: 3,
-        EvolutionStage.stage1: 2,
-        EvolutionStage.standalone: 1,
+        EvolutionStage.STAGE2: 3,
+        EvolutionStage.STAGE1: 2,
+        EvolutionStage.STANDALONE: 1,
     }
     stage_mother = stage_order.get(mother.stage, 0)
     stage_father = stage_order.get(father.stage, 0)
@@ -246,8 +245,8 @@ def _determine_tastes(mother: Monster, father: Monster) -> tuple[str, str]:
     warm_slug = random.choice([mother.taste_warm, father.taste_warm])
     cold_slug = random.choice([mother.taste_cold, father.taste_cold])
 
-    taste_warm = Taste.get_taste(warm_slug)
-    taste_cold = Taste.get_taste(cold_slug)
+    taste_warm = Taste.get(warm_slug)
+    taste_cold = Taste.get(cold_slug)
 
     if not taste_warm:
         raise ValueError(

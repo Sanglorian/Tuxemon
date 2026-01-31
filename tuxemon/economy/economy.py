@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional
+from dataclasses import dataclass
 
 from tuxemon.database.runtime import db
 from tuxemon.db import EconomyItemModel, EconomyModel, EconomyMonsterModel
@@ -13,10 +12,13 @@ from tuxemon.item.item import Item
 from tuxemon.monster import Monster
 from tuxemon.platform.const.graphics import GRAD_BLUE
 
-if TYPE_CHECKING:
-    from tuxemon.npc import NPC
-
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class PriceResult:
+    final_price: int
+    modifier_percent: int
 
 
 class Economy:
@@ -27,12 +29,12 @@ class Economy:
     """
 
     def __init__(
-        self, slug: Optional[str] = None, policy: Optional[PricePolicy] = None
+        self, slug: str | None = None, policy: PricePolicy | None = None
     ) -> None:
         self.policy = policy or PricePolicy()
         self.model: EconomyModel
-        self._items_map: dict[str, EconomyItemModel] = {}  # New
-        self._monsters_map: dict[str, EconomyMonsterModel] = {}  # New
+        self._items_map: dict[str, EconomyItemModel] = {}
+        self._monsters_map: dict[str, EconomyMonsterModel] = {}
 
         if slug:
             self.load(slug)
@@ -75,29 +77,17 @@ class Economy:
     def set_policy(self, policy: PricePolicy) -> None:
         self.policy = policy
 
-    def get_item(self, item_slug: str) -> Optional[EconomyItemModel]:
+    def get_item(self, item_slug: str) -> EconomyItemModel | None:
         """
         Gets an EconomyItemModel definition from the economy by its slug (O(1) lookup).
         """
         return self._items_map.get(item_slug)
 
-    def get_monster(self, monster_slug: str) -> Optional[EconomyMonsterModel]:
+    def get_monster(self, monster_slug: str) -> EconomyMonsterModel | None:
         """
         Gets an EconomyMonsterModel definition from the economy by its name (O(1) lookup).
         """
         return self._monsters_map.get(monster_slug)
-
-    def _get_entity_model(
-        self, entity: Item | Monster
-    ) -> Optional[EconomyItemModel | EconomyMonsterModel]:
-        """
-        Internal method to safely retrieve the associated economy model (Item or Monster).
-        """
-        if isinstance(entity, Item):
-            return self.get_item(entity.slug)
-        elif isinstance(entity, Monster):
-            return self.get_monster(entity.slug)
-        return None
 
     def refresh_maps(self) -> None:
         """
@@ -109,71 +99,47 @@ class Economy:
             monster.slug: monster for monster in self.model.monsters
         }
 
-    def update_entity_field(
-        self, entity_slug: str, entity_kind: str, field: str, value: int
-    ) -> None:
+    def get_model_for(
+        self, entity: Item | Monster
+    ) -> EconomyItemModel | EconomyMonsterModel | None:
+        slug = entity.slug
+        if isinstance(entity, Item):
+            return self._items_map.get(slug)
+        return self._monsters_map.get(slug)
+
+    def _resolve_resale_base(
+        self,
+        entity: Item | Monster,
+        model: EconomyItemModel | EconomyMonsterModel | None,
+    ) -> float:
         """
-        Updates the value of a specific field for an entity definition in the economy.
-        entity_kind should be "item" or "monster".
+        Determine the base resale value (shop buys from player).
         """
-        entity_model: EconomyItemModel | EconomyMonsterModel | None
+        if model:
+            return float(model.cost)
 
-        if entity_kind == "item":
-            entity_model = self.get_item(entity_slug)
-        elif entity_kind == "monster":
-            entity_model = self.get_monster(entity_slug)
-        else:
-            raise ValueError(
-                "Invalid entity kind provided. Use 'item' or 'monster'."
-            )
+        intrinsic = entity.cost if isinstance(entity, Item) else entity.hp
+        return intrinsic * self.model.resale_multiplier
 
-        if entity_model is None:
-            raise RuntimeError(
-                f"Entity definition '{entity_slug}' not found in economy '{self.model.slug}'"
-            )
-
-        if hasattr(entity_model, field):
-            setattr(entity_model, field, value)
-        else:
-            raise AttributeError(
-                f"Entity definition '{entity_slug}' has no field '{field}'"
-            )
-
-    def update_item_quantity(self, item_slug: str, quantity: int) -> None:
-        self.update_entity_field(item_slug, "item", "inventory", quantity)
-
-    def update_monster_quantity(
-        self, monster_slug: str, quantity: int
-    ) -> None:
-        self.update_entity_field(
-            monster_slug, "monster", "inventory", quantity
-        )
-
-    def variable(
-        self, variables: Sequence[dict[str, str]], character: NPC
-    ) -> bool:
+    def _resolve_purchase_base(
+        self,
+        entity: Item | Monster,
+        model: EconomyItemModel | EconomyMonsterModel | None,
+    ) -> float:
         """
-        Checks if the given variables (conditions from economy data) match
-        the character's game variables.
-
-        Parameters:
-            variables: A sequence of dictionaries, each representing a set of
-                variable-value pairs to check.
-            character: The character (NPC or player) whose game variables are
-                checked.
-
-        Returns:
-            True if all specified variable conditions match the character's
-            game variables, otherwise False.
+        Determine the base purchase value (shop sells to player).
         """
-        if not variables:
-            return True
-        return all(
-            all(
-                character.game_variables.get(key) == value
-                for key, value in variable.items()
+        if model:
+            return float(model.price)
+
+        if isinstance(entity, Item):
+            logger.warning(
+                f"Missing price for Item '{entity.slug}'. Falling back to resale calculation."
             )
-            for variable in variables
+            return round(entity.cost * self.model.resale_multiplier)
+
+        raise ValueError(
+            f"Missing mandatory price for monster: {entity.slug} in economy '{self.model.slug}'"
         )
 
     def calculate_price(
@@ -181,7 +147,7 @@ class Economy:
         entity: Item | Monster,
         quantity: int,
         seller_mode: bool = False,
-    ) -> tuple[int, int]:
+    ) -> PriceResult:
         """
         Calculate the final transaction price for an Item or Monster.
 
@@ -191,49 +157,18 @@ class Economy:
             seller_mode: True if the entity is being resold *to* the shop
                 (cost for buyer), False if it is being sold *by* the shop
                 (price for buyer).
-
-        Returns:
-            (final_price, discount_percent)
         """
-        entity_model = self._get_entity_model(entity)
-        base_value: float
+        model = self.get_model_for(entity)
 
         if seller_mode:
-            # --- Calculating Resale Cost (Price to Buyer) ---
-            lookup_cost = entity_model.cost if entity_model else None
-
-            if lookup_cost is not None:
-                base_value = float(lookup_cost)
-            else:
-                intrinsic_cost = (
-                    entity.cost if isinstance(entity, Item) else entity.hp
-                )
-                base_value = intrinsic_cost * self.model.resale_multiplier
-
-            return self.policy.apply_resell_modifiers(
-                round(base_value), quantity, entity.slug
+            base = self._resolve_resale_base(entity, model)
+            final_price, discount = self.policy.apply_resell_modifiers(
+                round(base), quantity, entity.slug
             )
+            return PriceResult(final_price, discount)
 
-        else:
-            # --- Calculating Purchase Price (Price from Shop) ---
-            lookup_price = entity_model.price if entity_model else None
-
-            if lookup_price is not None:
-                base_value = lookup_price
-            else:
-                if isinstance(entity, Item):
-                    intrinsic_cost = entity.cost
-                    base_value = round(
-                        intrinsic_cost * self.model.resale_multiplier
-                    )
-                    logger.warning(
-                        f"Missing price for Item '{entity.slug}'. Falling back to resale calculation."
-                    )
-                else:
-                    raise ValueError(
-                        f"Missing mandatory price for monster: {entity.slug} in economy '{self.model.slug}'"
-                    )
-
-            return self.policy.apply_modifiers(
-                base_value, quantity, entity.slug
-            )
+        base = self._resolve_purchase_base(entity, model)
+        final_price, discount = self.policy.apply_modifiers(
+            round(base), quantity, entity.slug
+        )
+        return PriceResult(final_price, discount)

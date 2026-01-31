@@ -1,94 +1,92 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
+import pytest
 
 from tuxemon.math import Vector3
 
 
-class TestVector3(unittest.TestCase):
-    def test_initialization(self):
-        v1 = Vector3()
-        self.assertEqual(tuple(v1), (0, 0, 0))
+def test_initialization():
+    assert tuple(Vector3()) == (0, 0, 0)
+    assert tuple(Vector3(1, 2, 3)) == (1, 2, 3)
+    assert tuple(Vector3([4, 5, 6])) == (4, 5, 6)
 
-        v2 = Vector3(1, 2, 3)
-        self.assertEqual(tuple(v2), (1, 2, 3))
 
-        v3 = Vector3([4, 5, 6])
-        self.assertEqual(tuple(v3), (4, 5, 6))
+def test_addition():
+    v1 = Vector3(1, 2, 3)
+    v2 = Vector3(4, 5, 6)
+    assert tuple(v1 + v2) == (5, 7, 9)
 
-    def test_addition(self):
-        v1 = Vector3(1, 2, 3)
-        v2 = Vector3(4, 5, 6)
-        result = v1 + v2
-        self.assertEqual(tuple(result), (5, 7, 9))
 
-    def test_scalar_multiplication(self):
-        v1 = Vector3(1, 2, 3)
-        result = v1 * 2
-        self.assertEqual(tuple(result), (2, 4, 6))
+@pytest.mark.parametrize(
+    "vector, scalar, expected",
+    [
+        (Vector3(1, 2, 3), 2, (2, 4, 6)),
+        (Vector3(1, 2, 3), -1, (-1, -2, -3)),
+        (Vector3(3, -3, 6), 0, (0, 0, 0)),
+    ],
+)
+def test_scalar_multiplication(vector, scalar, expected):
+    assert tuple(vector * scalar) == expected
+    assert tuple(scalar * vector) == expected
 
-        result = 2 * v1
-        self.assertEqual(tuple(result), (2, 4, 6))
 
-    def test_iteration(self):
-        v1 = Vector3(1, 2, 3)
-        values = list(iter(v1))
-        self.assertEqual(values, [1, 2, 3])
+def test_iteration():
+    assert list(Vector3(1, 2, 3)) == [1, 2, 3]
 
-    def test_equality(self):
-        v1 = Vector3(1, 2, 3)
-        v2 = Vector3(1, 2, 3)
-        v3 = Vector3(4, 5, 6)
-        self.assertTrue(v1 == v2)
-        self.assertFalse(v1 == v3)
 
-    def test_getitem(self):
-        v1 = Vector3(1, 2, 3)
-        self.assertEqual(v1[0], 1)
-        self.assertEqual(v1[1], 2)
-        self.assertEqual(v1[2], 3)
-        self.assertEqual(v1[0:2], (1, 2))
+def test_equality():
+    assert Vector3(1, 2, 3) == Vector3(1, 2, 3)
+    assert Vector3(1, 2, 3) != Vector3(4, 5, 6)
 
-    def test_vector3_magnitude(self):
-        v3 = Vector3(1, 2, 2)
-        self.assertAlmostEqual(v3.magnitude, 3.0, places=2)
 
-        v3_zero = Vector3(0, 0, 0)
-        self.assertAlmostEqual(v3_zero.magnitude, 0.0, places=2)
+def test_getitem():
+    v = Vector3(1, 2, 3)
+    assert v[0] == 1
+    assert v[1] == 2
+    assert v[2] == 3
+    assert v[0:2] == (1, 2)
 
-        v3_large = Vector3(10, 10, 10)
-        self.assertAlmostEqual(v3_large.magnitude, 17.32, places=2)
 
-    def test_vector3_normalized(self):
-        v3 = Vector3(1, 2, 2)
-        normalized_v3 = v3.normalized
-        self.assertAlmostEqual(normalized_v3.magnitude, 1.0, places=2)
-        self.assertAlmostEqual(normalized_v3[0], 0.33, places=2)
-        self.assertAlmostEqual(normalized_v3[1], 0.67, places=2)
-        self.assertAlmostEqual(normalized_v3[2], 0.67, places=2)
+@pytest.mark.parametrize(
+    "vector, expected",
+    [
+        (Vector3(1, 2, 2), 3.0),
+        (Vector3(0, 0, 0), 0.0),
+        (Vector3(10, 10, 10), pytest.approx(17.32, abs=0.01)),
+    ],
+)
+def test_vector3_magnitude(vector, expected):
+    assert pytest.approx(vector.magnitude, abs=0.01) == expected
 
-        v3_zero = Vector3(0, 0, 0)
-        normalized_v3_zero = v3_zero.normalized
-        self.assertEqual(normalized_v3_zero.magnitude, 0.0)
 
-    def test_scalar_division(self):
-        v = Vector3(9, 18, 27)
-        result = v / 3
-        self.assertEqual(tuple(result), (3.0, 6.0, 9.0))
+def test_vector3_normalized():
+    v = Vector3(1, 2, 2)
+    n = v.normalized
 
-    def test_vector_subtraction(self):
-        v1 = Vector3(10, 20, 30)
-        v2 = Vector3(1, 2, 3)
-        result = v1 - v2
-        self.assertEqual(tuple(result), (9, 18, 27))
+    assert pytest.approx(n.magnitude, abs=0.01) == 1.0
+    assert pytest.approx(n[0], abs=0.01) == 0.33
+    assert pytest.approx(n[1], abs=0.01) == 0.67
+    assert pytest.approx(n[2], abs=0.01) == 0.67
 
-        result = v1 - (5, 5, 5)
-        self.assertEqual(tuple(result), (5, 15, 25))
+    zero = Vector3(0, 0, 0).normalized
+    assert zero.magnitude == 0.0
 
-    def test_reverse_subtraction(self):
-        v1 = Vector3(2, 4, 6)
-        result = (10, 10, 10) - v1
-        self.assertEqual(tuple(result), (8, 6, 4))
 
-        result = Vector3(5, 5, 5) - Vector3(1, 2, 3)
-        self.assertEqual(tuple(result), (4, 3, 2))
+def test_scalar_division():
+    v = Vector3(9, 18, 27)
+    assert tuple(v / 3) == (3.0, 6.0, 9.0)
+
+
+def test_vector_subtraction():
+    v1 = Vector3(10, 20, 30)
+    v2 = Vector3(1, 2, 3)
+
+    assert tuple(v1 - v2) == (9, 18, 27)
+    assert tuple(v1 - (5, 5, 5)) == (5, 15, 25)
+
+
+def test_reverse_subtraction():
+    v1 = Vector3(2, 4, 6)
+
+    assert tuple((10, 10, 10) - v1) == (8, 6, 4)
+    assert tuple(Vector3(5, 5, 5) - Vector3(1, 2, 3)) == (4, 3, 2)

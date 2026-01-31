@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderboss_blonde",
-      "combat_front": "spyder_boss",
+      "combat_sheet": "spyder_boss",
       "slug": "spyder_boss"
     }
   },
@@ -26,7 +26,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderrookie",
-      "combat_front": "spyder_rookie",
+      "combat_sheet": "spyder_rookie",
       "slug": "spyder_rookie"
     }
   },
@@ -46,7 +46,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderboss_fiery",
-      "combat_front": "spyder_boss",
+      "combat_sheet": "spyder_boss",
       "slug": "spyder_boss"
     }
   },
@@ -66,7 +66,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderboss_green",
-      "combat_front": "spyder_boss",
+      "combat_sheet": "spyder_boss",
       "slug": "spyder_boss"
     }
   },
@@ -86,7 +86,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderrookie",
-      "combat_front": "spyder_rookie",
+      "combat_sheet": "spyder_rookie",
       "slug": "spyder_rookie"
     }
   },
@@ -106,7 +106,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderrookie",
-      "combat_front": "spyder_rookie",
+      "combat_sheet": "spyder_rookie",
       "slug": "spyder_rookie"
     }
   },
@@ -126,7 +126,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderboss_lapi",
-      "combat_front": "spyder_boss",
+      "combat_sheet": "spyder_boss",
       "slug": "spyder_boss"
     }
   },
@@ -146,7 +146,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderrookie",
-      "combat_front": "spyder_rookie",
+      "combat_sheet": "spyder_rookie",
       "slug": "spyder_rookie"
     }
   },
@@ -157,7 +157,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderboss",
-      "combat_front": "spyder_boss",
+      "combat_sheet": "spyder_boss",
       "slug": "spyder_boss"
     }
   },
@@ -177,7 +177,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderrookie",
-      "combat_front": "spyder_rookie",
+      "combat_sheet": "spyder_rookie",
       "slug": "spyder_rookie"
     }
   },
@@ -197,7 +197,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderrookie",
-      "combat_front": "spyder_rookie",
+      "combat_sheet": "spyder_rookie",
       "slug": "spyder_rookie"
     }
   },
@@ -217,7 +217,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor_brown",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -228,7 +228,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_brown",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -239,7 +239,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_black",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -250,7 +250,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_fiery",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -261,7 +261,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse_green",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   },
@@ -272,7 +272,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse_blonde",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   },
@@ -283,7 +283,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse_blue",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   }

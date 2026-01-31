@@ -461,10 +461,7 @@ class InputMenu(Menu[InputMenuObj]):
 
     def dont_care(self) -> None:
         """Assign a random name based on gender and language preferences."""
-        variables = local_session.player.game_variables
-        gender = variables.get("gender_choice", "neutral")
-        if gender not in ["male", "female"]:
-            gender = "neutral"
+        gender = local_session.player.gender or "neutral"
         language = T.get_current_language().lower()
         fallback_language = self.client.config.locale.slug.lower()
         random_name = self.name_loader.get_random_name(

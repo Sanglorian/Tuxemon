@@ -12,7 +12,6 @@ from pygame import SRCALPHA
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon.combat import utils
 from tuxemon.combat.menu_visibility import MenuProfiles
 from tuxemon.db import EffectPhase, SpeedLabel, State
 from tuxemon.graphics import load_and_scale
@@ -585,10 +584,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 open_dialog(self.client, [msg], dialog_speed="max")
                 return
 
-            if (
-                utils.has_effect(technique, "damage")
-                and target == self.monster
-            ):
+            if technique.has_effect("damage") and target == self.monster:
                 params = {"name": technique.name.upper()}
                 msg = T.format("combat_target_itself", params)
                 open_dialog(self.client, [msg], dialog_speed="max")

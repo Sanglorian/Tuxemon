@@ -257,19 +257,19 @@ class CombatState(CombatAnimations):
 
         elif phase == CombatPhase.DRAW_MATCH:
             message = self.track_battle_results(
-                OutputBattle.draw, c_session.defeated_players
+                OutputBattle.DRAW, c_session.defeated_players
             )
             if message:
                 self.process_combat_message(message)
 
         elif phase == CombatPhase.HAS_WINNER:
             message = self.track_battle_results(
-                OutputBattle.won,
+                OutputBattle.WON,
                 c_session.remaining_players,
                 c_session.defeated_players,
             )
             message += "\n" + self.track_battle_results(
-                OutputBattle.lost,
+                OutputBattle.LOST,
                 c_session.defeated_players,
                 c_session.remaining_players,
             )
@@ -437,7 +437,7 @@ class CombatState(CombatAnimations):
                 combat_type=self.combat_session.combat_type,
                 prize=(
                     self.combat_session.prize
-                    if result_type == OutputBattle.won
+                    if result_type == OutputBattle.WON
                     else 0
                 ),
             )
@@ -674,7 +674,7 @@ class CombatState(CombatAnimations):
         # animation sprite
         item_sprite = self._method_cache.get(item, False)
         # handle the capture device
-        if item.category == ItemCategory.capture and item_sprite:
+        if item.category == ItemCategory.CAPTURE and item_sprite:
             # retrieve tuxeball
             message += "\n" + T.translate("attempting_capture")
             action_time = result_item.num_shakes + 1.8

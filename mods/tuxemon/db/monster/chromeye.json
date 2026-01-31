@@ -34,7 +34,8 @@
       "monster_slug": "angrito",
       "variables": [
         {
-          "season": "winter"
+          "key": "season",
+          "value": "winter"
         }
       ]
     },
@@ -43,7 +44,8 @@
       "monster_slug": "happito",
       "variables": [
         {
-          "season": "summer"
+          "key": "season",
+          "value": "summer"
         }
       ]
     },
@@ -52,7 +54,8 @@
       "monster_slug": "neutrito",
       "variables": [
         {
-          "season": "spring"
+          "key": "season",
+          "value": "spring"
         }
       ]
     },
@@ -61,7 +64,8 @@
       "monster_slug": "sadito",
       "variables": [
         {
-          "season": "autumn"
+          "key": "season",
+          "value": "autumn"
         }
       ]
     }

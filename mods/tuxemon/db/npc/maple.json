@@ -5,7 +5,7 @@
   "audio": {},
   "template": {
     "sprite_name": "fashionista_fiery",
-    "combat_front": "fashionista",
+    "combat_sheet": "fashionista",
     "slug": "fashionista"
   }
 }

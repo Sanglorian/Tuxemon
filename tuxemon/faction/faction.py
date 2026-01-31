@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from tuxemon.database.runtime import db
 from tuxemon.db import (
@@ -19,6 +19,7 @@ from tuxemon.locale import T
 
 if TYPE_CHECKING:
     from tuxemon.event.eventbus import EventBus
+    from tuxemon.game_variables import GameVariablesManager
 
 logger = logging.getLogger(__name__)
 
@@ -43,16 +44,16 @@ class Faction:
 
     MAX_PUBLIC_REPUTATION: int = 100
 
-    def __init__(self, event_bus: Optional[EventBus] = None) -> None:
+    def __init__(self, event_bus: EventBus | None = None) -> None:
         self._event_bus = event_bus
         self._rank_cache: dict[str, str] = {}
         self.slug: str = ""
-        self._custom_name: Optional[str] = None
-        self._custom_description: Optional[str] = None
-        self.kind: Optional[FactionKind] = None
-        self.alignment: Optional[FactionAlignment] = None
-        self.badge_id: Optional[str] = None
-        self.leader_char: Optional[str] = None
+        self._custom_name: str | None = None
+        self._custom_description: str | None = None
+        self.kind: FactionKind | None = None
+        self.alignment: FactionAlignment | None = None
+        self.badge_id: str | None = None
+        self.leader_char: str | None = None
         self.ranks: list[RankStep] = []
         self.members: list[str] = []
         self.reputation: dict[str, int] = {}
@@ -133,13 +134,13 @@ class Faction:
             f"[Faction] {npc_id} assigned rank '{rank_title}' in faction '{self.slug}'"
         )
 
-    def get_rank_for_reputation(self, rep: int) -> Optional[str]:
+    def get_rank_for_reputation(self, rep: int) -> str | None:
         for rank in reversed(self.ranks):
             if rep >= rank.threshold:
                 return rank.title
         return None
 
-    def get_current_rank(self, npc_id: str) -> Optional[str]:
+    def get_current_rank(self, npc_id: str) -> str | None:
         if npc_id in self._rank_cache:
             return self._rank_cache[npc_id]
         rep = self.get_reputation(npc_id)
@@ -165,7 +166,7 @@ class Faction:
     def on_relation_changed(
         self,
         other_id: str,
-        old_status: Optional[FactionRelationStatus],
+        old_status: FactionRelationStatus | None,
         new_status: FactionRelationStatus,
     ) -> None:
         logger.info(
@@ -220,8 +221,8 @@ class Faction:
         return npc_id in self.members
 
     def evaluate_rank_change(
-        self, npc_id: str, game_variables: dict[str, Any]
-    ) -> Optional[str]:
+        self, npc_id: str, game_variables: GameVariablesManager
+    ) -> str | None:
         rep = self.get_reputation(npc_id)
         desired_rank = self.get_rank_for_reputation(rep)
         current_rank = self.get_current_rank(npc_id)
@@ -268,19 +269,19 @@ class Faction:
     def can_be_promoted(
         self,
         npc_id: str,
-        game_variables: dict[str, Any],
+        variable_manager: GameVariablesManager,
     ) -> bool:
         rep = self.get_reputation(npc_id)
+
         for rank in self.ranks:
             req = rank.requirement
+
             if rep >= rank.threshold:
-                if req:
-                    if req.variables:
-                        if not satisfies_all_requirements(
-                            req.variables, game_variables
-                        ):
-                            continue
+                if req and req.variables:
+                    if not variable_manager.check_conditions(req.variables):
+                        continue
                 return True
+
         return False
 
     def calculate_power_level(self, multiplier: int = 10) -> int:
@@ -319,7 +320,7 @@ class Faction:
         self,
         members_data: Mapping[str, Any],
         public_reputation: int = 0,
-        relations: Optional[Mapping[str, str]] = None,
+        relations: Mapping[str, str] | None = None,
     ) -> None:
         self._public_reputation = public_reputation
 
@@ -349,7 +350,7 @@ class Faction:
                         f"[Faction] Unknown relation status '{status_str}' for faction '{slug}'"
                     )
 
-    def to_save_data(self, npc_slugs: list[str]) -> Optional[dict[str, Any]]:
+    def to_save_data(self, npc_slugs: list[str]) -> dict[str, Any] | None:
         members_data: dict[str, Any] = {}
 
         for npc_slug in npc_slugs:
@@ -376,14 +377,3 @@ class Faction:
                 slug: status.name for slug, status in self.relations.items()
             },
         }
-
-
-def satisfies_all_requirements(
-    req_variables: Sequence[dict[str, Any]], game_variables: dict[str, Any]
-) -> bool:
-    return all(
-        all(
-            game_variables.get(key) == value for key, value in variable.items()
-        )
-        for variable in req_variables
-    )

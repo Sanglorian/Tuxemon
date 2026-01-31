@@ -6,7 +6,7 @@
     "audio": {},
     "template": {
       "sprite_name": "swimmer_red",
-      "combat_front": "swimmer",
+      "combat_sheet": "swimmer",
       "slug": "swimmer"
     }
   },
@@ -26,7 +26,7 @@
     "audio": {},
     "template": {
       "sprite_name": "swimmer_orange",
-      "combat_front": "swimmer",
+      "combat_sheet": "swimmer",
       "slug": "swimmer"
     }
   },
@@ -46,7 +46,7 @@
     "audio": {},
     "template": {
       "sprite_name": "dragonrider_blue",
-      "combat_front": "dragonrider",
+      "combat_sheet": "dragonrider",
       "slug": "dragonrider"
     }
   },
@@ -66,7 +66,7 @@
     "audio": {},
     "template": {
       "sprite_name": "swimmer_green",
-      "combat_front": "swimmer",
+      "combat_sheet": "swimmer",
       "slug": "swimmer"
     }
   },
@@ -86,7 +86,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -106,7 +106,7 @@
     "audio": {},
     "template": {
       "sprite_name": "fisher",
-      "combat_front": "fisher",
+      "combat_sheet": "fisher",
       "slug": "fisher"
     }
   },
@@ -126,7 +126,7 @@
     "audio": {},
     "template": {
       "sprite_name": "fisher_fiery",
-      "combat_front": "fisher",
+      "combat_sheet": "fisher",
       "slug": "fisher"
     }
   },
@@ -146,7 +146,7 @@
     "audio": {},
     "template": {
       "sprite_name": "swimmer",
-      "combat_front": "swimmer",
+      "combat_sheet": "swimmer",
       "slug": "swimmer"
     }
   },
@@ -166,7 +166,7 @@
     "audio": {},
     "template": {
       "sprite_name": "swimmer_blue",
-      "combat_front": "swimmer",
+      "combat_sheet": "swimmer",
       "slug": "swimmer"
     }
   },
@@ -186,7 +186,7 @@
     "audio": {},
     "template": {
       "sprite_name": "beachcomber_copper",
-      "combat_front": "yellowbelt",
+      "combat_sheet": "yellowbelt",
       "slug": "beachcomber"
     }
   },
@@ -206,7 +206,7 @@
     "audio": {},
     "template": {
       "sprite_name": "swimmer_blue",
-      "combat_front": "swimmer",
+      "combat_sheet": "swimmer",
       "slug": "swimmer"
     }
   },
@@ -226,7 +226,7 @@
     "audio": {},
     "template": {
       "sprite_name": "beachcomber_blue",
-      "combat_front": "yellowbelt",
+      "combat_sheet": "yellowbelt",
       "slug": "beachcomber"
     }
   },
@@ -246,7 +246,7 @@
     "audio": {},
     "template": {
       "sprite_name": "swimmer_red",
-      "combat_front": "swimmer",
+      "combat_sheet": "swimmer",
       "slug": "swimmer"
     }
   },
@@ -257,7 +257,7 @@
     "audio": {},
     "template": {
       "sprite_name": "swimmer_orange",
-      "combat_front": "swimmer",
+      "combat_sheet": "swimmer",
       "slug": "swimmer"
     }
   }

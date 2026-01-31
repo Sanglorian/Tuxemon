@@ -5,9 +5,9 @@ from __future__ import annotations
 import logging
 from collections.abc import Iterable
 from math import hypot
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
-from tuxemon.db import Direction
+from tuxemon.db import Direction, FacingMode
 from tuxemon.map.map import dirs2, get_direction
 from tuxemon.math import Vector2
 from tuxemon.tools import vector2_to_tile_pos
@@ -42,11 +42,11 @@ class PathController:
         self._npc_manager = npc_manager
         self._repath_cooldown: float = 0.0
         self.path: list[tuple[int, int]] = []
-        self.pathfinding: Optional[tuple[int, int]] = None
-        self.path_origin: Optional[tuple[int, int]] = None
+        self.pathfinding: tuple[int, int] | None = None
+        self.path_origin: tuple[int, int] | None = None
 
     @property
-    def move_destination(self) -> Optional[tuple[int, int]]:
+    def move_destination(self) -> tuple[int, int] | None:
         """Only used for the char_moved condition."""
         return self.path[-1] if self.path else None
 
@@ -144,8 +144,10 @@ class PathController:
             return
 
         target = self.path[-1]
-        direction = get_direction(self.owner.position, target)
-        self.owner.set_facing(direction)
+        move_dir = get_direction(self.owner.tile_pos, target)
+        if self.owner.facing_mode == FacingMode.FOLLOW_MOVEMENT:
+            direction = get_direction(self.owner.position, target)
+            self.owner.set_facing(direction)
 
         try:
             if self._pathfinder.is_tile_traversable(
@@ -165,9 +167,9 @@ class PathController:
                 # To fully resolve this issue, the game will eventually need
                 # a dedicated global clock—not reliant on wall time—to eliminate
                 # visual glitches and ensure frame accuracy.
-                self.owner.sprite_controller.play_animation()
+                self.owner.sprite_controller.play_animation(move_dir)
                 self.path_origin = self.owner.tile_pos
-                self.owner.mover.move(self.owner.facing)
+                self.owner.mover.move(move_dir)
                 self.owner.remove_collision()
             else:
                 self.owner.stop_moving()
@@ -196,6 +198,7 @@ class PathController:
         traveled = tile_distance(self.owner.position, self.path_origin)
         if traveled >= expected:
             self.owner.set_position(target)
+            self.owner.on_tile_changed()
             self.path.pop()
             self.path_origin = None
             self._apply_tile_effects()
@@ -264,7 +267,11 @@ class PathController:
             direction: The direction in which to move.
             strength: The maximum number of tiles to attempt moving through.
         """
-        self.owner.set_facing(direction)
+        if strength <= 0:
+            return
+
+        if self.owner.facing_mode == FacingMode.FOLLOW_MOVEMENT:
+            self.owner.set_facing(direction)
 
         origin = self.path[-1] if self.path else self.owner.tile_pos
         steps = []
@@ -316,14 +323,26 @@ class PathController:
         destination, it retains the last waypoint to avoid abrupt stopping.
         Otherwise, all movement is halted and pathfinding is cleared.
         """
-        if self.owner.position == self.path_origin:
+        at_origin = (
+            self.path_origin is not None
+            and self.owner.position == self.path_origin
+        )
+        mid_movement = self.path and self.owner.moving
+
+        if at_origin:
+            # Movement started but hasn't progressed
             self.abort_movement(preserve_position=True)
-        elif self.path and self.owner.moving:
+            return
+
+        if mid_movement:
+            # Keep last waypoint so NPC finishes the tile cleanly
             self.path = [self.path[-1]]
             self.pathfinding = None
             self.owner.set_move_direction()
-        else:
-            self.abort_movement()
+            return
+
+        # Default: fully stop and clear everything
+        self.abort_movement()
 
     def abort_movement(self, preserve_position: bool = False) -> None:
         """
@@ -336,6 +355,7 @@ class PathController:
         """
         if not preserve_position and self.path_origin is not None:
             self.owner.set_position(self.path_origin)
+            self.owner.on_tile_changed()
         self.owner.set_move_direction()
         self.owner.stop_moving()
         self.cancel_path()

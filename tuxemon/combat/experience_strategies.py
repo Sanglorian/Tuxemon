@@ -260,10 +260,10 @@ class StageScalingExperienceStrategy(ExperienceStrategy):
     """
 
     STAGE_MULTIPLIERS = {
-        EvolutionStage.basic: 1.0,  # unevolved
-        EvolutionStage.stage1: 1.5,  # mid evolution
-        EvolutionStage.stage2: 2.0,  # final evolution
-        EvolutionStage.standalone: 2.0,  # no evolution path, treat as final
+        EvolutionStage.BASIC: 1.0,  # unevolved
+        EvolutionStage.STAGE1: 1.5,  # mid evolution
+        EvolutionStage.STAGE2: 2.0,  # final evolution
+        EvolutionStage.STANDALONE: 2.0,  # no evolution path, treat as final
     }
 
     def calculate(

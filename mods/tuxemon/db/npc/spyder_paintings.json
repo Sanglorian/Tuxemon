@@ -6,7 +6,7 @@
     "audio": {},
     "template": {
       "sprite_name": "p_one",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -18,7 +18,7 @@
     "audio": {},
     "template": {
       "sprite_name": "p_two",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -30,7 +30,7 @@
     "audio": {},
     "template": {
       "sprite_name": "p_three",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -42,7 +42,7 @@
     "audio": {},
     "template": {
       "sprite_name": "p_four",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -54,7 +54,7 @@
     "audio": {},
     "template": {
       "sprite_name": "p_five",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }

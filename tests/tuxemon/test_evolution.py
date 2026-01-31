@@ -335,14 +335,13 @@ def test_item_conditions(setup_evolution, use_item, expected):
 @pytest.mark.parametrize(
     "monster_type,evo_type,expected",
     [
-        ("metal", "metal", True),  # match
-        ("metal", "water", False),  # mismatch
+        ("metal", "metal", True),
+        ("metal", "water", False),
     ],
 )
 def test_element_conditions(setup_evolution, monster_type, evo_type, expected):
     mon, _, _ = setup_evolution
-    element = MagicMock(slug=monster_type)
-    mon.types.set_types([element])
+    mon.types.set_types([monster_type])
     evo = MonsterEvolutionItemModel(monster_slug="botbot", element=evo_type)
     context = {"map_inside": True}
     assert mon.evolution_handler.can_evolve(evo, context) == expected
@@ -473,17 +472,16 @@ def test_party_gender_conditions(
 @pytest.mark.parametrize(
     "party_type,evo_types,expected",
     [
-        ("earth", {"earth": 1}, True),  # match
-        ("water", {"fire": 1}, False),  # mismatch
+        ("earth", {"earth": 1}, True),
+        ("water", {"fire": 1}, False),
     ],
 )
 def test_party_type_conditions(
     setup_evolution, party_type, evo_types, expected
 ):
     mon, player, _ = setup_evolution
-    element = MagicMock(slug=party_type)
     for m in player.party._monsters:
-        m.types.set_types([element])
+        m.types.set_types([party_type])
     evo = MonsterEvolutionItemModel(
         monster_slug="rockat",
         party_conditions=PartyConditionsModel(monster_types=evo_types),

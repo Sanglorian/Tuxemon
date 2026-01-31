@@ -202,6 +202,14 @@ class Monster:
         self._custom_name = value
 
     @property
+    def gender_symbol(self) -> str:
+        if self.gender == GenderType.MALE:
+            return "\u2642"  # ♂
+        if self.gender == GenderType.FEMALE:
+            return "\u2640"  # ♀
+        return ""
+
+    @property
     def description(self) -> str:
         return T.translate(f"{self.slug}_description")
 
@@ -389,6 +397,15 @@ class Monster:
             self.status.remove_item_statuses(item)
             return item
         return None
+
+    def swap_items(self, other: Monster) -> None:
+        item_a = self.unequip_item()
+        item_b = other.unequip_item()
+
+        if item_a:
+            other.equip_item(item_a)
+        if item_b:
+            self.equip_item(item_b)
 
     def get_experience_multiplier(self) -> float:
         """

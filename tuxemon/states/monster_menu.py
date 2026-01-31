@@ -5,14 +5,13 @@ from __future__ import annotations
 from collections import OrderedDict
 from collections.abc import Callable, Generator
 from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame import SRCALPHA
 from pygame.font import Font
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon import tools
 from tuxemon.animation import ScheduleType
 from tuxemon.graphics import ColorLike, load_and_scale, load_image
 from tuxemon.locale import T
@@ -25,7 +24,7 @@ from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.scaling import DefaultScaling
 from tuxemon.sprite import Sprite
-from tuxemon.tools import open_choice_dialog, open_dialog
+from tuxemon.tools import open_choice_dialog, open_dialog, scale
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.menu_options import (
     MenuOptions,
@@ -37,10 +36,14 @@ from tuxemon.ui.text import TextArea, draw_text
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
     from tuxemon.entity_dir.party import PartyHandler
+    from tuxemon.item.item import Item
     from tuxemon.monster import Monster
 
+LAYER_MONSTER_ICONS = 20
+LAYER_PORTRAIT = 30
 
-class MonsterMenuState(Menu[Optional[Monster]]):
+
+class MonsterMenuState(Menu[Monster | None]):
     """
     A class to create monster menu objects.
 
@@ -56,7 +59,7 @@ class MonsterMenuState(Menu[Optional[Monster]]):
     def __init__(
         self,
         monsters: list[Monster],
-        monster_filter: Optional[MonsterFilter] = None,
+        monster_filter: MonsterFilter | None = None,
     ) -> None:
         super().__init__()
         self.scaling = DefaultScaling()
@@ -69,7 +72,6 @@ class MonsterMenuState(Menu[Optional[Monster]]):
         self.sprites.add(self.text_area, layer=100)
         self.monster_stats_display = MonsterStatsDisplay(self)
         self.monster_sprite_displays: list[MonsterSpriteDisplay] = []
-        self.monster_sprite_display = MonsterSpriteDisplay(self)
         self.monster_portrait_display = MonsterPortraitDisplay(self)
 
         # Set up the border images used for the monster slots
@@ -92,7 +94,7 @@ class MonsterMenuState(Menu[Optional[Monster]]):
 
     def initialize_items(
         self,
-    ) -> Generator[MenuItem[Optional[Monster]], None, None]:
+    ) -> Generator[MenuItem[Monster | None], None, None]:
         # position the monster portrait
         try:
             monster = self.monsters[self.selected_index]
@@ -118,11 +120,11 @@ class MonsterMenuState(Menu[Optional[Monster]]):
 
     def on_menu_selection(
         self,
-        menu_item: MenuItem[Optional[Monster]],
+        menu_item: MenuItem[Monster | None],
     ) -> None:
         pass
 
-    def is_valid_entry(self, monster: Optional[Monster]) -> bool:
+    def is_valid_entry(self, monster: Monster | None) -> bool:
         """
         Used to determine if a given monster should be selectable.
 
@@ -136,12 +138,13 @@ class MonsterMenuState(Menu[Optional[Monster]]):
 
     def refresh_menu_items(self) -> None:
         """Used to render slots after their 'focus' flags change."""
-        self.monster_sprite_displays = []
+        MonsterSpriteDisplay.cleanup(self.monster_sprite_displays)
+
         for index, item in enumerate(self.menu_items):
             self.assign_monster_to_item(index, item)
 
     def assign_monster_to_item(
-        self, index: int, item: MenuItem[Optional[Monster]]
+        self, index: int, item: MenuItem[Monster | None]
     ) -> None:
         monster = self.monsters[index] if index < len(self.monsters) else None
         item.game_object = monster
@@ -158,7 +161,7 @@ class MonsterMenuState(Menu[Optional[Monster]]):
             self.monster_sprite_displays.append(sprite_display)
 
     def on_menu_selection_change(self) -> None:
-        monster: Optional[Monster] = None
+        monster: Monster | None = None
         try:
             monster = self.monsters[self.selected_index]
             self.monster_portrait_display.update(monster)
@@ -190,17 +193,17 @@ class MonsterMenuHandler:
     def monster_menu_hook(self, monster_menu: MonsterMenuState) -> None:
         """Handles monster reordering."""
         monster = self.context.get("monster")
-        if monster:
-            monster_list = self.party.monsters
-            original = monster_menu.get_selected_item()
-            if original and original.game_object:
-                original_monster = original.game_object
-                index = monster_list.index(original_monster)
-                monster_list[self.context["old_index"]] = original_monster
-                monster_list[index] = self.context["monster"]
-                self.context["old_index"] = index
+        if not monster:
+            return
 
-        MonsterMenuState.on_menu_selection_change(monster_menu)
+        monster_list = self.party.monsters
+        original = monster_menu.get_selected_item()
+        if original and original.game_object:
+            original_monster = original.game_object
+            index = monster_list.index(original_monster)
+            monster_list[self.context["old_index"]] = original_monster
+            monster_list[index] = self.context["monster"]
+            self.context["old_index"] = index
 
     def select_monster(self, monster: Monster) -> None:
         """Selects a monster for movement."""
@@ -214,17 +217,68 @@ class MonsterMenuHandler:
         params = {"monster": monster, "source": self.name}
         self.client.push_state("MonsterInfoState", kwargs=params)
 
-    def monster_item(self, monster: Monster) -> None:
-        """Displays monster item menu."""
-        self.client.remove_state_by_name("ChoiceState")
-        params = {"monster": monster, "source": self.name}
-        self.client.push_state("MonsterItemState", kwargs=params)
-
     def monster_techs(self, monster: Monster) -> None:
         """Displays monster techniques."""
         self.client.remove_state_by_name("ChoiceState")
         params = {"monster": monster, "source": self.name}
         self.client.push_state("MonsterMovesState", kwargs=params)
+
+    def remove_item_direct(self, monster: Monster) -> None:
+        item = monster.held_item
+        if item:
+            monster.unequip_item()
+            self.party.owner.bag.add_item(item)
+
+        self.client.remove_state_by_name("ChoiceState")
+        self.monster_menu.refresh_menu_items()
+
+    def open_item_picker(self, monster: Monster) -> None:
+        from tuxemon.item.filter import ItemFilter
+        from tuxemon.states.item_menu import ItemMenuState
+
+        self.client.remove_state_by_name("ChoiceState")
+        items_filtered = ItemFilter(self.party.owner.bag.items)
+        items_filtered.add_filter(lambda item: item.behaviors.holdable)
+
+        menu = self.client.push_state(
+            ItemMenuState(self.party.owner, self.name, items_filtered)
+        )
+        menu.on_menu_selection = lambda menu_item: self._equip_from_picker(monster, menu_item)  # type: ignore[method-assign]
+
+    def _equip_from_picker(
+        self, monster: Monster, menu_item: MenuItem[Item | None]
+    ) -> None:
+        item = menu_item.game_object
+        if not item:
+            return
+
+        monster.equip_item(item)
+        self.party.owner.bag.remove_item(item)
+        self.client.remove_state_by_name("ItemMenuState")
+        self.monster_menu.refresh_menu_items()
+
+    def swap_items(self, mon_a: Monster, mon_b: Monster) -> None:
+        """Swaps held items between two monsters."""
+        mon_a.swap_items(mon_b)
+        self.client.remove_state_by_name("ChoiceState")
+        self.monster_menu.refresh_menu_items()
+
+    def open_swap_picker(self, monster: Monster) -> None:
+        """Opens a submenu to choose another monster to swap items with."""
+        self.client.remove_state_by_name("ChoiceState")
+
+        candidates = [
+            m for m in self.party.monsters if m is not monster and m.held_item
+        ]
+
+        if not candidates:
+            return
+
+        actions = {
+            m.name: partial(self.swap_items, monster, m) for m in candidates
+        }
+        menu = MenuOptions(create_choice_options(actions))
+        open_choice_dialog(self.client, menu, escape_key_exits=True)
 
     def release_monster(self, monster: Monster) -> None:
         """Shows confirmation for releasing a monster."""
@@ -283,7 +337,24 @@ class MonsterMenuHandler:
         if mon.moves.moves:
             actions["tech"] = partial(self.monster_techs, mon)
 
-        actions["item"] = partial(self.monster_item, mon)
+        if mon.held_item:
+            actions["unequip_item"] = partial(self.remove_item_direct, mon)
+
+        holdable_items = [
+            item
+            for item in self.party.owner.bag.items
+            if item.behaviors.holdable
+        ]
+
+        if holdable_items:
+            actions["equip_item"] = partial(self.open_item_picker, mon)
+
+        other_with_items = [
+            m for m in self.party.monsters if m is not mon and m.held_item
+        ]
+
+        if other_with_items:
+            actions["swap_item"] = partial(self.open_swap_picker, mon)
 
         if self.party.party_size > 1:
             actions.update(
@@ -300,7 +371,7 @@ class MonsterMenuHandler:
 
     def handle_selection(
         self,
-        menu_item: MenuItem[Optional[Monster]],
+        menu_item: MenuItem[Monster | None],
         monster_menu: MonsterMenuState,
     ) -> None:
         """Handles selection interaction for monsters."""
@@ -326,8 +397,16 @@ class MonsterMenuHandler:
         self.monster_menu = self.client.push_state(
             MonsterMenuState(self.party.monsters)
         )
+
         self.monster_menu.on_menu_selection = lambda item: self.handle_selection(item, self.monster_menu)  # type: ignore[assignment]
-        self.monster_menu.on_menu_selection_change = partial(self.monster_menu_hook, self.monster_menu)  # type: ignore[method-assign]
+
+        original_on_change = self.monster_menu.on_menu_selection_change
+
+        def wrapped_on_change() -> None:
+            self.monster_menu_hook(self.monster_menu)
+            original_on_change()
+
+        self.monster_menu.on_menu_selection_change = wrapped_on_change  # type: ignore[method-assign]
 
     def open_sort_submenu(self, monster_menu: MonsterMenuState) -> None:
         """Opens a submenu with sorting options."""
@@ -356,9 +435,9 @@ class MonsterStatsDisplay:
         self.sprite = TextArea(
             self.menu_state.font, self.menu_state.font_color
         )
-        self.menu_state.sprites.add(self.sprite)
+        self.menu_state.sprites.add(self.sprite, layer=LAYER_MONSTER_ICONS)
 
-    def update(self, monster: Optional[Monster]) -> None:
+    def update(self, monster: Monster | None) -> None:
         if not monster:
             self.sprite.image = self.menu_state.shadow_text("")
             return
@@ -374,10 +453,6 @@ class MonsterStatsDisplay:
                 (T.translate("melee"), str(monster.melee)),
                 (T.translate("ranged"), str(monster.ranged)),
                 (T.translate("speed"), str(monster.speed)),
-                (
-                    T.translate("menu_item"),
-                    T.translate("yes" if monster.held_item else "no"),
-                ),
             ]
         )
 
@@ -392,22 +467,41 @@ class MonsterStatsDisplay:
 
 
 class MonsterSpriteDisplay:
+    """
+    Manages the sprite used to visually represent a monster inside the party menu.
+
+    Each instance tracks a single monster and its corresponding sprite. The class
+    is responsible for creating the sprite, positioning it relative to the slot
+    rectangle, updating it when the selected monster changes, and removing it
+    cleanly from the menu state's sprite group when no longer needed.
+    """
+
     def __init__(self, menu_state: MonsterMenuState) -> None:
         self.menu_state = menu_state
-        self.sprite: Optional[Sprite] = None
-        self.monster: Optional[Monster] = None
+        self.sprite: Sprite | None = None
+        self.monster: Monster | None = None
 
-    def update(self, monster: Optional[Monster], rect: Rect) -> None:
+    @staticmethod
+    def cleanup(displays: list[MonsterSpriteDisplay]) -> None:
+        for display in displays:
+            display.remove_sprite()
+        displays.clear()
+
+    def update(self, monster: Monster | None, rect: Rect) -> None:
         self.monster = monster
+
         if monster:
-            if self.sprite is None:
-                self.sprite = monster.get_sprite("menu", 0.25, 2.5)
-                self.menu_state.sprites.add(self.sprite)
-            if self.sprite is not None:
-                width = SCREEN_SIZE[0]
-                margin = int(width * 0.005)
-                self.sprite.rect.x = width - (self.sprite.rect.width + margin)
-                self.sprite.rect.y = rect.y + tools.scale(10)
+            if self.sprite:
+                self.menu_state.sprites.remove(self.sprite)
+
+            self.sprite = monster.get_sprite("menu", 0.25, 2.5)
+            self.menu_state.sprites.add(self.sprite, layer=LAYER_MONSTER_ICONS)
+
+            width = SCREEN_SIZE[0]
+            margin = int(width * 0.005)
+            self.sprite.rect.x = width - (self.sprite.rect.width + margin)
+            self.sprite.rect.y = rect.y + scale(10)
+
         else:
             self.remove_sprite()
 
@@ -423,9 +517,9 @@ class MonsterPortraitDisplay:
         self.menu_state = menu_state
         self.portrait = Sprite()
         self.portrait.rect = Rect(0, 0, 0, 0)
-        self.menu_state.sprites.add(self.portrait)
+        self.menu_state.sprites.add(self.portrait, layer=LAYER_PORTRAIT)
 
-    def update(self, monster: Optional[Monster]) -> None:
+    def update(self, monster: Monster | None) -> None:
         image = None
         if monster is not None:
             try:
@@ -445,7 +539,7 @@ class MonsterPortraitDisplay:
     def animate_down(self) -> None:
         ani = self.menu_state.animate(
             self.portrait.rect,
-            y=-tools.scale(5),
+            y=-scale(5),
             duration=1,
             transition="in_out_quad",
             relative=True,
@@ -455,66 +549,12 @@ class MonsterPortraitDisplay:
     def animate_up(self) -> None:
         ani = self.menu_state.animate(
             self.portrait.rect,
-            y=tools.scale(5),
+            y=scale(5),
             duration=1,
             transition="in_out_quad",
             relative=True,
         )
         ani.schedule(self.animate_down, ScheduleType.ON_FINISH)
-
-
-class MonsterInfoRenderer:
-    def __init__(
-        self, font: Font, hp_bar: HpBar, font_color: ColorLike
-    ) -> None:
-        self.font = font
-        self.hp_bar = hp_bar
-        self.font_color = font_color
-
-    def draw_hp_bar(
-        self, surface: Surface, monster: Monster, rect: Rect
-    ) -> None:
-        hp_rect = rect.copy()
-        left = int(rect.width * 0.6)
-        right = rect.right - tools.scale(4)
-        hp_rect.width = right - left
-        hp_rect.left = left
-        hp_rect.height = tools.scale(8)
-        hp_rect.centery = rect.centery
-        self.hp_bar.value = monster.hp_ratio
-        self.hp_bar.draw(surface, hp_rect)
-
-    def draw_name_and_level(
-        self, surface: Surface, monster: Monster, rect: Rect
-    ) -> None:
-        gender_icons = {
-            "male": "♂",
-            "female": "♀",
-        }
-        icon = gender_icons.get(monster.gender, "")
-        upper_label = f"{monster.name}{icon}"
-        text_rect = rect.inflate(-tools.scale(6), -tools.scale(6))
-        draw_text(surface, upper_label, text_rect, font=self.font)
-        text_rect.top = rect.bottom - tools.scale(7)
-        bottom_label = f"  Lv {monster.level}"
-        draw_text(surface, bottom_label, text_rect, font=self.font)
-
-    def draw_status_icons(
-        self, surface: Surface, monster: Monster, rect: Rect
-    ) -> None:
-        for index, status in enumerate(monster.status.get_statuses()):
-            if status.icon:
-                image = load_and_scale(status.icon)
-                pos = (
-                    (rect.width * 0.45) + (index * tools.scale(6)),
-                    rect.y + tools.scale(4),
-                )
-                surface.blit(image, pos)
-
-    def draw(self, surface: Surface, monster: Monster, rect: Rect) -> None:
-        self.draw_hp_bar(surface, monster, rect)
-        self.draw_name_and_level(surface, monster, rect)
-        self.draw_status_icons(surface, monster, rect)
 
 
 class MonsterSlotBorder:
@@ -544,24 +584,73 @@ class MonsterSlotBorder:
 
 
 class MonsterSlotRenderer:
-    """Handles rendering of monster slots and info."""
+    """Unified renderer for monster slot layout."""
 
     def __init__(self, font: Font, hp_bar: HpBar, font_color: ColorLike):
-        self.monster_info_renderer = MonsterInfoRenderer(
-            font, hp_bar, font_color
-        )
-        self.monster_slot_border = MonsterSlotBorder()
+        self.font = font
+        self.hp_bar = hp_bar
+        self.font_color = font_color
+        self.slot_border = MonsterSlotBorder()
 
     def render_slot(
         self,
         surface: Surface,
         rect: Rect,
-        monster: Optional[Monster],
+        monster: Monster | None,
         in_focus: bool,
-    ) -> Surface:
+    ) -> None:
+        surface.fill(TRANSPARENT_COLOR)
+
         filled = monster is not None
-        border = self.monster_slot_border.get_border(in_focus, filled)
+        border = self.slot_border.get_border(in_focus, filled)
         border.draw(surface)
-        if monster is not None:
-            self.monster_info_renderer.draw(surface, monster, rect)
-        return surface
+
+        if not monster:
+            return
+
+        padding = scale(6)
+        content = rect.inflate(-padding, -padding)
+
+        upper_label = f"{monster.name}{monster.gender_symbol}"
+
+        text_rect = rect.inflate(-scale(6), -scale(6))
+        draw_text(surface, upper_label, text_rect, font=self.font)
+
+        text_rect.top = rect.bottom - scale(7)
+        bottom_label = f"  Lv {monster.level}"
+        draw_text(surface, bottom_label, text_rect, font=self.font)
+
+        hp_width = int(content.width * 0.35)
+        hp_rect = Rect(0, 0, hp_width, scale(8))
+        hp_rect.right = content.right
+        hp_rect.centery = content.centery
+
+        self.hp_bar.value = monster.hp_ratio
+        self.hp_bar.draw(surface, hp_rect)
+
+        self._draw_icons(surface, monster, rect)
+
+    def _draw_icons(
+        self,
+        surface: Surface,
+        monster: Monster,
+        content: Rect,
+    ) -> None:
+        icon_y = content.top + scale(4)
+
+        for i, status in enumerate(monster.status.get_statuses()):
+            if status.icon:
+                img = load_and_scale(status.icon)
+                x = int(content.width * 0.45) + i * (
+                    img.get_width() + scale(4)
+                )
+                x += content.left
+                surface.blit(img, (x, icon_y))
+
+        if monster.held_item:
+            item_img = load_and_scale(monster.held_item.sprite, 1.5)
+            x = int(content.width * 0.45) + len(
+                monster.status.get_statuses()
+            ) * (scale(4) + item_img.get_width())
+            x += content.left
+            surface.blit(item_img, (x, icon_y))

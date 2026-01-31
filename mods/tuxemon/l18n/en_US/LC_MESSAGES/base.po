@@ -4372,6 +4372,15 @@ msgstr "Body Type"
 msgid "monster_menu_release"
 msgstr "Release"
 
+msgid "unequip_item"
+msgstr "Unequip"
+
+msgid "equip_item"
+msgstr "Equip"
+
+msgid "swap_item"
+msgstr "Swap Item"
+
 msgid "menu_sort"
 msgstr "Sort"
 
@@ -4550,9 +4559,6 @@ msgstr "Created {doc} days ago"
 
 msgid "tuxepedia_exp"
 msgstr "{exp_lv}xp to Lv {lv}"
-
-msgid "no_held_item"
-msgstr "No held item"
 
 # Menu notifications
 msgid "log_off"

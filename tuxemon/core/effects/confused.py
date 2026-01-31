@@ -6,7 +6,6 @@ import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat.utils import has_effect_param
 from tuxemon.core.core_effect import CoreEffect, StatusEffectResult
 from tuxemon.db import EffectPhase
 from tuxemon.locale import T
@@ -88,7 +87,7 @@ def _get_available_techniques(user: Monster) -> list[Technique]:
         move
         for move in user.moves.get_moves()
         if not move.is_recharging
-        and not has_effect_param(move, "give", "condition", "confused")
+        and not move.has_effect_param("give", "confused")
     ]
 
 

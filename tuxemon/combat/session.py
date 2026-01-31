@@ -431,7 +431,7 @@ class CombatSession:
             if other_player.is_player and other_player != player:
                 var = self.get_variable(monster.slug)
                 if var is None:
-                    other_player.tuxepedia.add_entry(monster.slug)
+                    other_player.tuxepedia.register_seen(monster.slug)
                     self.set_variable(monster.slug, True)
 
     def initialize_hit_chances(self) -> None:

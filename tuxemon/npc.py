@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from tuxemon.boxes import ItemBoxes, MonsterBoxes
@@ -16,6 +16,7 @@ from tuxemon.entity_dir.battle import BattlesHandler
 from tuxemon.entity_dir.party import PartyHandler
 from tuxemon.entity_dir.path import PathController
 from tuxemon.entity_dir.routing import RoutingPolicy
+from tuxemon.entity_dir.sheet import CombatSheet, get_combat_sheet
 from tuxemon.entity_dir.steps import StepManager
 from tuxemon.game_variables import GameVariablesManager, PlayerVariablesManager
 from tuxemon.locale import T
@@ -35,7 +36,7 @@ from tuxemon.save_state import NPCState
 from tuxemon.step_tracker import StepTrackerManager, decode_steps, encode_steps
 from tuxemon.teleporter import TeleportFaint
 from tuxemon.tracker import TrackingData, decode_tracking, encode_tracking
-from tuxemon.tuxepedia import (
+from tuxemon.tuxepedia.manager import (
     TuxepediaManager,
     decode_tuxepedia,
     encode_tuxepedia,
@@ -71,7 +72,7 @@ class NPC(Entity):
         npc_slug: str,
         npc_data: NpcModel,
         session: Session,
-        instance_id: Optional[UUID] = None,
+        instance_id: UUID | None = None,
     ) -> None:
         super().__init__(
             slug=npc_slug, session=session, instance_id=instance_id
@@ -82,9 +83,10 @@ class NPC(Entity):
         self.persistence = npc_data.persistence
         self.audio = npc_data.audio
 
-        self._custom_name: Optional[str] = None
+        self._custom_name: str | None = None
         # general
-        self.behavior: Optional[str] = "wander"  # not used for now
+        self.gender: str | None = None
+        self.behavior: str | None = "wander"  # not used for now
         self._variables = GameVariablesManager()
         self.battle_handler = BattlesHandler()
         # Tracks Tuxepedia (monster seen or caught)
@@ -94,8 +96,8 @@ class NPC(Entity):
         # list of ways player can interact with the Npc
         self.interactions: Sequence[str] = []
         self.mission_controller = MissionController(self, MissionManager())
-        self.economy: Optional[Economy] = None
-        self.shop_inventory: Optional[ShopInventory] = None
+        self.economy: Economy | None = None
+        self.shop_inventory: ShopInventory | None = None
         self.teleport_faint = TeleportFaint()
         self.tracker = TrackingData()
         self.step_tracker = StepTrackerManager()
@@ -110,7 +112,7 @@ class NPC(Entity):
         self.bag = BagHandler(item_boxes=self.item_boxes, owner=self)
         self.evolution_registry = EvolutionRegistry()
         self.steps: float = 0.0
-        self.dialogue: Optional[DialogueProfile] = None
+        self.dialogue: DialogueProfile | None = None
         self.sprite_controller = SpriteController(self)
 
         # PathController manages all path/pathfinding state & logic.
@@ -120,7 +122,6 @@ class NPC(Entity):
             self.client.map_manager,
             self.client.npc_manager,
         )
-        self.final_move_dest: tuple[int, int] = (0, 0)
 
     @classmethod
     def create(cls, session: Session, npc_slug: str) -> NPC:
@@ -144,6 +145,12 @@ class NPC(Entity):
         self._custom_name = value
 
     @property
+    def gender_translated(self) -> str:
+        if self.gender is None:
+            return ""
+        return T.translate(f"gender_{self.gender}")
+
+    @property
     def game_variables(self) -> PlayerVariablesManager:
         return self._variables.player
 
@@ -163,9 +170,12 @@ class NPC(Entity):
         return self.path_controller.path
 
     @property
-    def move_destination(self) -> Optional[tuple[int, int]]:
+    def move_destination(self) -> tuple[int, int] | None:
         """Returns the NPC's current movement destination tile, if any."""
         return self.path_controller.move_destination
+
+    def combat_sheet(self) -> CombatSheet:
+        return get_combat_sheet(self.template)
 
     def get_state(self, session: Session) -> NPCState:
         """
@@ -182,6 +192,7 @@ class NPC(Entity):
         monster_boxes_state = self.monster_boxes.get_state()
         item_boxes_state = self.item_boxes.get_state()
 
+        base.gender = self.gender
         base.current_map = self.current_map
         base.facing = self.facing.value
         base.game_variables = self._variables.get_player_state()
@@ -219,6 +230,7 @@ class NPC(Entity):
         """
         super().set_state(session, save_data)
 
+        self.gender = save_data.gender
         self._variables.set_player_state(save_data.game_variables)
         self.tuxepedia = decode_tuxepedia(
             save_data.tuxepedia, session.client.event_bus
@@ -249,7 +261,7 @@ class NPC(Entity):
             self.template.sprite_name = save_data.template.get(
                 "sprite_name", ""
             )
-            self.template.combat_front = save_data.template.get(
+            self.template.combat_sheet = save_data.template.get(
                 "combat_front", ""
             )
             self.sprite_controller.update_template(self.template)

@@ -13,7 +13,7 @@ from pygame.rect import Rect
 
 from tuxemon.event import get_event_bus
 from tuxemon.event.eventbus import Listener
-from tuxemon.graphics import load_animated_sprite, load_sprite
+from tuxemon.graphics import load_animated_sprite, load_sprite, load_surface
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import local_session
 from tuxemon.sprite import Sprite, SpriteGroup
@@ -21,6 +21,8 @@ from tuxemon.state.animation_mixin import AnimationMixin
 from tuxemon.state.render_mixin import RenderMixin
 
 if TYPE_CHECKING:
+    from pygame.surface import Surface
+
     from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
@@ -78,6 +80,12 @@ class State(AnimationMixin, RenderMixin, ABC):
         """Load a sprite and add it to this state."""
         layer = kwargs.pop("layer", 0)
         sprite = load_sprite(filename, **kwargs)
+        self.sprites.add(sprite, layer=layer)
+        return sprite
+
+    def load_surface(self, surface: Surface, **kwargs: Any) -> Sprite:
+        layer = kwargs.pop("layer", 0)
+        sprite = load_surface(surface, **kwargs)
         self.sprites.add(sprite, layer=layer)
         return sprite
 

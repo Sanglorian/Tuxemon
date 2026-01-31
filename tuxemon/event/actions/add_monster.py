@@ -6,11 +6,9 @@ from dataclasses import dataclass
 from typing import Optional, final
 
 from tuxemon.database.runtime import db
-from tuxemon.db import SeenStatus
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster import Monster
 from tuxemon.session import Session
-from tuxemon.time_handler import today_ordinal
 
 
 @final
@@ -59,7 +57,7 @@ class AddMonsterAction(EventAction):
             monster_slug = self.monster_slug
 
         monster = Monster.spawn_base(monster_slug, self.monster_level)
-        monster.set_capture(today_ordinal())
+        monster.set_capture(session.time.get_ordinal())
 
         if self.exp is not None:
             monster.set_experience_modifier(self.exp)
@@ -67,5 +65,5 @@ class AddMonsterAction(EventAction):
             monster.money_modifier = self.money
 
         trainer.party.add_monster(monster, len(trainer.monsters))
-        trainer.tuxepedia.add_entry(monster.slug, SeenStatus.caught)
+        trainer.tuxepedia.register_caught(monster.slug)
         player.game_variables.set(self.name, monster.instance_id.hex)

@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING, Optional, Union
 
 from pygame.rect import Rect
 
-from tuxemon.item.item import INFINITE_ITEMS, Item
+from tuxemon.item.item import Item
+from tuxemon.item.stock import INFINITE_ITEMS
 from tuxemon.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.monster import Monster

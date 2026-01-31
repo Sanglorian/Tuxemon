@@ -15,7 +15,6 @@ from tuxemon.combat.combat_context import CombatType
 from tuxemon.db import BattleMusicModel, GenderType, OutputBattle
 from tuxemon.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
-from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
@@ -63,38 +62,6 @@ def check_repellent(character: NPC) -> bool:
     if repellent_tracker is None:
         return False
     return repellent_tracker.countdown > 0
-
-
-def has_effect(technique: Technique, effect_name: str) -> bool:
-    """
-    Checks to see if the technique has a specific effect (eg ram -> damage).
-    """
-    return any(t for t in technique.effects if t.name == effect_name)
-
-
-def has_effect_param(
-    tech: Technique, effect_name: str, attribute: str, name: str
-) -> bool:
-    """
-    Checks whether a specific effect contains the specified attribute with a
-    matching value.
-
-    Parameters:
-        tech: The technique object containing a list of effects.
-        effect_name: The name of the effect to look for (e.g., 'give').
-        attribute: The attribute within the effect to check (e.g., 'condition'
-            in the 'give' effect).
-        name: The expected value of the attribute (e.g., 'diehard', which is
-            assigned by the 'give' effect).
-
-    Returns:
-        bool: True if an effect with the given name and attribute value is
-            found, otherwise False.
-    """
-    return any(
-        ele.name == effect_name and getattr(ele, attribute, None) == name
-        for ele in tech.effects
-    )
 
 
 def battlefield(session: Session, monster: Monster) -> None:

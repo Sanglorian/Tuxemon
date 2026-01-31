@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from tuxemon.boxes import ItemBoxes
@@ -26,7 +26,7 @@ class BagHandler:
         self,
         item_boxes: ItemBoxes,
         owner: NPC,
-        items: Optional[list[Item]] = None,
+        items: list[Item] | None = None,
         bag_limit: int = MAX_TYPES_BAG,
     ) -> None:
         self._owner = owner
@@ -42,37 +42,45 @@ class BagHandler:
     def items(self) -> list[Item]:
         return self._items
 
+    @property
+    def is_full(self) -> bool:
+        return len(self._items) >= self._bag_limit
+
     def add_item(
         self, item: Item, quantity: int = 1, locker: str = LOCKER
-    ) -> None:
-        """Add an item to the bag, or send to a box if full."""
+    ) -> bool:
+        """Add an item to the bag, or send to a box if full. Returns True on success."""
         logger.debug(f"Adding '{item.slug}' x{quantity} to inventory.")
+
+        if quantity <= 0:
+            logger.warning(f"Ignoring non-positive quantity: {quantity}")
+            return False
 
         if not self._item_boxes.has_box(locker, "item"):
             logger.debug(f"Item box '{locker}' missing; creating.")
             self._item_boxes.create_box(locker)
 
         existing = self.find_item(item.slug)
-
         if existing:
-            new_qty = existing.quantity + quantity
             logger.debug(
-                f"Item '{item.slug}' exists. Increasing quantity {existing.quantity} → {new_qty}."
+                f"Item '{item.slug}' exists. Increasing quantity "
+                f"{existing.quantity} → {existing.quantity + quantity}."
             )
-            existing.set_quantity(new_qty)
-            return
+            existing.increase_quantity(quantity)
+            return True
 
-        if len(self._items) >= self._bag_limit:
+        if self.is_full:
             logger.debug(
                 f"Bag full. Sending '{item.slug}' x{quantity} to box '{locker}'."
             )
             item.set_quantity(quantity)
             self._item_boxes.add_item(locker, item)
-            return
+            return True
 
         logger.debug(f"Adding new item '{item.slug}' to bag.")
         item.set_quantity(quantity)
         self._items.append(item)
+        return True
 
     def remove_item(self, item: Item, quantity: int = 1) -> bool:
         """Remove quantity of an item; remove entirely if quantity reaches zero."""
@@ -86,25 +94,31 @@ class BagHandler:
             logger.debug(f"Item '{item.slug}' not found in bag.")
             return False
 
-        if item.quantity <= quantity:
+        # Try to remove from stock
+        if not item.stock.try_remove(quantity):
+            logger.debug(
+                f"Not enough quantity of '{item.slug}' to remove {quantity}."
+            )
+            return False
+
+        # Remove item entirely if empty
+        if not item.stock.has_any:
             logger.debug(f"Removing item '{item.slug}' completely.")
             self._items.remove(item)
         else:
-            new_qty = item.quantity - quantity
             logger.debug(
-                f"Reducing '{item.slug}' quantity {item.quantity} → {new_qty}."
+                f"Reducing '{item.slug}' quantity to {item.quantity}."
             )
-            item.set_quantity(new_qty)
 
         return True
 
-    def find_item(self, slug: str) -> Optional[Item]:
+    def find_item(self, slug: str) -> Item | None:
         return next((itm for itm in self._items if itm.slug == slug), None)
 
     def has_item(self, slug: str) -> bool:
         return any(itm.slug == slug for itm in self._items)
 
-    def find_item_by_id(self, instance_id: UUID) -> Optional[Item]:
+    def find_item_by_id(self, instance_id: UUID) -> Item | None:
         return next(
             (itm for itm in self._items if itm.instance_id == instance_id),
             None,
@@ -133,7 +147,7 @@ class BagHandler:
     def encode_items(self) -> Sequence[Mapping[str, Any]]:
         return encode_items(self._items)
 
-    def decode_items(self, json_data: Optional[NPCState]) -> None:
+    def decode_items(self, json_data: NPCState | None) -> None:
         if not json_data or not json_data.items:
             return
         self._items = list(decode_items(json_data.items))

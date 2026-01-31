@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from enum import Enum
+from enum import Enum, auto
 from importlib import import_module
 from math import isclose
 from typing import (
@@ -43,6 +43,12 @@ class Direction(str, Enum):
     DOWN = "down"
     LEFT = "left"
     RIGHT = "right"
+
+
+class FacingMode(Enum):
+    FOLLOW_MOVEMENT = auto()
+    LOCKED = auto()
+    SCRIPTED = auto()
 
 
 class Orientation(str, Enum):
@@ -109,9 +115,9 @@ class OutputBattle(str, Enum):
 
 
 class SeenStatus(str, Enum):
-    unseen = "unseen"
-    seen = "seen"
-    caught = "caught"
+    UNSEEN = "unseen"
+    SEEN = "seen"
+    CAUGHT = "caught"
 
 
 class StatType(str, Enum):
@@ -162,20 +168,20 @@ class TargetType(str, Enum):
 
 
 class Temperature(str, Enum):
-    freezing = "freezing"
-    cold = "cold"
-    mild = "mild"
-    warm = "warm"
-    hot = "hot"
-    scorching = "scorching"
+    FREEZING = "freezing"
+    COLD = "cold"
+    MILD = "mild"
+    WARM = "warm"
+    HOT = "hot"
+    SCORCHING = "scorching"
 
 
 class Wind(str, Enum):
-    calm = "calm"
-    breezy = "breezy"
-    windy = "windy"
-    gusty = "gusty"
-    stormy = "stormy"
+    CALM = "calm"
+    BREEZY = "breezy"
+    WINDY = "windy"
+    GUSTY = "gusty"
+    STORMY = "stormy"
 
 
 class EffectPhase(Enum):
@@ -491,6 +497,13 @@ class ItemBehaviors(Behaviors):
         False, description="Whether this can be repaired."
     )
     craftable: bool = Field(False, description="Whether this can be crafted.")
+    destroy_on_break: bool = Field(
+        False,
+        description="Whether the item is removed from the inventory when it breaks.",
+    )
+    wear_on_use: bool = Field(
+        False, description="Whether using this item increases its wear."
+    )
 
 
 class TechBehaviors(Behaviors):
@@ -682,6 +695,9 @@ class ItemModel(BaseModel, BaseLookupModel):
         default_factory=list,
         description="Status slugs granted to the holder while this item is equipped.",
     )
+    break_into_item: str | None = Field(
+        None, description="Slug of the item created when this one breaks."
+    )
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> ItemModel:
@@ -735,6 +751,16 @@ class ItemModel(BaseModel, BaseLookupModel):
                 raise ValueError(
                     f"Status {status} does not exist in the database"
                 )
+        return v
+
+    @field_validator("break_into_item")
+    def break_item_exists(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        if not has.db_entry("item", v):
+            raise ValueError(
+                f"Break-into item '{v}' does not exist in the database"
+            )
         return v
 
 
@@ -1537,9 +1563,29 @@ class TechniqueModel(BaseModel, BaseLookupModel):
     )
     recharge: int = Field(
         0,
-        description="Recharge of this technique",
+        description="The base number of turns it takes to recharge after use.",
         ge=sizes.RECHARGE_RANGE[0],
         le=sizes.RECHARGE_RANGE[1],
+    )
+    min_recharge: int = Field(
+        0,
+        description="The absolute floor for recharge time (haste/multipliers cannot go below this).",
+        ge=0,
+    )
+    initial_delay: int = Field(
+        0,
+        description="Number of turns the technique is unavailable at the start of a battle.",
+        ge=0,
+    )
+    starting_charge: int = Field(
+        0,
+        description="Allows a move to be used multiple times before entering cooldown (if logic supports it).",
+        ge=0,
+    )
+    cooldown_multiplier: float = Field(
+        1.0,
+        description="A static modifier for how fast this specific tech recharges.",
+        ge=0.0,
     )
     range: Range = Field(..., description="The attack range of this technique")
     tech_id: int = Field(..., description="The id of this technique")
@@ -1802,10 +1848,14 @@ class NpcTemplateModel(TemplateModel):
         2.0,
         description="Additional speed scaling for this NPC",
     )
-    combat_front: str = Field(
+    combat_sheet: str = Field(
         ...,
-        description="Filename of the battle front sprite (without extension)",
+        description="Filename of the combat sprite sheet (side-by-side, back|front)",
     )
+    combat_frame_width: int = 64
+    combat_frame_height: int = 64
+    combat_rows: int = 1
+    combat_columns: int = 2
 
     @field_validator("sprite_name")
     def validate_sheet_exists(cls, v: str) -> str:
@@ -1827,12 +1877,12 @@ class NpcTemplateModel(TemplateModel):
             f"Neither sprite sheet '{sheet}' nor static prop '{static_obj}' exists"
         )
 
-    @field_validator("combat_front")
-    def validate_combat_sprite(cls, v: str) -> str:
+    @field_validator("combat_sheet")
+    def validate_combat_sheet(cls, v: str) -> str:
         file = f"gfx/sprites/player/{v}.png"
         if has.file(file):
             return v
-        raise ValueError(f"Combat sprite '{file}' does not exist")
+        raise ValueError(f"Combat sheet '{file}' does not exist")
 
 
 class DialogueContent(BaseModel):

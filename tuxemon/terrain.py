@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 from tuxemon.database.runtime import db
 from tuxemon.db import Modifier, TerrainModel
@@ -16,58 +15,41 @@ class Terrain:
 
     _terrains: dict[str, Terrain] = {}
 
-    def __init__(self, slug: Optional[str] = None) -> None:
+    def __init__(self, slug: str, modifiers: list[Modifier]) -> None:
         self.slug = slug
-        self.modifiers: list[Modifier] = []
-
-        if self.slug:
-            self.load(self.slug)
-
-    def load(self, slug: str) -> None:
-        """Loads terrain."""
-
-        if slug in Terrain._terrains:
-            cached_terrain = Terrain._terrains[slug]
-            self.slug = slug
-            self.modifiers = cached_terrain.modifiers
-            return
-
-        results = TerrainModel.lookup(slug, db)
-        self.modifiers = results.modifiers
-
-        Terrain._terrains[slug] = self
+        self.modifiers = list(modifiers)
 
     @classmethod
-    def get_terrain(cls, slug: str) -> Optional[Terrain]:
+    def get(cls, slug: str) -> Terrain:
         """
-        Retrieves a Terrain object by its slug.
-
-        Parameters:
-            slug: The unique identifier for the terrain.
-
-        Returns:
-            The Terrain object if found, otherwise None.
+        Retrieve a Terrain from cache or load it from the database.
         """
-        return cls._terrains.get(slug)
+        if slug in cls._terrains:
+            return cls._terrains[slug]
+
+        try:
+            model = TerrainModel.lookup(slug, db)
+            modifiers = model.modifiers
+        except Exception:
+            logger.warning(f"Terrain {slug} not found, using empty fallback.")
+            modifiers = []
+
+        terrain = cls(slug, modifiers)
+        cls._terrains[slug] = terrain
+        return terrain
 
     @classmethod
     def load_all_terrains(cls) -> None:
         """Loads all terrains from the database into the cache."""
         try:
-            all_terrain_slugs = list(db.database["terrain"])
-            for slug in all_terrain_slugs:
-                cls(slug)
+            for slug in db.database["terrain"]:
+                cls.get(slug)
         except Exception as e:
             logger.error(f"Failed to load all terrains: {e}")
 
     @classmethod
     def get_all_terrains(cls) -> dict[str, Terrain]:
-        """
-        Returns all loaded terrains.
-
-        Returns:
-            A dictionary of all loaded Terrain objects.
-        """
+        """Returns all loaded terrains."""
         if not cls._terrains:
             cls.load_all_terrains()
         return cls._terrains

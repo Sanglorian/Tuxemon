@@ -14,7 +14,6 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.locale import T
 from tuxemon.monster import Monster
 from tuxemon.taste import Taste
-from tuxemon.time_handler import today_ordinal
 from tuxemon.tools import get_valid_uuid, open_dialog
 
 if TYPE_CHECKING:
@@ -104,7 +103,7 @@ class SpawnMonsterAction(EventAction):
 
         # Create a new child monster
         child = Monster.spawn_base(seed_slug, level)
-        child.set_capture(today_ordinal())
+        child.set_capture(session.time.get_ordinal())
         child.name = name
         child.set_acquisition(Acquisition.BRED)
 
@@ -246,8 +245,8 @@ def _determine_tastes(mother: Monster, father: Monster) -> tuple[str, str]:
     warm_slug = random.choice([mother.taste_warm, father.taste_warm])
     cold_slug = random.choice([mother.taste_cold, father.taste_cold])
 
-    taste_warm = Taste.get_taste(warm_slug)
-    taste_cold = Taste.get_taste(cold_slug)
+    taste_warm = Taste.get(warm_slug)
+    taste_cold = Taste.get(cold_slug)
 
     if not taste_warm:
         raise ValueError(

@@ -59,7 +59,7 @@ events:
     actions:
     - set_environment snow
     conditions:
-    - not variable_set stage_of_day:night
+    - not time_is stage_of_day,equals,night
     - not environment_is snow
     x: 0
     y: 1
@@ -68,7 +68,7 @@ events:
     actions:
     - set_environment night_snow
     conditions:
-    - is variable_set stage_of_day:night
+    - is time_is stage_of_day,equals,night
     - not environment_is night_snow
     x: 0
     y: 2

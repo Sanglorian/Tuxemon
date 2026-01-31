@@ -5,7 +5,7 @@
   "audio": {},
   "template": {
     "sprite_name": "xerogrunt",
-    "combat_front": "adventurer",
+    "combat_sheet": "adventurer",
     "slug": "xerogrunt"
   }
 }

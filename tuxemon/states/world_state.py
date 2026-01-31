@@ -152,8 +152,6 @@ class WorldState(State):
         self.client.npc_manager.update_npcs_off_map(time_delta, self.client)
         self.client.map_renderer.update(time_delta)
 
-        logger.debug("*** Game Loop Started ***")
-
     def draw(self, surface: Surface) -> None:
         """Draw the game world to the screen."""
         self.client.map_renderer.draw(

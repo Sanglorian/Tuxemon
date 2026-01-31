@@ -6,7 +6,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight_red",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "enforcer_rookie"
     }
   },
@@ -17,7 +17,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist_fiery",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   },
@@ -28,7 +28,7 @@
     "audio": {},
     "template": {
       "sprite_name": "barmaid_red",
-      "combat_front": "barmaid",
+      "combat_sheet": "barmaid",
       "slug": "barmaid"
     }
   },
@@ -39,7 +39,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor_green",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -50,7 +50,7 @@
     "audio": {},
     "template": {
       "sprite_name": "riverboatcaptain",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "riverboatcaptain"
     }
   },
@@ -61,7 +61,7 @@
     "audio": {},
     "template": {
       "sprite_name": "catgirl",
-      "combat_front": "catgirl",
+      "combat_sheet": "catgirl",
       "slug": "catgirl"
     }
   },
@@ -72,7 +72,7 @@
     "audio": {},
     "template": {
       "sprite_name": "picnicker",
-      "combat_front": "picnicker",
+      "combat_sheet": "picnicker",
       "slug": "picnicker"
     }
   },
@@ -83,7 +83,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac_yellow",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "maniac"
     }
   },
@@ -94,7 +94,7 @@
     "audio": {},
     "template": {
       "sprite_name": "shopkeeper",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "shopkeeper"
     }
   },
@@ -105,7 +105,7 @@
     "audio": {},
     "template": {
       "sprite_name": "shopkeeper",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "shopkeeper"
     }
   },
@@ -116,7 +116,7 @@
     "audio": {},
     "template": {
       "sprite_name": "riverboatcaptain",
-      "combat_front": "pirate",
+      "combat_sheet": "pirate",
       "slug": "pirate"
     }
   },
@@ -127,7 +127,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac_rose",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "maniac"
     }
   },
@@ -138,7 +138,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor_lapi",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -149,7 +149,7 @@
     "audio": {},
     "template": {
       "sprite_name": "goth",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "goth"
     }
   },
@@ -160,7 +160,7 @@
     "audio": {},
     "template": {
       "sprite_name": "beachcomber_fiery",
-      "combat_front": "yellowbelt",
+      "combat_sheet": "yellowbelt",
       "slug": "yellowbelt"
     }
   },
@@ -171,7 +171,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk_blue",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   },
@@ -182,7 +182,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk_green",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   }

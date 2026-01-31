@@ -2,14 +2,15 @@
 # SPDX-License-Identifier: GPL-3.0
 
 from pathlib import Path
+
 from PIL import Image
 
 # Direction → (walk1, idle, walk2)
 DIRECTION_MAP = {
     "front": ("_front_walk.000.png", "_front.png", "_front_walk.001.png"),
-    "left":  ("_left_walk.000.png",  "_left.png",  "_left_walk.001.png"),
+    "left": ("_left_walk.000.png", "_left.png", "_left_walk.001.png"),
     "right": ("_right_walk.000.png", "_right.png", "_right_walk.001.png"),
-    "back":  ("_back_walk.000.png",  "_back.png",  "_back_walk.001.png"),
+    "back": ("_back_walk.000.png", "_back.png", "_back_walk.001.png"),
 }
 
 ROW_ORDER = ["front", "left", "right", "back"]
@@ -33,7 +34,7 @@ def collect_bases(folder: Path) -> list[str]:
     """
     bases = []
     for p in folder.glob("*_front.png"):
-        base = p.name[:-len("_front.png")]
+        base = p.name[: -len("_front.png")]
         bases.append(base)
     return sorted(set(bases))
 

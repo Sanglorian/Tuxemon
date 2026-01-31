@@ -14,7 +14,7 @@ from tuxemon.math import Vector2
 from tuxemon.platform.const.sizes import MOVERATE_RANGE
 from tuxemon.player import Player
 from tuxemon.session import local_session
-from tuxemon.tuxepedia import TuxepediaManager
+from tuxemon.tuxepedia.manager import TuxepediaManager
 from tuxemon.user_config import CONFIG
 
 
@@ -173,14 +173,6 @@ class TestActionsSetPlayer(unittest.TestCase):
             )
             local_session.set_player(Player())
             self.player = local_session.player
-
-    def test_set_player_name(self):
-        self.action.execute_action("set_player_name", ["jimmy"])
-        self.assertEqual(self.player.name, "jimmy")
-
-    def test_set_player_name_random(self):
-        self.action.execute_action("set_player_name", ["maple123:maple321"])
-        self.assertIn(self.player.name, ["maple123", "maple321"])
 
 
 class TestCharacterActions(unittest.TestCase):

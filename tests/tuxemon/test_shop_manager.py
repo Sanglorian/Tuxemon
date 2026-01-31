@@ -3,7 +3,7 @@
 import pytest
 
 from tuxemon.economy.shop_manager import ShopManager
-from tuxemon.item.item import INFINITE_ITEMS
+from tuxemon.item.stock import INFINITE_ITEMS
 
 
 @pytest.fixture

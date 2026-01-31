@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderrookie",
-      "combat_front": "spyder_rookie",
+      "combat_sheet": "spyder_rookie",
       "slug": "spyder_rookie"
     }
   },
@@ -35,7 +35,7 @@
     "audio": {},
     "template": {
       "sprite_name": "overseer",
-      "combat_front": "overseer",
+      "combat_sheet": "overseer",
       "slug": "overseer"
     }
   },
@@ -55,7 +55,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "knight",
+      "combat_sheet": "knight",
       "slug": "knight"
     }
   },
@@ -75,7 +75,7 @@
     "audio": {},
     "template": {
       "sprite_name": "fisher",
-      "combat_front": "fisher",
+      "combat_sheet": "fisher",
       "slug": "fisher"
     }
   },
@@ -95,7 +95,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_yellow",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -115,7 +115,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_red",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -135,7 +135,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_green",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -155,7 +155,7 @@
     "audio": {},
     "template": {
       "sprite_name": "tennisplayer",
-      "combat_front": "tennisplayer",
+      "combat_sheet": "tennisplayer",
       "slug": "tennisplayer"
     }
   },
@@ -175,7 +175,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -195,7 +195,7 @@
     "audio": {},
     "template": {
       "sprite_name": "tennisplayer",
-      "combat_front": "tennisplayer",
+      "combat_sheet": "tennisplayer",
       "slug": "tennisplayer"
     }
   },
@@ -206,7 +206,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderrookie",
-      "combat_front": "spyder_rookie",
+      "combat_sheet": "spyder_rookie",
       "slug": "spyder_rookie"
     }
   },
@@ -217,7 +217,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_blue",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -228,7 +228,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_red",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -239,7 +239,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_yellow",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   }

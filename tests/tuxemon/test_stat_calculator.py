@@ -37,7 +37,7 @@ def mock_tastes():
     warm = MagicMock(spec=Taste)
     warm.slug = "warm"
     warm.modifiers = [MagicMock(values=["melee"], multiplier=1.1)]
-    Taste.get_taste = MagicMock(
+    Taste.get = MagicMock(
         side_effect=lambda name: {"cold": cold, "warm": warm}[name]
     )
     return cold, warm

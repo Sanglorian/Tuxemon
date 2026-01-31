@@ -162,20 +162,20 @@ class TargetType(str, Enum):
 
 
 class Temperature(str, Enum):
-    freezing = "freezing"
-    cold = "cold"
-    mild = "mild"
-    warm = "warm"
-    hot = "hot"
-    scorching = "scorching"
+    FREEZING = "freezing"
+    COLD = "cold"
+    MILD = "mild"
+    WARM = "warm"
+    HOT = "hot"
+    SCORCHING = "scorching"
 
 
 class Wind(str, Enum):
-    calm = "calm"
-    breezy = "breezy"
-    windy = "windy"
-    gusty = "gusty"
-    stormy = "stormy"
+    CALM = "calm"
+    BREEZY = "breezy"
+    WINDY = "windy"
+    GUSTY = "gusty"
+    STORMY = "stormy"
 
 
 class EffectPhase(Enum):

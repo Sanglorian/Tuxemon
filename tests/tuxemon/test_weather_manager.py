@@ -16,7 +16,7 @@ from tuxemon.world.weather import (
 
 @pytest.fixture
 def weather_patch():
-    patcher = patch("tuxemon.world.weather.Weather")
+    patcher = patch("tuxemon.world.weather.Weather.get")
     mock_weather_class = patcher.start()
 
     def dummy_weather(slug):

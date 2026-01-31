@@ -14,7 +14,7 @@ from tuxemon.math import Vector2
 from tuxemon.platform.const.sizes import MOVERATE_RANGE
 from tuxemon.player import Player
 from tuxemon.session import local_session
-from tuxemon.tuxepedia import TuxepediaManager
+from tuxemon.tuxepedia.manager import TuxepediaManager
 from tuxemon.user_config import CONFIG
 
 

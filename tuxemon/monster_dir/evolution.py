@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 from tuxemon.db import (
     LearningMethod,
     MonsterEvolutionItemModel,
-    SeenStatus,
 )
 from tuxemon.monster_dir.evolution_conditions import (
     check_bond,
@@ -103,7 +102,7 @@ class Evolution:
                 )
 
         if owner.party.replace_monster(self.monster, new_monster):
-            owner.tuxepedia.add_entry(new_monster.slug, SeenStatus.caught)
+            owner.tuxepedia.register_caught(new_monster.slug)
             logger.info(f"{self.monster} evolved into {new_monster}")
         else:
             logger.warning(f"Failed to evolve {self.monster}")

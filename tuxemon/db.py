@@ -115,9 +115,9 @@ class OutputBattle(str, Enum):
 
 
 class SeenStatus(str, Enum):
-    unseen = "unseen"
-    seen = "seen"
-    caught = "caught"
+    UNSEEN = "unseen"
+    SEEN = "seen"
+    CAUGHT = "caught"
 
 
 class StatType(str, Enum):

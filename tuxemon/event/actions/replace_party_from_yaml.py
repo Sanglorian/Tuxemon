@@ -9,7 +9,6 @@ from typing import Any, final
 
 from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import load_yaml
-from tuxemon.db import SeenStatus
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster import Monster
 from tuxemon.platform.const.sizes import PARTY_LIMIT
@@ -107,7 +106,7 @@ class ReplacePartyFromYamlAction(EventAction):
 
             monster = Monster.spawn_base(slug, level)
             monster.set_capture(today_ordinal())
-            character.tuxepedia.add_entry(monster.slug, SeenStatus.caught)
+            character.tuxepedia.register_caught(monster.slug)
 
             if "experience_modifier" in entry:
                 monster.set_experience_modifier(

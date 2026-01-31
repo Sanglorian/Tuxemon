@@ -62,14 +62,14 @@ def test_evolve_monster_success(setup_evolution):
     new_mon.transfer_properties_from = MagicMock()
     new_mon.moves.learn_by_method = MagicMock()
     player.party.replace_monster = MagicMock(return_value=True)
-    player.tuxepedia.add_entry = MagicMock()
+    player.tuxepedia.register_caught = MagicMock()
     evo.evolve_monster(new_mon)
     new_mon.transfer_properties_from.assert_called_with(mon)
     new_mon.moves.learn_by_method.assert_called_with(
         new_mon, "SpecialBeam", LearningMethod.EVOLUTION
     )
     player.party.replace_monster.assert_called_with(mon, new_mon)
-    player.tuxepedia.add_entry.assert_called_with("rockat", SeenStatus.caught)
+    player.tuxepedia.register_caught.assert_called_with("rockat")
 
 
 def test_evolve_monster_not_eligible(setup_evolution):
@@ -90,7 +90,7 @@ def test_evolve_monster_replace_fails(setup_evolution):
     player.party.replace_monster = MagicMock(return_value=False)
     player.tuxepedia = MagicMock()
     evo.evolve_monster(new_mon)
-    assert not player.tuxepedia.add_entry.called
+    assert not player.tuxepedia.register_caught.called
 
 
 def test_no_owner(setup_evolution):

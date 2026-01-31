@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from enum import Enum
+from enum import Enum, auto
 from importlib import import_module
 from math import isclose
 from typing import (
@@ -43,6 +43,12 @@ class Direction(str, Enum):
     down = "down"
     left = "left"
     right = "right"
+
+
+class FacingMode(Enum):
+    FOLLOW_MOVEMENT = auto()
+    LOCKED = auto()
+    SCRIPTED = auto()
 
 
 class Orientation(str, Enum):

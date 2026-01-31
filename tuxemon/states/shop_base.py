@@ -9,7 +9,6 @@ from typing import (
     Any,
     ClassVar,
     Generic,
-    Optional,
     Protocol,
     TypeVar,
 )
@@ -90,7 +89,6 @@ class ShopMenuState(Menu[T], Generic[T], ABC):
         self.seller = seller
         self.economy = economy
         self.applier = EconomyApplier()
-        self.update_background(self.economy.model.background)
         self.buyer_manager = self.buyer.money_controller.money_manager
         self.seller_manager = self.seller.money_controller.money_manager
         self.transaction_manager = TransactionManager(
@@ -130,7 +128,7 @@ class ShopMenuState(Menu[T], Generic[T], ABC):
         self.add(menu_item)
 
     @abstractmethod
-    def _get_asset_image(self, asset: MenuItem[T]) -> Optional[Surface]:
+    def _get_asset_image(self, asset: MenuItem[T]) -> Surface | None:
         """Returns the visual representation for the asset."""
 
     @abstractmethod
@@ -178,7 +176,7 @@ class ShopMenuState(Menu[T], Generic[T], ABC):
         )
         self.on_menu_selection_change()
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         total_pages = self.paginator.total_pages()
         if event.button == buttons.RIGHT and event.pressed:
             if self.current_page < total_pages - 1:

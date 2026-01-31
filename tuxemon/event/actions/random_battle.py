@@ -20,7 +20,6 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.monster import Monster
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.session import Session
-from tuxemon.time_handler import today_ordinal
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +98,7 @@ class RandomBattleAction(EventAction):
         for monster in monsters_to_add:
             level = random.randint(self.min_level, self.max_level)
             spawn_monster = Monster.spawn_base(monster.slug, level)
-            spawn_monster.set_capture(today_ordinal())
+            spawn_monster.set_capture(session.time.get_ordinal())
             spawn_monster.money_modifier = level
             spawn_monster.set_experience_modifier(level)
             npc.party.insert_monster_to_party(spawn_monster, len(npc.monsters))

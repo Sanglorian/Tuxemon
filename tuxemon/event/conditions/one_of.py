@@ -26,7 +26,7 @@ class OneOfCondition(EventCondition):
         variable: The variable to check.
         values: Value to check for (multiple values separated by ":").
 
-    eg. "is one_of stage_of_day,afternoon:dusk:morning"
+    eg. "is one_of name_variable,option1:option2:option3"
     """
 
     name = "one_of"

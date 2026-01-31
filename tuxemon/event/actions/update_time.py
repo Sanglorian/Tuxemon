@@ -8,14 +8,6 @@ from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
-from tuxemon.time_handler import (
-    calculate_day_night_cycle,
-    calculate_day_stage_of_day,
-    determine_season,
-    get_current_time,
-    is_leap_year,
-)
-from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -46,22 +38,14 @@ class UpdateTimeAction(EventAction):
             logger.error(f"{self.character} not found")
             return
 
-        current_time = get_current_time()
+        time_vars = session.time.get_time_variables()
         game_variables = character.game_variables
-        game_variables.set("hour", current_time.strftime("%H"))
-        game_variables.set(
-            "day_of_year", str(current_time.timetuple().tm_yday)
-        )
-        game_variables.set("year", current_time.strftime("%Y"))
-        game_variables.set("weekday", current_time.strftime("%A"))
-        game_variables.set(
-            "leap_year",
-            ("true" if is_leap_year(current_time.year) else "false"),
-        )
-        game_variables.set("daytime", calculate_day_night_cycle(current_time))
-        game_variables.set(
-            "stage_of_day", calculate_day_stage_of_day(current_time)
-        )
-        game_variables.set(
-            "season", determine_season(current_time, CONFIG.hemisphere)
-        )
+
+        game_variables.set("hour", str(time_vars.hour))
+        game_variables.set("day_of_year", str(time_vars.day_of_year))
+        game_variables.set("year", str(time_vars.year))
+        game_variables.set("weekday", time_vars.weekday)
+        game_variables.set("leap_year", time_vars.leap_year)
+        game_variables.set("daytime", time_vars.daytime)
+        game_variables.set("stage_of_day", time_vars.stage_of_day)
+        game_variables.set("season", time_vars.season)

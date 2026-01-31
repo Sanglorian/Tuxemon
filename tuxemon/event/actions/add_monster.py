@@ -9,7 +9,6 @@ from tuxemon.database.runtime import db
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster import Monster
 from tuxemon.session import Session
-from tuxemon.time_handler import today_ordinal
 
 
 @final
@@ -58,7 +57,7 @@ class AddMonsterAction(EventAction):
             monster_slug = self.monster_slug
 
         monster = Monster.spawn_base(monster_slug, self.monster_level)
-        monster.set_capture(today_ordinal())
+        monster.set_capture(session.time.get_ordinal())
 
         if self.exp is not None:
             monster.set_experience_modifier(self.exp)

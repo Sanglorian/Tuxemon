@@ -14,7 +14,8 @@ horde:
           probability: 0.4
       level_range: [2, 4]
       variables:
-        - { stage_of_day: "night" }
+        - key: stage_of_day
+          value: "night"
       exp_req_mod: 1.0
 
     - monster: "nut"      # Second monster in the horde
@@ -24,7 +25,8 @@ horde:
           probability: 0.2
       level_range: [3, 5]
       variables:
-        - { stage_of_day: "night" }
+        - key: stage_of_day
+          value: "night"
       exp_req_mod: 1.5
 
     - monster: "rockitten"       # Third monster in the horde
@@ -34,7 +36,8 @@ horde:
           probability: 0.1
       level_range: [5, 7]
       variables:
-        - { stage_of_day: "night" }
+        - key: stage_of_day
+          value: "night"
       exp_req_mod: 2.0
 
   horde_level_range: [3, 6]         # Base level range for the entire horde

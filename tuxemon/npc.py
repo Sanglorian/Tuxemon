@@ -155,6 +155,10 @@ class NPC(Entity):
         return self._variables.player
 
     @property
+    def variable_manager(self) -> GameVariablesManager:
+        return self._variables
+
+    @property
     def monsters(self) -> list[Monster]:
         """Returns the list of monsters in the party."""
         return self.party.monsters

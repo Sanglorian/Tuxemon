@@ -7,7 +7,8 @@ monsters:
   - 20
   monster: dandicub
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 5
   exp_req_mod: 3
   held_items: []
@@ -16,7 +17,8 @@ monsters:
   - 23
   monster: dandylion
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 10
   exp_req_mod: 3
   held_items: []
@@ -25,7 +27,8 @@ monsters:
   - 22
   monster: capiti
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 10
   exp_req_mod: 3
   held_items: []
@@ -34,7 +37,8 @@ monsters:
   - 24
   monster: dandicub
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 - encounter_rate: 5
   exp_req_mod: 3
   held_items: []
@@ -43,7 +47,8 @@ monsters:
   - 24
   monster: dandylion
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 - encounter_rate: 10
   exp_req_mod: 3
   held_items: []
@@ -52,5 +57,6 @@ monsters:
   - 24
   monster: capiti
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 slug: spyder_route6

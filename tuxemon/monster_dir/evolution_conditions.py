@@ -173,13 +173,10 @@ def check_variables(
     """Append checks for required game variable values from the owner."""
     if not evolution_item.variables:
         return
-
-    for variable in evolution_item.variables:
-        for key, value in variable.items():
-            conditions.append(
-                monster.get_owner().game_variables.has(key)
-                and monster.get_owner().game_variables.get(key) == value
-            )
+    owner = monster.get_owner()
+    conditions.append(
+        owner.variable_manager.check_conditions(evolution_item.variables)
+    )
 
 
 def check_steps(

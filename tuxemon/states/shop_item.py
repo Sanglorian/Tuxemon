@@ -66,9 +66,9 @@ class ShopItemMenuState(ShopMenuState[Item]):
             )
 
             def buy_item(quantity: int) -> None:
-                total_price, _ = self.economy.calculate_price(item, quantity)
+                price = self.economy.calculate_price(item, quantity)
                 self.transaction_manager.buy_item(
-                    self.buyer, item, quantity, label, total_price
+                    self.buyer, item, quantity, label, price.final_price
                 )
                 self.reload_shop()
 
@@ -97,11 +97,11 @@ class ShopItemMenuState(ShopMenuState[Item]):
                 label = self.client.shop_manager.get_full_label(
                     self.economy.model.slug, item.slug
                 )
-                total_price, _ = self.economy.calculate_price(
+                price = self.economy.calculate_price(
                     item, quantity, seller_mode=True
                 )
                 self.transaction_manager.sell_item(
-                    self.seller, item, quantity, total_price, label
+                    self.seller, item, quantity, price.final_price, label
                 )
                 self.reload_shop()
 
@@ -126,9 +126,9 @@ class ShopItemBuyMenuState(ShopItemMenuState):
         )
 
         def buy_item(quantity: int) -> None:
-            total_price, _ = self.economy.calculate_price(item, quantity)
+            price = self.economy.calculate_price(item, quantity)
             self.transaction_manager.buy_item(
-                self.buyer, item, quantity, label, total_price
+                self.buyer, item, quantity, label, price.final_price
             )
             self.reload_items()
             if (
@@ -174,11 +174,11 @@ class ShopItemSellMenuState(ShopItemMenuState):
             label = self.client.shop_manager.get_full_label(
                 self.economy.model.slug, item.slug
             )
-            total_price, _ = self.economy.calculate_price(
+            price = self.economy.calculate_price(
                 item, quantity, seller_mode=True
             )
             self.transaction_manager.sell_item(
-                self.seller, item, quantity, total_price, label
+                self.seller, item, quantity, price.final_price, label
             )
             self.reload_items()
             if not self.seller.bag.has_item(item.slug):

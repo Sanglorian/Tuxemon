@@ -68,11 +68,9 @@ class ShopMonsterMenuState(ShopMenuState[Monster]):
             )
 
             def buy_monster(quantity: int) -> None:
-                total_price, _ = self.economy.calculate_price(
-                    monster, quantity
-                )
+                price = self.economy.calculate_price(monster, quantity)
                 self.transaction_manager.buy_monster(
-                    self.buyer, monster, quantity, label, total_price
+                    self.buyer, monster, quantity, label, price.final_price
                 )
                 self.reload_shop()
 
@@ -101,11 +99,11 @@ class ShopMonsterMenuState(ShopMenuState[Monster]):
                 label = self.client.shop_manager.get_full_label(
                     self.economy.model.slug, monster.slug
                 )
-                total_price, _ = self.economy.calculate_price(
+                price = self.economy.calculate_price(
                     monster, quantity, seller_mode=True
                 )
                 self.transaction_manager.sell_monster(
-                    self.seller, monster, total_price, label
+                    self.seller, monster, price.final_price, label
                 )
                 self.reload_shop()
 
@@ -130,9 +128,9 @@ class ShopMonsterBuyMenuState(ShopMonsterMenuState):
         )
 
         def buy_monster(quantity: int) -> None:
-            total_price, _ = self.economy.calculate_price(monster, quantity)
+            price = self.economy.calculate_price(monster, quantity)
             self.transaction_manager.buy_monster(
-                self.buyer, monster, quantity, label, total_price
+                self.buyer, monster, quantity, label, price.final_price
             )
             self.reload_items()
             if (
@@ -178,11 +176,11 @@ class ShopMonsterSellMenuState(ShopMonsterMenuState):
             label = self.client.shop_manager.get_full_label(
                 self.economy.model.slug, monster.slug
             )
-            total_price, _ = self.economy.calculate_price(
+            price = self.economy.calculate_price(
                 monster, quantity, seller_mode=True
             )
             self.transaction_manager.sell_monster(
-                self.seller, monster, total_price, label
+                self.seller, monster, price.final_price, label
             )
             self.reload_items()
             if not self.seller.party.has_monster(monster):

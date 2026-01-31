@@ -510,11 +510,16 @@ def calculate_capdev_modifier(
             ):
                 logger.warning(f"Invalid variables structure: {variables}")
                 continue
-            if (
-                character.game_variables.get(variables["key"])
-                == variables["value"]
+
+            if character.variable_manager.check_logic(
+                [{variables["key"]: variables["value"]}]
             ):
+                logger.debug(
+                    f"Variable match for key '{variables['key']}' == {variables['value']}. "
+                    f"Applying fallback_variables_bonus"
+                )
                 capdev_modifier *= config.fallback_variables_bonus
+
         logger.debug(
             "No matching variable found. Applying fallback_variables_malus"
         )

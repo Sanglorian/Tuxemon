@@ -8,6 +8,7 @@ from tuxemon.db import (
     Acquisition,
     BondComparison,
     Comparison,
+    GameCondition,
     GenderType,
     LearningMethod,
     MonsterEvolutionItemModel,
@@ -254,29 +255,39 @@ def test_stats_conditions(
 
 
 @pytest.mark.parametrize(
-    "variables,player_values,expected",
+    "variables, player_values, expected",
     [
-        ([{"var": "val"}], {"var": "val"}, True),  # single match
-        ([{"var": "val"}], {"var": "other_val"}, False),  # single mismatch
+        ([{"var": "val"}], {"var": "val"}, True),
+        ([{"var": "val"}], {"var": "other_val"}, False),
         (
             [{"var1": "val"}, {"var2": "val"}],
             {"var1": "val", "var2": "val"},
             True,
-        ),  # double match
+        ),
         (
             [{"var1": "val"}, {"var2": "other_val"}],
             {"var1": "val", "var2": "val"},
             False,
-        ),  # double mismatch
+        ),
     ],
 )
 def test_variables_conditions(
     setup_evolution, variables, player_values, expected
 ):
     mon, player, _ = setup_evolution
+
     for k, v in player_values.items():
         player.game_variables.set(k, v)
-    evo = MonsterEvolutionItemModel(monster_slug="rockat", variables=variables)
+
+    game_conditions = [
+        GameCondition(key=k, value=v)
+        for cond in variables
+        for k, v in cond.items()
+    ]
+    evo = MonsterEvolutionItemModel(
+        monster_slug="rockat",
+        variables=game_conditions,
+    )
     context = {"map_inside": True}
     assert mon.evolution_handler.can_evolve(evo, context) == expected
 

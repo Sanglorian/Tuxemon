@@ -1,9 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-from unittest import TestCase
 from unittest.mock import MagicMock
 
-from tuxemon.db import MissionStatus
+import pytest
+
+from tuxemon.db import (
+    GameCondition,
+    MissionModel,
+    MissionStatus,
+    MissionStepModel,
+)
 from tuxemon.entity_dir.bag import BagHandler
 from tuxemon.entity_dir.party import PartyHandler
 from tuxemon.game_variables import GameVariablesManager
@@ -13,183 +19,511 @@ from tuxemon.mission.mission import Mission, check_items, check_monsters
 from tuxemon.npc import NPC
 
 
-class TestMissionManager(TestCase):
-    def setUp(self):
-        self.character = MagicMock(spec=NPC)
-        self.character.slug = "test_character"
-        self.character._variables = GameVariablesManager()
-        self.mission = Mission()
-        self.manager = MissionManager()
-        self.mission_controller = MissionController(
-            self.character, self.manager
+@pytest.fixture
+def character(mission_manager):
+    c = MagicMock(spec=NPC)
+    c.slug = "test_character"
+    c.variable_manager = GameVariablesManager()
+    c.mission_controller = MissionController(c, mission_manager)
+    return c
+
+
+@pytest.fixture
+def mission():
+    model = MissionModel(
+        slug="empty",
+        description="empty",
+        prerequisites=[],
+        connected_missions=[],
+        failure_conditions=[],
+        required_items={},
+        required_monsters={},
+        required_missions=[],
+        steps={},
+        repeatable=False,
+    )
+    return Mission(db_data=model)
+
+
+@pytest.fixture
+def mission_manager():
+    return MissionManager()
+
+
+@pytest.fixture
+def controller(character, mission_manager):
+    return MissionController(character, mission_manager)
+
+
+def test_add_mission(mission_manager, mission):
+    mission_manager.add_mission(mission)
+    assert mission_manager.missions == {mission.slug: mission}
+
+
+def test_remove_mission(mission_manager, mission):
+    mission_manager.add_mission(mission)
+    mission_manager.remove_mission(mission)
+    assert mission_manager.missions == {}
+
+
+def test_remove_mission_not_found(mission_manager, mission):
+    mission_manager.remove_mission(mission)
+    assert mission_manager.get_mission_count() == 0
+
+
+def test_find_mission(mission_manager, mission):
+    mission.slug = "test_mission"
+    mission_manager.add_mission(mission)
+    assert mission_manager.find_mission("test_mission") is mission
+
+
+def test_find_mission_not_found(mission_manager):
+    assert mission_manager.find_mission("missing") is None
+
+
+def test_get_mission_count(mission_manager, mission):
+    assert mission_manager.get_mission_count() == 0
+    mission_manager.add_mission(mission)
+    assert mission_manager.get_mission_count() == 1
+
+
+def test_add_duplicate_mission(mission_manager, mission):
+    mission_manager.add_mission(mission)
+    mission_manager.add_mission(mission)
+    assert mission_manager.get_mission_count() == 1
+
+
+def test_large_mission_list(mission_manager):
+    for i in range(1000):
+        m = MagicMock()
+        m.slug = f"mission_{i}"
+        mission_manager.add_mission(m)
+    assert mission_manager.get_mission_count() == 1000
+
+
+@pytest.mark.parametrize(
+    "initial, new, expected",
+    [
+        (
+            MissionStatus.PENDING,
+            MissionStatus.COMPLETED,
+            MissionStatus.COMPLETED,
+        ),
+        (MissionStatus.PENDING, MissionStatus.PENDING, MissionStatus.PENDING),
+    ],
+)
+def test_update_status(mission, initial, new, expected):
+    mission.status = initial
+    mission.update_status(new)
+    assert mission.status == expected
+
+
+def test_check_all_prerequisites(
+    character, controller, mission_manager, mission
+):
+    mission.prerequisites = [GameCondition(key="key", value="value")]
+    mission_manager.add_mission(mission)
+
+    character.game_variables = character.variable_manager.player
+    character.game_variables.set("key", "value")
+    assert controller.check_all_prerequisites()
+
+    character.game_variables.set("key", "wrong_value")
+    assert not controller.check_all_prerequisites()
+
+
+def test_check_all_prerequisites_with_no_missions(controller):
+    assert controller.check_all_prerequisites()
+
+
+def test_check_all_prerequisites_with_unmet_conditions(
+    character, controller, mission_manager, mission
+):
+    mission.prerequisites = [GameCondition(key="key", value="required_value")]
+    mission_manager.add_mission(mission)
+
+    character.game_variables = character.variable_manager.player
+    character.game_variables.set("key", "incorrect_value")
+    assert not controller.check_all_prerequisites()
+
+
+@pytest.mark.parametrize(
+    "potion_qty, lotion_state, expected",
+    [
+        (1, 2, True),
+        (1, 1, False),
+        (1, "missing", False),
+    ],
+)
+def test_check_required_items(
+    character, mission, potion_qty, lotion_state, expected
+):
+    mission.required_items = {"potion": None, "lotion": 2}
+
+    item1 = MagicMock(slug="potion", quantity=potion_qty)
+    item2 = (
+        None
+        if lotion_state == "missing"
+        else MagicMock(slug="lotion", quantity=lotion_state)
+    )
+
+    character.bag = MagicMock(spec=BagHandler)
+    character.bag.find_item.side_effect = lambda slug: (
+        item1 if slug == "potion" else item2
+    )
+
+    assert check_items(character, mission.required_items) is expected
+
+
+@pytest.mark.parametrize(
+    "lvl1, lvl2, expected",
+    [
+        (3, 5, True),
+        (3, 4, False),
+        (3, None, False),
+    ],
+)
+def test_check_required_monsters(character, mission, lvl1, lvl2, expected):
+    mission.required_monsters = {"monster1": None, "monster2": 5}
+
+    monster1 = MagicMock(slug="monster1", level=lvl1)
+    monster2 = (
+        MagicMock(slug="monster2", level=lvl2) if lvl2 is not None else None
+    )
+
+    character.party = MagicMock(spec=PartyHandler)
+    character.party.find_monster.side_effect = lambda slug: (
+        monster1 if slug == "monster1" else monster2
+    )
+
+    assert check_monsters(character, mission.required_monsters) is expected
+
+
+def test_encode_missions(mission_manager, controller, mission):
+    mission.slug = "mission1"
+    mission.status = MissionStatus.PENDING
+    mission_manager.add_mission(mission)
+
+    encoded = controller.encode_missions()
+    assert isinstance(encoded, list)
+    assert len(encoded) == 1
+    assert encoded[0]["slug"] == "mission1"
+    assert encoded[0]["status"] == MissionStatus.PENDING
+
+
+@pytest.mark.parametrize("result", [True, False])
+def test_check_connected_missions(
+    mission_manager, controller, mission, result
+):
+    mission.check_connected_missions = MagicMock(return_value=result)
+    mission_manager.add_mission(mission)
+    assert controller.check_connected_missions() is result
+
+
+@pytest.fixture
+def mission_with_steps():
+    steps = {
+        "start": MissionStepModel(
+            slug="start",
+            conditions=GameCondition(key="x", value=1),
+            description="",
+            order=1,
+            next_steps=["mid"],
+            optional=False,
+        ),
+        "mid": MissionStepModel(
+            slug="mid",
+            conditions=GameCondition(key="x", value=1),
+            description="",
+            order=2,
+            next_steps=["end"],
+            optional=False,
+        ),
+        "end": MissionStepModel(
+            slug="end",
+            conditions=GameCondition(key="x", value=1),
+            description="",
+            order=3,
+            next_steps=[],
+            optional=False,
+        ),
+    }
+    model = MissionModel(
+        slug="agnite",
+        description="agnite",
+        prerequisites=[],
+        connected_missions=[],
+        failure_conditions=[],
+        required_items={},
+        required_monsters={},
+        required_missions=[],
+        steps=steps,
+        repeatable=False,
+    )
+    return Mission(db_data=model)
+
+
+def test_root_step_unlocked(mission_with_steps):
+    assert mission_with_steps.is_step_unlocked("start")
+
+
+def test_child_locked_initially(mission_with_steps):
+    assert not mission_with_steps.is_step_unlocked("mid")
+
+
+def test_child_unlocked_after_parent(mission_with_steps):
+    mission_with_steps.mark_step_completed("start")
+    assert mission_with_steps.is_step_unlocked("mid")
+
+
+def test_auto_complete_step(character):
+    step = MissionStepModel(
+        slug="rockitten",
+        conditions=GameCondition(key="x", value="1"),
+        description="",
+        order=1,
+        next_steps=[],
+        optional=False,
+        auto_complete=True,
+        any_of=[],
+        all_of=[],
+    )
+
+    model = MissionModel(
+        slug="agnite",
+        description="agnite",
+        prerequisites=[],
+        connected_missions=[],
+        failure_conditions=[],
+        required_items={},
+        required_monsters={},
+        required_missions=[],
+        steps={"rockitten": step},
+        repeatable=False,
+    )
+
+    mission = Mission(db_data=model)
+
+    character.game_variables = character.variable_manager.player
+    character.game_variables.set("x", "1")
+
+    mission.check_step_conditions(character)
+
+    assert "rockitten" in mission.completed_steps
+
+
+def test_progress_ignores_optional_steps():
+    steps = {
+        "rockitten": MissionStepModel(
+            slug="rockitten",
+            conditions=GameCondition(key="x", value=1),
+            description="",
+            order=1,
+            next_steps=[],
+            optional=False,
+        ),
+        "pairagrin": MissionStepModel(
+            slug="pairagrin",
+            conditions=GameCondition(key="x", value=1),
+            description="",
+            order=2,
+            next_steps=[],
+            optional=True,
+        ),
+    }
+    model = MissionModel(
+        slug="agnite",
+        description="agnite",
+        prerequisites=[],
+        connected_missions=[],
+        failure_conditions=[],
+        required_items={},
+        required_monsters={},
+        required_missions=[],
+        steps=steps,
+        repeatable=False,
+    )
+    mission = Mission(db_data=model)
+
+    mission.mark_step_completed("rockitten")
+
+    assert mission.get_progress() == 100.0
+
+
+def test_repeatable_mission_resets(character):
+    steps = {
+        "rockitten": MissionStepModel(
+            slug="rockitten",
+            conditions=GameCondition(key="x", value=1),
+            description="",
+            order=1,
+            next_steps=[],
+            optional=False,
+        ),
+    }
+
+    model = MissionModel(
+        slug="agnite",
+        description="agnite",
+        prerequisites=[],
+        connected_missions=[],
+        failure_conditions=[],
+        required_items={},
+        required_monsters={},
+        required_missions=[],
+        steps=steps,
+        repeatable=True,
+    )
+
+    mission = Mission(db_data=model)
+
+    mission.mark_step_completed("rockitten")
+    mission.update_progress(character)
+
+    assert mission.status == MissionStatus.PENDING
+    assert mission.completed_steps == set()
+
+
+def test_graph_valid():
+    steps = {
+        "rockitten": MissionStepModel(
+            slug="rockitten",
+            conditions=GameCondition(key="x", value=1),
+            description="",
+            order=1,
+            next_steps=["pairagrin"],
+        ),
+        "pairagrin": MissionStepModel(
+            slug="pairagrin",
+            conditions=GameCondition(key="x", value=1),
+            description="",
+            order=2,
+            next_steps=[],
+        ),
+    }
+    mission = Mission(
+        db_data=MissionModel(
+            slug="agnite",
+            description="agnite",
+            prerequisites=[],
+            connected_missions=[],
+            failure_conditions=[],
+            required_items={},
+            required_monsters={},
+            required_missions=[],
+            steps=steps,
+            repeatable=False,
         )
-        self.mission_manager = self.mission_controller.mission_manager
+    )
+    mission.validate_graph()  # should not raise
 
-    def test_add_mission(self):
-        self.mission_manager.add_mission(self.mission)
-        output = {self.mission.slug: self.mission}
-        self.assertEqual(self.mission_manager.missions, output)
 
-    def test_remove_mission(self):
-        self.mission_manager.add_mission(self.mission)
-        self.mission_manager.remove_mission(self.mission)
-        self.assertEqual(self.mission_manager.missions, {})
-
-    def test_remove_mission_not_found(self):
-        self.mission_manager.remove_mission(self.mission)
-        self.assertEqual(self.mission_manager.get_mission_count(), 0)
-
-    def test_find_mission(self):
-        self.mission.slug = "test_mission"
-        self.mission_manager.add_mission(self.mission)
-        found_mission = self.mission_manager.find_mission("test_mission")
-        self.assertEqual(found_mission, self.mission)
-
-    def test_find_mission_not_found(self):
-        found_mission = self.mission_manager.find_mission("test_mission")
-        self.assertIsNone(found_mission)
-
-    def test_update_status(self):
-        self.mission.status = MissionStatus.pending
-        self.mission.update_status(MissionStatus.completed)
-        self.assertEqual(self.mission.status, MissionStatus.completed)
-
-    def test_update_status_no_change(self):
-        self.mission.status = MissionStatus.pending
-        self.mission.update_status(MissionStatus.pending)
-        self.assertEqual(self.mission.status, MissionStatus.pending)
-
-    def test_get_mission_count(self):
-        self.assertEqual(self.mission_manager.get_mission_count(), 0)
-        self.mission_manager.add_mission(Mission())
-        self.assertEqual(self.mission_manager.get_mission_count(), 1)
-
-    def test_check_all_prerequisites(self):
-        self.mission.prerequisites = [{"key": "value"}]
-        self.mission_manager.add_mission(self.mission)
-        self.character.game_variables = self.character._variables.player
-
-        self.character.game_variables.set("key", "value")
-        self.assertTrue(self.mission_controller.check_all_prerequisites())
-
-        self.character.game_variables.set("key", "wrong_value")
-        self.assertFalse(self.mission_controller.check_all_prerequisites())
-
-    def test_check_required_items(self):
-        self.mission.required_items = {"potion": None, "lotion": 2}
-
-        item1 = MagicMock()
-        item1.slug = "potion"
-        item1.quantity = 1
-
-        item2 = MagicMock()
-        item2.slug = "lotion"
-        item2.quantity = 2
-
-        self.character.bag = MagicMock(spec=BagHandler)
-        self.character.bag.find_item.side_effect = lambda slug: (
-            item1 if slug == "potion" else item2 if slug == "lotion" else None
+def test_graph_cycle():
+    steps = {
+        "rockitten": MissionStepModel(
+            slug="rockitten",
+            conditions=GameCondition(key="x", value=1),
+            description="",
+            order=1,
+            next_steps=["pairagrin"],
+        ),
+        "pairagrin": MissionStepModel(
+            slug="pairagrin",
+            conditions=GameCondition(key="x", value=1),
+            description="",
+            order=2,
+            next_steps=["rockitten"],
+        ),
+    }
+    mission = Mission(
+        db_data=MissionModel(
+            slug="agnite",
+            description="agnite",
+            prerequisites=[],
+            connected_missions=[],
+            failure_conditions=[],
+            required_items={},
+            required_monsters={},
+            required_missions=[],
+            steps=steps,
+            repeatable=False,
         )
+    )
+    with pytest.raises(ValueError):
+        mission.validate_graph()
 
-        self.assertTrue(
-            check_items(self.character, self.mission.required_items)
+
+def test_required_missions(character, mission_manager):
+    m1 = Mission(
+        db_data=MissionModel(
+            slug="pairagrin",
+            description="pairagrin",
+            prerequisites=[],
+            connected_missions=[],
+            failure_conditions=[],
+            required_items={},
+            required_monsters={},
+            required_missions=[],
+            steps={},
+            repeatable=False,
         )
-
-        item2.quantity = 1
-        self.assertFalse(
-            check_items(self.character, self.mission.required_items)
+    )
+    m2 = Mission(
+        db_data=MissionModel(
+            slug="rockitten",
+            description="rockitten",
+            prerequisites=[],
+            connected_missions=[],
+            failure_conditions=[],
+            required_items={},
+            required_monsters={},
+            required_missions=["pairagrin"],
+            steps={},
+            repeatable=False,
         )
+    )
 
-        self.character.bag.find_item.side_effect = lambda slug: (
-            item1 if slug == "potion" else None
+    mission_manager.add_mission(m1)
+    mission_manager.add_mission(m2)
+
+    character.mission_controller.mission_manager = mission_manager
+
+    assert m2.check_required_missions(character)
+
+
+def test_connected_missions_logic(character, mission_manager):
+    m1 = Mission(
+        db_data=MissionModel(
+            slug="rockitten",
+            description="rockitten",
+            prerequisites=[],
+            connected_missions=[],
+            failure_conditions=[],
+            required_items={},
+            required_monsters={},
+            required_missions=[],
+            steps={},
+            repeatable=False,
         )
-        self.assertFalse(
-            check_items(self.character, self.mission.required_items)
+    )
+    m2 = Mission(
+        db_data=MissionModel(
+            slug="pairagrin",
+            description="pairagrin",
+            prerequisites=[],
+            connected_missions=[{"slug": "rockitten"}],
+            failure_conditions=[],
+            required_items={},
+            required_monsters={},
+            required_missions=[],
+            steps={},
+            repeatable=False,
         )
+    )
 
-    def test_check_required_monsters(self):
-        self.mission.required_monsters = {"monster1": None, "monster2": 5}
+    mission_manager.add_mission(m1)
+    mission_manager.add_mission(m2)
 
-        monster1 = MagicMock()
-        monster1.slug = "monster1"
-        monster1.level = 3
+    character.mission_controller.mission_manager = mission_manager
 
-        monster2 = MagicMock()
-        monster2.slug = "monster2"
-        monster2.level = 5
-
-        self.character.party = MagicMock(spec=PartyHandler)
-        self.character.party.find_monster.side_effect = lambda slug: (
-            monster1
-            if slug == "monster1"
-            else monster2 if slug == "monster2" else None
-        )
-
-        self.assertTrue(
-            check_monsters(self.character, self.mission.required_monsters)
-        )
-
-        monster2.level = 4
-        self.assertFalse(
-            check_monsters(self.character, self.mission.required_monsters)
-        )
-
-        self.character.party.find_monster.side_effect = lambda slug: (
-            monster1 if slug == "monster1" else None
-        )
-        self.assertFalse(
-            check_monsters(self.character, self.mission.required_monsters)
-        )
-
-    def test_check_all_prerequisites_with_no_missions(self):
-        self.assertTrue(self.mission_controller.check_all_prerequisites())
-
-    def test_check_all_prerequisites_with_unmet_conditions(self):
-        self.mission.prerequisites = [{"key": "required_value"}]
-        self.mission_manager.add_mission(self.mission)
-
-        self.character.game_variables.set("key", "incorrect_value")
-        self.assertFalse(self.mission_controller.check_all_prerequisites())
-
-    def test_encode_missions(self):
-        self.mission.slug = "mission1"
-        self.mission.status = MissionStatus.pending
-        self.mission_manager.add_mission(self.mission)
-
-        encoded_missions = self.mission_controller.encode_missions()
-        self.assertIsInstance(encoded_missions, list)
-        self.assertEqual(len(encoded_missions), 1)
-        self.assertEqual(encoded_missions[0]["slug"], "mission1")
-        self.assertEqual(encoded_missions[0]["status"], MissionStatus.pending)
-
-    def test_check_connected_missions(self):
-        self.mission.check_connected_missions = MagicMock(return_value=True)
-        self.mission_manager.add_mission(self.mission)
-
-        self.assertTrue(self.mission_controller.check_connected_missions())
-
-        self.mission.check_connected_missions.return_value = False
-        self.assertFalse(self.mission_controller.check_connected_missions())
-
-    def test_large_mission_list(self):
-        for i in range(1000):
-            mock_mission = MagicMock()
-            mock_mission.slug = f"mission_{i}"
-            self.mission_manager.add_mission(mock_mission)
-
-        self.assertEqual(self.mission_manager.get_mission_count(), 1000)
-
-    def test_remove_duplicate_mission(self):
-        self.mission_manager.add_mission(self.mission)
-        self.mission_manager.remove_mission(self.mission)
-        self.assertEqual(self.mission_manager.get_mission_count(), 0)
-
-    def test_add_and_remove_mission(self):
-        self.mission_manager.add_mission(self.mission)
-        self.mission_manager.remove_mission(self.mission)
-        self.assertEqual(self.mission_manager.get_mission_count(), 0)
-
-    def test_add_duplicate_mission(self):
-        self.mission_manager.add_mission(self.mission)
-        self.mission_manager.add_mission(self.mission)
-        self.assertEqual(self.mission_manager.get_mission_count(), 1)
+    assert m2.check_connected_missions(character)

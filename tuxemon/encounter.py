@@ -113,10 +113,6 @@ class Encounter:
         self._cache: list[EncounterItemModel] = list(zone.get_encounters())
 
     def _is_valid(self, enc: EncounterItemModel, character: NPC) -> bool:
-        """
-        Unified validation for single and horde monsters.
-        Checks levels and game-state variables.
-        """
         avg_lvl = character.party.level_average
         if avg_lvl is None:
             return False
@@ -126,12 +122,8 @@ class Encounter:
         if enc.max_player_level and avg_lvl > enc.max_player_level:
             return False
 
-        if enc.variables and not any(
-            all(
-                character.game_variables.get(k) == v
-                for k, v in var_set.items()
-            )
-            for var_set in enc.variables
+        if enc.variables and not character.variable_manager.check_conditions(
+            enc.variables
         ):
             return False
 

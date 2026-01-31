@@ -20,6 +20,7 @@ from tuxemon.npc import NPC
 
 if TYPE_CHECKING:
     from tuxemon.db import PartyMemberModel
+    from tuxemon.game_variables import GameVariablesManager
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -65,11 +66,14 @@ class CreateNpcAction(EventAction):
         npc.template = npc_details.template
         npc.combat = npc_details.combat
         npc.audio = npc_details.audio
-        game_variables = session.player.game_variables.get_state()
+        variable_manager = session.player.variable_manager
+
         if npc_details.monsters:
-            load_party_monsters(npc, npc_details, game_variables)
+            load_party_monsters(npc, npc_details, variable_manager)
+
         if npc_details.items:
-            load_party_items(npc, npc_details, game_variables)
+            load_party_items(npc, npc_details, variable_manager)
+
         npc.sprite_controller.update_template(npc.template)
         npc.dialogue = merge_dialogue(npc_details.speech.profile, None)
 
@@ -87,13 +91,13 @@ def load_party(slug: str) -> NpcModel:
 
 
 def load_party_monsters(
-    npc: NPC, party: NpcModel, game_variables: dict[str, Any]
+    npc: NPC, party: NpcModel, variable_manager: GameVariablesManager
 ) -> None:
     """Loads the NPC's party monsters from the database."""
     npc.party.clear_party()
     for npc_monster in party.monsters:
-        if npc_monster.variables and check_variables(
-            npc_monster.variables, game_variables
+        if npc_monster.variables and variable_manager.check_conditions(
+            npc_monster.variables
         ):
             monster = party_monster(npc_monster)
             npc.party.insert_monster_to_party(monster, len(npc.monsters))
@@ -109,13 +113,13 @@ def party_monster(npc_monster: PartyMemberModel) -> Monster:
 
 
 def load_party_items(
-    npc: NPC, bag: NpcModel, game_variables: dict[str, Any]
+    npc: NPC, bag: NpcModel, variable_manager: GameVariablesManager
 ) -> None:
     """Loads the NPC's items from the database."""
     npc.bag.clear_items()
     for npc_item in bag.items:
-        if npc_item.variables and check_variables(
-            npc_item.variables, game_variables
+        if npc_item.variables and variable_manager.check_conditions(
+            npc_item.variables
         ):
             item = Item.create(npc_item.slug, npc_item.model_dump())
             npc.bag.add_item(item, npc_item.quantity)

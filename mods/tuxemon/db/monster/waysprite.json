@@ -34,7 +34,8 @@
       "monster_slug": "angesnow",
       "variables": [
         {
-          "daytime": "true"
+          "key": "daytime",
+          "value": "true"
         }
       ]
     },
@@ -43,7 +44,8 @@
       "monster_slug": "demosnow",
       "variables": [
         {
-          "daytime": "false"
+          "key": "daytime",
+          "value": "false"
         }
       ]
     }

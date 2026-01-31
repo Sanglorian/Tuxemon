@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.ai.decision_strategy import (
     TrainerAIDecisionStrategy,
@@ -27,11 +27,11 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ItemEntry:
-    hp_below: Optional[float] = None
-    hp_above: Optional[float] = None
-    hp_range: Optional[tuple[float, float]] = None
-    status_effects: Optional[list[str]] = None
-    monster_slugs: Optional[list[str]] = None
+    hp_below: float | None = None
+    hp_above: float | None = None
+    hp_range: tuple[float, float] | None = None
+    status_effects: list[str] | None = None
+    monster_slugs: list[str] | None = None
 
 
 @dataclass
@@ -41,16 +41,16 @@ class AIItems:
 
 @dataclass
 class UserMonsterEntry:
-    health_weight: Optional[float] = None
-    armour_weight: Optional[float] = None
-    dodge_weight: Optional[float] = None
-    melee_weight: Optional[float] = None
-    ranged_weight: Optional[float] = None
-    speed_weight: Optional[float] = None
-    status_effects_weight: Optional[float] = None
-    status_effects: Optional[dict[str, float]] = None
-    level_difference_threshold: Optional[float] = None
-    level_difference_weight: Optional[float] = None
+    health_weight: float | None = None
+    armour_weight: float | None = None
+    dodge_weight: float | None = None
+    melee_weight: float | None = None
+    ranged_weight: float | None = None
+    speed_weight: float | None = None
+    status_effects_weight: float | None = None
+    status_effects: dict[str, float] | None = None
+    level_difference_threshold: float | None = None
+    level_difference_weight: float | None = None
 
 
 @dataclass
@@ -60,22 +60,22 @@ class AIOpponent:  # most of the time the player
 
 @dataclass
 class TechniqueCondition:
-    turn: Optional[int] = None
-    hp_below: Optional[float] = None
-    hp_above: Optional[float] = None
-    priority: Optional[int] = None
-    always: Optional[bool] = False
-    status_effects: Optional[list[str]] = None
-    opponent_types: Optional[list[str]] = None
-    opponent_slugs: Optional[list[str]] = None
-    opponent_status: Optional[list[str]] = None
-    hp_range: Optional[tuple[float, float]] = None
+    turn: int | None = None
+    hp_below: float | None = None
+    hp_above: float | None = None
+    priority: int | None = None
+    always: bool | None = False
+    status_effects: list[str] | None = None
+    opponent_types: list[str] | None = None
+    opponent_slugs: list[str] | None = None
+    opponent_status: list[str] | None = None
+    hp_range: tuple[float, float] | None = None
 
 
 @dataclass
 class MonsterTechnique:
     technique: str
-    condition: Optional[TechniqueCondition]
+    condition: TechniqueCondition | None
 
 
 @dataclass
@@ -90,21 +90,21 @@ class AITrainers:
 
 @dataclass
 class SingleTechnique:
-    melee_bonus: Optional[float] = None
-    touch_bonus: Optional[float] = None
-    special_bonus: Optional[float] = None
-    ranged_bonus: Optional[float] = None
-    reach_bonus: Optional[float] = None
-    reliable_bonus: Optional[float] = None
-    power_weight: Optional[float] = None
-    accuracy_weight: Optional[float] = None
-    elemental_multiplier_weight: Optional[float] = None
-    elemental_health_scaling: Optional[float] = None
-    elemental_health_threshold: Optional[float] = None
-    health_priority_threshold: Optional[float] = None
-    healing_weight: Optional[float] = None
-    healing_penalty_threshold: Optional[float] = None
-    healing_penalty_weight: Optional[float] = None
+    melee_bonus: float | None = None
+    touch_bonus: float | None = None
+    special_bonus: float | None = None
+    ranged_bonus: float | None = None
+    reach_bonus: float | None = None
+    reliable_bonus: float | None = None
+    power_weight: float | None = None
+    accuracy_weight: float | None = None
+    elemental_multiplier_weight: float | None = None
+    elemental_health_scaling: float | None = None
+    elemental_health_threshold: float | None = None
+    health_priority_threshold: float | None = None
+    healing_weight: float | None = None
+    healing_penalty_threshold: float | None = None
+    healing_penalty_weight: float | None = None
 
 
 @dataclass
@@ -113,10 +113,10 @@ class AITechniques:
 
 
 class AIConfigLoader:
-    _ai_techniques: Optional[AITechniques] = None
-    _ai_items: Optional[AIItems] = None
-    _ai_opponent: Optional[AIOpponent] = None
-    _ai_character: Optional[AITrainers] = None
+    _ai_techniques: AITechniques | None = None
+    _ai_items: AIItems | None = None
+    _ai_opponent: AIOpponent | None = None
+    _ai_character: AITrainers | None = None
 
     @classmethod
     def get_ai_opponent(cls, filename: str) -> AIOpponent:
@@ -140,7 +140,14 @@ class AIConfigLoader:
         yaml_path = paths.mods_folder / filename
         if cls._ai_items is None:
             raw_map = load_yaml(yaml_path)
-            cls._ai_items = AIItems(**raw_map)
+
+            items = {
+                slug: ItemEntry(**entry)
+                for slug, entry in raw_map["items"].items()
+            }
+
+            cls._ai_items = AIItems(items=items)
+
         return cls._ai_items
 
     @classmethod

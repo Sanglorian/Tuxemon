@@ -4,11 +4,10 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
-from tuxemon.db import MissionStatus
 from tuxemon.mission.manager import MissionManager
-from tuxemon.mission.mission import Mission, check_items, check_monsters
+from tuxemon.mission.mission import Mission
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
@@ -32,7 +31,7 @@ class MissionController:
         return encode_mission(self.get_missions())
 
     def decode_missions(
-        self, save_data: Optional[Sequence[Mapping[str, Any]]]
+        self, save_data: Sequence[Mapping[str, Any]] | None
     ) -> None:
         """
         Recreates missions from saved data.
@@ -62,36 +61,7 @@ class MissionController:
         Updates the progress of all missions for the given character.
         """
         for mission in self.get_missions():
-            if not mission.is_active():
-                continue
-
-            if mission.check_failure_conditions(self.character):
-                mission.update_status(MissionStatus.failed)
-                continue
-
-            if not mission.check_all_prerequisites(self.character):
-                continue
-
-            mission.check_step_conditions(self.character)
-
-            for step_slug, step in mission.steps.items():
-                if step_slug in mission.completed_steps:
-                    continue
-
-                # Check step-specific requirements
-                if not check_items(self.character, step.step_items_needed):
-                    continue
-                if not check_monsters(
-                    self.character, step.step_monsters_needed
-                ):
-                    continue
-
-                if mission.get_progress() >= 100.0:
-                    mission.update_status(MissionStatus.completed)
-
-                    if mission.repeatable:
-                        mission.completed_steps.clear()
-                        mission.update_status(MissionStatus.pending)
+            mission.update_progress(self.character)
 
     def get_missions_with_met_prerequisites(self) -> list[Mission]:
         """
@@ -146,17 +116,25 @@ class MissionController:
 
 
 def decode_mission(
-    json_data: Optional[Sequence[Mapping[str, Any]]],
+    json_data: Sequence[Mapping[str, Any]] | None,
 ) -> list[Mission]:
-    missions = []
-    for mission_data in json_data or []:
-        mission = Mission.from_db(mission_data["slug"])
-        if mission:
-            mission.set_state(mission_data)
+    if not json_data:
+        return []
+
+    missions: list[Mission] = []
+
+    for mission_data in json_data:
+        slug = mission_data.get("slug")
+        if not slug:
+            logger.warning("Skipping mission entry without slug.")
+            continue
+
+        try:
+            mission = Mission.from_save(mission_data)
             missions.append(mission)
-        else:
+        except Exception as exc:
             logger.warning(
-                f"Mission with slug '{mission_data['slug']}' not found in database."
+                f"Failed to load mission '{slug}' from save data: {exc}"
             )
     return missions
 

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tuxemon.db import Direction
+from tuxemon.db import Direction, FacingMode
 from tuxemon.entity_dir.path import PathController, tile_distance
 from tuxemon.map.map import dirs2
 from tuxemon.math import Vector2
@@ -15,7 +15,7 @@ class SimpleNPC:
     """Small real object for attributes mutated by PathController."""
 
     def __init__(
-        self, tile_pos=(0, 0), position=(0.0, 0.0), facing=Direction.down
+        self, tile_pos=(0, 0), position=(0.0, 0.0), facing=Direction.DOWN
     ):
         self.slug = "test-npc"
         self.position = Vector2(position)
@@ -39,6 +39,9 @@ class SimpleNPC:
         self.position = Vector2(float(pos[0]), float(pos[1]))
         self.tile_pos = vector2_to_tile_pos(self.position)
 
+    def on_tile_changed(self):
+        pass
+
     def remove_collision(self):
         pass
 
@@ -56,6 +59,7 @@ def mk_npc_with_mocks():
         mover = MagicMock()
         mover.move = MagicMock()
         npc.mover = mover
+        npc.facing_mode = FacingMode.FOLLOW_MOVEMENT
         sprite = MagicMock()
         sprite.play_animation = MagicMock()
         sprite.stop_animation = MagicMock()
@@ -93,7 +97,7 @@ def test_tile_distance(a, b, expected):
 
 @pytest.mark.parametrize(
     "direction",
-    [Direction.left, Direction.right, Direction.up, Direction.down],
+    [Direction.LEFT, Direction.RIGHT, Direction.UP, Direction.DOWN],
 )
 def test_move_one_tile_appends_expected_tile(
     mk_npc_with_mocks, pathfinder, map_manager, npc_manager, direction
@@ -162,7 +166,7 @@ def test_next_waypoint_traversable(
     pc.next_waypoint()
     npc.sprite_controller.play_animation.assert_called_once()
     assert pc.path_origin == (3, 3)
-    npc.mover.move.assert_called_once_with(Direction.down)
+    npc.mover.move.assert_called_once_with(Direction.DOWN)
 
 
 def test_next_waypoint_exception_cancels_path(
@@ -308,7 +312,7 @@ def test_process_movement_direct_move_when_no_path(
     pf.is_tile_traversable.return_value = True
     npc = mk_npc_with_mocks()
     npc.tile_pos = (0, 0)
-    npc.move_direction = npc.facing.down
+    npc.move_direction = npc.facing.DOWN
     pc = PathController(npc, pf, map_manager, MagicMock())
     pc.path = []
     pc.process_movement()

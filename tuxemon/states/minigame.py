@@ -31,52 +31,6 @@ def _lookup_monsters() -> None:
     }
 
 
-DIFFICULTIES = ["easy", "normal", "hard"]
-
-
-class DifficultySelectState(PygameMenuState):
-    """
-    A state that allows players to choose the difficulty level before entering the minigame.
-    """
-
-    name: ClassVar[str] = "DifficultySelectState"
-
-    def __init__(self) -> None:
-        width, height = SCREEN_SIZE
-        super().__init__(height=height, width=width)
-
-        self._build_menu()
-        self.reset_theme()
-
-    def _build_menu(self) -> None:
-        """
-        Constructs the difficulty selection menu with a title label and difficulty buttons.
-        """
-        title = T.translate("choose_difficulty")
-        self.menu.add.label(
-            title=title,
-            font_size=self.font_type.big,
-            align=locals.ALIGN_CENTER,
-            underline=True,
-        )
-
-        for level in DIFFICULTIES:
-            self.menu.add.button(
-                title=T.translate(f"level_{level}"),
-                action=partial(self.start_minigame, level),
-                button_id=f"diff_{level}",
-                font_size=self.font_type.medium,
-                selection_effect=HighlightSelection(),
-                align=locals.ALIGN_CENTER,
-            )
-
-    def start_minigame(self, difficulty: str) -> None:
-        """
-        Transitions to the minigame with the selected difficulty.
-        """
-        self.client.replace_state("MinigameState", difficulty=difficulty)
-
-
 class MinigameState(PygameMenuState):
     """Minigame where player guesses a monster using image or description."""
 

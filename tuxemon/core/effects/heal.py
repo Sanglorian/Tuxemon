@@ -50,7 +50,7 @@ class HealEffect(CoreEffect):
     def apply_item_target(
         self, session: Session, item: Item, target: Monster
     ) -> ItemEffectResult:
-        category = ItemCategory.potion
+        category = ItemCategory.POTION
         if target.status.has_status("festering") and item.category == category:
             return ItemEffectResult(
                 name=item.name,

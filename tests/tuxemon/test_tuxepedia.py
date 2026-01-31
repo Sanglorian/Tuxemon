@@ -5,18 +5,18 @@ from unittest.mock import ANY, Mock
 import pytest
 
 from tuxemon.db import SeenStatus
-from tuxemon.tuxepedia import (
+from tuxemon.tuxepedia.data import TuxepediaData
+from tuxemon.tuxepedia.manager import (
     EVENT_MONSTER_ADDED,
     EVENT_MONSTER_REMOVED,
     EVENT_MONSTER_STATUS_UPDATED,
     EVENT_TUXEPEDIA_RESET,
     MonsterEntry,
-    TuxepediaData,
     TuxepediaManager,
-    TuxepediaReporter,
     decode_tuxepedia,
     encode_tuxepedia,
 )
+from tuxemon.tuxepedia.reporter import TuxepediaReporter
 
 
 # TestMonsterEntry
@@ -24,13 +24,13 @@ from tuxemon.tuxepedia import (
     "initial_status,initial_appearance,update_to,expected_status,expected_appearance,expected_caught",
     [
         # init defaults
-        (SeenStatus.seen, 1, None, SeenStatus.seen, 1, 0),
+        (SeenStatus.SEEN, 1, None, SeenStatus.SEEN, 1, 0),
         # update to caught
-        (SeenStatus.seen, 1, SeenStatus.caught, SeenStatus.caught, 2, 1),
+        (SeenStatus.SEEN, 1, SeenStatus.CAUGHT, SeenStatus.CAUGHT, 2, 1),
         # cannot downgrade caught to seen
-        (SeenStatus.caught, 1, SeenStatus.seen, SeenStatus.caught, 1, 0),
+        (SeenStatus.CAUGHT, 1, SeenStatus.SEEN, SeenStatus.CAUGHT, 1, 0),
         # reset entry
-        (SeenStatus.caught, 5, "reset", SeenStatus.seen, 1, 0),
+        (SeenStatus.CAUGHT, 5, "reset", SeenStatus.SEEN, 1, 0),
     ],
 )
 def test_monster_entry_behaviors(
@@ -57,9 +57,9 @@ def test_monster_entry_behaviors(
 @pytest.fixture
 def data():
     initial_entries = {
-        "rockitten": MonsterEntry(SeenStatus.seen, 2),
-        "nut": MonsterEntry(SeenStatus.caught, 5),
-        "flowey": MonsterEntry(SeenStatus.seen, 1),
+        "rockitten": MonsterEntry(SeenStatus.SEEN, 2),
+        "nut": MonsterEntry(SeenStatus.CAUGHT, 5),
+        "flowey": MonsterEntry(SeenStatus.SEEN, 1),
     }
     return TuxepediaData(initial_entries)
 
@@ -72,9 +72,9 @@ def test_init():
 @pytest.mark.parametrize(
     "slug,expected_status,expected_appearance,expected_caught,is_registered",
     [
-        ("nut", SeenStatus.caught, 5, 0, True),
-        ("rockitten", SeenStatus.seen, 2, 0, True),
-        ("flowey", SeenStatus.seen, 1, 0, True),
+        ("nut", SeenStatus.CAUGHT, 5, 0, True),
+        ("rockitten", SeenStatus.SEEN, 2, 0, True),
+        ("flowey", SeenStatus.SEEN, 1, 0, True),
         ("unknown", None, 0, 0, False),
     ],
 )
@@ -114,9 +114,9 @@ def manager(event_bus):
         # Case 1: add new entry as seen
         (
             "rockitten",
-            SeenStatus.seen,
+            SeenStatus.SEEN,
             EVENT_MONSTER_ADDED,
-            SeenStatus.seen,
+            SeenStatus.SEEN,
             1,
             0,
             None,
@@ -124,9 +124,9 @@ def manager(event_bus):
         # Case 2: update existing entry to caught
         (
             "rockitten",
-            SeenStatus.caught,
+            SeenStatus.CAUGHT,
             EVENT_MONSTER_STATUS_UPDATED,
-            SeenStatus.caught,
+            SeenStatus.CAUGHT,
             2,
             1,
             None,
@@ -134,9 +134,9 @@ def manager(event_bus):
         # Case 3: remove entry
         (
             "nut",
-            SeenStatus.caught,
+            SeenStatus.CAUGHT,
             EVENT_MONSTER_REMOVED,
-            SeenStatus.caught,
+            SeenStatus.CAUGHT,
             1,
             0,
             None,
@@ -144,9 +144,9 @@ def manager(event_bus):
         # Case 4: remove non-existent entry (error expected)
         (
             "ghost",
-            SeenStatus.seen,
+            SeenStatus.SEEN,
             EVENT_MONSTER_REMOVED,
-            SeenStatus.seen,
+            SeenStatus.SEEN,
             0,
             0,
             ValueError,
@@ -165,9 +165,12 @@ def test_add_update_remove(
     expect_error,
 ):
     if expected_event == EVENT_MONSTER_STATUS_UPDATED:
-        manager.add_entry(slug, status=SeenStatus.seen)
+        manager.register_seen(slug)
     elif expected_event == EVENT_MONSTER_REMOVED and expect_error is None:
-        manager.add_entry(slug, status=status)
+        if status == SeenStatus.CAUGHT:
+            manager.register_caught(slug)
+        else:
+            manager.register_seen(slug)
 
     if expect_error:
         with pytest.raises(expect_error):
@@ -177,7 +180,10 @@ def test_add_update_remove(
     if expected_event == EVENT_MONSTER_REMOVED:
         manager.remove_entry(slug)
     else:
-        manager.add_entry(slug, status=status)
+        if status == SeenStatus.CAUGHT:
+            manager.register_caught(slug)
+        else:
+            manager.register_seen(slug)
 
     if expected_event == EVENT_MONSTER_REMOVED:
         assert slug not in manager.data.entries
@@ -215,9 +221,9 @@ def test_reset(
     expected_remaining,
     expected_removed,
 ):
-    manager.add_entry("caught_mon", status=SeenStatus.caught)
-    manager.add_entry("seen_mon_1")
-    manager.add_entry("seen_mon_2")
+    manager.register_caught("caught_mon")
+    manager.register_seen("seen_mon_1")
+    manager.register_seen("seen_mon_2")
 
     manager.reset(remove_seen_only=remove_seen_only)
 
@@ -239,9 +245,9 @@ def test_reset(
 @pytest.fixture
 def reporter():
     initial_entries = {
-        "rockitten": MonsterEntry(SeenStatus.seen, 5),
-        "nut": MonsterEntry(SeenStatus.caught, 10),
-        "flowey": MonsterEntry(SeenStatus.seen, 2),
+        "rockitten": MonsterEntry(SeenStatus.SEEN, 5),
+        "nut": MonsterEntry(SeenStatus.CAUGHT, 10),
+        "flowey": MonsterEntry(SeenStatus.SEEN, 2),
     }
     data = TuxepediaData(initial_entries)
     return TuxepediaReporter(data)
@@ -254,8 +260,8 @@ def test_get_most_frequent_monsters(reporter):
 
 def test_get_monster_status_distribution(reporter):
     distribution = reporter.get_monster_status_distribution()
-    assert distribution[SeenStatus.seen] == 2
-    assert distribution[SeenStatus.caught] == 1
+    assert distribution[SeenStatus.SEEN] == 2
+    assert distribution[SeenStatus.CAUGHT] == 1
 
 
 def test_get_unregistered_monsters(reporter):
@@ -287,18 +293,18 @@ def test_completeness_report(
     [
         # Case 1: simple seen + caught
         {
-            "rockitten": {"status": SeenStatus.seen, "appearance_count": 1},
-            "nut": {"status": SeenStatus.caught, "appearance_count": 2},
+            "rockitten": {"status": SeenStatus.SEEN, "appearance_count": 1},
+            "nut": {"status": SeenStatus.CAUGHT, "appearance_count": 2},
         },
         # Case 2: larger counts
         {
-            "ghost": {"status": SeenStatus.seen, "appearance_count": 5},
-            "dragon": {"status": SeenStatus.caught, "appearance_count": 10},
+            "ghost": {"status": SeenStatus.SEEN, "appearance_count": 5},
+            "dragon": {"status": SeenStatus.CAUGHT, "appearance_count": 10},
         },
         # Case 3: only seen monsters
         {
-            "flowey": {"status": SeenStatus.seen, "appearance_count": 3},
-            "leafy": {"status": SeenStatus.seen, "appearance_count": 7},
+            "flowey": {"status": SeenStatus.SEEN, "appearance_count": 3},
+            "leafy": {"status": SeenStatus.SEEN, "appearance_count": 7},
         },
     ],
 )
@@ -306,7 +312,10 @@ def test_encode_decode_roundtrip(entries, event_bus):
     manager = TuxepediaManager(event_bus)
     for slug, info in entries.items():
         for _ in range(info["appearance_count"]):
-            manager.add_entry(slug, status=info["status"])
+            if info["status"] == SeenStatus.CAUGHT:
+                manager.register_caught(slug)
+            else:
+                manager.register_seen(slug)
 
     json_data = encode_tuxepedia(manager)
     new_manager = decode_tuxepedia(json_data, event_bus)
@@ -335,4 +344,4 @@ def test_decode_with_raw_string_status(event_bus):
     manager = decode_tuxepedia(json_data, event_bus)
     entry = manager.data.entries["rockitten"]
     assert isinstance(entry.status, SeenStatus)
-    assert entry.status == SeenStatus.seen
+    assert entry.status == SeenStatus.SEEN

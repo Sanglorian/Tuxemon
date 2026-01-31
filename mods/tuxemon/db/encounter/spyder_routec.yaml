@@ -7,7 +7,8 @@ monsters:
   - 26
   monster: nudiflot_male
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -16,7 +17,8 @@ monsters:
   - 26
   monster: nudiflot_female
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -25,7 +27,8 @@ monsters:
   - 26
   monster: nudimind
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -34,7 +37,8 @@ monsters:
   - 26
   monster: nudikill
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -43,7 +47,8 @@ monsters:
   - 26
   monster: manosting
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -52,7 +57,8 @@ monsters:
   - 26
   monster: tweesher
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -61,7 +67,8 @@ monsters:
   - 26
   monster: nostray
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -70,7 +77,8 @@ monsters:
   - 29
   monster: nudiflot_male
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -79,7 +87,8 @@ monsters:
   - 29
   monster: nudiflot_female
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -88,7 +97,8 @@ monsters:
   - 29
   monster: nudimind
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -97,7 +107,8 @@ monsters:
   - 29
   monster: nudikill
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -106,7 +117,8 @@ monsters:
   - 29
   monster: manosting
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -115,7 +127,8 @@ monsters:
   - 29
   monster: tweesher
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -124,5 +137,6 @@ monsters:
   - 29
   monster: nostray
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 slug: spyder_routec

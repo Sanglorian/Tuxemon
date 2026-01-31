@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from tuxemon.db import (
     FactionAlignment,
@@ -45,7 +45,7 @@ class FactionManager:
             for faction in self._factions.values():
                 for npc_id in faction.members:
                     faction.evaluate_rank_change(
-                        npc_id, session.player.game_variables.get_state()
+                        npc_id, session.player.variable_manager
                     )
             self.clear_membership_cache()
 
@@ -80,7 +80,7 @@ class FactionManager:
     def on_faction_loaded(self, faction: Faction) -> None:
         logger.info(f"FactionManager detected faction loaded: {faction.slug}")
 
-    def get(self, slug: str) -> Optional[Faction]:
+    def get(self, slug: str) -> Faction | None:
         return self._factions.get(slug)
 
     def all_factions(self) -> list[Faction]:
@@ -105,7 +105,7 @@ class FactionManager:
         self._membership_cache[npc_id] = member_factions
         return member_factions
 
-    def clear_membership_cache(self, npc_id: Optional[str] = None) -> None:
+    def clear_membership_cache(self, npc_id: str | None = None) -> None:
         """Clears membership cache for one or all NPCs."""
         if npc_id:
             self._membership_cache.pop(npc_id, None)
@@ -134,7 +134,7 @@ class FactionManager:
     ) -> list[Faction]:
         return [f for f in self._factions.values() if f.alignment == alignment]
 
-    def rank_npc_globally(self, npc_id: str) -> dict[str, Optional[str]]:
+    def rank_npc_globally(self, npc_id: str) -> dict[str, str | None]:
         """Returns a map of faction slugs to NPC ranks based on reputation."""
         return {
             slug: faction.get_rank_for_reputation(

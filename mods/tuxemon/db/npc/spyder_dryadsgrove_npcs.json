@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "woodnymph",
-      "combat_front": "waternymph",
+      "combat_sheet": "waternymph",
       "slug": "waternymph"
     }
   },
@@ -35,7 +35,7 @@
     "audio": {},
     "template": {
       "sprite_name": "woodnymph",
-      "combat_front": "metalnymph",
+      "combat_sheet": "metalnymph",
       "slug": "metalnymph"
     }
   },
@@ -55,7 +55,7 @@
     "audio": {},
     "template": {
       "sprite_name": "firenymph",
-      "combat_front": "firenymph",
+      "combat_sheet": "firenymph",
       "slug": "firenymph"
     }
   },
@@ -75,7 +75,7 @@
     "audio": {},
     "template": {
       "sprite_name": "woodnymph",
-      "combat_front": "earthnymph",
+      "combat_sheet": "earthnymph",
       "slug": "earthnymph"
     }
   },
@@ -95,7 +95,7 @@
     "audio": {},
     "template": {
       "sprite_name": "woodnymph",
-      "combat_front": "woodnymph",
+      "combat_sheet": "woodnymph",
       "slug": "woodnymph"
     }
   },
@@ -106,7 +106,7 @@
     "audio": {},
     "template": {
       "sprite_name": "volcoli",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -118,7 +118,7 @@
     "audio": {},
     "template": {
       "sprite_name": "childactor_black",
-      "combat_front": "yellowbelt",
+      "combat_sheet": "yellowbelt",
       "slug": "childactor"
     }
   },
@@ -129,7 +129,7 @@
     "audio": {},
     "template": {
       "sprite_name": "beachcomber_gray",
-      "combat_front": "yellowbelt",
+      "combat_sheet": "yellowbelt",
       "slug": "beachcomber"
     }
   }

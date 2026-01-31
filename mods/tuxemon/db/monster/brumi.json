@@ -54,7 +54,8 @@
       "monster_slug": "bewhich",
       "variables": [
         {
-          "daytime": "false"
+          "key": "daytime",
+          "value": "false"
         }
       ]
     }

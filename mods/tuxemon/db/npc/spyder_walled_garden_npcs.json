@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "ceo",
-      "combat_front": "ceo",
+      "combat_sheet": "ceo",
       "slug": "ceo"
     }
   },
@@ -35,7 +35,7 @@
     "audio": {},
     "template": {
       "sprite_name": "ceo",
-      "combat_front": "ceo",
+      "combat_sheet": "ceo",
       "slug": "ceo"
     }
   },
@@ -55,7 +55,7 @@
     "audio": {},
     "template": {
       "sprite_name": "cooldude",
-      "combat_front": "cooldude",
+      "combat_sheet": "cooldude",
       "slug": "cooldude"
     }
   },
@@ -75,7 +75,7 @@
     "audio": {},
     "template": {
       "sprite_name": "ceo",
-      "combat_front": "ceo",
+      "combat_sheet": "ceo",
       "slug": "ceo"
     }
   },
@@ -95,7 +95,7 @@
     "audio": {},
     "template": {
       "sprite_name": "cooldude",
-      "combat_front": "cooldude",
+      "combat_sheet": "cooldude",
       "slug": "cooldude"
     }
   },
@@ -115,7 +115,7 @@
     "audio": {},
     "template": {
       "sprite_name": "picnicker",
-      "combat_front": "picnicker",
+      "combat_sheet": "picnicker",
       "slug": "picnicker"
     }
   },
@@ -135,7 +135,7 @@
     "audio": {},
     "template": {
       "sprite_name": "ceo",
-      "combat_front": "ceo",
+      "combat_sheet": "ceo",
       "slug": "ceo"
     }
   },
@@ -155,7 +155,7 @@
     "audio": {},
     "template": {
       "sprite_name": "ceo",
-      "combat_front": "ceo",
+      "combat_sheet": "ceo",
       "slug": "ceo"
     }
   },
@@ -175,7 +175,7 @@
     "audio": {},
     "template": {
       "sprite_name": "ceo",
-      "combat_front": "ceo",
+      "combat_sheet": "ceo",
       "slug": "ceo"
     }
   },
@@ -195,7 +195,7 @@
     "audio": {},
     "template": {
       "sprite_name": "ceo",
-      "combat_front": "ceo",
+      "combat_sheet": "ceo",
       "slug": "ceo"
     }
   },
@@ -215,7 +215,7 @@
     "audio": {},
     "template": {
       "sprite_name": "cooldude",
-      "combat_front": "cooldude",
+      "combat_sheet": "cooldude",
       "slug": "cooldude"
     }
   },
@@ -235,7 +235,7 @@
     "audio": {},
     "template": {
       "sprite_name": "ceo",
-      "combat_front": "ceo",
+      "combat_sheet": "ceo",
       "slug": "ceo"
     }
   },
@@ -255,7 +255,7 @@
     "audio": {},
     "template": {
       "sprite_name": "picnicker",
-      "combat_front": "picnicker",
+      "combat_sheet": "picnicker",
       "slug": "picnicker"
     }
   }

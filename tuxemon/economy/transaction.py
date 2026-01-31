@@ -37,13 +37,17 @@ class TransactionManager:
             self.buyer_manager.remove_money(amount)
 
     def _adjust_inventory(self, npc: NPC, item: Item, quantity: int) -> None:
-        """Adds items to NPC's bag, creating new entry if needed."""
-        in_bag = npc.bag.find_item(item.slug)
-        if in_bag:
-            in_bag.increase_quantity(quantity)
-        else:
-            new_item = Item.create(item.slug)
-            npc.bag.add_item(new_item, quantity)
+        """Adds items to NPC's bag using BagHandler rules."""
+        if quantity <= 0:
+            return  # ignore invalid or zero quantities
+
+        new_item = Item.create(item.slug)
+        success = npc.bag.add_item(new_item, quantity)
+
+        if not success:
+            raise RuntimeError(
+                f"Failed to add item '{item.slug}' x{quantity} to NPC '{npc.slug}'."
+            )
 
     def buy_item(
         self,
@@ -79,7 +83,13 @@ class TransactionManager:
         self, seller: NPC, item: Item, quantity: int, amount: int, label: str
     ) -> None:
         """Seller sells items to shop."""
-        seller.bag.remove_item(item, quantity)
+        success = seller.bag.remove_item(item, quantity)
+        if not success:
+            raise RuntimeError(
+                f"Seller '{seller.slug}' does not have enough of '{item.slug}' "
+                f"to sell {quantity} units."
+            )
+
         self.shop_manager.increase_stock(label, quantity)
         self._process_payment(amount, is_buying=False)
 

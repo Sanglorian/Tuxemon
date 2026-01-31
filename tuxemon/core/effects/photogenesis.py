@@ -60,7 +60,7 @@ class PhotogenesisEffect(CoreEffect):
         if not tech.hit:
             return TechEffectResult(name=tech.name)
 
-        hour = int(session.player.game_variables.get("hour", 0))
+        hour = session.time.get_time_variables().hour
         hp = user.shape.attributes.hp
         max_multiplier = hp / 2
 

@@ -7,7 +7,8 @@ monsters:
   - 25
   monster: cochini
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 5
   exp_req_mod: 3
   held_items: []
@@ -16,7 +17,8 @@ monsters:
   - 25
   monster: cateye
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 5
   exp_req_mod: 3
   held_items: []
@@ -25,7 +27,8 @@ monsters:
   - 25
   monster: sclairus
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 5
   exp_req_mod: 3
   held_items: []
@@ -34,7 +37,8 @@ monsters:
   - 25
   monster: bursa
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 - encounter_rate: 5
   exp_req_mod: 3
   held_items: []
@@ -43,5 +47,6 @@ monsters:
   - 25
   monster: nut
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 slug: spyder_greenwash

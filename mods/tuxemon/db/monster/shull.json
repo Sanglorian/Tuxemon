@@ -38,7 +38,8 @@
       "monster_slug": "myrmison",
       "variables": [
         {
-          "daytime": "false"
+          "key": "daytime",
+          "value": "false"
         }
       ]
     }

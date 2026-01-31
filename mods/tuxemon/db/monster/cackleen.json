@@ -42,7 +42,8 @@
       "monster_slug": "brumi",
       "variables": [
         {
-          "daytime": "false"
+          "key": "daytime",
+          "value": "false"
         }
       ]
     }

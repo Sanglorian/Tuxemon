@@ -42,6 +42,7 @@ class NPCState(BaseModel):
     )
     current_map: str | None = None
     facing: str | None = None
+    gender: str | None = None
     game_variables: dict[str, Any] = Field(default_factory=dict)
     battles: Sequence[Mapping[str, Any]] = Field(default_factory=list)
     tuxepedia: Mapping[str, Any] = Field(default_factory=dict)

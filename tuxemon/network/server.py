@@ -365,7 +365,7 @@ class ClientRegistry:
         char_dict: Optional[CharData] = None,
     ) -> None:
         default_char = CharData(
-            tile_pos=(0, 0), name="", facing=Direction.down, running=False
+            tile_pos=(0, 0), name="", facing=Direction.DOWN, running=False
         )
 
         self.registry[cuuid] = {
@@ -510,7 +510,7 @@ class EventFactory:
                 CharData(
                     tile_pos=(0, 0),
                     name="",
-                    facing=Direction.down,
+                    facing=Direction.DOWN,
                     running=False,
                 )
             )

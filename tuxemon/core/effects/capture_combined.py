@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from tuxemon import formula
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
 from tuxemon.database.rules import config_capdev
-from tuxemon.db import Acquisition, SeenStatus
+from tuxemon.db import Acquisition
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
@@ -114,7 +114,7 @@ class CaptureCombinedEffect(CoreEffect):
     def _apply_capture_effects(self, item: Item, target: Monster) -> None:
         if self.session.player.tuxepedia.is_seen(target.slug):
             self.client.combat_session.set_variable("new_tuxepedia", True)
-        self.session.player.tuxepedia.add_entry(target.slug, SeenStatus.caught)
+        self.session.player.tuxepedia.register_caught(target.slug)
         target.capture_device = item.slug
         target.wild = False
         target.set_acquisition(Acquisition.CAPTURED)

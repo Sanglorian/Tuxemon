@@ -5,7 +5,7 @@
   "audio": {},
   "template": {
     "sprite_name": "knight",
-    "combat_front": "knight",
+    "combat_sheet": "knight",
     "slug": "knight"
   }
 }

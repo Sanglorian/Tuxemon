@@ -8949,6 +8949,9 @@ msgstr "Neuter"
 msgid "gender_female"
 msgstr "Female"
 
+msgid "gender_nonbinary"
+msgstr "Non-binary"
+
 # Player additional gender, since very few ID as 'neuter'
 msgid "gender_enby"
 msgstr "Nonbinary"
@@ -8968,6 +8971,19 @@ msgstr "White male"
 
 msgid "black_male"
 msgstr "Black male"
+
+# Astronomy
+msgid "menu_celestial_title"
+msgstr "Celestial Overview"
+
+msgid "menu_celestial_current"
+msgstr "Current Phases"
+
+msgid "menu_celestial_details"
+msgstr "Cycle Details"
+
+msgid "menu_celestial_footer"
+msgstr "End of Report"
 
 # Monster types
 msgid "aether"

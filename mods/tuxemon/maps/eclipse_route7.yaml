@@ -275,7 +275,7 @@ events:
     actions:
     - set_environment cliff
     conditions:
-    - not variable_set stage_of_day:night
+    - not time_is stage_of_day,equals,night
     - not environment_is cliff
     x: 1
     y: 0
@@ -284,7 +284,7 @@ events:
     actions:
     - set_environment night_cliff
     conditions:
-    - is variable_set stage_of_day:night
+    - is time_is stage_of_day,equals,night
     - not environment_is night_cliff
     x: 2
     y: 0

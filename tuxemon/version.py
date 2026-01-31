@@ -2,114 +2,70 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import re
+from importlib.metadata import PackageNotFoundError, version
 
-__version__ = "0.4.35"
+from packaging.version import InvalidVersion
+from packaging.version import Version as PEP440Version
+
+try:
+    __version__ = version("tuxemon")
+except PackageNotFoundError:
+    __version__ = "0.0.0-dev"
+
+
+def version_info() -> str:
+    """Returns a human-readable version string for display or debugging."""
+    return f"Tuxemon version {__version__}"
 
 
 class Version:
-    """Represents the version of a plugin, following semantic versioning."""
+    """
+    A strict PEP 440 version wrapper.
 
-    def __init__(
-        self,
-        major: int,
-        minor: int,
-        patch: int,
-        pre_release: str = "",
-        build_metadata: str = "",
-    ):
-        self.major = major
-        self.minor = minor
-        self.patch = patch
-        self.pre_release = pre_release
-        self.build_metadata = build_metadata
+    This class delegates all parsing, normalization, and comparison
+    to packaging.version.Version to ensure full PEP 440 compliance.
+    """
+
+    def __init__(self, version_str: str):
+        try:
+            self._v = PEP440Version(version_str)
+        except InvalidVersion as e:
+            raise ValueError(f"Invalid PEP 440 version: {version_str}") from e
 
     def __str__(self) -> str:
-        """Returns the string representation of the version."""
-        version_str = f"{self.major}.{self.minor}.{self.patch}"
-        if self.pre_release:
-            version_str += f"-{self.pre_release}"
-        if self.build_metadata:
-            version_str += f"+{self.build_metadata}"
-        return version_str
+        return str(self._v)
+
+    def __repr__(self) -> str:
+        return f"Version('{self._v}')"
 
     @classmethod
     def from_string(cls, version_str: str) -> Version:
-        """Creates a Version from a string, supporting pre-release and build metadata."""
-        Version.validate_version(version_str)
+        return cls(version_str)
 
-        try:
-            main_part, *rest = version_str.split("-")
-            major, minor, patch = map(int, main_part.split("."))
-            pre_release = ""
-            build_metadata = ""
-
-            if rest:
-                pre_release = rest[0]
-                if "+" in pre_release:
-                    pre_release, build_metadata = pre_release.split("+", 1)
-
-            return cls(major, minor, patch, pre_release, build_metadata)
-        except ValueError:
-            raise ValueError(
-                f"Invalid version string: {version_str}. Expected format: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]"
-            )
-
+    # Comparison operators simply delegate to packaging.version.Version
     def __eq__(self, other: object) -> bool:
-        """Checks if two Version instances are equal."""
         if not isinstance(other, Version):
             return NotImplemented
-        return (
-            self.major == other.major
-            and self.minor == other.minor
-            and self.patch == other.patch
-            and self.pre_release == other.pre_release
-            and self.build_metadata == other.build_metadata
-        )
+        return self._v == other._v
 
     def __lt__(self, other: Version) -> bool:
-        """Compares two Version instances for less than."""
-        if self.major != other.major:
-            return self.major < other.major
-        if self.minor != other.minor:
-            return self.minor < other.minor
-        if self.patch != other.patch:
-            return self.patch < other.patch
-        return self.pre_release < other.pre_release
+        return self._v < other._v
+
+    def __le__(self, other: Version) -> bool:
+        return self._v <= other._v
 
     def __gt__(self, other: Version) -> bool:
-        """Compares two Version instances for greater than."""
-        return not (self < other or self == other)
+        return self._v > other._v
 
     def __ge__(self, other: Version) -> bool:
-        """Compares two Version instances for greater than or equal to."""
-        return self > other or self == other
-
-    @staticmethod
-    def validate_version(version_str: str) -> None:
-        """Validates the version string format."""
-        if not re.match(
-            r"^\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$",
-            version_str,
-        ):
-            raise ValueError(
-                f"Invalid version format: {version_str}. Expected format: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]"
-            )
+        return self._v >= other._v
 
 
 class VersionComparator:
     @staticmethod
     def compare(version1: Version, version2: Version) -> int:
-        """
-        Compares two Version objects.
-
-        Returns:
-            -1 if version1 < version2
-             0 if version1 == version2
-             1 if version1 > version2
-        """
-        if version1.major != version2.major:
-            return version1.major - version2.major
-        if version1.minor != version2.minor:
-            return version1.minor - version2.minor
-        return version1.patch - version2.patch
+        if version1 < version2:
+            return -1
+        if version1 > version2:
+            return 1
+        return 0

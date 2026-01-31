@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "catgirl_green",
-      "combat_front": "catgirl",
+      "combat_sheet": "catgirl",
       "slug": "catgirl"
     }
   },
@@ -35,7 +35,7 @@
     "audio": {},
     "template": {
       "sprite_name": "picnicker",
-      "combat_front": "picnicker",
+      "combat_sheet": "picnicker",
       "slug": "picnicker"
     }
   },
@@ -46,7 +46,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist_fiery",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   },
@@ -66,7 +66,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist_black",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   },
@@ -77,7 +77,7 @@
     "audio": {},
     "template": {
       "sprite_name": "granny",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "granny"
     }
   },
@@ -88,7 +88,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist_rose",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   },
@@ -99,7 +99,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac_green",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "maniac"
     }
   },
@@ -110,7 +110,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse_red",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   },
@@ -121,7 +121,7 @@
     "audio": {},
     "template": {
       "sprite_name": "box",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -133,7 +133,7 @@
     "audio": {},
     "template": {
       "sprite_name": "box",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -145,7 +145,7 @@
     "audio": {},
     "template": {
       "sprite_name": "box",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -157,7 +157,7 @@
     "audio": {},
     "template": {
       "sprite_name": "box",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -169,7 +169,7 @@
     "audio": {},
     "template": {
       "sprite_name": "box",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -181,7 +181,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac_green",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "maniac"
     }
   }

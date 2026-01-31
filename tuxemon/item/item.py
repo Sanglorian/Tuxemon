@@ -7,105 +7,100 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
-from pygame.surface import Surface
-
 from tuxemon import graphics
 from tuxemon.core.asset import get_assets
 from tuxemon.core.core_effect import ItemEffectResult
-from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
+from tuxemon.core.core_processor import (
+    ConditionProcessor,
+    ConditionValidationResult,
+    EffectProcessor,
+)
 from tuxemon.database.runtime import db
 from tuxemon.db import (
-    ExperienceMethod,
-    ItemBehaviors,
-    ItemCategory,
     ItemModel,
-    ItemRarity,
-    MenuAction,
-    SoundProperties,
-    State,
-    StatModel,
-    VisualProperties,
 )
+from tuxemon.item.durability import Durability
+from tuxemon.item.stock import Stock
 from tuxemon.locale import T
 from tuxemon.modifiers import ModifiersHandler
 from tuxemon.monster_dir.stats import BasicStats
-from tuxemon.surfanim import FlipAxes
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
     from tuxemon.npc import NPC
-    from tuxemon.plugin import PluginObject
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
-
-SIMPLE_PERSISTANCE_ATTRIBUTES = ("slug", "quantity", "wear")
-
-INFINITE_ITEMS: int = -1
 
 
 class Item:
     """An item object is an item that can be used either in or out of combat."""
 
-    def __init__(self, save_data: Mapping[str, Any] | None = None) -> None:
-        save_data = save_data or {}
-
-        self.slug: str = ""
+    def __init__(self, slug: str, db_data: ItemModel) -> None:
+        self.slug = slug
         self.instance_id: UUID = uuid4()
-        self.quantity: int = 1
-        self.visuals = VisualProperties(
-            animation=None, flip_axes=FlipAxes.NONE, loop=-1
-        )
-        self.sound = SoundProperties(sfx=None, volume=1.5)
-        self.modifiers: ModifiersHandler = ModifiersHandler()
-        # The path to the sprite to load.
-        self.sprite: str = ""
-        self.category: ItemCategory = ItemCategory.none
-        self.surface: Surface | None = None
-        self.surface_size_original: tuple[int, int] = (0, 0)
 
-        self.rarity: ItemRarity = ItemRarity.COMMON
-        self.sort: str = ""
-        self.confirm_text: str = ""
-        self.cancel_text: str = ""
-        self.use_item: str = ""
-        self.use_success: str = ""
-        self.use_failure: str = ""
-        self.usable_in: Sequence[State] = []
-        self.immunity_to_status: Sequence[str] = []
-        self.behaviors: ItemBehaviors
-        self.money_multiplier: float = 1.0
-        self.reward_method: ExperienceMethod = ExperienceMethod.DEFAULT
-        self.cost: int = 0
-        self.wear: int = 0
-        self.max_wear: int = 0
-        self.break_chance: float = 0.0
-        self.menu_actions_data: Sequence[MenuAction] = []
-        self.granted_techniques: Sequence[str] = []
-        self.granted_statuses: Sequence[str] = []
+        self.visuals = db_data.visuals
+        self.sound = db_data.sound
+        self.sprite = db_data.sprite
+        self.category = db_data.category
+        self.rarity = db_data.rarity
+        self.sort = db_data.sort
+        self.cost = db_data.cost
+        self.money_multiplier = db_data.money_multiplier
+        self.reward_method = db_data.reward_method
+        self.behaviors = db_data.behaviors
+        self.usable_in = db_data.usable_in
+        self.immunity_to_status = db_data.immunity_to_status
+        self.menu_actions_data = db_data.menu_actions
+        self.granted_techniques = db_data.granted_techniques
+        self.granted_statuses = db_data.granted_statuses
+        self.break_into_item = db_data.break_into_item
+        self.stat_modifiers = db_data.stat_modifiers
 
         self.core_assets = get_assets()
-        self.effects: Sequence[PluginObject] = []
-        self.conditions: Sequence[PluginObject] = []
-        self.stat_modifiers: dict[str, StatModel] = {}
-        self.temporary_stat_boosts: BasicStats = BasicStats()
+        self.conditions = self.core_assets.parse_conditions(db_data.conditions)
+        self.condition_handler = ConditionProcessor(self.conditions)
+        self.effect_defs = db_data.effects
 
-        self.set_state(save_data)
+        self.surface = graphics.load_and_scale(self.sprite)
+        self.surface_size_original = self.surface.get_size()
+        self.dynamic_menu = db_data.dynamic_menu
+
+        self.modifiers = ModifiersHandler(db_data.modifiers)
+        self.stock = Stock()
+        self.durability = Durability(
+            max_wear=db_data.max_wear, break_chance=db_data.break_chance
+        )
+        self.temporary_stat_boosts = BasicStats()
+
+        self.use_item = T.translate(db_data.use_item)
+        self.use_success = T.translate(db_data.use_success)
+        self.use_failure = T.translate(db_data.use_failure)
+        self.confirm_text = T.translate(db_data.confirm_text)
+        self.cancel_text = T.translate(db_data.cancel_text)
 
     @classmethod
-    def create(
-        cls, slug: str, save_data: Mapping[str, Any] | None = None
-    ) -> Item:
-        method = cls(save_data)
-        method.load(slug)
-        return method
+    def create(cls, slug: str) -> Item:
+        db_data = ItemModel.lookup(slug, db)
+        return cls(slug, db_data)
 
     @classmethod
-    def test(cls, save_data: Mapping[str, Any] | None = None) -> Item:
-        """Creates an Item instance for testing purposes."""
-        method = cls(save_data)
-        return method
+    def from_save(cls, save_data: Mapping[str, Any]) -> Item:
+        slug = save_data["slug"]
+        db_data = ItemModel.lookup(slug, db)
+
+        item = cls(slug, db_data)
+
+        if "quantity" in save_data:
+            item.stock.set(save_data["quantity"])
+        if "wear" in save_data:
+            item.durability.current = save_data["wear"]
+        if "instance_id" in save_data:
+            item.instance_id = UUID(save_data["instance_id"])
+
+        return item
 
     @property
     def name(self) -> str:
@@ -117,59 +112,15 @@ class Item:
 
     @property
     def has_wear(self) -> bool:
-        return self.max_wear > 0
+        return self.durability.has_wear
 
     @property
-    def wear_ratio(self) -> float:
-        if self.max_wear == 0:
-            return 0.0  # Item doesn't use wear, no ratio
-        return min(max(self.wear / self.max_wear, 0.0), 1.0)
+    def quantity(self) -> int:
+        return self.stock.quantity
 
-    def load(self, slug: str) -> None:
-        """Loads and sets this item's attributes from the item.db database.
-
-        The item is looked up in the database by slug.
-
-        Parameters:
-            slug: The item slug to look up in the monster.item database.
-
-        """
-        results = ItemModel.lookup(slug, db)
-        self.slug = results.slug
-        self.modifiers = ModifiersHandler(results.modifiers)
-
-        # item use notifications (translated!)
-        self.use_item = T.translate(results.use_item)
-        self.use_success = T.translate(results.use_success)
-        self.use_failure = T.translate(results.use_failure)
-        self.confirm_text = T.translate(results.confirm_text)
-        self.cancel_text = T.translate(results.cancel_text)
-
-        self.menu_actions_data = results.menu_actions
-        self.dynamic_menu = results.dynamic_menu
-        self.behaviors = results.behaviors
-        self.cost = results.cost
-        self.money_multiplier = results.money_multiplier
-        self.reward_method = results.reward_method
-        self.max_wear = results.max_wear
-        self.break_chance = results.break_chance
-        self.rarity = results.rarity
-        self.sort = results.sort
-        self.immunity_to_status = results.immunity_to_status
-        self.category = results.category
-        self.sprite = results.sprite
-        self.usable_in = results.usable_in
-        self.stat_modifiers = results.stat_modifiers
-        self.effect_defs = results.effects
-        self.conditions = self.core_assets.parse_conditions(results.conditions)
-        self.condition_handler = ConditionProcessor(self.conditions)
-        self.surface = graphics.load_and_scale(self.sprite)
-        self.surface_size_original = self.surface.get_size()
-        self.granted_techniques = results.granted_techniques
-        self.granted_statuses = results.granted_statuses
-
-        self.visuals = results.visuals
-        self.sound = results.sound
+    @property
+    def wear(self) -> int:
+        return self.durability.current
 
     def is_immune(self, status: str) -> bool:
         return (
@@ -177,74 +128,79 @@ class Item:
             or status in self.immunity_to_status
         )
 
-    def set_quantity(self, amount: int = 1) -> None:
-        """Set item quantity with clamping at zero, unless it's infinite (-1)."""
-        if amount < -1:
-            logger.warning(f"Invalid quantity: {amount}. Clamping to 0.")
-            amount = 0
+    def repair(self, amount: int = -1) -> None:
+        """Repairs the item if allowed, reducing or resetting its wear level."""
+        if not self.behaviors.repairable:
+            logger.debug(f"Item {self.slug} is not repairable.")
+            return
+        self.durability.try_repair(amount)
+        logger.debug(
+            f"Item {self.slug} repaired. Current wear: {self.durability.current}"
+        )
 
-        self.quantity = amount
+    def set_quantity(self, amount: int = 1) -> None:
+        """Set item quantity with clamping at zero, unless it's infinite."""
+        self.stock.set(amount)
         logger.debug(f"Item '{self.slug}' quantity set to {self.quantity}")
 
     def increase_quantity(self, amount: int = 1) -> bool:
-        """Increase item quantity unless it's infinite (-1)."""
-        if self.quantity == -1:
-            logger.debug(f"'{self.slug}' has infinite quantity.")
-            return True
-
-        if amount < 0:
+        """Increase item quantity unless it's infinite."""
+        if not self.stock.try_add(amount):
             logger.warning(
                 f"Negative increase: {amount}. Use decrease_quantity instead."
             )
             return False
 
-        self.quantity += amount
         logger.debug(f"'{self.slug}' quantity increased to {self.quantity}")
         return True
 
     def decrease_quantity(self, amount: int = 1) -> bool:
-        """Decrease item quantity unless it's infinite (-1), clamping at zero."""
-        if self.quantity == -1:
-            logger.debug(f"'{self.slug}' has infinite quantity.")
-            return True
-
-        if amount < 0:
-            logger.warning(
-                f"Negative decrease: {amount}. Use increase_quantity instead."
-            )
+        """Decrease item quantity unless it's infinite, clamping at zero."""
+        if not self.stock.try_remove(amount):
+            if amount < 0:
+                logger.warning(
+                    f"Negative decrease: {amount}. Use increase_quantity instead."
+                )
+            else:
+                logger.debug(f"'{self.slug}', but it's already 0.")
             return False
 
-        if self.quantity == 0:
-            logger.debug(f"'{self.slug}', but it's already 0.")
-            return False
-
-        self.quantity = max(0, self.quantity - amount)
         logger.debug(f"'{self.slug}' quantity decreased to {self.quantity}")
         return True
 
     def increase_wear(self, amount: int = 1) -> bool:
         """Increase the wear level of the item, clamped to max_wear."""
-        if not self.has_wear or amount < 0:
-            logger.warning(
-                f"Cannot increase wear: has_wear={self.has_wear}, amount={amount}"
-            )
-            return False
-
-        self.wear = min(self.wear + amount, self.max_wear)
+        just_broke = self.durability.try_increase(amount)
         logger.debug(f"'{self.slug}' wear increased to {self.wear}")
-        return True
+        return just_broke
 
     def reset_wear(self) -> None:
         """Resets the item's wear level to zero (fully restored)."""
-        if self.has_wear:
-            self.wear = 0
-            logger.debug(f"'{self.slug}' wear reset to 0")
+        self.durability.try_reset()
+        logger.debug(f"'{self.slug}' wear reset to 0")
 
     def validate_monster(self, session: Session, target: Monster) -> bool:
         """
         Check if the target meets all conditions that the item has on it's use.
         """
-        return self.condition_handler.validate(session=session, target=target)
+        if self.durability.is_broken:
+            logger.debug(f"{self.name} is broken and cannot be used!")
+            return False
+
+        if self.stock.quantity == 0:
+            return False
+
+        return self.condition_handler.validate_monster(
+            session=session, target=target
+        ).passed
+
+    def debug_validate_monster(
+        self, session: Session, target: Monster
+    ) -> ConditionValidationResult:
+        """Developer API: returns full structured validation result."""
+        return self.condition_handler.validate_monster(
+            session=session, target=target
+        )
 
     def use(
         self, session: Session, user: NPC, target: Monster | None
@@ -257,8 +213,22 @@ class Item:
         result = self.effect_handler.process_item(
             session=session, source=self, target=target
         )
-        if session.client:
-            session.client.active_effect_manager.add_item(self)
+
+        if self.durability.has_wear and self.behaviors.wear_on_use:
+            just_broke = self.increase_wear()
+
+            if just_broke:
+                logger.warning(f"The item {self.slug} has broken!")
+
+                if self.break_into_item:
+                    replacement_slug = self.break_into_item
+                    replacement = Item.create(replacement_slug)
+                    user.bag.add_item(replacement)
+                    logger.debug(f"{self.slug} broke into {replacement_slug}")
+
+                if self.behaviors.destroy_on_break:
+                    user.bag.remove_item(self)
+
         self.consume_if_needed(user, result)
         return result
 
@@ -272,51 +242,22 @@ class Item:
         ) and self.behaviors.consumable
 
         if should_consume:
-            logger.debug(
-                f"Consuming item '{self.slug}' from NPC '{user.slug}'."
-            )
-            user.bag.remove_item(self)
-        else:
-            logger.debug(
-                f"Item '{self.slug}' not consumed (consumable={self.behaviors.consumable}, success={result.success})."
-            )
+            self.stock.consume_one()
+            if not self.stock.has_any:
+                user.bag.remove_item(self)
 
     def get_state(self) -> Mapping[str, Any]:
-        """
-        Prepares a dictionary of the item to be saved to a file.
-
-        """
-        save_data = {
-            attr: getattr(self, attr)
-            for attr in SIMPLE_PERSISTANCE_ATTRIBUTES
-            if getattr(self, attr)
+        """Prepares a dictionary of the item to be saved."""
+        return {
+            "slug": self.slug,
+            "quantity": self.stock.quantity,
+            "wear": self.durability.current,
+            "instance_id": self.instance_id.hex,
         }
 
-        save_data["instance_id"] = self.instance_id.hex
 
-        return save_data
-
-    def set_state(self, save_data: Mapping[str, Any]) -> None:
-        """
-        Loads information from saved data.
-
-        """
-        if not save_data:
-            return
-
-        self.load(save_data["slug"])
-
-        for key, value in save_data.items():
-            if key == "instance_id" and value:
-                self.instance_id = UUID(value)
-            elif key in SIMPLE_PERSISTANCE_ATTRIBUTES:
-                setattr(self, key, value)
-
-
-def decode_items(
-    json_data: Sequence[Mapping[str, Any]] | None,
-) -> list[Item]:
-    return [Item(save_data=itm) for itm in (json_data or [])]
+def decode_items(json_data: Sequence[Mapping[str, Any]] | None) -> list[Item]:
+    return [Item.from_save(itm) for itm in (json_data or [])]
 
 
 def encode_items(itms: Sequence[Item]) -> Sequence[Mapping[str, Any]]:

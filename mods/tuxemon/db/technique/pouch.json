@@ -3,7 +3,7 @@
   "accuracy": 1,
   "effects": [
     {
-      "type": "cooldown",
+      "type": "cooldown_modifier",
       "parameters": [
         "own_monster",
         "0",

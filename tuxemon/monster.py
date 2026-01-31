@@ -104,7 +104,7 @@ class Monster:
         self.evolutions: list[MonsterEvolutionItemModel] = []
         self.evolution_handler = Evolution(self)
         self.history: list[MonsterHistoryItemModel] = []
-        self.stage: EvolutionStage = EvolutionStage.standalone
+        self.stage: EvolutionStage = EvolutionStage.STANDALONE
         self.flair_slugs: set[str] = set()
         self.flairs: dict[str, Flair] = {}
         self.owner: NPC | None = None

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Sequence
-from typing import Optional
 
 from tuxemon.database.runtime import db
 from tuxemon.db import ElementItemModel, ElementModel
@@ -18,30 +17,15 @@ class Element:
 
     _elements: dict[str, Element] = {}
 
-    def __init__(self, slug: Optional[str] = None) -> None:
-        self.slug: str = ""
-        self.icon: str = ""
-        self.types: Sequence[ElementItemModel] = []
-
-        if slug:
-            self.load(slug)
-
-    def load(self, slug: str) -> None:
-        """Loads an element."""
-
-        if slug in Element._elements:
-            cached_element = Element._elements[slug]
-            self.slug = slug
-            self.types = cached_element.types
-            self.icon = cached_element.icon
-            return
-
-        results = ElementModel.lookup(slug, db)
+    def __init__(
+        self,
+        slug: str,
+        icon: str,
+        types: Sequence[ElementItemModel],
+    ) -> None:
         self.slug = slug
-        self.types = results.types
-        self.icon = results.icon
-
-        Element._elements[slug] = self
+        self.icon = icon
+        self.types = list(types)
 
     @property
     def name(self) -> str:
@@ -49,17 +33,32 @@ class Element:
         return T.translate(self.slug) if self.slug else ""
 
     @classmethod
-    def get_element(cls, slug: str) -> Optional[Element]:
-        """Retrieves an Element object by its slug."""
-        return cls._elements.get(slug)
+    def get(cls, slug: str) -> Element:
+        """
+        Retrieve an Element from cache or load it from the database.
+        """
+        if slug in cls._elements:
+            return cls._elements[slug]
+
+        try:
+            results = ElementModel.lookup(slug, db)
+            icon = results.icon
+            types = results.types
+        except Exception:
+            logger.warning(f"Element {slug} not found, using empty fallback.")
+            icon = ""
+            types = []
+
+        element = cls(slug, icon, types)
+        cls._elements[slug] = element
+        return element
 
     @classmethod
     def load_all_elements(cls) -> None:
         """Loads all elements from the database into the cache."""
         try:
-            all_element_slugs = list(db.database["element"])
-            for slug in all_element_slugs:
-                cls(slug)
+            for slug in db.database["element"]:
+                cls.get(slug)
         except Exception as e:
             logger.error(f"Failed to load all elements: {e}")
 
@@ -80,10 +79,10 @@ class Element:
             f"Element(slug={self.slug}, "
             f"name={self.name}, "
             f"types={self.types}, "
-            f"icon={self.icon}, "
+            f"icon={self.icon})"
         )
 
-    def lookup_field(self, element: str, field: str) -> Optional[float]:
+    def lookup_field(self, element: str, field: str) -> float | None:
         """Looks up the element against for this element."""
         for item in self.types:
             if item.against == element and hasattr(item, field):
@@ -102,17 +101,21 @@ class Element:
 
 
 class ElementTypesHandler:
+    """
+    Handles element type sets and affinity/resistance calculations.
+    Uses Element templates via Element.get and caches multipliers.
+    """
 
     _multiplier_cache: dict[tuple[str, str], float] = {}
 
-    def __init__(self, initial_types: Optional[Sequence[str]] = None):
-        pre_types = (
-            []
-            if initial_types is None
-            else [Element(ele) for ele in initial_types]
-        )
-        self._current_types = pre_types
-        self._default_types = list(pre_types)
+    def __init__(self, initial_types: Sequence[str] | None = None):
+        if initial_types is None:
+            pre_types: list[Element] = []
+        else:
+            pre_types = [Element.get(slug) for slug in initial_types]
+
+        self._current_types: list[Element] = pre_types
+        self._default_types: list[Element] = list(pre_types)
 
     @classmethod
     def calculate_affinity_score(
@@ -161,8 +164,8 @@ class ElementTypesHandler:
     def clear_cache(cls) -> None:
         cls._multiplier_cache.clear()
 
-    def set_types(self, new_types: list[Element]) -> None:
-        self._current_types = new_types
+    def set_types(self, new_types: Sequence[str]) -> None:
+        self._current_types = [Element.get(slug) for slug in new_types]
 
     def reset_to_default(self) -> None:
         self._current_types = list(self._default_types)

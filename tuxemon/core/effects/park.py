@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 
 from tuxemon import formula
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
-from tuxemon.db import SeenStatus
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
@@ -125,7 +124,7 @@ class ParkEffect(CoreEffect):
 
         if self.session.player.tuxepedia.is_seen(target.slug):
             self.client.combat_session.set_variable("new_tuxepedia", True)
-        self.session.player.tuxepedia.add_entry(target.slug, SeenStatus.caught)
+        self.session.player.tuxepedia.register_caught(target.slug)
         target.capture_device = item.slug
         target.wild = False
         self.session.player.party.add_monster(

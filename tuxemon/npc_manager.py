@@ -132,7 +132,7 @@ class NPCManager:
                 continue
 
             char_dict = CharData(
-                tile_pos=entity.final_move_dest,
+                tile_pos=entity._last_tile_pos,
                 name=entity.name,
                 facing=entity.facing,
                 monsters=[],
@@ -257,4 +257,5 @@ class NPCManager:
         npc.set_current_map(map_name)
         npc.cancel_path()
         npc.set_position((x, y))
+        npc.on_tile_changed()
         self.add_npc(npc)

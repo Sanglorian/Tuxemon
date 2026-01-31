@@ -38,11 +38,11 @@ class HasPartyBreederCondition(EventCondition):
             return False
 
         has_male_evolved_monsters = any(
-            mon.stage != EvolutionStage.basic and mon.gender == GenderType.MALE
+            mon.stage != EvolutionStage.BASIC and mon.gender == GenderType.MALE
             for mon in character.monsters
         )
         has_female_evolved_monsters = any(
-            mon.stage != EvolutionStage.basic
+            mon.stage != EvolutionStage.BASIC
             and mon.gender == GenderType.FEMALE
             for mon in character.monsters
         )

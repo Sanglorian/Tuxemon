@@ -68,7 +68,7 @@
     <property name="behav1" value="talk cotton_misa_gramps"/>
     <property name="cond1" value="not variable_set grampsask:yes"/>
     <property name="cond2" value="not variable_set grampsask:no"/>
-    <property name="cond3" value="is variable_set gender_choice:gender_male"/>
+    <property name="cond3" value="is char_gender player,male"/>
    </properties>
   </object>
   <object id="54" name="Create Granny" type="event" x="80" y="64" width="16" height="16">
@@ -100,7 +100,7 @@
     <property name="behav1" value="talk cotton_misa_gramps"/>
     <property name="cond1" value="not variable_set grampsask:yes"/>
     <property name="cond2" value="not variable_set grampsask:no"/>
-    <property name="cond3" value="is variable_set gender_choice:gender_female"/>
+    <property name="cond3" value="not char_gender player,male"/>
    </properties>
   </object>
   <object id="64" name="Talk Granny Yes" type="event" x="32" y="16" width="16" height="16">

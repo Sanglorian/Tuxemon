@@ -13,7 +13,8 @@ monsters:
         probability: 0.25           # 25% chance the Pairagrin holds this item
     level_range: [3, 5]             # Pairagrin appears between level 3 and 5
     variables:                      # Variables affecting encounter
-      - { stage_of_day: "night" }   # Example: only appears at night
+      - key: stage_of_day
+        value: "night"              # Example: only appears at night
     exp_req_mod: 1.2                # 20% more XP required to defeat
     level_offset: 1                 # Pairagrin level is shifted +1
     min_player_level: 2             # Player must be at least level 2

@@ -9,7 +9,11 @@ from uuid import UUID, uuid4
 
 from tuxemon.core.asset import get_assets
 from tuxemon.core.core_effect import StatusEffectResult
-from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
+from tuxemon.core.core_processor import (
+    ConditionProcessor,
+    ConditionValidationResult,
+    EffectProcessor,
+)
 from tuxemon.database.runtime import db
 from tuxemon.db import EffectPhase, StatusModel
 from tuxemon.locale import T
@@ -152,7 +156,17 @@ class Status:
         """
         Check if the target meets all conditions that the status has on its use.
         """
-        return self.condition_handler.validate(session=session, target=target)
+        return self.condition_handler.validate_monster(
+            session=session, target=target
+        ).passed
+
+    def debug_validate_monster(
+        self, session: Session, target: Monster
+    ) -> ConditionValidationResult:
+        """Developer API: returns full structured validation result."""
+        return self.condition_handler.validate_monster(
+            session=session, target=target
+        )
 
     def set_linked_monster(self, monster: Monster) -> None:
         """Assigns a linked monster that benefits from this status."""

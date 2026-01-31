@@ -8943,6 +8943,9 @@ msgstr "Neuter"
 msgid "gender_female"
 msgstr "Female"
 
+msgid "gender_nonbinary"
+msgstr "Non-binary"
+
 # Player additional gender, since very few ID as 'neuter'
 msgid "gender_enby"
 msgstr "Nonbinary"

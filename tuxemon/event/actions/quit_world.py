@@ -36,6 +36,8 @@ class QuitWorldAction(EventAction):
         session.client.event_engine.reset()
         session.client.map_manager.clear_events()
         session.client.map_manager.clear_inits()
+        session.client.map_manager.clear_map()
+        session.client.map_loader.clear_cache()
         session.client.replace_state("StartState")
         try:
             old_world = session.client.get_state_by_name(WorldState)

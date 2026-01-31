@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "picnicker",
-      "combat_front": "picnicker",
+      "combat_sheet": "picnicker",
       "slug": "picnicker"
     }
   },
@@ -35,7 +35,7 @@
     "audio": {},
     "template": {
       "sprite_name": "tennisplayer_green",
-      "combat_front": "tennisplayer",
+      "combat_sheet": "tennisplayer",
       "slug": "tennisplayer"
     }
   },
@@ -55,7 +55,7 @@
     "audio": {},
     "template": {
       "sprite_name": "tennisplayer_fiery",
-      "combat_front": "tennisplayer",
+      "combat_sheet": "tennisplayer",
       "slug": "tennisplayer"
     }
   }

@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_brown",
-      "combat_front": "scientist_brown",
+      "combat_sheet": "scientist_brown",
       "slug": "scientist"
     }
   },
@@ -35,7 +35,7 @@
     "audio": {},
     "template": {
       "sprite_name": "robot",
-      "combat_front": "xeon",
+      "combat_sheet": "xeon",
       "slug": "robot"
     }
   },
@@ -55,7 +55,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "knightlord",
+      "combat_sheet": "knightlord",
       "slug": "knightlord"
     }
   },
@@ -75,7 +75,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "enforcer_agent",
+      "combat_sheet": "enforcer_agent",
       "slug": "enforcer_agent"
     }
   },
@@ -95,7 +95,7 @@
     "audio": {},
     "template": {
       "sprite_name": "soldier",
-      "combat_front": "aviator",
+      "combat_sheet": "aviator",
       "slug": "aviator"
     }
   },
@@ -115,7 +115,7 @@
     "audio": {},
     "template": {
       "sprite_name": "soldier",
-      "combat_front": "soldier",
+      "combat_sheet": "soldier",
       "slug": "soldier"
     }
   },
@@ -135,7 +135,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -155,7 +155,7 @@
     "audio": {},
     "template": {
       "sprite_name": "soldier",
-      "combat_front": "soldier",
+      "combat_sheet": "soldier",
       "slug": "soldier"
     }
   },
@@ -175,7 +175,7 @@
     "audio": {},
     "template": {
       "sprite_name": "soldier",
-      "combat_front": "soldier",
+      "combat_sheet": "soldier",
       "slug": "soldier"
     }
   },
@@ -195,7 +195,7 @@
     "audio": {},
     "template": {
       "sprite_name": "robot",
-      "combat_front": "chrome_robo",
+      "combat_sheet": "chrome_robo",
       "slug": "robot"
     }
   },
@@ -215,7 +215,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_fiery",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -235,7 +235,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "enforcer_boss",
+      "combat_sheet": "enforcer_boss",
       "slug": "enforcer_boss"
     }
   },
@@ -255,7 +255,7 @@
     "audio": {},
     "template": {
       "sprite_name": "soldier",
-      "combat_front": "soldier",
+      "combat_sheet": "soldier",
       "slug": "soldier"
     }
   },
@@ -275,7 +275,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_black",
-      "combat_front": "scientist_black",
+      "combat_sheet": "scientist_black",
       "slug": "scientist"
     }
   },
@@ -286,7 +286,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "enforcer_rookie"
     }
   },
@@ -297,7 +297,7 @@
     "audio": {},
     "template": {
       "sprite_name": "soldier",
-      "combat_front": "soldier",
+      "combat_sheet": "soldier",
       "slug": "soldier"
     }
   },
@@ -308,7 +308,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_brown",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -319,7 +319,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist_rose",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   }

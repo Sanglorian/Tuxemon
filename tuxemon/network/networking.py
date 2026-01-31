@@ -184,7 +184,7 @@ def populate_client(
         raise RuntimeError(f"Failed to create or retrieve NPC for {char_name}")
 
     char.is_player = True
-    char.final_move_dest = char.tile_pos
+    char._last_tile_pos = char.tile_pos
     char.interactions = ["TRADE", "DUEL"]
 
     # Update the registry with the client sprite and map name

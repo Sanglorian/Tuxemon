@@ -6,7 +6,7 @@
     "audio": {},
     "template": {
       "sprite_name": "barmaid_blonde",
-      "combat_front": "barmaid",
+      "combat_sheet": "barmaid",
       "slug": "barmaid"
     }
   },
@@ -17,7 +17,7 @@
     "audio": {},
     "template": {
       "sprite_name": "soldier",
-      "combat_front": "soldier",
+      "combat_sheet": "soldier",
       "slug": "soldier"
     }
   },
@@ -28,7 +28,7 @@
     "audio": {},
     "template": {
       "sprite_name": "magician_grey",
-      "combat_front": "magician",
+      "combat_sheet": "magician",
       "slug": "magician"
     }
   },
@@ -39,7 +39,7 @@
     "audio": {},
     "template": {
       "sprite_name": "postboy_green",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "postboy"
     }
   },
@@ -50,7 +50,7 @@
     "audio": {},
     "template": {
       "sprite_name": "magician_fiery",
-      "combat_front": "magician",
+      "combat_sheet": "magician",
       "slug": "magician"
     }
   },
@@ -61,7 +61,7 @@
     "audio": {},
     "template": {
       "sprite_name": "magician_brown",
-      "combat_front": "magician",
+      "combat_sheet": "magician",
       "slug": "magician"
     }
   },
@@ -72,7 +72,7 @@
     "audio": {},
     "template": {
       "sprite_name": "goth",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "goth"
     }
   },
@@ -83,7 +83,7 @@
     "audio": {},
     "template": {
       "sprite_name": "barmaid",
-      "combat_front": "barmaid",
+      "combat_sheet": "barmaid",
       "slug": "barmaid"
     }
   },
@@ -94,7 +94,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_blue",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -105,7 +105,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_green",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -116,7 +116,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_red",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -127,7 +127,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_fiery",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -138,7 +138,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_fiery",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -149,7 +149,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner_yellow",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -160,7 +160,7 @@
     "audio": {},
     "template": {
       "sprite_name": "miner",
-      "combat_front": "miner",
+      "combat_sheet": "miner",
       "slug": "miner"
     }
   },
@@ -171,7 +171,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "maniac"
     }
   },
@@ -182,7 +182,7 @@
     "audio": {},
     "template": {
       "sprite_name": "tennisplayer",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "tennisplayer"
     }
   },
@@ -193,7 +193,7 @@
     "audio": {},
     "template": {
       "sprite_name": "postboy_red",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "postboy"
     }
   },
@@ -204,7 +204,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor_brown",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -215,7 +215,7 @@
     "audio": {},
     "template": {
       "sprite_name": "soldier",
-      "combat_front": "soldier",
+      "combat_sheet": "soldier",
       "slug": "soldier"
     }
   },
@@ -226,7 +226,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist_blue",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   },
@@ -237,7 +237,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist_fiery",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   },
@@ -248,7 +248,7 @@
     "audio": {},
     "template": {
       "sprite_name": "snugglepot",
-      "combat_front": "snugglepot",
+      "combat_sheet": "snugglepot",
       "slug": "snugglepot"
     }
   },
@@ -259,7 +259,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_brown",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -270,7 +270,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac_violet",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "maniac"
     }
   },
@@ -281,7 +281,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac_rose",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "maniac"
     }
   },
@@ -292,7 +292,7 @@
     "audio": {},
     "template": {
       "sprite_name": "shopkeeper",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "shopkeeper"
     }
   }

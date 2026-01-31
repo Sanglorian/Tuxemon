@@ -215,12 +215,8 @@ def test_execute_trade_updates_party_and_ownership(
 def test_execute_trade_updates_tuxepedia(manager, players_and_monsters):
     player_a, player_b, monster_a, monster_b = players_and_monsters
     manager.execute_trade(monster_a, monster_b)
-    player_a.tuxepedia.add_entry.assert_called_once_with(
-        monster_b.slug, SeenStatus.caught
-    )
-    player_b.tuxepedia.add_entry.assert_called_once_with(
-        monster_a.slug, SeenStatus.caught
-    )
+    player_a.tuxepedia.register_caught.assert_called_once_with(monster_b.slug)
+    player_b.tuxepedia.register_caught.assert_called_once_with(monster_a.slug)
 
 
 def test_execute_trade_publishes_event(manager, players_and_monsters):
@@ -270,9 +266,7 @@ def test_execute_scripted_trade_success(
     player_a.party.replace_monster.assert_called_once_with(monster_a, fake_mon)
     assert fake_mon.acquisition is not None
     fake_mon.set_capture.assert_called_once()
-    player_a.tuxepedia.add_entry.assert_called_once_with(
-        "new_slug", SeenStatus.caught
-    )
+    player_a.tuxepedia.register_caught.assert_called_once_with("new_slug")
     assert len(manager.global_trade_log) == 1
     record = manager.global_trade_log[0]
     assert record.monster_given == monster_a.slug

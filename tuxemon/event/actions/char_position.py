@@ -45,3 +45,4 @@ class CharPositionAction(EventAction):
             )
         character.remove_collision()
         character.set_position(position)
+        character.on_tile_changed()

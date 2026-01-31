@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tuxemon.db import Direction
+from tuxemon.db import Direction, FacingMode
 from tuxemon.entity_dir.path import PathController, tile_distance
 from tuxemon.map.map import dirs2
 from tuxemon.math import Vector2
@@ -39,6 +39,9 @@ class SimpleNPC:
         self.position = Vector2(float(pos[0]), float(pos[1]))
         self.tile_pos = vector2_to_tile_pos(self.position)
 
+    def on_tile_changed(self):
+        pass
+
     def remove_collision(self):
         pass
 
@@ -56,6 +59,7 @@ def mk_npc_with_mocks():
         mover = MagicMock()
         mover.move = MagicMock()
         npc.mover = mover
+        npc.facing_mode = FacingMode.FOLLOW_MOVEMENT
         sprite = MagicMock()
         sprite.play_animation = MagicMock()
         sprite.stop_animation = MagicMock()

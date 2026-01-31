@@ -797,7 +797,7 @@
     <property name="act1" value="translated_dialog spyder_dryadsgrove_boy_healthy"/>
     <property name="act2" value="translated_dialog_choice yes:no,ruff"/>
     <property name="behav1" value="talk spyder_dryadsgrove_boy"/>
-    <property name="cond1" value="is variable_set party_healthy:yes"/>
+    <property name="cond1" value="is char_healed player"/>
     <property name="cond2" value="not variable_set ruff:yes"/>
     <property name="cond3" value="not variable_set ruff:proceed"/>
    </properties>
@@ -819,7 +819,7 @@
    <properties>
     <property name="act1" value="translated_dialog spyder_dryadsgrove_boy_not_healthy"/>
     <property name="behav1" value="talk spyder_dryadsgrove_boy"/>
-    <property name="cond1" value="not variable_set party_healthy:yes"/>
+    <property name="cond1" value="not char_healed player"/>
    </properties>
   </object>
   <object id="275" name="Ruff Yes" type="event" x="320" y="544" width="16" height="16">

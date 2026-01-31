@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.surface import Surface
 
@@ -15,13 +15,26 @@ from tuxemon.menu.quantity import QuantityAndCostMenu, QuantityAndPriceMenu
 from tuxemon.monster import Monster
 from tuxemon.states.shop_base import ShopMenuState
 
+if TYPE_CHECKING:
+    from tuxemon.economy.economy import Economy
+    from tuxemon.npc import NPC
+
 
 class ShopMonsterMenuState(ShopMenuState[Monster]):
     """State for buying and selling monsters, implementing the abstract methods of the generic ShopMenuState."""
 
     name: ClassVar[str] = "ShopMonsterMenuState"
 
-    def _get_asset_image(self, asset: MenuItem[Monster]) -> Optional[Surface]:
+    def __init__(
+        self,
+        buyer: NPC,
+        seller: NPC,
+        economy: Economy,
+    ) -> None:
+        super().__init__(buyer, seller, economy)
+        self.update_background(self.economy.model.background)
+
+    def _get_asset_image(self, asset: MenuItem[Monster]) -> Surface | None:
         image = asset.game_object.get_sprite("front")
         return image.image if image else None
 

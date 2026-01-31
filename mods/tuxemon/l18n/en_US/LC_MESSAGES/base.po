@@ -1689,11 +1689,6 @@ msgstr ""
 "Can't escape.\n"
 "{monster} is {status}!"
 
-msgid "combat_party_unselectable"
-msgstr ""
-"None of your monsters can battle! All are either fainted or already in the "
-"fight!"
-
 msgid "combat_player_swap_status"
 msgstr ""
 "Can't switch monsters.\n"

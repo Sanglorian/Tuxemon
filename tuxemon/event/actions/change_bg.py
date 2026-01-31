@@ -6,17 +6,14 @@ import logging
 from dataclasses import dataclass
 from typing import final
 
-from pygame_menu import locals
-
 from tuxemon.database.runtime import db
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
 
 logger = logging.getLogger()
 
-CATEGORIES: list[str] = ["image", "template", "item"]
+CATEGORIES: list[str] = ["image", "item"]
 CATEGORY_PATHS: dict[str, str] = {
-    "template": "gfx/sprites/player/{}.png",
     "item": "gfx/items/{}.png",
     "image": "gfx/ui/background/{}.png",
 }
@@ -39,11 +36,10 @@ class ChangeBgAction(EventAction):
             - A file name located in `gfx/ui/background/`
             - An RGB color formatted as `R:G:B` (e.g., `255:0:0`)
         image: An optional image identifier, which can be:
-            - A template slug (stored in `gfx/sprites/player`)
             - An item slug (stored in `gfx/items`)
             - A direct file path
-        category: The category of the image (e.g., template,
-            item, image). If omitted, defaults to "background".
+        category: The category of the image (e.g., item or image.
+            If omitted, defaults to "background".
 
     Notes:
         - Background images must be in `gfx/ui/background/`.
@@ -69,8 +65,6 @@ class ChangeBgAction(EventAction):
                 logger.error(f"{self.category} must be among {CATEGORIES}")
                 return
             if self.category == "image":
-                self.image = CATEGORY_PATHS[self.category].format(self.image)
-            elif self.image in db.database["template"]:
                 self.image = CATEGORY_PATHS[self.category].format(self.image)
             elif self.image in db.database["item"]:
                 self.image = CATEGORY_PATHS[self.category].format(self.image)

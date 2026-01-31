@@ -6,7 +6,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -17,7 +17,7 @@
     "audio": {},
     "template": {
       "sprite_name": "beachcomber_copper",
-      "combat_front": "beachgoer",
+      "combat_sheet": "beachgoer",
       "slug": "beachgoer"
     }
   },
@@ -28,7 +28,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac_violet",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "maniac"
     }
   },
@@ -48,7 +48,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk_black",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   },
@@ -68,7 +68,7 @@
     "audio": {},
     "template": {
       "sprite_name": "magician_blonde",
-      "combat_front": "magician",
+      "combat_sheet": "magician",
       "slug": "magician"
     }
   },
@@ -88,7 +88,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist_fiery",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   },
@@ -108,7 +108,7 @@
     "audio": {},
     "template": {
       "sprite_name": "boss_orange",
-      "combat_front": "baller",
+      "combat_sheet": "baller",
       "slug": "baller"
     }
   },
@@ -128,7 +128,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor_lapi",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -148,7 +148,7 @@
     "audio": {},
     "template": {
       "sprite_name": "cooldude_black",
-      "combat_front": "rocker",
+      "combat_sheet": "rocker",
       "slug": "rocker"
     }
   },
@@ -168,7 +168,7 @@
     "audio": {},
     "template": {
       "sprite_name": "rogue_copper",
-      "combat_front": "winger",
+      "combat_sheet": "winger",
       "slug": "winger"
     }
   },
@@ -188,7 +188,7 @@
     "audio": {},
     "template": {
       "sprite_name": "picnicker",
-      "combat_front": "picnicker",
+      "combat_sheet": "picnicker",
       "slug": "picnicker"
     }
   },
@@ -208,7 +208,7 @@
     "audio": {},
     "template": {
       "sprite_name": "postboy_green",
-      "combat_front": "cooldude",
+      "combat_sheet": "cooldude",
       "slug": "postboy"
     }
   },
@@ -228,7 +228,7 @@
     "audio": {},
     "template": {
       "sprite_name": "tennisplayer_green",
-      "combat_front": "coach",
+      "combat_sheet": "coach",
       "slug": "coach"
     }
   },
@@ -239,7 +239,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse_lapi",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   }

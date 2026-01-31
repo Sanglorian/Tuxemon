@@ -5,7 +5,7 @@
   "audio": {},
   "template": {
     "sprite_name": "childactor_fiery",
-    "combat_front": "yellowbelt",
+    "combat_sheet": "yellowbelt",
     "slug": "childactor"
   }
 }

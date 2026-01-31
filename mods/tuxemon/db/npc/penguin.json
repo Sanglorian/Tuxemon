@@ -5,7 +5,7 @@
   "audio": {},
   "template": {
     "sprite_name": "penguin",
-    "combat_front": "penguin",
+    "combat_sheet": "penguin",
     "slug": "noclass"
   }
 }

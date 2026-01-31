@@ -1802,10 +1802,14 @@ class NpcTemplateModel(TemplateModel):
         2.0,
         description="Additional speed scaling for this NPC",
     )
-    combat_front: str = Field(
+    combat_sheet: str = Field(
         ...,
-        description="Filename of the battle front sprite (without extension)",
+        description="Filename of the combat sprite sheet (side-by-side, back|front)",
     )
+    combat_frame_width: int = 64
+    combat_frame_height: int = 64
+    combat_rows: int = 1
+    combat_columns: int = 2
 
     @field_validator("sprite_name")
     def validate_sheet_exists(cls, v: str) -> str:
@@ -1827,12 +1831,12 @@ class NpcTemplateModel(TemplateModel):
             f"Neither sprite sheet '{sheet}' nor static prop '{static_obj}' exists"
         )
 
-    @field_validator("combat_front")
-    def validate_combat_sprite(cls, v: str) -> str:
+    @field_validator("combat_sheet")
+    def validate_combat_sheet(cls, v: str) -> str:
         file = f"gfx/sprites/player/{v}.png"
         if has.file(file):
             return v
-        raise ValueError(f"Combat sprite '{file}' does not exist")
+        raise ValueError(f"Combat sheet '{file}' does not exist")
 
 
 class DialogueContent(BaseModel):

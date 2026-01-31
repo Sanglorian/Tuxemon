@@ -49,26 +49,46 @@ class ModifyBillAction(EventAction):
 
         player = session.player
         money_manager = character.money_controller.money_manager
-        amount = 0
+
         if self.amount is None:
             if self.variable:
-                _amount = player.game_variables.get(self.variable, amount)
-                if isinstance(_amount, int):
-                    amount = int(_amount)
-                elif isinstance(_amount, float):
-                    _value = float(_amount)
-                    _wallet = money_manager.get_bill(self.bill_slug)
-                    if _wallet:
-                        amount = int(_wallet.amount * _value)
+                raw_value = player.game_variables.get(self.variable, 0)
+
+                if isinstance(raw_value, int):
+                    amount = raw_value
+
+                elif isinstance(raw_value, float):
+                    bill = money_manager.get_bill(self.bill_slug)
+                    if bill is None:
+                        logger.error(f"Bill '{self.bill_slug}' not found")
+                        return
+                    amount = int(bill.amount * raw_value)
+
                 else:
-                    raise ValueError("It must be float or int")
+                    raise ValueError(
+                        f"Variable '{self.variable}' must be int or float, "
+                        f"got {type(raw_value).__name__}"
+                    )
+            else:
+                amount = 0
         else:
             amount = self.amount
 
         if not T.has_translation("en_US", self.bill_slug):
             logger.error(f"Please add {self.bill_slug} to the en_US base.po")
 
-        if amount >= 0:
-            money_manager.add_bill(self.bill_slug, amount)
-        else:
-            money_manager.remove_bill(self.bill_slug, amount)
+        try:
+            if amount >= 0:
+                money_manager.add_bill(self.bill_slug, amount)
+            else:
+                money_manager.remove_bill(self.bill_slug, -amount)
+        except KeyError as e:
+            logger.error(str(e))
+            return
+
+        bill = money_manager.get_bill(self.bill_slug)
+        new_amount = bill.amount if bill else 0
+
+        logger.debug(
+            f"Bill '{self.bill_slug}' changed by {amount}. New amount: {new_amount}"
+        )

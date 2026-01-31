@@ -152,7 +152,7 @@
   </object>
   <object id="47" name="Watch 2" type="event" x="176" y="256" width="16" height="16">
    <properties>
-    <property name="act10" value="change_bg gradient_blue,ceo,template"/>
+    <property name="act10" value="change_bg_char gradient_blue,spyder_omnichannel_beaverbrook"/>
     <property name="act25" value="translated_dialog spyder_postintro00"/>
     <property name="act26" value="translated_dialog spyder_postintro01"/>
     <property name="act27" value="translated_dialog spyder_postintro02"/>
@@ -172,7 +172,7 @@
   </object>
   <object id="49" name="Watch 1" type="event" x="176" y="96" width="16" height="16">
    <properties>
-    <property name="act10" value="change_bg gradient_blue,ceo,template"/>
+    <property name="act10" value="change_bg_char gradient_blue,spyder_omnichannel_beaverbrook"/>
     <property name="act20" value="translated_dialog spyder_preintro00"/>
     <property name="act21" value="translated_dialog spyder_preintro01"/>
     <property name="act22" value="translated_dialog spyder_preintro02"/>

@@ -10,7 +10,11 @@ from uuid import UUID, uuid4
 from tuxemon import graphics
 from tuxemon.core.asset import get_assets
 from tuxemon.core.core_effect import ItemEffectResult
-from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
+from tuxemon.core.core_processor import (
+    ConditionProcessor,
+    ConditionValidationResult,
+    EffectProcessor,
+)
 from tuxemon.database.runtime import db
 from tuxemon.db import (
     ItemModel,
@@ -186,7 +190,17 @@ class Item:
         if self.stock.quantity == 0:
             return False
 
-        return self.condition_handler.validate(session=session, target=target)
+        return self.condition_handler.validate_monster(
+            session=session, target=target
+        ).passed
+
+    def debug_validate_monster(
+        self, session: Session, target: Monster
+    ) -> ConditionValidationResult:
+        """Developer API: returns full structured validation result."""
+        return self.condition_handler.validate_monster(
+            session=session, target=target
+        )
 
     def use(
         self, session: Session, user: NPC, target: Monster | None

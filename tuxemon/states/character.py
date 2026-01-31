@@ -11,6 +11,7 @@ from pygame_menu import locals
 from tuxemon import formula
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
+from tuxemon.graphics import scale_surface
 from tuxemon.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.menu.menu import PygameMenuState
@@ -193,10 +194,9 @@ class CharacterState(PygameMenuState):
         )
         lab8.translate(fxw(0.45), fxh(0.10))
         # image
-        combat_front = self.char.template.combat_front
-        _path = f"gfx/sprites/player/{combat_front}.png"
-        new_image = self._create_image(_path)
-        new_image.scale(SCALE, SCALE)
+        surface = self.char.combat_sheet().front()
+        scaled = scale_surface(surface, SCALE)
+        new_image = self._create_image_from_surface(scaled)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
         image_widget.translate(fxw(0.20), fxh(0.08))

@@ -5,7 +5,7 @@
   "audio": {},
   "template": {
     "sprite_name": "omnichannelallie",
-    "combat_front": "goth_rose",
+    "combat_sheet": "goth_rose",
     "slug": "heroine"
   }
 }

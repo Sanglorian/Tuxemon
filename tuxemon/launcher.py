@@ -75,7 +75,7 @@ class GameLauncher:
         execute.execute_action("set_player_name", [name])
 
         # Set template
-        template = ["player", meta.sprite, meta.combat_front]
+        template = ["player", meta.sprite, meta.combat_sheet]
         execute.execute_action("set_template", template)
 
         # Optionally clean up states

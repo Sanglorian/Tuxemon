@@ -6,7 +6,7 @@
     "audio": {},
     "template": {
       "sprite_name": "witch",
-      "combat_front": "witch",
+      "combat_sheet": "witch",
       "slug": "heroine"
     }
   },
@@ -17,7 +17,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "enforcer_rookie"
     }
   },
@@ -28,7 +28,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "enforcer_rookie"
     }
   },
@@ -39,7 +39,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "knight",
+      "combat_sheet": "knight",
       "slug": "knight"
     }
   }

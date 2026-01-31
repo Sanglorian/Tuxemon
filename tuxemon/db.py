@@ -1088,22 +1088,23 @@ class FlairModel(BaseModel, BaseLookupModel):
 
 
 class MonsterSpritesModel(BaseModel):
-    front: str = Field(..., description="The front sprite")
-    back: str = Field(..., description="The back sprite")
-    menu1: str = Field(..., description="The menu1 sprite")
-    menu2: str = Field(..., description="The menu2 sprite")
+    sheet: str = Field(..., description="Path to the combined sprite sheet")
+    front_rect: tuple[int, int, int, int] = Field(
+        (0, 0, 64, 64), description="Front sprite region"
+    )
+    back_rect: tuple[int, int, int, int] = Field(
+        (64, 0, 64, 64), description="Back sprite region"
+    )
+    menu1_rect: tuple[int, int, int, int] = Field(
+        (0, 64, 24, 24), description="Menu icon 1 region"
+    )
+    menu2_rect: tuple[int, int, int, int] = Field(
+        (24, 64, 24, 24), description="Menu icon 2 region"
+    )
 
-    @field_validator("front", "back")
-    def battle_exists(cls, v: str) -> str:
-        if has.file(f"{v}.png") and has.size(f"{v}.png", sizes.MONSTER_SIZE):
-            return v
-        raise ValueError(f"no resource exists with path: {v}")
-
-    @field_validator("menu1", "menu2")
-    def menu_exists(cls, v: str) -> str:
-        if has.file(f"{v}.png") and has.size(
-            f"{v}.png", sizes.MONSTER_SIZE_MENU
-        ):
+    @field_validator("sheet")
+    def sheet_exists(cls, v: str) -> str:
+        if has.file(f"{v}.png"):
             return v
         raise ValueError(f"no resource exists with path: {v}")
 
@@ -1197,15 +1198,12 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
 
     @field_validator("sprites")
     def set_default_sprites(
-        cls, v: str, info: ValidationInfo
-    ) -> Union[str, MonsterSpritesModel]:
+        cls,
+        v: Optional[MonsterSpritesModel],
+        info: ValidationInfo,
+    ) -> MonsterSpritesModel:
         slug = info.data.get("slug")
-        default = MonsterSpritesModel(
-            front=f"gfx/sprites/battle/{slug}-front",
-            back=f"gfx/sprites/battle/{slug}-back",
-            menu1=f"gfx/sprites/battle/{slug}-menu01",
-            menu2=f"gfx/sprites/battle/{slug}-menu02",
-        )
+        default = MonsterSpritesModel(sheet=f"gfx/sprites/battle/{slug}-sheet")  # type: ignore[call-arg]
         return v or default
 
     @field_validator("species")
@@ -1824,10 +1822,14 @@ class NpcTemplateModel(TemplateModel):
         2.0,
         description="Additional speed scaling for this NPC",
     )
-    combat_front: str = Field(
+    combat_sheet: str = Field(
         ...,
-        description="Filename of the battle front sprite (without extension)",
+        description="Filename of the combat sprite sheet (side-by-side, back|front)",
     )
+    combat_frame_width: int = 64
+    combat_frame_height: int = 64
+    combat_rows: int = 1
+    combat_columns: int = 2
 
     @field_validator("sprite_name")
     def validate_sheet_exists(cls, v: str) -> str:
@@ -1849,12 +1851,12 @@ class NpcTemplateModel(TemplateModel):
             f"Neither sprite sheet '{sheet}' nor static prop '{static_obj}' exists"
         )
 
-    @field_validator("combat_front")
-    def validate_combat_sprite(cls, v: str) -> str:
+    @field_validator("combat_sheet")
+    def validate_combat_sheet(cls, v: str) -> str:
         file = f"gfx/sprites/player/{v}.png"
         if has.file(file):
             return v
-        raise ValueError(f"Combat sprite '{file}' does not exist")
+        raise ValueError(f"Combat sheet '{file}' does not exist")
 
 
 class DialogueContent(BaseModel):

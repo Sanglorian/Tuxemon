@@ -33,6 +33,7 @@
 - slug: firenymph
 - slug: firefighter
 - slug: fisher
+- slug: flex_fanatic
 - slug: florist
 - slug: goalkeeper
 - slug: goth
@@ -74,9 +75,11 @@
 - slug: shopkeeper
 - slug: snugglepot
 - slug: soldier
+- slug: sludgehog
 - slug: spinner
 - slug: spyder_boss
 - slug: spyder_rookie
+- slug: strongarm
 - slug: swimmer
 - slug: tennisplayer
 - slug: terranite

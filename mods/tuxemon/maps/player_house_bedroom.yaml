@@ -18,7 +18,7 @@ events:
     y: 2
   Intro:
     actions:
-    - change_bg gradient_blue,rockitten,monster
+    - change_bg_monster gradient_blue,rockitten
     - translated_dialog xero_skip_question
     - translated_dialog_choice no:yes,question_xero
     conditions:
@@ -42,9 +42,9 @@ events:
   Intro Yes:
     actions:
     - translated_dialog xero_intro_1
-    - change_bg gradient_blue,ceo,template
+    - change_bg_char gradient_blue,aeble
     - translated_dialog xero_intro_2
-    - change_bg gradient_blue,rockitten,monster
+    - change_bg_monster gradient_blue,rockitten
     - translated_dialog xero_intro_3
     - translated_dialog xero_intro_question
     - rename_player random

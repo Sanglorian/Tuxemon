@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_black",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -35,7 +35,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_fiery",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -55,7 +55,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_brown",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -75,7 +75,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_fiery",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -95,7 +95,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -106,7 +106,7 @@
     "audio": {},
     "template": {
       "sprite_name": "box",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -118,7 +118,7 @@
     "audio": {},
     "template": {
       "sprite_name": "screen_small",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -130,7 +130,7 @@
     "audio": {},
     "template": {
       "sprite_name": "screen_small",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -142,7 +142,7 @@
     "audio": {},
     "template": {
       "sprite_name": "screen_small",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -154,7 +154,7 @@
     "audio": {},
     "template": {
       "sprite_name": "screen_small",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -166,7 +166,7 @@
     "audio": {},
     "template": {
       "sprite_name": "screen_small",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -178,7 +178,7 @@
     "audio": {},
     "template": {
       "sprite_name": "screen_small",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -190,7 +190,7 @@
     "audio": {},
     "template": {
       "sprite_name": "screen_small",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }

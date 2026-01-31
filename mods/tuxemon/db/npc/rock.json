@@ -5,7 +5,7 @@
   "audio": {},
   "template": {
     "sprite_name": "boulder",
-    "combat_front": "noclass",
+    "combat_sheet": "noclass",
     "slug": "noclass",
     "is_static_prop": true
   }

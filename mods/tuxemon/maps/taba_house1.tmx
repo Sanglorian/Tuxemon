@@ -70,18 +70,70 @@
     <property name="act1" value="translated_dialog taba_house1_calendar"/>
     <property name="cond1" value="is char_facing_tile player"/>
     <property name="cond2" value="is button_pressed INTERACT"/>
+    <property name="cond3" value="not time_is date,equals,2-12"/>
+    <property name="cond4" value="not time_is date,equals,9-30"/>
    </properties>
   </object>
-  <object id="42" name="Husband Talk" type="event" x="32" y="16" width="16" height="16">
+  <object id="38" name="Read Feb12" type="event" x="64" y="16" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog taba_house1_calendar_feb12"/>
+    <property name="cond1" value="is char_facing_tile player"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
+    <property name="cond3" value="is time_is date,equals,2-12"/>
+   </properties>
+  </object>
+  <object id="37" name="Read Sep30" type="event" x="64" y="16" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog taba_house1_calendar_sep30"/>
+    <property name="cond1" value="is char_facing_tile player"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
+    <property name="cond3" value="is time_is date,equals,9-30"/>
+   </properties>
+  </object>
+  <object id="34" name="Husband Talk" type="event" x="32" y="16" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog taba_house1_husband1"/>
+    <property name="act2" value="translated_dialog taba_house1_husband_extra"/>
     <property name="behav1" value="talk taba_house1_husband"/>
+    <property name="cond1" value="not time_is date,equals,2-12"/>
+    <property name="cond2" value="not time_is date,equals,9-30"/>
+   </properties>
+  </object>
+  <object id="32" name="Husband Feb12" type="event" x="32" y="16" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog taba_house1_husband_feb12"/>
+    <property name="behav1" value="talk taba_house1_husband"/>
+    <property name="cond1" value="is time_is date,equals,2-12"/>
+   </properties>
+  </object>
+  <object id="42" name="Husband Sep30" type="event" x="32" y="16" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog taba_house1_husband_sep30"/>
+    <property name="behav1" value="talk taba_house1_husband"/>
+    <property name="cond1" value="is time_is date,equals,9-30"/>
    </properties>
   </object>
   <object id="43" name="Wife Talk" type="event" x="48" y="16" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog taba_house1_wife1"/>
+    <property name="act2" value="translated_dialog taba_house1_wife_extra"/>
     <property name="behav1" value="talk taba_house1_wife"/>
+    <property name="cond1" value="not time_is date,equals,2-12"/>
+    <property name="cond2" value="not time_is date,equals,9-30"/>
+   </properties>
+  </object>
+  <object id="36" name="Wife Feb12" type="event" x="48" y="16" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog taba_house1_wife_feb12"/>
+    <property name="behav1" value="talk taba_house1_wife"/>
+    <property name="cond1" value="is time_is date,equals,2-12"/>
+   </properties>
+  </object>
+  <object id="35" name="Wife Sep30" type="event" x="48" y="16" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog taba_house1_wife_sep30"/>
+    <property name="behav1" value="talk taba_house1_wife"/>
+    <property name="cond1" value="is time_is date,equals,9-30"/>
    </properties>
   </object>
   <object id="44" name="Reading" type="event" x="64" y="64" width="16" height="16">

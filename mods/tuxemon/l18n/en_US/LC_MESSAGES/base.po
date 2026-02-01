@@ -11618,6 +11618,9 @@ msgstr "CARY: Well, you won this time. But next time, we'll win."
 msgid "maple_bedroom_sign"
 msgstr "It's a calendar and the 27 April is circled in pink."
 
+msgid "maple_bedroom_sign_apr27"
+msgstr "Today is ${{today}} — the date Maple circled in pink. Whatever it means, she clearly cares about it."
+
 msgid "taba_house1_sign"
 msgstr "Mr and Ms Clawbrew House"
 
@@ -11632,13 +11635,37 @@ msgstr "The Honorable Seagulls Pub"
 
 msgid "taba_house1_calendar"
 msgstr ""
-"It's a calendar and the 30 September and the 12 February are circled in red."
+"It's a calendar with the 30 September and the 12 February circled in red."
+
+msgid "taba_house1_calendar_feb12"
+msgstr "Today is ${{today}} — one of the circled dates. It must mean something to the people living here."
+
+msgid "taba_house1_calendar_sep30"
+msgstr "It's ${{today}}, one of the dates marked in red. Someone here clearly finds this day important."
 
 msgid "taba_house1_husband1"
 msgstr "Tuxemon! I was among the most skilled trainer!"
 
+msgid "taba_house1_husband_extra"
+msgstr "One day I'll prove I really was a top trainer. The world just wasn't ready for my talent."
+
+msgid "taba_house1_husband_feb12"
+msgstr "${{today}}… the day I almost caught a mythical Tuxemon! My wife insists it was just a stray cat."
+
+msgid "taba_house1_husband_sep30"
+msgstr "${{today}}… a legendary day in my career! Or it would've been, if anyone believed me."
+
 msgid "taba_house1_wife1"
 msgstr "Trainer? My husband is delusional."
+
+msgid "taba_house1_wife_extra"
+msgstr "Please don't encourage him. He'll start talking about imaginary battles again."
+
+msgid "taba_house1_wife_feb12"
+msgstr "Every year on ${{today}} he tells that same story. I've never seen a single piece of evidence."
+
+msgid "taba_house1_wife_sep30"
+msgstr "He insists ${{today}} is important. I think he just likes circling things on calendars."
 
 msgid "taba_house1_reading"
 msgstr "The book is Philosophy of Illusionary Studies by Jaiden Gemrevenza."

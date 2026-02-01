@@ -26,7 +26,7 @@ from tuxemon.mission.manager import MissionManager
 from tuxemon.money.controller import MoneyController
 from tuxemon.monster import Monster
 from tuxemon.monster_dir.evolution_registry import EvolutionRegistry
-from tuxemon.platform.const.sizes import PLAYER_NPC
+from tuxemon.platform.const.sizes import MONTH_KEYS, PLAYER_NPC
 from tuxemon.relationship import (
     Relationships,
     decode_relationships,
@@ -82,6 +82,7 @@ class NPC(Entity):
         self.combat = npc_data.combat
         self.persistence = npc_data.persistence
         self.audio = npc_data.audio
+        self.birthdate = npc_data.birthdate
 
         self._custom_name: str | None = None
         # general
@@ -114,7 +115,6 @@ class NPC(Entity):
         self.steps: float = 0.0
         self.dialogue: DialogueProfile | None = None
         self.sprite_controller = SpriteController(self)
-        self.birthdate: tuple[int, int] | None = None
 
         # PathController manages all path/pathfinding state & logic.
         self.path_controller = PathController(
@@ -150,6 +150,19 @@ class NPC(Entity):
         if self.gender is None:
             return ""
         return T.translate(f"gender_{self.gender}")
+
+    @property
+    def birthdate_string(self) -> str:
+        if self.birthdate is None:
+            return ""
+
+        month, day = self.birthdate
+
+        if 1 <= month <= 12:
+            month_name = T.translate(MONTH_KEYS[month - 1])
+            return f"{month_name} {day}"
+
+        return ""
 
     @property
     def game_variables(self) -> PlayerVariablesManager:
@@ -200,6 +213,7 @@ class NPC(Entity):
         base.gender = self.gender
         base.current_map = self.current_map
         base.facing = self.facing.value
+        base.birthdate = self.birthdate
         base.game_variables = self._variables.get_player_state()
         base.battles = self.battle_handler.encode_battle()
         base.tuxepedia = encode_tuxepedia(self.tuxepedia)
@@ -236,6 +250,7 @@ class NPC(Entity):
         super().set_state(session, save_data)
 
         self.gender = save_data.gender
+        self.birthdate = save_data.birthdate
         self._variables.set_player_state(save_data.game_variables)
         self.tuxepedia = decode_tuxepedia(
             save_data.tuxepedia, session.client.event_bus

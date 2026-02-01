@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Final
 
+from tuxemon.locale import T
+from tuxemon.platform.const.sizes import MONTH_KEYS
 from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
@@ -47,6 +49,16 @@ class TimeHandler:
 
     def __init__(self, hemisphere: str = CONFIG.hemisphere) -> None:
         self.hemisphere: str = hemisphere.lower()
+
+    @property
+    def today_string(self) -> str:
+        month, day = self.get_month_day()
+
+        if 1 <= month <= 12:
+            month_name = T.translate(MONTH_KEYS[month - 1])
+            return f"{month_name} {day}"
+
+        return ""
 
     def get_current_time(self) -> datetime:
         """Returns the real current datetime."""

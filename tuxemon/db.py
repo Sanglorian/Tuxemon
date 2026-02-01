@@ -1995,6 +1995,9 @@ class NpcAudioModel(BaseModel):
 class NpcModel(BaseModel, BaseLookupModel):
     table_name: ClassVar[str] = "npc"
     slug: str = Field(..., description="Slug of the name of the NPC")
+    birthdate: tuple[int, int] | None = Field(
+        None, description="The NPC's birthday represented as (month, day)."
+    )
     persistence: bool = Field(
         False,
         description="Whether this NPC should be retained and saved across sessions.",

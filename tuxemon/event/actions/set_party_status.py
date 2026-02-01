@@ -43,10 +43,8 @@ class SetPartyStatusAction(EventAction):
             1 for monster in char.monsters if monster.hp_ratio == 1.0
         )
         _lost_hp = sum(monster.missing_hp for monster in char.monsters)
-        party_healthy = "yes" if _healthy == len(char.monsters) else "no"
 
         variable_updates = {
-            "party_healthy": party_healthy,
             "party_lost_hp": _lost_hp,
         }
         variables = [

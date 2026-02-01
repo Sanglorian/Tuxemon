@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.db import MissionStatus
 
@@ -31,7 +31,7 @@ class MissionManager:
     def remove_by_slug(self, slug: str) -> None:
         self.missions.pop(slug, None)
 
-    def find_mission(self, slug: str) -> Optional[Mission]:
+    def find_mission(self, slug: str) -> Mission | None:
         return self.missions.get(slug)
 
     def get_mission_count(self) -> int:
@@ -51,5 +51,5 @@ class MissionManager:
             m
             for m in self.missions.values()
             if m.assigned_to in (None, npc_slug)
-            and m.status != MissionStatus.removed
+            and m.status != MissionStatus.REMOVED
         ]

@@ -55,7 +55,7 @@ class SetMissionAction(EventAction):
 
             progress = mission.get_progress()
             if progress >= 100.0:
-                mission.update_status(MissionStatus.completed)
+                mission.update_status(MissionStatus.COMPLETED)
                 if mission.repeatable:
                     mission.completed_steps.clear()
-                    mission.update_status(MissionStatus.pending)
+                    mission.update_status(MissionStatus.PENDING)

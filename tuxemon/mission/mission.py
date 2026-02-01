@@ -4,11 +4,16 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 from tuxemon.database.runtime import db
-from tuxemon.db import MissionModel, MissionStatus, MissionStepModel
+from tuxemon.db import (
+    GameCondition,
+    MissionModel,
+    MissionStatus,
+    MissionStepModel,
+)
 from tuxemon.locale import T
 
 if TYPE_CHECKING:
@@ -16,33 +21,37 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-SIMPLE_PERSISTANCE_ATTRIBUTES = (
-    "slug",
-    "status",
-)
-
 
 class Mission:
     """Tuxemon mission."""
 
-    def __init__(self) -> None:
-        self.slug: str = ""
-        self._custom_name: Optional[str] = None
-        self._description_slug: str = ""
-        self._custom_description: Optional[str] = None
+    def __init__(
+        self,
+        db_data: MissionModel,
+        instance_id: UUID | None = None,
+        completed_steps: set[str] | None = None,
+        status: MissionStatus = MissionStatus.PENDING,
+        assigned_to: str | None = None,
+    ):
+        self.slug = db_data.slug
+        self._description_slug = db_data.description
+        self.prerequisites = db_data.prerequisites
+        self.connected_missions = db_data.connected_missions
+        self.failure_conditions = db_data.failure_conditions
+        self.required_items = db_data.required_items
+        self.required_monsters = db_data.required_monsters
+        self.required_missions = db_data.required_missions
+        self.steps = {s.slug: s for s in db_data.steps.values()}
+        self.repeatable = db_data.repeatable
+
+        self.instance_id = instance_id or uuid4()
+        self.completed_steps = completed_steps or set()
+        self.status = status
+        self.assigned_to = assigned_to
+
         self.generated: bool = False
-        self.prerequisites: Sequence[dict[str, Any]] = []
-        self.connected_missions: Sequence[dict[str, Any]] = []
-        self.failure_conditions: Sequence[dict[str, Any]] = []
-        self.required_items: dict[str, Optional[int]] = {}
-        self.required_monsters: dict[str, Optional[int]] = {}
-        self.required_missions: Sequence[str] = []
-        self.steps: dict[str, MissionStepModel] = {}
-        self.completed_steps: set[str] = set()
-        self.assigned_to: Optional[str] = None
-        self.repeatable: bool = False
-        self.status: MissionStatus = MissionStatus.pending
-        self.instance_id: UUID = uuid4()
+        self._custom_name: str | None = None
+        self._custom_description: str | None = None
 
     @property
     def name(self) -> str:
@@ -69,82 +78,35 @@ class Mission:
         self._custom_description = value
 
     @classmethod
-    def from_db(cls, slug: str) -> Mission:
-        results = MissionModel.lookup(slug, db)
-        mission = cls()
-        mission.slug = results.slug
-        mission._description_slug = results.description
-        mission.prerequisites = results.prerequisites
-        mission.connected_missions = results.connected_missions
-        mission.required_items = results.required_items
-        mission.required_monsters = results.required_monsters
-        mission.required_missions = results.required_missions
-        mission.steps = {s.slug: s for s in results.steps.values()}
-        mission.repeatable = results.repeatable
-        mission.failure_conditions = results.failure_conditions
-        return mission
+    def create(cls, slug: str) -> Mission:
+        db_data = MissionModel.lookup(slug, db)
+        return cls(db_data=db_data)
 
-    def load(self, slug: str) -> None:
-        """
-        Loads and sets mission from the db.
-        """
-        results = MissionModel.lookup(slug, db)
-        self.slug = results.slug
-        self._description_slug = results.description
-        self.prerequisites = results.prerequisites
-        self.connected_missions = results.connected_missions
-        self.required_items = results.required_items
-        self.required_monsters = results.required_monsters
-        self.required_missions = results.required_missions
-        self.steps = {s.slug: s for s in results.steps.values()}
+    @classmethod
+    def from_save(cls, save_data: Mapping[str, Any]) -> Mission:
+        slug = save_data["slug"]
+        db_data = MissionModel.lookup(slug, db)
+
+        return cls(
+            db_data=db_data,
+            instance_id=UUID(save_data["instance_id"]),
+            completed_steps=set(save_data.get("completed_steps", [])),
+            status=save_data.get("status", MissionStatus.PENDING),
+            assigned_to=save_data.get("assigned_to"),
+        )
 
     def update_status(self, new_status: MissionStatus) -> None:
-        """
-        Updates the mission's status.
-        """
+        """Updates the mission's status."""
         self.status = new_status
 
     def get_state(self) -> Mapping[str, Any]:
-        """
-        Prepares a dictionary of the mission to be saved to a file.
-        """
-        save_data = {
-            attr: getattr(self, attr)
-            for attr in SIMPLE_PERSISTANCE_ATTRIBUTES
-            if getattr(self, attr)
+        return {
+            "slug": self.slug,
+            "instance_id": self.instance_id.hex,
+            "completed_steps": list(self.completed_steps),
+            "status": self.status,
+            "assigned_to": self.assigned_to,
         }
-        save_data["instance_id"] = self.instance_id.hex
-        save_data["completed_steps"] = list(self.completed_steps)
-        save_data["assigned_to"] = self.assigned_to
-
-        if self.generated and self.steps:
-            save_data["steps"] = {
-                slug: step.model_dump() for slug, step in self.steps.items()
-            }
-
-        return save_data
-
-    def set_state(self, save_data: Mapping[str, Any]) -> None:
-        """
-        Loads information from saved data.
-        """
-        if not save_data:
-            return
-
-        self.instance_id = UUID(save_data.get("instance_id", uuid4().hex))
-        self.completed_steps = set(save_data.get("completed_steps", []))
-        self.assigned_to = save_data.get("assigned_to", None)
-        self.generated = save_data.get("generated", False)
-
-        for key in SIMPLE_PERSISTANCE_ATTRIBUTES:
-            if key in save_data:
-                setattr(self, key, save_data[key])
-
-        if self.generated and "steps" in save_data:
-            self.steps = {
-                slug: MissionStepModel.model_validate(step_data)
-                for slug, step_data in save_data["steps"].items()
-            }
 
     def mark_step_completed(self, slug: str) -> None:
         if slug in self.steps:
@@ -170,27 +132,19 @@ class Mission:
 
     def check_prerequisites(self, character: NPC) -> bool:
         if not self.prerequisites:
-            return True  # No prerequisites means it's allowed
+            return True
 
         return all(
-            all(
-                character.game_variables.has(key)
-                and character.game_variables.get(key) == value
-                for key, value in prerequisite.items()
-            )
+            character.variable_manager.check_conditions([prerequisite])
             for prerequisite in self.prerequisites
         )
 
     def check_failure_conditions(self, character: NPC) -> bool:
         if not self.failure_conditions:
-            return False  # No failure conditions means nothing can fail
+            return False
 
         return all(
-            all(
-                character.game_variables.has(key)
-                and character.game_variables.get(key) == value
-                for key, value in condition.items()
-            )
+            character.variable_manager.check_conditions([condition])
             for condition in self.failure_conditions
         )
 
@@ -246,15 +200,13 @@ class Mission:
         )
 
     def _check_conditions_list(
-        self, conditions_list: Sequence[dict[str, Any]], character: NPC
+        self, conditions_list: Sequence[GameCondition], character: NPC
     ) -> bool:
         if not conditions_list:
             return True
+
         return all(
-            all(
-                character.game_variables.get(k) == v
-                for k, v in condition.items()
-            )
+            character.variable_manager.check_conditions([condition])
             for condition in conditions_list
         )
 
@@ -269,7 +221,12 @@ class Mission:
             any_of_met = self._check_conditions_list(step.any_of, character)
             all_of_met = self._check_conditions_list(step.all_of, character)
 
-            if base_conditions_met and any_of_met and all_of_met:
+            if (
+                step.auto_complete
+                and base_conditions_met
+                and any_of_met
+                and all_of_met
+            ):
                 self.mark_step_completed(slug)
 
     def check_all_prerequisites(self, character: NPC) -> bool:
@@ -281,13 +238,68 @@ class Mission:
         )
 
     def is_active(self) -> bool:
-        return self.status == MissionStatus.pending
+        return self.status == MissionStatus.PENDING
 
     def is_completed(self) -> bool:
-        return self.status == MissionStatus.completed
+        return self.status == MissionStatus.COMPLETED
+
+    def update_progress(self, character: NPC) -> None:
+        if not self.is_active():
+            return
+
+        if self.check_failure_conditions(character):
+            self.update_status(MissionStatus.FAILED)
+            return
+
+        if not self.check_all_prerequisites(character):
+            return
+
+        self.check_step_conditions(character)
+
+        for step in self.get_active_steps():
+            if step.slug in self.completed_steps:
+                continue
+
+            if not check_items(character, step.step_items_needed):
+                continue
+
+            if not check_monsters(character, step.step_monsters_needed):
+                continue
+
+        if self.get_progress() >= 100.0:
+            self.update_status(MissionStatus.COMPLETED)
+
+            if self.repeatable:
+                self.completed_steps.clear()
+                self.update_status(MissionStatus.PENDING)
+
+    def validate_graph(self) -> None:
+        visited = set()
+
+        def dfs(slug: str) -> None:
+            if slug in visited:
+                raise ValueError(
+                    f"Circular dependency detected at step {slug}"
+                )
+            visited.add(slug)
+            for nxt in self.steps[slug].next_steps:
+                if nxt not in self.steps:
+                    continue
+                dfs(nxt)
+            visited.remove(slug)
+
+        roots = self.get_root_steps()
+
+        if not roots and self.steps:
+            raise ValueError(
+                "Circular dependency detected: no root steps found"
+            )
+
+        for root in roots:
+            dfs(root)
 
 
-def check_items(character: NPC, step_items: dict[str, Optional[int]]) -> bool:
+def check_items(character: NPC, step_items: dict[str, int | None]) -> bool:
     for item_slug, required_quantity in step_items.items():
         item = character.bag.find_item(item_slug)
         if not item:
@@ -298,7 +310,7 @@ def check_items(character: NPC, step_items: dict[str, Optional[int]]) -> bool:
 
 
 def check_monsters(
-    character: NPC, step_monsters: dict[str, Optional[int]]
+    character: NPC, step_monsters: dict[str, int | None]
 ) -> bool:
     for monster_slug, required_level in step_monsters.items():
         monster = character.party.find_monster(monster_slug)

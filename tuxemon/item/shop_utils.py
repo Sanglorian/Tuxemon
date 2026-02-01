@@ -2,11 +2,12 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 from pygame.rect import Rect
 
-from tuxemon.item.item import INFINITE_ITEMS, Item
+from tuxemon.item.item import Item
+from tuxemon.item.stock import INFINITE_ITEMS
 from tuxemon.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.monster import Monster
@@ -49,9 +50,9 @@ def get_monster_label(monster: Monster, price_tag: str) -> str:
 
 
 def generate_label(
-    entity: Union[Item, Monster],
+    entity: Item | Monster,
     economy: Economy,
-    qty: Optional[int] = None,
+    qty: int | None = None,
     seller_mode: bool = False,
 ) -> tuple[str, str, int]:
     """
@@ -64,15 +65,17 @@ def generate_label(
     qty = qty or 1
     safe_qty = qty if qty > 0 else 1
 
-    total_price, discount_percent = economy.calculate_price(
-        entity, qty, seller_mode
-    )
+    price = economy.calculate_price(entity, qty, seller_mode)
     unit_price = (
-        round(total_price / safe_qty) if qty != -1 else round(total_price)
+        round(price.final_price / safe_qty)
+        if qty != -1
+        else round(price.final_price)
     )
     price_tag = formatter.format(unit_price)
     discount_label = (
-        f" ({discount_percent}% off)" if discount_percent > 0 else ""
+        f" ({price.modifier_percent}% off)"
+        if price.modifier_percent > 0
+        else ""
     )
 
     if isinstance(entity, Item):

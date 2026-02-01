@@ -4,29 +4,23 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from tuxemon.boxes import ItemBoxes
 from tuxemon.economy.shop_manager import ShopManager
 from tuxemon.economy.transaction import TransactionManager
-from tuxemon.item.item import INFINITE_ITEMS, Item
+from tuxemon.entity_dir.bag import BagHandler
+from tuxemon.item.item import Item
+from tuxemon.item.stock import INFINITE_ITEMS, Stock
 from tuxemon.money.manager import MoneyManager
 from tuxemon.monster import Monster
 
 
-class DummyBag:
-    def __init__(self):
-        self.items = {}
-
-    def find_item(self, slug):
-        return self.items.get(slug)
-
-    def add_item(self, item, qty):
-        self.items[item.slug] = item
-        item.quantity = qty
-
-    def remove_item(self, item, qty):
-        if item.slug in self.items:
-            item.quantity -= qty
-            if item.quantity <= 0:
-                del self.items[item.slug]
+def make_test_item(slug: str, qty: int = 1) -> Item:
+    item = Item.__new__(Item)
+    item.slug = slug
+    item.stock = Stock(quantity=qty)
+    item.is_infinite = False
+    item.is_stackable = True
+    return item
 
 
 class DummyParty:
@@ -42,7 +36,8 @@ class DummyParty:
 
 class DummyNPC:
     def __init__(self):
-        self.bag = DummyBag()
+        self.slug = "dummy"
+        self.bag = BagHandler(item_boxes=ItemBoxes(), owner=self)
         self.party = DummyParty()
 
 
@@ -60,12 +55,9 @@ def tx_env():
     buyer = DummyNPC()
     seller = DummyNPC()
 
-    item = MagicMock(spec=Item)
-    item.slug = "potion"
-    item.quantity = 5
+    item = make_test_item("potion", qty=5)
 
     monster = MagicMock(spec=Monster)
-
     return {
         "buyer_money": buyer_money,
         "seller_money": seller_money,
@@ -86,7 +78,7 @@ def test_buy_item_reduces_shop_and_buyer_pays(mock_create, tx_env):
         tx_env["buyer"], tx_env["item"], 2, tx_env["label"], cost=10
     )
     assert tx_env["shop_manager"].get_quantity(tx_env["label"]) == 3
-    assert tx_env["buyer"].bag.find_item("potion").quantity == 2
+    assert tx_env["buyer"].bag.find_item("potion").stock.quantity == 2
     tx_env["buyer_money"].remove_money.assert_called_once_with(10)
 
 
@@ -145,4 +137,4 @@ def test_sell_item_removes_from_bag(tx_env):
     tx_env["tx"].sell_item(
         tx_env["seller"], tx_env["item"], 1, amount=5, label=tx_env["label"]
     )
-    assert not tx_env["seller"].bag.find_item("potion")
+    assert tx_env["seller"].bag.find_item("potion") is None

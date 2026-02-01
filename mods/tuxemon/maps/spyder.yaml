@@ -85,7 +85,7 @@ events:
     actions:
     - set_layer
     conditions:
-    - not variable_set stage_of_day:night
+    - not time_is stage_of_day,equals,night
     - not variable_set flashback:on
     - not location_inside
     - is check_world layer,0:0:128:128
@@ -116,7 +116,7 @@ events:
     actions:
     - set_layer
     conditions:
-    - is variable_set stage_of_day:night
+    - is time_is stage_of_day,equals,night
     - not variable_set flashback:on
     - is location_inside
     - is check_world layer
@@ -125,7 +125,7 @@ events:
     actions:
     - set_layer 0:0:128:128
     conditions:
-    - is variable_set stage_of_day:night
+    - is time_is stage_of_day,equals,night
     - not variable_set flashback:on
     - not location_inside
     - not check_world layer,0:0:128:128
@@ -172,7 +172,7 @@ events:
     - set_environment ocean
     conditions:
     - is char_sprite player,swimmer
-    - not variable_set stage_of_day:night
+    - not time_is stage_of_day,equals,night
     - not environment_is ocean
     type: event
   Swim Encounters Day:
@@ -198,7 +198,7 @@ events:
     - set_environment night_ocean
     conditions:
     - is char_sprite player,swimmer
-    - is variable_set stage_of_day:night
+    - is time_is stage_of_day,equals,night
     - not environment_is night_ocean
     type: event
   Teleport Faint:

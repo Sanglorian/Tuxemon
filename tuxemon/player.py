@@ -60,6 +60,7 @@ class Player(NPC):
 
     def set_state(self, session: Session, save_data: NPCState) -> None:
         super().set_state(session, save_data)
+        self.is_player = True
 
     def update(self, dt: float) -> None:
         super().update(dt)

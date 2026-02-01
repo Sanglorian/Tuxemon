@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.db import Acquisition, EconomyItemModel, EconomyMonsterModel
 from tuxemon.economy.economy import Economy
@@ -44,7 +44,7 @@ class EconomyApplier:
         entity: NPC,
         eco_model: EconomyItemModel | EconomyMonsterModel,
         shop_manager: ShopManager,
-    ) -> Optional[Item | Monster]:
+    ) -> Item | Monster | None:
         """Process a single item or monster model and return the created entity, or None."""
 
         entity_name = eco_model.slug
@@ -57,8 +57,11 @@ class EconomyApplier:
         )
         quantity = shop_manager.get_or_set_default(label, default_quantity)
 
-        if eco_model.variables and not economy.variable(
-            eco_model.variables, entity
+        if (
+            eco_model.variables
+            and not entity.variable_manager.check_conditions(
+                eco_model.variables
+            )
         ):
             logger.debug(
                 f"Skipping {entity_type} '{entity_name}' (variables mismatch)"

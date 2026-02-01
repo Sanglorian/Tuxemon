@@ -5,7 +5,7 @@
   "audio": {},
   "template": {
     "sprite_name": "beachcomber",
-    "combat_front": "beachgoer",
+    "combat_sheet": "beachgoer",
     "slug": "beachgoer"
   }
 }

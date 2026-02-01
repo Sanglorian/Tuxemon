@@ -170,12 +170,12 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
                 if self.itm_description == T.translate(
                     ParkMenuKeys.DOLL.name.lower()
                 ):
-                    if item.category == ItemCategory.doll:
+                    if item.category == ItemCategory.DOLL:
                         ret = True
                 elif self.itm_description == T.translate(
                     ParkMenuKeys.FOOD.name.lower()
                 ):
-                    if item.category == ItemCategory.food:
+                    if item.category == ItemCategory.FOOD:
                         ret = True
             return ret
 
@@ -189,9 +189,9 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
     def deliver_action(self, item: Item) -> None:
         enemy = self.opponents[0]
 
-        if item.category == ItemCategory.food:
+        if item.category == ItemCategory.FOOD:
             self.encounter.apply_food_effect(item)
-        elif item.category == ItemCategory.doll:
+        elif item.category == ItemCategory.DOLL:
             self.encounter.apply_doll_effect(item)
 
         self.client.combat_session.enqueue_action(self.player, item, enemy)

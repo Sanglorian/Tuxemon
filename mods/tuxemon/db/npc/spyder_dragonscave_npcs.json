@@ -6,7 +6,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "enforcer_rookie"
     }
   },
@@ -26,7 +26,7 @@
     "audio": {},
     "template": {
       "sprite_name": "dragonrider_black",
-      "combat_front": "dragonrider",
+      "combat_sheet": "dragonrider",
       "slug": "dragonrider"
     }
   },
@@ -46,7 +46,7 @@
     "audio": {},
     "template": {
       "sprite_name": "dragonrider_blue",
-      "combat_front": "dragonrider",
+      "combat_sheet": "dragonrider",
       "slug": "dragonrider"
     }
   },
@@ -57,7 +57,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "enforcer_rookie"
     }
   },
@@ -77,7 +77,7 @@
     "audio": {},
     "template": {
       "sprite_name": "dragonrider",
-      "combat_front": "dragonrider",
+      "combat_sheet": "dragonrider",
       "slug": "dragonrider"
     }
   },
@@ -97,7 +97,7 @@
     "audio": {},
     "template": {
       "sprite_name": "dragonrider_fiery",
-      "combat_front": "dragonrider",
+      "combat_sheet": "dragonrider",
       "slug": "dragonrider"
     }
   },
@@ -108,7 +108,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "enforcer_rookie"
     }
   },
@@ -128,7 +128,7 @@
     "audio": {},
     "template": {
       "sprite_name": "dragonrider_black",
-      "combat_front": "dragonrider",
+      "combat_sheet": "dragonrider",
       "slug": "dragonrider"
     }
   },
@@ -148,7 +148,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight",
-      "combat_front": "enforcer_agent",
+      "combat_sheet": "enforcer_agent",
       "slug": "enforcer_agent"
     }
   },
@@ -168,7 +168,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderboss_fiery",
-      "combat_front": "spyder_boss",
+      "combat_sheet": "spyder_boss",
       "slug": "spyder_boss"
     }
   },
@@ -188,7 +188,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderrookie",
-      "combat_front": "spyder_rookie",
+      "combat_sheet": "spyder_rookie",
       "slug": "spyder_rookie"
     }
   },
@@ -208,7 +208,7 @@
     "audio": {},
     "template": {
       "sprite_name": "dragonrider_green",
-      "combat_front": "dragonrider",
+      "combat_sheet": "dragonrider",
       "slug": "dragonrider"
     }
   },
@@ -219,7 +219,7 @@
     "audio": {},
     "template": {
       "sprite_name": "drokoro",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -231,7 +231,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse_green",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   }

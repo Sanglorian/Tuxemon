@@ -6,7 +6,7 @@ import logging
 from collections.abc import Callable, Generator
 from typing import ClassVar, Optional
 
-from tuxemon.item.item import INFINITE_ITEMS
+from tuxemon.item.stock import INFINITE_ITEMS
 from tuxemon.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter, QuantityFormatter
 from tuxemon.menu.interface import MenuItem

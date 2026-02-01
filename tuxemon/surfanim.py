@@ -10,7 +10,7 @@ import bisect
 import itertools
 from collections.abc import Callable, Mapping, Sequence
 from enum import Enum
-from typing import Any, Optional, TypeVar, Union
+from typing import Any, TypeVar
 
 # TODO: Feature idea: if the same image file is specified, re-use the Surface
 import pygame
@@ -54,9 +54,7 @@ class FrameManager:
 
     _dummy_image: Surface = Surface((0, 0))
 
-    def __init__(
-        self, frames: Sequence[tuple[Union[str, Surface], float]]
-    ) -> None:
+    def __init__(self, frames: Sequence[tuple[str | Surface, float]]) -> None:
         self.images: list[Surface] = []
 
         # durations stores the durations (in seconds) of each frame.
@@ -133,7 +131,7 @@ class SurfaceAnimation:
 
     def __init__(
         self,
-        frames: Sequence[tuple[Union[str, Surface], float]],
+        frames: Sequence[tuple[str | Surface, float]],
         loop: int = -1,
         play_mode: PlayMode = PlayMode.FORWARD,
     ) -> None:
@@ -148,7 +146,7 @@ class SurfaceAnimation:
         self._completed_loops: int = 0
         self._rate: float = 1.0
         self._visibility: bool = True
-        self._on_completion_callback: Optional[Callable[..., Any]] = None
+        self._on_completion_callback: Callable[..., Any] | None = None
 
         # The time that the play() function was last called.
         self._playing_start_time: float = 0.0
@@ -182,7 +180,7 @@ class SurfaceAnimation:
 
         return completed >= allowed_cycles
 
-    def play(self, start_time: Optional[float] = None) -> None:
+    def play(self, start_time: float | None = None) -> None:
         """Start playing the animation."""
         if start_time is None:
             start_time = self._internal_clock
@@ -204,7 +202,7 @@ class SurfaceAnimation:
             )
             self._state = State.PLAYING
 
-    def pause(self, start_time: Optional[float] = None) -> None:
+    def pause(self, start_time: float | None = None) -> None:
         """Pause the animation at its current frame."""
         if start_time is None:
             start_time = self._internal_clock
@@ -279,6 +277,25 @@ class SurfaceAnimation:
         if not callable(callback):
             raise TypeError("Callback must be a callable function.")
         self._on_completion_callback = callback
+
+    def copy(self) -> SurfaceAnimation:
+        """
+        Returns a new SurfaceAnimation instance that shares the same frames
+        but has its own independent playback state (timers, loop count, etc).
+        """
+        new_anim = SurfaceAnimation(
+            frames=[(Surface((0, 0)), 0.1)],
+            loop=self._loop,
+            play_mode=self._play_mode,
+        )
+
+        new_anim._frame_manager = self._frame_manager
+        new_anim.rate = self.rate
+        new_anim._visibility = self._visibility
+        new_anim._on_completion_callback = self._on_completion_callback
+        new_anim._internal_clock = self._internal_clock
+
+        return new_anim
 
     @property
     def rate(self) -> float:
@@ -452,11 +469,9 @@ class SurfaceAnimation:
 class SurfaceAnimationCollection:
     def __init__(
         self,
-        *animations: Union[
-            SurfaceAnimation,
-            Sequence[SurfaceAnimation],
-            Mapping[Any, SurfaceAnimation],
-        ],
+        *animations: SurfaceAnimation
+        | Sequence[SurfaceAnimation]
+        | Mapping[Any, SurfaceAnimation],
     ) -> None:
         self._animations: list[SurfaceAnimation] = []
         self.add(*animations)
@@ -464,11 +479,9 @@ class SurfaceAnimationCollection:
 
     def add(
         self,
-        *animations: Union[
-            SurfaceAnimation,
-            Sequence[SurfaceAnimation],
-            Mapping[Any, SurfaceAnimation],
-        ],
+        *animations: SurfaceAnimation
+        | Sequence[SurfaceAnimation]
+        | Mapping[Any, SurfaceAnimation],
     ) -> None:
         for animation in animations:
             if isinstance(animation, SurfaceAnimation):
@@ -500,13 +513,13 @@ class SurfaceAnimationCollection:
     def is_finished(self) -> bool:
         return all(a.is_finished() for a in self._animations)
 
-    def play(self, start_time: Optional[float] = None) -> None:
+    def play(self, start_time: float | None = None) -> None:
         for anim_obj in self._animations:
             anim_obj.play(start_time)
 
         self._state = State.PLAYING
 
-    def pause(self, start_time: Optional[float] = None) -> None:
+    def pause(self, start_time: float | None = None) -> None:
         for anim_obj in self._animations:
             anim_obj.pause(start_time)
 

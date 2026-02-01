@@ -25,7 +25,6 @@ class HasMonsterCondition(EventCondition):
     Script parameters:
         character: Either "player" or npc slug name (e.g. "npc_maple").
         monster: Monster slug name (e.g. "rockitten").
-
     """
 
     name = "has_monster"

@@ -19,7 +19,6 @@ class StopCinemaModeAction(EventAction):
         .. code-block::
 
             stop_cinema_mode
-
     """
 
     name = "stop_cinema_mode"

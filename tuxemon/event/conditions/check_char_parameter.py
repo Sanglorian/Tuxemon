@@ -29,7 +29,6 @@ class CheckCharParameterCondition(EventCondition):
         value: Given value to check.
 
     eg. "player,name,alpha" -> is the player named alpha? true/false
-
     """
 
     name = "check_char_parameter"

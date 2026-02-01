@@ -25,7 +25,6 @@ class CharSpriteCondition(EventCondition):
     Script parameters:
         character: Either "player" or character slug name (e.g. "npc_maple")
         sprite: NPC's sprite (eg maniac, florist, etc.)
-
     """
 
     name = "char_sprite"

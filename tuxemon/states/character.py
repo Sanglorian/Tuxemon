@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
 
 from tuxemon import formula
 from tuxemon.database.runtime import db
@@ -44,7 +44,6 @@ class CharacterState(PygameMenuState):
 
     Shows details of the character (e.g. monster captured, seen,
     battles, wallet, etc.).
-
     """
 
     name: ClassVar[str] = "CharacterState"
@@ -121,7 +120,7 @@ class CharacterState(PygameMenuState):
             title=name.upper(),
             label_id="name",
             font_size=self.font_type.big,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             underline=True,
             float=True,
         )
@@ -133,7 +132,7 @@ class CharacterState(PygameMenuState):
             title=f"{T.translate('wallet')}: {money.format(amount)}",
             label_id="money",
             font_size=self.font_type.smaller,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab2.translate(fxw(0.45), fxh(0.25))
@@ -142,7 +141,7 @@ class CharacterState(PygameMenuState):
             title=msg_seen,
             label_id="seen",
             font_size=self.font_type.smaller,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab3.translate(fxw(0.45), fxh(0.30))
@@ -151,7 +150,7 @@ class CharacterState(PygameMenuState):
             title=msg_caught,
             label_id="caught",
             font_size=self.font_type.smaller,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab4.translate(fxw(0.45), fxh(0.35))
@@ -160,7 +159,7 @@ class CharacterState(PygameMenuState):
             title=msg_begin,
             label_id="begin",
             font_size=self.font_type.smaller,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab5.translate(fxw(0.45), fxh(0.40))
@@ -170,7 +169,7 @@ class CharacterState(PygameMenuState):
                 title=msg_walked,
                 label_id="walked",
                 font_size=self.font_type.smaller,
-                align=locals.ALIGN_LEFT,
+                align=ALIGN_LEFT,
                 float=True,
             )
             lab6.translate(fxw(0.45), fxh(0.45))
@@ -179,7 +178,7 @@ class CharacterState(PygameMenuState):
             title=msg_battles,
             label_id="battle",
             font_size=self.font_type.smaller,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab7.translate(fxw(0.45), fxh(0.50))
@@ -188,7 +187,7 @@ class CharacterState(PygameMenuState):
             title=msg_progress,
             label_id="progress",
             font_size=self.font_type.smaller,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab8.translate(fxw(0.45), fxh(0.10))
@@ -203,7 +202,7 @@ class CharacterState(PygameMenuState):
     def __init__(self, **kwargs: Any) -> None:
         if not lookup_cache:
             _lookup_monsters()
-        character: Optional[NPC] = None
+        character: NPC | None = None
         for element in kwargs.values():
             character = element["character"]
         if character is None:
@@ -219,15 +218,15 @@ class CharacterState(PygameMenuState):
         )
 
         theme = self._setup_theme(bg)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
         super().__init__(height=height, width=width)
 
         self.add_menu_items(self.menu)
         self.reset_theme()
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         if (
             event.button == buttons.RIGHT
             and event.pressed

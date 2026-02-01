@@ -25,7 +25,6 @@ class CharFacingCondition(EventCondition):
     Script parameters:
         character: Either "player" or character slug name (e.g. "npc_maple").
         direction: One of "up", "down", "left" or "right".
-
     """
 
     name = "char_facing"

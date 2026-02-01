@@ -20,7 +20,6 @@ class LocationInsideCondition(EventCondition):
             is location_inside
 
     eg. "is location_inside"
-
     """
 
     name = "location_inside"

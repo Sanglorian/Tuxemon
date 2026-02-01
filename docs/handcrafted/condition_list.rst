@@ -16,8 +16,8 @@
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_facing.CharFacingCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_facing_char.CharFacingCharCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_facing_tile.CharFacingTileCondition
-.. autoscriptinfoclass:: tuxemon.event.conditions.char_healed.CharHealedCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_gender.CharGenderCondition
+.. autoscriptinfoclass:: tuxemon.event.conditions.char_healed.CharHealedCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_in.CharInCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_in_boundary.CharInBoundaryCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_moved.CharMovedCondition

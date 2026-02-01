@@ -37,7 +37,6 @@ class PlayMusicAction(EventAction):
         The volume will be based on the main value in the options menu.
         e.g. if you set volume = 0.5 here, but the player has 0.5 among
         its options, then it'll result into 0.25 (0.5*0.5)
-
     """
 
     name = "play_music"

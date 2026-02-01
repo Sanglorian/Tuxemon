@@ -26,7 +26,6 @@ class CharFacingCharCondition(EventCondition):
     Script parameters:
         character1: Either "player" or character slug name (e.g. "npc_maple").
         character2: Either "player" or character slug name (e.g. "npc_maple").
-
     """
 
     name = "char_facing_char"

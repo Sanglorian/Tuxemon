@@ -46,7 +46,6 @@ class DojoMethodAction(EventAction):
             - "technique": Learn any move the monster hasn't acquired from its base
               moveset, without restrictions based on level or evolution stage.
             - "monster": Devolve the monster.
-
     """
 
     name = "dojo_method"

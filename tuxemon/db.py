@@ -2129,8 +2129,23 @@ class BattleGraphicsModel(BaseModel):
     menu: str = Field(
         "MainCombatMenuState", description="Menu used for combat."
     )
-    island_back: str = Field(..., description="Sprite used for back combat")
-    island_front: str = Field(..., description="Sprite used for front combat")
+    island_sheet: str = Field(
+        ..., description="Sprite sheet containing back+front islands"
+    )
+    island_width: int = Field(
+        96,
+        description=(
+            "Width of a single island frame inside the island sheet. "
+            "The sheet contains two frames arranged horizontally."
+        ),
+    )
+    island_height: int = Field(
+        57,
+        description=(
+            "Height of a single island frame inside the island sheet. "
+            "Both frames must share this height."
+        ),
+    )
     background: str = Field(..., description="Sprite used for background")
     hud: BattleHudModel
     icons: BattleIconsModel
@@ -2160,11 +2175,11 @@ class BattleGraphicsModel(BaseModel):
         0.8, description="Duration of trainer exit animation"
     )
 
-    @field_validator("island_back", "island_front")
-    def island_exists(cls, v: str) -> str:
-        if has.file(v) and has.size(v, sizes.ISLAND_SIZE):
-            return v
-        raise ValueError(f"no resource exists with path: {v}")
+    @field_validator("island_sheet")
+    def validate_sheet_exists(cls, v: str) -> str:
+        if not has.file(v):
+            raise ValueError(f"Island sheet not found: {v}")
+        return v
 
     @field_validator("background")
     def background_exists(cls, v: str) -> str:

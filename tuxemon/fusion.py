@@ -279,7 +279,6 @@ def fuse(
         >>> # Fuse the sprites.
         >>> fuse(body=sapsnap, face=vivitron)
         >>> fuse(body=vivitron, face=sapsnap)
-
     """
     logger.info(
         f"Starting fusion for body '{body.name}' and face '{face.name}'."

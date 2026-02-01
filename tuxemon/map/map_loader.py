@@ -350,7 +350,6 @@ class TMXMapLoader:
     understand.
 
     **Tiled:** http://www.mapeditor.org/
-
     """
 
     def __init__(self) -> None:

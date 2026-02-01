@@ -9,7 +9,12 @@ def test_initial_state():
     cd = Cooldown(duration=3)
     assert cd.duration == 3
     assert cd.remaining == 0
+    assert cd.is_ready is True
     assert cd.is_recharging is False
+    assert cd.multiplier == 1.0
+    assert cd.min_remaining == 0
+    assert cd.delay_turns == 0
+    assert cd.locked is False
 
 
 @pytest.mark.parametrize("duration", [0, 1, 5, 999])
@@ -25,8 +30,8 @@ def test_trigger_sets_remaining_to_duration(duration):
     [
         (5, 1, 4),
         (5, 2, 3),
-        (1, 5, 0),  # cannot go below zero
-        (0, 1, 0),  # already zero
+        (1, 5, 0),
+        (0, 1, 0),
     ],
 )
 def test_tick_reduces_remaining(start, tick_amount, expected):
@@ -36,12 +41,113 @@ def test_tick_reduces_remaining(start, tick_amount, expected):
     assert cd.remaining == expected
 
 
-def test_reset_sets_remaining_to_zero():
-    cd = Cooldown(duration=3)
-    cd.remaining = 3
-    cd.reset()
-    assert cd.remaining == 0
-    assert cd.is_recharging is False
+def test_tick_respects_min_remaining():
+    cd = Cooldown(duration=10)
+    cd.remaining = 5
+    cd.min_remaining = 3
+    cd.tick(10)
+    assert cd.remaining == 3
+
+
+def test_tick_respects_delay_turns():
+    cd = Cooldown(duration=10)
+    cd.remaining = 5
+    cd.delay_turns = 2
+
+    cd.tick()
+    assert cd.remaining == 5
+    assert cd.delay_turns == 1
+
+    cd.tick()
+    assert cd.remaining == 5
+    assert cd.delay_turns == 0
+
+    cd.tick()
+    assert cd.remaining == 4
+
+
+def test_tick_respects_multiplier():
+    cd = Cooldown(duration=10)
+    cd.remaining = 10
+    cd.multiplier = 3.0
+
+    cd.tick()
+    assert cd.remaining == 7  # 10 - 3
+
+
+def test_tick_respects_locked():
+    cd = Cooldown(duration=10)
+    cd.remaining = 10
+    cd.locked = True
+
+    cd.tick()
+    assert cd.remaining == 10
+
+
+@pytest.mark.parametrize(
+    "remaining,frozen_turns,ticks,expected_remaining,expected_frozen",
+    [
+        (4, 2, 1, 4, 1),
+        (4, 2, 2, 4, 0),
+        (4, 1, 2, 3, 0),
+        (4, 0, 1, 3, 0),
+    ],
+)
+def test_freeze_behavior(
+    remaining, frozen_turns, ticks, expected_remaining, expected_frozen
+):
+    cd = Cooldown(duration=5)
+    cd.remaining = remaining
+    cd.frozen_turns = frozen_turns
+
+    for _ in range(ticks):
+        cd.tick()
+
+    assert cd.remaining == expected_remaining
+    assert cd.frozen_turns == expected_frozen
+
+
+@pytest.mark.parametrize(
+    "remaining,haste_turns,ticks,expected_remaining,expected_haste",
+    [
+        (6, 2, 1, 4, 1),
+        (6, 2, 2, 2, 0),
+        (3, 1, 1, 1, 0),
+        (1, 1, 2, 0, 0),
+    ],
+)
+def test_haste_behavior(
+    remaining, haste_turns, ticks, expected_remaining, expected_haste
+):
+    cd = Cooldown(duration=5)
+    cd.remaining = remaining
+    cd.haste_turns = haste_turns
+
+    for _ in range(ticks):
+        cd.tick()
+
+    assert cd.remaining == expected_remaining
+    assert cd.haste_turns == expected_haste
+
+
+@pytest.mark.parametrize(
+    "initial_remaining,shield,expected_after_trigger,expected_shield",
+    [
+        (10, True, 10, False),
+        (10, False, 5, False),
+    ],
+)
+def test_shield_behavior(
+    initial_remaining, shield, expected_after_trigger, expected_shield
+):
+    cd = Cooldown(duration=5)
+    cd.remaining = initial_remaining
+    cd.shield = shield
+
+    cd.trigger()
+
+    assert cd.remaining == expected_after_trigger
+    assert cd.shield == expected_shield
 
 
 @pytest.mark.parametrize(
@@ -49,8 +155,8 @@ def test_reset_sets_remaining_to_zero():
     [
         (0, 1, 5, 1),
         (1, 2, 5, 3),
-        (3, 10, 5, 5),  # clamp
-        (5, 1, 5, 5),  # already max
+        (3, 10, 5, 5),
+        (5, 1, 5, 5),
     ],
 )
 def test_add_increases_remaining_but_clamps(
@@ -62,22 +168,112 @@ def test_add_increases_remaining_but_clamps(
     assert cd.remaining == expected
 
 
-def test_trigger_overrides_remaining():
-    cd = Cooldown(duration=4)
-    cd.remaining = 99
-    cd.trigger()
-    assert cd.remaining == 4
-
-
-def test_negative_tick_does_not_increase_remaining():
+def test_add_respects_locked():
     cd = Cooldown(duration=5)
-    cd.remaining = 3
-    cd.tick(-10)
-    assert cd.remaining == 3  # unchanged
+    cd.remaining = 1
+    cd.locked = True
+    cd.add(5, 10)
+    assert cd.remaining == 1
 
 
-def test_negative_add_does_not_reduce_remaining():
+@pytest.mark.parametrize("initial", [0, 1, 5])
+def test_negative_add_does_not_reduce_remaining(initial):
     cd = Cooldown(duration=5)
-    cd.remaining = 3
+    cd.remaining = initial
     cd.add(-5, max_value=10)
-    assert cd.remaining == 3  # unchanged
+    assert cd.remaining == initial
+
+
+@pytest.mark.parametrize(
+    "initial,add,expected",
+    [
+        (0, 1, 1),
+        (1, 3, 4),
+        (5, 0, 5),
+    ],
+)
+def test_charge_accumulates(initial, add, expected):
+    cd = Cooldown(duration=5)
+    cd.charge = initial
+    cd.charge += add
+    assert cd.charge == expected
+
+
+@pytest.mark.parametrize(
+    "remaining,frozen,haste,ticks,expected_remaining",
+    [
+        (5, 1, 2, 1, 5),
+        (5, 0, 2, 1, 3),
+        (5, 0, 2, 2, 1),
+        (5, 0, 0, 3, 2),
+    ],
+)
+def test_combined_behavior(
+    remaining, frozen, haste, ticks, expected_remaining
+):
+    cd = Cooldown(duration=5)
+    cd.remaining = remaining
+    cd.frozen_turns = frozen
+    cd.haste_turns = haste
+
+    for _ in range(ticks):
+        cd.tick()
+
+    assert cd.remaining == expected_remaining
+
+
+def test_locked_blocks_trigger():
+    cd = Cooldown(duration=5)
+    cd.remaining = 0
+    cd.locked = True
+    cd.trigger()
+    assert cd.remaining == 0
+
+
+def test_locked_blocks_tick():
+    cd = Cooldown(duration=5)
+    cd.remaining = 5
+    cd.locked = True
+    cd.tick()
+    assert cd.remaining == 5
+
+
+def test_locked_blocks_reset():
+    cd = Cooldown(duration=5)
+    cd.remaining = 5
+    cd.locked = True
+    cd.reset()
+    assert cd.remaining == 5
+
+
+def test_delay_prevents_trigger_start():
+    cd = Cooldown(duration=5)
+    cd.delay_turns = 2
+    cd.trigger()
+    assert cd.remaining == 0  # delayed
+
+
+def test_multiplier_tick_scaling():
+    cd = Cooldown(duration=10)
+    cd.remaining = 10
+    cd.multiplier = 2.5
+    cd.tick()
+    assert cd.remaining == 8  # 10 - int(2.5)
+
+
+def test_swap_with():
+    cd1 = Cooldown(duration=5)
+    cd2 = Cooldown(duration=10)
+
+    cd1.remaining = 3
+    cd2.remaining = 7
+
+    cd1.frozen_turns = 1
+    cd2.haste_turns = 2
+
+    cd1.swap_with(cd2)
+
+    assert cd1.remaining == 7
+    assert cd2.remaining == 3
+    assert cd1.haste_turns == 2
+    assert cd2.frozen_turns == 1

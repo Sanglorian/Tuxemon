@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "catgirl_blonde",
-      "combat_front": "catgirl",
+      "combat_sheet": "catgirl",
       "slug": "catgirl"
     }
   },
@@ -35,7 +35,7 @@
     "audio": {},
     "template": {
       "sprite_name": "picnicker",
-      "combat_front": "picnicker",
+      "combat_sheet": "picnicker",
       "slug": "picnicker"
     }
   },
@@ -55,7 +55,7 @@
     "audio": {},
     "template": {
       "sprite_name": "soldier",
-      "combat_front": "soldier",
+      "combat_sheet": "soldier",
       "slug": "soldier"
     }
   },
@@ -75,7 +75,7 @@
     "audio": {},
     "template": {
       "sprite_name": "spyderrookie",
-      "combat_front": "spyder_rookie",
+      "combat_sheet": "spyder_rookie",
       "slug": "spyder_rookie"
     }
   },
@@ -95,7 +95,7 @@
     "audio": {},
     "template": {
       "sprite_name": "picnicker",
-      "combat_front": "picnicker",
+      "combat_sheet": "picnicker",
       "slug": "picnicker"
     }
   },
@@ -115,7 +115,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist_blue",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   },
@@ -126,7 +126,7 @@
     "audio": {},
     "template": {
       "sprite_name": "granny_lapi",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "granny"
     }
   },
@@ -137,7 +137,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse_blue",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   }

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.surface import Surface
 
@@ -15,13 +15,26 @@ from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.quantity import QuantityAndCostMenu, QuantityAndPriceMenu
 from tuxemon.states.shop_base import ShopMenuState
 
+if TYPE_CHECKING:
+    from tuxemon.economy.economy import Economy
+    from tuxemon.npc import NPC
+
 
 class ShopItemMenuState(ShopMenuState[Item]):
     """State for buying and selling items, implementing the abstract methods of the generic ShopMenuState."""
 
     name: ClassVar[str] = "ShopItemMenuState"
 
-    def _get_asset_image(self, asset: MenuItem[Item]) -> Optional[Surface]:
+    def __init__(
+        self,
+        buyer: NPC,
+        seller: NPC,
+        economy: Economy,
+    ) -> None:
+        super().__init__(buyer, seller, economy)
+        self.update_background(self.economy.model.background)
+
+    def _get_asset_image(self, asset: MenuItem[Item]) -> Surface | None:
         image = asset.game_object.surface
         return image if image else None
 
@@ -66,9 +79,9 @@ class ShopItemMenuState(ShopMenuState[Item]):
             )
 
             def buy_item(quantity: int) -> None:
-                total_price, _ = self.economy.calculate_price(item, quantity)
+                price = self.economy.calculate_price(item, quantity)
                 self.transaction_manager.buy_item(
-                    self.buyer, item, quantity, label, total_price
+                    self.buyer, item, quantity, label, price.final_price
                 )
                 self.reload_shop()
 
@@ -97,11 +110,11 @@ class ShopItemMenuState(ShopMenuState[Item]):
                 label = self.client.shop_manager.get_full_label(
                     self.economy.model.slug, item.slug
                 )
-                total_price, _ = self.economy.calculate_price(
+                price = self.economy.calculate_price(
                     item, quantity, seller_mode=True
                 )
                 self.transaction_manager.sell_item(
-                    self.seller, item, quantity, total_price, label
+                    self.seller, item, quantity, price.final_price, label
                 )
                 self.reload_shop()
 
@@ -126,9 +139,9 @@ class ShopItemBuyMenuState(ShopItemMenuState):
         )
 
         def buy_item(quantity: int) -> None:
-            total_price, _ = self.economy.calculate_price(item, quantity)
+            price = self.economy.calculate_price(item, quantity)
             self.transaction_manager.buy_item(
-                self.buyer, item, quantity, label, total_price
+                self.buyer, item, quantity, label, price.final_price
             )
             self.reload_items()
             if (
@@ -174,11 +187,11 @@ class ShopItemSellMenuState(ShopItemMenuState):
             label = self.client.shop_manager.get_full_label(
                 self.economy.model.slug, item.slug
             )
-            total_price, _ = self.economy.calculate_price(
+            price = self.economy.calculate_price(
                 item, quantity, seller_mode=True
             )
             self.transaction_manager.sell_item(
-                self.seller, item, quantity, total_price, label
+                self.seller, item, quantity, price.final_price, label
             )
             self.reload_items()
             if not self.seller.bag.has_item(item.slug):

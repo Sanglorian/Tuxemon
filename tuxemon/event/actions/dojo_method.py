@@ -104,13 +104,13 @@ class DojoMethodAction(EventAction):
                 if self.monster.slug in mon.evolves_into
                 and (
                     (
-                        self.monster.stage == EvolutionStage.stage1
-                        and mon.stage == EvolutionStage.basic
+                        self.monster.stage == EvolutionStage.STAGE1
+                        and mon.stage == EvolutionStage.BASIC
                     )
                     or (
-                        self.monster.stage == EvolutionStage.stage2
+                        self.monster.stage == EvolutionStage.STAGE2
                         and mon.stage
-                        in [EvolutionStage.stage1, EvolutionStage.basic]
+                        in [EvolutionStage.STAGE1, EvolutionStage.BASIC]
                     )
                 )
             }

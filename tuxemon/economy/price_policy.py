@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -16,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class PricePolicyData:
-    discount: Union[float, dict[str, float]]
+    discount: float | dict[str, float]
     tax: float
     fee: int
     resell_bonus: float
@@ -25,7 +24,7 @@ class PricePolicyData:
 
 
 class RawPolicySchema(BaseModel):
-    discount: Union[float, dict[str, float]] = Field(default=0.0)
+    discount: float | dict[str, float] = Field(default=0.0)
     tax: float = Field(ge=0.0, le=1.0, default=0.0)
     fee: int = Field(ge=0, default=0)
     resell_bonus: float = Field(ge=0.0, le=1.0, default=0.0)
@@ -35,7 +34,7 @@ class RawPolicySchema(BaseModel):
 
 def load_policy(
     slug: str, filename: str = "price_policies.yaml"
-) -> Optional[PricePolicyData]:
+) -> PricePolicyData | None:
     yaml_path = paths.mods_folder / filename
     raw_yaml = load_yaml(yaml_path)
 
@@ -199,70 +198,25 @@ class StaticYamlPolicy(PricePolicy):
         return self._data.seller_fee
 
     def apply_modifiers(
-        self,
-        base_price: int,
-        quantity: int,
-        slug: str,
+        self, base_price: int, quantity: int, slug: str
     ) -> tuple[int, int]:
         logger.debug(
-            f"[apply_modifiers] Slug: {slug}, Base Price: {base_price}, Qty: {quantity}"
+            f"[StaticPolicy] Calculating Buy: {slug} (Qty: {quantity})"
         )
-
-        tax_rate = self.get_tax_rate(slug)
-        discount_rate = self.get_discount(slug)
-
-        taxed = base_price * (1 + tax_rate)
-        discounted = taxed * (1 - discount_rate)
-
-        if quantity == -1:
-            total = discounted + self.get_transaction_fee(slug)
-        else:
-            total = discounted * quantity + self.get_transaction_fee(slug)
-
-        final_price = round(total)
-        discounted_unit_price = discounted
-        original_unit_price = base_price * (1 + tax_rate)
-        effective_discount = round(
-            (1 - discounted_unit_price / original_unit_price) * 100
-        )
-
+        result = super().apply_modifiers(base_price, quantity, slug)
         logger.debug(
-            f"[apply_modifiers] Taxed: {taxed}, Discounted: {discounted}, Fee: {self.get_transaction_fee(slug)}"
+            f"[StaticPolicy] Result: Price={result[0]}, Disc={result[1]}%"
         )
-        logger.debug(
-            f"[apply_modifiers] Final Price: {final_price}, Effective Discount %: {effective_discount}"
-        )
-
-        return final_price, effective_discount
+        return result
 
     def apply_resell_modifiers(
-        self,
-        base_cost: int,
-        quantity: int,
-        slug: str,
+        self, base_cost: int, quantity: int, slug: str
     ) -> tuple[int, int]:
         logger.debug(
-            f"[apply_resell_modifiers] Slug: {slug}, Base Cost: {base_cost}, Qty: {quantity}"
+            f"[StaticPolicy] Calculating Resell: {slug} (Qty: {quantity})"
         )
-
-        bonus_rate = self.get_resell_bonus(slug)
-        tax_rate = self.get_resell_tax_rate(slug)
-
-        adjusted = base_cost * (1 + bonus_rate) * (1 - tax_rate)
-
-        if quantity == -1:
-            total = adjusted + self.get_seller_fee(slug)
-        else:
-            total = adjusted * quantity + self.get_seller_fee(slug)
-
-        final_amount = max(round(total), 0)
-        effective_change = round((adjusted / base_cost - 1) * 100)
-
+        result = super().apply_resell_modifiers(base_cost, quantity, slug)
         logger.debug(
-            f"[apply_resell_modifiers] Adjusted: {adjusted}, Fee: {self.get_seller_fee(slug)}"
+            f"[StaticPolicy] Result: Payout={result[0]}, Change={result[1]}%"
         )
-        logger.debug(
-            f"[apply_resell_modifiers] Final Resell Price: {final_amount}, Effective % Change: {effective_change}"
-        )
-
-        return final_amount, effective_change
+        return result

@@ -1,5 +1,6 @@
 # Configuration for the healing shop service.
 cathedral:
+  background: "gfx/ui/item/item_menu_bg.png"
   base_healing_cost: 5
 
   # Defines the cost scaling type.

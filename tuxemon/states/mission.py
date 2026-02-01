@@ -109,7 +109,7 @@ class SingleMissionState(PygameMenuState):
             open_choice_dialog(self.client, menu)
 
         def confirm_deletion() -> None:
-            self.mission.update_status(MissionStatus.removed)
+            self.mission.update_status(MissionStatus.REMOVED)
             self.character.mission_controller.mission_manager.remove_by_slug(
                 self.mission.slug
             )

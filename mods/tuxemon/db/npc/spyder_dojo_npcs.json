@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk_black",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   },
@@ -26,7 +26,7 @@
     "audio": {},
     "template": {
       "sprite_name": "granny_yellow",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "granny"
     }
   },
@@ -37,7 +37,7 @@
     "audio": {},
     "template": {
       "sprite_name": "childactor_black",
-      "combat_front": "childactor",
+      "combat_sheet": "childactor",
       "slug": "childactor"
     }
   },
@@ -48,7 +48,7 @@
     "audio": {},
     "template": {
       "sprite_name": "childactor_blonde",
-      "combat_front": "childactor",
+      "combat_sheet": "childactor",
       "slug": "childactor"
     }
   },
@@ -68,7 +68,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk_orange",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   },
@@ -88,7 +88,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk_red",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   },
@@ -108,7 +108,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk_orange",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   },
@@ -128,7 +128,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk_blue",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   },
@@ -148,7 +148,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk_green",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   },
@@ -168,7 +168,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk_red",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   },
@@ -188,7 +188,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk_green",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   },
@@ -199,7 +199,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac_yellow",
-      "combat_front": "riddler",
+      "combat_sheet": "riddler",
       "slug": "maniac"
     }
   },
@@ -219,7 +219,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk_black",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   },
@@ -230,7 +230,7 @@
     "audio": {},
     "template": {
       "sprite_name": "ninja_red",
-      "combat_front": "ninja",
+      "combat_sheet": "ninja",
       "slug": "ninja"
     }
   },
@@ -241,7 +241,7 @@
     "audio": {},
     "template": {
       "sprite_name": "ninja_blue",
-      "combat_front": "ninja",
+      "combat_sheet": "ninja",
       "slug": "ninja"
     }
   },
@@ -252,7 +252,7 @@
     "audio": {},
     "template": {
       "sprite_name": "granny_green",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "granny"
     }
   },
@@ -272,7 +272,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk_blue",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   },
@@ -283,7 +283,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac_violet",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "maniac"
     }
   },
@@ -294,7 +294,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac_green",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "maniac"
     }
   },
@@ -305,7 +305,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac_rose",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "maniac"
     }
   }

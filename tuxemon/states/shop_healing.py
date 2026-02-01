@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from functools import partial
-from typing import Any, ClassVar, Literal, Optional
+from typing import Any, ClassVar, Literal
 
 from pydantic import BaseModel, Field
 from pygame.surface import Surface
@@ -22,11 +22,12 @@ logger = logging.getLogger(__name__)
 
 
 class HealingShopConfig(BaseModel):
+    background: str
     base_healing_cost: int
     cost_scaling_type: Literal["linear", "polynomial", "exponential"] = (
         "linear"
     )
-    polynomial_exponent: Optional[float] = Field(default=1.5)
+    polynomial_exponent: float | None = Field(default=1.5)
     exclude_if_hp_ratio_above: float = Field(default=1.0)
     revive_cost_multiplier: float = Field(default=1.0)
     revive_cost: int = Field(default=0)
@@ -63,7 +64,7 @@ class ShopHealingMenuState(ShopMenuState[Monster]):
     def __init__(
         self,
         *args: Any,
-        model: Optional[str] = None,
+        model: str | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -72,8 +73,9 @@ class ShopHealingMenuState(ShopMenuState[Monster]):
         _model = model if model is not None else "cathedral"
         self.config = HealingShopConfig(**raw_data[_model])
         self.base_healing_cost = self.config.base_healing_cost
+        self.update_background(self.config.background)
 
-    def _get_asset_image(self, asset: MenuItem[Monster]) -> Optional[Surface]:
+    def _get_asset_image(self, asset: MenuItem[Monster]) -> Surface | None:
         image = asset.game_object.get_sprite("front")
         return image.image if image else None
 

@@ -6,7 +6,7 @@ import logging
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from functools import partial
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.npc import NPC
@@ -47,7 +47,7 @@ class OpenShopAction(EventAction):
     name = "open_shop"
     npc_slug: str
     menu: str
-    model: Optional[str] = None
+    model: str | None = None
 
     def start(self, session: Session) -> None:
         valid_menus = {
@@ -71,7 +71,10 @@ class OpenShopAction(EventAction):
             logger.error(f"NPC '{self.npc_slug}' not found.")
             return
 
-        if character.economy is None:
+        if character.economy is None and self.menu not in {
+            "train_monster",
+            "heal_monster",
+        }:
             raise ValueError(
                 f"NPC '{character.slug}' has no assigned economy."
                 "Use the 'set_economy' EventAction first."

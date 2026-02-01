@@ -98,6 +98,14 @@ class PartyHandler:
     def alive(self) -> list[Monster]:
         return PartyStats.alive(self._monsters)
 
+    @property
+    def missing_hp_total(self) -> int:
+        return PartyStats.missing_hp_total(self._monsters)
+
+    @property
+    def is_healed(self) -> bool:
+        return PartyStats.is_healed(self._monsters)
+
     def has_tech(self, tech_slug: str) -> bool:
         return PartyStats.has_tech(self._monsters, tech_slug)
 

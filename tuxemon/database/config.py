@@ -75,7 +75,7 @@ class ModMetadata(BaseModel):
     sprite: str = Field(
         ..., description="Base filename of the player's overworld sprite."
     )
-    combat_front: str = Field(
+    combat_sheet: str = Field(
         ...,
         description="Base filename of the player's front-facing combat sprite.",
     )

@@ -539,12 +539,12 @@ class TMXMapLoader:
             for blocker0, blocker1, orientation in self.process_line(
                 tiled_object, tile_size
             ):
-                if orientation == Orientation.vertical:
-                    yield blocker0, Direction.left
-                    yield blocker1, Direction.right
-                elif orientation == Orientation.horizontal:
-                    yield blocker1, Direction.down
-                    yield blocker0, Direction.up
+                if orientation == Orientation.VERTICAL:
+                    yield blocker0, Direction.LEFT
+                    yield blocker1, Direction.RIGHT
+                elif orientation == Orientation.HORIZONTAL:
+                    yield blocker1, Direction.DOWN
+                    yield blocker0, Direction.UP
                 else:
                     raise ValueError(f"Invalid orientation: {orientation}")
 

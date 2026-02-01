@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.surface import Surface
 
@@ -15,13 +15,26 @@ from tuxemon.menu.quantity import QuantityAndCostMenu, QuantityAndPriceMenu
 from tuxemon.monster import Monster
 from tuxemon.states.shop_base import ShopMenuState
 
+if TYPE_CHECKING:
+    from tuxemon.economy.economy import Economy
+    from tuxemon.npc import NPC
+
 
 class ShopMonsterMenuState(ShopMenuState[Monster]):
     """State for buying and selling monsters, implementing the abstract methods of the generic ShopMenuState."""
 
     name: ClassVar[str] = "ShopMonsterMenuState"
 
-    def _get_asset_image(self, asset: MenuItem[Monster]) -> Optional[Surface]:
+    def __init__(
+        self,
+        buyer: NPC,
+        seller: NPC,
+        economy: Economy,
+    ) -> None:
+        super().__init__(buyer, seller, economy)
+        self.update_background(self.economy.model.background)
+
+    def _get_asset_image(self, asset: MenuItem[Monster]) -> Surface | None:
         image = asset.game_object.get_sprite("front")
         return image.image if image else None
 
@@ -68,11 +81,9 @@ class ShopMonsterMenuState(ShopMenuState[Monster]):
             )
 
             def buy_monster(quantity: int) -> None:
-                total_price, _ = self.economy.calculate_price(
-                    monster, quantity
-                )
+                price = self.economy.calculate_price(monster, quantity)
                 self.transaction_manager.buy_monster(
-                    self.buyer, monster, quantity, label, total_price
+                    self.buyer, monster, quantity, label, price.final_price
                 )
                 self.reload_shop()
 
@@ -101,11 +112,11 @@ class ShopMonsterMenuState(ShopMenuState[Monster]):
                 label = self.client.shop_manager.get_full_label(
                     self.economy.model.slug, monster.slug
                 )
-                total_price, _ = self.economy.calculate_price(
+                price = self.economy.calculate_price(
                     monster, quantity, seller_mode=True
                 )
                 self.transaction_manager.sell_monster(
-                    self.seller, monster, total_price, label
+                    self.seller, monster, price.final_price, label
                 )
                 self.reload_shop()
 
@@ -130,9 +141,9 @@ class ShopMonsterBuyMenuState(ShopMonsterMenuState):
         )
 
         def buy_monster(quantity: int) -> None:
-            total_price, _ = self.economy.calculate_price(monster, quantity)
+            price = self.economy.calculate_price(monster, quantity)
             self.transaction_manager.buy_monster(
-                self.buyer, monster, quantity, label, total_price
+                self.buyer, monster, quantity, label, price.final_price
             )
             self.reload_items()
             if (
@@ -178,11 +189,11 @@ class ShopMonsterSellMenuState(ShopMonsterMenuState):
             label = self.client.shop_manager.get_full_label(
                 self.economy.model.slug, monster.slug
             )
-            total_price, _ = self.economy.calculate_price(
+            price = self.economy.calculate_price(
                 monster, quantity, seller_mode=True
             )
             self.transaction_manager.sell_monster(
-                self.seller, monster, total_price, label
+                self.seller, monster, price.final_price, label
             )
             self.reload_items()
             if not self.seller.party.has_monster(monster):

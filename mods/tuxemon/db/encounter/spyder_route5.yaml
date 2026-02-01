@@ -7,7 +7,8 @@ monsters:
   - 23
   monster: foofle
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 3
   exp_req_mod: 3
   held_items: []
@@ -16,7 +17,8 @@ monsters:
   - 20
   monster: vamporm
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 1
   exp_req_mod: 3
   held_items: []
@@ -25,7 +27,8 @@ monsters:
   - 22
   monster: dracune
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 3
   exp_req_mod: 3
   held_items: []
@@ -34,7 +37,8 @@ monsters:
   - 22
   monster: anoleaf
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 - encounter_rate: 1
   exp_req_mod: 3
   held_items: []
@@ -43,5 +47,6 @@ monsters:
   - 26
   monster: gectile
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 slug: spyder_route5

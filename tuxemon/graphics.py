@@ -221,6 +221,13 @@ def load_raw_image(filename: str) -> Surface:
     return load(filename)
 
 
+def load_surface(surface: Surface, **rect_kwargs: Any) -> Sprite:
+    """Load a surface and return a sprite."""
+    sprite = Sprite(image=surface)
+    sprite.rect = sprite.image.get_rect(**rect_kwargs)
+    return sprite
+
+
 def load_animated_sprite(
     filenames: Iterable[str],
     delay: float,
@@ -489,9 +496,12 @@ def get_avatar(session: Session, avatar: str) -> Sprite | None:
         return handler.get_sprite("menu")
 
     if avatar in db.database.get("npc", {}):
+        from tuxemon.entity_dir.sheet import get_combat_sheet
+
         npc_data = NpcModel.lookup(avatar, db)
-        path = f"gfx/sprites/player/{npc_data.template.combat_front}.png"
-        sprite = load_sprite(path)
+        sheet = get_combat_sheet(npc_data.template)
+        surface = sheet.front()
+        sprite = load_surface(surface)
         scale_sprite(sprite, 0.5)
         return sprite
 

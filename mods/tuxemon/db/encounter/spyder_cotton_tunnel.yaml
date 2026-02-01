@@ -7,7 +7,8 @@ monsters:
   - 40
   monster: dinoflop
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -16,7 +17,8 @@ monsters:
   - 35
   monster: furnursus
   variables:
-  - daytime: 'false'
+    - key: daytime
+      value: "false"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -25,7 +27,8 @@ monsters:
   - 35
   monster: boltnu
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 - encounter_rate: 3.5
   exp_req_mod: 3
   held_items: []
@@ -34,5 +37,6 @@ monsters:
   - 35
   monster: metesaur
   variables:
-  - daytime: 'true'
+    - key: daytime
+      value: "true"
 slug: spyder_cotton_tunnel

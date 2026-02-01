@@ -187,10 +187,10 @@ class MovementMiddleware(EventMiddleware):
         self.camera_manager = camera_manager
 
         self.direction_map: Mapping[int, Direction] = {
-            intentions.UP: Direction.up,
-            intentions.DOWN: Direction.down,
-            intentions.LEFT: Direction.left,
-            intentions.RIGHT: Direction.right,
+            intentions.UP: Direction.UP,
+            intentions.DOWN: Direction.DOWN,
+            intentions.LEFT: Direction.LEFT,
+            intentions.RIGHT: Direction.RIGHT,
         }
 
     def preprocess(self, event: PlayerInput) -> PlayerInput | None:

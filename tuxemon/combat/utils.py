@@ -9,13 +9,12 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.combat.combat_context import CombatType
-from tuxemon.db import BattleMusicModel, GenderType, OutputBattle
+from tuxemon.db import BattleMusicModel, OutputBattle
 from tuxemon.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
-from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
@@ -65,38 +64,6 @@ def check_repellent(character: NPC) -> bool:
     return repellent_tracker.countdown > 0
 
 
-def has_effect(technique: Technique, effect_name: str) -> bool:
-    """
-    Checks to see if the technique has a specific effect (eg ram -> damage).
-    """
-    return any(t for t in technique.effects if t.name == effect_name)
-
-
-def has_effect_param(
-    tech: Technique, effect_name: str, attribute: str, name: str
-) -> bool:
-    """
-    Checks whether a specific effect contains the specified attribute with a
-    matching value.
-
-    Parameters:
-        tech: The technique object containing a list of effects.
-        effect_name: The name of the effect to look for (e.g., 'give').
-        attribute: The attribute within the effect to check (e.g., 'condition'
-            in the 'give' effect).
-        name: The expected value of the attribute (e.g., 'diehard', which is
-            assigned by the 'give' effect).
-
-    Returns:
-        bool: True if an effect with the given name and attribute value is
-            found, otherwise False.
-    """
-    return any(
-        ele.name == effect_name and getattr(ele, attribute, None) == name
-        for ele in tech.effects
-    )
-
-
 def battlefield(session: Session, monster: Monster) -> None:
     """
     Record the useful properties of the last monster fought.
@@ -113,7 +80,7 @@ def battlefield(session: Session, monster: Monster) -> None:
 
 def get_battle_outcome_music(
     session: Session, default_music: BattleMusicModel, monster: Monster
-) -> Optional[tuple[str, float]]:
+) -> tuple[str, float] | None:
     """
     Return the appropriate music track based on outcome and participants.
     Player-centric: only trigger music if a player is involved.
@@ -192,11 +159,11 @@ def track_battles(
     location = character.current_map or "unknown"
     opponents = [op for op in opponents if op.slug != character.slug]
 
-    if output == OutputBattle.won:
+    if output == OutputBattle.WON:
         return _handle_win(
             session, character, opponents, turns, location, prize, combat_type
         )
-    elif output == OutputBattle.lost:
+    elif output == OutputBattle.LOST:
         return _handle_loss(
             session, character, opponents, turns, location, combat_type
         )
@@ -222,13 +189,13 @@ def _handle_win(
         for loser in losers:
             winner.battle_handler.record_battle(
                 opponent=loser.slug,
-                outcome=OutputBattle.won,
+                outcome=OutputBattle.WON,
                 location=location,
                 turns=turns,
             )
 
         if winner.is_player:
-            set_var(session, "battle_last_result", OutputBattle.won.value)
+            set_var(session, "battle_last_result", OutputBattle.WON.value)
             set_var(session, "battle_last_winner", "player")
             money_manager = winner.money_controller.money_manager
             remaining = money_manager.apply_all_battle_shares(prize)
@@ -264,7 +231,7 @@ def _handle_loss(
 
     if combat_type == CombatType.TRAINER:
         if loser.is_player:
-            set_var(session, "battle_last_result", OutputBattle.lost.value)
+            set_var(session, "battle_last_result", OutputBattle.LOST.value)
             set_var(session, "battle_last_loser", "player")
         else:
             set_var(session, "battle_last_loser", loser.slug)
@@ -273,7 +240,7 @@ def _handle_loss(
         for winner in winners:
             loser.battle_handler.record_battle(
                 opponent=winner.slug,
-                outcome=OutputBattle.lost,
+                outcome=OutputBattle.LOST,
                 location=location,
                 turns=turns,
             )
@@ -294,12 +261,12 @@ def _handle_draw(
     defeat.remove(player)
 
     if combat_type == CombatType.TRAINER:
-        set_var(session, "battle_last_result", OutputBattle.draw.value)
+        set_var(session, "battle_last_result", OutputBattle.DRAW.value)
         for player_defeated in defeat:
             set_var(session, "battle_last_trainer", player_defeated.slug)
             player.battle_handler.record_battle(
                 opponent=player_defeated.slug,
-                outcome=OutputBattle.draw,
+                outcome=OutputBattle.DRAW,
                 location=location,
                 turns=turns,
             )
@@ -345,17 +312,11 @@ def build_hud_text(
         quantity = item.quantity if item else 0
         return {"line1": f"{ball}: {quantity}", "line2": ""}
 
-    icon = ""
-    if monster.gender == GenderType.male:
-        icon = "♂"
-    elif monster.gender == GenderType.female:
-        icon = "♀"
-
     symbol = ""
     if not is_trainer and is_status and not is_right:
         symbol = "◉"
 
     return {
-        "line1": f"{monster.name}{icon} Lv.{monster.level}{symbol}",
+        "line1": f"{monster.name}{monster.gender_symbol} Lv.{monster.level}{symbol}",
         "line2": "",
     }

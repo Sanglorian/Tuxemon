@@ -1,4 +1,6 @@
 default:
+  background: "gfx/ui/item/item_menu_bg.png"
+
   # Configuration for the training shop service.
   base_cost_per_level: 100
     

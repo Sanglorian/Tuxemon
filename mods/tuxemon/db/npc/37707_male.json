@@ -5,7 +5,7 @@
   "audio": {},
   "template": {
     "sprite_name": "37707_male",
-    "combat_front": "adventurer",
+    "combat_sheet": "adventurer",
     "slug": "noclass"
   }
 }

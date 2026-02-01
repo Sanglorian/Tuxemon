@@ -8,6 +8,7 @@
 .. autoscriptinfoclass:: tuxemon.event.conditions.button_held.ButtonHeldCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.button_pressed.ButtonPressedCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.camera_at.CameraAtCondition
+.. autoscriptinfoclass:: tuxemon.event.conditions.celestial_is.CelestialIsCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_at.CharAtCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_at_position.CharAtPositionCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_defeated.CharDefeatedCondition
@@ -15,6 +16,8 @@
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_facing.CharFacingCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_facing_char.CharFacingCharCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_facing_tile.CharFacingTileCondition
+.. autoscriptinfoclass:: tuxemon.event.conditions.char_healed.CharHealedCondition
+.. autoscriptinfoclass:: tuxemon.event.conditions.char_gender.CharGenderCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_in.CharInCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_in_boundary.CharInBoundaryCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.char_moved.CharMovedCondition
@@ -50,6 +53,7 @@
 .. autoscriptinfoclass:: tuxemon.event.conditions.party_status.PartyStatusCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.step_tracker.StepTrackerCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.tile_property_updated.TilePropertyUpdatedCondition
+.. autoscriptinfoclass:: tuxemon.event.conditions.time_is.TimeIsCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.timestamp_cooldown.TimestampCooldownCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.to_use_tile.ToUseTileCondition
 .. autoscriptinfoclass:: tuxemon.event.conditions.tracker.TrackerCondition

@@ -196,11 +196,11 @@ def test_bond_experience_strategy_scaling(setup_combat):
 
 def test_stage_scaling_experience_strategy(setup_combat):
     loser, winner, _, damages = setup_combat
-    loser.stage = EvolutionStage.stage1
+    loser.stage = EvolutionStage.STAGE1
     strat = StageScalingExperienceStrategy()
     exp_evolved, _ = strat.calculate(loser, winner, damages, 1.0)
 
-    loser.stage = EvolutionStage.basic
+    loser.stage = EvolutionStage.BASIC
     exp_basic, _ = strat.calculate(loser, winner, damages, 1.0)
 
     assert exp_evolved > exp_basic

@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse_red",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   },
@@ -35,7 +35,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist_rose",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   },
@@ -55,7 +55,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse_lapi",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   },
@@ -75,7 +75,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_fiery",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -95,7 +95,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_brown",
-      "combat_front": "aviator",
+      "combat_sheet": "aviator",
       "slug": "aviator"
     }
   },
@@ -115,7 +115,7 @@
     "audio": {},
     "template": {
       "sprite_name": "rogue_copper",
-      "combat_front": "rogue",
+      "combat_sheet": "rogue",
       "slug": "rogue"
     }
   },
@@ -135,7 +135,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_fiery",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -155,7 +155,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist_fiery",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   },
@@ -175,7 +175,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_brown",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -186,7 +186,7 @@
     "audio": {},
     "template": {
       "sprite_name": "soldier",
-      "combat_front": "soldier",
+      "combat_sheet": "soldier",
       "slug": "soldier"
     }
   },
@@ -206,7 +206,7 @@
     "audio": {},
     "template": {
       "sprite_name": "postboy_red",
-      "combat_front": "cooldude",
+      "combat_sheet": "cooldude",
       "slug": "postboy"
     }
   },
@@ -226,7 +226,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_black",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -246,7 +246,7 @@
     "audio": {},
     "template": {
       "sprite_name": "firefighter",
-      "combat_front": "firefighter",
+      "combat_sheet": "firefighter",
       "slug": "firefighter"
     }
   },
@@ -266,7 +266,7 @@
     "audio": {},
     "template": {
       "sprite_name": "firefighter",
-      "combat_front": "firefighter",
+      "combat_sheet": "firefighter",
       "slug": "firefighter"
     }
   },
@@ -286,7 +286,7 @@
     "audio": {},
     "template": {
       "sprite_name": "goth",
-      "combat_front": "goth",
+      "combat_sheet": "goth",
       "slug": "goth"
     }
   },
@@ -306,7 +306,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -326,7 +326,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_black",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -346,7 +346,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -357,7 +357,7 @@
     "audio": {},
     "template": {
       "sprite_name": "firefighter",
-      "combat_front": "firefighter",
+      "combat_sheet": "firefighter",
       "slug": "firefighter"
     }
   },
@@ -368,7 +368,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_fiery",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   }

@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon import formula
 from tuxemon.database.runtime import db
@@ -20,7 +20,6 @@ from tuxemon.platform.const.graphics import INDIV_INFO
 from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_LB, U_M, U_T
 from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCALE, SCREEN_SIZE
-from tuxemon.time_handler import today_ordinal
 from tuxemon.tools import fix_measure, transform_resource_filename
 
 if TYPE_CHECKING:
@@ -58,7 +57,7 @@ class MonsterInfoState(PygameMenuState):
 
     def add_menu_items(
         self,
-        menu: pygame_menu.Menu,
+        menu: Menu,
         monster: Monster,
     ) -> None:
 
@@ -104,7 +103,7 @@ class MonsterInfoState(PygameMenuState):
             title=f"{monster.name.upper()}",
             label_id="name",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_color=dark_color,
         )
@@ -114,7 +113,7 @@ class MonsterInfoState(PygameMenuState):
             title=f"Lv. {monster.level}",
             label_id="level",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_color=dark_color,
         )
@@ -130,7 +129,7 @@ class MonsterInfoState(PygameMenuState):
             title=f"{x:,}/",  # add commas for readability
             label_id="exp",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_color=dark_color,
         )
@@ -140,7 +139,7 @@ class MonsterInfoState(PygameMenuState):
             title=f"{y:,}",  # add commas for readability
             label_id="exp2",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_color=dark_color,
         )
@@ -151,7 +150,7 @@ class MonsterInfoState(PygameMenuState):
             title=T.translate("height"),
             label_id="label-height",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_name=thin_font_path,
             font_color=light_color,
@@ -162,7 +161,7 @@ class MonsterInfoState(PygameMenuState):
             title=T.translate("weight"),
             label_id="label-weight",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_name=thin_font_path,
             font_color=light_color,
@@ -173,7 +172,7 @@ class MonsterInfoState(PygameMenuState):
             title=T.translate("tastes"),
             label_id="label-tastes",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_name=thin_font_path,
             font_color=light_color,
@@ -184,7 +183,7 @@ class MonsterInfoState(PygameMenuState):
             title=T.translate("exp_to_next_level"),
             label_id="label-exp-next",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_name=thin_font_path,
             font_color=light_color,
@@ -196,7 +195,7 @@ class MonsterInfoState(PygameMenuState):
                 title=monster.gender_symbol,
                 label_id="gender",
                 font_size=self.font_type.biggest,
-                align=locals.ALIGN_LEFT,
+                align=ALIGN_LEFT,
                 font_color=dark_color,
                 float=True,
             )
@@ -207,7 +206,7 @@ class MonsterInfoState(PygameMenuState):
             title=mon_weight,
             label_id="weight",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_color=dark_color,
         )
@@ -217,7 +216,7 @@ class MonsterInfoState(PygameMenuState):
             title=mon_height,
             label_id="height",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_color=dark_color,
         )
@@ -230,7 +229,7 @@ class MonsterInfoState(PygameMenuState):
             title=f"{warm}",
             label_id="taste-warm",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_color=dark_color,
         )
@@ -240,7 +239,7 @@ class MonsterInfoState(PygameMenuState):
             title=f"{cold}",
             label_id="taste-cold",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_color=dark_color,
         )
@@ -253,7 +252,7 @@ class MonsterInfoState(PygameMenuState):
             title=reference,
             label_id="capture",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_name=thin_font_path,
             font_color=dark_color,
@@ -288,7 +287,7 @@ class MonsterInfoState(PygameMenuState):
             title=f"{monster.hp}",
             label_id="hp",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_color=dark_color,
         )
@@ -298,7 +297,7 @@ class MonsterInfoState(PygameMenuState):
             title=f"{monster.armour}",
             label_id="armour",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_color=dark_color,
         )
@@ -308,7 +307,7 @@ class MonsterInfoState(PygameMenuState):
             title=f"{monster.dodge}",
             label_id="dodge",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_color=dark_color,
         )
@@ -318,7 +317,7 @@ class MonsterInfoState(PygameMenuState):
             title=f"{monster.melee}",
             label_id="melee",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_color=dark_color,
         )
@@ -328,7 +327,7 @@ class MonsterInfoState(PygameMenuState):
             title=f"{monster.ranged}",
             label_id="ranged",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_color=dark_color,
         )
@@ -338,7 +337,7 @@ class MonsterInfoState(PygameMenuState):
             title=f"{monster.speed}",
             label_id="speed",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
             font_color=dark_color,
         )
@@ -367,7 +366,7 @@ class MonsterInfoState(PygameMenuState):
                 title=title,
                 label_id=f"label-{stat}",
                 font_size=self.font_type.biggest,
-                align=locals.ALIGN_LEFT,
+                align=ALIGN_LEFT,
                 float=True,
                 font_name=thin_font_path,
                 font_color=light_color,
@@ -439,7 +438,7 @@ class MonsterInfoState(PygameMenuState):
             _lookup_monsters()
         if not lookup_tastes:
             _lookup_tastes()
-        monster: Optional[Monster] = None
+        monster: Monster | None = None
         source = ""
         for element in kwargs.values():
             monster = element["monster"]
@@ -449,8 +448,8 @@ class MonsterInfoState(PygameMenuState):
         width, height = SCREEN_SIZE
 
         theme = get_theme().copy()
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
         theme.widget_font_shadow = False
         theme.widget_padding = (0, 0)
 
@@ -460,7 +459,7 @@ class MonsterInfoState(PygameMenuState):
         self.add_menu_items(self.menu, monster)
         self.reset_theme()
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         param: dict[str, Any] = {"source": self._source}
         client = self.client
 
@@ -492,10 +491,8 @@ class MonsterInfoState(PygameMenuState):
 
 def get_acquisition_reference(monster: Monster) -> str:
     acq_type = monster.acquisition
-    doc = today_ordinal() - monster.capture
-    time_key = "today" if doc < 1 else "days_ago"
-    msgid = f"tuxepedia_acquisition_{acq_type.value}_{time_key}"
-    return T.translate(msgid) if doc < 1 else T.format(msgid, {"doc": doc})
+    msgid = f"tuxepedia_acquisition_{acq_type.value}"
+    return T.format(msgid, {"doc": monster.capture_string})
 
 
 def _get_monsters(

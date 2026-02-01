@@ -12,8 +12,8 @@ from tuxemon.db import (
     GenderType,
     LearningMethod,
     MonsterEvolutionItemModel,
+    MonsterModel,
     PartyConditionsModel,
-    SeenStatus,
     StatsComparison,
     StatType,
 )
@@ -24,6 +24,52 @@ from tuxemon.npc import PartyHandler
 from tuxemon.player import Player
 from tuxemon.session import local_session
 from tuxemon.technique.technique import Technique
+
+
+@pytest.fixture(autouse=True)
+def patch_monster_constructor(monkeypatch):
+    original_init = Monster.__init__
+
+    def fake_init(self, slug="testmon", db_data=None, instance_id=None):
+        if db_data is None:
+            db_data = MonsterModel.lookup(slug, None)
+        original_init(self, slug, db_data, instance_id)
+
+    monkeypatch.setattr(Monster, "__init__", fake_init)
+
+
+@pytest.fixture(autouse=True)
+def disable_asset_init(monkeypatch):
+    monkeypatch.setattr(Monster, "_init_assets", lambda self, db_data: None)
+
+
+@pytest.fixture(autouse=True)
+def mock_monster_lookup(monkeypatch):
+    fake = MagicMock()
+    fake.species = "test"
+    fake.stage = "basic"
+    fake.tags = []
+    fake.terrains = []
+    fake.max_moves = 4
+    fake.txmn_id = 0
+    fake.catch_rate = 100
+    fake.upper_catch_resistance = 1.0
+    fake.lower_catch_resistance = 1.0
+    fake.gender_weights = {GenderType.NEUTER: 1.0}
+    fake.types = []
+    fake.shape = "blob"
+    fake.randomly = False
+    fake.evolutions = []
+    fake.history = []
+    tech = MagicMock(spec=Technique, slug="ram")
+    fake.moves.moves = [tech]
+    fake.flairs = set()
+    fake.sprites = MagicMock()
+    fake.sounds = None
+    fake.height = 1.0
+    fake.weight = 1.0
+
+    monkeypatch.setattr(MonsterModel, "lookup", lambda slug, db: fake)
 
 
 def mockPlayer(self) -> None:

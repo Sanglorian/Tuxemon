@@ -15,10 +15,7 @@ from tuxemon.database.runtime import db
 from tuxemon.db import (
     Acquisition,
     EffectPhase,
-    EvolutionStage,
     GenderType,
-    MonsterEvolutionItemModel,
-    MonsterHistoryItemModel,
     MonsterModel,
     MonsterSpritesModel,
     SoundProperties,
@@ -48,11 +45,12 @@ from tuxemon.monster_dir.stats import (
     randomize_ivs,
 )
 from tuxemon.monster_dir.status import MonsterStatusHandler
+from tuxemon.platform.const.sizes import MONTH_KEYS
 from tuxemon.prepare import SCALE
 from tuxemon.shape import ShapeHandler
 from tuxemon.sprite import Sprite
 from tuxemon.taste import Taste
-from tuxemon.time_handler import today_ordinal
+from tuxemon.time_handler import random_month_day, today_month_day
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
@@ -61,19 +59,6 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
-
-SIMPLE_PERSISTANCE_ATTRIBUTES = (
-    "current_hp",
-    "name",
-    "slug",
-    "capture",
-    "capture_device",
-    "height",
-    "weight",
-    "taste_cold",
-    "taste_warm",
-    "steps",
-)
 
 
 class Monster:
@@ -84,113 +69,211 @@ class Monster:
     a Tuxemon, fetching its details from a database.
     """
 
-    def __init__(self, save_data: Mapping[str, Any] | None = None) -> None:
-        save_data = save_data or {}
+    _persist_simple = {
+        "current_hp": int,
+        "name": str,
+        "slug": str,
+        "birthdate": tuple[int, int] | None,
+        "capture_date": tuple[int, int] | None,
+        "capture_device": str,
+        "height": float,
+        "weight": float,
+        "taste_cold": str,
+        "taste_warm": str,
+        "steps": float,
+    }
 
-        self.slug: str = ""
+    def __init__(
+        self,
+        slug: str,
+        db_data: MonsterModel,
+        instance_id: UUID | None = None,
+    ) -> None:
+        self.slug: str = slug
+        self.instance_id: UUID = instance_id or uuid4()
         self._custom_name: str | None = None
-        self.instance_id: UUID = uuid4()
 
-        self.base_stats: BasicStats = BasicStats()
-        self.current_hp: int = 0
+        self.species = db_data.species
+        self.stage = db_data.stage
+        self.tags = db_data.tags
+        self.terrains = db_data.terrains
+        self.max_moves = db_data.max_moves
+        self.txmn_id = db_data.txmn_id
+        self.catch_rate = db_data.catch_rate
+        self.upper_catch_resistance = db_data.upper_catch_resistance
+        self.lower_catch_resistance = db_data.lower_catch_resistance
+        self.gender_weights = db_data.gender_weights
 
-        self.steps: float = 0.0
-        self.bond_handler: BondHandler = BondHandler(save_data)
+        self.types = ElementTypesHandler(db_data.types)
+        self.shape: ShapeHandler = ShapeHandler(db_data.shape)
+        self.randomly = db_data.randomly
 
-        self.custom_stats = CustomStatBoosts()
-        self.training_points = TrainingPoints()
-
-        self.moves = MonsterMovesHandler()
-        self.evolutions: list[MonsterEvolutionItemModel] = []
+        self.evolutions = list(db_data.evolutions or [])
+        self.history = list(db_data.history or [])
         self.evolution_handler = Evolution(self)
-        self.history: list[MonsterHistoryItemModel] = []
-        self.stage: EvolutionStage = EvolutionStage.STANDALONE
-        self.flair_slugs: set[str] = set()
-        self.flairs: dict[str, Flair] = {}
-        self.owner: NPC | None = None
-        self.gender_weights: dict[GenderType, float] = {}
-        self.item_handler = MonsterItemHandler()
-        self.experience_handler: MonsterExperience = MonsterExperience()
 
-        self.money_modifier: float = 0.0
-        self.max_moves: int = 1
+        self._init_assets(db_data)
 
-        self.types = ElementTypesHandler()
-        self.shape: ShapeHandler = ShapeHandler()
-        self.randomly: bool = True
-        self.acquisition: Acquisition = Acquisition.UNKNOWN
+        self.current_hp: int = 0
+        self.steps: float = 0.0
+        self.state: str = ""
+        self.out_of_range: bool = False
         self.wild: bool = False
 
-        # Combat Attributes
-        self.out_of_range: bool = False
         self.is_charging: bool = False
         self.charged_technique: str | None = None
         self.locked_turns_left: int = 0
         self.locked_move: str | None = None
         self.ramp_counter: int = 0
         self.is_confused: bool = False
+        self.money_modifier: float = 0.0
 
-        self.status = MonsterStatusHandler()
-        self.plague = MonsterPlagueHandler()
-        self.taste_cold: str = "tasteless"
-        self.taste_warm: str = "tasteless"
-
-        self.txmn_id: int = 0
-        self.capture: int = 0
-        self.capture_device: str = "tuxeball"
-        self.height: float = 0.0
-        self.weight: float = 0.0
+        self.acquisition: Acquisition = Acquisition.UNKNOWN
+        self.gender = self.assign_gender(self.gender_weights)
+        self.owner: NPC | None = None
 
         self.mother_iid: UUID | None = None
         self.father_iid: UUID | None = None
+        self.birthdate: tuple[int, int] | None = None
 
-        # The multiplier for checks when a monster ball is thrown this should be a value between 0-100 meaning that
-        # 0 is 0% capture rate and 100 has a very good chance of capture. This numbers are based on the capture system
-        # calculations. This was originally inspired by the calculations which can be found at:
-        # https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_catch_rate, but has been modified to fit with
-        # most people's intuitions.
-        self.catch_rate: float = 100.0
+        self.capture_date: tuple[int, int] | None = None
+        self.capture_device: str = "tuxeball"
 
-        # The catch_resistance value is calculated during the capture. The upper and lower catch_resistance
-        # set the span on which the catch_resistance will be. For more information check capture.py
-        self.upper_catch_resistance: float = 1.0
-        self.lower_catch_resistance: float = 1.0
+        self.taste_cold, self.taste_warm = Taste.generate(
+            "tasteless", "tasteless"
+        )
 
-        # The tuxemon's state is used for various animations, etc. For example
-        # a tuxemon's state might be "attacking" or "fainting" so we know when
-        # to play the animations for those states.
-        self.state: str = ""
+        self.height: float = 0.0
+        self.weight: float = 0.0
+        self.height = formula.set_height(self, db_data.height)
+        self.weight = formula.set_weight(self, db_data.weight)
 
-        # A fusion body object that contains the monster's face and body
-        # sprites, as well as _color scheme.
+        self.moves = MonsterMovesHandler()
+        self.moves.set_moveset(db_data.moveset or [])
+
+        self.status = MonsterStatusHandler()
+        self.plague = MonsterPlagueHandler()
+        self.item_handler = MonsterItemHandler()
+        self.experience_handler = MonsterExperience()
+        self.bond_handler = BondHandler()
+
+        self.base_stats: BasicStats = BasicStats()
+        self.training_points = TrainingPoints()
+        self.custom_stats = CustomStatBoosts()
+        self.individual_values = randomize_ivs()
+
         self.body = Body()
 
-        # Set up our sprites.
+    def _init_assets(self, db_data: MonsterModel) -> None:
+        """Configures visual and auditory assets from DB data."""
+        self.flair_slugs = db_data.flairs
+        self.flairs = FlairApplier.create(self.flair_slugs)
 
-        if save_data.get("individual_values"):
-            self.individual_values = IndividualValues.from_dict(
-                save_data["individual_values"]
-            )
+        loader = SpriteLoader()
+        sprites = db_data.sprites or MonsterSpritesModel(
+            sheet=f"gfx/sprites/battle/{self.slug}-sheet",
+        )
+
+        self.sprite_handler = MonsterSpriteHandler(
+            slug=self.slug,
+            sheet_path=loader.resolve_path(sprites.sheet),
+            front_rect=sprites.front_rect,
+            back_rect=sprites.back_rect,
+            menu1_rect=sprites.menu1_rect,
+            menu2_rect=sprites.menu2_rect,
+            flairs=self.flairs,
+        )
+
+        primary_slug = self.types.primary.slug
+
+        if db_data.sounds and db_data.sounds.combat_call:
+            self.combat_call = db_data.sounds.combat_call
+            if self.combat_call.sfx is None:
+                self.combat_call.sfx = f"sound_{primary_slug}_call"
         else:
-            self.individual_values = randomize_ivs()
+            self.combat_call = SoundProperties(
+                sfx=f"sound_{primary_slug}_call",
+                volume=1.5,
+            )
 
-        self.set_state(save_data)
-        self.set_stats()
-
-    @classmethod
-    def create(
-        cls, slug: str, save_data: Mapping[str, Any] | None = None
-    ) -> Monster:
-        method = cls(save_data)
-        method.load(slug)
-        return method
+        if db_data.sounds and db_data.sounds.faint_call:
+            self.faint_call = db_data.sounds.faint_call
+            if self.faint_call.sfx is None:
+                self.faint_call.sfx = f"sound_{primary_slug}_faint"
+        else:
+            self.faint_call = SoundProperties(
+                sfx=f"sound_{primary_slug}_faint",
+                volume=1.5,
+            )
 
     @classmethod
     def spawn_base(cls, slug: str, level: int) -> Monster:
-        monster = cls.create(slug)
-        monster.set_level(level)
+        """Creates a fresh monster at a given level with initialized stats."""
+        db_data = MonsterModel.lookup(slug, db)
+        monster = cls(slug, db_data)
+        monster.capture_date = today_month_day()
+        monster.birthdate = random_month_day()
+        monster.experience_handler.set_level(level)
         monster.moves.set_moves(monster)
+        monster.set_stats()
         monster.current_hp = monster.hp
+        return monster
+
+    @classmethod
+    def from_save(cls, save_data: Mapping[str, Any]) -> Monster:
+        """Reconstructs a monster from saved state."""
+        slug = save_data["slug"]
+        db_data = MonsterModel.lookup(slug, db)
+
+        iid = (
+            UUID(save_data["instance_id"])
+            if "instance_id" in save_data
+            else None
+        )
+        monster = cls(slug, db_data, iid)
+
+        monster.moves.decode_moves(save_data)
+        monster.status.decode_status(save_data, monster)
+        monster.plague.decode_plagues(save_data)
+        monster.bond_handler.set_state(save_data)
+        monster.experience_handler = MonsterExperience.from_state(save_data)
+
+        for key, value in save_data.items():
+            if key == "body" and value:
+                monster.body.set_state(value)
+            elif key == "gender" and value:
+                monster.gender = GenderType(value)
+            elif key == "acquisition" and value:
+                monster.acquisition = Acquisition(value)
+            elif key == "mother_iid":
+                monster.mother_iid = UUID(value) if value else None
+            elif key == "father_iid":
+                monster.father_iid = UUID(value) if value else None
+            elif key in cls._persist_simple:
+                setattr(monster, key, value)
+            elif key == "held_item" and value:
+                item = monster.item_handler.decode_item(value)
+                if item:
+                    monster.equip_item(item)
+            elif key == "training_points" and value:
+                monster.training_points = TrainingPoints.from_dict(value)
+            elif key == "modifiers" and value:
+                monster.custom_stats = CustomStatBoosts.from_dict(value)
+            elif key == "individual_values" and value:
+                monster.individual_values = IndividualValues.from_dict(value)
+            elif key == "flairs" and value:
+                monster.flairs = {
+                    category: Flair.from_state(flair_data)
+                    for category, flair_data in value.items()
+                }
+            elif key == "flair_slugs" and value:
+                monster.flair_slugs = set(value)
+                if "flairs" not in save_data:
+                    monster.flairs = FlairApplier.create(monster.flair_slugs)
+
+        monster.set_stats()
+        monster.load_sprites()
+
         return monster
 
     @property
@@ -282,78 +365,31 @@ class Monster:
     def is_fainted(self) -> bool:
         return self.current_hp <= 0
 
-    def load(self, slug: str) -> None:
-        """
-        Loads and sets this monster's attributes from the monster.db database.
+    @property
+    def birthdate_string(self) -> str:
+        if self.birthdate is None:
+            return ""
 
-        The monster is looked up in the database by name.
+        month, day = self.birthdate
 
-        Parameters:
-            slug: Slug to lookup.
-        """
-        results = MonsterModel.lookup(slug, db)
-        self.experience_handler.set_level(random.randint(2, 5))
-        self.slug = results.slug
-        self.species = results.species
-        self.shape = ShapeHandler(results.shape)
-        self.stage = results.stage
-        self.tags = results.tags
-        self.terrains = results.terrains
-        self.taste_cold, self.taste_warm = Taste.generate(
-            self.taste_cold, self.taste_warm
-        )
+        if 1 <= month <= 12:
+            month_name = T.translate(MONTH_KEYS[month - 1])
+            return f"{month_name} {day}"
 
-        self.types = ElementTypesHandler(results.types)
+        return ""
 
-        self.randomly = results.randomly
-        self.max_moves = results.max_moves
+    @property
+    def capture_string(self) -> str:
+        if self.capture_date is None:
+            return ""
 
-        self.txmn_id = results.txmn_id
-        self.set_capture(self.capture)
-        self.height = formula.set_height(self, results.height)
-        self.weight = formula.set_weight(self, results.weight)
-        self.gender_weights = results.gender_weights
-        self.gender = self.assign_gender(results.gender_weights)
-        self.catch_rate = results.catch_rate
-        self.upper_catch_resistance = results.upper_catch_resistance
-        self.lower_catch_resistance = results.lower_catch_resistance
+        month, day = self.capture_date
 
-        self.moves.set_moveset(results.moveset or [])
-        self.evolutions.extend(results.evolutions or [])
-        self.history.extend(results.history or [])
+        if 1 <= month <= 12:
+            month_name = T.translate(MONTH_KEYS[month - 1])
+            return f"{month_name} {day}"
 
-        # Look up the monster's sprite image paths
-        sprites = results.sprites or MonsterSpritesModel(sheet=f"gfx/sprites/battle/{slug}-sheet")  # type: ignore[call-arg]
-        self.flair_slugs = results.flairs
-        self.flairs = FlairApplier.create(self.flair_slugs)
-        loader = SpriteLoader()
-        self.sprite_handler = MonsterSpriteHandler(
-            slug=slug,
-            sheet_path=loader.resolve_path(sprites.sheet),
-            front_rect=sprites.front_rect,
-            back_rect=sprites.back_rect,
-            menu1_rect=sprites.menu1_rect,
-            menu2_rect=sprites.menu2_rect,
-            flairs=self.flairs,
-        )
-
-        if results.sounds and results.sounds.combat_call:
-            self.combat_call = results.sounds.combat_call
-            if self.combat_call.sfx is None:
-                self.combat_call.sfx = f"sound_{self.types.primary.slug}_call"
-        else:
-            self.combat_call = SoundProperties(
-                sfx=f"sound_{self.types.primary.slug}_call", volume=1.5
-            )
-
-        if results.sounds and results.sounds.faint_call:
-            self.faint_call = results.sounds.faint_call
-            if self.faint_call.sfx is None:
-                self.faint_call.sfx = f"sound_{self.types.primary.slug}_faint"
-        else:
-            self.faint_call = SoundProperties(
-                sfx=f"sound_{self.types.primary.slug}_faint", volume=1.5
-            )
+        return ""
 
     def load_sprites(self, scale: float = SCALE) -> None:
         """
@@ -561,13 +597,6 @@ class Monster:
         if self.item_handler.held_item:
             self.item_handler.held_item.temporary_stat_boosts = BasicStats()
 
-    def set_capture(self, amount: int) -> int:
-        """
-        It returns the capture date.
-        """
-        self.capture = today_ordinal() if amount == 0 else amount
-        return self.capture
-
     def set_level(self, level: int) -> None:
         """Set monster level."""
         self.experience_handler.set_level(level)
@@ -610,7 +639,8 @@ class Monster:
         else:  # Re-roll if incompatible
             self.gender = self.assign_gender(self.gender_weights)
 
-        self.capture = old_monster.capture
+        self.birthdate = old_monster.birthdate
+        self.capture_date = old_monster.capture_date
         self.capture_device = old_monster.capture_device
         self.taste_cold = old_monster.taste_cold
         self.taste_warm = old_monster.taste_warm
@@ -628,16 +658,11 @@ class Monster:
                 ]
 
     def get_state(self) -> Mapping[str, Any]:
-        """
-        Prepares a dictionary of the monster to be saved to a file.
+        """Serializes the monster into a save-ready dictionary."""
 
-        Returns:
-            Dictionary containing all the information about the monster.
-
-        """
-        save_data = {
+        save_data: dict[str, Any] = {
             attr: getattr(self, attr)
-            for attr in SIMPLE_PERSISTANCE_ATTRIBUTES
+            for attr, _type in self._persist_simple.items()
             if getattr(self, attr)
         }
 
@@ -652,9 +677,9 @@ class Monster:
             self.father_iid.hex if self.father_iid else None
         )
 
-        body = self.body.get_state()
-        if body:
-            save_data["body"] = body
+        body_state = self.body.get_state()
+        if body_state:
+            save_data["body"] = body_state
 
         save_data["status"] = self.status.encode_status()
         save_data["moves"] = self.moves.encode_moves()
@@ -671,62 +696,6 @@ class Monster:
 
         save_data.update(self.experience_handler.get_state())
         return save_data
-
-    def set_state(self, save_data: Mapping[str, Any]) -> None:
-        """
-        Loads information from saved data.
-
-        Parameters:
-            save_data: Data used to reconstruct the monster.
-
-        """
-        if not save_data:
-            return
-
-        self.load(save_data["slug"])
-
-        self.moves.decode_moves(save_data)
-        self.status.decode_status(save_data, self)
-        self.plague.decode_plagues(save_data)
-        self.bond_handler.set_state(save_data)
-
-        for key, value in save_data.items():
-            if key == "body" and value:
-                self.body.set_state(value)
-            elif key == "instance_id" and value:
-                self.instance_id = UUID(value)
-            elif key == "gender" and value:
-                self.gender = GenderType(value)
-            elif key == "acquisition" and value:
-                self.acquisition = Acquisition(value)
-            elif key == "mother_iid":
-                self.mother_iid = UUID(value) if value else None
-            elif key == "father_iid":
-                self.father_iid = UUID(value) if value else None
-            elif key in SIMPLE_PERSISTANCE_ATTRIBUTES:
-                setattr(self, key, value)
-            elif key == "held_item" and value:
-                item = self.item_handler.decode_item(value)
-                if item:
-                    self.equip_item(item)
-            elif key == "training_points" and value:
-                self.training_points = TrainingPoints.from_dict(value)
-            elif key == "modifiers" and value:
-                self.modifiers = CustomStatBoosts.from_dict(value)
-            elif key == "individual_values" and value:
-                self.individual_values = IndividualValues.from_dict(value)
-            elif key == "flairs" and value:
-                self.flairs = {
-                    category: Flair.from_state(flair_data)
-                    for category, flair_data in value.items()
-                }
-            elif key == "flair_slugs" and value:
-                self.flair_slugs = set(value)
-                if "flairs" not in save_data:
-                    self.flairs = FlairApplier.create(self.flair_slugs)
-
-        self.experience_handler = MonsterExperience.from_state(save_data)
-        self.load_sprites()
 
     def end_combat(self, session: Session) -> None:
         """
@@ -757,7 +726,15 @@ class Monster:
 def decode_monsters(
     json_data: Sequence[Mapping[str, Any]] | None,
 ) -> list[Monster]:
-    return [Monster(save_data=mon) for mon in (json_data or [])]
+    if not json_data:
+        return []
+    monsters = [Monster.from_save(mon) for mon in json_data]
+    for m in monsters:
+        if m.capture_date is None:
+            m.capture_date = random_month_day()
+        if m.birthdate is None:
+            m.birthdate = random_month_day()
+    return monsters
 
 
 def encode_monsters(mons: Sequence[Monster]) -> Sequence[Mapping[str, Any]]:

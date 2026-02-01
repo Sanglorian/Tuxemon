@@ -27,7 +27,6 @@ class CopyVariableAction(EventAction):
     Script parameters:
         var1: The variable to copy to.
         var2: The variable to copy from.
-
     """
 
     name = "copy_variable"

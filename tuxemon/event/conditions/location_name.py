@@ -26,7 +26,6 @@ class LocationNameCondition(EventCondition):
 
     eg. "is location_name routeb"
     eg. "is location_name routeb:routea"
-
     """
 
     name = "location_name"

@@ -37,7 +37,6 @@ class SaveGameAction(EventAction):
 
     eg: "save_game" (slot4.save)
     eg: "save_game 1"
-
     """
 
     name = "save_game"

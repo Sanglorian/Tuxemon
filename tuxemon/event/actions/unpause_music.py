@@ -22,7 +22,6 @@ class UnpauseMusicAction(EventAction):
         .. code-block::
 
             unpause_music
-
     """
 
     name = "unpause_music"

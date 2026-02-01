@@ -30,7 +30,6 @@ class ModifyMoneyAction(EventAction):
 
     eg. "modify_money player,-50"
     eg. "modify_money player,,name_variable"
-
     """
 
     name = "modify_money"

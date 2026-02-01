@@ -30,7 +30,6 @@ class HasItemCondition(EventCondition):
             "less_or_equal", "greater_than", "greater_or_equal", "equals"
             and "not_equals".
         quantity: Quantity to compare with.
-
     """
 
     name = "has_item"

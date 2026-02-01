@@ -43,7 +43,6 @@ class InfoAction(EventAction):
         "info name_variable,owner_steps"
         -> if the owner walked 69 steps, then it'll create a variable called:
         "info_owner_steps:69"
-
     """
 
     name = "info"

@@ -2180,7 +2180,7 @@ class BattleGraphicsModel(BaseModel):
     )
 
     @field_validator("island_sheet")
-    def validate_sheet_exists(cls, v):
+    def validate_sheet_exists(cls, v: str) -> str:
         if not has.file(v):
             raise ValueError(f"Island sheet not found: {v}")
         return v

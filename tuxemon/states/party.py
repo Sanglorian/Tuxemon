@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon import formula
 from tuxemon.entity_dir.party import PartyHandler
@@ -39,8 +39,8 @@ class PartyState(PygameMenuState):
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_PARTY)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
         super().__init__(height=height, width=width)
         self.initialize_items(self.menu, self.party.monsters)
@@ -48,7 +48,7 @@ class PartyState(PygameMenuState):
 
     def initialize_items(
         self,
-        menu: pygame_menu.Menu,
+        menu: Menu,
         monsters: list[Monster],
     ) -> None:
         fxw: Callable[[float], int] = lambda r: fix_measure(menu._width, r)
@@ -58,7 +58,7 @@ class PartyState(PygameMenuState):
         lab1: Any = menu.add.label(
             title=T.translate("menu_party"),
             font_size=self.font_type.big,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             underline=True,
             float=True,
         )
@@ -73,7 +73,7 @@ class PartyState(PygameMenuState):
         lab2: Any = menu.add.label(
             title=f"{highest}: {level_highest or 0}",
             font_size=self.font_type.smaller,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab2.translate(fxw(0.05), fxh(0.25))
@@ -82,7 +82,7 @@ class PartyState(PygameMenuState):
         lab3: Any = menu.add.label(
             title=f"{average}: {level_average or 0}",
             font_size=self.font_type.smaller,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab3.translate(fxw(0.05), fxh(0.30))
@@ -91,7 +91,7 @@ class PartyState(PygameMenuState):
         lab4: Any = menu.add.label(
             title=f"{lowest}: {level_lowest or 0}",
             font_size=self.font_type.smaller,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab4.translate(fxw(0.05), fxh(0.35))
@@ -101,7 +101,7 @@ class PartyState(PygameMenuState):
             lab7: Any = menu.add.label(
                 title=f"{alignment}: {T.translate(party_alignment)}",
                 font_size=self.font_type.smaller,
-                align=locals.ALIGN_LEFT,
+                align=ALIGN_LEFT,
                 float=True,
             )
             lab7.translate(fxw(0.05), fxh(0.40))
@@ -112,7 +112,7 @@ class PartyState(PygameMenuState):
             lab5: Any = menu.add.label(
                 title=T.translate("menu_bond"),
                 font_size=self.font_type.big,
-                align=locals.ALIGN_LEFT,
+                align=ALIGN_LEFT,
                 underline=True,
                 float=True,
             )
@@ -127,7 +127,7 @@ class PartyState(PygameMenuState):
                         f"{_label:<10}",
                         default=monster.bond_handler.bond,
                         font_size=self.font_type.smaller,
-                        align=locals.ALIGN_LEFT,
+                        align=ALIGN_LEFT,
                         progress_text_enabled=False,
                         float=True,
                     )
@@ -153,11 +153,11 @@ class PartyState(PygameMenuState):
                 lab6: Any = menu.add.label(
                     title=T.format("menu_party_traveled", params),
                     font_size=self.font_type.smaller,
-                    align=locals.ALIGN_LEFT,
+                    align=ALIGN_LEFT,
                 )
                 lab6.translate(fxw(0.35), fxh(0.25))
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         params = {"character": self.char}
         if event.button == buttons.LEFT and event.pressed:
             self.client.replace_state("CharacterState", kwargs=params)

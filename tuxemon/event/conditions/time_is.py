@@ -28,8 +28,8 @@ class TimeIsCondition(EventCondition):
     Script parameters:
         property:
             The name of a time property to evaluate. Valid options include:
-            "hour", "day_of_year", "year", "weekday", "leap_year",
-            "daytime", "stage_of_day", and "season".
+            "date", "hour", "day_of_year", "year", "weekday", "leap_year",
+            "daytime", "month", "day", "stage_of_day", and "season".
 
         operation:
             A comparison operator supported by the `compare` helper
@@ -46,6 +46,7 @@ class TimeIsCondition(EventCondition):
             is time_is hour,greater_than,17
             is time_is season,equals,winter
             is time_is stage_of_day,equals,dusk
+            is time_is date,equals,4-30
     """
 
     name = "time_is"
@@ -57,12 +58,16 @@ class TimeIsCondition(EventCondition):
         operation: str = condition.parameters[1]
         raw_value: str = condition.parameters[2]
 
+        if property_name == "date":
+            current = f"{snapshot.month}-{snapshot.day}"
+            return compare(operation, current, raw_value)
+
         if not hasattr(snapshot, property_name):
             logger.error(f"Invalid time property '{property_name}'")
             return False
 
         value = getattr(snapshot, property_name)
-        numeric_properties = {"hour", "day_of_year", "year"}
+        numeric_properties = {"hour", "day_of_year", "year", "month", "day"}
 
         # Numeric path
         if property_name in numeric_properties:

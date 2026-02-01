@@ -59,6 +59,7 @@ class TextFormatter:
 
     def _register_player_client_replacements(self) -> None:
         """Registers replacements related to the player and client."""
+        session = self.session
         player = self.session.player
         client = self.session.client
         formatter = CurrencyFormatter()
@@ -66,6 +67,8 @@ class TextFormatter:
         player_client_map = {
             "${{name}}": lambda: player.name,
             "${{NAME}}": lambda: player.name.upper(),
+            "${{today}}": lambda: session.time.today_string,
+            "${{birthdate}}": lambda: player.birthdate_string,
             "${{currency}}": lambda: "$",
             "${{money}}": lambda: str(
                 player.money_controller.money_manager.get_money()

@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any, ClassVar
 
-import pygame_menu
 from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon import formula
 from tuxemon.database.runtime import db
@@ -50,7 +50,7 @@ class CharacterState(PygameMenuState):
 
     def add_menu_items(
         self,
-        menu: pygame_menu.Menu,
+        menu: Menu,
     ) -> None:
         fxw: Callable[[float], int] = lambda r: fix_measure(menu._width, r)
         fxh: Callable[[float], int] = lambda r: fix_measure(menu._height, r)

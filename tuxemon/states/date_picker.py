@@ -10,6 +10,7 @@ from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
+from tuxemon.platform.const.sizes import MONTH_KEYS
 from tuxemon.prepare import SCREEN_SIZE
 
 
@@ -40,24 +41,9 @@ class DatePickerState(PygameMenuState):
         self.menu.clear()
         self.menu.set_title(T.translate("select_month")).center_content()
 
-        months = [
-            ("month_jan", 1),
-            ("month_feb", 2),
-            ("month_mar", 3),
-            ("month_apr", 4),
-            ("month_may", 5),
-            ("month_jun", 6),
-            ("month_jul", 7),
-            ("month_aug", 8),
-            ("month_sep", 9),
-            ("month_oct", 10),
-            ("month_nov", 11),
-            ("month_dec", 12),
-        ]
-
-        for key, num in months:
+        for index, key in enumerate(MONTH_KEYS, start=1):
             self.menu.add.button(
-                T.translate(key), lambda m=num: self._pick_month(m)
+                T.translate(key), lambda m=index: self._pick_month(m)
             )
 
     def _pick_month(self, month: int) -> None:

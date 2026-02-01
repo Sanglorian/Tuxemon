@@ -1640,6 +1640,12 @@ msgstr "E-Pay"
 msgid "no_money_operation"
 msgstr "{operation} not possible!"
 
+msgid "select_number"
+msgstr "Select number"
+
+msgid "number_picker_instructions"
+msgstr "Right: increase\n Left: decrease\n A: confirm"
+
 # Contacts notification
 msgid "action_call"
 msgstr "Call"

@@ -21,7 +21,6 @@ class CharExistsCondition(EventCondition):
 
     Script parameters:
         character: Either "player" or character slug name (e.g. "npc_maple").
-
     """
 
     name = "char_exists"

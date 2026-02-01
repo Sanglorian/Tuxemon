@@ -35,7 +35,6 @@ class CheckPartyParameterCondition(EventCondition):
 
     eg. "check_party_parameter player,level,5,equals,1"
     translated: "is there 1 monster in the party at level 5? True/False"
-
     """
 
     name = "check_party_parameter"

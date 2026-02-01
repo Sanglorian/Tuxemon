@@ -27,7 +27,6 @@ class ClearTuxepediaAction(EventAction):
 
     Script parameters:
         monster_slug: Monster slug name (e.g. "rockitten").
-
     """
 
     name = "clear_tuxepedia"

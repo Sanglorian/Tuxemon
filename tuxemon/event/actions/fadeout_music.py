@@ -26,7 +26,6 @@ class FadeoutMusicAction(EventAction):
 
     Script parameters:
         duration: Number of milliseconds to fade out the music over.
-
     """
 
     name = "fadeout_music"

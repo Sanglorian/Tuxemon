@@ -25,7 +25,6 @@ class CurrentStateCondition(EventCondition):
 
     eg: "is current_state CombatState"
     eg: "is current_state CombatState:DialogState"
-
     """
 
     name = "current_state"

@@ -34,7 +34,6 @@ class VariableMathAction(EventAction):
         var2: Second operand.
         result: Variable where to store the result. If missing, it will be
             ``var1``.
-
     """
 
     name = "variable_math"

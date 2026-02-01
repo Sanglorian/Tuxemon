@@ -56,7 +56,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
     def __init__(
         self,
         session: Session,
-        cmb: CombatState,
+        combat: CombatState,
         character: NPC,
         monster: Monster,
     ) -> None:
@@ -64,7 +64,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         self.rect = self.calculate_menu_rectangle()
         self.session = session
         self.combat_session = self.client.combat_session
-        self.combat = cmb
+        self.combat = combat
         self.character = character
         self.monster = monster
         self.party = self.combat_session.field_monsters.get_monsters(
@@ -82,7 +82,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             )
         params = {"name": monster.name}
         message = T.format("combat_monster_choice", params)
-        self.dialog.alert(message, self.combat.text_area)
+        self.event_bus.publish("combat_dialog", message=message)
 
         self.type_icon_sprites: list[Sprite] = []
         self.text_sprites: dict[str, Sprite] = {}
@@ -390,8 +390,8 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
             def show() -> None:
                 # Clear the combat dialog so the old "What will X do?" text disappears
-                self.dialog.alert(
-                    "", self.combat.text_area, dialog_speed="max"
+                self.event_bus.publish(
+                    "combat_dialog", message="", dialog_speed="max"
                 )
 
                 screen_w, screen_h = SCREEN_SIZE
@@ -536,8 +536,8 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 # Restore the original combat prompt
                 params = {"name": self.monster.name}
                 message = T.format("combat_monster_choice", params)
-                self.dialog.alert(
-                    message, self.combat.text_area, dialog_speed="max"
+                self.event_bus.publish(
+                    "combat_dialog", message=message, dialog_speed="max"
                 )
 
             menu.on_menu_selection_change_callback = show
@@ -553,7 +553,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             if len(self.opponents) > 1:
                 state = self.client.push_state(
                     CombatTargetMenuState(
-                        combat_state=self.combat,
+                        combat=self.combat,
                         character=self.character,
                         monster=self.monster,
                         technique=technique,
@@ -616,7 +616,7 @@ class CombatTargetMenuState(Menu[Monster]):
 
     def __init__(
         self,
-        combat_state: CombatState,
+        combat: CombatState,
         character: NPC,
         monster: Monster,
         technique: Technique,
@@ -624,7 +624,7 @@ class CombatTargetMenuState(Menu[Monster]):
         super().__init__()
         self.character = character
         self.monster = monster
-        self.combat_state = combat_state
+        self.combat = combat
         self.combat_session = self.client.combat_session
         self.technique = technique
         self.targeting_map: defaultdict[str, list[Monster]] = defaultdict(list)
@@ -656,7 +656,7 @@ class CombatTargetMenuState(Menu[Monster]):
 
     def _create_menu_item(self, monster: Monster) -> MenuItem[Monster]:
         """Creates a menu item for a given monster."""
-        sprite = self.combat_state.sprite_map.get_sprite(monster)
+        sprite = self.combat.sprite_map.get_sprite(monster)
         if sprite is None:
             raise KeyError(f"Sprite not found for entity: {monster.name}")
         item = MenuItem(self.surface, None, monster.name, monster)
@@ -711,7 +711,7 @@ class CombatTargetMenuState(Menu[Monster]):
 
         if selected := self.get_selected_item():
             monster = selected.game_object
-            pos = self.combat_state.sprite_map.get_sprite(monster)
+            pos = self.combat.sprite_map.get_sprite(monster)
             if pos is None:
                 return
 

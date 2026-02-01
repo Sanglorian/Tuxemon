@@ -15,6 +15,21 @@ REGION_KEYS: list[str] = [
 # Surface Keys (tilesets)
 SURFACE_KEYS: list[str] = ["surfable", "walkable", "climbable"]
 
+MONTH_KEYS = [
+    "month_jan",
+    "month_feb",
+    "month_mar",
+    "month_apr",
+    "month_may",
+    "month_jun",
+    "month_jul",
+    "month_aug",
+    "month_sep",
+    "month_oct",
+    "month_nov",
+    "month_dec",
+]
+
 MAP_CACHE_SIZE: int = 10
 PLAYER_NPC = "npc_red"
 
@@ -30,7 +45,6 @@ MONSTER_SIZE: tuple[int, int] = (64, 64)
 MONSTER_SIZE_MENU: tuple[int, int] = (24, 24)
 BORDERS_SIZE: tuple[int, int] = (18, 18)
 ELEMENT_SIZE: tuple[int, int] = (24, 24)
-ISLAND_SIZE: tuple[int, int] = (96, 57)
 BATTLE_BG_SIZE: tuple[int, int] = (256, 108)
 
 # Native resolution is similar to the old gameboy resolution.

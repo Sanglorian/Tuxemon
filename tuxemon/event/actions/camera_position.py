@@ -26,7 +26,6 @@ class CameraPositionAction(EventAction):
 
     Script parameters:
         x,y: the coordinates where the camera needs to be centered.
-
     """
 
     name = "camera_position"

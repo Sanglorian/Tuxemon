@@ -15,7 +15,7 @@ from tuxemon.db import (
     BattleMusicModel,
     EnvironmentModel,
 )
-from tuxemon.graphics import load_and_scale
+from tuxemon.graphics import load_and_scale, load_raw_image, scale_surface
 from tuxemon.prepare import SCALE
 from tuxemon.tools import scale
 
@@ -206,12 +206,18 @@ class Environment:
     def get_battle_music(self) -> BattleMusicModel:
         return self.data.get_battle_music()
 
-    def get_battle_assets(self) -> dict[str, str]:
+    def get_battle_assets(self) -> dict[str, Surface]:
         graphics = self.data.get_battle_graphics()
+
+        sheet = IslandSheet(
+            graphics.island_sheet,
+            frame_w=graphics.island_width,
+            frame_h=graphics.island_height,
+        )
+
         return {
-            "background": graphics.background,
-            "island_back": graphics.island_back,
-            "island_front": graphics.island_front,
+            "island_back": sheet.back(),
+            "island_front": sheet.front(),
         }
 
     def get_party_layout(
@@ -236,8 +242,8 @@ class Environment:
 
     def prepare_background(self, screen_size: tuple[int, int]) -> Surface:
         """Processes the background sprite to fit the screen dimensions."""
-        bg_path = self.get_battle_assets()["background"]
-        surf = load_and_scale(bg_path, SCALE)
+        graphics = self.data.get_battle_graphics()
+        surf = load_and_scale(graphics.background, SCALE)
 
         full_width, full_height = screen_size
         full_surf = Surface((full_width, full_height))
@@ -253,3 +259,43 @@ class Environment:
                 full_surf.blit(last_row, (0, y))
 
         return full_surf
+
+
+class IslandSheet:
+    def __init__(self, file_path: str, frame_w: int, frame_h: int):
+        self.file_path = file_path
+        self.frame_w = frame_w
+        self.frame_h = frame_h
+        self.frames = self._slice()
+
+    def _slice(self) -> dict[str, Surface]:
+        sheet = load_raw_image(self.file_path)
+        w, h = sheet.get_size()
+
+        expected_w = self.frame_w * 2
+        expected_h = self.frame_h
+
+        if (w, h) != (expected_w, expected_h):
+            raise ValueError(
+                f"Island sheet '{self.file_path}' must be "
+                f"{expected_w}x{expected_h}, but is {w}x{h}"
+            )
+
+        back_raw = sheet.subsurface((0, 0, self.frame_w, self.frame_h))
+        front_raw = sheet.subsurface(
+            (self.frame_w, 0, self.frame_w, self.frame_h)
+        )
+
+        back_scaled = scale_surface(back_raw, SCALE)
+        front_scaled = scale_surface(front_raw, SCALE)
+
+        return {
+            "back": back_scaled,
+            "front": front_scaled,
+        }
+
+    def back(self) -> Surface:
+        return self.frames["back"]
+
+    def front(self) -> Surface:
+        return self.frames["front"]

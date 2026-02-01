@@ -31,7 +31,6 @@ class ModifyCharAttributeAction(EventAction):
         character: Either "player" or character slug name (e.g. "npc_maple").
         attribute: Name of the attribute to modify.
         value: Value of the attribute modifier.
-
     """
 
     name = "modify_char_attribute"

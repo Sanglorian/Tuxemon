@@ -30,7 +30,6 @@ class FormatVariableAction(EventAction):
         type_format: Kind of format (float or int).
 
     eg. "format_variable name_variable,int"
-
     """
 
     name = "format_variable"

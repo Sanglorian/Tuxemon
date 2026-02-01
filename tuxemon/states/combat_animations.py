@@ -34,8 +34,6 @@ from tuxemon.ui.combat_monsters import MonsterSpriteMap
 from tuxemon.ui.combat_status import StatusIconManager
 from tuxemon.ui.combat_text_display import CombatTextDisplay
 from tuxemon.ui.combat_zone import CombatZone
-from tuxemon.ui.graphic_box import GraphicBox
-from tuxemon.ui.text import TextArea
 from tuxemon.ui.text_alignment import HorizontalAlignment
 
 if TYPE_CHECKING:
@@ -43,6 +41,8 @@ if TYPE_CHECKING:
     from tuxemon.item.item import Item
     from tuxemon.monster import Monster
     from tuxemon.npc import NPC
+    from tuxemon.ui.graphic_box import GraphicBox
+    from tuxemon.ui.text import TextArea
 
 logger = logging.getLogger(__name__)
 
@@ -101,23 +101,12 @@ class CombatAnimations(Menu[None], ABC):
         current_graphics = self.env.get_battle_graphics()
         self.bars.draw_bars(self.hud_manager.hud_map, current_graphics)
 
-    def show_combat_dialog(self) -> None:
-        """Create and show the area where battle messages are displayed."""
-        # make the border and area at the bottom of the screen for messages
-        rect_screen = SCREEN_RECT.copy()
-        rect = Rect(0, 0, rect_screen.w, rect_screen.h // 4)
-        rect.bottomright = rect_screen.w, rect_screen.h
-        border = graphics.load_and_scale(self.borders_filename)
-        self.dialog_box = GraphicBox(border, None, self.background_color)
-        self.dialog_box.rect = rect
-        self.sprites.add(self.dialog_box, layer=HUD_LAYER)
-
-        # make a text area to show messages
-        self.text_area = TextArea(self.font, self.font_color)
-        self.text_area.rect = self.dialog_box.calc_inner_rect(
-            self.dialog_box.rect,
-        )
-        self.sprites.add(self.text_area, layer=HUD_LAYER)
+    def show_combat_dialog(
+        self, dialog_box: GraphicBox, text_area: TextArea
+    ) -> None:
+        """Show the area where battle messages are displayed."""
+        self.sprites.add(dialog_box, layer=HUD_LAYER)
+        self.sprites.add(text_area, layer=HUD_LAYER)
 
     def animate_open(self) -> None:
         self.transition_none_normal()
@@ -639,10 +628,10 @@ class CombatAnimations(Menu[None], ABC):
 
         # Spawn Islands
         assets = self.env.get_battle_assets()
-        back_island = self.load_sprite(
+        back_island = self.load_surface(
             assets["island_back"], **layout.back_island_pos
         )
-        front_island = self.load_sprite(
+        front_island = self.load_surface(
             assets["island_front"], **layout.front_island_pos
         )
 
@@ -682,8 +671,8 @@ class CombatAnimations(Menu[None], ABC):
                 "play_sound_combat", sound=sound.sfx, value=sound.volume
             )
 
-        self.dialog.alert(
-            self.combat_session.get_start_message(), self.text_area
+        self.event_bus.publish(
+            "combat_dialog", message=self.combat_session.get_start_message()
         )
 
     def flip_sprites(self, enemy: Sprite, player_back: Sprite) -> None:
@@ -854,7 +843,7 @@ class CombatAnimations(Menu[None], ABC):
             )
 
             def show_success() -> None:
-                self.dialog.alert(full_msg, self.text_area)
+                self.event_bus.publish("combat_dialog", message=full_msg)
 
             self.task(show_success, interval=dialog_delay)
 
@@ -883,7 +872,7 @@ class CombatAnimations(Menu[None], ABC):
                 self.blink(sprite)
 
             def show_failure() -> None:
-                self.dialog.alert(failure_text, self.text_area)
+                self.event_bus.publish("combat_dialog", message=failure_text)
 
             self.task(show_monster, interval=breakout_time)
             self.task(capture_capsule, interval=breakout_time)

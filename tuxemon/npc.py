@@ -267,7 +267,7 @@ class NPC(Entity):
                 "sprite_name", ""
             )
             self.template.combat_sheet = save_data.template.get(
-                "combat_front", ""
+                "combat_sheet", ""
             )
             self.sprite_controller.update_template(self.template)
 

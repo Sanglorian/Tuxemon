@@ -21,7 +21,6 @@ class HasTechCondition(EventCondition):
 
     Script parameters:
         technique: Technique slug name (e.g. "bullet").
-
     """
 
     name = "has_tech"

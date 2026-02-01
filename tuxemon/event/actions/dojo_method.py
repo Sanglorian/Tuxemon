@@ -46,7 +46,6 @@ class DojoMethodAction(EventAction):
             - "technique": Learn any move the monster hasn't acquired from its base
               moveset, without restrictions based on level or evolution stage.
             - "monster": Devolve the monster.
-
     """
 
     name = "dojo_method"
@@ -128,7 +127,7 @@ class DojoMethodAction(EventAction):
             self.stop()
 
     def devolve(self, slug: str) -> None:
-        devolution = Monster.create(slug)
+        devolution = Monster.spawn_base(slug, self.monster.level)
         self.monster.evolution_handler.evolve_monster(devolution)
         logger.info(f"{self.monster.name}'s devolved!")
         self.client.sound_manager.play_sound("sound_confirm")

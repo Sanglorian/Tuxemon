@@ -14,12 +14,19 @@ from typing import (
     TypeVar,
 )
 
-import pygame_menu
 from pygame import image
 from pygame.font import Font
 from pygame.rect import Rect
 from pygame.surface import Surface
-from pygame_menu import baseimage, locals, themes
+from pygame_menu.baseimage import BaseImage
+from pygame_menu.locals import (
+    ALIGN_LEFT,
+    POSITION_CENTER,
+    SCROLLAREA_POSITION_NONE,
+)
+from pygame_menu.menu import Menu as PyMenu
+from pygame_menu.sound import Sound
+from pygame_menu.themes import Theme
 from pygame_menu.widgets.core.widget import Widget
 
 from tuxemon.animation import Animation, ScheduleType
@@ -90,8 +97,8 @@ class PygameMenuState(State):
         self,
         width: int = 1,
         height: int = 1,
-        theme: pygame_menu.Theme | None = None,
-        sound_engine: pygame_menu.Sound | None = None,
+        theme: Theme | None = None,
+        sound_engine: Sound | None = None,
         font_settings: FontSettings | None = None,
         **kwargs: Any,
     ) -> None:
@@ -118,8 +125,8 @@ class PygameMenuState(State):
         self,
         width: int,
         height: int,
-        theme: pygame_menu.Theme,
-        sound_engine: pygame_menu.Sound | None,
+        theme: Theme,
+        sound_engine: Sound | None,
         **kwargs: Any,
     ) -> None:
         """
@@ -131,7 +138,7 @@ class PygameMenuState(State):
             theme: The theme of the menu.
             sound_engine: Optional pre-configured sound engine.
         """
-        self.menu = pygame_menu.Menu(
+        self.menu = PyMenu(
             "",
             width,
             height,
@@ -156,8 +163,8 @@ class PygameMenuState(State):
         self.menu._keyboard_ignore_nonphysical = False
 
     def _setup_theme(
-        self, background: str, position: str = locals.POSITION_CENTER
-    ) -> themes.Theme:
+        self, background: str, position: str = POSITION_CENTER
+    ) -> Theme:
         """
         Sets up a Pygame menu theme with a custom background image.
 
@@ -166,7 +173,7 @@ class PygameMenuState(State):
             position: The position of the background image.
 
         Returns:
-            pygame_menu.Theme: The configured theme object.
+            Theme: The configured theme object.
         """
         base_image = self._create_image(background, position)
         theme = get_theme()
@@ -174,8 +181,8 @@ class PygameMenuState(State):
         return theme
 
     def _create_image(
-        self, path: str, position: str = locals.POSITION_CENTER
-    ) -> baseimage.BaseImage:
+        self, path: str, position: str = POSITION_CENTER
+    ) -> BaseImage:
         """
         Creates a Pygame menu image.
 
@@ -184,20 +191,20 @@ class PygameMenuState(State):
             position: The position of the background image.
 
         Returns:
-            pygame_menu.BaseImage: The created background image object.
+            BaseImage: The created background image object.
         """
-        return pygame_menu.BaseImage(
+        return BaseImage(
             image_path=transform_resource_filename(path),
             drawing_position=position,
         )
 
     def _create_image_from_surface(
-        self, surface: Surface, position=locals.POSITION_CENTER
-    ) -> baseimage.BaseImage:
+        self, surface: Surface, position=POSITION_CENTER
+    ) -> BaseImage:
         temp_path = "/tmp/tuxemon_sprite.png"
         image.save(surface, temp_path)
 
-        return pygame_menu.BaseImage(
+        return BaseImage(
             image_path=temp_path,
             load_from_file=True,
             drawing_position=position,
@@ -303,9 +310,9 @@ class PygameMenuState(State):
     def reset_theme(self) -> None:
         """Reset to original theme (color, alignment, etc.)"""
         theme = get_theme()
-        theme.scrollarea_position = locals.SCROLLAREA_POSITION_NONE
+        theme.scrollarea_position = SCROLLAREA_POSITION_NONE
         theme.background_color = BACKGROUND_COLOR
-        theme.widget_alignment = locals.ALIGN_LEFT
+        theme.widget_alignment = ALIGN_LEFT
         theme.title = False
 
     def animate_open(self) -> Animation | None:
@@ -365,8 +372,9 @@ class Menu(Generic[T], State):
         self.selected_index = selected_index
         # state: closed, opening, normal, disabled, closing
         self.state_controller = MenuController()
-        self._show_contents = False
-        self._needs_refresh = False
+        self._show_contents: bool = False
+        self._needs_refresh: bool = False
+        self._layout_passes: int = 0
         self._anchors: list[tuple[str, int | tuple[int, int]]] = []
         self.__dict__.update(kwargs)
 
@@ -607,20 +615,28 @@ class Menu(Generic[T], State):
 
     def refresh_layout(self) -> None:
         """Fit border to contents and hide/show cursor."""
+        self._layout_passes += 1
+        logger.debug(
+            f"[{self.name}] layout pass #{self._layout_passes} (needs_refresh={self._needs_refresh})"
+        )
+        self.arrange_items()
+        self.update_cursor_visibility()
+        self.update_border()
+
+    def arrange_items(self) -> None:
         self.menu_items.expand = not self.shrink_to_items
+        self.menu_items.arrange_menu_items()
 
-        # check if we have items, but they are all disabled
+    def update_cursor_visibility(self) -> None:
         disabled = all(not i.enabled for i in self.menu_items)
-
         if self.menu_items and not disabled:
             self.cursor_controller.show_cursor()
         else:
             self.cursor_controller.hide_cursor()
 
+    def update_border(self) -> None:
         if self.shrink_to_items:
             self.fit_border()
-
-        self.validate_layout("refresh layout")
 
     def draw(self, surface: Surface) -> None:
         """
@@ -631,6 +647,7 @@ class Menu(Generic[T], State):
         """
         if self._needs_refresh:
             self.refresh_layout()
+            self.validate_layout("refresh layout")
 
         if not self.transparent:
             self.window.draw(surface, self.rect)

@@ -639,10 +639,10 @@ class CombatAnimations(Menu[None], ABC):
 
         # Spawn Islands
         assets = self.env.get_battle_assets()
-        back_island = self.load_sprite(
+        back_island = self.load_surface(
             assets["island_back"], **layout.back_island_pos
         )
-        front_island = self.load_sprite(
+        front_island = self.load_surface(
             assets["island_front"], **layout.front_island_pos
         )
 

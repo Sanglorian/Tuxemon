@@ -17,7 +17,6 @@ def split_escaped(
 
     Returns:
         A list of the split string.
-
     """
     # Split by "," unless it is escaped by a "\"
     split_list = re.split(r"(?<!\\)" + delimeter, string_to_split)

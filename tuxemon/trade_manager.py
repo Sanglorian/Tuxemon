@@ -13,7 +13,6 @@ from uuid import UUID, uuid4
 from tuxemon.db import Acquisition
 from tuxemon.event import get_event_bus
 from tuxemon.monster import Monster
-from tuxemon.time_handler import today_ordinal
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
@@ -211,7 +210,6 @@ class TradeManager:
             return TradeResult.NOT_FOUND
 
         new_monster = Monster.spawn_base(added_slug, player_monster.level)
-        new_monster.set_capture(today_ordinal())
         new_monster.set_acquisition(Acquisition.TRADED)
 
         if not owner.party.replace_monster(player_monster, new_monster):

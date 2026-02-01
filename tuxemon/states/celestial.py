@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon.celestial_handler import get_phase_progress
 from tuxemon.locale import T
@@ -29,8 +29,8 @@ class CelestialState(PygameMenuState):
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_MISSIONS)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
         width = int(width * 0.8)
         height = int(height * 0.8)
@@ -39,7 +39,7 @@ class CelestialState(PygameMenuState):
         self.initialize_items(self.menu)
         self.reset_theme()
 
-    def initialize_items(self, menu: pygame_menu.Menu) -> None:
+    def initialize_items(self, menu: Menu) -> None:
         day_of_year = self.session.time.get_time_variables().day_of_year
 
         menu.add.label(

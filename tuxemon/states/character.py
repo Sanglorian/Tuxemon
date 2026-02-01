@@ -44,7 +44,6 @@ class CharacterState(PygameMenuState):
 
     Shows details of the character (e.g. monster captured, seen,
     battles, wallet, etc.).
-
     """
 
     name: ClassVar[str] = "CharacterState"

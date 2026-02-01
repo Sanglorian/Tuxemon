@@ -4,12 +4,35 @@ from datetime import datetime
 
 import pytest
 
-from tuxemon.time_handler import TimeHandler
+from tuxemon.time_handler import TimeHandler, random_month_day
 
 
 @pytest.fixture
 def time_handler():
     return TimeHandler(hemisphere="northern")
+
+
+def test_random_month_day_valid_month():
+    for _ in range(500):
+        month, _ = random_month_day()
+        assert 1 <= month <= 12
+
+
+def test_random_month_day_valid_day():
+    for _ in range(500):
+        month, day = random_month_day()
+
+        if month in (4, 6, 9, 11):
+            assert 1 <= day <= 30
+        elif month == 2:
+            assert 1 <= day <= 29
+        else:
+            assert 1 <= day <= 31
+
+
+def test_random_month_day_distribution_runs():
+    for _ in range(1000):
+        random_month_day()
 
 
 def test_get_current_time(time_handler):

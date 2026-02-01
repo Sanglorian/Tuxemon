@@ -54,7 +54,9 @@ class EvolveEffect(CoreEffect):
                 possible_evolutions
             )
         )
-        new_monster = Monster.create(selected_evolution_model.monster_slug)
+        new_monster = Monster.spawn_base(
+            selected_evolution_model.monster_slug, target.level
+        )
         target.evolution_handler.evolve_monster(new_monster)
 
         session.client.push_state(

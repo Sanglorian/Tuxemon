@@ -25,7 +25,6 @@ class HasPartyBreederCondition(EventCondition):
 
     Script parameters:
         character: Either "player" or npc slug name (e.g. "npc_maple").
-
     """
 
     name = "has_party_breeder"

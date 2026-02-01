@@ -1,4 +1,6 @@
-import unittest
+# SPDX-License-Identifier: GPL-3.0
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+import pytest
 
 from tuxemon.database.rules import config_monster
 from tuxemon.monster_dir.experience import MonsterExperience
@@ -7,10 +9,7 @@ from tuxemon.monster_dir.experience import MonsterExperience
 class MockConfig:
     def __init__(self):
         self.experience_groups = {
-            "default": {
-                "multiplier": 1.0,
-                "experience_coefficient": 3,
-            },
+            "default": {"multiplier": 1.0, "experience_coefficient": 3},
             "fast": {"multiplier": 0.8, "experience_coefficient": 2.5},
             "slow": {"multiplier": 1.25, "experience_coefficient": 3.5},
         }
@@ -19,174 +18,187 @@ class MockConfig:
 mock_config = MockConfig()
 
 
-class TestMonsterExperience(unittest.TestCase):
+@pytest.fixture
+def monster():
+    return MonsterExperience()
 
-    def test_initialization_defaults(self):
-        monster = MonsterExperience()
-        self.assertEqual(monster.level, 1)
-        self.assertEqual(monster.total_experience, 0)
-        self.assertEqual(monster.experience_modifier, 1.0)
-        self.assertFalse(monster.got_experience)
-        self.assertFalse(monster.levelling_up)
-        self.assertFalse(monster.is_maxed_out)
 
-    def test_set_level_within_bounds(self):
-        monster = MonsterExperience()
-        monster.set_level(10)
-        self.assertEqual(monster.level, 10)
-        self.assertGreater(monster.total_experience, 0)
+def test_initialization_defaults(monster):
+    assert monster.level == 1
+    assert monster.total_experience == 0
+    assert monster.experience_modifier == 1.0
+    assert not monster.got_experience
+    assert not monster.levelling_up
+    assert not monster.is_maxed_out
 
-    def test_set_level_above_max(self):
-        monster = MonsterExperience()
-        monster.set_level(config_monster.level_range[1] + 10)
-        self.assertEqual(monster.level, config_monster.level_range[1])
 
-    def test_experience_required_default_group(self):
-        monster = MonsterExperience(level=5)
-        required = monster.experience_required()
-        expected = 1.0 * (5**3)
-        self.assertEqual(required, int(expected))
+def test_set_level_within_bounds(monster):
+    monster.set_level(10)
+    assert monster.level == 10
+    assert monster.total_experience > 0
 
-    def test_experience_required_with_offset(self):
-        monster = MonsterExperience(level=5)
-        required = monster.experience_required(level_delta=2)
-        expected = 1.0 * (7**3)
-        self.assertEqual(required, int(expected))
 
-    def test_give_experience_and_level_up(self):
-        monster = MonsterExperience(level=1)
-        exp_to_next = monster.experience_required(level_delta=1)
-        levels_gained = monster.give_experience(exp_to_next)
-        self.assertEqual(levels_gained, 1)
-        self.assertEqual(monster.level, 2)
+def test_set_level_above_max(monster):
+    monster.set_level(config_monster.level_range[1] + 10)
+    assert monster.level == config_monster.level_range[1]
 
-    def test_give_experience_to_max_level(self):
-        monster = MonsterExperience(level=config_monster.level_range[1] - 1)
-        monster.give_experience(9999999)
-        self.assertEqual(monster.level, config_monster.level_range[1])
-        self.assertTrue(monster.is_maxed_out)
 
-    def test_excess_experience_at_max_level(self):
-        monster = MonsterExperience(level=config_monster.level_range[1])
-        monster._total_experience = monster.experience_required() + 500
-        excess = monster.excess_experience()
-        self.assertEqual(excess, 500)
+def test_experience_required_default_group():
+    m = MonsterExperience(level=5)
+    required = m.experience_required()
+    assert required == int(1.0 * (5**3))
 
-    def test_set_exp_group_valid(self):
-        monster = MonsterExperience()
-        monster.set_exp_group("fast")
-        self.assertEqual(monster._exp_group_slug, "fast")
 
-    def test_set_exp_group_invalid(self):
-        monster = MonsterExperience()
-        with self.assertRaises(ValueError):
-            monster.set_exp_group("unknown")
+def test_experience_required_with_offset():
+    m = MonsterExperience(level=5)
+    required = m.experience_required(level_delta=2)
+    assert required == int(1.0 * (7**3))
 
-    def test_give_zero_experience(self):
-        monster = MonsterExperience(level=1)
-        levels_gained = monster.give_experience(0)
-        self.assertEqual(levels_gained, 0)
-        self.assertEqual(monster.level, 1)
 
-    def test_negative_experience_gain(self):
-        monster = MonsterExperience(level=5, total_experience=1000)
-        levels_gained = monster.give_experience(-500)
-        self.assertEqual(levels_gained, 0)
-        self.assertGreaterEqual(monster.total_experience, 0)
+def test_give_experience_and_level_up():
+    m = MonsterExperience(level=1)
+    exp_to_next = m.experience_required(level_delta=1)
+    gained = m.give_experience(exp_to_next)
+    assert gained == 1
+    assert m.level == 2
 
-    def test_multiple_level_ups(self):
-        monster = MonsterExperience(level=1)
-        exp_to_level_5 = monster.experience_required(level_delta=4)
-        levels_gained = monster.give_experience(exp_to_level_5)
-        self.assertEqual(monster.level, 5)
-        self.assertEqual(levels_gained, 4)
 
-    def test_experience_required_at_max_level(self):
-        monster = MonsterExperience(level=config_monster.level_range[1])
-        required = monster.experience_required(level_delta=1)
-        self.assertGreater(required, 0)
-        self.assertTrue(monster.is_maxed_out)
+def test_give_experience_to_max_level():
+    m = MonsterExperience(level=config_monster.level_range[1] - 1)
+    m.give_experience(9999999)
+    assert m.level == config_monster.level_range[1]
+    assert m.is_maxed_out
 
-    def test_invalid_exp_group_fallback(self):
-        monster = MonsterExperience(level=5)
-        monster._exp_group_slug = "nonexistent"
-        required = monster.experience_required()
-        expected = mock_config.experience_groups["default"]["multiplier"] * (
-            5
-            ** mock_config.experience_groups["default"][
-                "experience_coefficient"
-            ]
-        )
-        self.assertEqual(required, int(expected))
 
-    def test_experience_modifier_applied(self):
-        monster = MonsterExperience(level=1)
-        monster._experience_modifier = 2.0
-        base_exp = monster.experience_required(level_delta=1)
-        monster.give_experience(base_exp // 2)
-        self.assertEqual(monster.level, 2)
+def test_excess_experience_at_max_level():
+    m = MonsterExperience(level=config_monster.level_range[1])
+    m._total_experience = m.experience_required() + 500
+    assert m.excess_experience() == 500
 
-    def test_is_maxed_out_property(self):
-        monster_low = MonsterExperience(
-            level=config_monster.level_range[1] - 1
-        )
-        self.assertFalse(monster_low.is_maxed_out)
-        monster_max = MonsterExperience(level=config_monster.level_range[1])
-        self.assertTrue(monster_max.is_maxed_out)
-        monster_set = MonsterExperience()
-        monster_set.set_level(config_monster.level_range[1])
-        self.assertTrue(monster_set.is_maxed_out)
 
-    def test_set_level_below_min(self):
-        monster = MonsterExperience(level=10)
-        monster.set_level(0)
-        self.assertEqual(monster.level, 1)
-        monster.set_level(-5)
-        self.assertEqual(monster.level, 1)
+def test_set_exp_group_valid(monster):
+    monster.set_exp_group("fast")
+    assert monster._exp_group_slug == "fast"
 
-    def test_set_level_resets_progress(self):
-        monster = MonsterExperience(level=1)
-        exp_for_lvl_4 = monster.experience_required(level_delta=3)
-        exp_for_lvl_5 = monster.experience_required(level_delta=4)
-        monster._total_experience = exp_for_lvl_5 - 1
-        monster.set_level(3)
-        expected_exp = monster.experience_required()  # Should be for level 3
-        expected_calc = 1.0 * (3**3)
-        self.assertEqual(monster.level, 3)
-        self.assertEqual(monster.total_experience, int(expected_calc))
-        self.assertEqual(monster.total_experience, expected_exp)
 
-    def test_experience_required_slow_group(self):
-        monster = MonsterExperience(level=5, exp_group_slug="slow")
-        monster.config_monster = mock_config
-        required = monster.experience_required()
-        expected = 1.25 * (5**3.5)
-        self.assertEqual(required, int(expected))
+def test_set_exp_group_invalid(monster):
+    with pytest.raises(ValueError):
+        monster.set_exp_group("unknown")
 
-    def test_experience_required_fast_group(self):
-        monster = MonsterExperience(level=10, exp_group_slug="fast")
-        monster.config_monster = mock_config
-        required = monster.experience_required(level_delta=-1)
-        expected = 0.8 * (9**2.5)
-        self.assertEqual(required, int(expected))
 
-    def test_level_up_flag_set(self):
-        monster = MonsterExperience(level=1)
-        self.assertFalse(monster.levelling_up)
-        exp_to_next = monster.experience_required(level_delta=1)
-        monster.give_experience(exp_to_next - monster.total_experience + 1)
-        self.assertTrue(monster.levelling_up)
+def test_give_zero_experience(monster):
+    gained = monster.give_experience(0)
+    assert gained == 0
+    assert monster.level == 1
 
-    def test_excess_experience_not_maxed_out(self):
-        monster = MonsterExperience(level=10)
-        req_for_10 = monster.experience_required()
-        monster._total_experience = req_for_10 + 500
-        if monster.level < config_monster.level_range[1]:
-            excess = monster.excess_experience()
-            self.assertEqual(excess, 0)
 
-    def test_trigger_experience_flags_sets_both(self):
-        monster = MonsterExperience()
-        monster.trigger_experience_flags()
-        self.assertTrue(monster.got_experience)
-        self.assertTrue(monster.levelling_up)
+def test_negative_experience_gain():
+    m = MonsterExperience(level=5, total_experience=1000)
+    gained = m.give_experience(-500)
+    assert gained == 0
+    assert m.total_experience >= 0
+
+
+def test_multiple_level_ups():
+    m = MonsterExperience(level=1)
+    exp_to_5 = m.experience_required(level_delta=4)
+    gained = m.give_experience(exp_to_5)
+    assert m.level == 5
+    assert gained == 4
+
+
+def test_experience_required_at_max_level():
+    m = MonsterExperience(level=config_monster.level_range[1])
+    required = m.experience_required(level_delta=1)
+    assert required > 0
+    assert m.is_maxed_out
+
+
+def test_invalid_exp_group_fallback():
+    m = MonsterExperience(level=5)
+    m._exp_group_slug = "nonexistent"
+    required = m.experience_required()
+
+    expected = mock_config.experience_groups["default"]["multiplier"] * (
+        5 ** mock_config.experience_groups["default"]["experience_coefficient"]
+    )
+    assert required == int(expected)
+
+
+def test_experience_modifier_applied():
+    m = MonsterExperience(level=1)
+    m._experience_modifier = 2.0
+    base = m.experience_required(level_delta=1)
+    m.give_experience(base // 2)
+    assert m.level == 2
+
+
+def test_is_maxed_out_property():
+    low = MonsterExperience(level=config_monster.level_range[1] - 1)
+    assert not low.is_maxed_out
+
+    maxed = MonsterExperience(level=config_monster.level_range[1])
+    assert maxed.is_maxed_out
+
+    m = MonsterExperience()
+    m.set_level(config_monster.level_range[1])
+    assert m.is_maxed_out
+
+
+def test_set_level_below_min():
+    m = MonsterExperience(level=10)
+    m.set_level(0)
+    assert m.level == 1
+    m.set_level(-5)
+    assert m.level == 1
+
+
+def test_set_level_resets_progress():
+    m = MonsterExperience(level=1)
+    exp4 = m.experience_required(level_delta=3)
+    exp5 = m.experience_required(level_delta=4)
+
+    m._total_experience = exp5 - 1
+    m.set_level(3)
+
+    expected = int(1.0 * (3**3))
+    assert m.level == 3
+    assert m.total_experience == expected
+    assert m.total_experience == m.experience_required()
+
+
+def test_experience_required_slow_group():
+    m = MonsterExperience(level=5, exp_group_slug="slow")
+    m.config_monster = mock_config
+    required = m.experience_required()
+    assert required == int(1.25 * (5**3.5))
+
+
+def test_experience_required_fast_group():
+    m = MonsterExperience(level=10, exp_group_slug="fast")
+    m.config_monster = mock_config
+    required = m.experience_required(level_delta=-1)
+    assert required == int(0.8 * (9**2.5))
+
+
+def test_level_up_flag_set():
+    m = MonsterExperience(level=1)
+    assert not m.levelling_up
+    exp_to_next = m.experience_required(level_delta=1)
+    m.give_experience(exp_to_next - m.total_experience + 1)
+    assert m.levelling_up
+
+
+def test_excess_experience_not_maxed_out():
+    m = MonsterExperience(level=10)
+    req = m.experience_required()
+    m._total_experience = req + 500
+
+    if m.level < config_monster.level_range[1]:
+        assert m.excess_experience() == 0
+
+
+def test_trigger_experience_flags_sets_both(monster):
+    monster.trigger_experience_flags()
+    assert monster.got_experience
+    assert monster.levelling_up

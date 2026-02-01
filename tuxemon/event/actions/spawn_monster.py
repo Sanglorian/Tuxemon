@@ -103,8 +103,8 @@ class SpawnMonsterAction(EventAction):
 
         # Create a new child monster
         child = Monster.spawn_base(seed_slug, level)
-        child.set_capture(session.time.get_ordinal())
         child.name = name
+        child.birthdate = session.time.get_month_day()
         child.set_acquisition(Acquisition.BRED)
 
         # Give the child a random move from the father

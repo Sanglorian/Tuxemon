@@ -253,7 +253,6 @@ def test_execute_scripted_trade_success(
     class FakeNewMonster(MockMonster):
         def __init__(self):
             super().__init__("NewMon", "new_slug", player_a)
-            self.set_capture = MagicMock()
 
     fake_mon = FakeNewMonster()
     monkeypatch.setattr(
@@ -265,7 +264,6 @@ def test_execute_scripted_trade_success(
     assert result == TradeResult.SUCCESS
     player_a.party.replace_monster.assert_called_once_with(monster_a, fake_mon)
     assert fake_mon.acquisition is not None
-    fake_mon.set_capture.assert_called_once()
     player_a.tuxepedia.register_caught.assert_called_once_with("new_slug")
     assert len(manager.global_trade_log) == 1
     record = manager.global_trade_log[0]
@@ -291,7 +289,6 @@ def test_execute_scripted_trade_replace_failure(
     class FakeNewMonster(MockMonster):
         def __init__(self):
             super().__init__("NewMon", "new_slug", player_a)
-            self.set_capture = MagicMock()
 
     fake_mon = FakeNewMonster()
     monkeypatch.setattr(

@@ -32,12 +32,13 @@ def mock_player(self):
 @pytest.fixture(scope="module")
 def base_models():
     init_assets()
+
     dragon_attr = MagicMock(
         armour=7, dodge=5, hp=6, melee=6, ranged=6, speed=6
     )
     blob_attr = MagicMock(armour=8, dodge=4, hp=8, melee=4, ranged=8, speed=4)
 
-    models = {
+    return {
         "monster": {
             "agnite": MonsterModel(
                 slug="agnite",
@@ -152,12 +153,9 @@ def base_models():
         },
     }
 
-    return models
-
 
 @pytest.fixture
 def game_env(monkeypatch, base_models):
-    """Creates a fresh game environment for each test."""
     monkeypatch.setattr(Player, "__init__", mock_player)
     local_session.set_client(MagicMock())
 
@@ -173,38 +171,57 @@ def game_env(monkeypatch, base_models):
     for key, value in base_models.items():
         db.database[key] = value
 
+    from tuxemon.taste import Taste
+
+    Taste._tastes = {
+        "sweet": MagicMock(slug="sweet", rarity_score=1),
+        "bitter": MagicMock(slug="bitter", rarity_score=1),
+    }
     return engine, player
 
 
 def test_add_monster(game_env):
     engine, player = game_env
     engine.execute_action("add_monster", ["agnite", 5])
+
     assert len(player.monsters) == 1
     assert player.monsters[0].slug == "agnite"
 
 
-def test_random_monster(game_env):
+@pytest.mark.parametrize(
+    "args,expected_slugs",
+    [
+        ([5], {"nut", "agnite"}),
+        ([5, None, 69], {"nut", "agnite"}),  # experience modifier case
+        ([5, None, None, 69], {"nut", "agnite"}),  # money modifier case
+    ],
+)
+def test_random_monster_variants(game_env, args, expected_slugs):
     engine, player = game_env
-    engine.execute_action("random_monster", [5])
+    engine.execute_action("random_monster", args)
+
     assert len(player.monsters) == 1
-    assert player.monsters[0].slug in {"nut", "agnite"}
+    assert player.monsters[0].slug in expected_slugs
 
 
 def test_random_monster_experience(game_env):
     engine, player = game_env
     engine.execute_action("random_monster", [5, None, 69])
+
     assert player.monsters[0].experience_modifier == 69
 
 
 def test_random_monster_money(game_env):
     engine, player = game_env
     engine.execute_action("random_monster", [5, None, None, 69])
+
     assert player.monsters[0].money_modifier == 69
 
 
 def test_random_monster_shape(game_env):
     engine, player = game_env
     engine.execute_action("random_monster", [5, None, None, None, "blob"])
+
     assert player.monsters[0].slug == "nut"
 
 
@@ -213,37 +230,34 @@ def test_random_monster_evolution(game_env):
     engine.execute_action(
         "random_monster", [5, None, None, None, None, "basic"]
     )
+
     assert player.monsters[0].stage == EvolutionStage.BASIC
 
 
-def test_give_experience_no_change(game_env):
+@pytest.mark.parametrize(
+    "amount,expected_delta",
+    [
+        (None, 0),  # no change
+        (-50, 0),  # negative ignored
+        (50, 50),  # positive applied
+    ],
+)
+def test_give_experience(game_env, amount, expected_delta):
     engine, player = game_env
     engine.execute_action("random_monster", [5])
     before = player.monsters[0].total_experience
-    engine.execute_action("give_experience", [None, None])
-    assert player.monsters[0].total_experience == before
 
+    engine.execute_action("give_experience", [None, amount])
 
-def test_give_experience_negative(game_env):
-    engine, player = game_env
-    engine.execute_action("random_monster", [5])
-    before = player.monsters[0].total_experience
-    engine.execute_action("give_experience", [None, -50])
-    assert player.monsters[0].total_experience == before
-
-
-def test_give_experience_positive(game_env):
-    engine, player = game_env
-    engine.execute_action("random_monster", [5])
-    before = player.monsters[0].total_experience
-    engine.execute_action("give_experience", [None, 50])
-    assert player.monsters[0].total_experience == before + 50
+    assert player.monsters[0].total_experience == before + expected_delta
 
 
 def test_give_experience_variable(game_env):
     engine, player = game_env
     engine.execute_action("random_monster", [5])
     engine.execute_action("set_variable", ["exp:50"])
+
     before = player.monsters[0].total_experience
     engine.execute_action("give_experience", [None, "exp"])
+
     assert player.monsters[0].total_experience == before + 50

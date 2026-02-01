@@ -1,88 +1,73 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock
+
+import pytest
 
 from tuxemon.boxes import MonsterBoxes
 from tuxemon.game_variables import GameVariablesManager
-from tuxemon.monster import Monster
 from tuxemon.npc import NPC, PartyHandler
 from tuxemon.platform.const.sizes import KENNEL, PARTY_LIMIT
 
 
-def mockNPC(self) -> None:
-    self.is_player = True
-    self._variables = GameVariablesManager()
-    self.monster_boxes = MonsterBoxes()
-    self.monster_boxes.create_box(KENNEL)
-    self.party = PartyHandler(self.monster_boxes, self)
-    self.party._monsters = []
+def fake_mon():
+    return MagicMock()
 
 
-class TestCatchTuxemon(unittest.TestCase):
-    # Can't release Tuxemon if it is the only one in the party.
-    def setUp(self):
-        with patch.object(NPC, "__init__", mockNPC):
-            self.npc = NPC()
+@pytest.fixture
+def npc():
+    npc = NPC.__new__(NPC)
+    npc.is_player = True
+    npc._variables = GameVariablesManager()
+    npc.monster_boxes = MonsterBoxes()
+    npc.monster_boxes.create_box(KENNEL)
+    npc.party = PartyHandler(npc.monster_boxes, npc)
+    npc.party._monsters = []
+    return npc
 
-    def test_release_one(self):
-        self.assertEqual(len(self.npc.monsters), 0)
-        self.assertEqual(
-            self.npc.monster_boxes.get_box_size(KENNEL, "monster"), 0
-        )
 
-        monster = Monster()
-        self.npc.party.add_monster(monster, len(self.npc.monsters))
-        self.assertEqual(len(self.npc.monsters), 1)
-        self.npc.party.release_monster(monster)
-        self.assertEqual(len(self.npc.monsters), 1)
+def test_release_one(npc):
+    assert len(npc.monsters) == 0
+    assert npc.monster_boxes.get_box_size(KENNEL, "monster") == 0
 
-    # Tuxemon can be released if there is another in the party
-    def test_release_two(self):
-        monsterA = Monster()
-        self.npc.party.add_monster(monsterA, len(self.npc.monsters))
-        self.assertEqual(len(self.npc.monsters), 1)
+    mon = fake_mon()
+    npc.party.add_monster(mon, 0)
+    assert len(npc.monsters) == 1
 
-        monsterB = Monster()
-        self.npc.party.add_monster(monsterB, len(self.npc.monsters))
-        self.assertEqual(len(self.npc.monsters), 2)
+    npc.party.release_monster(mon)
+    assert len(npc.monsters) == 1
 
-        self.npc.party.release_monster(monsterA)
-        self.assertEqual(len(self.npc.monsters), 1)
 
-        self.assertEqual(self.npc.monsters[0], monsterB)
-        self.assertNotEqual(self.npc.monsters[0], monsterA)
+def test_release_two(npc):
+    monA = fake_mon()
+    monB = fake_mon()
 
-    # Can't have more than 6 Tuxemon in party. The excess goes into the Kennel.
-    def test_catch_multiple(self):
-        self.assertEqual(len(self.npc.monsters), 0)
+    npc.party.add_monster(monA, 0)
+    npc.party.add_monster(monB, 1)
+    assert len(npc.monsters) == 2
 
-        monsterA = Monster()
-        self.npc.party.add_monster(monsterA, len(self.npc.monsters))
+    npc.party.release_monster(monA)
+    assert len(npc.monsters) == 1
+    assert npc.monsters[0] is monB
 
-        monsterB = Monster()
-        self.npc.party.add_monster(monsterB, len(self.npc.monsters))
 
-        monsterC = Monster()
-        self.npc.party.add_monster(monsterC, len(self.npc.monsters))
+@pytest.mark.parametrize("count", [1, 2, 3, 4, 5])
+def test_catch_until_limit(npc, count):
+    for _ in range(count):
+        npc.party.add_monster(fake_mon(), len(npc.monsters))
 
-        monsterD = Monster()
-        self.npc.party.add_monster(monsterD, len(self.npc.monsters))
+    assert len(npc.monsters) == count
+    assert npc.monster_boxes.get_box_size(KENNEL, "monster") == 0
 
-        monsterE = Monster()
-        self.npc.party.add_monster(monsterE, len(self.npc.monsters))
-        self.assertEqual(len(self.npc.monsters), 5)
 
-        monsterF = Monster()
-        self.npc.party.add_monster(monsterF, len(self.npc.monsters))
-        self.assertEqual(len(self.npc.monsters), PARTY_LIMIT)
-        self.assertEqual(
-            self.npc.monster_boxes.get_box_size(KENNEL, "monster"), 0
-        )
+def test_catch_multiple_overflow(npc):
+    for _ in range(PARTY_LIMIT):
+        npc.party.add_monster(fake_mon(), len(npc.monsters))
 
-        monsterG = Monster()
-        self.npc.party.add_monster(monsterG, len(self.npc.monsters))
-        self.assertEqual(len(self.npc.monsters), PARTY_LIMIT)
-        self.assertEqual(
-            self.npc.monster_boxes.get_box_size(KENNEL, "monster"), 1
-        )
+    assert len(npc.monsters) == PARTY_LIMIT
+    assert npc.monster_boxes.get_box_size(KENNEL, "monster") == 0
+
+    npc.party.add_monster(fake_mon(), len(npc.monsters))
+
+    assert len(npc.monsters) == PARTY_LIMIT
+    assert npc.monster_boxes.get_box_size(KENNEL, "monster") == 1

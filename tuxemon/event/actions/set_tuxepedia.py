@@ -30,7 +30,6 @@ class SetTuxepediaAction(EventAction):
         character: Either "player" or npc slug name (e.g. "npc_maple").
         monster_slug: Monster slug name (e.g. "rockitten").
         label: seen / caught
-
     """
 
     name = "set_tuxepedia"

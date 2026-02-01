@@ -5,10 +5,10 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from functools import partial
-from random import randint
 from typing import TYPE_CHECKING, final
 
 from tuxemon.event.eventaction import EventAction
+from tuxemon.time_handler import random_month_day
 
 if TYPE_CHECKING:
     from tuxemon.npc import NPC
@@ -50,7 +50,7 @@ class SetPlayerBirthdayAction(EventAction):
             return
 
         if self.random is not None:
-            birthdate = self._generate_random_date()
+            birthdate = random_month_day()
             self.set_birthday(character, birthdate)
             self.stop()
             return
@@ -60,19 +60,6 @@ class SetPlayerBirthdayAction(EventAction):
             callback=partial(self.set_birthday, character),
             escape_key_exits=False,
         )
-
-    def _generate_random_date(self) -> tuple[int, int]:
-        month = randint(1, 12)
-
-        if month in (4, 6, 9, 11):
-            max_days = 30
-        elif month == 2:
-            max_days = 29
-        else:
-            max_days = 31
-
-        day = randint(1, max_days)
-        return month, day
 
     def update(self, session: Session, dt: float) -> None:
         try:

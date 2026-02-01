@@ -45,7 +45,6 @@ MONSTER_SIZE: tuple[int, int] = (64, 64)
 MONSTER_SIZE_MENU: tuple[int, int] = (24, 24)
 BORDERS_SIZE: tuple[int, int] = (18, 18)
 ELEMENT_SIZE: tuple[int, int] = (24, 24)
-ISLAND_SIZE: tuple[int, int] = (96, 57)
 BATTLE_BG_SIZE: tuple[int, int] = (256, 108)
 
 # Native resolution is similar to the old gameboy resolution.

@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import date, datetime
+from random import randint
 from typing import Final
 
 from tuxemon.locale import T
@@ -33,11 +34,30 @@ class TimeSnapshot:
     season: str
 
 
-def today_ordinal() -> int:
+def today_month_day() -> tuple[int, int]:
     """
-    It gives today's proleptic Gregorian ordinal.
+    Returns today's (month, day) as integers.
     """
-    return date.today().toordinal()
+    t = date.today()
+    return t.month, t.day
+
+
+def random_month_day() -> tuple[int, int]:
+    """
+    Returns a random (month, day) pair.
+    February allows up to 29 days for simplicity.
+    """
+    month = randint(1, 12)
+
+    if month in (4, 6, 9, 11):
+        max_days = 30
+    elif month == 2:
+        max_days = 29
+    else:
+        max_days = 31
+
+    day = randint(1, max_days)
+    return month, day
 
 
 class TimeHandler:

@@ -46,14 +46,14 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
     def __init__(
         self,
         session: Session,
-        cmb: CombatState,
+        combat: CombatState,
         character: NPC,
         monster: Monster,
     ) -> None:
         super().__init__()
         self.rect = self.calculate_menu_rectangle()
         self.session = session
-        self.combat = cmb
+        self.combat = combat
         self.character = character
         self.player = session.client.combat_session.left_player  # human
         self.enemy = session.client.combat_session.right_player  # ai
@@ -73,7 +73,7 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
         self.itm_description: str | None = None
         params = {"player": self.character.name}
         message = T.format("combat_player_choice", params)
-        self.dialog.alert(message, self.combat.text_area)
+        self.event_bus.publish("combat_dialog", message=message)
 
     def calculate_menu_rectangle(self) -> Rect:
         rect_screen = SCREEN_RECT.copy()
@@ -84,8 +84,10 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
         return rect
 
     def initialize_items(self) -> Generator[MenuItem[MenuGameObj], None, None]:
-        self.combat.hud_manager.delete_hud(self.monster)
-        self.combat.update_hud(self.player, False, True)
+        hud = self.combat.hud_manager.get_hud(self.monster)
+        if hud is None:
+            return
+        self.combat._update_hud_details(self.monster, hud, hud.player)
 
         menu_items_map = (
             (ParkMenuKeys.BALL, "menu_ball", self.throw_tuxeball),

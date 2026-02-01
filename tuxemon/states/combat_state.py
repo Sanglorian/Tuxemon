@@ -40,6 +40,8 @@ from collections.abc import Sequence
 from functools import partial
 from typing import TYPE_CHECKING, ClassVar
 
+from pygame.rect import Rect
+
 from tuxemon.ai.manager import AIManager
 from tuxemon.animation import Task, TaskBase
 from tuxemon.animation_entity import AnimationManager
@@ -53,6 +55,7 @@ from tuxemon.db import (
     ItemCategory,
     OutputBattle,
 )
+from tuxemon.graphics import load_and_scale
 from tuxemon.item.item import Item
 from tuxemon.locale import T
 from tuxemon.menu.interface import MenuItem
@@ -60,6 +63,7 @@ from tuxemon.monster import Monster
 from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.sizes import PARTY_LIMIT
+from tuxemon.prepare import SCREEN_RECT
 from tuxemon.state.state import State
 from tuxemon.states.combat_animations import CombatAnimations
 from tuxemon.states.monster_menu import MonsterMenuState
@@ -67,8 +71,11 @@ from tuxemon.status.status import Status
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import assert_never
 from tuxemon.ui.combat_notifier import CombatNotifier, TextAnimationManager
+from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.method_animation import MethodAnimationCache
+from tuxemon.ui.text import TextArea
 from tuxemon.ui.text_alignment import HorizontalAlignment
+from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
     from tuxemon.platform.events import PlayerInput
@@ -91,6 +98,7 @@ EVENTS: list[str] = [
     "capture_finished",
     "play_sound_combat",
     "play_animation_combat",
+    "combat_dialog",
 ]
 
 
@@ -143,7 +151,7 @@ class CombatState(CombatAnimations):
         self.combat_session.set_battle_format(context.is_double_battle)
         self.combat_session.set_players(context.teams)
         self._lock_update = self.client.config.combat_click_to_continue
-        self.show_combat_dialog()
+        self.create_combat_dialog()
         self.transition_phase(CombatPhase.BEGIN)
         self.task(
             partial(setattr, self, "phase", CombatPhase.READY), interval=3
@@ -325,6 +333,19 @@ class CombatState(CombatAnimations):
             self.task(self.animate_party_status, interval=3)
             self.notifier.trigger_xp_and_wait_for_input(self.text_area)
 
+    def create_combat_dialog(self) -> None:
+        """Create the area where battle messages are displayed."""
+        rect_screen = SCREEN_RECT.copy()
+        rect = Rect(0, 0, rect_screen.w, rect_screen.h // 4)
+        rect.bottomright = rect_screen.w, rect_screen.h
+        border = load_and_scale(self.borders_filename)
+        dialog_box = GraphicBox(border=border, color=self.background_color)
+        dialog_box.rect = rect
+
+        self.text_area = TextArea(self.font, self.font_color)
+        self.text_area.rect = dialog_box.calc_inner_rect(dialog_box.rect)
+        self.show_combat_dialog(dialog_box, self.text_area)
+
     def ask_player_for_monster(self, player: NPC) -> None:
         """
         Open dialog to allow player to choose a Tuxemon to enter into play.
@@ -402,7 +423,7 @@ class CombatState(CombatAnimations):
         self.client.push_state(
             self.env.get_battle_graphics().menu,
             session=self.session,
-            cmb=self,
+            combat=self,
             character=owner,
             monster=monster,
         )
@@ -1006,6 +1027,13 @@ class CombatState(CombatAnimations):
 
     def _on_update_party_hud(self) -> None:
         self.animate_update_party_hud()
+
+    def _on_combat_dialog(
+        self, message: str, dialog_speed: str = CONFIG.dialog_speed
+    ) -> None:
+        self.dialog.alert(
+            message, text_area=self.text_area, dialog_speed=dialog_speed
+        )
 
     def _on_monster_disappeared(self, user: Monster) -> None:
         user_sprite = self.sprite_map.get_sprite(user)

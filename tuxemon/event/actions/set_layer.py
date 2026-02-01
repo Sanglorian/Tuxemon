@@ -28,7 +28,6 @@ class SetLayerAction(EventAction):
     Note: this is not a separate state, so it's advisable
         to add a 4th value to the rgb, if not you're not
         going to see the character, ideally 128.
-
     """
 
     name = "set_layer"

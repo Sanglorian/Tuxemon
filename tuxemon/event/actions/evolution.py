@@ -87,7 +87,7 @@ class EvolutionAction(EventAction):
             )
             return
 
-        evolved = Monster.create(evolution)
+        evolved = Monster.spawn_base(evolution, monster.level)
         monster.evolution_handler.evolve_monster(evolved)
         self.client.push_state(
             "EvolutionTransition", original=monster.slug, evolved=evolved.slug
@@ -137,7 +137,7 @@ class EvolutionAction(EventAction):
             return
 
         slug = pending_evolutions[0]
-        evolved = Monster.create(slug)
+        evolved = Monster.spawn_base(slug, monster_to_evolve.level)
         logger.debug(f"Created evolved monster: {evolved.name} (slug: {slug})")
 
         self._pending_map[monster_to_evolve.instance_id] = slug

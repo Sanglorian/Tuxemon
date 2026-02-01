@@ -25,7 +25,6 @@ class SetCharAttributeAction(EventAction):
         character: Either "player" or character slug name (e.g. "npc_maple").
         attribute: Name of the attribute.
         value: Value of the attribute.
-
     """
 
     name = "set_char_attribute"

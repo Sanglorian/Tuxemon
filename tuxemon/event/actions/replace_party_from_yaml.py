@@ -104,7 +104,6 @@ class ReplacePartyFromYamlAction(EventAction):
                 continue
 
             monster = Monster.spawn_base(slug, level)
-            monster.set_capture(session.time.get_ordinal())
             character.tuxepedia.register_caught(monster.slug)
 
             if "experience_modifier" in entry:

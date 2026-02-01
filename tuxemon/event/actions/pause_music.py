@@ -22,7 +22,6 @@ class PauseMusicAction(EventAction):
         .. code-block::
 
             pause_music
-
     """
 
     name = "pause_music"

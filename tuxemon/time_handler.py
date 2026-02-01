@@ -5,8 +5,11 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import date, datetime
+from random import randint
 from typing import Final
 
+from tuxemon.locale import T
+from tuxemon.platform.const.sizes import MONTH_KEYS
 from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
@@ -31,11 +34,30 @@ class TimeSnapshot:
     season: str
 
 
-def today_ordinal() -> int:
+def today_month_day() -> tuple[int, int]:
     """
-    It gives today's proleptic Gregorian ordinal.
+    Returns today's (month, day) as integers.
     """
-    return date.today().toordinal()
+    t = date.today()
+    return t.month, t.day
+
+
+def random_month_day() -> tuple[int, int]:
+    """
+    Returns a random (month, day) pair.
+    February allows up to 29 days for simplicity.
+    """
+    month = randint(1, 12)
+
+    if month in (4, 6, 9, 11):
+        max_days = 30
+    elif month == 2:
+        max_days = 29
+    else:
+        max_days = 31
+
+    day = randint(1, max_days)
+    return month, day
 
 
 class TimeHandler:
@@ -47,6 +69,16 @@ class TimeHandler:
 
     def __init__(self, hemisphere: str = CONFIG.hemisphere) -> None:
         self.hemisphere: str = hemisphere.lower()
+
+    @property
+    def today_string(self) -> str:
+        month, day = self.get_month_day()
+
+        if 1 <= month <= 12:
+            month_name = T.translate(MONTH_KEYS[month - 1])
+            return f"{month_name} {day}"
+
+        return ""
 
     def get_current_time(self) -> datetime:
         """Returns the real current datetime."""

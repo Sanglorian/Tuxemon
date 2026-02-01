@@ -57,7 +57,6 @@ class AddMonsterAction(EventAction):
             monster_slug = self.monster_slug
 
         monster = Monster.spawn_base(monster_slug, self.monster_level)
-        monster.set_capture(session.time.get_ordinal())
 
         if self.exp is not None:
             monster.set_experience_modifier(self.exp)

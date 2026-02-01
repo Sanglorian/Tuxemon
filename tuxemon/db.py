@@ -1120,19 +1120,15 @@ class FlairModel(BaseModel, BaseLookupModel):
 
 
 class MonsterSpritesModel(BaseModel):
-    sheet: str = Field(..., description="Path to the combined sprite sheet")
-    front_rect: tuple[int, int, int, int] = Field(
-        (0, 0, 64, 64), description="Front sprite region"
-    )
-    back_rect: tuple[int, int, int, int] = Field(
-        (64, 0, 64, 64), description="Back sprite region"
-    )
-    menu1_rect: tuple[int, int, int, int] = Field(
-        (0, 64, 24, 24), description="Menu icon 1 region"
-    )
-    menu2_rect: tuple[int, int, int, int] = Field(
-        (24, 64, 24, 24), description="Menu icon 2 region"
-    )
+    sheet: str  # Path to the combined sprite sheet
+    # Front sprite region
+    front_rect: tuple[int, int, int, int] = (0, 0, 64, 64)
+    # Back sprite region
+    back_rect: tuple[int, int, int, int] = (64, 0, 64, 64)
+    # Menu icon 1 region
+    menu1_rect: tuple[int, int, int, int] = (0, 64, 24, 24)
+    # Menu icon 2 region
+    menu2_rect: tuple[int, int, int, int] = (24, 64, 24, 24)
 
     @field_validator("sheet")
     def sheet_exists(cls, v: str) -> str:
@@ -1235,7 +1231,7 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
         info: ValidationInfo,
     ) -> MonsterSpritesModel:
         slug = info.data.get("slug")
-        default = MonsterSpritesModel(sheet=f"gfx/sprites/battle/{slug}-sheet")  # type: ignore[call-arg]
+        default = MonsterSpritesModel(sheet=f"gfx/sprites/battle/{slug}-sheet")
         return v or default
 
     @field_validator("species")

@@ -431,7 +431,9 @@
     <property name="act050" value="translated_dialog ourstuffisours"/>
     <property name="act060" value="char_face allie,right"/>
     <property name="act070" value="translated_dialog oopsie2"/>
+    <property name="act075" value="set_facing_mode npc_mom,locked"/>
     <property name="act080" value="pathfind npc_mom,38,47"/>
+    <property name="act085" value="set_facing_mode npc_mom,follow_movement"/>
     <property name="act090" value="char_face npc_mom,up"/>
     <property name="act100" value="create_npc knight3,43,46"/>
     <property name="act110" value="char_face knight3,left"/>
@@ -860,14 +862,14 @@
   <object id="179" name="Environment Day" type="event" x="0" y="16" width="16" height="16">
    <properties>
     <property name="act1" value="set_environment grass"/>
-    <property name="cond1" value="not variable_set stage_of_day:night"/>
+    <property name="cond1" value="not time_is stage_of_day,equals,night"/>
     <property name="cond2" value="not environment_is grass"/>
    </properties>
   </object>
   <object id="180" name="Environment Night" type="event" x="16" y="16" width="16" height="16">
    <properties>
     <property name="act1" value="set_environment night_grass"/>
-    <property name="cond1" value="is variable_set stage_of_day:night"/>
+    <property name="cond1" value="is time_is stage_of_day,equals,night"/>
     <property name="cond2" value="not environment_is night_grass"/>
    </properties>
   </object>

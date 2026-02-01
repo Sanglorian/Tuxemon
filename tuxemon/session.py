@@ -6,11 +6,13 @@ import logging
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import TYPE_CHECKING, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 from uuid import UUID, uuid4
 
 from tuxemon import save
+from tuxemon.celestial_handler import CelestialHandler
 from tuxemon.save_state import TIME_FORMAT, NPCState, SessionSave, WorldSave
+from tuxemon.time_handler import TimeHandler
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -33,13 +35,15 @@ class AbstractSession(ABC, Generic[ClientType]):
 
     def __init__(self) -> None:
         self._uuid: UUID = uuid4()
+        self.time = TimeHandler()
+        self.celestial = CelestialHandler.from_session(self)
         self._start_time: datetime = datetime.now()
         self._start_timestamp: float = time.time()
         self._total_playtime: float = 0.0
 
-        self._client: Optional[ClientType] = None
-        self._world: Optional[WorldState] = None
-        self._player: Optional[Player] = None
+        self._client: ClientType | None = None
+        self._world: WorldState | None = None
+        self._player: Player | None = None
         self._session_state: SessionSave = SessionSave()
 
     @property
@@ -70,6 +74,7 @@ class AbstractSession(ABC, Generic[ClientType]):
     def set_player(self, player: Player) -> None:
         """Sets the player. Can be overridden, but is provided for local convenience."""
         self._player = player
+        player.is_player = True
         logger.debug("Player initialized successfully.")
 
     def has_player(self) -> bool:

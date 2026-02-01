@@ -131,18 +131,10 @@ class MonsterActionHandler:
             kwargs={"monster": mon, "source": self.source_state},
         )
 
-    def item(self, mon: Monster) -> None:
-        self._clear_states("ChoiceState")
-        self.client.state_manager.push_state(
-            "MonsterItemState",
-            kwargs={"monster": mon, "source": self.source_state},
-        )
-
     def description_dialog(self, mon: Monster) -> None:
         actions = {
             "info": partial(self.info, mon),
             "tech": partial(self.tech, mon),
-            "item": partial(self.item, mon),
         }
 
         options = create_choice_options(actions)
@@ -297,7 +289,8 @@ class MonsterTakeState(PygameMenuState):
         for monster in _sorted:
             label = T.translate(monster.name).upper()
             iid = monster.instance_id.hex
-            new_image = self._create_image(monster.sprite_handler.front_path)
+            surface = monster.get_sprite("front").image
+            new_image = self._create_image_from_surface(surface)
             new_image.scale(SCALE * 0.5, SCALE * 0.5)
             menu.add.banner(
                 new_image,

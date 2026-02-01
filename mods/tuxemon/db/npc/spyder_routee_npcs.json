@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight_red",
-      "combat_front": "enforcer_agent",
+      "combat_sheet": "enforcer_agent",
       "slug": "enforcer_agent"
     }
   },
@@ -35,7 +35,7 @@
     "audio": {},
     "template": {
       "sprite_name": "knight_green",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "enforcer_rookie"
     }
   }

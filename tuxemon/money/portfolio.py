@@ -2,6 +2,7 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import random
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
@@ -131,6 +132,16 @@ class PortfolioManager:
 class MarketDataManager:
     def __init__(self) -> None:
         self.prices: dict[str, float] = {}
+        self.volatility: float = 0.02  # 2% standard deviation per tick
+
+    def tick(self, delta_time: float) -> None:
+        """Updates all prices based on elapsed time."""
+        for symbol, price in list(self.prices.items()):
+            change = random.gauss(0, self.volatility) * delta_time
+            new_price = price * (1 + change)
+
+            if new_price > 0:
+                self.prices[symbol] = new_price
 
     def get_price(self, symbol: str) -> float:
         """Returns the current market price of the given symbol, or 0.0 if unavailable."""

@@ -15,7 +15,7 @@
     "audio": {},
     "template": {
       "sprite_name": "rogue_copper",
-      "combat_front": "rogue",
+      "combat_sheet": "rogue",
       "slug": "rogue"
     }
   },
@@ -35,7 +35,7 @@
     "audio": {},
     "template": {
       "sprite_name": "scientist_fiery",
-      "combat_front": "scientist",
+      "combat_sheet": "scientist",
       "slug": "scientist"
     }
   },
@@ -55,7 +55,7 @@
     "audio": {},
     "template": {
       "sprite_name": "rogue_red",
-      "combat_front": "rogue",
+      "combat_sheet": "rogue",
       "slug": "rogue"
     }
   },
@@ -75,7 +75,7 @@
     "audio": {},
     "template": {
       "sprite_name": "magician_fiery",
-      "combat_front": "mage",
+      "combat_sheet": "mage",
       "slug": "mage"
     }
   },
@@ -86,7 +86,7 @@
     "audio": {},
     "template": {
       "sprite_name": "barmaid_red",
-      "combat_front": "barmaid",
+      "combat_sheet": "barmaid",
       "slug": "barmaid"
     }
   },
@@ -97,7 +97,7 @@
     "audio": {},
     "template": {
       "sprite_name": "barmaid_blonde",
-      "combat_front": "barmaid",
+      "combat_sheet": "barmaid",
       "slug": "barmaid"
     }
   },
@@ -108,7 +108,7 @@
     "audio": {},
     "template": {
       "sprite_name": "magician",
-      "combat_front": "magician",
+      "combat_sheet": "magician",
       "slug": "magician"
     }
   },
@@ -119,7 +119,7 @@
     "audio": {},
     "template": {
       "sprite_name": "rogue_green",
-      "combat_front": "rogue",
+      "combat_sheet": "rogue",
       "slug": "rogue"
     }
   },
@@ -130,7 +130,7 @@
     "audio": {},
     "template": {
       "sprite_name": "magician_black",
-      "combat_front": "magician",
+      "combat_sheet": "magician",
       "slug": "magician"
     }
   },
@@ -150,7 +150,7 @@
     "audio": {},
     "template": {
       "sprite_name": "riverboatcaptain",
-      "combat_front": "pirate",
+      "combat_sheet": "pirate",
       "slug": "pirate"
     }
   },
@@ -170,7 +170,7 @@
     "audio": {},
     "template": {
       "sprite_name": "barmaid_red",
-      "combat_front": "barmaid",
+      "combat_sheet": "barmaid",
       "slug": "barmaid"
     }
   },
@@ -190,7 +190,7 @@
     "audio": {},
     "template": {
       "sprite_name": "magician_brown",
-      "combat_front": "magician",
+      "combat_sheet": "magician",
       "slug": "magician"
     }
   },
@@ -201,7 +201,7 @@
     "audio": {},
     "template": {
       "sprite_name": "warrior",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "warrior"
     }
   },
@@ -212,7 +212,7 @@
     "audio": {},
     "template": {
       "sprite_name": "barmaid",
-      "combat_front": "barmaid",
+      "combat_sheet": "barmaid",
       "slug": "barmaid"
     }
   },
@@ -223,7 +223,7 @@
     "audio": {},
     "template": {
       "sprite_name": "riverboatcaptain",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "riverboatcaptain"
     }
   },
@@ -234,7 +234,7 @@
     "audio": {},
     "template": {
       "sprite_name": "picnicker",
-      "combat_front": "picnicker",
+      "combat_sheet": "picnicker",
       "slug": "picnicker"
     }
   },
@@ -245,7 +245,7 @@
     "audio": {},
     "template": {
       "sprite_name": "magician_fiery",
-      "combat_front": "magician",
+      "combat_sheet": "magician",
       "slug": "magician"
     }
   },
@@ -256,7 +256,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse_lapi",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   },
@@ -276,7 +276,7 @@
     "audio": {},
     "template": {
       "sprite_name": "postboy",
-      "combat_front": "rocker",
+      "combat_sheet": "rocker",
       "slug": "postboy"
     }
   },
@@ -296,7 +296,7 @@
     "audio": {},
     "template": {
       "sprite_name": "disciple",
-      "combat_front": "healer",
+      "combat_sheet": "healer",
       "slug": "healer"
     }
   },
@@ -316,7 +316,7 @@
     "audio": {},
     "template": {
       "sprite_name": "barmaid_blonde",
-      "combat_front": "dancer",
+      "combat_sheet": "dancer",
       "slug": "dancer"
     }
   },
@@ -327,7 +327,7 @@
     "audio": {},
     "template": {
       "sprite_name": "disciple",
-      "combat_front": "healer",
+      "combat_sheet": "healer",
       "slug": "healer"
     }
   },
@@ -347,7 +347,7 @@
     "audio": {},
     "template": {
       "sprite_name": "tennisplayer_lapi",
-      "combat_front": "tennisplayer",
+      "combat_sheet": "tennisplayer",
       "slug": "tennisplayer"
     }
   },
@@ -358,7 +358,7 @@
     "audio": {},
     "template": {
       "sprite_name": "boss_orange",
-      "combat_front": "baller",
+      "combat_sheet": "baller",
       "slug": "baller"
     }
   },
@@ -369,7 +369,7 @@
     "audio": {},
     "template": {
       "sprite_name": "rogue_green",
-      "combat_front": "rogue",
+      "combat_sheet": "rogue",
       "slug": "rogue"
     }
   },
@@ -380,7 +380,7 @@
     "audio": {},
     "template": {
       "sprite_name": "riverboatcaptain",
-      "combat_front": "enforcer_rookie",
+      "combat_sheet": "enforcer_rookie",
       "slug": "riverboatcaptain"
     }
   }

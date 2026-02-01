@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import logging
 import random
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.constants.asset_loader import fetch_asset
+from tuxemon.locale import T
 from tuxemon.player import Player
 
 if TYPE_CHECKING:
@@ -34,7 +35,7 @@ class GameLauncher:
         self,
         session: Session,
         meta: ModMetadata,
-        remove_states: Optional[list[str]] = None,
+        remove_states: list[str] | None = None,
     ) -> None:
         """
         Starts the game session from a mod's metadata.
@@ -72,10 +73,10 @@ class GameLauncher:
             if len(meta.starting_names) == 1
             else random.choice(meta.starting_names)
         )
-        execute.execute_action("set_player_name", [name])
+        session.player.name = T.translate(name)
 
         # Set template
-        template = ["player", meta.sprite, meta.combat_front]
+        template = ["player", meta.sprite, meta.combat_sheet]
         execute.execute_action("set_template", template)
 
         # Optionally clean up states

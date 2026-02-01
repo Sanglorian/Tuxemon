@@ -101,13 +101,13 @@ class MonsterPlagueHandler:
         if plague_slug not in self.plague_data:
             logger.error(f"Unknown plague slug: {plague_slug}")
             return
-        self._plagues[plague_slug] = PlagueType.infected
+        self._plagues[plague_slug] = PlagueType.INFECTED
 
     def inoculate(self, plague_slug: str) -> None:
         if plague_slug not in self.plague_data:
             logger.error(f"Unknown plague slug: {plague_slug}")
             return
-        self._plagues[plague_slug] = PlagueType.inoculated
+        self._plagues[plague_slug] = PlagueType.INOCULATED
 
     def can_be_infected_by(self, monster: Monster, plague_slug: str) -> bool:
         plague_config = self.get_plague_config(plague_slug)
@@ -341,7 +341,7 @@ class MonsterPlagueHandler:
         message = None
 
         if success:
-            self._plagues[plague_slug] = PlagueType.recovered
+            self._plagues[plague_slug] = PlagueType.RECOVERED
 
             if was_infected:
                 message = cure.message_cured
@@ -352,7 +352,7 @@ class MonsterPlagueHandler:
 
     def is_infected(self) -> bool:
         return any(
-            plague_type == PlagueType.infected
+            plague_type == PlagueType.INFECTED
             for plague_type in self._plagues.values()
         )
 
@@ -370,20 +370,20 @@ class MonsterPlagueHandler:
         return [
             slug
             for slug, plague in self._plagues.items()
-            if plague == PlagueType.infected
+            if plague == PlagueType.INFECTED
         ]
 
     def is_infected_with(self, plague_slug: str) -> bool:
-        return self.get_plague_type(plague_slug) == PlagueType.infected
+        return self.get_plague_type(plague_slug) == PlagueType.INFECTED
 
     def is_inoculated_against(self, plague_slug: str) -> bool:
-        return self.get_plague_type(plague_slug) == PlagueType.inoculated
+        return self.get_plague_type(plague_slug) == PlagueType.INOCULATED
 
     def is_carrier_of(self, plague_slug: str) -> bool:
-        return self.get_plague_type(plague_slug) == PlagueType.carrier
+        return self.get_plague_type(plague_slug) == PlagueType.CARRIER
 
     def is_recovered_from(self, plague_slug: str) -> bool:
-        return self.get_plague_type(plague_slug) == PlagueType.recovered
+        return self.get_plague_type(plague_slug) == PlagueType.RECOVERED
 
     def clear_plagues(self) -> None:
         self._plagues.clear()
@@ -446,17 +446,17 @@ class MonsterPlagueHandler:
                 continue
 
             # Infected -> Recovered (Natural Recovery)
-            if plague_type == PlagueType.infected:
+            if plague_type == PlagueType.INFECTED:
                 if random.random() < plague_config.natural_recovery_chance:
-                    self._plagues[slug] = PlagueType.recovered
+                    self._plagues[slug] = PlagueType.RECOVERED
                     progression_messages.append(
                         (slug, "message_natural_recovery")
                     )
 
             # Symptom Onset (Carrier -> Infected)
-            elif plague_type == PlagueType.carrier:
+            elif plague_type == PlagueType.CARRIER:
                 if random.random() < plague_config.symptom_onset_chance:
-                    self._plagues[slug] = PlagueType.infected
+                    self._plagues[slug] = PlagueType.INFECTED
                     message = (
                         plague_config.message_symptom_onset
                         or "message_symptom_onset_default"

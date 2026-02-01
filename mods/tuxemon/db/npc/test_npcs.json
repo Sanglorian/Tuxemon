@@ -6,7 +6,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -17,7 +17,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -28,7 +28,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -39,7 +39,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -50,7 +50,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -61,7 +61,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -72,7 +72,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -83,7 +83,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -94,7 +94,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -105,7 +105,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -116,7 +116,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -127,7 +127,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -138,7 +138,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -149,7 +149,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -160,7 +160,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -171,7 +171,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -182,7 +182,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -193,7 +193,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -204,7 +204,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -215,7 +215,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -226,7 +226,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -237,7 +237,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -248,7 +248,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -259,7 +259,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -270,7 +270,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -281,7 +281,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -292,7 +292,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -303,7 +303,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -314,7 +314,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -325,7 +325,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -336,7 +336,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -347,7 +347,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -358,7 +358,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -369,7 +369,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -380,7 +380,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -391,7 +391,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -402,7 +402,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -413,7 +413,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -424,7 +424,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -435,7 +435,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -446,7 +446,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -457,7 +457,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -468,7 +468,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -479,7 +479,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -490,7 +490,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -501,7 +501,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -512,7 +512,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -523,7 +523,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -534,7 +534,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -545,7 +545,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -556,7 +556,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -567,7 +567,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -578,7 +578,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -589,7 +589,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -600,7 +600,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -611,7 +611,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -622,7 +622,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -633,7 +633,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -644,7 +644,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -655,7 +655,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -666,7 +666,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -677,7 +677,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -688,7 +688,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -699,7 +699,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -710,7 +710,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -721,7 +721,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -732,7 +732,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -743,7 +743,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -754,7 +754,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -765,7 +765,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -776,7 +776,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -787,7 +787,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -798,7 +798,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -809,7 +809,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -820,7 +820,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -831,7 +831,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -842,7 +842,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -853,7 +853,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -864,7 +864,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -875,7 +875,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -886,7 +886,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -897,7 +897,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -908,7 +908,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -919,7 +919,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -930,7 +930,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -941,7 +941,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -952,7 +952,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -963,7 +963,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -974,7 +974,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -985,7 +985,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -996,7 +996,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1007,7 +1007,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1018,7 +1018,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1029,7 +1029,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1040,7 +1040,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1051,7 +1051,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1062,7 +1062,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1073,7 +1073,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1084,7 +1084,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1095,7 +1095,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1106,7 +1106,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1117,7 +1117,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1128,7 +1128,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1139,7 +1139,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1150,7 +1150,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1161,7 +1161,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1172,7 +1172,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1183,7 +1183,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1194,7 +1194,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1205,7 +1205,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1216,7 +1216,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1227,7 +1227,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1238,7 +1238,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1249,7 +1249,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1260,7 +1260,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1271,7 +1271,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1282,7 +1282,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1293,7 +1293,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1304,7 +1304,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1315,7 +1315,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1326,7 +1326,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1337,7 +1337,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1348,7 +1348,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1359,7 +1359,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1370,7 +1370,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1381,7 +1381,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1392,7 +1392,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1403,7 +1403,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1414,7 +1414,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1425,7 +1425,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1436,7 +1436,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1447,7 +1447,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1458,7 +1458,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1469,7 +1469,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1480,7 +1480,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1491,7 +1491,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1502,7 +1502,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1513,7 +1513,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1524,7 +1524,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1535,7 +1535,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1546,7 +1546,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1557,7 +1557,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1568,7 +1568,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1579,7 +1579,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1590,7 +1590,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1601,7 +1601,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1612,7 +1612,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1623,7 +1623,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1634,7 +1634,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1645,7 +1645,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1656,7 +1656,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1667,7 +1667,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1678,7 +1678,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1689,7 +1689,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1700,7 +1700,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1711,7 +1711,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1722,7 +1722,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1733,7 +1733,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1744,7 +1744,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1755,7 +1755,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1766,7 +1766,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1777,7 +1777,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1788,7 +1788,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1799,7 +1799,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1810,7 +1810,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1821,7 +1821,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1832,7 +1832,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1843,7 +1843,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1854,7 +1854,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1865,7 +1865,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1876,7 +1876,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1887,7 +1887,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1898,7 +1898,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1909,7 +1909,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1920,7 +1920,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1931,7 +1931,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1942,7 +1942,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1953,7 +1953,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1964,7 +1964,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1975,7 +1975,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1986,7 +1986,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -1997,7 +1997,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2008,7 +2008,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2019,7 +2019,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2030,7 +2030,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2041,7 +2041,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2052,7 +2052,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2063,7 +2063,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2074,7 +2074,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2085,7 +2085,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2096,7 +2096,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2107,7 +2107,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2118,7 +2118,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2129,7 +2129,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2140,7 +2140,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2151,7 +2151,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2162,7 +2162,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2173,7 +2173,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2184,7 +2184,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2195,7 +2195,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2206,7 +2206,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2217,7 +2217,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2228,7 +2228,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2239,7 +2239,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2250,7 +2250,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2261,7 +2261,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2272,7 +2272,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2283,7 +2283,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2294,7 +2294,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2305,7 +2305,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2316,7 +2316,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2327,7 +2327,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2338,7 +2338,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2349,7 +2349,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2360,7 +2360,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2371,7 +2371,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2382,7 +2382,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2393,7 +2393,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2404,7 +2404,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2415,7 +2415,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2426,7 +2426,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2437,7 +2437,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2448,7 +2448,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2459,7 +2459,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2470,7 +2470,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2481,7 +2481,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2492,7 +2492,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2503,7 +2503,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2514,7 +2514,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2525,7 +2525,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2536,7 +2536,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2547,7 +2547,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2558,7 +2558,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2569,7 +2569,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2580,7 +2580,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2591,7 +2591,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2602,7 +2602,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2613,7 +2613,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2624,7 +2624,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2635,7 +2635,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2646,7 +2646,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2657,7 +2657,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2668,7 +2668,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2679,7 +2679,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2690,7 +2690,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2701,7 +2701,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2712,7 +2712,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2723,7 +2723,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2734,7 +2734,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2745,7 +2745,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2756,7 +2756,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2767,7 +2767,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2778,7 +2778,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2789,7 +2789,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2800,7 +2800,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2811,7 +2811,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2822,7 +2822,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2833,7 +2833,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2844,7 +2844,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2855,7 +2855,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2866,7 +2866,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2877,7 +2877,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2888,7 +2888,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2899,7 +2899,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2910,7 +2910,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2921,7 +2921,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2932,7 +2932,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2943,7 +2943,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2954,7 +2954,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2965,7 +2965,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2976,7 +2976,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2987,7 +2987,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -2998,7 +2998,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3009,7 +3009,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3020,7 +3020,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3031,7 +3031,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3042,7 +3042,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3053,7 +3053,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3064,7 +3064,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3075,7 +3075,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3086,7 +3086,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3097,7 +3097,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3108,7 +3108,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3119,7 +3119,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3130,7 +3130,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3141,7 +3141,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3152,7 +3152,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3163,7 +3163,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3174,7 +3174,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3185,7 +3185,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3196,7 +3196,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3207,7 +3207,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3218,7 +3218,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3229,7 +3229,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3240,7 +3240,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3251,7 +3251,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3262,7 +3262,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3273,7 +3273,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3284,7 +3284,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3295,7 +3295,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3306,7 +3306,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3317,7 +3317,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3328,7 +3328,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3339,7 +3339,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3350,7 +3350,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3361,7 +3361,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3372,7 +3372,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3383,7 +3383,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3394,7 +3394,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3405,7 +3405,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3416,7 +3416,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3427,7 +3427,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3438,7 +3438,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3449,7 +3449,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3460,7 +3460,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3471,7 +3471,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3482,7 +3482,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3493,7 +3493,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3504,7 +3504,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3515,7 +3515,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3526,7 +3526,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3537,7 +3537,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3548,7 +3548,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3559,7 +3559,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3570,7 +3570,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3581,7 +3581,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3592,7 +3592,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3603,7 +3603,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3614,7 +3614,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3625,7 +3625,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3636,7 +3636,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3647,7 +3647,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3658,7 +3658,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3669,7 +3669,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3680,7 +3680,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3691,7 +3691,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3702,7 +3702,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3713,7 +3713,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3724,7 +3724,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3735,7 +3735,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3746,7 +3746,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3757,7 +3757,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3768,7 +3768,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3779,7 +3779,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3790,7 +3790,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3801,7 +3801,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3812,7 +3812,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3823,7 +3823,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3834,7 +3834,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3845,7 +3845,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3856,7 +3856,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3867,7 +3867,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3878,7 +3878,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3889,7 +3889,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3900,7 +3900,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3911,7 +3911,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3922,7 +3922,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3933,7 +3933,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3944,7 +3944,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3955,7 +3955,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3966,7 +3966,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3977,7 +3977,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3988,7 +3988,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -3999,7 +3999,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4010,7 +4010,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4021,7 +4021,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4032,7 +4032,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4043,7 +4043,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4054,7 +4054,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4065,7 +4065,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4076,7 +4076,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4087,7 +4087,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4098,7 +4098,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4109,7 +4109,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4120,7 +4120,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4131,7 +4131,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4142,7 +4142,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4153,7 +4153,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4164,7 +4164,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4175,7 +4175,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4186,7 +4186,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4197,7 +4197,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4208,7 +4208,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4219,7 +4219,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4230,7 +4230,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4241,7 +4241,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4252,7 +4252,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4263,7 +4263,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4274,7 +4274,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4285,7 +4285,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4296,7 +4296,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4307,7 +4307,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4318,7 +4318,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4329,7 +4329,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4340,7 +4340,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4351,7 +4351,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4362,7 +4362,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4373,7 +4373,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4384,7 +4384,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4395,7 +4395,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4406,7 +4406,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4417,7 +4417,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4428,7 +4428,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4439,7 +4439,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4450,7 +4450,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4461,7 +4461,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4472,7 +4472,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4483,7 +4483,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4494,7 +4494,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4505,7 +4505,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4516,7 +4516,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4527,7 +4527,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4538,7 +4538,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4549,7 +4549,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4560,7 +4560,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4571,7 +4571,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4582,7 +4582,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4593,7 +4593,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4604,7 +4604,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4615,7 +4615,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4626,7 +4626,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4637,7 +4637,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4648,7 +4648,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4659,7 +4659,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4670,7 +4670,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4681,7 +4681,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4692,7 +4692,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4703,7 +4703,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4714,7 +4714,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4725,7 +4725,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4736,7 +4736,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4747,7 +4747,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4758,7 +4758,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4769,7 +4769,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4780,7 +4780,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4791,7 +4791,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4802,7 +4802,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4813,7 +4813,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4824,7 +4824,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4835,7 +4835,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4846,7 +4846,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4857,7 +4857,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4868,7 +4868,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4879,7 +4879,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4890,7 +4890,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4901,7 +4901,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4912,7 +4912,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4923,7 +4923,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4934,7 +4934,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4945,7 +4945,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4956,7 +4956,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4967,7 +4967,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4978,7 +4978,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -4989,7 +4989,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5000,7 +5000,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5011,7 +5011,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5022,7 +5022,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5033,7 +5033,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5044,7 +5044,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5055,7 +5055,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5066,7 +5066,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5077,7 +5077,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5088,7 +5088,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5099,7 +5099,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5110,7 +5110,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5121,7 +5121,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5132,7 +5132,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5143,7 +5143,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5154,7 +5154,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5165,7 +5165,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5176,7 +5176,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5187,7 +5187,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5198,7 +5198,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5209,7 +5209,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5220,7 +5220,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5231,7 +5231,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5242,7 +5242,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5253,7 +5253,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5264,7 +5264,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5275,7 +5275,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5286,7 +5286,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5297,7 +5297,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5308,7 +5308,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5319,7 +5319,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5330,7 +5330,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5341,7 +5341,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5352,7 +5352,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5363,7 +5363,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5374,7 +5374,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5385,7 +5385,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5396,7 +5396,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5407,7 +5407,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5418,7 +5418,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5429,7 +5429,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5440,7 +5440,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5451,7 +5451,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5462,7 +5462,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5473,7 +5473,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5484,7 +5484,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -5495,7 +5495,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   }

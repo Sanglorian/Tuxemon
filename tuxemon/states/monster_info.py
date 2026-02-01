@@ -191,16 +191,9 @@ class MonsterInfoState(PygameMenuState):
         )
         exp_label.translate(fxw(79 / 256), fxh(78.8 / 144))
 
-        # gender
-        gender_symbol = ""
-        if monster.gender == "male":
-            gender_symbol = "\u2642"  # ♂
-        elif monster.gender == "female":
-            gender_symbol = "\u2640"  # ♀
-
-        if gender_symbol:
+        if monster.gender_symbol:
             lab_gender: Any = menu.add.label(
-                title=gender_symbol,
+                title=monster.gender_symbol,
                 label_id="gender",
                 font_size=self.font_type.biggest,
                 align=locals.ALIGN_LEFT,
@@ -427,8 +420,8 @@ class MonsterInfoState(PygameMenuState):
                 bond_widget.translate(fxw(20 / 256), fxh(29 / 144))
 
         # image
-        new_image = self._create_image(monster.sprite_handler.front_path)
-        new_image.scale(SCALE, SCALE)
+        surface = monster.get_sprite("front").image
+        new_image = self._create_image_from_surface(surface)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
         image_widget.translate(fxw(16 / 256), fxh(27 / 144))

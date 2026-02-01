@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
-from tuxemon.time_handler import today_ordinal
 
 
 @dataclass
@@ -34,9 +33,9 @@ class CooldownDaysCondition(EventCondition):
 
         if player.game_variables.has(variable):
             cooldown_day = int(player.game_variables.get(variable))
-            if today_ordinal() < cooldown_day:
+            if session.time.get_ordinal() < cooldown_day:
                 return False  # Event is still on cooldown.
 
-        new_cooldown_day = today_ordinal() + timeframe
+        new_cooldown_day = session.time.get_ordinal() + timeframe
         player.game_variables.set(variable, new_cooldown_day)
         return True

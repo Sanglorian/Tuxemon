@@ -29,7 +29,8 @@
 - slug: spyder_maniac_achievement1
   description: spyder_maniac_achievement2
   prerequisites:
-  - maniac_achievements: 'yes'
+    - key: maniac_achievements
+      value: "yes"
   failure_conditions: []
   connected_missions: []
   required_items: {}
@@ -42,37 +43,43 @@
       order: 0
       description: Verify maniac achievements unlocked.
       conditions:
-        maniac_achievements: 'yes'
+        key: maniac_achievements
+        value: "yes"
       next_steps:
-      - fossil_check
-      - shammer_check
+        - fossil_check
+        - shammer_check
       optional: false
     fossil_check:
       slug: fossil_check
       order: 1
       description: Confirm player has both fossils.
       conditions:
-        got_both_fossils: 'yes'
+        key: got_both_fossils
+        value: "yes"
       next_steps:
-      - candy_trade
+        - candy_trade
       optional: false
     shammer_check:
       slug: shammer_check
       order: 1
       description: Verify possession of Shammer monster.
       conditions:
-        got_shammer: 'yes'
+        key: got_shammer
+        value: "yes"
       next_steps:
-      - candy_trade
+        - candy_trade
       optional: false
     candy_trade:
       slug: candy_trade
       order: 2
       description: Confirm candy trade with catgirl was completed.
       conditions:
-        any_of:
-        - got_both_fossils: 'yes'
-        - got_shammer: 'yes'
-        catgirl_candy_hastraded: 'yes'
+        key: catgirl_candy_hastraded
+        value: "yes"
+      any_of:
+        - key: got_both_fossils
+          value: "yes"
+        - key: got_shammer
+          value: "yes"
       next_steps: []
       optional: false

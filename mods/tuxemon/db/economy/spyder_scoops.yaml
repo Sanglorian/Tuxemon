@@ -8,14 +8,14 @@
 #   price: Purchase price of the item (integer, example: 20)
 #   cost: Internal cost value for the item (integer, example: 5)
 #   inventory: Quantity available (default -1 = unlimited)
-#   variables: Optional list of variables affecting the item (must be non-empty if provided)
+# variables: Optional list of GameCondition entries affecting the item (must be non-empty if provided)
 # monsters: List of monsters available in this economy
 #   slug: Slug of the monster (must exist in the monster database)
 #   price: Purchase price of the monster (integer)
 #   cost: Internal cost value for the monster (integer)
 #   inventory: Quantity available (must be > 0, default = 1)
 #   level: Minimum level of the monster (must be > 0)
-#   variables: Optional list of variables affecting the monster (must be non-empty if provided)
+# variables: Optional list of GameCondition entries affecting the monster (must be non-empty if provided)
 
 - background: gfx/ui/item/item_menu_bg.png
   items:
@@ -159,12 +159,14 @@
     slug: tuxeball_diurnal
     price: 300
     variables:
-    - daytime: 'true'
+      - key: daytime
+        value: "true"
   - cost: 60
     slug: tuxeball_nocturnal
     price: 300
     variables:
-    - daytime: 'false'
+      - key: daytime
+        value: "false"
   monsters: []
   resale_multiplier: 0.5
   slug: spyder_timber_scoop
@@ -189,12 +191,14 @@
     slug: tuxeball_diurnal
     price: 300
     variables:
-    - daytime: 'true'
+      - key: daytime
+        value: "true"
   - cost: 60
     slug: tuxeball_nocturnal
     price: 300
     variables:
-    - daytime: 'false'
+      - key: daytime
+        value: "false"
   monsters: []
   resale_multiplier: 0.5
   slug: spyder_candy_scoop

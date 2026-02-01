@@ -26,9 +26,9 @@ def elements():
     }
 
     return {
-        "fire": Element("fire"),
-        "metal": Element("metal"),
-        "aether": Element("aether"),
+        "fire": Element.get("fire"),
+        "metal": Element.get("metal"),
+        "aether": Element.get("aether"),
     }
 
 
@@ -50,15 +50,14 @@ def test_init_with_types(handler):
 
 def test_set_types(elements):
     basic = ElementTypesHandler()
-    basic.set_types([elements["fire"], elements["metal"]])
-    assert len(basic.current) == 2
+    basic.set_types(["fire", "metal"])
+    assert basic.get_type_slugs() == ["fire", "metal"]
 
 
 def test_reset_to_default(handler):
-    new_element = Element("metal")
-    handler.set_types([new_element])
+    handler.set_types(["metal"])
     handler.reset_to_default()
-    assert len(handler.current) == 2
+    assert handler.get_type_slugs() == ["metal", "fire"]
 
 
 def test_get_type_slugs(handler):
@@ -128,3 +127,173 @@ def test_resistance(elements, defenders, attacker, expected_fn):
         dfn, attacker
     )
     assert score == expected_fn(elements)
+
+
+def test_lookup_multiplier_missing_entry(elements):
+    fire = elements["fire"]
+    assert fire.lookup_multiplier("nonexistent") == 1.0
+
+
+def test_set_types_with_unknown_slug():
+    handler = ElementTypesHandler()
+    handler.set_types(["unknown_slug"])
+    assert handler.get_type_slugs() == ["unknown_slug"]
+    elem = Element.get("unknown_slug")
+    assert elem.slug == "unknown_slug"
+    assert elem.types == []
+
+
+def test_primary_raises_on_empty():
+    handler = ElementTypesHandler()
+    with pytest.raises(ValueError):
+        _ = handler.primary
+
+
+def test_affinity_aether_user(elements):
+    atk = [elements["aether"]]
+    dfn = [elements["fire"]]
+    score = ElementTypesHandler.calculate_affinity_score(atk, dfn)
+    assert score == 1.0
+
+
+def test_affinity_aether_target(elements):
+    atk = [elements["fire"]]
+    dfn = [elements["aether"]]
+    score = ElementTypesHandler.calculate_affinity_score(atk, dfn)
+    assert score == 1.0
+
+
+def test_resistance_aether_defender(elements):
+    dfn = [elements["aether"]]
+    score = ElementTypesHandler.calculate_resistance_multiplier_for_types(
+        dfn, "fire"
+    )
+    assert score == 1.0
+
+
+def test_resistance_aether_attacker(elements):
+    dfn = [elements["fire"]]
+    score = ElementTypesHandler.calculate_resistance_multiplier_for_types(
+        dfn, "aether"
+    )
+    assert score == 1.0
+
+
+def test_element_get_uses_cache(elements):
+    fire1 = Element.get("fire")
+    fire2 = Element.get("fire")
+    assert fire1 is fire2
+
+
+def test_element_cache_clears(elements):
+    fire1 = Element.get("fire")
+    Element.clear_cache()
+    fire2 = Element.get("fire")
+    assert fire1 is not fire2
+
+
+def test_multiplier_cache_reuse(elements):
+    ElementTypesHandler.clear_cache()
+
+    score1 = ElementTypesHandler.calculate_affinity_score(
+        [elements["fire"]], [elements["metal"]]
+    )
+    assert ("fire", "metal") in ElementTypesHandler._multiplier_cache
+
+    old_value = ElementTypesHandler._multiplier_cache[("fire", "metal")]
+    elements["fire"].lookup_multiplier = lambda slug: 9999
+
+    score2 = ElementTypesHandler.calculate_affinity_score(
+        [elements["fire"]], [elements["metal"]]
+    )
+
+    assert score2 == old_value
+
+
+def test_element_name_translation(monkeypatch):
+    monkeypatch.setattr("tuxemon.locale.T.translate", lambda slug: f"X_{slug}")
+    elem = Element.get("fire")
+    assert elem.name == "X_fire"
+
+
+def test_element_name_empty_slug(monkeypatch):
+    monkeypatch.setattr("tuxemon.locale.T.translate", lambda slug: f"X_{slug}")
+    elem = Element("", "", [])
+    assert elem.name == ""
+
+
+def test_reset_to_default_mixed_slugs(elements):
+    handler = ElementTypesHandler(["fire", "metal"])
+    handler.set_types(["aether"])
+    handler.reset_to_default()
+    assert handler.get_type_slugs() == ["fire", "metal"]
+
+
+def test_ordering_preserved_in_current(elements):
+    handler = ElementTypesHandler(["fire", "metal"])
+    assert handler.get_type_slugs() == ["fire", "metal"]
+
+
+def test_ordering_preserved_after_set_types(elements):
+    handler = ElementTypesHandler(["metal", "fire"])
+    handler.set_types(["aether", "fire"])
+    assert handler.get_type_slugs() == ["aether", "fire"]
+
+
+def test_ordering_preserved_after_reset(elements):
+    handler = ElementTypesHandler(["fire", "metal"])
+    handler.set_types(["metal"])
+    handler.reset_to_default()
+    assert handler.get_type_slugs() == ["fire", "metal"]
+
+
+def test_affinity_multi_type_with_aether(elements):
+    Element.clear_cache()
+    elements = {
+        "fire": Element.get("fire"),
+        "metal": Element.get("metal"),
+        "aether": Element.get("aether"),
+    }
+
+    atk = [elements["aether"], elements["fire"]]
+    dfn = [elements["metal"]]
+    score = ElementTypesHandler.calculate_affinity_score(atk, dfn)
+
+    assert score == 1.0
+
+
+def test_resistance_multi_type_with_aether(elements):
+    Element.clear_cache()
+    elements = {
+        "fire": Element.get("fire"),
+        "metal": Element.get("metal"),
+        "aether": Element.get("aether"),
+    }
+
+    dfn = [elements["aether"], elements["fire"]]
+    score = ElementTypesHandler.calculate_resistance_multiplier_for_types(
+        dfn, "metal"
+    )
+
+    assert score == 1.0
+
+
+def test_affinity_aether_in_middle(elements):
+    atk = [elements["fire"], elements["aether"], elements["metal"]]
+    dfn = [elements["fire"]]
+    score = ElementTypesHandler.calculate_affinity_score(atk, dfn)
+    expected = elements["fire"].lookup_multiplier("fire") * elements[
+        "metal"
+    ].lookup_multiplier("fire")
+    assert score == expected
+
+
+def test_resistance_aether_in_middle(elements):
+    dfn = [elements["fire"], elements["aether"], elements["metal"]]
+    score = ElementTypesHandler.calculate_resistance_multiplier_for_types(
+        dfn, "fire"
+    )
+    expected = elements["fire"].lookup_multiplier("fire") * elements[
+        "metal"
+    ].lookup_multiplier("fire")
+    assert score == expected

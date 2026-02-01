@@ -226,9 +226,9 @@ def _handle_change_plague(save_data: dict[str, Any]) -> None:
     def change_plague(monster: dict[str, Any]) -> None:
         if not isinstance(monster["plague"], dict):
             if monster["plague"] == "infected":
-                monster["plague"] = {"spyderbite": PlagueType.infected}
+                monster["plague"] = {"spyderbite": PlagueType.INFECTED}
             elif monster["plague"] == "inoculated":
-                monster["plague"] = {"spyderbite": PlagueType.inoculated}
+                monster["plague"] = {"spyderbite": PlagueType.INOCULATED}
             else:
                 monster["plague"] = {}
 

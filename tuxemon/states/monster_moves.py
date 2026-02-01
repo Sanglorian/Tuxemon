@@ -94,8 +94,8 @@ class MonsterMovesState(PygameMenuState):
             ).translate(fxw(83.6 / 256), fxh(_height))
 
         # Monster image (manual position)
-        new_image = self._create_image(monster.sprite_handler.front_path)
-        new_image.scale(SCALE, SCALE)
+        surface = monster.get_sprite("front").image
+        new_image = self._create_image_from_surface(surface)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
         image_widget.translate(fxw(1 / 256), fxh(2 / 144))

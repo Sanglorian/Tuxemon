@@ -14,6 +14,7 @@ from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
 from tuxemon.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.monster_dir.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const.graphics import BG_MINIGAME, MISSING_IMAGE
 from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.tools import fix_measure, open_dialog
@@ -28,52 +29,6 @@ def _lookup_monsters() -> None:
         for mon_name in db.database["monster"]
         if (result := MonsterModel.lookup(mon_name, db)).txmn_id > 0
     }
-
-
-DIFFICULTIES = ["easy", "normal", "hard"]
-
-
-class DifficultySelectState(PygameMenuState):
-    """
-    A state that allows players to choose the difficulty level before entering the minigame.
-    """
-
-    name: ClassVar[str] = "DifficultySelectState"
-
-    def __init__(self) -> None:
-        width, height = SCREEN_SIZE
-        super().__init__(height=height, width=width)
-
-        self._build_menu()
-        self.reset_theme()
-
-    def _build_menu(self) -> None:
-        """
-        Constructs the difficulty selection menu with a title label and difficulty buttons.
-        """
-        title = T.translate("choose_difficulty")
-        self.menu.add.label(
-            title=title,
-            font_size=self.font_type.big,
-            align=locals.ALIGN_CENTER,
-            underline=True,
-        )
-
-        for level in DIFFICULTIES:
-            self.menu.add.button(
-                title=T.translate(f"level_{level}"),
-                action=partial(self.start_minigame, level),
-                button_id=f"diff_{level}",
-                font_size=self.font_type.medium,
-                selection_effect=HighlightSelection(),
-                align=locals.ALIGN_CENTER,
-            )
-
-    def start_minigame(self, difficulty: str) -> None:
-        """
-        Transitions to the minigame with the selected difficulty.
-        """
-        self.client.replace_state("MinigameState", difficulty=difficulty)
 
 
 class MinigameState(PygameMenuState):
@@ -115,11 +70,23 @@ class MinigameState(PygameMenuState):
         self.tuxemon = tuxemon
 
         # Image Display Based on Difficulty
-        image_path = f"gfx/sprites/battle/{tuxemon.slug}-front.png"
+        loader = SpriteLoader()
+        sprites = tuxemon.sprites
+        assert sprites
+        handler = MonsterSpriteHandler(
+            slug=tuxemon.slug,
+            sheet_path=loader.resolve_path(sprites.sheet),
+            front_rect=sprites.front_rect,
+            back_rect=sprites.back_rect,
+            menu1_rect=sprites.menu1_rect,
+            menu2_rect=sprites.menu2_rect,
+        )
+        if handler is None:
+            return
+        sprite = handler.get_sprite("front", scale=SCALE)
         if self.difficulty in ["easy", "normal"]:
             try:
-                image = self._create_image(image_path)
-                image.scale(SCALE, SCALE)
+                image = self._create_image_from_surface(sprite.image)
                 menu.add.image(image_path=image.copy())
             except Exception:
                 image = self._create_image(MISSING_IMAGE)

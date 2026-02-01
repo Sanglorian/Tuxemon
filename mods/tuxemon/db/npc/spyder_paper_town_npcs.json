@@ -6,7 +6,7 @@
     "audio": {},
     "template": {
       "sprite_name": "granny_yellow",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "granny"
     }
   },
@@ -17,7 +17,7 @@
     "audio": {},
     "template": {
       "sprite_name": "conileaf",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "noclass"
     }
   },
@@ -28,7 +28,7 @@
     "audio": {},
     "template": {
       "sprite_name": "rockitten",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "noclass"
     }
   },
@@ -39,7 +39,7 @@
     "audio": {},
     "template": {
       "sprite_name": "beachcomber_copper",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "beachcomber"
     }
   },
@@ -50,7 +50,7 @@
     "audio": {},
     "template": {
       "sprite_name": "tennisplayer_green",
-      "combat_front": "tennisplayer",
+      "combat_sheet": "tennisplayer",
       "slug": "tennisplayer"
     }
   },
@@ -61,7 +61,7 @@
     "audio": {},
     "template": {
       "sprite_name": "picnicker",
-      "combat_front": "picnicker",
+      "combat_sheet": "picnicker",
       "slug": "picnicker"
     }
   },
@@ -72,7 +72,7 @@
     "audio": {},
     "template": {
       "sprite_name": "tennisplayer_lapi",
-      "combat_front": "tennisplayer",
+      "combat_sheet": "tennisplayer",
       "slug": "tennisplayer"
     }
   },
@@ -83,7 +83,7 @@
     "audio": {},
     "template": {
       "sprite_name": "homemaker",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "homemaker"
     }
   },
@@ -94,7 +94,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   },
@@ -105,7 +105,7 @@
     "audio": {},
     "template": {
       "sprite_name": "maniac_yellow",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "maniac"
     }
   },
@@ -116,7 +116,7 @@
     "audio": {},
     "template": {
       "sprite_name": "shopkeeper",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "shopkeeper"
     }
   }

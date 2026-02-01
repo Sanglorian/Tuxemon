@@ -6,7 +6,7 @@
     "audio": {},
     "template": {
       "sprite_name": "barmaid",
-      "combat_front": "barmaid",
+      "combat_sheet": "barmaid",
       "slug": "barmaid"
     }
   },
@@ -17,7 +17,7 @@
     "audio": {},
     "template": {
       "sprite_name": "monk",
-      "combat_front": "monk",
+      "combat_sheet": "monk",
       "slug": "monk"
     }
   },
@@ -28,7 +28,7 @@
     "audio": {},
     "template": {
       "sprite_name": "magician",
-      "combat_front": "magician",
+      "combat_sheet": "magician",
       "slug": "magician"
     }
   },
@@ -39,7 +39,7 @@
     "audio": {},
     "template": {
       "sprite_name": "firefighter",
-      "combat_front": "firefighter",
+      "combat_sheet": "firefighter",
       "slug": "firefighter"
     }
   },
@@ -50,7 +50,7 @@
     "audio": {},
     "template": {
       "sprite_name": "homemaker_blonde",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "homemaker"
     }
   },
@@ -61,7 +61,7 @@
     "audio": {},
     "template": {
       "sprite_name": "homemaker_black",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "homemaker"
     }
   },
@@ -81,7 +81,7 @@
     "audio": {},
     "template": {
       "sprite_name": "goth",
-      "combat_front": "goth",
+      "combat_sheet": "goth",
       "slug": "goth"
     }
   },
@@ -92,7 +92,7 @@
     "audio": {},
     "template": {
       "sprite_name": "shopassistant",
-      "combat_front": "shopassistant",
+      "combat_sheet": "shopassistant",
       "slug": "shopassistant"
     }
   },
@@ -103,7 +103,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist_blue",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   },
@@ -114,7 +114,7 @@
     "audio": {},
     "template": {
       "sprite_name": "granny_lapi",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "granny"
     }
   },
@@ -125,7 +125,7 @@
     "audio": {},
     "template": {
       "sprite_name": "goth",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "goth"
     }
   },
@@ -136,7 +136,7 @@
     "audio": {},
     "template": {
       "sprite_name": "granny_green",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "granny"
     }
   },
@@ -147,7 +147,7 @@
     "audio": {},
     "template": {
       "sprite_name": "catgirl_fiery",
-      "combat_front": "catgirl",
+      "combat_sheet": "catgirl",
       "slug": "catgirl"
     }
   },
@@ -158,7 +158,7 @@
     "audio": {},
     "template": {
       "sprite_name": "florist",
-      "combat_front": "florist",
+      "combat_sheet": "florist",
       "slug": "florist"
     }
   },
@@ -169,7 +169,7 @@
     "audio": {},
     "template": {
       "sprite_name": "picnicker",
-      "combat_front": "picnicker",
+      "combat_sheet": "picnicker",
       "slug": "picnicker"
     }
   },
@@ -180,7 +180,7 @@
     "audio": {},
     "template": {
       "sprite_name": "shopkeeper_blonde",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "shopkeeper"
     }
   },
@@ -191,7 +191,7 @@
     "audio": {},
     "template": {
       "sprite_name": "shopkeeper_brown",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "shopkeeper"
     }
   },
@@ -202,7 +202,7 @@
     "audio": {},
     "template": {
       "sprite_name": "nurse_green",
-      "combat_front": "nurse",
+      "combat_sheet": "nurse",
       "slug": "nurse"
     }
   },
@@ -213,7 +213,7 @@
     "audio": {},
     "template": {
       "sprite_name": "shopkeeper",
-      "combat_front": "adventurer",
+      "combat_sheet": "adventurer",
       "slug": "shopkeeper"
     }
   },
@@ -224,7 +224,7 @@
     "audio": {},
     "template": {
       "sprite_name": "box",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -236,7 +236,7 @@
     "audio": {},
     "template": {
       "sprite_name": "box",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -248,7 +248,7 @@
     "audio": {},
     "template": {
       "sprite_name": "box",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -260,7 +260,7 @@
     "audio": {},
     "template": {
       "sprite_name": "box",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -272,7 +272,7 @@
     "audio": {},
     "template": {
       "sprite_name": "box",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -284,7 +284,7 @@
     "audio": {},
     "template": {
       "sprite_name": "box",
-      "combat_front": "noclass",
+      "combat_sheet": "noclass",
       "slug": "noclass",
       "is_static_prop": true
     }
@@ -296,7 +296,7 @@
     "audio": {},
     "template": {
       "sprite_name": "professor_fiery",
-      "combat_front": "professor",
+      "combat_sheet": "professor",
       "slug": "professor"
     }
   },
@@ -307,7 +307,7 @@
     "audio": {},
     "template": {
       "sprite_name": "shopassistant_black",
-      "combat_front": "shopassistant",
+      "combat_sheet": "shopassistant",
       "slug": "shopassistant"
     }
   },
@@ -327,7 +327,7 @@
     "audio": {},
     "template": {
       "sprite_name": "dragonrider_black",
-      "combat_front": "dragonrider",
+      "combat_sheet": "dragonrider",
       "slug": "dragonrider"
     }
   },
@@ -347,7 +347,7 @@
     "audio": {},
     "template": {
       "sprite_name": "childactor_fiery",
-      "combat_front": "tennisplayer_fiery",
+      "combat_sheet": "tennisplayer_fiery",
       "slug": "childactor"
     }
   }

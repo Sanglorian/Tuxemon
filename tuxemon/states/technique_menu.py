@@ -123,15 +123,18 @@ class TechniqueMenuState(Menu[Technique]):
 
         for tech in self.tech_sorter.sort(output):
             mon = self.char.party.find_monster_by_tech_id(tech.instance_id)
+
             if mon:
-                sprite = mon.sprite_handler.front_path
+                sprite = mon.get_sprite("front")
+                sprite.rect.center = self.backpack_center
+                self.sprites.add(sprite, layer=100)
             else:
-                sprite = MISSING_IMAGE
-            self.load_sprite(
-                sprite,
-                center=self.backpack_center,
-                layer=100,
-            )
+                self.load_sprite(
+                    MISSING_IMAGE,
+                    center=self.backpack_center,
+                    layer=100,
+                )
+
             yield self.create_technique_menu_item(tech)
 
     def on_menu_selection_change(self) -> None:

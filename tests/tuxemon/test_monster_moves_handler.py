@@ -208,13 +208,13 @@ def test_is_eligible_stage_mismatch(handler, monster):
     move = MagicMock(
         technique="wave",
         level_learned=3,
-        evolution_stage_learned=EvolutionStage.stage2,
+        evolution_stage_learned=EvolutionStage.STAGE2,
         learning_method=LearningMethod.LEVEL_UP,
     )
 
     handler.set_moveset([move])
     monster.level = 4
-    monster.stage = EvolutionStage.basic
+    monster.stage = EvolutionStage.BASIC
 
     assert not handler.is_eligible(
         monster, "wave", method=LearningMethod.LEVEL_UP
@@ -225,13 +225,13 @@ def test_is_eligible_stage_match(handler, monster):
     move = MagicMock(
         technique="zap",
         level_learned=2,
-        evolution_stage_learned=EvolutionStage.basic,
+        evolution_stage_learned=EvolutionStage.BASIC,
         learning_method=LearningMethod.LEVEL_UP,
     )
 
     handler.set_moveset([move])
     monster.level = 3
-    monster.stage = EvolutionStage.basic
+    monster.stage = EvolutionStage.BASIC
 
     assert handler.is_eligible(monster, "zap", method=LearningMethod.LEVEL_UP)
 

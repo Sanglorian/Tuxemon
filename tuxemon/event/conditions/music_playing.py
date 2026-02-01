@@ -35,7 +35,7 @@ class MusicPlayingCondition(EventCondition):
         ):
             return True
 
-        if session.client.current_music.status == MusicStatus.paused:
+        if session.client.current_music.status == MusicStatus.PAUSED:
             return True
         else:
             return (

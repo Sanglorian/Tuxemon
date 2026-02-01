@@ -8,6 +8,7 @@ from tuxemon.db import (
     Acquisition,
     BondComparison,
     Comparison,
+    GameCondition,
     GenderType,
     LearningMethod,
     MonsterEvolutionItemModel,
@@ -62,14 +63,14 @@ def test_evolve_monster_success(setup_evolution):
     new_mon.transfer_properties_from = MagicMock()
     new_mon.moves.learn_by_method = MagicMock()
     player.party.replace_monster = MagicMock(return_value=True)
-    player.tuxepedia.add_entry = MagicMock()
+    player.tuxepedia.register_caught = MagicMock()
     evo.evolve_monster(new_mon)
     new_mon.transfer_properties_from.assert_called_with(mon)
     new_mon.moves.learn_by_method.assert_called_with(
         new_mon, "SpecialBeam", LearningMethod.EVOLUTION
     )
     player.party.replace_monster.assert_called_with(mon, new_mon)
-    player.tuxepedia.add_entry.assert_called_with("rockat", SeenStatus.caught)
+    player.tuxepedia.register_caught.assert_called_with("rockat")
 
 
 def test_evolve_monster_not_eligible(setup_evolution):
@@ -90,7 +91,7 @@ def test_evolve_monster_replace_fails(setup_evolution):
     player.party.replace_monster = MagicMock(return_value=False)
     player.tuxepedia = MagicMock()
     evo.evolve_monster(new_mon)
-    assert not player.tuxepedia.add_entry.called
+    assert not player.tuxepedia.register_caught.called
 
 
 def test_no_owner(setup_evolution):
@@ -223,14 +224,14 @@ def test_taste_conditions(
     [
         (
             {"hp": 30, "melee": 20},
-            Comparison.greater_or_equal,
-            StatType.melee,
+            Comparison.GREATER_OR_EQUAL,
+            StatType.MELEE,
             True,
         ),
         (
             {"speed": 5, "armour": 10},
-            Comparison.greater_or_equal,
-            StatType.armour,
+            Comparison.GREATER_OR_EQUAL,
+            StatType.ARMOUR,
             False,
         ),
     ],
@@ -254,29 +255,39 @@ def test_stats_conditions(
 
 
 @pytest.mark.parametrize(
-    "variables,player_values,expected",
+    "variables, player_values, expected",
     [
-        ([{"var": "val"}], {"var": "val"}, True),  # single match
-        ([{"var": "val"}], {"var": "other_val"}, False),  # single mismatch
+        ([{"var": "val"}], {"var": "val"}, True),
+        ([{"var": "val"}], {"var": "other_val"}, False),
         (
             [{"var1": "val"}, {"var2": "val"}],
             {"var1": "val", "var2": "val"},
             True,
-        ),  # double match
+        ),
         (
             [{"var1": "val"}, {"var2": "other_val"}],
             {"var1": "val", "var2": "val"},
             False,
-        ),  # double mismatch
+        ),
     ],
 )
 def test_variables_conditions(
     setup_evolution, variables, player_values, expected
 ):
     mon, player, _ = setup_evolution
+
     for k, v in player_values.items():
         player.game_variables.set(k, v)
-    evo = MonsterEvolutionItemModel(monster_slug="rockat", variables=variables)
+
+    game_conditions = [
+        GameCondition(key=k, value=v)
+        for cond in variables
+        for k, v in cond.items()
+    ]
+    evo = MonsterEvolutionItemModel(
+        monster_slug="rockat",
+        variables=game_conditions,
+    )
     context = {"map_inside": True}
     assert mon.evolution_handler.can_evolve(evo, context) == expected
 
@@ -309,7 +320,7 @@ def test_bond_conditions(setup_evolution, bond_value, evo_value, expected):
     evo = MonsterEvolutionItemModel(
         monster_slug="rockat",
         bond=BondComparison(
-            comparison=Comparison.greater_or_equal, value=evo_value
+            comparison=Comparison.GREATER_OR_EQUAL, value=evo_value
         ),
     )
     context = {"map_inside": True}
@@ -335,14 +346,13 @@ def test_item_conditions(setup_evolution, use_item, expected):
 @pytest.mark.parametrize(
     "monster_type,evo_type,expected",
     [
-        ("metal", "metal", True),  # match
-        ("metal", "water", False),  # mismatch
+        ("metal", "metal", True),
+        ("metal", "water", False),
     ],
 )
 def test_element_conditions(setup_evolution, monster_type, evo_type, expected):
     mon, _, _ = setup_evolution
-    element = MagicMock(slug=monster_type)
-    mon.types.set_types([element])
+    mon.types.set_types([monster_type])
     evo = MonsterEvolutionItemModel(monster_slug="botbot", element=evo_type)
     context = {"map_inside": True}
     assert mon.evolution_handler.can_evolve(evo, context) == expected
@@ -445,13 +455,13 @@ def test_party_alignment_conditions(
     "party_genders,evo_genders,expected",
     [
         (
-            [GenderType.male, GenderType.male],
-            {GenderType.male: 1},
+            [GenderType.MALE, GenderType.MALE],
+            {GenderType.MALE: 1},
             True,
         ),  # match
         (
-            [GenderType.female, GenderType.female],
-            {GenderType.male: 1},
+            [GenderType.FEMALE, GenderType.FEMALE],
+            {GenderType.MALE: 1},
             False,
         ),  # mismatch
     ],
@@ -473,17 +483,16 @@ def test_party_gender_conditions(
 @pytest.mark.parametrize(
     "party_type,evo_types,expected",
     [
-        ("earth", {"earth": 1}, True),  # match
-        ("water", {"fire": 1}, False),  # mismatch
+        ("earth", {"earth": 1}, True),
+        ("water", {"fire": 1}, False),
     ],
 )
 def test_party_type_conditions(
     setup_evolution, party_type, evo_types, expected
 ):
     mon, player, _ = setup_evolution
-    element = MagicMock(slug=party_type)
     for m in player.party._monsters:
-        m.types.set_types([element])
+        m.types.set_types([party_type])
     evo = MonsterEvolutionItemModel(
         monster_slug="rockat",
         party_conditions=PartyConditionsModel(monster_types=evo_types),

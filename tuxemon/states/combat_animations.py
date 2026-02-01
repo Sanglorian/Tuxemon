@@ -24,7 +24,7 @@ from tuxemon.database.rules import config_combat
 from tuxemon.environment import BattleLayout
 from tuxemon.menu.menu import Menu
 from tuxemon.platform.const.sizes import PARTY_LIMIT
-from tuxemon.prepare import SCREEN, SCREEN_RECT
+from tuxemon.prepare import SCALE, SCREEN, SCREEN_RECT
 from tuxemon.sprite import CaptureDeviceSprite, HordeSprite, Sprite
 from tuxemon.tools import scale
 from tuxemon.ui.combat_bars import CombatBars
@@ -649,10 +649,9 @@ class CombatAnimations(Menu[None], ABC):
         # Spawn Entities
         if self.combat_session.is_trainer_battle:
             enemy_pos = layout.get_combatant_pos("enemy", back_island.rect)
-            enemy = self.load_sprite(
-                f"gfx/sprites/player/{opponent.template.combat_front}.png",
-                **enemy_pos,
-            )
+            enemy_surface = opponent.combat_sheet().front()
+            enemy_surface = graphics.scale_surface(enemy_surface, SCALE)
+            enemy = self.load_surface(enemy_surface, **enemy_pos)
             self.sprite_map.add_sprite(opponent, enemy)
         else:
             monster_pos = layout.get_combatant_pos("monster", back_island.rect)
@@ -666,10 +665,9 @@ class CombatAnimations(Menu[None], ABC):
             self.update_hud(opponent, True, True)
 
         player_pos = layout.get_combatant_pos("player", front_island.rect)
-        player_back = self.load_sprite(
-            f"gfx/sprites/player/{player.template.combat_front}.png",
-            **player_pos,
-        )
+        player_surface = player.combat_sheet().back()
+        player_surface = graphics.scale_surface(player_surface, SCALE)
+        player_back = self.load_surface(player_surface, **player_pos)
 
         self.sprites.add(enemy, player_back)
         self.sprite_map.add_sprite(player, player_back)

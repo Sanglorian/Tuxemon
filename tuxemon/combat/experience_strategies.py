@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from tuxemon.database.rules import config_monster
 from tuxemon.db import EvolutionStage, ExperienceMethod
@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 
 
 class ExperienceStrategy(ABC):
+    name: ClassVar[ExperienceMethod]
+
     @abstractmethod
     def calculate(
         self,
@@ -32,6 +34,8 @@ class DefaultExperienceStrategy(ExperienceStrategy):
     Non-Participant XP: 0
     Notes: Simple, fair split
     """
+
+    name: ClassVar[ExperienceMethod] = ExperienceMethod.DEFAULT
 
     def calculate(
         self,
@@ -59,6 +63,8 @@ class EqualExperienceStrategy(ExperienceStrategy):
     Notes: Rewards frequent attackers
     """
 
+    name: ClassVar[ExperienceMethod] = ExperienceMethod.XP_EQUAL
+
     def calculate(
         self,
         loser: Monster,
@@ -85,6 +91,8 @@ class FeederExperienceStrategy(ExperienceStrategy):
     Non-Participant XP: 0
     Notes: Applies only if held item has XP_FEEDER
     """
+
+    name: ClassVar[ExperienceMethod] = ExperienceMethod.XP_FEEDER
 
     def calculate(
         self,
@@ -122,6 +130,8 @@ class TransmitterExperienceStrategy(ExperienceStrategy):
     Notes: Encourages whole-party growth
     """
 
+    name: ClassVar[ExperienceMethod] = ExperienceMethod.XP_TRANSMITTER
+
     def calculate(
         self,
         loser: Monster,
@@ -152,6 +162,8 @@ class OverkillExperienceStrategy(ExperienceStrategy):
     Non-Participant XP: 0
     Notes: Rewards decisive finishing hit
     """
+
+    name: ClassVar[ExperienceMethod] = ExperienceMethod.XP_OVERKILL
 
     BONUS_RATIO: float = 0.25  # class variable, 25% bonus
 
@@ -198,6 +210,8 @@ class DamageProportionalExperienceStrategy(ExperienceStrategy):
     Notes: Rewards high damage contribution
     """
 
+    name: ClassVar[ExperienceMethod] = ExperienceMethod.XP_DAMAGE_PROP
+
     def calculate(
         self,
         loser: Monster,
@@ -231,6 +245,8 @@ class BondExperienceStrategy(ExperienceStrategy):
     Notes: Rewards monsters with stronger bonds to their trainer.
     """
 
+    name: ClassVar[ExperienceMethod] = ExperienceMethod.XP_BOND
+
     def calculate(
         self,
         loser: Monster,
@@ -259,11 +275,13 @@ class StageScalingExperienceStrategy(ExperienceStrategy):
     Notes: Rewards defeating higher‑stage monsters more heavily.
     """
 
+    name: ClassVar[ExperienceMethod] = ExperienceMethod.XP_STAGE
+
     STAGE_MULTIPLIERS = {
-        EvolutionStage.basic: 1.0,  # unevolved
-        EvolutionStage.stage1: 1.5,  # mid evolution
-        EvolutionStage.stage2: 2.0,  # final evolution
-        EvolutionStage.standalone: 2.0,  # no evolution path, treat as final
+        EvolutionStage.BASIC: 1.0,  # unevolved
+        EvolutionStage.STAGE1: 1.5,  # mid evolution
+        EvolutionStage.STAGE2: 2.0,  # final evolution
+        EvolutionStage.STANDALONE: 2.0,  # no evolution path, treat as final
     }
 
     def calculate(
@@ -292,6 +310,8 @@ class SurvivorExperienceStrategy(ExperienceStrategy):
     Non-Participant XP: 0
     Notes: Encourages keeping monsters alive, even if they didn't attack.
     """
+
+    name: ClassVar[ExperienceMethod] = ExperienceMethod.XP_SURVIVOR
 
     def calculate(
         self,

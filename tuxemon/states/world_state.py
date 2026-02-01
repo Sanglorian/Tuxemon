@@ -152,8 +152,6 @@ class WorldState(State):
         self.client.npc_manager.update_npcs_off_map(time_delta, self.client)
         self.client.map_renderer.update(time_delta)
 
-        logger.debug("*** Game Loop Started ***")
-
     def draw(self, surface: Surface) -> None:
         """Draw the game world to the screen."""
         self.client.map_renderer.draw(
@@ -208,13 +206,13 @@ class WorldState(State):
         else:
             for direction in collisions:
                 if self.player.facing == direction:
-                    if direction == Direction.up:
+                    if direction == Direction.UP:
                         tile = (player_tile_pos[0], player_tile_pos[1] - 1)
-                    elif direction == Direction.down:
+                    elif direction == Direction.DOWN:
                         tile = (player_tile_pos[0], player_tile_pos[1] + 1)
-                    elif direction == Direction.left:
+                    elif direction == Direction.LEFT:
                         tile = (player_tile_pos[0] - 1, player_tile_pos[1])
-                    elif direction == Direction.right:
+                    elif direction == Direction.RIGHT:
                         tile = (player_tile_pos[0] + 1, player_tile_pos[1])
                     for npc in self.client.npc_manager.npcs:
                         tile_pos = (

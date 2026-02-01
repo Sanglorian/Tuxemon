@@ -179,6 +179,11 @@ class MapManager:
         if self.current_map:
             self.current_map.clear_inits()
 
+    def clear_map(self) -> None:
+        self.current_map = None
+        self.maps = {}
+        self._map_type_slug = None
+
     def remove_event(self, event: EventObject) -> None:
         if self.current_map:
             updated = list(self.current_map.events)

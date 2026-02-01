@@ -21,7 +21,7 @@ def test_initialization(body, mover):
     assert body.position == Vector2(0, 0)
     assert body.velocity == Vector2(0, 0)
     assert body.acceleration == Vector2(0, 0)
-    assert mover.facing == Direction.down
+    assert mover.facing == Direction.DOWN
 
 
 @pytest.mark.parametrize(
@@ -93,10 +93,10 @@ def test_stop_sets_velocity_to_zero(body, mover):
 @pytest.mark.parametrize(
     "direction,expected",
     [
-        (Direction.up, Vector2(0, -5)),
-        (Direction.down, Vector2(0, 5)),
-        (Direction.left, Vector2(-5, 0)),
-        (Direction.right, Vector2(5, 0)),
+        (Direction.UP, Vector2(0, -5)),
+        (Direction.DOWN, Vector2(0, 5)),
+        (Direction.LEFT, Vector2(-5, 0)),
+        (Direction.RIGHT, Vector2(5, 0)),
     ],
 )
 def test_move_with_valid_direction(mover, body, direction, expected):
@@ -113,16 +113,16 @@ def test_move_boundary_case(mover, body):
     mover.base_moverate = 0.0001
     mover.moverate_modifier = 1.0
 
-    mover.move(Direction.down)
+    mover.move(Direction.DOWN)
 
     assert body.velocity == Vector2(0, 0.0001)
-    assert mover.facing == Direction.down
+    assert mover.facing == Direction.DOWN
 
 
 def test_facing_persists_after_stop(mover, body):
     mover.base_moverate = 5
-    mover.move(Direction.right)
+    mover.move(Direction.RIGHT)
     mover.stop()
 
     assert body.velocity == Vector2(0, 0)
-    assert mover.facing == Direction.right
+    assert mover.facing == Direction.RIGHT

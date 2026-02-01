@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from functools import partial
-from typing import Any, ClassVar, Literal, Optional
+from typing import Any, ClassVar, Literal
 
 from pydantic import BaseModel, Field
 from pygame.surface import Surface
@@ -22,11 +22,12 @@ logger = logging.getLogger(__name__)
 
 
 class TrainingShopConfig(BaseModel):
+    background: str
     base_cost_per_level: int
     cost_scaling_type: Literal["linear", "polynomial", "exponential"] = (
         "linear"
     )
-    polynomial_exponent: Optional[float] = Field(default=1.5)
+    polynomial_exponent: float | None = Field(default=1.5)
 
 
 class TrainingCostMenu(QuantityAndCostMenu):
@@ -60,7 +61,7 @@ class ShopTrainingMenuState(ShopMenuState[Monster]):
     def __init__(
         self,
         *args: Any,
-        model: Optional[str] = None,
+        model: str | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -69,8 +70,9 @@ class ShopTrainingMenuState(ShopMenuState[Monster]):
         _model = model if model is not None else "cathedral"
         self.config = TrainingShopConfig(**raw_data[_model])
         self.base_cost_per_level = self.config.base_cost_per_level
+        self.update_background(self.config.background)
 
-    def _get_asset_image(self, asset: MenuItem[Monster]) -> Optional[Surface]:
+    def _get_asset_image(self, asset: MenuItem[Monster]) -> Surface | None:
         """Returns the front sprite image for a monster."""
         image = asset.game_object.get_sprite("front")
         return image.image if image else None

@@ -40,9 +40,6 @@ class SetMoneyAction(EventAction):
             return
 
         amount = 0 if self.amount is None else self.amount
-        if amount < 0:
-            raise AttributeError(f"{amount} must be >= 0")
-        else:
-            money_manager = character.money_controller.money_manager
-            money_manager.add_money(amount)
-            logger.info(f"{character.name}'s have {amount}")
+        money_manager = character.money_controller.money_manager
+        money_manager.set_money(amount)
+        logger.debug(f"{character.name}'s money set to {amount}")

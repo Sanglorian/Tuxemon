@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections import Counter
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from tuxemon.monster import Monster
@@ -28,21 +28,21 @@ class PartyStats:
         return [m.name for m in monsters if not m.moves.has_moves()]
 
     @staticmethod
-    def calculate_level_lowest(monsters: list[Monster]) -> Optional[int]:
+    def calculate_level_lowest(monsters: list[Monster]) -> int | None:
         """Returns the lowest level, or None if the list is empty."""
         if not monsters:
             return None
         return min(mon.level for mon in monsters)
 
     @staticmethod
-    def calculate_level_highest(monsters: list[Monster]) -> Optional[int]:
+    def calculate_level_highest(monsters: list[Monster]) -> int | None:
         """Returns the highest level, or None if the list is empty."""
         if not monsters:
             return None
         return max(mon.level for mon in monsters)
 
     @staticmethod
-    def calculate_level_average(monsters: list[Monster]) -> Optional[int]:
+    def calculate_level_average(monsters: list[Monster]) -> int | None:
         """Returns the average level, or None if the list is empty."""
         if not monsters:
             return None
@@ -50,7 +50,7 @@ class PartyStats:
         return round(total / len(monsters))
 
     @staticmethod
-    def get_alignment(monsters: list[Monster]) -> Optional[str]:
+    def get_alignment(monsters: list[Monster]) -> str | None:
         """
         Returns the dominant elemental type in the list,
         based on the most frequently occurring type.
@@ -82,3 +82,13 @@ class PartyStats:
             if monster.moves.has_move(tech_slug):
                 return True
         return False
+
+    @staticmethod
+    def missing_hp_total(monsters: list[Monster]) -> int:
+        return sum(mon.missing_hp for mon in monsters)
+
+    @staticmethod
+    def is_healed(monsters: list[Monster]) -> bool:
+        if not monsters:
+            return False
+        return all(mon.hp_ratio == 1.0 for mon in monsters)

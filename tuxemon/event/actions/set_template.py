@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SetTemplateAction(EventAction):
     """
-    Switch template (sprite and combat_front).
+    Switch template (sprite and combat_sheet).
 
-    Please remember that if you change the combat_front,
+    Please remember that if you change the combat_sheet,
     it automatically changes the combat_back.
 
     Example: if you put xxx, it's going to be xxx_back.png.
@@ -33,7 +33,7 @@ class SetTemplateAction(EventAction):
 
         .. code-block:: text
 
-           set_template <character>,<sprite>[,combat_front]
+           set_template <character>,<sprite>[,combat_sheet]
 
     Script parameters:
 
@@ -44,7 +44,7 @@ class SetTemplateAction(EventAction):
             Must be inside mods/tuxemon/sprites.
             Example: adventurer_brown_back.png -> adventurer.
 
-        combat_front:
+        combat_sheet:
             Must be inside mods/tuxemon/gfx/sprites/player.
             Example: adventurer.png -> adventurer.
     """
@@ -52,7 +52,7 @@ class SetTemplateAction(EventAction):
     name = "set_template"
     character: str
     sprite: str
-    combat_front: Optional[str] = None
+    combat_sheet: Optional[str] = None
 
     def start(self, session: Session) -> None:
         character = session.get_npc(self.character)
@@ -70,17 +70,24 @@ class SetTemplateAction(EventAction):
                 "white_female": ("heroine", "heroine"),
                 "white_male": ("adventurer", "adventurer"),
             }
-            sprite_name, combat_front = sprite_mapping.get(
+            sprite_name, combat_sheet = sprite_mapping.get(
                 gender, (None, None)
             )
+
             if sprite_name:
                 character.template.sprite_name = sprite_name
-                if combat_front:
-                    character.template.combat_front = combat_front
+
+            if combat_sheet:
+                character.template.combat_sheet = combat_sheet
+
         else:
             character.template.sprite_name = self.sprite
             logger.info(f"{character.name}'s sprite is {self.sprite}")
-            if self.combat_front:
-                character.template.combat_front = self.combat_front
-                logger.info(f"{character.name}'s front is {self.combat_front}")
+
+            if self.combat_sheet:
+                character.template.combat_sheet = self.combat_sheet
+                logger.info(
+                    f"{character.name}'s combat sheet is {self.combat_sheet}"
+                )
+
         character.sprite_controller.update_template(character.template)

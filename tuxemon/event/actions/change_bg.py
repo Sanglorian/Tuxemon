@@ -4,22 +4,16 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
-
-from pygame_menu import locals
+from typing import final
 
 from tuxemon.database.runtime import db
 from tuxemon.event.eventaction import EventAction
-from tuxemon.menu.theme import get_theme
-from tuxemon.platform.const.graphics import BACKGROUND_COLOR
 from tuxemon.session import Session
 
 logger = logging.getLogger()
 
-CATEGORIES: list[str] = ["image", "monster", "template", "item"]
+CATEGORIES: list[str] = ["image", "item"]
 CATEGORY_PATHS: dict[str, str] = {
-    "monster": "gfx/sprites/battle/{}-front.png",
-    "template": "gfx/sprites/player/{}.png",
     "item": "gfx/items/{}.png",
     "image": "gfx/ui/background/{}.png",
 }
@@ -42,12 +36,10 @@ class ChangeBgAction(EventAction):
             - A file name located in `gfx/ui/background/`
             - An RGB color formatted as `R:G:B` (e.g., `255:0:0`)
         image: An optional image identifier, which can be:
-            - A monster slug (stored in `gfx/sprites/battle`)
-            - A template slug (stored in `gfx/sprites/player`)
             - An item slug (stored in `gfx/items`)
             - A direct file path
-        category: The category of the image (e.g., monster, template,
-            item, image). If omitted, defaults to "background".
+        category: The category of the image (e.g., item or image.
+            If omitted, defaults to "background".
 
     Notes:
         - Background images must be in `gfx/ui/background/`.
@@ -55,18 +47,16 @@ class ChangeBgAction(EventAction):
     """
 
     name = "change_bg"
-    background: Optional[str] = None
-    image: Optional[str] = None
-    category: Optional[str] = None
+    background: str | None = None
+    image: str | None = None
+    category: str | None = None
 
     def start(self, session: Session) -> None:
-        # don't override previous state if we are still in the state.
+
         client = session.client
         if client.current_state is None:
-            # obligatory "should not happen"
             raise RuntimeError
 
-        # this function cleans up the previous state without crashing
         if client.has_extra_states():
             client.pop_state()
 
@@ -75,10 +65,6 @@ class ChangeBgAction(EventAction):
                 logger.error(f"{self.category} must be among {CATEGORIES}")
                 return
             if self.category == "image":
-                self.image = CATEGORY_PATHS[self.category].format(self.image)
-            elif self.image in db.database["monster"]:
-                self.image = CATEGORY_PATHS[self.category].format(self.image)
-            elif self.image in db.database["template"]:
                 self.image = CATEGORY_PATHS[self.category].format(self.image)
             elif self.image in db.database["item"]:
                 self.image = CATEGORY_PATHS[self.category].format(self.image)
@@ -104,8 +90,3 @@ class ChangeBgAction(EventAction):
 
                 else:
                     client.push_state("ColorState", color=self.background)
-
-    def cleanup(self, session: Session) -> None:
-        theme = get_theme()
-        theme.background_color = BACKGROUND_COLOR
-        theme.widget_alignment = locals.ALIGN_LEFT

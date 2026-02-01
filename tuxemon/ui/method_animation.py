@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 from tuxemon.animation_entity import AnimationManager
 from tuxemon.sprite import Sprite
@@ -21,62 +21,26 @@ class MethodKey:
 
 
 class MethodAnimationCache:
-    """
-    Caches and retrieves sprites for techniques, statuses, and items
-    used as animated methods in gameplay.
-    """
+    """Caches and retrieves sprites for gameplay methods."""
 
     def __init__(self, manager: AnimationManager) -> None:
         self._manager = manager
-        self._sprites: dict[MethodKey, Optional[Sprite]] = {}
+        self._sprites: dict[MethodKey, Sprite | None] = {}
 
     def get(
-        self, method: Union[Technique, Status, Item], is_flipped: bool
-    ) -> Optional[Sprite]:
-        """
-        Retrieves a cached sprite for the given method, creating it if necessary.
-
-        Parameters:
-            method: A Technique, Status, or Item instance.
-            is_flipped: Whether the animation should be flipped.
-
-        Returns:
-            A Sprite object representing the method's animation, or None if unavailable.
-        """
-        if not method.visuals.animation:
+        self, method: Technique | Status | Item, is_flipped: bool
+    ) -> Sprite | None:
+        slug = method.visuals.animation
+        if not slug:
             return None
 
-        key = MethodKey(method.visuals.animation, is_flipped)
+        key = MethodKey(slug, is_flipped)
 
         if key not in self._sprites:
-            self._sprites[key] = self._load_sprite(method, is_flipped)
+            self._sprites[key] = self._manager.get_sprite(
+                slug=slug,
+                loop=method.visuals.loop_mode(),
+                flip_axes=method.visuals.flip_axes if is_flipped else None,
+            )
 
         return self._sprites[key]
-
-    def _load_sprite(
-        self, method: Union[Technique, Status, Item], is_flipped: bool
-    ) -> Optional[Sprite]:
-        """
-        Loads and prepares a sprite for the given method.
-
-        Parameters:
-            method: The method whose animation should be loaded.
-            is_flipped: Whether to apply flipping to the animation.
-
-        Returns:
-            A Sprite object or None if the method has no animation.
-        """
-
-        if not method.visuals.animation:
-            return None
-
-        animation = self._manager.get_or_create_animation(
-            slug=method.visuals.animation,
-            loop=method.visuals.loop,
-        )
-
-        if is_flipped:
-            animation.flip(method.visuals.flip_axes)
-
-        animation.play()
-        return Sprite(animation=animation)

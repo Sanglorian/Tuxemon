@@ -20,17 +20,17 @@ def mover(body):
 
 def test_initial_state(mover, body):
     assert mover.state == EntityState.IDLE
-    assert mover.facing == Direction.down
+    assert mover.facing == Direction.DOWN
     assert body.velocity == Vector2(0, 0)
 
 
 @pytest.mark.parametrize(
     "direction, expected",
     [
-        (Direction.right, Vector2(5, 0)),
-        (Direction.left, Vector2(-5, 0)),
-        (Direction.up, Vector2(0, -5)),
-        (Direction.down, Vector2(0, 5)),
+        (Direction.RIGHT, Vector2(5, 0)),
+        (Direction.LEFT, Vector2(-5, 0)),
+        (Direction.UP, Vector2(0, -5)),
+        (Direction.DOWN, Vector2(0, 5)),
     ],
 )
 def test_move_sets_state_and_velocity(mover, body, direction, expected):
@@ -44,15 +44,15 @@ def test_move_sets_state_and_velocity(mover, body, direction, expected):
 
 def test_move_boundary_case(mover, body):
     mover.base_moverate = 0.0001
-    mover.move(Direction.down)
+    mover.move(Direction.DOWN)
 
     assert body.velocity == Vector2(0, 0.0001)
-    assert mover.facing == Direction.down
+    assert mover.facing == Direction.DOWN
 
 
 def test_stop_resets_velocity_and_state(mover, body):
     mover.base_moverate = 5
-    mover.move(Direction.right)
+    mover.move(Direction.RIGHT)
 
     mover.stop()
 
@@ -61,15 +61,15 @@ def test_stop_resets_velocity_and_state(mover, body):
 
 
 def test_facing_persists_after_stop(mover, body):
-    mover.move(Direction.right)
+    mover.move(Direction.RIGHT)
     mover.stop()
 
-    assert mover.facing == Direction.right
+    assert mover.facing == Direction.RIGHT
 
 
 def test_running_sets_state_and_speed(mover, body):
     mover.base_moverate = 5
-    mover.move(Direction.up)
+    mover.move(Direction.UP)
 
     mover.running()
 
@@ -79,7 +79,7 @@ def test_running_sets_state_and_speed(mover, body):
 
 def test_walking_resets_state_and_speed(mover, body):
     mover.base_moverate = CONFIG.player_runrate
-    mover.move(Direction.left)
+    mover.move(Direction.LEFT)
 
     mover.walking()
 
@@ -102,7 +102,7 @@ def test_jump_blocked_if_already_jumping(mover):
 
 def test_update_movement_state_running(mover, body):
     mover.base_moverate = 5
-    mover.move(Direction.right)
+    mover.move(Direction.RIGHT)
 
     mover.update_movement_state(running=True)
 
@@ -111,7 +111,7 @@ def test_update_movement_state_running(mover, body):
 
 def test_update_movement_state_walking(mover, body):
     mover.base_moverate = 5
-    mover.move(Direction.right)
+    mover.move(Direction.RIGHT)
 
     mover.update_movement_state(running=False)
 
@@ -127,7 +127,7 @@ def test_update_movement_state_idle(mover, body):
 
 def test_set_state_idle_resets_velocity_and_rate(mover, body):
     mover.base_moverate = 10
-    mover.move(Direction.right)
+    mover.move(Direction.RIGHT)
 
     mover.set_state(EntityState.IDLE)
 
@@ -137,7 +137,7 @@ def test_set_state_idle_resets_velocity_and_rate(mover, body):
 
 
 def test_set_state_same_state_no_change(mover):
-    mover.move(Direction.right)
+    mover.move(Direction.RIGHT)
     assert mover.state == EntityState.WALKING
 
     mover.set_state(EntityState.WALKING)

@@ -118,7 +118,7 @@ def handle_client_move_complete(
 
     sprite = self.client.registry.get(cuuid, {}).get("sprite")
     if sprite:
-        sprite.final_move_dest = event_data.char_dict.tile_pos
+        sprite._last_tile_pos = event_data.char_dict.tile_pos
         for d in sprite.direction:
             sprite.direction[d] = False
 
@@ -194,7 +194,7 @@ def handle_client_start_battle(
     sprite = self.client.registry.get(cuuid, {}).get("sprite")
     if sprite:
         sprite.running = False
-        sprite.final_move_dest = event_data.char_dict.tile_pos
+        sprite._last_tile_pos = event_data.char_dict.tile_pos
         for d in sprite.direction:
             sprite.direction[d] = False
 

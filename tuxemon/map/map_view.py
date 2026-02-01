@@ -12,24 +12,23 @@ from typing import TYPE_CHECKING, Optional
 from pygame import SRCALPHA
 from pygame.draw import line
 from pygame.gfxdraw import box
-from pygame.image import load
 from pygame.rect import Rect
 from pygame.surface import Surface
 
+from tuxemon.animation_entity import AnimationManager
 from tuxemon.camera.camera import project
-from tuxemon.db import Direction
+from tuxemon.db import Direction, FacingMode
 from tuxemon.graphics import (
     ColorLike,
     apply_cinema_bars,
     load_and_scale,
-    scale_surface,
+    slice_spritesheet,
 )
 from tuxemon.map.map import get_pos_from_tilepos
 from tuxemon.math import Vector2
 from tuxemon.platform.const.graphics import BLACK_COLOR
-from tuxemon.prepare import SCALE, SCREEN_SIZE, TILE_SIZE
+from tuxemon.prepare import SCREEN_SIZE, TILE_SIZE
 from tuxemon.surfanim import SurfaceAnimation, SurfaceAnimationCollection
-from tuxemon.tools import transform_resource_filename
 from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
@@ -51,18 +50,11 @@ class EntityFacing(str, Enum):
 
 
 DIRECTION_TO_FACING: dict[Direction, EntityFacing] = {
-    Direction.up: EntityFacing.back,
-    Direction.down: EntityFacing.front,
-    Direction.left: EntityFacing.left,
-    Direction.right: EntityFacing.right,
+    Direction.UP: EntityFacing.back,
+    Direction.DOWN: EntityFacing.front,
+    Direction.LEFT: EntityFacing.left,
+    Direction.RIGHT: EntityFacing.right,
 }
-
-
-@dataclass
-class AnimationInfo:
-    animation: SurfaceAnimation
-    position: tuple[int, int]
-    layer: int
 
 
 @dataclass
@@ -86,39 +78,6 @@ def load_and_scale_with_cache(file_path: str) -> Surface:
             logger.error(f"Failed to load sprite: {file_path} - {e}")
             raise
     return sprite_cache[file_path]
-
-
-def slice_spritesheet(
-    file_path: str,
-    frame_width: int,
-    frame_height: int,
-) -> list[Surface]:
-    """
-    Load a sprite sheet and slice it into individual frames.
-
-    The sheet is assumed to be a grid of equally sized frames.
-    """
-    real_path = transform_resource_filename(file_path)
-    full_sheet = load(real_path).convert_alpha()
-
-    sheet_w, sheet_h = full_sheet.get_size()
-
-    if sheet_w % frame_width != 0 or sheet_h % frame_height != 0:
-        raise ValueError(
-            f"Sheet '{file_path}' has invalid dimensions "
-            f"({sheet_w}x{sheet_h}) for frame size "
-            f"{frame_width}x{frame_height}"
-        )
-
-    frames = []
-    for y in range(0, sheet_h, frame_height):
-        for x in range(0, sheet_w, frame_width):
-            rect = Rect(x, y, frame_width, frame_height)
-            frame = full_sheet.subsurface(rect)
-            scaled = scale_surface(frame, SCALE)
-            frames.append(scaled)
-
-    return frames
 
 
 class SpriteController:
@@ -170,9 +129,17 @@ class SpriteController:
             self.sprite_renderer.standing,
         )
 
-    def play_animation(self) -> None:
+    def play_animation(self, move_dir: Direction) -> None:
         """Play the sprite animation."""
-        self.sprite_renderer.play()
+        if self.npc.facing_mode != FacingMode.FOLLOW_MOVEMENT:
+            facing = self.npc.facing.value
+            ani_key = SpriteRenderer.ANIMATION_MAPPING["walking"][facing]
+        else:
+            ani_key = SpriteRenderer.ANIMATION_MAPPING["walking"][
+                move_dir.value
+            ]
+
+        self.sprite_renderer.play(ani_key)
 
     def stop_animation(self) -> None:
         """Stop the sprite animation."""
@@ -361,8 +328,17 @@ class SpriteRenderer:
             raise ValueError(f"Facing '{facing}' not found.")
         return sprites[facing]
 
-    def play(self) -> None:
-        """Play all sprite animations."""
+    def play(self, ani_key: str | None = None) -> None:
+        """Play the sprite animation.
+
+        If ani_key is provided, switch to that animation first.
+        Otherwise, just resume whatever is currently active.
+        """
+        if ani_key is not None:
+            animation = self.sprite[ani_key]
+            self.surface_animations.clear()
+            self.surface_animations.add(animation)
+
         self.surface_animations.play()
 
     def stop(self) -> None:
@@ -377,7 +353,7 @@ class AbstractRenderer(ABC):
     bubble_manager: BubbleManager
     cinema_x_ratio: Optional[float]
     cinema_y_ratio: Optional[float]
-    map_animations: dict[str, AnimationInfo]
+    map_animations: AnimationManager
 
     @property
     @abstractmethod
@@ -432,7 +408,7 @@ class MapRenderer(AbstractRenderer):
         self.layer_color: Optional[ColorLike] = None
         self.cinema_x_ratio: Optional[float] = None
         self.cinema_y_ratio: Optional[float] = None
-        self.map_animations: dict[str, AnimationInfo] = {}
+        self.map_animations = AnimationManager()
         self.bubble_manager = BubbleManager()
 
     @property
@@ -459,8 +435,7 @@ class MapRenderer(AbstractRenderer):
     def update(self, time_delta: float) -> None:
         """Update the map animations."""
         self.camera_manager.update(time_delta)
-        for anim_data in self.map_animations.values():
-            anim_data.animation.update(time_delta)
+        self.map_animations.update_all(time_delta)
 
     def _prepare_map_rendering(self, current_map: AbstractMap) -> None:
         """Prepares the map renderer for drawing."""
@@ -523,7 +498,7 @@ class MapRenderer(AbstractRenderer):
             WorldSurfaces(
                 anim.get_current_frame(), Vector2(data.position), data.layer
             )
-            for data in self.map_animations.values()
+            for data in self.map_animations._cache.values()
             for anim in [data.animation]
             if not anim.is_finished() and anim.visibility
         ]

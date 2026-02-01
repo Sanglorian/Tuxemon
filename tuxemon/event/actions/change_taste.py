@@ -82,7 +82,7 @@ class ChangeTasteAction(EventAction):
                 )
                 return
         else:
-            taste_obj = Taste.get_taste(self.new_taste)
+            taste_obj = Taste.get(self.new_taste)
             if not taste_obj:
                 logger.error(f"Taste '{self.new_taste}' not found.")
                 return

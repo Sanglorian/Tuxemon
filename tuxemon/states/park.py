@@ -2,7 +2,6 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import ClassVar
 
 import pygame_menu
@@ -13,8 +12,6 @@ from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import Session
-
-MenuGameObj = Callable[[], object]
 
 
 class ParkState(PygameMenuState):

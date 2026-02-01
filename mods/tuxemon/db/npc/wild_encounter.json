@@ -5,7 +5,7 @@
   "audio": {},
   "template": {
     "sprite_name": "invisible",
-    "combat_front": "noclass",
+    "combat_sheet": "noclass",
     "slug": "noclass"
   }
 }

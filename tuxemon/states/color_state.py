@@ -31,3 +31,4 @@ class ColorState(PygameMenuState):
         else:
             raise ValueError("Invalid color format for background_color")
         super().__init__(height=height, width=width)
+        self.reset_theme()

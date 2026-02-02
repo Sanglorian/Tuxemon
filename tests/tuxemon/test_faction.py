@@ -15,7 +15,7 @@ def faction():
 
 
 def test_init(faction, mocker):
-    mocker.patch("tuxemon.locale.T.translate", return_value="")
+    mocker.patch("tuxemon.locale.locale.T.translate", return_value="")
     assert faction.slug == ""
     assert faction.name == ""
     assert faction.description == ""

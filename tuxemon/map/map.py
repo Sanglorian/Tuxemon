@@ -6,7 +6,7 @@ import logging
 from collections.abc import Generator, Mapping, Sequence
 from itertools import product
 from math import atan2, pi
-from typing import TYPE_CHECKING, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, TypeVar
 
 from tuxemon.camera.camera import project
 from tuxemon.compat.rect import ReadOnlyRect
@@ -15,8 +15,8 @@ from tuxemon.math import Vector2, Vector3
 from tuxemon.tools import round_to_divisible
 
 if TYPE_CHECKING:
-    from tuxemon.map.map_region import RegionProperties
-    from tuxemon.map.map_tuxemon import AbstractMap
+    from tuxemon.map.region import RegionProperties
+    from tuxemon.map.tuxemon import AbstractMap
 
 logger = logging.getLogger(__name__)
 
@@ -216,8 +216,8 @@ def get_adjacent_position(
 
 
 def get_direction(
-    base: Union[Vector2, tuple[int, int]],
-    target: Union[Vector2, tuple[int, int]],
+    base: Vector2 | tuple[int, int],
+    target: Vector2 | tuple[int, int],
 ) -> Direction:
     """
     Return the direction based on the coordinates position.
@@ -459,7 +459,7 @@ def get_explicit_tile_exits(
     position: tuple[int, int],
     tile: RegionProperties,
     facing: Direction,
-    skip_nodes: Optional[set[tuple[int, int]]] = None,
+    skip_nodes: set[tuple[int, int]] | None = None,
 ) -> list[tuple[float, ...]]:
     """
     Check for exits from tile which are defined in the map.

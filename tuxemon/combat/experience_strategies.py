@@ -10,7 +10,7 @@ from tuxemon.db import EvolutionStage, ExperienceMethod
 
 if TYPE_CHECKING:
     from tuxemon.combat.damage_tracker import DamageTracker
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
 
 
 class ExperienceStrategy(ABC):

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -34,8 +34,8 @@ class ModifyMoneyAction(EventAction):
 
     name = "modify_money"
     character: str
-    amount: Optional[int] = None
-    variable: Optional[str] = None
+    amount: int | None = None
+    variable: str | None = None
 
     def start(self, session: Session) -> None:
         character = session.get_npc(self.character)

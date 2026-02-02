@@ -15,10 +15,10 @@ from tuxemon.prepare import DEV_TOOLS
 
 if TYPE_CHECKING:
     from tuxemon.camera.camera import CameraManager
+    from tuxemon.entity.npc import NPC
     from tuxemon.event.eventmanager import EventManager
-    from tuxemon.map.map_manager import MapManager
+    from tuxemon.map.manager import MapManager
     from tuxemon.movement import MovementManager
-    from tuxemon.npc import NPC
     from tuxemon.platform.input_manager import InputManager
     from tuxemon.state.manager import StateManager
     from tuxemon.world.manager import WorldMenuManager

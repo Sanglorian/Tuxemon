@@ -2,13 +2,13 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 import pygame
 from pygame_menu import locals
 
 from tuxemon.animation import Animation, ScheduleType
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.platform.events import PlayerInput
@@ -37,7 +37,7 @@ class SetKeyState(PygameMenuState):
         self.value = value
         self.reset_theme()
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         invalid_keys = [
             pygame.K_UP,
             pygame.K_DOWN,

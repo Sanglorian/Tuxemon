@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections import deque
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from tuxemon.state.state import State
@@ -27,7 +27,7 @@ class StateStack:
         self._resume_set.add(state)
         self._stack.appendleft(state)
 
-    def pop(self, state: Optional[State] = None) -> State:
+    def pop(self, state: State | None = None) -> State:
         """Pop a state from the stack."""
         if not self._stack:
             raise RuntimeError("Attempted to pop from an empty state stack")
@@ -71,7 +71,7 @@ class StateStack:
         except ValueError:
             raise RuntimeError("Attempted to remove a state not in the stack")
 
-    def current(self) -> Optional[State]:
+    def current(self) -> State | None:
         """Return the current (top) state."""
         return self._stack[0] if self._stack else None
 

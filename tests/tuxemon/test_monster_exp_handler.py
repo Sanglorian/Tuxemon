@@ -3,7 +3,7 @@
 import pytest
 
 from tuxemon.database.rules import config_monster
-from tuxemon.monster_dir.experience import MonsterExperience
+from tuxemon.monster.experience import MonsterExperience
 
 
 class MockConfig:

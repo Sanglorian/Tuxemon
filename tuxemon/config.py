@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 import pygame
 from pydantic import BaseModel, Field, ValidationError, field_validator
@@ -41,7 +41,7 @@ class GameConfig(BaseModel):
     dev_tools: bool = False
     recompile_translations: bool = True
     skip_titlescreen: bool = False
-    compress_save: Optional[str] = None
+    compress_save: str | None = None
     save_prefix: str = "slot"
     save_extension: str = "save"
     save_method: str = "json"
@@ -94,7 +94,7 @@ class ControlsConfig(BaseModel):
 
 
 class ControllerConfigModel(BaseModel):
-    type: Optional[str] = None
+    type: str | None = None
     overlay: bool = False
     transparency: int = 45
     hide_mouse: bool = True
@@ -133,7 +133,7 @@ class TuxemonConfig:
 
     config_model: TuxemonFullConfig
 
-    def __init__(self, config_path: Optional[Path] = None) -> None:
+    def __init__(self, config_path: Path | None = None) -> None:
         self.config_path = config_path
 
         config_data: dict[str, Any] = TuxemonFullConfig().model_dump()
@@ -343,16 +343,16 @@ class InputConfig:
 
     def _get_custom_pygame_keyboard_controls(
         self,
-    ) -> Mapping[Optional[int], int]:
+    ) -> Mapping[int | None, int]:
         """
         Returns a dictionary mapping pygame key constants to custom button values.
         """
-        custom_controls: dict[Optional[int], int] = {None: events.UNICODE}
+        custom_controls: dict[int | None, int] = {None: events.UNICODE}
 
         for key, values in self.config_model.controls.model_dump().items():
             key = key.upper()
-            button_value: Optional[int] = getattr(buttons, key, None)
-            event_value: Optional[int] = getattr(events, key, None)
+            button_value: int | None = getattr(buttons, key, None)
+            event_value: int | None = getattr(events, key, None)
 
             internal_value = (
                 button_value if button_value is not None else event_value
@@ -362,9 +362,7 @@ class InputConfig:
 
             for each in values.split(", "):
                 each = each.lower() if len(each) == 1 else each.upper()
-                pygame_value: Optional[int] = getattr(
-                    pygame, "K_" + each, None
-                )
+                pygame_value: int | None = getattr(pygame, "K_" + each, None)
                 if pygame_value is not None:
                     custom_controls[pygame_value] = internal_value
 

@@ -5,10 +5,9 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable, Mapping, Sequence
 from functools import partial
-from typing import Optional
 
 from tuxemon.formula import convert_ft, convert_km, convert_lbs, convert_mi
-from tuxemon.locale import TranslatorManager
+from tuxemon.locale.locale import TranslatorManager
 from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_KM, U_LB, U_MI
 from tuxemon.session import Session
@@ -28,8 +27,8 @@ class TextFormatter:
         self,
         session: Session,
         translator: TranslatorManager,
-        cipher_processor: Optional[CipherProcessor] = None,
-        paginator: Optional[TextPaginator] = None,
+        cipher_processor: CipherProcessor | None = None,
+        paginator: TextPaginator | None = None,
     ):
         self.session = session
         self.translator = translator
@@ -44,8 +43,8 @@ class TextFormatter:
         session: Session,
         text: str,
         translator: TranslatorManager,
-        cipher_processor: Optional[CipherProcessor] = None,
-        paginator: Optional[TextPaginator] = None,
+        cipher_processor: CipherProcessor | None = None,
+        paginator: TextPaginator | None = None,
     ) -> str:
         """
         Convenience class method to format text without instantiating the formatter directly.
@@ -300,7 +299,7 @@ class TextFormatter:
     def paginate_translation(
         self,
         text_slug: str,
-        parameters: Optional[Mapping[str, str]] = None,
+        parameters: Mapping[str, str] | None = None,
     ) -> Sequence[str]:
         """
         Translates a dialog and processes it into a sequence of pages of text,

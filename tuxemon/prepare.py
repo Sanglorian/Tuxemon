@@ -49,7 +49,7 @@ def pygame_init() -> None:
 
     import pygame as pg
 
-    from tuxemon.locale import T
+    from tuxemon.locale.locale import T
 
     T.initialize_translations(recompile=CONFIG.recompile_translations)
     from tuxemon.database.runtime import db

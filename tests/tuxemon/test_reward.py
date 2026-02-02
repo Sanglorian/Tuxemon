@@ -16,9 +16,9 @@ from tuxemon.combat.reward_system import (
 )
 from tuxemon.database.rules import config_monster
 from tuxemon.db import Acquisition, ExperienceMethod
-from tuxemon.monster_dir.stats import BasicStats
-from tuxemon.monster_dir.status import MonsterStatusHandler
-from tuxemon.npc import NPC
+from tuxemon.entity.npc import NPC
+from tuxemon.monster.stats import BasicStats
+from tuxemon.monster.status import MonsterStatusHandler
 
 
 class DummyItem:

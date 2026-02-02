@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.db import Direction
 from tuxemon.event.eventaction import EventAction
@@ -48,8 +48,8 @@ class TransitionTeleportReturnAction(EventAction):
     name = "transition_teleport_return"
     character: str
     facing: str
-    trans_time: Optional[float] = None
-    rgb: Optional[str] = None
+    trans_time: float | None = None
+    rgb: str | None = None
 
     def start(self, session: Session) -> None:
 

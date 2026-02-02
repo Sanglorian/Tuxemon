@@ -12,12 +12,12 @@ from tuxemon.item.shop_utils import (
 )
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.quantity import QuantityAndCostMenu, QuantityAndPriceMenu
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.states.shop_base import ShopMenuState
 
 if TYPE_CHECKING:
     from tuxemon.economy.economy import Economy
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 
 class ShopMonsterMenuState(ShopMenuState[Monster]):

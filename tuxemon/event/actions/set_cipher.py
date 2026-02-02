@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import load_yaml
@@ -69,8 +69,8 @@ class SetCipherAction(EventAction):
     """
 
     name = "set_cipher"
-    option: Optional[str] = None
-    cipher_map: Optional[str] = None
+    option: str | None = None
+    cipher_map: str | None = None
 
     def start(self, session: Session) -> None:
         if self.cipher_map:

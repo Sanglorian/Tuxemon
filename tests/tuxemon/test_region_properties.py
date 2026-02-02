@@ -3,7 +3,7 @@
 import pytest
 
 from tuxemon.db import Direction
-from tuxemon.map.map_region import (
+from tuxemon.map.region import (
     PushEffect,
     RegionProperties,
     direction_to_list,

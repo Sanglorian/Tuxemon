@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from tuxemon.database.yaml_utils import load_yaml
-from tuxemon.map.map_loader import YAMLEventLoader
+from tuxemon.map.loader import YAMLEventLoader
 
 
 @pytest.fixture

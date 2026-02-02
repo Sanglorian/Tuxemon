@@ -9,10 +9,10 @@ from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
 from pygame_menu.menu import Menu
 
 from tuxemon import formula
-from tuxemon.entity_dir.party import PartyHandler
-from tuxemon.locale import T
+from tuxemon.entity.party import PartyHandler
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_PARTY
 from tuxemon.platform.const.sizes import U_KM, U_MI

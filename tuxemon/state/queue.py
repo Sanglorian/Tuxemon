@@ -7,7 +7,7 @@ import time
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from heapq import heapify, heappush
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from tuxemon.state.manager import StateManager
@@ -20,10 +20,10 @@ class QueuedState:
     priority: int
     name: str
     kwargs: Mapping[str, Any]
-    activation_time: Optional[float] = None
-    expires_at: Optional[float] = None
-    source: Optional[str] = None
-    condition: Optional[Callable[[], bool]] = None
+    activation_time: float | None = None
+    expires_at: float | None = None
+    source: str | None = None
+    condition: Callable[[], bool] | None = None
 
 
 class StateQueue:
@@ -46,10 +46,10 @@ class StateQueue:
         self,
         state_name: str,
         priority: int = 10,
-        activation_time: Optional[float] = None,
-        expires_at: Optional[float] = None,
-        source: Optional[str] = None,
-        condition: Optional[Callable[[], bool]] = None,
+        activation_time: float | None = None,
+        expires_at: float | None = None,
+        source: str | None = None,
+        condition: Callable[[], bool] | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -174,12 +174,12 @@ class StateQueue:
         self,
         state_name: str,
         *,
-        new_kwargs: Optional[Mapping[str, Any]] = None,
-        new_priority: Optional[int] = None,
-        new_activation_time: Optional[float] = None,
-        new_expires_at: Optional[float] = None,
-        new_source: Optional[str] = None,
-        new_condition: Optional[Callable[[], bool]] = None,
+        new_kwargs: Mapping[str, Any] | None = None,
+        new_priority: int | None = None,
+        new_activation_time: float | None = None,
+        new_expires_at: float | None = None,
+        new_source: str | None = None,
+        new_condition: Callable[[], bool] | None = None,
     ) -> None:
         """
         Replaces the attributes of a queued state by name.
@@ -236,7 +236,7 @@ class StateQueue:
         heapify(self._state_queue)
         logger.debug(f"Replaced queued state attributes for: {state_name}")
 
-    def peek_next(self) -> Optional[QueuedState]:
+    def peek_next(self) -> QueuedState | None:
         """
         Returns the next queued state without removing it.
 

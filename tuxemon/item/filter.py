@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.db import State
 from tuxemon.item.item import Item
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ class ItemFilter:
         self._filters.append(filter_func)
 
     def get_filtered_inventory(
-        self, items: Optional[list[Item]] = None
+        self, items: list[Item] | None = None
     ) -> list[Item]:
         all_items = items if items is not None else self.items
         if not self._filters:

@@ -12,15 +12,15 @@ from pygame.rect import Rect
 from tuxemon.db import ItemCategory
 from tuxemon.item.filter import ItemFilter
 from tuxemon.item.item import Item
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu
 from tuxemon.prepare import SCREEN_RECT
 from tuxemon.states.item_menu import ItemMenuState
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
     from tuxemon.states.combat_state import CombatState
 

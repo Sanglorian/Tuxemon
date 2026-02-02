@@ -5,14 +5,14 @@ from __future__ import annotations
 import logging
 import random
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, final
+from typing import TYPE_CHECKING, final
 
 from tuxemon.boxes import BoxMetadata
 from tuxemon.event.eventaction import EventAction
 from tuxemon.platform.const.sizes import MAX_KENNEL
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ class QuarantineAction(EventAction):
     npc_slug: str
     plague_slug: str
     action_type: str
-    amount: Optional[int] = None
+    amount: int | None = None
 
     def _quarantine_in(self, character: NPC) -> None:
         """Moves currently infected monsters from the party into the quarantine box."""

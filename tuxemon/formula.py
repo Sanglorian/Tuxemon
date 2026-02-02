@@ -6,7 +6,7 @@ import logging
 import math
 import random
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 from tuxemon.database.rules import (
     CaptureDeviceEffect,
@@ -25,9 +25,9 @@ from tuxemon.platform.const.sizes import (
 
 if TYPE_CHECKING:
     from tuxemon.element import Element
+    from tuxemon.entity.npc import NPC
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.monster.monster import Monster
     from tuxemon.technique.technique import Technique
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 def simple_damage_multiplier(
     attack_types: Sequence[Element],
     target_types: Sequence[Element],
-    additional_factors: Optional[dict[str, float]] = None,
+    additional_factors: dict[str, float] | None = None,
 ) -> float:
     """
     Calculates damage multiplier based on strengths and weaknesses.
@@ -68,7 +68,7 @@ def simple_damage_calculate(
     technique: Technique,
     user: Monster,
     target: Monster,
-    additional_factors: Optional[dict[str, float]] = None,
+    additional_factors: dict[str, float] | None = None,
 ) -> tuple[int, float]:
     """
     Calculates the damage of a technique based on stats and multiplier.
@@ -135,7 +135,7 @@ def simple_damage_calculate(
 def simple_heal(
     technique: Technique,
     monster: Monster,
-    additional_factors: Optional[dict[str, float]] = None,
+    additional_factors: dict[str, float] | None = None,
 ) -> int:
     """
     Calculates the simple healing amount based on the technique's healing
@@ -231,7 +231,7 @@ def calculate_hp_transfer(user: Monster, target: Monster, divisor: int) -> int:
 
 
 def set_health(
-    monster: Monster, value: Union[float, int], adjust: bool = False
+    monster: Monster, value: float | int, adjust: bool = False
 ) -> None:
     """Sets or adjusts monster's health, ensuring valid limits."""
     if adjust:

@@ -9,7 +9,7 @@ from typing import final
 from tuxemon.database.runtime import db
 from tuxemon.db import SeenStatus
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

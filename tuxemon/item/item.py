@@ -21,14 +21,14 @@ from tuxemon.db import (
 )
 from tuxemon.item.durability import Durability
 from tuxemon.item.stock import Stock
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.modifiers import ModifiersHandler
-from tuxemon.monster_dir.stats import BasicStats
+from tuxemon.monster.stats import BasicStats
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

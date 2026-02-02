@@ -8,7 +8,7 @@ from pydantic_core import ValidationError
 from tuxemon.db import Modifier
 from tuxemon.element import Element, ElementTypesHandler
 from tuxemon.modifiers import ModifiersHandler
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 
 
 @pytest.fixture

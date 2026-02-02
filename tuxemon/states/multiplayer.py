@@ -8,7 +8,7 @@ from typing import ClassVar
 import pygame_menu
 
 from tuxemon.animation import Animation, ScheduleType
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu, PygameMenuState
 from tuxemon.tools import open_dialog

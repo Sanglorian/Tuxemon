@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.combat.combat_context import (
     BattleMode,
@@ -15,7 +15,7 @@ from tuxemon.combat.utils import check_battle_legal, check_repellent
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import ColorLike, string_to_colorlike
 from tuxemon.item.item import Item
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.platform.const.graphics import WHITE_COLOR
 from tuxemon.session import Session
 
@@ -49,8 +49,8 @@ class RandomEncounterAction(EventAction):
 
     name = "random_encounter"
     encounter_slug: str
-    total_prob: Optional[float] = None
-    rgb: Optional[str] = None
+    total_prob: float | None = None
+    rgb: str | None = None
 
     def start(self, session: Session) -> None:
         player = session.player

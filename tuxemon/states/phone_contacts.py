@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pygame_menu
 from pygame_menu import locals
@@ -12,7 +12,7 @@ from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import load_yaml
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_CONTACTS
 from tuxemon.platform.const.sizes import UNKNOWN_MAP_SLUG
@@ -22,13 +22,13 @@ from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 logger = logging.getLogger(__name__)
 
 
 class Loader:
-    _phone_calls_data: Optional[dict[str, Any]] = None
+    _phone_calls_data: dict[str, Any] | None = None
 
     @classmethod
     def get_phone_calls_data(cls, filename: str) -> dict[str, Any]:

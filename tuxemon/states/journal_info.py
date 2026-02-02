@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pygame_menu
 from pygame_menu import locals
@@ -11,9 +11,9 @@ from pygame_menu import locals
 from tuxemon import formula
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.monster_dir.sprite import MonsterSpriteHandler, SpriteLoader
+from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_JOURNAL_INFO
 from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_LB
@@ -22,7 +22,7 @@ from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 lookup_cache: dict[str, MonsterModel] = {}
 
@@ -251,7 +251,7 @@ class JournalInfoState(PygameMenuState):
     def __init__(
         self,
         character: NPC,
-        monster: Optional[MonsterModel],
+        monster: MonsterModel | None,
         source: str,
         reveal: bool = False,
     ) -> None:

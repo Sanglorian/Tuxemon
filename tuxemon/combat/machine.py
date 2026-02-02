@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from tuxemon.combat.session import CombatSession
@@ -33,8 +33,8 @@ class CombatMachine:
         self.session = session
 
     def determine_next_phase(
-        self, current_phase: Optional[CombatPhase]
-    ) -> Optional[CombatPhase]:
+        self, current_phase: CombatPhase | None
+    ) -> CombatPhase | None:
         logger.debug(f"Evaluating next phase from: {current_phase}")
 
         if current_phase is None or current_phase == CombatPhase.BEGIN:

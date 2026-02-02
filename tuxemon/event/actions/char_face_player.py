@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.entity_dir.path import tile_distance
+from tuxemon.entity.path import tile_distance
 from tuxemon.event.eventaction import EventAction
 from tuxemon.map.map import get_direction
 from tuxemon.session import Session

@@ -7,7 +7,7 @@ import pytest
 from tuxemon.db import EconomyItemModel, EconomyModel, EconomyMonsterModel
 from tuxemon.economy.economy import Economy
 from tuxemon.item.item import Item
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 
 
 class DummyNPC:

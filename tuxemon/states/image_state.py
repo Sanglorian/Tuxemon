@@ -2,7 +2,7 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER
 
@@ -20,10 +20,10 @@ class ImageState(PygameMenuState):
 
     name: ClassVar[str] = "ImageState"
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         return None
 
-    def __init__(self, background: str, image: Optional[str] = None) -> None:
+    def __init__(self, background: str, image: str | None = None) -> None:
         width, height = SCREEN_SIZE
         image_path = f"gfx/ui/background/{background}.png"
         native = NATIVE_RESOLUTION

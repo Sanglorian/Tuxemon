@@ -10,7 +10,7 @@ from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventbehavior import BehaviorManager
 from tuxemon.event.eventengine import EventEngine
 from tuxemon.event.running import ConditionEvaluator
-from tuxemon.map.map_manager import MapManager
+from tuxemon.map.manager import MapManager
 from tuxemon.session import Session, local_session
 
 

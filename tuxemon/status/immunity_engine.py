@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from tuxemon.db import BlockedReason
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.status.status import Status
 
 

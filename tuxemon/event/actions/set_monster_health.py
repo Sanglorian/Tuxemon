@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, Union, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.formula import set_health
@@ -35,8 +35,8 @@ class SetMonsterHealthAction(EventAction):
     """
 
     name = "set_monster_health"
-    variable: Optional[str] = None
-    health: Optional[Union[int, float]] = None
+    variable: str | None = None
+    health: int | float | None = None
 
     def start(self, session: Session) -> None:
         player = session.player

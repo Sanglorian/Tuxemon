@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from tuxemon.entity_dir.steps import StepManager
+from tuxemon.entity.steps import StepManager
 
 
 class DummySession:

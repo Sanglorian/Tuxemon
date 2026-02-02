@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.session import Session
 from tuxemon.status.status import Status
 from tuxemon.tools import get_valid_uuid
@@ -34,12 +34,12 @@ class SetMonsterStatusAction(EventAction):
     """
 
     name = "set_monster_status"
-    variable: Optional[str] = None
-    status: Optional[str] = None
+    variable: str | None = None
+    status: str | None = None
 
     @staticmethod
     def set_status(
-        session: Session, monster: Monster, value: Optional[str], steps: float
+        session: Session, monster: Monster, value: str | None, steps: float
     ) -> None:
         if not value:
             monster.status.clear_status(session)

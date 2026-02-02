@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional, final
+from typing import TYPE_CHECKING, Any, final
 
 from tuxemon.database.runtime import db
 from tuxemon.db import (
@@ -13,10 +13,10 @@ from tuxemon.db import (
     DialogueProfile,
     NpcModel,
 )
+from tuxemon.entity.npc import NPC
 from tuxemon.event.eventaction import EventAction
 from tuxemon.item.item import Item
-from tuxemon.monster import Monster
-from tuxemon.npc import NPC
+from tuxemon.monster.monster import Monster
 
 if TYPE_CHECKING:
     from tuxemon.db import PartyMemberModel
@@ -48,7 +48,7 @@ class CreateNpcAction(EventAction):
     npc_slug: str
     tile_pos_x: int
     tile_pos_y: int
-    behavior: Optional[str] = None
+    behavior: str | None = None
 
     def start(self, session: Session) -> None:
         slug = self.npc_slug
@@ -138,8 +138,8 @@ def check_variables(
 
 
 def merge_dialogue(
-    source: Optional[DialogueProfile],
-    fallback: Optional[DialogueProfile] = None,
+    source: DialogueProfile | None,
+    fallback: DialogueProfile | None = None,
 ) -> DialogueProfile:
     """
     Merges a source DialogueProfile with a fallback.

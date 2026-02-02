@@ -7,7 +7,7 @@ from collections.abc import Sequence
 
 from tuxemon.database.runtime import db
 from tuxemon.db import ElementItemModel, ElementModel
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 
 logger = logging.getLogger(__name__)
 

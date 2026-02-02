@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, final
+from typing import TYPE_CHECKING, final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.platform.const.sizes import KENNEL
@@ -44,7 +44,7 @@ class SetKennelVisibleAction(EventAction):
     name = "set_kennel_visible"
     npc_slug: str
     kennel: str
-    visible: Optional[str] = None
+    visible: str | None = None
 
     def start(self, session: Session) -> None:
         character = session.get_npc(self.npc_slug)

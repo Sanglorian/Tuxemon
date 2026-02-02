@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from collections.abc import Generator
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar
 
 from pygame.rect import Rect
 
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu
 from tuxemon.platform.const.graphics import (
@@ -30,7 +30,7 @@ from tuxemon.tools import (
 from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 
 class TechniqueMenuState(Menu[Technique]):
@@ -44,8 +44,8 @@ class TechniqueMenuState(Menu[Technique]):
         self,
         character: NPC,
         techniques: list[Technique],
-        tech_filter: Optional[TechFilter] = None,
-        tech_sorter: Optional[TechSorter] = None,
+        tech_filter: TechFilter | None = None,
+        tech_sorter: TechSorter | None = None,
     ) -> None:
         self.char = character
         self.tech_filter = tech_filter or TechFilter(techniques)
@@ -147,7 +147,7 @@ class TechniqueMenuState(Menu[Technique]):
                     technique.description, self.text_area, dialog_speed="max"
                 )
 
-    def is_valid_entry(self, technique: Optional[Technique]) -> bool:
+    def is_valid_entry(self, technique: Technique | None) -> bool:
         """
         Used to determine if a given technique should be selectable.
         """

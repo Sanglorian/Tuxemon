@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from tuxemon.db import StepEffectType
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
 
 
 class StepEffectEngine:

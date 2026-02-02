@@ -11,11 +11,11 @@ from pygame_menu.menu import Menu
 from tuxemon import formula
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
+from tuxemon.entity.npc import NPC
 from tuxemon.graphics import scale_surface
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_PLAYER1, BG_PLAYER2
 from tuxemon.platform.const.sizes import U_KM, U_MI

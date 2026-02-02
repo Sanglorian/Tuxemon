@@ -6,8 +6,8 @@ import pytest
 
 from tuxemon.core.asset import init_assets
 from tuxemon.db import CategoryStatus, EffectPhase, ResponseStatus
-from tuxemon.monster import Monster
-from tuxemon.monster_dir.status import MonsterStatusHandler
+from tuxemon.monster.monster import Monster
+from tuxemon.monster.status import MonsterStatusHandler
 
 
 @pytest.fixture

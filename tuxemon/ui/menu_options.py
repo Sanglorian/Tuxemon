@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 
 
 def noop_action() -> None:
@@ -35,9 +35,7 @@ class MenuOptions:
         """Initializes the menu with a sequence of choice options."""
         self.options = list(options)
 
-    def add(
-        self, option: ChoiceOption, position: Optional[int] = None
-    ) -> None:
+    def add(self, option: ChoiceOption, position: int | None = None) -> None:
         """Adds a new option to the menu, optionally at a specific index."""
         if position is None:
             self.options.append(option)

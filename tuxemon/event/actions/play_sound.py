@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.platform.const.sizes import SOUND_RANGE
@@ -37,7 +37,7 @@ class PlaySoundAction(EventAction):
 
     name = "play_sound"
     filename: str
-    volume: Optional[float] = None
+    volume: float | None = None
 
     def start(self, session: Session) -> None:
         client = session.client

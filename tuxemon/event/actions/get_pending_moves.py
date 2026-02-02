@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.interface import MenuItem
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.session import Session
 from tuxemon.states.technique_menu import TechniqueMenuState
 from tuxemon.technique.technique import Technique
@@ -40,7 +40,7 @@ class GetPendingMovesAction(EventAction):
     name = "get_pending_moves"
     variable_name: str
 
-    def validate(self, technique: Optional[Technique]) -> bool:
+    def validate(self, technique: Technique | None) -> bool:
         monster = self.monster
 
         if technique is None:

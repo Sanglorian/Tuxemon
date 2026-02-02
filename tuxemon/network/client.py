@@ -5,14 +5,14 @@ from __future__ import annotations
 import logging
 from enum import Enum, auto
 from itertools import count
-from typing import TYPE_CHECKING, Any, Optional, TypedDict
+from typing import TYPE_CHECKING, Any, TypedDict
 
 import pygame as pg
 
+from tuxemon.entity.npc import NPC
 from tuxemon.network.event_dispatcher import EventDispatcher
 from tuxemon.network.networking import EventData, update_client
 from tuxemon.network.websocket_client import WebsocketClientWrapper
-from tuxemon.npc import NPC
 from tuxemon.session import local_session
 from tuxemon.states import world_state as world
 
@@ -58,7 +58,7 @@ class TuxemonClient:
 
         self.available_games: list[tuple[str, int]] = []
         self.server_list: list[str] = []
-        self.selected_game: Optional[tuple[str, int]] = None
+        self.selected_game: tuple[str, int] | None = None
 
         self.populated: bool = False
         self.listening: bool = False
@@ -220,7 +220,7 @@ class InputEventTranslator:
 
         return EventData.from_dict(event_data_dict).to_dict()
 
-    def _map_key(self, key: int) -> Optional[str]:
+    def _map_key(self, key: int) -> str | None:
         key_map = {
             pg.K_LSHIFT: "SHIFT",
             pg.K_RSHIFT: "SHIFT",

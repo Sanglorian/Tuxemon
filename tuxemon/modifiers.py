@@ -6,54 +6,54 @@ import logging
 from collections import defaultdict
 from collections.abc import Callable, Iterator, Sequence
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.db import StackingMode
 
 if TYPE_CHECKING:
     from tuxemon.db import Modifier
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
 
 logger = logging.getLogger(__name__)
 
 
-def handle_type(modifier: Modifier, monster: Monster) -> Optional[float]:
+def handle_type(modifier: Modifier, monster: Monster) -> float | None:
     if any(t.name in modifier.values for t in monster.types.current):
         return modifier.multiplier
     return None
 
 
-def handle_tag(modifier: Modifier, monster: Monster) -> Optional[float]:
+def handle_tag(modifier: Modifier, monster: Monster) -> float | None:
     if any(t in modifier.values for t in monster.tags):
         return modifier.multiplier
     return None
 
 
-def handle_terrain(modifier: Modifier, monster: Monster) -> Optional[float]:
+def handle_terrain(modifier: Modifier, monster: Monster) -> float | None:
     if any(t in modifier.values for t in monster.terrains):
         return modifier.multiplier
     return None
 
 
-def handle_shape(modifier: Modifier, monster: Monster) -> Optional[float]:
+def handle_shape(modifier: Modifier, monster: Monster) -> float | None:
     if any(t == monster.shape.slug for t in modifier.values):
         return modifier.multiplier
     return None
 
 
-def handle_stage(modifier: Modifier, monster: Monster) -> Optional[float]:
+def handle_stage(modifier: Modifier, monster: Monster) -> float | None:
     if any(t == monster.stage.value for t in modifier.values):
         return modifier.multiplier
     return None
 
 
-def handle_species(modifier: Modifier, monster: Monster) -> Optional[float]:
+def handle_species(modifier: Modifier, monster: Monster) -> float | None:
     if any(t == monster.species for t in modifier.values):
         return modifier.multiplier
     return None
 
 
-def handle_stat(modifier: Modifier, monster: Monster) -> Optional[float]:
+def handle_stat(modifier: Modifier, monster: Monster) -> float | None:
     logger.warning(
         "handle_stat() is a reserved placeholder for taste/terrain/weather modifiers. "
         "Do not use directly."
@@ -61,7 +61,7 @@ def handle_stat(modifier: Modifier, monster: Monster) -> Optional[float]:
     return None
 
 
-def handle_stat_max(modifier: Modifier, monster: Monster) -> Optional[float]:
+def handle_stat_max(modifier: Modifier, monster: Monster) -> float | None:
     """
     Check if the modifier applies to the monster's highest base stat.
     """
@@ -76,7 +76,7 @@ def handle_stat_max(modifier: Modifier, monster: Monster) -> Optional[float]:
     return None
 
 
-def handle_stat_min(modifier: Modifier, monster: Monster) -> Optional[float]:
+def handle_stat_min(modifier: Modifier, monster: Monster) -> float | None:
     """
     Check if the modifier applies to the monster's lowest base stat.
     """
@@ -92,7 +92,7 @@ def handle_stat_min(modifier: Modifier, monster: Monster) -> Optional[float]:
 
 
 ATTRIBUTE_HANDLER_REGISTRY: dict[
-    str, Callable[[Modifier, Monster], Optional[float]]
+    str, Callable[[Modifier, Monster], float | None]
 ] = {
     "type": handle_type,
     "tag": handle_tag,
@@ -128,10 +128,10 @@ def parse_modifier_mode(value: str) -> ModifierMode:
 class ModifiersHandler:
     def __init__(
         self,
-        modifiers: Optional[list[Modifier]] = None,
-        attribute_handlers: Optional[
-            dict[str, Callable[[Modifier, Monster], Optional[float]]]
-        ] = None,
+        modifiers: list[Modifier] | None = None,
+        attribute_handlers: None | (
+            dict[str, Callable[[Modifier, Monster], float | None]]
+        ) = None,
     ) -> None:
         self._modifiers: dict[str, list[Modifier]] = {}
         self._attribute_handlers = (
@@ -144,7 +144,7 @@ class ModifiersHandler:
     def register_handler(
         self,
         attribute: str,
-        handler: Callable[[Modifier, Monster], Optional[float]],
+        handler: Callable[[Modifier, Monster], float | None],
     ) -> None:
         self._attribute_handlers[attribute] = handler
 
@@ -176,7 +176,7 @@ class ModifiersHandler:
 
     def _get_applicable_multiplier(
         self, modifier: Modifier, monster: Monster
-    ) -> Optional[float]:
+    ) -> float | None:
         if modifier.condition_name:
             condition = CONDITION_REGISTRY.get(modifier.condition_name)
             if condition is None:

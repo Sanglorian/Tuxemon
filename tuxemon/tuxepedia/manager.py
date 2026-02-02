@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from tuxemon.db import SeenStatus
 from tuxemon.tuxepedia.data import TuxepediaData
@@ -97,7 +97,7 @@ class TuxepediaManager:
     def __init__(
         self,
         event_bus: EventBus,
-        initial_entries: Optional[dict[str, MonsterEntry]] = None,
+        initial_entries: dict[str, MonsterEntry] | None = None,
     ) -> None:
         """Initializes the manager, optionally loading data via initial_entries."""
         self._event_bus = event_bus
@@ -246,7 +246,7 @@ class TuxepediaManager:
 
 
 def decode_tuxepedia(
-    json_data: Optional[Mapping[str, Any]], event_bus: EventBus
+    json_data: Mapping[str, Any] | None, event_bus: EventBus
 ) -> TuxepediaManager:
     """
     Creates a new TuxepediaManager object from the given JSON data.

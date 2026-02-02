@@ -5,9 +5,9 @@ from unittest.mock import MagicMock
 import pytest
 
 from tuxemon.db import Direction
+from tuxemon.entity.npc import NPC
 from tuxemon.event.eventmanager import EventManager
 from tuxemon.movement import MovementManager
-from tuxemon.npc import NPC
 from tuxemon.platform.input_manager import InputManager
 
 

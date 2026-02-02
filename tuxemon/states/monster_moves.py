@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pygame_menu
 from pygame_menu import locals
@@ -12,7 +12,7 @@ from pygame_menu.widgets.widget.progressbar import ProgressBar
 
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel, SpeedLabel
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import TECH_INFO
@@ -23,7 +23,7 @@ from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.platform.events import PlayerInput
 
 lookup_cache: dict[str, MonsterModel] = {}
@@ -44,13 +44,13 @@ class MonsterMovesState(PygameMenuState):
     """
 
     name: ClassVar[str] = "MonsterMovesState"
-    description_label: Optional[Any] = None
-    info_label: Optional[Any] = None
-    bar_accuracy: Optional[ProgressBar] = None
-    bar_potency: Optional[ProgressBar] = None
-    power_label: Optional[Any] = None
-    range_icon_widget: Optional[Any] = None
-    speed_icon_widget: Optional[Any] = None
+    description_label: Any | None = None
+    info_label: Any | None = None
+    bar_accuracy: ProgressBar | None = None
+    bar_potency: ProgressBar | None = None
+    power_label: Any | None = None
+    range_icon_widget: Any | None = None
+    speed_icon_widget: Any | None = None
     type_icon_widgets: list[Any] = []
 
     # -------------------------
@@ -124,7 +124,7 @@ class MonsterMovesState(PygameMenuState):
         self, menu: pygame_menu.Menu, technique: Technique
     ) -> None:
         width, height = SCREEN_SIZE
-        description_label: Optional[Label] = None
+        description_label: Label | None = None
         for widget in menu.get_widgets():
             if isinstance(widget, Label) and widget.get_id() == "description":
                 description_label = widget
@@ -151,7 +151,7 @@ class MonsterMovesState(PygameMenuState):
         self, menu: pygame_menu.Menu, technique: Technique
     ) -> None:
         width, height = SCREEN_SIZE
-        info_label: Optional[Label] = None
+        info_label: Label | None = None
         for widget in menu.get_widgets():
             if isinstance(widget, Label) and widget.get_id() == "label":
                 info_label = widget
@@ -196,8 +196,8 @@ class MonsterMovesState(PygameMenuState):
         diff_potency = round((technique.potency / POTENCY_RANGE[1]) * 100)
 
         # Find existing bars (by title) if present
-        bar_accuracy: Optional[ProgressBar] = None
-        bar_potency: Optional[ProgressBar] = None
+        bar_accuracy: ProgressBar | None = None
+        bar_potency: ProgressBar | None = None
         for widget in menu.get_widgets():
             if isinstance(widget, ProgressBar):
                 if widget.get_title() == T.translate("technique_accuracy"):
@@ -243,9 +243,9 @@ class MonsterMovesState(PygameMenuState):
         if not hasattr(self, "type_icon_widgets"):
             self.type_icon_widgets: list[Any] = []
         if not hasattr(self, "range_icon_widget"):
-            self.range_icon_widget: Optional[Any] = None
+            self.range_icon_widget: Any | None = None
         if not hasattr(self, "speed_icon_widget"):
-            self.speed_icon_widget: Optional[Any] = None
+            self.speed_icon_widget: Any | None = None
 
         fxw: Callable[[float], int] = lambda r: fix_measure(SCREEN_SIZE[0], r)
         fxh: Callable[[float], int] = lambda r: fix_measure(SCREEN_SIZE[1], r)
@@ -339,7 +339,7 @@ class MonsterMovesState(PygameMenuState):
         if not lookup_cache:
             _lookup_monsters()
 
-        monster: Optional[Monster] = None
+        monster: Monster | None = None
         source = ""
         for element in kwargs.values():
             monster = element["monster"]

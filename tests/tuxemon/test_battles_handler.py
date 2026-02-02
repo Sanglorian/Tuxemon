@@ -5,7 +5,7 @@ import unittest
 
 from tuxemon.battle import Battle
 from tuxemon.db import OutputBattle
-from tuxemon.entity_dir.battle import BattlesHandler
+from tuxemon.entity.battle import BattlesHandler
 from tuxemon.save_state import NPCState
 
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from tuxemon.save_state import NPCState
@@ -20,7 +20,7 @@ class CipherProcessor:
     def __init__(
         self,
         cipher_map: dict[str, str],
-        unlocked_letters: Optional[set[str]] = None,
+        unlocked_letters: set[str] | None = None,
     ) -> None:
         self._unlocked_letters = unlocked_letters or set()
         self._cipher_map = cipher_map

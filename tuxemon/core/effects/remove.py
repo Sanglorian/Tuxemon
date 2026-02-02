@@ -10,7 +10,7 @@ from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 from tuxemon.db import CategoryStatus
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 

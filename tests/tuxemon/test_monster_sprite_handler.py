@@ -6,7 +6,7 @@ import pytest
 from pygame import SRCALPHA
 from pygame.surface import Surface
 
-from tuxemon.monster_dir.sprite import MonsterSpriteHandler
+from tuxemon.monster.sprite import MonsterSpriteHandler
 
 
 @pytest.fixture

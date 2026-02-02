@@ -15,8 +15,8 @@ from tuxemon.state.state import State
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
+    from tuxemon.monster.monster import Monster
     from tuxemon.ui.combat_hud import CombatLayoutManager
 
 

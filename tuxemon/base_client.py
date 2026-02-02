@@ -31,10 +31,10 @@ from tuxemon.event.eventmanager import EventManager
 from tuxemon.event.eventpersist import EventPersist
 from tuxemon.event.running import ConditionEvaluator
 from tuxemon.map.collision_manager import CollisionManager
-from tuxemon.map.map_loader import MapLoader
-from tuxemon.map.map_manager import MapManager
-from tuxemon.map.map_transition import MapTransition
-from tuxemon.map.map_view import AbstractRenderer, NullRenderer
+from tuxemon.map.loader import MapLoader
+from tuxemon.map.manager import MapManager
+from tuxemon.map.transition import MapTransition
+from tuxemon.map.view import AbstractRenderer, NullRenderer
 from tuxemon.menu.alert import AlertManager
 from tuxemon.movement import MovementManager, Pathfinder
 from tuxemon.network.manager import NetworkManager
@@ -56,8 +56,8 @@ from tuxemon.world.weather import WorldWeatherManager
 
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
+    from tuxemon.monster.monster import Monster
     from tuxemon.platform.events import PlayerInput
     from tuxemon.state.queue import QueuedState
     from tuxemon.ui.cipher_processor import CipherProcessor

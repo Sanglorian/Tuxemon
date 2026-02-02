@@ -11,7 +11,7 @@ from tuxemon.technique.technique import Technique
 from tuxemon.tools import get_valid_uuid
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

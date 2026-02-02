@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Optional, Protocol
+from typing import Protocol
 
 import pygame
 
@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 class MusicPlayerState:
     def __init__(self) -> None:
         self.status = MusicStatus.STOPPED
-        self.current_song: Optional[str] = None
-        self.previous_song: Optional[str] = None
+        self.current_song: str | None = None
+        self.previous_song: str | None = None
         self.cache: dict[str, str] = {}
 
     def load(
@@ -128,7 +128,7 @@ class MusicPlayerState:
                 "Music is not playing, volume adjustment not applied."
             )
 
-    def get_volume(self) -> Optional[float]:
+    def get_volume(self) -> float | None:
         if self.status == MusicStatus.PLAYING:
             return float(mixer2.music.get_volume())
         else:
@@ -148,7 +148,7 @@ class SoundProtocol(Protocol):
 
 
 class SoundWrapper(SoundProtocol):
-    def __init__(self, sound: Optional[pygame.mixer.Sound] = None):
+    def __init__(self, sound: pygame.mixer.Sound | None = None):
         self.sound = sound
 
     def play(self) -> None:
@@ -164,7 +164,7 @@ class SoundManager:
     def __init__(self) -> None:
         self.sounds: dict[str, SoundProtocol] = {}
 
-    def get_sound_filename(self, slug: str) -> Optional[Path]:
+    def get_sound_filename(self, slug: str) -> Path | None:
         if slug is None or slug == "":
             return None
 

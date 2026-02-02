@@ -5,14 +5,14 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pygame_menu
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 
 from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import load_yaml
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_CONTACTS
 from tuxemon.platform.const.sizes import UNKNOWN_MAP_SLUG
@@ -20,7 +20,7 @@ from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 logger = logging.getLogger(__name__)
 
@@ -31,8 +31,8 @@ TUNING_TOLERANCE = 0.2
 
 
 class Loader:
-    _radio_map_lists: Optional[dict[str, Any]] = None
-    _radio_data: Optional[dict[str, Any]] = None
+    _radio_map_lists: dict[str, Any] | None = None
+    _radio_data: dict[str, Any] | None = None
 
     @classmethod
     def get_radio_map_lists(
@@ -88,7 +88,7 @@ def _check_conditions(
 
 def _get_broadcast_content(
     radio_state: NuPhoneRadioBase, station_slug: str
-) -> tuple[list[str], Optional[dict[str, Any]]]:
+) -> tuple[list[str], dict[str, Any] | None]:
     """Finds the correct dialogue and variables to set for a given station slug."""
     station_content = RADIO_DATA.get(station_slug, {})
     ULTIMATE_FALLBACK_DIALOGUE = ["radio_static_msgid"]
@@ -100,7 +100,7 @@ def _get_broadcast_content(
     dialogue_msgids: list[str] = default_broadcast.get(
         "dialogue", ULTIMATE_FALLBACK_DIALOGUE
     )
-    set_variables: Optional[dict[str, Any]] = None
+    set_variables: dict[str, Any] | None = None
 
     conditional_broadcasts = station_content.get("conditional_broadcasts", [])
 
@@ -209,9 +209,7 @@ class NuPhoneRadioTuner(NuPhoneRadioBase):
     name: ClassVar[str] = "NuPhoneRadioTuner"
     current_station_slug: str = "station_scrambled_frequency"
 
-    def __init__(
-        self, character: NPC, frequency: Optional[float] = None
-    ) -> None:
+    def __init__(self, character: NPC, frequency: float | None = None) -> None:
         self.initial_freq = (
             frequency if frequency is not None else INITIAL_FREQ
         )

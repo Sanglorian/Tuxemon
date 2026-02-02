@@ -8,8 +8,8 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from tuxemon.combat.sort_manager import SortManager
-from tuxemon.monster import Monster
-from tuxemon.npc import NPC
+from tuxemon.entity.npc import NPC
+from tuxemon.monster.monster import Monster
 from tuxemon.status.status import Status
 from tuxemon.technique.technique import Technique
 

@@ -5,7 +5,7 @@ from unittest.mock import Mock
 import pygame
 import pytest
 
-from tuxemon.map.map_view import EntityFacing, SpriteRenderer
+from tuxemon.map.view import EntityFacing, SpriteRenderer
 from tuxemon.prepare import SCREEN_SIZE, TILE_SIZE
 from tuxemon.user_config import CONFIG
 
@@ -35,7 +35,7 @@ def test_load_static_prop(monkeypatch):
     fake_surface = make_frame(32, 32)
 
     monkeypatch.setattr(
-        "tuxemon.map.map_view.load_and_scale_with_cache",
+        "tuxemon.map.view.load_and_scale_with_cache",
         lambda p: fake_surface,
     )
 
@@ -63,7 +63,7 @@ def test_load_from_sheet(monkeypatch):
     npc.tile_pos = (0, 0)
 
     monkeypatch.setattr(
-        "tuxemon.map.map_view.slice_spritesheet",
+        "tuxemon.map.view.slice_spritesheet",
         lambda *args, **kwargs: fake_sheet(),
     )
 
@@ -101,7 +101,7 @@ def test_walking_animation_pattern(monkeypatch):
 
     frames = fake_sheet()
     monkeypatch.setattr(
-        "tuxemon.map.map_view.slice_spritesheet",
+        "tuxemon.map.view.slice_spritesheet",
         lambda *args, **kwargs: frames,
     )
 
@@ -137,7 +137,7 @@ def test_tall_sprite_offset(monkeypatch):
     frames = [pygame.Surface((16, 64)) for _ in range(12)]
 
     monkeypatch.setattr(
-        "tuxemon.map.map_view.slice_spritesheet",
+        "tuxemon.map.view.slice_spritesheet",
         lambda *args, **kwargs: frames,
     )
 

@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.relationship import Connection
 from tuxemon.session import Session
 
@@ -41,11 +41,11 @@ class AddContactsAction(EventAction):
     name = "add_contacts"
     character: str
     npc_slug: str
-    relation: Optional[str] = None
-    strength: Optional[int] = None
-    steps: Optional[float] = None
-    decay_rate: Optional[float] = None
-    decay_threshold: Optional[int] = None
+    relation: str | None = None
+    strength: int | None = None
+    steps: float | None = None
+    decay_rate: float | None = None
+    decay_threshold: int | None = None
 
     def start(self, session: Session) -> None:
         character = session.get_npc(self.character)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from tuxemon.event import get_event_bus
 from tuxemon.platform.events import PlayerInput
@@ -25,7 +25,7 @@ class InputRecorder:
         self._is_recording: bool = False
         self._is_playing_back: bool = False
         self._playback_index: int = 0
-        self._current_playback_data: Optional[list[PlayerInput]] = None
+        self._current_playback_data: list[PlayerInput] | None = None
         self._recordings: dict[str, list[PlayerInput]] = {}
         self._recording_states: dict[str, dict[str, Any]] = {}
         self._initial_state: dict[str, Any] | None = None
@@ -73,7 +73,7 @@ class InputRecorder:
         if self._is_recording:
             self._recorded_events.append(event.clone())
 
-    def stop_recording(self, name: Optional[str] = None) -> list[PlayerInput]:
+    def stop_recording(self, name: str | None = None) -> list[PlayerInput]:
         if not self._is_recording:
             return []
         self._is_recording = False
@@ -85,7 +85,7 @@ class InputRecorder:
             logger.info(f"Recording saved in memory under name '{name}'")
         return self._recorded_events
 
-    def save_to_file(self, path: Path, name: Optional[str] = None) -> bool:
+    def save_to_file(self, path: Path, name: str | None = None) -> bool:
         """Save either the last recording or a named one to file."""
         events = self._recordings.get(name) if name else self._recorded_events
         state = (
@@ -108,8 +108,8 @@ class InputRecorder:
             return False
 
     def load_from_file(
-        self, path: Path, name: Optional[str] = None
-    ) -> Optional[list[PlayerInput]]:
+        self, path: Path, name: str | None = None
+    ) -> list[PlayerInput] | None:
         """Load events from file and optionally store under a name."""
         if not path.exists():
             logger.error(f"Input file not found: {path}")
@@ -125,7 +125,7 @@ class InputRecorder:
             logger.error(f"Could not load input file {path}: {e}")
             return None
 
-    def next_playback_event(self) -> Optional[PlayerInput]:
+    def next_playback_event(self) -> PlayerInput | None:
         """Return the next playback event if available."""
         if self._is_playing_back and self._current_playback_data:
             if self._playback_index < len(self._current_playback_data):
@@ -140,9 +140,9 @@ class InputRecorder:
         """Return all named recordings currently stored in memory."""
         return list(self._recordings.keys())
 
-    def get_recording(self, name: str) -> Optional[list[PlayerInput]]:
+    def get_recording(self, name: str) -> list[PlayerInput] | None:
         return self._recordings.get(name)
 
-    def get_recording_state(self, name: str) -> Optional[dict[str, Any]]:
+    def get_recording_state(self, name: str) -> dict[str, Any] | None:
         """Return the initial state metadata for a named recording."""
         return self._recording_states.get(name)

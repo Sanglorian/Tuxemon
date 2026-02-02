@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, final
+from typing import TYPE_CHECKING, final
 
 from tuxemon.camera.camera import Camera
 from tuxemon.event.eventaction import EventAction
@@ -37,7 +37,7 @@ class CameraManageAction(EventAction):
     name = "camera_manage"
     action: str
     camera_name: str = "default"
-    npc_slug: Optional[str] = None
+    npc_slug: str | None = None
 
     def start(self, session: Session) -> None:
         manager = session.client.camera_manager

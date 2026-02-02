@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar
 
 import pygame_menu
 
@@ -18,7 +18,7 @@ from tuxemon.states.monster_menu import MonsterMenuHandler
 
 if TYPE_CHECKING:
     from tuxemon.animation import Animation
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
     from tuxemon.world.manager import MenuItem, WorldMenuManager
 
 logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ class WorldMenuState(PygameMenuState):
         ani.schedule(self.update_animation_position, ScheduleType.ON_UPDATE)
         return ani
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         if (
             event.button in (buttons.START, buttons.B, buttons.BACK)
             and event.pressed

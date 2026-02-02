@@ -9,7 +9,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import TracebackType
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 from tuxemon.constants.paths import ACTIONS_PATH, LIBDIR, get_plugin_paths
 from tuxemon.plugin import PluginManager
@@ -42,9 +42,9 @@ class ActionContextManager:
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> None:
         """
         Called once when exiting the context.
@@ -270,7 +270,7 @@ class EventAction(ABC):
 
 class ActionManager:
 
-    def __init__(self, root_path: Optional[Path] = None) -> None:
+    def __init__(self, root_path: Path | None = None) -> None:
         if root_path is None:
             root_path = LIBDIR.parent
 
@@ -290,8 +290,8 @@ class ActionManager:
     def get_action(
         self,
         name: str,
-        parameters: Optional[Sequence[Any]] = None,
-    ) -> Optional[EventAction]:
+        parameters: Sequence[Any] | None = None,
+    ) -> EventAction | None:
         """
         Get an action that is loaded into the engine.
 

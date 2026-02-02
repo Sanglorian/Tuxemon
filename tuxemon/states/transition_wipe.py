@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from pygame import draw as pg_draw
 from pygame.surface import Surface
@@ -86,5 +86,5 @@ class WipeTransition(State):
                 surface, self.color, (0, self.wipe_y, self.width, self.height)
             )
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         return None

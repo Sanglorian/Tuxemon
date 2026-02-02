@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon import formula
 from tuxemon.combat.utils import set_var
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 
@@ -59,7 +59,7 @@ class RunEffect(CoreEffect):
 
         return TechEffectResult(name=tech.name, success=success, extras=extras)
 
-    def _determine_escape_method(self, user: Monster) -> Optional[str]:
+    def _determine_escape_method(self, user: Monster) -> str | None:
         """
         Determines which escape method to use based on monster position.
         """

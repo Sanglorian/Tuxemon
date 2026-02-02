@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, final
+from typing import TYPE_CHECKING, final
 
 from tuxemon.event.eventaction import EventAction
 
@@ -35,7 +35,7 @@ class SetEnvironmentAction(EventAction):
     """
 
     name = "set_environment"
-    slug: Optional[str] = None
+    slug: str | None = None
 
     def start(self, session: Session) -> None:
         if self.slug is None:

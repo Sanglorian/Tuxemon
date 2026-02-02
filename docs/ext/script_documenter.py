@@ -1,5 +1,3 @@
-from typing import Optional
-
 from docutils.statemachine import StringList
 from sphinx.application import Sphinx
 from sphinx.ext.autodoc import ClassDocumenter
@@ -22,7 +20,7 @@ class ScriptClassDocumenter(ClassDocumenter):
 
     def add_content(
         self,
-        more_content: Optional[StringList],
+        more_content: StringList | None,
         no_docstring: bool = False,
     ) -> None:
         """Add the processed docstring content if available."""

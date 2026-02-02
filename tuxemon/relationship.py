@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from tuxemon.constants.paths import mods_folder
 from tuxemon.database.yaml_utils import load_yaml
@@ -220,7 +220,7 @@ class Relationships:
                 connection=self.connections[slug],
             )
 
-    def get_connection(self, slug: str) -> Optional[Connection]:
+    def get_connection(self, slug: str) -> Connection | None:
         return self.connections.get(slug)
 
     def get_all_connections(self) -> dict[str, Connection]:

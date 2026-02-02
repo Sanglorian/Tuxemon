@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar
 
 from pygame.surface import Surface
 
@@ -61,7 +61,7 @@ class SplashState(State):
         if self.triggered:
             self.parent.pop_state()
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         # Skip the splash screen if a key is pressed.
         if event.pressed and not self.triggered:
             self.fade_out()

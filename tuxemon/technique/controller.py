@@ -9,7 +9,7 @@ from functools import partial
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import TechEffectResult
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.session import Session
 from tuxemon.states.monster_menu import MonsterMenuState
@@ -18,8 +18,8 @@ from tuxemon.tools import open_dialog, show_result_as_dialog
 from tuxemon.ui.menu_options import ChoiceOption, MenuOptions
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
+    from tuxemon.monster.monster import Monster
 
 logger = logging.getLogger(__name__)
 

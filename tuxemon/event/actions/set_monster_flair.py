@@ -9,7 +9,7 @@ from typing import final
 from tuxemon.database.runtime import db
 from tuxemon.db import FlairModel
 from tuxemon.event.eventaction import EventAction
-from tuxemon.monster_dir.sprite import Flair
+from tuxemon.monster.sprite import Flair
 from tuxemon.session import Session
 from tuxemon.tools import get_valid_uuid
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional, Union
+from typing import Any
 
 logger = logging.getLogger(__name__)
 from dataclasses import dataclass
@@ -17,7 +17,7 @@ class CommonCondition:
     name = "Common"
 
     @staticmethod
-    def _get_attribute(entity: object, parameter: str) -> Optional[Any]:
+    def _get_attribute(entity: object, parameter: str) -> Any | None:
         """
         Get the attribute of an entity.
 
@@ -216,7 +216,7 @@ class CommonCondition:
         entity: object,
         parameter: str,
         operator: str,
-        value: Union[int, float],
+        value: int | float,
     ) -> bool:
         """
         Check if a entity's parameter is greater_than, etc.

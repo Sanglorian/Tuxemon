@@ -4,16 +4,16 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from functools import partial
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 import pygame_menu
 from pygame_menu import locals
 
 from tuxemon.db import MissionStatus
-from tuxemon.locale import T
+from tuxemon.entity.npc import NPC
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.mission.mission import Mission
-from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.platform.events import PlayerInput
@@ -174,7 +174,7 @@ class SingleMissionState(PygameMenuState):
             font_size=self.font_type.small,
         )
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         client = self.client
         missions = self.character.mission_controller.get_active_missions()
         if event.button in (buttons.RIGHT, buttons.LEFT) and event.pressed:

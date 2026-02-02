@@ -13,12 +13,12 @@ from tuxemon.core.core_effect import (
     TechEffectResult,
 )
 from tuxemon.db import EffectPhase
-from tuxemon.monster_dir.stat_utils import apply_stat_modifiers
-from tuxemon.monster_dir.stats import BasicStats
+from tuxemon.monster.stat_utils import apply_stat_modifiers
+from tuxemon.monster.stats import BasicStats
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
     from tuxemon.status.status import Status
     from tuxemon.technique.technique import Technique

@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.session import Session
 from tuxemon.tools import open_dialog
 
@@ -40,7 +40,7 @@ class SaveGameAction(EventAction):
     """
 
     name = "save_game"
-    index: Optional[int] = None
+    index: int | None = None
 
     def start(self, session: Session) -> None:
         index = 4 if self.index is None else self.index + 1

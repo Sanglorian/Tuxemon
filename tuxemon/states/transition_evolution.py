@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar
 
 import pygame
 from pygame.surface import Surface
@@ -11,8 +11,8 @@ from pygame.surface import Surface
 from tuxemon import tools
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
-from tuxemon.locale import T
-from tuxemon.monster_dir.sprite import MonsterSpriteHandler, SpriteLoader
+from tuxemon.locale.locale import T
+from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BLACK_COLOR, WHITE_COLOR
 from tuxemon.prepare import SCREEN_SIZE
@@ -153,7 +153,7 @@ class EvolutionTransition(State):
 
         surface.blit(sprite_image, (self.x, self.y))
 
-    def _get_monster(self, slug: str) -> Optional[MonsterModel]:
+    def _get_monster(self, slug: str) -> MonsterModel | None:
         if slug not in db.database["monster"]:
             logger.error(f"{slug} doesn't exist.")
             return None
@@ -198,7 +198,7 @@ class EvolutionTransition(State):
         tools.open_dialog(self.client, [msg], dialog_speed="max")
         self.dialog_opened = True
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         if (
             event.button in (buttons.BACK, buttons.B, buttons.A)
             and event.pressed

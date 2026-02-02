@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.database.runtime import db
 from tuxemon.event.eventaction import EventAction
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.session import Session
 
 
@@ -35,9 +35,9 @@ class AddMonsterAction(EventAction):
     name = "add_monster"
     monster_slug: str
     monster_level: int
-    npc_slug: Optional[str] = None
-    exp: Optional[float] = None
-    money: Optional[float] = None
+    npc_slug: str | None = None
+    exp: float | None = None
+    money: float | None = None
 
     def start(self, session: Session) -> None:
         player = session.player

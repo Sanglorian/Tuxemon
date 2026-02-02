@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING
 from pygame.rect import Rect
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
+    from tuxemon.monster.monster import Monster
     from tuxemon.sprite import Sprite
 
 

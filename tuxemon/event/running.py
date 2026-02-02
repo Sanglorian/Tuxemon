@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from enum import Enum, auto
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from tuxemon.db import EventObject, ParameterizableRule, SpatialCondition
@@ -58,7 +58,7 @@ class RunningEvent:
         self.map_event = map_event
         self.context: dict[str, Any] = dict()
         self.action_index: int = 0
-        self.current_action: Optional[EventAction] = None
+        self.current_action: EventAction | None = None
         self.state = EventState.WAITING
         self.priority = map_event.priority
         self.elapsed_time: float = 0.0
@@ -82,7 +82,7 @@ class RunningEvent:
 
         return True
 
-    def get_next_action(self) -> Optional[ParameterizableRule]:
+    def get_next_action(self) -> ParameterizableRule | None:
         """
         Get the next action to execute, if any.
 
@@ -155,7 +155,7 @@ class RunningCondition:
         self.map_condition = map_condition
         self.evaluator = evaluator
         self.state = ConditionState.WAITING
-        self.result: Optional[bool] = None
+        self.result: bool | None = None
 
     def start_check(self) -> None:
         self.state = ConditionState.CHECKING

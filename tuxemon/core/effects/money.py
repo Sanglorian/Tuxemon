@@ -7,12 +7,12 @@ from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 from tuxemon.formula import simple_damage_calculate
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 

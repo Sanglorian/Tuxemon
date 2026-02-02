@@ -6,15 +6,15 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from tuxemon.item.filter import ItemFilter
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.world.menu_flags import MenuFlags
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
     from tuxemon.states.world_menus import WorldMenuState
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ class WorldMenuManager:
     def __init__(self, client: BaseClient) -> None:
         self.menu_flags = MenuFlags()
         self.menu_items: list[MenuItem] = []
-        self.menu_renderer: Optional[WorldMenuState] = None
+        self.menu_renderer: WorldMenuState | None = None
         self.client = client
 
     def set_menu_renderer(self, menu_renderer: WorldMenuState) -> None:
@@ -60,8 +60,8 @@ class WorldMenuManager:
     def update_item(
         self,
         key: str,
-        new_callback: Optional[WorldMenuGameObj] = None,
-        enabled: Optional[bool] = None,
+        new_callback: WorldMenuGameObj | None = None,
+        enabled: bool | None = None,
     ) -> None:
         """Updates an item's callback and/or enabled state by key."""
         for i, item in enumerate(self.menu_items):
@@ -76,7 +76,7 @@ class WorldMenuManager:
                 return
 
     def item_exists(
-        self, key: str, include_dynamic: Optional[list[MenuItem]] = None
+        self, key: str, include_dynamic: list[MenuItem] | None = None
     ) -> bool:
         """
         Checks if an item with the translated key exists in the persistent

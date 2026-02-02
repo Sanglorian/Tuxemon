@@ -10,7 +10,7 @@ from tuxemon.event.conditions.common import CommonCondition
 from tuxemon.platform.const.sizes import RECHARGE_RANGE
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 

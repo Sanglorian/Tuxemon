@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from tuxemon.db import Direction, FacingMode
-from tuxemon.entity_dir.path import PathController, tile_distance
+from tuxemon.entity.path import PathController, tile_distance
 from tuxemon.map.map import dirs2
 from tuxemon.math import Vector2
 from tuxemon.tools import vector2_to_tile_pos

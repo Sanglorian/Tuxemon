@@ -18,8 +18,8 @@ from tuxemon.formula import (
     simple_damage_multiplier,
     simple_heal,
 )
-from tuxemon.monster import Monster
-from tuxemon.monster_dir.stats import CustomStatBoosts
+from tuxemon.monster.monster import Monster
+from tuxemon.monster.stats import CustomStatBoosts
 from tuxemon.platform.const.sizes import COEFF_DAMAGE
 from tuxemon.technique.stats import (
     TechniqueBaseStats,

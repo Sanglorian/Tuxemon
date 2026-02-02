@@ -12,10 +12,10 @@ from uuid import UUID, uuid4
 
 from tuxemon.db import Acquisition
 from tuxemon.event import get_event_bus
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
     from tuxemon.npc_manager import NPCManager
 
 logger = logging.getLogger(__name__)

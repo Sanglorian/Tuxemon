@@ -8,7 +8,7 @@ from collections.abc import Callable
 from dataclasses import asdict, replace
 from datetime import datetime
 from itertools import count
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from tuxemon.db import Direction
 from tuxemon.network.networking import CharData, EventData, EventType
@@ -32,7 +32,7 @@ class TuxemonServer:
     def __init__(
         self,
         game: BaseClient,
-        server_name: Optional[str] = SERVER_NAME,
+        server_name: str | None = SERVER_NAME,
         server_port: int = 40081,
         timeout: int = 15,
     ) -> None:
@@ -258,9 +258,7 @@ class TuxemonServer:
         )
         self.notify_client(cuuid, event_data)
 
-    def update_char_dict(
-        self, cuuid: str, char_data: Optional[CharData]
-    ) -> None:
+    def update_char_dict(self, cuuid: str, char_data: CharData | None) -> None:
         """
         Updates the character dictionary for a client with new data.
         """
@@ -282,7 +280,7 @@ class TuxemonServer:
         self.notification_manager.notify_populate_client(cuuid, event_data)
 
     def notify_client_interaction(
-        self, cuuid: str, event_data: Optional[EventData]
+        self, cuuid: str, event_data: EventData | None
     ) -> None:
         """
         Notifies a target client that another client has interacted with them.
@@ -361,8 +359,8 @@ class ClientRegistry:
     def register_client(
         self,
         cuuid: str,
-        map_name: Optional[str] = None,
-        char_dict: Optional[CharData] = None,
+        map_name: str | None = None,
+        char_dict: CharData | None = None,
     ) -> None:
         default_char = CharData(
             tile_pos=(0, 0), name="", facing=Direction.DOWN, running=False
@@ -388,9 +386,7 @@ class ClientRegistry:
         elif isinstance(existing, dict):
             existing[key] = value
 
-    def update_char_dict(
-        self, cuuid: str, char_data: Optional[CharData]
-    ) -> None:
+    def update_char_dict(self, cuuid: str, char_data: CharData | None) -> None:
         if cuuid not in self.registry:
             return
 
@@ -501,8 +497,8 @@ class EventFactory:
         event_type: EventType,
         cuuid: str,
         map_name: str = "",
-        char_dict: Optional[Union[dict[str, Any], CharData]] = None,
-        target: Optional[str] = None,
+        char_dict: dict[str, Any] | CharData | None = None,
+        target: str | None = None,
     ) -> EventData:
 
         if isinstance(char_dict, dict):

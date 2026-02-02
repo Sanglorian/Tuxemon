@@ -5,18 +5,18 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from tuxemon.item.item import decode_items, encode_items
-from tuxemon.monster import decode_monsters, encode_monsters
+from tuxemon.monster.monster import decode_monsters, encode_monsters
 from tuxemon.platform.const.sizes import MAX_KENNEL, MAX_LOCKER
 
 if TYPE_CHECKING:
-    from tuxemon.entity_dir.routing import RoutingPolicy
+    from tuxemon.entity.npc import NPC
+    from tuxemon.entity.routing import RoutingPolicy
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.monster.monster import Monster
     from tuxemon.save_state import NPCState
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ class BoxMetadataManager:
             )
         metadata_dict[box_id] = metadata
 
-    def get(self, box_id: str, box_type: str) -> Optional[BoxMetadata]:
+    def get(self, box_id: str, box_type: str) -> BoxMetadata | None:
         return self._get_dict(box_type).get(box_id)
 
     def delete(self, box_id: str, box_type: str) -> None:
@@ -164,7 +164,7 @@ class BoxCollection:
         return True
 
     def remove_from_box(
-        self, box_type: str, box_id: Optional[str], obj: Any
+        self, box_type: str, box_id: str | None, obj: Any
     ) -> None:
         boxes = self.item_boxes if box_type == "item" else self.monster_boxes
         if box_id:
@@ -176,7 +176,7 @@ class BoxCollection:
                     box.remove(obj)
                     return
 
-    def get_items_by_iid(self, instance_id: UUID) -> Optional[Item]:
+    def get_items_by_iid(self, instance_id: UUID) -> Item | None:
         """
         Retrieves an item by its instance ID.
 
@@ -196,7 +196,7 @@ class BoxCollection:
             None,
         )
 
-    def get_monsters_by_iid(self, instance_id: UUID) -> Optional[Monster]:
+    def get_monsters_by_iid(self, instance_id: UUID) -> Monster | None:
         """
         Retrieves a monster by its instance ID.
 
@@ -428,7 +428,7 @@ class BoxCollection:
         metadata_label: str,
         decoder: Callable[[Sequence[Mapping[str, Any]]], list[Any]],
         default_capacity: int,
-        owner: Optional[NPC] = None,
+        owner: NPC | None = None,
     ) -> tuple[dict[str, list[Any]], dict[str, BoxMetadata]]:
         boxes: dict[str, list[Any]] = {}
         metadata: dict[str, BoxMetadata] = {}
@@ -457,7 +457,7 @@ class ItemBoxes(BoxCollection):
         super().__init__()
 
     def create_box(
-        self, box_id: str, box_metadata: Optional[BoxMetadata] = None
+        self, box_id: str, box_metadata: BoxMetadata | None = None
     ) -> None:
         """Create a new item box with optional metadata."""
         if box_id in self.item_boxes:
@@ -505,7 +505,7 @@ class ItemBoxes(BoxCollection):
         self,
         item: Item,
         policy: RoutingPolicy,
-        preferred_locker: Optional[str] = None,
+        preferred_locker: str | None = None,
     ) -> bool:
         """Attempt to add an item to a box following routing policy and overflow rules."""
         locker = preferred_locker if preferred_locker else policy.get_locker()
@@ -599,7 +599,7 @@ class MonsterBoxes(BoxCollection):
         super().__init__()
 
     def create_box(
-        self, box_id: str, box_metadata: Optional[BoxMetadata] = None
+        self, box_id: str, box_metadata: BoxMetadata | None = None
     ) -> None:
         """Create a new monster box with optional metadata."""
         if box_id in self.monster_boxes:
@@ -616,7 +616,7 @@ class MonsterBoxes(BoxCollection):
 
     def find_monster_by_slug_in_boxes(
         self, monster_slug: str
-    ) -> Optional[tuple[str, Monster]]:
+    ) -> tuple[str, Monster] | None:
         """Find a monster by slug and return its box ID and instance."""
         for box_id, monsters in self.monster_boxes.items():
             for monster in monsters:
@@ -641,7 +641,7 @@ class MonsterBoxes(BoxCollection):
         del self.monster_boxes[box_id]
         self.metadata_manager.delete(box_id, "monster")
 
-    def get_box_name(self, instance_id: UUID) -> Optional[str]:
+    def get_box_name(self, instance_id: UUID) -> str | None:
         """Return the box ID containing the monster with the given instance ID."""
         return next(
             (
@@ -697,7 +697,7 @@ class MonsterBoxes(BoxCollection):
         self,
         monster: Monster,
         policy: RoutingPolicy,
-        preferred_kennel: Optional[str] = None,
+        preferred_kennel: str | None = None,
     ) -> bool:
         """Attempt to add a monster to a box following routing policy and overflow rules."""
         kennel = preferred_kennel if preferred_kennel else policy.get_kennel()

@@ -6,7 +6,7 @@ import pytest
 
 from tuxemon.combat.action_queue import EnqueuedAction
 from tuxemon.combat.sort_manager import ActionSortKey, SortManager
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.technique.technique import Technique
 
 

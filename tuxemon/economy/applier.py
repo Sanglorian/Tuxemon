@@ -9,11 +9,11 @@ from typing import TYPE_CHECKING
 from tuxemon.db import Acquisition, EconomyItemModel, EconomyMonsterModel
 from tuxemon.economy.economy import Economy
 from tuxemon.item.item import Item
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 
 if TYPE_CHECKING:
     from tuxemon.economy.shop_manager import ShopManager
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

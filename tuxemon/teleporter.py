@@ -11,8 +11,8 @@ from typing import TYPE_CHECKING, Any
 from tuxemon.db import Direction
 
 if TYPE_CHECKING:
-    from tuxemon.map.map_transition import MapTransition
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
+    from tuxemon.map.transition import MapTransition
     from tuxemon.npc_manager import NPCManager
     from tuxemon.save_state import NPCState
     from tuxemon.state.manager import StateManager

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.db import Comparison, EvolutionStage, GenderType, StatType
 from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.interface import MenuItem
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.session import Session
 from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.tools import compare
@@ -59,11 +59,11 @@ class GetPlayerMonsterAction(EventAction):
 
     name = "get_player_monster"
     variable_name: str
-    filter_name: Optional[str] = None
-    value_name: Optional[str] = None
-    extra: Optional[str] = None
+    filter_name: str | None = None
+    value_name: str | None = None
+    extra: str | None = None
 
-    def validate(self, target: Optional[Monster]) -> bool:
+    def validate(self, target: Monster | None) -> bool:
         filter_name = self.filter_name
         value_name = self.value_name
 

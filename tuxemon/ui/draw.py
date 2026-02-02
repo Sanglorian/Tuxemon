@@ -7,7 +7,6 @@ import re
 from collections.abc import Generator, Iterable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 from pygame.font import Font
 from pygame.rect import Rect
@@ -94,7 +93,7 @@ class OverflowHandler:
         fg: ColorLike,
         bg: ColorLike,
         renderer: TextRenderer,
-    ) -> tuple[bool, Optional[RenderedChar]]:
+    ) -> tuple[bool, RenderedChar | None]:
         """
         Determines if a segment should be rendered and if an ellipsis
         is needed.
@@ -236,7 +235,7 @@ def iter_render_text(
     rect: Rect,
     h_alignment: HorizontalAlignment = HorizontalAlignment.LEFT,
     v_alignment: VerticalAlignment = VerticalAlignment.TOP,
-    text_renderer: Optional[TextRenderer] = None,
+    text_renderer: TextRenderer | None = None,
     mode: RenderMode = RenderMode.CHARACTER,
     overflow_behavior: TextOverflow = TextOverflow.CLIP,
     line_spacing: int = 0,

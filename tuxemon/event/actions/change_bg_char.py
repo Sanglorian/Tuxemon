@@ -7,7 +7,7 @@ from typing import final
 
 from tuxemon.database.runtime import db
 from tuxemon.db import NpcModel
-from tuxemon.entity_dir.sheet import get_combat_sheet
+from tuxemon.entity.sheet import get_combat_sheet
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import load_surface, scale_surface
 from tuxemon.prepare import SCALE

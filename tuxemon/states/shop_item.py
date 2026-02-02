@@ -17,7 +17,7 @@ from tuxemon.states.shop_base import ShopMenuState
 
 if TYPE_CHECKING:
     from tuxemon.economy.economy import Economy
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 
 class ShopItemMenuState(ShopMenuState[Item]):

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -27,7 +27,7 @@ class UnloadSoundAction(EventAction):
     """
 
     name = "unload_sound"
-    filename: Optional[str] = None
+    filename: str | None = None
 
     def start(self, session: Session) -> None:
         client = session.client

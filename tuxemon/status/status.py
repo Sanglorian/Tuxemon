@@ -16,14 +16,14 @@ from tuxemon.core.core_processor import (
 )
 from tuxemon.database.runtime import db
 from tuxemon.db import EffectPhase, StatusModel
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.modifiers import ModifiersHandler
-from tuxemon.monster_dir.stats import BasicStats
+from tuxemon.monster.stats import BasicStats
 from tuxemon.status.lifecycle import Lifecycle
 from tuxemon.status.step_effect_engine import StepEffectEngine
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

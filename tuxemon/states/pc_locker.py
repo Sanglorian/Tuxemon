@@ -6,7 +6,7 @@ import logging
 import math
 from collections.abc import Callable, Sequence
 from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 from uuid import UUID
 
 import pygame_menu
@@ -16,7 +16,7 @@ from pygame_menu.widgets.selection.highlight import HighlightSelection
 from tuxemon.animation import ScheduleType
 from tuxemon.item.filter import ItemFilter
 from tuxemon.item.item import Item
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.quantity import QuantityMenu
@@ -32,8 +32,8 @@ logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from tuxemon.animation import Animation
     from tuxemon.base_client import BaseClient
+    from tuxemon.entity.npc import NPC
     from tuxemon.item.item import Item
-    from tuxemon.npc import NPC
 
 
 MenuGameObj = Callable[[], object]
@@ -398,7 +398,7 @@ class ItemDropOff(ItemMenuState):
 
     def on_menu_selection(
         self,
-        menu_item: MenuItem[Optional[Item]],
+        menu_item: MenuItem[Item | None],
     ) -> None:
         game_object = menu_item.game_object
         assert game_object
@@ -414,9 +414,7 @@ class ItemDropOff(ItemMenuState):
             new_item = Item.create(itm.slug)
             new_item.set_quantity(quantity)
 
-            def find_item_in_box(
-                slug: str, items: list[Item]
-            ) -> Optional[Item]:
+            def find_item_in_box(slug: str, items: list[Item]) -> Item | None:
                 return next((i for i in items if i.slug == slug), None)
 
             retrieve = find_item_in_box(itm.slug, box) if box else None

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tuxemon.map.map_transition import MapTransition
+from tuxemon.map.transition import MapTransition
 
 
 @pytest.fixture

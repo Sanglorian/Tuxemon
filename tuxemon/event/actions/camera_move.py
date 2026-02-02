@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.camera.camera import Camera
 from tuxemon.event.eventaction import EventAction
@@ -31,8 +31,8 @@ class CameraMoveAction(EventAction):
 
     name = "camera_move"
     time: float
-    x: Optional[int] = None
-    y: Optional[int] = None
+    x: int | None = None
+    y: int | None = None
 
     def start(self, session: Session) -> None:
         self.camera = session.client.camera_manager.get_active_camera()

@@ -4,13 +4,12 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional
 
 from tuxemon.boundary import MapConditionBoundary
 from tuxemon.db import SpatialCondition
+from tuxemon.entity.npc import NPC
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.event.eventpersist import EventPersist
-from tuxemon.npc import NPC
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -86,7 +85,7 @@ def generic_test(
     stored = persist.get_event_data(name)
 
     # Get the last recorded destination for this specific condition
-    last_destination: Optional[tuple[int, int]] = stored.get(condition_str)
+    last_destination: tuple[int, int] | None = stored.get(condition_str)
 
     # If no last destination is recorded, update storage when movement stops or collides
     if last_destination is None and (stopped or collide_next):

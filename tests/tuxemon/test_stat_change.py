@@ -6,8 +6,8 @@ from unittest.mock import patch
 import pytest
 
 from tuxemon.db import StatModel
-from tuxemon.monster_dir.stat_utils import apply_stat_modifiers
-from tuxemon.monster_dir.stats import BasicStats
+from tuxemon.monster.stat_utils import apply_stat_modifiers
+from tuxemon.monster.stats import BasicStats
 
 
 class DummyMonster:

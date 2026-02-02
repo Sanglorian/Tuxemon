@@ -11,7 +11,7 @@ from tuxemon.money.manager import MoneyManager
 from tuxemon.money.portfolio import PortfolioManager
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
     from tuxemon.save_state import NPCState
 
 logger = logging.getLogger(__name__)

@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable, Generator
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from tuxemon.item.stock import INFINITE_ITEMS
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter, QuantityFormatter
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu
@@ -33,13 +33,13 @@ class QuantityMenu(Menu[None]):
         self,
         callback: Callable[[int], None],
         quantity: int = 1,
-        max_quantity: Optional[int] = None,
+        max_quantity: int | None = None,
         shrink_to_items: bool = False,
         price: int = 0,
         cost: int = 0,
-        currency_formatter: Optional[CurrencyFormatter] = None,
-        quantity_formatter: Optional[QuantityFormatter] = None,
-        label: Optional[Callable[[int], str]] = None,
+        currency_formatter: CurrencyFormatter | None = None,
+        quantity_formatter: QuantityFormatter | None = None,
+        label: Callable[[int], str] | None = None,
     ) -> None:
         """
         Initialize the quantity menu.
@@ -66,7 +66,7 @@ class QuantityMenu(Menu[None]):
         self.quantity_formatter = quantity_formatter or QuantityFormatter()
         self.label = label or self.quantity_formatter.format
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         if event.pressed:
             if event.button in (
                 buttons.B,

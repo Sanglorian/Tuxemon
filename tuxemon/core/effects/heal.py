@@ -3,16 +3,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
 from tuxemon.db import ItemCategory
 from tuxemon.formula import set_health
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
 
 
@@ -44,7 +44,7 @@ class HealEffect(CoreEffect):
     """
 
     name = "heal"
-    amount: Union[int, float]
+    amount: int | float
     heal_type: str
 
     def apply_item_target(

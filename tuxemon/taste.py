@@ -8,7 +8,7 @@ from collections.abc import Sequence
 
 from tuxemon.database.runtime import db
 from tuxemon.db import TasteModel
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.modifiers import ModifiersHandler
 
 logger = logging.getLogger(__name__)

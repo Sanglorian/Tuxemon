@@ -7,7 +7,7 @@ from collections.abc import Callable
 from typing import Any
 
 from tuxemon.db import PlagueType
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 
 logger = logging.getLogger(__name__)
 

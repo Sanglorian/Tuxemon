@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon import save
 from tuxemon.constants.asset_loader import fetch_asset
+from tuxemon.entity.player import Player
 from tuxemon.event.eventaction import EventAction
 from tuxemon.platform.const.sizes import PLAYER_NPC
-from tuxemon.player import Player
 from tuxemon.session import Session
 from tuxemon.states.world_state import WorldState
 
@@ -43,7 +43,7 @@ class LoadGameAction(EventAction):
     """
 
     name = "load_game"
-    index: Optional[int] = None
+    index: int | None = None
 
     def start(self, session: Session) -> None:
         client = session.client

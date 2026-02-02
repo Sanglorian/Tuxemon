@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from pygame.surface import Surface
 from pygame.transform import scale
@@ -65,7 +65,7 @@ class ZoomOutTransition(State):
         )
         surface.blit(scaled_image, rect)
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         return None
 
 
@@ -119,5 +119,5 @@ class ZoomInTransition(State):
         )
         surface.blit(scaled_image, rect)
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         return None

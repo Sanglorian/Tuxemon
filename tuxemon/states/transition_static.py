@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import random
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from pygame.surface import Surface
 
@@ -31,7 +31,7 @@ class StaticTransition(State):
         self.duration = duration
         self.start_time = 0.0
         self.elapsed_time = 0.0
-        self.screenshot: Optional[Surface] = None
+        self.screenshot: Surface | None = None
 
     def resume(self) -> None:
         self.screenshot = Surface.copy(SCREEN)
@@ -56,5 +56,5 @@ class StaticTransition(State):
                 ),
             )
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         return None

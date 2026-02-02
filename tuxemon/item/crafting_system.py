@@ -6,13 +6,13 @@ import logging
 import random
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from tuxemon.item.item import Item
 from tuxemon.item.recipe import Recipe
 
 if TYPE_CHECKING:
-    from tuxemon.entity_dir.bag import BagHandler
+    from tuxemon.entity.bag import BagHandler
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +23,9 @@ class CraftingResult:
     message_slug: str
     output_type: str
     crafted_items: list[Item] = field(default_factory=list)
-    failure_reason: Optional[str] = None
-    used_method: Optional[str] = None
-    revealed_content_slug: Optional[str] = None
+    failure_reason: str | None = None
+    used_method: str | None = None
+    revealed_content_slug: str | None = None
 
 
 class CraftingSystem:
@@ -36,9 +36,9 @@ class CraftingSystem:
 
     def __init__(self) -> None:
         self.recipes: dict[str, Recipe] = {}
-        self._current_method_slug: Optional[str] = None
+        self._current_method_slug: str | None = None
 
-    def set_current_method(self, method_slug: Optional[str]) -> None:
+    def set_current_method(self, method_slug: str | None) -> None:
         """Sets the current crafting method the player is using."""
         self._current_method_slug = method_slug
         logger.debug(f"Current crafting method set to: {method_slug}")
@@ -173,7 +173,7 @@ class CraftingSystem:
                 )
 
         crafted_items: list[Item] = []
-        revealed_content_slug: Optional[str] = None
+        revealed_content_slug: str | None = None
         message_slug: str = "generic_success"
 
         # Select output from recipe's weighted options

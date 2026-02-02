@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Optional, final
+from typing import Any, final
 
 from tuxemon.database.runtime import db
 from tuxemon.db import DialogueModel
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import get_avatar, string_to_colorlike
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.session import Session
 from tuxemon.tools import open_dialog, safe_enum_value
 from tuxemon.ui.text_alignment import (
@@ -58,11 +58,11 @@ class CipherDialogAction(EventAction):
 
     name = "cipher_dialog"
     raw_parameters: str
-    avatar: Optional[str] = None
-    position: Optional[str] = None
-    h_alignment: Optional[str] = None
-    v_alignment: Optional[str] = None
-    style: Optional[str] = None
+    avatar: str | None = None
+    position: str | None = None
+    h_alignment: str | None = None
+    v_alignment: str | None = None
+    style: str | None = None
 
     def start(self, session: Session) -> None:
         cipher_processor = session.client.cipher_processor

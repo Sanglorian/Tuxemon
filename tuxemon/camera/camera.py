@@ -6,7 +6,7 @@ import logging
 import math
 import random
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pygame.rect import Rect
 
@@ -16,7 +16,7 @@ from tuxemon.prepare import SCREEN_SIZE, TILE_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.boundary import BoundaryChecker
-    from tuxemon.entity import Entity
+    from tuxemon.entity.entity import Entity
     from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ class CameraController:
         self.enabled: bool = True
         self.speed: int = 7
 
-    def handle_input(self, input_event: PlayerInput) -> Optional[PlayerInput]:
+    def handle_input(self, input_event: PlayerInput) -> PlayerInput | None:
         """
         Processes input events to move the camera if roaming is enabled.
 
@@ -98,8 +98,8 @@ class CameraManager:
 
     def __init__(self) -> None:
         self.cameras: dict[str, Camera] = {}
-        self.active_camera: Optional[Camera] = None
-        self.controller: Optional[CameraController] = None
+        self.active_camera: Camera | None = None
+        self.controller: CameraController | None = None
 
     def add_camera(self, name: str, camera: Camera) -> None:
         """Adds a camera to the manager and sets it active if none is selected."""
@@ -137,13 +137,13 @@ class CameraManager:
         if self.active_camera:
             self.active_camera.update(delta_time)
 
-    def handle_input(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def handle_input(self, event: PlayerInput) -> PlayerInput | None:
         """Delegates input handling to the active camera's controller."""
         if self.controller:
             return self.controller.handle_input(event)
         return None
 
-    def get_active_camera(self) -> Optional[Camera]:
+    def get_active_camera(self) -> Camera | None:
         """Returns the currently active camera, if any."""
         return self.active_camera
 
@@ -355,7 +355,7 @@ class Camera:
         self.tracker.pending_follow = True
 
     def switch_entity(
-        self, new_entity: Optional[Entity] = None, reset: bool = False
+        self, new_entity: Entity | None = None, reset: bool = False
     ) -> None:
         """
         Switches the camera's target to a new entity, or restores the original

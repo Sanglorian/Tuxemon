@@ -19,11 +19,11 @@ from pygame.surface import Surface
 from tuxemon import tools
 from tuxemon.economy.applier import EconomyApplier
 from tuxemon.economy.transaction import TransactionManager
+from tuxemon.entity.npc import NPC
 from tuxemon.item.shop_utils import calc_internal_rect
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu
 from tuxemon.menu.quantity import QuantityAndCostMenu
-from tuxemon.npc import NPC
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.sizes import MAX_MENU_ITEMS
 from tuxemon.platform.events import PlayerInput

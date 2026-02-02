@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from pygame.rect import Rect
 
-from tuxemon.npc import NPC
+from tuxemon.entity.npc import NPC
 from tuxemon.ui.combat_layout import (
     LayoutManager,
     LayoutRectFactory,

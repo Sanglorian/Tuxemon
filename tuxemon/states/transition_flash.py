@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from pygame.surface import Surface
 
@@ -92,6 +92,6 @@ class FlashTransition(State):
         self.transition_surface.set_alpha(int(self.transition_alpha))
         surface.blit(self.transition_surface, (0, 0))
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         # prevent other states from getting input
         return None

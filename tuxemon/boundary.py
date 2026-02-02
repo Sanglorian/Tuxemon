@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, NamedTuple, Optional
+from typing import TYPE_CHECKING, NamedTuple
 
 if TYPE_CHECKING:
     from tuxemon.db import SpatialCondition
@@ -254,7 +254,7 @@ class BoundaryChecker:
 
     def __init__(self) -> None:
         self.boundaries: dict[str, Boundary] = {}
-        self.active: Optional[str] = None
+        self.active: str | None = None
 
     def set_rectangular_boundary(
         self, name: str, x0: int, x1: int, y0: int, y1: int

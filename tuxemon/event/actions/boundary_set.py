@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -35,8 +35,8 @@ class BoundarySetAction(EventAction):
 
     name = "boundary_set"
     boundary_name: str
-    shape: Optional[str] = None
-    values: Optional[str] = None
+    shape: str | None = None
+    values: str | None = None
 
     def start(self, session: Session) -> None:
         checker = session.client.boundary

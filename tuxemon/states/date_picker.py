@@ -7,7 +7,7 @@ from typing import Any
 
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.platform.const.sizes import MONTH_KEYS

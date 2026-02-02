@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from tuxemon.core.core_effect import CoreEffect, StatusEffectResult
 from tuxemon.db import EffectPhase, Range
 from tuxemon.formula import simple_damage_calculate
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.status.status import Status
 from tuxemon.technique.technique import Technique
 

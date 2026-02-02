@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.combat.combat_context import (
     BattleMode,
@@ -15,7 +15,7 @@ from tuxemon.combat.utils import check_battle_legal
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import ColorLike, string_to_colorlike
 from tuxemon.item.item import Item
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.platform.const.graphics import WHITE_COLOR
 from tuxemon.session import Session
 
@@ -47,11 +47,11 @@ class WildEncounterAction(EventAction):
     name = "wild_encounter"
     monster_slug: str
     monster_level: int
-    exp: Optional[float] = None
-    money: Optional[float] = None
-    env: Optional[str] = None
-    rgb: Optional[str] = None
-    held_item: Optional[str] = None
+    exp: float | None = None
+    money: float | None = None
+    env: str | None = None
+    rgb: str | None = None
+    held_item: str | None = None
 
     def start(self, session: Session) -> None:
         player = session.player

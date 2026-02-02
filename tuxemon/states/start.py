@@ -14,14 +14,14 @@ from pygame.surface import Surface
 from pygame_menu import locals
 
 from tuxemon.database.runtime import db
+from tuxemon.entity.player import Player
 from tuxemon.launcher import GameLauncher
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_START_SCREEN, BLACK_COLOR
 from tuxemon.platform.const.sizes import PLAYER_NPC
 from tuxemon.platform.events import PlayerInput
-from tuxemon.player import Player
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.save import get_index_of_latest_save
 from tuxemon.session import local_session

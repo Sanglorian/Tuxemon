@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from tuxemon.core.core_condition import CoreCondition
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
 
 

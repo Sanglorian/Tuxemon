@@ -9,7 +9,7 @@ from tuxemon.core.core_condition import CoreCondition
 from tuxemon.tools import check_condition, parse_flag
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 

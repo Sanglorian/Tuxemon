@@ -5,7 +5,7 @@ from uuid import UUID
 
 import pytest
 
-from tuxemon.monster_dir.evolution_registry import EvolutionRegistry
+from tuxemon.monster.evolution_registry import EvolutionRegistry
 
 
 @pytest.fixture

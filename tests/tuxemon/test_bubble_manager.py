@@ -5,8 +5,8 @@ from unittest.mock import MagicMock
 
 from pygame.surface import Surface
 
-from tuxemon.map.map_view import BubbleManager
-from tuxemon.npc import NPC
+from tuxemon.entity.npc import NPC
+from tuxemon.map.view import BubbleManager
 
 
 class TestBubbleManager(unittest.TestCase):

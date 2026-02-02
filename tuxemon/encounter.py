@@ -6,7 +6,7 @@ import logging
 import random
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.database.runtime import db
 from tuxemon.db import (
@@ -17,7 +17,7 @@ from tuxemon.db import (
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +29,13 @@ ENCOUNTER_ROLL_MAX = 100
 class EncounterResult:
     monster: EncounterItemModel
     level: int
-    held_item: Optional[str] = None
+    held_item: str | None = None
 
 
 @dataclass
 class HordeEncounterResult:
     monsters: Sequence[EncounterResult]
-    horde_exp_mod: Optional[float] = None
+    horde_exp_mod: float | None = None
 
 
 class EncounterManager:
@@ -45,7 +45,7 @@ class EncounterManager:
     """
 
     def __init__(self) -> None:
-        self._active_handler: Optional[Encounter] = None
+        self._active_handler: Encounter | None = None
         logger.debug("EncounterManager initialized.")
 
     def load_zone(self, zone_slug: str) -> bool:
@@ -73,7 +73,7 @@ class EncounterManager:
 
     def attempt_single_encounter(
         self, character: NPC, total_prob: float
-    ) -> Optional[EncounterResult]:
+    ) -> EncounterResult | None:
         if self._active_handler:
             return self._active_handler.get_single_encounter(
                 character, total_prob
@@ -81,8 +81,8 @@ class EncounterManager:
         return None
 
     def attempt_horde_encounter(
-        self, character: NPC, total_prob: Optional[float] = None
-    ) -> Optional[HordeEncounterResult]:
+        self, character: NPC, total_prob: float | None = None
+    ) -> HordeEncounterResult | None:
         if self._active_handler:
             return self._active_handler.get_horde_encounter(
                 character, total_prob
@@ -131,7 +131,7 @@ class Encounter:
 
     def get_single_encounter(
         self, character: NPC, total_prob: float
-    ) -> Optional[EncounterResult]:
+    ) -> EncounterResult | None:
         if self.zone.encounter_type != EncounterType.SINGLE:
             return None
 
@@ -155,8 +155,8 @@ class Encounter:
         return EncounterResult(monster=chosen, level=level, held_item=item)
 
     def get_horde_encounter(
-        self, character: NPC, total_prob: Optional[float] = None
-    ) -> Optional[HordeEncounterResult]:
+        self, character: NPC, total_prob: float | None = None
+    ) -> HordeEncounterResult | None:
         """
         Returns a list of monsters for a horde encounter.
         """
@@ -200,7 +200,7 @@ class Encounter:
 
         return LevelScaler.get_static_level(encounter)
 
-    def get_held_item(self, encounter: EncounterItemModel) -> Optional[str]:
+    def get_held_item(self, encounter: EncounterItemModel) -> str | None:
         if not encounter.held_items:
             return None
 

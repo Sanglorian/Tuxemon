@@ -55,12 +55,12 @@ from tuxemon.db import (
     ItemCategory,
     OutputBattle,
 )
+from tuxemon.entity.npc import NPC
 from tuxemon.graphics import load_and_scale
 from tuxemon.item.item import Item
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
-from tuxemon.monster import Monster
-from tuxemon.npc import NPC
+from tuxemon.monster.monster import Monster
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.prepare import SCREEN_RECT

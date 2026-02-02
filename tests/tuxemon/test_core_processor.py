@@ -12,7 +12,7 @@ from tuxemon.core.core_effect import (
     TechEffectResult,
 )
 from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.session import Session
 from tuxemon.technique.technique import Technique
 

@@ -10,7 +10,7 @@ from tuxemon.mission.manager import MissionManager
 from tuxemon.mission.mission import Mission
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 logger = logging.getLogger(__name__)
 

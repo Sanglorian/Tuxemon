@@ -4,21 +4,21 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pygame_menu
 from pygame_menu import locals
 
 from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import load_yaml
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_MAP
 from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 
 logger = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ class NuPhoneMapConfig:
 
 
 class Loader:
-    _config_nuphone_map: Optional[NuPhoneMapConfig] = None
+    _config_nuphone_map: NuPhoneMapConfig | None = None
 
     @classmethod
     def get_config_nuphone_map(cls, filename: str) -> NuPhoneMapConfig:

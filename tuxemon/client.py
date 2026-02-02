@@ -11,8 +11,8 @@ from pygame.surface import Surface
 
 from tuxemon.base_client import BaseClient, ClientState
 from tuxemon.config import TuxemonConfig
-from tuxemon.map.map_tuxemon import NullMap
-from tuxemon.map.map_view import DebugRenderer, MapRenderer, NullRenderer
+from tuxemon.map.tuxemon import NullMap
+from tuxemon.map.view import DebugRenderer, MapRenderer, NullRenderer
 from tuxemon.state.draw import EventDebugDrawer, Renderer, StateDrawer
 
 logger = logging.getLogger(__name__)

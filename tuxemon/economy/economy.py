@@ -9,7 +9,7 @@ from tuxemon.database.runtime import db
 from tuxemon.db import EconomyItemModel, EconomyModel, EconomyMonsterModel
 from tuxemon.economy.price_policy import PricePolicy
 from tuxemon.item.item import Item
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.platform.const.graphics import GRAD_BLUE
 
 logger = logging.getLogger(__name__)

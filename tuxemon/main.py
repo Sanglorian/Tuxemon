@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon import log
 from tuxemon.client import LocalPygameClient
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def main(config: TuxemonConfig, load_slot: Optional[int] = None) -> None:
+def main(config: TuxemonConfig, load_slot: int | None = None) -> None:
     """
     Configure and start the game.
 
@@ -54,7 +54,7 @@ def main(config: TuxemonConfig, load_slot: Optional[int] = None) -> None:
 def configure_game_states(
     client: LocalPygameClient,
     config: TuxemonConfig,
-    load_slot: Optional[int] = None,
+    load_slot: int | None = None,
 ) -> None:
     # The "BackgroundState" prevents other states from tracking dirty screen areas.
     # For example, menus in the start state don't clean up dirty areas, so a blank

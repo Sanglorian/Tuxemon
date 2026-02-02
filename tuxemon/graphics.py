@@ -472,7 +472,7 @@ def get_avatar(session: Session, avatar: str) -> Sprite | None:
     Returns:
         The sprite for the monster or NPC avatar, or None if not found.
     """
-    from tuxemon.monster_dir.sprite import MonsterSpriteHandler, SpriteLoader
+    from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 
     if avatar.isdigit():
         monster = session.player.monsters[int(avatar)]
@@ -496,7 +496,7 @@ def get_avatar(session: Session, avatar: str) -> Sprite | None:
         return handler.get_sprite("menu")
 
     if avatar in db.database.get("npc", {}):
-        from tuxemon.entity_dir.sheet import get_combat_sheet
+        from tuxemon.entity.sheet import get_combat_sheet
 
         npc_data = NpcModel.lookup(avatar, db)
         sheet = get_combat_sheet(npc_data.template)

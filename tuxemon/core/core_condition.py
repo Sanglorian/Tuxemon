@@ -12,7 +12,7 @@ from tuxemon.tools import cast_dataclass_parameters
 if TYPE_CHECKING:
     from tuxemon.db import SpatialCondition
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.status.status import Status
     from tuxemon.technique.technique import Technique
 

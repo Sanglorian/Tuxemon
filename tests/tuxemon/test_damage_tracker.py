@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import MagicMock
 
 from tuxemon.combat.damage_tracker import DamageTracker
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 
 
 class TestDamageTracker(unittest.TestCase):

@@ -6,7 +6,7 @@ import logging
 import math
 from collections.abc import Callable, Sequence
 from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 from uuid import UUID
 
 import pygame_menu
@@ -14,7 +14,7 @@ from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.animation import ScheduleType
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PC_KENNEL
@@ -34,8 +34,8 @@ logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from tuxemon.animation import Animation
     from tuxemon.base_client import BaseClient
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
+    from tuxemon.monster.monster import Monster
 
 
 MenuGameObj = Callable[[], object]
@@ -105,7 +105,7 @@ class MonsterActionHandler:
             self._clear_states("MonsterTakeState")
         self.monster_boxes.move_monster(self.box_name, box, monster)
 
-    def output(self, monster: Optional[Monster]) -> None:
+    def output(self, monster: Monster | None) -> None:
         self._clear_states("ChoiceState", "MonsterTakeState")
         if monster is not None:
             self.monster_boxes.remove_from_box(
@@ -190,7 +190,7 @@ class MonsterTakeState(PygameMenuState):
         self,
         box_name: str,
         character: NPC,
-        swap_target: Optional[Monster] = None,
+        swap_target: Monster | None = None,
     ) -> None:
         width, height = SCREEN_SIZE
 
@@ -468,7 +468,7 @@ class MonsterDropOff(MonsterMenuState):
         self,
         box_name: str,
         character: NPC,
-        on_selection: Optional[Callable[[Monster], None]] = None,
+        on_selection: Callable[[Monster], None] | None = None,
     ) -> None:
         super().__init__(monsters=character.monsters)
 
@@ -476,7 +476,7 @@ class MonsterDropOff(MonsterMenuState):
         self.char = character
         self.on_selection = on_selection
 
-    def is_valid_entry(self, monster: Optional[Monster]) -> bool:
+    def is_valid_entry(self, monster: Monster | None) -> bool:
         alive_monsters = [
             mon for mon in self.char.monsters if not mon.is_fainted
         ]
@@ -486,7 +486,7 @@ class MonsterDropOff(MonsterMenuState):
 
     def on_menu_selection(
         self,
-        menu_item: MenuItem[Optional[Monster]],
+        menu_item: MenuItem[Monster | None],
     ) -> None:
         monster = menu_item.game_object
         assert monster

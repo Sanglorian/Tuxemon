@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -30,7 +30,7 @@ class SetWeatherAction(EventAction):
     """
 
     name = "set_weather"
-    slug: Optional[str] = None
+    slug: str | None = None
 
     def start(self, session: Session) -> None:
         manager = session.client.weather_manager

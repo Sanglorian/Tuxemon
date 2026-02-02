@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import ColorLike, string_to_colorlike
@@ -42,8 +42,8 @@ class TransitionTeleportAction(EventAction):
     map_name: str
     x: int
     y: int
-    trans_time: Optional[float] = None
-    rgb: Optional[str] = None
+    trans_time: float | None = None
+    rgb: str | None = None
 
     def start(self, session: Session) -> None:
 

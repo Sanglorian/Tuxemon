@@ -6,11 +6,11 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
-from tuxemon.locale import T
-from tuxemon.monster_dir.plague import InfectionResult
+from tuxemon.locale.locale import T
+from tuxemon.monster.plague import InfectionResult
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 

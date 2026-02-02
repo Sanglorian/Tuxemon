@@ -10,7 +10,7 @@ import logging
 import os
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Optional, Protocol
+from typing import Any, Protocol
 
 __all__ = (
     "init",
@@ -89,7 +89,7 @@ class DummyMixer(MixerProtocol):
 
 
 class AndroidContextProtocol(Protocol):
-    def getExternalFilesDir(self, arg: Optional[str]) -> Any: ...
+    def getExternalFilesDir(self, arg: str | None) -> Any: ...
 
 
 class AndroidModuleProtocol(Protocol):
@@ -97,7 +97,7 @@ class AndroidModuleProtocol(Protocol):
 
 
 _pygame_mixer_in_use: bool = False
-android_module: Optional[AndroidModuleProtocol] = None
+android_module: AndroidModuleProtocol | None = None
 mixer: MixerProtocol = DummyMixer()
 
 
@@ -181,7 +181,7 @@ class SystemStorage:
     Provides immutable storage paths for built-in mods/resources.
     """
 
-    def __init__(self, android_module: Optional[Any] = None) -> None:
+    def __init__(self, android_module: Any | None = None) -> None:
         self.android_module = android_module
 
     def system_dirs(self) -> Sequence[Path]:
@@ -253,7 +253,7 @@ class UserStorage:
     Provides mutable storage paths for saves, configs, cache, downloaded mods.
     """
 
-    def __init__(self, android_module: Optional[Any] = None) -> None:
+    def __init__(self, android_module: Any | None = None) -> None:
         self.android_module = android_module
 
     def user_dir(self) -> Path:

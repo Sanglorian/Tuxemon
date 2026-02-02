@@ -6,7 +6,7 @@ import logging
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from tuxemon.event.eventbehavior import (
     expand_behavior_actions,
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from tuxemon.event.eventaction import ActionManager
     from tuxemon.event.eventbehavior import BehaviorManager
     from tuxemon.event.running import ConditionEvaluator
-    from tuxemon.map.map_tuxemon import AbstractMap
+    from tuxemon.map.tuxemon import AbstractMap
     from tuxemon.session import Session
 
 
@@ -57,7 +57,7 @@ class EventEngine:
 
         self.running_events: dict[int, RunningEvent] = dict()
         self.name = "Event"
-        self.current_map: Optional[AbstractMap] = None
+        self.current_map: AbstractMap | None = None
         self._suspended: bool = False
 
         self.global_events: list[EventObject] = []
@@ -68,7 +68,7 @@ class EventEngine:
             list()
         )
 
-    def set_current_map(self, new_map: Optional[AbstractMap]) -> None:
+    def set_current_map(self, new_map: AbstractMap | None) -> None:
         """Updates the current map."""
         if self.current_map != new_map:
             self.current_map = new_map
@@ -98,7 +98,7 @@ class EventEngine:
     def execute_action(
         self,
         action_name: str,
-        parameters: Optional[Sequence[Any]] = None,
+        parameters: Sequence[Any] | None = None,
         skip: bool = False,
     ) -> None:
         """
@@ -421,7 +421,7 @@ class EventEngine:
 @contextmanager
 def add_error_context(
     event: EventObject,
-    item: Union[SpatialCondition, ParameterizableRule],
+    item: SpatialCondition | ParameterizableRule,
     session: Session,
 ) -> Generator[None, None, None]:
     """

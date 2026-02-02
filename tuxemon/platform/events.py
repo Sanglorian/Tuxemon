@@ -6,7 +6,7 @@ import time
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from collections.abc import Callable, Generator, Mapping
-from typing import Any, ClassVar, Generic, Optional, TypeVar
+from typing import Any, ClassVar, Generic, TypeVar
 
 _InputEventType = TypeVar("_InputEventType", contravariant=True)
 
@@ -100,11 +100,11 @@ class InputHandler(ABC, Generic[_InputEventType]):
         event_map: Mapping of original identifiers to button identifiers.
     """
 
-    default_input_map: ClassVar[Mapping[Optional[int], int]]
+    default_input_map: ClassVar[Mapping[int | None, int]]
 
     def __init__(
         self,
-        event_map: Optional[Mapping[Optional[int], int]] = None,
+        event_map: Mapping[int | None, int] | None = None,
     ) -> None:
         if event_map is None:
             event_map = self.default_input_map
@@ -250,7 +250,7 @@ class PlayerInput:
         value: Any = 0,
         hold_time: int = 0,
         previous_value: Any = 0,
-        timestamp: Optional[float] = None,
+        timestamp: float | None = None,
         hold_duration: float = 0.0,
     ) -> None:
         self.button = button

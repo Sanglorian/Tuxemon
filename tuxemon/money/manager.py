@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from typing import Optional
 
 from tuxemon.money.bill import BillEntry
 from tuxemon.money.portfolio import PortfolioManager
@@ -59,9 +58,9 @@ class MoneyManager:
         self,
         bill_name: str,
         amount: int,
-        interest_rate: Optional[float] = None,
-        late_fee: Optional[int] = None,
-        share_rate: Optional[float] = None,
+        interest_rate: float | None = None,
+        late_fee: int | None = None,
+        share_rate: float | None = None,
     ) -> None:
         self.bills[bill_name] = BillEntry(
             amount=amount,
@@ -115,7 +114,7 @@ class MoneyManager:
     def get_bills(self) -> dict[str, BillEntry]:
         return self.bills
 
-    def get_bill(self, bill_name: str) -> Optional[BillEntry]:
+    def get_bill(self, bill_name: str) -> BillEntry | None:
         return self.bills.get(bill_name)
 
     def get_total_bills(self) -> int:

@@ -11,8 +11,8 @@ from typing import TYPE_CHECKING, final
 from tuxemon.db import Acquisition, EvolutionStage, StatType
 from tuxemon.element import ElementTypesHandler
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
-from tuxemon.monster import Monster
+from tuxemon.locale.locale import T
+from tuxemon.monster.monster import Monster
 from tuxemon.taste import Taste
 from tuxemon.tools import get_valid_uuid, open_dialog
 

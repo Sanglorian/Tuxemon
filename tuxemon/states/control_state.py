@@ -4,14 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from functools import partial
-from typing import Any, ClassVar, Optional, Union
+from typing import Any, ClassVar
 
 import pygame_menu
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.sound import SOUND_TYPE_WIDGET_SELECTION
 
 from tuxemon.animation import Animation, ScheduleType
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.platform.const import buttons
@@ -42,7 +42,7 @@ class ControlState(PygameMenuState):
         menu: pygame_menu.Menu,
     ) -> None:
         def change_state(
-            state: Union[State, str], **change_state_kwargs: Any
+            state: State | str, **change_state_kwargs: Any
         ) -> Callable[[], State]:
             return partial(
                 self.client.push_state, state, **change_state_kwargs
@@ -246,7 +246,7 @@ class ControlState(PygameMenuState):
                 self.client.config.input.keyboard_button_map
             )
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         if event.button in (buttons.BACK, buttons.B):
             self.reload_controls()
             if not self.main_menu:

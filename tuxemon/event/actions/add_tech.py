@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.platform.const.sizes import (
@@ -45,9 +45,9 @@ class AddTechAction(EventAction):
     name = "add_tech"
     variable: str
     technique: str
-    power: Optional[float] = None
-    potency: Optional[float] = None
-    accuracy: Optional[float] = None
+    power: float | None = None
+    potency: float | None = None
+    accuracy: float | None = None
 
     def start(self, session: Session) -> None:
         player = session.player

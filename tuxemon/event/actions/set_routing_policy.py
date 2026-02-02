@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -36,7 +36,7 @@ class SetRoutingPolicyAction(EventAction):
 
     name = "set_routing_policy"
     npc_slug: str
-    policy_name: Optional[str] = None
+    policy_name: str | None = None
 
     def start(self, session: Session) -> None:
         trainer = session.get_npc(self.npc_slug)

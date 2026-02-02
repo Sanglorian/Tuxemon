@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from tuxemon.graphics import load_and_scale
 from tuxemon.menu.menu import PopUpMenu
@@ -40,14 +40,14 @@ class DialogState(PopUpMenu[None]):
     def __init__(
         self,
         text: Sequence[str] = (),
-        avatar: Optional[Sprite] = None,
-        box_style: Optional[dict[str, Any]] = None,
-        on_complete: Optional[Callable[[], None]] = None,
+        avatar: Sprite | None = None,
+        box_style: dict[str, Any] | None = None,
+        on_complete: Callable[[], None] | None = None,
         auto_close: bool = True,
-        close_after: Optional[float] = None,
+        close_after: float | None = None,
         per_line_timeout: bool = False,
-        advance_buttons: Optional[list[int]] = None,
-        dialog_speed: Optional[str] = None,
+        advance_buttons: list[int] | None = None,
+        dialog_speed: str | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -114,7 +114,7 @@ class DialogState(PopUpMenu[None]):
         if button in self.advance_buttons:
             self.advance_buttons.remove(button)
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         """Handle player input to fast-forward or advance dialog lines."""
         if event.pressed and event.button in self.advance_buttons:
             if not self.dialog.is_dialog_complete(self.dialog_box):
@@ -155,7 +155,7 @@ class DialogState(PopUpMenu[None]):
                     logger.debug("Dialog auto-closing after timeout")
                     self.close_dialog()
 
-    def next_text(self) -> Optional[str]:
+    def next_text(self) -> str | None:
         """Advance to the next line of dialog or close when finished."""
         if self.dialog_box.drawing_text:
             return None

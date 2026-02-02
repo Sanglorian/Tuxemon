@@ -3,7 +3,7 @@
 import pytest
 
 from tuxemon.db import Direction
-from tuxemon.entity import Body, EntityState, Mover
+from tuxemon.entity.entity import Body, EntityState, Mover
 from tuxemon.math import Vector2
 from tuxemon.prepare import CONFIG
 

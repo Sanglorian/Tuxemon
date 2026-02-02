@@ -8,7 +8,7 @@ from typing import final
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
 from tuxemon.event.eventaction import EventAction
-from tuxemon.monster_dir.sprite import MonsterSpriteHandler, SpriteLoader
+from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.session import Session
 
 

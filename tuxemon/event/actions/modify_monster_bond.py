@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import random as rd
 from dataclasses import dataclass
-from typing import Optional, Union, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -40,10 +40,10 @@ class ModifyMonsterBondAction(EventAction):
     """
 
     name = "modify_monster_bond"
-    variable: Optional[str] = None
-    amount: Optional[Union[int, float]] = None
-    lower_bound: Optional[int] = None
-    upper_bound: Optional[int] = None
+    variable: str | None = None
+    amount: int | float | None = None
+    lower_bound: int | None = None
+    upper_bound: int | None = None
 
     def start(self, session: Session) -> None:
         player = session.player

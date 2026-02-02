@@ -12,8 +12,8 @@ from tuxemon.graphics import ColorLike
 from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
+    from tuxemon.entity.npc import NPC
     from tuxemon.movement import MovementManager
-    from tuxemon.npc import NPC
     from tuxemon.states.world_state import WorldState
 
 

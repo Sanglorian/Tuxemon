@@ -10,7 +10,7 @@ from tuxemon.database.registry import validator
 from tuxemon.database.utils import load_config
 from tuxemon.database.validator import Validator
 from tuxemon.db import load_model_map
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.user_config import CONFIG
 
 

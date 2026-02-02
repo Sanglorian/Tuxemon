@@ -9,7 +9,7 @@ from tuxemon.database.runtime import db
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventengine import EventEngine
 from tuxemon.event.running import ConditionEvaluator
-from tuxemon.map.map_loader import TMXMapLoader
+from tuxemon.map.loader import TMXMapLoader
 from tuxemon.session import Session
 from tuxemon.user_config import CONFIG
 

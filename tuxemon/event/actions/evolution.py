@@ -5,12 +5,12 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from functools import partial
-from typing import TYPE_CHECKING, Optional, final
+from typing import TYPE_CHECKING, final
 from uuid import UUID
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
-from tuxemon.monster import Monster
+from tuxemon.locale.locale import T
+from tuxemon.monster.monster import Monster
 from tuxemon.tools import get_valid_uuid, open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_yes_no_options
 
@@ -40,8 +40,8 @@ class EvolutionAction(EventAction):
 
     name = "evolution"
     npc_slug: str
-    variable: Optional[str] = None
-    evolution: Optional[str] = None
+    variable: str | None = None
+    evolution: str | None = None
 
     def start(self, session: Session) -> None:
         self.session = session

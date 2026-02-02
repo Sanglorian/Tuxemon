@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.platform.const.sizes import MUSIC_FADEOUT
@@ -29,7 +29,7 @@ class FadeoutMusicAction(EventAction):
     """
 
     name = "fadeout_music"
-    duration: Optional[int] = None
+    duration: int | None = None
 
     def start(self, session: Session) -> None:
         duration = MUSIC_FADEOUT if self.duration is None else self.duration

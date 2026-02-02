@@ -7,7 +7,7 @@ from typing import final
 
 from tuxemon.db import Direction
 from tuxemon.event.eventaction import EventAction
-from tuxemon.map.map_region import RegionProperties
+from tuxemon.map.region import RegionProperties
 from tuxemon.session import Session
 
 

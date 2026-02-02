@@ -7,12 +7,12 @@ from collections.abc import Iterable, Sequence
 from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
+from tuxemon.entity.npc import NPC
 from tuxemon.network.networking import CharData, update_client
-from tuxemon.npc import NPC
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.network.manager import NetworkManager
     from tuxemon.save_state import NPCState
     from tuxemon.session import Session

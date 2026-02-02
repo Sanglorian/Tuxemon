@@ -2,7 +2,7 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import logging
 import os
-from typing import Any, Optional
+from typing import Any
 
 from tuxemon.rumble.libshake import DummyRumble, LibShakeRumble, Rumble
 from tuxemon.rumble.patterns import get_pattern
@@ -19,7 +19,7 @@ class RumbleManager:
         rumble backend and controls controller haptic feedback.
         """
         self.rumbler: Rumble
-        self.backend: Optional[str] = None
+        self.backend: str | None = None
 
         # Get backend locations, allowing for dynamic configuration
         locations = os.getenv("RUMBLE_BACKEND_LOCATIONS", "").split(",") or [
@@ -50,7 +50,7 @@ class RumbleManager:
     def update(self, dt: float) -> None:
         self.rumbler.update(dt)
 
-    def select_backend(self, locations: list[str]) -> Optional[str]:
+    def select_backend(self, locations: list[str]) -> str | None:
         """
         Attempts to locate a backend library from the provided locations.
         """

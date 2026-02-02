@@ -14,7 +14,7 @@ from tuxemon.sprite import Sprite
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 
 class CombatTextDisplay:

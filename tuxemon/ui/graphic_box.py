@@ -2,8 +2,6 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import Optional
-
 from pygame import SRCALPHA
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -78,9 +76,9 @@ class GraphicBox(Sprite):
 
     def __init__(
         self,
-        border: Optional[Surface] = None,
-        background: Optional[Surface] = None,
-        color: Optional[ColorLike] = None,
+        border: Surface | None = None,
+        background: Surface | None = None,
+        color: ColorLike | None = None,
         fill_tiles: bool = False,
     ) -> None:
         """

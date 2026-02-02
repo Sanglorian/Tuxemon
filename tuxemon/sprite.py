@@ -30,9 +30,9 @@ from tuxemon.tools import scale as tuxemon_scale
 
 if TYPE_CHECKING:
     from tuxemon.db import BattleIconsModel
-    from tuxemon.entity_dir.party import PartyHandler
+    from tuxemon.entity.party import PartyHandler
     from tuxemon.menu.interface import MenuItem
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
 
 logger = logging.getLogger()
 

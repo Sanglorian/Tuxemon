@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ class TrackingData:
         else:
             logger.error(f"TrackingPoint ID '{location_id}' does not exist.")
 
-    def get_location(self, location_id: str) -> Optional[TrackingPoint]:
+    def get_location(self, location_id: str) -> TrackingPoint | None:
         if location_id in self.locations:
             return self.locations[location_id]
         else:

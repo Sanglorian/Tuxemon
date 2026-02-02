@@ -3,10 +3,10 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from tuxemon.entity import Entity
+from tuxemon.entity.entity import Entity
 from tuxemon.map.collision_manager import CollisionManager
-from tuxemon.map.map_manager import MapManager
-from tuxemon.map.map_region import RegionProperties
+from tuxemon.map.manager import MapManager
+from tuxemon.map.region import RegionProperties
 from tuxemon.npc_manager import NPCManager
 
 

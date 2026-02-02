@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import difflib
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.database.config import DatabaseConfig, EntryNotFoundError
 
@@ -25,7 +25,7 @@ class DatabaseQuery:
         self._database = database
         self._config = config
 
-    def lookup(self, slug: str, table: Optional[str] = None) -> DataModel:
+    def lookup(self, slug: str, table: str | None = None) -> DataModel:
         """
         Looks up a data model based on slug. Uses default_lookup_table if table is None.
         """

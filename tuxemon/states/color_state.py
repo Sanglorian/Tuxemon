@@ -2,7 +2,7 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from tuxemon.graphics import string_to_colorlike
 from tuxemon.menu.menu import PygameMenuState
@@ -19,7 +19,7 @@ class ColorState(PygameMenuState):
 
     name: ClassVar[str] = "ColorState"
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         return None
 
     def __init__(self, color: str) -> None:

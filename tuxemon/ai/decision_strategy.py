@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from tuxemon.ai.opponent_evaluator import OpponentEvaluator
     from tuxemon.ai.technique_tracker import TechniqueTracker
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
 
 logger = logging.getLogger(__name__)
 

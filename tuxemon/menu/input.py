@@ -6,13 +6,13 @@ import random as rd
 import time
 from collections.abc import Callable, Generator
 from functools import partial
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 from pygame.rect import Rect
 
 from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import load_yaml
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu
 from tuxemon.platform.const import buttons, events, intentions
@@ -30,7 +30,7 @@ class InputMenuObj:
     def __init__(
         self,
         action: Callable[[], None],
-        char: Optional[str] = None,
+        char: str | None = None,
     ):
         self.action = action
         self.char = char
@@ -96,8 +96,8 @@ class CharacterSetManager:
 
     def __init__(
         self,
-        chars: Optional[str] = None,
-        char_variants: Optional[str] = None,
+        chars: str | None = None,
+        char_variants: str | None = None,
     ) -> None:
         _chars = chars or T.translate("menu_alphabet")
         self.chars = (_chars or "").replace(r"\0", "\0")
@@ -132,13 +132,13 @@ class CharacterSetManager:
         """Checks if a character is part of the main alphabet or a known variant."""
         return char in self.all_chars or char == " "
 
-    def get_layout_grid(self, columns: int) -> list[list[Optional[str]]]:
+    def get_layout_grid(self, columns: int) -> list[list[str | None]]:
         """
         Returns the characters arranged in a grid with given columns.
         Empty cells (from '\0') are represented as None.
         """
-        grid: list[list[Optional[str]]] = []
-        row: list[Optional[str]] = []
+        grid: list[list[str | None]] = []
+        row: list[str | None] = []
 
         for char in self.all_chars:
             if char == "\0":
@@ -237,18 +237,18 @@ class InputMenu(Menu[InputMenuObj]):
     def __init__(
         self,
         prompt: str = "",
-        callback: Optional[Callable[[str], None]] = None,
+        callback: Callable[[str], None] | None = None,
         initial: str = "",
         char_limit: int = 99,
         random: bool = False,
-        button_injectors: Optional[
+        button_injectors: None | (
             list[
                 Callable[
                     [InputMenu], Generator[MenuItem[InputMenuObj], None, None]
                 ]
             ]
-        ] = None,
-        char_manager: Optional[CharacterSetManager] = None,
+        ) = None,
+        char_manager: CharacterSetManager | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -357,7 +357,7 @@ class InputMenu(Menu[InputMenuObj]):
                 InputMenuObj(self.dont_care),
             )
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         """Process player input and dispatch to appropriate handlers."""
         if event.button in (buttons.A, intentions.SELECT):
             self._handle_select_event(event)

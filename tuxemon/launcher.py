@@ -7,8 +7,8 @@ import random
 from typing import TYPE_CHECKING
 
 from tuxemon.constants.asset_loader import fetch_asset
-from tuxemon.locale import T
-from tuxemon.player import Player
+from tuxemon.entity.player import Player
+from tuxemon.locale.locale import T
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient

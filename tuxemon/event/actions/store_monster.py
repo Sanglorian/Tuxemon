@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.platform.const.sizes import KENNEL
@@ -35,7 +35,7 @@ class StoreMonsterAction(EventAction):
 
     name = "store_monster"
     variable: str
-    box: Optional[str] = None
+    box: str | None = None
 
     def start(self, session: Session) -> None:
         player = session.player

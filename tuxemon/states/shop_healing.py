@@ -11,10 +11,10 @@ from pygame.surface import Surface
 
 from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import load_yaml
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.quantity import QuantityAndCostMenu
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.session import local_session
 from tuxemon.states.shop_base import ShopMenuState
 

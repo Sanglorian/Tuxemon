@@ -7,7 +7,7 @@ import pytest
 
 from tuxemon.database.rules import config_combat
 from tuxemon.formula import speed_monster
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.technique.technique import Technique
 
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ class EventBus:
         self,
         event_name: str,
         listener: Callable[..., None],
-        priority: Optional[int] = None,
+        priority: int | None = None,
     ) -> None:
         """
         Unsubscribes a listener function from a specified event.

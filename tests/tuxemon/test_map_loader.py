@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tuxemon.map.map_loader import MapLoader
+from tuxemon.map.loader import MapLoader
 
 
 @pytest.fixture
@@ -43,13 +43,13 @@ def mock_fetch_asset(mocker):
         return f"/fake/maps/{name}.tmx"
 
     return mocker.patch(
-        "tuxemon.map.map_loader.fetch_asset", side_effect=fake_fetch
+        "tuxemon.map.loader.fetch_asset", side_effect=fake_fetch
     )
 
 
 @pytest.fixture
 def mock_null_map(mocker):
-    NullMap = mocker.patch("tuxemon.map.map_loader.NullMap")
+    NullMap = mocker.patch("tuxemon.map.loader.NullMap")
     instance = NullMap.return_value
     instance.events = []
     instance.inits = []
@@ -60,16 +60,16 @@ def mock_null_map(mocker):
 @pytest.fixture
 def mock_mods_folder(mocker):
     folder = Path("/fake/mods")
-    return mocker.patch("tuxemon.map.map_loader.mods_folder", folder)
+    return mocker.patch("tuxemon.map.loader.mods_folder", folder)
 
 
 @pytest.fixture
 def loader(mocker, mock_tmx_loader, mock_yaml_loader):
     mocker.patch(
-        "tuxemon.map.map_loader.TMXMapLoader", return_value=mock_tmx_loader
+        "tuxemon.map.loader.TMXMapLoader", return_value=mock_tmx_loader
     )
     mocker.patch(
-        "tuxemon.map.map_loader.YAMLEventLoader", return_value=mock_yaml_loader
+        "tuxemon.map.loader.YAMLEventLoader", return_value=mock_yaml_loader
     )
     return MapLoader(cache_size=2, enable_cache=True)
 
@@ -98,7 +98,7 @@ def test_cache_eviction(loader, mock_fetch_asset, mock_tmx_loader):
 
 def test_cache_disabled(mocker, mock_fetch_asset, mock_tmx_loader):
     mocker.patch(
-        "tuxemon.map.map_loader.TMXMapLoader", return_value=mock_tmx_loader
+        "tuxemon.map.loader.TMXMapLoader", return_value=mock_tmx_loader
     )
     loader = MapLoader(enable_cache=False)
     loader.load_map_data("test")
@@ -112,7 +112,7 @@ def test_resolve_yaml_files_with_scenario(
 ):
     mock_tmx_map.scenario = "scenario_file"
     mocker.patch(
-        "tuxemon.map.map_loader.fetch_asset",
+        "tuxemon.map.loader.fetch_asset",
         return_value="/fake/maps/scenario_file.yaml",
     )
 
@@ -129,7 +129,7 @@ def test_load_null_map(loader, mock_null_map, mock_mods_folder):
 
 
 def test_load_map_data_missing_asset(loader, mocker):
-    mocker.patch("tuxemon.map.map_loader.fetch_asset", return_value=None)
+    mocker.patch("tuxemon.map.loader.fetch_asset", return_value=None)
 
     with pytest.raises(FileNotFoundError):
         loader.load_map_data("missing")

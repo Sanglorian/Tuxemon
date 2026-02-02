@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import Optional, Union
 
 from pygame import SRCALPHA
 from pygame.draw import line, rect
@@ -78,8 +77,8 @@ class TextArea(Sprite):
         font: Font,
         font_color: ColorLike,
         font_shadow: ColorLike = FONT_SHADOW_COLOR,
-        background_color: Optional[ColorLike] = None,
-        background_image: Optional[Surface] = None,
+        background_color: ColorLike | None = None,
+        background_image: Surface | None = None,
         h_alignment: HorizontalAlignment = HorizontalAlignment.LEFT,
         v_alignment: VerticalAlignment = VerticalAlignment.TOP,
         overflow_behavior: TextOverflow = TextOverflow.CLIP,
@@ -107,7 +106,7 @@ class TextArea(Sprite):
         self._rendered_text = None
         self._text_rect = None
         self._text = ""
-        self._iter: Optional[Iterator[RenderedChar]] = None
+        self._iter: Iterator[RenderedChar] | None = None
 
     def __iter__(self) -> TextArea:
         return self
@@ -155,8 +154,8 @@ class TextArea(Sprite):
 
     def set_background(
         self,
-        background_color: Optional[ColorLike] = None,
-        background_image: Optional[Surface] = None,
+        background_color: ColorLike | None = None,
+        background_image: Surface | None = None,
     ) -> None:
         self.image = Surface(self.rect.size, SRCALPHA)
 
@@ -265,14 +264,14 @@ class MultilineTextRenderer:
 def draw_text(
     surface: Surface,
     text: str,
-    rect: Union[Rect, tuple[int, int, int, int]],
+    rect: Rect | tuple[int, int, int, int],
     *,
     h_alignment: HorizontalAlignment = HorizontalAlignment.LEFT,
     v_alignment: VerticalAlignment = VerticalAlignment.TOP,
     font: Font,
-    font_size: Optional[int] = None,
-    font_color: Optional[ColorLike] = None,
-    text_renderer: Optional[TextRenderer] = None,
+    font_size: int | None = None,
+    font_color: ColorLike | None = None,
+    text_renderer: TextRenderer | None = None,
 ) -> None:
     """
     Draws text to a surface within a specified rectangle, handling wrapping and alignment.

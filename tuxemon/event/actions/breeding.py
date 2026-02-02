@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.interface import MenuItem
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.session import Session
 from tuxemon.states.monster_menu import MonsterMenuState
 
@@ -31,7 +31,7 @@ class BreedingAction(EventAction):
     name = "breeding"
     gender: str
 
-    def validate(self, target: Optional[Monster]) -> bool:
+    def validate(self, target: Monster | None) -> bool:
         if target:
             if target.gender == self.gender and target.stage != "basic":
                 return True

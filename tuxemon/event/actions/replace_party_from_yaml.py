@@ -10,7 +10,7 @@ from typing import Any, final
 from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.event.eventaction import EventAction
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.session import Session
 

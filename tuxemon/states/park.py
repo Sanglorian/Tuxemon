@@ -7,7 +7,7 @@ from typing import ClassVar
 import pygame_menu
 from pygame_menu import locals
 
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.prepare import SCREEN_SIZE

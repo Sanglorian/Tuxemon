@@ -12,7 +12,7 @@ from datetime import datetime
 from enum import Enum
 from operator import itemgetter
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from pygame.image import tobytes
 from pygame.surface import Surface
@@ -38,7 +38,7 @@ T = TypeVar("T")
 
 logger = logging.getLogger(__name__)
 
-slot_number: Optional[int] = None
+slot_number: int | None = None
 config = CONFIG
 
 
@@ -100,9 +100,9 @@ def save_action(
     mode: str,
     action_function: Callable[[Any, Any], T],
     save_method: SaveMethod,
-    compress_save: Optional[str] = None,
-    compression_kwargs: Optional[Mapping[str, Any]] = None,
-    serializer_kwargs: Optional[Mapping[str, Any]] = None,
+    compress_save: str | None = None,
+    compression_kwargs: Mapping[str, Any] | None = None,
+    serializer_kwargs: Mapping[str, Any] | None = None,
 ) -> T:
     if compression_kwargs is None:
         compression_kwargs = {}
@@ -136,9 +136,9 @@ def dump_data(
     obj: SaveData,
     path: Path,
     save_method: SaveMethod,
-    compress_save: Optional[str] = None,
-    compression_kwargs: Optional[Mapping[str, Any]] = None,
-    serializer_kwargs: Optional[Mapping[str, Any]] = None,
+    compress_save: str | None = None,
+    compression_kwargs: Mapping[str, Any] | None = None,
+    serializer_kwargs: Mapping[str, Any] | None = None,
 ) -> None:
     def action_function(
         file: Any,
@@ -179,9 +179,9 @@ def dump_data(
 def load_data(
     path: Path,
     save_method: SaveMethod,
-    compress_save: Optional[str] = None,
-    compression_kwargs: Optional[Mapping[str, Any]] = None,
-    serializer_kwargs: Optional[Mapping[str, Any]] = None,
+    compress_save: str | None = None,
+    compression_kwargs: Mapping[str, Any] | None = None,
+    serializer_kwargs: Mapping[str, Any] | None = None,
 ) -> Any:
     if compression_kwargs is None:
         compression_kwargs = {}
@@ -216,7 +216,7 @@ def load_data(
             raise ValueError(f"Unsupported save method: {save_method}")
 
 
-def open_save_file(save_path: Path) -> Optional[dict[str, Any]]:
+def open_save_file(save_path: Path) -> dict[str, Any] | None:
     """
     Opens and decodes the save file from disk.
 
@@ -246,7 +246,7 @@ def open_save_file(save_path: Path) -> Optional[dict[str, Any]]:
 
 
 def get_save_path(
-    slot: int, prefix: Optional[str] = None, extension: Optional[str] = None
+    slot: int, prefix: str | None = None, extension: str | None = None
 ) -> Path:
     extension = config.save_extension if extension is None else extension
     prefix = config.save_prefix if prefix is None else prefix
@@ -291,7 +291,7 @@ def save(save_data: SaveData, save_path: Path) -> None:
     os.replace(save_path_tmp.as_posix(), save_path.as_posix())
 
 
-def load(save_path: Path) -> Optional[SaveData]:
+def load(save_path: Path) -> SaveData | None:
     """
     Loads game state data from a save file.
 
@@ -311,7 +311,7 @@ def load(save_path: Path) -> Optional[SaveData]:
     return SaveData(**upgraded_data)
 
 
-def get_index_of_latest_save() -> Optional[int]:
+def get_index_of_latest_save() -> int | None:
     times = []
     for slot_index in range(3):
         save_path = get_save_path(slot_index + 1)

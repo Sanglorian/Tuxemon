@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from tuxemon.locale_dir.finder import LocaleFinder
+from tuxemon.locale.finder import LocaleFinder
 
 
 class TestLocaleFinder(unittest.TestCase):

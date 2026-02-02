@@ -17,7 +17,7 @@ from tuxemon.database.rules import config_monster
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel, NpcModel
 from tuxemon.event.eventaction import EventAction
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.session import Session
 

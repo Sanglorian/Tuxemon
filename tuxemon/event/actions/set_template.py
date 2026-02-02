@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -52,7 +52,7 @@ class SetTemplateAction(EventAction):
     name = "set_template"
     character: str
     sprite: str
-    combat_sheet: Optional[str] = None
+    combat_sheet: str | None = None
 
     def start(self, session: Session) -> None:
         character = session.get_npc(self.character)

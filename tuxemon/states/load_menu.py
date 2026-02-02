@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from pygame.rect import Rect
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class LoadMenuState(SaveMenuState):
     name: ClassVar[str] = "LoadMenuState"
 
-    def __init__(self, load_slot: Optional[int] = None) -> None:
+    def __init__(self, load_slot: int | None = None) -> None:
         super().__init__()
         if load_slot:
             self.selected_index = load_slot - 1
@@ -36,7 +36,7 @@ class LoadMenuState(SaveMenuState):
             item = self.create_menu_item(slot_rect, i + 1, selectable=False)
             self.add(item)
 
-    def on_menu_selection(self, menuitem: Optional[MenuItem[None]]) -> None:
+    def on_menu_selection(self, menuitem: MenuItem[None] | None) -> None:
         self.client.event_engine.execute_action(
             "load_game",
             [self.selected_index],

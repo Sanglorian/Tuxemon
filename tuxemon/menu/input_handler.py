@@ -20,11 +20,20 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T", covariant=True)
 
 
+class PressLogicMixin:
+    def _is_press(self, event: PlayerInput, delay: float) -> bool:
+        if event.pressed:
+            return True
+        if event.held and event.hold_duration > delay:
+            return True
+        return False
+
+
 class InputHandler(Protocol):
     def handle_event(self, event: PlayerInput) -> PlayerInput | None: ...
 
 
-class MenuInputHandler(InputHandler):
+class MenuInputHandler(InputHandler, PressLogicMixin):
     """
     Handles input events for a Menu instance.
 
@@ -32,8 +41,9 @@ class MenuInputHandler(InputHandler):
         None if the event was handled and should not propagate further.
         The original event otherwise.
     """
-    REPEAT_DELAY = 0.50
-    REPEAT_INTERVAL = 0.08
+
+    REPEAT_DELAY = 0.50  # seconds before repeat starts
+    REPEAT_INTERVAL = 0.08  # seconds between repeats
 
     def __init__(self, menu: Menu[T]) -> None:
         self._menu = menu
@@ -82,11 +92,7 @@ class MenuInputHandler(InputHandler):
     def _valid_press(self, event: PlayerInput) -> bool:
         if not self._menu_interactable():
             return False
-        if event.pressed:
-            return True
-        if event.held and event.hold_duration > 0.50:  # 500ms threshold
-            return True
-        return False
+        return self._is_press(event, self.REPEAT_DELAY)
 
     def _handle_escape(self, event: PlayerInput) -> bool:
         if event.button not in (
@@ -192,7 +198,7 @@ class MenuInputHandler(InputHandler):
         return False
 
 
-class PygameMenuInputHandler(InputHandler):
+class PygameMenuInputHandler(InputHandler, PressLogicMixin):
     """
     Handles PlayerInput events for a PygameMenuState.
 
@@ -200,17 +206,11 @@ class PygameMenuInputHandler(InputHandler):
         None if the event was handled and should not propagate further.
         The original event otherwise.
     """
-    REPEAT_DELAY = 0.50
+
+    REPEAT_DELAY = 0.50  # seconds before repeat starts
 
     def __init__(self, state: PygameMenuState) -> None:
         self._state = state
-
-    def _valid_press(self, event: PlayerInput) -> bool:
-        if event.pressed:
-            return True
-        if event.held and event.hold_duration > self.REPEAT_DELAY:
-            return True
-        return False
 
     def handle_event(self, event: PlayerInput) -> PlayerInput | None:
         if not self._state.state_controller.is_interactive():
@@ -239,7 +239,7 @@ class PygameMenuInputHandler(InputHandler):
             buttons.LEFT,
             buttons.RIGHT,
         ):
-            if self._state.open and self._valid_press(event):
+            if self._state.open and self._is_press(event, self.REPEAT_DELAY):
                 try:
                     self._state.menu.update([pygame_event])
                     self._state.selected_widget = (

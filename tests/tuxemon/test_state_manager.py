@@ -5,11 +5,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from tuxemon.event.eventbus import EventBus
-from tuxemon.menu.input import InputMenu
 from tuxemon.state.factory import StateFactory
 from tuxemon.state.manager import StateManager
 from tuxemon.state.repository import StateRepository
 from tuxemon.state.state import State
+from tuxemon.states.input import InputMenu
 from tuxemon.states.world_state import WorldState
 
 

@@ -92,7 +92,7 @@ def test_conversion_exception_propagates(handler, state):
     assert handler.handle_event(event) is event
 
 
-def test_menu_updates_when_open_and_pressed(handler, state):
+def test_confirm_button_updates_menu_when_open_and_pressed(handler, state):
     pygame_event = Mock()
     handler._convert_event = Mock(return_value=pygame_event)
 
@@ -138,3 +138,56 @@ def test_menu_update_exception_is_logged_and_consumed(handler, state):
 
     assert result is None
     assert state.selected_widget is None
+
+
+def test_directional_updates_when_is_press_true(handler, state):
+    pygame_event = Mock()
+    handler._convert_event = Mock(return_value=pygame_event)
+    handler._is_press = Mock(return_value=True)
+
+    event = make_event(buttons.UP, pressed=False)
+    result = handler.handle_event(event)
+
+    assert result is None
+    state.menu.update.assert_called_once_with([pygame_event])
+    handler._is_press.assert_called_once()
+
+
+def test_directional_does_not_update_when_is_press_false(handler, state):
+    pygame_event = Mock()
+    handler._convert_event = Mock(return_value=pygame_event)
+    handler._is_press = Mock(return_value=False)
+
+    event = make_event(buttons.UP, pressed=False)
+    result = handler.handle_event(event)
+
+    assert result is None
+    state.menu.update.assert_not_called()
+
+
+def test_directional_held_before_delay_no_update(handler, state):
+    pygame_event = Mock()
+    handler._convert_event = Mock(return_value=pygame_event)
+
+    event = make_event(buttons.UP, pressed=False)
+    event.held = True
+    event.hold_duration = handler.REPEAT_DELAY - 0.1
+
+    result = handler.handle_event(event)
+
+    assert result is None
+    state.menu.update.assert_not_called()
+
+
+def test_directional_held_after_delay_updates(handler, state):
+    pygame_event = Mock()
+    handler._convert_event = Mock(return_value=pygame_event)
+
+    event = make_event(buttons.UP, pressed=False)
+    event.held = True
+    event.hold_duration = handler.REPEAT_DELAY + 0.1
+
+    result = handler.handle_event(event)
+
+    assert result is None
+    state.menu.update.assert_called_once_with([pygame_event])

@@ -217,7 +217,7 @@ class PygameMenuState(State):
         self.selected_widget = self.menu.get_selected_widget()
 
     def valid_press(self, event: PlayerInput) -> bool:
-        return self._input_handler._valid_press(event)
+        return self._input_handler._is_press(event, 0.5)
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         """

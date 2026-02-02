@@ -3,7 +3,7 @@
 import pytest
 
 from tuxemon.db import BoundingBox, EventObject
-from tuxemon.map.map_loader import EventParser
+from tuxemon.map.loader import EventParser
 
 
 @pytest.fixture

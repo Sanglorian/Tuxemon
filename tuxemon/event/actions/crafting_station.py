@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -33,7 +33,7 @@ class CraftingStationAction(EventAction):
     name = "crafting_station"
     character_slug: str
     method: str
-    file_yaml: Optional[str] = None
+    file_yaml: str | None = None
 
     def start(self, session: Session) -> None:
         self.client = session.client

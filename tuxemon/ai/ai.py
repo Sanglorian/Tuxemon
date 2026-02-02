@@ -17,9 +17,9 @@ from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
+    from tuxemon.entity.npc import NPC
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

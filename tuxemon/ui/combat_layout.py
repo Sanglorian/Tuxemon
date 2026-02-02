@@ -14,7 +14,7 @@ from tuxemon.scaling import DefaultScaling, ScalingStrategy
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 
 def load_layout_groups(path: Path) -> dict[int, list[str]]:

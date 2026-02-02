@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from tuxemon.technique.technique import Technique
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 class TechSorter:
     def __init__(
-        self, attribute: Optional[str] = None, reverse: bool = False
+        self, attribute: str | None = None, reverse: bool = False
     ) -> None:
         self.attribute = attribute or "tech_id"
         self.reverse = reverse

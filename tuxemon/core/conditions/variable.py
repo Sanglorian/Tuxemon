@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from tuxemon.core.core_condition import CoreCondition
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
 
 
@@ -39,7 +39,7 @@ class VariableCondition(CoreCondition):
 
     name = "variable"
     var_name: str
-    expected: Union[str, int, None] = None
+    expected: str | int | None = None
 
     def test_with_monster(self, session: Session, target: Monster) -> bool:
         var_name = self.var_name

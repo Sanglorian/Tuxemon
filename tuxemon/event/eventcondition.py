@@ -6,7 +6,7 @@ import logging
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from tuxemon.constants.paths import (
     CONDITIONS_PATH,
@@ -47,7 +47,7 @@ class EventCondition:
 
 
 class ConditionManager:
-    def __init__(self, root_path: Optional[Path] = None) -> None:
+    def __init__(self, root_path: Path | None = None) -> None:
         if root_path is None:
             root_path = LIBDIR.parent
 
@@ -66,7 +66,7 @@ class ConditionManager:
 
     def get_condition(
         self, cond_data: SpatialCondition
-    ) -> Optional[EventCondition]:
+    ) -> EventCondition | None:
         """
         Get a condition that is loaded into the engine.
 

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from tuxemon.core.core_effect import CoreEffect, StatusEffectResult
 from tuxemon.db import EffectPhase
 from tuxemon.formula import simple_recover
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 
 if TYPE_CHECKING:
     from tuxemon.session import Session

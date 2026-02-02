@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.platform.const.sizes import MUSIC_FADEIN, MUSIC_LOOP, MUSIC_RANGE
@@ -41,9 +41,9 @@ class PlayMusicAction(EventAction):
 
     name = "play_music"
     filename: str
-    volume: Optional[float] = None
-    loop: Optional[int] = None
-    fade_ms: Optional[int] = None
+    volume: float | None = None
+    loop: int | None = None
+    fade_ms: int | None = None
 
     def start(self, session: Session) -> None:
         client = session.client

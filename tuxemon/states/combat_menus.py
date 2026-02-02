@@ -16,10 +16,10 @@ from tuxemon.combat.menu_visibility import MenuProfiles
 from tuxemon.db import EffectPhase, SpeedLabel, State
 from tuxemon.graphics import load_and_scale
 from tuxemon.item.filter import ItemFilter
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu, PopUpMenu
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.prepare import SCALE, SCREEN_RECT, SCREEN_SIZE
 from tuxemon.sprite import Sprite
 from tuxemon.states.item_menu import ItemMenuState
@@ -30,8 +30,8 @@ from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
+    from tuxemon.entity.npc import NPC
     from tuxemon.item.item import Item
-    from tuxemon.npc import NPC
     from tuxemon.session import Session
     from tuxemon.states.combat_state import CombatState
 

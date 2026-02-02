@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from tuxemon.combat.action_queue import ActionQueue, EnqueuedAction
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.technique.technique import Technique
 
 

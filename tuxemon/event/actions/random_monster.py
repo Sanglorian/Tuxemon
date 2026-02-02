@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import random
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.database.runtime import db
 from tuxemon.db import EvolutionStage, MonsterModel
@@ -40,11 +40,11 @@ class RandomMonsterAction(EventAction):
 
     name = "random_monster"
     monster_level: int
-    trainer_slug: Optional[str] = None
-    exp: Optional[float] = None
-    money: Optional[float] = None
-    shape: Optional[str] = None
-    evo: Optional[str] = None
+    trainer_slug: str | None = None
+    exp: float | None = None
+    money: float | None = None
+    shape: str | None = None
+    evo: str | None = None
 
     def start(self, session: Session) -> None:
         if not lookup_cache:

@@ -9,7 +9,7 @@ from tuxemon.economy.price_policy import (
     PricePolicyData,
     StaticYamlPolicy,
 )
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 
 
 @pytest.fixture

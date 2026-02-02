@@ -6,12 +6,12 @@ from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from enum import Enum
 from fractions import Fraction
-from typing import Literal, Optional, Union
+from typing import Literal
 from unittest.mock import MagicMock
 from uuid import UUID
 
+from tuxemon.entity.player import Player
 from tuxemon.math import Vector2
-from tuxemon.player import Player
 from tuxemon.tools import (
     cast_value,
     check_condition,
@@ -146,21 +146,19 @@ class TestCastValue(unittest.TestCase):
             cast_value(((Literal[1, 2, 3], "param"), 4))
 
     def test_union_types(self):
-        self.assertEqual(cast_value(((Union[int, str], "param"), 123)), 123)
-        self.assertEqual(
-            cast_value(((Union[int, str], "param"), "abc")), "abc"
-        )
+        self.assertEqual(cast_value(((int | str, "param"), 123)), 123)
+        self.assertEqual(cast_value(((int | str, "param"), "abc")), "abc")
         with self.assertRaises(ValueError):
-            cast_value(((Union[int, bool], "param"), "abc"))
+            cast_value(((int | bool, "param"), "abc"))
 
     def test_sequence_of_types_combinations(self):
         with self.assertRaises(ValueError):
             cast_value(((int, str, bool), True))
 
     def test_optional_types_and_sequences(self):
-        self.assertEqual(cast_value(((Optional[int], str), None)), None)
+        self.assertEqual(cast_value(((int | None, str), None)), None)
         with self.assertRaises(ValueError):
-            cast_value(((Optional[int], None, str), True))
+            cast_value(((int | None, None, str), True))
 
     def test_edge_cases_with_sequences(self):
         with self.assertRaises(ValueError):
@@ -185,8 +183,8 @@ class TestCastValue(unittest.TestCase):
             cast_value(((Literal["yes", "no"], "param"), "maybe"))
 
     def test_optional_with_union(self):
-        self.assertEqual(cast_value(((Optional[int], "param"), None)), None)
-        self.assertEqual(cast_value(((Optional[int], "param"), 5)), 5)
+        self.assertEqual(cast_value(((int | None, "param"), None)), None)
+        self.assertEqual(cast_value(((int | None, "param"), 5)), 5)
 
     def test_uuid_casting(self):
         uid = "12345678-1234-5678-1234-567812345678"
@@ -236,8 +234,8 @@ class TestCastValue(unittest.TestCase):
         )
 
     def test_union_with_optional(self):
-        self.assertEqual(cast_value(((Union[int, None], "param"), None)), None)
-        self.assertEqual(cast_value(((Union[int, None], "param"), "42")), 42)
+        self.assertEqual(cast_value(((int | None, "param"), None)), None)
+        self.assertEqual(cast_value(((int | None, "param"), "42")), 42)
 
     def test_datetime_invalid(self):
         with self.assertRaises(ValueError):
@@ -259,20 +257,20 @@ class TestCastValue(unittest.TestCase):
         self.assertEqual(cast_value(((Color, "param"), Color.RED)), Color.RED)
 
     def test_empty_string_optional(self):
-        self.assertIsNone(cast_value(((Optional[int], "param"), "")))
+        self.assertIsNone(cast_value(((int | None, "param"), "")))
 
     def test_empty_string_casts_to_none_for_optional(self):
-        self.assertIsNone(cast_value(((Optional[str], "param"), "")))
-        self.assertIsNone(cast_value(((Optional[int], "param"), "")))
-        self.assertIsNone(cast_value(((Union[int, None], "param"), "")))
+        self.assertIsNone(cast_value(((str | None, "param"), "")))
+        self.assertIsNone(cast_value(((int | None, "param"), "")))
+        self.assertIsNone(cast_value(((int | None, "param"), "")))
         self.assertEqual(cast_value(((str, "param"), "")), "")
 
     def test_empty_string_in_collections(self):
         self.assertEqual(
-            cast_value(((Optional[list[str]], "param"), ",1.0")), [None, "1.0"]
+            cast_value(((list[str] | None, "param"), ",1.0")), [None, "1.0"]
         )
         self.assertEqual(
-            cast_value(((Optional[tuple[str]], "param"), "a,,b")),
+            cast_value(((tuple[str] | None, "param"), "a,,b")),
             ("a", None, "b"),
         )
         self.assertEqual(

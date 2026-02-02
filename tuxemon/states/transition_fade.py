@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from pygame import SRCALPHA
 from pygame.surface import Surface
@@ -28,9 +28,9 @@ class FadeTransitionBase(State):
 
     def __init__(
         self,
-        state_duration: Optional[float] = None,
-        fade_duration: Optional[float] = None,
-        caller: Optional[State] = None,
+        state_duration: float | None = None,
+        fade_duration: float | None = None,
+        caller: State | None = None,
         color: ColorLike = BLACK_COLOR,
     ) -> None:
         """
@@ -59,7 +59,7 @@ class FadeTransitionBase(State):
         self.task(self.client.pop_state, interval=self.state_duration)
         self.create_fade_animation()
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         return None
 
     def update(self, time_delta: float) -> None:

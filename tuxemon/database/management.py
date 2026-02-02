@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import ValidationError
 
@@ -20,9 +20,7 @@ class DependencyResolver:
     def __init__(self, mod_dependencies: dict[str, list[str]]) -> None:
         self.mod_dependencies = mod_dependencies
 
-    def resolve(
-        self, mod: str, visited: Optional[set[str]] = None
-    ) -> list[str]:
+    def resolve(self, mod: str, visited: set[str] | None = None) -> list[str]:
         """Recursively resolves dependencies for a single mod."""
         if visited is None:
             visited = set()
@@ -96,7 +94,7 @@ class ModMetadataManager:
 
     def get_mod_attribute(
         self, mod_name: str, attribute_name: str
-    ) -> Optional[Any]:
+    ) -> Any | None:
         """Retrieves a specific attribute (field) from a mod's metadata."""
         mod_meta = self._mod_metadata.get(mod_name)
         if mod_meta:

@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.core.core_condition import CoreCondition
 from tuxemon.core.core_effect import (
@@ -20,7 +20,7 @@ from tuxemon.plugin import PluginObject
 if TYPE_CHECKING:
     from tuxemon.db import SpatialCondition
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
     from tuxemon.status.status import Status
     from tuxemon.technique.technique import Technique
@@ -90,8 +90,8 @@ class EffectProcessor:
         self,
         session: Session,
         source: Technique,
-        user: Optional[Monster],
-        target: Optional[Monster],
+        user: Monster | None,
+        target: Monster | None,
     ) -> TechEffectResult:
         meta_result = TechEffectResult(name=source.name)
         if not self.effects:
@@ -128,7 +128,7 @@ class EffectProcessor:
         self,
         session: Session,
         source: Item,
-        target: Optional[Monster],
+        target: Monster | None,
     ) -> ItemEffectResult:
         meta_result = ItemEffectResult(name=source.name)
         if not self.effects:

@@ -2,7 +2,7 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, TypeVar
 
 from pygame import draw as pg_draw
 from pygame.rect import Rect
@@ -38,7 +38,7 @@ class Bar:
         value: float,
         border_filename: str,
         fg_color: ColorLike = WHITE_COLOR,
-        bg_color: Optional[ColorLike] = BLACK_COLOR,
+        bg_color: ColorLike | None = BLACK_COLOR,
     ) -> None:
         """
         Initializes the bar with a given value, border filename, foreground color, and background color.
@@ -53,7 +53,7 @@ class Bar:
         self.border_filename = border_filename
         self.fg_color = fg_color
         self.bg_color = bg_color
-        self.border: Optional[GraphicBox] = None
+        self.border: GraphicBox | None = None
 
     @property
     def value(self) -> float:
@@ -117,7 +117,7 @@ class Bar:
     def set_color(
         self,
         fg_color: ColorLike,
-        bg_color: Optional[ColorLike] = None,
+        bg_color: ColorLike | None = None,
     ) -> None:
         """
         Sets the foreground and background colors of the bar.
@@ -197,12 +197,12 @@ class MenuItem(Generic[T], Sprite):
 
     def __init__(
         self,
-        image: Optional[Surface],
-        label: Optional[str],
-        description: Optional[str],
+        image: Surface | None,
+        label: str | None,
+        description: str | None,
         game_object: T,
         enabled: bool = True,
-        position: Optional[tuple[int, int]] = None,
+        position: tuple[int, int] | None = None,
     ):
         super().__init__(image=image)
         self.label = label

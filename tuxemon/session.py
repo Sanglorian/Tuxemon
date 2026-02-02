@@ -16,8 +16,8 @@ from tuxemon.time_handler import TimeHandler
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
-    from tuxemon.npc import NPC
-    from tuxemon.player import Player
+    from tuxemon.entity.npc import NPC
+    from tuxemon.entity.player import Player
     from tuxemon.save_state import SaveData
     from tuxemon.states.world_state import WorldState
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, final
+from typing import TYPE_CHECKING, final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.tools import get_valid_uuid, parse_flag
@@ -39,7 +39,7 @@ class RemoveTechAction(EventAction):
 
     name = "remove_tech"
     tech_id: str
-    force_remove: Optional[str] = None
+    force_remove: str | None = None
 
     def start(self, session: Session) -> None:
         player = session.player

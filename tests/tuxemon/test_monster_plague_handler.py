@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from tuxemon.db import PlagueType
-from tuxemon.monster_dir.plague import (
+from tuxemon.monster.plague import (
     CureData,
     InoculationResult,
     MonsterPlagueHandler,

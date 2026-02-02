@@ -9,7 +9,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Generator, Sequence
 from math import sqrt
-from typing import TypeVar, Union, overload
+from typing import TypeVar, overload
 
 SelfType = TypeVar("SelfType", bound="Vector")
 
@@ -56,8 +56,8 @@ class Vector(ABC, Sequence[float]):
 
     def __getitem__(
         self,
-        key: Union[int, slice],
-    ) -> Union[float, Sequence[float]]:
+        key: int | slice,
+    ) -> float | Sequence[float]:
         return tuple(self)[key]
 
     def __add__(self: SelfType, other: Sequence[float]) -> SelfType:
@@ -90,7 +90,7 @@ class Vector3(Vector):
 
     def __init__(
         self,
-        x: Union[float, Sequence[float]] = 0,
+        x: float | Sequence[float] = 0,
         y: float = 0,
         z: float = 0,
     ) -> None:
@@ -119,7 +119,7 @@ class Vector3(Vector):
     def __truediv__(self, scalar: float) -> Vector3:
         return Vector3(self.x / scalar, self.y / scalar, self.z / scalar)
 
-    def __sub__(self, other: Union[Vector3, Sequence[float]]) -> Vector3:
+    def __sub__(self, other: Vector3 | Sequence[float]) -> Vector3:
         if isinstance(other, Vector3):
             return Vector3(
                 self.x - other.x, self.y - other.y, self.z - other.z
@@ -132,7 +132,7 @@ class Vector3(Vector):
             f"Unsupported operand type(s) for -: 'Vector3' and '{type(other).__name__}'"
         )
 
-    def __rsub__(self, other: Union[Vector3, Sequence[float]]) -> Vector3:
+    def __rsub__(self, other: Vector3 | Sequence[float]) -> Vector3:
         if isinstance(other, Vector3):
             return Vector3(
                 other.x - self.x, other.y - self.y, other.z - self.z
@@ -171,7 +171,7 @@ class Vector2(Vector):
 
     def __init__(
         self,
-        x: Union[float, Sequence[float]] = 0,
+        x: float | Sequence[float] = 0,
         y: float = 0,
     ) -> None:
         if isinstance(x, (int, float)):
@@ -191,7 +191,7 @@ class Vector2(Vector):
         yield self.x
         yield self.y
 
-    def __add__(self, other: Union[Vector2, Sequence[float]]) -> Vector2:
+    def __add__(self, other: Vector2 | Sequence[float]) -> Vector2:
         if isinstance(other, Vector2):
             return Vector2(self.x + other.x, self.y + other.y)
         elif isinstance(other, (tuple, list)) and len(other) == 2:
@@ -206,7 +206,7 @@ class Vector2(Vector):
     def __truediv__(self, scalar: float) -> Vector2:
         return Vector2(self.x / scalar, self.y / scalar)
 
-    def __sub__(self, other: Union[Vector2, Sequence[float]]) -> Vector2:
+    def __sub__(self, other: Vector2 | Sequence[float]) -> Vector2:
         if isinstance(other, Vector2):
             return Vector2(self.x - other.x, self.y - other.y)
         elif isinstance(other, (tuple, list)) and len(other) == 2:
@@ -215,7 +215,7 @@ class Vector2(Vector):
             f"Unsupported operand type(s) for -: 'Vector2' and '{type(other).__name__}'"
         )
 
-    def __rsub__(self, other: Union[Vector2, Sequence[float]]) -> Vector2:
+    def __rsub__(self, other: Vector2 | Sequence[float]) -> Vector2:
         if isinstance(other, Vector2):
             return Vector2(other.x - self.x, other.y - self.y)
         elif isinstance(other, (tuple, list)) and len(other) == 2:

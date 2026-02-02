@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 from pygame.surface import Surface
 
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PopUpMenu
 from tuxemon.platform.const.graphics import BLACK_COLOR
 from tuxemon.tools import transform_resource_filename

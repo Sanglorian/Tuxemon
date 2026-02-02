@@ -8,7 +8,7 @@ from datetime import date, datetime
 from random import randint
 from typing import Final
 
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.platform.const.sizes import MONTH_KEYS
 from tuxemon.user_config import CONFIG
 

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Sequence
-from typing import Optional
 
 from pygame import SRCALPHA
 from pygame.font import Font
@@ -32,9 +31,9 @@ class TextRenderer:
     def __init__(
         self,
         font_color: ColorLike,
-        font_shadow_color: Optional[ColorLike] = None,
-        font_filename: Optional[str] = None,
-        font: Optional[Font] = None,
+        font_shadow_color: ColorLike | None = None,
+        font_filename: str | None = None,
+        font: Font | None = None,
     ) -> None:
         self.font_color = font_color
         if font_shadow_color is None:
@@ -45,8 +44,8 @@ class TextRenderer:
     def shadow_text(
         self,
         text: str,
-        bg: Optional[ColorLike] = None,
-        fg: Optional[ColorLike] = None,
+        bg: ColorLike | None = None,
+        fg: ColorLike | None = None,
         offset: tuple[float, float] = (0.5, 0.5),
     ) -> Surface:
         """

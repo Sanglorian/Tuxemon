@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.widgets.selection.highlight import HighlightSelection
@@ -13,7 +13,7 @@ from pygame_menu.widgets.selection.highlight import HighlightSelection
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.database.runtime import db
 from tuxemon.db import NpcModel
-from tuxemon.entity_dir.sheet import get_combat_sheet
+from tuxemon.entity.sheet import get_combat_sheet
 from tuxemon.graphics import scale_surface
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
@@ -45,7 +45,7 @@ class ChoiceNpc(PygameMenuState):
         self,
         menu: MenuOptions,
         escape_key_exits: bool = False,
-        config: Optional[MenuNpcConfig] = None,
+        config: MenuNpcConfig | None = None,
         **kwargs: Any,
     ) -> None:
         self.config = config or MenuNpcConfig()

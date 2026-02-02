@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Sequence
 from heapq import heappop, heappush
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.db import Direction
 from tuxemon.map.map import (
@@ -20,10 +20,10 @@ from tuxemon.user_config import CONFIG
 if TYPE_CHECKING:
     from tuxemon.boundary import BoundaryChecker
     from tuxemon.db import Direction
+    from tuxemon.entity.npc import NPC
     from tuxemon.event.eventmanager import EventManager
     from tuxemon.map.collision_manager import CollisionManager, CollisionMap
-    from tuxemon.map.map_manager import MapManager
-    from tuxemon.npc import NPC
+    from tuxemon.map.manager import MapManager
     from tuxemon.npc_manager import NPCManager
     from tuxemon.platform.input_manager import InputManager
 
@@ -40,7 +40,7 @@ class PathfindNode:
     def __init__(
         self,
         value: tuple[int, int],
-        parent: Optional[PathfindNode] = None,
+        parent: PathfindNode | None = None,
         g_cost: float = 0.0,
         h_cost: float = 0.0,
     ) -> None:
@@ -54,7 +54,7 @@ class PathfindNode:
         else:
             self.depth = 0
 
-    def get_parent(self) -> Optional[PathfindNode]:
+    def get_parent(self) -> PathfindNode | None:
         return self.parent
 
     def set_parent(self, parent: PathfindNode) -> None:
@@ -72,7 +72,7 @@ class PathfindNode:
 
     def reconstruct_path(self) -> list[tuple[int, int]]:
         path = []
-        current: Optional[PathfindNode] = self
+        current: PathfindNode | None = self
         while current:
             path.append(current.value)
             current = current.parent
@@ -157,7 +157,7 @@ class Pathfinder:
 
     def pathfind(
         self, start: tuple[int, int], dest: tuple[int, int], facing: Direction
-    ) -> Optional[Sequence[tuple[int, int]]]:
+    ) -> Sequence[tuple[int, int]] | None:
         """
         Attempts to find a path from the start position to the destination position.
 
@@ -236,8 +236,8 @@ class Pathfinder:
         self,
         position: tuple[int, int],
         facing: Direction,
-        collision_map: Optional[CollisionMap] = None,
-        skip_nodes: Optional[set[tuple[int, int]]] = None,
+        collision_map: CollisionMap | None = None,
+        skip_nodes: set[tuple[int, int]] | None = None,
     ) -> Sequence[tuple[int, int]]:
         """
         Determines all adjacent tiles that can be traversed from the given position.

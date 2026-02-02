@@ -6,7 +6,7 @@ from uuid import UUID
 import pytest
 
 from tuxemon.db import EvolutionStage, LearningMethod
-from tuxemon.monster_dir.moves import MonsterMovesHandler
+from tuxemon.monster.moves import MonsterMovesHandler
 
 
 class DummyMonster:

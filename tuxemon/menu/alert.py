@@ -6,7 +6,7 @@ import logging
 from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.constants.dialog_speed import resolve_character_delay
 from tuxemon.ui.text import TextArea
@@ -26,7 +26,7 @@ class SplitAlertState:
     dialog_index: int = 0
     dialog_speed: str = CONFIG.dialog_speed
 
-    def current_line(self) -> Optional[str]:
+    def current_line(self) -> str | None:
         """Returns the current line to be displayed."""
         if 0 <= self.dialog_index < len(self.dialog_lines):
             return self.dialog_lines[self.dialog_index]
@@ -41,23 +41,23 @@ class SplitAlertState:
 class AlertEntry:
     message: str
     text_area: TextArea
-    callback: Optional[Callable[[], None]]
+    callback: Callable[[], None] | None
     dialog_speed: str
     split_lines: bool
-    split_state: Optional[SplitAlertState] = None
+    split_state: SplitAlertState | None = None
 
 
 class AlertManager:
     def __init__(self, event_bus: EventBus) -> None:
         self.event_bus = event_bus
-        self._final_callback: Optional[Callable[[], None]] = None
+        self._final_callback: Callable[[], None] | None = None
         self._time_accum: float = 0.0
         self.character_delay = resolve_character_delay(CONFIG.dialog_speed)
 
         self._alert_queue: deque[AlertEntry] = deque()
         self._is_busy: bool = False
-        self._active_area: Optional[TextArea] = None
-        self._active_split_state: Optional[SplitAlertState] = None
+        self._active_area: TextArea | None = None
+        self._active_split_state: SplitAlertState | None = None
 
     def update(self, dt: float) -> None:
         area = self._active_area
@@ -73,12 +73,12 @@ class AlertManager:
                 break
             self._time_accum -= self.character_delay
 
-    def _current_text_area(self) -> Optional[TextArea]:
+    def _current_text_area(self) -> TextArea | None:
         """Return the currently active TextArea being animated."""
         return self._active_area
 
     def animate_text(
-        self, text_area: Optional[TextArea], text: str, dialog_speed: str
+        self, text_area: TextArea | None, text: str, dialog_speed: str
     ) -> None:
         """Animate text in the given TextArea at the specified speed."""
         if text_area is None:
@@ -101,12 +101,12 @@ class AlertManager:
         self,
         message: str,
         text_area: TextArea,
-        callback: Optional[Callable[[], None]] = None,
+        callback: Callable[[], None] | None = None,
         dialog_speed: str = CONFIG.dialog_speed,
         split_lines: bool = False,
     ) -> None:
         """Queue a new alert message for display in a TextArea."""
-        split_state: Optional[SplitAlertState] = None
+        split_state: SplitAlertState | None = None
         if split_lines:
             lines = message.splitlines()
             if lines:
@@ -284,7 +284,7 @@ class AlertManager:
         """Return True if the manager is currently processing an alert."""
         return self._is_busy
 
-    def current_message(self) -> Optional[str]:
+    def current_message(self) -> str | None:
         """Return the current message line being displayed, if any."""
         if self._active_split_state:
             return self._active_split_state.current_line()

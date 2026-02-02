@@ -12,13 +12,13 @@ from tuxemon.db import (
     MonsterModel,
     TechniqueModel,
 )
+from tuxemon.entity.npc import PartyHandler
+from tuxemon.entity.player import Player
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventbehavior import BehaviorManager
 from tuxemon.event.eventengine import EventEngine
 from tuxemon.event.running import ConditionEvaluator
 from tuxemon.game_variables import GameVariablesManager
-from tuxemon.npc import PartyHandler
-from tuxemon.player import Player
 from tuxemon.session import local_session
 
 

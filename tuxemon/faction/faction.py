@@ -15,7 +15,7 @@ from tuxemon.db import (
     FactionRelationStatus,
     RankStep,
 )
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 
 if TYPE_CHECKING:
     from tuxemon.event.eventbus import EventBus

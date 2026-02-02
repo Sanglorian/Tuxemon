@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -25,7 +25,7 @@ class GetPartyMonsterAction(EventAction):
     """
 
     name = "get_party_monster"
-    npc_slug: Optional[str] = None
+    npc_slug: str | None = None
 
     def start(self, session: Session) -> None:
         player = session.player

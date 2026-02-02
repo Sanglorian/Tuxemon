@@ -2,7 +2,6 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import logging
 from dataclasses import dataclass
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +59,7 @@ class RumbleParams:
         )
 
 
-def find_library(locations: list[str]) -> Optional[str]:
+def find_library(locations: list[str]) -> str | None:
     """
     Attempts to load a library from the provided locations.
 

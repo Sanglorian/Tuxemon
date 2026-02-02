@@ -14,11 +14,11 @@ from pygame.surface import Surface
 
 from tuxemon.animation import ScheduleType
 from tuxemon.graphics import ColorLike, load_and_scale, load_image
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.interface import ExpBar, HpBar, MenuItem
 from tuxemon.menu.menu import Menu
-from tuxemon.monster import Monster
-from tuxemon.monster_dir.filter import MonsterFilter
+from tuxemon.monster.filter import MonsterFilter
+from tuxemon.monster.monster import Monster
 from tuxemon.platform.const.graphics import BG_MONSTERS, TRANSPARENT_COLOR
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.prepare import SCREEN_SIZE
@@ -35,9 +35,9 @@ from tuxemon.ui.text import TextArea, draw_text
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
-    from tuxemon.entity_dir.party import PartyHandler
+    from tuxemon.entity.party import PartyHandler
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
 
 LAYER_MONSTER_ICONS = 20
 LAYER_PORTRAIT = 30

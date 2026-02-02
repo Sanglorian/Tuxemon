@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import cmd
 from collections.abc import Sequence
-from typing import Optional
 
 
 class Formatter:
@@ -18,7 +17,7 @@ class Formatter:
         self,
         header: str,
         items: Sequence[str],
-        footer: Optional[str],
+        footer: str | None,
         ruler: str = "=",
         maxcol: int = 120,
     ) -> None:

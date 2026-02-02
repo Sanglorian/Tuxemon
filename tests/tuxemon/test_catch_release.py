@@ -5,8 +5,8 @@ from unittest.mock import MagicMock
 import pytest
 
 from tuxemon.boxes import MonsterBoxes
+from tuxemon.entity.npc import NPC, PartyHandler
 from tuxemon.game_variables import GameVariablesManager
-from tuxemon.npc import NPC, PartyHandler
 from tuxemon.platform.const.sizes import KENNEL, PARTY_LIMIT
 
 

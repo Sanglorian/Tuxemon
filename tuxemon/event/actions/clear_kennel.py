@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.platform.const.sizes import KENNEL
@@ -40,7 +40,7 @@ class ClearKennelAction(EventAction):
     name = "clear_kennel"
     npc_slug: str
     kennel: str
-    transfer: Optional[str] = None
+    transfer: str | None = None
 
     def start(self, session: Session) -> None:
         character = session.get_npc(self.npc_slug)

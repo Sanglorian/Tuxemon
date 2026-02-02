@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import load_and_scale
@@ -35,7 +35,7 @@ class SetBubbleAction(EventAction):
 
     name = "set_bubble"
     npc_slug: str
-    bubble: Optional[str] = None
+    bubble: str | None = None
 
     def start(self, session: Session) -> None:
         client = session.client

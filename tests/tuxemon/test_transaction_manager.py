@@ -7,11 +7,11 @@ import pytest
 from tuxemon.boxes import ItemBoxes
 from tuxemon.economy.shop_manager import ShopManager
 from tuxemon.economy.transaction import TransactionManager
-from tuxemon.entity_dir.bag import BagHandler
+from tuxemon.entity.bag import BagHandler
 from tuxemon.item.item import Item
 from tuxemon.item.stock import INFINITE_ITEMS, Stock
 from tuxemon.money.manager import MoneyManager
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 
 
 def make_test_item(slug: str, qty: int = 1) -> Item:

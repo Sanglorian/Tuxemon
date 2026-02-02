@@ -9,8 +9,8 @@ from tuxemon.formula import (
     capture,
     shake_check,
 )
-from tuxemon.monster import Monster
-from tuxemon.monster_dir.status import MonsterStatusHandler
+from tuxemon.monster.monster import Monster
+from tuxemon.monster.status import MonsterStatusHandler
 
 
 class TestShakeCheck(unittest.TestCase):

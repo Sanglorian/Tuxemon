@@ -6,12 +6,11 @@ import os
 import shutil
 import zipfile
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import requests
 
 from tuxemon.constants import paths
-from tuxemon.mod_manager.symlink_missing import symlink_missing
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +83,7 @@ class Manager:
         self,
         author: str,
         name: str,
-        release: Optional[float],
+        release: float | None,
         repo: Any = None,
         dont_extract: bool = False,
         install_deps: bool = True,

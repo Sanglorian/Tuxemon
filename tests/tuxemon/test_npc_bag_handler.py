@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 
-from tuxemon.entity_dir.bag import BagHandler
+from tuxemon.entity.bag import BagHandler
 
 
 class FakeStock:

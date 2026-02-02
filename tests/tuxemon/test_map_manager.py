@@ -5,8 +5,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tuxemon.map.map_manager import MapManager, MapType
-from tuxemon.map.map_tuxemon import AbstractMap
+from tuxemon.map.manager import MapManager, MapType
+from tuxemon.map.tuxemon import AbstractMap
 
 
 @pytest.fixture
@@ -123,7 +123,7 @@ def test_map_type_property_logs_warning_for_invalid_type(
 ):
     m = mock_map(map_type="invalid")
 
-    with caplog.at_level("WARNING", logger="tuxemon.map.map_manager"):
+    with caplog.at_level("WARNING", logger="tuxemon.map.manager"):
         map_manager.load_map(m)
         _ = map_manager.map_type
 

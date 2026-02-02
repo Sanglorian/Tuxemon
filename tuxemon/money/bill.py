@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 @dataclass
 class BillEntry:
     amount: int = 0
-    interest_rate: Optional[float] = None
-    late_fee: Optional[int] = None
-    share_rate: Optional[float] = None
+    interest_rate: float | None = None
+    late_fee: int | None = None
+    share_rate: float | None = None
 
     def get_state(self) -> dict[str, Any]:
         state: dict[str, Any] = {"amount": self.amount}

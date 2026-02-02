@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item

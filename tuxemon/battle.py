@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Mapping, Sequence
-from typing import Any, Optional
+from typing import Any
 from uuid import UUID, uuid4
 
 from tuxemon.db import OutputBattle
@@ -73,7 +73,7 @@ class Battle:
 
 
 def decode_battle(
-    json_data: Optional[Sequence[Mapping[str, Any]]],
+    json_data: Sequence[Mapping[str, Any]] | None,
 ) -> list[Battle]:
     """Converts saved battle data into Battle instances."""
     return [Battle.from_save_data(battle) for battle in (json_data or [])]

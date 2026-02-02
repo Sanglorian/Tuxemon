@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import ColorLike, string_to_colorlike
@@ -34,8 +34,8 @@ class ScreenTransitionAction(EventAction):
     """
 
     name = "screen_transition"
-    trans_time: Optional[float] = None
-    rgb: Optional[str] = None
+    trans_time: float | None = None
+    rgb: str | None = None
     elapsed: float = 0.0
 
     def start(self, session: Session) -> None:

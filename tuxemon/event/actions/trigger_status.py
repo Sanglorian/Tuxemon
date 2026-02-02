@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, final
+from typing import TYPE_CHECKING, final
 from uuid import UUID
 
 from tuxemon.db import EffectPhase
@@ -40,8 +40,8 @@ class TriggerStatusAction(EventAction):
     """
 
     name = "trigger_status"
-    variable: Optional[str] = None
-    status_name: Optional[str] = None
+    variable: str | None = None
+    status_name: str | None = None
 
     def start(self, session: Session) -> None:
         player = session.player

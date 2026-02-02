@@ -17,11 +17,11 @@ from tuxemon.db import (
     StatsComparison,
     StatType,
 )
+from tuxemon.entity.npc import PartyHandler
+from tuxemon.entity.player import Player
 from tuxemon.game_variables import GameVariablesManager
-from tuxemon.monster import Monster
-from tuxemon.monster_dir.evolution import Evolution
-from tuxemon.npc import PartyHandler
-from tuxemon.player import Player
+from tuxemon.monster.evolution import Evolution
+from tuxemon.monster.monster import Monster
 from tuxemon.session import local_session
 from tuxemon.technique.technique import Technique
 

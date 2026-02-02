@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.constants import paths
 from tuxemon.event.eventaction import EventAction
@@ -34,7 +34,7 @@ class LoadWeatherAction(EventAction):
     """
 
     name = "load_weather"
-    model_file: Optional[str] = None
+    model_file: str | None = None
 
     def start(self, session: Session) -> None:
 

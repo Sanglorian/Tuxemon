@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.db import Direction
 from tuxemon.event.eventaction import EventAction
@@ -41,8 +41,8 @@ class PathfindToCharAction(EventAction):
     name = "pathfind_to_char"
     target_entity: str
     entity: str
-    direction: Optional[Direction] = None
-    distance: Optional[int] = None
+    direction: Direction | None = None
+    distance: int | None = None
 
     def start(self, session: Session) -> None:
         client = session.client

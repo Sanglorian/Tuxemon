@@ -14,10 +14,10 @@ from tuxemon.db import (
     MissionStatus,
     MissionStepModel,
 )
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 logger = logging.getLogger(__name__)
 

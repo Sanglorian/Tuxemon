@@ -7,7 +7,7 @@ import logging
 import sys
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Generic, Optional, TypeVar
+from typing import Generic, TypeVar
 
 from tuxemon.constants.paths import (
     LIBDIR,
@@ -33,7 +33,7 @@ class CoreManager(Generic[LocalInterfaceValue]):
         path: Path,
         category: str,
         root_package_name: str,
-        root_path: Optional[Path] = None,
+        root_path: Path | None = None,
     ) -> None:
         self.category = category
         self.root_package_name = root_package_name
@@ -45,7 +45,7 @@ class CoreManager(Generic[LocalInterfaceValue]):
         interface: type[LocalInterfaceValue],
         path: Path,
         category: str,
-        root_path: Optional[Path],
+        root_path: Path | None,
     ) -> None:
         """Load all available plugins using the existing plugin system."""
         if root_path is None:
@@ -146,7 +146,7 @@ class EffectManager(CoreManager[CoreEffect]):
         path: Path,
         root_package_name: str,
         category: str = "effects",
-        root_path: Optional[Path] = None,
+        root_path: Path | None = None,
     ) -> None:
         """Initialize the EffectManager with the specific effect type."""
         super().__init__(
@@ -179,7 +179,7 @@ class ConditionManager(CoreManager[CoreCondition]):
         path: Path,
         root_package_name: str,
         category: str = "conditions",
-        root_path: Optional[Path] = None,
+        root_path: Path | None = None,
     ) -> None:
         """Initialize the ConditionManager with the specific condition type."""
         super().__init__(

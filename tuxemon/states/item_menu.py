@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar
 
 from pygame.rect import Rect
 
@@ -12,7 +12,7 @@ from tuxemon.item.controller import ItemController
 from tuxemon.item.filter import ItemFilter
 from tuxemon.item.item import Item
 from tuxemon.item.sorter import ItemSorter
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu
 from tuxemon.platform.const import buttons
@@ -36,7 +36,7 @@ from tuxemon.ui.paginator import Paginator
 from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 
 class ItemMenuState(Menu[Item]):
@@ -50,8 +50,8 @@ class ItemMenuState(Menu[Item]):
         self,
         character: NPC,
         source: str,
-        item_filter: Optional[ItemFilter] = None,
-        sorter: Optional[ItemSorter] = None,
+        item_filter: ItemFilter | None = None,
+        sorter: ItemSorter | None = None,
     ) -> None:
         self.char = character
         self.source = source
@@ -201,7 +201,7 @@ class ItemMenuState(Menu[Item]):
             self.animate_item_selection(selected_item.game_object)
             self.show_item_description(selected_item.game_object)
 
-    def is_valid_entry(self, item: Optional[Item]) -> bool:
+    def is_valid_entry(self, item: Item | None) -> bool:
         return item is not None
 
     def animate_item_selection(self, item: Item) -> None:
@@ -255,7 +255,7 @@ class ItemMenuState(Menu[Item]):
         self.update_page_number_display(len(self.inventory))
         self.on_menu_selection_change()
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         """
         Processes a player input event.
 

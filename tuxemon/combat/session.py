@@ -20,7 +20,7 @@ from tuxemon.combat.reward_system import (
 from tuxemon.combat.utils import battlefield
 from tuxemon.db import EffectPhase, TargetType
 from tuxemon.event import get_event_bus
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.technique.technique import Technique
 from tuxemon.ui.combat_swap import SwapTracker
 
@@ -30,9 +30,9 @@ if TYPE_CHECKING:
         StatusEffectResult,
         TechEffectResult,
     )
+    from tuxemon.entity.npc import NPC
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
     from tuxemon.status.status import Status
 

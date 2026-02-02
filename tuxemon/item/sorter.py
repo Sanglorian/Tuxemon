@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
 
 
 class ItemSorter:
-    def __init__(self, sort_order: Optional[list[str]] = None) -> None:
+    def __init__(self, sort_order: list[str] | None = None) -> None:
         self.sort_order = sort_order or ["potion", "food", "utility", "quest"]
         self.sort_order_rank = {
             category: i for i, category in enumerate(self.sort_order)

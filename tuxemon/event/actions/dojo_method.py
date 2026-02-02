@@ -9,9 +9,9 @@ from typing import TYPE_CHECKING, final
 
 from tuxemon.db import EvolutionStage
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.states.technique_menu import TechniqueMenuState
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import get_valid_uuid, open_choice_dialog

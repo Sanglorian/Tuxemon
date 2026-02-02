@@ -277,7 +277,7 @@ class JournalInfoState(PygameMenuState):
     def _safe_display(self, value: str) -> str:
         return value if self.is_visible else "-----"
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         client = self.client
         monsters = self.char.tuxepedia.get_monsters()
         models = list(lookup_cache.values())
@@ -287,9 +287,10 @@ class JournalInfoState(PygameMenuState):
             key=lambda x: x.txmn_id,
         )
 
+        # LEFT / RIGHT → cycle monsters (with repeat)
         if (
             event.button in (buttons.RIGHT, buttons.LEFT)
-            and event.pressed
+            and self.valid_press(event)
             and self.source in ("JournalInfoState", "JournalState")
         ):
             if not monster_models:
@@ -301,17 +302,21 @@ class JournalInfoState(PygameMenuState):
                 if event.button == buttons.RIGHT
                 else (current_monster_index - 1) % len(monster_models)
             )
+
             client.replace_state(
                 "JournalInfoState",
                 character=self.char,
                 monster=monster_models[new_index],
                 source=self.name,
             )
+            return None
 
+        # A / B / BACK → close (pressed only)
         elif (
             event.button in (buttons.BACK, buttons.B, buttons.A)
             and event.pressed
         ):
             client.remove_state_by_name("JournalInfoState")
+            return None
 
         return None

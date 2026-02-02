@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from functools import partial
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 import pygame_menu
 from pygame_menu import locals
@@ -174,25 +174,39 @@ class SingleMissionState(PygameMenuState):
             font_size=self.font_type.small,
         )
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         client = self.client
         missions = self.character.mission_controller.get_active_missions()
-        if event.button in (buttons.RIGHT, buttons.LEFT) and event.pressed:
+
+        # LEFT / RIGHT → cycle missions (with repeat)
+        if event.button in (buttons.RIGHT, buttons.LEFT) and self.valid_press(
+            event
+        ):
             if len(missions) == 1:
                 return None
+
             current_index = missions.index(self.mission)
             new_index = (
                 (current_index + 1) % len(missions)
                 if event.button == buttons.RIGHT
                 else (current_index - 1) % len(missions)
             )
+
             client.replace_state(
                 "SingleMissionState",
                 mission=missions[new_index],
                 character=self.character,
             )
+            return None
+
+        # B / BACK → close (pressed only)
         elif event.button in (buttons.BACK, buttons.B) and event.pressed:
             client.remove_state_by_name("SingleMissionState")
+            return None
+
+        # A → forward to menu (pressed only)
         elif event.button == buttons.A and event.pressed:
             super().process_event(event)
+            return None
+
         return None

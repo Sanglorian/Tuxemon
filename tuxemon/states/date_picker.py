@@ -48,26 +48,21 @@ class DatePickerState(PygameMenuState):
 
     def _pick_month(self, month: int) -> None:
         self.selected_month = month
-        self._build_day_menu()
 
-    def _build_day_menu(self) -> None:
-        self.menu.clear()
-        self.menu.set_title(T.translate("select_day"))
-
-        if self.selected_month in [4, 6, 9, 11]:
+        # Determine max days
+        if month in (4, 6, 9, 11):
             max_days = 30
-        elif self.selected_month == 2:
+        elif month == 2:
             max_days = 29
         else:
             max_days = 31
 
-        for day in range(1, max_days + 1):
-            self.menu.add.button(
-                str(day), lambda d=day: self._pick_day(d), align=ALIGN_CENTER
-            )
-
-        self.menu.add.button(
-            T.translate("select_month"), self._build_month_menu
+        self.client.push_state(
+            "NumberPickerState",
+            min_value=1,
+            max_value=max_days,
+            callback=self._pick_day,
+            title=T.translate("select_day"),
         )
 
     def _pick_day(self, day: int) -> None:

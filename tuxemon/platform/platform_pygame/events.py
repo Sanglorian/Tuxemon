@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Generator, Mapping
 from dataclasses import dataclass, field
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 import pygame as pg
 from pygame.event import Event
@@ -49,17 +49,15 @@ class PygameEventQueueHandler(EventQueueHandler):
 
 
 class InputMappingStrategy:
-    def map_button(self, raw_button_id: int) -> Optional[int]:
+    def map_button(self, raw_button_id: int) -> int | None:
         raise NotImplementedError
 
-    def map_axis(
-        self, axis_id: int, value: float
-    ) -> tuple[Optional[int], bool]:
+    def map_axis(self, axis_id: int, value: float) -> tuple[int | None, bool]:
         raise NotImplementedError
 
 
 class XboxMapping(InputMappingStrategy):
-    def map_button(self, raw_button_id: int) -> Optional[int]:
+    def map_button(self, raw_button_id: int) -> int | None:
         return {
             0: buttons.A,
             1: buttons.B,
@@ -71,9 +69,7 @@ class XboxMapping(InputMappingStrategy):
             14: buttons.DOWN,
         }.get(raw_button_id)
 
-    def map_axis(
-        self, axis_id: int, value: float
-    ) -> tuple[Optional[int], bool]:
+    def map_axis(self, axis_id: int, value: float) -> tuple[int | None, bool]:
         if axis_id == HORIZONTAL_AXIS:
             return (
                 buttons.RIGHT if value > 0 else buttons.LEFT,
@@ -88,7 +84,7 @@ class XboxMapping(InputMappingStrategy):
 
 
 class PlayStationMapping(InputMappingStrategy):
-    def map_button(self, raw_button_id: int) -> Optional[int]:
+    def map_button(self, raw_button_id: int) -> int | None:
         return {
             1: buttons.A,  # Cross
             2: buttons.B,  # Circle
@@ -100,9 +96,7 @@ class PlayStationMapping(InputMappingStrategy):
             13: buttons.DOWN,
         }.get(raw_button_id)
 
-    def map_axis(
-        self, axis_id: int, value: float
-    ) -> tuple[Optional[int], bool]:
+    def map_axis(self, axis_id: int, value: float) -> tuple[int | None, bool]:
         if axis_id == HORIZONTAL_AXIS:
             return (
                 buttons.RIGHT if value > 0 else buttons.LEFT,
@@ -278,7 +272,7 @@ class PygameKeyboardInput(PygameEventHandler):
     }
 
     def __init__(
-        self, event_map: Optional[Mapping[Optional[int], int]] = None
+        self, event_map: Mapping[int | None, int] | None = None
     ) -> None:
         super().__init__(event_map or self.default_input_map)
         self._initialize_buttons_from_map(self.event_map)
@@ -296,13 +290,13 @@ class PygameKeyboardInput(PygameEventHandler):
         if pressed or released:
             self._handle_key_event(input_event, pressed)
 
-    def reload_mapping(self, new_map: Mapping[Optional[int], int]) -> None:
+    def reload_mapping(self, new_map: Mapping[int | None, int]) -> None:
         """Update the key→button mapping in place."""
         self.event_map = new_map
         self._initialize_buttons_from_map(new_map)
 
     def _initialize_buttons_from_map(
-        self, mapping: Mapping[Optional[int], int]
+        self, mapping: Mapping[int | None, int]
     ) -> None:
         """Ensure self.buttons matches the given mapping."""
         for button in mapping.values():
@@ -488,7 +482,7 @@ class TouchOverlayUI:
 
 
 class PygameTouchOverlayInput(PygameEventHandler):
-    default_input_map: ClassVar[Mapping[Optional[int], int]] = {}
+    default_input_map: ClassVar[Mapping[int | None, int]] = {}
 
     def __init__(self, transparency: int) -> None:
         super().__init__()
@@ -559,7 +553,7 @@ class PygameTouchOverlayInput(PygameEventHandler):
                 else:
                     del self._active_touches[finger_id]
 
-    def get_touched_button(self, pos: tuple[int, int]) -> Optional[int]:
+    def get_touched_button(self, pos: tuple[int, int]) -> int | None:
         """Determine which button was pressed based on position."""
         for name, rect in [
             (buttons.UP, self.ui.dpad.rect.up),

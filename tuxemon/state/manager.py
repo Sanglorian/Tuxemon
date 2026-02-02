@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import warnings
 from collections.abc import Callable, Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, TypeVar, overload
 
 from tuxemon.constants import paths
 from tuxemon.state.factory import StateFactory
@@ -42,8 +42,8 @@ class StateManager:
         package: str,
         event: EventBus,
         repository: StateRepository,
-        on_state_change: Optional[Callable[..., None]] = None,
-        state_loader: Optional[StateLoader] = None,
+        on_state_change: Callable[..., None] | None = None,
+        state_loader: StateLoader | None = None,
     ) -> None:
         self.package = package
         self.event_bus = event
@@ -141,10 +141,10 @@ class StateManager:
         self,
         state_name: str,
         priority: int = 10,
-        activation_time: Optional[float] = None,
-        expires_at: Optional[float] = None,
-        source: Optional[str] = None,
-        condition: Optional[Callable[[], bool]] = None,
+        activation_time: float | None = None,
+        expires_at: float | None = None,
+        source: str | None = None,
+        condition: Callable[[], bool] | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -183,7 +183,7 @@ class StateManager:
         """Handle a queued state if one exists."""
         self.state_queue.handle_next_queued_state()
 
-    def pop_state(self, state: Optional[State] = None) -> None:
+    def pop_state(self, state: State | None = None) -> None:
         """
         Pop some state.
 
@@ -266,7 +266,7 @@ class StateManager:
 
     def push_state(
         self,
-        state_name: Union[str, StateType],
+        state_name: str | StateType,
         **kwargs: Any,
     ) -> State:
         """
@@ -318,7 +318,7 @@ class StateManager:
 
     def replace_state(
         self,
-        state_name: Union[str, State],
+        state_name: str | State,
         **kwargs: Any,
     ) -> State:
         """
@@ -350,7 +350,7 @@ class StateManager:
         return instance
 
     def push_state_with_timeout(
-        self, state_name: Union[str, StateType], updates: int = 1
+        self, state_name: str | StateType, updates: int = 1
     ) -> None:
         """
         Push a state onto the stack and schedule it to be destroyed after
@@ -365,7 +365,7 @@ class StateManager:
         state.task(lambda: self.pop_state(state), times=updates)
 
     @property
-    def current_state(self) -> Optional[State]:
+    def current_state(self) -> State | None:
         """Return the currently running state, if any."""
         return self.state_stack.current()
 
@@ -392,7 +392,7 @@ class StateManager:
 
     def get_state_by_name(
         self,
-        state_name: Union[str, type[State]],
+        state_name: str | type[State],
     ) -> State:
         """
         Query the state stack for a state by the name supplied.
@@ -439,6 +439,6 @@ class StateManager:
 
     def peek_next_queued_state(
         self,
-    ) -> Optional[QueuedState]:
+    ) -> QueuedState | None:
         """Returns the next queued state without removing it."""
         return self.state_queue.peek_next()

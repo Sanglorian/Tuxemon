@@ -12,15 +12,15 @@ from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.item.item import Item
-from tuxemon.locale import T
-from tuxemon.map.map_manager import MAP_TYPES, MapType
+from tuxemon.locale.locale import T
+from tuxemon.map.manager import MAP_TYPES, MapType
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE
 from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.tools import fix_measure, open_dialog
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 
 class NuPhone(PygameMenuState):

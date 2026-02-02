@@ -6,7 +6,7 @@ from uuid import uuid4
 import pytest
 
 from tuxemon.boxes import BoxMetadata, MonsterBoxes
-from tuxemon.entity_dir.routing import RoutingPolicy
+from tuxemon.entity.routing import RoutingPolicy
 
 
 @dataclass

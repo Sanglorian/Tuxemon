@@ -4,12 +4,12 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from tuxemon.locale_dir.translator import TranslatorPo
+from tuxemon.locale.translator import TranslatorPo
 
 
 class TestTranslatorPo(unittest.TestCase):
 
-    @patch("tuxemon.locale_dir.translator.translation")
+    @patch("tuxemon.locale.translator.translation")
     def test_translation_success(self, mock_translation):
         mock_trans = MagicMock()
         mock_trans.gettext.return_value = "Bonjour"
@@ -25,7 +25,7 @@ class TestTranslatorPo(unittest.TestCase):
         self.assertEqual(result, "Bonjour")
 
     @patch(
-        "tuxemon.locale_dir.translator.translation",
+        "tuxemon.locale.translator.translation",
         side_effect=FileNotFoundError,
     )
     def test_fallback_to_null_translations(self, mock_translation):
@@ -54,7 +54,7 @@ class TestTranslatorPo(unittest.TestCase):
         result = po.maybe_translate(None)
         self.assertEqual(result, "")
 
-    @patch("tuxemon.locale_dir.translator.translation")
+    @patch("tuxemon.locale.translator.translation")
     def test_plural_translation_success(self, mock_translation):
         mock_trans = MagicMock()
         mock_trans.ngettext.side_effect = lambda singular, plural, n: (
@@ -82,7 +82,7 @@ class TestTranslatorPo(unittest.TestCase):
         self.assertEqual(result_one, "1 apple")
         self.assertEqual(result_many, "3 apples")
 
-    @patch("tuxemon.locale_dir.translator.translation")
+    @patch("tuxemon.locale.translator.translation")
     def test_has_translation(self, mock_translation):
         mock_trans = MagicMock()
         mock_trans.gettext.side_effect = lambda msg: (
@@ -97,7 +97,7 @@ class TestTranslatorPo(unittest.TestCase):
         self.assertTrue(po.has_translation("Hello"))
         self.assertFalse(po.has_translation("Goodbye"))
 
-    @patch("tuxemon.locale_dir.translator.translation")
+    @patch("tuxemon.locale.translator.translation")
     def test_has_plural_translation(self, mock_translation):
         mock_trans = MagicMock()
         mock_trans.ngettext.side_effect = lambda s, p, n: s if n == 1 else p
@@ -110,7 +110,7 @@ class TestTranslatorPo(unittest.TestCase):
         self.assertFalse(po.has_plural_translation("apple", "apples", 0))
 
     @patch(
-        "tuxemon.locale_dir.translator.translation",
+        "tuxemon.locale.translator.translation",
         side_effect=FileNotFoundError,
     )
     def test_missing_all_translations(self, mock_translation):

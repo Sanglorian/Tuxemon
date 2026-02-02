@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon.network.client import TuxemonClient
 from tuxemon.network.server import TuxemonServer
@@ -18,8 +18,8 @@ if TYPE_CHECKING:
 class NetworkManager:
     def __init__(self, parent: BaseClient) -> None:
         self.parent = parent
-        self.server: Optional[TuxemonServer] = None
-        self.client: Optional[TuxemonClient] = None
+        self.server: TuxemonServer | None = None
+        self.client: TuxemonClient | None = None
         self._last_host_state = False
         self._last_client_state = False
 

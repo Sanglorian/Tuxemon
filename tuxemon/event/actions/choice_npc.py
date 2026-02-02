@@ -7,9 +7,9 @@ from dataclasses import dataclass
 from functools import partial
 from typing import final
 
+from tuxemon.entity.npc import NPC
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
-from tuxemon.npc import NPC
+from tuxemon.locale.locale import T
 from tuxemon.session import Session
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 from tuxemon.ui.text_formatter import TextFormatter

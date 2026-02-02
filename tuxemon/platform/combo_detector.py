@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Optional
 
 from tuxemon.platform.events import PlayerInput
 from tuxemon.platform.tools import ButtonEdgeFilter
@@ -18,8 +17,8 @@ class _TrieNode:
     """A node in the combo detection Trie."""
 
     children: dict[int, _TrieNode] = field(default_factory=dict)
-    callback: Optional[Callable[[], None]] = None
-    max_delay_s: Optional[float] = None
+    callback: Callable[[], None] | None = None
+    max_delay_s: float | None = None
     priority: int = 0
     length: int = 0
     trigger_on_release: bool = False
@@ -32,7 +31,7 @@ class _ActiveCombo:
     node: _TrieNode
     last_timestamp: float
     start_timestamp: float
-    last_button: Optional[int] = None
+    last_button: int | None = None
 
 
 @dataclass
@@ -40,9 +39,9 @@ class ComboProfile:
     name: str
     buttons: list[int]
     callback: Callable[[], None]
-    delays_s: Optional[list[float]] = None
+    delays_s: list[float] | None = None
     description: str = ""
-    character: Optional[str] = None
+    character: str | None = None
     difficulty: int = 1  # 1 = easy, 2 = medium, 3 = hard
     priority: int = 0
     trigger_on_release: bool = False

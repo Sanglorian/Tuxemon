@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 from tuxemon.event import get_event_bus
 
@@ -74,7 +74,7 @@ class AFKManager:
                 return True
         return False
 
-    def update(self, time_delta: float) -> Optional[str]:
+    def update(self, time_delta: float) -> str | None:
         """
         Increments idle time and returns the new highest active threshold level
         if the state has changed.
@@ -106,7 +106,7 @@ class AFKManager:
 
         return None
 
-    def reset(self) -> Optional[str]:
+    def reset(self) -> str | None:
         """
         Resets idle time and active state. Returns the HIGHEST level the player was
         previously at, signaling a return to 'Active'.
@@ -131,7 +131,7 @@ class AFKManager:
         return None
 
     @property
-    def current_level(self) -> Optional[str]:
+    def current_level(self) -> str | None:
         """Returns the current highest active AFK level name."""
         if not self.active_levels:
             return None

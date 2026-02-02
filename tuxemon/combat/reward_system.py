@@ -9,12 +9,12 @@ from typing import TYPE_CHECKING
 from tuxemon.combat.combat_context import CombatType
 from tuxemon.combat.experience_strategies import calculate_experience
 from tuxemon.database.rules import config_monster
-from tuxemon.locale import T
-from tuxemon.monster_dir.stats import BasicStats
+from tuxemon.locale.locale import T
+from tuxemon.monster.stats import BasicStats
 
 if TYPE_CHECKING:
     from tuxemon.combat.damage_tracker import DamageTracker
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 

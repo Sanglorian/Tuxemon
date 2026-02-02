@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, final
+from typing import TYPE_CHECKING, final
 
 from tuxemon.event.eventaction import EventAction
 
@@ -37,7 +37,7 @@ class MenuAction(EventAction):
 
     name = "menu"
     act: str
-    menu: Optional[str] = None
+    menu: str | None = None
 
     def start(self, session: Session) -> None:
         flags = session.world.menu_manager.menu_flags

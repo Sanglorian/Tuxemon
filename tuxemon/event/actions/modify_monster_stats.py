@@ -5,12 +5,12 @@ from __future__ import annotations
 import logging
 import random as rd
 from dataclasses import dataclass
-from typing import Optional, Union, final
+from typing import final
 
 from tuxemon.db import StatType
 from tuxemon.event.eventaction import EventAction
 from tuxemon.formula import modify_monster_custom_stat
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.session import Session
 from tuxemon.tools import get_valid_uuid
 
@@ -46,11 +46,11 @@ class ModifyMonsterStatsAction(EventAction):
     """
 
     name = "modify_monster_stats"
-    variable: Optional[str] = None
-    stat: Optional[str] = None
-    amount: Optional[Union[int, float]] = None
-    lower_bound: Optional[int] = None
-    upper_bound: Optional[int] = None
+    variable: str | None = None
+    stat: str | None = None
+    amount: int | float | None = None
+    lower_bound: int | None = None
+    upper_bound: int | None = None
 
     def start(self, session: Session) -> None:
         player = session.player

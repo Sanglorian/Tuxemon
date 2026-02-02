@@ -3,7 +3,6 @@
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
 
 from tuxemon.platform import get_system_storage_dirs, get_user_storage_dir
 
@@ -114,7 +113,7 @@ def get_active_mod_paths() -> list[Path]:
 
 
 def get_plugin_paths(
-    base_path: Path, category: str, subfolder: Optional[str] = None
+    base_path: Path, category: str, subfolder: str | None = None
 ) -> list[Path]:
     """
     Return a list of plugin directories from core and active mods for the given category and optional subfolder.
@@ -127,7 +126,7 @@ def get_plugin_paths(
     return plugin_paths
 
 
-def get_mod_name_from_path(file_path: Path) -> Optional[str]:
+def get_mod_name_from_path(file_path: Path) -> str | None:
     """
     Extracts the mod name from a given file path.
 

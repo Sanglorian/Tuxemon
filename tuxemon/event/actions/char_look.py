@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import random
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.db import Direction
 from tuxemon.event.eventaction import EventAction
@@ -42,8 +42,8 @@ class CharLookAction(EventAction):
 
     name = "char_look"
     character: str
-    frequency: Optional[float] = None
-    directions: Optional[str] = None
+    frequency: float | None = None
+    directions: str | None = None
 
     def start(self, session: Session) -> None:
         character = session.get_npc(self.character)

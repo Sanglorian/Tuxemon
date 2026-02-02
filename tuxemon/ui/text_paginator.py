@@ -5,7 +5,6 @@ from __future__ import annotations
 import textwrap
 from collections.abc import Sequence
 from itertools import dropwhile
-from typing import Optional
 
 
 class TextPaginator:
@@ -17,8 +16,8 @@ class TextPaginator:
 
     def __init__(
         self,
-        max_line_length: Optional[int] = None,
-        max_lines_per_page: Optional[int] = None,
+        max_line_length: int | None = None,
+        max_lines_per_page: int | None = None,
         line_break_chars: str = "\n",
         strip_lines: bool = True,
     ):

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from pygame.surface import Surface
 
@@ -57,12 +57,12 @@ class MenuCursorController(Generic[T]):
         self,
         cursor_filename: str,
         menu_sprites: SpriteGroup[MenuCursor],
-        get_selected_item: Callable[[], Optional[MenuItem[T]]],
+        get_selected_item: Callable[[], MenuItem[T] | None],
         animate: Callable[..., Animation],
         duration: float,
         remove_animations: Callable[[Any], None],
         offset: tuple[int, int] = (0, 0),
-        cursor_image: Optional[Surface] = None,
+        cursor_image: Surface | None = None,
     ):
         """
         Initializes the cursor controller with required graphics
@@ -130,7 +130,7 @@ class MenuCursorController(Generic[T]):
         if visible:
             self.trigger_cursor_update(animate=False)
 
-    def _update_focus(self, item: Optional[MenuItem[T]], focus: bool) -> None:
+    def _update_focus(self, item: MenuItem[T] | None, focus: bool) -> None:
         """
         Sets the focus state on a menu item and refreshes its appearance.
 
@@ -142,9 +142,7 @@ class MenuCursorController(Generic[T]):
             item.in_focus = focus
             item.update_image()
 
-    def trigger_cursor_update(
-        self, animate: bool = True
-    ) -> Optional[Animation]:
+    def trigger_cursor_update(self, animate: bool = True) -> Animation | None:
         """
         Moves the cursor to match the selected menu item's position.
 
@@ -175,8 +173,8 @@ class MenuCursorController(Generic[T]):
 
     def update_selection_focus(
         self,
-        previous_item: Optional[MenuItem[T]],
-        new_item: Optional[MenuItem[T]],
+        previous_item: MenuItem[T] | None,
+        new_item: MenuItem[T] | None,
         animate: bool = True,
     ) -> None:
         """

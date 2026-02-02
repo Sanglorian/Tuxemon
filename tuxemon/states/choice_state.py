@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 from pygame_menu.locals import POSITION_EAST
 
@@ -39,7 +39,7 @@ class ChoiceState(PygameMenuState):
         self,
         menu: MenuOptions,
         escape_key_exits: bool = False,
-        config: Optional[MenuStateConfig] = None,
+        config: MenuStateConfig | None = None,
         **kwargs: Any,
     ) -> None:
         self.config = config or MenuStateConfig()

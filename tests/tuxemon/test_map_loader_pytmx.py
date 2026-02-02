@@ -7,8 +7,8 @@ from unittest.mock import Mock
 import pytest
 
 from tuxemon.db import Direction
-from tuxemon.map.map_loader import TMXMapLoader
-from tuxemon.map.map_region import RegionProperties as RP
+from tuxemon.map.loader import TMXMapLoader
+from tuxemon.map.region import RegionProperties as RP
 
 
 @pytest.fixture

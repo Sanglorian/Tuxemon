@@ -3,7 +3,8 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from tuxemon.entity import Body, Mover
+from tuxemon.entity.entity import Body, Mover
+from tuxemon.entity.player import Player
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.eventbehavior import BehaviorManager
 from tuxemon.event.eventbus import EventBus
@@ -12,7 +13,6 @@ from tuxemon.event.running import ConditionEvaluator
 from tuxemon.game_variables import GameVariablesManager
 from tuxemon.math import Vector2
 from tuxemon.platform.const.sizes import MOVERATE_RANGE
-from tuxemon.player import Player
 from tuxemon.session import local_session
 from tuxemon.tuxepedia.manager import TuxepediaManager
 from tuxemon.user_config import CONFIG

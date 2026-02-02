@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Sequence
-from typing import Protocol, TypeVar, Union, runtime_checkable
+from typing import Protocol, TypeAlias, TypeVar, runtime_checkable
 
 SelfRectType = TypeVar("SelfRectType", bound="ReadOnlyRect")
 RectType = TypeVar("RectType", bound="ReadOnlyRect", covariant=True)
@@ -17,11 +17,11 @@ class HasRectAttribute(Protocol[RectType]):
         pass
 
 
-RectLike = Union[
-    SelfRectType,
-    tuple[int, int, int, int],
-    tuple[tuple[int, int], tuple[int, int]],
-]
+RectLike: TypeAlias = (
+    SelfRectType
+    | tuple[int, int, int, int]
+    | tuple[tuple[int, int], tuple[int, int]]
+)
 
 
 class ReadOnlyRect(Protocol):
@@ -29,7 +29,7 @@ class ReadOnlyRect(Protocol):
 
     def __init__(
         self: SelfRectType,
-        __arg: Union[HasRectAttribute[SelfRectType], RectLike[SelfRectType]],
+        __arg: HasRectAttribute[SelfRectType] | RectLike[SelfRectType],
     ) -> None:
         pass
 
@@ -226,7 +226,7 @@ class Rect(ReadOnlyRect):
 
     def __init__(
         self,
-        arg: Union[HasRectAttribute[Rect], RectLike[Rect]],
+        arg: HasRectAttribute[Rect] | RectLike[Rect],
     ) -> None:
         """
         should accept rect like object or tuple of two tuples or one tuple

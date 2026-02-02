@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.database.runtime import db
 from tuxemon.event.eventaction import EventAction
@@ -34,8 +34,8 @@ class AddItemAction(EventAction):
 
     name = "add_item"
     item_slug: str
-    quantity: Optional[int] = None
-    npc_slug: Optional[str] = None
+    quantity: int | None = None
+    npc_slug: str | None = None
 
     def start(self, session: Session) -> None:
         player = session.player

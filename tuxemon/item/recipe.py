@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from tuxemon.database.yaml_utils import load_yaml
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 
 logger = logging.getLogger(__name__)
 
@@ -19,14 +19,14 @@ class Recipe:
 
     def __init__(self, data: dict[str, Any]) -> None:
         self.recipe_slug: str = data["recipe_slug"]
-        self.recipe_text: Optional[str] = data.get("recipe_text", None)
+        self.recipe_text: str | None = data.get("recipe_text", None)
         self.possible_outputs: list[dict[str, Any]] = data.get(
             "possible_outputs", []
         )
         self.required_ingredients: dict[str, int] = data.get(
             "required_ingredients", {}
         )
-        self.crafting_method: Optional[str] = data.get("crafting_method", None)
+        self.crafting_method: str | None = data.get("crafting_method", None)
         self.required_tools: list[dict[str, Any]] = data.get(
             "required_tools", []
         )

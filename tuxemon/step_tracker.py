@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 from tuxemon.event import get_event_bus
 
@@ -88,8 +88,8 @@ class StepTracker:
             tracker=self,
         )
 
-    def check_milestone_events(self) -> Optional[float]:
-        triggered_milestone: Optional[float] = None
+    def check_milestone_events(self) -> float | None:
+        triggered_milestone: float | None = None
         if self.milestones:
             for milestone in self.milestones:
                 if (
@@ -164,7 +164,7 @@ class StepTrackerManager:
         else:
             logger.error(f"StepTracker ID '{tracker_id}' does not exist.")
 
-    def get_tracker(self, tracker_id: str) -> Optional[StepTracker]:
+    def get_tracker(self, tracker_id: str) -> StepTracker | None:
         if tracker_id in self.trackers:
             return self.trackers[tracker_id]
         else:

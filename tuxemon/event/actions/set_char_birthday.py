@@ -11,7 +11,7 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.time_handler import random_month_day
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

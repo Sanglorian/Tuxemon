@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from tuxemon.db import BattleGraphicsModel
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
 
 
 class CombatBars:

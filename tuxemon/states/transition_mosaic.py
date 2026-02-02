@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import random
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from pygame import draw as pg_draw
 from pygame.rect import Rect
@@ -67,6 +67,6 @@ class MosaicTransition(State):
             else:
                 pg_draw.rect(surface, (0, 0, 0), tile)
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         # prevent other states from getting input
         return None

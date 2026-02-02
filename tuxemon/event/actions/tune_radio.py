@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -45,7 +45,7 @@ class TuneRadioAction(EventAction):
 
     name = "tune_radio"
     character_slug: str
-    frequency: Optional[float] = None
+    frequency: float | None = None
 
     def start(self, session: Session) -> None:
         self.session = session

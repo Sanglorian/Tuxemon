@@ -7,14 +7,14 @@ from collections import defaultdict
 from collections.abc import Mapping, MutableMapping
 from typing import TYPE_CHECKING, DefaultDict
 
-from tuxemon.map.map_region import RegionProperties
+from tuxemon.map.region import RegionProperties
 from tuxemon.platform.const.sizes import SURFACE_KEYS
 
 if TYPE_CHECKING:
 
-    from tuxemon.entity import Entity
-    from tuxemon.map.map_manager import MapManager
-    from tuxemon.npc import NPC
+    from tuxemon.entity.entity import Entity
+    from tuxemon.entity.npc import NPC
+    from tuxemon.map.manager import MapManager
     from tuxemon.npc_manager import NPCManager
 
 logger = logging.getLogger(__name__)

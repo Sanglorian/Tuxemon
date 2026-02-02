@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tuxemon.monster_dir.held_item import MonsterItemHandler
+from tuxemon.monster.held_item import MonsterItemHandler
 
 
 @pytest.fixture

@@ -5,12 +5,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from tuxemon.item.item import Item
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 
 if TYPE_CHECKING:
     from tuxemon.economy.shop_manager import ShopManager
+    from tuxemon.entity.npc import NPC
     from tuxemon.money.manager import MoneyManager
-    from tuxemon.npc import NPC
 
 
 class TransactionManager:

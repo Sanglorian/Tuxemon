@@ -25,9 +25,7 @@ from typing import (
     Any,
     Literal,
     NoReturn,
-    Optional,
     TypeVar,
-    Union,
     get_args,
     get_origin,
     get_type_hints,
@@ -37,7 +35,7 @@ from uuid import UUID
 from tuxemon.compat.rect import ReadOnlyRect
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import Comparison
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.math import Vector2
 from tuxemon.prepare import SCREEN_RECT
 from tuxemon.scaling import DefaultScaling, ScalingStrategy
@@ -68,11 +66,10 @@ Never = NoReturn
 TVar = TypeVar("TVar")
 
 
-ValidParameterSingleType = Optional[type[Any]]
-ValidParameterTypes = Union[
-    ValidParameterSingleType,
-    Sequence[ValidParameterSingleType],
-]
+ValidParameterSingleType = type[Any] | None
+ValidParameterTypes = (
+    ValidParameterSingleType | Sequence[ValidParameterSingleType]
+)
 
 
 def safe_floordiv(a: float, b: float) -> int:
@@ -147,7 +144,7 @@ TEnum = TypeVar("TEnum", bound=Enum)
 
 def safe_enum_value(
     enum_class: type[TEnum],
-    value: Optional[str],
+    value: str | None,
     default: TEnum,
     raise_on_error: bool = False,
 ) -> TEnum:
@@ -170,9 +167,9 @@ def safe_enum_value(
 
 def get_valid_uuid(
     game_variables: ScopeVariablesManager, variable_name: str
-) -> Optional[UUID]:
+) -> UUID | None:
     """Safely retrieves a valid UUID from game variables."""
-    raw_value: Union[str, None] = game_variables.get(variable_name)
+    raw_value: str | None = game_variables.get(variable_name)
 
     if raw_value in ("no_choice", "no_options", None):
         logger.info(
@@ -197,13 +194,13 @@ def fix_measure(measure: int, percentage: float) -> int:
 def open_dialog(
     client: BaseClient,
     text: Sequence[str],
-    avatar: Optional[Sprite] = None,
-    box_style: Optional[dict[str, Any]] = None,
+    avatar: Sprite | None = None,
+    box_style: dict[str, Any] | None = None,
     position: DialogPosition = DialogPosition.BOTTOM,
-    target_coords: Optional[Union[tuple[int, int], Rect]] = None,
-    custom_rect: Optional[Rect] = None,
-    on_complete: Optional[Callable[[], None]] = None,
-    dialog_speed: Optional[str] = None,
+    target_coords: tuple[int, int] | Rect | None = None,
+    custom_rect: Rect | None = None,
+    on_complete: Callable[[], None] | None = None,
+    dialog_speed: str | None = None,
 ) -> State:
     """
     Open a dialog with the standard window size or a custom size/position.
@@ -253,7 +250,7 @@ def open_choice_dialog(
     client: BaseClient,
     menu: MenuOptions,
     escape_key_exits: bool = False,
-    config: Optional[MenuStateConfig] = None,
+    config: MenuStateConfig | None = None,
 ) -> State:
     """
     Opens a dialog choice using the standard window size.
@@ -346,7 +343,7 @@ def cast_value(
     for c in type_constructors:
         if c is None:
             expanded.append(type(None))
-        elif get_origin(c) in (Union, UnionType):
+        elif get_origin(c) == UnionType:
             expanded.extend(get_args(c))
         else:
             expanded.append(c)
@@ -508,7 +505,7 @@ def get_types_tuple(
     """
     origin = get_origin(param_type)
 
-    if origin is Union or origin is UnionType:
+    if origin is UnionType:
         return get_args(param_type)
 
     if param_type is type(None):
@@ -570,7 +567,7 @@ def cast_dataclass_parameters(obj: Any) -> None:
 
 def show_result_as_dialog(
     session: Session,
-    entity: Union[Item, Technique],
+    entity: Item | Technique,
     result: bool,
 ) -> None:
     """
@@ -636,9 +633,7 @@ def assert_never(value: Never) -> NoReturn:
     assert False, f"Unhandled value: {value} ({type(value).__name__})"
 
 
-def compare(
-    key: str, value1: Union[int, float], value2: Union[int, float]
-) -> bool:
+def compare(key: str, value1: int | float, value2: int | float) -> bool:
     """
     It compares and it returns a boleean whether is greater_than or not.
 
@@ -673,7 +668,7 @@ def compare(
         raise ValueError(f"{key} isn't among {list(Comparison)}")
 
 
-def parse_flag(value: Optional[str]) -> bool:
+def parse_flag(value: str | None) -> bool:
     """
     Convert a string flag to a boolean.
 

@@ -11,7 +11,7 @@ from tuxemon.event import get_event_bus
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
 
 

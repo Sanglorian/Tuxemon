@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -37,8 +37,8 @@ class ModifyBillAction(EventAction):
     name = "modify_bill"
     character: str
     bill_slug: str
-    amount: Optional[int] = None
-    variable: Optional[str] = None
+    amount: int | None = None
+    variable: str | None = None
 
     def start(self, session: Session) -> None:
         character = session.get_npc(self.character)

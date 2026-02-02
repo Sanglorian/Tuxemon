@@ -6,7 +6,7 @@ import time
 from collections import deque
 from collections.abc import Callable
 from heapq import heapify, heappop, heappush, heappushpop
-from typing import Any, Optional, Union
+from typing import Any
 
 __all__ = ("ScheduledItem", "Scheduler", "Clock")
 
@@ -55,7 +55,7 @@ class Scheduler:
         self._next_tick_items: list[ScheduledItem] = []
         self.cumulative_time = 0.0
 
-    def _get_nearest_ts(self) -> Union[float, int]:
+    def _get_nearest_ts(self) -> float | int:
         """Schedule from now, unless now is sufficiently close to last_ts, in
         which case use last_ts.  This clusters together scheduled items that
         probably want to be scheduled together.
@@ -325,7 +325,7 @@ class Scheduler:
 
         return result
 
-    def get_idle_time(self) -> Optional[float]:
+    def get_idle_time(self) -> float | None:
         """
         Get the time until the next item is scheduled.
 

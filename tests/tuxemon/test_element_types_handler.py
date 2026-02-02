@@ -211,13 +211,17 @@ def test_multiplier_cache_reuse(elements):
 
 
 def test_element_name_translation(monkeypatch):
-    monkeypatch.setattr("tuxemon.locale.T.translate", lambda slug: f"X_{slug}")
+    monkeypatch.setattr(
+        "tuxemon.locale.locale.T.translate", lambda slug: f"X_{slug}"
+    )
     elem = Element.get("fire")
     assert elem.name == "X_fire"
 
 
 def test_element_name_empty_slug(monkeypatch):
-    monkeypatch.setattr("tuxemon.locale.T.translate", lambda slug: f"X_{slug}")
+    monkeypatch.setattr(
+        "tuxemon.locale.locale.T.translate", lambda slug: f"X_{slug}"
+    )
     elem = Element("", "", [])
     assert elem.name == ""
 

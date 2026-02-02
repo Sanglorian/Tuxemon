@@ -8,15 +8,15 @@ from typing import TYPE_CHECKING, ClassVar
 import pygame_menu
 from pygame_menu import locals
 
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_RENAMING
 from tuxemon.platform.const.sizes import PLAYER_NAME_LIMIT
 from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
+    from tuxemon.monster.monster import Monster
 
 
 class NuPhoneRenaming(PygameMenuState):

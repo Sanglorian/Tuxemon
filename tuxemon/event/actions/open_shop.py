@@ -8,8 +8,8 @@ from dataclasses import dataclass
 from functools import partial
 from typing import final
 
+from tuxemon.entity.npc import NPC
 from tuxemon.event.eventaction import EventAction
-from tuxemon.npc import NPC
 from tuxemon.session import Session
 from tuxemon.tools import open_choice_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional, Union
 
 from pygame import Rect
 
@@ -31,7 +30,7 @@ def scale_dialog_size(rect: Rect) -> Rect:
 
 
 def resolve_reference_rect(
-    screen_rect: Rect, target_coords: Optional[Union[tuple[int, int], Rect]]
+    screen_rect: Rect, target_coords: tuple[int, int] | Rect | None
 ) -> Rect:
     """Determines the reference rectangle based on target coordinates or defaults to the screen."""
     if target_coords is None:
@@ -44,7 +43,7 @@ def resolve_reference_rect(
 def calc_dialog_rect(
     screen_rect: Rect,
     position: DialogPosition,
-    target_coords: Optional[Union[tuple[int, int], Rect]] = None,
+    target_coords: tuple[int, int] | Rect | None = None,
 ) -> Rect:
     """
     Return a rect that is the area for a dialog box on the screen.

@@ -8,11 +8,11 @@ from functools import partial
 from typing import TYPE_CHECKING, final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.platform.const.sizes import PLAYER_NAME_LIMIT
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

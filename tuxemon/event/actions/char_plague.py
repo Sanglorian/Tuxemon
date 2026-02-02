@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, final
+from typing import TYPE_CHECKING, final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.monster_dir.plague import InfectionResult, InoculationResult
+from tuxemon.monster.plague import InfectionResult, InoculationResult
 from tuxemon.tools import parse_flag
 
 if TYPE_CHECKING:
@@ -39,9 +39,9 @@ class CharPlagueAction(EventAction):
 
     name = "char_plague"
     plague_slug: str
-    condition: Optional[str] = None
-    character: Optional[str] = None
-    enforced_check: Optional[str] = None
+    condition: str | None = None
+    character: str | None = None
+    enforced_check: str | None = None
 
     def start(self, session: Session) -> None:
         target = self.character or "player"

@@ -10,13 +10,13 @@ from tuxemon.db import (
     MissionStatus,
     MissionStepModel,
 )
-from tuxemon.entity_dir.bag import BagHandler
-from tuxemon.entity_dir.party import PartyHandler
+from tuxemon.entity.bag import BagHandler
+from tuxemon.entity.npc import NPC
+from tuxemon.entity.party import PartyHandler
 from tuxemon.game_variables import GameVariablesManager
 from tuxemon.mission.controller import MissionController
 from tuxemon.mission.manager import MissionManager
 from tuxemon.mission.mission import Mission, check_items, check_monsters
-from tuxemon.npc import NPC
 
 
 @pytest.fixture

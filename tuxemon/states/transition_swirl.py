@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from pygame.surface import Surface
 from pygame.transform import rotate, scale
@@ -60,5 +60,5 @@ class SwirlTransition(State):
         rect = scaled_image.get_rect(center=(self.center_x, self.center_y))
         surface.blit(scaled_image, rect)
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         return None

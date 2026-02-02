@@ -10,7 +10,7 @@ from PIL import Image, UnidentifiedImageError
 from tuxemon.constants.asset_loader import (
     fetch_asset,
 )
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.platform.const.sizes import NATIVE_RESOLUTION
 
 if TYPE_CHECKING:

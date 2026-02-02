@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 from pygame.font import Font
 from pygame.rect import Rect
@@ -41,7 +40,7 @@ class InputDisplay:
         prompt_text: str,
         initial_input_string: str,
         area_rect: Rect,
-        config: Optional[InputDisplayConfig] = None,
+        config: InputDisplayConfig | None = None,
     ) -> None:
         self.sprites: SpriteGroup[Sprite] = SpriteGroup()
         self.config = config or InputDisplayConfig()

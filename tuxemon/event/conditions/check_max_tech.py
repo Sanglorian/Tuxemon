@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from tuxemon.database.rules import config_monster
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

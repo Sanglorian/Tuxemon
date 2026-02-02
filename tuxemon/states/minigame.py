@@ -12,9 +12,9 @@ from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.monster_dir.sprite import MonsterSpriteHandler, SpriteLoader
+from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const.graphics import BG_MINIGAME, MISSING_IMAGE
 from tuxemon.prepare import SCALE, SCREEN_SIZE
 from tuxemon.tools import fix_measure, open_dialog

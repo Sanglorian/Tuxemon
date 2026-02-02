@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 from collections import deque
-from typing import TYPE_CHECKING, NamedTuple, Optional
+from typing import TYPE_CHECKING, NamedTuple
 
 from tuxemon.event.eventmiddleware import InputTranslatorMiddleware
 
@@ -21,11 +21,11 @@ class ComboHint(NamedTuple):
 class InputHistory:
     def __init__(self, config: TuxemonConfig, max_size: int = 25):
         self.history: deque[PlayerInput] = deque(maxlen=max_size)
-        self.last_history_event: Optional[PlayerInput] = None
+        self.last_history_event: PlayerInput | None = None
         self.held_timers: dict[int, float] = {}
         self._click_counts: dict[int, int] = {}
         self._buttons_down: set[int] = set()
-        self._last_button_clicked: Optional[int] = None
+        self._last_button_clicked: int | None = None
         self._current_combo_hint: ComboHint = ComboHint()
         self.combo_window_seconds = config.controller.combo_window_seconds
         self.translator = InputTranslatorMiddleware()
@@ -74,7 +74,7 @@ class InputHistory:
         for button in list(self.held_timers.keys()):
             self.held_timers[button] += time_delta
 
-    def update_history(self, max_age_s: Optional[float] = None) -> None:
+    def update_history(self, max_age_s: float | None = None) -> None:
         """
         Removes inputs from the history if they are older than max_age_s.
         This enforces a 'combo window'.
@@ -155,7 +155,7 @@ class InputHistory:
         """
         return dict(self._click_counts)
 
-    def get_last_button_clicked(self) -> Optional[int]:
+    def get_last_button_clicked(self) -> int | None:
         """Returns the ID of the last button pressed down."""
         return self._last_button_clicked
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Mapping
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from pydantic import ValidationError
 
@@ -65,7 +65,7 @@ class ModData:
         """Access to the Mod Metadata Manager for queries."""
         return self._mod_manager
 
-    def lookup(self, slug: str, table: Optional[str] = None) -> DataModel:
+    def lookup(self, slug: str, table: str | None = None) -> DataModel:
         """Looks up a data model based on slug."""
         return self._query_manager.lookup(slug, table)
 
@@ -115,7 +115,7 @@ class ModData:
             self._preload_table(directory, None)
 
     def _preload_table(
-        self, table: str, mod_directory: Optional[str] = None
+        self, table: str, mod_directory: str | None = None
     ) -> None:
         """Internal helper to preload table data from mod directories."""
         mod_directories = (
@@ -189,7 +189,7 @@ class ModData:
 
     def _validate_and_load(
         self, item: Mapping[str, Any], table: str, validate: bool
-    ) -> Optional[DataModel]:
+    ) -> DataModel | None:
         """Internal helper to validate and load a model entry via ModelLoader."""
         try:
             # ModelLoader is responsible for logging ValidationError exceptions

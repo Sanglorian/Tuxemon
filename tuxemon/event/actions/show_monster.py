@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.session import Session
 from tuxemon.tools import get_valid_uuid
 
@@ -62,7 +62,7 @@ class ShowMonsterAction(EventAction):
         except ValueError:
             self.stop()
 
-    def _retrieve_monster(self, session: Session) -> Optional[Monster]:
+    def _retrieve_monster(self, session: Session) -> Monster | None:
         """Retrieve a monster from the game database."""
         player = session.player
         monster_id = get_valid_uuid(

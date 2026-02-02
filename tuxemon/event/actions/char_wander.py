@@ -6,7 +6,7 @@ import logging
 import random
 from dataclasses import dataclass
 from itertools import product
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.map.map import get_coords, get_direction
@@ -42,11 +42,11 @@ class CharWanderAction(EventAction):
 
     name = "char_wander"
     character: str
-    frequency: Optional[float] = None
-    t_bound_x: Optional[int] = None
-    t_bound_y: Optional[int] = None
-    b_bound_x: Optional[int] = None
-    b_bound_y: Optional[int] = None
+    frequency: float | None = None
+    t_bound_x: int | None = None
+    t_bound_y: int | None = None
+    b_bound_x: int | None = None
+    b_bound_y: int | None = None
 
     def start(self, session: Session) -> None:
         player = session.player

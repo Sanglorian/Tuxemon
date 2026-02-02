@@ -38,9 +38,9 @@ from tuxemon.ui.text_alignment import HorizontalAlignment
 
 if TYPE_CHECKING:
     from tuxemon.core.core_effect import ItemEffectResult
+    from tuxemon.entity.npc import NPC
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.monster.monster import Monster
     from tuxemon.ui.graphic_box import GraphicBox
     from tuxemon.ui.text import TextArea
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass
-from typing import Optional, Union, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -31,14 +31,14 @@ class RandomItemAction(EventAction):
 
     name = "random_item"
     item_slug: str
-    quantity: Optional[int] = None
-    trainer_slug: Optional[str] = None
+    quantity: int | None = None
+    trainer_slug: str | None = None
 
     def start(self, session: Session) -> None:
         items = self.item_slug.split(":")
         chosen_item = random.choice(items)
 
-        params: list[Union[str, int]] = [chosen_item]
+        params: list[str | int] = [chosen_item]
 
         if self.trainer_slug is not None:
             params.append(self.quantity if self.quantity is not None else 1)

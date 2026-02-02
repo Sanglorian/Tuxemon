@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
-from tuxemon.entity_dir.dialogue_profile import DialogueProfileManager
+from tuxemon.entity.dialogue_profile import DialogueProfileManager
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.session import Session
 from tuxemon.tools import open_dialog
 from tuxemon.ui.text_formatter import TextFormatter
@@ -56,7 +56,7 @@ class CharTalkAction(EventAction):
     name = "char_talk"
     character: str
     field: str
-    location: Optional[str] = None
+    location: str | None = None
 
     def start(self, session: Session) -> None:
         character = session.get_npc(self.character)

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, StatusEffectResult
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.modifiers import parse_modifier_mode
 
 if TYPE_CHECKING:

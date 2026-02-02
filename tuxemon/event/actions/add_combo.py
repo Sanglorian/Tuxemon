@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Optional, final
+from typing import Any, final
 
 from tuxemon.constants.paths import mods_folder
 from tuxemon.database.yaml_utils import load_yaml
@@ -54,7 +54,7 @@ class AddComboAction(EventAction):
     """
 
     name = "add_combo"
-    yaml_data: Optional[str] = None
+    yaml_data: str | None = None
 
     def start(self, session: Session) -> None:
         yaml_file = self.yaml_data or "combos"
@@ -82,7 +82,7 @@ class AddComboAction(EventAction):
                 delays_s = [max_delay_s] * len(button_sequence)
 
                 def make_callback(
-                    event_name: Optional[str],
+                    event_name: str | None,
                 ) -> Callable[[], None]:
                     def callback() -> None:
                         logger.info(f"Combo '{combo['name']}' triggered!")

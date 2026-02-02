@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from base64 import b64decode
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar
 
 from pygame import SRCALPHA
 from pygame.image import frombuffer
@@ -14,7 +14,7 @@ from pygame.surface import Surface
 from pygame.transform import smoothscale
 
 from tuxemon import save
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu
 from tuxemon.platform.const.graphics import WHITE_COLOR
@@ -39,7 +39,7 @@ class SaveMenuState(PopUpMenu[None]):
     number_of_slots = 3
     shrink_to_items = True
 
-    def __init__(self, selected_index: Optional[int] = None) -> None:
+    def __init__(self, selected_index: int | None = None) -> None:
         if selected_index is None:
             selected_index = save.slot_number or 0
         super().__init__(selected_index=selected_index)

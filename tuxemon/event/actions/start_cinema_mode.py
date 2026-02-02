@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
@@ -36,8 +36,8 @@ class StartCinemaModeAction(EventAction):
     """
 
     name = "start_cinema_mode"
-    aspect_y_ratio: Optional[float] = 2.39
-    aspect_x_ratio: Optional[float] = None
+    aspect_y_ratio: float | None = 2.39
+    aspect_x_ratio: float | None = None
 
     def start(self, session: Session) -> None:
         session.client.map_renderer.cinema_y_ratio = self.aspect_y_ratio

@@ -19,9 +19,9 @@ from tuxemon.db import (
     TechniqueModel,
 )
 from tuxemon.element import ElementTypesHandler
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.modifiers import ModifiersHandler
-from tuxemon.monster_dir.stats import BasicStats
+from tuxemon.monster.stats import BasicStats
 from tuxemon.technique.cooldown import Cooldown
 from tuxemon.technique.stats import (
     TechniqueBaseStats,
@@ -30,7 +30,7 @@ from tuxemon.technique.stats import (
 )
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

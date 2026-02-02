@@ -11,8 +11,8 @@ from tuxemon.sprite import Sprite
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
+    from tuxemon.monster.monster import Monster
 
 
 class MonsterSpriteMap:

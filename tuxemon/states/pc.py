@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pygame_menu
 
 from tuxemon.animation import Animation, ScheduleType
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.sizes import KENNEL, LOCKER, MAX_LOCKER
 from tuxemon.state.state import State
@@ -17,7 +17,7 @@ from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
-    from tuxemon.npc import NPC
+    from tuxemon.entity.npc import NPC
 
 MenuGameObj = Callable[[], object]
 
@@ -45,7 +45,7 @@ class PCMenuBuilder:
         self,
         client: BaseClient,
         character: NPC,
-        menu_providers: Optional[list[MenuProvider]] = None,
+        menu_providers: list[MenuProvider] | None = None,
     ) -> None:
         self.client = client
         self.character = character
@@ -121,7 +121,7 @@ class PCState(PygameMenuState):
     name: ClassVar[str] = "PCState"
 
     def __init__(
-        self, character: NPC, menu_builder: Optional[PCMenuBuilder] = None
+        self, character: NPC, menu_builder: PCMenuBuilder | None = None
     ) -> None:
         super().__init__()
         kennel = KENNEL

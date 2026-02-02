@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
 
 
 @dataclass
@@ -90,7 +90,7 @@ class DamageTracker:
         return attackers
 
     def count_hits(
-        self, loser: Monster, winner: Optional[Monster] = None
+        self, loser: Monster, winner: Monster | None = None
     ) -> tuple[int, int]:
         """
         Count the number of hits on the loser and optionally the hits

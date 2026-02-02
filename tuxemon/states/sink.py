@@ -2,7 +2,7 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from pygame.draw import circle
 from pygame.surface import Surface
@@ -18,7 +18,7 @@ class SinkState(State):
     name: ClassVar[str] = "SinkState"
     transparent = True
 
-    def process_event(self, event: PlayerInput) -> Optional[PlayerInput]:
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
         return None
 
     def draw(self, surface: Surface) -> None:

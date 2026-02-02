@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.combat.combat_context import (
     BattleMode,
@@ -38,8 +38,8 @@ class StartDoubleBattleAction(EventAction):
 
     name = "start_double_battle"
     character1: str
-    character2: Optional[str] = None
-    music: Optional[str] = None
+    character2: str | None = None
+    music: str | None = None
 
     def start(self, session: Session) -> None:
         self.character2 = self.character2 or "player"

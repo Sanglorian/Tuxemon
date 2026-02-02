@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.map.map_region import RegionProperties
+from tuxemon.map.region import RegionProperties
 from tuxemon.session import Session
 
 
@@ -32,8 +32,8 @@ class AddCollisionAction(EventAction):
 
     name = "add_collision"
     label: str
-    x: Optional[int] = None
-    y: Optional[int] = None
+    x: int | None = None
+    y: int | None = None
 
     def start(self, session: Session) -> None:
         client = session.client.collision_manager

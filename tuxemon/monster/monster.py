@@ -391,6 +391,13 @@ class Monster:
 
         return ""
 
+    @property
+    def acquisition_string(self) -> str:
+        return T.format(
+            f"tuxepedia_acquisition_{self.acquisition.value}",
+            {"doc": self.capture_string},
+        )
+
     def load_sprites(self, scale: float = SCALE) -> None:
         """
         Delegates the task of loading sprites to the sprite handler.

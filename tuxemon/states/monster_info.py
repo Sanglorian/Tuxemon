@@ -246,10 +246,8 @@ class MonsterInfoState(PygameMenuState):
         lab9.translate(fxw(84 / 256), fxh(66 / 144))
 
         # capture
-        reference = get_acquisition_reference(monster)
-
         lab10: Any = menu.add.label(
-            title=reference,
+            title=monster.acquisition_string,
             label_id="capture",
             font_size=self.font_type.biggest,
             align=ALIGN_LEFT,
@@ -487,12 +485,6 @@ class MonsterInfoState(PygameMenuState):
             client.remove_state_by_name("MonsterInfoState")
 
         return None
-
-
-def get_acquisition_reference(monster: Monster) -> str:
-    acq_type = monster.acquisition
-    msgid = f"tuxepedia_acquisition_{acq_type.value}"
-    return T.format(msgid, {"doc": monster.capture_string})
 
 
 def _get_monsters(

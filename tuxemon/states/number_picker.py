@@ -103,28 +103,22 @@ class NumberPickerState(PygameMenuState):
         self.client.pop_state()
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
-        if event.button == buttons.RIGHT and event.pressed:
+        # RIGHT increment
+        if event.button == buttons.RIGHT and self.valid_press(event):
             self._increment()
             return None
 
-        if event.button == buttons.RIGHT and event.held:
-            if event.hold_duration > 0.15:  # 150ms
-                self._increment()
-            return None
-
-        if event.button == buttons.LEFT and event.pressed:
+        # LEFT decrement
+        if event.button == buttons.LEFT and self.valid_press(event):
             self._decrement()
             return None
 
-        if event.button == buttons.LEFT and event.held:
-            if event.hold_duration > 0.15:  # 150ms
-                self._decrement()
-            return None
-
+        # A confirm (pressed only, not held)
         if event.button == buttons.A and event.pressed:
             self._confirm()
             return None
 
+        # B cancel (pressed only)
         if event.button == buttons.B and event.pressed:
             self.client.pop_state()
             return None

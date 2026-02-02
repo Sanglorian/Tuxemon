@@ -469,11 +469,11 @@ class MonsterInfoState(PygameMenuState):
             monsters = _get_monsters(client, self._monster, self._source)
             slot = monsters.index(self._monster)
 
-            if event.button == buttons.RIGHT and event.pressed:
+            if event.button == buttons.RIGHT and self.valid_press(event):
                 slot = (slot + 1) % len(monsters)
                 param["monster"] = monsters[slot]
                 client.replace_state("MonsterInfoState", kwargs=param)
-            elif event.button == buttons.LEFT and event.pressed:
+            elif event.button == buttons.LEFT and self.valid_press(event):
                 slot = (slot - 1) % len(monsters)
                 param["monster"] = monsters[slot]
                 client.replace_state("MonsterInfoState", kwargs=param)

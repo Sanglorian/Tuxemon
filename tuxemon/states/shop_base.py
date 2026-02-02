@@ -178,17 +178,19 @@ class ShopMenuState(Menu[T], Generic[T], ABC):
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         total_pages = self.paginator.total_pages()
+
         if event.button == buttons.RIGHT and event.pressed:
             if self.current_page < total_pages - 1:
                 self.current_page += 1
                 self.reload_shop()
+            return None
         elif event.button == buttons.LEFT and event.pressed:
             if self.current_page > 0:
                 self.current_page -= 1
                 self.reload_shop()
-        else:
-            return super().process_event(event)
-        return None
+            return None
+
+        return super().process_event(event)
 
     def on_menu_selection(self, menu_item: MenuItem[T]) -> None:
         """Handles the common logic for pushing the quantity menu."""

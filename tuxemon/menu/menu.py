@@ -216,6 +216,9 @@ class PygameMenuState(State):
         """
         self.selected_widget = self.menu.get_selected_widget()
 
+    def valid_press(self, event: PlayerInput) -> bool:
+        return self._input_handler._is_press(event, 0.5)
+
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         """
         Processes a player input event.
@@ -710,6 +713,9 @@ class Menu(Generic[T], State):
             Rect representing space inside borders, if any.
         """
         return self.window.calc_inner_rect(self.rect)
+
+    def valid_press(self, event: PlayerInput) -> bool:
+        return self._input_handler._valid_press(event)
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         """

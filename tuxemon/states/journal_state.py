@@ -145,25 +145,28 @@ class JournalState(PygameMenuState):
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         client = self.client
         box = list(lookup_cache.values())
-        max_page = (
-            len(box) + MAX_PAGE - 1
-        ) // MAX_PAGE  # calculate max_page correctly
+        max_page = (len(box) + MAX_PAGE - 1) // MAX_PAGE
 
-        if event.button in (buttons.RIGHT, buttons.LEFT) and event.pressed:
+        # LEFT / RIGHT → page navigation (with repeat)
+        if event.button in (buttons.RIGHT, buttons.LEFT) and self.valid_press(
+            event
+        ):
             self._page = (
                 self._page + (1 if event.button == buttons.RIGHT else -1)
             ) % max_page
+
             client.replace_state(
                 "JournalState",
                 character=self.char,
                 monsters=box,
                 page=self._page,
             )
+            return None
 
+        # B / BACK → close (pressed only)
         elif event.button in (buttons.BACK, buttons.B) and event.pressed:
             client.remove_state_by_name("JournalState")
+            return None
 
-        else:
-            return super().process_event(event)
-
-        return None
+        # Everything else → normal menu behavior (UP/DOWN, A, etc.)
+        return super().process_event(event)

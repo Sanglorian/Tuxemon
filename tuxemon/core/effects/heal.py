@@ -57,6 +57,7 @@ class HealEffect(CoreEffect):
                 extras=[T.translate("combat_state_festering_item")],
             )
 
+        value: int | float
         if self.heal_type == "fixed":
             value = int(self.amount)
         elif self.heal_type == "percentage":

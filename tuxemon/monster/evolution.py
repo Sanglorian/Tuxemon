@@ -33,6 +33,37 @@ class Evolution:
     def __init__(self, monster: Monster):
         self.monster = monster
 
+    def get_eligible_evolution_slug(
+        self, context: dict[str, bool] | None = None
+    ) -> str | None:
+        """Checks all paths. Returns target slug or None."""
+        if not self.is_eligible_for_evolution():
+            return None
+
+        ctx = context or {"use_item": False}
+        registry = self.monster.get_owner().evolution_registry
+        monster_id = self.monster.instance_id
+
+        # Check Held Item (Everstone) - Bypass if using an evolution item
+        if not ctx.get("use_item"):
+            held = self.monster.held_item
+            if held and held.behaviors.block_evolution:
+                return None
+
+        # Check Registry (Blocked list)
+        blocked = registry.get_blocked(monster_id)
+
+        # Scan evolution paths
+        for evolution_item in self.monster.evolutions:
+            slug = evolution_item.monster_slug
+            if slug in blocked:
+                continue
+
+            if self.can_evolve(evolution_item, ctx):
+                return slug
+
+        return None
+
     def has_evolution_to(self, slug: str) -> bool:
         return any(
             evolution.monster_slug == slug

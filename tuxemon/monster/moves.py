@@ -85,8 +85,8 @@ class MonsterMovesHandler:
         if max_moves is None:
             max_moves = monster.max_moves
 
-        if not ignore_eligibility and not self.is_technique_eligible(
-            monster, technique, method
+        if not ignore_eligibility and not self.can_learn(
+            monster, technique, max_moves, method
         ):
             return False
 
@@ -97,8 +97,19 @@ class MonsterMovesHandler:
             self.moves.append(technique)
         else:
             self.moves.append(technique)
+        return True
 
-        logger.debug(f"Monster learned technique: {technique.slug}")
+    def can_learn(
+        self,
+        monster: Monster,
+        technique: Technique,
+        max_moves: int | None = None,
+        method: LearningMethod | None = None,
+    ) -> bool:
+        if max_moves is None:
+            max_moves = monster.max_moves
+        if not self.is_technique_eligible(monster, technique, method):
+            return False
         return True
 
     def forget(self, technique: Technique) -> bool:
@@ -247,6 +258,35 @@ class MonsterMovesHandler:
                     f"Monster '{monster.slug}' learned technique: {technique.slug} at level {monster.level} and stage {monster.stage}"
                 )
 
+    def techniques_learned_between(
+        self, start_level: int, end_level: int
+    ) -> list[str]:
+        return [
+            move.technique
+            for move in self.moveset
+            if start_level < move.level_learned <= end_level
+        ]
+
+    def preview_moves_learned(
+        self,
+        monster: Monster,
+        levels_earned: int,
+        method: LearningMethod = LearningMethod.LEVEL_UP,
+    ) -> list[str]:
+        start_level = monster.level - levels_earned
+        techniques = self.techniques_learned_between(
+            start_level, monster.level
+        )
+
+        learnable = []
+        for tech in techniques:
+            technique = Technique.create(tech)
+
+            if self.can_learn(monster, technique, method=method):
+                learnable.append(tech)
+
+        return learnable
+
     def update_moves(
         self,
         monster: Monster,
@@ -254,16 +294,17 @@ class MonsterMovesHandler:
         method: LearningMethod = LearningMethod.LEVEL_UP,
     ) -> list[Technique]:
         start_level = monster.level - levels_earned
-        newly_learned_techniques = []
+        techniques = self.techniques_learned_between(
+            start_level, monster.level
+        )
 
-        for move in self.moveset:
-            if start_level < move.level_learned <= monster.level:
-                technique = Technique.create(move.technique)
+        newly_learned = []
+        for tech in techniques:
+            technique = Technique.create(tech)
+            if self.learn(monster, technique, method=method):
+                newly_learned.append(technique)
 
-                if self.learn(monster, technique, method=method):
-                    newly_learned_techniques.append(technique)
-
-        return newly_learned_techniques
+        return newly_learned
 
     def learn_by_method(
         self,

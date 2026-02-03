@@ -63,7 +63,7 @@ def monster(monkeypatch):
     ],
 )
 def test_set_level(monster, input_level, expected):
-    monster.set_level(input_level)
+    monster.set_level(input_level, input_level)
     assert monster.level == expected
 
 
@@ -102,7 +102,7 @@ def tastes(monkeypatch):
 
 
 def test_set_stats_basic(monster):
-    monster.set_level(5)
+    monster.set_level(5, 5)
     value = monster.level + config_monster.coeff_stats
     monster.set_stats()
 
@@ -115,7 +115,7 @@ def test_set_stats_basic(monster):
 
 
 def test_set_stats_shape(monster, shape_model):
-    monster.set_level(5)
+    monster.set_level(5, 5)
     value = monster.level + config_monster.coeff_stats
 
     monster.shape = ShapeHandler("dragon")
@@ -131,7 +131,7 @@ def test_set_stats_shape(monster, shape_model):
 
 
 def test_set_stats_taste_warm(monster, tastes):
-    monster.set_level(5)
+    monster.set_level(5, 5)
     value = monster.level + config_monster.coeff_stats
 
     monster.taste_warm = "peppy"
@@ -141,7 +141,7 @@ def test_set_stats_taste_warm(monster, tastes):
 
 
 def test_set_stats_taste_cold(monster, tastes):
-    monster.set_level(5)
+    monster.set_level(5, 5)
     value = monster.level + config_monster.coeff_stats
 
     monster.taste_cold = "mild"
@@ -151,7 +151,7 @@ def test_set_stats_taste_cold(monster, tastes):
 
 
 def test_set_stats_tastes(monster, tastes):
-    monster.set_level(5)
+    monster.set_level(5, 5)
     value = monster.level + config_monster.coeff_stats
 
     monster.taste_cold = "flakey"

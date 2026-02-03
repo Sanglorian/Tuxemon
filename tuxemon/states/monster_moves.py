@@ -371,14 +371,21 @@ class MonsterMovesState(PygameMenuState):
             monsters = _get_monsters(client, self._monster, self._source)
             slot = monsters.index(self._monster)
 
-            if event.button == buttons.RIGHT and event.pressed:
+            # RIGHT → next monster (with repeat)
+            if event.button == buttons.RIGHT and self.valid_press(event):
                 slot = (slot + 1) % len(monsters)
                 param["monster"] = monsters[slot]
                 client.replace_state("MonsterMovesState", kwargs=param)
-            elif event.button == buttons.LEFT and event.pressed:
+                return None
+
+            # LEFT → previous monster (with repeat)
+            elif event.button == buttons.LEFT and self.valid_press(event):
                 slot = (slot - 1) % len(monsters)
                 param["monster"] = monsters[slot]
                 client.replace_state("MonsterMovesState", kwargs=param)
+                return None
+
+            # Everything else → normal menu behavior
             else:
                 self.update_selected_widget()
                 menu = self.menu.get_current()

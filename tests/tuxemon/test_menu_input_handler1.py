@@ -6,6 +6,7 @@ import pytest
 
 from tuxemon.menu.input_handler import MenuInputHandler
 from tuxemon.platform.const import buttons, intentions
+from tuxemon.platform.events import PlayerInput
 
 
 def make_event(button, pressed=True, value=None):
@@ -14,6 +15,16 @@ def make_event(button, pressed=True, value=None):
     event.pressed = pressed
     event.value = value
     return event
+
+
+def real_event(
+    button, value=1, hold_time=1, hold_duration=0.0, previous_value=0
+):
+    e = PlayerInput(button, value=value)
+    e.hold_time = hold_time
+    e.hold_duration = hold_duration
+    e.previous_value = previous_value
+    return e
 
 
 def fake_menu_items(items):
@@ -62,11 +73,7 @@ def handler(menu):
 
 @pytest.mark.parametrize(
     "button",
-    [
-        buttons.B,
-        buttons.BACK,
-        intentions.MENU_CANCEL,
-    ],
+    [buttons.B, buttons.BACK, intentions.MENU_CANCEL],
 )
 def test_escape_buttons_always_consume(handler, menu, button):
     event = make_event(button)
@@ -75,10 +82,7 @@ def test_escape_buttons_always_consume(handler, menu, button):
 
 @pytest.mark.parametrize(
     "button",
-    [
-        buttons.A,
-        intentions.SELECT,
-    ],
+    [buttons.A, intentions.SELECT],
 )
 def test_confirm_buttons_always_consume(handler, menu, button):
     event = make_event(button)
@@ -87,12 +91,7 @@ def test_confirm_buttons_always_consume(handler, menu, button):
 
 @pytest.mark.parametrize(
     "button",
-    [
-        buttons.UP,
-        buttons.DOWN,
-        buttons.LEFT,
-        buttons.RIGHT,
-    ],
+    [buttons.UP, buttons.DOWN, buttons.LEFT, buttons.RIGHT],
 )
 def test_cursor_buttons_always_consume(handler, menu, button):
     event = make_event(button)
@@ -109,30 +108,27 @@ def test_no_enabled_items_prevents_confirm(handler, menu):
     for item in menu.menu_items:
         item.enabled = False
 
-    event = make_event(buttons.A, pressed=True)
-    result = handler.handle_event(event)
+    event = real_event(buttons.A, value=1, hold_time=1)
+    handler.handle_event(event)
 
-    assert result is None
     menu.on_menu_selection.assert_not_called()
 
 
 def test_empty_menu_prevents_interaction(handler, menu):
     menu.menu_items = fake_menu_items([])
 
-    event = make_event(buttons.A, pressed=True)
-    result = handler.handle_event(event)
+    event = real_event(buttons.A, value=1, hold_time=1)
+    handler.handle_event(event)
 
-    assert result is None
     menu.on_menu_selection.assert_not_called()
 
 
 def test_disabled_menu_prevents_interaction(handler, menu):
     menu.state_controller.is_enabled.return_value = False
 
-    event = make_event(buttons.A, pressed=True)
-    result = handler.handle_event(event)
+    event = real_event(buttons.A, value=1, hold_time=1)
+    handler.handle_event(event)
 
-    assert result is None
     menu.on_menu_selection.assert_not_called()
 
 
@@ -173,3 +169,52 @@ def test_mouse_invalid_position_raises(handler, menu):
     event = make_event(buttons.MOUSELEFT, value="invalid")
     with pytest.raises(ValueError):
         handler.handle_event(event)
+
+
+def test_valid_press_on_pressed(handler, menu):
+    event = real_event(buttons.A, value=1, hold_time=1)
+    assert handler._valid_press(event) is True
+
+
+def test_valid_press_on_held_after_delay(handler, menu):
+    event = real_event(
+        buttons.A,
+        value=1,
+        hold_time=10,
+        hold_duration=handler.REPEAT_DELAY + 0.1,
+    )
+    assert handler._valid_press(event) is True
+
+
+def test_valid_press_on_held_before_delay(handler, menu):
+    event = real_event(
+        buttons.A,
+        value=1,
+        hold_time=10,
+        hold_duration=handler.REPEAT_DELAY - 0.1,
+    )
+    assert handler._valid_press(event) is False
+
+
+def test_fake_press_is_valid_press(handler, menu):
+    event = real_event(buttons.RIGHT, value=1, hold_time=10, hold_duration=1.0)
+
+    fake = handler._fake_press(event)
+
+    assert fake.value == 1
+    assert fake.previous_value == 0
+    assert fake.hold_time == 1
+    assert fake.hold_duration == 0.0
+    assert fake.pressed is True
+    assert fake.held is True
+
+
+def test_repeat_timer_resets_on_release(handler, menu):
+    handler._repeat_timers[buttons.RIGHT] = 123.456
+
+    event = real_event(buttons.RIGHT, value=0, previous_value=1)
+    assert event.released is True
+
+    handler.handle_event(event)
+
+    assert handler._repeat_timers[buttons.RIGHT] == 0.0

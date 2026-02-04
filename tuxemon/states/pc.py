@@ -1,143 +1,69 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026
+# William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+
 from __future__ import annotations
 
 from collections.abc import Callable
-from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
-import pygame_menu
+from pygame_menu.menu import Menu
 
 from tuxemon.animation import Animation, ScheduleType
+from tuxemon.computer import PCMenuBuilder
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.platform.const.sizes import KENNEL, LOCKER, MAX_LOCKER
-from tuxemon.state.state import State
-from tuxemon.tools import open_dialog
+from tuxemon.platform.const.sizes import KENNEL, LOCKER
 
 if TYPE_CHECKING:
-    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
+
 
 MenuGameObj = Callable[[], object]
 
 
-def add_menu_items(
-    menu: pygame_menu.Menu,
-    items: list[tuple[str, MenuGameObj]],
-) -> None:
+def add_menu_items(menu: Menu, items: list[tuple[str, MenuGameObj]]) -> None:
+    """Add translated menu entries to a pygame_menu.Menu."""
     for key, callback in items:
         label = T.translate(key).upper()
         menu.add.button(label, callback)
 
 
-class MenuProvider:
-    def get_menu_items(
-        self, client: BaseClient, character: NPC
-    ) -> list[tuple[str, MenuGameObj]]:
-        raise NotImplementedError
-
-
-class PCMenuBuilder:
-    """Builds the menu items for the PCState."""
-
-    def __init__(
-        self,
-        client: BaseClient,
-        character: NPC,
-        menu_providers: list[MenuProvider] | None = None,
-    ) -> None:
-        self.client = client
-        self.character = character
-        self.menu_providers = (
-            menu_providers if menu_providers is not None else []
-        )
-
-    def _change_state(self, state: str, **kwargs: Any) -> partial[State]:
-        return partial(self.client.replace_state, state, **kwargs)
-
-    def _not_implemented_dialog(self) -> None:
-        open_dialog(
-            self.client, [T.translate("not_implemented")], dialog_speed="max"
-        )
-
-    def build_menu_items(self) -> list[tuple[str, MenuGameObj]]:
-        char = self.character
-        menu: list[tuple[str, MenuGameObj]] = []
-
-        # Monster box logic
-        monster_storage_callback = self._change_state(
-            "MonsterStorageState", character=char
-        )
-
-        if char.monster_boxes.get_all_monsters_visible():
-            menu.append(("menu_storage", monster_storage_callback))
-
-        if len(char.monsters) > 1:
-            menu.append(
-                (
-                    "menu_dropoff",
-                    self._change_state("MonsterDropOffState", character=char),
-                )
-            )
-
-        # Item box logic
-        if len(char.items) == MAX_LOCKER:
-            item_storage_callback = partial(
-                open_dialog,
-                self.client,
-                [T.translate("menu_storage_items_full")],
-            )
-        else:
-            item_storage_callback = self._change_state(
-                "ItemStorageState", character=char
-            )
-
-        if char.item_boxes.get_all_items_visible():
-            menu.append(("menu_item_storage", item_storage_callback))
-
-        if len(char.items) > 1:
-            menu.append(
-                (
-                    "menu_item_dropoff",
-                    self._change_state("ItemDropOffState", character=char),
-                )
-            )
-
-        # Other menu items
-        menu.append(("menu_multiplayer", self._not_implemented_dialog))
-        menu.append(("log_off", self.client.pop_state))
-
-        # Collect items from all injected providers
-        for provider in self.menu_providers:
-            menu.extend(provider.get_menu_items(self.client, self.character))
-
-        return menu
-
-
 class PCState(PygameMenuState):
-    """The PC State: deposit monster, deposit item, etc."""
+    """
+    The PC State: deposit monsters, deposit items, and any dynamic
+    menu entries provided by registered PC menu providers.
+
+    This state receives a PCMenuBuilder instance (injected by
+    AccessPCAction) and uses it to populate the menu.
+    """
 
     name: ClassVar[str] = "PCState"
 
     def __init__(
-        self, character: NPC, menu_builder: PCMenuBuilder | None = None
+        self,
+        character: NPC,
+        tag_list: list[str],
+        menu_builder: PCMenuBuilder | None = None,
     ) -> None:
+        self.tag_list = tag_list
         super().__init__()
-        kennel = KENNEL
-        locker = LOCKER
+        self.escape_key_exits = False
+
         char = character
 
-        # it creates the kennel and locker (new players)
-        if not char.monster_boxes.has_box(kennel, "monster"):
-            char.monster_boxes.create_box(kennel)
-        if not char.item_boxes.has_box(locker, "item"):
-            char.item_boxes.create_box(locker)
+        if not char.monster_boxes.has_box(KENNEL, "monster"):
+            char.monster_boxes.create_box(KENNEL)
+
+        if not char.item_boxes.has_box(LOCKER, "item"):
+            char.item_boxes.create_box(LOCKER)
 
         if menu_builder is None:
-            self.menu_builder = PCMenuBuilder(self.client, char)
-        else:
-            self.menu_builder = menu_builder
+            menu_builder = PCMenuBuilder(
+                self.client, char, menu_providers=[], tag_list=self.tag_list
+            )
+
+        self.menu_builder = menu_builder
 
         menu_items = self.menu_builder.build_menu_items()
         add_menu_items(self.menu, menu_items)

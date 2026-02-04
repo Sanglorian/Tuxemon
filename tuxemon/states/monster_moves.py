@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
+from pygame_menu.menu import Menu
 from pygame_menu.widgets.widget.label import Label
 from pygame_menu.widgets.widget.progressbar import ProgressBar
 
@@ -58,7 +58,7 @@ class MonsterMovesState(PygameMenuState):
     # -------------------------
     def add_menu_items(
         self,
-        menu: pygame_menu.Menu,
+        menu: Menu,
         monster: Monster,
     ) -> None:
         fxw: Callable[[float], int] = lambda r: fix_measure(menu._width, r)
@@ -72,7 +72,7 @@ class MonsterMovesState(PygameMenuState):
             label_id=monster.slug,
             font_color=(255, 255, 255),  # white
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab1.translate(fxw(79.4 / 256), fxh(-0.2 / 144))
@@ -89,7 +89,7 @@ class MonsterMovesState(PygameMenuState):
                 action=None,
                 button_id=tech.slug,
                 font_size=self.font_type.biggest,
-                align=locals.ALIGN_LEFT,
+                align=ALIGN_LEFT,
                 float=True,
             ).translate(fxw(83.6 / 256), fxh(_height))
 
@@ -103,7 +103,7 @@ class MonsterMovesState(PygameMenuState):
     # -------------------------
     # Per-tech UI updates
     # -------------------------
-    def add_menu_technique(self, menu: pygame_menu.Menu, slug: str) -> None:
+    def add_menu_technique(self, menu: Menu, slug: str) -> None:
         # keep width stable across updates
         menu._width = fix_measure(SCREEN_SIZE[0], 248 / 256)
 
@@ -120,9 +120,7 @@ class MonsterMovesState(PygameMenuState):
         )  # power % label (manual placement)
 
     # -------- description ----------
-    def _add_description_label(
-        self, menu: pygame_menu.Menu, technique: Technique
-    ) -> None:
+    def _add_description_label(self, menu: Menu, technique: Technique) -> None:
         width, height = SCREEN_SIZE
         description_label: Label | None = None
         for widget in menu.get_widgets():
@@ -136,7 +134,7 @@ class MonsterMovesState(PygameMenuState):
                 label_id="description",
                 font_size=self.font_type.bigger,
                 wordwrap=True,
-                align=locals.ALIGN_LEFT,
+                align=ALIGN_LEFT,
                 float=True,
             )
             assert not isinstance(self.description_label, list)
@@ -147,9 +145,7 @@ class MonsterMovesState(PygameMenuState):
             description_label.set_title(technique.description)
 
     # -------- info line (id/types/recharge) ----------
-    def _add_info_label(
-        self, menu: pygame_menu.Menu, technique: Technique
-    ) -> None:
+    def _add_info_label(self, menu: Menu, technique: Technique) -> None:
         width, height = SCREEN_SIZE
         info_label: Label | None = None
         for widget in menu.get_widgets():
@@ -175,7 +171,7 @@ class MonsterMovesState(PygameMenuState):
                 label_id="label",
                 font_size=self.font_type.small,
                 wordwrap=True,
-                align=locals.ALIGN_LEFT,
+                align=ALIGN_LEFT,
                 float=True,
             )
             # place it just above the description block
@@ -187,9 +183,7 @@ class MonsterMovesState(PygameMenuState):
             info_label.set_title(label_text)
 
     # -------- bars ----------
-    def _add_progress_bars(
-        self, menu: pygame_menu.Menu, technique: Technique
-    ) -> None:
+    def _add_progress_bars(self, menu: Menu, technique: Technique) -> None:
         width, height = SCREEN_SIZE
 
         diff_accuracy = round((technique.accuracy / ACCURACY_RANGE[1]) * 100)
@@ -212,7 +206,7 @@ class MonsterMovesState(PygameMenuState):
                 default=diff_accuracy,
                 font_size=self.font_type.biggest,
                 width=fix_measure(width, 80 / 256),
-                align=locals.ALIGN_LEFT,
+                align=ALIGN_LEFT,
                 float=True,
             )
             self.bar_accuracy.translate(
@@ -228,7 +222,7 @@ class MonsterMovesState(PygameMenuState):
                 default=diff_potency,
                 font_size=self.font_type.biggest,
                 width=fix_measure(width, 80 / 256),
-                align=locals.ALIGN_LEFT,
+                align=ALIGN_LEFT,
                 float=True,
             )
             self.bar_potency.translate(
@@ -238,7 +232,7 @@ class MonsterMovesState(PygameMenuState):
             bar_potency.set_value(diff_potency)
 
     # -------- icons (types, range, speed) ----------
-    def _add_icons(self, menu: pygame_menu.Menu, technique: Technique) -> None:
+    def _add_icons(self, menu: Menu, technique: Technique) -> None:
         # Ensure attributes exist
         if not hasattr(self, "type_icon_widgets"):
             self.type_icon_widgets: list[Any] = []
@@ -306,9 +300,7 @@ class MonsterMovesState(PygameMenuState):
         self.speed_icon_widget.translate(fxw(222 / 256), fxh(51.8 / 144))
 
     # -------- power label ----------
-    def _add_power_label(
-        self, menu: pygame_menu.Menu, technique: Technique
-    ) -> None:
+    def _add_power_label(self, menu: Menu, technique: Technique) -> None:
         width, height = SCREEN_SIZE
         power_percent = round(technique.power * 100)
         power_text = f"{T.translate('technique_power')} {power_percent}%"
@@ -324,7 +316,7 @@ class MonsterMovesState(PygameMenuState):
         self.power_label = menu.add.label(
             title=power_text,
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         assert not isinstance(self.power_label, list)
@@ -349,8 +341,8 @@ class MonsterMovesState(PygameMenuState):
 
         width, height = SCREEN_SIZE
         theme = self._setup_theme(TECH_INFO)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
         super().__init__(height=height, width=width)
         self._source = source

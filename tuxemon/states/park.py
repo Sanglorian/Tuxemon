@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
@@ -27,8 +27,8 @@ class ParkState(PygameMenuState):
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_MISSIONS)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
         width = int(0.8 * width)
         height = int(0.8 * height)
@@ -36,7 +36,7 @@ class ParkState(PygameMenuState):
         self.initialize_items(self.menu)
         self.reset_theme()
 
-    def initialize_items(self, menu: pygame_menu.Menu) -> None:
+    def initialize_items(self, menu: Menu) -> None:
         tracker = self.park_session.tracker
         history = self.park_session.encounter_history
 

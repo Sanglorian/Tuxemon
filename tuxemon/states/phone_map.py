@@ -6,8 +6,8 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import load_yaml
@@ -75,7 +75,7 @@ class NuPhoneMap(PygameMenuState):
 
     def add_menu_items(
         self,
-        menu: pygame_menu.Menu,
+        menu: Menu,
     ) -> None:
         new_image = self._create_image(data.map_path)
         new_image.scale(SCALE, SCALE)
@@ -111,8 +111,8 @@ class NuPhoneMap(PygameMenuState):
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_PHONE_MAP)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
         theme.title = True
 

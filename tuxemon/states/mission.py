@@ -6,8 +6,8 @@ from collections.abc import Callable
 from functools import partial
 from typing import Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon.db import MissionStatus
 from tuxemon.entity.npc import NPC
@@ -36,8 +36,8 @@ class MissionState(PygameMenuState):
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_MISSIONS)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
         width = int(0.8 * width)
         height = int(0.8 * height)
@@ -46,10 +46,7 @@ class MissionState(PygameMenuState):
         self.initialize_items(self.menu)
         self.reset_theme()
 
-    def initialize_items(
-        self,
-        menu: pygame_menu.Menu,
-    ) -> None:
+    def initialize_items(self, menu: Menu) -> None:
         def change_state(state: str, **kwargs: Any) -> MenuGameObj:
             return partial(self.client.push_state, state, **kwargs)
 
@@ -84,18 +81,15 @@ class SingleMissionState(PygameMenuState):
         self.character = character
         width, height = SCREEN_SIZE
         theme = self._setup_theme(BG_MISSIONS)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
         width = int(0.8 * width)
         height = int(0.8 * height)
         super().__init__(height=height, width=width)
         self.initialize_items(self.menu)
         self.reset_theme()
 
-    def initialize_items(
-        self,
-        menu: pygame_menu.Menu,
-    ) -> None:
+    def initialize_items(self, menu: Menu) -> None:
         def delete_mission() -> None:
             msg = T.translate("mission_deletion")
             open_dialog(self.client, [msg], dialog_speed="max")
@@ -127,7 +121,7 @@ class SingleMissionState(PygameMenuState):
             title=f"{self.mission.name}",
             label_id="name",
             font_size=self.font_type.small,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=False,
         )
 
@@ -135,7 +129,7 @@ class SingleMissionState(PygameMenuState):
             title=self.mission.description,
             label_id="description",
             font_size=self.font_type.small,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=False,
         )
 
@@ -143,7 +137,7 @@ class SingleMissionState(PygameMenuState):
             menu.add.label(
                 title=T.translate("mission_repeatable"),
                 font_size=self.font_type.small,
-                align=locals.ALIGN_LEFT,
+                align=ALIGN_LEFT,
             )
 
         next_missions = (
@@ -155,7 +149,7 @@ class SingleMissionState(PygameMenuState):
             title=f"{T.translate('mission_next')}: {next_missions}",
             label_id="next_missions",
             font_size=self.font_type.small,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=False,
         )
 
@@ -164,7 +158,7 @@ class SingleMissionState(PygameMenuState):
             title=T.translate("mission_progress"),
             default=progress,
             font_size=self.font_type.small,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=False,
         )
 

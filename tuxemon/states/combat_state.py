@@ -959,6 +959,7 @@ class CombatState(CombatAnimations):
         self.combat_session.reset()
         self.unregister_event_handlers()
         self.client.current_music.stop()
+        self.client.environment_manager.unlock_environment()
         self.clear_combat_states()
         self.phase = None
 

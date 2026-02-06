@@ -6,6 +6,7 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol
 
+from tuxemon.platform.joystick_detector import JoystickDetector
 from tuxemon.platform.platform_pygame.events import (
     InputMappingStrategy,
     PlayStationMapping,
@@ -72,16 +73,28 @@ class GamepadSetup:
     def setup(
         self, event_queue: PygameEventQueueHandler, config: TuxemonConfig
     ) -> PygameGamepadInput | None:
+
+        detector = JoystickDetector()
+        joysticks = detector.detect()
+
+        if not joysticks:
+            logger.info("No usable joysticks found")
+            return None
+
         controller_type = config.controller.type
-        if controller_type:
-            strategy = self._get_mapping_strategy(controller_type)
-            gamepad = PygameGamepadInput(strategy)
-            event_queue.set_input(0, 20, gamepad)
-            logger.info(
-                f"{controller_type.capitalize()} gamepad set up successfully"
-            )
-            return gamepad
-        return None
+
+        if controller_type is None:
+            return None
+
+        strategy = self._get_mapping_strategy(controller_type)
+
+        gamepad = PygameGamepadInput(strategy, joysticks)
+        event_queue.set_input(0, 20, gamepad)
+
+        logger.info(
+            f"{controller_type.capitalize()} gamepad set up successfully"
+        )
+        return gamepad
 
 
 class ControllerOverlaySetup:

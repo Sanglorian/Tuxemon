@@ -668,6 +668,32 @@ def compare(key: str, value1: int | float, value2: int | float) -> bool:
         raise ValueError(f"{key} isn't among {list(Comparison)}")
 
 
+def compare_tuple(
+    key: str,
+    value1: tuple[int | float, int | float],
+    value2: tuple[int | float, int | float],
+) -> bool:
+    """
+    Tuple-based comparison using the same Comparison enum
+    and symbolic operators supported by compare().
+    """
+
+    if key == Comparison.LESS_THAN or key == "<":
+        return value1 < value2
+    elif key == Comparison.LESS_OR_EQUAL or key == "<=":
+        return value1 <= value2
+    elif key == Comparison.GREATER_THAN or key == ">":
+        return value1 > value2
+    elif key == Comparison.GREATER_OR_EQUAL or key == ">=":
+        return value1 >= value2
+    elif key == Comparison.EQUALS or key == "==":
+        return value1 == value2
+    elif key == Comparison.NOT_EQUALS or key == "!=":
+        return value1 != value2
+    else:
+        raise ValueError(f"{key} isn't among {list(Comparison)}")
+
+
 def parse_flag(value: str | None) -> bool:
     """
     Convert a string flag to a boolean.

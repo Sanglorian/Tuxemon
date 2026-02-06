@@ -3,7 +3,7 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from argparse import ArgumentParser, Namespace
 import sys
-from tuxemon import headless, prepare
+from tuxemon import prepare
 from tuxemon.user_config import CONFIG
 
 
@@ -31,7 +31,7 @@ def init(platform: str = "pygame") -> None:
     if platform == "pygame":
         prepare.pygame_init()
     elif platform == "headless":
-        headless.headless_init()
+        prepare.headless_init()
     else:
         raise ValueError(f"Unsupported platform: {platform}")
 

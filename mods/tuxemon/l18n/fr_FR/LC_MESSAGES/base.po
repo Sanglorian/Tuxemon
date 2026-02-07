@@ -999,14 +999,11 @@ msgstr "Chevalier II"
 msgid "liela"
 msgstr "Liela"
 
-msgid "maple_girl"
+msgid "maple_wren"
 msgstr "Érable"
 
 msgid "misa"
 msgstr "Misa"
-
-msgid "npc_wife"
-msgstr "Femme PNJ"
 
 msgid "professor"
 msgstr "Professeur"

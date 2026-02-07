@@ -4085,14 +4085,11 @@ msgstr "骑士II"
 msgid "liela"
 msgstr "莉拉"
 
-msgid "maple_girl"
+msgid "maple_wren"
 msgstr "马恩"
 
 msgid "misa"
 msgstr "米萨"
-
-msgid "npc_wife"
-msgstr "妻子NPC"
 
 msgid "professor"
 msgstr "教授"

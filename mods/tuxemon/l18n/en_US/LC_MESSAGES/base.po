@@ -9390,17 +9390,17 @@ msgstr "Knight II"
 msgid "liela"
 msgstr "Liela"
 
-msgid "maple_girl"
+msgid "maple_wren"
 msgstr "Maple"
+
+msgid "kay_wren"
+msgstr "Prof. Kay Wren"
 
 msgid "misa"
 msgstr "Misa"
 
 msgid "timmy"
 msgstr "Timmy"
-
-msgid "npc_wife"
-msgstr "Wife NPC"
 
 msgid "professor"
 msgstr "Professor"
@@ -11420,199 +11420,41 @@ msgstr ""
 msgid "shady_rename"
 msgstr "Shady Guy: Good luck with your new name, friend..."
 
-msgid "37707_sign_welcome"
-msgstr "Welcome to town 37707! We are..."
-
-msgid "37707_sign_tower"
-msgstr "Town 37707 tower. This structure is highly unstable: Do not enter!"
-
-msgid "37707_sign_foreign"
-msgstr "This sign is written in a foreign language you can't understand."
-
-msgid "37707_sign_hidden"
-msgstr "Get out while you still can..."
-
-msgid "37707_sign_missing_welcome"
-msgstr "We11c0me T0 t0wn ERROR! We ne^er weR3"
-
-msgid "37707_sign_missing_tower"
-msgstr "Town N/A <undefined_structure>. Denetsil evah dluohs uoy"
-
-msgid "37707_sign_missing_foreign"
-msgstr ""
-"PyGame - UnboundLocalError: Local variable 'map_id' referenced before assignment\n"
-"Error 404: **** resources not found. Please notify tHe dEvEl0p#r$ @b0%t t#1# ##### ###########\n"
-"01010010 01100101 01101101 01100101 01101101 01100010 01100101 01110010 00100000 01101101 01100101 00101110"
-
-msgid "37707_sign_missing_hidden_read"
-msgstr "W3 KN0W Y0U R3@D TH1$: Y0U H@D 833N W@RN3D."
-
-msgid "37707_sign_missing_hidden_unread"
-msgstr "1T i$ t00 L8 N0W"
-
-msgid "37707_house"
-msgstr "Strange: It's locked. No one seems to be using this building."
-
-msgid "37707_mail"
-msgstr "It's empty and full of spider webs."
-
-msgid "37707_house_missing"
-msgstr "Th3r3 is n0th1ng here. The7e n3vEr w@$."
-
-msgid "37707_mail_missing"
-msgstr "1t\"$ empty @nd y0u c@n $EE th3 v0id."
-
-msgid "37707_flower"
-msgstr ""
-"You sense a warm energy emanating from this flower. It's the only thing in "
-"this town your Tuxemon seem to enjoy."
-
-msgid "37707_flower_missing"
-msgstr ""
-"E330R: Event @ction set_monster_health contains inv@l1d p@r@meter$. He@l1ng "
-"aLL Tu+em0n.,."
-
-msgid "37707_computer"
-msgstr ""
-"Developer console: This is intended for Tuxemon developers only, for testing an experimental data loading system.\n"
-"The variable for the new loader will now be enabled. Please report any issues you find at https://tuxemon.org\n"
-"Developer note 1: This suppresses crashes for missing maps. The system may attempt to load invalid data!\n"
-"Developer note 2: Do NOT save your game with this enabled, it may result in data corruption.\n"
-"Developer note 3: As of switching to Python 3, data seems to be aggregated and combined in a very unusual manner. Please debug this!"
-
-msgid "37707_tower_missing"
-msgstr "Y0u c@nn0t ente7 @ bu1ldIng th@t d0e$ n0t e+i$t."
-
-msgid "37707_exit_missing"
-msgstr ""
-"<recovery_module>: GREETINGS ${{name}}. PLEASE UNDERSTAND THIS AREA NEVER EXISTED. YOU HAVE EXPERIENCED A SYSTEM ERROR.\n"
-"<recovery_module>: THE GLITCH HAS NOW BEEN PATCHED. YOU MAY CONTINUE THE GAME NORMALLY FROM HERE ON. DO NOT ATTEMPT TO RETURN HERE.\n"
-"<recovery_module>: WAKE UP. FORGET ALL. ALL IS BUT A DREAM..."
-
-msgid "37707_villager_male_1"
-msgstr ""
-"Blank: Hmph. Hi. Sorry: We're usually weary of outsiders. We only get visited... sometimes.\n"
-"Blank: But since you're here, maybe you can do me a favor. It might sound strange of me to ask you this, yet I must know...\n"
-"Blank: Do you know who I am? Have you... ever seen me? I'm curious: My name, do I have a...\n"
-"Blank: No. Sorry: I have made a mistake. Please don't tell anyhone what I asked you. Carry on, enjoy your trip here."
-
-msgid "37707_villager_male_2"
-msgstr ""
-"Blank: You can't help any more. We are not allowed to talk about it. You "
-"cannot understand. Leave."
-
-msgid "37707_villager_male_3"
-msgstr ""
-"Blank: You... you will doom us all over again. Go back and never return!"
-
-msgid "37707_villager_female_1"
-msgstr ""
-"Wish: Oh... a newcomer! How did you get here? We haven't seen anyone new in... oh, never mind.\n"
-"Wish: Welcome! Welcome to... oh my: We never got around to giving our town a name! Just call us whatever you'd like I guess.\n"
-"Wish: Please make yourself at home. Usually there are more people around... it depends on the seed, maybe it's a bad omen today.\n"
-"Wish: Let me know if you need anything that exists here. Just don't make the same mistake as the others: We don't want you to leave us too."
-
-msgid "37707_villager_female_2"
-msgstr "Wish: Please: Do not enter the tower. It hasn't been built yet."
-
-msgid "37707_villager_female_3"
-msgstr ""
-"Wish: No, no, no: Stop doing this! Do you not understand it's not there?"
-
-msgid "37707_villager_male_missing"
-msgstr ""
-"00000: i W@$ n3v3R B0rN\n"
-"${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}}"
-
-msgid "37707_villager_female_missing"
-msgstr ""
-"@*!^: 0H... @ n3wc0m3r! H0vv p1d y0v g3t he7e? <NONE> h3llen\"T $33N %^&one new 1n... ()h, never n3ver m3V3t N3W37 MIIIIIIIIND\n"
-"@*!^: WElcoME! W3lcome t0... 0H N/A: We never g0t ar0und to gi^ing 0ur town {<1} We never g00000000 {<2} W3 neVer Bu1lt 0uR t0wN\n"
-"TH S D ES N T EX ST Y U AR  C NNE  ED TO TH  V ID YO  M ST LEA E N W"
-
-msgid "buddha_welcome"
-msgstr "Welcome to Buddha Mountain!"
-
-msgid "old_sphalian_house01"
-msgstr ""
-"You watch some TV with your beloved Lv ${{monster_0_level}} "
-"${{monster_0_name}}.,0"
-
-msgid "old_sphalian_house02"
-msgstr "Home Sweet Home"
-
-msgid "old_sphalian_center01"
-msgstr "Your tuxemon are now at full health!"
-
-msgid "old_sphalian_center02"
-msgstr "It says that it is under repair"
-
-msgid "old_sphalian_town01"
-msgstr "Sphalian Town - a quiet, peaceful place"
-
-msgid "rubberduck_cave_01"
-msgstr "A good place to hide an item"
-
-msgid "rubberduck_cave_02"
-msgstr "If I could swim..."
-
-msgid "rubberduck_cave_03"
-msgstr "This ladder leads to nowhere"
-
-msgid "rubberduck_city_01"
-msgstr "The door won't open"
-
-msgid "rubberduck_city_02"
-msgstr "Maybe some good guys here"
-
-msgid "rubberduck_city_03"
-msgstr "Here you should be able to heal your monsters ... but no one here ..."
-
-msgid "rubberduck_city_04"
-msgstr "A mart ..."
-
-msgid "rubberduck_city_05"
-msgstr "Currently no one is living here"
-
-msgid "rubberduck_city_06"
-msgstr "Maybe someone evil / bad should be here"
-
-msgid "rubberduck_city_07"
-msgstr "Maybe make this door opened and put someone here"
-
-msgid "rubberduck_city_08"
-msgstr "Place for a cave route... maybe cave_01.tmx"
-
-msgid "rubberduck_city_09"
-msgstr "Where should this lead to??"
-
-msgid "rubberduck_city_10"
-msgstr "This is a secret place that can't be reached yet..."
-
-msgid "37707_town01"
-msgstr "You got a Fruitera for testing purposes. This will be removed later!"
-
-msgid "mart_junkyard01"
-msgstr "${{name}}: I got a Fruitera!"
-
-msgid "mart_junkyard02"
-msgstr "${{name}}: I got a Bamboon!"
-
-msgid "mart_junkyard03"
-msgstr "MAPLE: I got a Bamboon!"
-
-msgid "mart_junkyard04"
-msgstr "MAPLE: I got a Fruitera!"
-
-msgid "mart_junkyard05"
-msgstr "CARY: Well, you won this time. But next time, we'll win."
-
-# Taba Town
 msgid "maple_bedroom_sign"
 msgstr "It's a calendar and the 27 April is circled in pink."
 
 msgid "maple_bedroom_sign_apr27"
 msgstr "Today is ${{today}} — the date Maple circled in pink. Whatever it means, she clearly cares about it."
+
+msgid "flashback_apr27_start"
+msgstr "The room blurs... A memory surfaces."
+
+msgid "flashback_apr27_maple_1"
+msgstr "Maple: He's getting worse, Callie. I can't stay here. Not with what he's planning."
+
+msgid "flashback_apr27_callie_1"
+msgstr "Callie: Maple... you don't know the whole story. He's trying to help-"
+
+msgid "flashback_apr27_maple_2"
+msgstr "Maple: Help? Secret meetings? Codes? Experiments? I won't let my child be part of this."
+
+msgid "flashback_apr27_kay_voice"
+msgstr "Girls! Come down for a moment! I've made a breakthrough!"
+
+msgid "flashback_apr27_maple_3"
+msgstr "Maple: I'm sorry. I wish I could take ${{name}} with me. But if he finds out I…"
+
+msgid "flashback_apr27_maple_final"
+msgstr "Maple: ${{today}}... I have to go."
+
+msgid "flashback_apr27_callie_final"
+msgstr "Callie: Maple… wait— just talk to me before you go."
+
+msgid "flashback_apr27_end"
+msgstr "The memory fades away..."
+
+msgid "maple_pc_entry_1"
+msgstr "April 27. I can't stay. Not with what he's planning.\n If you're reading this… I'm sorry. I hope you never have to understand why."
 
 msgid "taba_house1_sign"
 msgstr "Mr and Ms Clawbrew House"
@@ -11754,6 +11596,79 @@ msgstr "Luckily I didn't pay for this. How can you pay for this?"
 
 msgid "taba_house4_dish1"
 msgstr "It's brown, dense, but it doesn't look like pudding..."
+
+msgid "cotton_misa_fireplace"
+msgstr "It looks like someone burned papers."
+
+msgid "cotton_misa_tv"
+msgstr ""
+"What's on TV? The story of how Omnichannel became a global phenomenon, "
+"reflecting and influencing a generation in the process."
+
+msgid "cotton_misa_granny"
+msgstr "Are you here to ask for my grand-daughter's hand?"
+
+msgid "cotton_misa_granny_yes"
+msgstr ""
+"Ah, well good luck with that! She inherited my witty personality and her "
+"Mother's temper, so she's a handful!"
+
+msgid "cotton_misa_granny_no"
+msgstr "No? I'm sorry!"
+
+msgid "cotton_misa_granny2"
+msgstr ""
+"Oh! You must be one of those friends my granddaughter was talking about!"
+
+msgid "cotton_misa_littlebro"
+msgstr "My sister is very nice to me."
+
+msgid "cotton_underground_stop"
+msgstr "Sorry, I'm under orders to let no one pass."
+
+msgid "xero_omnichannel_sign"
+msgstr "Omnichannel HQ: We are Safety, We are Order, We are Omnichannel"
+
+msgid "taba_town_homeplace"
+msgstr "${{name}}'s house"
+
+msgid "taba_town_sign_profhouse"
+msgstr "Tuxemon Professor's House"
+
+msgid "taba_town_sign_proflab"
+msgstr "Tuxemon Professor's Lab"
+
+msgid "taba_town_sign_tuxemart"
+msgstr "Tuxemart - A place to buy and sell items"
+
+msgid "taba_town_sign_tuxecenter"
+msgstr "Tuxecenter - A place to heal your tuxemon"
+
+msgid "leather_town_open_air"
+msgstr "Open Air Cafe and Marketplace"
+
+msgid "xero_citypark_achievement"
+msgstr "Achievement Maniac's House"
+
+msgid "xero_shaft1_sign"
+msgstr "Shaft Headquarters: Mining Division"
+
+msgid "xero_shaft2_sign"
+msgstr "Shaft Headquarters: Public Relations Division"
+
+msgid "xero_taba_tvwatch"
+msgstr ""
+"What's on TV? A prom queen is breaking her tiara into pieces and handing it "
+"out."
+
+msgid "xero_taba_poster"
+msgstr "Home sweet home!"
+
+msgid "xero_taba_restinbed"
+msgstr "You awake fully rested!"
+
+msgid "xero_skip_question"
+msgstr "Do you want to skip the intro?"
 
 # DIALOG TRANSLATIONS ##
 # spyder intros
@@ -17639,78 +17554,6 @@ msgstr "Omnichannel HQ: We Make Headlines"
 msgid "spyder_confusedperson"
 msgstr "Confused Guy"
 
-msgid "cotton_misa_fireplace"
-msgstr "It looks like someone burned papers."
-
-msgid "cotton_misa_tv"
-msgstr ""
-"What's on TV? The story of how Omnichannel became a global phenomenon, "
-"reflecting and influencing a generation in the process."
-
-msgid "cotton_misa_granny"
-msgstr "Are you here to ask for my grand-daughter's hand?"
-
-msgid "cotton_misa_granny_yes"
-msgstr ""
-"Ah, well good luck with that! She inherited my witty personality and her "
-"Mother's temper, so she's a handful!"
-
-msgid "cotton_misa_granny_no"
-msgstr "No? I'm sorry!"
-
-msgid "cotton_misa_granny2"
-msgstr ""
-"Oh! You must be one of those friends my granddaughter was talking about!"
-
-msgid "cotton_misa_littlebro"
-msgstr "My sister is very nice to me."
-
-msgid "cotton_underground_stop"
-msgstr "Sorry, I'm under orders to let no one pass."
-
-msgid "xero_omnichannel_sign"
-msgstr "Omnichannel HQ: We are Safety, We are Order, We are Omnichannel"
-
-msgid "taba_town_homeplace"
-msgstr "${{name}}'s house"
-
-msgid "taba_town_sign_profhouse"
-msgstr "Tuxemon Professor's House"
-
-msgid "taba_town_sign_proflab"
-msgstr "Tuxemon Professor's Lab"
-
-msgid "taba_town_sign_tuxemart"
-msgstr "Tuxemart - A place to buy and sell items"
-
-msgid "taba_town_sign_tuxecenter"
-msgstr "Tuxecenter - A place to heal your tuxemon"
-
-msgid "leather_town_open_air"
-msgstr "Open Air Cafe and Marketplace"
-
-msgid "xero_citypark_achievement"
-msgstr "Achievement Maniac's House"
-
-msgid "xero_shaft1_sign"
-msgstr "Shaft Headquarters: Mining Division"
-
-msgid "xero_shaft2_sign"
-msgstr "Shaft Headquarters: Public Relations Division"
-
-msgid "xero_taba_tvwatch"
-msgstr ""
-"What's on TV? A prom queen is breaking her tiara into pieces and handing it "
-"out."
-
-msgid "xero_taba_poster"
-msgstr "Home sweet home!"
-
-msgid "xero_taba_restinbed"
-msgstr "You awake fully rested!"
-
-msgid "xero_skip_question"
-msgstr "Do you want to skip the intro?"
 
 # NPC Dialogues for Legend of Bofie Campaign
 # Manhattan ##
@@ -18462,6 +18305,194 @@ msgstr "{user} dashes around, kicking up dust in excitement."
 
 msgid "menu_park_alert"
 msgstr "{user} suddenly stops, sensing something nearby."
+
+# Another Mod ##
+msgid "37707_sign_welcome"
+msgstr "Welcome to town 37707! We are..."
+
+msgid "37707_sign_tower"
+msgstr "Town 37707 tower. This structure is highly unstable: Do not enter!"
+
+msgid "37707_sign_foreign"
+msgstr "This sign is written in a foreign language you can't understand."
+
+msgid "37707_sign_hidden"
+msgstr "Get out while you still can..."
+
+msgid "37707_sign_missing_welcome"
+msgstr "We11c0me T0 t0wn ERROR! We ne^er weR3"
+
+msgid "37707_sign_missing_tower"
+msgstr "Town N/A <undefined_structure>. Denetsil evah dluohs uoy"
+
+msgid "37707_sign_missing_foreign"
+msgstr ""
+"PyGame - UnboundLocalError: Local variable 'map_id' referenced before assignment\n"
+"Error 404: **** resources not found. Please notify tHe dEvEl0p#r$ @b0%t t#1# ##### ###########\n"
+"01010010 01100101 01101101 01100101 01101101 01100010 01100101 01110010 00100000 01101101 01100101 00101110"
+
+msgid "37707_sign_missing_hidden_read"
+msgstr "W3 KN0W Y0U R3@D TH1$: Y0U H@D 833N W@RN3D."
+
+msgid "37707_sign_missing_hidden_unread"
+msgstr "1T i$ t00 L8 N0W"
+
+msgid "37707_house"
+msgstr "Strange: It's locked. No one seems to be using this building."
+
+msgid "37707_mail"
+msgstr "It's empty and full of spider webs."
+
+msgid "37707_house_missing"
+msgstr "Th3r3 is n0th1ng here. The7e n3vEr w@$."
+
+msgid "37707_mail_missing"
+msgstr "1t\"$ empty @nd y0u c@n $EE th3 v0id."
+
+msgid "37707_flower"
+msgstr ""
+"You sense a warm energy emanating from this flower. It's the only thing in "
+"this town your Tuxemon seem to enjoy."
+
+msgid "37707_flower_missing"
+msgstr ""
+"E330R: Event @ction set_monster_health contains inv@l1d p@r@meter$. He@l1ng "
+"aLL Tu+em0n.,."
+
+msgid "37707_computer"
+msgstr ""
+"Developer console: This is intended for Tuxemon developers only, for testing an experimental data loading system.\n"
+"The variable for the new loader will now be enabled. Please report any issues you find at https://tuxemon.org\n"
+"Developer note 1: This suppresses crashes for missing maps. The system may attempt to load invalid data!\n"
+"Developer note 2: Do NOT save your game with this enabled, it may result in data corruption.\n"
+"Developer note 3: As of switching to Python 3, data seems to be aggregated and combined in a very unusual manner. Please debug this!"
+
+msgid "37707_tower_missing"
+msgstr "Y0u c@nn0t ente7 @ bu1ldIng th@t d0e$ n0t e+i$t."
+
+msgid "37707_exit_missing"
+msgstr ""
+"<recovery_module>: GREETINGS ${{name}}. PLEASE UNDERSTAND THIS AREA NEVER EXISTED. YOU HAVE EXPERIENCED A SYSTEM ERROR.\n"
+"<recovery_module>: THE GLITCH HAS NOW BEEN PATCHED. YOU MAY CONTINUE THE GAME NORMALLY FROM HERE ON. DO NOT ATTEMPT TO RETURN HERE.\n"
+"<recovery_module>: WAKE UP. FORGET ALL. ALL IS BUT A DREAM..."
+
+msgid "37707_villager_male_1"
+msgstr ""
+"Blank: Hmph. Hi. Sorry: We're usually weary of outsiders. We only get visited... sometimes.\n"
+"Blank: But since you're here, maybe you can do me a favor. It might sound strange of me to ask you this, yet I must know...\n"
+"Blank: Do you know who I am? Have you... ever seen me? I'm curious: My name, do I have a...\n"
+"Blank: No. Sorry: I have made a mistake. Please don't tell anyhone what I asked you. Carry on, enjoy your trip here."
+
+msgid "37707_villager_male_2"
+msgstr ""
+"Blank: You can't help any more. We are not allowed to talk about it. You "
+"cannot understand. Leave."
+
+msgid "37707_villager_male_3"
+msgstr ""
+"Blank: You... you will doom us all over again. Go back and never return!"
+
+msgid "37707_villager_female_1"
+msgstr ""
+"Wish: Oh... a newcomer! How did you get here? We haven't seen anyone new in... oh, never mind.\n"
+"Wish: Welcome! Welcome to... oh my: We never got around to giving our town a name! Just call us whatever you'd like I guess.\n"
+"Wish: Please make yourself at home. Usually there are more people around... it depends on the seed, maybe it's a bad omen today.\n"
+"Wish: Let me know if you need anything that exists here. Just don't make the same mistake as the others: We don't want you to leave us too."
+
+msgid "37707_villager_female_2"
+msgstr "Wish: Please: Do not enter the tower. It hasn't been built yet."
+
+msgid "37707_villager_female_3"
+msgstr ""
+"Wish: No, no, no: Stop doing this! Do you not understand it's not there?"
+
+msgid "37707_villager_male_missing"
+msgstr ""
+"00000: i W@$ n3v3R B0rN\n"
+"${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}} ${{name}}"
+
+msgid "37707_villager_female_missing"
+msgstr ""
+"@*!^: 0H... @ n3wc0m3r! H0vv p1d y0v g3t he7e? <NONE> h3llen\"T $33N %^&one new 1n... ()h, never n3ver m3V3t N3W37 MIIIIIIIIND\n"
+"@*!^: WElcoME! W3lcome t0... 0H N/A: We never g0t ar0und to gi^ing 0ur town {<1} We never g00000000 {<2} W3 neVer Bu1lt 0uR t0wN\n"
+"TH S D ES N T EX ST Y U AR  C NNE  ED TO TH  V ID YO  M ST LEA E N W"
+
+msgid "buddha_welcome"
+msgstr "Welcome to Buddha Mountain!"
+
+msgid "old_sphalian_house01"
+msgstr ""
+"You watch some TV with your beloved Lv ${{monster_0_level}} "
+"${{monster_0_name}}.,0"
+
+msgid "old_sphalian_house02"
+msgstr "Home Sweet Home"
+
+msgid "old_sphalian_center01"
+msgstr "Your tuxemon are now at full health!"
+
+msgid "old_sphalian_center02"
+msgstr "It says that it is under repair"
+
+msgid "old_sphalian_town01"
+msgstr "Sphalian Town - a quiet, peaceful place"
+
+msgid "rubberduck_cave_01"
+msgstr "A good place to hide an item"
+
+msgid "rubberduck_cave_02"
+msgstr "If I could swim..."
+
+msgid "rubberduck_cave_03"
+msgstr "This ladder leads to nowhere"
+
+msgid "rubberduck_city_01"
+msgstr "The door won't open"
+
+msgid "rubberduck_city_02"
+msgstr "Maybe some good guys here"
+
+msgid "rubberduck_city_03"
+msgstr "Here you should be able to heal your monsters ... but no one here ..."
+
+msgid "rubberduck_city_04"
+msgstr "A mart ..."
+
+msgid "rubberduck_city_05"
+msgstr "Currently no one is living here"
+
+msgid "rubberduck_city_06"
+msgstr "Maybe someone evil / bad should be here"
+
+msgid "rubberduck_city_07"
+msgstr "Maybe make this door opened and put someone here"
+
+msgid "rubberduck_city_08"
+msgstr "Place for a cave route... maybe cave_01.tmx"
+
+msgid "rubberduck_city_09"
+msgstr "Where should this lead to??"
+
+msgid "rubberduck_city_10"
+msgstr "This is a secret place that can't be reached yet..."
+
+msgid "37707_town01"
+msgstr "You got a Fruitera for testing purposes. This will be removed later!"
+
+msgid "mart_junkyard01"
+msgstr "${{name}}: I got a Fruitera!"
+
+msgid "mart_junkyard02"
+msgstr "${{name}}: I got a Bamboon!"
+
+msgid "mart_junkyard03"
+msgstr "MAPLE: I got a Bamboon!"
+
+msgid "mart_junkyard04"
+msgstr "MAPLE: I got a Fruitera!"
+
+msgid "mart_junkyard05"
+msgstr "CARY: Well, you won this time. But next time, we'll win."
 
 # JUNKYARD ##
 msgid "junkyard_01"

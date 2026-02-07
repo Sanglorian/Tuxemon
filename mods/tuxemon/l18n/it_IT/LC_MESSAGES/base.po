@@ -1253,14 +1253,11 @@ msgstr "Cavaliere II"
 msgid "liela"
 msgstr "Liela"
 
-msgid "maple_girl"
+msgid "maple_wren"
 msgstr "Maple"
 
 msgid "misa"
 msgstr "Misa"
-
-msgid "npc_wife"
-msgstr "Moglie NPC"
 
 msgid "professor"
 msgstr "Professore"

@@ -1792,14 +1792,11 @@ msgstr "Ritter II"
 msgid "liela"
 msgstr "Liela"
 
-msgid "maple_girl"
+msgid "maple_wren"
 msgstr "Maple"
 
 msgid "misa"
 msgstr "Misa"
-
-msgid "npc_wife"
-msgstr "Ehefrau NPC"
 
 msgid "professor"
 msgstr "Professor"

@@ -81,10 +81,10 @@
   </object>
   <object id="29" name="create mom" type="event" x="0" y="32" width="16" height="16">
    <properties>
-    <property name="act10" value="create_npc npc_mom,8,3,stand"/>
-    <property name="act20" value="char_face npc_mom,left"/>
-    <property name="act40" value="char_wander npc_mom,3.0"/>
-    <property name="cond10" value="not char_exists npc_mom"/>
+    <property name="act10" value="create_npc callie_wren,8,3,stand"/>
+    <property name="act20" value="char_face callie_wren,left"/>
+    <property name="act40" value="char_wander callie_wren,3.0"/>
+    <property name="cond10" value="not char_exists callie_wren"/>
     <property name="cond20" value="not variable_set comeinside:done"/>
     <property name="cond30" value="not variable_set backhome:no"/>
    </properties>
@@ -92,23 +92,23 @@
   <object id="30" name="talkwithmom" type="event" x="112" y="64" width="16" height="16">
    <properties>
     <property name="act10" value="translated_dialog firsts"/>
-    <property name="behav10" value="talk npc_mom"/>
+    <property name="behav10" value="talk callie_wren"/>
     <property name="cond1" value="not variable_set can_exit_town:yes"/>
     <property name="cond30" value="not variable_set scene:yes"/>
    </properties>
   </object>
   <object id="31" name="create mom2" type="event" x="80" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc npc_mom,0,5,stand"/>
-    <property name="act2" value="char_face npc_mom,right"/>
+    <property name="act1" value="create_npc callie_wren,0,5,stand"/>
+    <property name="act2" value="char_face callie_wren,right"/>
     <property name="act3" value="wait 1"/>
     <property name="act4" value="translated_dialog ipausedit"/>
-    <property name="act5" value="char_face npc_mom,up"/>
+    <property name="act5" value="char_face callie_wren,up"/>
     <property name="act6" value="set_variable aeble_talk:1"/>
     <property name="act7" value="set_variable scene:yes"/>
     <property name="act8" value="clear_variable comeinside"/>
     <property name="cond1" value="is variable_set comeinside:done"/>
-    <property name="cond2" value="not char_exists npc_mom"/>
+    <property name="cond2" value="not char_exists callie_wren"/>
     <property name="cond3" value="not variable_set can_exit_town:yes"/>
    </properties>
   </object>
@@ -119,9 +119,9 @@
     <property name="act2" value="translated_dialog announcement2"/>
     <property name="act3" value="translated_dialog announcement3"/>
     <property name="act4" value="translated_dialog announcement4"/>
-    <property name="act5" value="char_face npc_mom,right"/>
+    <property name="act5" value="char_face callie_wren,right"/>
     <property name="act6" value="translated_dialog whythecheering"/>
-    <property name="act7" value="char_face npc_mom,up"/>
+    <property name="act7" value="char_face callie_wren,up"/>
     <property name="act8" value="translated_dialog announcement5"/>
     <property name="act9" value="set_variable aeble_talk:2"/>
     <property name="cond1" value="is variable_set aeble_talk:1"/>
@@ -133,11 +133,11 @@
   <object id="35" name="postannouncement" type="event" x="16" y="80" width="16" height="16">
    <properties>
     <property name="act01" value="wait 1"/>
-    <property name="act02" value="char_face npc_mom,right"/>
+    <property name="act02" value="char_face callie_wren,right"/>
     <property name="act03" value="translated_dialog ohnoes"/>
     <property name="act04" value="wait 0.7"/>
     <property name="act05" value="translated_dialog ohnoes2"/>
-    <property name="act06" value="char_face npc_mom,left"/>
+    <property name="act06" value="char_face callie_wren,left"/>
     <property name="act08" value="unlock_controls"/>
     <property name="act09" value="set_variable can_exit_town:yes"/>
     <property name="act10" value="clear_variable scene"/>
@@ -149,7 +149,7 @@
    <properties>
     <property name="act1" value="wait 0.4"/>
     <property name="act2" value="translated_dialog depressedmom"/>
-    <property name="behav1" value="talk npc_mom"/>
+    <property name="behav1" value="talk callie_wren"/>
     <property name="cond1" value="is variable_set can_exit_town:yes"/>
     <property name="cond2" value="not variable_set backhome:no"/>
    </properties>
@@ -163,17 +163,17 @@
   </object>
   <object id="38" name="create mom3" type="event" x="0" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc npc_mom,0,5"/>
-    <property name="act2" value="char_face npc_mom,right"/>
+    <property name="act1" value="create_npc callie_wren,0,5"/>
+    <property name="act2" value="char_face callie_wren,right"/>
     <property name="act3" value="wait 1"/>
     <property name="cond1" value="is variable_set backhome:no"/>
-    <property name="cond2" value="not char_exists npc_mom"/>
+    <property name="cond2" value="not char_exists callie_wren"/>
    </properties>
   </object>
   <object id="39" name="Start the anthem" type="event" x="64" y="0" width="16" height="16">
    <properties>
     <property name="act2" value="translated_dialog theanthemishere"/>
-    <property name="act3" value="char_face npc_mom,up"/>
+    <property name="act3" value="char_face callie_wren,up"/>
     <property name="act4" value="set_variable scene:yes"/>
     <property name="act5" value="set_variable announce_trials:1"/>
     <property name="act6" value="set_variable anthem_started:yes"/>
@@ -198,11 +198,11 @@
     <property name="act10" value="lock_controls"/>
     <property name="act11" value="wait 1"/>
     <property name="act12" value="char_face player,left"/>
-    <property name="act20" value="char_face npc_mom,right"/>
+    <property name="act20" value="char_face callie_wren,right"/>
     <property name="act30" value="translated_dialog youneedtodothis"/>
-    <property name="act40" value="char_face npc_mom,left"/>
+    <property name="act40" value="char_face callie_wren,left"/>
     <property name="act50" value="wait 0.6"/>
-    <property name="act60" value="char_face npc_mom,right"/>
+    <property name="act60" value="char_face callie_wren,right"/>
     <property name="act70" value="translated_dialog youneedtodothis2"/>
     <property name="act80" value="char_face player,right"/>
     <property name="act90" value="translated_dialog ihaveyourmoney"/>
@@ -212,13 +212,13 @@
   </object>
   <object id="42" name="new possibilities2" type="event" x="32" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc professor,4,6"/>
-    <property name="act2" value="char_face professor,left"/>
+    <property name="act1" value="create_npc kay_wren,4,6"/>
+    <property name="act2" value="char_face kay_wren,left"/>
     <property name="act3" value="translated_dialog iknowyou"/>
     <property name="act4" value="translated_dialog ihaveyourmoney2"/>
-    <property name="act5" value="char_face professor,down"/>
+    <property name="act5" value="char_face kay_wren,down"/>
     <property name="act6" value="wait 0.4"/>
-    <property name="act7" value="remove_npc professor"/>
+    <property name="act7" value="remove_npc kay_wren"/>
     <property name="act9" value="unlock_controls"/>
     <property name="act99" value="set_variable announce_trials:4"/>
     <property name="cond1" value="is variable_set announce_trials:3"/>
@@ -229,7 +229,7 @@
     <property name="act1" value="translated_dialog hebenice"/>
     <property name="act2" value="clear_variable scene"/>
     <property name="act5" value="set_variable go_get_tuxemon:yes"/>
-    <property name="behav1" value="talk npc_mom"/>
+    <property name="behav1" value="talk callie_wren"/>
     <property name="cond1" value="is variable_set announce_trials:4"/>
    </properties>
   </object>

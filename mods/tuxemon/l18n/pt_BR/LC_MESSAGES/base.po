@@ -1367,9 +1367,6 @@ msgstr "Aliado"
 msgid "misa"
 msgstr "Massa"
 
-msgid "npc_wife"
-msgstr "Esposa NPC"
-
 msgid "tuxemart_aide"
 msgstr "Funcionário do Tuxemart"
 

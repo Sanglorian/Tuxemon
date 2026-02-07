@@ -831,7 +831,7 @@ class CombatState(CombatAnimations):
             )
 
     def update_hud_and_level_up(
-        self, winner: Monster, techniques: list[Technique]
+        self, winner: Monster, techniques: list[str]
     ) -> None:
         """
         Update the HUD and handle level ups for the winner.
@@ -842,7 +842,9 @@ class CombatState(CombatAnimations):
         """
         if winner in self.combat_session.monsters_in_play_right:
             if techniques:
-                tech_list = ", ".join(tech.name.upper() for tech in techniques)
+                tech_list = ", ".join(
+                    T.translate(tech).upper() for tech in techniques
+                )
                 params = {"name": winner.name.upper(), "tech": tech_list}
                 mex = T.format("tuxemon_new_tech", params)
                 self.text_anim.add_xp_message(mex)

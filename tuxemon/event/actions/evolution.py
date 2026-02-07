@@ -95,55 +95,25 @@ class EvolutionAction(EventAction):
 
     def process_pending_evolutions(self) -> None:
         """Process pending evolutions for the character"""
+        candidates = [m for m in self.char.monsters if m.waiting_to_evolve]
+        if not candidates:
+            return
+
+        monster = candidates[0]
+        context = {"use_item": monster.waiting_to_evolve}
+        slug = monster.evolution_handler.get_eligible_evolution_slug(context)
+
+        if not slug:
+            monster.waiting_to_evolve = False
+            return
+
         registry = self.char.evolution_registry
-        logger.debug(
-            f"Checking pending evolutions for character: {self.char.name}"
-        )
+        if slug not in registry.get_pending(monster.instance_id):
+            registry.add_pending(monster.instance_id, slug)
 
-        evolve_candidates: list[Monster] = []
-        for monster in self.char.monsters:
-            logger.debug(
-                f"Evaluating monster: {monster.name} (ID: {monster.instance_id})"
-            )
-            logger.debug(
-                f"  got_experience={monster.got_experience}, levelling_up={monster.levelling_up}"
-            )
-
-            pending = registry.get_pending(monster.instance_id)
-            logger.debug(f"  Pending evolutions: {pending}")
-
-            if monster.got_experience and monster.levelling_up and pending:
-                evolve_candidates.append(monster)
-                logger.debug(f"  -> Added to evolve_candidates")
-
-        if not evolve_candidates:
-            logger.debug("No evolve candidates found. Returning from action.")
-            return
-
-        monster_to_evolve = evolve_candidates[0]
-        logger.debug(
-            f"Selected monster for evolution: {monster_to_evolve.name}"
-        )
-
-        pending_evolutions = registry.get_pending(
-            monster_to_evolve.instance_id
-        )
-        logger.debug(
-            f"Pending evolutions for selected monster: {pending_evolutions}"
-        )
-
-        if not pending_evolutions:
-            logger.debug("No pending evolutions found for selected monster.")
-            return
-
-        slug = pending_evolutions[0]
-        evolved = Monster.spawn_base(slug, monster_to_evolve.level)
-        logger.debug(f"Created evolved monster: {evolved.name} (slug: {slug})")
-
-        self._pending_map[monster_to_evolve.instance_id] = slug
-        logger.debug(f"Stored pending evolution slug for denial logic")
-
-        self.question_evolution(monster_to_evolve, evolved)
+        evolved = Monster.spawn_base(slug, monster.level)
+        self._pending_map[monster.instance_id] = slug
+        self.question_evolution(monster, evolved)
 
     def question_evolution(self, monster: Monster, evolved: Monster) -> None:
         """Ask the user to confirm the evolution"""
@@ -162,32 +132,27 @@ class EvolutionAction(EventAction):
         open_choice_dialog(self.session.client, MenuOptions(options))
 
     def confirm_evolution(self, monster: Monster, evolved: Monster) -> None:
-        """Confirm the evolution"""
         self.client.pop_state()
         self.client.pop_state()
-        logger.info(f"{monster.name} evolves into {evolved.name}!")
 
         registry = self.char.evolution_registry
         monster.evolution_handler.confirm_pending_evolution(
             registry, evolved.slug
         )
-        self._pending_map.pop(monster.instance_id, None)
-
         monster.evolution_handler.evolve_monster(evolved)
+        monster.waiting_to_evolve = False
+
         self.client.push_state(
             "EvolutionTransition", original=monster.slug, evolved=evolved.slug
         )
 
     def deny_evolution(self, monster: Monster) -> None:
-        """Deny the evolution"""
-        monster.experience_handler.reset_status_flags()
-        logger.info(f"{monster.name}'s evolution refused!")
-
+        monster.waiting_to_evolve = False
         slug = self._pending_map.get(monster.instance_id)
         if slug:
             registry = self.char.evolution_registry
-            monster.evolution_handler.deny_pending_evolution(registry, slug)
-            self._pending_map.pop(monster.instance_id, None)
+            registry.log_missed(monster.instance_id, slug, monster.level)
+            registry.clear_pending_slug(monster.instance_id, slug)
 
         self.client.pop_state()
         self.client.pop_state()

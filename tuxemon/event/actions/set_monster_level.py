@@ -54,10 +54,8 @@ class SetMonsterLevelAction(EventAction):
                 logger.error("Monster not found")
                 return
             new_level = monster.level + self.levels_added
-            monster.set_level(new_level)
-            monster.moves.update_moves(monster, self.levels_added)
+            monster.set_level(new_level, monster.level)
         else:
             for monster in player.monsters:
                 new_level = monster.level + self.levels_added
-                monster.set_level(new_level)
-                monster.moves.update_moves(monster, self.levels_added)
+                monster.set_level(new_level, monster.level)

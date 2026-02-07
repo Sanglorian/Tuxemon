@@ -119,6 +119,7 @@ class Monster:
         self.state: str = ""
         self.out_of_range: bool = False
         self.wild: bool = False
+        self.waiting_to_evolve: bool = False
 
         self.is_charging: bool = False
         self.charged_technique: str | None = None
@@ -504,14 +505,13 @@ class Monster:
         return self.types.has_type(type_slug)
 
     def give_experience(self, amount: int = 1) -> int:
-        """Increase experience."""
+        """Adds experience and triggers synchronization if level changes."""
+        old_level = self.level
         levels_earned = self.experience_handler.give_experience(amount)
 
         if levels_earned > 0:
-            self.set_stats()
-            logger.info(
-                f"Leveling {self.name} from {self.level -1} to {self.level}!"
-            )
+            new_level = self.level  # XP handler already updated it
+            self.set_level(new_level, old_level)
 
         return levels_earned
 
@@ -604,10 +604,22 @@ class Monster:
         if self.item_handler.held_item:
             self.item_handler.held_item.temporary_stat_boosts = BasicStats()
 
-    def set_level(self, level: int) -> None:
-        """Set monster level."""
-        self.experience_handler.set_level(level)
+    def set_level(self, new_level: int, old_level: int) -> int:
+        self.experience_handler.set_level(new_level)
         self.set_stats()
+        level_delta = new_level - old_level
+
+        if level_delta > 0:
+            self.moves.update_moves(self, level_delta)
+            slug = self.evolution_handler.get_eligible_evolution_slug()
+
+            if slug:
+                self.waiting_to_evolve = True
+                logger.debug(f"{self.name} is ready to evolve into {slug}!")
+            else:
+                logger.debug("No evolution flagged at level-up")
+
+        return level_delta
 
     def set_experience_modifier(self, modifier: float) -> None:
         """Sets the experience modifier for this monster."""
@@ -635,7 +647,7 @@ class Monster:
 
     def transfer_properties_from(self, old_monster: Monster) -> None:
         """Copies essential state and identity properties from the pre-evolved monster."""
-        self.set_level(old_monster.level)
+        self.set_level(old_monster.level, old_monster.level)
         self.current_hp = min(old_monster.current_hp, self.hp)
         self.moves = old_monster.moves
         self.status = old_monster.status

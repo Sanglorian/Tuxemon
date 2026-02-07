@@ -4622,6 +4622,21 @@ msgstr "Pick Up Item"
 msgid "menu_item_dropoff"
 msgstr "Drop Off Item"
 
+msgid "menu_calendar"
+msgstr "Calendar"
+
+msgid "menu_email"
+msgstr "Emails"
+
+msgid "menu_email_none"
+msgstr "No emails"
+
+msgid "menu_email_from"
+msgstr "From"
+
+msgid "menu_back"
+msgstr "Back"
+
 msgid "menu_multiplayer"
 msgstr "Multiplayer"
 

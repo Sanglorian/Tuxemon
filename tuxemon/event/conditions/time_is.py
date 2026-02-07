@@ -8,7 +8,8 @@ from dataclasses import dataclass
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
-from tuxemon.tools import compare
+from tuxemon.time_handler import TimeSnapshot
+from tuxemon.tools import compare, compare_tuple
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +60,7 @@ class TimeIsCondition(EventCondition):
         raw_value: str = condition.parameters[2]
 
         if property_name == "date":
-            current = f"{snapshot.month}-{snapshot.day}"
-            return compare(operation, current, raw_value)
+            return self._compare_date(snapshot, operation, raw_value)
 
         if not hasattr(snapshot, property_name):
             logger.error(f"Invalid time property '{property_name}'")
@@ -90,3 +90,17 @@ class TimeIsCondition(EventCondition):
             f"Operation '{operation}' not valid for non-numeric property '{property_name}'"
         )
         return False
+
+    def _compare_date(
+        self, snapshot: TimeSnapshot, operation: str, raw_value: str
+    ) -> bool:
+        try:
+            m1, d1 = snapshot.month, snapshot.day
+            m2, d2 = map(int, raw_value.split("-"))
+        except Exception:
+            logger.error("Invalid date format, expected MM-DD")
+            return False
+
+        current = (m1, d1)
+        target = (m2, d2)
+        return compare_tuple(operation, current, target)

@@ -9,6 +9,7 @@ from typing import ClassVar
 
 import pygame as pg
 from pygame.event import Event
+from pygame.joystick import JoystickType
 from pygame.rect import Rect
 from pygame.surface import Surface
 
@@ -130,11 +131,29 @@ class PygameGamepadInput(PygameEventHandler):
             into logical button identifiers used by the game.
     """
 
-    def __init__(self, mapping_strategy: InputMappingStrategy):
+    def __init__(
+        self,
+        mapping_strategy: InputMappingStrategy,
+        joysticks: list[JoystickType],
+    ):
         super().__init__({})
         self.mapping = mapping_strategy
+        self.joysticks = joysticks
         self.hat_state = (0, 0)
         self.axis_state = {HORIZONTAL_AXIS: 0, VERTICAL_AXIS: 0}
+
+        for js in self.joysticks:
+            try:
+                # No js.init() here
+                instance_id = js.get_instance_id()
+                logger.info(f"Using joystick with instance ID {instance_id}")
+            except Exception as e:
+                logger.warning(f"Failed to access joystick instance ID: {e}")
+
+    def _is_our_joystick(self, pg_event: Event) -> bool:
+        return any(
+            js.get_instance_id() == pg_event.joy for js in self.joysticks
+        )
 
     def handle_button(
         self, button: int, pressed: bool, value: float = 0.0
@@ -174,6 +193,9 @@ class PygameGamepadInput(PygameEventHandler):
             pg_event: The pygame event.
         """
         if pg_event.type in (pg.JOYBUTTONDOWN, pg.JOYBUTTONUP):
+            if not self._is_our_joystick(pg_event):
+                return
+
             button = self.mapping.map_button(pg_event.button)
             if button is not None:
                 self.handle_button(button, pg_event.type == pg.JOYBUTTONDOWN)
@@ -186,6 +208,9 @@ class PygameGamepadInput(PygameEventHandler):
             pg_event: The pygame event.
         """
         if pg_event.type == pg.JOYHATMOTION:
+            if not self._is_our_joystick(pg_event):
+                return
+
             x, y = pg_event.value
             prev_x, prev_y = self.hat_state
             self.hat_state = (x, y)
@@ -214,6 +239,9 @@ class PygameGamepadInput(PygameEventHandler):
             pg_event: The pygame event.
         """
         if pg_event.type == pg.JOYAXISMOTION:
+            if not self._is_our_joystick(pg_event):
+                return
+
             self._handle_axis(pg_event.axis, pg_event.value)
 
     def _handle_axis(self, axis: int, value: float) -> None:

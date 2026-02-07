@@ -14,12 +14,13 @@ from pygame_menu import locals
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.animation import ScheduleType
+from tuxemon.graphics import scale_surface
 from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PC_KENNEL
 from tuxemon.platform.const.sizes import MAX_KENNEL, PARTY_LIMIT
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.tools import fix_measure, open_choice_dialog, open_dialog
@@ -121,14 +122,22 @@ class MonsterActionHandler:
         self._clear_states("ChoiceState")
         self.client.state_manager.push_state(
             "MonsterInfoState",
-            kwargs={"monster": mon, "source": self.source_state},
+            kwargs={
+                "monster": mon,
+                "source": self.source_state,
+                "monsters": self.monster_boxes.get_monsters(self.box_name),
+            },
         )
 
     def tech(self, mon: Monster) -> None:
         self._clear_states("ChoiceState")
         self.client.state_manager.push_state(
             "MonsterMovesState",
-            kwargs={"monster": mon, "source": self.source_state},
+            kwargs={
+                "monster": mon,
+                "source": self.source_state,
+                "monsters": self.monster_boxes.get_monsters(self.box_name),
+            },
         )
 
     def description_dialog(self, mon: Monster) -> None:
@@ -290,8 +299,8 @@ class MonsterTakeState(PygameMenuState):
             label = T.translate(monster.name).upper()
             iid = monster.instance_id.hex
             surface = monster.get_sprite("front").image
-            new_image = self._create_image_from_surface(surface)
-            new_image.scale(SCALE * 0.5, SCALE * 0.5)
+            scaled = scale_surface(surface, self.client.context.scale * 0.125)
+            new_image = self._create_image_from_surface(scaled)
             menu.add.banner(
                 new_image,
                 partial(self.kennel_options, iid, handler),
@@ -380,7 +389,6 @@ class MonsterBoxState(PygameMenuState):
 
         Returns:
             Sliding in animation.
-
         """
 
         width = self.menu.get_width(border=True)
@@ -397,7 +405,6 @@ class MonsterBoxState(PygameMenuState):
 
         Returns:
             Sliding out animation.
-
         """
         ani = self.animate(self, animation_offset=0, duration=0.50)
         ani.schedule(self.update_animation_position, ScheduleType.ON_UPDATE)

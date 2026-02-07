@@ -17,7 +17,7 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import local_session
 from tuxemon.ui.menu_options import MenuOptions
 
@@ -91,7 +91,7 @@ class ChoiceMonster(PygameMenuState):
         if handler is None:
             return
         sprite = handler.get_sprite(
-            "front", scale=SCALE * self.config.scale_sprite
+            "front", scale=self.client.context.scale * self.config.scale_sprite
         )
         image = self._create_image_from_surface(sprite.image)
         self.menu.add.image(image, align=ALIGN_CENTER)

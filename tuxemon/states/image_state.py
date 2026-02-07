@@ -9,7 +9,7 @@ from pygame_menu.locals import ALIGN_CENTER
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.sizes import NATIVE_RESOLUTION
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 
 
 class ImageState(PygameMenuState):
@@ -44,7 +44,9 @@ class ImageState(PygameMenuState):
                     f"{image} {image_size}: "
                     f"It must be less than the native resolution {native}"
                 )
-            new_image.scale(SCALE, SCALE)
+            new_image.scale(
+                self.client.context.scale, self.client.context.scale
+            )
             self.menu.add.image(
                 new_image,
                 align=ALIGN_CENTER,

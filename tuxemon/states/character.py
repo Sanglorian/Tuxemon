@@ -20,7 +20,7 @@ from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_PLAYER1, BG_PLAYER2
 from tuxemon.platform.const.sizes import U_KM, U_MI
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure, format_playtime
 from tuxemon.tuxepedia.reporter import TuxepediaReporter
 
@@ -193,7 +193,7 @@ class CharacterState(PygameMenuState):
         lab8.translate(fxw(0.45), fxh(0.10))
         # image
         surface = self.char.combat_sheet().front()
-        scaled = scale_surface(surface, SCALE)
+        scaled = scale_surface(surface, self.client.context.scale)
         new_image = self._create_image_from_surface(scaled)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)

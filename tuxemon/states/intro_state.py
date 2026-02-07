@@ -37,7 +37,11 @@ class IntroState(PopUpMenu[MenuGameObj]):
             IntroState._cached_sprites = self._load_sprite_files()
 
         if IntroState._cached_sprites:
-            self.load_animated_sprite(IntroState._cached_sprites, 0.07)
+            self.load_animated_sprite(
+                IntroState._cached_sprites,
+                delay=0.07,
+                scale=self.client.context.scale,
+            )
 
     def _load_sprite_files(self) -> list[str] | None:
         folder_path = Path(transform_resource_filename("animations/intro"))

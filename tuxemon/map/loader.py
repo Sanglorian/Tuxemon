@@ -34,7 +34,7 @@ from tuxemon.platform.const.sizes import (
     REGION_KEYS,
     SURFACE_KEYS,
 )
-from tuxemon.prepare import TILE_SIZE
+from tuxemon.prepare import DisplayContext
 from tuxemon.tools import copy_dict_with_keys
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,10 @@ class MapLoader:
     """
 
     def __init__(
-        self, cache_size: int | None = None, enable_cache: bool = True
+        self,
+        context: DisplayContext,
+        cache_size: int | None = None,
+        enable_cache: bool = True,
     ) -> None:
         """
         Initializes the MapLoader with optional cache configuration.
@@ -62,6 +65,7 @@ class MapLoader:
             enable_cache: Flag to enable or disable caching behavior.
                         If False, maps are always loaded fresh from disk.
         """
+        self.context = context
         self.tmx_loader = TMXMapLoader()
         self.yaml_loader = YAMLEventLoader()
         self.cache_size = cache_size or MAP_CACHE_SIZE
@@ -118,7 +122,7 @@ class MapLoader:
         logger.info(
             f"Cache miss for map '{normalized_path}'. Loading from disk."
         )
-        return self.tmx_loader.load(normalized_path)
+        return self.tmx_loader.load(normalized_path, self.context)
 
     def resolve_yaml_files(
         self, txmn_map: AbstractMap, normalized_path: str
@@ -353,10 +357,9 @@ class TMXMapLoader:
     """
 
     def __init__(self) -> None:
-        # Makes mocking easier during tests
         self.image_loader = scaled_image_loader
 
-    def load(self, filename: str) -> TuxemonMap:
+    def load(self, filename: str, context: DisplayContext) -> TuxemonMap:
         """Load map data from a tmx map file.
 
         Loading the map data is done using the pytmx library.
@@ -387,7 +390,7 @@ class TMXMapLoader:
         """
         data = self.load_tiled_map(filename)
         tile_size = (data.tilewidth, data.tileheight)
-        data.tilewidth, data.tileheight = TILE_SIZE
+        data.tilewidth, data.tileheight = context.tile_size
 
         collision_map, collision_lines_map = self.load_collision_data(
             data, tile_size

@@ -17,12 +17,11 @@ from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import TECH_INFO
 from tuxemon.platform.const.sizes import ACCURACY_RANGE, POTENCY_RANGE
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
-    from tuxemon.base_client import BaseClient
     from tuxemon.monster.monster import Monster
     from tuxemon.platform.events import PlayerInput
 
@@ -282,7 +281,7 @@ class MonsterMovesState(PygameMenuState):
             for i, t in enumerate(technique.types.current[:2]):
                 path = f"gfx/ui/icons/element/{t.name.lower()}_type_small.png"
                 img = self._create_image(path)
-                img.scale(SCALE, SCALE)
+                img.scale(self.client.context.scale, self.client.context.scale)
                 icon = menu.add.image(img.copy(), float=True)
                 icon.translate(fxw(x_positions[i]), fxh(y_position))
                 self.type_icon_widgets.append(icon)
@@ -291,7 +290,7 @@ class MonsterMovesState(PygameMenuState):
         if technique.range:
             path = f"gfx/ui/icons/range/{technique.range.name.lower()}.png"
             rimg = self._create_image(path)
-            rimg.scale(SCALE, SCALE)
+            rimg.scale(self.client.context.scale, self.client.context.scale)
             self.range_icon_widget = menu.add.image(rimg.copy(), float=True)
             self.range_icon_widget.translate(fxw(4 / 256), fxh(86.8 / 144))
 
@@ -301,7 +300,7 @@ class MonsterMovesState(PygameMenuState):
 
         spath = f"gfx/ui/icons/speed/{speed_key}.png"
         simg = self._create_image(spath)
-        simg.scale(SCALE, SCALE)
+        simg.scale(self.client.context.scale, self.client.context.scale)
         self.speed_icon_widget = menu.add.image(simg.copy(), float=True)
         self.speed_icon_widget.translate(fxw(222 / 256), fxh(51.8 / 144))
 
@@ -339,11 +338,11 @@ class MonsterMovesState(PygameMenuState):
         if not lookup_cache:
             _lookup_monsters()
 
-        monster: Monster | None = None
-        source = ""
-        for element in kwargs.values():
-            monster = element["monster"]
-            source = element["source"]
+        inner = next(iter(kwargs.values())) if kwargs else {}
+        monster: Monster | None = inner.get("monster")
+        source: str = inner.get("source") or ""
+        self._monsters: list[Monster] | None = inner.get("monsters")
+
         if monster is None:
             raise ValueError("No monster")
 
@@ -368,7 +367,12 @@ class MonsterMovesState(PygameMenuState):
             "MonsterMenuState",
             "MonsterTakeState",
         ]:
-            monsters = _get_monsters(client, self._monster, self._source)
+            monsters = self._monsters
+            if not monsters:
+                return None
+
+            param["monsters"] = monsters
+
             slot = monsters.index(self._monster)
 
             # RIGHT → next monster (with repeat)
@@ -396,18 +400,3 @@ class MonsterMovesState(PygameMenuState):
                 return super().process_event(event)
 
         return None
-
-
-def _get_monsters(
-    client: BaseClient, monster: Monster, source: str
-) -> list[Monster]:
-    owner = client.get_monster_owner(monster)
-    if owner is None:
-        return []
-    if source == "MonsterTakeState":
-        box = owner.monster_boxes.get_box_name(monster.instance_id)
-        if box is None:
-            raise ValueError("Box doesn't exist")
-        return owner.monster_boxes.get_monsters(box)
-    else:
-        return owner.monsters

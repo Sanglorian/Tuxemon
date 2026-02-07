@@ -13,7 +13,7 @@ from tuxemon.database.runtime import db
 from tuxemon.db import ItemModel
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 from tuxemon.ui.menu_options import MenuOptions
 
@@ -93,10 +93,8 @@ class ChoiceItem(PygameMenuState):
     ) -> None:
         item = ItemModel.lookup(slug, db)
         new_image = self._create_image(item.sprite)
-        new_image.scale(
-            SCALE * self.config.scale_sprite,
-            SCALE * self.config.scale_sprite,
-        )
+        scaled = self.client.context.scale * self.config.scale_sprite
+        new_image.scale(scaled, scaled)
         self.menu.add.image(new_image)
         self.menu.add.button(
             name,

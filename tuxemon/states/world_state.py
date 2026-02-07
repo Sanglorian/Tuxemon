@@ -24,7 +24,7 @@ from tuxemon.event.eventmiddleware import (
 )
 from tuxemon.faction.manager import FactionManager
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import DEV_TOOLS, TILE_SIZE
+from tuxemon.prepare import DEV_TOOLS
 from tuxemon.save_state import WorldSave
 from tuxemon.session import Session
 from tuxemon.state.state import State
@@ -59,13 +59,15 @@ class WorldState(State):
         self.input_translator_mw = mw
         self.session = session
         self.session.set_world(self)
-        self.tile_size = TILE_SIZE
+        self.tile_size = self.client.context.tile_size
         self.menu_manager = WorldMenuManager(self.client)
         self.transition_manager = WorldTransition(
             self, self.client.movement_manager
         )
         self.player = self.session.player
-        self.camera = Camera(self.player, self.client.boundary)
+        self.camera = Camera(
+            self.player, self.client.boundary, self.client.context
+        )
         self.client.camera_manager.add_camera(self.player.slug, self.camera)
         self.faction_manager = FactionManager(self.client.event_bus)
         self.client.map_transition.change_map(map_name, yaml_name)

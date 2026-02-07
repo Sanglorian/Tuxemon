@@ -16,7 +16,7 @@ from tuxemon.db import (
     EnvironmentModel,
 )
 from tuxemon.graphics import load_and_scale, load_raw_image, scale_surface
-from tuxemon.prepare import SCALE
+from tuxemon.prepare import DISPLAY_CONTEXT
 from tuxemon.tools import scale
 
 logger = logging.getLogger(__name__)
@@ -243,7 +243,7 @@ class Environment:
     def prepare_background(self, screen_size: tuple[int, int]) -> Surface:
         """Processes the background sprite to fit the screen dimensions."""
         graphics = self.data.get_battle_graphics()
-        surf = load_and_scale(graphics.background, SCALE)
+        surf = load_and_scale(graphics.background, DISPLAY_CONTEXT.scale)
 
         full_width, full_height = screen_size
         full_surf = Surface((full_width, full_height))
@@ -286,8 +286,8 @@ class IslandSheet:
             (self.frame_w, 0, self.frame_w, self.frame_h)
         )
 
-        back_scaled = scale_surface(back_raw, SCALE)
-        front_scaled = scale_surface(front_raw, SCALE)
+        back_scaled = scale_surface(back_raw, DISPLAY_CONTEXT.scale)
+        front_scaled = scale_surface(front_raw, DISPLAY_CONTEXT.scale)
 
         return {
             "back": back_scaled,

@@ -16,7 +16,7 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const.graphics import BG_MINIGAME, MISSING_IMAGE
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure, open_dialog
 
 lookup_cache: dict[str, MonsterModel] = {}
@@ -83,14 +83,16 @@ class MinigameState(PygameMenuState):
         )
         if handler is None:
             return
-        sprite = handler.get_sprite("front", scale=SCALE)
+        sprite = handler.get_sprite("front", scale=self.client.context.scale)
         if self.difficulty in ["easy", "normal"]:
             try:
                 image = self._create_image_from_surface(sprite.image)
                 menu.add.image(image_path=image.copy())
             except Exception:
                 image = self._create_image(MISSING_IMAGE)
-                image.scale(SCALE, SCALE)
+                image.scale(
+                    self.client.context.scale, self.client.context.scale
+                )
                 menu.add.image(image_path=image.copy())
 
         if self.difficulty == "hard":

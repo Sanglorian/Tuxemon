@@ -14,7 +14,6 @@ from tuxemon import graphics, tools
 from tuxemon.database.runtime import db
 from tuxemon.db import ColorModel, FlairModel
 from tuxemon.platform.const.graphics import MISSING_IMAGE
-from tuxemon.prepare import SCALE
 from tuxemon.sprite import Sprite
 
 if TYPE_CHECKING:
@@ -323,7 +322,7 @@ class MonsterSpriteHandler:
     def get_sprite(
         self,
         sprite_type: str,
-        scale: float = SCALE,
+        scale: float,
         frame_duration: float = 0.25,
         **kwargs: Any,
     ) -> Sprite:
@@ -374,7 +373,7 @@ class MonsterSpriteHandler:
         self._flair_cache[cache_key] = image
         return Sprite(image=image)
 
-    def load_sprites(self, scale: float = SCALE) -> dict[str, Surface]:
+    def load_sprites(self, scale: float) -> dict[str, Surface]:
         return {
             key: graphics.scale_surface(self._slice(key), scale)
             for key in self.rects

@@ -15,7 +15,6 @@ from tuxemon.platform.const.graphics import (
     DIMGRAY_COLOR,
     MISSING_IMAGE,
 )
-from tuxemon.prepare import SCREEN_RECT
 from tuxemon.session import local_session
 from tuxemon.sprite import Sprite
 from tuxemon.technique.controller import TechController
@@ -59,7 +58,7 @@ class TechniqueMenuState(Menu[Technique]):
         self.menu_items.line_spacing = scale(7)
 
         # this is the area where the technique description is displayed
-        rect = SCREEN_RECT.copy()
+        rect = self.client.context.rect.copy()
         rect.top = scale(106)
         rect.left = scale(3)
         rect.width = scale(250)

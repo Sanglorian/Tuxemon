@@ -9,7 +9,6 @@ from pygame.surface import Surface
 from pygame.transform import rotate, scale
 
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCREEN
 from tuxemon.state.state import State
 
 logger = logging.getLogger(__name__)
@@ -34,8 +33,8 @@ class SwirlTransition(State):
         super().__init__()
         logger.info("Initializing Swirl transition")
         self.image = image
-        self.center_x = SCREEN.get_width() // 2
-        self.center_y = SCREEN.get_height() // 2
+        self.center_x = self.client.context.screen.get_width() // 2
+        self.center_y = self.client.context.screen.get_height() // 2
         self.angle = 0.0
         self.scale = scale
         self.speed = speed

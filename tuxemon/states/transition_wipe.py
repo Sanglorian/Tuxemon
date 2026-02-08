@@ -11,7 +11,6 @@ from pygame.surface import Surface
 from tuxemon.graphics import ColorLike
 from tuxemon.platform.const.graphics import BLACK_COLOR
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCREEN
 from tuxemon.state.state import State
 
 logger = logging.getLogger(__name__)
@@ -46,8 +45,8 @@ class WipeTransition(State):
         self.wipe_y = 0.0
         self.color = color
         self.speed = speed
-        self.height = SCREEN.get_height()
-        self.width = SCREEN.get_width()
+        self.height = self.client.context.screen.get_height()
+        self.width = self.client.context.screen.get_width()
 
     def update(self, time_delta: float) -> None:
         self.update_wipe_position(time_delta)

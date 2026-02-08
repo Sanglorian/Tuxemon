@@ -59,6 +59,7 @@ if TYPE_CHECKING:
     from tuxemon.entity.npc import NPC
     from tuxemon.monster.monster import Monster
     from tuxemon.platform.events import PlayerInput
+    from tuxemon.prepare import DisplayContext
     from tuxemon.state.queue import QueuedState
     from tuxemon.ui.cipher_processor import CipherProcessor
 
@@ -80,9 +81,11 @@ class BaseClient(ABC):
     Handles shared setup and lifecycle management for both graphical and headless clients.
     """
 
-    def __init__(self, config: TuxemonConfig) -> None:
+    def __init__(self, config: TuxemonConfig, context: DisplayContext) -> None:
         init_assets()
         self.config = config
+        self.context = context
+        self.screen = context.screen
         self.active_effect_manager = ActiveEffectManager()
 
         self.event_bus = get_event_bus()
@@ -128,7 +131,7 @@ class BaseClient(ABC):
         self.event_persist = EventPersist()
 
         self.npc_manager = NPCManager()
-        self.map_loader = MapLoader()
+        self.map_loader = MapLoader(self.context)
         self.map_manager = MapManager()
         self.boundary = BoundaryChecker()
         self.camera_manager = CameraManager()

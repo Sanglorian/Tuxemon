@@ -3,7 +3,7 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from argparse import ArgumentParser, Namespace
 import sys
-from tuxemon import prepare
+from tuxemon.prepare import pygame_init,headless_init, DisplayContext
 from tuxemon.user_config import CONFIG
 
 
@@ -27,11 +27,11 @@ def parse_args() -> Namespace:
     )
     return parser.parse_args()
 
-def init(platform: str = "pygame") -> None:
+def init(platform: str = "pygame") -> DisplayContext:
     if platform == "pygame":
-        prepare.pygame_init()
+        return pygame_init()
     elif platform == "headless":
-        prepare.headless_init()
+        return headless_init()
     else:
         raise ValueError(f"Unsupported platform: {platform}")
 
@@ -39,9 +39,9 @@ def launch_game() -> None:
     args = parse_args()
 
     if args.headless:
-        init(platform="headless")
+        context = init(platform="headless")
     else:
-        init(platform="pygame")
+        context = init(platform="pygame")
 
     from tuxemon import main
     config = CONFIG
@@ -54,9 +54,9 @@ def launch_game() -> None:
             config.splash = False
 
         if args.headless:
-            main.headless(config=config)
+            main.headless(config=config, context=context)
         else:
-            main.main(config=config, load_slot=args.slot)
+            main.main(config=config, context=context, load_slot=args.slot)
 
     except Exception as e:
         import traceback

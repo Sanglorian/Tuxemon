@@ -57,7 +57,9 @@ def test_load_animated_sprite(monkeypatch):
     )
     monkeypatch.setattr("tuxemon.state.state.SpriteGroup", lambda: mock_group)
     s = DummyState()
-    result = s.load_animated_sprite(["a.png", "b.png"], delay=0.1, layer=2)
+    result = s.load_animated_sprite(
+        ["a.png", "b.png"], delay=0.1, scale=1.0, layer=2
+    )
     assert result is mock_sprite
     mock_group.add.assert_called_once_with(mock_sprite, layer=2)
 

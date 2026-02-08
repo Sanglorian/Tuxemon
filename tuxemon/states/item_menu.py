@@ -24,7 +24,6 @@ from tuxemon.platform.const.graphics import (
 )
 from tuxemon.platform.const.sizes import MAX_MENU_ITEMS
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCREEN_RECT
 from tuxemon.session import local_session
 from tuxemon.sprite import Sprite
 from tuxemon.tools import (
@@ -71,7 +70,7 @@ class ItemMenuState(Menu[Item]):
         self.inventory = self.filter_controller.get_filtered_inventory()
 
         # this is the area where the item description is displayed
-        rect = SCREEN_RECT.copy()
+        rect = self.client.context.rect.copy()
         rect.top = scale(106)
         rect.left = scale(3)
         rect.width = scale(250)

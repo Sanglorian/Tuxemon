@@ -14,7 +14,7 @@ from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_MAP
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
@@ -78,7 +78,7 @@ class NuPhoneMap(PygameMenuState):
         menu: pygame_menu.Menu,
     ) -> None:
         new_image = self._create_image(data.map_path)
-        new_image.scale(SCALE, SCALE)
+        new_image.scale(self.client.context.scale, self.client.context.scale)
         menu.add.image(image_path=new_image.copy())
         underline = False
         selectable = True

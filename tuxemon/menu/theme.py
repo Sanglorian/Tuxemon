@@ -21,7 +21,7 @@ from tuxemon.platform.const.graphics import (
     SCROLLBAR_SLIDER_COLOR,
     TRANSPARENT_COLOR,
 )
-from tuxemon.prepare import SCALE
+from tuxemon.prepare import DISPLAY_CONTEXT
 from tuxemon.tools import scale, transform_resource_filename
 from tuxemon.user_config import CONFIG
 
@@ -41,7 +41,7 @@ class TuxemonArrowSelection(Selection):
         #  --------------------------
         #
 
-        scale_factor = max(SCALE, 1)
+        scale_factor = max(DISPLAY_CONTEXT.scale, 1)
         arrow = BaseImage(
             image_path=transform_resource_filename(CONFIG.menu_cursor),
         ).scale(scale_factor, scale_factor, smooth=False)
@@ -81,7 +81,7 @@ def get_theme() -> Theme:
     if _theme is not None:
         return _theme
 
-    scale_factor = max(SCALE, 1)
+    scale_factor = max(DISPLAY_CONTEXT.scale, 1)
     tuxemon_border = BaseImage(
         image_path=transform_resource_filename(CONFIG.menu_border),
     ).scale(scale_factor, scale_factor, smooth=False)

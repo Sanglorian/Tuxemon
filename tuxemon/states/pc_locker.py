@@ -21,7 +21,7 @@ from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.quantity import QuantityMenu
 from tuxemon.platform.const.graphics import BG_PC_LOCKER
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.tools import fix_measure, open_choice_dialog, open_dialog
@@ -244,7 +244,9 @@ class ItemTakeState(PygameMenuState):
             label = T.translate(itm.name).upper() + " x" + str(itm.quantity)
             iid = itm.instance_id.hex
             new_image = self._create_image(itm.sprite)
-            new_image.scale(SCALE, SCALE)
+            new_image.scale(
+                self.client.context.scale, self.client.context.scale
+            )
             menu.add.banner(
                 new_image,
                 partial(self.locker_options, iid, handler),

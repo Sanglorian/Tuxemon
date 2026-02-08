@@ -26,7 +26,7 @@ from pytmx.util_pygame import handle_transformation, smart_convert
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel, NpcModel
 from tuxemon.platform.const.graphics import FUCHSIA_COLOR
-from tuxemon.prepare import SCALE
+from tuxemon.prepare import DISPLAY_CONTEXT
 from tuxemon.scaling import DefaultScaling, ScalingStrategy
 from tuxemon.session import Session
 from tuxemon.sprite import Sprite
@@ -126,7 +126,7 @@ def slice_spritesheet(
         for x in range(0, sheet_w, frame_width):
             rect = Rect(x, y, frame_width, frame_height)
             frame = full_sheet.subsurface(rect)
-            scaled = scale_surface(frame, SCALE)
+            scaled = scale_surface(frame, DISPLAY_CONTEXT.scale)
             frames.append(scaled)
 
     return frames
@@ -152,7 +152,9 @@ def cursor_from_image(image: Surface) -> Sequence[str]:
     return icon_string
 
 
-def load_and_scale(filename: str, scale: float = SCALE) -> Surface:
+def load_and_scale(
+    filename: str, scale: float = DISPLAY_CONTEXT.scale
+) -> Surface:
     """
     Load an image and scale it according to game settings.
 
@@ -231,7 +233,7 @@ def load_surface(surface: Surface, **rect_kwargs: Any) -> Sprite:
 def load_animated_sprite(
     filenames: Iterable[str],
     delay: float,
-    scale: float = SCALE,
+    scale: float,
     loop: int = -1,
     **rect_kwargs: Any,
 ) -> Sprite:
@@ -476,7 +478,7 @@ def get_avatar(session: Session, avatar: str) -> Sprite | None:
 
     if avatar.isdigit():
         monster = session.player.monsters[int(avatar)]
-        return monster.get_sprite("menu")
+        return monster.get_sprite("menu", scale=session.client.context.scale)
 
     if avatar in db.database.get("monster", {}):
         model = MonsterModel.lookup(avatar, db)
@@ -493,7 +495,7 @@ def get_avatar(session: Session, avatar: str) -> Sprite | None:
         )
         if handler is None:
             return None
-        return handler.get_sprite("menu")
+        return handler.get_sprite("menu", session.client.context.scale)
 
     if avatar in db.database.get("npc", {}):
         from tuxemon.entity.sheet import get_combat_sheet

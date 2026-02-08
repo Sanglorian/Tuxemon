@@ -53,7 +53,6 @@ from tuxemon.platform.const.graphics import (
     UNAVAILABLE_COLOR,
     UNAVAILABLE_COLOR_SHOP,
 )
-from tuxemon.prepare import SCREEN_RECT
 from tuxemon.sprite import (
     RelativeGroup,
     SpriteGroup,
@@ -979,7 +978,7 @@ class PopUpMenu(Menu[T]):
     def animate_open(self) -> Animation:
         # anchor the center of the popup
         final_rect = self.calc_final_rect()
-        self.anchor("center", SCREEN_RECT.center)
+        self.anchor("center", self.client.context.rect.center)
 
         # set rect to a small size for the initial values of the animation
         self.rect = self._calculate_initial_rect(final_rect)

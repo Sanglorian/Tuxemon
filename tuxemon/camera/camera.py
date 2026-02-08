@@ -12,7 +12,7 @@ from pygame.rect import Rect
 
 from tuxemon.math import Vector2
 from tuxemon.platform.const import intentions
-from tuxemon.prepare import SCREEN_SIZE, TILE_SIZE
+from tuxemon.prepare import DisplayContext
 
 if TYPE_CHECKING:
     from tuxemon.boundary import BoundaryChecker
@@ -22,17 +22,23 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def project(position: Sequence[float]) -> tuple[int, int]:
+def project(
+    context: DisplayContext, position: Sequence[float]
+) -> tuple[int, int]:
+    ts = context.tile_size
     return (
-        int(position[0] * TILE_SIZE[0]),
-        int(position[1] * TILE_SIZE[1]),
+        int(position[0] * ts[0]),
+        int(position[1] * ts[1]),
     )
 
 
-def unproject(position: Sequence[float]) -> tuple[int, int]:
+def unproject(
+    context: DisplayContext, position: Sequence[float]
+) -> tuple[int, int]:
+    ts = context.tile_size
     return (
-        int(position[0] / TILE_SIZE[0]),
-        int(position[1] / TILE_SIZE[1]),
+        int(position[0] / ts[0]),
+        int(position[1] / ts[1]),
     )
 
 
@@ -151,12 +157,11 @@ class CameraManager:
 class CameraView:
     """Represents the camera's viewport, position, and zoom level."""
 
-    def __init__(
-        self, tile_size: tuple[int, int], screen_size: tuple[int, int]
-    ):
+    def __init__(self, context: DisplayContext):
         """Initializes the view with a tile size and default position."""
-        self.tile_size = tile_size
-        self.screen_size = screen_size
+        self.context = context
+        self.tile_size = context.tile_size
+        self.screen_size = context.rect.size
         self.position = Vector2(0, 0)
 
     def set_position(self, x: float, y: float) -> None:
@@ -165,7 +170,7 @@ class CameraView:
 
     def get_center(self, position: Vector2) -> Vector2:
         """Calculates the center point of the view based on tile size."""
-        cx, cy = project(position)
+        cx, cy = project(self.context, position)
         return Vector2(
             cx + self.tile_size[0] // 2, cy + self.tile_size[1] // 2
         )
@@ -287,10 +292,16 @@ class CameraEffects:
 
 
 class Camera:
-    def __init__(self, entity: Entity, boundary: BoundaryChecker):
-        self.view = CameraView(TILE_SIZE, SCREEN_SIZE)
+    def __init__(
+        self,
+        entity: Entity,
+        boundary: BoundaryChecker,
+        context: DisplayContext,
+    ):
+        self.view = CameraView(context)
         self.tracker = CameraTracker(self.view, entity)
         self.effects = CameraEffects(self.view)
+        self.context = context
         self.boundary = boundary
         self.free_roaming_enabled: bool = False
 
@@ -318,7 +329,8 @@ class Camera:
     def move(self, dx: int = 0, dy: int = 0) -> None:
         """Moves the camera by a specified offset, constrained by boundary validity."""
         tile_pos = unproject(
-            (self.view.position.x + dx, self.view.position.y + dy)
+            self.context,
+            (self.view.position.x + dx, self.view.position.y + dy),
         )
         is_x_valid, is_y_valid = self.boundary.get_boundary_validity(tile_pos)
         if is_x_valid:

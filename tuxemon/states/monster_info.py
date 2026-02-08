@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
 from pygame_menu.menu import Menu
@@ -19,11 +19,8 @@ from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import INDIV_INFO
 from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_LB, U_M, U_T
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure, transform_resource_filename
-
-if TYPE_CHECKING:
-    from tuxemon.base_client import BaseClient
 
 lookup_cache: dict[str, MonsterModel] = {}
 lookup_tastes: dict[str, TasteModel] = {}
@@ -66,7 +63,7 @@ class MonsterInfoState(PygameMenuState):
         menu._width = fxw(1)
 
         background = self._create_image(INDIV_INFO)
-        background.scale(SCALE, SCALE)
+        background.scale(self.client.context.scale, self.client.context.scale)
         background_widget = menu.add.image(image_path=background)
         background_widget.set_float(origin_position=True)
         background_widget.translate(fxw(0 / 256), fxh(0 / 144))
@@ -264,7 +261,9 @@ class MonsterInfoState(PygameMenuState):
             type1_icon = self._create_image(
                 f"gfx/ui/icons/element/{types[0].slug}_type_watermark.png"
             )
-            type1_icon.scale(SCALE, SCALE)
+            type1_icon.scale(
+                self.client.context.scale, self.client.context.scale
+            )
             icon1_widget = menu.add.image(image_path=type1_icon)
             icon1_widget.set_float(origin_position=True)
             # Position of type 1 (set wherever you want)
@@ -274,7 +273,9 @@ class MonsterInfoState(PygameMenuState):
             type2_icon = self._create_image(
                 f"gfx/ui/icons/element/{types[1].slug}_type_watermark.png"
             )
-            type2_icon.scale(SCALE, SCALE)
+            type2_icon.scale(
+                self.client.context.scale, self.client.context.scale
+            )
             icon2_widget = menu.add.image(image_path=type2_icon)
             icon2_widget.set_float(origin_position=True)
             # Position of type 2 (independent from type 1)
@@ -374,8 +375,8 @@ class MonsterInfoState(PygameMenuState):
 
         plus_icon = self._create_image("gfx/ui/icons/plusminus/plus.png")
         minus_icon = self._create_image("gfx/ui/icons/plusminus/minus.png")
-        plus_icon.scale(SCALE, SCALE)
-        minus_icon.scale(SCALE, SCALE)
+        plus_icon.scale(self.client.context.scale, self.client.context.scale)
+        minus_icon.scale(self.client.context.scale, self.client.context.scale)
 
         # Helper: find which stat a taste affects
         def get_stat_for_taste(slug: str) -> str | None:
@@ -411,7 +412,9 @@ class MonsterInfoState(PygameMenuState):
             bond_file = monster.bond_handler.get_bond_icon_path()
             if bond_file:
                 bond_icon = self._create_image(bond_file)
-                bond_icon.scale(SCALE, SCALE)
+                bond_icon.scale(
+                    self.client.context.scale, self.client.context.scale
+                )
                 bond_widget = menu.add.image(image_path=bond_icon)
                 bond_widget.set_float(origin_position=True)
                 bond_widget.translate(fxw(20 / 256), fxh(29 / 144))
@@ -426,7 +429,7 @@ class MonsterInfoState(PygameMenuState):
         tuxeball = self._create_image(
             f"gfx/items/{monster.capture_device}.png"
         )
-        tuxeball.scale(SCALE, SCALE)
+        tuxeball.scale(self.client.context.scale, self.client.context.scale)
         capture_device = menu.add.image(image_path=tuxeball)
         capture_device.set_float(origin_position=True)
         capture_device.translate(fxw(17 / 256), fxh(110 / 144))
@@ -436,11 +439,12 @@ class MonsterInfoState(PygameMenuState):
             _lookup_monsters()
         if not lookup_tastes:
             _lookup_tastes()
-        monster: Monster | None = None
-        source = ""
-        for element in kwargs.values():
-            monster = element["monster"]
-            source = element["source"]
+
+        inner = next(iter(kwargs.values())) if kwargs else {}
+        monster: Monster | None = inner.get("monster")
+        source: str = inner.get("source") or ""
+        self._monsters: list[Monster] | None = inner.get("monsters")
+
         if monster is None:
             raise ValueError("No monster")
         width, height = SCREEN_SIZE
@@ -466,7 +470,12 @@ class MonsterInfoState(PygameMenuState):
             "MonsterMenuState",
             "MonsterTakeState",
         ]:
-            monsters = _get_monsters(client, self._monster, self._source)
+            monsters = self._monsters
+            if not monsters:
+                return None
+
+            param["monsters"] = monsters
+
             slot = monsters.index(self._monster)
 
             if event.button == buttons.RIGHT and self.valid_press(event):
@@ -485,18 +494,3 @@ class MonsterInfoState(PygameMenuState):
             client.remove_state_by_name("MonsterInfoState")
 
         return None
-
-
-def _get_monsters(
-    client: BaseClient, monster: Monster, source: str
-) -> list[Monster]:
-    owner = client.get_monster_owner(monster)
-    if owner is None:
-        return []
-    if source == "MonsterTakeState":
-        box = owner.monster_boxes.get_box_name(monster.instance_id)
-        if box is None:
-            raise ValueError("Box doesn't exist")
-        return owner.monster_boxes.get_monsters(box)
-    else:
-        return owner.monsters

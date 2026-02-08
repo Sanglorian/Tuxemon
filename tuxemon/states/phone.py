@@ -16,7 +16,7 @@ from tuxemon.locale.locale import T
 from tuxemon.map.manager import MAP_TYPES, MapType
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure, open_dialog
 
 if TYPE_CHECKING:
@@ -119,7 +119,9 @@ class NuPhone(PygameMenuState):
                 change = self._get_app_callback(item)
 
                 new_image = self._create_image(item.sprite)
-                new_image.scale(SCALE, SCALE)
+                new_image.scale(
+                    self.client.context.scale, self.client.context.scale
+                )
 
                 # App image (banner)
                 menu.add.banner(

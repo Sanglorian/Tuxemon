@@ -69,7 +69,8 @@ class ChangeBgNpcAction(EventAction):
         npc_data = NpcModel.lookup(self.slug, db)
         sheet = get_combat_sheet(npc_data.template)
         surface = sheet.front()
-        scaled = scale_surface(surface, session.client.context.scale)
+        scale_int = session.client.context.scaling.scale_int(1)
+        scaled = scale_surface(surface, scale_int)
         sprite = load_surface(scaled)
 
         client.push_state(

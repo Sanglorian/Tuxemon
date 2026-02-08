@@ -88,11 +88,11 @@ class SetMonsterFlairAction(EventAction):
 
         monster.sprite_handler.refresh_flairs(monster.flairs)
 
+        scale_int = session.client.context.scaling.scale_int(1)
+
         if sprite_types:
             for sprite_type in sprite_types:
-                monster.sprite_handler.get_sprite(
-                    sprite_type, session.client.context.scale
-                )
+                monster.sprite_handler.get_sprite(sprite_type, scale_int)
 
         if flair_model.slug not in monster.flair_slugs:
             monster.flair_slugs.add(flair_model.slug)

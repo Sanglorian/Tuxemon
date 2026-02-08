@@ -40,7 +40,7 @@ class IntroState(PopUpMenu[MenuGameObj]):
             self.load_animated_sprite(
                 IntroState._cached_sprites,
                 delay=0.07,
-                scale=self.client.context.scale,
+                scale=self.scale_int(1),
             )
 
     def _load_sprite_files(self) -> list[str] | None:

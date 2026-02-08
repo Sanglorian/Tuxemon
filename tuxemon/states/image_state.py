@@ -44,9 +44,7 @@ class ImageState(PygameMenuState):
                     f"{image} {image_size}: "
                     f"It must be less than the native resolution {native}"
                 )
-            new_image.scale(
-                self.client.context.scale, self.client.context.scale
-            )
+            new_image.scale(self.scale_int(1), self.scale_int(1))
             self.menu.add.image(
                 new_image,
                 align=ALIGN_CENTER,

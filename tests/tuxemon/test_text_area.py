@@ -9,8 +9,6 @@ from tuxemon.ui.draw import (
     iter_render_text,
 )
 from tuxemon.ui.text import TextArea
-from tuxemon.ui.text_alignment import HorizontalAlignment, VerticalAlignment
-from tuxemon.ui.text_renderer import TextRenderer
 
 
 class DummyChar:

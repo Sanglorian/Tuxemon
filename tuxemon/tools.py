@@ -37,7 +37,7 @@ from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import Comparison
 from tuxemon.locale.locale import T
 from tuxemon.math import Vector2
-from tuxemon.scaling import DefaultScaling, ScalingStrategy
+from tuxemon.scaling import ScalingStrategy
 from tuxemon.ui.dialogue import calc_dialog_rect
 from tuxemon.ui.text_alignment import DialogPosition
 from tuxemon.ui.text_formatter import TextFormatter
@@ -124,22 +124,14 @@ def get_screen_rect(sprite: Sprite, internal_rect: Rect) -> Rect:
     return internal_rect.move(sprite.rect.topleft)
 
 
-def scale(number: int | float, scaling: ScalingStrategy | None = None) -> int:
-    """
-    Scale a number by the configured scale factor.
+def scale(number: int, scaling: ScalingStrategy | None = None) -> int:
+    """Scale a number by the configured scale factor."""
+    if scaling is None:
+        from tuxemon.prepare import DISPLAY_CONTEXT
 
-    Parameters:
-        number: Integer or float to scale. Floats are rounded before scaling.
+        scaling = DISPLAY_CONTEXT.scaling
 
-    Returns:
-        Scaled integer.
-    """
-    scaling = scaling or DefaultScaling()
-
-    if isinstance(number, float):
-        number = round(number)
-
-    return scaling.scale_int(int(number))
+    return scaling.scale_int(number)
 
 
 TEnum = TypeVar("TEnum", bound=Enum)

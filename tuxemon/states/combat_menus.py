@@ -25,7 +25,7 @@ from tuxemon.sprite import Sprite
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.technique.technique import Technique
-from tuxemon.tools import fix_measure, open_dialog, scale
+from tuxemon.tools import fix_measure, open_dialog
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text import TextArea
 
@@ -430,7 +430,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                         path = f"gfx/ui/icons/element/{t.name.lower()}_type_small.png"
                         try:
                             icon_surface = load_and_scale(
-                                path, self.client.context.scale
+                                path, self.scale_int(1)
                             )
                             spr = Sprite()
                             spr.image = icon_surface
@@ -458,7 +458,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 # --- Draw range icon ---
                 path = f"gfx/ui/icons/range/{technique.range.name.lower()}.png"
                 try:
-                    surf = load_and_scale(path, self.client.context.scale)
+                    surf = load_and_scale(path, self.scale_int(1))
                     spr = Sprite()
                     spr.image = surf
                     spr.rect = surf.get_rect()
@@ -477,7 +477,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
                 path = f"gfx/ui/icons/speed/{speed_val}.png"
                 try:
-                    surf = load_and_scale(path, self.client.context.scale)
+                    surf = load_and_scale(path, self.scale_int(1))
                     spr = Sprite()
                     spr.image = surf
                     spr.rect = surf.get_rect()
@@ -663,7 +663,7 @@ class CombatTargetMenuState(Menu[Monster]):
             raise KeyError(f"Sprite not found for entity: {monster.name}")
         item = MenuItem(self.surface, None, monster.name, monster)
         item.rect = sprite.rect.copy()
-        item.rect.inflate_ip(scale(1), scale(1))
+        item.rect.inflate_ip(self.scale_int(1), self.scale_int(1))
         return item
 
     def _create_menu(self) -> None:
@@ -718,7 +718,7 @@ class CombatTargetMenuState(Menu[Monster]):
                 return
 
             selected.image = Surface(selected.rect.size, SRCALPHA)
-            BORDER_OFFSET = scale(12)
+            BORDER_OFFSET = self.client.context.scaling.scale_int(12)
             selected.rect.center = (
                 pos.rect.centerx - BORDER_OFFSET,
                 pos.rect.centery - BORDER_OFFSET,

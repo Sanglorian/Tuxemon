@@ -63,7 +63,7 @@ class MonsterInfoState(PygameMenuState):
         menu._width = fxw(1)
 
         background = self._create_image(INDIV_INFO)
-        background.scale(self.client.context.scale, self.client.context.scale)
+        background.scale(self.scale_int(1), self.scale_int(1))
         background_widget = menu.add.image(image_path=background)
         background_widget.set_float(origin_position=True)
         background_widget.translate(fxw(0 / 256), fxh(0 / 144))
@@ -261,9 +261,7 @@ class MonsterInfoState(PygameMenuState):
             type1_icon = self._create_image(
                 f"gfx/ui/icons/element/{types[0].slug}_type_watermark.png"
             )
-            type1_icon.scale(
-                self.client.context.scale, self.client.context.scale
-            )
+            type1_icon.scale(self.scale_int(1), self.scale_int(1))
             icon1_widget = menu.add.image(image_path=type1_icon)
             icon1_widget.set_float(origin_position=True)
             # Position of type 1 (set wherever you want)
@@ -273,9 +271,7 @@ class MonsterInfoState(PygameMenuState):
             type2_icon = self._create_image(
                 f"gfx/ui/icons/element/{types[1].slug}_type_watermark.png"
             )
-            type2_icon.scale(
-                self.client.context.scale, self.client.context.scale
-            )
+            type2_icon.scale(self.scale_int(1), self.scale_int(1))
             icon2_widget = menu.add.image(image_path=type2_icon)
             icon2_widget.set_float(origin_position=True)
             # Position of type 2 (independent from type 1)
@@ -375,8 +371,8 @@ class MonsterInfoState(PygameMenuState):
 
         plus_icon = self._create_image("gfx/ui/icons/plusminus/plus.png")
         minus_icon = self._create_image("gfx/ui/icons/plusminus/minus.png")
-        plus_icon.scale(self.client.context.scale, self.client.context.scale)
-        minus_icon.scale(self.client.context.scale, self.client.context.scale)
+        plus_icon.scale(self.scale_int(1), self.scale_int(1))
+        minus_icon.scale(self.scale_int(1), self.scale_int(1))
 
         # Helper: find which stat a taste affects
         def get_stat_for_taste(slug: str) -> str | None:
@@ -412,9 +408,7 @@ class MonsterInfoState(PygameMenuState):
             bond_file = monster.bond_handler.get_bond_icon_path()
             if bond_file:
                 bond_icon = self._create_image(bond_file)
-                bond_icon.scale(
-                    self.client.context.scale, self.client.context.scale
-                )
+                bond_icon.scale(self.scale_int(1), self.scale_int(1))
                 bond_widget = menu.add.image(image_path=bond_icon)
                 bond_widget.set_float(origin_position=True)
                 bond_widget.translate(fxw(20 / 256), fxh(29 / 144))
@@ -429,7 +423,7 @@ class MonsterInfoState(PygameMenuState):
         tuxeball = self._create_image(
             f"gfx/items/{monster.capture_device}.png"
         )
-        tuxeball.scale(self.client.context.scale, self.client.context.scale)
+        tuxeball.scale(self.scale_int(1), self.scale_int(1))
         capture_device = menu.add.image(image_path=tuxeball)
         capture_device.set_float(origin_position=True)
         capture_device.translate(fxw(17 / 256), fxh(110 / 144))

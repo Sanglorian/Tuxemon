@@ -63,7 +63,6 @@ class State(AnimationMixin, RenderMixin, ABC):
 
         # All sprites that draw on the screen
         self.sprites: SpriteGroup[Sprite] = SpriteGroup()
-
         self.client = local_session.client
         self.event_bus = get_event_bus()
 
@@ -124,6 +123,14 @@ class State(AnimationMixin, RenderMixin, ABC):
             handlers. Otherwise, return the input event.
         """
         return event
+
+    def scale_int(self, value: int) -> int:
+        """Convenience wrapper for client scaling."""
+        return self.client.context.scaling.scale_int(value)
+
+    def scale_tuple(self, value: int) -> int:
+        """Convenience wrapper for client scaling."""
+        return self.client.context.scaling.scale_tuple(value)
 
     def update(self, time_delta: float) -> None:
         """

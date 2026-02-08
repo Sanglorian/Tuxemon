@@ -3,14 +3,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from pygame.font import Font
 from pygame.rect import Rect
 
-from tuxemon import tools
 from tuxemon.graphics import ColorLike
 from tuxemon.sprite import Sprite, SpriteGroup
 from tuxemon.ui.text import TextArea
+
+if TYPE_CHECKING:
+    from tuxemon.prepare import DisplayContext
 
 
 @dataclass
@@ -35,6 +38,7 @@ class InputDisplay:
 
     def __init__(
         self,
+        context: DisplayContext,
         font: Font,
         font_color: ColorLike,
         prompt_text: str,
@@ -42,6 +46,7 @@ class InputDisplay:
         area_rect: Rect,
         config: InputDisplayConfig | None = None,
     ) -> None:
+        self.scaling = context.scaling
         self.sprites: SpriteGroup[Sprite] = SpriteGroup()
         self.config = config or InputDisplayConfig()
         self.area_rect = area_rect
@@ -50,10 +55,10 @@ class InputDisplay:
         self.prompt = TextArea(font, font_color, (96, 96, 96))
         self.prompt.animated = False
         self.prompt.rect = Rect(
-            area_rect.x + tools.scale(self.config.prompt_offset_x),
-            area_rect.y + tools.scale(self.config.prompt_offset_y),
-            tools.scale(self.config.prompt_width),
-            tools.scale(self.config.prompt_height),
+            area_rect.x + self.scaling.scale_int(self.config.prompt_offset_x),
+            area_rect.y + self.scaling.scale_int(self.config.prompt_offset_y),
+            self.scaling.scale_int(self.config.prompt_width),
+            self.scaling.scale_int(self.config.prompt_height),
         )
         self.prompt.text = prompt_text
         self.sprites.add(self.prompt)
@@ -62,10 +67,12 @@ class InputDisplay:
         self.text_area = TextArea(font, font_color, (96, 96, 96))
         self.text_area.animated = False
         self.text_area.rect = Rect(
-            area_rect.x + tools.scale(self.config.text_area_offset_x),
-            area_rect.y + tools.scale(self.config.text_area_offset_y),
-            tools.scale(self.config.text_area_width),
-            tools.scale(self.config.text_area_height),
+            area_rect.x
+            + self.scaling.scale_int(self.config.text_area_offset_x),
+            area_rect.y
+            + self.scaling.scale_int(self.config.text_area_offset_y),
+            self.scaling.scale_int(self.config.text_area_width),
+            self.scaling.scale_int(self.config.text_area_height),
         )
         self.text_area.text = initial_input_string
         self.sprites.add(self.text_area)
@@ -84,7 +91,7 @@ class InputDisplay:
         self.char_counter.text = f"{remaining_chars}"
         self.char_counter.rect.topleft = (
             self.area_rect.right
-            - tools.scale(self.config.char_counter_offset_x),
+            - self.scaling.scale_int(self.config.char_counter_offset_x),
             self.area_rect.top
-            + tools.scale(self.config.char_counter_offset_y),
+            + self.scaling.scale_int(self.config.char_counter_offset_y),
         )

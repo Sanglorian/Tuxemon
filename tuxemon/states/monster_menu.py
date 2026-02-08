@@ -22,9 +22,8 @@ from tuxemon.monster.monster import Monster
 from tuxemon.platform.const.graphics import BG_MONSTERS, TRANSPARENT_COLOR
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.prepare import SCREEN_SIZE
-from tuxemon.scaling import DefaultScaling
 from tuxemon.sprite import Sprite
-from tuxemon.tools import open_choice_dialog, open_dialog, scale
+from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.menu_options import (
     MenuOptions,
@@ -38,6 +37,7 @@ if TYPE_CHECKING:
     from tuxemon.entity.party import PartyHandler
     from tuxemon.item.item import Item
     from tuxemon.monster.monster import Monster
+    from tuxemon.prepare import DisplayContext
 
 LAYER_MONSTER_ICONS = 20
 LAYER_PORTRAIT = 30
@@ -62,23 +62,22 @@ class MonsterMenuState(Menu[Monster | None]):
         monster_filter: MonsterFilter | None = None,
     ) -> None:
         super().__init__()
-        self.scaling = DefaultScaling()
         self.monster_filter = monster_filter or MonsterFilter()
         self.monsters = self.monster_filter.get_filtered_monsters(monsters)
 
         # make a text area to show messages
         self.text_area = TextArea(self.font, self.font_color, (96, 96, 96))
-        self.text_area.rect = Rect(self.scaling.scale_tuple((20, 80, 80, 100)))
+        self.text_area.rect = Rect(self.scale_tuple((20, 80, 80, 100)))
         self.sprites.add(self.text_area, layer=100)
         self.monster_stats_display = MonsterStatsDisplay(self)
         self.monster_sprite_displays: list[MonsterSpriteDisplay] = []
         self.monster_portrait_display = MonsterPortraitDisplay(self)
 
         # Set up the border images used for the monster slots
-        self.hp_bar = HpBar()
-        self.exp_bar = ExpBar()
+        self.hp_bar = HpBar(self.client.context)
+        self.exp_bar = ExpBar(self.client.context)
         self.slot_renderer = MonsterSlotRenderer(
-            self.font, self.hp_bar, self.font_color
+            self.client.context, self.font, self.hp_bar, self.font_color
         )
 
         # Load monster visuals
@@ -486,6 +485,7 @@ class MonsterSpriteDisplay:
 
     def __init__(self, menu_state: MonsterMenuState) -> None:
         self.menu_state = menu_state
+        self.scaling = self.menu_state.client.context.scaling
         self.sprite: Sprite | None = None
         self.monster: Monster | None = None
 
@@ -508,7 +508,7 @@ class MonsterSpriteDisplay:
             width = SCREEN_SIZE[0]
             margin = int(width * 0.005)
             self.sprite.rect.x = width - (self.sprite.rect.width + margin)
-            self.sprite.rect.y = rect.y + scale(10)
+            self.sprite.rect.y = rect.y + self.scaling.scale_int(10)
 
         else:
             self.remove_sprite()
@@ -523,6 +523,7 @@ class MonsterSpriteDisplay:
 class MonsterPortraitDisplay:
     def __init__(self, menu_state: MonsterMenuState) -> None:
         self.menu_state = menu_state
+        self.scaling = self.menu_state.client.context.scaling
         self.portrait = Sprite()
         self.portrait.rect = Rect(0, 0, 0, 0)
         self.menu_state.sprites.add(self.portrait, layer=LAYER_PORTRAIT)
@@ -547,7 +548,7 @@ class MonsterPortraitDisplay:
     def animate_down(self) -> None:
         ani = self.menu_state.animate(
             self.portrait.rect,
-            y=-scale(5),
+            y=-self.scaling.scale_int(5),
             duration=1,
             transition="in_out_quad",
             relative=True,
@@ -557,7 +558,7 @@ class MonsterPortraitDisplay:
     def animate_up(self) -> None:
         ani = self.menu_state.animate(
             self.portrait.rect,
-            y=scale(5),
+            y=self.scaling.scale_int(5),
             duration=1,
             transition="in_out_quad",
             relative=True,
@@ -594,7 +595,15 @@ class MonsterSlotBorder:
 class MonsterSlotRenderer:
     """Unified renderer for monster slot layout."""
 
-    def __init__(self, font: Font, hp_bar: HpBar, font_color: ColorLike):
+    def __init__(
+        self,
+        context: DisplayContext,
+        font: Font,
+        hp_bar: HpBar,
+        font_color: ColorLike,
+    ):
+        self.context = context
+        self.scaling = context.scaling
         self.font = font
         self.hp_bar = hp_bar
         self.font_color = font_color
@@ -616,20 +625,20 @@ class MonsterSlotRenderer:
         if not monster:
             return
 
-        padding = scale(6)
+        padding = self.scaling.scale_int(6)
         content = rect.inflate(-padding, -padding)
 
         upper_label = f"{monster.name}{monster.gender_symbol}"
 
-        text_rect = rect.inflate(-scale(6), -scale(6))
+        text_rect = rect.inflate(-padding, -padding)
         draw_text(surface, upper_label, text_rect, font=self.font)
 
-        text_rect.top = rect.bottom - scale(7)
+        text_rect.top = rect.bottom - self.scaling.scale_int(7)
         bottom_label = f"  Lv {monster.level}"
         draw_text(surface, bottom_label, text_rect, font=self.font)
 
         hp_width = int(content.width * 0.35)
-        hp_rect = Rect(0, 0, hp_width, scale(8))
+        hp_rect = Rect(0, 0, hp_width, self.scaling.scale_int(8))
         hp_rect.right = content.right
         hp_rect.centery = content.centery
 
@@ -644,13 +653,13 @@ class MonsterSlotRenderer:
         monster: Monster,
         content: Rect,
     ) -> None:
-        icon_y = content.top + scale(4)
+        icon_y = content.top + self.scaling.scale_int(4)
 
         for i, status in enumerate(monster.status.get_statuses()):
             if status.icon:
                 img = load_and_scale(status.icon)
                 x = int(content.width * 0.45) + i * (
-                    img.get_width() + scale(4)
+                    img.get_width() + self.scaling.scale_int(4)
                 )
                 x += content.left
                 surface.blit(img, (x, icon_y))
@@ -659,6 +668,6 @@ class MonsterSlotRenderer:
             item_img = load_and_scale(monster.held_item.sprite, 1.5)
             x = int(content.width * 0.45) + len(
                 monster.status.get_statuses()
-            ) * (scale(4) + item_img.get_width())
+            ) * (self.scaling.scale_int(4) + item_img.get_width())
             x += content.left
             surface.blit(item_img, (x, icon_y))

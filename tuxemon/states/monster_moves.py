@@ -281,7 +281,7 @@ class MonsterMovesState(PygameMenuState):
             for i, t in enumerate(technique.types.current[:2]):
                 path = f"gfx/ui/icons/element/{t.name.lower()}_type_small.png"
                 img = self._create_image(path)
-                img.scale(self.client.context.scale, self.client.context.scale)
+                img.scale(self.scale_int(1), self.scale_int(1))
                 icon = menu.add.image(img.copy(), float=True)
                 icon.translate(fxw(x_positions[i]), fxh(y_position))
                 self.type_icon_widgets.append(icon)
@@ -290,7 +290,7 @@ class MonsterMovesState(PygameMenuState):
         if technique.range:
             path = f"gfx/ui/icons/range/{technique.range.name.lower()}.png"
             rimg = self._create_image(path)
-            rimg.scale(self.client.context.scale, self.client.context.scale)
+            rimg.scale(self.scale_int(1), self.scale_int(1))
             self.range_icon_widget = menu.add.image(rimg.copy(), float=True)
             self.range_icon_widget.translate(fxw(4 / 256), fxh(86.8 / 144))
 
@@ -300,7 +300,7 @@ class MonsterMovesState(PygameMenuState):
 
         spath = f"gfx/ui/icons/speed/{speed_key}.png"
         simg = self._create_image(spath)
-        simg.scale(self.client.context.scale, self.client.context.scale)
+        simg.scale(self.scale_int(1), self.scale_int(1))
         self.speed_icon_widget = menu.add.image(simg.copy(), float=True)
         self.speed_icon_widget.translate(fxw(222 / 256), fxh(51.8 / 144))
 

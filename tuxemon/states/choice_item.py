@@ -93,7 +93,7 @@ class ChoiceItem(PygameMenuState):
     ) -> None:
         item = ItemModel.lookup(slug, db)
         new_image = self._create_image(item.sprite)
-        scaled = self.client.context.scale * self.config.scale_sprite
+        scaled = self.scale_int(1) * self.config.scale_sprite
         new_image.scale(scaled, scaled)
         self.menu.add.image(new_image)
         self.menu.add.button(

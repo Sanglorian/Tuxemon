@@ -80,7 +80,7 @@ class ChoiceNpc(PygameMenuState):
         sheet = get_combat_sheet(npc.template)
         surface = sheet.front()
         scaled = scale_surface(
-            surface, self.client.context.scale * self.config.scale_sprite
+            surface, self.scale_int(1) * self.config.scale_sprite
         )
         new_image = self._create_image_from_surface(scaled)
         self.menu.add.image(new_image, align=ALIGN_CENTER)

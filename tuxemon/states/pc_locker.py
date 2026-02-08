@@ -244,9 +244,7 @@ class ItemTakeState(PygameMenuState):
             label = T.translate(itm.name).upper() + " x" + str(itm.quantity)
             iid = itm.instance_id.hex
             new_image = self._create_image(itm.sprite)
-            new_image.scale(
-                self.client.context.scale, self.client.context.scale
-            )
+            new_image.scale(self.scale_int(1), self.scale_int(1))
             menu.add.banner(
                 new_image,
                 partial(self.locker_options, iid, handler),

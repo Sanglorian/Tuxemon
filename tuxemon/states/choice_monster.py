@@ -91,7 +91,7 @@ class ChoiceMonster(PygameMenuState):
         if handler is None:
             return
         sprite = handler.get_sprite(
-            "front", scale=self.client.context.scale * self.config.scale_sprite
+            "front", scale=self.scale_int(1) * self.config.scale_sprite
         )
         image = self._create_image_from_surface(sprite.image)
         self.menu.add.image(image, align=ALIGN_CENTER)

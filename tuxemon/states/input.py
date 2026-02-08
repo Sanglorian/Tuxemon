@@ -103,6 +103,7 @@ class InputMenu(Menu[InputMenuObj]):
         self.leaving_char_variant_dialog = False
 
         self.input_display = InputDisplay(
+            context=self.client.context,
             font=self.font,
             font_color=self.font_color,
             prompt_text=prompt,

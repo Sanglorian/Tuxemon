@@ -28,7 +28,7 @@ class SetTemplateAction(EventAction):
 
         .. code-block:: text
 
-        set_template <character>,<sprite>[,combat_sheet]
+            set_template <character>,<sprite>[,combat_sheet]
 
     Script parameters:
 

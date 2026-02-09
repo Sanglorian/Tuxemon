@@ -27,11 +27,7 @@ from tuxemon.graphics import (
 from tuxemon.map.map import get_pos_from_tilepos
 from tuxemon.math import Vector2
 from tuxemon.platform.const.graphics import BLACK_COLOR
-<<<<<<< template
-from tuxemon.prepare import SCALE, SCREEN_SIZE, TILE_SIZE
-=======
 from tuxemon.prepare import DISPLAY_CONTEXT, DisplayContext
->>>>>>> development
 from tuxemon.surfanim import SurfaceAnimation, SurfaceAnimationCollection
 from tuxemon.user_config import CONFIG
 
@@ -253,8 +249,8 @@ class SpriteRenderer:
             sheet_path = f"sprites/{template.sprite_name}.png"
             sheet = load_and_scale_with_cache(sheet_path)
 
-        scaled_fw = template.frame_width * SCALE
-        scaled_fh = template.frame_height * SCALE
+        scaled_fw = template.frame_width * DISPLAY_CONTEXT.scale
+        scaled_fh = template.frame_height * DISPLAY_CONTEXT.scale
 
         all_frames = slice_spritesheet_surface(
             sheet,

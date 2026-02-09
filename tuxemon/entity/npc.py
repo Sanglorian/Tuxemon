@@ -17,7 +17,7 @@ from tuxemon.entity.entity import Entity
 from tuxemon.entity.party import PartyHandler
 from tuxemon.entity.path import PathController
 from tuxemon.entity.routing import RoutingPolicy
-from tuxemon.entity.sheet import CombatSheet, get_combat_sheet
+from tuxemon.entity.sheet import CombatSheet
 from tuxemon.entity.steps import StepManager
 from tuxemon.game_variables import GameVariablesManager, PlayerVariablesManager
 from tuxemon.locale.locale import T
@@ -196,7 +196,17 @@ class NPC(Entity):
         return self.path_controller.move_destination
 
     def combat_sheet(self) -> CombatSheet:
-        return get_combat_sheet(self.template)
+        a = self.appearance_manager.state
+
+        sheet = a.combat_sheet or self.template.combat_sheet
+        fw = a.combat_frame_width or self.template.combat_frame_width
+        fh = a.combat_frame_height or self.template.combat_frame_height
+
+        return CombatSheet(
+            file_path=f"gfx/sprites/player/{sheet}.png",
+            frame_w=fw,
+            frame_h=fh,
+        )
 
     def get_state(self, session: Session) -> NPCState:
         """

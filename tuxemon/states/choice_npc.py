@@ -79,9 +79,7 @@ class ChoiceNpc(PygameMenuState):
         npc = NpcModel.lookup(slug, db)
         sheet = get_combat_sheet(npc.template)
         surface = sheet.front()
-        scaled = scale_surface(
-            surface, self.client.context.scale * self.config.scale_sprite
-        )
+        scaled = scale_surface(surface, self.factor * self.config.scale_sprite)
         new_image = self._create_image_from_surface(scaled)
         self.menu.add.image(new_image, align=ALIGN_CENTER)
         # replace slug not translated

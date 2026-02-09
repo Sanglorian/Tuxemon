@@ -10,13 +10,13 @@ from pygame.rect import Rect
 
 from tuxemon.menu.interface import ExpBar, HpBar
 from tuxemon.sprite import Sprite
-from tuxemon.tools import scale
 
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from tuxemon.db import BattleGraphicsModel
     from tuxemon.monster.monster import Monster
+    from tuxemon.prepare import DisplayContext
 
 
 class CombatBars:
@@ -24,7 +24,8 @@ class CombatBars:
     A class responsible for drawing the combat UI, including HP and EXP bars.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, context: DisplayContext) -> None:
+        self.context = context
         self._hp_bars: MutableMapping[Monster, HpBar] = {}
         self._exp_bars: MutableMapping[Monster, ExpBar] = {}
 
@@ -68,20 +69,29 @@ class CombatBars:
         hud: Sprite,
         width: int,
         height: int,
-        top_offset: int,
+        top: int,
         right_padding: int,
     ) -> Rect:
-        rect = Rect(0, 0, scale(width), scale(height))
-        rect.right = hud.image.get_width() - scale(right_padding)
-        rect.top += scale(top_offset)
+        s = self.context.scaling.scale_int
+
+        width = s(width)
+        height = s(height)
+        top = s(top)
+        right_padding = s(right_padding)
+
+        rect = Rect(0, 0, width, height)
+        rect.top = top
+        rect.right = hud.image.get_width() - right_padding
         return rect
 
     def get_hp_bar(self, monster: Monster) -> HpBar:
-        return self._hp_bars.setdefault(monster, HpBar(monster.hp_ratio))
+        return self._hp_bars.setdefault(
+            monster, HpBar(self.context, monster.hp_ratio)
+        )
 
     def get_exp_bar(self, monster: Monster) -> ExpBar:
         return self._exp_bars.setdefault(
-            monster, ExpBar(monster.experience_progress_percent)
+            monster, ExpBar(self.context, monster.experience_progress_percent)
         )
 
     def remove_monster(self, monster: Monster) -> None:

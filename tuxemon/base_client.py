@@ -180,7 +180,7 @@ class BaseClient(ABC):
 
         # Various Sessions
         self.trade_manager = TradeManager(self.npc_manager)
-        self.environment_manager = EnvironmentManager()
+        self.environment_manager = EnvironmentManager(self.context)
         self.encounter_manager = EncounterManager()
         self.park_session = ParkSession()
         self.weather_manager = WorldWeatherManager()

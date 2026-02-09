@@ -12,6 +12,7 @@ import pygame as pg
 
 from tuxemon.platform.const.sizes import NATIVE_RESOLUTION
 from tuxemon.platform.const.sizes import TILE_SIZE as NATIVE_TILE_SIZE
+from tuxemon.scaling import DefaultScaling, ScalingStrategy
 from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
@@ -21,8 +22,8 @@ logger = logging.getLogger(__name__)
 class DisplayContext:
     screen: pg.Surface
     rect: pg.Rect
-    scale: int
     tile_size: tuple[int, int]
+    scaling: ScalingStrategy
 
 
 _default_surface = pg.Surface((1, 1))
@@ -31,8 +32,8 @@ _default_rect = _default_surface.get_rect()
 DISPLAY_CONTEXT: DisplayContext = DisplayContext(
     screen=_default_surface,
     rect=_default_rect,
-    scale=1,
     tile_size=(1, 1),
+    scaling=DefaultScaling(1),
 )
 
 
@@ -86,8 +87,8 @@ def pygame_init() -> DisplayContext:
     DISPLAY_CONTEXT = DisplayContext(
         screen=screen,
         rect=rect,
-        scale=scale,
         tile_size=tile_size,
+        scaling=DefaultScaling(scale),
     )
 
     return DISPLAY_CONTEXT
@@ -112,8 +113,8 @@ def headless_init() -> DisplayContext:
     DISPLAY_CONTEXT = DisplayContext(
         screen=screen,
         rect=rect,
-        scale=1,
         tile_size=NATIVE_TILE_SIZE,
+        scaling=DefaultScaling(1),
     )
 
     return DISPLAY_CONTEXT

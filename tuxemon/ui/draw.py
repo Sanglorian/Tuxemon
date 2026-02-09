@@ -7,6 +7,7 @@ import re
 from collections.abc import Generator, Iterable
 from dataclasses import dataclass
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from pygame.font import Font
 from pygame.rect import Rect
@@ -15,6 +16,9 @@ from pygame.surface import Surface
 from tuxemon.graphics import ColorLike
 from tuxemon.ui.text_alignment import HorizontalAlignment, VerticalAlignment
 from tuxemon.ui.text_renderer import TextRenderer
+
+if TYPE_CHECKING:
+    from tuxemon.scaling import ScalingStrategy
 
 logger = logging.getLogger(__name__)
 
@@ -233,6 +237,7 @@ def iter_render_text(
     fg: ColorLike,
     bg: ColorLike,
     rect: Rect,
+    scaling: ScalingStrategy,
     h_alignment: HorizontalAlignment = HorizontalAlignment.LEFT,
     v_alignment: VerticalAlignment = VerticalAlignment.TOP,
     text_renderer: TextRenderer | None = None,
@@ -254,7 +259,7 @@ def iter_render_text(
 
     if text_renderer is None:
         text_renderer = TextRenderer(
-            font_color=fg, font_shadow_color=bg, font=font
+            scaling=scaling, font_color=fg, font_shadow_color=bg, font=font
         )
 
     for line_index, line in enumerate(lines):

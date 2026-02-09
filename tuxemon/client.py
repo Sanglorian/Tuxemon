@@ -64,7 +64,7 @@ class LocalPygameClient(BaseClient):
         self.state_drawer = StateDrawer(
             self.screen, self.state_manager, config
         )
-        self.event_debug_drawer = EventDebugDrawer(self.screen)
+        self.event_debug_drawer = EventDebugDrawer(self.context)
         self.renderer = Renderer(
             self.screen,
             self.state_drawer,

@@ -16,7 +16,6 @@ from typing import (
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon import tools
 from tuxemon.economy.applier import EconomyApplier
 from tuxemon.economy.transaction import TransactionManager
 from tuxemon.entity.npc import NPC
@@ -68,18 +67,22 @@ class ShopMenuState(Menu[T], Generic[T], ABC):
         self.asset_sprite = Sprite()
         self.sprites.add(self.asset_sprite)
 
-        self.menu_items.line_spacing = tools.scale(7)
+        self.menu_items.line_spacing = self.scale_int(7)
         self.current_page = 0
         self.total_pages = 0
         self.inventory: list[T] = []
 
         # This is the area where the asset's description is displayed.
         rect = self.client.context.rect.copy()
-        rect.top = tools.scale(106)
-        rect.left = tools.scale(3)
-        rect.width = tools.scale(250)
-        rect.height = tools.scale(32)
-        self.text_area = TextArea(self.font, self.font_color)
+        rect.top = self.scale_int(106)
+        rect.left = self.scale_int(3)
+        rect.width = self.scale_int(250)
+        rect.height = self.scale_int(32)
+        self.text_area = TextArea(
+            font=self.font,
+            font_color=self.font_color,
+            scaling=self.client.context.scaling,
+        )
         self.text_area.rect = rect
         self.sprites.add(self.text_area, layer=100)
 

@@ -25,7 +25,6 @@ from tuxemon.environment import BattleLayout
 from tuxemon.menu.menu import Menu
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.sprite import CaptureDeviceSprite, HordeSprite, Sprite
-from tuxemon.tools import scale
 from tuxemon.ui.combat_bars import CombatBars
 from tuxemon.ui.combat_hud import CombatLayoutManager
 from tuxemon.ui.combat_layout import LayoutManager
@@ -73,8 +72,10 @@ class CombatAnimations(Menu[None], ABC):
         self.sprite_map = MonsterSpriteMap()
         self.capdevs: list[CaptureDeviceSprite] = []
         self.horde_sprite: HordeSprite | None = None
-        self.bars = CombatBars()
-        layout_manager = LayoutManager(mods_folder / "combat_layouts.yaml")
+        self.bars = CombatBars(self.client.context)
+        layout_manager = LayoutManager(
+            mods_folder / "combat_layouts.yaml", self.client.context.scaling
+        )
         _layout = layout_manager.prepare_all(teams)
         self.hud_manager = CombatLayoutManager(_layout)
         self.status_icons = StatusIconManager(self, _layout, self.hud_manager)
@@ -132,7 +133,7 @@ class CombatAnimations(Menu[None], ABC):
             raise KeyError(f"Sprite not found for entity: {trainer.name}")
 
         graphics = self.env.get_battle_graphics()
-        dist = scale(-graphics.trainer_exit_offset)
+        dist = self.scale_int(-graphics.trainer_exit_offset)
         duration = graphics.trainer_exit_duration
         x_offset = self.combat_zone.get_horizontal_offset(sprite.rect, dist)
         self.animate(sprite.rect, x=x_offset, relative=True, duration=duration)
@@ -161,7 +162,7 @@ class CombatAnimations(Menu[None], ABC):
         # Load and scale capture device sprite
         capdev = self.load_sprite(f"gfx/items/{monster.capture_device}.png")
         graphics.scale_sprite(capdev, 0.4)
-        capdev.rect.center = (feet[0], feet[1] - scale(60))
+        capdev.rect.center = (feet[0], feet[1] - self.scale_int(60))
 
         # Animate capture device falling
         fall_time = 0.7
@@ -181,7 +182,7 @@ class CombatAnimations(Menu[None], ABC):
             self.animate, duration=fade_duration, delay=delay
         )
         animate_fade(capdev, width=1, height=h * 1.5)
-        animate_fade(capdev.rect, y=-scale(14), relative=True)
+        animate_fade(capdev.rect, y=-self.scale_int(14), relative=True)
 
         # Convert capture device sprite for easy fading
         def convert_sprite() -> None:
@@ -233,7 +234,9 @@ class CombatAnimations(Menu[None], ABC):
         _, horizontal = self.combat_zone.get_zone(attacker.rect)
 
         delta = (
-            scale(14) if horizontal is HorizontalAlignment.LEFT else -scale(14)
+            self.scale_int(14)
+            if horizontal is HorizontalAlignment.LEFT
+            else -self.scale_int(14)
         )
 
         self.animate(
@@ -275,10 +278,10 @@ class CombatAnimations(Menu[None], ABC):
             duration=1,
             transition="in_out_elastic",
         )
-        ani = animate(x=original_x, initial=original_x + scale(400))
+        ani = animate(x=original_x, initial=original_x + self.scale_int(400))
         # just want the end of the animation, not the entire thing
         ani._elapsed = 0.735
-        ani = animate(y=original_y, initial=original_y - scale(400))
+        ani = animate(y=original_y, initial=original_y - self.scale_int(400))
         # just want the end of the animation, not the entire thing
         ani._elapsed = 0.735
 
@@ -349,7 +352,7 @@ class CombatAnimations(Menu[None], ABC):
             raise KeyError(f"Sprite not found for entity: {monster.name}")
 
         x_offset = self.combat_zone.get_horizontal_offset(
-            sprite.rect, scale(-150)
+            sprite.rect, self.scale_int(-150)
         )
 
         cry = (
@@ -467,7 +470,11 @@ class CombatAnimations(Menu[None], ABC):
             self.combat_session.is_trainer_battle
             and not self.combat_session.is_double
         ):
-            return None, home.right - scale(13), scale(8)
+            return (
+                None,
+                home.right - self.scale_int(13),
+                self.scale_int(8),
+            )
 
         hud_data = self.env.data.get_battle_graphics().hud
         party_layout = self.env.get_party_layout("opponent", home, HUD_LAYER)
@@ -518,7 +525,7 @@ class CombatAnimations(Menu[None], ABC):
                 opponent_party=player.party,
                 tray_rect=home,
                 shadow_text_func=self.shadow_text,
-                scale_func=scale,
+                context=self.client.context,
             )
             self.sprites.add(self.horde_sprite, layer=HUD_LAYER)
 
@@ -541,7 +548,7 @@ class CombatAnimations(Menu[None], ABC):
             else list(range(PARTY_LIMIT))
         )
 
-        scaled_top = scale(1)
+        scaled_top = self.factor
 
         for index, pos in enumerate(positions):
             monster = player.monsters[index] if index < monster_count else None
@@ -561,6 +568,7 @@ class CombatAnimations(Menu[None], ABC):
                 tray=tray,
                 monster=monster,
                 icon=self.env.get_battle_graphics().icons,
+                context=self.client.context,
             )
             self.capdevs.append(capdev)
             animate = partial(
@@ -638,9 +646,7 @@ class CombatAnimations(Menu[None], ABC):
         if self.combat_session.is_trainer_battle:
             enemy_pos = layout.get_combatant_pos("enemy", back_island.rect)
             enemy_surface = opponent.combat_sheet().front()
-            enemy_surface = graphics.scale_surface(
-                enemy_surface, self.client.context.scale
-            )
+            enemy_surface = graphics.scale_surface(enemy_surface, self.factor)
             enemy = self.load_surface(enemy_surface, **enemy_pos)
             self.sprite_map.add_sprite(opponent, enemy)
         else:
@@ -656,9 +662,7 @@ class CombatAnimations(Menu[None], ABC):
 
         player_pos = layout.get_combatant_pos("player", front_island.rect)
         player_surface = player.combat_sheet().back()
-        player_surface = graphics.scale_surface(
-            player_surface, self.client.context.scale
-        )
+        player_surface = graphics.scale_surface(player_surface, self.factor)
         player_back = self.load_surface(player_surface, **player_pos)
 
         self.sprites.add(enemy, player_back)
@@ -752,7 +756,7 @@ class CombatAnimations(Menu[None], ABC):
             self.animate, sprite.rect, transition="in_quad", duration=1.0
         )
         graphics.scale_sprite(sprite, 0.4)
-        sprite.rect.center = scale(0), scale(0)
+        sprite.rect.center = self.scale_int(0), self.scale_int(0)
         animate(x=monster_sprite.rect.centerx)
         animate(y=monster_sprite.rect.centery)
         return sprite
@@ -795,7 +799,7 @@ class CombatAnimations(Menu[None], ABC):
         def shake_up() -> Animation:
             return self.animate(
                 capdev.rect,
-                y=scale(3),
+                y=self.scale_int(3),
                 relative=True,
                 duration=0.1,
                 transition="in_quad",
@@ -804,7 +808,7 @@ class CombatAnimations(Menu[None], ABC):
         def shake_down() -> Animation:
             return self.animate(
                 capdev.rect,
-                y=-scale(6),
+                y=-self.scale_int(6),
                 relative=True,
                 duration=0.2,
                 transition="in_quad",
@@ -813,7 +817,7 @@ class CombatAnimations(Menu[None], ABC):
         def shake_up2() -> Animation:
             return self.animate(
                 capdev.rect,
-                y=scale(3),
+                y=self.scale_int(3),
                 relative=True,
                 duration=0.1,
                 transition="in_quad",

@@ -76,6 +76,7 @@ class SaveMenuState(PopUpMenu[None]):
             slot_image,
             T.translate("empty_slot"),
             rect,
+            scaling=self.client.context.scaling,
             font=self.font,
         )
         return slot_image
@@ -132,6 +133,7 @@ class SaveMenuState(PopUpMenu[None]):
             slot_image,
             f"{T.translate('slot')} {slot_num}",
             rect,
+            scaling=self.client.context.scaling,
             font=self.font,
         )
 
@@ -141,6 +143,7 @@ class SaveMenuState(PopUpMenu[None]):
                 slot_image,
                 save_data.npc_state.player_name,
                 (x, 0, 500, 500),
+                scaling=self.client.context.scaling,
                 font=self.font,
             )
         if save_data.time:
@@ -148,6 +151,7 @@ class SaveMenuState(PopUpMenu[None]):
                 slot_image,
                 save_data.time,
                 (x, 50, 500, 500),
+                scaling=self.client.context.scaling,
                 font=self.font,
             )
 

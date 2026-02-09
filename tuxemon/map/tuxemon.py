@@ -180,8 +180,8 @@ class TuxemonMap(AbstractMap):
         self._maps = maps
         self._renderer: pyscroll.BufferedRenderer | None = None
 
-        self._events = events
-        self._inits = inits
+        self._events: list[EventObject] = list(events)
+        self._inits: list[EventObject] = list(inits)
 
         self._config = self._parse_config(maps)
 
@@ -311,18 +311,16 @@ class TuxemonMap(AbstractMap):
         )
 
     def add_events(self, new_events: Sequence[EventObject]) -> None:
-        """Append new events to the existing events list."""
-        self._events = list(self._events) + list(new_events)
+        self._events.extend(new_events)
 
     def add_inits(self, new_inits: Sequence[EventObject]) -> None:
-        """Append new init events to the existing inits list."""
-        self._inits = list(self._inits) + list(new_inits)
+        self._inits.extend(new_inits)
 
     def clear_events(self) -> None:
-        self._events = []
+        self._events.clear()
 
     def clear_inits(self) -> None:
-        self._inits = []
+        self._inits.clear()
 
     def reload_tiles(self) -> None:
         """Reload the map tiles."""

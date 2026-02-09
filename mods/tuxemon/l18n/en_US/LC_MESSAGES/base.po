@@ -4436,10 +4436,22 @@ msgstr ""
 "Which technique do you want to delete?"
 
 msgid "evolution_confirmation"
-msgstr "{name} is trying to evolve into {evolve}. Allow evolution?"
+msgstr "{name} is trying to evolve into {evolve}."
+
+msgid "allow_evolution"
+msgstr "Allow evolution?"
+
+msgid "devolution_confirmation"
+msgstr "{name} is trying to devolve into {evolve}."
+
+msgid "allow_devolution"
+msgstr "Allow devolution?"
 
 msgid "evolution_ended"
 msgstr "{name} evolves into {evolve}!"
+
+msgid "devolution_ended"
+msgstr "{name} devolves into {evolve}!"
 
 msgid "trade_completed"
 msgstr "You traded {sent} and received {received}!"

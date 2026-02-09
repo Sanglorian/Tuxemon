@@ -1911,7 +1911,10 @@ msgstr ""
 "Norte: ${{north}} / Sul: ${{south}} / Oeste: ${{west}} / Leste: ${{east}}"
 
 msgid "evolution_confirmation"
-msgstr "{name} está tentando evoluir para {evolve}. Permitir a evolução?"
+msgstr "{name} está tentando evoluir para {evolve}."
+
+msgid "allow_evolution"
+msgstr "Permitir a evolução?"
 
 msgid "tuxemon_stat1"
 msgstr ""

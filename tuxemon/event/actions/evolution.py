@@ -4,15 +4,12 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from functools import partial
 from typing import TYPE_CHECKING, final
 from uuid import UUID
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale.locale import T
 from tuxemon.monster.monster import Monster
-from tuxemon.tools import get_valid_uuid, open_choice_dialog, open_dialog
-from tuxemon.ui.menu_options import MenuOptions, create_yes_no_options
+from tuxemon.tools import get_valid_uuid
 
 if TYPE_CHECKING:
     from tuxemon.session import Session
@@ -94,7 +91,7 @@ class EvolutionAction(EventAction):
         )
 
     def process_pending_evolutions(self) -> None:
-        """Process pending evolutions for the character"""
+        """Process pending evolutions for the character."""
         candidates = [m for m in self.char.monsters if m.waiting_to_evolve]
         if not candidates:
             return
@@ -112,47 +109,10 @@ class EvolutionAction(EventAction):
             registry.add_pending(monster.instance_id, slug)
 
         evolved = Monster.spawn_base(slug, monster.level)
-        self._pending_map[monster.instance_id] = slug
-        self.question_evolution(monster, evolved)
-
-    def question_evolution(self, monster: Monster, evolved: Monster) -> None:
-        """Ask the user to confirm the evolution"""
-        params = {
-            "name": monster.name.upper(),
-            "evolve": evolved.name.upper(),
-        }
-        msg = T.format("evolution_confirmation", params)
-        open_dialog(self.session.client, [msg], dialog_speed="max")
-
-        options = create_yes_no_options(
-            yes_action=partial(self.confirm_evolution, monster, evolved),
-            no_action=partial(self.deny_evolution, monster),
-            reverse_order=True,
-        )
-        open_choice_dialog(self.session.client, MenuOptions(options))
-
-    def confirm_evolution(self, monster: Monster, evolved: Monster) -> None:
-        self.client.pop_state()
-        self.client.pop_state()
-
-        registry = self.char.evolution_registry
-        monster.evolution_handler.confirm_pending_evolution(
-            registry, evolved.slug
-        )
-        monster.evolution_handler.evolve_monster(evolved)
-        monster.waiting_to_evolve = False
 
         self.client.push_state(
-            "EvolutionTransition", original=monster.slug, evolved=evolved.slug
+            "EvolutionState",
+            monster=monster,
+            evolved=evolved,
+            character=self.char,
         )
-
-    def deny_evolution(self, monster: Monster) -> None:
-        monster.waiting_to_evolve = False
-        slug = self._pending_map.get(monster.instance_id)
-        if slug:
-            registry = self.char.evolution_registry
-            registry.log_missed(monster.instance_id, slug, monster.level)
-            registry.clear_pending_slug(monster.instance_id, slug)
-
-        self.client.pop_state()
-        self.client.pop_state()

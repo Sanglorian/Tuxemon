@@ -6,7 +6,7 @@ from collections.abc import Callable
 from functools import partial
 from typing import ClassVar
 
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.locale.locale import T
@@ -39,7 +39,7 @@ class DifficultyPickState(PygameMenuState):
         self.menu.add.label(
             title=title,
             font_size=self.font_type.big,
-            align=locals.ALIGN_CENTER,
+            align=ALIGN_CENTER,
             underline=True,
         )
 
@@ -50,7 +50,7 @@ class DifficultyPickState(PygameMenuState):
                 button_id=f"diff_{level}",
                 font_size=self.font_type.medium,
                 selection_effect=HighlightSelection(),
-                align=locals.ALIGN_CENTER,
+                align=ALIGN_CENTER,
             )
 
     def _handle_pick(self, difficulty: str) -> None:

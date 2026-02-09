@@ -6,8 +6,8 @@ from collections.abc import Callable
 from functools import partial
 from typing import Any, ClassVar
 
-import pygame_menu
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 from pygame_menu.sound import SOUND_TYPE_WIDGET_SELECTION
 
 from tuxemon.animation import Animation, ScheduleType
@@ -37,10 +37,7 @@ class ControlState(PygameMenuState):
         self.reload_controls()
         self.reset_theme()
 
-    def initialize_items(
-        self,
-        menu: pygame_menu.Menu,
-    ) -> None:
+    def initialize_items(self, menu: Menu) -> None:
         def change_state(
             state: State | str, **change_state_kwargs: Any
         ) -> Callable[[], State]:

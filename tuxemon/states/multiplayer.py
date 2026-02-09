@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Generator
 from typing import ClassVar
 
-import pygame_menu
+from pygame_menu.menu import Menu
 
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale.locale import T
@@ -16,10 +16,7 @@ from tuxemon.tools import open_dialog
 MenuGameObj = Callable[[], object]
 
 
-def add_menu_items(
-    menu: pygame_menu.Menu,
-    items: list[tuple[str, MenuGameObj]],
-) -> None:
+def add_menu_items(menu: Menu, items: list[tuple[str, MenuGameObj]]) -> None:
     for key, callback in items:
         label = T.translate(key).upper()
         menu.add.button(label, callback)

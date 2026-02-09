@@ -9,8 +9,8 @@ from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 from uuid import UUID
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.animation import ScheduleType
@@ -204,8 +204,8 @@ class MonsterTakeState(PygameMenuState):
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_PC_KENNEL)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
         # menu
         theme.title = True
@@ -285,9 +285,7 @@ class MonsterTakeState(PygameMenuState):
             escape_key_exits=True,
         )
 
-    def add_menu_items(
-        self, menu: pygame_menu.Menu, items: Sequence[Monster]
-    ) -> None:
+    def add_menu_items(self, menu: Menu, items: Sequence[Monster]) -> None:
         self.monster_boxes = self.char.monster_boxes
         self.box = self.monster_boxes.get_monsters(self.box_name)
         handler = MonsterActionHandler(
@@ -312,13 +310,13 @@ class MonsterTakeState(PygameMenuState):
                 level,
                 default=diff,
                 font_size=self.font_type.small,
-                align=locals.ALIGN_CENTER,
+                align=ALIGN_CENTER,
             )
             menu.add.button(
                 label,
                 partial(handler.description_dialog, monster),
                 font_size=self.font_type.small,
-                align=locals.ALIGN_CENTER,
+                align=ALIGN_CENTER,
                 selection_effect=HighlightSelection(),
             )
 
@@ -346,7 +344,7 @@ class MonsterBoxState(PygameMenuState):
 
     def add_menu_items(
         self,
-        menu: pygame_menu.Menu,
+        menu: Menu,
         items: Sequence[tuple[str, MenuGameObj]],
     ) -> None:
         menu.add.vertical_fill()

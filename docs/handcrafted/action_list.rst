@@ -27,7 +27,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.change_state.ChangeStateAction
 .. autoscriptinfoclass:: tuxemon.event.actions.change_taste.ChangeTasteAction
 .. autoscriptinfoclass:: tuxemon.event.actions.char_face.CharFaceAction
-.. autoscriptinfoclass:: tuxemon.event.actions.char_face_player.CharFacePlayerAction
+.. autoscriptinfoclass:: tuxemon.event.actions.char_face_char.CharFaceCharAction
 .. autoscriptinfoclass:: tuxemon.event.actions.char_look.CharLookAction
 .. autoscriptinfoclass:: tuxemon.event.actions.char_move.CharMoveAction
 .. autoscriptinfoclass:: tuxemon.event.actions.char_patrol.CharPatrolAction

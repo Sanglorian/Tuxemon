@@ -189,7 +189,7 @@ class TrapEffect(CoreEffect):
                 mon_slug, level = self._pending_encounter
                 session.client.event_engine.execute_action(
                     "wild_encounter",
-                    [mon_slug, level, None, None, None, None, None],
+                    [mon_slug, level, None, None, None, None],
                     True,
                 )
                 session.client.event_engine.execute_action(

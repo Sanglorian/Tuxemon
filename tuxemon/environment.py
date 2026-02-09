@@ -125,6 +125,7 @@ class EnvironmentManager:
 
     def __init__(self) -> None:
         self._active_handler: Environment | None = None
+        self._override_lock: bool = False
         logger.debug("EnvironmentManager initialized.")
 
     def update(self, dt: float) -> None:
@@ -136,6 +137,10 @@ class EnvironmentManager:
         Loads a new environment by creating an EnvironmentData and Environment object.
         Returns True on success, False on failure.
         """
+        if self._override_lock:
+            logger.debug(f"Environment override active, ignoring load: {slug}")
+            return False
+
         self._active_handler = None
         try:
             env_data = EnvironmentData(slug)
@@ -154,6 +159,15 @@ class EnvironmentManager:
     def get_active_environment(self) -> Environment | None:
         """Returns the currently active Environment, or None if none is loaded."""
         return self._active_handler
+
+    def lock_environment(self):
+        self._override_lock = True
+
+    def unlock_environment(self):
+        self._override_lock = False
+
+    def is_locked(self) -> bool:
+        return self._override_lock
 
 
 class EnvironmentData:

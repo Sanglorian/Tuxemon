@@ -160,10 +160,10 @@ class EnvironmentManager:
         """Returns the currently active Environment, or None if none is loaded."""
         return self._active_handler
 
-    def lock_environment(self):
+    def lock_environment(self) -> None:
         self._override_lock = True
 
-    def unlock_environment(self):
+    def unlock_environment(self) -> None:
         self._override_lock = False
 
     def is_locked(self) -> bool:

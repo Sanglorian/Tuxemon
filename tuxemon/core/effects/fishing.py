@@ -165,6 +165,7 @@ class FishingEffect(CoreEffect):
                     == "night"
                     else self._fish.environment.get("default")
                 )
+                env = env or "ocean"
                 session.client.environment_manager.load_environment(env)
                 session.client.environment_manager.lock_environment()
                 rgb = ":".join(map(str, self._fish.animation_color))

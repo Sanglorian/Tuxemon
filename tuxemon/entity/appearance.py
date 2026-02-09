@@ -22,6 +22,9 @@ class RuntimeAppearance:
     accessory: str | None = None
     palette: str | None = None
 
+    combat_frame_width: int | None = None
+    combat_frame_height: int | None = None
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "sprite_name": self.sprite_name,
@@ -29,6 +32,8 @@ class RuntimeAppearance:
             "outfit": self.outfit,
             "accessory": self.accessory,
             "palette": self.palette,
+            "combat_frame_width": self.combat_frame_width,
+            "combat_frame_height": self.combat_frame_height,
         }
 
     @classmethod
@@ -36,6 +41,8 @@ class RuntimeAppearance:
         return cls(
             sprite_name=template.sprite_name,
             combat_sheet=template.combat_sheet,
+            combat_frame_width=template.combat_frame_width,
+            combat_frame_height=template.combat_frame_height,
         )
 
     @classmethod
@@ -48,6 +55,12 @@ class RuntimeAppearance:
             outfit=data.get("outfit"),
             accessory=data.get("accessory"),
             palette=data.get("palette"),
+            combat_frame_width=data.get(
+                "combat_frame_width", template.combat_frame_width
+            ),
+            combat_frame_height=data.get(
+                "combat_frame_height", template.combat_frame_height
+            ),
         )
 
 
@@ -117,13 +130,22 @@ class AppearanceManager:
 
         self.state.sprite_name = new.sprite_name
         self.state.combat_sheet = new.combat_sheet
+        self.state.outfit = new.outfit
+        self.state.accessory = new.accessory
+        self.state.palette = new.palette
+        self.state.combat_frame_width = new.combat_frame_width
+        self.state.combat_frame_height = new.combat_frame_height
 
         self.owner.sprite_controller.update_appearance(self.state)
 
     def build_composited_sheet(self) -> Surface:
-        base = load_and_scale_with_cache(
-            f"sprites/{self.state.sprite_name}.png"
-        )
+        if self.owner.template.is_static_prop:
+            base_path = f"sprites_obj/{self.state.sprite_name}.png"
+        else:
+            base_path = f"sprites/{self.state.sprite_name}.png"
+
+        base = load_and_scale_with_cache(base_path)
+
         final = base.copy()
 
         if self.state.outfit:

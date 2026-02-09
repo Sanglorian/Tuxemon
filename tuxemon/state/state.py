@@ -128,10 +128,6 @@ class State(AnimationMixin, RenderMixin, ABC):
         """Convenience wrapper for client scaling."""
         return self.client.context.scaling.scale_int(value)
 
-    def scale_tuple(self, value: int) -> int:
-        """Convenience wrapper for client scaling."""
-        return self.client.context.scaling.scale_tuple(value)
-
     def update(self, time_delta: float) -> None:
         """
         Time update function for state. Must be overloaded in children.

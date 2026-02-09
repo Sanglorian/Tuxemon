@@ -67,7 +67,8 @@ class MonsterMenuState(Menu[Monster | None]):
 
         # make a text area to show messages
         self.text_area = TextArea(self.font, self.font_color, (96, 96, 96))
-        self.text_area.rect = Rect(self.scale_tuple((20, 80, 80, 100)))
+        rect = self.client.context.scaling.scale_tuple((20, 80, 80, 100))
+        self.text_area.rect = Rect(rect)
         self.sprites.add(self.text_area, layer=100)
         self.monster_stats_display = MonsterStatsDisplay(self)
         self.monster_sprite_displays: list[MonsterSpriteDisplay] = []

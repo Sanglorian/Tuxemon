@@ -429,9 +429,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     for i, t in enumerate(technique.types.current[:2]):
                         path = f"gfx/ui/icons/element/{t.name.lower()}_type_small.png"
                         try:
-                            icon_surface = load_and_scale(
-                                path, self.scale_int(1)
-                            )
+                            icon_surface = load_and_scale(path, self.factor)
                             spr = Sprite()
                             spr.image = icon_surface
                             spr.rect = spr.image.get_rect()
@@ -458,7 +456,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 # --- Draw range icon ---
                 path = f"gfx/ui/icons/range/{technique.range.name.lower()}.png"
                 try:
-                    surf = load_and_scale(path, self.scale_int(1))
+                    surf = load_and_scale(path, self.factor)
                     spr = Sprite()
                     spr.image = surf
                     spr.rect = surf.get_rect()
@@ -477,7 +475,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
                 path = f"gfx/ui/icons/speed/{speed_val}.png"
                 try:
-                    surf = load_and_scale(path, self.scale_int(1))
+                    surf = load_and_scale(path, self.factor)
                     spr = Sprite()
                     spr.image = surf
                     spr.rect = surf.get_rect()
@@ -663,7 +661,7 @@ class CombatTargetMenuState(Menu[Monster]):
             raise KeyError(f"Sprite not found for entity: {monster.name}")
         item = MenuItem(self.surface, None, monster.name, monster)
         item.rect = sprite.rect.copy()
-        item.rect.inflate_ip(self.scale_int(1), self.scale_int(1))
+        item.rect.inflate_ip(self.factor, self.factor)
         return item
 
     def _create_menu(self) -> None:
@@ -680,7 +678,11 @@ class CombatTargetMenuState(Menu[Monster]):
         self.window.rect = rect
         self.sprites.add(self.window, layer=100)
 
-        self.text_area = TextArea(self.font, self.font_color)
+        self.text_area = TextArea(
+            font=self.font,
+            font_color=self.font_color,
+            scaling=self.client.context.scaling,
+        )
         self.text_area.rect = self.window.calc_inner_rect(self.window.rect)
         self.sprites.add(self.text_area, layer=100)
 

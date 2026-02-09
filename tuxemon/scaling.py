@@ -16,22 +16,28 @@ class ScalingStrategy(Protocol):
     def scale_tuple(self, coords: TVarSequence) -> TVarSequence: ...
     def scale_int(self, value: int) -> int: ...
     def scale_float(self, value: float) -> float: ...
-    def scale_sequence(self, seq: Sequence[float]) -> list[float]:
-        return [self.scale_float(x) for x in seq]
+    def scale_sequence(self, seq: Sequence[float]) -> list[float]: ...
+
+    @property
+    def factor(self) -> int: ...
 
 
 class DefaultScaling:
     def __init__(self, scale: int):
-        self.scale = scale
+        self._scale = scale
+
+    @property
+    def factor(self) -> int:
+        return self._scale
 
     def scale_tuple(self, coords: TVarSequence) -> TVarSequence:
-        return type(coords)(i * self.scale for i in coords)
+        return type(coords)(i * self._scale for i in coords)
 
     def scale_int(self, value: int) -> int:
-        return value * self.scale
+        return value * self._scale
 
     def scale_float(self, value: float) -> float:
-        return value * self.scale
+        return value * self._scale
 
     def scale_sequence(self, seq: Sequence[float]) -> list[float]:
         return [self.scale_float(x) for x in seq]
@@ -45,6 +51,10 @@ class ResolutionScaling:
     ):
         self.base_w, self.base_h = base_resolution
         self.curr_w, self.curr_h = current_resolution
+
+    @property
+    def factor(self) -> float:
+        return self.curr_w / self.base_w
 
     def scale_int(self, value: int) -> int:
         # scale uniformly using width ratio

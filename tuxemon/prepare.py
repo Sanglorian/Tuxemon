@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 class DisplayContext:
     screen: pg.Surface
     rect: pg.Rect
-    scale: int
     tile_size: tuple[int, int]
     scaling: ScalingStrategy
 
@@ -33,7 +32,6 @@ _default_rect = _default_surface.get_rect()
 DISPLAY_CONTEXT: DisplayContext = DisplayContext(
     screen=_default_surface,
     rect=_default_rect,
-    scale=1,
     tile_size=(1, 1),
     scaling=DefaultScaling(1),
 )
@@ -89,7 +87,6 @@ def pygame_init() -> DisplayContext:
     DISPLAY_CONTEXT = DisplayContext(
         screen=screen,
         rect=rect,
-        scale=scale,
         tile_size=tile_size,
         scaling=DefaultScaling(scale),
     )
@@ -116,7 +113,6 @@ def headless_init() -> DisplayContext:
     DISPLAY_CONTEXT = DisplayContext(
         screen=screen,
         rect=rect,
-        scale=1,
         tile_size=NATIVE_TILE_SIZE,
         scaling=DefaultScaling(1),
     )

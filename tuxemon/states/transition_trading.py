@@ -169,7 +169,7 @@ class TradingTransition(State):
             menu2_rect=sprites.menu2_rect,
         )
         assert handler
-        return handler.get_sprite("front", self.scale_int(1))
+        return handler.get_sprite("front", self.factor)
 
     def _white_image(self, sprite: Surface) -> Surface:
         for x in range(sprite.get_width()):

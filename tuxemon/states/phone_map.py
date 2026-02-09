@@ -78,7 +78,7 @@ class NuPhoneMap(PygameMenuState):
         menu: Menu,
     ) -> None:
         new_image = self._create_image(data.map_path)
-        new_image.scale(self.scale_int(1), self.scale_int(1))
+        new_image.scale(self.factor, self.factor)
         menu.add.image(image_path=new_image.copy())
         underline = False
         selectable = True

@@ -410,6 +410,7 @@ class Menu(Generic[T], State):
         self.reload_sounds()  # load default sounds
         self._input_handler = MenuInputHandler(self)
         self._text_renderer = TextRenderer(
+            scaling=self.client.context.scaling,
             font=self.font,
             font_filename=self.font_filename,
             font_color=self.font_color,

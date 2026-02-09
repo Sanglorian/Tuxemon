@@ -71,10 +71,19 @@ class ItemMenuState(Menu[Item]):
         rect.left = self.client.context.scaling.scale_int(3)
         rect.width = self.client.context.scaling.scale_int(250)
         rect.height = self.client.context.scaling.scale_int(32)
-        self.text_area = TextArea(self.font, self.font_color, (96, 96, 128))
+        self.text_area = TextArea(
+            font=self.font,
+            font_color=self.font_color,
+            scaling=self.client.context.scaling,
+            font_shadow=(96, 96, 128),
+        )
         self.text_area.rect = rect
         self.sprites.add(self.text_area, layer=100)
-        self.page_number_display = TextArea(self.font, self.font_color)
+        self.page_number_display = TextArea(
+            font=self.font,
+            font_color=self.font_color,
+            scaling=self.client.context.scaling,
+        )
         self.sprites.add(self.page_number_display, layer=100)
         self.page_size = MAX_MENU_ITEMS
 

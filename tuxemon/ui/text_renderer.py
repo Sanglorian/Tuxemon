@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from typing import TYPE_CHECKING
 
 from pygame import SRCALPHA
 from pygame.font import Font
@@ -10,23 +11,27 @@ from pygame.surface import Surface
 
 from tuxemon.graphics import ColorLike
 from tuxemon.platform.const.graphics import FONT_SHADOW_COLOR, FONT_SIZE
-from tuxemon.prepare import DISPLAY_CONTEXT
+
+if TYPE_CHECKING:
+    from tuxemon.scaling import ScalingStrategy
 
 
 class TextRenderer:
     def __init__(
         self,
+        scaling: ScalingStrategy,
         font_color: ColorLike,
         font_shadow_color: ColorLike | None = None,
         font_filename: str | None = None,
         font: Font | None = None,
     ) -> None:
+        self.scaling = scaling
         self.font_color = font_color
         if font_shadow_color is None:
             font_shadow_color = FONT_SHADOW_COLOR
         self.font_shadow_color = font_shadow_color
         self.font = font or Font(
-            font_filename, DISPLAY_CONTEXT.scaling.scale_int(FONT_SIZE)
+            font_filename, self.scaling.scale_int(FONT_SIZE)
         )
 
     def shadow_text(
@@ -54,7 +59,7 @@ class TextRenderer:
             bg = self.font_shadow_color
         font_color = self.font.render(text, True, fg)
         shadow_color = self.font.render(text, True, bg)
-        _offset = DISPLAY_CONTEXT.scaling.scale_sequence(offset)
+        _offset = self.scaling.scale_sequence(offset)
         size = [
             int(math.ceil(a + b))
             for a, b in zip(_offset, font_color.get_size())

@@ -88,7 +88,7 @@ class SetMonsterFlairAction(EventAction):
 
         monster.sprite_handler.refresh_flairs(monster.flairs)
 
-        scale_int = session.client.context.scaling.scale_int(1)
+        scale_int = session.client.context.scaling.factor
 
         if sprite_types:
             for sprite_type in sprite_types:

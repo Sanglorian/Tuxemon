@@ -87,7 +87,6 @@ def test_get_center_zero_tile_size(context):
     fake_context = DisplayContext(
         screen=context.screen,
         rect=context.rect,
-        scale=1,
         tile_size=(0, 0),
         scaling=DefaultScaling(1),
     )
@@ -103,7 +102,6 @@ def test_get_center_extreme_tile_size(context):
     fake_context = DisplayContext(
         screen=context.screen,
         rect=context.rect,
-        scale=1,
         tile_size=tile_size,
         scaling=DefaultScaling(1),
     )

@@ -66,7 +66,12 @@ class MonsterMenuState(Menu[Monster | None]):
         self.monsters = self.monster_filter.get_filtered_monsters(monsters)
 
         # make a text area to show messages
-        self.text_area = TextArea(self.font, self.font_color, (96, 96, 96))
+        self.text_area = TextArea(
+            font=self.font,
+            font_color=self.font_color,
+            scaling=self.client.context.scaling,
+            font_shadow=(96, 96, 96),
+        )
         rect = self.client.context.scaling.scale_tuple((20, 80, 80, 100))
         self.text_area.rect = Rect(rect)
         self.sprites.add(self.text_area, layer=100)
@@ -441,7 +446,9 @@ class MonsterStatsDisplay:
     def __init__(self, menu_state: MonsterMenuState) -> None:
         self.menu_state = menu_state
         self.sprite = TextArea(
-            self.menu_state.font, self.menu_state.font_color
+            font=self.menu_state.font,
+            font_color=self.menu_state.font_color,
+            scaling=self.menu_state.client.context.scaling,
         )
         self.menu_state.sprites.add(self.sprite, layer=LAYER_MONSTER_ICONS)
 
@@ -632,11 +639,23 @@ class MonsterSlotRenderer:
         upper_label = f"{monster.name}{monster.gender_symbol}"
 
         text_rect = rect.inflate(-padding, -padding)
-        draw_text(surface, upper_label, text_rect, font=self.font)
+        draw_text(
+            surface,
+            upper_label,
+            text_rect,
+            scaling=self.scaling,
+            font=self.font,
+        )
 
         text_rect.top = rect.bottom - self.scaling.scale_int(7)
         bottom_label = f"  Lv {monster.level}"
-        draw_text(surface, bottom_label, text_rect, font=self.font)
+        draw_text(
+            surface,
+            bottom_label,
+            text_rect,
+            scaling=self.scaling,
+            font=self.font,
+        )
 
         hp_width = int(content.width * 0.35)
         hp_rect = Rect(0, 0, hp_width, self.scaling.scale_int(8))

@@ -52,7 +52,12 @@ class InputDisplay:
         self.area_rect = area_rect
 
         # Prompt area
-        self.prompt = TextArea(font, font_color, (96, 96, 96))
+        self.prompt = TextArea(
+            font=font,
+            font_color=font_color,
+            scaling=self.scaling,
+            font_shadow=(96, 96, 96),
+        )
         self.prompt.animated = False
         self.prompt.rect = Rect(
             area_rect.x + self.scaling.scale_int(self.config.prompt_offset_x),
@@ -64,7 +69,12 @@ class InputDisplay:
         self.sprites.add(self.prompt)
 
         # Input text area
-        self.text_area = TextArea(font, font_color, (96, 96, 96))
+        self.text_area = TextArea(
+            font=font,
+            font_color=font_color,
+            scaling=self.scaling,
+            font_shadow=(96, 96, 96),
+        )
         self.text_area.animated = False
         self.text_area.rect = Rect(
             area_rect.x
@@ -78,7 +88,12 @@ class InputDisplay:
         self.sprites.add(self.text_area)
 
         # Character counter
-        self.char_counter = TextArea(font, font_color, (96, 96, 96))
+        self.char_counter = TextArea(
+            font=font,
+            font_color=font_color,
+            scaling=self.scaling,
+            font_shadow=(96, 96, 96),
+        )
         self.char_counter.animated = False
         self.sprites.add(self.char_counter)
 

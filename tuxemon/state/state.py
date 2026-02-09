@@ -63,6 +63,7 @@ class State(AnimationMixin, RenderMixin, ABC):
 
         # All sprites that draw on the screen
         self.sprites: SpriteGroup[Sprite] = SpriteGroup()
+
         self.client = local_session.client
         self.event_bus = get_event_bus()
 
@@ -74,6 +75,10 @@ class State(AnimationMixin, RenderMixin, ABC):
             raise TypeError(
                 f"{cls.__name__} must define a class variable 'name'"
             )
+
+    @property
+    def factor(self) -> int:
+        return self.client.context.scaling.factor
 
     def load_sprite(self, filename: str, **kwargs: Any) -> Sprite:
         """Load a sprite and add it to this state."""

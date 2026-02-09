@@ -548,7 +548,7 @@ class CombatAnimations(Menu[None], ABC):
             else list(range(PARTY_LIMIT))
         )
 
-        scaled_top = self.scale_int(1)
+        scaled_top = self.factor
 
         for index, pos in enumerate(positions):
             monster = player.monsters[index] if index < monster_count else None
@@ -646,9 +646,7 @@ class CombatAnimations(Menu[None], ABC):
         if self.combat_session.is_trainer_battle:
             enemy_pos = layout.get_combatant_pos("enemy", back_island.rect)
             enemy_surface = opponent.combat_sheet().front()
-            enemy_surface = graphics.scale_surface(
-                enemy_surface, self.scale_int(1)
-            )
+            enemy_surface = graphics.scale_surface(enemy_surface, self.factor)
             enemy = self.load_surface(enemy_surface, **enemy_pos)
             self.sprite_map.add_sprite(opponent, enemy)
         else:
@@ -664,9 +662,7 @@ class CombatAnimations(Menu[None], ABC):
 
         player_pos = layout.get_combatant_pos("player", front_island.rect)
         player_surface = player.combat_sheet().back()
-        player_surface = graphics.scale_surface(
-            player_surface, self.scale_int(1)
-        )
+        player_surface = graphics.scale_surface(player_surface, self.factor)
         player_back = self.load_surface(player_surface, **player_pos)
 
         self.sprites.add(enemy, player_back)

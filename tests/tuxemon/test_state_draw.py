@@ -155,36 +155,41 @@ class TestEventDebugDrawer(unittest.TestCase):
     def tearDownClass(cls):
         pygame.quit()
 
+    def make_context(self):
+        context = MagicMock()
+        context.screen = MagicMock()
+        context.scaling = MagicMock()
+        context.scaling.scale_sequence.return_value = (1, 1)
+        context.scaling.scale_int.return_value = 15
+        return context
+
     def test_init(self):
-        screen = MagicMock()
-        event_debug_drawer = EventDebugDrawer(screen)
-        self.assertEqual(event_debug_drawer.screen, screen)
-        self.assertEqual(event_debug_drawer.max_width, 1000)
-        self.assertEqual(event_debug_drawer.x_offset, 20)
-        self.assertEqual(event_debug_drawer.y_offset, 200)
-        self.assertEqual(event_debug_drawer.initial_x, 4)
-        self.assertEqual(event_debug_drawer.initial_y, 20)
-        self.assertEqual(event_debug_drawer.success_color, GREEN_COLOR)
-        self.assertEqual(event_debug_drawer.failure_color, RED_COLOR)
+        context = self.make_context()
+        drawer = EventDebugDrawer(context)
+        self.assertEqual(drawer.screen, context.screen)
+        self.assertEqual(drawer.scaling, context.scaling)
+        self.assertEqual(drawer.max_width, 1000)
+        self.assertEqual(drawer.x_offset, 20)
+        self.assertEqual(drawer.y_offset, 200)
+        self.assertEqual(drawer.initial_x, 4)
+        self.assertEqual(drawer.initial_y, 20)
+        self.assertEqual(drawer.success_color, GREEN_COLOR)
+        self.assertEqual(drawer.failure_color, RED_COLOR)
 
     def test_draw_event_debug(self):
-        screen = MagicMock()
-        event_debug_drawer = EventDebugDrawer(screen)
+        context = self.make_context()
+        drawer = EventDebugDrawer(context)
         event1 = [(True, MagicMock()), (False, MagicMock())]
         event1[0][1].parameters = ["param1", "param2"]
         event1[1][1].parameters = ["param3", "param4"]
         event2 = [(True, MagicMock()), (False, MagicMock())]
         event2[0][1].parameters = ["param5", "param6"]
         event2[1][1].parameters = ["param7", "param8"]
-        event_debug_drawer.draw_event_debug([event1, event2])
-        self.assertTrue(screen.blit.called)
+        drawer.draw_event_debug([event1, event2])
+        self.assertTrue(context.screen.blit.called)
 
     def test_render_text(self):
-        screen = MagicMock()
-        event_debug_drawer = EventDebugDrawer(screen)
-        text = "Test text"
-        color = (255, 0, 0)
-        position = (10, 20)
-        font_size = 15
-        event_debug_drawer.render_text(text, color, position, font_size)
-        self.assertTrue(screen.blit.called)
+        context = self.make_context()
+        drawer = EventDebugDrawer(context)
+        drawer.render_text("Test text", (255, 0, 0), (10, 20), 15)
+        self.assertTrue(context.screen.blit.called)

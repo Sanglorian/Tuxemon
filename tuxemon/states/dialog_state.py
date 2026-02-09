@@ -85,6 +85,7 @@ class DialogState(PopUpMenu[None]):
         self.dialog_box = TextArea(
             font=self.font,
             font_color=final_box_style["font_color"],
+            scaling=self.client.context.scaling,
             font_shadow=final_box_style["font_shadow"],
             h_alignment=final_box_style["h_alignment"],
             v_alignment=final_box_style["v_alignment"],

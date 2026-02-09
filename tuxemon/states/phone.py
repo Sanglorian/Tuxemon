@@ -119,7 +119,7 @@ class NuPhone(PygameMenuState):
                 change = self._get_app_callback(item)
 
                 new_image = self._create_image(item.sprite)
-                new_image.scale(self.scale_int(1), self.scale_int(1))
+                new_image.scale(self.factor, self.factor)
 
                 # App image (banner)
                 menu.add.banner(

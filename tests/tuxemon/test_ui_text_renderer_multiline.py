@@ -5,6 +5,7 @@ import unittest
 import pygame
 from pygame.surface import Surface
 
+from tuxemon.scaling import DefaultScaling
 from tuxemon.ui.text import MultilineTextRenderer
 from tuxemon.ui.text_renderer import TextRenderer
 
@@ -20,7 +21,7 @@ class TestMultilineTextRenderer(unittest.TestCase):
         pygame.quit()
 
     def setUp(self):
-        self.text_renderer = TextRenderer((255, 255, 255))
+        self.text_renderer = TextRenderer(DefaultScaling(1), (255, 255, 255))
         self.multiline_text_renderer = MultilineTextRenderer(
             self.text_renderer
         )

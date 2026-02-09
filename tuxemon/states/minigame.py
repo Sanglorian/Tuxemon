@@ -83,14 +83,14 @@ class MinigameState(PygameMenuState):
         )
         if handler is None:
             return
-        sprite = handler.get_sprite("front", scale=self.scale_int(1))
+        sprite = handler.get_sprite("front", scale=self.factor)
         if self.difficulty in ["easy", "normal"]:
             try:
                 image = self._create_image_from_surface(sprite.image)
                 menu.add.image(image_path=image.copy())
             except Exception:
                 image = self._create_image(MISSING_IMAGE)
-                image.scale(self.scale_int(1), self.scale_int(1))
+                image.scale(self.factor, self.factor)
                 menu.add.image(image_path=image.copy())
 
         if self.difficulty == "hard":

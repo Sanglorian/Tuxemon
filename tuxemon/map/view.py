@@ -249,8 +249,8 @@ class SpriteRenderer:
             sheet_path = f"sprites/{template.sprite_name}.png"
             sheet = load_and_scale_with_cache(sheet_path)
 
-        scaled_fw = template.frame_width * DISPLAY_CONTEXT.scale
-        scaled_fh = template.frame_height * DISPLAY_CONTEXT.scale
+        scaled_fw = template.frame_width * DISPLAY_CONTEXT.scaling.factor
+        scaled_fh = template.frame_height * DISPLAY_CONTEXT.scaling.factor
 
         all_frames = slice_spritesheet_surface(
             sheet,

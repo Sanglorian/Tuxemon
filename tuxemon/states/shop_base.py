@@ -78,7 +78,11 @@ class ShopMenuState(Menu[T], Generic[T], ABC):
         rect.left = self.scale_int(3)
         rect.width = self.scale_int(250)
         rect.height = self.scale_int(32)
-        self.text_area = TextArea(self.font, self.font_color)
+        self.text_area = TextArea(
+            font=self.font,
+            font_color=self.font_color,
+            scaling=self.client.context.scaling,
+        )
         self.text_area.rect = rect
         self.sprites.add(self.text_area, layer=100)
 

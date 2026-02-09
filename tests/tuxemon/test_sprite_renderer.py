@@ -63,7 +63,7 @@ def test_load_from_sheet(monkeypatch):
     npc.tile_pos = (0, 0)
 
     monkeypatch.setattr(
-        "tuxemon.map.view.slice_spritesheet",
+        "tuxemon.map.view.slice_spritesheet_surface",
         lambda *args, **kwargs: fake_sheet(),
     )
 
@@ -101,7 +101,7 @@ def test_walking_animation_pattern(monkeypatch):
 
     frames = fake_sheet()
     monkeypatch.setattr(
-        "tuxemon.map.view.slice_spritesheet",
+        "tuxemon.map.view.slice_spritesheet_surface",
         lambda *args, **kwargs: frames,
     )
 
@@ -137,7 +137,7 @@ def test_tall_sprite_offset(monkeypatch):
     frames = [pygame.Surface((16, 64)) for _ in range(12)]
 
     monkeypatch.setattr(
-        "tuxemon.map.view.slice_spritesheet",
+        "tuxemon.map.view.slice_spritesheet_surface",
         lambda *args, **kwargs: frames,
     )
 

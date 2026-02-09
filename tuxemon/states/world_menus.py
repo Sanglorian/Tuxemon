@@ -6,7 +6,7 @@ import logging
 from collections.abc import Callable
 from typing import TYPE_CHECKING, ClassVar
 
-import pygame_menu
+from pygame_menu.menu import Menu
 
 from tuxemon.animation import ScheduleType
 from tuxemon.menu.menu import PygameMenuState
@@ -27,10 +27,7 @@ logger = logging.getLogger(__name__)
 WorldMenuGameObj = Callable[[], object]
 
 
-def add_menu_items_to_pygame_menu(
-    menu: pygame_menu.Menu,
-    items: list[MenuItem],
-) -> None:
+def add_menu_items_to_pygame_menu(menu: Menu, items: list[MenuItem]) -> None:
     """Helper function to add items to a pygame_menu.Menu instance."""
     menu.clear()
     menu.add.vertical_fill()

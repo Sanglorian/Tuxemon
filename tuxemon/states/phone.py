@@ -7,8 +7,8 @@ from collections.abc import Callable, Sequence
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.item.item import Item
@@ -33,8 +33,8 @@ class NuPhone(PygameMenuState):
         self.char = character
 
         theme = self._setup_theme(BG_PHONE)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
         theme.title = True
 
         self.menu_apps: list[Item] = []
@@ -90,7 +90,7 @@ class NuPhone(PygameMenuState):
 
     def add_menu_items(
         self,
-        menu: pygame_menu.Menu,
+        menu: Menu,
         items: Sequence[Item],
     ) -> None:
         """Dynamically adds app items to the phone menu."""

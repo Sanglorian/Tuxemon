@@ -6,8 +6,8 @@ import logging
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.constants import paths
@@ -107,7 +107,7 @@ class NuPhoneContacts(PygameMenuState):
 
     def add_menu_items(
         self,
-        menu: pygame_menu.Menu,
+        menu: Menu,
     ) -> None:
 
         T_RELATIONSHIP = T.translate("relation_relationship")
@@ -150,8 +150,8 @@ class NuPhoneContacts(PygameMenuState):
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_PHONE_CONTACTS)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
         theme.title = True
 
         self.char = character

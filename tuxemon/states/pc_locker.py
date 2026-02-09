@@ -9,8 +9,8 @@ from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 from uuid import UUID
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.animation import ScheduleType
@@ -126,8 +126,8 @@ class ItemTakeState(PygameMenuState):
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_PC_LOCKER)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
         # menu
         theme.title = True
@@ -228,9 +228,7 @@ class ItemTakeState(PygameMenuState):
             escape_key_exits=True,
         )
 
-    def add_menu_items(
-        self, menu: pygame_menu.Menu, items: Sequence[Item]
-    ) -> None:
+    def add_menu_items(self, menu: Menu, items: Sequence[Item]) -> None:
         self.item_boxes = self.char.item_boxes
         self.box = self.item_boxes.get_items(self.box_name)
         handler = ItemActionHandler(
@@ -256,7 +254,7 @@ class ItemTakeState(PygameMenuState):
                 label,
                 selectable=True,
                 font_size=self.font_type.small,
-                align=locals.ALIGN_CENTER,
+                align=ALIGN_CENTER,
                 selection_effect=HighlightSelection(),
             )
 
@@ -283,7 +281,7 @@ class ItemBoxState(PygameMenuState):
 
     def add_menu_items(
         self,
-        menu: pygame_menu.Menu,
+        menu: Menu,
         items: Sequence[tuple[str, MenuGameObj]],
     ) -> None:
         menu.add.vertical_fill()

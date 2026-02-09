@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, ClassVar
 
 import pygame
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale.locale import T
@@ -27,8 +27,8 @@ class SetKeyState(PygameMenuState):
         Used when initializing the state
         """
         theme = get_theme()
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
         super().__init__(**kwargs)
         self.menu.add.label(
             T.translate("options_new_input_key0").upper(),

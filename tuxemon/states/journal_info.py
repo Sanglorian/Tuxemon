@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon import formula
 from tuxemon.database.runtime import db
@@ -41,11 +41,7 @@ class JournalInfoState(PygameMenuState):
 
     name: ClassVar[str] = "JournalInfoState"
 
-    def add_menu_items(
-        self,
-        menu: pygame_menu.Menu,
-        monster: MonsterModel,
-    ) -> None:
+    def add_menu_items(self, menu: Menu, monster: MonsterModel) -> None:
         fxw: Callable[[float], int] = lambda r: fix_measure(menu._width, r)
         fxh: Callable[[float], int] = lambda r: fix_measure(menu._height, r)
         menu._width = fxw(248 / 256)
@@ -79,7 +75,7 @@ class JournalInfoState(PygameMenuState):
             title=name,
             label_id="name",
             font_size=self.font_type.biggest,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab1.translate(fxw(126 / 256), fxh(19.8 / 144))
@@ -89,7 +85,7 @@ class JournalInfoState(PygameMenuState):
             title=_weight,
             label_id="weight",
             font_size=self.font_type.small,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab2.translate(fxw(158 / 256), fxh(39 / 144))
@@ -99,7 +95,7 @@ class JournalInfoState(PygameMenuState):
             title=_height,
             label_id="height",
             font_size=self.font_type.small,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab3.translate(fxw(126 / 256), fxh(39 / 144))
@@ -134,7 +130,7 @@ class JournalInfoState(PygameMenuState):
             title=types,
             label_id="type_loaded",
             font_size=self.font_type.small,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab5.translate(fxw((141.4 / 256) + type_shift), fxh(56 / 144))
@@ -144,7 +140,7 @@ class JournalInfoState(PygameMenuState):
             title=_type,
             label_id="type_label",
             font_size=self.font_type.small,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab4.translate(fxw((141 / 256) + type_shift), fxh(49 / 144))
@@ -156,7 +152,7 @@ class JournalInfoState(PygameMenuState):
             title=shape,
             label_id="shape",
             font_size=self.font_type.small,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab6.translate(fxw(126 / 256), fxh(66 / 144))
@@ -168,7 +164,7 @@ class JournalInfoState(PygameMenuState):
             title=species,
             label_id="species",
             font_size=self.font_type.small,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab7.translate(fxw(126 / 256), fxh(29 / 144))
@@ -178,7 +174,7 @@ class JournalInfoState(PygameMenuState):
             title=_txmn_id,
             label_id="txmn_id",
             font_size=self.font_type.small,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab8.translate(fxw(124.6 / 256), fxh(10 / 144))
@@ -192,7 +188,7 @@ class JournalInfoState(PygameMenuState):
             font_size=self.font_type.small,
             wordwrap=True,
             leading=35,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
 
@@ -205,7 +201,7 @@ class JournalInfoState(PygameMenuState):
             label_id="evolution",
             font_size=self.font_type.small,
             wordwrap=True,
-            align=locals.ALIGN_LEFT,
+            align=ALIGN_LEFT,
             float=True,
         )
         lab10.translate(fxw(2 / 256), fxh(109 / 144))
@@ -225,7 +221,7 @@ class JournalInfoState(PygameMenuState):
             labels = [
                 menu.add.label(
                     title=f"{T.translate(ele).upper()}",
-                    align=locals.ALIGN_LEFT,
+                    align=ALIGN_LEFT,
                     font_size=self.font_type.smaller,
                 )
                 for ele in elements
@@ -266,8 +262,8 @@ class JournalInfoState(PygameMenuState):
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_JOURNAL_INFO)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
         super().__init__(height=height, width=width)
 

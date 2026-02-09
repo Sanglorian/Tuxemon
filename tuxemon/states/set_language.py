@@ -5,8 +5,8 @@ from __future__ import annotations
 from functools import partial
 from typing import Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale.locale import T
@@ -29,8 +29,8 @@ class SetLanguage(PygameMenuState):
         """
         self.main_menu = main_menu
         theme = get_theme()
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
         super().__init__(**kwargs)
         self.initialize_items(self.menu)
         self.reset_theme()
@@ -50,10 +50,7 @@ class SetLanguage(PygameMenuState):
                 character=local_session.player,
             )
 
-    def initialize_items(
-        self,
-        menu: pygame_menu.Menu,
-    ) -> None:
+    def initialize_items(self, menu: Menu) -> None:
         used = self.client.config.locale.slug
         languages = T.get_available_languages()
         for language in languages:

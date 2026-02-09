@@ -7,8 +7,8 @@ from abc import ABC, abstractmethod
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import load_yaml
@@ -160,7 +160,7 @@ class NuPhoneRadioBase(PygameMenuState, ABC):
         )
 
     @abstractmethod
-    def add_menu_items(self, menu: pygame_menu.Menu) -> None:
+    def add_menu_items(self, menu: Menu) -> None:
         pass
 
 
@@ -175,7 +175,7 @@ class NuPhoneRadioMenu(NuPhoneRadioBase):
         """Starts the broadcast when a button is clicked."""
         self._start_broadcast(station_slug)
 
-    def add_menu_items(self, menu: pygame_menu.Menu) -> None:
+    def add_menu_items(self, menu: Menu) -> None:
         """Builds the menu with clickable station buttons based on map location."""
         available_stations = RADIO_MAP_LISTS.get(
             self.current_map, RADIO_MAP_LISTS.get("all_maps", [])
@@ -320,7 +320,7 @@ class NuPhoneRadioTuner(NuPhoneRadioBase):
 
         return best_match_slug
 
-    def add_menu_items(self, menu: pygame_menu.Menu) -> None:
+    def add_menu_items(self, menu: Menu) -> None:
         """Builds the menu with the frequency tuner slider."""
 
         menu.add.label(

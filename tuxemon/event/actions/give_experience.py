@@ -67,7 +67,9 @@ class GiveExperienceAction(EventAction):
                     return
             monsters = [monster]
 
-        if monsters:
-            for mon in monsters:
-                mon.give_experience(exp)
-                logger.info(f"{mon.name} +{exp} exp")
+        if not monsters:
+            return
+
+        for mon in monsters:
+            mon.give_experience(exp)
+            logger.info(f"{mon.name} +{exp} exp")

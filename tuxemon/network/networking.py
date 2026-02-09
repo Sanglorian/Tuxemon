@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING, Any
 from tuxemon.db import Direction
 from tuxemon.item.item import decode_items, encode_items
 from tuxemon.monster.monster import decode_monsters, encode_monsters
-from tuxemon.prepare import TILE_SIZE
 from tuxemon.session import local_session
 from tuxemon.states import world_state as world
 
@@ -225,7 +224,7 @@ def update_client(
 
         # Handle tile position updates
         if item == "tile_pos":
-            tile_size = TILE_SIZE
+            tile_size = game.context.tile_size
             position = [
                 value[0] * tile_size[0],
                 value[1] * tile_size[1],

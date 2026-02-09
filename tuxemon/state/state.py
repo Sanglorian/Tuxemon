@@ -90,11 +90,15 @@ class State(AnimationMixin, RenderMixin, ABC):
         return sprite
 
     def load_animated_sprite(
-        self, filenames: Iterable[str], delay: float, **kwargs: Any
+        self,
+        filenames: Iterable[str],
+        delay: float,
+        scale: float,
+        **kwargs: Any,
     ) -> Sprite:
         """Load an animated sprite and add it to this state."""
         layer = kwargs.pop("layer", 0)
-        sprite = load_animated_sprite(filenames, delay, **kwargs)
+        sprite = load_animated_sprite(filenames, delay, scale, **kwargs)
         self.sprites.add(sprite, layer=layer)
         return sprite
 

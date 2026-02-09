@@ -18,7 +18,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu
 from tuxemon.platform.const.graphics import WHITE_COLOR
-from tuxemon.prepare import SCREEN_RECT
 from tuxemon.save import get_save_path
 from tuxemon.tools import open_choice_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options
@@ -59,7 +58,7 @@ class SaveMenuState(PopUpMenu[None]):
             )
 
     def initialize_items(self) -> None:
-        rect = SCREEN_RECT.copy()
+        rect = self.client.context.rect.copy()
         slot_rect = Rect(
             0,
             0,

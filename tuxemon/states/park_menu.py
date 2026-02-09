@@ -15,7 +15,6 @@ from tuxemon.item.item import Item
 from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu
-from tuxemon.prepare import SCREEN_RECT
 from tuxemon.states.item_menu import ItemMenuState
 
 if TYPE_CHECKING:
@@ -76,7 +75,7 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
         self.event_bus.publish("combat_dialog", message=message)
 
     def calculate_menu_rectangle(self) -> Rect:
-        rect_screen = SCREEN_RECT.copy()
+        rect_screen = self.client.context.rect.copy()
         menu_width = rect_screen.w // 2.5
         menu_height = rect_screen.h // 4
         rect = Rect(0, 0, menu_width, menu_height)

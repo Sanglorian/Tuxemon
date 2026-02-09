@@ -5,8 +5,8 @@ from __future__ import annotations
 from functools import partial
 from typing import TYPE_CHECKING, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
@@ -22,16 +22,13 @@ if TYPE_CHECKING:
 class NuPhoneRenaming(PygameMenuState):
     name: ClassVar[str] = "NuPhoneRenaming"
 
-    def add_menu_items(
-        self,
-        menu: pygame_menu.Menu,
-    ) -> None:
+    def add_menu_items(self, menu: Menu) -> None:
         def rename_callback(new_name: str, monster: Monster) -> None:
             monster.name = new_name
             self.menu.clear()
             theme = self._setup_theme(BG_PHONE_RENAMING)
-            theme.scrollarea_position = locals.POSITION_EAST
-            theme.widget_alignment = locals.ALIGN_CENTER
+            theme.scrollarea_position = POSITION_EAST
+            theme.widget_alignment = ALIGN_CENTER
             self.add_menu_items(self.menu)
 
         def rename(monster: Monster) -> None:
@@ -60,8 +57,8 @@ class NuPhoneRenaming(PygameMenuState):
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_PHONE_RENAMING)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
         theme.title = True
 
         self.char = character

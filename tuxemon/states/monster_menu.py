@@ -214,13 +214,21 @@ class MonsterMenuHandler:
     def monster_stats(self, monster: Monster) -> None:
         """Displays monster statistics."""
         self.client.remove_state_by_name("ChoiceState")
-        params = {"monster": monster, "source": self.name}
+        params = {
+            "monster": monster,
+            "source": self.name,
+            "monsters": self.party.monsters,
+        }
         self.client.push_state("MonsterInfoState", kwargs=params)
 
     def monster_techs(self, monster: Monster) -> None:
         """Displays monster techniques."""
         self.client.remove_state_by_name("ChoiceState")
-        params = {"monster": monster, "source": self.name}
+        params = {
+            "monster": monster,
+            "source": self.name,
+            "monsters": self.party.monsters,
+        }
         self.client.push_state("MonsterMovesState", kwargs=params)
 
     def remove_item_direct(self, monster: Monster) -> None:

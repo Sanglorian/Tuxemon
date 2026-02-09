@@ -1,47 +1,101 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
 from unittest.mock import MagicMock
 
-from pygame.surface import Surface
+import pytest
+from pygame import Rect, Surface
 
 from tuxemon.entity.npc import NPC
+from tuxemon.map.tuxemon import AbstractMap
 from tuxemon.map.view import BubbleManager
+from tuxemon.prepare import DisplayContext
 
 
-class TestBubbleManager(unittest.TestCase):
+@pytest.fixture
+def context():
+    ctx = MagicMock(spec=DisplayContext)
+    ctx.rect = Rect(0, 0, 800, 600)
+    ctx.tile_size = (32, 32)
 
-    def setUp(self):
-        self.manager = BubbleManager()
-        self.entity = MagicMock(spec=NPC)
-        self.surface = MagicMock(spec=Surface)
+    return ctx
 
-    def test_init(self):
-        self.assertEqual(self.manager.layer, 100)
-        self.assertEqual(self.manager.offset_divisor, 10)
-        self.assertEqual(self.manager._bubbles, {})
 
-    def test_add_bubble(self):
-        self.manager.add_bubble(self.entity, self.surface)
-        self.assertIn(self.entity, self.manager._bubbles)
-        self.assertEqual(self.manager._bubbles[self.entity], self.surface)
+@pytest.fixture
+def manager(context):
+    return BubbleManager(context=context)
 
-    def test_remove_bubble(self):
-        self.manager.add_bubble(self.entity, self.surface)
-        self.manager.remove_bubble(self.entity)
-        self.assertNotIn(self.entity, self.manager._bubbles)
 
-    def test_has_bubble(self):
-        self.assertFalse(self.manager.has_bubble(self.entity))
-        self.manager.add_bubble(self.entity, self.surface)
-        self.assertTrue(self.manager.has_bubble(self.entity))
+@pytest.fixture
+def npc():
+    npc = MagicMock(spec=NPC)
+    npc.sprite_controller = MagicMock()
+    npc.tile_pos = (5, 5)
+    sprite_renderer = MagicMock()
+    sprite_renderer.rect = Rect(0, 0, 32, 48)
+    npc.sprite_controller.get_sprite_renderer.return_value = sprite_renderer
+    return npc
 
-    def test_clear_all_bubbles(self):
-        entity1 = MagicMock(spec=NPC)
-        entity2 = MagicMock(spec=NPC)
-        surface1 = MagicMock(spec=Surface)
-        surface2 = MagicMock(spec=Surface)
-        self.manager.add_bubble(entity1, surface1)
-        self.manager.add_bubble(entity2, surface2)
-        self.manager.clear_all_bubbles()
-        self.assertEqual(self.manager._bubbles, {})
+
+@pytest.fixture
+def surface():
+    return Surface((64, 32))
+
+
+def test_init(manager, context):
+    assert manager.layer == 100
+    assert manager.offset_divisor == 10
+    assert manager.context is context
+    assert manager._bubbles == {}
+
+
+def test_add_bubble(manager, npc, surface):
+    manager.add_bubble(npc, surface)
+    assert npc in manager._bubbles
+    assert manager._bubbles[npc] is surface
+
+
+def test_remove_bubble(manager, npc, surface):
+    manager.add_bubble(npc, surface)
+    manager.remove_bubble(npc)
+    assert npc not in manager._bubbles
+
+
+@pytest.mark.parametrize("present", [False, True])
+def test_has_bubble(manager, npc, surface, present):
+    if present:
+        manager.add_bubble(npc, surface)
+    assert manager.has_bubble(npc) is present
+
+
+def test_clear_all_bubbles(manager, npc, surface):
+    npc2 = MagicMock(spec=NPC)
+    surface2 = MagicMock(spec=Surface)
+
+    manager.add_bubble(npc, surface)
+    manager.add_bubble(npc2, surface2)
+
+    manager.clear_all_bubbles()
+    assert manager._bubbles == {}
+
+
+def test_get_rendered_bubbles(manager, npc, surface, context, monkeypatch):
+    current_map = MagicMock(spec=AbstractMap)
+
+    monkeypatch.setattr(
+        "tuxemon.map.view.get_pos_from_tilepos", lambda m, c, v: (100, 200)
+    )
+
+    manager.add_bubble(npc, surface)
+    rendered = manager.get_rendered_bubbles(current_map)
+
+    assert len(rendered) == 1
+
+    surf, rect, layer = rendered[0]
+
+    assert surf is surface
+    assert isinstance(rect, Rect)
+    assert layer == manager.layer
+
+    sprite_renderer = npc.sprite_controller.get_sprite_renderer()
+    assert rect.centerx == 100 + sprite_renderer.rect.width // 2
+    assert rect.bottom < 200

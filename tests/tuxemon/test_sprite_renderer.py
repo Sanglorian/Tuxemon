@@ -6,7 +6,7 @@ import pygame
 import pytest
 
 from tuxemon.map.view import EntityFacing, SpriteRenderer
-from tuxemon.prepare import SCREEN_SIZE, TILE_SIZE
+from tuxemon.prepare import DISPLAY_CONTEXT
 from tuxemon.user_config import CONFIG
 
 pygame.display.init()
@@ -146,7 +146,7 @@ def test_tall_sprite_offset(monkeypatch):
     renderer = SpriteRenderer(npc)
     renderer.load_sprites(npc.template)
 
-    expected_offset = 64 - TILE_SIZE[1]
+    expected_offset = 64 - DISPLAY_CONTEXT.tile_size[1]
     assert renderer.rect.y == 200 - expected_offset
 
 

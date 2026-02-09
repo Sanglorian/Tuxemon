@@ -20,7 +20,7 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu, PopUpMenu
 from tuxemon.monster.monster import Monster
-from tuxemon.prepare import SCALE, SCREEN_RECT, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.sprite import Sprite
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.states.monster_menu import MonsterMenuState
@@ -112,7 +112,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     self.sprites.remove(spr)
 
     def calculate_menu_rectangle(self) -> Rect:
-        rect_screen = SCREEN_RECT.copy()
+        rect_screen = self.client.context.rect.copy()
         menu_width = fix_measure(rect_screen.w, 102 / 256)
         menu_height = fix_measure(rect_screen.h, 36 / 144)
         rect = Rect(0, 0, menu_width, menu_height)
@@ -252,7 +252,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         menu.on_menu_selection = swap_it  # type: ignore[assignment]
         menu.is_valid_entry = validate  # type: ignore[assignment]
         menu.anchor("bottom", self.rect.top)
-        menu.anchor("right", SCREEN_RECT.right)
+        menu.anchor("right", self.client.context.rect.right)
 
     def open_item_menu(self) -> None:
         """Open menu to choose item to use."""
@@ -383,7 +383,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
             # position the new menu
             menu.anchor("bottom", self.rect.top)
-            menu.anchor("right", SCREEN_RECT.right)
+            menu.anchor("right", self.client.context.rect.right)
 
             # set next menu after the selection is made
             menu.on_menu_selection = choose_target  # type: ignore[assignment]
@@ -429,7 +429,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     for i, t in enumerate(technique.types.current[:2]):
                         path = f"gfx/ui/icons/element/{t.name.lower()}_type_small.png"
                         try:
-                            icon_surface = load_and_scale(path, SCALE)
+                            icon_surface = load_and_scale(
+                                path, self.client.context.scale
+                            )
                             spr = Sprite()
                             spr.image = icon_surface
                             spr.rect = spr.image.get_rect()
@@ -456,7 +458,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 # --- Draw range icon ---
                 path = f"gfx/ui/icons/range/{technique.range.name.lower()}.png"
                 try:
-                    surf = load_and_scale(path, SCALE)
+                    surf = load_and_scale(path, self.client.context.scale)
                     spr = Sprite()
                     spr.image = surf
                     spr.rect = surf.get_rect()
@@ -475,7 +477,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
                 path = f"gfx/ui/icons/speed/{speed_val}.png"
                 try:
-                    surf = load_and_scale(path, SCALE)
+                    surf = load_and_scale(path, self.client.context.scale)
                     spr = Sprite()
                     spr.image = surf
                     spr.rect = surf.get_rect()
@@ -666,7 +668,7 @@ class CombatTargetMenuState(Menu[Monster]):
 
     def _create_menu(self) -> None:
         """Sets up the menu UI."""
-        rect_screen = SCREEN_RECT.copy()
+        rect_screen = self.client.context.rect.copy()
         rect = Rect(0, 0, rect_screen.w // 2, rect_screen.h // 4)
         rect.bottomright = rect_screen.w, rect_screen.h
 

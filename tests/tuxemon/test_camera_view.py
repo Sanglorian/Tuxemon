@@ -2,16 +2,28 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import pytest
 
-from tuxemon import prepare
 from tuxemon.camera.camera import CameraView, project
 from tuxemon.math import Vector2
+from tuxemon.prepare import DISPLAY_CONTEXT, DisplayContext
 
 
 @pytest.fixture
-def view():
-    tile_size = prepare.TILE_SIZE
-    screen_size = prepare.SCREEN_SIZE
-    return CameraView(tile_size=tile_size, screen_size=screen_size)
+def context():
+    return DISPLAY_CONTEXT
+
+
+@pytest.fixture
+def view(context):
+    return CameraView(context)
+
+
+@pytest.fixture
+def center(context):
+    def compute(position: Vector2, tile_size):
+        px, py = project(context, (position.x, position.y))
+        return Vector2(px + tile_size[0] // 2, py + tile_size[1] // 2)
+
+    return compute
 
 
 def assert_vector_equal(actual: Vector2, expected: Vector2):
@@ -23,13 +35,9 @@ def test_initial_position(view):
     assert_vector_equal(view.position, Vector2(0, 0))
 
 
-def test_set_position(view):
+def test_set_position(view, center):
     target = Vector2(1.0, 1.0)
-    projected = project((target.x, target.y))
-    expected = Vector2(
-        projected[0] + view.tile_size[0] // 2,
-        projected[1] + view.tile_size[1] // 2,
-    )
+    expected = center(target, view.tile_size)
     view.set_position(target.x, target.y)
     assert_vector_equal(view.position, expected)
 
@@ -40,77 +48,64 @@ def test_move_relative(view):
     assert_vector_equal(view.position, Vector2(60, 30))
 
 
-def test_get_center_origin(view):
-    projected = project((0.0, 0.0))
-    expected = Vector2(
-        projected[0] + view.tile_size[0] // 2,
-        projected[1] + view.tile_size[1] // 2,
-    )
+def test_get_center_origin(view, center):
+    expected = center(Vector2(0.0, 0.0), view.tile_size)
     result = view.get_center(Vector2(0.0, 0.0))
     assert_vector_equal(result, expected)
 
 
-def test_get_center_whole_tile(view):
+def test_get_center_whole_tile(view, center):
     position = Vector2(2.0, 3.0)
-    projected = project((position.x, position.y))
-    expected = Vector2(
-        projected[0] + view.tile_size[0] // 2,
-        projected[1] + view.tile_size[1] // 2,
-    )
+    expected = center(position, view.tile_size)
     result = view.get_center(position)
     assert_vector_equal(result, expected)
 
 
-def test_get_center_fractional_tile(view):
+def test_get_center_fractional_tile(view, center):
     position = Vector2(0.5, 0.5)
-    projected = project((position.x, position.y))
-    expected = Vector2(
-        projected[0] + view.tile_size[0] // 2,
-        projected[1] + view.tile_size[1] // 2,
-    )
+    expected = center(position, view.tile_size)
     result = view.get_center(position)
     assert_vector_equal(result, expected)
 
 
-def test_get_center_negative_coordinates(view):
+def test_get_center_negative_coordinates(view, center):
     position = Vector2(-1.0, -1.0)
-    projected = project((position.x, position.y))
-    expected = Vector2(
-        projected[0] + view.tile_size[0] // 2,
-        projected[1] + view.tile_size[1] // 2,
-    )
+    expected = center(position, view.tile_size)
     result = view.get_center(position)
     assert_vector_equal(result, expected)
 
 
-def test_get_center_large_coordinates(view):
+def test_get_center_large_coordinates(view, center):
     position = Vector2(100.0, 200.0)
-    projected = project((position.x, position.y))
-    expected = Vector2(
-        projected[0] + view.tile_size[0] // 2,
-        projected[1] + view.tile_size[1] // 2,
-    )
+    expected = center(position, view.tile_size)
     result = view.get_center(position)
     assert_vector_equal(result, expected)
 
 
-def test_get_center_zero_tile_size():
-    screen_size = prepare.SCREEN_SIZE
-    view = CameraView(tile_size=(0, 0), screen_size=screen_size)
-    projected = project((1.0, 1.0))
-    expected = Vector2(projected[0], projected[1])
+def test_get_center_zero_tile_size(context):
+    fake_context = DisplayContext(
+        screen=context.screen,
+        rect=context.rect,
+        scale=1,
+        tile_size=(0, 0),
+    )
+    view = CameraView(fake_context)
+    px, py = project(fake_context, (1.0, 1.0))
+    expected = Vector2(px, py)
     result = view.get_center(Vector2(1.0, 1.0))
     assert_vector_equal(result, expected)
 
 
-def test_get_center_extreme_tile_size():
-    screen_size = prepare.SCREEN_SIZE
+def test_get_center_extreme_tile_size(context):
     tile_size = (1024, 512)
-    view = CameraView(tile_size=tile_size, screen_size=screen_size)
-    projected = project((1.0, 1.0))
-    expected = Vector2(
-        projected[0] + tile_size[0] // 2,
-        projected[1] + tile_size[1] // 2,
+    fake_context = DisplayContext(
+        screen=context.screen,
+        rect=context.rect,
+        scale=1,
+        tile_size=tile_size,
     )
+    view = CameraView(fake_context)
+    px, py = project(fake_context, (1.0, 1.0))
+    expected = Vector2(px + tile_size[0] // 2, py + tile_size[1] // 2)
     result = view.get_center(Vector2(1.0, 1.0))
     assert_vector_equal(result, expected)

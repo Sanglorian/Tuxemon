@@ -63,7 +63,6 @@ from tuxemon.menu.interface import MenuItem
 from tuxemon.monster.monster import Monster
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.sizes import PARTY_LIMIT
-from tuxemon.prepare import SCREEN_RECT
 from tuxemon.state.state import State
 from tuxemon.states.combat_animations import CombatAnimations
 from tuxemon.states.monster_menu import MonsterMenuState
@@ -335,7 +334,7 @@ class CombatState(CombatAnimations):
 
     def create_combat_dialog(self) -> None:
         """Create the area where battle messages are displayed."""
-        rect_screen = SCREEN_RECT.copy()
+        rect_screen = self.client.context.rect.copy()
         rect = Rect(0, 0, rect_screen.w, rect_screen.h // 4)
         rect.bottomright = rect_screen.w, rect_screen.h
         border = load_and_scale(self.borders_filename)
@@ -961,6 +960,7 @@ class CombatState(CombatAnimations):
         self.combat_session.reset()
         self.unregister_event_handlers()
         self.client.current_music.stop()
+        self.client.environment_manager.unlock_environment()
         self.clear_combat_states()
         self.phase = None
 

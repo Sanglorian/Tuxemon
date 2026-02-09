@@ -6,8 +6,8 @@ import random
 from functools import partial
 from typing import ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.database.runtime import db
@@ -16,7 +16,7 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const.graphics import BG_MINIGAME, MISSING_IMAGE
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure, open_dialog
 
 lookup_cache: dict[str, MonsterModel] = {}
@@ -48,20 +48,20 @@ class MinigameState(PygameMenuState):
         self.score = score
 
         theme = self._setup_theme(BG_MINIGAME)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
         super().__init__(height=height, width=width)
         self.add_menu_items(self.menu)
         self.reset_theme()
 
-    def add_menu_items(self, menu: pygame_menu.Menu) -> None:
+    def add_menu_items(self, menu: Menu) -> None:
         name = T.translate("who_is_that")
         menu.add.label(
             title=name,
             label_id="question",
             font_size=self.font_type.big,
-            align=locals.ALIGN_CENTER,
+            align=ALIGN_CENTER,
             underline=True,
         )
 
@@ -83,14 +83,16 @@ class MinigameState(PygameMenuState):
         )
         if handler is None:
             return
-        sprite = handler.get_sprite("front", scale=SCALE)
+        sprite = handler.get_sprite("front", scale=self.client.context.scale)
         if self.difficulty in ["easy", "normal"]:
             try:
                 image = self._create_image_from_surface(sprite.image)
                 menu.add.image(image_path=image.copy())
             except Exception:
                 image = self._create_image(MISSING_IMAGE)
-                image.scale(SCALE, SCALE)
+                image.scale(
+                    self.client.context.scale, self.client.context.scale
+                )
                 menu.add.image(image_path=image.copy())
 
         if self.difficulty == "hard":
@@ -99,7 +101,7 @@ class MinigameState(PygameMenuState):
                 title=description,
                 font_size=self.font_type.small,
                 label_id="description_label",
-                align=locals.ALIGN_CENTER,
+                align=ALIGN_CENTER,
                 max_char=-1,
                 wordwrap=True,
             )
@@ -115,7 +117,7 @@ class MinigameState(PygameMenuState):
             width=fix_measure(menu._width, 0.95),
             height=fix_measure(menu._width, 0.05),
             frame_id="options",
-            align=locals.ALIGN_CENTER,
+            align=ALIGN_CENTER,
         )
         frame._relax = True
 
@@ -127,20 +129,20 @@ class MinigameState(PygameMenuState):
                 button_id=mon.slug,
                 selection_effect=HighlightSelection(),
             )
-            frame.pack(label, align=locals.ALIGN_CENTER)
+            frame.pack(label, align=ALIGN_CENTER)
 
         # Score and Streak
         menu.add.label(
             title=f"{T.translate('score_label')}: {self.score}",
             label_id="score_label",
             font_size=self.font_type.medium,
-            align=locals.ALIGN_CENTER,
+            align=ALIGN_CENTER,
         )
         menu.add.label(
             title=f"{T.translate('streak_label')}: {self.streak}",
             label_id="streak_label",
             font_size=self.font_type.medium,
-            align=locals.ALIGN_CENTER,
+            align=ALIGN_CENTER,
         )
 
         if self.streak >= 10:
@@ -149,7 +151,7 @@ class MinigameState(PygameMenuState):
                 font_size=self.font_type.medium,
                 font_color=(255, 215, 0),
                 label_id="streak_bonus_label",
-                align=locals.ALIGN_CENTER,
+                align=ALIGN_CENTER,
             )
 
     def check_answer(self, mon: MonsterModel) -> None:

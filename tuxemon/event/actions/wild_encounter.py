@@ -32,14 +32,13 @@ class WildEncounterAction(EventAction):
         .. code-block::
 
             wild_encounter <monster_slug>,<monster_level>[,exp_mod]
-                            [,mon_mod][,env][,rgb][,held_item]
+                            [,mon_mod][,rgb][,held_item]
 
     Script parameters:
         monster_slug: Monster slug.
         monster_level: Level of monster.
         exp_mod: Experience modifier.
         mon_mod: Money modifier.
-        env: Environment (grass default)
         rgb: color (eg red > 255,0,0 > 255:0:0) - default rgb(255,255,255)
         held_item: item held by the monster
     """

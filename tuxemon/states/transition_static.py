@@ -9,7 +9,6 @@ from typing import ClassVar
 from pygame.surface import Surface
 
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCREEN
 from tuxemon.state.state import State
 
 logger = logging.getLogger(__name__)
@@ -34,7 +33,7 @@ class StaticTransition(State):
         self.screenshot: Surface | None = None
 
     def resume(self) -> None:
-        self.screenshot = Surface.copy(SCREEN)
+        self.screenshot = Surface.copy(self.client.context.screen)
 
     def update(self, time_delta: float) -> None:
         self.elapsed_time += time_delta

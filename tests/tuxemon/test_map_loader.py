@@ -10,6 +10,15 @@ from tuxemon.map.loader import MapLoader
 
 
 @pytest.fixture
+def fake_context():
+    ctx = MagicMock()
+    ctx.tile_size = (16, 16)
+    ctx.rect = MagicMock()
+    ctx.rect.size = (320, 240)
+    return ctx
+
+
+@pytest.fixture
 def mock_tmx_map(mocker):
     m = mocker.MagicMock()
     m.scenario = None
@@ -64,14 +73,14 @@ def mock_mods_folder(mocker):
 
 
 @pytest.fixture
-def loader(mocker, mock_tmx_loader, mock_yaml_loader):
+def loader(mocker, mock_tmx_loader, mock_yaml_loader, fake_context):
     mocker.patch(
         "tuxemon.map.loader.TMXMapLoader", return_value=mock_tmx_loader
     )
     mocker.patch(
         "tuxemon.map.loader.YAMLEventLoader", return_value=mock_yaml_loader
     )
-    return MapLoader(cache_size=2, enable_cache=True)
+    return MapLoader(context=fake_context, cache_size=2, enable_cache=True)
 
 
 def test_load_map_data_cache_miss(loader, mock_fetch_asset, mock_tmx_loader):
@@ -96,11 +105,13 @@ def test_cache_eviction(loader, mock_fetch_asset, mock_tmx_loader):
     assert "/fake/maps/a.tmx" not in loader._cache
 
 
-def test_cache_disabled(mocker, mock_fetch_asset, mock_tmx_loader):
+def test_cache_disabled(
+    mocker, mock_fetch_asset, mock_tmx_loader, fake_context
+):
     mocker.patch(
         "tuxemon.map.loader.TMXMapLoader", return_value=mock_tmx_loader
     )
-    loader = MapLoader(enable_cache=False)
+    loader = MapLoader(context=fake_context, enable_cache=False)
     loader.load_map_data("test")
     loader.load_map_data("test")
     assert mock_tmx_loader.load.call_count == 2
@@ -143,8 +154,8 @@ def test_process_events_missing_yaml(loader, mock_yaml_loader, mocker):
     assert events == defaultdict(list)
 
 
-def test_add_to_cache_disabled(mocker):
-    loader = MapLoader(enable_cache=False)
+def test_add_to_cache_disabled(mocker, fake_context):
+    loader = MapLoader(context=fake_context, enable_cache=False)
     loader.add_to_cache("x", MagicMock())
     assert len(loader._cache) == 0
 

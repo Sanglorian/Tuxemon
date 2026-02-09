@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol, TypeVar, overload
 
-from tuxemon.prepare import SCALE
+from tuxemon.prepare import DISPLAY_CONTEXT
 
 TVarSequence = TypeVar("TVarSequence", bound=tuple[int, ...])
 
@@ -20,10 +20,10 @@ class ScalingStrategy(Protocol):
 
 class DefaultScaling:
     def scale_tuple(self, coords: TVarSequence) -> TVarSequence:
-        return type(coords)(i * SCALE for i in coords)
+        return type(coords)(i * DISPLAY_CONTEXT.scale for i in coords)
 
     def scale_int(self, value: int) -> int:
-        return value * SCALE
+        return value * DISPLAY_CONTEXT.scale
 
 
 class ResolutionScaling:

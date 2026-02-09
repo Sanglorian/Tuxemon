@@ -54,7 +54,7 @@ Notes:
 - Keep universal fixes minimal and focused on data consistency.
 """
 
-SAVE_VERSION = 2
+SAVE_VERSION = 3
 
 # "evolution_registry": ("npc_state", "world_state"),
 FIELD_MIGRATION_MAP: dict[str, tuple[str, str]] = {}
@@ -75,6 +75,12 @@ def upgrade_from_v1_to_v2(save_data: dict[str, Any]) -> None:
     _handle_change_money(npc_state)
     _handle_change_teleport_faint(npc_state)
     _handle_change_contacts(npc_state)
+
+
+def upgrade_from_v2_to_v3(save_data: dict[str, Any]) -> None:
+    logger.info("Applying upgrade from version 2 to 3")
+    npc_state = save_data.get("npc_state", {})
+    _handle_change_appearance(npc_state)
 
 
 def apply_universal_fixes(npc_state: dict[str, Any]) -> None:
@@ -102,6 +108,7 @@ def apply_field_migrations(save_data: dict[str, Any]) -> None:
 VERSION_UPGRADES: dict[int, Callable[[dict[str, Any]], None]] = {
     0: upgrade_from_v0_to_v1,
     1: upgrade_from_v1_to_v2,
+    2: upgrade_from_v2_to_v3,
 }
 
 
@@ -178,6 +185,20 @@ def _handle_change_contacts(save_data: dict[str, Any]) -> None:
             new[key] = {"relationship_type": "unknown"}
         save_data["relationships"] = new
         del save_data["contacts"]
+
+
+def _handle_change_appearance(npc_state: dict[str, Any]) -> None:
+    """Introduces the 'appearance' field for NPCs."""
+    if "appearance" in npc_state:
+        return
+
+    template = npc_state.get("template", {})
+    sprite_name = template.get("sprite_name", "adventurer")
+    combat_sheet = template.get("combat_sheet", "adventurer")
+    npc_state["appearance"] = {
+        "sprite_name": sprite_name,
+        "combat_sheet": combat_sheet,
+    }
 
 
 def _handle_change_teleport_faint(save_data: dict[str, Any]) -> None:

@@ -27,7 +27,6 @@ from tuxemon.menu.quantity import QuantityAndCostMenu
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.sizes import MAX_MENU_ITEMS
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCREEN_RECT
 from tuxemon.sprite import Sprite
 from tuxemon.ui.paginator import Paginator
 from tuxemon.ui.text import TextArea
@@ -75,7 +74,7 @@ class ShopMenuState(Menu[T], Generic[T], ABC):
         self.inventory: list[T] = []
 
         # This is the area where the asset's description is displayed.
-        rect = SCREEN_RECT.copy()
+        rect = self.client.context.rect.copy()
         rect.top = tools.scale(106)
         rect.left = tools.scale(3)
         rect.width = tools.scale(250)

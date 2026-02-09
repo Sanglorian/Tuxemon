@@ -6,7 +6,7 @@ import pygame
 import pytest
 
 from tuxemon.map.view import EntityFacing, SpriteRenderer
-from tuxemon.prepare import SCREEN_SIZE, TILE_SIZE
+from tuxemon.prepare import DISPLAY_CONTEXT
 from tuxemon.user_config import CONFIG
 
 pygame.display.init()
@@ -63,7 +63,7 @@ def test_load_from_sheet(monkeypatch):
     npc.tile_pos = (0, 0)
 
     monkeypatch.setattr(
-        "tuxemon.map.view.slice_spritesheet",
+        "tuxemon.map.view.slice_spritesheet_surface",
         lambda *args, **kwargs: fake_sheet(),
     )
 
@@ -101,7 +101,7 @@ def test_walking_animation_pattern(monkeypatch):
 
     frames = fake_sheet()
     monkeypatch.setattr(
-        "tuxemon.map.view.slice_spritesheet",
+        "tuxemon.map.view.slice_spritesheet_surface",
         lambda *args, **kwargs: frames,
     )
 
@@ -137,7 +137,7 @@ def test_tall_sprite_offset(monkeypatch):
     frames = [pygame.Surface((16, 64)) for _ in range(12)]
 
     monkeypatch.setattr(
-        "tuxemon.map.view.slice_spritesheet",
+        "tuxemon.map.view.slice_spritesheet_surface",
         lambda *args, **kwargs: frames,
     )
 
@@ -146,7 +146,7 @@ def test_tall_sprite_offset(monkeypatch):
     renderer = SpriteRenderer(npc)
     renderer.load_sprites(npc.template)
 
-    expected_offset = 64 - TILE_SIZE[1]
+    expected_offset = 64 - DISPLAY_CONTEXT.tile_size[1]
     assert renderer.rect.y == 200 - expected_offset
 
 

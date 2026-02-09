@@ -6,8 +6,8 @@ from collections.abc import Callable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_LEFT, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
@@ -42,11 +42,7 @@ class JournalState(PygameMenuState):
 
     name: ClassVar[str] = "JournalState"
 
-    def add_menu_items(
-        self,
-        menu: pygame_menu.Menu,
-        monsters: list[MonsterModel],
-    ) -> None:
+    def add_menu_items(self, menu: Menu, monsters: list[MonsterModel]) -> None:
         column_width = fix_measure(menu._width, 0.35)
         btn_x_offset = fix_measure(menu._width, 0.25)
         btn_y_offset = fix_measure(menu._height, 0.01)
@@ -104,8 +100,8 @@ class JournalState(PygameMenuState):
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_JOURNAL)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_LEFT
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_LEFT
 
         columns = 2
 

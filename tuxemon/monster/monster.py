@@ -46,7 +46,7 @@ from tuxemon.monster.stats import (
 )
 from tuxemon.monster.status import MonsterStatusHandler
 from tuxemon.platform.const.sizes import MONTH_KEYS
-from tuxemon.prepare import SCALE
+from tuxemon.prepare import DISPLAY_CONTEXT
 from tuxemon.shape import ShapeHandler
 from tuxemon.sprite import Sprite
 from tuxemon.taste import Taste
@@ -399,13 +399,13 @@ class Monster:
             {"doc": self.capture_string},
         )
 
-    def load_sprites(self, scale: float = SCALE) -> None:
+    def load_sprites(self, scale: float = DISPLAY_CONTEXT.scale) -> None:
         """
         Delegates the task of loading sprites to the sprite handler.
 
         Parameters:
             scale: The scaling factor to resize the sprite images.
-                Defaults to the predefined scale value in 'SCALE'.
+                Defaults to the predefined scale value in 'DISPLAY_CONTEXT.scale'.
         """
         self.sprite_handler.load_sprites(scale)
 
@@ -472,7 +472,7 @@ class Monster:
         self,
         sprite_type: str,
         frame_duration: float = 0.25,
-        scale: float = SCALE,
+        scale: float = DISPLAY_CONTEXT.scale,
         **kwargs: Any,
     ) -> Sprite:
         """

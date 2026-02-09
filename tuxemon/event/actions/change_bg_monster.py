@@ -73,7 +73,7 @@ class ChangeBgMonsterAction(EventAction):
             menu2_rect=sprites.menu2_rect,
         )
 
-        sprite = handler.get_sprite("front")
+        sprite = handler.get_sprite("front", session.client.context.scale)
 
         client.push_state(
             "MonsterImageState",

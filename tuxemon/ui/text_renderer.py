@@ -11,7 +11,7 @@ from pygame.surface import Surface
 
 from tuxemon.graphics import ColorLike
 from tuxemon.platform.const.graphics import FONT_SHADOW_COLOR, FONT_SIZE
-from tuxemon.prepare import SCALE
+from tuxemon.prepare import DISPLAY_CONTEXT
 from tuxemon.tools import scale
 
 
@@ -24,7 +24,7 @@ def create_layout(
     return func
 
 
-layout = create_layout(SCALE)
+layout = create_layout(DISPLAY_CONTEXT.scale)
 
 
 class TextRenderer:

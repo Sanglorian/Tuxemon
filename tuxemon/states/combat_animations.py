@@ -24,7 +24,6 @@ from tuxemon.database.rules import config_combat
 from tuxemon.environment import BattleLayout
 from tuxemon.menu.menu import Menu
 from tuxemon.platform.const.sizes import PARTY_LIMIT
-from tuxemon.prepare import SCALE, SCREEN, SCREEN_RECT
 from tuxemon.sprite import CaptureDeviceSprite, HordeSprite, Sprite
 from tuxemon.tools import scale
 from tuxemon.ui.combat_bars import CombatBars
@@ -79,7 +78,7 @@ class CombatAnimations(Menu[None], ABC):
         _layout = layout_manager.prepare_all(teams)
         self.hud_manager = CombatLayoutManager(_layout)
         self.status_icons = StatusIconManager(self, _layout, self.hud_manager)
-        self.combat_zone = CombatZone(SCREEN_RECT)
+        self.combat_zone = CombatZone(self.client.context.rect)
         self.text_display = CombatTextDisplay(
             get_rect_func=self.hud_manager.get_rect,
             shadow_text_func=self.shadow_text,
@@ -206,7 +205,7 @@ class CombatAnimations(Menu[None], ABC):
         self.sprite_map.add_sprite(monster, monster_sprite)
 
         # Position monster sprite off screen and animate it to final spot
-        monster_sprite.rect.top = SCREEN.get_height()
+        monster_sprite.rect.top = self.client.context.screen.get_height()
         self.animate(
             monster_sprite.rect,
             bottom=feet[1],
@@ -598,7 +597,7 @@ class CombatAnimations(Menu[None], ABC):
         if self.background_sprite:
             self.background_sprite.kill()
 
-        full_surf = self.env.prepare_background(SCREEN_RECT.size)
+        full_surf = self.env.prepare_background(self.client.context.rect.size)
         spr = Sprite()
         spr.image = full_surf
         spr.rect = full_surf.get_rect()
@@ -623,7 +622,7 @@ class CombatAnimations(Menu[None], ABC):
         player_home = self.hud_manager.get_rect(player, "home")
         opp_home = self.hud_manager.get_rect(opponent, "home")
         layout = self.env.get_battle_layout(
-            SCREEN_RECT.size, player_home, opp_home
+            self.client.context.rect.size, player_home, opp_home
         )
 
         # Spawn Islands
@@ -639,7 +638,9 @@ class CombatAnimations(Menu[None], ABC):
         if self.combat_session.is_trainer_battle:
             enemy_pos = layout.get_combatant_pos("enemy", back_island.rect)
             enemy_surface = opponent.combat_sheet().front()
-            enemy_surface = graphics.scale_surface(enemy_surface, SCALE)
+            enemy_surface = graphics.scale_surface(
+                enemy_surface, self.client.context.scale
+            )
             enemy = self.load_surface(enemy_surface, **enemy_pos)
             self.sprite_map.add_sprite(opponent, enemy)
         else:
@@ -655,7 +656,9 @@ class CombatAnimations(Menu[None], ABC):
 
         player_pos = layout.get_combatant_pos("player", front_island.rect)
         player_surface = player.combat_sheet().back()
-        player_surface = graphics.scale_surface(player_surface, SCALE)
+        player_surface = graphics.scale_surface(
+            player_surface, self.client.context.scale
+        )
         player_back = self.load_surface(player_surface, **player_pos)
 
         self.sprites.add(enemy, player_back)

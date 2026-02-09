@@ -10,18 +10,21 @@ from tuxemon.client import LocalPygameClient
 from tuxemon.database.runtime import db
 from tuxemon.headless_client import HeadlessClient
 from tuxemon.launcher import GameLauncher
-from tuxemon.prepare import SCREEN
 from tuxemon.session import local_session
 
 if TYPE_CHECKING:
-
     from tuxemon.config import TuxemonConfig
+    from tuxemon.prepare import DisplayContext
 
 
 logger = logging.getLogger(__name__)
 
 
-def main(config: TuxemonConfig, load_slot: int | None = None) -> None:
+def main(
+    config: TuxemonConfig,
+    context: DisplayContext,
+    load_slot: int | None = None,
+) -> None:
     """
     Configure and start the game.
 
@@ -34,11 +37,9 @@ def main(config: TuxemonConfig, load_slot: int | None = None) -> None:
     """
     log.configure()
 
-    screen = SCREEN
-
     import pygame
 
-    client = LocalPygameClient.create(config, screen)
+    client = LocalPygameClient.create(config, context)
 
     local_session.set_client(client)
 
@@ -49,6 +50,19 @@ def main(config: TuxemonConfig, load_slot: int | None = None) -> None:
 
     client.main()
     pygame.quit()
+
+
+def headless(config: TuxemonConfig, context: DisplayContext) -> None:
+    """
+    Sets up out headless server and start the game.
+
+    Parameters:
+        config: The Tuxemon configuration object containing game settings.
+    """
+    log.configure()
+    control = HeadlessClient(config, context)
+    control.push_state("HeadlessServerState")
+    control.main()
 
 
 def configure_game_states(
@@ -63,7 +77,7 @@ def configure_game_states(
     if not config.skip_titlescreen:
         client.push_state("IntroState")
 
-    if load_slot:
+    if load_slot is not None:
         client.push_state("LoadMenuState", load_slot=load_slot)
         client.pop_state()
 
@@ -96,16 +110,3 @@ def configure_debug_options(client: LocalPygameClient) -> None:
         action("add_item", ("super_potion",))
     for _ in range(100):
         action("add_item", ("apple",))
-
-
-def headless(config: TuxemonConfig) -> None:
-    """
-    Sets up out headless server and start the game.
-
-    Parameters:
-        config: The Tuxemon configuration object containing game settings.
-    """
-    log.configure()
-    control = HeadlessClient(config)
-    control.push_state("HeadlessServerState")
-    control.main()

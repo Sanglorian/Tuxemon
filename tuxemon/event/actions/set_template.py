@@ -18,11 +18,6 @@ class SetTemplateAction(EventAction):
     """
     Switch template (sprite and combat_sheet).
 
-    Please remember that if you change the combat_sheet,
-    it automatically changes the combat_back.
-
-    Example: if you put xxx, it's going to be xxx_back.png.
-
     By using default:
 
         set_template player,default
@@ -33,7 +28,7 @@ class SetTemplateAction(EventAction):
 
         .. code-block:: text
 
-           set_template <character>,<sprite>[,combat_sheet]
+            set_template <character>,<sprite>[,combat_sheet]
 
     Script parameters:
 
@@ -47,6 +42,11 @@ class SetTemplateAction(EventAction):
         combat_sheet:
             Must be inside mods/tuxemon/gfx/sprites/player.
             Example: adventurer.png -> adventurer.
+
+    Note:
+        This action only changes the base template fields (sprite_name and
+        combat_sheet). Layered appearance fields such as outfit, accessory,
+        or palette are handled separately.
     """
 
     name = "set_template"
@@ -55,39 +55,13 @@ class SetTemplateAction(EventAction):
     combat_sheet: str | None = None
 
     def start(self, session: Session) -> None:
-        character = session.get_npc(self.character)
-        if character is None:
-            logger.error(f"{self.character} not found")
+        target = session.get_npc(self.character)
+        if not target:
+            logger.error(f"NPC {self.character} not found")
             return
 
         if self.sprite == "default":
-            gender = character.game_variables.get("race_choice", "")
-            sprite_mapping = {
-                "gender_enby": ("enbyasian", "enbyasian"),
-                "gender_whatever": ("penguin", "penguin"),
-                "black_female": ("brownheroine_brown", "heroineblack"),
-                "black_male": ("adventurerblack", "adventurerblack"),
-                "white_female": ("heroine", "heroine"),
-                "white_male": ("adventurer", "adventurer"),
-            }
-            sprite_name, combat_sheet = sprite_mapping.get(
-                gender, (None, None)
-            )
-
-            if sprite_name:
-                character.template.sprite_name = sprite_name
-
-            if combat_sheet:
-                character.template.combat_sheet = combat_sheet
-
+            target.appearance_manager.reset_to_default()
         else:
-            character.template.sprite_name = self.sprite
-            logger.info(f"{character.name}'s sprite is {self.sprite}")
-
-            if self.combat_sheet:
-                character.template.combat_sheet = self.combat_sheet
-                logger.info(
-                    f"{character.name}'s combat sheet is {self.combat_sheet}"
-                )
-
-        character.sprite_controller.update_template(character.template)
+            target.appearance_manager.update(self.sprite, self.combat_sheet)
+            logger.info(f"Updated {target.name} appearance to {self.sprite}")

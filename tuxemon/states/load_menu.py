@@ -8,7 +8,6 @@ from typing import ClassVar
 from pygame.rect import Rect
 
 from tuxemon.menu.interface import MenuItem
-from tuxemon.prepare import SCREEN_RECT
 
 from .save_menu import SLOT_HEIGHT_RATIO, SLOT_WIDTH_RATIO, SaveMenuState
 
@@ -25,7 +24,7 @@ class LoadMenuState(SaveMenuState):
             self.on_menu_selection(None)
 
     def initialize_items(self) -> None:
-        rect = SCREEN_RECT.copy()
+        rect = self.client.context.rect.copy()
         slot_rect = Rect(
             0,
             0,

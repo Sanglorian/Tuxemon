@@ -10,6 +10,7 @@ from uuid import UUID
 from tuxemon.boxes import ItemBoxes, MonsterBoxes
 from tuxemon.database.runtime import db
 from tuxemon.db import DialogueProfile, NpcModel
+from tuxemon.entity.appearance import AppearanceManager
 from tuxemon.entity.bag import BagHandler
 from tuxemon.entity.battle import BattlesHandler
 from tuxemon.entity.entity import Entity
@@ -83,6 +84,8 @@ class NPC(Entity):
         self.persistence = npc_data.persistence
         self.audio = npc_data.audio
         self.birthdate = npc_data.birthdate
+
+        self.appearance_manager = AppearanceManager(self)
 
         self._custom_name: str | None = None
         # general
@@ -220,7 +223,7 @@ class NPC(Entity):
         base.relationships = encode_relationships(self.relationships)
         base.money = self.money_controller.save()
         base.items = self.bag.encode_items()
-        base.template = self.template.model_dump()
+        base.appearance = self.appearance_manager.state.to_dict()
         base.missions = self.mission_controller.encode_missions()
         base.monsters = self.party.encode_party()
         base.player_slug = self.slug
@@ -276,15 +279,8 @@ class NPC(Entity):
         self.step_tracker = decode_steps(save_data.step_tracker)
         self.party.routing_policy_name = RoutingPolicy.from_dict(save_data)
 
-        if save_data.template:
-            self.template.slug = save_data.template.get("slug", "")
-            self.template.sprite_name = save_data.template.get(
-                "sprite_name", ""
-            )
-            self.template.combat_sheet = save_data.template.get(
-                "combat_sheet", ""
-            )
-            self.sprite_controller.update_template(self.template)
+        if save_data.appearance:
+            self.appearance_manager.load_state(save_data.appearance)
 
     def get_active_battle_music(
         self, default_music: BattleMusicModel

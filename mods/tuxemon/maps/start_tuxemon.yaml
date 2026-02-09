@@ -12,7 +12,7 @@ events:
 
   Gender:
     actions:
-    - change_bg gradient_blue
+    - change_bg gradient_blue,choice_gender,image
     - translated_dialog_choice gender_male:gender_female:gender_nonbinary,gender_choice
     conditions:
     - is variable_set scenario_choice

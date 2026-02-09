@@ -22,7 +22,7 @@ from tuxemon.graphics import (
     ColorLike,
     apply_cinema_bars,
     load_and_scale,
-    slice_spritesheet,
+    slice_spritesheet_surface,
 )
 from tuxemon.map.map import get_pos_from_tilepos
 from tuxemon.math import Vector2
@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from tuxemon.camera.camera import CameraManager
     from tuxemon.db import NpcTemplateModel
+    from tuxemon.entity.appearance import RuntimeAppearance
     from tuxemon.entity.npc import NPC
     from tuxemon.map.manager import MapManager
     from tuxemon.map.tuxemon import AbstractMap
@@ -100,10 +101,19 @@ class SpriteController:
         self.sprite_renderer.set_position(self.npc.tile_pos)
         self.sprite_renderer.update(time_delta)
 
-    def update_template(self, template: NpcTemplateModel) -> None:
+    def update_appearance(self, appearance: RuntimeAppearance) -> None:
         """
-        Update the NPC template and reload all sprites from the sheet.
+        Reload sprites using the NPC's template, but with runtime-overridden
+        sprite/combat sheet names.
         """
+        template = self.npc.template.model_copy()
+
+        template.sprite_name = appearance.sprite_name
+        template.combat_sheet = appearance.combat_sheet
+        self.composited_sheet = (
+            self.npc.appearance_manager.build_composited_sheet()
+        )
+
         self.sprite_renderer.load_sprites(template)
         self.sprite_renderer.stop()
         self.sprite_renderer.surface_animations.clear()
@@ -229,18 +239,29 @@ class SpriteRenderer:
           rows: directions (front, left, right, back)
           columns: frames (walk1, idle, walk2)
         """
-        sheet_path = f"sprites/{template.sprite_name}.png"
+        sprite_controller = getattr(self.npc, "sprite_controller", None)
 
-        all_frames = slice_spritesheet(
-            sheet_path,
-            template.frame_width,
-            template.frame_height,
+        if sprite_controller is not None and hasattr(
+            sprite_controller, "composited_sheet"
+        ):
+            sheet = self.npc.sprite_controller.composited_sheet
+        else:
+            sheet_path = f"sprites/{template.sprite_name}.png"
+            sheet = load_and_scale_with_cache(sheet_path)
+
+        scaled_fw = template.frame_width * DISPLAY_CONTEXT.scale
+        scaled_fh = template.frame_height * DISPLAY_CONTEXT.scale
+
+        all_frames = slice_spritesheet_surface(
+            sheet,
+            scaled_fw,
+            scaled_fh,
         )
 
         expected_frames = template.rows * template.columns
         if len(all_frames) != expected_frames:
             raise ValueError(
-                f"Sprite sheet '{sheet_path}' has {len(all_frames)} frames, "
+                f"Sprite sheet {len(all_frames)} frames, "
                 f"but expected {expected_frames} ({template.rows}x{template.columns})"
             )
 

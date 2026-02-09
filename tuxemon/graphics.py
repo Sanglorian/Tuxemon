@@ -132,6 +132,33 @@ def slice_spritesheet(
     return frames
 
 
+def slice_spritesheet_surface(
+    sheet: Surface,
+    frame_width: int,
+    frame_height: int,
+) -> list[Surface]:
+    """
+    Slice an already-loaded sprite sheet Surface into frames.
+    """
+    sheet_w, sheet_h = sheet.get_size()
+
+    if sheet_w % frame_width != 0 or sheet_h % frame_height != 0:
+        raise ValueError(
+            f"Sheet has invalid dimensions "
+            f"({sheet_w}x{sheet_h}) for frame size "
+            f"{frame_width}x{frame_height}"
+        )
+
+    frames = []
+    for y in range(0, sheet_h, frame_height):
+        for x in range(0, sheet_w, frame_width):
+            rect = Rect(x, y, frame_width, frame_height)
+            frame = sheet.subsurface(rect)
+            frames.append(frame.copy())
+
+    return frames
+
+
 def cursor_from_image(image: Surface) -> Sequence[str]:
     """Take a valid image and create a mouse cursor."""
     colors = {(0, 0, 0, 255): "X", (255, 255, 255, 255): "."}

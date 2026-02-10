@@ -6,7 +6,7 @@ import logging
 from collections import defaultdict
 from collections.abc import Callable, Generator
 from functools import partial
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame import SRCALPHA
 from pygame.rect import Rect
@@ -30,6 +30,7 @@ from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
     from tuxemon.item.item import Item
     from tuxemon.session import Session
@@ -55,12 +56,14 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
     def __init__(
         self,
+        client: BaseClient,
         session: Session,
         combat: CombatState,
         character: NPC,
         monster: Monster,
+        **kwargs: Any,
     ) -> None:
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         self.rect = self.calculate_menu_rectangle()
         self.session = session
         self.combat_session = self.client.combat_session
@@ -247,7 +250,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             return False
 
         menu = self.client.push_state(
-            MonsterMenuState(self.character.monsters)
+            MonsterMenuState(self.client, self.character.monsters)
         )
         menu.on_menu_selection = swap_it  # type: ignore[assignment]
         menu.is_valid_entry = validate  # type: ignore[assignment]
@@ -264,7 +267,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 self.session, self.character.monsters, self.opponents
             )
             menu = self.client.push_state(
-                ItemMenuState(self.character, self.name, items_filtered)
+                ItemMenuState(
+                    self.client, self.character, self.name, items_filtered
+                )
             )
 
             # set next menu after the selection is made
@@ -283,7 +288,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     enqueue_item(item, mon)
                 else:
                     state = self.client.push_state(
-                        MonsterMenuState(self.character.monsters)
+                        MonsterMenuState(self.client, self.character.monsters)
                     )
                     state.is_valid_entry = partial(validate, item)  # type: ignore[method-assign]
                     state.on_menu_selection = partial(enqueue_item, item)  # type: ignore[method-assign]
@@ -336,7 +341,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 self.session, self.opponents
             )
 
-            menu = self.client.push_state(Menu())
+            menu: Menu[Any] = self.client.push_state(Menu(self.client))
             menu.shrink_to_items = True
 
             # No usable moves → show only fallback/skip
@@ -553,6 +558,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             if len(self.opponents) > 1:
                 state = self.client.push_state(
                     CombatTargetMenuState(
+                        client=self.client,
                         combat=self.combat,
                         character=self.character,
                         monster=self.monster,
@@ -616,12 +622,14 @@ class CombatTargetMenuState(Menu[Monster]):
 
     def __init__(
         self,
+        client: BaseClient,
         combat: CombatState,
         character: NPC,
         monster: Monster,
         technique: Technique,
+        **kwargs: Any,
     ) -> None:
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         self.character = character
         self.monster = monster
         self.combat = combat

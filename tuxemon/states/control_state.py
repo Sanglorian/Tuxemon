@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from functools import partial
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.menu import Menu
@@ -15,9 +15,12 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.platform.const import buttons
-from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 
 class ControlState(PygameMenuState):
@@ -25,14 +28,21 @@ class ControlState(PygameMenuState):
 
     name: ClassVar[str] = "ControlState"
 
-    def __init__(self, **kwargs: Any) -> None:
-        """Used when initializing the state."""
+    def __init__(
+        self,
+        client: BaseClient,
+        *args: Any,
+        main_menu: bool = False,
+        **kwargs: Any,
+    ) -> None:
         theme = get_theme()
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-        self.main_menu = "main_menu" in kwargs and kwargs["main_menu"]
-        kwargs.pop("main_menu", None)
-        super().__init__(**kwargs)
+
+        self.main_menu = main_menu
+
+        super().__init__(client, *args, **kwargs)
+
         self.initialize_items(self.menu)
         self.reload_controls()
         self.reset_theme()

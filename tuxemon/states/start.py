@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from functools import partial
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.surface import Surface
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
@@ -25,6 +25,9 @@ from tuxemon.save import get_index_of_latest_save
 from tuxemon.session import local_session
 from tuxemon.state.state import State
 
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+
 logger = logging.getLogger(__name__)
 
 
@@ -41,6 +44,9 @@ class BackgroundState(State):
     """
 
     name: ClassVar[str] = "BackgroundState"
+
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
 
     def draw(self, surface: Surface) -> None:
         surface.fill(BLACK_COLOR)
@@ -136,14 +142,14 @@ class StartState(PygameMenuState):
             button_id="exit",
         )
 
-    def __init__(self) -> None:
+    def __init__(self, client: BaseClient, **kwargs: Any) -> None:
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_START_SCREEN)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
         self.escape_key_exits = False
         self.client.afk_manager.add_threshold("IntroState", 15.0)
         self.event_bus.subscribe(
@@ -205,7 +211,9 @@ class ModsChoice(PygameMenuState):
                 button_id=mod_name,
             )
 
-    def __init__(self, mods: list[str]) -> None:
+    def __init__(
+        self, client: BaseClient, mods: list[str], **kwargs: Any
+    ) -> None:
         self.mods = mods
         width, height = SCREEN_SIZE
 
@@ -213,7 +221,7 @@ class ModsChoice(PygameMenuState):
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         self.add_menu_items(self.menu)
         self.reset_theme()

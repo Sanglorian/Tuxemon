@@ -22,6 +22,7 @@ from tuxemon.technique.technique import Technique
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.monster.monster import Monster
     from tuxemon.platform.events import PlayerInput
 
@@ -326,26 +327,31 @@ class MonsterMovesState(PygameMenuState):
     # -------------------------
     # Lifecycle / plumbing
     # -------------------------
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        monster: Monster,
+        source: str,
+        monsters: list[Monster] | None,
+        **kwargs: Any,
+    ) -> None:
         if not lookup_cache:
             _lookup_monsters()
 
-        inner = next(iter(kwargs.values())) if kwargs else {}
-        monster: Monster | None = inner.get("monster")
-        source: str = inner.get("source") or ""
-        self._monsters: list[Monster] | None = inner.get("monsters")
-
-        if monster is None:
-            raise ValueError("No monster")
-
         width, height = SCREEN_SIZE
+
+        self._monster = monster
+        self._source = source
+        self._monsters = monsters
+
         theme = self._setup_theme(TECH_INFO)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height, width=width)
-        self._source = source
-        self._monster = monster
+        super().__init__(
+            client=client, height=height, width=width, theme=theme, **kwargs
+        )
+
         self.add_menu_items(self.menu, monster)
         self.update_selected_widget()
         self.reset_theme()
@@ -371,14 +377,14 @@ class MonsterMovesState(PygameMenuState):
             if event.button == buttons.RIGHT and self.valid_press(event):
                 slot = (slot + 1) % len(monsters)
                 param["monster"] = monsters[slot]
-                client.replace_state("MonsterMovesState", kwargs=param)
+                client.replace_state("MonsterMovesState", **param)
                 return None
 
             # LEFT → previous monster (with repeat)
             elif event.button == buttons.LEFT and self.valid_press(event):
                 slot = (slot - 1) % len(monsters)
                 param["monster"] = monsters[slot]
-                client.replace_state("MonsterMovesState", kwargs=param)
+                client.replace_state("MonsterMovesState", **param)
                 return None
 
             # Everything else → normal menu behavior

@@ -94,7 +94,7 @@ class BaseClient(ABC):
         )
         self.state_manager = StateManager(
             package="tuxemon.states",
-            event=self.event_bus,
+            client=self,
             repository=self.state_repository,
             on_state_change=self.on_state_change,
         )

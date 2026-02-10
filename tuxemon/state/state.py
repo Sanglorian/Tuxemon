@@ -76,6 +76,10 @@ class State(AnimationMixin, RenderMixin, ABC):
                 f"{cls.__name__} must define a class variable 'name'"
             )
 
+    @property
+    def factor(self) -> int:
+        return self.client.context.scaling.factor
+
     def load_sprite(self, filename: str, **kwargs: Any) -> Sprite:
         """Load a sprite and add it to this state."""
         layer = kwargs.pop("layer", 0)
@@ -124,6 +128,10 @@ class State(AnimationMixin, RenderMixin, ABC):
             handlers. Otherwise, return the input event.
         """
         return event
+
+    def scale_int(self, value: int) -> int:
+        """Convenience wrapper for client scaling."""
+        return self.client.context.scaling.scale_int(value)
 
     def update(self, time_delta: float) -> None:
         """

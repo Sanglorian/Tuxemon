@@ -9,11 +9,11 @@ from pygame.surface import Surface
 
 from tuxemon.graphics import load_and_scale
 from tuxemon.sprite import Sprite
-from tuxemon.tools import scale
 
 if TYPE_CHECKING:
     from tuxemon.animation import Animation
     from tuxemon.menu.interface import MenuItem
+    from tuxemon.prepare import DisplayContext
     from tuxemon.sprite import SpriteGroup
 
 T = TypeVar("T", covariant=True)
@@ -60,6 +60,7 @@ class MenuCursorController(Generic[T]):
         get_selected_item: Callable[[], MenuItem[T] | None],
         animate: Callable[..., Animation],
         duration: float,
+        context: DisplayContext,
         remove_animations: Callable[[Any], None],
         offset: tuple[int, int] = (0, 0),
         cursor_image: Surface | None = None,
@@ -89,17 +90,17 @@ class MenuCursorController(Generic[T]):
         self.get_item = get_selected_item
         self.animate = animate
         self.duration = duration
+        self.context = context
         self.remove_animations = remove_animations
 
     def get_margin(self) -> tuple[int, int]:
         """
         Calculates margin using ratios derived from the original hardcoded scale values.
-        Keeps layout behavior consistent with (-scale(11), -scale(5)).
         """
-        x = -scale(
+        x = -self.context.scaling.scale_int(
             int(self.arrow.image.get_width() / CURSOR_X_RATIO_DENOMINATOR)
         )
-        y = -scale(
+        y = -self.context.scaling.scale_int(
             int(self.arrow.image.get_height() / CURSOR_Y_RATIO_DENOMINATOR)
         )
         return (x, y)
@@ -157,7 +158,7 @@ class MenuCursorController(Generic[T]):
             return None
 
         x, y = item.rect.midleft
-        x -= scale(2)
+        x -= self.context.scaling.scale_int(2)
 
         if animate:
             self.remove_animations(self.arrow.rect)

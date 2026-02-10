@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING
 
 from pygame import SRCALPHA
 from pygame.font import Font
@@ -11,35 +11,28 @@ from pygame.surface import Surface
 
 from tuxemon.graphics import ColorLike
 from tuxemon.platform.const.graphics import FONT_SHADOW_COLOR, FONT_SIZE
-from tuxemon.prepare import DISPLAY_CONTEXT
-from tuxemon.tools import scale
 
-
-def create_layout(
-    scale: float,
-) -> Callable[[Sequence[float]], Sequence[float]]:
-    def func(area: Sequence[float]) -> Sequence[float]:
-        return [scale * i for i in area]
-
-    return func
-
-
-layout = create_layout(DISPLAY_CONTEXT.scale)
+if TYPE_CHECKING:
+    from tuxemon.scaling import ScalingStrategy
 
 
 class TextRenderer:
     def __init__(
         self,
+        scaling: ScalingStrategy,
         font_color: ColorLike,
         font_shadow_color: ColorLike | None = None,
         font_filename: str | None = None,
         font: Font | None = None,
     ) -> None:
+        self.scaling = scaling
         self.font_color = font_color
         if font_shadow_color is None:
             font_shadow_color = FONT_SHADOW_COLOR
         self.font_shadow_color = font_shadow_color
-        self.font = font or Font(font_filename, scale(FONT_SIZE))
+        self.font = font or Font(
+            font_filename, self.scaling.scale_int(FONT_SIZE)
+        )
 
     def shadow_text(
         self,
@@ -66,7 +59,7 @@ class TextRenderer:
             bg = self.font_shadow_color
         font_color = self.font.render(text, True, fg)
         shadow_color = self.font.render(text, True, bg)
-        _offset = layout(offset)
+        _offset = self.scaling.scale_sequence(offset)
         size = [
             int(math.ceil(a + b))
             for a, b in zip(_offset, font_color.get_size())

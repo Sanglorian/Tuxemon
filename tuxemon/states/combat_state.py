@@ -341,7 +341,11 @@ class CombatState(CombatAnimations):
         dialog_box = GraphicBox(border=border, color=self.background_color)
         dialog_box.rect = rect
 
-        self.text_area = TextArea(self.font, self.font_color)
+        self.text_area = TextArea(
+            font=self.font,
+            font_color=self.font_color,
+            scaling=self.client.context.scaling,
+        )
         self.text_area.rect = dialog_box.calc_inner_rect(dialog_box.rect)
         self.show_combat_dialog(dialog_box, self.text_area)
 

@@ -23,7 +23,16 @@ def menu_sprites():
 
 
 @pytest.fixture
-def controller(menu_sprites):
+def fake_context():
+    ctx = MagicMock()
+    ctx.scaling = MagicMock()
+    ctx.scaling.scale_int = lambda x: x * 2
+    ctx.scaling.scale_tuple = lambda t: tuple(x * 2 for x in t)
+    return ctx
+
+
+@pytest.fixture
+def controller(menu_sprites, fake_context):
     cursor_filename = "gfx/arrow.png"
     get_selected_item = MagicMock(return_value=None)
     animate = MagicMock(return_value=None)
@@ -35,6 +44,7 @@ def controller(menu_sprites):
         get_selected_item,
         animate,
         duration,
+        fake_context,
         remove_animations,
     )
     return ctrl

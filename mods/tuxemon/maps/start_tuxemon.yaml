@@ -36,7 +36,7 @@ events:
     actions:
     - set_char_attribute player,gender,female
     - change_bg gradient_blue,choice_gender,image
-    - translated_dialog_choice white_female:white_female,race_choice
+    - translated_dialog_choice black_female:white_female,race_choice
     conditions:
     - is variable_set scenario_choice
     - is variable_set gender_choice:gender_female

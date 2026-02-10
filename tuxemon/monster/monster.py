@@ -399,13 +399,14 @@ class Monster:
             {"doc": self.capture_string},
         )
 
-    def load_sprites(self, scale: float = DISPLAY_CONTEXT.scale) -> None:
+    def load_sprites(
+        self, scale: float = DISPLAY_CONTEXT.scaling.factor
+    ) -> None:
         """
         Delegates the task of loading sprites to the sprite handler.
 
         Parameters:
             scale: The scaling factor to resize the sprite images.
-                Defaults to the predefined scale value in 'DISPLAY_CONTEXT.scale'.
         """
         self.sprite_handler.load_sprites(scale)
 
@@ -472,7 +473,7 @@ class Monster:
         self,
         sprite_type: str,
         frame_duration: float = 0.25,
-        scale: float = DISPLAY_CONTEXT.scale,
+        scale: float = DISPLAY_CONTEXT.scaling.factor,
         **kwargs: Any,
     ) -> Sprite:
         """

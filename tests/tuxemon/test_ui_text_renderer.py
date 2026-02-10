@@ -5,6 +5,7 @@ import unittest
 import pygame
 from pygame.surface import Surface
 
+from tuxemon.scaling import DefaultScaling
 from tuxemon.ui.text_renderer import TextRenderer
 
 
@@ -19,7 +20,7 @@ class TestTextRenderer(unittest.TestCase):
         pygame.quit()
 
     def setUp(self):
-        self.text_renderer = TextRenderer((255, 255, 255))
+        self.text_renderer = TextRenderer(DefaultScaling(1), (255, 255, 255))
 
     def test_init(self):
         self.assertEqual(self.text_renderer.font_color, (255, 255, 255))

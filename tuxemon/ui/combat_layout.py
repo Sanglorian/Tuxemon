@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from pygame.rect import Rect
 
 from tuxemon.database.yaml_utils import load_yaml
-from tuxemon.scaling import DefaultScaling, ScalingStrategy
+from tuxemon.scaling import ScalingStrategy
 
 logger = logging.getLogger(__name__)
 
@@ -49,11 +49,11 @@ class LayoutRepository:
     def __init__(
         self,
         yaml_path: Path,
-        scaling: ScalingStrategy | None = None,
+        scaling: ScalingStrategy,
     ):
         self.raw_layouts = load_layouts_from_yaml(yaml_path)
         self.groups = load_layout_groups(yaml_path)
-        self.scaling = scaling or DefaultScaling()
+        self.scaling = scaling
 
     def get_raw_layout(self, name: str) -> dict[str, tuple[int, ...]]:
         if name not in self.raw_layouts:
@@ -100,7 +100,7 @@ class LayoutManager:
     def __init__(
         self,
         yaml_path: Path,
-        scaling: ScalingStrategy | None = None,
+        scaling: ScalingStrategy,
     ):
         self.repo = LayoutRepository(yaml_path, scaling=scaling)
         self.selector = LayoutSelector(self.repo)

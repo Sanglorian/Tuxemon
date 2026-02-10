@@ -26,11 +26,7 @@ from tuxemon.platform.const.sizes import MAX_MENU_ITEMS
 from tuxemon.platform.events import PlayerInput
 from tuxemon.session import local_session
 from tuxemon.sprite import Sprite
-from tuxemon.tools import (
-    open_choice_dialog,
-    open_dialog,
-    scale,
-)
+from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.paginator import Paginator
 from tuxemon.ui.text import TextArea
 
@@ -64,21 +60,30 @@ class ItemMenuState(Menu[Item]):
         self.item_sprite = Sprite()
         self.sprites.add(self.item_sprite)
 
-        self.menu_items.line_spacing = scale(7)
+        self.menu_items.line_spacing = self.client.context.scaling.scale_int(7)
         self.current_page = 0
         self.total_pages = 0
         self.inventory = self.filter_controller.get_filtered_inventory()
 
         # this is the area where the item description is displayed
         rect = self.client.context.rect.copy()
-        rect.top = scale(106)
-        rect.left = scale(3)
-        rect.width = scale(250)
-        rect.height = scale(32)
-        self.text_area = TextArea(self.font, self.font_color, (96, 96, 128))
+        rect.top = self.client.context.scaling.scale_int(106)
+        rect.left = self.client.context.scaling.scale_int(3)
+        rect.width = self.client.context.scaling.scale_int(250)
+        rect.height = self.client.context.scaling.scale_int(32)
+        self.text_area = TextArea(
+            font=self.font,
+            font_color=self.font_color,
+            scaling=self.client.context.scaling,
+            font_shadow=(96, 96, 128),
+        )
         self.text_area.rect = rect
         self.sprites.add(self.text_area, layer=100)
-        self.page_number_display = TextArea(self.font, self.font_color)
+        self.page_number_display = TextArea(
+            font=self.font,
+            font_color=self.font_color,
+            scaling=self.client.context.scaling,
+        )
         self.sprites.add(self.page_number_display, layer=100)
         self.page_size = MAX_MENU_ITEMS
 

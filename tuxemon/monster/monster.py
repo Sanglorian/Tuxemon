@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 import random
 from collections.abc import Mapping, Sequence
-from dataclasses import fields
 from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
@@ -258,6 +257,7 @@ class Monster:
                     monster.equip_item(item)
             elif key == "training_points" and value:
                 monster.training_points = TrainingPoints.from_dict(value)
+                monster.training_points.validate()
             elif key == "modifiers" and value:
                 monster.custom_stats = CustomStatBoosts.from_dict(value)
             elif key == "individual_values" and value:
@@ -520,35 +520,33 @@ class Monster:
         self, stat_name: str, value: int = config_monster.default_tp_gain
     ) -> None:
         """
-        Gives TP points to the monster's TrainingPoints after a battle,
-        respecting the per-stat and total TP limits.
+        Gives TP points to the monster, respecting global and per-stat limits.
         """
-        max_tps = config_monster.max_tps
-        max_total_tps = config_monster.max_total_tps
-        total_tps = sum(
-            getattr(self.training_points, field.name)
-            for field in fields(self.training_points)
-        )
-        stat_tps = getattr(self.training_points, stat_name)
+        if stat_name not in BasicStats.names():
+            raise ValueError(f"Invalid stat name: {stat_name}")
+
+        current_tps = self.training_points.to_dict()
+        total_tps = sum(current_tps.values())
+
+        remaining_total = config_monster.max_total_tps - total_tps
+        current_stat_val = getattr(self.training_points, stat_name)
+        remaining_stat = config_monster.max_tps - current_stat_val
+
+        points_to_add = max(0, min(value, remaining_total, remaining_stat))
+
+        if points_to_add == 0:
+            logger.debug(
+                f"No TP added to '{stat_name}' — cap reached "
+                f"(remaining_total={remaining_total}, remaining_stat={remaining_stat})."
+            )
+            return
+
+        new_val = current_stat_val + points_to_add
+        setattr(self.training_points, stat_name, new_val)
+        self.training_points.validate()
         logger.debug(
-            f"Attempting to give {value} training_points to '{stat_name}'"
+            f"Added {points_to_add} TP to '{stat_name}'. New total: {new_val}"
         )
-        logger.debug(f"Current training_points for '{stat_name}': {stat_tps}")
-        logger.debug(f"Current total training_points: {total_tps}")
-        logger.debug(
-            f"Remaining total training_points: {max_total_tps - total_tps}"
-        )
-        logger.debug(
-            f"Remaining training_points for '{stat_name}': {max_tps - stat_tps}"
-        )
-        remaining_total_tps = max_total_tps - total_tps
-        points_to_add = min(value, remaining_total_tps, max_tps - stat_tps)
-        logger.debug(
-            f"training_points to be added to '{stat_name}': {points_to_add}"
-        )
-        new_stat_tps = stat_tps + points_to_add
-        setattr(self.training_points, stat_name, new_stat_tps)
-        logger.debug(f"New training_points for '{stat_name}': {new_stat_tps}")
         self.set_stats()
 
     def set_stats(self) -> None:

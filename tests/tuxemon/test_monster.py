@@ -78,18 +78,31 @@ def shape_model(monkeypatch):
 
 @pytest.fixture
 def tastes(monkeypatch):
-    """Inject fake tastes with modifiers."""
     Taste._tastes = {}
 
     def make_taste(slug, values, mult):
         t = MagicMock(spec=Taste)
         t.slug = slug
         t.taste_type = "warm"
-        mod = MagicMock(spec=Modifier)
-        mod.attribute = "stat"
+
+        mod = MagicMock()
         mod.values = values
         mod.multiplier = mult
         t.modifiers = [mod]
+
+        def get_multiplier(stat_name):
+            m = 1.0
+            for mod in t.modifiers:
+                if stat_name in mod.values:
+                    m *= mod.multiplier
+            return m
+
+        def apply_to_stat(stat_name, value):
+            return round(value * get_multiplier(stat_name))
+
+        t.get_multiplier.side_effect = get_multiplier
+        t.apply_to_stat.side_effect = apply_to_stat
+
         Taste._tastes[slug] = t
         return t
 

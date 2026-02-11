@@ -6,11 +6,13 @@ import logging
 import random
 from collections.abc import Mapping
 from dataclasses import dataclass, fields
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from tuxemon.database.rules import config_monster
-from tuxemon.shape import ShapeHandler
 from tuxemon.taste import Taste
+
+if TYPE_CHECKING:
+    from tuxemon.shape import ShapeHandler
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +45,16 @@ class BasicStats:
                 new_stats, name, getattr(self, name) + getattr(other, name)
             )
         return new_stats
+
+    def copy(self) -> BasicStats:
+        return BasicStats(
+            armour=self.armour,
+            dodge=self.dodge,
+            hp=self.hp,
+            melee=self.melee,
+            ranged=self.ranged,
+            speed=self.speed,
+        )
 
 
 @dataclass
@@ -111,6 +123,35 @@ class TrainingPoints(BasicStats):
         valid_fields = {field.name for field in fields(cls)}
         filtered_data = {k: v for k, v in data.items() if k in valid_fields}
         return cls(**filtered_data)
+
+    def get_contribution(self, level: int) -> BasicStats:
+        """Returns the floor-level scaled contribution of TPs."""
+        contribution = BasicStats()
+        level_scale = level / 100
+        for name in self.names():
+            raw_tp = getattr(self, name)
+            setattr(contribution, name, int(raw_tp * level_scale))
+        return contribution
+
+    def validate(self) -> None:
+        """Clamps individual stats and the total to configuration limits."""
+        max_stat = config_monster.max_tps
+        max_total = config_monster.max_total_tps
+
+        # Clamp individual stats
+        for name in self.names():
+            val = getattr(self, name)
+            if val > max_stat:
+                setattr(self, name, max_stat)
+
+        # Clamp total if needed (proportional scaling)
+        current_total = self.sum()
+        if current_total > max_total:
+            ratio = max_total / current_total
+            for name in self.names():
+                val = getattr(self, name)
+                setattr(self, name, int(val * ratio))
+            logger.warning(f"TPs exceeded {max_total} and were scaled down.")
 
 
 class StatCalculator:
@@ -198,19 +239,11 @@ class StatCalculator:
         taste_warm: Taste | None,
     ) -> int:
         """Applies taste modifiers to a single stat value."""
-        modified_stat = float(stat_value)
-
+        modified = stat_value
         for taste in (taste_cold, taste_warm):
             if taste:
-                for modifier in taste.modifiers:
-                    if stat_name in modifier.values:
-                        logger.debug(
-                            f"Applying modifier {modifier.multiplier} to {stat_name} "
-                            f"from taste {taste.slug}"
-                        )
-                        modified_stat *= modifier.multiplier
-
-        return round(modified_stat)
+                modified = taste.apply_to_stat(stat_name, modified)
+        return modified
 
     def calculate_at_level(self, target_level: int) -> BasicStats:
         """Returns final stats at a specific level without modifying internal state."""
@@ -232,46 +265,57 @@ class StatAnalyzer:
     def get_breakdown(self) -> dict[str, dict[str, Any]]:
         """Returns a detailed breakdown of each stat's calculation."""
         breakdown = {}
-        multiplier = self.calculator.level + config_monster.coeff_stats
-        level_scale = self.calculator.level / 100
+        level = self.calculator.level
+        multiplier = level + config_monster.coeff_stats
+
+        # Use the new TP scaling logic
+        tp_contribution = self.calculator.training_points.get_contribution(
+            level
+        )
+
         cold = Taste.get(self.calculator.taste_cold)
         warm = Taste.get(self.calculator.taste_warm)
 
         for stat_name in BasicStats.names():
-            base_value = (
+            # Base from shape
+            base_part = (
                 getattr(self.calculator.shape.attributes, stat_name)
                 * multiplier
             )
-            iv_value = getattr(self.calculator.individual_values, stat_name, 0)
-            raw_tp = getattr(self.calculator.training_points, stat_name, 0)
-            scaled_tp = int(raw_tp * level_scale)
-            modifier_value = getattr(
-                self.calculator.custom_stats, stat_name, 0
-            )
 
-            pre_taste_total = (
-                base_value + iv_value + scaled_tp + modifier_value
-            )
+            # IVs
+            iv_part = getattr(self.calculator.individual_values, stat_name, 0)
 
+            # Scaled TPs (already floor-scaled)
+            tp_part = getattr(tp_contribution, stat_name)
+
+            # Custom stat boosts
+            mod_part = getattr(self.calculator.custom_stats, stat_name, 0)
+
+            # Pre‑taste total
+            pre_taste_total = base_part + iv_part + tp_part + mod_part
+
+            # Taste multiplier
             taste_multiplier = 1.0
             for taste in (cold, warm):
                 if taste:
-                    for modifier in taste.modifiers:
-                        if stat_name in modifier.values:
-                            taste_multiplier *= modifier.multiplier
+                    taste_multiplier *= taste.get_multiplier(stat_name)
 
             final_value = round(pre_taste_total * taste_multiplier)
 
             breakdown[stat_name] = {
-                "base_value": int(base_value),
-                "individual_value": iv_value,
-                "training_points_raw": raw_tp,
-                "training_points_scaled": scaled_tp,
-                "temporary_modifier": modifier_value,
+                "base_value": int(base_part),
+                "individual_value": iv_part,
+                "training_points_raw": getattr(
+                    self.calculator.training_points, stat_name
+                ),
+                "training_points_scaled": tp_part,
+                "temporary_modifier": mod_part,
                 "pre_taste_total": int(pre_taste_total),
                 "taste_multiplier": taste_multiplier,
                 "final_value": final_value,
             }
+
         return breakdown
 
     def evaluate_taste_efficiency(self) -> float:

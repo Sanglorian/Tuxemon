@@ -23,12 +23,9 @@ from pygame.transform import scale
 from pytmx.pytmx import TileFlags
 from pytmx.util_pygame import handle_transformation, smart_convert
 
-from tuxemon.database.runtime import db
-from tuxemon.db import MonsterModel, NpcModel
 from tuxemon.platform.const.graphics import FUCHSIA_COLOR
 from tuxemon.prepare import DISPLAY_CONTEXT
 from tuxemon.scaling import ScalingStrategy
-from tuxemon.session import Session
 from tuxemon.sprite import Sprite
 from tuxemon.surfanim import SurfaceAnimation
 from tuxemon.tools import transform_resource_filename
@@ -490,56 +487,6 @@ def scaled_image_loader(
         return tile
 
     return load_image
-
-
-def get_avatar(session: Session, avatar: str) -> Sprite | None:
-    """
-    Retrieves the avatar sprite of a monster or NPC.
-
-    Parameters:
-        session: Game session.
-        avatar: The identifier of the avatar to be used.
-
-    Returns:
-        The sprite for the monster or NPC avatar, or None if not found.
-    """
-    from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
-
-    scale_int = session.client.context.scaling.factor
-
-    if avatar.isdigit():
-        monster = session.player.monsters[int(avatar)]
-        return monster.get_sprite("menu", scale=scale_int)
-
-    if avatar in db.database.get("monster", {}):
-        model = MonsterModel.lookup(avatar, db)
-        loader = SpriteLoader()
-        sprites = model.sprites
-        assert sprites
-        handler = MonsterSpriteHandler(
-            slug=model.slug,
-            sheet_path=loader.resolve_path(sprites.sheet),
-            front_rect=sprites.front_rect,
-            back_rect=sprites.back_rect,
-            menu1_rect=sprites.menu1_rect,
-            menu2_rect=sprites.menu2_rect,
-        )
-        if handler is None:
-            return None
-        return handler.get_sprite("menu", scale=scale_int)
-
-    if avatar in db.database.get("npc", {}):
-        from tuxemon.entity.sheet import get_combat_sheet
-
-        npc_data = NpcModel.lookup(avatar, db)
-        sheet = get_combat_sheet(npc_data.template)
-        surface = sheet.front()
-        sprite = load_surface(surface)
-        scale_sprite(sprite, 0.5)
-        return sprite
-
-    logger.debug(f"Avatar '{avatar}' not found")
-    return None
 
 
 def string_to_colorlike(color: str) -> ColorLike:

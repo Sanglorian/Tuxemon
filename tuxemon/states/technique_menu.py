@@ -10,6 +10,7 @@ from pygame.rect import Rect
 from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu
+from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const.graphics import (
     BG_MOVES,
     DIMGRAY_COLOR,
@@ -125,7 +126,8 @@ class TechniqueMenuState(Menu[Technique]):
             mon = self.char.party.find_monster_by_tech_id(tech.instance_id)
 
             if mon:
-                sprite = mon.get_sprite("front")
+                renderer = MonsterRenderer(mon, scale=self.factor)
+                sprite = renderer.get_sprite("front")
                 sprite.rect.center = self.backpack_center
                 self.sprites.add(sprite, layer=100)
             else:

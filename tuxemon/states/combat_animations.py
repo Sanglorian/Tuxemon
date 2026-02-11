@@ -23,6 +23,7 @@ from tuxemon.constants.paths import mods_folder
 from tuxemon.database.rules import config_combat
 from tuxemon.environment import BattleLayout
 from tuxemon.menu.menu import Menu
+from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.sprite import CaptureDeviceSprite, HordeSprite, Sprite
 from tuxemon.ui.combat_bars import CombatBars
@@ -198,7 +199,8 @@ class CombatAnimations(Menu[None], ABC):
         self.task(capdev.kill, interval=fall_time + delay + fade_duration)
 
         # Load monster sprite and set final position
-        monster_sprite = monster.get_sprite(
+        renderer = MonsterRenderer(monster, scale=self.factor)
+        monster_sprite = renderer.get_sprite(
             "back" if npc == self.combat_session.left_player else "front"
         )
         monster_sprite.rect.midbottom = feet
@@ -222,10 +224,12 @@ class CombatAnimations(Menu[None], ABC):
         self.task(partial(self.sprites.add, sprite), interval=1.3)
 
         # Load and play combat call sound
+        sound, volume = renderer.get_combat_sound()
+
         self.event_bus.publish(
             "play_sound_combat",
-            sound=monster.combat_call.sfx,
-            value=monster.combat_call.volume,
+            sound=sound,
+            value=volume,
         )
 
     def animate_sprite_tackle(self, attacker: Sprite) -> None:
@@ -355,13 +359,17 @@ class CombatAnimations(Menu[None], ABC):
             sprite.rect, self.scale_int(-150)
         )
 
-        cry = (
-            monster.combat_call
-            if monster.current_hp > 0
-            else monster.faint_call
-        )
+        renderer = MonsterRenderer(monster)
+
+        if monster.current_hp > 0:
+            sound, volume = renderer.get_combat_sound()
+        else:
+            sound, volume = renderer.get_faint_sound()
+
         self.event_bus.publish(
-            "play_sound_combat", sound=cry.sfx, value=cry.volume
+            "play_sound_combat",
+            sound=sound,
+            value=volume,
         )
         self.animate(sprite.rect, x=x_offset, relative=True, duration=2)
         self.status_icons.animate_icons(monster, self.animate)
@@ -651,7 +659,8 @@ class CombatAnimations(Menu[None], ABC):
             self.sprite_map.add_sprite(opponent, enemy)
         else:
             monster_pos = layout.get_combatant_pos("monster", back_island.rect)
-            enemy = opp_mon.get_sprite("front")
+            renderer = MonsterRenderer(opp_mon, scale=self.factor)
+            enemy = renderer.get_sprite("front")
             enemy.rect.midbottom = (
                 monster_pos["centerx"],
                 monster_pos["bottom"],
@@ -673,9 +682,13 @@ class CombatAnimations(Menu[None], ABC):
         )
 
         if not self.combat_session.is_trainer_battle:
-            sound = self.combat_session.right_player.monsters[0].combat_call
+            renderer = MonsterRenderer(opp_mon)
+            sound, volume = renderer.get_combat_sound()
+
             self.event_bus.publish(
-                "play_sound_combat", sound=sound.sfx, value=sound.volume
+                "play_sound_combat",
+                sound=sound,
+                value=volume,
             )
 
         self.event_bus.publish(
@@ -864,10 +877,13 @@ class CombatAnimations(Menu[None], ABC):
 
             def show_monster() -> None:
                 toggle_visible(monster_sprite)
+                renderer = MonsterRenderer(monster)
+                sound, volume = renderer.get_combat_sound()
+
                 self.event_bus.publish(
                     "play_sound_combat",
-                    sound=monster.combat_call.sfx,
-                    value=monster.combat_call.volume,
+                    sound=sound,
+                    value=volume,
                 )
 
             def capture_capsule() -> None:

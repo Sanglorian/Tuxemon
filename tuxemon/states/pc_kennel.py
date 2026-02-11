@@ -18,6 +18,7 @@ from tuxemon.graphics import scale_surface
 from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const.graphics import BG_PC_KENNEL
 from tuxemon.platform.const.sizes import MAX_KENNEL, PARTY_LIMIT
 from tuxemon.prepare import SCREEN_SIZE
@@ -296,7 +297,8 @@ class MonsterTakeState(PygameMenuState):
         for monster in _sorted:
             label = T.translate(monster.name).upper()
             iid = monster.instance_id.hex
-            surface = monster.get_sprite("front").image
+            renderer = MonsterRenderer(monster, scale=self.factor)
+            surface = renderer.get_sprite("front").image
             scaled = scale_surface(surface, self.factor * 0.125)
             new_image = self._create_image_from_surface(scaled)
             menu.add.banner(

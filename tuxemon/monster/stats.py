@@ -44,6 +44,16 @@ class BasicStats:
             )
         return new_stats
 
+    def copy(self) -> BasicStats:
+        return BasicStats(
+            armour=self.armour,
+            dodge=self.dodge,
+            hp=self.hp,
+            melee=self.melee,
+            ranged=self.ranged,
+            speed=self.speed,
+        )
+
 
 @dataclass
 class IndividualValues(BasicStats):

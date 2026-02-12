@@ -1,0 +1,77 @@
+# SPDX-License-Identifier: GPL-3.0
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# SPDX-License-Identifier: GPL-3.0
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, ClassVar
+
+from pygame_menu.locals import ALIGN_CENTER
+from pygame_menu.menu import Menu
+
+from tuxemon.locale.locale import T
+from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.graphics import BG_MISSIONS
+from tuxemon.prepare import SCREEN_SIZE
+
+if TYPE_CHECKING:
+    from tuxemon.monster.monster import Monster
+
+
+class LevelUpSummaryState(PygameMenuState):
+    """
+    UI state that displays stat changes after a monster gains one or more levels.
+    This state is shown after combat or after any XP gain outside combat.
+    """
+
+    name: ClassVar[str] = "LevelUpSummaryState"
+
+    def __init__(
+        self,
+        monster: Monster,
+        start_level: int,
+        end_level: int,
+        diff: dict[str, tuple[int, int, int]],
+        **kwargs: Any,
+    ) -> None:
+        self.monster = monster
+        self.start_level = start_level
+        self.end_level = end_level
+        self.diff = diff
+
+        width, height = SCREEN_SIZE
+        theme = self._setup_theme(BG_MISSIONS)
+        theme.widget_alignment = ALIGN_CENTER
+
+        super().__init__(height=height // 1.5, width=width // 2, **kwargs)
+        self._build_menu(self.menu)
+        self.reset_theme()
+
+    def _build_menu(self, menu: Menu) -> None:
+
+        menu.add.label(
+            title=self.monster.name.upper(),
+            font_size=self.font_type.medium,
+        )
+
+        menu.add.label(
+            title=f"Lv.{self.start_level} → Lv.{self.end_level}",
+            font_size=self.font_type.small,
+        )
+
+        menu.add.vertical_margin(10)
+
+        for stat_name, (old, new, delta) in self.diff.items():
+            sign = "+" if delta > 0 else ""
+            text = f"{stat_name.upper()}: {old} → {new} ({sign}{delta})"
+            menu.add.label(text, font_size=self.font_type.small)
+
+        menu.add.vertical_margin(10)
+
+        menu.add.button(
+            title=T.translate("ok").upper(),
+            action=self._confirm,
+            font_size=self.font_type.small,
+        )
+
+    def _confirm(self) -> None:
+        self.client.pop_state()

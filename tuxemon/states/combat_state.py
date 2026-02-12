@@ -190,16 +190,24 @@ class CombatState(CombatAnimations):
         """
         Update the combat phase.
         """
-        if self.client.current_state:
-            if self.client.current_state.name == "WaitForInputState":
-                return
-        time_left = self.text_anim.get_text_animation_time_left()
-        if time_left <= 0 and all(map(self.is_task_finished, self.animations)):
+        if not self.text_anim.is_animating() and all(
+            map(self.is_task_finished, self.animations)
+        ):
             new_phase = self.machine.determine_next_phase(self.phase)
             if new_phase:
                 self.phase = new_phase
                 self.transition_phase(new_phase)
             self.update_phase()
+
+    def is_blocked(self) -> bool:
+        if self.text_anim.is_animating():
+            return True
+
+        cs = self.client.current_state
+        if cs and cs.name == "WaitForInputState":
+            return True
+
+        return False
 
     def update(self, time_delta: float) -> None:
         """

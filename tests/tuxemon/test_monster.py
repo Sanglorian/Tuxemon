@@ -78,6 +78,7 @@ def shape_model(monkeypatch):
 
 @pytest.fixture
 def tastes(monkeypatch):
+    """Inject fake tastes with modifiers."""
     Taste._tastes = {}
 
     def make_taste(slug, values, mult):

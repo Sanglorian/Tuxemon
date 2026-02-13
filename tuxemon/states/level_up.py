@@ -14,6 +14,7 @@ from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.monster.monster import Monster
 
 
@@ -27,6 +28,7 @@ class LevelUpSummaryState(PygameMenuState):
 
     def __init__(
         self,
+        client: BaseClient,
         monster: Monster,
         start_level: int,
         end_level: int,
@@ -42,7 +44,12 @@ class LevelUpSummaryState(PygameMenuState):
         theme = self._setup_theme(BG_MISSIONS)
         theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height // 1.5, width=width // 2, **kwargs)
+        super().__init__(
+            client=client,
+            height=int(height // 1.5),
+            width=int(width // 2),
+            **kwargs,
+        )
         self._build_menu(self.menu)
         self.reset_theme()
 

@@ -5,15 +5,18 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import pygame
-from pygame.surface import Surface
 
 from tuxemon.base_client import BaseClient, ClientState
 from tuxemon.config import TuxemonConfig
 from tuxemon.map.tuxemon import NullMap
 from tuxemon.map.view import DebugRenderer, MapRenderer, NullRenderer
 from tuxemon.state.draw import EventDebugDrawer, Renderer, StateDrawer
+
+if TYPE_CHECKING:
+    from tuxemon.prepare import DisplayContext
 
 logger = logging.getLogger(__name__)
 
@@ -32,13 +35,13 @@ class LocalPygameClient(BaseClient):
 
     @classmethod
     def create(
-        cls, config: TuxemonConfig, screen: Surface
+        cls, config: TuxemonConfig, context: DisplayContext
     ) -> LocalPygameClient:
         """
         Initialize the LocalPygameClient with the given configuration and screen.
         """
         try:
-            client = LocalPygameClient(config, screen)
+            client = LocalPygameClient(config, context)
             logger.info("Client initialized successfully.")
         except (TypeError, ValueError) as e:
             logger.error(f"Failed to initialize client: {e}")
@@ -50,9 +53,8 @@ class LocalPygameClient(BaseClient):
             raise
         return client
 
-    def __init__(self, config: TuxemonConfig, screen: Surface) -> None:
-        super().__init__(config)
-        self.screen = screen
+    def __init__(self, config: TuxemonConfig, context: DisplayContext):
+        super().__init__(config, context)
 
         # movie creation
         self.frame_number = 0
@@ -62,16 +64,21 @@ class LocalPygameClient(BaseClient):
         self.state_drawer = StateDrawer(
             self.screen, self.state_manager, config
         )
-        self.event_debug_drawer = EventDebugDrawer(self.screen)
+        self.event_debug_drawer = EventDebugDrawer(self.context)
         self.renderer = Renderer(
             self.screen,
             self.state_drawer,
             self.config,
             self.event_debug_drawer,
         )
-        self.debug_renderer = DebugRenderer(self.map_manager, self.npc_manager)
+        self.debug_renderer = DebugRenderer(
+            self.map_manager, self.npc_manager, self.context
+        )
         map_renderer = MapRenderer(
-            self.camera_manager, self.npc_manager, self.debug_renderer
+            self.camera_manager,
+            self.npc_manager,
+            self.debug_renderer,
+            self.context,
         )
         self.set_renderer(map_renderer)
 
@@ -82,10 +89,13 @@ class LocalPygameClient(BaseClient):
             logger.debug("Renderer reset to NullRenderer.")
         else:
             self.debug_renderer = DebugRenderer(
-                self.map_manager, self.npc_manager
+                self.map_manager, self.npc_manager, self.context
             )
             map_renderer = MapRenderer(
-                self.camera_manager, self.npc_manager, self.debug_renderer
+                self.camera_manager,
+                self.npc_manager,
+                self.debug_renderer,
+                self.context,
             )
             self.set_renderer(map_renderer)
             logger.debug("Renderer reset to MapRenderer.")

@@ -49,7 +49,7 @@ class NPCState(BaseModel):
     tuxepedia: Mapping[str, Any] = Field(default_factory=dict)
     relationships: Mapping[str, Any] = Field(default_factory=dict)
     money: Mapping[str, Any] = Field(default_factory=dict)
-    template: Mapping[str, Any] = Field(default_factory=dict)
+    appearance: dict[str, Any] = Field(default_factory=dict)
     missions: Sequence[Mapping[str, Any]] = Field(default_factory=list)
     items: Sequence[Mapping[str, Any]] = Field(default_factory=list)
     monsters: Sequence[Mapping[str, Any]] = Field(default_factory=list)

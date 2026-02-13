@@ -3,16 +3,19 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.session import local_session
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 
 class SetLanguage(PygameMenuState):
@@ -23,15 +26,14 @@ class SetLanguage(PygameMenuState):
 
     name: ClassVar[str] = "SetLanguage"
 
-    def __init__(self, main_menu: bool, **kwargs: Any) -> None:
-        """
-        Used when initializing the state
-        """
+    def __init__(
+        self, client: BaseClient, main_menu: bool, **kwargs: Any
+    ) -> None:
         self.main_menu = main_menu
         theme = get_theme()
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
-        super().__init__(**kwargs)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
+        super().__init__(client=client, **kwargs)
         self.initialize_items(self.menu)
         self.reset_theme()
 
@@ -50,10 +52,7 @@ class SetLanguage(PygameMenuState):
                 character=local_session.player,
             )
 
-    def initialize_items(
-        self,
-        menu: pygame_menu.Menu,
-    ) -> None:
+    def initialize_items(self, menu: Menu) -> None:
         used = self.client.config.locale.slug
         languages = T.get_available_languages()
         for language in languages:
@@ -72,13 +71,6 @@ class SetLanguage(PygameMenuState):
         )
 
     def animate_open(self) -> Animation:
-        """
-        Animate the menu popping in.
-
-        Returns:
-            Popping in animation.
-
-        """
         self.animation_size = 0.0
         ani = self.animate(self, animation_size=1.0, duration=0.2)
         ani.schedule(self.update_animation_size, ScheduleType.ON_UPDATE)

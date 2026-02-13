@@ -37,8 +37,7 @@ from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import Comparison
 from tuxemon.locale.locale import T
 from tuxemon.math import Vector2
-from tuxemon.prepare import SCREEN_RECT
-from tuxemon.scaling import DefaultScaling, ScalingStrategy
+from tuxemon.scaling import ScalingStrategy
 from tuxemon.ui.dialogue import calc_dialog_rect
 from tuxemon.ui.text_alignment import DialogPosition
 from tuxemon.ui.text_formatter import TextFormatter
@@ -126,16 +125,12 @@ def get_screen_rect(sprite: Sprite, internal_rect: Rect) -> Rect:
 
 
 def scale(number: int, scaling: ScalingStrategy | None = None) -> int:
-    """
-    Scale an integer by the configured scale factor.
+    """Scale a number by the configured scale factor."""
+    if scaling is None:
+        from tuxemon.prepare import DISPLAY_CONTEXT
 
-    Parameter:
-        number: Integer to scale.
+        scaling = DISPLAY_CONTEXT.scaling
 
-    Returns:
-        Scaled integer.
-    """
-    scaling = scaling or DefaultScaling()
     return scaling.scale_int(number)
 
 
@@ -232,7 +227,7 @@ def open_dialog(
         dialog_rect = custom_rect
     else:
         dialog_rect = calc_dialog_rect(
-            SCREEN_RECT, position, target_coords=target_coords
+            client.context.rect, position, target_coords=target_coords
         )
 
     return client.push_state(
@@ -664,6 +659,32 @@ def compare(key: str, value1: int | float, value2: int | float) -> bool:
         return bool(eq(value1, value2))
     elif key == Comparison.NOT_EQUALS or key == "!=":
         return bool(ne(value1, value2))
+    else:
+        raise ValueError(f"{key} isn't among {list(Comparison)}")
+
+
+def compare_tuple(
+    key: str,
+    value1: tuple[int | float, int | float],
+    value2: tuple[int | float, int | float],
+) -> bool:
+    """
+    Tuple-based comparison using the same Comparison enum
+    and symbolic operators supported by compare().
+    """
+
+    if key == Comparison.LESS_THAN or key == "<":
+        return value1 < value2
+    elif key == Comparison.LESS_OR_EQUAL or key == "<=":
+        return value1 <= value2
+    elif key == Comparison.GREATER_THAN or key == ">":
+        return value1 > value2
+    elif key == Comparison.GREATER_OR_EQUAL or key == ">=":
+        return value1 >= value2
+    elif key == Comparison.EQUALS or key == "==":
+        return value1 == value2
+    elif key == Comparison.NOT_EQUALS or key == "!=":
+        return value1 != value2
     else:
         raise ValueError(f"{key} isn't among {list(Comparison)}")
 

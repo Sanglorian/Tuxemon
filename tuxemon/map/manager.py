@@ -143,11 +143,11 @@ class MapManager:
 
     @property
     def events(self) -> Sequence[EventObject]:
-        return self.current_map.events if self.current_map else []
+        return self.current_map.events if self.current_map else ()
 
     @property
     def inits(self) -> Sequence[EventObject]:
-        return self.current_map.inits if self.current_map else []
+        return self.current_map.inits if self.current_map else ()
 
     def load_map(self, map_data: AbstractMap) -> None:
         """Loads a new map, sets properties, and resets relevant events."""
@@ -165,11 +165,17 @@ class MapManager:
 
     def set_events(self, new_events: Sequence[EventObject]) -> None:
         if self.current_map:
-            self.current_map.add_events(new_events)
+            sorted_events = sorted(
+                new_events, key=lambda e: e.priority, reverse=True
+            )
+            self.current_map.add_events(sorted_events)
 
     def set_inits(self, new_inits: Sequence[EventObject]) -> None:
         if self.current_map:
-            self.current_map.add_inits(new_inits)
+            sorted_inits = sorted(
+                new_inits, key=lambda e: e.priority, reverse=True
+            )
+            self.current_map.add_inits(sorted_inits)
 
     def clear_events(self) -> None:
         if self.current_map:

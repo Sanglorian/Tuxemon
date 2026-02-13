@@ -214,10 +214,10 @@ def test_award_rewards_moves_updates(setup_combat):
         combat_type,
     ) = setup_combat
 
-    winner.moves.update_moves.return_value = ["Fireball"]
+    winner.moves.preview_moves_learned.return_value = ["Fireball"]
 
     second_winner = monster_mock(level=5, hp=50)
-    second_winner.moves.update_moves.return_value = ["Ram"]
+    second_winner.moves.preview_moves_learned.return_value = ["Ram"]
     second_winner.owner = winner.owner
 
     damage_tracker.log_damage(second_winner, loser, 5, 1)

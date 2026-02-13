@@ -2,14 +2,17 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER
 
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.sizes import NATIVE_RESOLUTION
-from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 
 class ImageState(PygameMenuState):
@@ -23,7 +26,13 @@ class ImageState(PygameMenuState):
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         return None
 
-    def __init__(self, background: str, image: str | None = None) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        background: str,
+        image: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         width, height = SCREEN_SIZE
         image_path = f"gfx/ui/background/{background}.png"
         native = NATIVE_RESOLUTION
@@ -34,7 +43,7 @@ class ImageState(PygameMenuState):
                 f"{image_path} {bg_size}: "
                 f"It doesn't respect the native resolution {native}"
             )
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         if image:
             new_image = self._create_image(image)
@@ -44,7 +53,7 @@ class ImageState(PygameMenuState):
                     f"{image} {image_size}: "
                     f"It must be less than the native resolution {native}"
                 )
-            new_image.scale(SCALE, SCALE)
+            new_image.scale(self.factor, self.factor)
             self.menu.add.image(
                 new_image,
                 align=ALIGN_CENTER,

@@ -30,13 +30,11 @@ class CharSpriteCondition(EventCondition):
     name = "char_sprite"
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        character = session.get_npc(condition.parameters[0])
-        if character is None:
-            logger.error(f"{condition.parameters[0]} not found")
+        target_slug = condition.parameters[0]
+        expected_sprite = condition.parameters[1]
+
+        target = session.get_npc(target_slug)
+        if not target:
             return False
 
-        sprite = condition.parameters[1]
-
-        if character.template.sprite_name == sprite:
-            return True
-        return False
+        return target.appearance_manager.state.sprite_name == expected_sprite

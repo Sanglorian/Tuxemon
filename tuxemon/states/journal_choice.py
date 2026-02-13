@@ -7,8 +7,8 @@ from collections.abc import Callable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_LEFT, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
@@ -19,6 +19,7 @@ from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
 
 MAX_PAGE = 20
@@ -44,7 +45,7 @@ class JournalChoice(PygameMenuState):
 
     def add_menu_items(
         self,
-        menu: pygame_menu.Menu,
+        menu: Menu,
         monsters: list[MonsterModel],
     ) -> None:
 
@@ -91,14 +92,16 @@ class JournalChoice(PygameMenuState):
                 )
                 lab1.translate(btn_x_offset, btn_y_offset)
 
-    def __init__(self, character: NPC) -> None:
+    def __init__(
+        self, client: BaseClient, character: NPC, **kwargs: Any
+    ) -> None:
         if not lookup_cache:
             _lookup_monsters()
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_JOURNAL_CHOICE)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_LEFT
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_LEFT
 
         self.char = character
 
@@ -109,7 +112,12 @@ class JournalChoice(PygameMenuState):
         rows = int(diff / columns) + 1
 
         super().__init__(
-            height=height, width=width, columns=columns, rows=rows
+            client=client,
+            height=height,
+            width=width,
+            columns=columns,
+            rows=rows,
+            **kwargs,
         )
 
         self.add_menu_items(self.menu, box)

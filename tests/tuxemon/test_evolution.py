@@ -158,7 +158,7 @@ def test_no_owner(setup_evolution):
 )
 def test_level_requirement(setup_evolution, level, at_level, expected):
     mon, _, _ = setup_evolution
-    mon.set_level(level)
+    mon.set_level(level, level)
     evo = MonsterEvolutionItemModel(monster_slug="rockat", at_level=at_level)
     context = {"map_inside": True}
     assert mon.evolution_handler.can_evolve(evo, context) == expected
@@ -441,7 +441,7 @@ def test_probability_conditions(
 ):
     mon, _, _ = setup_evolution
     if level is not None:
-        mon.set_level(level)
+        mon.set_level(level, level)
     evo_kwargs = {"monster_slug": "rockat"}
     if at_level is not None:
         evo_kwargs["at_level"] = at_level
@@ -670,9 +670,86 @@ def test_deny_pending_evolution_calls_registry_and_resets_flags(
     mon, _, evo = setup_evolution
     registry = MagicMock()
     mon.instance_id = "iid123"
-    mon.set_level(10)
+    mon.set_level(10, 10)
     mon.experience_handler.reset_status_flags = MagicMock()
     evo.deny_pending_evolution(registry, "slug123")
     registry.log_missed.assert_called_once_with("iid123", "slug123", 10)
     registry.clear_pending.assert_called_once_with("iid123")
     mon.experience_handler.reset_status_flags.assert_called_once()
+
+
+def test_get_eligible_evolution_slug_requires_item_but_not_used(
+    setup_evolution,
+):
+    mon, player, evo = setup_evolution
+
+    evolution_item = MonsterEvolutionItemModel.model_construct(
+        monster_slug="rockat", item={"stone": 1}
+    )
+
+    mon.evolutions = [evolution_item]
+    evo.is_eligible_for_evolution = lambda: True
+    evo.can_evolve = lambda item, ctx: False
+    registry = MagicMock()
+    registry.get_blocked.return_value = []
+    player.evolution_registry = registry
+
+    type(mon).held_item = PropertyMock(return_value=None)
+    slug = evo.get_eligible_evolution_slug(context={"use_item": False})
+    assert slug is None
+
+
+def test_get_eligible_evolution_slug_held_item_blocks(setup_evolution):
+    mon, player, evo = setup_evolution
+
+    evolution_item = MonsterEvolutionItemModel(monster_slug="rockat")
+    mon.evolutions = [evolution_item]
+
+    evo.is_eligible_for_evolution = lambda: True
+    evo.can_evolve = lambda item, ctx: True
+
+    registry = MagicMock()
+    registry.get_blocked.return_value = []
+    player.evolution_registry = registry
+
+    blocker = MagicMock()
+    blocker.behaviors.block_evolution = True
+    type(mon).held_item = PropertyMock(return_value=blocker)
+    slug = evo.get_eligible_evolution_slug()
+    assert slug is None
+
+
+def test_get_eligible_evolution_slug_blocked(setup_evolution):
+    mon, player, evo = setup_evolution
+
+    evolution_item = MonsterEvolutionItemModel(monster_slug="rockat")
+    mon.evolutions = [evolution_item]
+
+    evo.is_eligible_for_evolution = lambda: True
+    evo.can_evolve = lambda item, ctx: True
+
+    registry = MagicMock()
+    registry.get_blocked.return_value = ["rockat"]
+    player.evolution_registry = registry
+
+    type(mon).held_item = PropertyMock(return_value=None)
+    slug = evo.get_eligible_evolution_slug()
+    assert slug is None
+
+
+def test_get_eligible_evolution_slug(setup_evolution):
+    mon, player, evo = setup_evolution
+
+    evolution_item = MonsterEvolutionItemModel(monster_slug="rockat")
+    mon.evolutions = [evolution_item]
+
+    evo.is_eligible_for_evolution = lambda: True
+    evo.can_evolve = lambda item, ctx: True
+
+    registry = MagicMock()
+    registry.get_blocked.return_value = []
+    player.evolution_registry = registry
+
+    type(mon).held_item = PropertyMock(return_value=None)
+    slug = evo.get_eligible_evolution_slug()
+    assert slug == "rockat"

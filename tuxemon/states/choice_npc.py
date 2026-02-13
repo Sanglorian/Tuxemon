@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.widgets.selection.highlight import HighlightSelection
@@ -17,8 +17,11 @@ from tuxemon.entity.sheet import get_combat_sheet
 from tuxemon.graphics import scale_surface
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.ui.menu_options import MenuOptions
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 
 @dataclass
@@ -43,6 +46,7 @@ class ChoiceNpc(PygameMenuState):
 
     def __init__(
         self,
+        client: BaseClient,
         menu: MenuOptions,
         escape_key_exits: bool = False,
         config: MenuNpcConfig | None = None,
@@ -59,7 +63,10 @@ class ChoiceNpc(PygameMenuState):
         )
 
         super().__init__(
-            columns=self.config.number_columns, rows=rows, **kwargs
+            client=client,
+            columns=self.config.number_columns,
+            rows=rows,
+            **kwargs,
         )
 
         for option in menu.get_menu():
@@ -79,7 +86,7 @@ class ChoiceNpc(PygameMenuState):
         npc = NpcModel.lookup(slug, db)
         sheet = get_combat_sheet(npc.template)
         surface = sheet.front()
-        scaled = scale_surface(surface, SCALE * self.config.scale_sprite)
+        scaled = scale_surface(surface, self.factor * self.config.scale_sprite)
         new_image = self._create_image_from_surface(scaled)
         self.menu.add.image(new_image, align=ALIGN_CENTER)
         # replace slug not translated

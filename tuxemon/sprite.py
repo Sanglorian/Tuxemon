@@ -26,13 +26,13 @@ from tuxemon import graphics
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 from tuxemon.surfanim import SurfaceAnimation
-from tuxemon.tools import scale as tuxemon_scale
 
 if TYPE_CHECKING:
     from tuxemon.db import BattleIconsModel
     from tuxemon.entity.party import PartyHandler
     from tuxemon.menu.interface import MenuItem
     from tuxemon.monster.monster import Monster
+    from tuxemon.prepare import DisplayContext
 
 logger = logging.getLogger()
 
@@ -364,13 +364,13 @@ class HordeSprite(Sprite):
         opponent_party: PartyHandler,
         tray_rect: Rect,
         shadow_text_func: Callable[[str], Surface],
-        scale_func: Callable[[int], int],
+        context: DisplayContext,
     ) -> None:
         super().__init__()
         self.opponent_party = opponent_party
         self.tray_rect = tray_rect
         self.shadow_text = shadow_text_func
-        self.scale = scale_func
+        self.context = context
         self.update_count_display()
 
     def update_count_display(self) -> bool:
@@ -380,8 +380,8 @@ class HordeSprite(Sprite):
         horde_size = len(self.opponent_party.alive)
         horde_text = f"x{horde_size}"
         text_surface = self.shadow_text(horde_text)
-        x_pad = self.scale(2)
-        y_pad = self.scale(4)
+        x_pad = self.context.scaling.scale_int(2)
+        y_pad = self.context.scaling.scale_int(4)
         width = text_surface.get_width() + x_pad * 2
         height = text_surface.get_height() + y_pad * 2
         self.image = Surface((width, height), SRCALPHA)
@@ -407,12 +407,14 @@ class CaptureDeviceSprite(Sprite):
         monster: Monster | None,
         sprite: Sprite,
         icon: BattleIconsModel,
+        context: DisplayContext,
     ) -> None:
         super().__init__()
         self.tray = tray
         self.monster = monster
         self.sprite = sprite
         self.icon = icon
+        self.context = context
         self.state = self.resolve_status()
         self.update_image()
 
@@ -448,7 +450,10 @@ class CaptureDeviceSprite(Sprite):
         sprite.image = graphics.convert_alpha_to_colorkey(sprite.image)
         sprite.image.set_alpha(0)
         animate(sprite.image, set_alpha=255, initial=0)
-        animate(sprite.rect, bottom=self.tray.rect.top + tuxemon_scale(3))
+        animate(
+            sprite.rect,
+            bottom=self.tray.rect.top + self.context.scaling.scale_int(3),
+        )
 
 
 _GroupElement = TypeVar("_GroupElement", bound=Sprite)

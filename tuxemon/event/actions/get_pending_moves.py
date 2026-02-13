@@ -78,6 +78,7 @@ class GetPendingMovesAction(EventAction):
             self.monster = mon
             menu = session.client.push_state(
                 TechniqueMenuState(
+                    client=session.client,
                     character=player,
                     techniques=mon.moves.get_moves(),
                 )

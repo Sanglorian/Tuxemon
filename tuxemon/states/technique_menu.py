@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.rect import Rect
 
@@ -15,21 +15,17 @@ from tuxemon.platform.const.graphics import (
     DIMGRAY_COLOR,
     MISSING_IMAGE,
 )
-from tuxemon.prepare import SCREEN_RECT
 from tuxemon.session import local_session
 from tuxemon.sprite import Sprite
 from tuxemon.technique.controller import TechController
 from tuxemon.technique.filter import TechFilter
 from tuxemon.technique.sorter import TechSorter
 from tuxemon.technique.technique import Technique
-from tuxemon.tools import (
-    open_choice_dialog,
-    open_dialog,
-    scale,
-)
+from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
 
 
@@ -42,29 +38,36 @@ class TechniqueMenuState(Menu[Technique]):
 
     def __init__(
         self,
+        client: BaseClient,
         character: NPC,
         techniques: list[Technique],
         tech_filter: TechFilter | None = None,
         tech_sorter: TechSorter | None = None,
+        **kwargs: Any,
     ) -> None:
         self.char = character
         self.tech_filter = tech_filter or TechFilter(techniques)
         self.tech_sorter = tech_sorter or TechSorter()
 
-        super().__init__()
+        super().__init__(client=client, **kwargs)
 
         self.item_center = self.rect.width * 0.164, self.rect.height * 0.13
         self.technique_sprite = Sprite()
         self.sprites.add(self.technique_sprite)
-        self.menu_items.line_spacing = scale(7)
+        self.menu_items.line_spacing = self.client.context.scaling.scale_int(7)
 
         # this is the area where the technique description is displayed
-        rect = SCREEN_RECT.copy()
-        rect.top = scale(106)
-        rect.left = scale(3)
-        rect.width = scale(250)
-        rect.height = scale(32)
-        self.text_area = TextArea(self.font, self.font_color, (96, 96, 128))
+        rect = self.client.context.rect.copy()
+        rect.top = self.client.context.scaling.scale_int(106)
+        rect.left = self.client.context.scaling.scale_int(3)
+        rect.width = self.client.context.scaling.scale_int(250)
+        rect.height = self.client.context.scaling.scale_int(32)
+        self.text_area = TextArea(
+            font=self.font,
+            font_color=self.font_color,
+            scaling=self.client.context.scaling,
+            font_shadow=(96, 96, 128),
+        )
         self.text_area.rect = rect
         self.sprites.add(self.text_area, layer=100)
 

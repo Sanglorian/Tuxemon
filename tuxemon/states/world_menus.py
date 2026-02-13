@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
+from pygame_menu.menu import Menu
 
 from tuxemon.animation import ScheduleType
 from tuxemon.menu.menu import PygameMenuState
@@ -18,6 +18,7 @@ from tuxemon.states.monster_menu import MonsterMenuHandler
 
 if TYPE_CHECKING:
     from tuxemon.animation import Animation
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
     from tuxemon.world.manager import MenuItem, WorldMenuManager
 
@@ -27,10 +28,7 @@ logger = logging.getLogger(__name__)
 WorldMenuGameObj = Callable[[], object]
 
 
-def add_menu_items_to_pygame_menu(
-    menu: pygame_menu.Menu,
-    items: list[MenuItem],
-) -> None:
+def add_menu_items_to_pygame_menu(menu: Menu, items: list[MenuItem]) -> None:
     """Helper function to add items to a pygame_menu.Menu instance."""
     menu.clear()
     menu.add.vertical_fill()
@@ -62,10 +60,16 @@ class WorldMenuState(PygameMenuState):
 
     name: ClassVar[str] = "WorldMenuState"
 
-    def __init__(self, menu_manager: WorldMenuManager, character: NPC) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        menu_manager: WorldMenuManager,
+        character: NPC,
+        **kwargs: Any,
+    ) -> None:
         """Initialize menu state and build menu separately."""
         self.char = character
-        super().__init__(height=SCREEN_SIZE[1])
+        super().__init__(client=client, height=SCREEN_SIZE[1], **kwargs)
         self.menu_manager = menu_manager
         self.menu_manager.set_menu_renderer(self)
         self.update_menu_from_manager()

@@ -16,6 +16,7 @@ from tuxemon.ui.text_renderer import TextRenderer
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
     from tuxemon.db import SpatialCondition
+    from tuxemon.prepare import DisplayContext
     from tuxemon.state.manager import StateManager
     from tuxemon.state.state import State
 
@@ -136,7 +137,7 @@ class StateDrawer:
 class EventDebugDrawer:
     def __init__(
         self,
-        screen: Surface,
+        context: DisplayContext,
         max_width: int = 1000,
         x_offset: int = 20,
         y_offset: int = 200,
@@ -164,7 +165,8 @@ class EventDebugDrawer:
             valid_color: Color used to indicate valid conditions.
             invalid_color: Color used to indicate invalid conditions.
         """
-        self.screen = screen
+        self.screen = context.screen
+        self.scaling = context.scaling
         self.max_width = max_width
         self.x_offset = x_offset
         self.y_offset = y_offset
@@ -207,7 +209,9 @@ class EventDebugDrawer:
         font_size: int = 15,
     ) -> tuple[int, int]:
         font = Font(get_default_font(), font_size)
-        renderer = TextRenderer(font=font, font_color=color)
+        renderer = TextRenderer(
+            scaling=self.scaling, font=font, font_color=color
+        )
         image = renderer.shadow_text(text)
         self.screen.blit(image, position)
         return image.get_size()

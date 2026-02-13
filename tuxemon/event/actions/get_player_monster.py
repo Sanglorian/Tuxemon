@@ -149,7 +149,7 @@ class GetPlayerMonsterAction(EventAction):
         self.choose = False
         # pull up the monster menu so we know which one we are saving
         menu = session.client.push_state(
-            MonsterMenuState(session.player.monsters)
+            MonsterMenuState(session.client, session.player.monsters)
         )
         menu.is_valid_entry = self.validate  # type: ignore[assignment]
         menu.on_menu_selection = self.set_var  # type: ignore[assignment]

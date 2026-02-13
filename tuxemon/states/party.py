@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
 from pygame_menu.menu import Menu
@@ -16,9 +16,12 @@ from tuxemon.monster.monster import Monster
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_PARTY
 from tuxemon.platform.const.sizes import U_KM, U_MI
-from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 
 class PartyState(PygameMenuState):
@@ -33,7 +36,9 @@ class PartyState(PygameMenuState):
 
     name: ClassVar[str] = "PartyState"
 
-    def __init__(self, party: PartyHandler) -> None:
+    def __init__(
+        self, client: BaseClient, party: PartyHandler, **kwargs: Any
+    ) -> None:
         self.party = party
         self.char = party.owner
         width, height = SCREEN_SIZE
@@ -42,7 +47,7 @@ class PartyState(PygameMenuState):
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
         self.initialize_items(self.menu, self.party.monsters)
         self.reset_theme()
 
@@ -160,7 +165,7 @@ class PartyState(PygameMenuState):
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         params = {"character": self.char}
         if event.button == buttons.LEFT and event.pressed:
-            self.client.replace_state("CharacterState", kwargs=params)
+            self.client.replace_state("CharacterState", **params)
         if (
             event.button in (buttons.BACK, buttons.B, buttons.A)
             and event.pressed

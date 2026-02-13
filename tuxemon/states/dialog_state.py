@@ -11,11 +11,11 @@ from tuxemon.menu.menu import PopUpMenu
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 from tuxemon.sprite import Sprite
-from tuxemon.tools import scale
 from tuxemon.ui.text import TextArea
 from tuxemon.ui.text_alignment import HorizontalAlignment, VerticalAlignment
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.platform.events import PlayerInput
     from tuxemon.sprite import Sprite
 
@@ -39,6 +39,7 @@ class DialogState(PopUpMenu[None]):
 
     def __init__(
         self,
+        client: BaseClient,
         text: Sequence[str] = (),
         avatar: Sprite | None = None,
         box_style: dict[str, Any] | None = None,
@@ -50,7 +51,7 @@ class DialogState(PopUpMenu[None]):
         dialog_speed: str | None = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(client=client, **kwargs)
         self.text_queue = list(text)
         self.avatar = avatar
         self.on_complete = on_complete
@@ -80,11 +81,13 @@ class DialogState(PopUpMenu[None]):
         _border = load_and_scale(final_box_style["border"])
         self.window._set_border(_border)
         self.window._color = final_box_style["bg_color"]
-        line_spacing = scale(final_box_style["line_spacing"])
+        scaling = self.client.context.scaling
+        line_spacing = scaling.scale_int(final_box_style["line_spacing"])
 
         self.dialog_box = TextArea(
             font=self.font,
             font_color=final_box_style["font_color"],
+            scaling=self.client.context.scaling,
             font_shadow=final_box_style["font_shadow"],
             h_alignment=final_box_style["h_alignment"],
             v_alignment=final_box_style["v_alignment"],

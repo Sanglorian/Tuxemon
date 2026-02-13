@@ -2,9 +2,8 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Protocol, TypeVar, overload
-
-from tuxemon.prepare import SCALE
 
 TVarSequence = TypeVar("TVarSequence", bound=tuple[int, ...])
 
@@ -16,14 +15,32 @@ class ScalingStrategy(Protocol):
 
     def scale_tuple(self, coords: TVarSequence) -> TVarSequence: ...
     def scale_int(self, value: int) -> int: ...
+    def scale_float(self, value: float) -> float: ...
+    def scale_sequence(self, seq: Sequence[float]) -> list[float]: ...
+
+    @property
+    def factor(self) -> int: ...
 
 
 class DefaultScaling:
+    def __init__(self, scale: int):
+        self._scale = scale
+
+    @property
+    def factor(self) -> int:
+        return self._scale
+
     def scale_tuple(self, coords: TVarSequence) -> TVarSequence:
-        return type(coords)(i * SCALE for i in coords)
+        return type(coords)(i * self._scale for i in coords)
 
     def scale_int(self, value: int) -> int:
-        return value * SCALE
+        return value * self._scale
+
+    def scale_float(self, value: float) -> float:
+        return value * self._scale
+
+    def scale_sequence(self, seq: Sequence[float]) -> list[float]:
+        return [self.scale_float(x) for x in seq]
 
 
 class ResolutionScaling:
@@ -35,9 +52,19 @@ class ResolutionScaling:
         self.base_w, self.base_h = base_resolution
         self.curr_w, self.curr_h = current_resolution
 
+    @property
+    def factor(self) -> float:
+        return self.curr_w / self.base_w
+
     def scale_int(self, value: int) -> int:
         # scale uniformly using width ratio
         return int(value * (self.curr_w / self.base_w))
+
+    def scale_float(self, value: float) -> float:
+        return value * (self.curr_w / self.base_w)
+
+    def scale_sequence(self, seq: Sequence[float]) -> list[float]:
+        return [self.scale_float(x) for x in seq]
 
     @overload
     def scale_tuple(self, coords: tuple[int, int]) -> tuple[int, int]: ...

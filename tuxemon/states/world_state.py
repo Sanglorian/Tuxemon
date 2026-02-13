@@ -32,6 +32,7 @@ from tuxemon.world.manager import WorldMenuManager
 from tuxemon.world.transition import WorldTransition
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.network.networking import EventData, update_client
 
 logger = logging.getLogger(__name__)
@@ -44,11 +45,13 @@ class WorldState(State):
 
     def __init__(
         self,
+        client: BaseClient,
         session: Session,
         map_name: str | None = None,
         yaml_name: str | None = None,
+        **kwargs: Any,
     ) -> None:
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         mw = self.client.event_manager.get_middleware_instance(
             InputTranslatorMiddleware
         )

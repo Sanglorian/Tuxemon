@@ -20,6 +20,7 @@ from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
 
 logger = logging.getLogger(__name__)
@@ -117,7 +118,9 @@ def _get_broadcast_content(
 class NuPhoneRadioBase(PygameMenuState, ABC):
     name: ClassVar[str] = "NuPhoneRadioBase"
 
-    def __init__(self, character: NPC) -> None:
+    def __init__(
+        self, client: BaseClient, character: NPC, **kwargs: Any
+    ) -> None:
         width, height = SCREEN_SIZE
         theme = self._setup_theme(BG_PHONE_CONTACTS)
         theme.scrollarea_position = POSITION_EAST
@@ -130,7 +133,7 @@ class NuPhoneRadioBase(PygameMenuState, ABC):
         else:
             self.current_map = UNKNOWN_MAP_SLUG
 
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
         self.reset_theme()
 
     def _apply_variable_changes(self, set_variables: dict[str, Any]) -> None:
@@ -167,8 +170,10 @@ class NuPhoneRadioBase(PygameMenuState, ABC):
 class NuPhoneRadioMenu(NuPhoneRadioBase):
     name: ClassVar[str] = "NuPhoneRadioMenu"
 
-    def __init__(self, character: NPC) -> None:
-        super().__init__(character)
+    def __init__(
+        self, client: BaseClient, character: NPC, **kwargs: Any
+    ) -> None:
+        super().__init__(client=client, character=character, **kwargs)
         self.add_menu_items(self.menu)
 
     def _start_radio_button(self, station_slug: str) -> None:
@@ -209,12 +214,18 @@ class NuPhoneRadioTuner(NuPhoneRadioBase):
     name: ClassVar[str] = "NuPhoneRadioTuner"
     current_station_slug: str = "station_scrambled_frequency"
 
-    def __init__(self, character: NPC, frequency: float | None = None) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        character: NPC,
+        frequency: float | None = None,
+        **kwargs: Any,
+    ) -> None:
         self.initial_freq = (
             frequency if frequency is not None else INITIAL_FREQ
         )
         self.selected_freq = self.initial_freq
-        super().__init__(character)
+        super().__init__(client=client, character=character, **kwargs)
         self.current_station_slug = "station_scrambled_frequency"
         self.add_menu_items(self.menu)
 

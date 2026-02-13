@@ -18,6 +18,7 @@ from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
 
 
@@ -107,7 +108,9 @@ class NuPhoneMap(PygameMenuState):
 
         menu.set_title(title=T.translate("app_map")).center_content()
 
-    def __init__(self, character: NPC) -> None:
+    def __init__(
+        self, client: BaseClient, character: NPC, **kwargs: Any
+    ) -> None:
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_PHONE_MAP)
@@ -118,10 +121,7 @@ class NuPhoneMap(PygameMenuState):
 
         self.char = character
 
-        super().__init__(
-            height=height,
-            width=width,
-        )
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         self.add_menu_items(self.menu)
         self.reset_theme()

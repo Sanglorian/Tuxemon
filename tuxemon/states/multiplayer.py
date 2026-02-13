@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Generator
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.menu import Menu
 
@@ -12,6 +12,9 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu, PygameMenuState
 from tuxemon.tools import open_dialog
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 MenuGameObj = Callable[[], object]
 
@@ -28,8 +31,8 @@ class MultiplayerMenu(PygameMenuState):
     name: ClassVar[str] = "MultiplayerMenu"
     shrink_to_items = True
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, client: BaseClient, **kwargs: Any) -> None:
+        super().__init__(client=client, **kwargs)
         self.network = self.client.network_manager
 
         menu: list[tuple[str, MenuGameObj]] = []
@@ -109,8 +112,8 @@ class MultiplayerSelect(PopUpMenu[None]):
     name: ClassVar[str] = "MultiplayerSelect"
     shrink_to_items = True
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, client: BaseClient, **kwargs: Any) -> None:
+        super().__init__(client=client, **kwargs)
         self.network = self.client.network_manager
 
         # make a timer to refresh the menu items every second

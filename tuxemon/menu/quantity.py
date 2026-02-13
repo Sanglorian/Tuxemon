@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable, Generator
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from tuxemon.item.stock import INFINITE_ITEMS
 from tuxemon.locale.locale import T
@@ -14,6 +14,9 @@ from tuxemon.menu.menu import Menu
 from tuxemon.platform.const import buttons, intentions
 from tuxemon.platform.events import PlayerInput
 from tuxemon.session import local_session
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +34,7 @@ class QuantityMenu(Menu[None]):
 
     def __init__(
         self,
+        client: BaseClient,
         callback: Callable[[int], None],
         quantity: int = 1,
         max_quantity: int | None = None,
@@ -40,6 +44,7 @@ class QuantityMenu(Menu[None]):
         currency_formatter: CurrencyFormatter | None = None,
         quantity_formatter: QuantityFormatter | None = None,
         label: Callable[[int], str] | None = None,
+        **kwargs: Any,
     ) -> None:
         """
         Initialize the quantity menu.
@@ -53,7 +58,7 @@ class QuantityMenu(Menu[None]):
             currency_formatter: An optional formatter for currency display.
             quantity_formatter: An optional formatter for quantity display.
         """
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         self.quantity = quantity
         self.price = price
         self.cost = cost
@@ -134,6 +139,9 @@ class QuantityAndPriceMenu(QuantityMenu):
 
     name: ClassVar[str] = "QuantityAndPriceMenu"
 
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
+
     def on_open(self) -> None:
         # Do this to force the menu to resize when first opened, as currently
         # it's way too big initially and then resizes after you change quantity.
@@ -158,6 +166,9 @@ class QuantityAndCostMenu(QuantityMenu):
     """Menu used to select quantities, and also shows the cost of items."""
 
     name: ClassVar[str] = "QuantityAndCostMenu"
+
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
 
     def on_open(self) -> None:
         # Do this to force the menu to resize when first opened, as currently

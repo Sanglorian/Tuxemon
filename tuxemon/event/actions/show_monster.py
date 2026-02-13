@@ -54,7 +54,7 @@ class ShowMonsterAction(EventAction):
             return
 
         params = {"monster": monster, "source": self.name}
-        self.client.push_state("MonsterInfoState", kwargs=params)
+        self.client.push_state("MonsterInfoState", **params)
 
     def update(self, session: Session, dt: float) -> None:
         try:

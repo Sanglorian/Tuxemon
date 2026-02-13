@@ -4,16 +4,19 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame import SRCALPHA
 from pygame.surface import Surface
 
 from tuxemon.graphics import ColorLike
 from tuxemon.platform.const.graphics import BLACK_COLOR
-from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
 
@@ -28,10 +31,12 @@ class FadeTransitionBase(State):
 
     def __init__(
         self,
+        client: BaseClient,
         state_duration: float | None = None,
         fade_duration: float | None = None,
         caller: State | None = None,
         color: ColorLike = BLACK_COLOR,
+        **kwargs: Any,
     ) -> None:
         """
         Parameters:
@@ -43,7 +48,7 @@ class FadeTransitionBase(State):
                 it will be set to None.
             color: The color to use for the fade transition. Defaults to black.
         """
-        super().__init__()
+        super().__init__(client=client, **kwargs)
 
         logger.debug("Initializing fade transition")
 
@@ -77,6 +82,9 @@ class FadeTransitionBase(State):
 class FadeOutTransition(FadeTransitionBase):
     name: ClassVar[str] = "FadeOutTransition"
 
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
+
     def create_fade_animation(self) -> None:
         self.animate(
             self.transition_surface,
@@ -96,6 +104,9 @@ class FadeOutTransition(FadeTransitionBase):
 
 class FadeInTransition(FadeTransitionBase):
     name: ClassVar[str] = "FadeInTransition"
+
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
 
     def create_fade_animation(self) -> None:
         self.animate(

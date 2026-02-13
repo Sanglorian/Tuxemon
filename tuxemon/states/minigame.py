@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import random
 from functools import partial
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.menu import Menu
@@ -18,6 +18,9 @@ from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const.graphics import BG_MINIGAME, MISSING_IMAGE
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure, open_dialog
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 lookup_cache: dict[str, MonsterModel] = {}
 
@@ -37,7 +40,12 @@ class MinigameState(PygameMenuState):
     name: ClassVar[str] = "MinigameState"
 
     def __init__(
-        self, difficulty: str = "easy", streak: int = 0, score: int = 0
+        self,
+        client: BaseClient,
+        difficulty: str = "easy",
+        streak: int = 0,
+        score: int = 0,
+        **kwargs: Any,
     ) -> None:
         if not lookup_cache:
             _lookup_monsters()
@@ -51,7 +59,7 @@ class MinigameState(PygameMenuState):
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
         self.add_menu_items(self.menu)
         self.reset_theme()
 

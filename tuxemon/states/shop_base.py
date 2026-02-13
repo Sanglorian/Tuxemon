@@ -31,6 +31,7 @@ from tuxemon.ui.paginator import Paginator
 from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.economy.economy import Economy
 
 
@@ -56,11 +57,13 @@ class ShopMenuState(Menu[T], Generic[T], ABC):
 
     def __init__(
         self,
+        client: BaseClient,
         buyer: NPC,
         seller: NPC,
         economy: Economy,
+        **kwargs: Any,
     ) -> None:
-        super().__init__()
+        super().__init__(client=client, **kwargs)
 
         # This sprite is used to display the selected asset.
         self.item_center = self.rect.width * 0.164, self.rect.height * 0.13
@@ -199,6 +202,7 @@ class ShopMenuState(Menu[T], Generic[T], ABC):
         params = self._get_selection_menu_params(menu_item)
         self.client.state_manager.push_state(
             QuantityAndCostMenu(
+                client=self.client,
                 callback=params["callback"],
                 max_quantity=params["max_quantity"],
                 quantity=1,

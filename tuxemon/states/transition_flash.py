@@ -3,16 +3,19 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.surface import Surface
 
 from tuxemon.graphics import ColorLike
 from tuxemon.platform.const.graphics import WHITE_COLOR
-from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.rumble.tools import RumbleParams
 from tuxemon.state.state import State
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +28,11 @@ class FlashTransition(State):
 
     def __init__(
         self,
+        client: BaseClient,
         color: ColorLike = WHITE_COLOR,
         flash_time: float = 0.2,
         max_flash_count: int = 7,
+        **kwargs: Any,
     ) -> None:
         """
         Parameters:
@@ -37,7 +42,7 @@ class FlashTransition(State):
             max_flash_count: The maximum number of times the flash effect will
                 repeat. Defaults to 7.
         """
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         logger.info("Initializing battle transition")
         self.flash_time = flash_time
         self.flash_state = "up"

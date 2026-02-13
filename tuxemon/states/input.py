@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Generator
 from functools import partial
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.rect import Rect
 
@@ -17,11 +17,14 @@ from tuxemon.menu.input import (
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu
 from tuxemon.platform.const import buttons, events, intentions
-from tuxemon.platform.events import PlayerInput
 from tuxemon.session import local_session
 from tuxemon.tools import open_choice_dialog
 from tuxemon.ui.input_display import InputDisplay
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 
 class InputMenuObj:
@@ -52,6 +55,7 @@ class InputMenu(Menu[InputMenuObj]):
 
     def __init__(
         self,
+        client: BaseClient,
         prompt: str = "",
         callback: Callable[[str], None] | None = None,
         initial: str = "",
@@ -96,7 +100,7 @@ class InputMenu(Menu[InputMenuObj]):
             buttons.LEFT: 0.0,
             buttons.RIGHT: 0.0,
         }
-        super().__init__(**kwargs)
+        super().__init__(client=client, **kwargs)
 
         # The following is necessary to prevent writing a char immediately
         # after leaving the char variant dialog.

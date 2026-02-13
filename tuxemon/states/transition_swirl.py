@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.surface import Surface
 from pygame.transform import rotate, scale
 
-from tuxemon.platform.events import PlayerInput
 from tuxemon.state.state import State
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +24,12 @@ class SwirlTransition(State):
     force_draw = True
 
     def __init__(
-        self, image: Surface, scale: float = 1.2, speed: float = 50.0
+        self,
+        client: BaseClient,
+        image: Surface,
+        scale: float = 1.2,
+        speed: float = 50.0,
+        **kwargs: Any,
     ) -> None:
         """
         Parameters:
@@ -30,7 +38,7 @@ class SwirlTransition(State):
                 meaning the image will start at 120% of its original size.
             speed: The rate of rotation in degrees per second. Defaults to 50.
         """
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         logger.info("Initializing Swirl transition")
         self.image = image
         self.center_x = self.client.context.screen.get_width() // 2

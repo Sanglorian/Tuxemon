@@ -122,7 +122,7 @@ class MonsterActionHandler:
         self._clear_states("ChoiceState")
         self.client.state_manager.push_state(
             "MonsterInfoState",
-            kwargs={
+            **{
                 "monster": mon,
                 "source": self.source_state,
                 "monsters": self.monster_boxes.get_monsters(self.box_name),
@@ -133,7 +133,7 @@ class MonsterActionHandler:
         self._clear_states("ChoiceState")
         self.client.state_manager.push_state(
             "MonsterMovesState",
-            kwargs={
+            **{
                 "monster": mon,
                 "source": self.source_state,
                 "monsters": self.monster_boxes.get_monsters(self.box_name),
@@ -197,9 +197,11 @@ class MonsterTakeState(PygameMenuState):
 
     def __init__(
         self,
+        client: BaseClient,
         box_name: str,
         character: NPC,
         swap_target: Monster | None = None,
+        **kwargs: Any,
     ) -> None:
         width, height = SCREEN_SIZE
 
@@ -223,7 +225,12 @@ class MonsterTakeState(PygameMenuState):
         rows = math.ceil(len(self.box) / columns) * num_widgets
 
         super().__init__(
-            height=height, width=width, columns=columns, rows=rows
+            client=client,
+            height=height,
+            width=width,
+            columns=columns,
+            rows=rows,
+            **kwargs,
         )
 
         column_width = fix_measure(self.menu._width, 0.33)
@@ -331,10 +338,12 @@ class MonsterBoxState(PygameMenuState):
 
     name: ClassVar[str] = "MonsterBoxState"
 
-    def __init__(self, character: NPC) -> None:
+    def __init__(
+        self, client: BaseClient, character: NPC, **kwargs: Any
+    ) -> None:
         _, height = SCREEN_SIZE
 
-        super().__init__(height=height)
+        super().__init__(client=client, height=height, **kwargs)
 
         self.animation_offset = 0
         self.char = character
@@ -415,6 +424,9 @@ class MonsterStorageState(MonsterBoxState):
 
     name: ClassVar[str] = "MonsterStorageState"
 
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
+
     def get_menu_items_map(self) -> Sequence[tuple[str, MenuGameObj]]:
         menu_items_map = []
         monster_boxes = self.char.monster_boxes
@@ -441,6 +453,9 @@ class MonsterDropOffState(MonsterBoxState):
     """Menu to choose a box, which you can then drop off a tuxemon into."""
 
     name: ClassVar[str] = "MonsterDropOffState"
+
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
 
     def get_menu_items_map(self) -> Sequence[tuple[str, MenuGameObj]]:
         menu_items_map = []
@@ -471,11 +486,13 @@ class MonsterDropOff(MonsterMenuState):
 
     def __init__(
         self,
+        client: BaseClient,
         box_name: str,
         character: NPC,
         on_selection: Callable[[Monster], None] | None = None,
+        **kwargs: Any,
     ) -> None:
-        super().__init__(monsters=character.monsters)
+        super().__init__(client=client, monsters=character.monsters, **kwargs)
 
         self.box_name = box_name
         self.char = character

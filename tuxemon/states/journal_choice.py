@@ -19,6 +19,7 @@ from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
 
 MAX_PAGE = 20
@@ -91,7 +92,9 @@ class JournalChoice(PygameMenuState):
                 )
                 lab1.translate(btn_x_offset, btn_y_offset)
 
-    def __init__(self, character: NPC) -> None:
+    def __init__(
+        self, client: BaseClient, character: NPC, **kwargs: Any
+    ) -> None:
         if not lookup_cache:
             _lookup_monsters()
         width, height = SCREEN_SIZE
@@ -109,7 +112,12 @@ class JournalChoice(PygameMenuState):
         rows = int(diff / columns) + 1
 
         super().__init__(
-            height=height, width=width, columns=columns, rows=rows
+            client=client,
+            height=height,
+            width=width,
+            columns=columns,
+            rows=rows,
+            **kwargs,
         )
 
         self.add_menu_items(self.menu, box)

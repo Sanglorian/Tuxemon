@@ -23,7 +23,9 @@ def create_state(name):
 
 @pytest.fixture
 def state_manager():
-    return StateManager("head.tail", EventBus(), StateRepository())
+    mock_client = MagicMock()
+    mock_client.event_bus = EventBus()
+    return StateManager("head.tail", mock_client, StateRepository())
 
 
 @pytest.fixture
@@ -240,7 +242,9 @@ def test_when_empty_current_state_is_none(state_manager):
 # TestStateManagerResumeCallCount
 @pytest.fixture
 def resume_state_manager():
-    sm = StateManager("game", EventBus(), StateRepository())
+    mock_client = MagicMock()
+    mock_client.event_bus = EventBus()
+    sm = StateManager("game", mock_client, StateRepository())
 
     world_state = MagicMock(spec=WorldState)
     world_state.__name__ = "WorldState"

@@ -15,6 +15,7 @@ from tuxemon.ui.text import TextArea
 from tuxemon.ui.text_alignment import HorizontalAlignment, VerticalAlignment
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.platform.events import PlayerInput
     from tuxemon.sprite import Sprite
 
@@ -38,6 +39,7 @@ class DialogState(PopUpMenu[None]):
 
     def __init__(
         self,
+        client: BaseClient,
         text: Sequence[str] = (),
         avatar: Sprite | None = None,
         box_style: dict[str, Any] | None = None,
@@ -49,7 +51,7 @@ class DialogState(PopUpMenu[None]):
         dialog_speed: str | None = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(client=client, **kwargs)
         self.text_queue = list(text)
         self.avatar = avatar
         self.on_complete = on_complete

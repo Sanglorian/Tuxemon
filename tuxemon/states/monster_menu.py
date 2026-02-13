@@ -58,10 +58,12 @@ class MonsterMenuState(Menu[Monster | None]):
 
     def __init__(
         self,
+        client: BaseClient,
         monsters: list[Monster],
         monster_filter: MonsterFilter | None = None,
+        **kwargs: Any,
     ) -> None:
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         self.monster_filter = monster_filter or MonsterFilter()
         self.monsters = self.monster_filter.get_filtered_monsters(monsters)
 
@@ -224,7 +226,7 @@ class MonsterMenuHandler:
             "source": self.name,
             "monsters": self.party.monsters,
         }
-        self.client.push_state("MonsterInfoState", kwargs=params)
+        self.client.push_state("MonsterInfoState", **params)
 
     def monster_techs(self, monster: Monster) -> None:
         """Displays monster techniques."""
@@ -234,7 +236,7 @@ class MonsterMenuHandler:
             "source": self.name,
             "monsters": self.party.monsters,
         }
-        self.client.push_state("MonsterMovesState", kwargs=params)
+        self.client.push_state("MonsterMovesState", **params)
 
     def remove_item_direct(self, monster: Monster) -> None:
         item = monster.held_item
@@ -254,7 +256,9 @@ class MonsterMenuHandler:
         items_filtered.add_filter(lambda item: item.behaviors.holdable)
 
         menu = self.client.push_state(
-            ItemMenuState(self.party.owner, self.name, items_filtered)
+            ItemMenuState(
+                self.client, self.party.owner, self.name, items_filtered
+            )
         )
         menu.on_menu_selection = lambda menu_item: self._equip_from_picker(monster, menu_item)  # type: ignore[method-assign]
 
@@ -408,7 +412,7 @@ class MonsterMenuHandler:
     def open_monster_menu(self) -> None:
         """Pushes the monster menu state."""
         self.monster_menu = self.client.push_state(
-            MonsterMenuState(self.party.monsters)
+            MonsterMenuState(self.client, self.party.monsters)
         )
 
         self.monster_menu.on_menu_selection = lambda item: self.handle_selection(item, self.monster_menu)  # type: ignore[assignment]

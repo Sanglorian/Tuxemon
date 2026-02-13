@@ -17,12 +17,13 @@ from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_JOURNAL_INFO
 from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_LB
-from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
+    from tuxemon.platform.events import PlayerInput
 
 lookup_cache: dict[str, MonsterModel] = {}
 
@@ -246,10 +247,12 @@ class JournalInfoState(PygameMenuState):
 
     def __init__(
         self,
+        client: BaseClient,
         character: NPC,
         monster: MonsterModel | None,
         source: str,
         reveal: bool = False,
+        **kwargs: Any,
     ) -> None:
         if not lookup_cache:
             _lookup_monsters()
@@ -261,7 +264,7 @@ class JournalInfoState(PygameMenuState):
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         self.char = character
         self.source = source

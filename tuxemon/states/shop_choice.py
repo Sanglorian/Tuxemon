@@ -13,6 +13,7 @@ from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
     from tuxemon.session import Session
 
@@ -25,7 +26,12 @@ class ShopChoiceState(PygameMenuState):
     name: ClassVar[str] = "ShopChoiceState"
 
     def __init__(
-        self, session: Session, npc: NPC, mode: str, **kwargs: Any
+        self,
+        client: BaseClient,
+        session: Session,
+        npc: NPC,
+        mode: str,
+        **kwargs: Any,
     ) -> None:
         self.session = session
         self.npc = npc
@@ -40,7 +46,12 @@ class ShopChoiceState(PygameMenuState):
         theme = self._setup_theme(BG_MISSIONS)
         theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=int(height * 0.2), width=int(width * 0.2))
+        super().__init__(
+            client=client,
+            height=int(height * 0.4),
+            width=int(width * 0.4),
+            **kwargs,
+        )
         self._build_menu(self.menu)
         self.reset_theme()
 

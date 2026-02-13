@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.menu import Menu
@@ -18,6 +18,9 @@ from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.platform.const.sizes import UNKNOWN_MAP_SLUG
 from tuxemon.prepare import SCREEN_SIZE
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 
 @dataclass
@@ -58,7 +61,13 @@ class EmailState(PygameMenuState):
 
     name: ClassVar[str] = "EmailState"
 
-    def __init__(self, character: NPC, tag_list: list[str]) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        character: NPC,
+        tag_list: list[str],
+        **kwargs: Any,
+    ) -> None:
         self.char = character
         self.session = character.session
         self.tag_list = tag_list
@@ -79,7 +88,7 @@ class EmailState(PygameMenuState):
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
         self.initialize_items(self.menu)
         self.reset_theme()
 
@@ -128,7 +137,9 @@ class EmailReadState(PygameMenuState):
 
     name: ClassVar[str] = "EmailReadState"
 
-    def __init__(self, email: EmailData) -> None:
+    def __init__(
+        self, client: BaseClient, email: EmailData, **kwargs: Any
+    ) -> None:
         self.email = email
 
         width, height = SCREEN_SIZE
@@ -139,7 +150,7 @@ class EmailReadState(PygameMenuState):
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
         self.initialize_items(self.menu)
         self.reset_theme()
 

@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 from abc import ABC
 from functools import partial
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -36,6 +36,7 @@ from tuxemon.ui.combat_zone import CombatZone
 from tuxemon.ui.text_alignment import HorizontalAlignment
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.core.core_effect import ItemEffectResult
     from tuxemon.entity.npc import NPC
     from tuxemon.item.item import Item
@@ -67,8 +68,10 @@ class CombatAnimations(Menu[None], ABC):
 
     name: ClassVar[str] = "CombatAnimations"
 
-    def __init__(self, teams: list[NPC]) -> None:
-        super().__init__()
+    def __init__(
+        self, client: BaseClient, teams: list[NPC], **kwargs: Any
+    ) -> None:
+        super().__init__(client=client, **kwargs)
         self.combat_session = self.client.combat_session
         self.sprite_map = MonsterSpriteMap()
         self.capdevs: list[CaptureDeviceSprite] = []

@@ -227,7 +227,7 @@ class WorldMenuManager:
 
         if self.menu_flags.is_enabled("menu_player"):
             current_menu.append(
-                self._menu_item("menu_player", "CharacterState", kwargs=param)
+                self._menu_item("menu_player", "CharacterState", **param)
             )
 
         if player.mission_controller.get_missions_with_met_prerequisites():

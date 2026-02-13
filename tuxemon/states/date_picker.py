@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 
@@ -13,12 +13,18 @@ from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.platform.const.sizes import MONTH_KEYS
 from tuxemon.prepare import SCREEN_SIZE
 
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+
 
 class DatePickerState(PygameMenuState):
-    name = "DatePickerState"
+    name: ClassVar[str] = "DatePickerState"
 
     def __init__(
-        self, callback: Callable[[tuple[int, int]], None], **kwargs: Any
+        self,
+        client: BaseClient,
+        callback: Callable[[tuple[int, int]], None],
+        **kwargs: Any,
     ):
         self.callback = callback
         self.selected_month: int | None = None
@@ -30,7 +36,7 @@ class DatePickerState(PygameMenuState):
         theme.scrollarea_position = POSITION_EAST
         theme.title = True
 
-        super().__init__(width=width, height=height, **kwargs)
+        super().__init__(client=client, width=width, height=height, **kwargs)
 
         if escape_key_exits is not None:
             self.escape_key_exits = escape_key_exits

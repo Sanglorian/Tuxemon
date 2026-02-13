@@ -38,7 +38,7 @@ import logging
 import random
 from collections.abc import Sequence
 from functools import partial
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.rect import Rect
 
@@ -78,6 +78,7 @@ from tuxemon.ui.text_alignment import HorizontalAlignment
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.platform.events import PlayerInput
     from tuxemon.sprite import Sprite
 
@@ -107,6 +108,9 @@ class WaitForInputState(State):
 
     name: ClassVar[str] = "WaitForInputState"
 
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
+
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         if event.pressed and event.button == buttons.A:
             self.client.pop_state(self)
@@ -134,7 +138,12 @@ class CombatState(CombatAnimations):
     draw_borders = False
     escape_key_exits = False
 
-    def __init__(self, context: CombatContext) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        context: CombatContext,
+        **kwargs: Any,
+    ) -> None:
         self.session = context.session
         self.phase: CombatPhase | None = None
         self._method_cache = MethodAnimationCache(AnimationManager())
@@ -142,7 +151,7 @@ class CombatState(CombatAnimations):
         self._decision_queue: list[Monster] = []
         self._captured_mon: Monster | None = None
         # player => home areas on screen
-        super().__init__(teams=context.teams)
+        super().__init__(client=client, teams=context.teams, **kwargs)
         self.combat_session = self.client.combat_session
         self.unregister_event_handlers()
         self.register_event_handlers()
@@ -374,7 +383,9 @@ class CombatState(CombatAnimations):
                 return True
             return False
 
-        state = self.client.push_state(MonsterMenuState(player.monsters))
+        state = self.client.push_state(
+            MonsterMenuState(self.client, player.monsters)
+        )
         state.task(
             partial(
                 self.dialog.alert,
@@ -972,7 +983,7 @@ class CombatState(CombatAnimations):
         if new_entry and self._captured_mon:
             self.client.remove_state_by_name("CombatState")
             params = {"monster": self._captured_mon, "source": self.name}
-            self.client.push_state("MonsterInfoState", kwargs=params)
+            self.client.push_state("MonsterInfoState", **params)
         else:
             self.client.push_state("FadeOutTransition", caller=self)
 

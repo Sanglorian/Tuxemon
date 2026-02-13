@@ -15,12 +15,13 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_JOURNAL, DIMGRAY_COLOR
-from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
+    from tuxemon.platform.events import PlayerInput
 
 MAX_PAGE = 20
 
@@ -92,7 +93,12 @@ class JournalState(PygameMenuState):
                 lab.translate(btn_x_offset, btn_y_offset)
 
     def __init__(
-        self, character: NPC, monsters: list[MonsterModel], page: int
+        self,
+        client: BaseClient,
+        character: NPC,
+        monsters: list[MonsterModel],
+        page: int,
+        **kwargs: Any,
     ) -> None:
         if not lookup_cache:
             _lookup_monsters()
@@ -129,7 +135,12 @@ class JournalState(PygameMenuState):
         rows = num_mon / columns
 
         super().__init__(
-            height=height, width=width, columns=columns, rows=int(rows)
+            client=client,
+            height=height,
+            width=width,
+            columns=columns,
+            rows=int(rows),
+            **kwargs,
         )
 
         self.char = character

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
 from pygame_menu.menu import Menu
@@ -19,9 +19,12 @@ from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import INDIV_INFO
 from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_LB, U_M, U_T
-from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure, transform_resource_filename
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 lookup_cache: dict[str, MonsterModel] = {}
 lookup_tastes: dict[str, TasteModel] = {}
@@ -430,20 +433,24 @@ class MonsterInfoState(PygameMenuState):
         capture_device.set_float(origin_position=True)
         capture_device.translate(fxw(17 / 256), fxh(110 / 144))
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        monster: Monster,
+        source: str,
+        monsters: list[Monster] | None,
+        **kwargs: Any,
+    ) -> None:
         if not lookup_cache:
             _lookup_monsters()
         if not lookup_tastes:
             _lookup_tastes()
 
-        inner = next(iter(kwargs.values())) if kwargs else {}
-        monster: Monster | None = inner.get("monster")
-        source: str = inner.get("source") or ""
-        self._monsters: list[Monster] | None = inner.get("monsters")
-
-        if monster is None:
-            raise ValueError("No monster")
         width, height = SCREEN_SIZE
+
+        self._monster = monster
+        self._source = source
+        self._monsters = monsters
 
         theme = get_theme().copy()
         theme.scrollarea_position = POSITION_EAST
@@ -451,9 +458,10 @@ class MonsterInfoState(PygameMenuState):
         theme.widget_font_shadow = False
         theme.widget_padding = (0, 0)
 
-        super().__init__(height=height, width=width, theme=theme)
-        self._source = source
-        self._monster = monster
+        super().__init__(
+            client=client, height=height, width=width, theme=theme, **kwargs
+        )
+
         self.add_menu_items(self.menu, monster)
         self.reset_theme()
 
@@ -477,11 +485,11 @@ class MonsterInfoState(PygameMenuState):
             if event.button == buttons.RIGHT and self.valid_press(event):
                 slot = (slot + 1) % len(monsters)
                 param["monster"] = monsters[slot]
-                client.replace_state("MonsterInfoState", kwargs=param)
+                client.replace_state("MonsterInfoState", **param)
             elif event.button == buttons.LEFT and self.valid_press(event):
                 slot = (slot - 1) % len(monsters)
                 param["monster"] = monsters[slot]
-                client.replace_state("MonsterInfoState", kwargs=param)
+                client.replace_state("MonsterInfoState", **param)
 
         if (
             event.button in (buttons.BACK, buttons.B, buttons.A)

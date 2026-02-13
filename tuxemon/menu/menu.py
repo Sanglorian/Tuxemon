@@ -65,6 +65,7 @@ from tuxemon.ui.text_renderer import TextRenderer
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.menu.alert import AlertManager
     from tuxemon.platform.events import PlayerInput
     from tuxemon.prepare import DisplayContext
@@ -107,6 +108,7 @@ class PygameMenuState(State):
 
     def __init__(
         self,
+        client: BaseClient,
         width: int = 1,
         height: int = 1,
         theme: Theme | None = None,
@@ -114,7 +116,7 @@ class PygameMenuState(State):
         font_settings: FontSettings | None = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         self.font_type = font_settings or FontSettings.from_context(
             self.client.context
         )
@@ -213,7 +215,7 @@ class PygameMenuState(State):
         )
 
     def _create_image_from_surface(
-        self, surface: Surface, position=POSITION_CENTER
+        self, surface: Surface, position: str = POSITION_CENTER
     ) -> BaseImage:
         temp_path = "/tmp/tuxemon_sprite.png"
         image.save(surface, temp_path)
@@ -382,8 +384,10 @@ class Menu(Generic[T], State):
     # if true, then menu items can be selected with the mouse/touch
     touch_aware = True
 
-    def __init__(self, selected_index: int = 0, **kwargs: Any) -> None:
-        super().__init__()
+    def __init__(
+        self, client: BaseClient, selected_index: int = 0, **kwargs: Any
+    ) -> None:
+        super().__init__(client=client, **kwargs)
 
         self.rect = self.rect.copy()  # do not remove!
         self.selected_index = selected_index
@@ -978,8 +982,10 @@ class PopUpMenu(Menu[T]):
     name: ClassVar[str] = "PopUpMenu"
     ANIMATION_DURATION = 0.20
 
-    def __init__(self, initial_scale: float = 0.1, **kwargs: Any):
-        super().__init__(**kwargs)
+    def __init__(
+        self, client: BaseClient, initial_scale: float = 0.1, **kwargs: Any
+    ):
+        super().__init__(client=client, **kwargs)
         self.initial_scale = initial_scale
 
     def _calculate_initial_rect(self, final_rect: Rect) -> Rect:

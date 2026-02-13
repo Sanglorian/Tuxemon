@@ -91,6 +91,7 @@ class DojoMethodAction(EventAction):
 
             forget = session.client.push_state(
                 TechniqueMenuState(
+                    client=session.client,
                     character=session.player,
                     techniques=self.monster.moves.current_moves,
                 )
@@ -169,6 +170,7 @@ class DojoMethodAction(EventAction):
 
         relearn = self.client.push_state(
             TechniqueMenuState(
+                client=self.client,
                 character=self.player,
                 techniques=learnable_moves,
             )

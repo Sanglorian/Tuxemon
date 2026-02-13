@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.rect import Rect
 
@@ -31,6 +31,7 @@ from tuxemon.ui.paginator import Paginator
 from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
 
 
@@ -43,14 +44,16 @@ class ItemMenuState(Menu[Item]):
 
     def __init__(
         self,
+        client: BaseClient,
         character: NPC,
         source: str,
         item_filter: ItemFilter | None = None,
         sorter: ItemSorter | None = None,
+        **kwargs: Any,
     ) -> None:
         self.char = character
         self.source = source
-        super().__init__()
+        super().__init__(client=client, **kwargs)
 
         self.filter_controller = item_filter or ItemFilter(self.char.items)
         self.sorter = sorter or ItemSorter()

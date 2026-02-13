@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.rect import Rect
 
@@ -26,6 +26,7 @@ from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
 
 
@@ -38,16 +39,18 @@ class TechniqueMenuState(Menu[Technique]):
 
     def __init__(
         self,
+        client: BaseClient,
         character: NPC,
         techniques: list[Technique],
         tech_filter: TechFilter | None = None,
         tech_sorter: TechSorter | None = None,
+        **kwargs: Any,
     ) -> None:
         self.char = character
         self.tech_filter = tech_filter or TechFilter(techniques)
         self.tech_sorter = tech_sorter or TechSorter()
 
-        super().__init__()
+        super().__init__(client=client, **kwargs)
 
         self.item_center = self.rect.width * 0.164, self.rect.height * 0.13
         self.technique_sprite = Sprite()

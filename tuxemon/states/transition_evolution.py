@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pygame
 from pygame.surface import Surface
@@ -19,6 +19,7 @@ from tuxemon.state.state import State
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.platform.events import PlayerInput
     from tuxemon.sprite import Sprite
 
@@ -41,12 +42,14 @@ class EvolutionTransition(State):
 
     def __init__(
         self,
+        client: BaseClient,
         original: str,
         evolved: str,
         is_devolution: bool = False,
+        **kwargs: Any,
     ) -> None:
         self.is_devolution = is_devolution
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         self.original_monster = self._get_monster(original)
         self.evolved_monster = self._get_monster(evolved)
         if not self.original_monster or not self.evolved_monster:

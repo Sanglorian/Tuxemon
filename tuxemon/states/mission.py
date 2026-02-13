@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from functools import partial
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
 from pygame_menu.menu import Menu
@@ -16,10 +16,13 @@ from tuxemon.menu.menu import PygameMenuState
 from tuxemon.mission.mission import Mission
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_MISSIONS
-from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_yes_no_options
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 MenuGameObj = Callable[[], object]
 
@@ -31,7 +34,9 @@ class MissionState(PygameMenuState):
 
     name: ClassVar[str] = "MissionState"
 
-    def __init__(self, character: NPC) -> None:
+    def __init__(
+        self, client: BaseClient, character: NPC, **kwargs: Any
+    ) -> None:
         self.character = character
         width, height = SCREEN_SIZE
 
@@ -41,7 +46,7 @@ class MissionState(PygameMenuState):
 
         width = int(0.8 * width)
         height = int(0.8 * height)
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
         self.character.mission_controller.update_mission_progress()
         self.initialize_items(self.menu)
         self.reset_theme()
@@ -76,7 +81,13 @@ class MissionState(PygameMenuState):
 class SingleMissionState(PygameMenuState):
     name: ClassVar[str] = "SingleMissionState"
 
-    def __init__(self, mission: Mission, character: NPC) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        mission: Mission,
+        character: NPC,
+        **kwargs: Any,
+    ) -> None:
         self.mission = mission
         self.character = character
         width, height = SCREEN_SIZE
@@ -85,7 +96,7 @@ class SingleMissionState(PygameMenuState):
         theme.widget_alignment = ALIGN_CENTER
         width = int(0.8 * width)
         height = int(0.8 * height)
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
         self.initialize_items(self.menu)
         self.reset_theme()
 

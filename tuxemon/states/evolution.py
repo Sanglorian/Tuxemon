@@ -14,6 +14,7 @@ from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
     from tuxemon.monster.monster import Monster
 
@@ -27,6 +28,7 @@ class EvolutionState(PygameMenuState):
 
     def __init__(
         self,
+        client: BaseClient,
         monster: Monster,
         target: Monster,
         character: NPC,
@@ -43,7 +45,7 @@ class EvolutionState(PygameMenuState):
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
         self._build_menu(self.menu)
         self.reset_theme()
 

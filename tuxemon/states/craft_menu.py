@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import POSITION_EAST
 from pygame_menu.menu import Menu
@@ -17,6 +17,7 @@ from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
     from tuxemon.item.recipe import Recipe
 
@@ -29,7 +30,12 @@ class CraftMenuState(PygameMenuState):
     name: ClassVar[str] = "CraftMenuState"
 
     def __init__(
-        self, character: NPC, file_yaml: str, method: str | None = None
+        self,
+        client: BaseClient,
+        character: NPC,
+        file_yaml: str,
+        method: str | None = None,
+        **kwargs: Any,
     ) -> None:
         self.character = character
         self.file_yaml = file_yaml
@@ -41,7 +47,7 @@ class CraftMenuState(PygameMenuState):
 
         width = int(0.8 * width)
         height = int(0.8 * height)
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
         self.crafting_system = CraftingSystem()
         self.crafting_system.set_current_method(self.method)
         self.initialize_items(self.menu)

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.surface import Surface
 
@@ -17,6 +17,7 @@ from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.state.manager import StateManager
 
 logger = logging.getLogger(__name__)
@@ -28,8 +29,10 @@ class SplashState(State):
     name: ClassVar[str] = "SplashState"
     default_duration = 3
 
-    def __init__(self, parent: StateManager) -> None:
-        super().__init__()
+    def __init__(
+        self, client: BaseClient, parent: StateManager, **kwargs: Any
+    ) -> None:
+        super().__init__(client=client, **kwargs)
 
         self.parent = parent
 

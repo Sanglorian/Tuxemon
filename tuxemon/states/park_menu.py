@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable, Generator
 from enum import Enum, auto
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.rect import Rect
 
@@ -18,6 +18,7 @@ from tuxemon.menu.menu import PopUpMenu
 from tuxemon.states.item_menu import ItemMenuState
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
     from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
@@ -44,12 +45,14 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
 
     def __init__(
         self,
+        client: BaseClient,
         session: Session,
         combat: CombatState,
         character: NPC,
         monster: Monster,
+        **kwargs: Any,
     ) -> None:
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         self.rect = self.calculate_menu_rectangle()
         self.session = session
         self.combat = combat
@@ -159,7 +162,9 @@ class MainParkMenuState(PopUpMenu[MenuGameObj]):
                 self.session, self.player.monsters, self.opponents
             )
             menu = self.client.push_state(
-                ItemMenuState(self.player, self.name, items_filtered)
+                ItemMenuState(
+                    self.client, self.player, self.name, items_filtered
+                )
             )
             menu.is_valid_entry = validate  # type: ignore[method-assign]
             menu.on_menu_selection = choose_target  # type: ignore[method-assign]

@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.menu import Menu
@@ -19,6 +19,7 @@ from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
 
 
@@ -201,7 +202,9 @@ class NuPhoneBanking(PygameMenuState):
 
         menu.set_title(T.translate("app_banking")).center_content()
 
-    def __init__(self, character: NPC) -> None:
+    def __init__(
+        self, client: BaseClient, character: NPC, **kwargs: Any
+    ) -> None:
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_PHONE_BANKING)
@@ -211,6 +214,6 @@ class NuPhoneBanking(PygameMenuState):
 
         self.char = character
 
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
         self.add_menu_items(self.menu)
         self.reset_theme()

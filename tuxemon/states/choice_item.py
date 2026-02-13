@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import POSITION_EAST
 from pygame_menu.widgets.selection.highlight import HighlightSelection
@@ -16,6 +16,9 @@ from tuxemon.menu.theme import get_theme
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 from tuxemon.ui.menu_options import MenuOptions
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 
 @dataclass
@@ -40,6 +43,7 @@ class ChoiceItem(PygameMenuState):
 
     def __init__(
         self,
+        client: BaseClient,
         menu: MenuOptions,
         escape_key_exits: bool = False,
         config: MenuItemConfig | None = None,
@@ -52,7 +56,9 @@ class ChoiceItem(PygameMenuState):
         self.width, self.height, self.translate_percentage = (
             self.calculate_window_size(menu)
         )
-        super().__init__(width=self.width, height=self.height, **kwargs)
+        super().__init__(
+            client=client, width=self.width, height=self.height, **kwargs
+        )
 
         for option in menu.get_menu():
             self.add_item_menu_item(

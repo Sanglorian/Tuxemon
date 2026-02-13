@@ -113,6 +113,12 @@ class EvolutionAction(EventAction):
         self.client.push_state(
             "EvolutionState",
             monster=monster,
-            evolved=evolved,
+            target=evolved,
             character=self.char,
         )
+
+    def update(self, session: Session, dt: float) -> None:
+        try:
+            session.client.get_state_by_name("EvolutionState")
+        except ValueError:
+            self.stop()

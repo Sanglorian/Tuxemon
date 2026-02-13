@@ -28,7 +28,6 @@ def split_escaped(string_to_split: str, delimeter: str = ",") -> Sequence[str]:
     return [
         item.replace(f"\\{delimeter}", delimeter).strip()
         for item in split_list
-        if item.strip()
     ]
 
 

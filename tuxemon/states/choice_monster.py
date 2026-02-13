@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.widgets.selection.highlight import HighlightSelection
@@ -20,6 +20,9 @@ from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import local_session
 from tuxemon.ui.menu_options import MenuOptions
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 
 @dataclass
@@ -44,6 +47,7 @@ class ChoiceMonster(PygameMenuState):
 
     def __init__(
         self,
+        client: BaseClient,
         menu: MenuOptions,
         escape_key_exits: bool = False,
         config: MenuMonsterConfig | None = None,
@@ -59,7 +63,10 @@ class ChoiceMonster(PygameMenuState):
             * self.config.number_widgets
         )
         super().__init__(
-            columns=self.config.number_columns, rows=rows, **kwargs
+            client=client,
+            columns=self.config.number_columns,
+            rows=rows,
+            **kwargs,
         )
 
         for option in menu.get_menu():

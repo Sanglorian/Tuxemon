@@ -2,14 +2,17 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.surface import Surface
 from pygame_menu.locals import ALIGN_CENTER
 
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_SIZE
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 
 class NpcImageState(PygameMenuState):
@@ -18,12 +21,18 @@ class NpcImageState(PygameMenuState):
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         return None
 
-    def __init__(self, background: str, surface: Surface) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        background: str,
+        surface: Surface,
+        **kwargs: Any,
+    ) -> None:
         image_path = f"gfx/ui/background/{background}.png"
         self._setup_theme(image_path)
         width, height = SCREEN_SIZE
         surface = surface.copy()
         image = self._create_image_from_surface(surface)
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
         self.menu.add.image(image, align=ALIGN_CENTER)
         self.reset_theme()

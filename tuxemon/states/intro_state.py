@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.surface import Surface
 
@@ -15,6 +15,7 @@ from tuxemon.platform.const.graphics import BLACK_COLOR
 from tuxemon.tools import transform_resource_filename
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
@@ -28,8 +29,8 @@ class IntroState(PopUpMenu[MenuGameObj]):
 
     _cached_sprites = None
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, client: BaseClient, **kwargs: Any) -> None:
+        super().__init__(client=client, **kwargs)
 
         self.triggered = False
 

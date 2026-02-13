@@ -18,10 +18,10 @@ from tuxemon.script.parser import (
         (" spam", ["spam"]),
         (" spam ", ["spam"]),
         ("spam , eggs  ", ["spam", "eggs"]),
-        ("spam , eggs,", ["spam", "eggs"]),  # empty removed
-        ("spam , eggs  ,, ", ["spam", "eggs"]),  # empties removed
+        ("spam , eggs,", ["spam", "eggs", ""]),
+        ("spam , eggs  ,, ", ["spam", "eggs", "", ""]),
         ("", []),
-        (",", []),  # both empty segments removed
+        (",", ["", ""]),
         ("spam\\,eggs,ham", ["spam,eggs", "ham"]),
         ("spam\\,eggs\\,ham", ["spam,eggs,ham"]),
     ],
@@ -36,11 +36,11 @@ def test_split_escaped(input_str, expected):
         ("spam", ("spam", [])),
         ("spam eggs", ("spam", ["eggs"])),
         ("spam eggs,parrot", ("spam", ["eggs", "parrot"])),
-        ("spam , ", ("spam", [])),  # empty args removed
-        ("spam eggs, ", ("spam", ["eggs"])),
+        ("spam , ", ("spam", ["", ""])),
+        ("spam eggs, ", ("spam", ["eggs", ""])),
         ("spam,eggs", ("spam,eggs", [])),
         ("   spam   ", ("", ["spam"])),
-        ("spam ,,", ("spam", [])),
+        ("spam ,,", ("spam", ["", "", ""])),
         ("spam ex parrot", ("spam", ["ex parrot"])),
         ("spam eggs,  ex parrot", ("spam", ["eggs", "ex parrot"])),
     ],
@@ -63,7 +63,7 @@ def test_no_type():
         ("spam eggs, parrot", ("spam", "eggs,", ["parrot"])),
         (
             " spam eggs parrot, cheese, ",
-            ("", "spam", ["eggs parrot", "cheese"]),
+            ("", "spam", ["eggs parrot", "cheese", ""]),
         ),
         (
             "spam eggs  ex parrot, cheese shop",

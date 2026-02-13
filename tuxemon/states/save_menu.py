@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from base64 import b64decode
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame import SRCALPHA
 from pygame.image import frombuffer
@@ -24,6 +24,7 @@ from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 from tuxemon.ui.text import draw_text
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.save_state import SaveData
 
 logger = logging.getLogger(__name__)
@@ -38,10 +39,17 @@ class SaveMenuState(PopUpMenu[None]):
     number_of_slots = 3
     shrink_to_items = True
 
-    def __init__(self, selected_index: int | None = None) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        selected_index: int | None = None,
+        **kwargs: Any,
+    ) -> None:
         if selected_index is None:
             selected_index = save.slot_number or 0
-        super().__init__(selected_index=selected_index)
+        super().__init__(
+            client=client, selected_index=selected_index, **kwargs
+        )
 
     def create_menu_item(
         self, slot_rect: Rect, slot_index: int, selectable: bool = True

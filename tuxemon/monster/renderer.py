@@ -61,17 +61,14 @@ class MonsterRenderer:
         self.sprite_handler = self._setup_handler()
 
     def _resolve_flairs(self) -> dict[str, Flair]:
-        """
-        Returns the correct flair objects for rendering:
-        - Use saved flair state if present
-        - Otherwise generate fresh flairs from slugs
-        """
+        """Return the monster's saved flairs or generate new ones from slugs."""
         if self.monster.flairs:
             return self.monster.flairs
 
         return FlairApplier.create(self.monster.flair_slugs)
 
     def _setup_handler(self) -> MonsterSpriteHandler:
+        """Initialize and load the monster's sprite handler."""
         cfg = self.monster.sprite_config
         loader = SpriteLoader()
 
@@ -89,6 +86,7 @@ class MonsterRenderer:
         return handler
 
     def get_sprite(self, sprite_type: str = "front", **kwargs: Any) -> Sprite:
+        """Return a rendered sprite of the specified type."""
         return self.sprite_handler.get_sprite(
             sprite_type=sprite_type,
             scale=self.scale,
@@ -97,6 +95,7 @@ class MonsterRenderer:
         )
 
     def get_combat_sound(self) -> tuple[str, float]:
+        """Return the monster's combat sound effect and volume."""
         cfg = self.monster.sound_config
         call = cfg.combat
 
@@ -108,6 +107,7 @@ class MonsterRenderer:
         return cfg.default_combat, 1.0
 
     def get_faint_sound(self) -> tuple[str, float]:
+        """Return the monster's faint sound effect and volume."""
         cfg = self.monster.sound_config
         call = cfg.faint
 

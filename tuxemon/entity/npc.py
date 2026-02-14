@@ -185,7 +185,7 @@ class NPC(Entity):
     @property
     def path(self) -> list[tuple[int, int]]:
         """Returns the current movement path assigned to the NPC."""
-        return self.path_controller.path
+        return self.path_controller.path.to_list()
 
     @property
     def move_destination(self) -> tuple[int, int] | None:

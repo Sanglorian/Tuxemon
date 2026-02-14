@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
+from dataclasses import dataclass
 from math import hypot
 from typing import TYPE_CHECKING
 
@@ -28,6 +29,115 @@ def tile_distance(tile0: Iterable[float], tile1: Iterable[float]) -> float:
     return hypot(x1 - x0, y1 - y0)
 
 
+class PathView:
+    """
+    A contributor-proof path abstraction.
+
+    Invariant:
+        - The NEXT waypoint is always the LAST element of _tiles.
+        - Path grows toward the front; consumption pops from the end.
+    """
+
+    __slots__ = ("_tiles", "_consumed")
+
+    def __init__(self, tiles: Iterable[tuple[int, int]]):
+        self._tiles = list(tiles)
+        self._consumed: list[tuple[int, int]] = []
+
+    def next(self) -> tuple[int, int] | None:
+        """Return the next waypoint without consuming it."""
+        return self._tiles[-1] if self._tiles else None
+
+    def consume(self) -> tuple[int, int] | None:
+        """Consume and return the next waypoint."""
+        if not self._tiles:
+            return None
+        tile = self._tiles.pop()
+        self._consumed.append(tile)
+        return tile
+
+    def push(self, tile: tuple[int, int]) -> None:
+        """Append a new waypoint as the next step."""
+        self._tiles.append(tile)
+
+    def prepend(self, tile: tuple[int, int]) -> None:
+        """
+        Insert a waypoint at the *start* of the path.
+        This is used for dynamic rerouting.
+        """
+        self._tiles.insert(0, tile)
+
+    def extend_reversed(self, tiles: Iterable[tuple[int, int]]) -> None:
+        """Append a reversed sequence so the last element is the next waypoint."""
+        seq = list(tiles)
+        self._tiles.extend(reversed(seq))
+
+    def peek(self, n: int = 0) -> tuple[int, int] | None:
+        """
+        Peek n steps ahead.
+        n=0 → next waypoint
+        n=1 → second next waypoint
+        """
+        idx = len(self._tiles) - 1 - n
+        if idx < 0:
+            return None
+        return self._tiles[idx]
+
+    def clear(self) -> None:
+        """Remove all remaining waypoints."""
+        self._tiles.clear()
+
+    def replace_tail(self, tiles: Iterable[tuple[int, int]]) -> None:
+        """Replace the remaining path with a new sequence."""
+        self._tiles = list(tiles)
+
+    def splice(self, tiles: Iterable[tuple[int, int]]) -> None:
+        """
+        Insert new waypoints so they become the next steps.
+        Equivalent to replacing the tail but preserving the invariant.
+        """
+        seq = list(tiles)
+        self._tiles.extend(reversed(seq))
+
+    def to_list(self) -> list[tuple[int, int]]:
+        """Return a copy of the path."""
+        return list(self._tiles)
+
+    def consumed(self) -> list[tuple[int, int]]:
+        """Return consumed waypoints (debug only)."""
+        return list(self._consumed)
+
+    def __len__(self) -> int:
+        return len(self._tiles)
+
+    def __bool__(self) -> bool:
+        return bool(self._tiles)
+
+    def __iter__(self) -> Iterator[tuple[int, int]]:
+        return iter(self._tiles)
+
+    def __repr__(self) -> str:
+        return f"PathView(next={self.next()}, len={len(self)})"
+
+
+@dataclass
+class PathExecutionState:
+    """
+    Tracks a single tile-to-tile movement transition.
+    """
+
+    origin: tuple[int, int] | None = None
+    target: tuple[int, int] | None = None
+
+    @property
+    def in_progress(self) -> bool:
+        return self.origin is not None and self.target is not None
+
+    def reset(self) -> None:
+        self.origin = None
+        self.target = None
+
+
 class PathController:
     def __init__(
         self,
@@ -40,15 +150,16 @@ class PathController:
         self._pathfinder = pathfinder
         self._map_manager = map_manager
         self._npc_manager = npc_manager
+
+        self.path = PathView([])
         self._repath_cooldown: float = 0.0
-        self.path: list[tuple[int, int]] = []
         self.pathfinding: tuple[int, int] | None = None
-        self.path_origin: tuple[int, int] | None = None
+        self.exec = PathExecutionState()
 
     @property
     def move_destination(self) -> tuple[int, int] | None:
         """Only used for the char_moved condition."""
-        return self.path[-1] if self.path else None
+        return self.path.next()
 
     def start_path(self, destination: tuple[int, int]) -> None:
         """
@@ -70,7 +181,7 @@ class PathController:
             self.owner.tile_pos, destination, self.owner.facing
         )
         if path:
-            self.path = list(path)
+            self.path = PathView(path)
             self.next_waypoint()
         else:
             # If pathfinding fails, ensure all path data is cleared.
@@ -106,7 +217,7 @@ class PathController:
             return
 
         if self.path:
-            if self.path_origin:
+            if self.exec.in_progress:
                 self.check_waypoint()
             else:
                 self.next_waypoint()
@@ -128,7 +239,7 @@ class PathController:
         """
         Assigns a new path to the controller and initiates movement toward the first waypoint.
         """
-        self.path = path
+        self.path = PathView(path)
         logger.debug(f"Path set for {self.owner.slug}: {self.path}")
         self.next_waypoint()
 
@@ -143,7 +254,8 @@ class PathController:
         if not self.path:
             return
 
-        target = self.path[-1]
+        target = self.path.next()
+        assert target is not None
         move_dir = get_direction(self.owner.tile_pos, target)
         if self.owner.facing_mode == FacingMode.FOLLOW_MOVEMENT:
             direction = get_direction(self.owner.position, target)
@@ -168,7 +280,8 @@ class PathController:
                 # a dedicated global clock—not reliant on wall time—to eliminate
                 # visual glitches and ensure frame accuracy.
                 self.owner.sprite_controller.play_animation(move_dir)
-                self.path_origin = self.owner.tile_pos
+                self.exec.origin = self.owner.tile_pos
+                self.exec.target = target
                 self.owner.mover.move(move_dir)
                 self.owner.remove_collision()
             else:
@@ -190,17 +303,20 @@ class PathController:
         * Assumes once waypoint is set, direction doesn't change
         * Honors continue tiles
         """
-        if not self.path_origin:
+        if not self.exec.in_progress:
             return
 
-        target = self.path[-1]
-        expected = tile_distance(self.path_origin, target)
-        traveled = tile_distance(self.owner.position, self.path_origin)
+        origin = self.exec.origin
+        target = self.exec.target
+        assert origin is not None and target is not None
+
+        expected = tile_distance(origin, target)
+        traveled = tile_distance(self.owner.position, origin)
         if traveled >= expected:
             self.owner.set_position(target)
             self.owner.on_tile_changed()
-            self.path.pop()
-            self.path_origin = None
+            self.path.consume()
+            self.exec.reset()
             self._apply_tile_effects()
             self.check_continue()
             if self.path:
@@ -249,7 +365,7 @@ class PathController:
 
     def move_one_tile(self, direction: Direction) -> None:
         target = self._get_next_tile_pos(self.owner.tile_pos, direction)
-        self.path.append(target)
+        self.path.push(target)
 
     def move_multiple_tiles(self, direction: Direction, strength: int) -> None:
         """
@@ -261,7 +377,7 @@ class PathController:
         If a tile is blocked, movement stops at the last valid position. The
         resulting path is reversed before being appended to ensure that the
         next waypoint is always the immediate neighbor, since movement logic
-        expects self.path[-1] to be adjacent to the current position.
+        expects self.path.next() to be adjacent to the current position.
 
         Parameters:
             direction: The direction in which to move.
@@ -273,8 +389,10 @@ class PathController:
         if self.owner.facing_mode == FacingMode.FOLLOW_MOVEMENT:
             self.owner.set_facing(direction)
 
-        origin = self.path[-1] if self.path else self.owner.tile_pos
-        steps = []
+        origin = self.path.next()
+        if origin is None:
+            origin = self.owner.tile_pos
+        steps: list[tuple[int, int]] = []
 
         for _ in range(strength):
             candidate = self._get_next_tile_pos(origin, direction)
@@ -297,10 +415,10 @@ class PathController:
             origin = candidate
 
         if steps:
-            self.path.extend(reversed(steps))
-            self.path_origin = self.owner.tile_pos
+            self.path.extend_reversed(steps)
+            self.exec.origin = self.owner.tile_pos
             logger.debug(
-                f"Final path (last is next): {self.path} | path_origin={self.path_origin}"
+                f"Final path (last is next): {self.path} | origin={self.exec.origin}"
             )
             self.next_waypoint()
 
@@ -311,9 +429,9 @@ class PathController:
         This method removes the NPC's current path and resets pathfinding
         related attributes, ensuring no further automatic movement occurs.
         """
-        self.path = []
+        self.path = PathView([])
         self.pathfinding = None
-        self.path_origin = None
+        self.exec.reset()
 
     def cancel_movement(self) -> None:
         """
@@ -324,8 +442,8 @@ class PathController:
         Otherwise, all movement is halted and pathfinding is cleared.
         """
         at_origin = (
-            self.path_origin is not None
-            and self.owner.position == self.path_origin
+            self.exec.origin is not None
+            and self.owner.position == self.exec.origin
         )
         mid_movement = self.path and self.owner.moving
 
@@ -336,7 +454,8 @@ class PathController:
 
         if mid_movement:
             # Keep last waypoint so NPC finishes the tile cleanly
-            self.path = [self.path[-1]]
+            last = self.path.next()
+            self.path = PathView([last] if last else [])
             self.pathfinding = None
             self.owner.set_move_direction()
             return
@@ -353,8 +472,8 @@ class PathController:
         `preserve_position` is True, the NPC's current tile position
         is retained; otherwise, it reverts to its last recorded origin.
         """
-        if not preserve_position and self.path_origin is not None:
-            self.owner.set_position(self.path_origin)
+        if not preserve_position and self.exec.origin is not None:
+            self.owner.set_position(self.exec.origin)
             self.owner.on_tile_changed()
         self.owner.set_move_direction()
         self.owner.stop_moving()

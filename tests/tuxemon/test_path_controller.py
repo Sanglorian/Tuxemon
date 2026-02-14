@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from tuxemon.db import Direction, FacingMode
-from tuxemon.entity.path import PathController, tile_distance
+from tuxemon.entity.path import PathController, PathView, tile_distance
 from tuxemon.map.map import dirs2
 from tuxemon.math import Vector2
 from tuxemon.tools import vector2_to_tile_pos
@@ -107,7 +107,7 @@ def test_move_one_tile_appends_expected_tile(
     pc = PathController(npc, pathfinder, map_manager, npc_manager)
     pc.move_one_tile(direction)
     expected = vector2_to_tile_pos(Vector2(npc.tile_pos) + dirs2[direction])
-    assert pc.path[-1] == expected
+    assert pc.path.next() == expected
 
 
 def test_start_path_sets_path_and_calls_next_waypoint(
@@ -120,7 +120,7 @@ def test_start_path_sets_path_and_calls_next_waypoint(
     npc.tile_pos = (0, 0)
     pc = PathController(npc, pf, map_manager, npc_manager)
     pc.start_path((0, 2))
-    assert pc.path == [(0, 1), (0, 2)]
+    assert list(pc.path) == [(0, 1), (0, 2)]
     npc.sprite_controller.play_animation.assert_called_once()
     npc.mover.move.assert_called()
 
@@ -135,8 +135,9 @@ def test_start_path_no_path_returns_no_changes(
     pc = PathController(npc, pf, map_manager, npc_manager)
     pc.pathfinding = (5, 5)
     pc.start_path((5, 5))
-    assert pc.path == []
-    assert pc.path_origin is None
+    assert len(pc.path) == 0
+    assert pc.exec.origin is None
+    assert pc.exec.target is None
     assert pc.pathfinding is None
 
 
@@ -147,7 +148,7 @@ def test_next_waypoint_blocked_calls_handle_obstruction(
     pf.is_tile_traversable.return_value = False
     npc = mk_npc_with_mocks()
     pc = PathController(npc, pf, map_manager, npc_manager)
-    pc.path = [(0, 1)]
+    pc.path = PathView([(0, 1)])
     pc.handle_obstruction = MagicMock()
     pc.next_waypoint()
     pc.handle_obstruction.assert_called_once_with((0, 1))
@@ -162,10 +163,11 @@ def test_next_waypoint_traversable(
     npc = mk_npc_with_mocks()
     npc.tile_pos = (3, 3)
     pc = PathController(npc, pf, map_manager, npc_manager)
-    pc.path = [(3, 4)]
+    pc.path = PathView([(3, 4)])
     pc.next_waypoint()
     npc.sprite_controller.play_animation.assert_called_once()
-    assert pc.path_origin == (3, 3)
+    assert pc.exec.origin == (3, 3)
+    assert pc.exec.target == (3, 4)
     npc.mover.move.assert_called_once_with(Direction.DOWN)
 
 
@@ -176,10 +178,11 @@ def test_next_waypoint_exception_cancels_path(
     pf.is_tile_traversable.side_effect = RuntimeError("boom")
     npc = mk_npc_with_mocks()
     pc = PathController(npc, pf, map_manager, npc_manager)
-    pc.path = [(0, 1)]
+    pc.path = PathView([(0, 1)])
     pc.next_waypoint()
-    assert pc.path == []
-    assert pc.path_origin is None
+    assert len(pc.path) == 0
+    assert pc.exec.origin is None
+    assert pc.exec.target is None
 
 
 def test_cancel_movement_preserve_and_abort(
@@ -188,10 +191,10 @@ def test_cancel_movement_preserve_and_abort(
     npc = mk_npc_with_mocks()
     pc = PathController(npc, pathfinder, map_manager, npc_manager)
     pc.path_origin = (2, 2)
-    pc.path = []
+    pc.path = PathView([])
     npc.position = Vector2(2.0, 2.0)
     pc.cancel_movement()
-    assert pc.path == []
+    assert len(pc.path) == 0
 
 
 def test_abort_movement_reverts_tile_pos(
@@ -200,11 +203,12 @@ def test_abort_movement_reverts_tile_pos(
     npc = mk_npc_with_mocks()
     pc = PathController(npc, pathfinder, map_manager, npc_manager)
     npc.tile_pos = (7, 7)
-    pc.path_origin = (3, 3)
+    pc.exec.origin = (3, 3)
+    pc.exec.target = (3, 4)
     pc.abort_movement(preserve_position=False)
     assert npc.tile_pos == (3, 3)
     assert not npc.moving
-    assert pc.path == []
+    assert len(pc.path) == 0
 
 
 def test_stress_obstruction_loop(mk_npc_with_mocks, map_manager, npc_manager):
@@ -215,7 +219,7 @@ def test_stress_obstruction_loop(mk_npc_with_mocks, map_manager, npc_manager):
     npc = mk_npc_with_mocks()
     pc = PathController(npc, pf, map_manager, npc_manager)
     pc.pathfinding = (0, 1)
-    pc.path = [(0, 1)]
+    pc.path = PathView([(0, 1)])
     for _ in range(100):
         pc.next_waypoint()
     assert True
@@ -244,10 +248,10 @@ def test_cancel_movement_preserve_and_abort_behavior(
     npc = mk_npc_with_mocks()
     pc = PathController(npc, pathfinder, map_manager, npc_manager)
     pc.path_origin = (2, 2)
-    pc.path = []
+    pc.path = PathView([])
     npc.position = Vector2(2.0, 2.0)
     pc.cancel_movement()
-    assert pc.path == []
+    assert len(pc.path) == 0
 
 
 def test_handle_obstruction_recalculates_when_npc_blocking(
@@ -298,10 +302,10 @@ def test_handle_obstruction_without_npc_sets_cooldown_and_stops(
     npc = mk_npc_with_mocks()
     pc = PathController(npc, pathfinder, map_manager, npc_manager)
     pc.pathfinding = (5, 5)
-    pc.path = [(5, 5)]
+    pc.path = PathView([(5, 5)])
     pc.handle_obstruction((4, 4))
     assert pc._repath_cooldown == 1.0
-    assert pc.path == [(5, 5)]
+    assert list(pc.path) == [(5, 5)]
     assert not npc.moving
 
 
@@ -314,7 +318,7 @@ def test_process_movement_direct_move_when_no_path(
     npc.tile_pos = (0, 0)
     npc.move_direction = npc.facing.DOWN
     pc = PathController(npc, pf, map_manager, MagicMock())
-    pc.path = []
+    pc.path = PathView([])
     pc.process_movement()
     assert pc.path
 
@@ -325,7 +329,7 @@ def test_update_triggers_process(
     npc = mk_npc_with_mocks()
     pc = PathController(npc, pathfinder, map_manager, npc_manager)
     pc.update(0.016)
-    pc.path = [(1, 1)]
+    pc.path = PathView([(1, 1)])
     pc.update(0.016)
 
 
@@ -402,7 +406,7 @@ def test_obstruction_handling(
     npc = mk_npc_with_mocks()
     pc = PathController(npc, pf, map_manager, npc_manager)
     pc.pathfinding = (1, 1)
-    pc.path = [(1, 1)]
+    pc.path = PathView([(1, 1)])
 
     for _ in range(10):
         pc.next_waypoint()

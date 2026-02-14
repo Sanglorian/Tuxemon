@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
 from pygame_menu.menu import Menu
@@ -19,10 +19,13 @@ from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_PLAYER1, BG_PLAYER2
 from tuxemon.platform.const.sizes import U_KM, U_MI
-from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure, format_playtime
 from tuxemon.tuxepedia.reporter import TuxepediaReporter
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 lookup_cache: dict[str, MonsterModel] = {}
 
@@ -193,22 +196,22 @@ class CharacterState(PygameMenuState):
         lab8.translate(fxw(0.45), fxh(0.10))
         # image
         surface = self.char.combat_sheet().front()
-        scaled = scale_surface(surface, SCALE)
+        scaled = scale_surface(surface, self.factor)
         new_image = self._create_image_from_surface(scaled)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
         image_widget.translate(fxw(0.20), fxh(0.08))
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        character: NPC,
+        **kwargs: Any,
+    ) -> None:
         if not lookup_cache:
             _lookup_monsters()
-        character: NPC | None = None
-        for element in kwargs.values():
-            character = element["character"]
-        if character is None:
-            raise ValueError("No character found")
-        width, height = SCREEN_SIZE
 
+        width, height = SCREEN_SIZE
         self.char = character
 
         bg = (
@@ -221,7 +224,7 @@ class CharacterState(PygameMenuState):
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         self.add_menu_items(self.menu)
         self.reset_theme()

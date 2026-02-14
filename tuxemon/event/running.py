@@ -46,6 +46,7 @@ class RunningEvent:
 
     __slots__ = (
         "map_event",
+        "actions",
         "context",
         "action_index",
         "current_action",
@@ -54,9 +55,14 @@ class RunningEvent:
         "elapsed_time",
     )
 
-    def __init__(self, map_event: EventObject) -> None:
+    def __init__(
+        self,
+        map_event: EventObject,
+        expanded_actions: list[ParameterizableRule],
+    ) -> None:
         self.map_event = map_event
-        self.context: dict[str, Any] = dict()
+        self.actions = expanded_actions
+        self.context: dict[str, Any] = {}
         self.action_index: int = 0
         self.current_action: EventAction | None = None
         self.state = EventState.WAITING
@@ -66,17 +72,18 @@ class RunningEvent:
     def tick(self, dt: float) -> bool:
         self.elapsed_time += dt
 
-        if (
-            self.map_event.delay is not None
-            and self.elapsed_time < self.map_event.delay
-        ):
+        # Check for delay
+        if self.map_event.delay and self.elapsed_time < self.map_event.delay:
             return False
 
+        # Watchdog: Timeout prevents infinite event hangs
         if (
-            self.map_event.timeout is not None
+            self.map_event.timeout
             and self.elapsed_time > self.map_event.timeout
         ):
-            logger.info(f"Event {self.map_event.id} timed out")
+            logger.warning(
+                f"Event {self.map_event.id} reached timeout of {self.map_event.timeout}s"
+            )
             self.cancel()
             return False
 
@@ -93,19 +100,13 @@ class RunningEvent:
         Returns:
             Next action to execute. ``None`` if there isn't one.
         """
-        # if None, then make a new one
         try:
-            action = self.map_event.acts[self.action_index]
-
+            return self.actions[self.action_index]
         except IndexError:
-            # reached end of list, remove event and move on
-            logger.debug("map event actions finished")
             return None
 
-        return action
-
     def advance(self) -> None:
-        if self.action_index < len(self.map_event.acts):
+        if self.action_index < len(self.actions):
             self.action_index += 1
 
     def cancel(self) -> None:

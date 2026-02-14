@@ -7,8 +7,8 @@ from collections.abc import Callable, Sequence
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.item.item import Item
@@ -16,10 +16,11 @@ from tuxemon.locale.locale import T
 from tuxemon.map.manager import MAP_TYPES, MapType
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure, open_dialog
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
 
 
@@ -28,13 +29,15 @@ class NuPhone(PygameMenuState):
 
     name: ClassVar[str] = "NuPhone"
 
-    def __init__(self, character: NPC) -> None:
+    def __init__(
+        self, client: BaseClient, character: NPC, **kwargs: Any
+    ) -> None:
         width, height = SCREEN_SIZE
         self.char = character
 
         theme = self._setup_theme(BG_PHONE)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
         theme.title = True
 
         self.menu_apps: list[Item] = []
@@ -46,7 +49,12 @@ class NuPhone(PygameMenuState):
         rows = math.ceil(len(self.menu_apps) / columns) * 3
 
         super().__init__(
-            height=height, width=width, columns=columns, rows=rows
+            client=client,
+            height=height,
+            width=width,
+            columns=columns,
+            rows=rows,
+            **kwargs,
         )
 
         self.add_menu_items(self.menu, self.menu_apps)
@@ -90,7 +98,7 @@ class NuPhone(PygameMenuState):
 
     def add_menu_items(
         self,
-        menu: pygame_menu.Menu,
+        menu: Menu,
         items: Sequence[Item],
     ) -> None:
         """Dynamically adds app items to the phone menu."""
@@ -119,7 +127,7 @@ class NuPhone(PygameMenuState):
                 change = self._get_app_callback(item)
 
                 new_image = self._create_image(item.sprite)
-                new_image.scale(SCALE, SCALE)
+                new_image.scale(self.factor, self.factor)
 
                 # App image (banner)
                 menu.add.banner(

@@ -5,24 +5,29 @@ from unittest.mock import Mock
 import pytest
 from pygame.rect import Rect
 
-from tuxemon import prepare
 from tuxemon.camera.camera import Camera, project, unproject
 from tuxemon.math import Vector2
+from tuxemon.prepare import DISPLAY_CONTEXT
 
 
 @pytest.fixture
-def camera_setup():
-    prepare.TILE_SIZE = (16, 16)
+def context():
+    return DISPLAY_CONTEXT
+
+
+@pytest.fixture
+def camera_setup(context):
+    context.tile_size = (16, 16)
     entity = Mock()
     entity.position = Vector2(5.0, 5.0)
     boundary = Mock()
     boundary.get_boundary_validity.return_value = (True, True)
-    camera = Camera(entity, boundary)
+    camera = Camera(entity, boundary, context)
     camera.reset_to_entity_center()
-    projected = project((entity.position.x, entity.position.y))
+    projected = project(context, (entity.position.x, entity.position.y))
     expected_center = Vector2(
-        projected[0] + prepare.TILE_SIZE[0] // 2,
-        projected[1] + prepare.TILE_SIZE[1] // 2,
+        projected[0] + context.tile_size[0] // 2,
+        projected[1] + context.tile_size[1] // 2,
     )
     return camera, entity, boundary, expected_center
 
@@ -208,8 +213,8 @@ def test_viewport_top_left_calculation(camera_setup):
         ((100.0, 200.0), (1600, 3200)),
     ],
 )
-def test_project(coords, expected):
-    assert project(coords) == expected
+def test_project(coords, expected, context):
+    assert project(context, coords) == expected
 
 
 @pytest.mark.parametrize(
@@ -221,12 +226,12 @@ def test_project(coords, expected):
         ((1600, 3200), (100, 200)),
     ],
 )
-def test_unproject(pixels, expected):
-    assert unproject(pixels) == expected
+def test_unproject(pixels, expected, context):
+    assert unproject(context, pixels) == expected
 
 
-def test_project_unproject_round_trip():
+def test_project_unproject_round_trip(context):
     original = (7.5, 3.25)
-    projected = project(original)
-    unprojected = unproject(projected)
+    projected = project(context, original)
+    unprojected = unproject(context, projected)
     assert unprojected == (7, 3)

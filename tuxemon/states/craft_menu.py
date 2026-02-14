@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon.constants import paths
 from tuxemon.item.crafting_system import CraftingSystem
@@ -17,6 +17,7 @@ from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
     from tuxemon.item.recipe import Recipe
 
@@ -29,7 +30,12 @@ class CraftMenuState(PygameMenuState):
     name: ClassVar[str] = "CraftMenuState"
 
     def __init__(
-        self, character: NPC, file_yaml: str, method: str | None = None
+        self,
+        client: BaseClient,
+        character: NPC,
+        file_yaml: str,
+        method: str | None = None,
+        **kwargs: Any,
     ) -> None:
         self.character = character
         self.file_yaml = file_yaml
@@ -37,17 +43,17 @@ class CraftMenuState(PygameMenuState):
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_MISSIONS)
-        theme.scrollarea_position = locals.POSITION_EAST
+        theme.scrollarea_position = POSITION_EAST
 
         width = int(0.8 * width)
         height = int(0.8 * height)
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
         self.crafting_system = CraftingSystem()
         self.crafting_system.set_current_method(self.method)
         self.initialize_items(self.menu)
         self.reset_theme()
 
-    def initialize_items(self, menu: pygame_menu.Menu) -> None:
+    def initialize_items(self, menu: Menu) -> None:
 
         def up() -> None:
             menu._scrollarea._scrollbars[0].bump_to_top()
@@ -75,9 +81,7 @@ class CraftMenuState(PygameMenuState):
                 self.add_ingredient_label(menu, recipe)
             menu.add.button(T.translate("menu_to_the_top"), action=up)
 
-    def add_craft_button(
-        self, menu: pygame_menu.Menu, slug: str, recipe: Recipe
-    ) -> None:
+    def add_craft_button(self, menu: Menu, slug: str, recipe: Recipe) -> None:
 
         def craft(recipe_slug: str) -> None:
             self.client.remove_state_by_name("CraftMenuState")
@@ -105,7 +109,7 @@ class CraftMenuState(PygameMenuState):
                 wordwrap=True,
             )
 
-    def add_tool_label(self, menu: pygame_menu.Menu, recipe: Recipe) -> None:
+    def add_tool_label(self, menu: Menu, recipe: Recipe) -> None:
         for tool in recipe.required_tools:
             tool_name = T.translate(tool.get("slug", ""))
             consumed_text = (
@@ -120,9 +124,7 @@ class CraftMenuState(PygameMenuState):
                 wordwrap=True,
             )
 
-    def add_ingredient_label(
-        self, menu: pygame_menu.Menu, recipe: Recipe
-    ) -> None:
+    def add_ingredient_label(self, menu: Menu, recipe: Recipe) -> None:
         items = f"{T.translate('menu_items')}: {T.translate(recipe.get_ingredients_str())}"
         menu.add.label(
             title=items,

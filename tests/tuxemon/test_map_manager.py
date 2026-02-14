@@ -44,8 +44,8 @@ def mock_map():
 @pytest.mark.parametrize(
     "attr, expected",
     [
-        ("events", []),
-        ("inits", []),
+        ("events", ()),
+        ("inits", ()),
         ("current_map", None),
         ("maps", {}),
         ("map_slug", ""),
@@ -157,3 +157,81 @@ def test_map_type_slug_variants(map_manager, slug, expected):
 )
 def test_properties_without_map(map_manager, prop, expected):
     assert getattr(map_manager, prop) == expected
+
+
+def test_events_sorted_on_load(map_manager):
+    e1 = MagicMock(priority=1)
+    e2 = MagicMock(priority=5)
+    e3 = MagicMock(priority=3)
+
+    m = MagicMock(spec=AbstractMap)
+    m.events = [e1, e2, e3]
+    m.inits = []
+    m.maps = {}
+    m.slug = "slug"
+    m.name = "name"
+    m.description = ""
+    m.inside = False
+    m.is_inside = False
+    m.size = (0, 0)
+    m.map_type = "town"
+    m.north_trans = m.south_trans = m.east_trans = m.west_trans = ""
+    m.collision_lines_map = set()
+    m.surface_map = {}
+    m.collision_map = {}
+    m.filename = "file"
+
+    map_manager.load_map(m)
+
+    assert map_manager.events == [e1, e2, e3]
+
+
+def test_set_events_sorts(map_manager, mock_map):
+    m = mock_map()
+    map_manager.load_map(m)
+
+    e1 = MagicMock(priority=1)
+    e2 = MagicMock(priority=10)
+    e3 = MagicMock(priority=5)
+
+    map_manager.set_events([e1, e2, e3])
+    assert map_manager.events == m.events
+
+
+def test_direct_mutation_does_not_break_order(map_manager, mock_map):
+    e1 = MagicMock(priority=1)
+    e2 = MagicMock(priority=5)
+
+    m = mock_map()
+    m.events = [e1, e2]
+    map_manager.load_map(m)
+
+    e3 = MagicMock(priority=100)
+    m.events.append(e3)
+    assert map_manager.events == [e1, e2, e3]
+
+
+def test_inits_sorted(map_manager, mock_map):
+    e1 = MagicMock(priority=2)
+    e2 = MagicMock(priority=9)
+    e3 = MagicMock(priority=1)
+
+    m = mock_map()
+    m.inits = [e1, e2, e3]
+
+    map_manager.load_map(m)
+    assert map_manager.inits == [e1, e2, e3]
+
+
+@pytest.mark.parametrize(
+    "slug, expected",
+    [
+        ("town", "town"),
+        ("shop", "shop"),
+        ("unknown", "notype"),
+        (None, "notype"),
+    ],
+)
+def test_map_type_slug(map_manager, slug, expected):
+    map_manager._map_type_slug = slug
+    assert map_manager.map_type.name == expected

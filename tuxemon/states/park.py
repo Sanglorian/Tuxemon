@@ -2,16 +2,19 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import Session
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 
 class ParkState(PygameMenuState):
@@ -21,22 +24,24 @@ class ParkState(PygameMenuState):
 
     name: ClassVar[str] = "ParkState"
 
-    def __init__(self, session: Session) -> None:
+    def __init__(
+        self, client: BaseClient, session: Session, **kwargs: Any
+    ) -> None:
         self.session = session
         self.park_session = session.client.park_session
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_MISSIONS)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
         width = int(0.8 * width)
         height = int(0.8 * height)
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
         self.initialize_items(self.menu)
         self.reset_theme()
 
-    def initialize_items(self, menu: pygame_menu.Menu) -> None:
+    def initialize_items(self, menu: Menu) -> None:
         tracker = self.park_session.tracker
         history = self.park_session.encounter_history
 

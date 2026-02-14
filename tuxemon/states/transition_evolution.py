@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pygame
 from pygame.surface import Surface
 
-from tuxemon import tools
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
 from tuxemon.locale.locale import T
@@ -17,8 +16,10 @@ from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BLACK_COLOR, WHITE_COLOR
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
+from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.platform.events import PlayerInput
     from tuxemon.sprite import Sprite
 
@@ -41,10 +42,14 @@ class EvolutionTransition(State):
 
     def __init__(
         self,
+        client: BaseClient,
         original: str,
         evolved: str,
+        is_devolution: bool = False,
+        **kwargs: Any,
     ) -> None:
-        super().__init__()
+        self.is_devolution = is_devolution
+        super().__init__(client=client, **kwargs)
         self.original_monster = self._get_monster(original)
         self.evolved_monster = self._get_monster(evolved)
         if not self.original_monster or not self.evolved_monster:
@@ -173,7 +178,7 @@ class EvolutionTransition(State):
             menu2_rect=sprites.menu2_rect,
         )
         assert handler
-        return handler.get_sprite("front")
+        return handler.get_sprite("front", self.factor)
 
     def _white_image(self, sprite: Surface) -> Surface:
         for x in range(sprite.get_width()):
@@ -194,8 +199,9 @@ class EvolutionTransition(State):
             "name": T.format(self.original),
             "evolve": T.format(self.evolved),
         }
-        msg = T.format("evolution_ended", param)
-        tools.open_dialog(self.client, [msg], dialog_speed="max")
+        msgid = "devolution_ended" if self.is_devolution else "evolution_ended"
+        msg = T.format(msgid, param)
+        open_dialog(self.client, [msg], dialog_speed="max")
         self.dialog_opened = True
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:

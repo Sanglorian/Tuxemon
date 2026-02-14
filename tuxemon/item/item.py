@@ -214,6 +214,9 @@ class Item:
             session=session, source=self, target=target
         )
 
+        if session.client:
+            session.client.active_effect_manager.add_item(self)
+
         if self.durability.has_wear and self.behaviors.wear_on_use:
             just_broke = self.increase_wear()
 

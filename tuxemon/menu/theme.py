@@ -21,15 +21,15 @@ from tuxemon.platform.const.graphics import (
     SCROLLBAR_SLIDER_COLOR,
     TRANSPARENT_COLOR,
 )
-from tuxemon.prepare import SCALE
-from tuxemon.tools import scale, transform_resource_filename
+from tuxemon.prepare import DISPLAY_CONTEXT
+from tuxemon.tools import transform_resource_filename
 from tuxemon.user_config import CONFIG
 
 _theme: Theme | None = None
 
 
 class TuxemonArrowSelection(Selection):
-    def __init__(self) -> None:
+    def __init__(self, scale_factor: int) -> None:
         # Call the constructor of the Selection providing the left, right,
         # top and bottom margins of your Selection effect box.
         #
@@ -41,7 +41,6 @@ class TuxemonArrowSelection(Selection):
         #  --------------------------
         #
 
-        scale_factor = max(SCALE, 1)
         arrow = BaseImage(
             image_path=transform_resource_filename(CONFIG.menu_cursor),
         ).scale(scale_factor, scale_factor, smooth=False)
@@ -81,7 +80,7 @@ def get_theme() -> Theme:
     if _theme is not None:
         return _theme
 
-    scale_factor = max(SCALE, 1)
+    scale_factor = max(DISPLAY_CONTEXT.scaling.factor, 1)
     tuxemon_border = BaseImage(
         image_path=transform_resource_filename(CONFIG.menu_border),
     ).scale(scale_factor, scale_factor, smooth=False)
@@ -101,7 +100,7 @@ def get_theme() -> Theme:
         background_color=tuxemon_background,
         widget_alignment=ALIGN_LEFT,
         title=False,
-        widget_selection_effect=TuxemonArrowSelection(),
+        widget_selection_effect=TuxemonArrowSelection(scale_factor),
         border_color=tuxemon_border,
         scrollarea_position=SCROLLAREA_POSITION_NONE,
         widget_padding=(10, 20),
@@ -111,8 +110,8 @@ def get_theme() -> Theme:
     )
 
     # Set common font sizes and colors as part of the theme definition
-    theme.widget_font_size = scale(FONT_SIZE)
-    theme.title_font_size = scale(FONT_SIZE_BIG)
+    theme.widget_font_size = DISPLAY_CONTEXT.scaling.scale_int(FONT_SIZE)
+    theme.title_font_size = DISPLAY_CONTEXT.scaling.scale_int(FONT_SIZE_BIG)
     theme.widget_font_color = FONT_COLOR
     theme.selection_color = FONT_COLOR
     theme.scrollbar_color = SCROLLBAR_COLOR

@@ -12,6 +12,7 @@ from tuxemon.camera.camera import project
 from tuxemon.compat.rect import ReadOnlyRect
 from tuxemon.db import Direction, Orientation
 from tuxemon.math import Vector2, Vector3
+from tuxemon.prepare import DisplayContext
 from tuxemon.tools import round_to_divisible
 
 if TYPE_CHECKING:
@@ -502,27 +503,34 @@ def get_explicit_tile_exits(
 
 
 def get_pos_from_tilepos(
-    current_map: AbstractMap, tile_position: Vector2
+    current_map: AbstractMap, context: DisplayContext, tile_position: Vector2
 ) -> tuple[int, int]:
     """
-    Returns the map pixel coordinates based on the tile position.
+    Convert a tile-space position into on-screen pixel coordinates.
 
-    This method calculates the pixel coordinates on the map corresponding
-    to the specified tile position, accounting for the map's center offset.
-    Use this method for drawing elements on the screen.
+    This function projects a tile position (in map tile units) into pixel
+    coordinates using the provided DisplayContext, then applies the map
+    renderer's center offset so that the returned coordinates correspond to
+    the correct on-screen location for drawing.
 
     Parameters:
-        current_map: The map object (`AbstractMap`) containing the renderer
-            and relevant positional data.
-        tile_position: A [x, y] tile position represented as a `Vector2`.
+        current_map:
+            The map whose renderer provides the center offset used to align
+            the projected coordinates on screen.
+        context:
+            The DisplayContext containing tile size and projection settings.
+        tile_position:
+            A Vector2 representing the tile-space position to convert.
 
     Returns:
-        A tuple representing the pixel coordinates (x, y) to draw at the
-        given tile position, adjusted for the map's center offset.
+        (x, y):
+            The pixel coordinates on screen where an element at the given
+            tile position should be drawn, after applying projection and
+            the map renderer's center offset.
     """
     assert current_map.renderer
     cx, cy = current_map.renderer.get_center_offset()
-    px, py = project(tile_position)
+    px, py = project(context, tile_position)
     x = px + cx
     y = py + cy
     return x, y

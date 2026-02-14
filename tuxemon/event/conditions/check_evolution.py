@@ -34,69 +34,8 @@ class CheckEvolutionCondition(EventCondition):
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
         target_name = condition.parameters[0]
-        logger.debug(
-            f"EvolutionCondition.test() called with target_name='{target_name}'"
-        )
-
         target_character = session.get_npc(target_name)
-        if target_character is None:
-            logger.error(f"Character '{target_name}' not found.")
+        if not target_character:
             return False
 
-        logger.debug(f"Found character: {target_character.name}")
-        context = {"map_inside": session.client.map_manager.map_inside}
-        new_evolutions_found = False
-        has_pending_evolutions = False
-
-        for monster in target_character.monsters:
-            logger.debug(
-                f"Checking monster: {monster.name} (ID: {monster.instance_id})"
-            )
-
-            if not monster.evolutions:
-                logger.debug(f"  No evolutions available for {monster.name}")
-                continue
-
-            registry = target_character.evolution_registry
-            pending_evolutions = registry.get_pending(monster.instance_id)
-            blocked_evolutions = registry.get_blocked(monster.instance_id)
-
-            if pending_evolutions:
-                logger.debug(
-                    f"  Already has pending evolutions: {pending_evolutions}"
-                )
-                has_pending_evolutions = True
-
-            for evolution_data in monster.evolutions:
-                evolution_slug = evolution_data.monster_slug
-                logger.debug(
-                    f"  Evaluating evolution option: {evolution_slug}"
-                )
-
-                if evolution_slug in blocked_evolutions:
-                    logger.debug(
-                        f"  Skipping '{evolution_slug}' — permanently blocked"
-                    )
-                    continue
-
-                if evolution_slug in pending_evolutions:
-                    logger.debug(
-                        f"  Skipping '{evolution_slug}' — already pending"
-                    )
-                    continue
-
-                if monster.evolution_handler.can_evolve(
-                    evolution_item=evolution_data, context=context
-                ):
-                    logger.debug(f"  Adding '{evolution_slug}' to pending")
-                    registry.add_pending(monster.instance_id, evolution_slug)
-                    new_evolutions_found = True
-                    has_pending_evolutions = True
-                else:
-                    logger.debug(
-                        f"  '{evolution_slug}' not valid in current context"
-                    )
-
-        logger.debug(f"New evolutions found: {new_evolutions_found}")
-        logger.debug(f"Has any pending evolutions: {has_pending_evolutions}")
-        return has_pending_evolutions
+        return any(m.waiting_to_evolve for m in target_character.monsters)

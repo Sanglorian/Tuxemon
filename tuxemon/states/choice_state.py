@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import POSITION_EAST
 
@@ -12,6 +12,9 @@ from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.ui.menu_options import MenuOptions
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 
 @dataclass
@@ -37,6 +40,7 @@ class ChoiceState(PygameMenuState):
 
     def __init__(
         self,
+        client: BaseClient,
         menu: MenuOptions,
         escape_key_exits: bool = False,
         config: MenuStateConfig | None = None,
@@ -48,7 +52,7 @@ class ChoiceState(PygameMenuState):
         if len(menu.options) > self.config.max_elements:
             theme.scrollarea_position = POSITION_EAST
 
-        super().__init__(**kwargs)
+        super().__init__(client=client, **kwargs)
 
         for option in menu.get_menu():
             self.menu.add.button(

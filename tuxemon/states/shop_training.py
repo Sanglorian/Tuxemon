@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from functools import partial
-from typing import Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from pydantic import BaseModel, Field
 from pygame.surface import Surface
@@ -17,6 +17,9 @@ from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.quantity import QuantityAndCostMenu
 from tuxemon.monster.monster import Monster
 from tuxemon.states.shop_base import ShopMenuState
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 logger = logging.getLogger(__name__)
 
@@ -35,12 +38,13 @@ class TrainingCostMenu(QuantityAndCostMenu):
 
     def __init__(
         self,
+        client: BaseClient,
         trainer_state: ShopTrainingMenuState,
         monster: Monster,
         *args: Any,
         **kwargs: Any,
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(client, *args, **kwargs)
         self._trainer_state = trainer_state
         self._monster = monster
 
@@ -60,11 +64,12 @@ class ShopTrainingMenuState(ShopMenuState[Monster]):
 
     def __init__(
         self,
+        client: BaseClient,
         *args: Any,
         model: str | None = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(*args, **kwargs)
+        super().__init__(client, *args, **kwargs)
         yaml_path = paths.mods_folder / "training_shop_config.yaml"
         raw_data = load_yaml(yaml_path)
         _model = model if model is not None else "cathedral"
@@ -137,8 +142,7 @@ class ShopTrainingMenuState(ShopMenuState[Monster]):
             cost = self._calculate_total_training_cost(monster, quantity)
             if quantity > 0 and cost <= available_money:
                 self.seller_manager.remove_money(cost)
-                monster.set_level(monster.level + quantity)
-                monster.moves.update_moves(monster, quantity)
+                monster.set_level(monster.level + quantity, monster.level)
                 self.reload_shop()
 
         base_cost = self._calculate_training_cost(monster)
@@ -185,6 +189,7 @@ class ShopTrainingMenuState(ShopMenuState[Monster]):
         params = self._get_selection_menu_params(menu_monster)
 
         menu = TrainingCostMenu(
+            client=self.client,
             trainer_state=self,
             monster=monster,
             callback=params["callback"],

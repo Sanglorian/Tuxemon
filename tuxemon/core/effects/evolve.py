@@ -36,33 +36,16 @@ class EvolveEffect(CoreEffect):
     def apply_item_target(
         self, session: Session, item: Item, target: Monster
     ) -> ItemEffectResult:
-        if not target.evolutions:
-            return ItemEffectResult(name=item.name)
-
         context = {"use_item": True}
-        possible_evolutions = (
-            target.evolution_handler.get_possible_item_evolutions(
-                item, context
-            )
+        possible = target.evolution_handler.get_possible_item_evolutions(
+            item, context
         )
+        if not possible:
+            return ItemEffectResult(name=item.name, success=False)
 
-        if not possible_evolutions:
-            return ItemEffectResult(name=item.name)
+        model = target.evolution_handler.choose_evolution_model(possible)
+        registry = target.get_owner().evolution_registry
+        registry.add_pending(target.instance_id, model.monster_slug)
 
-        selected_evolution_model = (
-            target.evolution_handler.choose_evolution_model(
-                possible_evolutions
-            )
-        )
-        new_monster = Monster.spawn_base(
-            selected_evolution_model.monster_slug, target.level
-        )
-        target.evolution_handler.evolve_monster(new_monster)
-
-        session.client.push_state(
-            "EvolutionTransition",
-            original=target.slug,
-            evolved=new_monster.slug,
-        )
-
+        target.waiting_to_evolve = True
         return ItemEffectResult(name=item.name, success=True)

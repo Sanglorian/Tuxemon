@@ -16,8 +16,7 @@ from tuxemon.db import (
     EnvironmentModel,
 )
 from tuxemon.graphics import load_and_scale, load_raw_image, scale_surface
-from tuxemon.prepare import SCALE
-from tuxemon.tools import scale
+from tuxemon.prepare import DisplayContext
 
 logger = logging.getLogger(__name__)
 
@@ -32,10 +31,15 @@ class PartyLayout:
 
     @classmethod
     def create(
-        cls, side: str, home: Rect, hud: BattleHudModel, hud_layer: int
+        cls,
+        context: DisplayContext,
+        side: str,
+        home: Rect,
+        hud: BattleHudModel,
+        hud_layer: int,
     ) -> PartyLayout:
-        center_off = scale(hud.tray_center_offset)
-        spacing_off = scale(hud.icon_spacing_offset)
+        center_off = context.scaling.scale_int(hud.tray_center_offset)
+        spacing_off = context.scaling.scale_int(hud.icon_spacing_offset)
 
         if side == "opponent":
             return cls(
@@ -74,23 +78,32 @@ class BattleLayout:
     @classmethod
     def create(
         cls,
+        context: DisplayContext,
         graphics: BattleGraphicsModel,
         screen_rect: tuple[int, int],
         player_home: Rect,
         opp_home: Rect,
     ) -> BattleLayout:
         w, _ = screen_rect
-        y_mod = scale(graphics.island_offset_y)
+        y_mod = context.scaling.scale_int(graphics.island_offset_y)
 
         return cls(
             back_island_pos={"bottom": opp_home.bottom + y_mod, "right": 0},
             front_island_pos={"bottom": player_home.bottom - y_mod, "left": w},
             offsets={
-                "enemy_y": scale(graphics.enemy_base_offset),
-                "monster_y": scale(graphics.monster_base_offset),
-                "player_y": scale(graphics.player_base_offset),
+                "enemy_y": context.scaling.scale_int(
+                    graphics.enemy_base_offset
+                ),
+                "monster_y": context.scaling.scale_int(
+                    graphics.monster_base_offset
+                ),
+                "player_y": context.scaling.scale_int(
+                    graphics.player_base_offset
+                ),
             },
-            entry_jump_distance=scale(graphics.entry_jump_distance),
+            entry_jump_distance=context.scaling.scale_int(
+                graphics.entry_jump_distance
+            ),
             entry_duration=graphics.entry_duration,
         )
 
@@ -123,8 +136,10 @@ class EnvironmentManager:
     Ensures safe access to the active environment context.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, context: DisplayContext) -> None:
+        self.context = context
         self._active_handler: Environment | None = None
+        self._override_lock: bool = False
         logger.debug("EnvironmentManager initialized.")
 
     def update(self, dt: float) -> None:
@@ -136,10 +151,14 @@ class EnvironmentManager:
         Loads a new environment by creating an EnvironmentData and Environment object.
         Returns True on success, False on failure.
         """
+        if self._override_lock:
+            logger.debug(f"Environment override active, ignoring load: {slug}")
+            return False
+
         self._active_handler = None
         try:
             env_data = EnvironmentData(slug)
-            self._active_handler = Environment(env_data)
+            self._active_handler = Environment(env_data, self.context)
             logger.debug(f"Successfully loaded environment: {slug}")
             return True
         except Exception as e:
@@ -154,6 +173,15 @@ class EnvironmentManager:
     def get_active_environment(self) -> Environment | None:
         """Returns the currently active Environment, or None if none is loaded."""
         return self._active_handler
+
+    def lock_environment(self) -> None:
+        self._override_lock = True
+
+    def unlock_environment(self) -> None:
+        self._override_lock = False
+
+    def is_locked(self) -> bool:
+        return self._override_lock
 
 
 class EnvironmentData:
@@ -190,8 +218,11 @@ class Environment:
     for graphics, music, and combat menu state used during battles.
     """
 
-    def __init__(self, environment_data: EnvironmentData) -> None:
+    def __init__(
+        self, environment_data: EnvironmentData, context: DisplayContext
+    ) -> None:
         self.data = environment_data
+        self.context = context
         self.elapsed_time = 0.0
         self._party_layouts: dict[str, PartyLayout] = {}
         self._battle_layout: BattleLayout | None = None
@@ -210,7 +241,8 @@ class Environment:
         graphics = self.data.get_battle_graphics()
 
         sheet = IslandSheet(
-            graphics.island_sheet,
+            context=self.context,
+            file_path=graphics.island_sheet,
             frame_w=graphics.island_width,
             frame_h=graphics.island_height,
         )
@@ -226,7 +258,7 @@ class Environment:
         if side not in self._party_layouts:
             hud = self.data.get_battle_graphics().hud
             self._party_layouts[side] = PartyLayout.create(
-                side, home, hud, hud_layer
+                self.context, side, home, hud, hud_layer
             )
         return self._party_layouts[side]
 
@@ -236,14 +268,15 @@ class Environment:
         if not self._battle_layout:
             graphics = self.data.get_battle_graphics()
             self._battle_layout = BattleLayout.create(
-                graphics, screen_rect, player_home, opp_home
+                self.context, graphics, screen_rect, player_home, opp_home
             )
         return self._battle_layout
 
     def prepare_background(self, screen_size: tuple[int, int]) -> Surface:
         """Processes the background sprite to fit the screen dimensions."""
         graphics = self.data.get_battle_graphics()
-        surf = load_and_scale(graphics.background, SCALE)
+        scale_int = self.context.scaling.factor
+        surf = load_and_scale(graphics.background, scale_int)
 
         full_width, full_height = screen_size
         full_surf = Surface((full_width, full_height))
@@ -262,7 +295,14 @@ class Environment:
 
 
 class IslandSheet:
-    def __init__(self, file_path: str, frame_w: int, frame_h: int):
+    def __init__(
+        self,
+        context: DisplayContext,
+        file_path: str,
+        frame_w: int,
+        frame_h: int,
+    ):
+        self.context = context
         self.file_path = file_path
         self.frame_w = frame_w
         self.frame_h = frame_h
@@ -285,9 +325,9 @@ class IslandSheet:
         front_raw = sheet.subsurface(
             (self.frame_w, 0, self.frame_w, self.frame_h)
         )
-
-        back_scaled = scale_surface(back_raw, SCALE)
-        front_scaled = scale_surface(front_raw, SCALE)
+        scale_int = self.context.scaling.factor
+        back_scaled = scale_surface(back_raw, scale_int)
+        front_scaled = scale_surface(front_raw, scale_int)
 
         return {
             "back": back_scaled,

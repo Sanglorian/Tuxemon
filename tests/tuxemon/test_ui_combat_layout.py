@@ -6,6 +6,7 @@ import pytest
 from pygame.rect import Rect
 
 from tuxemon.entity.npc import NPC
+from tuxemon.scaling import DefaultScaling
 from tuxemon.ui.combat_layout import (
     LayoutManager,
     LayoutRectFactory,
@@ -40,7 +41,7 @@ def repo(tmp_path, raw_layouts, layout_groups, monkeypatch):
     monkeypatch.setattr(module, "load_layout_groups", lambda _: layout_groups)
     yaml_path = tmp_path / "combat_layouts.yaml"
     yaml_path.write_text("fake: true")
-    return LayoutRepository(yaml_path)
+    return LayoutRepository(yaml_path, DefaultScaling(1))
 
 
 @pytest.fixture
@@ -55,7 +56,7 @@ def rect_factory():
 
 @pytest.fixture
 def manager(tmp_path, repo):
-    return LayoutManager(tmp_path / "combat_layouts.yaml")
+    return LayoutManager(tmp_path / "combat_layouts.yaml", DefaultScaling(1))
 
 
 @pytest.fixture

@@ -10,7 +10,6 @@ from tuxemon.db import NpcModel
 from tuxemon.entity.sheet import get_combat_sheet
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import load_surface, scale_surface
-from tuxemon.prepare import SCALE
 from tuxemon.session import Session
 
 
@@ -70,7 +69,8 @@ class ChangeBgNpcAction(EventAction):
         npc_data = NpcModel.lookup(self.slug, db)
         sheet = get_combat_sheet(npc_data.template)
         surface = sheet.front()
-        scaled = scale_surface(surface, SCALE)
+        scale_int = session.client.context.scaling.factor
+        scaled = scale_surface(surface, scale_int)
         sprite = load_surface(scaled)
 
         client.push_state(

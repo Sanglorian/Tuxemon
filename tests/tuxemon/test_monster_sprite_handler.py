@@ -3,8 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pygame import SRCALPHA
-from pygame.surface import Surface
+from pygame import Surface
 
 from tuxemon.monster.sprite import MonsterSpriteHandler
 
@@ -58,19 +57,19 @@ def test_sheet_loaded_in_constructor(fake_sheet):
     ],
 )
 def test_slice_sprite(handler, sprite_type, expected):
-    sprite = handler.get_sprite(sprite_type)
+    sprite = handler.get_sprite(sprite_type, scale=1)
     assert sprite.image.get_size() == expected
 
 
 def test_sprite_cache(handler):
-    s1 = handler.get_sprite("front")
-    s2 = handler.get_sprite("front")
+    s1 = handler.get_sprite("front", scale=1)
+    s2 = handler.get_sprite("front", scale=1)
     assert s1.image is s2.image
 
 
 def test_invalid_sprite_name(handler):
     with pytest.raises(ValueError):
-        handler.get_sprite("nope")
+        handler.get_sprite("nope", scale=1)
 
 
 def test_from_model(fake_sheet):

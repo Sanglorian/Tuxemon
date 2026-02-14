@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 from pygame import SRCALPHA
 from pygame.draw import line, rect
@@ -23,6 +24,9 @@ from tuxemon.ui.draw import (
 )
 from tuxemon.ui.text_alignment import HorizontalAlignment, VerticalAlignment
 from tuxemon.ui.text_renderer import TextRenderer
+
+if TYPE_CHECKING:
+    from tuxemon.scaling import ScalingStrategy
 
 
 class TextAreaDiagnostics:
@@ -76,6 +80,7 @@ class TextArea(Sprite):
         self,
         font: Font,
         font_color: ColorLike,
+        scaling: ScalingStrategy,
         font_shadow: ColorLike = FONT_SHADOW_COLOR,
         background_color: ColorLike | None = None,
         background_image: Surface | None = None,
@@ -91,7 +96,9 @@ class TextArea(Sprite):
         self.font = font
         self.font_color = font_color
         self.font_shadow = font_shadow
+        self.scaling = scaling
         self._text_renderer = TextRenderer(
+            scaling=scaling,
             font=self.font,
             font_color=self.font_color,
             font_shadow_color=self.font_shadow,
@@ -183,6 +190,7 @@ class TextArea(Sprite):
             fg=self.font_color,
             bg=self.font_shadow,
             rect=self.image.get_rect(),
+            scaling=self.scaling,
             h_alignment=self.h_alignment,
             v_alignment=self.v_alignment,
             text_renderer=self._text_renderer,
@@ -265,6 +273,7 @@ def draw_text(
     surface: Surface,
     text: str,
     rect: Rect | tuple[int, int, int, int],
+    scaling: ScalingStrategy,
     *,
     h_alignment: HorizontalAlignment = HorizontalAlignment.LEFT,
     v_alignment: VerticalAlignment = VerticalAlignment.TOP,
@@ -299,7 +308,9 @@ def draw_text(
         font_color = FONT_COLOR
 
     if text_renderer is None:
-        text_renderer = TextRenderer(font_color=font_color, font=font)
+        text_renderer = TextRenderer(
+            scaling=scaling, font_color=font_color, font=font
+        )
 
     if not text:
         return

@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.rect import Rect
 
 from tuxemon.menu.interface import MenuItem
-from tuxemon.prepare import SCREEN_RECT
 
 from .save_menu import SLOT_HEIGHT_RATIO, SLOT_WIDTH_RATIO, SaveMenuState
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 logger = logging.getLogger(__name__)
 
@@ -18,14 +20,16 @@ logger = logging.getLogger(__name__)
 class LoadMenuState(SaveMenuState):
     name: ClassVar[str] = "LoadMenuState"
 
-    def __init__(self, load_slot: int | None = None) -> None:
-        super().__init__()
+    def __init__(
+        self, client: BaseClient, load_slot: int | None = None, **kwargs: Any
+    ) -> None:
+        super().__init__(client=client, **kwargs)
         if load_slot:
             self.selected_index = load_slot - 1
             self.on_menu_selection(None)
 
     def initialize_items(self) -> None:
-        rect = SCREEN_RECT.copy()
+        rect = self.client.context.rect.copy()
         slot_rect = Rect(
             0,
             0,

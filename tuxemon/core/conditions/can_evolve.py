@@ -37,11 +37,6 @@ class CanEvolveCondition(CoreCondition):
             "map_inside": session.client.map_manager.map_inside,
             "use_item": True,
         }
-        if not target.evolutions:
-            return False
-        for evolution in target.evolutions:
-            if target.evolution_handler.can_evolve(
-                evolution_item=evolution, context=context
-            ):
-                return True
-        return False
+        return bool(
+            target.evolution_handler.get_eligible_evolution_slug(context)
+        )

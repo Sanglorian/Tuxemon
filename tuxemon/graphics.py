@@ -26,8 +26,8 @@ from pytmx.util_pygame import handle_transformation, smart_convert
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel, NpcModel
 from tuxemon.platform.const.graphics import FUCHSIA_COLOR
-from tuxemon.prepare import SCALE
-from tuxemon.scaling import DefaultScaling, ScalingStrategy
+from tuxemon.prepare import DISPLAY_CONTEXT
+from tuxemon.scaling import ScalingStrategy
 from tuxemon.session import Session
 from tuxemon.sprite import Sprite
 from tuxemon.surfanim import SurfaceAnimation
@@ -126,8 +126,35 @@ def slice_spritesheet(
         for x in range(0, sheet_w, frame_width):
             rect = Rect(x, y, frame_width, frame_height)
             frame = full_sheet.subsurface(rect)
-            scaled = scale_surface(frame, SCALE)
+            scaled = scale_surface(frame, DISPLAY_CONTEXT.scaling.factor)
             frames.append(scaled)
+
+    return frames
+
+
+def slice_spritesheet_surface(
+    sheet: Surface,
+    frame_width: int,
+    frame_height: int,
+) -> list[Surface]:
+    """
+    Slice an already-loaded sprite sheet Surface into frames.
+    """
+    sheet_w, sheet_h = sheet.get_size()
+
+    if sheet_w % frame_width != 0 or sheet_h % frame_height != 0:
+        raise ValueError(
+            f"Sheet has invalid dimensions "
+            f"({sheet_w}x{sheet_h}) for frame size "
+            f"{frame_width}x{frame_height}"
+        )
+
+    frames = []
+    for y in range(0, sheet_h, frame_height):
+        for x in range(0, sheet_w, frame_width):
+            rect = Rect(x, y, frame_width, frame_height)
+            frame = sheet.subsurface(rect)
+            frames.append(frame.copy())
 
     return frames
 
@@ -152,7 +179,9 @@ def cursor_from_image(image: Surface) -> Sequence[str]:
     return icon_string
 
 
-def load_and_scale(filename: str, scale: float = SCALE) -> Surface:
+def load_and_scale(
+    filename: str, scale: float = DISPLAY_CONTEXT.scaling.factor
+) -> Surface:
     """
     Load an image and scale it according to game settings.
 
@@ -231,7 +260,7 @@ def load_surface(surface: Surface, **rect_kwargs: Any) -> Sprite:
 def load_animated_sprite(
     filenames: Iterable[str],
     delay: float,
-    scale: float = SCALE,
+    scale: float,
     loop: int = -1,
     **rect_kwargs: Any,
 ) -> Sprite:
@@ -427,7 +456,9 @@ def scaled_image_loader(
     Returns:
         The loader to use.
     """
-    scaling = scaling or DefaultScaling()
+    if scaling is None:
+        scaling = DISPLAY_CONTEXT.scaling
+
     colorkey_color = Color(f"#{colorkey}") if colorkey else None
 
     # load the tileset image
@@ -474,9 +505,11 @@ def get_avatar(session: Session, avatar: str) -> Sprite | None:
     """
     from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 
+    scale_int = session.client.context.scaling.factor
+
     if avatar.isdigit():
         monster = session.player.monsters[int(avatar)]
-        return monster.get_sprite("menu")
+        return monster.get_sprite("menu", scale=scale_int)
 
     if avatar in db.database.get("monster", {}):
         model = MonsterModel.lookup(avatar, db)
@@ -493,7 +526,7 @@ def get_avatar(session: Session, avatar: str) -> Sprite | None:
         )
         if handler is None:
             return None
-        return handler.get_sprite("menu")
+        return handler.get_sprite("menu", scale=scale_int)
 
     if avatar in db.database.get("npc", {}):
         from tuxemon.entity.sheet import get_combat_sheet

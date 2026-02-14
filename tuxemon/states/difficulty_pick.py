@@ -4,14 +4,17 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from functools import partial
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.prepare import SCREEN_SIZE
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 DIFFICULTIES = ["beginner", "easy", "normal", "hard", "expert"]
 
@@ -23,11 +26,13 @@ class DifficultyPickState(PygameMenuState):
 
     def __init__(
         self,
+        client: BaseClient,
         on_pick: Callable[[str], None],
         difficulties: list[str] = DIFFICULTIES,
+        **kwargs: Any,
     ) -> None:
         width, height = SCREEN_SIZE
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         self.on_pick = on_pick
         self.difficulties = difficulties
@@ -39,7 +44,7 @@ class DifficultyPickState(PygameMenuState):
         self.menu.add.label(
             title=title,
             font_size=self.font_type.big,
-            align=locals.ALIGN_CENTER,
+            align=ALIGN_CENTER,
             underline=True,
         )
 
@@ -50,7 +55,7 @@ class DifficultyPickState(PygameMenuState):
                 button_id=f"diff_{level}",
                 font_size=self.font_type.medium,
                 selection_effect=HighlightSelection(),
-                align=locals.ALIGN_CENTER,
+                align=ALIGN_CENTER,
             )
 
     def _handle_pick(self, difficulty: str) -> None:

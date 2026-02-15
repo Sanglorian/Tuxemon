@@ -41,11 +41,13 @@ class EvolutionState(PygameMenuState):
         self.is_devolution = is_devolution
 
         width, height = SCREEN_SIZE
+
+        super().__init__(client=client, height=height, width=width, **kwargs)
+
         theme = self._setup_theme(BG_MISSIONS)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-
-        super().__init__(client=client, height=height, width=width, **kwargs)
+        self._menu_config["theme"] = theme
         self._build_menu(self.menu)
         self.reset_theme()
 

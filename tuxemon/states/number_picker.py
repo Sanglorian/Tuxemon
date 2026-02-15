@@ -45,15 +45,15 @@ class NumberPickerState(PygameMenuState):
         self.current_value = min_value
 
         width, height = SCREEN_SIZE
+        width = int(0.5 * width)
+        height = int(0.5 * height)
+        super().__init__(client=client, width=width, height=height, **kwargs)
 
         theme = self._setup_theme(BG_MISSIONS)
         theme.widget_alignment = ALIGN_CENTER
         theme.scrollarea_position = POSITION_EAST
         theme.title = True
-
-        width = int(0.5 * width)
-        height = int(0.5 * height)
-        super().__init__(client=client, width=width, height=height, **kwargs)
+        self._menu_config["theme"] = theme
 
         if escape_key_exits is not None:
             self.escape_key_exits = escape_key_exits

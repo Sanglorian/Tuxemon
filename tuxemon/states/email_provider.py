@@ -84,11 +84,12 @@ class EmailState(PygameMenuState):
         width = int(width * 0.8)
         height = int(height * 0.8)
 
+        super().__init__(client=client, height=height, width=width, **kwargs)
+
         theme = self._setup_theme(BG_MISSIONS)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-
-        super().__init__(client=client, height=height, width=width, **kwargs)
+        self._menu_config["theme"] = theme
         self.initialize_items(self.menu)
         self.reset_theme()
 
@@ -146,11 +147,12 @@ class EmailReadState(PygameMenuState):
         width = int(width * 0.7)
         height = int(height * 0.7)
 
+        super().__init__(client=client, height=height, width=width, **kwargs)
+
         theme = self._setup_theme(BG_MISSIONS)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-
-        super().__init__(client=client, height=height, width=width, **kwargs)
+        self._menu_config["theme"] = theme
         self.initialize_items(self.menu)
         self.reset_theme()
 

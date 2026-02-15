@@ -35,13 +35,14 @@ class ControlState(PygameMenuState):
         main_menu: bool = False,
         **kwargs: Any,
     ) -> None:
-        theme = get_theme()
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_CENTER
-
         self.main_menu = main_menu
 
         super().__init__(client, *args, **kwargs)
+
+        theme = get_theme(self.client.context.scaling)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
+        self._menu_config["theme"] = theme
 
         self.initialize_items(self.menu)
         self.reload_controls()

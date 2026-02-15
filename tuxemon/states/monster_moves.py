@@ -344,13 +344,12 @@ class MonsterMovesState(PygameMenuState):
         self._source = source
         self._monsters = monsters
 
+        super().__init__(client=client, height=height, width=width, **kwargs)
+
         theme = self._setup_theme(TECH_INFO)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-
-        super().__init__(
-            client=client, height=height, width=width, theme=theme, **kwargs
-        )
+        self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu, monster)
         self.update_selected_widget()

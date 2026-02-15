@@ -254,22 +254,25 @@ class JournalInfoState(PygameMenuState):
         reveal: bool = False,
         **kwargs: Any,
     ) -> None:
+
         if not lookup_cache:
             _lookup_monsters()
         if monster is None:
             raise ValueError("No monster")
-        width, height = SCREEN_SIZE
-
-        theme = self._setup_theme(BG_JOURNAL_INFO)
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_CENTER
-
-        super().__init__(client=client, height=height, width=width, **kwargs)
 
         self.char = character
         self.source = source
         self.is_visible = self.char.tuxepedia.is_caught(monster.slug) or reveal
         self._monster = monster
+        width, height = SCREEN_SIZE
+
+        super().__init__(client=client, height=height, width=width, **kwargs)
+
+        theme = self._setup_theme(BG_JOURNAL_INFO)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
+        self._menu_config["theme"] = theme
+
         self.add_menu_items(self.menu, monster)
         self.reset_theme()
 

@@ -55,11 +55,13 @@ class MinigameState(PygameMenuState):
         self.streak = streak
         self.score = score
 
+        super().__init__(client=client, height=height, width=width, **kwargs)
+
         theme = self._setup_theme(BG_MINIGAME)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
+        self._menu_config["theme"] = theme
 
-        super().__init__(client=client, height=height, width=width, **kwargs)
         self.add_menu_items(self.menu)
         self.reset_theme()
 

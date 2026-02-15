@@ -125,22 +125,13 @@ class ItemTakeState(PygameMenuState):
     def __init__(
         self, client: BaseClient, box_name: str, character: NPC, **kwargs: Any
     ) -> None:
-        width, height = SCREEN_SIZE
-
-        theme = self._setup_theme(BG_PC_LOCKER)
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_CENTER
-
-        # menu
-        theme.title = True
-
-        columns = 3
-
         self.box_name = box_name
         self.char = character
         self.box = self.char.item_boxes.get_items(self.box_name)
 
-        # Widgets are like a pygame_menu label, image, etc.
+        width, height = SCREEN_SIZE
+
+        columns = 3
         num_widgets = 2
         rows = math.ceil(len(self.box) / columns) * num_widgets
 
@@ -151,6 +142,12 @@ class ItemTakeState(PygameMenuState):
             columns=columns,
             rows=rows,
         )
+
+        theme = self._setup_theme(BG_PC_LOCKER)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
+        theme.title = True
+        self._menu_config["theme"] = theme
 
         column_width = fix_measure(self.menu._width, 0.33)
         self.menu._column_max_width = [

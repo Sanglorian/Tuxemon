@@ -40,16 +40,19 @@ class CraftMenuState(PygameMenuState):
         self.character = character
         self.file_yaml = file_yaml
         self.method = method
-        width, height = SCREEN_SIZE
+        self.crafting_system = CraftingSystem()
+        self.crafting_system.set_current_method(self.method)
 
-        theme = self._setup_theme(BG_MISSIONS)
-        theme.scrollarea_position = POSITION_EAST
+        width, height = SCREEN_SIZE
 
         width = int(0.8 * width)
         height = int(0.8 * height)
         super().__init__(client=client, height=height, width=width, **kwargs)
-        self.crafting_system = CraftingSystem()
-        self.crafting_system.set_current_method(self.method)
+
+        theme = self._setup_theme(BG_MISSIONS)
+        theme.scrollarea_position = POSITION_EAST
+        self._menu_config["theme"] = theme
+
         self.initialize_items(self.menu)
         self.reset_theme()
 

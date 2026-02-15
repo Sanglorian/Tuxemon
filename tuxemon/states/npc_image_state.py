@@ -29,10 +29,11 @@ class NpcImageState(PygameMenuState):
         **kwargs: Any,
     ) -> None:
         image_path = f"gfx/ui/background/{background}.png"
-        self._setup_theme(image_path)
         width, height = SCREEN_SIZE
+        super().__init__(client=client, height=height, width=width, **kwargs)
+        theme = self._setup_theme(image_path)
+        self._menu_config["theme"] = theme
         surface = surface.copy()
         image = self._create_image_from_surface(surface)
-        super().__init__(client=client, height=height, width=width, **kwargs)
         self.menu.add.image(image, align=ALIGN_CENTER)
         self.reset_theme()

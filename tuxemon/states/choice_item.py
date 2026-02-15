@@ -50,8 +50,6 @@ class ChoiceItem(PygameMenuState):
         **kwargs: Any,
     ) -> None:
         self.config = config or MenuItemConfig()
-        theme = get_theme().copy()
-        theme.scrollarea_position = POSITION_EAST
 
         self.width, self.height, self.translate_percentage = (
             self.calculate_window_size(menu)
@@ -59,6 +57,9 @@ class ChoiceItem(PygameMenuState):
         super().__init__(
             client=client, width=self.width, height=self.height, **kwargs
         )
+        theme = get_theme(self.client.context.scaling).copy()
+        theme.scrollarea_position = POSITION_EAST
+        self._menu_config["theme"] = theme
 
         for option in menu.get_menu():
             self.add_item_menu_item(

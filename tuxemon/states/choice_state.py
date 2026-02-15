@@ -47,12 +47,15 @@ class ChoiceState(PygameMenuState):
         **kwargs: Any,
     ) -> None:
         self.config = config or MenuStateConfig()
-        theme = get_theme().copy()
+
+        super().__init__(client=client, **kwargs)
+
+        theme = get_theme(self.client.context.scaling).copy()
 
         if len(menu.options) > self.config.max_elements:
             theme.scrollarea_position = POSITION_EAST
 
-        super().__init__(client=client, **kwargs)
+        self._menu_config["theme"] = theme
 
         for option in menu.get_menu():
             self.menu.add.button(

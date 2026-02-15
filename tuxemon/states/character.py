@@ -220,11 +220,12 @@ class CharacterState(PygameMenuState):
             else BG_PLAYER1
         )
 
+        super().__init__(client=client, height=height, width=width, **kwargs)
+
         theme = self._setup_theme(bg)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-
-        super().__init__(client=client, height=height, width=width, **kwargs)
+        self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu)
         self.reset_theme()

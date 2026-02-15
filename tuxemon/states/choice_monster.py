@@ -54,9 +54,6 @@ class ChoiceMonster(PygameMenuState):
         **kwargs: Any,
     ) -> None:
         self.config = config or MenuMonsterConfig()
-        theme = get_theme().copy()
-        if len(menu.options) > self.config.max_elements:
-            theme.scrollarea_position = POSITION_EAST
 
         rows = (
             math.ceil(len(menu.options) / self.config.number_columns)
@@ -68,6 +65,13 @@ class ChoiceMonster(PygameMenuState):
             rows=rows,
             **kwargs,
         )
+
+        theme = get_theme(self.client.context.scaling).copy()
+
+        if len(menu.options) > self.config.max_elements:
+            theme.scrollarea_position = POSITION_EAST
+
+        self._menu_config["theme"] = theme
 
         for option in menu.get_menu():
             self.add_monster_menu_item(

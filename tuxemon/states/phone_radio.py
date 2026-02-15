@@ -121,19 +121,22 @@ class NuPhoneRadioBase(PygameMenuState, ABC):
     def __init__(
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
-        width, height = SCREEN_SIZE
-        theme = self._setup_theme(BG_PHONE_CONTACTS)
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_CENTER
-        theme.title = True
-
         self.char = character
         if self.char.current_map:
             self.current_map = self.char.current_map.split(".")[0]
         else:
             self.current_map = UNKNOWN_MAP_SLUG
 
+        width, height = SCREEN_SIZE
+
         super().__init__(client=client, height=height, width=width, **kwargs)
+
+        theme = self._setup_theme(BG_PHONE_CONTACTS)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
+        theme.title = True
+        self._menu_config["theme"] = theme
+
         self.reset_theme()
 
     def _apply_variable_changes(self, set_variables: dict[str, Any]) -> None:

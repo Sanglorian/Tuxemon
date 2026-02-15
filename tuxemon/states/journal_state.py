@@ -103,13 +103,8 @@ class JournalState(PygameMenuState):
         if not lookup_cache:
             _lookup_monsters()
 
-        width, height = SCREEN_SIZE
-
-        theme = self._setup_theme(BG_JOURNAL)
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_LEFT
-
-        columns = 2
+        self.char = character
+        self._page = page
 
         # defines range txmn_ids
         min_txmn: int = 0
@@ -125,6 +120,12 @@ class JournalState(PygameMenuState):
         monster_list = [
             ele for ele in monsters if min_txmn < ele.txmn_id <= max_txmn
         ]
+
+        self._monster_list = monster_list
+
+        width, height = SCREEN_SIZE
+
+        columns = 2
 
         # fix columns and rows
         num_mon: int = 0
@@ -143,9 +144,11 @@ class JournalState(PygameMenuState):
             **kwargs,
         )
 
-        self.char = character
-        self._page = page
-        self._monster_list = monster_list
+        theme = self._setup_theme(BG_JOURNAL)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_LEFT
+        self._menu_config["theme"] = theme
+
         self.add_menu_items(self.menu, monster_list)
         self.reset_theme()
 

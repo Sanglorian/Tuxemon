@@ -33,14 +33,15 @@ class CelestialState(PygameMenuState):
 
         width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(BG_MISSIONS)
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_CENTER
-
         width = int(width * 0.8)
         height = int(height * 0.8)
 
         super().__init__(client=client, height=height, width=width, **kwargs)
+
+        theme = self._setup_theme(BG_MISSIONS)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
+        self._menu_config["theme"] = theme
         self.initialize_items(self.menu)
         self.reset_theme()
 

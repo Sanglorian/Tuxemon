@@ -6,13 +6,7 @@ import logging
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from functools import partial
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    ClassVar,
-    Generic,
-    TypeVar,
-)
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypedDict, TypeVar
 
 from pygame import image
 from pygame.font import Font
@@ -98,72 +92,100 @@ class FontSettings:
 T = TypeVar("T", covariant=True)
 
 
-class PygameMenuState(State):
-    """
-    A Pygame menu state class.
-    """
+class MenuConfig(TypedDict):
+    width: int
+    height: int
+    theme: Theme | None
+    sound_engine: Sound | None
+    menu_kwargs: dict[str, Any]
+    columns: int | None
+    rows: int | None
 
+
+class PygameMenuState(State):
     name: ClassVar[str] = "PygameMenuState"
     transparent = True
 
     def __init__(
         self,
         client: BaseClient,
+        *,
         width: int = 1,
         height: int = 1,
         theme: Theme | None = None,
         sound_engine: Sound | None = None,
         font_settings: FontSettings | None = None,
-        **kwargs: Any,
+        menu_kwargs: dict[str, Any] | None = None,
+        **state_kwargs: Any,
     ) -> None:
-        super().__init__(client=client, **kwargs)
+        super().__init__(client=client, **state_kwargs)
+
+        self.font_settings = font_settings
         self.font_type = font_settings or FontSettings.from_context(
-            self.client.context
+            client.context
         )
-        theme = theme or get_theme()
-        self._initialize_attributes()
-        self._create_menu(width, height, theme, sound_engine, **kwargs)
-        self._input_handler = PygameMenuInputHandler(self)
 
-    def _initialize_attributes(self) -> None:
-        """
-        Initializes the attributes of the menu state.
+        self._menu_config = {
+            "width": width,
+            "height": height,
+            "theme": theme,
+            "sound_engine": sound_engine,
+            "menu_kwargs": menu_kwargs or {},
+            "columns": state_kwargs.pop("columns", None),
+            "rows": state_kwargs.pop("rows", None),
+        }
 
-        Parameters:
-            theme: The theme of the menu.
-        """
         self.state_controller = MenuController()
         self.open = False
         self.escape_key_exits = True
         self.selected_widget: Widget | None = None
+        self._input_handler = PygameMenuInputHandler(self)
+        self._menu: PyMenu | None = None
 
-    def _create_menu(
-        self,
-        width: int,
-        height: int,
-        theme: Theme,
-        sound_engine: Sound | None,
-        **kwargs: Any,
-    ) -> None:
+    @property
+    def menu(self) -> PyMenu:
         """
-        Creates the Pygame menu.
+        Public, non-optional menu.
+        Lazily builds the menu if needed.
+        """
+        if self._menu is None:
+            self.setup()
+        assert self._menu is not None
+        return self._menu
 
-        Parameters:
-            width: The width of the menu.
-            height: The height of the menu.
-            theme: The theme of the menu.
-            sound_engine: Optional pre-configured sound engine.
+    def setup(self) -> None:
         """
-        self.menu = PyMenu(
+        Build or rebuild the menu.
+        Idempotent: safe to call multiple times.
+        """
+        cfg = self._menu_config
+
+        base_theme = cfg["theme"] or get_theme(self.client.context.scaling)
+        theme = self._copy_theme(base_theme)
+
+        columns = cfg["columns"]
+        rows = cfg["rows"]
+
+        kwargs = {
+            "theme": theme,
+            "center_content": True,
+            "onclose": self._on_close,
+            **cfg["menu_kwargs"],
+        }
+
+        if columns is not None:
+            kwargs["columns"] = columns
+        if rows is not None:
+            kwargs["rows"] = rows
+
+        menu = PyMenu(
             "",
-            width,
-            height,
-            theme=theme,
-            center_content=True,
-            onclose=self._on_close,
+            cfg["width"],
+            cfg["height"],
             **kwargs,
         )
 
+        sound_engine = cfg["sound_engine"]
         if sound_engine is None:
             sound_file = self.client.sound_manager.get_sound_filename(
                 self.client.config.menu_sound
@@ -171,44 +193,33 @@ class PygameMenuState(State):
             sound_volume = self.client.config.sound_volume
             sound_engine = get_sound_engine(sound_volume, sound_file)
 
-        self.menu.set_sound(sound_engine)
+        menu.set_sound(sound_engine)
         # If we 'ignore nonphysical keyboard', pygame_menu will check the
         # pygame event queue to make sure there is an actual keyboard event
         # being pressed right now, and ignore the event if not, hence it won't
         # work for controllers.
-        self.menu._keyboard_ignore_nonphysical = False
+        menu._keyboard_ignore_nonphysical = False
 
-    def _setup_theme(
-        self, background: str, position: str = POSITION_CENTER
-    ) -> Theme:
+        self._menu = menu
+
+    def _copy_theme(self, theme: Theme) -> Theme:
         """
-        Sets up a Pygame menu theme with a custom background image.
-
-        Parameters:
-            background: The path to the background image file.
-            position: The position of the background image.
-
-        Returns:
-            Theme: The configured theme object.
+        pygame_menu.Theme.copy() is shallow, so we deep-copy only the fields
+        that are known to cause cross-menu bleed.
         """
-        base_image = self._create_image(background, position)
-        theme = get_theme()
-        theme.background_color = base_image
-        return theme
+        new = theme.copy()
+
+        if hasattr(theme, "widget_font"):
+            new.widget_font = theme.widget_font
+
+        if hasattr(theme, "title_font"):
+            new.title_font = theme.title_font
+
+        return new
 
     def _create_image(
         self, path: str, position: str = POSITION_CENTER
     ) -> BaseImage:
-        """
-        Creates a Pygame menu image.
-
-        Parameters:
-            path: The path to the background image file.
-            position: The position of the background image.
-
-        Returns:
-            BaseImage: The created background image object.
-        """
         return BaseImage(
             image_path=transform_resource_filename(path),
             drawing_position=position,
@@ -219,56 +230,27 @@ class PygameMenuState(State):
     ) -> BaseImage:
         temp_path = "/tmp/tuxemon_sprite.png"
         image.save(surface, temp_path)
-
         return BaseImage(
             image_path=temp_path,
             load_from_file=True,
             drawing_position=position,
         )
 
-    def update_selected_widget(self) -> None:
-        """
-        Updates the currently selected widget based on the menu's selection.
-        """
-        self.selected_widget = self.menu.get_selected_widget()
-
-    def valid_press(self, event: PlayerInput) -> bool:
-        return self._input_handler._is_press(event, 0.5)
-
-    def process_event(self, event: PlayerInput) -> PlayerInput | None:
-        """
-        Processes a player input event.
-
-        Parameters:
-            event: The player input event.
-
-        Returns:
-            PlayerInput | None: The processed event or None if it's not handled.
-        """
-        return self._input_handler.handle_event(event)
-
-    def draw(self, surface: Surface) -> None:
-        """
-        Draws the menu on the given surface.
-
-        Parameters:
-            surface: The surface to draw on.
-        """
-        if not self.state_controller.is_closed() and self.menu.is_enabled():
-            self.menu.draw(surface)
-
-    def _set_open(self) -> None:
-        """
-        Sets the menu as open.
-        """
-        self.open = True
-        self.state_controller.set_normal()
-        self.menu.enable()
+    def _setup_theme(
+        self, background: str, position: str = POSITION_CENTER
+    ) -> Theme:
+        theme = self._copy_theme(get_theme(self.client.context.scaling))
+        theme.background_color = self._create_image(background, position)
+        return theme
 
     def resume(self) -> None:
         """
-        Resumes the menu.
+        Called when the state becomes active.
+        Ensures menu exists, then opens it.
         """
+        _ = self.menu
+        self.refresh()
+
         if self.state_controller.is_closed():
             self.state_controller.open()
             animation = self.animate_open()
@@ -276,39 +258,43 @@ class PygameMenuState(State):
                 animation.schedule(self._set_open, ScheduleType.ON_FINISH)
             else:
                 self._set_open()
-        else:
-            logger.debug(
-                f"resume() called, but menu already in state {self.state_controller.state.name}"
-            )
+
+        super().resume()
+
+    def refresh(self) -> None:
+        """Subclasses override to update widget data."""
+
+    def _set_open(self) -> None:
+        self.open = True
+        self.state_controller.set_normal()
+        self.menu.enable()
+
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
+        return self._input_handler.handle_event(event)
+
+    def valid_press(self, event: PlayerInput) -> bool:
+        return self._input_handler._is_press(event, 0.5)
+
+    def update_selected_widget(self) -> None:
+        self.selected_widget = self.menu.get_selected_widget()
+
+    def draw(self, surface: Surface) -> None:
+        if not self.state_controller.is_closed() and self.menu.is_enabled():
+            self.menu.draw(surface)
 
     def disable(self) -> None:
-        """
-        Disables the menu, preventing interaction but still allowing drawing.
-        """
         if self.state_controller.is_enabled():
             self.state_controller.disable()
             self.menu.disable()
-        else:
-            logger.debug("Menu disable called but was not in NORMAL state.")
 
     def enable(self) -> None:
-        """
-        Enables the menu, allowing interaction again.
-        """
         if self.state_controller.is_disabled():
             self.state_controller.set_normal()
             self.menu.enable()
-        else:
-            logger.debug("Menu enable called but was not in DISABLED state.")
 
     def _on_close(self) -> None:
-        """
-        Called when the menu is closed.
-        """
         self.open = False
         self.state_controller.close()
-        self.reset_theme()
-        self.menu.disable()
         self.selected_widget = None
 
         animation = self.animate_close()
@@ -318,28 +304,31 @@ class PygameMenuState(State):
             self.client.pop_state()
 
     def _finalize(self) -> None:
-        """
-        Final cleanup before the menu state is fully closed.
-        """
-        self.menu.disable()
-        self.menu.clear()
+        if self._menu is not None:
+            self._menu.disable()
+            self._menu.clear()
         self.selected_widget = None
         self.open = False
 
     def reset_theme(self) -> None:
-        """Reset to original theme (color, alignment, etc.)"""
-        theme = get_theme()
+        """
+        Reset the menu's theme, not the global theme.
+        """
+        if self._menu is None:
+            return
+
+        theme = self._copy_theme(get_theme(self.client.context.scaling))
         theme.scrollarea_position = SCROLLAREA_POSITION_NONE
         theme.background_color = BACKGROUND_COLOR
         theme.widget_alignment = ALIGN_LEFT
         theme.title = False
 
+        self._menu._theme = theme
+
     def animate_open(self) -> Animation | None:
-        """Animates the menu opening."""
         return None
 
     def animate_close(self) -> Animation | None:
-        """Animates the menu closing."""
         return None
 
 

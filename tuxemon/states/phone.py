@@ -35,11 +35,6 @@ class NuPhone(PygameMenuState):
         width, height = SCREEN_SIZE
         self.char = character
 
-        theme = self._setup_theme(BG_PHONE)
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_CENTER
-        theme.title = True
-
         self.menu_apps: list[Item] = []
         for itm in self.char.items:
             if itm.dynamic_menu and itm.dynamic_menu.menu_type == "phone":
@@ -56,6 +51,12 @@ class NuPhone(PygameMenuState):
             rows=rows,
             **kwargs,
         )
+
+        theme = self._setup_theme(BG_PHONE)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
+        theme.title = True
+        self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu, self.menu_apps)
         self.reset_theme()

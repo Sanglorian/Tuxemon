@@ -203,24 +203,15 @@ class MonsterTakeState(PygameMenuState):
         swap_target: Monster | None = None,
         **kwargs: Any,
     ) -> None:
-        width, height = SCREEN_SIZE
-
-        theme = self._setup_theme(BG_PC_KENNEL)
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_CENTER
-
-        # menu
-        theme.title = True
-
-        columns = 3
-
         self.box_name = box_name
         self.char = character
         self.monster_boxes = self.char.monster_boxes
         self.box = self.monster_boxes.get_monsters(self.box_name)
         self.swap_target = swap_target
 
-        # Widgets are like a pygame_menu label, image, etc.
+        width, height = SCREEN_SIZE
+
+        columns = 3
         num_widgets = 3
         rows = math.ceil(len(self.box) / columns) * num_widgets
 
@@ -232,6 +223,12 @@ class MonsterTakeState(PygameMenuState):
             rows=rows,
             **kwargs,
         )
+
+        theme = self._setup_theme(BG_PC_KENNEL)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
+        theme.title = True
+        self._menu_config["theme"] = theme
 
         column_width = fix_measure(self.menu._width, 0.33)
         self.menu._column_max_width = [

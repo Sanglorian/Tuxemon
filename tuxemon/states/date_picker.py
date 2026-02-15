@@ -31,12 +31,13 @@ class DatePickerState(PygameMenuState):
         width, height = SCREEN_SIZE
         escape_key_exits = kwargs.pop("escape_key_exits", None)
 
+        super().__init__(client=client, width=width, height=height, **kwargs)
+
         theme = self._setup_theme(BG_MISSIONS)
         theme.widget_alignment = ALIGN_CENTER
         theme.scrollarea_position = POSITION_EAST
         theme.title = True
-
-        super().__init__(client=client, width=width, height=height, **kwargs)
+        self._menu_config["theme"] = theme
 
         if escape_key_exits is not None:
             self.escape_key_exits = escape_key_exits

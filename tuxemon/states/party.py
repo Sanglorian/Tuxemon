@@ -42,12 +42,13 @@ class PartyState(PygameMenuState):
         self.party = party
         self.char = party.owner
         width, height = SCREEN_SIZE
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         theme = self._setup_theme(BG_PARTY)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
+        self._menu_config["theme"] = theme
 
-        super().__init__(client=client, height=height, width=width, **kwargs)
         self.initialize_items(self.menu, self.party.monsters)
         self.reset_theme()
 

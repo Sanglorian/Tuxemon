@@ -26,15 +26,19 @@ class SetKeyState(PygameMenuState):
     name: ClassVar[str] = "SetKeyState"
 
     def __init__(self, client: BaseClient, value: str, **kwargs: Any) -> None:
-        theme = get_theme()
+        self.value = value
+
+        super().__init__(client=client, **kwargs)
+
+        theme = get_theme(self.client.context.scaling)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-        super().__init__(client=client, **kwargs)
+        self._menu_config["theme"] = theme
+
         self.menu.add.label(
             T.translate("options_new_input_key0").upper(),
             font_size=self.font_type.small,
         )
-        self.value = value
         self.reset_theme()
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:

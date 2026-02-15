@@ -450,15 +450,14 @@ class MonsterInfoState(PygameMenuState):
         self._source = source
         self._monsters = monsters
 
-        theme = get_theme().copy()
+        super().__init__(client=client, height=height, width=width, **kwargs)
+
+        theme = get_theme(self.client.context.scaling).copy()
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
         theme.widget_font_shadow = False
         theme.widget_padding = (0, 0)
-
-        super().__init__(
-            client=client, height=height, width=width, theme=theme, **kwargs
-        )
+        self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu, monster)
         self.reset_theme()

@@ -47,9 +47,9 @@ class SwirlTransition(State):
         self.scale = scale
         self.speed = speed
 
-    def update(self, time_delta: float) -> None:
-        self.angle += self.speed * time_delta
-        self.scale += 0.01 * time_delta
+    def update(self, dt: float) -> None:
+        self.angle += self.speed * dt
+        self.scale += 0.01 * dt
         if self.angle > 360:
             logger.info("Swirl transition finished.")
             self.client.pop_state()

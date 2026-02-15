@@ -218,14 +218,10 @@ class CombatState(CombatAnimations):
 
         return False
 
-    def update(self, time_delta: float) -> None:
-        """
-        Update the combat state.
-
-        This method is responsible for updating the text animation and the combat phase.
-        """
-        super().update(time_delta)
-        self.text_anim.update_text_animation(time_delta)
+    def update(self, dt: float) -> None:
+        """Update the combat state."""
+        super().update(dt)
+        self.text_anim.update_text_animation(dt)
         self.update_combat_phase()
 
     def transition_phase(self, phase: CombatPhase) -> None:

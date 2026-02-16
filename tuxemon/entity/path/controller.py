@@ -3,12 +3,21 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable, Iterator
-from dataclasses import dataclass
-from math import hypot
 from typing import TYPE_CHECKING
 
 from tuxemon.db import Direction, FacingMode
+from tuxemon.entity.path.commands import (
+    ContinueCommand,
+    MovementCommand,
+    PushCommand,
+    RepathCommand,
+    SpeedCommand,
+    StopMovementCommand,
+)
+from tuxemon.entity.path.path_view import PathExecutionState, PathView
+from tuxemon.entity.path.policies.animation import MovementAnimationPolicy
+from tuxemon.entity.path.policies.reroute import ReroutePolicy
+from tuxemon.entity.path.policies.tile_effects import TileEffectProcessor
 from tuxemon.map.map import dirs2, get_direction
 from tuxemon.math import Vector2
 from tuxemon.tools import vector2_to_tile_pos
@@ -23,121 +32,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def tile_distance(tile0: Iterable[float], tile1: Iterable[float]) -> float:
-    x0, y0 = tile0
-    x1, y1 = tile1
-    return hypot(x1 - x0, y1 - y0)
-
-
-class PathView:
-    """
-    A contributor-proof path abstraction.
-
-    Invariant:
-        - The NEXT waypoint is always the LAST element of _tiles.
-        - Path grows toward the front; consumption pops from the end.
-    """
-
-    __slots__ = ("_tiles", "_consumed")
-
-    def __init__(self, tiles: Iterable[tuple[int, int]]):
-        self._tiles = list(tiles)
-        self._consumed: list[tuple[int, int]] = []
-
-    def next(self) -> tuple[int, int] | None:
-        """Return the next waypoint without consuming it."""
-        return self._tiles[-1] if self._tiles else None
-
-    def consume(self) -> tuple[int, int] | None:
-        """Consume and return the next waypoint."""
-        if not self._tiles:
-            return None
-        tile = self._tiles.pop()
-        self._consumed.append(tile)
-        return tile
-
-    def push(self, tile: tuple[int, int]) -> None:
-        """Append a new waypoint as the next step."""
-        self._tiles.append(tile)
-
-    def prepend(self, tile: tuple[int, int]) -> None:
-        """
-        Insert a waypoint at the *start* of the path.
-        This is used for dynamic rerouting.
-        """
-        self._tiles.insert(0, tile)
-
-    def extend_reversed(self, tiles: Iterable[tuple[int, int]]) -> None:
-        """Append a reversed sequence so the last element is the next waypoint."""
-        seq = list(tiles)
-        self._tiles.extend(reversed(seq))
-
-    def peek(self, n: int = 0) -> tuple[int, int] | None:
-        """
-        Peek n steps ahead.
-        n=0 → next waypoint
-        n=1 → second next waypoint
-        """
-        idx = len(self._tiles) - 1 - n
-        if idx < 0:
-            return None
-        return self._tiles[idx]
-
-    def clear(self) -> None:
-        """Remove all remaining waypoints."""
-        self._tiles.clear()
-
-    def replace_tail(self, tiles: Iterable[tuple[int, int]]) -> None:
-        """Replace the remaining path with a new sequence."""
-        self._tiles = list(tiles)
-
-    def splice(self, tiles: Iterable[tuple[int, int]]) -> None:
-        """
-        Insert new waypoints so they become the next steps.
-        Equivalent to replacing the tail but preserving the invariant.
-        """
-        seq = list(tiles)
-        self._tiles.extend(reversed(seq))
-
-    def to_list(self) -> list[tuple[int, int]]:
-        """Return a copy of the path."""
-        return list(self._tiles)
-
-    def consumed(self) -> list[tuple[int, int]]:
-        """Return consumed waypoints (debug only)."""
-        return list(self._consumed)
-
-    def __len__(self) -> int:
-        return len(self._tiles)
-
-    def __bool__(self) -> bool:
-        return bool(self._tiles)
-
-    def __iter__(self) -> Iterator[tuple[int, int]]:
-        return iter(self._tiles)
-
-    def __repr__(self) -> str:
-        return f"PathView(next={self.next()}, len={len(self)})"
-
-
-@dataclass
-class PathExecutionState:
-    """
-    Tracks a single tile-to-tile movement transition.
-    """
-
-    origin: tuple[int, int] | None = None
-    target: tuple[int, int] | None = None
-
-    @property
-    def in_progress(self) -> bool:
-        return self.origin is not None and self.target is not None
-
-    def reset(self) -> None:
-        self.origin = None
-        self.target = None
-
-
 class PathController:
     def __init__(
         self,
@@ -145,11 +39,18 @@ class PathController:
         pathfinder: Pathfinder,
         map_manager: MapManager,
         npc_manager: NPCManager,
+        tile_effects: TileEffectProcessor | None = None,
+        reroute_policy: ReroutePolicy | None = None,
+        animation_policy: MovementAnimationPolicy | None = None,
     ) -> None:
         self.owner = owner
         self._pathfinder = pathfinder
         self._map_manager = map_manager
         self._npc_manager = npc_manager
+
+        self.tile_effects = tile_effects or TileEffectProcessor()
+        self.reroute_policy = reroute_policy or ReroutePolicy()
+        self.animation_policy = animation_policy or MovementAnimationPolicy()
 
         self.path = PathView([])
         self._repath_cooldown: float = 0.0
@@ -233,7 +134,7 @@ class PathController:
 
         if not self.path:
             self.cancel_movement()
-            self.owner.sprite_controller.stop_animation()
+            self.animation_policy.on_stop(self.owner)
 
     def set_path_and_start(self, path: list[tuple[int, int]]) -> None:
         """
@@ -258,8 +159,10 @@ class PathController:
         assert target is not None
         move_dir = get_direction(self.owner.tile_pos, target)
         if self.owner.facing_mode == FacingMode.FOLLOW_MOVEMENT:
-            direction = get_direction(self.owner.position, target)
-            self.owner.set_facing(direction)
+            direction = self.animation_policy.compute_facing(
+                self.owner, target
+            )
+            self.animation_policy.on_face(self.owner, direction)
 
         try:
             if self._pathfinder.is_tile_traversable(
@@ -279,14 +182,20 @@ class PathController:
                 # To fully resolve this issue, the game will eventually need
                 # a dedicated global clock—not reliant on wall time—to eliminate
                 # visual glitches and ensure frame accuracy.
-                self.owner.sprite_controller.play_animation(move_dir)
+                self.animation_policy.on_step(self.owner, move_dir)
                 self.exec.origin = self.owner.tile_pos
                 self.exec.target = target
                 self.owner.mover.move(move_dir)
                 self.owner.remove_collision()
             else:
-                self.owner.stop_moving()
-                self.handle_obstruction(target)
+                commands = self.reroute_policy.on_obstruction(
+                    self.owner,
+                    self._npc_manager,
+                    self.pathfinding,
+                    target,
+                )
+                for cmd in commands:
+                    self.execute_command(cmd)
         except Exception as e:
             logger.error(
                 f"Error in next_waypoint for {self.owner.slug}: {e}",
@@ -301,7 +210,6 @@ class PathController:
         * For most accurate speed, tests distance traveled.
         * Doesn't verify the target position, just distance
         * Assumes once waypoint is set, direction doesn't change
-        * Honors continue tiles
         """
         if not self.exec.in_progress:
             return
@@ -310,51 +218,21 @@ class PathController:
         target = self.exec.target
         assert origin is not None and target is not None
 
-        expected = tile_distance(origin, target)
-        traveled = tile_distance(self.owner.position, origin)
-        if traveled >= expected:
+        if self.owner.mover.has_reached_next_tile(origin, target):
             self.owner.set_position(target)
             self.owner.on_tile_changed()
             self.path.consume()
             self.exec.reset()
-            self._apply_tile_effects()
-            self.check_continue()
+            tile = self._map_manager.collision_map.get(self.owner.tile_pos)
+            commands = self.tile_effects.get_effects(
+                tile,
+                self.owner,
+                self.path,
+            )
+            for cmd in commands:
+                self.execute_command(cmd)
             if self.path:
                 self.next_waypoint()
-
-    def check_continue(self) -> None:
-        try:
-            tile = self._map_manager.collision_map[self.owner.tile_pos]
-            if tile and tile.endure:
-                # Use self.owner.facing if the tile allows multiple directions (> 1).
-                if len(tile.endure) > 1:
-                    _direction = self.owner.facing
-                # Otherwise, it must be the single required direction (len == 1).
-                else:
-                    _direction = tile.endure[0]
-
-                self.move_one_tile(_direction)
-            else:
-                pass
-        except (KeyError, TypeError):
-            pass
-
-    def _apply_tile_effects(self) -> None:
-        try:
-            tile = self._map_manager.collision_map.get(self.owner.tile_pos)
-            if tile is None:
-                return
-
-            if tile.push_effect:
-                self.move_multiple_tiles(
-                    direction=tile.push_effect.direction,
-                    strength=tile.push_effect.strength,
-                )
-
-            if tile.speed_modifier:
-                self.owner.set_moverate_modifier(tile.speed_modifier)
-        except (KeyError, TypeError):
-            pass
 
     def _get_next_tile_pos(
         self, origin: tuple[int, int], direction: Direction
@@ -387,7 +265,7 @@ class PathController:
             return
 
         if self.owner.facing_mode == FacingMode.FOLLOW_MOVEMENT:
-            self.owner.set_facing(direction)
+            self.animation_policy.on_face(self.owner, direction)
 
         origin = self.path.next()
         if origin is None:
@@ -479,23 +357,19 @@ class PathController:
         self.owner.stop_moving()
         self.cancel_path()
 
-    def handle_obstruction(self, target: tuple[int, int]) -> None:
-        if self.pathfinding:
-            npc = self._npc_manager.get_entity_pos(self.pathfinding)
-            if npc:
-                logger.info(
-                    f"{npc.slug} obstructing {self.owner.slug}, recalculating path."
-                )
-                self._repath_cooldown = 0.5
-                self.start_path(self.pathfinding)
-            else:
-                logger.warning(
-                    f"{self.owner.slug} could not proceed to {self.pathfinding} due to obstruction. "
-                    "Consider splitting pathfinding or postponing movement."
-                )
-                self._repath_cooldown = 1.0
-                self.owner.stop_moving()
-        else:
-            logger.debug(
-                f"{self.owner.slug} faced obstruction at {target}. Movement stopped."
-            )
+    def execute_command(self, cmd: MovementCommand) -> None:
+        """
+        Central dispatcher that applies policy decisions to controller/owner state.
+        """
+        if isinstance(cmd, PushCommand):
+            self.move_multiple_tiles(cmd.direction, cmd.strength)
+        elif isinstance(cmd, SpeedCommand):
+            self.owner.set_moverate_modifier(cmd.modifier)
+        elif isinstance(cmd, ContinueCommand):
+            self.move_one_tile(cmd.direction)
+        elif isinstance(cmd, RepathCommand):
+            self._repath_cooldown = cmd.cooldown
+            if cmd.immediate:
+                self.start_path(cmd.destination)
+        elif isinstance(cmd, StopMovementCommand):
+            self.owner.stop_moving()

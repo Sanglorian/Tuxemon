@@ -13,9 +13,10 @@ from tuxemon.db import DialogueProfile, NpcModel
 from tuxemon.entity.appearance import AppearanceManager
 from tuxemon.entity.bag import BagHandler
 from tuxemon.entity.battle import BattlesHandler
+from tuxemon.entity.behavior.base import BehaviorPolicy
 from tuxemon.entity.entity import Entity
 from tuxemon.entity.party import PartyHandler
-from tuxemon.entity.path import PathController
+from tuxemon.entity.path.controller import PathController
 from tuxemon.entity.routing import RoutingPolicy
 from tuxemon.entity.sheet import CombatSheet
 from tuxemon.entity.steps import StepManager
@@ -90,7 +91,7 @@ class NPC(Entity):
         self._custom_name: str | None = None
         # general
         self.gender: str | None = None
-        self.behavior: str | None = "wander"  # not used for now
+        self.behavior_policy: BehaviorPolicy | None = None
         self._variables = GameVariablesManager()
         self.battle_handler = BattlesHandler()
         # Tracks Tuxepedia (monster seen or caught)
@@ -314,7 +315,7 @@ class NPC(Entity):
     def abort_movement(self, preserve_position: bool = False) -> None:
         self.path_controller.abort_movement(preserve_position)
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         """
         Handles NPC movement updates, including animations, physics, and
         navigation.
@@ -324,12 +325,10 @@ class NPC(Entity):
         - Animation state of the NPC.
         - Movement logic, including path progression and direct movement
             requests.
-
-        Parameters:
-            time_delta: The time elapsed since the last update
-            (from clock.tick()/1000.0).
         """
-        # Update sprite animations based on movement state.
-        self.sprite_controller.update(time_delta)
-        self.update_physics(time_delta)
-        self.path_controller.update(time_delta)
+        if self.behavior_policy:
+            self.behavior_policy.update(self, self.path_controller, dt)
+
+        self.update_physics(dt)
+        self.path_controller.update(dt)
+        self.sprite_controller.update(dt)

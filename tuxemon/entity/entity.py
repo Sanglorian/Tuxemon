@@ -11,7 +11,7 @@ from tuxemon.db import Direction, FacingMode
 from tuxemon.map.map import dirs2
 from tuxemon.math import Vector2
 from tuxemon.save_state import NPCState
-from tuxemon.tools import vector2_to_tile_pos
+from tuxemon.tools import tile_distance, vector2_to_tile_pos
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
@@ -161,6 +161,13 @@ class Mover:
                 self.walking()
         else:
             self.stop()
+
+    def has_reached_next_tile(
+        self, origin: tuple[int, int], target: tuple[int, int]
+    ) -> bool:
+        expected = tile_distance(origin, target)
+        traveled = tile_distance(self.body.position, origin)
+        return traveled >= expected
 
 
 class Entity:

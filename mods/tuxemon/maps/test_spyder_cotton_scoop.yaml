@@ -1,32 +1,19 @@
 events:
   NPCs:
     actions:
-    - create_npc test_npc038,3,4
-    - create_npc test_npc039,4,4
-    - create_npc test_npc040,5,4
-    - create_npc test_npc041,6,4
-    - create_npc test_npc042,7,4
-    - create_npc test_npc043,8,4
-    - create_npc test_npc044,9,4
-    - create_npc test_npc045,10,4
-    - create_npc test_npc046,11,4
-    - create_npc test_npc047,12,4
-    - create_npc test_npc048,1,8
-    - create_npc test_npc049,1,9
-    - create_npc test_npc050,1,10
-    - char_wander test_npc038
-    - char_wander test_npc039
-    - char_wander test_npc040
-    - char_wander test_npc041
-    - char_wander test_npc042
-    - char_wander test_npc043
-    - char_wander test_npc044
-    - char_wander test_npc045
-    - char_wander test_npc046
-    - char_wander test_npc047
-    - char_wander test_npc048
-    - char_wander test_npc049
-    - char_wander test_npc050
+    - create_npc test_npc038,3,4,wander
+    - create_npc test_npc039,4,4,wander
+    - create_npc test_npc040,5,4,wander
+    - create_npc test_npc041,6,4,wander
+    - create_npc test_npc042,7,4,wander
+    - create_npc test_npc043,8,4,wander
+    - create_npc test_npc044,9,4,wander
+    - create_npc test_npc045,10,4,wander
+    - create_npc test_npc046,11,4,wander
+    - create_npc test_npc047,12,4,wander
+    - create_npc test_npc048,1,8,wander
+    - create_npc test_npc049,1,9,wander
+    - create_npc test_npc050,1,10,wander
     conditions:
     - not char_exists test_npc038
     - not char_exists test_npc039

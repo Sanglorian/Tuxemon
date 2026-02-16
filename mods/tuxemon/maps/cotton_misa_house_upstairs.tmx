@@ -48,8 +48,7 @@
   </object>
   <object id="54" name="Create LittleBro" type="event" x="112" y="80" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc cotton_misa_bro,7,5"/>
-    <property name="act2" value="char_wander cotton_misa_bro"/>
+    <property name="act1" value="create_npc cotton_misa_bro,7,5,wander"/>
     <property name="cond1" value="not char_exists cotton_misa_bro"/>
    </properties>
   </object>

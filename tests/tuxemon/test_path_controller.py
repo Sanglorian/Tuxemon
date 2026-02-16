@@ -5,10 +5,11 @@ from unittest.mock import MagicMock
 import pytest
 
 from tuxemon.db import Direction, FacingMode
-from tuxemon.entity.path import PathController, PathView, tile_distance
+from tuxemon.entity.path.controller import PathController
+from tuxemon.entity.path.path_view import PathView
 from tuxemon.map.map import dirs2
 from tuxemon.math import Vector2
-from tuxemon.tools import vector2_to_tile_pos
+from tuxemon.tools import tile_distance, vector2_to_tile_pos
 
 
 class SimpleNPC:
@@ -149,9 +150,9 @@ def test_next_waypoint_blocked_calls_handle_obstruction(
     npc = mk_npc_with_mocks()
     pc = PathController(npc, pf, map_manager, npc_manager)
     pc.path = PathView([(0, 1)])
-    pc.handle_obstruction = MagicMock()
+    pc.reroute_policy.on_obstruction = MagicMock()
     pc.next_waypoint()
-    pc.handle_obstruction.assert_called_once_with((0, 1))
+    pc.reroute_policy.on_obstruction(npc, npc_manager, pc.pathfinding, (0, 1))
     assert not npc.moving
 
 
@@ -234,6 +235,7 @@ def test_stress_cooldown_throttling(
     pf.is_tile_traversable.return_value = True
     npc = mk_npc_with_mocks()
     pc = PathController(npc, pf, map_manager, npc_manager)
+    map_manager.collision_map.get.return_value = None
     pc.pathfinding = (1, 1)
     pc._repath_cooldown = 1.0
     for _ in range(steps):
@@ -264,7 +266,12 @@ def test_handle_obstruction_recalculates_when_npc_blocking(
     pc = PathController(npc, pathfinder, map_manager, npc_manager)
     pc.pathfinding = (9, 9)
     pc.start_path = MagicMock()
-    pc.handle_obstruction((0, 0))
+    commands = pc.reroute_policy.on_obstruction(
+        npc, npc_manager, pc.pathfinding, (0, 0)
+    )
+    for cmd in commands:
+        pc.execute_command(cmd)
+
     pc.start_path.assert_called_once_with((9, 9))
 
 
@@ -273,7 +280,7 @@ def test_handle_obstruction_no_pathfinding_logs(
 ):
     npc = mk_npc_with_mocks()
     pc = PathController(npc, pathfinder, map_manager, npc_manager)
-    pc.handle_obstruction((0, 1))
+    pc.reroute_policy.on_obstruction(npc, npc_manager, pc.pathfinding, (0, 1))
 
 
 def test_handle_obstruction_with_npc_sets_cooldown_and_retries_path(
@@ -289,7 +296,12 @@ def test_handle_obstruction_with_npc_sets_cooldown_and_retries_path(
     npc = mk_npc_with_mocks()
     pc = PathController(npc, pf, map_manager, npc_manager)
     pc.pathfinding = (0, 2)
-    pc.handle_obstruction((0, 1))
+    commands = pc.reroute_policy.on_obstruction(
+        npc, npc_manager, pc.pathfinding, (0, 1)
+    )
+    for cmd in commands:
+        pc.execute_command(cmd)
+
     assert pc._repath_cooldown == 0.5
     pf.pathfind.assert_called_once_with(npc.tile_pos, (0, 2), npc.facing)
 
@@ -303,7 +315,12 @@ def test_handle_obstruction_without_npc_sets_cooldown_and_stops(
     pc = PathController(npc, pathfinder, map_manager, npc_manager)
     pc.pathfinding = (5, 5)
     pc.path = PathView([(5, 5)])
-    pc.handle_obstruction((4, 4))
+    commands = pc.reroute_policy.on_obstruction(
+        npc, npc_manager, pc.pathfinding, (4, 4)
+    )
+    for cmd in commands:
+        pc.execute_command(cmd)
+
     assert pc._repath_cooldown == 1.0
     assert list(pc.path) == [(5, 5)]
     assert not npc.moving
@@ -434,6 +451,7 @@ def test_retry_path_after_cooldown(
     npc = mk_npc_with_mocks()
     npc.tile_pos = (0, 0)
     pc = PathController(npc, pf, map_manager, npc_manager)
+    map_manager.collision_map.get.return_value = None
     pc.pathfinding = path_return[-1]
     pc._repath_cooldown = 0.0
 

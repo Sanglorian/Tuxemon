@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
+from tuxemon.platform.platform_pygame.events import KeyBindingRules
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -38,44 +38,29 @@ class SetKeyState(PygameMenuState):
         self.reset_theme()
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
-        invalid_keys = [
-            pygame.K_UP,
-            pygame.K_DOWN,
-            pygame.K_RIGHT,
-            pygame.K_LEFT,
-            pygame.K_RSHIFT,
-            pygame.K_LSHIFT,
-            pygame.K_RETURN,
-            pygame.K_ESCAPE,
-            pygame.K_BACKSPACE,
-        ]
+        """
+        Accepts a PlayerInput event and binds the first valid keycode.
+        Assumes event.value is already normalized by InputConfig.
+        """
+        if not event.pressed:
+            return None
 
-        pressed_key = next(
-            (
-                k
-                for k in range(len(pygame.key.get_pressed()))
-                if pygame.key.get_pressed()[k]
-            ),
-            None,
-        )
+        pressed_key = self.client.config.input.normalize_key(event.value)
 
-        if (
-            isinstance(pressed_key, int)
-            and (event.pressed or event.value == "")
-            and pressed_key not in invalid_keys
-        ):
-            assert pressed_key
+        if pressed_key is None:
+            return None  # ignore unmappable input
+
+        if KeyBindingRules.is_valid_binding(pressed_key):
             self.client.remove_state_by_name("SetKeyState")
-            pressed_key_str = pygame.key.name(pressed_key)
-            if event.value == pressed_key_str:
-                # Update the configuration file with the new key
-                self.client.config.update_control(self.value, pressed_key)
-                keyboard = self.client.input_manager.core_devices.keyboard
-                if keyboard is not None:
-                    keyboard.reload_mapping(
-                        self.client.config.input.keyboard_button_map
-                    )
-                    return event
+            self.client.config.update_control(self.value, pressed_key)
+
+            keyboard = self.client.input_manager.core_devices.keyboard
+            if keyboard is not None:
+                keyboard.reload_mapping(
+                    self.client.config.input.keyboard_button_map
+                )
+
+            return None
 
         return None
 

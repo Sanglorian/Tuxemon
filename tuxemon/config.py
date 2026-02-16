@@ -15,6 +15,12 @@ from tuxemon.platform.const import buttons, events
 
 Animation.default_transition = "out_quint"
 
+LOCALE_FONT_MAP = {
+    "zh_CN": ("SourceHanSerifCN-Bold.otf", "SourceHanSerifCN-Bold.otf"),
+    "ja": ("SourceHanSerifJP-Bold.otf", "SourceHanSerifJP-Bold.otf"),
+    "default": ("PressStart2P.ttf", "Pizel.ttf"),
+}
+
 
 class DisplayConfig(BaseModel):
     """Configuration for the game display."""
@@ -156,14 +162,152 @@ class TuxemonConfig:
             )
             self.config_model = TuxemonFullConfig()
 
-        # Load attributes
-        self.load_config_attributes()
-
         self.input = InputConfig(self.config_model)
         self.logging = LoggingConfig(self.config_model)
         self.locale = LocaleConfig(self.config_model)
         self.controller = ControllerConfig(self.config_model)
         self.mods = ["tuxemon"]
+
+    @property
+    def resolution(self) -> tuple[int, int]:
+        d = self.config_model.display
+        return (d.resolution_x, d.resolution_y)
+
+    @property
+    def splash(self) -> bool:
+        return self.config_model.display.splash
+
+    @property
+    def fullscreen(self) -> bool:
+        return self.config_model.display.fullscreen
+
+    @property
+    def fps(self) -> float:
+        return self.config_model.display.fps
+
+    @property
+    def vsync(self) -> bool:
+        return self.config_model.display.vsync
+
+    @property
+    def show_fps(self) -> bool:
+        return self.config_model.display.show_fps
+
+    @property
+    def scaling(self) -> bool:
+        return self.config_model.display.scaling
+
+    @property
+    def collision_map(self) -> bool:
+        return self.config_model.display.collision_map
+
+    @property
+    def large_gui(self) -> bool:
+        return self.config_model.display.large_gui
+
+    @property
+    def window_caption(self) -> str:
+        return self.config_model.display.window_caption
+
+    @property
+    def data(self) -> str:
+        return self.config_model.game.data
+
+    @property
+    def cli(self) -> bool:
+        return self.config_model.game.cli_enabled
+
+    @property
+    def net_controller_enabled(self) -> bool:
+        return self.config_model.game.net_controller_enabled
+
+    @property
+    def dev_tools(self) -> bool:
+        return self.config_model.game.dev_tools
+
+    @property
+    def recompile_translations(self) -> bool:
+        return self.config_model.game.recompile_translations
+
+    @property
+    def skip_titlescreen(self) -> bool:
+        return self.config_model.game.skip_titlescreen
+
+    @property
+    def compress_save(self) -> str | None:
+        return self.config_model.game.compress_save
+
+    @property
+    def save_prefix(self) -> str:
+        return self.config_model.game.save_prefix
+
+    @property
+    def save_extension(self) -> str:
+        return self.config_model.game.save_extension
+
+    @property
+    def save_method(self) -> str:
+        return self.config_model.game.save_method
+
+    @property
+    def items_consumed_on_failure(self) -> bool:
+        return self.config_model.gameplay.items_consumed_on_failure
+
+    @property
+    def encounter_rate_modifier(self) -> float:
+        return self.config_model.gameplay.encounter_rate_modifier
+
+    @property
+    def dialog_speed(self) -> str:
+        return self.config_model.gameplay.dialog_speed
+
+    @property
+    def unit_measure(self) -> str:
+        return self.config_model.gameplay.unit_measure
+
+    @property
+    def hemisphere(self) -> str:
+        return self.config_model.gameplay.hemisphere
+
+    @property
+    def sound_volume(self) -> float:
+        return self.config_model.gameplay.sound_volume
+
+    @property
+    def music_volume(self) -> float:
+        return self.config_model.gameplay.music_volume
+
+    @property
+    def combat_click_to_continue(self) -> bool:
+        return self.config_model.gameplay.combat_click_to_continue
+
+    @property
+    def dialog_box_style(self) -> str:
+        return self.config_model.graphics.dialog_box_style
+
+    @property
+    def menu_border(self) -> str:
+        return self.config_model.graphics.menu_border
+
+    @property
+    def menu_cursor(self) -> str:
+        return self.config_model.graphics.menu_cursor
+
+    @property
+    def menu_sound(self) -> str:
+        return self.config_model.graphics.menu_sound
+
+    @property
+    def animation_speed(self) -> float:
+        return self.config_model.player.animation_speed
+
+    @property
+    def player_walkrate(self) -> float:
+        return self.config_model.player.player_walkrate
+
+    @property
+    def player_runrate(self) -> float:
+        return self.config_model.player.player_runrate
 
     def save_config(self) -> None:
         """Saves the configuration from the Pydantic model to a YAML file."""
@@ -180,212 +324,210 @@ class TuxemonConfig:
                 indent=4,
             )
 
-    def load_config_attributes(self) -> None:
-        """Assigns Pydantic model values to easy-access instance attributes."""
-        # [display]
-        display = self.config_model.display
-        self.resolution = (
-            display.resolution_x,
-            display.resolution_y,
-        )
-        self.splash = display.splash
-        self.fullscreen = display.fullscreen
-        self.fps = display.fps
-        self.vsync = display.vsync
-        self.show_fps = display.show_fps
-        self.scaling = display.scaling
-        self.collision_map = display.collision_map
-        self.large_gui = display.large_gui
-        self.window_caption = display.window_caption
-
-        # [game]
-        game = self.config_model.game
-        self.data = game.data
-        self.cli = game.cli_enabled
-        self.net_controller_enabled = game.net_controller_enabled
-        self.dev_tools = game.dev_tools
-        self.recompile_translations = game.recompile_translations
-        self.skip_titlescreen = game.skip_titlescreen
-        self.compress_save = game.compress_save
-        self.save_prefix = game.save_prefix
-        self.save_extension = game.save_extension
-        self.save_method = game.save_method
-
-        # [gameplay]
-        gameplay = self.config_model.gameplay
-        self.items_consumed_on_failure = gameplay.items_consumed_on_failure
-        self.encounter_rate_modifier = gameplay.encounter_rate_modifier
-
-        self.dialog_speed = gameplay.dialog_speed
-        self.unit_measure = gameplay.unit_measure
-        self.hemisphere = gameplay.hemisphere
-
-        self.sound_volume = gameplay.sound_volume
-        self.music_volume = gameplay.music_volume
-        self.combat_click_to_continue = gameplay.combat_click_to_continue
-
-        # [graphics]
-        graphics = self.config_model.graphics
-        self.dialog_box_style = graphics.dialog_box_style
-        self.menu_border = graphics.menu_border
-        self.menu_cursor = graphics.menu_cursor
-        self.menu_sound = graphics.menu_sound
-
-        # [player]
-        player = self.config_model.player
-        self.animation_speed = player.animation_speed
-        self.player_walkrate = player.player_walkrate
-        self.player_runrate = player.player_runrate
-
     def reload_config(self) -> None:
         if not self.config_path or not self.config_path.exists():
             raise RuntimeError(
                 "No path specified for reloading configuration."
             )
 
-        loaded_config = load_yaml(self.config_path) or {}
+        loaded = load_yaml(self.config_path) or {}
+        current = self.config_model.model_dump()
 
-        current_config = self.config_model.model_dump()
+        for category, defaults in current.items():
+            if category in loaded and isinstance(defaults, dict):
+                defaults.update(loaded[category])
+            elif category in loaded:
+                current[category] = loaded[category]
 
-        for category, defaults in current_config.items():
-            if category in loaded_config and isinstance(defaults, dict):
-                defaults.update(loaded_config[category])
-            elif category in loaded_config:
-                current_config[category] = loaded_config[category]
-
-        self.config_model = TuxemonFullConfig.model_validate(current_config)
-
-        self.load_config_attributes()
-
-        self.input.reload_input_map()
-        self.locale.slug = self.config_model.game.locale
-        self.locale.translation_mode = self.config_model.game.translation_mode
-        self.locale.font_file = self.config_model.game.language_font
-        self.locale.thin_font_file = self.config_model.game.thin_font_file
+        self.config_model = TuxemonFullConfig.model_validate(current)
+        self.input = InputConfig(self.config_model)
+        self.logging = LoggingConfig(self.config_model)
+        self.locale = LocaleConfig(self.config_model)
+        self.controller = ControllerConfig(self.config_model)
 
     def update_attribute(
-        self, section: str, attribute: str, value: Any
+        self,
+        section: str,
+        attribute: str,
+        value: Any,
+        save: bool = True,
     ) -> None:
         """
         Updates the attribute's value in the Pydantic model and saves/reloads.
         """
         sub_model = getattr(self.config_model, section)
         setattr(sub_model, attribute, value)
-        self.save_config()
-        self.reload_config()
+
+        # Special case: controls require keymap rebuild
+        if section == "controls":
+            self.input.reload_input_map()
+
+        if save:
+            self.save_config()
 
     def update_control(self, value: str, key: int) -> None:
         self.input.update_key(value, pygame.key.name(key))
         self.save_config()
-        self.reload_config()
 
     def update_locale(self, value: str) -> None:
-        """Handles locale update and derived font file changes."""
-
-        # Set the base locale value on the Pydantic model
+        """
+        Updates the locale and applies derived font logic.
+        """
         self.config_model.game.locale = value
 
-        # Apply the derived font logic
-        if value == "zh_CN":
-            font_file = "SourceHanSerifCN-Bold.otf"
-            thin_font = "SourceHanSerifCN-Bold.otf"
-        elif value == "ja":
-            font_file = "SourceHanSerifJP-Bold.otf"
-            thin_font = "SourceHanSerifJP-Bold.otf"
-        else:
-            font_file = "PressStart2P.ttf"
-            thin_font = "Pizel.ttf"
+        font_file, thin_font = LOCALE_FONT_MAP.get(
+            value, LOCALE_FONT_MAP["default"]
+        )
 
-        # Update the font attributes on the Pydantic model
-        self.config_model.game.language_font = font_file
-        self.config_model.game.font_file = font_file
-        self.config_model.game.thin_font_file = thin_font
-
+        game = self.config_model.game
+        game.language_font = font_file
+        game.font_file = font_file
+        game.thin_font_file = thin_font
         self.save_config()
-        self.reload_config()
 
     def reset_controls_to_default(self) -> None:
-        self.input.reset_to_default()
+        self.config_model.controls = ControlsConfig()
+        self.input.reload_input_map()
         self.save_config()
-        self.reload_config()
 
 
 class ControllerConfig:
-    """Handles controller-related configurations."""
+    """Reactive controller configuration wrapper."""
 
     def __init__(self, config_model: TuxemonFullConfig) -> None:
-        controller = config_model.controller
-        self.type = controller.type
-        self.overlay = controller.overlay
-        self.transparency = controller.transparency
-        self.hide_mouse = controller.hide_mouse
-        self.show_input_visualizer = controller.show_input_visualizer
-        self.combo_window_seconds = controller.combo_window_seconds
+        self._model = config_model.controller
+
+    @property
+    def type(self) -> str | None:
+        return self._model.type
+
+    @property
+    def overlay(self) -> bool:
+        return self._model.overlay
+
+    @property
+    def transparency(self) -> int:
+        return self._model.transparency
+
+    @property
+    def hide_mouse(self) -> bool:
+        return self._model.hide_mouse
+
+    @property
+    def show_input_visualizer(self) -> bool:
+        return self._model.show_input_visualizer
+
+    @property
+    def combo_window_seconds(self) -> float:
+        return self._model.combo_window_seconds
 
 
 class LocaleConfig:
-    """Handles locale-related configurations."""
+    """Reactive locale configuration wrapper."""
 
     def __init__(self, config_model: TuxemonFullConfig) -> None:
-        game = config_model.game
-        self.slug = game.locale
-        self.translation_mode = game.translation_mode
-        self.font_file = game.font_file
-        self.thin_font_file = game.thin_font_file
+        self._model = config_model.game
+
+    @property
+    def slug(self) -> str:
+        return self._model.locale
+
+    @property
+    def translation_mode(self) -> str:
+        return self._model.translation_mode
+
+    @property
+    def font_file(self) -> str:
+        return self._model.font_file
+
+    @property
+    def thin_font_file(self) -> str:
+        return self._model.thin_font_file
 
 
 class InputConfig:
-    """Handles input-related configurations."""
+    """Reactive input configuration wrapper with cached keymap."""
 
     def __init__(self, config_model: TuxemonFullConfig) -> None:
-        self.config_model = config_model
-        self.keyboard_button_map = self._get_custom_pygame_keyboard_controls()
+        self._model = config_model
+        self._keyboard_button_map = self._build_keyboard_map()
 
-    def _get_custom_pygame_keyboard_controls(
-        self,
-    ) -> Mapping[int | None, int]:
+    @property
+    def controls(self) -> ControlsConfig:
+        return self._model.controls
+
+    @property
+    def keyboard_button_map(self) -> Mapping[int | None, int]:
+        return self._keyboard_button_map
+
+    @staticmethod
+    def normalize_key(value: int | str) -> int | None:
+        # Already a keycode
+        if isinstance(value, int):
+            return value
+
+        # Convert unicode like "w" → 119
+        if isinstance(value, str) and len(value) == 1:
+            try:
+                return pygame.key.key_code(value)
+            except ValueError:
+                return None
+
+        return None
+
+    def _build_keyboard_map(self) -> Mapping[int | None, int]:
         """
-        Returns a dictionary mapping pygame key constants to custom button values.
+        Builds the pygame key → internal button/event mapping.
         """
         custom_controls: dict[int | None, int] = {None: events.UNICODE}
 
-        for key, values in self.config_model.controls.model_dump().items():
-            key = key.upper()
-            button_value: int | None = getattr(buttons, key, None)
-            event_value: int | None = getattr(events, key, None)
+        defaults = ControlsConfig().model_dump()
+        raw = self.controls.model_dump()
+        controls = {}
 
+        for key, default_value in defaults.items():
+            user_value = raw.get(key)
+            controls[key] = user_value if user_value else default_value
+
+        for key, values in controls.items():
+            key = key.upper()
+            button_value = getattr(buttons, key, None)
+            event_value = getattr(events, key, None)
             internal_value = (
                 button_value if button_value is not None else event_value
             )
+
             if internal_value is None:
                 continue
 
             for each in values.split(", "):
                 each = each.lower() if len(each) == 1 else each.upper()
-                pygame_value: int | None = getattr(pygame, "K_" + each, None)
+                pygame_value = getattr(pygame, "K_" + each, None)
                 if pygame_value is not None:
                     custom_controls[pygame_value] = internal_value
 
         return custom_controls
 
+    def reload_input_map(self) -> None:
+        """Rebuilds the derived keymap."""
+        self._keyboard_button_map = self._build_keyboard_map()
+
     def update_key(self, value: str, key_name: str) -> None:
-        """Updates a key binding on the Pydantic controls model."""
-        setattr(self.config_model.controls, value, key_name)
+        """Updates a key binding and rebuilds the keymap."""
+        setattr(self._model.controls, value, key_name)
         self.reload_input_map()
 
-    def reload_input_map(self) -> None:
-        self.keyboard_button_map = self._get_custom_pygame_keyboard_controls()
-
     def reset_to_default(self) -> None:
-        """Resets the controls section to the defaults defined in the ControlsConfig model."""
-        self.config_model.controls = ControlsConfig()
+        """Resets controls to defaults and rebuilds keymap."""
+        self._model.controls = ControlsConfig()
         self.reload_input_map()
 
 
 class LoggingConfig:
-    """Handles logging-related configurations."""
+    """Reactive logging configuration wrapper."""
 
     def __init__(self, config_model: TuxemonFullConfig) -> None:
+        self._model = config_model.logging
         # [logging]
         # Log levels can be: debug, info, warning, error, or critical
         # Setting loggers to "all" will enable debug logging for all modules.
@@ -393,10 +535,23 @@ class LoggingConfig:
         #     states.combat, states.world, event,
         #     neteria.server, neteria.client, neteria.core
         # Comma-separated list of which modules to enable logging on
-        log = config_model.logging
-        loggers_str: str = log.loggers
-        self.loggers = loggers_str.replace(" ", "").split(",")
-        self.debug_logging = log.debug_logging
-        self.debug_level = log.debug_level
-        self.log_to_file = log.dump_to_file
-        self.log_keep_max = log.file_keep_max
+
+    @property
+    def loggers(self) -> list[str]:
+        return self._model.loggers.replace(" ", "").split(",")
+
+    @property
+    def debug_logging(self) -> bool:
+        return self._model.debug_logging
+
+    @property
+    def debug_level(self) -> str:
+        return self._model.debug_level
+
+    @property
+    def log_to_file(self) -> bool:
+        return self._model.dump_to_file
+
+    @property
+    def log_keep_max(self) -> int:
+        return self._model.file_keep_max

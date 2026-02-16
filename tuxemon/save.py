@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 try:
     import cbor
 except ImportError:
-    CONFIG.save_method = "json"
+    CONFIG.update_attribute("game", "save_method", "json", save=False)
 
 
 T = TypeVar("T")

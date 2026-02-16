@@ -12,13 +12,23 @@ import pytest
 import yaml
 
 from tuxemon.config import (
+    ControllerConfig,
     ControlsConfig,
     InputConfig,
+    LocaleConfig,
     LoggingConfig,
     TuxemonConfig,
     TuxemonFullConfig,
 )
 from tuxemon.database.yaml_utils import dump_yaml_path
+from tuxemon.platform.const import buttons
+
+
+@pytest.fixture(scope="module", autouse=True)
+def pygame_setup_teardown():
+    pygame.init()
+    yield
+    pygame.quit()
 
 
 def write_yaml(dir_path: Path, data) -> Path:
@@ -253,3 +263,271 @@ def test_update_control_and_reload():
 
         cfg2 = TuxemonConfig(config_path=cfg_path)
         assert cfg2.config_model.controls.up == pygame.key.name(pygame.K_w)
+
+
+def test_inputconfig_never_diverges_from_model_controls():
+    base = TuxemonFullConfig().model_dump()
+    model = TuxemonFullConfig.model_validate(base)
+    input_cfg = InputConfig(model)
+
+    model.controls.up = "w"
+    model.controls.down = "s"
+
+    input_cfg.reload_input_map()
+    if hasattr(pygame, "K_w"):
+        assert getattr(pygame, "K_w") in input_cfg.keyboard_button_map
+    if hasattr(pygame, "K_s"):
+        assert getattr(pygame, "K_s") in input_cfg.keyboard_button_map
+
+
+def test_reset_controls_updates_model_and_keymap():
+    with TemporaryDirectory() as td:
+        td = Path(td)
+        base = TuxemonFullConfig().model_dump()
+        cfg_path = write_yaml(td, base)
+        cfg = TuxemonConfig(config_path=cfg_path)
+        cfg.input.update_key("up", "w")
+
+        assert cfg.config_model.controls.up == "w"
+
+        cfg.reset_controls_to_default()
+
+        assert cfg.config_model.controls == ControlsConfig()
+        assert None in cfg.input.keyboard_button_map
+
+
+def test_locale_wrapper_reflects_model_changes():
+    base = TuxemonFullConfig().model_dump()
+    model = TuxemonFullConfig.model_validate(base)
+    locale_cfg = LocaleConfig(model)
+
+    assert locale_cfg.slug == "en_US"
+    assert "PressStart2P" in locale_cfg.font_file
+
+    model.game.locale = "ja"
+    model.game.font_file = "SourceHanSerifJP-Bold.otf"
+    model.game.thin_font_file = "SourceHanSerifJP-Bold.otf"
+
+    assert locale_cfg.slug == "ja"
+    assert "SourceHanSerifJP" in locale_cfg.font_file
+    assert "SourceHanSerifJP" in locale_cfg.thin_font_file
+
+
+def test_controller_wrapper_reflects_model_changes():
+    base = TuxemonFullConfig().model_dump()
+    model = TuxemonFullConfig.model_validate(base)
+    controller_cfg = ControllerConfig(model)
+
+    assert controller_cfg.overlay is False
+
+    model.controller.overlay = True
+    model.controller.combo_window_seconds = 7.5
+
+    assert controller_cfg.overlay is True
+    assert controller_cfg.combo_window_seconds == 7.5
+
+
+def test_logging_wrapper_reflects_model_changes():
+    base = TuxemonFullConfig().model_dump()
+    base["logging"]["loggers"] = "states.world, event"
+    model = TuxemonFullConfig.model_validate(base)
+    log_cfg = LoggingConfig(model)
+
+    assert "states.world" in log_cfg.loggers
+    assert "event" in log_cfg.loggers
+
+    model.logging.loggers = "states.combat, neteria.client"
+    assert "states.combat" in log_cfg.loggers
+    assert "neteria.client" in log_cfg.loggers
+
+
+def test_reload_config_preserves_non_overridden_fields():
+    with TemporaryDirectory() as td:
+        td = Path(td)
+        base = TuxemonFullConfig().model_dump()
+        base["display"]["resolution_x"] = 800
+        cfg_path = write_yaml(td, base)
+
+        cfg = TuxemonConfig(config_path=cfg_path)
+        assert cfg.resolution[0] == 800
+
+        updated = {"display": {"resolution_x": 1024}}
+        cfg_path.write_text(yaml.safe_dump(updated))
+
+        cfg.reload_config()
+        assert cfg.resolution[0] == 1024
+        assert cfg.resolution[1] == 720
+
+
+def test_reload_config_rebuilds_input_map_after_controls_change():
+    with TemporaryDirectory() as td:
+        td = Path(td)
+        base = TuxemonFullConfig().model_dump()
+        cfg_path = write_yaml(td, base)
+
+        cfg = TuxemonConfig(config_path=cfg_path)
+
+        updated = base.copy()
+        updated["controls"] = {
+            "up": "w",
+            "down": "down",
+            "left": "left",
+            "right": "right",
+            "a": "return",
+            "b": "rshift, lshift",
+            "back": "escape",
+            "backspace": "backspace",
+        }
+        cfg_path.write_text(yaml.safe_dump(updated))
+
+        cfg.reload_config()
+
+        assert cfg.config_model.controls.up == "w"
+
+        if hasattr(pygame, "K_w"):
+            assert getattr(pygame, "K_w") in cfg.input.keyboard_button_map
+
+
+def test_reload_config_does_not_break_wrappers():
+    with TemporaryDirectory() as td:
+        td = Path(td)
+        base = TuxemonFullConfig().model_dump()
+        cfg_path = write_yaml(td, base)
+
+        cfg = TuxemonConfig(config_path=cfg_path)
+
+        updated = base.copy()
+        updated["game"] = {
+            "locale": "ja",
+            "font_file": "SourceHanSerifJP-Bold.otf",
+            "thin_font_file": "SourceHanSerifJP-Bold.otf",
+            "data": "tuxemon",
+            "cli_enabled": False,
+            "net_controller_enabled": False,
+            "dev_tools": False,
+            "recompile_translations": True,
+            "skip_titlescreen": False,
+            "compress_save": None,
+            "save_prefix": "slot",
+            "save_extension": "save",
+            "save_method": "json",
+            "translation_mode": "none",
+            "language_font": "SourceHanSerifJP-Bold.otf",
+        }
+        cfg_path.write_text(yaml.safe_dump(updated))
+
+        cfg.reload_config()
+
+        assert cfg.locale.slug == "ja"
+        assert "SourceHanSerifJP" in cfg.locale.font_file
+
+
+def test_reload_config_keeps_controller_wrapper_in_sync():
+    with TemporaryDirectory() as td:
+        td = Path(td)
+        base = TuxemonFullConfig().model_dump()
+        cfg_path = write_yaml(td, base)
+
+        cfg = TuxemonConfig(config_path=cfg_path)
+
+        updated = base.copy()
+        updated["controller"]["overlay"] = True
+        updated["controller"]["combo_window_seconds"] = 9.0
+        cfg_path.write_text(yaml.safe_dump(updated))
+
+        cfg.reload_config()
+
+        assert cfg.controller.overlay is True
+        assert cfg.controller.combo_window_seconds == 9.0
+
+
+def test_reload_config_rebuilds_all_wrappers():
+    with TemporaryDirectory() as td:
+        td = Path(td)
+        base = TuxemonFullConfig().model_dump()
+        cfg_path = write_yaml(td, base)
+
+        cfg = TuxemonConfig(config_path=cfg_path)
+
+        old_input = cfg.input
+        old_locale = cfg.locale
+        old_controller = cfg.controller
+        old_logging = cfg.logging
+        old_model = cfg.config_model
+
+        updated = base.copy()
+        updated["display"]["resolution_x"] = 777
+        cfg_path.write_text(yaml.safe_dump(updated))
+
+        cfg.reload_config()
+
+        assert cfg.config_model is not old_model
+        assert cfg.input is not old_input
+        assert cfg.locale is not old_locale
+        assert cfg.controller is not old_controller
+        assert cfg.logging is not old_logging
+        assert cfg.input._model is cfg.config_model
+        assert cfg.locale._model is cfg.config_model.game
+        assert cfg.controller._model is cfg.config_model.controller
+        assert cfg.logging._model is cfg.config_model.logging
+
+
+def test_normalize_key():
+    assert InputConfig.normalize_key(119) == 119  # already keycode
+    assert InputConfig.normalize_key("w") == pygame.key.key_code("w")
+    assert InputConfig.normalize_key("W") == pygame.key.key_code("w")
+    assert InputConfig.normalize_key("invalid") is None
+    assert InputConfig.normalize_key("") is None
+    assert InputConfig.normalize_key("ab") is None
+
+
+def test_build_keyboard_map_defaults():
+    model = TuxemonFullConfig()
+    input_cfg = InputConfig(model)
+    assert None in input_cfg.keyboard_button_map
+    assert pygame.K_UP in input_cfg.keyboard_button_map
+    assert input_cfg.keyboard_button_map[pygame.K_UP] == buttons.UP
+
+
+def test_build_keyboard_map_custom_controls():
+    base = TuxemonFullConfig().model_dump()
+    base["controls"]["up"] = "w"
+    base["controls"]["a"] = "return"
+    model = TuxemonFullConfig.model_validate(base)
+    input_cfg = InputConfig(model)
+    assert pygame.K_w in input_cfg.keyboard_button_map
+    assert input_cfg.keyboard_button_map[pygame.K_w] == buttons.UP
+    assert pygame.K_RETURN in input_cfg.keyboard_button_map
+    assert input_cfg.keyboard_button_map[pygame.K_RETURN] == buttons.A
+
+
+def test_reload_input_map_rebuilds():
+    base = TuxemonFullConfig().model_dump()
+    model = TuxemonFullConfig.model_validate(base)
+    input_cfg = InputConfig(model)
+    old_map = dict(input_cfg.keyboard_button_map)
+    model.controls.up = "w"
+    input_cfg.reload_input_map()
+    assert input_cfg.keyboard_button_map != old_map
+    assert pygame.K_w in input_cfg.keyboard_button_map
+
+
+def test_update_key_updates_model_and_map():
+    base = TuxemonFullConfig().model_dump()
+    model = TuxemonFullConfig.model_validate(base)
+    input_cfg = InputConfig(model)
+    input_cfg.update_key("up", "w")
+    assert model.controls.up == "w"
+    assert pygame.K_w in input_cfg.keyboard_button_map
+
+
+def test_reset_to_default():
+    base = TuxemonFullConfig().model_dump()
+    model = TuxemonFullConfig.model_validate(base)
+    input_cfg = InputConfig(model)
+    input_cfg.update_key("up", "w")
+    assert model.controls.up == "w"
+    input_cfg.reset_to_default()
+    assert model.controls == ControlsConfig()
+    assert pygame.K_UP in input_cfg.keyboard_button_map
+    assert None in input_cfg.keyboard_button_map

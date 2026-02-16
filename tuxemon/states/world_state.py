@@ -65,7 +65,7 @@ class WorldState(State):
         self.tile_size = self.client.context.tile_size
         self.menu_manager = WorldMenuManager(self.client)
         self.transition_manager = WorldTransition(
-            self, self.client.movement_manager
+            self, self.client.movement_manager, self.client.context.resolution
         )
         self.player = self.session.player
         self.camera = Camera(

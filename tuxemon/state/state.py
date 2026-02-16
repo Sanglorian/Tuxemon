@@ -7,13 +7,12 @@ import random
 from abc import ABC
 from collections.abc import Callable, Iterable
 from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from pygame.rect import Rect
 
 from tuxemon.event.eventbus import Listener
 from tuxemon.graphics import load_animated_sprite, load_sprite, load_surface
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.sprite import Sprite, SpriteGroup
 from tuxemon.state.animation_mixin import AnimationMixin
 from tuxemon.state.render_mixin import RenderMixin
@@ -42,7 +41,6 @@ class State(AnimationMixin, RenderMixin, ABC):
     """
 
     name: ClassVar[str] = "State"
-    rect = Rect((0, 0), SCREEN_SIZE)
     transparent = False  # ignore all background/borders
     force_draw = False  # draw even if completely under another state
 
@@ -65,6 +63,7 @@ class State(AnimationMixin, RenderMixin, ABC):
 
         self.client = client
         self.event_bus = client.event_bus
+        self.rect = Rect((0, 0), self._get_resolution())
 
     def __init_subclass__(cls: type[State], **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -94,9 +93,17 @@ class State(AnimationMixin, RenderMixin, ABC):
                 f"{cls.__name__}.__init__ must accept `client` as its second parameter"
             )
 
+    def _get_resolution(self) -> tuple[int, int]:
+        ctx = getattr(self.client, "context", None)
+        if ctx is not None:
+            res = getattr(ctx, "resolution", None)
+            if isinstance(res, tuple) and len(res) == 2:
+                return cast(tuple[int, int], res)
+        return (1, 1)
+
     @property
     def factor(self) -> int:
-        return self.client.context.scaling.factor
+        return self.client.context.scale
 
     def load_sprite(self, filename: str, **kwargs: Any) -> Sprite:
         """Load a sprite and add it to this state."""

@@ -9,7 +9,6 @@ from pygame.surface import Surface
 
 from tuxemon.graphics import ColorLike
 from tuxemon.platform.const.graphics import WHITE_COLOR
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.rumble.tools import RumbleParams
 from tuxemon.state.state import State
 
@@ -52,7 +51,7 @@ class FlashTransition(State):
         params = RumbleParams(target=-1, length=1.5)
         self.client.rumble_manager.rumble(params)
         self.color = color
-        self.transition_surface = Surface(SCREEN_SIZE)
+        self.transition_surface = Surface(self.client.context.resolution)
         self.transition_surface.fill(self.color)
 
     def resume(self) -> None:

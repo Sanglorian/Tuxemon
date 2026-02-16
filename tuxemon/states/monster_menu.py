@@ -21,7 +21,6 @@ from tuxemon.monster.filter import MonsterFilter
 from tuxemon.monster.monster import Monster
 from tuxemon.platform.const.graphics import BG_MONSTERS, TRANSPARENT_COLOR
 from tuxemon.platform.const.sizes import PARTY_LIMIT
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.sprite import Sprite
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.graphic_box import GraphicBox
@@ -113,8 +112,9 @@ class MonsterMenuState(Menu[Monster | None]):
         self.monster_portrait_display.animate_down()
 
         # position and animate the monster portrait
-        width = SCREEN_SIZE[0] // 2
-        height = SCREEN_SIZE[1] // int(PARTY_LIMIT * 1.5)
+        _width, _height = self.client.context.resolution
+        width = _width // 2
+        height = _height // int(PARTY_LIMIT * 1.5)
 
         # make 6 slots
         for _ in range(PARTY_LIMIT):
@@ -481,7 +481,7 @@ class MonsterStatsDisplay:
         )
 
         self.sprite.image = self.menu_state.shadow_text(text)
-        width, height = SCREEN_SIZE
+        width, height = self.menu_state.client.context.resolution
         self.sprite.rect.topleft = (width // 10, height // 2 + 50)
 
 
@@ -498,6 +498,7 @@ class MonsterSpriteDisplay:
     def __init__(self, menu_state: MonsterMenuState) -> None:
         self.menu_state = menu_state
         self.scaling = self.menu_state.client.context.scaling
+        self.resolution = self.menu_state.client.context.resolution
         self.sprite: Sprite | None = None
         self.monster: Monster | None = None
 
@@ -517,7 +518,7 @@ class MonsterSpriteDisplay:
             self.sprite = monster.get_sprite("menu", 0.25, 2.5)
             self.menu_state.sprites.add(self.sprite, layer=LAYER_MONSTER_ICONS)
 
-            width = SCREEN_SIZE[0]
+            width = self.resolution[0]
             margin = int(width * 0.005)
             self.sprite.rect.x = width - (self.sprite.rect.width + margin)
             self.sprite.rect.y = rect.y + self.scaling.scale_int(10)
@@ -536,6 +537,7 @@ class MonsterPortraitDisplay:
     def __init__(self, menu_state: MonsterMenuState) -> None:
         self.menu_state = menu_state
         self.scaling = self.menu_state.client.context.scaling
+        self.resolution = self.menu_state.client.context.resolution
         self.portrait = Sprite()
         self.portrait.rect = Rect(0, 0, 0, 0)
         self.menu_state.sprites.add(self.portrait, layer=LAYER_PORTRAIT)
@@ -551,7 +553,7 @@ class MonsterPortraitDisplay:
         image = image or Surface((1, 1), SRCALPHA)
 
         self.portrait.image = image
-        width, height = SCREEN_SIZE
+        width, height = self.resolution
         self.portrait.rect = image.get_rect(
             centerx=width // 4,
             top=height // 12,

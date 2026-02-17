@@ -61,6 +61,7 @@ from tuxemon.item.item import Item
 from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.monster.monster import Monster
+from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.state.state import State
@@ -1097,10 +1098,12 @@ class CombatState(CombatAnimations):
         assert user_sprite and target_sprite
 
         if direction == "both":
-            front_user = user.get_sprite(
+            u_renderer = MonsterRenderer(user, scale=self.factor)
+            front_user = u_renderer.get_sprite(
                 "front", midbottom=target_sprite.rect.midbottom
             )
-            back_target = target.get_sprite(
+            t_renderer = MonsterRenderer(user, scale=self.factor)
+            back_target = t_renderer.get_sprite(
                 "back", midbottom=user_sprite.rect.midbottom
             )
             self.sprites.add(front_user)
@@ -1114,7 +1117,8 @@ class CombatState(CombatAnimations):
             _, h_align = self.combat_zone.get_zone(user_sprite.rect)
             side = "front" if h_align is HorizontalAlignment.LEFT else "back"
 
-            front_user = user.get_sprite(
+            renderer = MonsterRenderer(user, scale=self.factor)
+            front_user = renderer.get_sprite(
                 side, midbottom=target_sprite.rect.midbottom
             )
             self.sprites.add(front_user)
@@ -1125,7 +1129,8 @@ class CombatState(CombatAnimations):
             _, h_align = self.combat_zone.get_zone(user_sprite.rect)
             side = "back" if h_align is HorizontalAlignment.LEFT else "front"
 
-            back_target = target.get_sprite(
+            renderer = MonsterRenderer(target, scale=self.factor)
+            back_target = renderer.get_sprite(
                 side, midbottom=user_sprite.rect.midbottom
             )
             self.sprites.add(back_target)

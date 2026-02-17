@@ -15,6 +15,7 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.quantity import QuantityAndCostMenu
 from tuxemon.monster.monster import Monster
+from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.session import local_session
 from tuxemon.states.shop_base import ShopMenuState
 
@@ -81,7 +82,8 @@ class ShopHealingMenuState(ShopMenuState[Monster]):
         self.update_background(self.config.background)
 
     def _get_asset_image(self, asset: MenuItem[Monster]) -> Surface | None:
-        image = asset.game_object.get_sprite("front")
+        renderer = MonsterRenderer(asset.game_object, scale=self.factor)
+        image = renderer.get_sprite("front")
         return image.image if image else None
 
     def _display_asset_description(self, asset: MenuItem[Monster]) -> None:

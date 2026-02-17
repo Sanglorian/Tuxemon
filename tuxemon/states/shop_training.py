@@ -16,6 +16,7 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.quantity import QuantityAndCostMenu
 from tuxemon.monster.monster import Monster
+from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.states.shop_base import ShopMenuState
 
 if TYPE_CHECKING:
@@ -79,7 +80,8 @@ class ShopTrainingMenuState(ShopMenuState[Monster]):
 
     def _get_asset_image(self, asset: MenuItem[Monster]) -> Surface | None:
         """Returns the front sprite image for a monster."""
-        image = asset.game_object.get_sprite("front")
+        renderer = MonsterRenderer(asset.game_object, scale=self.factor)
+        image = renderer.get_sprite("front")
         return image.image if image else None
 
     def _display_asset_description(self, asset: MenuItem[Monster]) -> None:

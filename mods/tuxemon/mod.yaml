@@ -16,6 +16,9 @@ authors:
   - beta
   - gamma
 
+startup_rules:
+  - mods.tuxemon.rules.MyStartupRule
+
 # The player's initial slugs
 starting_players: ["npc_red"]
 

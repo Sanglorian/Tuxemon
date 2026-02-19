@@ -230,11 +230,11 @@ class MenuItem(Generic[T], Sprite):
 
         self.update_image()
 
-    def update_image(self) -> None:
+    def update_image(self, source: Surface | None = None) -> None:
         """
         Update the image of the sprite, applying focus/enabled visual changes.
         """
-        super().update_image()
+        super().update_image(source=source)
 
         if self._image is None:
             return

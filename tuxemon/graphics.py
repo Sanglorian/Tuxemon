@@ -392,19 +392,13 @@ def create_animation(
 
 def scale_sprite(sprite: Sprite, ratio: float) -> None:
     """
-    Scale a sprite's image in place.
-
-    Parameters:
-        sprite: Sprite to rescale.
-        ratio: Amount to scale by.
+    Scale a sprite using the new logical-size pipeline.
     """
-    center = sprite.rect.center
-    sprite.rect.width = int(sprite.rect.width * ratio)
-    sprite.rect.height = int(sprite.rect.height * ratio)
-    sprite.rect.center = center
-    assert sprite._original_image
-    sprite._original_image = scale(sprite._original_image, sprite.rect.size)
-    sprite._needs_update = True
+    new_width = int(sprite.rect.width * ratio)
+    new_height = int(sprite.rect.height * ratio)
+
+    sprite.width = new_width
+    sprite.height = new_height
 
 
 def convert_alpha_to_colorkey(

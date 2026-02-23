@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import BoundingBox, Operator, SpatialCondition
 from tuxemon.event.conditions.button_pressed import ButtonPressedCondition
@@ -14,32 +15,53 @@ from tuxemon.session import Session
 @dataclass
 class ToUseTileCondition(EventCondition):
     """
-    Check if we are attempting to interact with a map condition tile.
+    Checks whether the player (or another character) is attempting to
+    interact with the tile directly in front of them.
 
     Script usage:
         .. code-block::
 
-            is to_use_tile
+            is to_use_tile <character>,<value>
+
+    Script parameters:
+        character: The character performing the interaction. Typically
+            "player", but may also be an NPC slug (e.g. "npc_maple").
+        value: Optional value passed through to the underlying
+            CharFacingTileCondition. May be used to restrict which tile
+            types can be interacted with, or left empty for general use.
+
+    Behavior:
+        - First checks whether the character is facing a valid tile using
+          CharFacingTileCondition.
+        - Then checks whether the INTERACT button was pressed.
+        - Returns True only if both conditions are satisfied.
+
+    Dataclass fields:
+        character: str
+            The character whose facing direction and tile interaction
+            should be evaluated.
+        value: str | None
+            Optional tile-matching value forwarded to
+            CharFacingTileCondition.
     """
 
-    name = "to_use_tile"
+    character: str
+    value: str | None = None
+
+    name: ClassVar[str] = "to_use_tile"
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        character_facing_tile = CharFacingTileCondition().test(
-            session,
-            condition,
+        char_facing = CharFacingTileCondition(self.character, self.value).test(
+            session, condition
         )
-        box = BoundingBox(x=0, y=0, width=0, height=0)
-        button_pressed = ButtonPressedCondition().test(
+        button_pressed = ButtonPressedCondition("INTERACT").test(
             session,
             SpatialCondition(
                 type="button_pressed",
-                parameters=[
-                    "INTERACT",
-                ],
+                parameters=["INTERACT"],
                 operator=Operator.IS,
-                box=box,
+                box=BoundingBox(x=0, y=0, width=0, height=0),
                 name="",
             ),
         )
-        return character_facing_tile and button_pressed
+        return char_facing and button_pressed

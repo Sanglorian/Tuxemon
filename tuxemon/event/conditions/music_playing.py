@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import MusicStatus, SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -23,11 +24,10 @@ class MusicPlayingCondition(EventCondition):
         music_filename: Name of the music.
     """
 
-    name = "music_playing"
+    name: ClassVar[str] = "music_playing"
+    music_filename: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        song = condition.parameters[0]
-
         combat_states = {"FlashTransition", "CombatState"}
         if any(
             state in combat_states
@@ -39,6 +39,7 @@ class MusicPlayingCondition(EventCondition):
             return True
         else:
             return (
-                session.client.current_music.current_song == song
+                session.client.current_music.current_song
+                == self.music_filename
                 and session.client.current_music.is_playing()
             )

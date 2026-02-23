@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -28,27 +29,29 @@ class PartyInfectedCondition(EventCondition):
         value: all, some or none.
     """
 
-    name = "party_infected"
+    name: ClassVar[str] = "party_infected"
+    character: str
+    plague_slug: str
+    value: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        _character, _plague_slug, _value = condition.parameters[:3]
-        character = session.get_npc(_character)
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
 
         plague = [
             mon
             for mon in character.monsters
-            if mon.plague.has_plague(_plague_slug)
-            and mon.plague.is_infected_with(_plague_slug)
+            if mon.plague.has_plague(self.plague_slug)
+            and mon.plague.is_infected_with(self.plague_slug)
         ]
 
-        if _value == "all":
+        if self.value == "all":
             return len(plague) == len(character.monsters)
-        elif _value == "some":
+        elif self.value == "some":
             return len(character.monsters) > len(plague) > 0
-        elif _value == "none":
+        elif self.value == "none":
             return len(plague) == 0
         else:
-            raise ValueError(f"{_value} must be 'all', 'some' or 'none'")
+            raise ValueError(f"{self.value} must be 'all', 'some' or 'none'")

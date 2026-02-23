@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -52,28 +53,28 @@ class CelestialIsCondition(EventCondition):
             is celestial_is sun,equals,high
     """
 
-    name = "celestial_is"
+    name: ClassVar[str] = "celestial_is"
+    body: str
+    operation: str
+    phase: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        body: str = condition.parameters[0]
-        operation: str = condition.parameters[1]
-        expected_phase: str = condition.parameters[2]
 
         try:
-            current_phase = session.celestial.get_phase(body)
+            current_phase = session.celestial.get_phase(self.body)
         except KeyError:
-            logger.error(f"Unknown celestial body '{body}'")
+            logger.error(f"Unknown celestial body '{self.body}'")
             return False
 
         # Only string comparisons make sense for celestial phases
-        if operation in ("equals", "=="):
-            return current_phase == expected_phase
+        if self.operation in ("equals", "=="):
+            return current_phase == self.phase
 
-        if operation in ("not_equals", "!="):
-            return current_phase != expected_phase
+        if self.operation in ("not_equals", "!="):
+            return current_phase != self.phase
 
         logger.error(
-            f"Operation '{operation}' not valid for celestial phases "
+            f"Operation '{self.operation}' not valid for celestial phases "
             f"(only equals / not_equals supported)"
         )
         return False

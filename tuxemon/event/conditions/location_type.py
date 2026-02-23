@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -33,16 +34,19 @@ class LocationTypeCondition(EventCondition):
     any of the specified location types.
     """
 
-    name = "location_type"
+    name: ClassVar[str] = "location_type"
+    location: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
         client = session.client
-        location = condition.parameters[0]
-
         locs = (
-            location.split(":")
-            if ":" in location
-            else (list(MAP_TYPES.keys()) if location == "all" else [location])
+            self.location.split(":")
+            if ":" in self.location
+            else (
+                list(MAP_TYPES.keys())
+                if self.location == "all"
+                else [self.location]
+            )
         )
 
         return client.map_manager.map_type.name in locs

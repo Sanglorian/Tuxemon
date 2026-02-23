@@ -2,7 +2,8 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -12,10 +13,8 @@ from tuxemon.session import Session
 @dataclass
 class VariableSetCondition(EventCondition):
     """
-    Checks if one or more player game variables exist and optionally match
-    specified values.
-
-    If a variable does not exist, the condition returns `False`.
+    Checks whether one or more player game variables exist and optionally
+    match specific values.
 
     Script usage:
         .. code-block::
@@ -23,22 +22,38 @@ class VariableSetCondition(EventCondition):
             is variable_set <variable>[:value],[<variable>[:value] ...]
 
     Script parameters:
-        variable: The variable to check.
-        value: Optional value to check against. If omitted, the condition
-            only checks for the variable's existence.
-
-    The condition returns `True` if all specified variables exist and
-    match their given values (if provided). Otherwise, it returns `False`.
+        variable: The first variable to check.
+        value: Optional value for the first variable. Additional variables
+            are read from condition.parameters.
     """
 
-    name = "variable_set"
+    name: ClassVar[str] = "variable_set"
+    required_vars: list[tuple[str, str | None]] = field(
+        default_factory=list, init=False
+    )
+
+    def __init__(self, *args: str):
+        self.required_vars = []
+
+        for arg in args:
+            if ":" in arg:
+                key, _, val = arg.partition(":")
+                self.required_vars.append((key, val if val != "" else None))
+            else:
+                self.required_vars.append((arg, None))
+
+        self.__post_init__()
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
         player = session.player
 
-        return all(
-            player.game_variables.has(key)
-            and (not value or player.game_variables.get(key) == value)
-            for part in condition.parameters
-            for key, _, value in [part.partition(":")]
-        )
+        for key, expected in self.required_vars:
+            if not player.game_variables.has(key):
+                return False
+            if (
+                expected is not None
+                and player.game_variables.get(key) != expected
+            ):
+                return False
+
+        return True

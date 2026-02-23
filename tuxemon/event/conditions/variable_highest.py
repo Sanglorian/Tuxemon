@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -30,15 +31,16 @@ class VariableHighestCondition(EventCondition):
         is variable_highest jimmy,arthur:jimmy:clara
     """
 
-    name = "variable_highest"
+    name: ClassVar[str] = "variable_highest"
+    key_to_check: str
+    keys_to_check: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
         game_variables = session.player.game_variables
-        key_to_check, _keys_to_check = condition.parameters
-        keys_to_check = _keys_to_check.split(":")
+        keys_to_check = self.keys_to_check.split(":")
 
-        if not game_variables.has(key_to_check):
-            logger.error(f"{key_to_check} is not in the game variables.")
+        if not game_variables.has(self.key_to_check):
+            logger.error(f"{self.key_to_check} is not in the game variables.")
             return False
 
         highest_value, highest_keys = game_variables.find_highest(
@@ -50,4 +52,4 @@ class VariableHighestCondition(EventCondition):
                 f"Multiple highest keys found: {highest_keys} with value {highest_value}"
             )
 
-        return key_to_check == highest_keys[0] if highest_keys else False
+        return self.key_to_check == highest_keys[0] if highest_keys else False

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -25,6 +26,7 @@ class FactionReputationCondition(EventCondition):
 
     Script parameters:
         character: Either "player" or npc slug name (e.g. "npc_maple").
+        faction: Faction slug.
         operator: Numeric comparison operator. Accepted values are "less_than",
             "less_or_equal", "greater_than", "greater_or_equal", "equals"
             and "not_equals".
@@ -32,32 +34,28 @@ class FactionReputationCondition(EventCondition):
             Will be parsed and used as a numeric threshold in comparison.
     """
 
-    name = "faction_reputation"
+    name: ClassVar[str] = "faction_reputation"
+    character: str
+    faction: str
+    operator: str
+    threshold: int
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        if len(condition.parameters) != 4:
-            return False
-
-        character_slug, faction_slug, operator, threshold_raw = (
-            condition.parameters
-        )
-        threshold = int(threshold_raw)
-
-        char = session.get_npc(character_slug)
+        char = session.get_npc(self.character)
         if not char:
             logger.error(
-                f"[Condition] Character '{character_slug}' not found."
+                f"[Condition] Character '{self.character}' not found."
             )
             return False
 
         faction_manager = session.world.faction_manager
-        faction = faction_manager.get(faction_slug)
+        faction = faction_manager.get(self.faction)
         if not faction:
             return False
 
         rep = faction.get_reputation(char.slug)
-        comparison = compare(operator, rep, threshold)
+        comparison = compare(self.operator, rep, self.threshold)
         logger.debug(
-            f"[Condition] {char.slug}'s rep with {faction_slug}: {rep} vs {operator} {threshold} = {comparison}"
+            f"[Condition] {char.slug}'s rep with {self.faction}: {rep} vs {self.operator} {self.threshold} = {comparison}"
         )
         return comparison

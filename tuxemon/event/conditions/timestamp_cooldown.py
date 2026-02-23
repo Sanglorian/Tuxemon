@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -27,20 +28,21 @@ class TimestampCooldownCondition(EventCondition):
         variable: The game variable where the cooldown timestamp is stored.
     """
 
-    name = "timestamp_cooldown"
+    name: ClassVar[str] = "timestamp_cooldown"
+    timeframe: float
+    variable: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        timeframe_in_seconds = int(condition.parameters[0])
-        variable = condition.parameters[1]
         player = session.player
-
         current_timestamp = time.time()
 
-        if player.game_variables.has(variable):
-            cooldown_timestamp = float(player.game_variables.get(variable))
+        if player.game_variables.has(self.variable):
+            cooldown_timestamp = float(
+                player.game_variables.get(self.variable)
+            )
             if current_timestamp < cooldown_timestamp:
                 return False  # Event is still on cooldown.
 
-        new_cooldown_timestamp = current_timestamp + timeframe_in_seconds
-        player.game_variables.set(variable, new_cooldown_timestamp)
+        new_cooldown_timestamp = current_timestamp + self.timeframe
+        player.game_variables.set(self.variable, new_cooldown_timestamp)
         return True

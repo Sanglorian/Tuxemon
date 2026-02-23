@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -28,14 +29,16 @@ class CharFacingCharCondition(EventCondition):
         character2: Either "player" or character slug name (e.g. "npc_maple").
     """
 
-    name = "char_facing_char"
+    name: ClassVar[str] = "char_facing_char"
+    character1: str
+    character2: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
         client = session.client
         npc_location = None
 
-        character1 = session.get_npc(condition.parameters[0])
-        character2 = session.get_npc(condition.parameters[1])
+        character1 = session.get_npc(self.character1)
+        character2 = session.get_npc(self.character2)
         if character2 is None or character1 is None:
             return False
 

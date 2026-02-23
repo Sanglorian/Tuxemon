@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -28,16 +29,13 @@ class VariableIsCondition(EventCondition):
         value2: Either a variable or a number.
     """
 
-    name = "variable_is"
+    name: ClassVar[str] = "variable_is"
+    value1: str
+    operation: str
+    value2: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        # Read the parameters
         variables = session.player.game_variables
-        operand1 = number_or_variable(
-            variables.get_state(), condition.parameters[0]
-        )
-        operation = condition.parameters[1]
-        operand2 = number_or_variable(
-            variables.get_state(), condition.parameters[2]
-        )
-        return compare(operation, operand1, operand2)
+        operand1 = number_or_variable(variables.get_state(), self.value1)
+        operand2 = number_or_variable(variables.get_state(), self.value2)
+        return compare(self.operation, operand1, operand2)

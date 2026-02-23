@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -31,12 +32,14 @@ class CharFacingTileCondition(EventCondition):
         value: value (eg surfable) inside the tileset.
     """
 
-    name = "char_facing_tile"
+    name: ClassVar[str] = "char_facing_tile"
+    character: str
+    value: str | None = None
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        character = session.get_npc(condition.parameters[0])
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{condition.parameters[0]} not found")
+            logger.error(f"{self.character} not found")
             return False
 
         tiles = [
@@ -49,15 +52,14 @@ class CharFacingTileCondition(EventCondition):
         npc_tiles = get_coords(character.tile_pos, client.map_manager.map_size)
 
         # check if the NPC is facing a specific set of tiles
-        if len(condition.parameters) > 1:
-            value = condition.parameters[1]
-            if value in SURFACE_KEYS:
+        if self.value:
+            if self.value in SURFACE_KEYS:
                 label = client.collision_manager.get_all_tile_properties(
-                    client.map_manager.surface_map, value
+                    client.map_manager.surface_map, self.value
                 )
             else:
                 label = client.collision_manager.check_collision_zones(
-                    client.map_manager.collision_map, value
+                    client.map_manager.collision_map, self.value
                 )
             tiles = list(set(npc_tiles).intersection(label))
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -28,14 +29,15 @@ class CharAtPositionCondition(EventCondition):
         tile_pos_y: Y position to set the character to.
     """
 
-    name = "char_at_position"
+    name: ClassVar[str] = "char_at_position"
+    character: str
+    tile_pos_x: int
+    tile_pos_y: int
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        character = session.get_npc(condition.parameters[0])
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{condition.parameters[0]} not found")
+            logger.error(f"{self.character} not found")
             return False
-        tile_pos_x = int(condition.parameters[1])
-        tile_pos_y = int(condition.parameters[2])
-        tile_pos = (tile_pos_x, tile_pos_y)
+        tile_pos = (self.tile_pos_x, self.tile_pos_y)
         return character.tile_pos == tile_pos

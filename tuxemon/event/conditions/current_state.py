@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -21,16 +22,17 @@ class CurrentStateCondition(EventCondition):
             is current_state <state>
 
     Script parameters:
-        state: Either "CombatState", "DialogState", etc
+        states: Either "CombatState", "DialogState", etc
 
     eg: "is current_state CombatState"
     eg: "is current_state CombatState:DialogState"
     """
 
-    name = "current_state"
+    name: ClassVar[str] = "current_state"
+    states: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
         current_state = session.client.current_state
         assert current_state
-        states = condition.parameters[0].split(":")
+        states = self.states.split(":")
         return current_state.name in states

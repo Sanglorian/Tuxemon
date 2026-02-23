@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -31,12 +32,14 @@ class PartySizeCondition(EventCondition):
         value: The value to compare the party size with.
     """
 
-    name = "party_size"
+    name: ClassVar[str] = "party_size"
+    character: str
+    operator: str
+    value: int
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        _character, _operator, _value = condition.parameters[:3]
-        character = session.get_npc(_character)
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
-        return compare(_operator, len(character.monsters), int(_value))
+        return compare(self.operator, len(character.monsters), self.value)

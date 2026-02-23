@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -32,28 +33,30 @@ class KennelCondition(EventCondition):
             "visible") or existence of it ("exist").
     """
 
-    name = "kennel"
+    name: ClassVar[str] = "kennel"
+    character: str
+    kennel: str
+    option: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        _character, kennel_name, option = condition.parameters[:3]
-        character = session.get_npc(_character)
+        character = session.get_npc(self.character)
 
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
 
-        if option == "visible":
+        if self.option == "visible":
             return character.monster_boxes.has_box(
-                kennel_name, "monster"
+                self.kennel, "monster"
             ) and not character.monster_boxes.is_box_hidden(
-                kennel_name, "monster"
+                self.kennel, "monster"
             )
-        elif option == "hidden":
+        elif self.option == "hidden":
             return character.monster_boxes.has_box(
-                kennel_name, "monster"
-            ) and character.monster_boxes.is_box_hidden(kennel_name, "monster")
-        elif option == "exist":
-            return character.monster_boxes.has_box(kennel_name, "monster")
+                self.kennel, "monster"
+            ) and character.monster_boxes.is_box_hidden(self.kennel, "monster")
+        elif self.option == "exist":
+            return character.monster_boxes.has_box(self.kennel, "monster")
         else:
-            logger.error(f"The option {option} must be among {OPTIONS}")
+            logger.error(f"The option {self.option} must be among {OPTIONS}")
             return False

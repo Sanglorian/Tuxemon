@@ -2,6 +2,8 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+from typing import ClassVar
+
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.platform.const.intentions import constants
@@ -21,10 +23,11 @@ class ButtonComboCondition(EventCondition):
         buttons: A sequence of button/intention keys (E.g. "up:down:interact").
     """
 
-    name = "button_combo"
+    name: ClassVar[str] = "button_combo"
+    buttons: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        _buttons = condition.parameters[0].split(":")
+        _buttons = self.buttons.split(":")
         ids: list[int] = []
         for _button in _buttons:
             try:

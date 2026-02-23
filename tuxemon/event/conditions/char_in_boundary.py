@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -27,22 +28,21 @@ class CharInBoundaryCondition(EventCondition):
         boundary_name: The name of the boundary to check (e.g., "safe_zone").
     """
 
-    name = "char_in_boundary"
+    name: ClassVar[str] = "char_in_boundary"
     character_name: str
     boundary_name: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        character_name, boundary_name = condition.parameters
-        character = session.get_npc(character_name)
+        character = session.get_npc(self.character_name)
         if character is None:
-            logger.error(f"Character '{character_name}' not found.")
+            logger.error(f"Character '{self.character_name}' not found.")
             return False
 
         checker = session.client.boundary
         try:
-            boundary = checker.boundaries[boundary_name]
+            boundary = checker.boundaries[self.boundary_name]
         except KeyError:
-            logger.error(f"Boundary '{boundary_name}' not found.")
+            logger.error(f"Boundary '{self.boundary_name}' not found.")
             return False
 
         return boundary.is_within(character.tile_pos)

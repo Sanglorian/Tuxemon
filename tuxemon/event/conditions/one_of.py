@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -29,20 +30,21 @@ class OneOfCondition(EventCondition):
     eg. "is one_of name_variable,option1:option2:option3"
     """
 
-    name = "one_of"
+    name: ClassVar[str] = "one_of"
+    variable: str
+    values: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
         player = session.player
-        key = condition.parameters[0]
-        values = condition.parameters[1].split(":")
+        values = self.values.split(":")
 
-        if not player.game_variables.has(key):
+        if not player.game_variables.has(self.variable):
             return False
 
         result = [
             value
             for value in values
-            if player.game_variables.get(key) == value
+            if player.game_variables.get(self.variable) == value
         ]
 
         return bool(result)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.conditions.common import CommonCondition
@@ -31,12 +32,16 @@ class CheckCharParameterCondition(EventCondition):
     eg. "player,name,alpha" -> is the player named alpha? true/false
     """
 
-    name = "check_char_parameter"
+    name: ClassVar[str] = "check_char_parameter"
+    character: str
+    param: str
+    value: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        _character, _parameter, _value = condition.parameters[:3]
-        character = session.get_npc(_character)
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
-        return CommonCondition.check_parameter(character, _parameter, _value)
+        return CommonCondition.check_parameter(
+            character, self.param, self.value
+        )

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -27,13 +28,14 @@ class TrackerCondition(EventCondition):
         map_name: The name of the map to validate against.
     """
 
-    name = "tracker"
+    name: ClassVar[str] = "tracker"
+    character: str
+    map_name: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        _character, _map_name = condition.parameters
-        character = session.get_npc(_character)
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
 
-        return character.tracker.get_location(_map_name) is not None
+        return character.tracker.get_location(self.map_name) is not None

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -23,7 +24,8 @@ class CharExistsCondition(EventCondition):
         character: Either "player" or character slug name (e.g. "npc_maple").
     """
 
-    name = "char_exists"
+    name: ClassVar[str] = "char_exists"
+    character: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        return session.get_npc(condition.parameters[0]) is not None
+        return session.get_npc(self.character) is not None

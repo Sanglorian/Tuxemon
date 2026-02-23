@@ -16,6 +16,7 @@ from tuxemon.constants.paths import (
 from tuxemon.db import Operator, SpatialCondition
 from tuxemon.plugin import PluginManager
 from tuxemon.session import Session
+from tuxemon.tools import cast_dataclass_parameters
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class EventCondition:
     is_expected: bool = field(default=False, init=False)
 
     def __post_init__(self) -> None:
-        pass
+        cast_dataclass_parameters(self)
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
         """
@@ -89,13 +90,13 @@ class ConditionManager:
             )
             return None
 
-        instance = condition_class()
-        # Instantiate with parameters (positional unpacking)
-        # try:
-        #    instance = condition_class(*cond_data.parameters)
-        # except TypeError as e:
-        #    logger.error(f"Failed to instantiate {cond_data.type} with parameters {cond_data.parameters}: {e}")
-        #    return None
+        try:
+            instance = condition_class(*cond_data.parameters)
+        except TypeError as e:
+            logger.error(
+                f"Failed to instantiate {cond_data.type} with parameters {cond_data.parameters}: {e}"
+            )
+            return None
 
         # Set expected state
         instance.is_expected = cond_data.operator == Operator.IS

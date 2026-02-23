@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -47,35 +48,31 @@ class BattleOutcomeCountCondition(EventCondition):
         Checks if the 'player' has won at least 2 times against 'npc_maple'.
     """
 
-    name = "battle_outcome_count"
+    name: ClassVar[str] = "battle_outcome_count"
+    fighter: str
+    outcome: str
+    opponent: str
+    required_count: int
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        try:
-            fighter, outcome, opponent, count_str = condition.parameters[:4]
-            required_count = int(count_str)
-        except (ValueError, IndexError) as e:
-            logger.error(
-                f"Invalid parameters for battle_outcome_count: {condition.parameters}"
-            )
+
+        if self.outcome not in {"won", "lost", "draw"}:
+            logger.error(f"Invalid outcome '{self.outcome}'")
             return False
 
-        if outcome not in {"won", "lost", "draw"}:
-            logger.error(f"Invalid outcome '{outcome}'")
-            return False
-
-        character = session.get_npc(fighter)
+        character = session.get_npc(self.fighter)
         if character is None or not character.battle_handler:
             logger.error(
-                f"Character '{fighter}' not found or has no battle handler"
+                f"Character '{self.fighter}' not found or has no battle handler"
             )
             return False
 
         actual_count = sum(
             1
             for battle in character.battle_handler.get_battles()
-            if battle.fighter == fighter
-            and battle.opponent == opponent
-            and battle.outcome.value == outcome
+            if battle.fighter == self.fighter
+            and battle.opponent == self.opponent
+            and battle.outcome.value == self.outcome
         )
 
-        return actual_count >= required_count
+        return actual_count >= self.required_count

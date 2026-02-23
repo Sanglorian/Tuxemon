@@ -2,6 +2,8 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+from typing import ClassVar
+
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.platform.const.intentions import constants
@@ -26,16 +28,18 @@ class ButtonCountCondition(EventCondition):
         amount: The number of times the button was pressed.
     """
 
-    name = "button_count"
+    name: ClassVar[str] = "button_count"
+    button_id: str
+    operator: str
+    amount: int
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        button_id, operator, amount = condition.parameters[:3]
         try:
-            button = constants[button_id.upper()]
+            button = constants[self.button_id.upper()]
         except KeyError:
             raise ValueError("Constant not found")
         counter = (
             session.client.input_manager.input_history.count_button_clicks()
         )
         output = counter.get(button, 0)
-        return compare(operator, output, int(amount))
+        return compare(self.operator, output, self.amount)

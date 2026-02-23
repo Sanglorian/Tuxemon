@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -34,28 +35,21 @@ class MonsterFlairCondition(EventCondition):
         - Returns False if no match is found or the character is invalid.
     """
 
-    name = "monster_flair"
+    name: ClassVar[str] = "monster_flair"
+    character: str
+    category: str
+    flair_name: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        if len(condition.parameters) < 3:
-            logger.error(
-                "monster_flair condition requires 3 parameters: character, category, name"
-            )
-            return False
-
-        _character = condition.parameters[0]
-        category = condition.parameters[1]
-        name = condition.parameters[2]
-
-        character = session.get_npc(_character)
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
 
         for monster in character.party.monsters:
             if (
-                monster.flairs.get(category)
-                and monster.flairs[category].slug == name
+                monster.flairs.get(self.category)
+                and monster.flairs[self.category].slug == self.flair_name
             ):
                 return True
         return False

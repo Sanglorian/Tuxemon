@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.boundary import MapConditionBoundary
 from tuxemon.db import SpatialCondition
@@ -27,12 +28,13 @@ class CharAtCondition(EventCondition):
         character: Either "player" or character slug name (e.g. "npc_maple").
     """
 
-    name = "char_at"
+    name: ClassVar[str] = "char_at"
+    character: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        character = session.get_npc(condition.parameters[0])
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{condition.parameters[0]} not found")
+            logger.error(f"{self.character} not found")
             return False
 
         map_boundary = MapConditionBoundary(condition)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -29,15 +30,16 @@ class BillExistsCondition(EventCondition):
     eg. "is bill_exists player,my_bill"
     """
 
-    name = "bill_exists"
+    name: ClassVar[str] = "bill_exists"
+    character: str
+    bill_slug: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        character_name, bill_slug = condition.parameters[:2]
-        character = session.get_npc(character_name)
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"Character '{character_name}' not found")
+            logger.error(f"Character '{self.character}' not found")
             return False
 
         money_manager = character.money_controller.money_manager
-        bill = money_manager.get_bill(bill_slug)
+        bill = money_manager.get_bill(self.bill_slug)
         return bill is not None

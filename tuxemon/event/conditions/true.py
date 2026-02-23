@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -20,7 +21,7 @@ class TrueCondition(EventCondition):
             is true
     """
 
-    name = "true"
+    name: ClassVar[str] = "true"
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
         return True

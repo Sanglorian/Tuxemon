@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -32,18 +33,20 @@ class HasKennelCondition(EventCondition):
         value: The value to compare the party with.
     """
 
-    name = "has_kennel"
+    name: ClassVar[str] = "has_kennel"
+    character: str
+    kennel: str
+    operator: str
+    value: int
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        _character, kennel_name, check, _number = condition.parameters[:4]
-        number = int(_number)
-        character = session.get_npc(_character)
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
-        if not character.monster_boxes.has_box(kennel_name, "monster"):
-            raise ValueError(f"{kennel_name} doesn't exist.")
+        if not character.monster_boxes.has_box(self.kennel, "monster"):
+            raise ValueError(f"{self.kennel} doesn't exist.")
         party_size = character.monster_boxes.get_box_size(
-            kennel_name, "monster"
+            self.kennel, "monster"
         )
-        return compare(check, party_size, number)
+        return compare(self.operator, party_size, self.value)

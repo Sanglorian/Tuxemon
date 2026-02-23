@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -27,13 +28,14 @@ class CharFacingCondition(EventCondition):
         direction: One of "up", "down", "left" or "right".
     """
 
-    name = "char_facing"
+    name: ClassVar[str] = "char_facing"
+    character: str
+    direction: str
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        character = session.get_npc(condition.parameters[0])
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{condition.parameters[0]} not found")
+            logger.error(f"{self.character} not found")
             return False
-        facing = condition.parameters[1]
 
-        return character.facing == facing
+        return character.facing == self.direction

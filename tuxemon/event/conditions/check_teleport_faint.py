@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -31,23 +32,21 @@ class CheckTeleportFaintCondition(EventCondition):
         y: The y-coordinate to validate against.
     """
 
-    name = "check_teleport_faint"
+    name: ClassVar[str] = "check_teleport_faint"
+    character: str
+    map_name: str | None = None
+    x_coord: int | None = None
+    y_coord: int | None = None
 
     def test(self, session: Session, condition: SpatialCondition) -> bool:
-        _character = condition.parameters[0]
-        character = session.get_npc(_character)
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
 
-        if len(condition.parameters) == 1:
-            return character.teleport_faint.is_default()
-        elif len(condition.parameters) > 1:
-            _map_name = condition.parameters[1]
-            _x = condition.parameters[2]
-            _y = condition.parameters[3]
+        if self.map_name and self.x_coord and self.y_coord:
             return character.teleport_faint.is_valid(
-                map_name=_map_name, x=int(_x), y=int(_y)
+                map_name=self.map_name, x=self.x_coord, y=self.y_coord
             )
         else:
-            return False
+            return character.teleport_faint.is_default()

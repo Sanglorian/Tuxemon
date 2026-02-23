@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -30,7 +29,7 @@ class CharHealedCondition(EventCondition):
     name: ClassVar[str] = "char_healed"
     character: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")

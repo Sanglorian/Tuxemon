@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -58,7 +57,7 @@ class CelestialIsCondition(EventCondition):
     operation: str
     phase: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
 
         try:
             current_phase = session.celestial.get_phase(self.body)

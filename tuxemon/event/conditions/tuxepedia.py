@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from tuxemon.database.runtime import db
-from tuxemon.db import MonsterModel, SpatialCondition
+from tuxemon.db import MonsterModel
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 from tuxemon.tools import compare
@@ -38,7 +38,7 @@ class TuxepediaCondition(EventCondition):
     percentage: float
     total: int | None = None
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         if not lookup_cache:
             _lookup_monsters()
 

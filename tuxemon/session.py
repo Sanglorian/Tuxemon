@@ -16,6 +16,7 @@ from tuxemon.time_handler import TimeHandler
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
+    from tuxemon.db import BoundingBox
     from tuxemon.entity.npc import NPC
     from tuxemon.entity.player import Player
     from tuxemon.save_state import SaveData
@@ -40,6 +41,7 @@ class AbstractSession(ABC, Generic[ClientType]):
         self._start_time: datetime = datetime.now()
         self._start_timestamp: float = time.time()
         self._total_playtime: float = 0.0
+        self.current_condition_box: BoundingBox | None = None
 
         self._client: ClientType | None = None
         self._world: WorldState | None = None

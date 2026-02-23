@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from tuxemon.camera.camera import unproject
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 from tuxemon.tools import compare
@@ -34,7 +33,7 @@ class CameraAtCondition(EventCondition):
     pos_x: int
     pos_y: int
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         map_size = session.client.map_manager.map_size
         camera = session.client.camera_manager.get_active_camera()
         if camera is None:

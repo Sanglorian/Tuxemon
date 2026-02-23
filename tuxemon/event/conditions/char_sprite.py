@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -32,7 +31,7 @@ class CharSpriteCondition(EventCondition):
     character: str
     sprite: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         target = session.get_npc(self.character)
         if not target:
             return False

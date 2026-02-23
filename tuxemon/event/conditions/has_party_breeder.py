@@ -6,7 +6,7 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import EvolutionStage, GenderType, SpatialCondition
+from tuxemon.db import EvolutionStage, GenderType
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -31,7 +31,7 @@ class HasPartyBreederCondition(EventCondition):
     name: ClassVar[str] = "has_party_breeder"
     character: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")

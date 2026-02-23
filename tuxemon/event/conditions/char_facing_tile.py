@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.map.map import get_coords, get_direction
 from tuxemon.platform.const.sizes import SURFACE_KEYS
@@ -36,16 +35,20 @@ class CharFacingTileCondition(EventCondition):
     character: str
     value: str | None = None
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return False
 
+        current_box = session.current_condition_box
+        if current_box is None:
+            return False
+
         tiles = [
-            (condition.box.x + w, condition.box.y + h)
-            for w in range(0, condition.box.width)
-            for h in range(0, condition.box.height)
+            (current_box.x + w, current_box.y + h)
+            for w in range(0, current_box.width)
+            for h in range(0, current_box.height)
         ]
         # get all the coordinates around the npc
         client = session.client

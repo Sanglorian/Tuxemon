@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import MusicStatus, SpatialCondition
+from tuxemon.db import MusicStatus
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -27,7 +27,7 @@ class MusicPlayingCondition(EventCondition):
     name: ClassVar[str] = "music_playing"
     music_filename: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         combat_states = {"FlashTransition", "CombatState"}
         if any(
             state in combat_states

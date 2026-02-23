@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 from tuxemon.tools import compare
@@ -39,7 +38,7 @@ class HasItemCondition(EventCondition):
     operator: str | None = None
     quantity: int | None = None
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         def op(itm_qty: int, op: str, qty: int) -> bool:
             return compare(op, itm_qty, qty)
 

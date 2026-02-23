@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.platform.const.intentions import constants
 from tuxemon.session import Session
@@ -33,7 +32,7 @@ class ButtonCountCondition(EventCondition):
     operator: str
     amount: int
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         try:
             button = constants[self.button_id.upper()]
         except KeyError:

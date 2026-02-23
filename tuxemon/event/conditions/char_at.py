@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from tuxemon.boundary import MapConditionBoundary
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -31,11 +30,14 @@ class CharAtCondition(EventCondition):
     name: ClassVar[str] = "char_at"
     character: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return False
 
-        map_boundary = MapConditionBoundary(condition)
+        if session.current_condition_box is None:
+            return False
+
+        map_boundary = MapConditionBoundary(session.current_condition_box)
         return map_boundary.is_within(character.tile_pos)

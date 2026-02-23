@@ -29,21 +29,8 @@ class EventCondition:
     def __post_init__(self) -> None:
         cast_dataclass_parameters(self)
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        """
-        Return ``True`` if the condition is satisfied, or ``False`` if not.
-
-        Parameters:
-            session: Object containing the session information.
-            condition: Condition defined in the map.
-
-        Returns:
-            Value of the condition.
-        """
-        return True
-
-    @property
-    def done(self) -> bool:
+    def test(self, session: Session) -> bool:
+        """Evaluate the condition and return True if it is satisfied."""
         return True
 
 
@@ -68,20 +55,7 @@ class ConditionManager:
     def get_condition(
         self, cond_data: SpatialCondition
     ) -> EventCondition | None:
-        """
-        Get a condition that is loaded into the engine.
-
-        A new instance will be returned each time.
-
-        Return ``None`` if condition is not loaded.
-
-        Parameters:
-            name: Name of the condition.
-
-        Returns:
-            New instance of the condition if that condition is loaded.
-            ``None`` otherwise.
-        """
+        """Instantiate a condition from map data, or return None if unavailable."""
         try:
             condition_class = self.conditions[cond_data.type]
         except KeyError:

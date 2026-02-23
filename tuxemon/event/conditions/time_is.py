@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 from tuxemon.time_handler import TimeSnapshot
@@ -56,7 +55,7 @@ class TimeIsCondition(EventCondition):
     operation: str
     value: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         snapshot = session.time.get_time_variables()
 
         if self.property_name == "date":

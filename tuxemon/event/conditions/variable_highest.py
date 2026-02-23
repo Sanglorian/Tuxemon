@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -35,7 +34,7 @@ class VariableHighestCondition(EventCondition):
     key_to_check: str
     keys_to_check: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         game_variables = session.player.game_variables
         keys_to_check = self.keys_to_check.split(":")
 

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.platform.const.intentions import constants
 from tuxemon.session import Session
@@ -26,7 +25,7 @@ class ButtonComboCondition(EventCondition):
     name: ClassVar[str] = "button_combo"
     buttons: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         _buttons = self.buttons.split(":")
         ids: list[int] = []
         for _button in _buttons:

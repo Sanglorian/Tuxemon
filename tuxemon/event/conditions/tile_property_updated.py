@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -33,7 +32,7 @@ class TilePropertyUpdatedCondition(EventCondition):
     label: str
     moverate: float
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         return session.client.collision_manager.all_tiles_modified(
             self.label, self.moverate
         )

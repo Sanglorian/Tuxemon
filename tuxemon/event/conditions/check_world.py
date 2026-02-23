@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.graphics import string_to_colorlike
 from tuxemon.session import Session
@@ -43,7 +42,7 @@ class CheckWorldCondition(EventCondition):
     param: str
     value: str | None = None
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         if self.param == "layer":
             if self.value is None:
                 return True

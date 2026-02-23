@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -54,7 +53,7 @@ class BattleOutcomeCountCondition(EventCondition):
     opponent: str
     required_count: int
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
 
         if self.outcome not in {"won", "lost", "draw"}:
             logger.error(f"Invalid outcome '{self.outcome}'")

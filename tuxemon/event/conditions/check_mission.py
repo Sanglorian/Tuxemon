@@ -6,7 +6,7 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import MissionStatus, SpatialCondition
+from tuxemon.db import MissionStatus
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -44,7 +44,7 @@ class CheckMissionCondition(EventCondition):
     status: str
     mode: str | None = None
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         _mode = self.mode if self.mode else "any"
 
         character = session.get_npc(self.character)

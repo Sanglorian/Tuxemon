@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -31,7 +30,7 @@ class EnvironmentIsCondition(EventCondition):
     name: ClassVar[str] = "environment_is"
     slug: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         env = session.client.environment_manager.get_active_environment()
         if env is None:
             return False

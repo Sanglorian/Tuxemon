@@ -6,7 +6,6 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -32,7 +31,7 @@ class TimestampCooldownCondition(EventCondition):
     timeframe: float
     variable: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         player = session.player
         current_timestamp = time.time()
 

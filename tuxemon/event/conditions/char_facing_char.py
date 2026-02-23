@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.map.map import get_coords, get_direction
 from tuxemon.session import Session
@@ -33,7 +32,7 @@ class CharFacingCharCondition(EventCondition):
     character1: str
     character2: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         client = session.client
         npc_location = None
 

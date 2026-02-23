@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -23,8 +22,7 @@ class VariableSetCondition(EventCondition):
 
     Script parameters:
         variable: The first variable to check.
-        value: Optional value for the first variable. Additional variables
-            are read from condition.parameters.
+        value: Optional value for the first variable.
     """
 
     name: ClassVar[str] = "variable_set"
@@ -44,7 +42,7 @@ class VariableSetCondition(EventCondition):
 
         self.__post_init__()
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         player = session.player
 
         for key, expected in self.required_vars:

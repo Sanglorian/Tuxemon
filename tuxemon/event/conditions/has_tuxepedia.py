@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -34,7 +33,7 @@ class HasTuxepediaCondition(EventCondition):
     monster: str
     label: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         character = session.get_npc(self.character)
         if character is None:
             raise ValueError(f"{self.character} not found")

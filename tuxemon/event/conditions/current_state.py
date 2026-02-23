@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -31,7 +30,7 @@ class CurrentStateCondition(EventCondition):
     name: ClassVar[str] = "current_state"
     states: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         current_state = session.client.current_state
         assert current_state
         states = self.states.split(":")

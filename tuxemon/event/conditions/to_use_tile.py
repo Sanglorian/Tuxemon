@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import BoundingBox, Operator, SpatialCondition
 from tuxemon.event.conditions.button_pressed import ButtonPressedCondition
 from tuxemon.event.conditions.char_facing_tile import CharFacingTileCondition
 from tuxemon.event.eventcondition import EventCondition
@@ -50,18 +49,9 @@ class ToUseTileCondition(EventCondition):
 
     name: ClassVar[str] = "to_use_tile"
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         char_facing = CharFacingTileCondition(self.character, self.value).test(
-            session, condition
+            session
         )
-        button_pressed = ButtonPressedCondition("INTERACT").test(
-            session,
-            SpatialCondition(
-                type="button_pressed",
-                parameters=["INTERACT"],
-                operator=Operator.IS,
-                box=BoundingBox(x=0, y=0, width=0, height=0),
-                name="",
-            ),
-        )
+        button_pressed = ButtonPressedCondition("INTERACT").test(session)
         return char_facing and button_pressed

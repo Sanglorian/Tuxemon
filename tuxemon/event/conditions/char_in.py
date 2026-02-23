@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.platform.const.sizes import SURFACE_KEYS
 from tuxemon.session import Session
@@ -33,7 +32,7 @@ class CharInCondition(EventCondition):
     character: str
     value: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         client = session.client
         character = session.get_npc(self.character)
         if character is None:

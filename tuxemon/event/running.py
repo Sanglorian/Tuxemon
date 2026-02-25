@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from tuxemon.db import EventObject, ParameterizableRule, SpatialCondition
-    from tuxemon.event.eventaction import EventAction
+    from tuxemon.event.eventaction import ActionManager, EventAction
     from tuxemon.event.eventcondition import ConditionManager
     from tuxemon.session import Session
 
@@ -73,12 +73,15 @@ class RunningEvent:
         self.elapsed_time += dt
 
         # Check for delay
-        if self.map_event.delay and self.elapsed_time < self.map_event.delay:
+        if (
+            self.map_event.delay is not None
+            and self.elapsed_time < self.map_event.delay
+        ):
             return False
 
-        # Watchdog: Timeout prevents infinite event hangs
+        # Watchdog: Timeout prevents infinite event hangs (opt-in)
         if (
-            self.map_event.timeout
+            self.map_event.timeout is not None
             and self.elapsed_time > self.map_event.timeout
         ):
             logger.warning(
@@ -89,25 +92,115 @@ class RunningEvent:
 
         return True
 
-    def get_next_action(self) -> ParameterizableRule | None:
+    def step(
+        self,
+        session: Session,
+        action_manager: ActionManager,
+        dt: float,
+    ) -> bool:
         """
-        Get the next action to execute, if any.
+        Advance this event by one frame.
+        Returns True if the event is still active, False if finished or cancelled.
+        """
+        if self.state in (EventState.COMPLETED, EventState.CANCELLED):
+            return False
 
-        Returns MapActions, which are just data from the map, not live objects.
+        return self.process(session, action_manager, dt)
 
-        ``None`` will be returned if the MapEvent is finished.
+    def process(
+        self, session: Session, action_manager: ActionManager, dt: float
+    ) -> bool:
+        """
+        Processes the event's actions.
 
         Returns:
-            Next action to execute. ``None`` if there isn't one.
+            True - event is still alive (delay, long-running action)
+            False - event is finished or cancelled
         """
-        try:
-            return self.actions[self.action_index]
-        except IndexError:
+
+        # Delay / timeout
+        if not self.tick(dt):
+            return self.is_alive()
+
+        while True:
+            if self.is_cancelled():
+                logger.debug("Running event was cancelled.")
+                return False
+
+            # If no action is active, try to load the next one
+            if self.current_action is None:
+                next_data = self.get_next_action()
+                if next_data is None:
+                    self.complete()
+                    return False
+
+                action = action_manager.get_action(
+                    next_data.type, next_data.parameters
+                )
+                if action is None:
+                    logger.error(
+                        f"Invalid action returned for '{next_data.type}'"
+                    )
+                    self.cancel()
+                    return False
+
+                action.on_start(session)
+                self.current_action = action
+
+                # Edge case: action cancelled itself during on_start()
+                if self.current_action.cancelled:
+                    self.advance()
+                    self.current_action = None
+                    continue
+
+            # Advance if action was cancelled between frames
+            if self.current_action.cancelled:
+                self.advance()
+                self.current_action = None
+                continue
+
+            # Update the current action
+            self.current_action.update(session, dt)
+
+            # Safety: action should not clear itself during update
+            if self.current_action is None:
+                logger.error(
+                    "Action cleared itself unexpectedly during update"
+                )
+                self.cancel()
+                return False
+
+            # If action finished, clean up and move to next one in the same frame
+            if self.current_action.done:
+                self.current_action.cleanup(session)
+                self.advance()
+                self.current_action = None
+                continue
+
+            # Action is still running (multi-frame)
+            return True
+
+    def get_next_action(self) -> ParameterizableRule | None:
+        """Return the next action, or None if the event is completed."""
+        if self.state == EventState.COMPLETED:
             return None
 
+        if self.action_index >= len(self.actions):
+            return None
+
+        return self.actions[self.action_index]
+
+    def reset(self) -> None:
+        self.action_index = 0
+        self.current_action = None
+        self.elapsed_time = 0.0
+        self.state = EventState.WAITING
+        self.context.clear()
+
     def advance(self) -> None:
-        if self.action_index < len(self.actions):
-            self.action_index += 1
+        self.action_index += 1
+        if self.action_index >= len(self.actions):
+            self.complete()
 
     def cancel(self) -> None:
         self.state = EventState.CANCELLED
@@ -117,6 +210,9 @@ class RunningEvent:
 
     def running(self) -> None:
         self.state = EventState.RUNNING
+
+    def is_alive(self) -> bool:
+        return self.state not in (EventState.COMPLETED, EventState.CANCELLED)
 
     def is_cancelled(self) -> bool:
         return self.state == EventState.CANCELLED

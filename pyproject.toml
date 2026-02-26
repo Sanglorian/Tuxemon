@@ -45,15 +45,6 @@ include = ["tuxemon*"]
 [tool.setuptools.dynamic]
 dependencies = {file = "requirements.txt"}
 
-[tool.black]
-line-length = 79
-target-version = ["py310"]
-
-[tool.isort]
-line_length = 79
-profile = "black"
-skip_gitignore = true
-
 [tool.mypy]
 enable_error_code = "ignore-without-code"
 ignore_missing_imports = true
@@ -105,8 +96,15 @@ ignored-argument-names = "_.*"
 [tool.pylint.deprecated_builtins]
 bad-functions = ["map", "filter", "apply", "input"]
 
-[tool.flake8]
-ignore = []
-max-line-length = 79
-exclude = [".env/*", ".git"]
-max-complexity = 10
+[tool.ruff]
+line-length = 79
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["tuxemon"]
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true

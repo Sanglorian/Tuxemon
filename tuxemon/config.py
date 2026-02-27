@@ -2,7 +2,12 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import logging
+import sys
+import time
+import warnings
 from collections.abc import Mapping
+from logging import FileHandler, Formatter, Logger, StreamHandler
 from pathlib import Path
 from typing import Any, Literal
 
@@ -10,6 +15,7 @@ import pygame
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from tuxemon.animation import Animation
+from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import dump_yaml_io, load_yaml
 from tuxemon.platform.const import buttons, events
 
@@ -396,18 +402,84 @@ class InputConfig:
 class LoggingConfig:
     """Handles logging-related configurations."""
 
+    LOG_LEVELS = {
+        "debug": logging.DEBUG,
+        "info": logging.INFO,
+        "warning": logging.WARNING,
+        "error": logging.ERROR,
+        "critical": logging.CRITICAL,
+    }
+
     def __init__(self, config_model: TuxemonFullConfig) -> None:
-        # [logging]
-        # Log levels can be: debug, info, warning, error, or critical
-        # Setting loggers to "all" will enable debug logging for all modules.
-        #   Some available loggers:
-        #     states.combat, states.world, event,
-        #     neteria.server, neteria.client, neteria.core
-        # Comma-separated list of which modules to enable logging on
         log = config_model.logging
-        loggers_str: str = log.loggers
-        self.loggers = loggers_str.replace(" ", "").split(",")
+        self.loggers = log.loggers.replace(" ", "").split(",")
         self.debug_logging = log.debug_logging
         self.debug_level = log.debug_level
         self.log_to_file = log.dump_to_file
         self.log_keep_max = log.file_keep_max
+
+    def configure(self) -> None:
+        log_level = self.LOG_LEVELS.get(self.debug_level, logging.INFO)
+
+        if self.debug_logging:
+            warnings.filterwarnings("default")
+
+        for logger_name in self.loggers:
+            if logger_name == "all":
+                print("Enabling logging of all modules.")
+                logger = logging.getLogger()
+            else:
+                print(f"Enabling logging for module: {logger_name}")
+                logger = logging.getLogger(logger_name)
+
+            logger.setLevel(log_level)
+
+            log_formatter = Formatter(
+                "[%(asctime)s] %(name)s - %(levelname)s - %(message)s"
+            )
+
+            if not any(
+                isinstance(h, StreamHandler)
+                and getattr(h, "stream", None) is sys.stdout
+                for h in logger.handlers
+            ):
+                log_strm = StreamHandler(sys.stdout)
+                log_strm.setLevel(log_level)
+                log_strm.setFormatter(log_formatter)
+                logger.addHandler(log_strm)
+
+            if self.log_to_file:
+                self.setup_file_logging(logger, log_formatter, log_level)
+
+        pyscroll_logger = logging.getLogger("orthographic")
+        pyscroll_logger.setLevel(logging.ERROR)
+
+    def setup_file_logging(
+        self, logger: Logger, formatter: Formatter, log_level: int
+    ) -> None:
+        log_dir = paths.USER_STORAGE_DIR / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+
+        formatted_time = time.strftime("%Y-%m-%d_%Hh%Mm%Ss", time.localtime())
+        new_file_path = log_dir / f"{formatted_time}.log"
+
+        if not any(
+            isinstance(h, FileHandler)
+            and getattr(h, "baseFilename", None) == str(new_file_path)
+            for h in logger.handlers
+        ):
+            log_file = FileHandler(new_file_path)
+            log_file.setFormatter(formatter)
+            log_file.setLevel(log_level)
+            logger.addHandler(log_file)
+
+        sorted_files = sorted(
+            log_dir.glob("*.log"),
+            key=lambda f: f.stat().st_mtime,
+            reverse=True,
+        )
+
+        keep = max(1, self.log_keep_max)
+
+        for old_file in sorted_files[keep:]:
+            old_file.unlink(missing_ok=True)

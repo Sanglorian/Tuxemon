@@ -261,7 +261,7 @@ def _determine_tastes(mother: Monster, father: Monster) -> tuple[str, str]:
     warm_slug = _mutate_taste(taste_warm, "warm")
     cold_slug = _mutate_taste(taste_cold, "cold")
 
-    return (taste_warm.slug, taste_cold.slug)
+    return (warm_slug, cold_slug)
 
 
 def _mutate_taste(

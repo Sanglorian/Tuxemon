@@ -15,6 +15,7 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.monster.monster import Monster
+from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import INDIV_INFO
 from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_LB, U_M, U_T
@@ -417,7 +418,8 @@ class MonsterInfoState(PygameMenuState):
                 bond_widget.translate(fxw(20 / 256), fxh(29 / 144))
 
         # image
-        surface = monster.get_sprite("front").image
+        renderer = MonsterRenderer(monster, scale=self.factor)
+        surface = renderer.get_sprite("front").image
         new_image = self._create_image_from_surface(surface)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)

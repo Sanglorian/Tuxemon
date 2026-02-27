@@ -144,6 +144,22 @@ class Taste:
 
         return cold_slug, warm_slug
 
+    def get_multiplier(self, stat_name: str) -> float:
+        """
+        Returns the combined multiplier for a given stat based on this taste's modifiers.
+        """
+        multiplier = 1.0
+        for modifier in self.modifiers:
+            if stat_name in modifier.values:
+                multiplier *= modifier.multiplier
+        return multiplier
+
+    def apply_to_stat(self, stat_name: str, value: int) -> int:
+        """
+        Applies this taste's modifiers to a stat value and returns the modified result.
+        """
+        return round(value * self.get_multiplier(stat_name))
+
     def __repr__(self) -> str:
         return (
             f"Taste(slug={self.slug}, "

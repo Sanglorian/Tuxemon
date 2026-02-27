@@ -19,6 +19,7 @@ from tuxemon.menu.interface import ExpBar, HpBar, MenuItem
 from tuxemon.menu.menu import Menu
 from tuxemon.monster.filter import MonsterFilter
 from tuxemon.monster.monster import Monster
+from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const.graphics import BG_MONSTERS, TRANSPARENT_COLOR
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.prepare import SCREEN_SIZE
@@ -87,10 +88,6 @@ class MonsterMenuState(Menu[Monster | None]):
         self.slot_renderer = MonsterSlotRenderer(
             self.client.context, self.font, self.hp_bar, self.font_color
         )
-
-        # Load monster visuals
-        for monster in self.monsters:
-            monster.load_sprites()
 
     def calc_menu_items_rect(self) -> Rect:
         width, height = self.rect.size
@@ -514,7 +511,8 @@ class MonsterSpriteDisplay:
             if self.sprite:
                 self.menu_state.sprites.remove(self.sprite)
 
-            self.sprite = monster.get_sprite("menu", 0.25, 2.5)
+            renderer = MonsterRenderer(monster, scale=2.5, frame_duration=0.25)
+            self.sprite = renderer.get_sprite("menu")
             self.menu_state.sprites.add(self.sprite, layer=LAYER_MONSTER_ICONS)
 
             width = SCREEN_SIZE[0]
@@ -544,10 +542,12 @@ class MonsterPortraitDisplay:
         image = None
         if monster is not None:
             try:
-                sprite = monster.get_sprite("front")
+                renderer = MonsterRenderer(monster, scale=self.scaling.factor)
+                sprite = renderer.get_sprite("front")
                 image = sprite.image
-            except AttributeError:
+            except Exception:
                 pass
+
         image = image or Surface((1, 1), SRCALPHA)
 
         self.portrait.image = image

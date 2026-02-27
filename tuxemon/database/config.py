@@ -82,6 +82,9 @@ class ModMetadata(BaseModel):
     authors: list[str] = Field(
         default_factory=list, description="List of authors or contributors."
     )
+    startup_rules: list[str] = Field(
+        default_factory=list, description="List of rules (startup)."
+    )
     starting_players: list[str] = Field(
         default_factory=list,
         description="Initial slugs available to the player.",

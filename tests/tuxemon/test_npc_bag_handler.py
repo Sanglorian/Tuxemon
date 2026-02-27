@@ -177,3 +177,12 @@ def test_get_all_item_quantities(handler):
     totals = handler.get_all_item_quantities()
     assert totals["test_item"] == 5
     assert totals["potion"] == 2
+
+
+def test_remove_item_after_consumption_to_zero(handler):
+    item = FakeItem("consumable", qty=1)
+    handler.add_item(item)
+    item.stock.try_remove(1)
+    assert item.quantity == 0
+    handler.remove_item(item)
+    assert handler.find_item("consumable") is None

@@ -46,12 +46,10 @@ class Body:
         """Returns whether the entity is currently moving."""
         return self.velocity != Vector2(0, 0)
 
-    def update(self, time_delta: float) -> None:
-        """
-        Updates the position based on velocity and time.
-        """
-        self.velocity += self.acceleration * time_delta
-        self.position += self.velocity * time_delta
+    def update(self, dt: float) -> None:
+        """Updates the position based on velocity and time."""
+        self.velocity += self.acceleration * dt
+        self.position += self.velocity * dt
 
     def reset(
         self,

@@ -309,6 +309,17 @@ class TuxemonConfig:
     def player_runrate(self) -> float:
         return self.config_model.player.player_runrate
 
+      def copy(self) -> TuxemonConfig:
+        new = TuxemonConfig(config_path=self.config_path)
+        new.config_model = self.config_model.model_copy(deep=True)
+        new.load_config_attributes()
+        new.input = InputConfig(new.config_model)
+        new.logging = LoggingConfig(new.config_model)
+        new.locale = LocaleConfig(new.config_model)
+        new.controller = ControllerConfig(new.config_model)
+        new.mods = list(self.mods)
+        return new
+
     def save_config(self) -> None:
         """Saves the configuration from the Pydantic model to a YAML file."""
         if not self.config_path:

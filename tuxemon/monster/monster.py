@@ -17,7 +17,6 @@ from tuxemon.db import (
     GenderType,
     MonsterModel,
     MonsterSpritesModel,
-    SoundProperties,
     StatType,
 )
 from tuxemon.element import ElementTypesHandler
@@ -29,12 +28,8 @@ from tuxemon.monster.experience import MonsterExperience
 from tuxemon.monster.held_item import MonsterItemHandler
 from tuxemon.monster.moves import MonsterMovesHandler
 from tuxemon.monster.plague import MonsterPlagueHandler
-from tuxemon.monster.sprite import (
-    Flair,
-    FlairApplier,
-    MonsterSpriteHandler,
-    SpriteLoader,
-)
+from tuxemon.monster.renderer import SoundConfig, SpriteConfig
+from tuxemon.monster.sprite import Flair, FlairApplier
 from tuxemon.monster.stats import (
     BasicStats,
     CustomStatBoosts,
@@ -45,9 +40,7 @@ from tuxemon.monster.stats import (
 )
 from tuxemon.monster.status import MonsterStatusHandler
 from tuxemon.platform.const.sizes import MONTH_KEYS
-from tuxemon.prepare import DISPLAY_CONTEXT
 from tuxemon.shape import ShapeHandler
-from tuxemon.sprite import Sprite
 from tuxemon.taste import Taste
 from tuxemon.time_handler import random_month_day, today_month_day
 
@@ -165,46 +158,32 @@ class Monster:
         self.body = Body()
 
     def _init_assets(self, db_data: MonsterModel) -> None:
-        """Configures visual and auditory assets from DB data."""
-        self.flair_slugs = db_data.flairs
-        self.flairs = FlairApplier.create(self.flair_slugs)
+        """Store only metadata for assets. No loading, no SpriteLoader."""
+        self.flair_slugs = set(db_data.flairs or [])
+        self.flairs: dict[str, Flair] = {}
 
-        loader = SpriteLoader()
         sprites = db_data.sprites or MonsterSpritesModel(
             sheet=f"gfx/sprites/battle/{self.slug}-sheet",
         )
 
-        self.sprite_handler = MonsterSpriteHandler(
+        self.sprite_config = SpriteConfig(
             slug=self.slug,
-            sheet_path=loader.resolve_path(sprites.sheet),
+            sheet_path=sprites.sheet,
             front_rect=sprites.front_rect,
             back_rect=sprites.back_rect,
             menu1_rect=sprites.menu1_rect,
             menu2_rect=sprites.menu2_rect,
-            flairs=self.flairs,
+            flair_slugs=self.flair_slugs,
         )
 
         primary_slug = self.types.primary.slug
 
-        if db_data.sounds and db_data.sounds.combat_call:
-            self.combat_call = db_data.sounds.combat_call
-            if self.combat_call.sfx is None:
-                self.combat_call.sfx = f"sound_{primary_slug}_call"
-        else:
-            self.combat_call = SoundProperties(
-                sfx=f"sound_{primary_slug}_call",
-                volume=1.5,
-            )
-
-        if db_data.sounds and db_data.sounds.faint_call:
-            self.faint_call = db_data.sounds.faint_call
-            if self.faint_call.sfx is None:
-                self.faint_call.sfx = f"sound_{primary_slug}_faint"
-        else:
-            self.faint_call = SoundProperties(
-                sfx=f"sound_{primary_slug}_faint",
-                volume=1.5,
-            )
+        self.sound_config = SoundConfig(
+            combat=db_data.sounds.combat_call if db_data.sounds else None,
+            faint=db_data.sounds.faint_call if db_data.sounds else None,
+            default_combat=f"sound_{primary_slug}_call",
+            default_faint=f"sound_{primary_slug}_faint",
+        )
 
     @classmethod
     def spawn_base(cls, slug: str, level: int) -> Monster:
@@ -262,18 +241,18 @@ class Monster:
                 monster.custom_stats = CustomStatBoosts.from_dict(value)
             elif key == "individual_values" and value:
                 monster.individual_values = IndividualValues.from_dict(value)
-            elif key == "flairs" and value:
-                monster.flairs = {
-                    category: Flair.from_state(flair_data)
-                    for category, flair_data in value.items()
-                }
-            elif key == "flair_slugs" and value:
-                monster.flair_slugs = set(value)
-                if "flairs" not in save_data:
-                    monster.flairs = FlairApplier.create(monster.flair_slugs)
+
+        monster.flair_slugs = set(save_data.get("flair_slugs", []))
+
+        if "flairs" in save_data:
+            monster.flairs = {
+                category: Flair.from_state(flair_data)
+                for category, flair_data in save_data["flairs"].items()
+            }
+        elif monster.flair_slugs:
+            monster.flairs = FlairApplier.create(monster.flair_slugs)
 
         monster.set_stats()
-        monster.load_sprites()
 
         return monster
 
@@ -399,17 +378,6 @@ class Monster:
             {"doc": self.capture_string},
         )
 
-    def load_sprites(
-        self, scale: float = DISPLAY_CONTEXT.scaling.factor
-    ) -> None:
-        """
-        Delegates the task of loading sprites to the sprite handler.
-
-        Parameters:
-            scale: The scaling factor to resize the sprite images.
-        """
-        self.sprite_handler.load_sprites(scale)
-
     def get_owner(self) -> NPC:
         """Returns the character associated with this monster."""
         if not self.owner:
@@ -468,23 +436,6 @@ class Monster:
             )
 
         return exp_multiplier
-
-    def get_sprite(
-        self,
-        sprite_type: str,
-        frame_duration: float = 0.25,
-        scale: float = DISPLAY_CONTEXT.scaling.factor,
-        **kwargs: Any,
-    ) -> Sprite:
-        """
-        Retrieves a specific sprite via the sprite handler.
-        """
-        return self.sprite_handler.get_sprite(
-            sprite_type=sprite_type,
-            scale=scale,
-            frame_duration=frame_duration,
-            **kwargs,
-        )
 
     def return_stat(self, stat: StatType | str) -> int:
         """

@@ -67,8 +67,8 @@ class FadeTransitionBase(State):
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         return None
 
-    def update(self, time_delta: float) -> None:
-        self.animations.update(time_delta)
+    def update(self, dt: float) -> None:
+        self.animations.update(dt)
 
     @abstractmethod
     def create_fade_animation(self) -> None:

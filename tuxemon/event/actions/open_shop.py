@@ -3,16 +3,12 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from functools import partial
 from typing import final
 
 from tuxemon.entity.npc import NPC
 from tuxemon.event.eventaction import EventAction
 from tuxemon.session import Session
-from tuxemon.tools import open_choice_dialog
-from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +59,8 @@ class OpenShopAction(EventAction):
 
         if self.menu not in valid_menus:
             raise ValueError(
-                f"Invalid menu: '{self.menu}'. Must be one of: {', '.join(sorted(valid_menus))}"
+                f"Invalid menu: '{self.menu}'. Must be one of: "
+                f"{', '.join(sorted(valid_menus))}"
             )
 
         character = session.get_npc(self.npc_slug)
@@ -71,12 +68,13 @@ class OpenShopAction(EventAction):
             logger.error(f"NPC '{self.npc_slug}' not found.")
             return
 
+        # Only item/monster shops require an economy
         if character.economy is None and self.menu not in {
             "train_monster",
             "heal_monster",
         }:
             raise ValueError(
-                f"NPC '{character.slug}' has no assigned economy."
+                f"NPC '{character.slug}' has no assigned economy. "
                 "Use the 'set_economy' EventAction first."
             )
 
@@ -90,46 +88,25 @@ class OpenShopAction(EventAction):
                 economy=economy,
             )
 
-        def wrap_choice_dialog(
-            actions: Mapping[str, Callable[..., None]],
-        ) -> None:
-            options = create_choice_options(actions)
-            open_choice_dialog(
-                client=session.client,
-                menu=MenuOptions(options),
-                escape_key_exits=True,
-            )
-
-        item_actions = {
-            "buy": partial(
-                push_state, "ShopItemBuyMenuState", session.player, character
-            ),
-            "sell": partial(
-                push_state, "ShopItemSellMenuState", character, session.player
-            ),
-        }
-
-        monster_actions = {
-            "buy": partial(
-                push_state,
-                "ShopMonsterBuyMenuState",
-                session.player,
-                character,
-            ),
-            "sell": partial(
-                push_state,
-                "ShopMonsterSellMenuState",
-                character,
-                session.player,
-            ),
-        }
-
-        # Dispatch based on menu mode
         if self.menu == "both_item":
-            wrap_choice_dialog(item_actions)
-        elif self.menu == "both_monster":
-            wrap_choice_dialog(monster_actions)
-        elif self.menu == "buy_item":
+            session.client.push_state(
+                "ShopChoiceState",
+                session=session,
+                npc=character,
+                mode="item",
+            )
+            return
+
+        if self.menu == "both_monster":
+            session.client.push_state(
+                "ShopChoiceState",
+                session=session,
+                npc=character,
+                mode="monster",
+            )
+            return
+
+        if self.menu == "buy_item":
             push_state("ShopItemBuyMenuState", session.player, character)
         elif self.menu == "sell_item":
             push_state("ShopItemSellMenuState", character, session.player)

@@ -52,8 +52,7 @@
   </object>
   <object id="201" name="Create River" type="event" x="80" y="112" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_searoutec_river,5,7"/>
-    <property name="act2" value="char_wander spyder_searoutec_river"/>
+    <property name="act1" value="create_npc spyder_searoutec_river,5,7,wander"/>
     <property name="cond1" value="not char_exists spyder_searoutec_river"/>
    </properties>
   </object>
@@ -108,8 +107,7 @@
   </object>
   <object id="207" name="Create Leek" type="event" x="480" y="160" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_searoutec_leek,30,10"/>
-    <property name="act2" value="char_wander spyder_searoutec_leek"/>
+    <property name="act1" value="create_npc spyder_searoutec_leek,30,10,wander"/>
     <property name="cond1" value="not char_exists spyder_searoutec_leek"/>
    </properties>
   </object>
@@ -125,8 +123,7 @@
   </object>
   <object id="209" name="Create Beech" type="event" x="128" y="192" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_searoutec_beech,8,14"/>
-    <property name="act2" value="char_wander spyder_searoutec_beech"/>
+    <property name="act1" value="create_npc spyder_searoutec_beech,8,14,wander"/>
     <property name="cond1" value="not char_exists spyder_searoutec_beech"/>
    </properties>
   </object>
@@ -334,8 +331,7 @@
   </object>
   <object id="256" name="Create Swimmer2" type="event" x="480" y="352" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_searoutec_alpha,30,22"/>
-    <property name="act2" value="char_wander spyder_searoutec_alpha"/>
+    <property name="act1" value="create_npc spyder_searoutec_alpha,30,22,wander"/>
     <property name="cond1" value="not char_exists spyder_searoutec_alpha"/>
    </properties>
   </object>
@@ -347,8 +343,7 @@
   </object>
   <object id="258" name="Create Swimmer" type="event" x="240" y="480" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_searoutec_beta,15,30"/>
-    <property name="act2" value="char_wander spyder_searoutec_beta"/>
+    <property name="act1" value="create_npc spyder_searoutec_beta,15,30,wander"/>
     <property name="cond1" value="not char_exists spyder_searoutec_beta"/>
    </properties>
   </object>

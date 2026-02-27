@@ -86,7 +86,7 @@ class EvolutionTransition(State):
         self.x = (screen_width - sprite_width) // 2
         self.y = (screen_height - sprite_height) // 2
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         current_time = pygame.time.get_ticks()
         self.elapsed_time = (current_time - self.transition_start_time) / 1000
         self.percentage = (self.elapsed_time / self.total_seconds) * 100

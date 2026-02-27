@@ -201,6 +201,9 @@ class CombatState(CombatAnimations):
         """
         Update the combat phase.
         """
+        if self.is_blocked():
+            return
+
         if not self.text_anim.is_animating() and all(
             map(self.is_task_finished, self.animations)
         ):

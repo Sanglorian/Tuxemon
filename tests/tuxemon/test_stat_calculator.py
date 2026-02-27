@@ -29,17 +29,40 @@ def mock_shape():
 @pytest.fixture
 def mock_tastes():
     cold = MagicMock(spec=Taste)
-    cold.slug = "cold"
+    warm = MagicMock(spec=Taste)
+
     cold.modifiers = [
         MagicMock(values=["speed"], multiplier=1.2),
         MagicMock(values=["hp"], multiplier=0.9),
     ]
-    warm = MagicMock(spec=Taste)
-    warm.slug = "warm"
-    warm.modifiers = [MagicMock(values=["melee"], multiplier=1.1)]
+    warm.modifiers = [
+        MagicMock(values=["melee"], multiplier=1.1),
+    ]
+
+    def get_multiplier(taste, stat_name: str) -> float:
+        m = 1.0
+        for mod in taste.modifiers:
+            if stat_name in mod.values:
+                m *= mod.multiplier
+        return m
+
+    def apply_to_stat(taste, stat_name: str, value: int) -> int:
+        return round(value * get_multiplier(taste, stat_name))
+
+    cold.get_multiplier.side_effect = lambda stat: get_multiplier(cold, stat)
+    warm.get_multiplier.side_effect = lambda stat: get_multiplier(warm, stat)
+
+    cold.apply_to_stat.side_effect = lambda stat, val: apply_to_stat(
+        cold, stat, val
+    )
+    warm.apply_to_stat.side_effect = lambda stat, val: apply_to_stat(
+        warm, stat, val
+    )
+
     Taste.get = MagicMock(
         side_effect=lambda name: {"cold": cold, "warm": warm}[name]
     )
+
     return cold, warm
 
 
@@ -225,3 +248,60 @@ def test_taste_multiplier_stacking(analyzer, mock_tastes):
         pytest.approx(breakdown["hp"]["taste_multiplier"], rel=1e-2)
         == 1.5 * 2.0
     )
+
+
+# TrainingPoints invariant tests
+
+
+def test_tp_validate_individual_clamp():
+    tp = TrainingPoints(armour=config_monster.max_tps + 50)
+    tp.validate()
+    assert tp.armour == config_monster.max_tps
+
+
+def test_tp_validate_total_clamp_proportional():
+    tp = TrainingPoints(
+        armour=200, dodge=200, hp=200, melee=200, ranged=200, speed=200
+    )
+    tp.validate()
+    total_after = tp.sum()
+    assert total_after <= config_monster.max_total_tps
+    assert pytest.approx(tp.armour, rel=0.1) == tp.dodge
+    assert pytest.approx(tp.armour, rel=0.1) == tp.hp
+
+
+def test_tp_validate_no_change_when_valid():
+    tp = TrainingPoints(armour=10, dodge=5, hp=3, melee=2, ranged=1, speed=4)
+    before = tp.to_dict().copy()
+    tp.validate()
+    assert tp.to_dict() == before
+
+
+def test_tp_validate_individual_then_total():
+    tp = TrainingPoints(
+        armour=config_monster.max_tps + 20,
+        dodge=config_monster.max_tps + 10,
+        hp=50,
+        melee=50,
+        ranged=50,
+        speed=50,
+    )
+    tp.validate()
+    assert tp.armour <= config_monster.max_tps
+    assert tp.dodge <= config_monster.max_tps
+    assert tp.sum() <= config_monster.max_total_tps
+
+
+def test_tp_validate_scaling_preserves_zero_stats():
+    tp = TrainingPoints(
+        armour=100,
+        dodge=0,
+        hp=100,
+        melee=0,
+        ranged=100,
+        speed=0,
+    )
+    tp.validate()
+    assert tp.dodge == 0
+    assert tp.melee == 0
+    assert tp.speed == 0

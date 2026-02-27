@@ -46,9 +46,9 @@ class ZoomOutTransition(State):
         self.scale = scale
         self.speed = speed  # scale factor per second
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         if self.scale < 1.0:
-            self.scale += self.speed * time_delta
+            self.scale += self.speed * dt
         else:
             self.scale = 1.0
 
@@ -105,9 +105,9 @@ class ZoomInTransition(State):
         self.scale = scale
         self.speed = speed  # scale factor per second
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         if self.scale > 0.1:
-            self.scale -= self.speed * time_delta
+            self.scale -= self.speed * dt
         else:
             self.scale = 0.1
 

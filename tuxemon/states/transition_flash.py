@@ -57,24 +57,17 @@ class FlashTransition(State):
     def resume(self) -> None:
         self.transition_surface.fill(self.color)
 
-    def update(self, time_delta: float) -> None:
-        """
-        Update function for state.
-
-        Parameters:
-            time_delta: Time since last update in seconds
-
-        """
+    def update(self, dt: float) -> None:
         logger.info("Battle transition!")
 
         if self.flash_state == "up":
             self.transition_alpha = min(
                 255,
-                self.transition_alpha + 255 * (time_delta / self.flash_time),
+                self.transition_alpha + 255 * (dt / self.flash_time),
             )
         elif self.flash_state == "down":
             self.transition_alpha = max(
-                0, self.transition_alpha - 255 * (time_delta / self.flash_time)
+                0, self.transition_alpha - 255 * (dt / self.flash_time)
             )
 
         if self.transition_alpha >= 255:

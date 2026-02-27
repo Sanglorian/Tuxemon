@@ -53,8 +53,8 @@ class WipeTransition(State):
         self.height = self.client.context.screen.get_height()
         self.width = self.client.context.screen.get_width()
 
-    def update(self, time_delta: float) -> None:
-        self.update_wipe_position(time_delta)
+    def update(self, dt: float) -> None:
+        self.update_wipe_position(dt)
         self.check_boundary()
 
     def update_wipe_position(self, time_delta: float) -> None:

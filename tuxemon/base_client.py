@@ -282,7 +282,7 @@ class BaseClient(ABC):
         """
 
     @abstractmethod
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         """
         Main loop for entire game.
 

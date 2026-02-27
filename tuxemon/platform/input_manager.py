@@ -104,10 +104,10 @@ class InputManager:
 
             yield event
 
-    def update(self, time_delta: float) -> None:
-        self.input_history.update(time_delta)
-        self.event_queue.update_handlers(time_delta)
-        self.afk_manager.update(time_delta)
+    def update(self, dt: float) -> None:
+        self.input_history.update(dt)
+        self.event_queue.update_handlers(dt)
+        self.afk_manager.update(dt)
 
     def draw_overlay(self, screen: Surface) -> None:
         if self.core_devices.overlay:

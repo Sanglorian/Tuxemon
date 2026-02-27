@@ -531,3 +531,58 @@ def test_reset_to_default():
     assert model.controls == ControlsConfig()
     assert pygame.K_UP in input_cfg.keyboard_button_map
     assert None in input_cfg.keyboard_button_map
+
+
+def test_copy_produces_independent_model():
+    base = TuxemonFullConfig().model_dump()
+    model = TuxemonFullConfig.model_validate(base)
+    cfg = TuxemonConfig(config_path=None)
+    cfg.config_model = model
+    new = cfg.copy()
+    assert new.config_model is not cfg.config_model
+    cfg.config_model.display.resolution_x = 999
+    assert new.config_model.display.resolution_x != 999
+
+
+def test_copy_rebuilds_all_wrappers():
+    cfg = TuxemonConfig(config_path=None)
+    old_input = cfg.input
+    old_locale = cfg.locale
+    old_controller = cfg.controller
+    old_logging = cfg.logging
+    new = cfg.copy()
+    assert new.input is not old_input
+    assert new.locale is not old_locale
+    assert new.controller is not old_controller
+    assert new.logging is not old_logging
+    assert new.input._model is new.config_model
+    assert new.locale._model is new.config_model.game
+    assert new.controller._model is new.config_model.controller
+    assert new.logging._model is new.config_model.logging
+
+
+def test_copy_preserves_mods_list_but_not_reference():
+    cfg = TuxemonConfig(config_path=None)
+    cfg.mods.append("extra_mod")
+    new = cfg.copy()
+    assert new.mods == cfg.mods
+    assert new.mods is not cfg.mods
+
+
+def test_copy_rebuilds_input_map():
+    cfg = TuxemonConfig(config_path=None)
+    cfg.config_model.controls.up = "w"
+    cfg.input.reload_input_map()
+    new = cfg.copy()
+
+    if hasattr(pygame, "K_w"):
+        assert getattr(pygame, "K_w") in new.input.keyboard_button_map
+
+    assert new.input.keyboard_button_map is not cfg.input.keyboard_button_map
+
+
+def test_copy_does_not_mutate_original():
+    cfg = TuxemonConfig(config_path=None)
+    new = cfg.copy()
+    new.config_model.display.resolution_x = 555
+    assert cfg.config_model.display.resolution_x != 555

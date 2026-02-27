@@ -71,8 +71,7 @@
   </object>
   <object id="28" name="Create Tennis Player" type="event" x="144" y="48" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_leatherhouse1_roger,9,3"/>
-    <property name="act2" value="char_wander spyder_leatherhouse1_roger"/>
+    <property name="act1" value="create_npc spyder_leatherhouse1_roger,9,3,wander"/>
     <property name="cond1" value="not char_exists spyder_leatherhouse1_roger"/>
    </properties>
   </object>

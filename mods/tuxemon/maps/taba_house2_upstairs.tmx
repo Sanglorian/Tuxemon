@@ -63,8 +63,7 @@
   </object>
   <object id="60" name="Create Reader1" type="event" x="64" y="48" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc taba_house2_reader2,4,3"/>
-    <property name="act2" value="char_wander taba_house2_reader2"/>
+    <property name="act1" value="create_npc taba_house2_reader2,4,3,wander"/>
     <property name="cond1" value="not char_exists taba_house2_reader2"/>
    </properties>
   </object>

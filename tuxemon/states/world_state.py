@@ -144,18 +144,12 @@ class WorldState(State):
             self.client, self.player, self.client.network_manager
         )
 
-    def update(self, time_delta: float) -> None:
-        """
-        The primary game loop that executes the world's functions every frame.
-
-        Parameters:
-            time_delta: Amount of time passed since last frame.
-        """
-        super().update(time_delta)
-        self.faction_manager.update(time_delta, self.session)
-        self.client.npc_manager.update_npcs(time_delta, self.client)
-        self.client.npc_manager.update_npcs_off_map(time_delta, self.client)
-        self.client.map_renderer.update(time_delta)
+    def update(self, dt: float) -> None:
+        super().update(dt)
+        self.faction_manager.update(dt, self.session)
+        self.client.npc_manager.update_npcs(dt, self.client)
+        self.client.npc_manager.update_npcs_off_map(dt, self.client)
+        self.client.map_renderer.update(dt)
 
     def draw(self, surface: Surface) -> None:
         """Draw the game world to the screen."""

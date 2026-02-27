@@ -35,15 +35,8 @@ class NegativeTransition(State):
         self.start_time = 0.0
         self.elapsed_time = 0.0
 
-    def update(self, time_delta: float) -> None:
-        """
-        Update function for state.
-
-        Parameters:
-            time_delta: Time since last update in seconds
-
-        """
-        self.elapsed_time += time_delta
+    def update(self, dt: float) -> None:
+        self.elapsed_time += dt
         if self.elapsed_time > self.duration:
             logger.info("Negative colors transition finished.")
             self.client.pop_state()

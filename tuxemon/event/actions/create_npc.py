@@ -14,6 +14,7 @@ from tuxemon.db import (
     NpcModel,
 )
 from tuxemon.entity.appearance import RuntimeAppearance
+from tuxemon.entity.behavior.registry import create_behavior
 from tuxemon.entity.npc import NPC
 from tuxemon.event.eventaction import EventAction
 from tuxemon.item.item import Item
@@ -62,7 +63,8 @@ class CreateNpcAction(EventAction):
             npc, slug, self.tile_pos_x, self.tile_pos_y
         )
 
-        npc.behavior = self.behavior
+        if self.behavior:
+            npc.behavior_policy = create_behavior(self.behavior)
         npc_details = load_party(slug)
 
         npc.template = npc_details.template

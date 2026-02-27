@@ -161,16 +161,14 @@
   </object>
   <object id="62" name="Create LapinouA" type="event" x="144" y="96" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_lapinoua,9,6"/>
-    <property name="act2" value="char_wander spyder_scoop_lapinoua"/>
+    <property name="act1" value="create_npc spyder_scoop_lapinoua,9,6,wander"/>
     <property name="cond1" value="not char_exists spyder_scoop_lapinoua"/>
     <property name="cond2" value="not variable_set scooplapinoua:yes"/>
    </properties>
   </object>
   <object id="63" name="Create CochiniA" type="event" x="288" y="160" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_cochinia,18,10"/>
-    <property name="act2" value="char_wander spyder_scoop_cochinia"/>
+    <property name="act1" value="create_npc spyder_scoop_cochinia,18,10,wander"/>
     <property name="cond1" value="not char_exists spyder_scoop_cochinia"/>
     <property name="cond2" value="not variable_set scoopcochinia:yes"/>
    </properties>

@@ -544,7 +544,8 @@ class MonsterPortraitDisplay:
         image = None
         if monster is not None:
             try:
-                renderer = MonsterRenderer(monster, scale=self.scaling.factor)
+                scale = self.menu_state.client.context.scale
+                renderer = MonsterRenderer(monster, scale=scale)
                 sprite = renderer.get_sprite("front")
                 image = sprite.image
             except Exception:

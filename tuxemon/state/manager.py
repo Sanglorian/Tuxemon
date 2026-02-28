@@ -100,7 +100,7 @@ class StateManager:
         base_count = base_count or DEFAULT_BASE_STATE_COUNT
         return len(self.active_states) > base_count
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         """
         Run update on all active states, which doing some internal housekeeping.
 
@@ -111,11 +111,11 @@ class StateManager:
             time_delta: Amount of time passed since last frame.
         """
         logger.debug("updating states")
-        self.trigger_global_event("pre_state_update", time_delta)
+        self.trigger_global_event("pre_state_update", dt)
         for state in self.active_states:
             self._check_resume(state)
-            state.update(time_delta)
-        self.trigger_global_event("post_state_update", time_delta)
+            state.update(dt)
+        self.trigger_global_event("post_state_update", dt)
 
     def _check_resume(self, state: State) -> None:
         """

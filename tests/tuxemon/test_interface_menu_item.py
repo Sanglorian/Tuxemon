@@ -1,75 +1,76 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
 from unittest.mock import MagicMock
 
+import pytest
 from pygame import Surface
 
 from tuxemon.menu.interface import MenuItem
 
 
-class TestMenuItem(unittest.TestCase):
+@pytest.fixture
+def image():
+    return Surface((10, 10))
 
-    def setUp(self):
-        self.image = Surface((10, 10))
-        self.game_object = MagicMock()
 
-    def test_init_default(self):
-        menu_item = MenuItem(
-            self.image, "Test Label", "Test Description", self.game_object
-        )
-        self.assertEqual(menu_item.label, "Test Label")
-        self.assertEqual(menu_item.description, "Test Description")
-        self.assertEqual(menu_item.enabled, True)
+@pytest.fixture
+def game_object():
+    return MagicMock()
 
-    def test_init_custom(self):
-        menu_item = MenuItem(
-            self.image,
-            "Test Label",
-            "Test Description",
-            self.game_object,
-            enabled=False,
-            position=(100, 100),
-        )
-        self.assertEqual(menu_item.label, "Test Label")
-        self.assertEqual(menu_item.description, "Test Description")
-        self.assertEqual(menu_item.enabled, False)
 
-    def test_update_image_focus(self):
-        menu_item = MenuItem(
-            self.image, "Test Label", "Test Description", self.game_object
-        )
-        menu_item._in_focus = True
-        menu_item.update_image = MagicMock()
-        menu_item.update_image()
+def test_init_default(image, game_object):
+    menu_item = MenuItem(image, "Test Label", "Test Description", game_object)
+    assert menu_item.label == "Test Label"
+    assert menu_item.description == "Test Description"
+    assert menu_item.enabled is True
 
-    def test_update_image_enabled(self):
-        menu_item = MenuItem(
-            self.image, "Test Label", "Test Description", self.game_object
-        )
-        menu_item.enabled = False
-        menu_item.update_image = MagicMock()
-        menu_item.update_image()
 
-    def test_enabled_property(self):
-        menu_item = MenuItem(
-            self.image, "Test Label", "Test Description", self.game_object
-        )
-        self.assertTrue(menu_item.enabled)
-        menu_item.enabled = False
-        self.assertFalse(menu_item.enabled)
+def test_init_custom(image, game_object):
+    menu_item = MenuItem(
+        image,
+        "Test Label",
+        "Test Description",
+        game_object,
+        enabled=False,
+        position=(100, 100),
+    )
+    assert menu_item.label == "Test Label"
+    assert menu_item.description == "Test Description"
+    assert menu_item.enabled is False
 
-    def test_in_focus_property(self):
-        menu_item = MenuItem(
-            self.image, "Test Label", "Test Description", self.game_object
-        )
-        self.assertFalse(menu_item.in_focus)
-        menu_item.in_focus = True
-        self.assertTrue(menu_item.in_focus)
 
-    def test_repr(self):
-        menu_item = MenuItem(
-            self.image, "Test Label", "Test Description", self.game_object
-        )
-        self.assertIn("Test Label", str(menu_item))
-        self.assertIn("enabled=True", str(menu_item))
+def test_update_image_focus(image, game_object):
+    menu_item = MenuItem(image, "Test Label", "Test Description", game_object)
+    menu_item._in_focus = True
+    menu_item.update_image = MagicMock()
+    menu_item.update_image()
+    menu_item.update_image.assert_called_once()
+
+
+def test_update_image_enabled(image, game_object):
+    menu_item = MenuItem(image, "Test Label", "Test Description", game_object)
+    menu_item.enabled = False
+    menu_item.update_image = MagicMock()
+    menu_item.update_image()
+    menu_item.update_image.assert_called_once()
+
+
+def test_enabled_property(image, game_object):
+    menu_item = MenuItem(image, "Test Label", "Test Description", game_object)
+    assert menu_item.enabled is True
+    menu_item.enabled = False
+    assert menu_item.enabled is False
+
+
+def test_in_focus_property(image, game_object):
+    menu_item = MenuItem(image, "Test Label", "Test Description", game_object)
+    assert menu_item.in_focus is False
+    menu_item.in_focus = True
+    assert menu_item.in_focus is True
+
+
+def test_repr(image, game_object):
+    menu_item = MenuItem(image, "Test Label", "Test Description", game_object)
+    rep = str(menu_item)
+    assert "Test Label" in rep
+    assert "enabled=True" in rep

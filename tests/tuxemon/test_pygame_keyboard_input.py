@@ -106,6 +106,7 @@ def test_reload_mapping_behaviors(
     expected_pressed,
 ):
     keyboard_input.reload_mapping(new_map)
+    keyboard_input.update_state(0)
 
     if event:
         keyboard_input.process_event(event)
@@ -125,3 +126,25 @@ def test_reload_mapping_behaviors(
     if new_map == {pg.K_RETURN: buttons.UP}:
         keyboard_input.process_event(Event(pg.KEYUP, key=pg.K_RETURN))
         assert not keyboard_input.buttons[buttons.UP].pressed
+
+
+def test_reload_mapping_is_deferred(keyboard_input: PygameKeyboardInput):
+    old_map = dict(keyboard_input.event_map)
+    new_map = {pg.K_LEFT: buttons.A}
+    keyboard_input.reload_mapping(new_map)
+    assert keyboard_input.event_map == old_map
+
+
+def test_update_state_applies_pending_map(keyboard_input: PygameKeyboardInput):
+    new_map = {pg.K_LEFT: buttons.A}
+    keyboard_input.reload_mapping(new_map)
+    keyboard_input.update_state(0)
+    assert keyboard_input.event_map == new_map
+
+
+def test_update_state_rebuilds_buttons(keyboard_input: PygameKeyboardInput):
+    new_map = {pg.K_LEFT: buttons.A}
+    keyboard_input.reload_mapping(new_map)
+    keyboard_input.update_state(0)
+    assert buttons.A in keyboard_input.buttons
+    assert buttons.UP not in keyboard_input.buttons

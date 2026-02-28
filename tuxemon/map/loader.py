@@ -409,6 +409,7 @@ class TMXMapLoader:
             data,
             data.properties,
             filename,
+            context.resolution,
         )
 
     def load_tiled_map(self, filename: str) -> pytmx.TiledMap:

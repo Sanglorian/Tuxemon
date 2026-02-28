@@ -20,7 +20,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu, PopUpMenu
 from tuxemon.monster.monster import Monster
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.sprite import Sprite
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.states.monster_menu import MonsterMenuState
@@ -398,7 +397,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     "combat_dialog", message="", dialog_speed="max"
                 )
 
-                screen_w, screen_h = SCREEN_SIZE
+                screen_w, screen_h = self.client.context.resolution
 
                 # --- Clear old sprites if they exist ---
                 if self.range_icon_sprite:

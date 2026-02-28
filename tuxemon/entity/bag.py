@@ -93,6 +93,10 @@ class BagHandler:
             logger.debug(f"Item '{item.slug}' not found in bag.")
             return False
 
+        if item.quantity == 0:
+            self._items.remove(item)
+            return True
+
         # Try to remove from stock
         if not item.stock.try_remove(quantity):
             logger.debug(

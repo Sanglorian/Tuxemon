@@ -46,8 +46,7 @@ events:
     type: event
   Create Lile:
     actions:
-    - create_npc eclipse_bank_lile,10,18
-    - char_wander eclipse_bank_lile
+    - create_npc eclipse_bank_lile,10,18,wander
     conditions:
     - not char_exists eclipse_bank_lile
     type: event

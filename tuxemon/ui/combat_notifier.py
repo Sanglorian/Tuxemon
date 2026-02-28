@@ -27,7 +27,6 @@ class TextAnimationManager:
         self.text_queue: deque[tuple[Callable[[], None], float]] = deque()
         self._text_time_left: float = 0
         self._xp_messages: list[str] = []
-        self._pending_xp_duration: float | None = None
 
     @staticmethod
     def compute_text_anim_time(message: str) -> float:
@@ -61,6 +60,9 @@ class TextAnimationManager:
     def get_text_animation_time_left(self) -> float:
         return self._text_time_left
 
+    def is_animating(self) -> bool:
+        return self._text_time_left > 0 or bool(self.text_queue)
+
     def add_xp_message(self, message: str) -> None:
         self._xp_messages.append(message)
         logger.debug(
@@ -69,20 +71,16 @@ class TextAnimationManager:
 
     def trigger_xp_animation(
         self, alert_func: Callable[..., None], text_area: TextArea
-    ) -> None:
-        if self._xp_messages:
-            combined_message = "\n".join(self._xp_messages)
-            logger.debug(
-                f"Triggering XP animation with combined message: {combined_message!r}"
-            )
-            duration = self.compute_text_anim_time(combined_message)
-            self._pending_xp_duration = duration
-            timed_text_animation = partial(
-                alert_func, combined_message, text_area
-            )
-            self.add_text_animation(timed_text_animation, duration)
-            self._xp_messages.clear()
-            logger.debug("Cleared XP messages after triggering animation")
+    ) -> float | None:
+        if not self._xp_messages:
+            return None
+
+        combined_message = "\n".join(self._xp_messages)
+        duration = self.compute_text_anim_time(combined_message)
+        timed_text_animation = partial(alert_func, combined_message, text_area)
+        self.add_text_animation(timed_text_animation, duration)
+        self._xp_messages.clear()
+        return duration
 
 
 class CombatNotifier:
@@ -141,31 +139,15 @@ class CombatNotifier:
         Triggers XP animation and schedules input block based on actual animation duration.
         """
 
-        def after_xp_triggered() -> None:
-            duration = self.text_anim._pending_xp_duration
-
-            if duration and self._lock_update:
-                logger.debug(
-                    f"Using XP duration: {duration:.2f}s to block input"
-                )
-                self.state.task(
-                    partial(self.state.client.push_state, "WaitForInputState"),
-                    interval=delay + duration,
-                )
-            self.text_anim._pending_xp_duration = None
-
-        # First queue the XP animation trigger
-        self.state.task(
-            partial(
-                self.text_anim.trigger_xp_animation,
+        def trigger_and_block() -> None:
+            duration = self.text_anim.trigger_xp_animation(
                 self.alert_manager.alert,
                 text_area,
-            ),
-            interval=delay,
-        )
+            )
+            if duration and self._lock_update:
+                self.state.task(
+                    partial(self.state.client.push_state, "WaitForInputState"),
+                    interval=duration,
+                )
 
-        # Then queue the block decision to run after animation has been triggered
-        self.state.task(
-            after_xp_triggered,
-            interval=delay + 0.01,  # Slight buffer to ensure XP is queued
-        )
+        self.state.task(trigger_and_block, interval=delay)

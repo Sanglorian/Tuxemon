@@ -302,7 +302,7 @@ class TranslatorManager:
             for domain in domains_to_reload:
                 self.load_translator_for_domain(domain, new_locale_name)
 
-            LOCALE_CONFIG.slug = new_locale_name
+            CONFIG.update_attribute("game", "locale", new_locale_name)
             logger.info(f"Language changed globally to: {new_locale_name}")
             self.invoke_language_changed_callbacks(new_locale_name)
         else:

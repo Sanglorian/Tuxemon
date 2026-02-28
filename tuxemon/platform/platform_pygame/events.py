@@ -111,6 +111,24 @@ class PlayStationMapping(InputMappingStrategy):
         return (None, False)
 
 
+class KeyBindingRules:
+    RESERVED_KEYS = {
+        pg.K_ESCAPE,
+        pg.K_RETURN,
+        pg.K_BACKSPACE,
+        pg.K_LSHIFT,
+        pg.K_RSHIFT,
+        pg.K_UP,
+        pg.K_DOWN,
+        pg.K_LEFT,
+        pg.K_RIGHT,
+    }
+
+    @classmethod
+    def is_valid_binding(cls, key: int) -> bool:
+        return key not in cls.RESERVED_KEYS
+
+
 class PygameEventHandler(InputHandler[Event]):
     """
     Input handler of Pygame events.
@@ -304,6 +322,17 @@ class PygameKeyboardInput(PygameEventHandler):
     ) -> None:
         super().__init__(event_map or self.default_input_map)
         self._initialize_buttons_from_map(self.event_map)
+        self._needs_rebuild: bool = False
+        self._pending_map: Mapping[int | None, int] | None = None
+
+    def update_state(self, dt: float) -> None:
+        if self._needs_rebuild:
+            assert self._pending_map is not None
+            self.event_map = self._pending_map
+            self._initialize_buttons_from_map(self._pending_map)
+            self._needs_rebuild = False
+
+        super().update_state(dt)
 
     def process_event(self, input_event: Event) -> None:
         """
@@ -320,8 +349,8 @@ class PygameKeyboardInput(PygameEventHandler):
 
     def reload_mapping(self, new_map: Mapping[int | None, int]) -> None:
         """Update the key→button mapping in place."""
-        self.event_map = new_map
-        self._initialize_buttons_from_map(new_map)
+        self._pending_map = new_map
+        self._needs_rebuild = True
 
     def _initialize_buttons_from_map(
         self, mapping: Mapping[int | None, int]

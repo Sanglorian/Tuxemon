@@ -5,6 +5,7 @@ import pytest
 from tuxemon.camera.camera import CameraView, project
 from tuxemon.math import Vector2
 from tuxemon.prepare import DISPLAY_CONTEXT, DisplayContext
+from tuxemon.scaling import DefaultScaling
 
 
 @pytest.fixture
@@ -86,8 +87,10 @@ def test_get_center_zero_tile_size(context):
     fake_context = DisplayContext(
         screen=context.screen,
         rect=context.rect,
-        scale=1,
         tile_size=(0, 0),
+        scaling=DefaultScaling(1),
+        scale=1,
+        resolution=(1, 1),
     )
     view = CameraView(fake_context)
     px, py = project(fake_context, (1.0, 1.0))
@@ -101,8 +104,10 @@ def test_get_center_extreme_tile_size(context):
     fake_context = DisplayContext(
         screen=context.screen,
         rect=context.rect,
-        scale=1,
         tile_size=tile_size,
+        scaling=DefaultScaling(1),
+        scale=1,
+        resolution=(1, 1),
     )
     view = CameraView(fake_context)
     px, py = project(fake_context, (1.0, 1.0))

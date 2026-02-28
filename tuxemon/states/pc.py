@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.menu import Menu
 
@@ -16,6 +16,7 @@ from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.sizes import KENNEL, LOCKER
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
 
 
@@ -42,12 +43,14 @@ class PCState(PygameMenuState):
 
     def __init__(
         self,
+        client: BaseClient,
         character: NPC,
         tag_list: list[str],
         menu_builder: PCMenuBuilder | None = None,
+        **kwargs: Any,
     ) -> None:
         self.tag_list = tag_list
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         self.escape_key_exits = False
 
         char = character

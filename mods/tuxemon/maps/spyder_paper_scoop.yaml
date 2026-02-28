@@ -169,8 +169,7 @@ events:
     type: event
   Create Dante:
     actions:
-    - create_npc spyder_dante,11,6
-    - char_wander spyder_dante
+    - create_npc spyder_dante,11,6,wander
     conditions:
     - not char_exists spyder_dante
     - is variable_set intro_scoop:done

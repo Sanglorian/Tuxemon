@@ -14,6 +14,7 @@ from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel, SpeedLabel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import TECH_INFO
 from tuxemon.platform.const.sizes import ACCURACY_RANGE, POTENCY_RANGE
@@ -22,6 +23,7 @@ from tuxemon.technique.technique import Technique
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.monster.monster import Monster
     from tuxemon.platform.events import PlayerInput
 
@@ -93,7 +95,8 @@ class MonsterMovesState(PygameMenuState):
             ).translate(fxw(83.6 / 256), fxh(_height))
 
         # Monster image (manual position)
-        surface = monster.get_sprite("front").image
+        renderer = MonsterRenderer(monster, scale=self.factor)
+        surface = renderer.get_sprite("front").image
         new_image = self._create_image_from_surface(surface)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
@@ -275,7 +278,7 @@ class MonsterMovesState(PygameMenuState):
             for i, t in enumerate(technique.types.current[:2]):
                 path = f"gfx/ui/icons/element/{t.name.lower()}_type_small.png"
                 img = self._create_image(path)
-                img.scale(self.client.context.scale, self.client.context.scale)
+                img.scale(self.factor, self.factor)
                 icon = menu.add.image(img.copy(), float=True)
                 icon.translate(fxw(x_positions[i]), fxh(y_position))
                 self.type_icon_widgets.append(icon)
@@ -284,7 +287,7 @@ class MonsterMovesState(PygameMenuState):
         if technique.range:
             path = f"gfx/ui/icons/range/{technique.range.name.lower()}.png"
             rimg = self._create_image(path)
-            rimg.scale(self.client.context.scale, self.client.context.scale)
+            rimg.scale(self.factor, self.factor)
             self.range_icon_widget = menu.add.image(rimg.copy(), float=True)
             self.range_icon_widget.translate(fxw(4 / 256), fxh(86.8 / 144))
 
@@ -294,7 +297,7 @@ class MonsterMovesState(PygameMenuState):
 
         spath = f"gfx/ui/icons/speed/{speed_key}.png"
         simg = self._create_image(spath)
-        simg.scale(self.client.context.scale, self.client.context.scale)
+        simg.scale(self.factor, self.factor)
         self.speed_icon_widget = menu.add.image(simg.copy(), float=True)
         self.speed_icon_widget.translate(fxw(222 / 256), fxh(51.8 / 144))
 
@@ -326,26 +329,31 @@ class MonsterMovesState(PygameMenuState):
     # -------------------------
     # Lifecycle / plumbing
     # -------------------------
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        monster: Monster,
+        source: str,
+        monsters: list[Monster] | None,
+        **kwargs: Any,
+    ) -> None:
         if not lookup_cache:
             _lookup_monsters()
 
-        inner = next(iter(kwargs.values())) if kwargs else {}
-        monster: Monster | None = inner.get("monster")
-        source: str = inner.get("source") or ""
-        self._monsters: list[Monster] | None = inner.get("monsters")
-
-        if monster is None:
-            raise ValueError("No monster")
-
         width, height = SCREEN_SIZE
+
+        self._monster = monster
+        self._source = source
+        self._monsters = monsters
+
         theme = self._setup_theme(TECH_INFO)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height, width=width)
-        self._source = source
-        self._monster = monster
+        super().__init__(
+            client=client, height=height, width=width, theme=theme, **kwargs
+        )
+
         self.add_menu_items(self.menu, monster)
         self.update_selected_widget()
         self.reset_theme()
@@ -371,14 +379,14 @@ class MonsterMovesState(PygameMenuState):
             if event.button == buttons.RIGHT and self.valid_press(event):
                 slot = (slot + 1) % len(monsters)
                 param["monster"] = monsters[slot]
-                client.replace_state("MonsterMovesState", kwargs=param)
+                client.replace_state("MonsterMovesState", **param)
                 return None
 
             # LEFT → previous monster (with repeat)
             elif event.button == buttons.LEFT and self.valid_press(event):
                 slot = (slot - 1) % len(monsters)
                 param["monster"] = monsters[slot]
-                client.replace_state("MonsterMovesState", kwargs=param)
+                client.replace_state("MonsterMovesState", **param)
                 return None
 
             # Everything else → normal menu behavior

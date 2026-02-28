@@ -94,7 +94,7 @@ class BaseClient(ABC):
         )
         self.state_manager = StateManager(
             package="tuxemon.states",
-            event=self.event_bus,
+            client=self,
             repository=self.state_repository,
             on_state_change=self.on_state_change,
         )
@@ -106,7 +106,10 @@ class BaseClient(ABC):
         self.afk_manager = AFKManager()
         self.input_cache = ScriptInputCache(self.event_bus)
         self.input_manager = InputManager(
-            config, self.afk_manager, self.input_recorder
+            config,
+            self.afk_manager,
+            self.input_recorder,
+            self.context.resolution,
         )
 
         # Set up our networking for multiplayer.
@@ -180,7 +183,7 @@ class BaseClient(ABC):
 
         # Various Sessions
         self.trade_manager = TradeManager(self.npc_manager)
-        self.environment_manager = EnvironmentManager()
+        self.environment_manager = EnvironmentManager(self.context)
         self.encounter_manager = EncounterManager()
         self.park_session = ParkSession()
         self.weather_manager = WorldWeatherManager()
@@ -279,7 +282,7 @@ class BaseClient(ABC):
         """
 
     @abstractmethod
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         """
         Main loop for entire game.
 

@@ -12,6 +12,9 @@ from tuxemon.entity.appearance import AppearanceManager, RuntimeAppearance
 class DummyTemplate:
     sprite_name: str = "npc_default"
     combat_sheet: str = "combat_default"
+    combat_frame_width: int = 32
+    combat_frame_height: int = 32
+    is_static_prop: bool = False
 
 
 def test_from_template():
@@ -52,6 +55,8 @@ def test_to_dict_roundtrip():
         "outfit": None,
         "accessory": None,
         "palette": None,
+        "combat_frame_width": None,
+        "combat_frame_height": None,
     }
 
 

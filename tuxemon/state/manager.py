@@ -15,7 +15,7 @@ from tuxemon.state.stack import StateStack
 from tuxemon.state.state import State
 
 if TYPE_CHECKING:
-    from tuxemon.event.eventbus import EventBus
+    from tuxemon.base_client import BaseClient
     from tuxemon.state.repository import StateRepository
 
 logger = logging.getLogger(__name__)
@@ -40,17 +40,18 @@ class StateManager:
     def __init__(
         self,
         package: str,
-        event: EventBus,
+        client: BaseClient,
         repository: StateRepository,
         on_state_change: Callable[..., None] | None = None,
         state_loader: StateLoader | None = None,
     ) -> None:
         self.package = package
-        self.event_bus = event
+        self.client = client
+        self.event_bus = client.event_bus
         self.state_repository = repository
         self.state_loader = state_loader or StateLoader(package, paths.LIBDIR)
         self.state_stack = StateStack()
-        self.state_factory = StateFactory(self.state_repository)
+        self.state_factory = StateFactory(self.client, self.state_repository)
         self.state_queue = StateQueue(self)
 
         if on_state_change:
@@ -99,7 +100,7 @@ class StateManager:
         base_count = base_count or DEFAULT_BASE_STATE_COUNT
         return len(self.active_states) > base_count
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         """
         Run update on all active states, which doing some internal housekeeping.
 
@@ -110,11 +111,11 @@ class StateManager:
             time_delta: Amount of time passed since last frame.
         """
         logger.debug("updating states")
-        self.trigger_global_event("pre_state_update", time_delta)
+        self.trigger_global_event("pre_state_update", dt)
         for state in self.active_states:
             self._check_resume(state)
-            state.update(time_delta)
-        self.trigger_global_event("post_state_update", time_delta)
+            state.update(dt)
+        self.trigger_global_event("post_state_update", dt)
 
     def _check_resume(self, state: State) -> None:
         """

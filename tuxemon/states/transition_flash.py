@@ -3,16 +3,18 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.surface import Surface
 
 from tuxemon.graphics import ColorLike
 from tuxemon.platform.const.graphics import WHITE_COLOR
-from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.rumble.tools import RumbleParams
 from tuxemon.state.state import State
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +27,11 @@ class FlashTransition(State):
 
     def __init__(
         self,
+        client: BaseClient,
         color: ColorLike = WHITE_COLOR,
         flash_time: float = 0.2,
         max_flash_count: int = 7,
+        **kwargs: Any,
     ) -> None:
         """
         Parameters:
@@ -37,7 +41,7 @@ class FlashTransition(State):
             max_flash_count: The maximum number of times the flash effect will
                 repeat. Defaults to 7.
         """
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         logger.info("Initializing battle transition")
         self.flash_time = flash_time
         self.flash_state = "up"
@@ -47,30 +51,23 @@ class FlashTransition(State):
         params = RumbleParams(target=-1, length=1.5)
         self.client.rumble_manager.rumble(params)
         self.color = color
-        self.transition_surface = Surface(SCREEN_SIZE)
+        self.transition_surface = Surface(self.client.context.resolution)
         self.transition_surface.fill(self.color)
 
     def resume(self) -> None:
         self.transition_surface.fill(self.color)
 
-    def update(self, time_delta: float) -> None:
-        """
-        Update function for state.
-
-        Parameters:
-            time_delta: Time since last update in seconds
-
-        """
+    def update(self, dt: float) -> None:
         logger.info("Battle transition!")
 
         if self.flash_state == "up":
             self.transition_alpha = min(
                 255,
-                self.transition_alpha + 255 * (time_delta / self.flash_time),
+                self.transition_alpha + 255 * (dt / self.flash_time),
             )
         elif self.flash_state == "down":
             self.transition_alpha = max(
-                0, self.transition_alpha - 255 * (time_delta / self.flash_time)
+                0, self.transition_alpha - 255 * (dt / self.flash_time)
             )
 
         if self.transition_alpha >= 255:

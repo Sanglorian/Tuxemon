@@ -4,14 +4,17 @@ from __future__ import annotations
 
 import logging
 import random
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame import draw as pg_draw
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon.platform.events import PlayerInput
 from tuxemon.state.state import State
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
 
@@ -22,13 +25,19 @@ class MosaicTransition(State):
     name: ClassVar[str] = "MosaicTransition"
     force_draw = True
 
-    def __init__(self, duration: float = 1.0, tile_size: int = 10) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        duration: float = 1.0,
+        tile_size: int = 10,
+        **kwargs: Any,
+    ) -> None:
         """
         Parameters:
             duration: The time in seconds. Defaults to 1.0 seconds.
             tile_size: The size of the mosaic tile. Defaults to 10.
         """
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         logger.info("Initializing Mosaic transition")
         self.duration = duration
         self.start_time = 0.0
@@ -46,15 +55,8 @@ class MosaicTransition(State):
                 self.tiles.append(rect)
                 self.tile_surfaces.append(self.screenshot.subsurface(rect))
 
-    def update(self, time_delta: float) -> None:
-        """
-        Update function for state.
-
-        Parameters:
-            time_delta: Time since last update in seconds
-
-        """
-        self.elapsed_time += time_delta
+    def update(self, dt: float) -> None:
+        self.elapsed_time += dt
         if self.elapsed_time > self.duration:
             logger.info("Mosaic transition finished.")
             self.client.pop_state()

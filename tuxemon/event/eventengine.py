@@ -140,19 +140,19 @@ class EventEngine:
         Parameters:
             map_event: Event whose actions will be executed.
         """
-        if map_event.id not in self.running_events:
-            behav_acts = expand_behavior_actions(
-                map_event, self.behavior_manager
-            )
-            map_event.acts = behav_acts + list(map_event.acts)
+        if map_event.id in self.running_events:
+            return
 
-            logger.debug(f"Starting map event: {map_event.id}")
-            token = RunningEvent(map_event)
-            token.running()
-            self.running_events[map_event.id] = token
+        behav_acts = expand_behavior_actions(map_event, self.behavior_manager)
+        combined_actions = behav_acts + list(map_event.acts)
+        logger.debug(f"Starting map event: {map_event.id}")
 
-            if map_event in self.session.client.map_manager.inits:
-                self.session.client.map_manager.remove_init(map_event)
+        token = RunningEvent(map_event, combined_actions)
+        token.running()
+        self.running_events[map_event.id] = token
+
+        if map_event in self.session.client.map_manager.inits:
+            self.session.client.map_manager.remove_init(map_event)
 
     def process_map_event(self, map_event: EventObject) -> None:
         """
@@ -173,9 +173,6 @@ class EventEngine:
     def update(self, dt: float) -> None:
         """
         Check all the MapEvents and start their actions if conditions are met.
-
-        Parameters:
-            dt: Amount of time passed in seconds since last frame.
         """
         if self._suspended:
             return
@@ -191,11 +188,10 @@ class EventEngine:
 
         Actions may be started during this function.
         """
-        all_events = list(self.session.client.map_manager.inits) + list(
-            self.session.client.map_manager.events
-        )
-        all_events.sort(key=lambda event: event.priority, reverse=True)
-        for event in all_events:
+        for event in self.session.client.map_manager.inits:
+            self.process_map_event(event)
+
+        for event in self.session.client.map_manager.events:
             self.process_map_event(event)
 
     def register_global_event(self, event: EventObject) -> bool:
@@ -204,6 +200,8 @@ class EventEngine:
             return False
 
         self.global_events.append(event)
+        self.global_events.sort(key=lambda e: e.priority, reverse=True)
+
         logger.debug(f"Global event {event.id} registered.")
         return True
 
@@ -226,11 +224,7 @@ class EventEngine:
         return was_removed
 
     def check_global_conditions(self) -> None:
-        sorted_global_events = sorted(
-            self.global_events, key=lambda event: event.priority, reverse=True
-        )
-
-        for event in sorted_global_events:
+        for event in self.global_events:
             if event.id in self.triggered_global_events:
                 continue
             self._evaluate_and_queue_event(event, is_global=True)
@@ -355,32 +349,40 @@ class EventEngine:
 
             current_action = running_event.current_action
 
-            # Handle initialization of the next action if none is active
+            # If no action is active, try to load the next one
             if current_action is None:
                 if not self.handle_next_action(running_event):
-                    return False  # Event is complete
-                continue
+                    return False
+                current_action = running_event.current_action
 
-            # Check for cancellation
+                if current_action is None:
+                    # This should not normally happen, but protects against
+                    # misbehaving actions or unexpected states.
+                    logger.error(
+                        f"handle_next_action() succeeded but produced no action "
+                        f"for event {running_event.map_event.id}"
+                    )
+                    return False
+
+            # Check if the action was cancelled immediately on start
             if current_action.cancelled:
                 logger.debug("Action is cancelled, advancing to the next one.")
                 running_event.advance()
                 running_event.current_action = None
                 continue
 
-            # with add_error_context(e.map_event, e.current_action,
-            # self.session):
+            # Update the action
             current_action.update(self.session, dt)
 
+            # Completion check
             if current_action.done:
-                # action finished, so continue and do the next one,
-                # if available
                 current_action.cleanup(self.session)
                 running_event.advance()
                 running_event.current_action = None
-                logger.debug(f"Action finished: {current_action}")
+                # CONTINUE the loop to see if the next action is also instant
+                continue
             else:
-                # Action is still running, exit the loop
+                # Action is still working (e.g., walking, fading); wait for next frame
                 return True
 
     def handle_next_action(self, running_event: RunningEvent) -> bool:

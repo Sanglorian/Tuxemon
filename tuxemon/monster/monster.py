@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 import random
 from collections.abc import Mapping, Sequence
-from dataclasses import fields
 from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
@@ -18,7 +17,6 @@ from tuxemon.db import (
     GenderType,
     MonsterModel,
     MonsterSpritesModel,
-    SoundProperties,
     StatType,
 )
 from tuxemon.element import ElementTypesHandler
@@ -30,25 +28,20 @@ from tuxemon.monster.experience import MonsterExperience
 from tuxemon.monster.held_item import MonsterItemHandler
 from tuxemon.monster.moves import MonsterMovesHandler
 from tuxemon.monster.plague import MonsterPlagueHandler
-from tuxemon.monster.sprite import (
-    Flair,
-    FlairApplier,
-    MonsterSpriteHandler,
-    SpriteLoader,
-)
+from tuxemon.monster.renderer import SoundConfig, SpriteConfig
+from tuxemon.monster.sprite import Flair, FlairApplier
 from tuxemon.monster.stats import (
     BasicStats,
     CustomStatBoosts,
     IndividualValues,
     StatCalculator,
     TrainingPoints,
+    compare_stats,
     randomize_ivs,
 )
 from tuxemon.monster.status import MonsterStatusHandler
 from tuxemon.platform.const.sizes import MONTH_KEYS
-from tuxemon.prepare import DISPLAY_CONTEXT
 from tuxemon.shape import ShapeHandler
-from tuxemon.sprite import Sprite
 from tuxemon.taste import Taste
 from tuxemon.time_handler import random_month_day, today_month_day
 
@@ -129,6 +122,11 @@ class Monster:
         self.is_confused: bool = False
         self.money_modifier: float = 0.0
 
+        self._levelup_start_stats: BasicStats | None = None
+        self._levelup_end_stats: BasicStats | None = None
+        self._levelup_start_level: int | None = None
+        self._levelup_end_level: int | None = None
+
         self.acquisition: Acquisition = Acquisition.UNKNOWN
         self.gender = self.assign_gender(self.gender_weights)
         self.owner: NPC | None = None
@@ -166,46 +164,32 @@ class Monster:
         self.body = Body()
 
     def _init_assets(self, db_data: MonsterModel) -> None:
-        """Configures visual and auditory assets from DB data."""
-        self.flair_slugs = db_data.flairs
-        self.flairs = FlairApplier.create(self.flair_slugs)
+        """Store only metadata for assets. No loading, no SpriteLoader."""
+        self.flair_slugs = set(db_data.flairs or [])
+        self.flairs: dict[str, Flair] = {}
 
-        loader = SpriteLoader()
         sprites = db_data.sprites or MonsterSpritesModel(
             sheet=f"gfx/sprites/battle/{self.slug}-sheet",
         )
 
-        self.sprite_handler = MonsterSpriteHandler(
+        self.sprite_config = SpriteConfig(
             slug=self.slug,
-            sheet_path=loader.resolve_path(sprites.sheet),
+            sheet_path=sprites.sheet,
             front_rect=sprites.front_rect,
             back_rect=sprites.back_rect,
             menu1_rect=sprites.menu1_rect,
             menu2_rect=sprites.menu2_rect,
-            flairs=self.flairs,
+            flair_slugs=self.flair_slugs,
         )
 
         primary_slug = self.types.primary.slug
 
-        if db_data.sounds and db_data.sounds.combat_call:
-            self.combat_call = db_data.sounds.combat_call
-            if self.combat_call.sfx is None:
-                self.combat_call.sfx = f"sound_{primary_slug}_call"
-        else:
-            self.combat_call = SoundProperties(
-                sfx=f"sound_{primary_slug}_call",
-                volume=1.5,
-            )
-
-        if db_data.sounds and db_data.sounds.faint_call:
-            self.faint_call = db_data.sounds.faint_call
-            if self.faint_call.sfx is None:
-                self.faint_call.sfx = f"sound_{primary_slug}_faint"
-        else:
-            self.faint_call = SoundProperties(
-                sfx=f"sound_{primary_slug}_faint",
-                volume=1.5,
-            )
+        self.sound_config = SoundConfig(
+            combat=db_data.sounds.combat_call if db_data.sounds else None,
+            faint=db_data.sounds.faint_call if db_data.sounds else None,
+            default_combat=f"sound_{primary_slug}_call",
+            default_faint=f"sound_{primary_slug}_faint",
+        )
 
     @classmethod
     def spawn_base(cls, slug: str, level: int) -> Monster:
@@ -258,22 +242,23 @@ class Monster:
                     monster.equip_item(item)
             elif key == "training_points" and value:
                 monster.training_points = TrainingPoints.from_dict(value)
+                monster.training_points.validate()
             elif key == "modifiers" and value:
                 monster.custom_stats = CustomStatBoosts.from_dict(value)
             elif key == "individual_values" and value:
                 monster.individual_values = IndividualValues.from_dict(value)
-            elif key == "flairs" and value:
-                monster.flairs = {
-                    category: Flair.from_state(flair_data)
-                    for category, flair_data in value.items()
-                }
-            elif key == "flair_slugs" and value:
-                monster.flair_slugs = set(value)
-                if "flairs" not in save_data:
-                    monster.flairs = FlairApplier.create(monster.flair_slugs)
+
+        monster.flair_slugs = set(save_data.get("flair_slugs", []))
+
+        if "flairs" in save_data:
+            monster.flairs = {
+                category: Flair.from_state(flair_data)
+                for category, flair_data in save_data["flairs"].items()
+            }
+        elif monster.flair_slugs:
+            monster.flairs = FlairApplier.create(monster.flair_slugs)
 
         monster.set_stats()
-        monster.load_sprites()
 
         return monster
 
@@ -399,16 +384,6 @@ class Monster:
             {"doc": self.capture_string},
         )
 
-    def load_sprites(self, scale: float = DISPLAY_CONTEXT.scale) -> None:
-        """
-        Delegates the task of loading sprites to the sprite handler.
-
-        Parameters:
-            scale: The scaling factor to resize the sprite images.
-                Defaults to the predefined scale value in 'DISPLAY_CONTEXT.scale'.
-        """
-        self.sprite_handler.load_sprites(scale)
-
     def get_owner(self) -> NPC:
         """Returns the character associated with this monster."""
         if not self.owner:
@@ -468,23 +443,6 @@ class Monster:
 
         return exp_multiplier
 
-    def get_sprite(
-        self,
-        sprite_type: str,
-        frame_duration: float = 0.25,
-        scale: float = DISPLAY_CONTEXT.scale,
-        **kwargs: Any,
-    ) -> Sprite:
-        """
-        Retrieves a specific sprite via the sprite handler.
-        """
-        return self.sprite_handler.get_sprite(
-            sprite_type=sprite_type,
-            scale=scale,
-            frame_duration=frame_duration,
-            **kwargs,
-        )
-
     def return_stat(self, stat: StatType | str) -> int:
         """
         Returns a monster stat (eg. melee, armour, etc.).
@@ -519,35 +477,33 @@ class Monster:
         self, stat_name: str, value: int = config_monster.default_tp_gain
     ) -> None:
         """
-        Gives TP points to the monster's TrainingPoints after a battle,
-        respecting the per-stat and total TP limits.
+        Gives TP points to the monster, respecting global and per-stat limits.
         """
-        max_tps = config_monster.max_tps
-        max_total_tps = config_monster.max_total_tps
-        total_tps = sum(
-            getattr(self.training_points, field.name)
-            for field in fields(self.training_points)
-        )
-        stat_tps = getattr(self.training_points, stat_name)
+        if stat_name not in BasicStats.names():
+            raise ValueError(f"Invalid stat name: {stat_name}")
+
+        current_tps = self.training_points.to_dict()
+        total_tps = sum(current_tps.values())
+
+        remaining_total = config_monster.max_total_tps - total_tps
+        current_stat_val = getattr(self.training_points, stat_name)
+        remaining_stat = config_monster.max_tps - current_stat_val
+
+        points_to_add = max(0, min(value, remaining_total, remaining_stat))
+
+        if points_to_add == 0:
+            logger.debug(
+                f"No TP added to '{stat_name}' — cap reached "
+                f"(remaining_total={remaining_total}, remaining_stat={remaining_stat})."
+            )
+            return
+
+        new_val = current_stat_val + points_to_add
+        setattr(self.training_points, stat_name, new_val)
+        self.training_points.validate()
         logger.debug(
-            f"Attempting to give {value} training_points to '{stat_name}'"
+            f"Added {points_to_add} TP to '{stat_name}'. New total: {new_val}"
         )
-        logger.debug(f"Current training_points for '{stat_name}': {stat_tps}")
-        logger.debug(f"Current total training_points: {total_tps}")
-        logger.debug(
-            f"Remaining total training_points: {max_total_tps - total_tps}"
-        )
-        logger.debug(
-            f"Remaining training_points for '{stat_name}': {max_tps - stat_tps}"
-        )
-        remaining_total_tps = max_total_tps - total_tps
-        points_to_add = min(value, remaining_total_tps, max_tps - stat_tps)
-        logger.debug(
-            f"training_points to be added to '{stat_name}': {points_to_add}"
-        )
-        new_stat_tps = stat_tps + points_to_add
-        setattr(self.training_points, stat_name, new_stat_tps)
-        logger.debug(f"New training_points for '{stat_name}': {new_stat_tps}")
         self.set_stats()
 
     def set_stats(self) -> None:
@@ -605,8 +561,18 @@ class Monster:
             self.item_handler.held_item.temporary_stat_boosts = BasicStats()
 
     def set_level(self, new_level: int, old_level: int) -> int:
+
+        if new_level > old_level and self._levelup_start_stats is None:
+            self._levelup_start_stats = self.base_stats.copy()
+            self._levelup_start_level = old_level
+
         self.experience_handler.set_level(new_level)
         self.set_stats()
+
+        if new_level > old_level:
+            self._levelup_end_stats = self.base_stats.copy()
+            self._levelup_end_level = new_level
+
         level_delta = new_level - old_level
 
         if level_delta > 0:
@@ -620,6 +586,28 @@ class Monster:
                 logger.debug("No evolution flagged at level-up")
 
         return level_delta
+
+    def consume_levelup_summary(
+        self,
+    ) -> tuple[int | None, int | None, dict[str, tuple[int, int, int]]] | None:
+        if (
+            self._levelup_start_stats is None
+            or self._levelup_end_stats is None
+        ):
+            return None
+
+        diff = compare_stats(
+            self._levelup_start_stats, self._levelup_end_stats
+        )
+        start = self._levelup_start_level
+        end = self._levelup_end_level
+
+        self._levelup_start_stats = None
+        self._levelup_end_stats = None
+        self._levelup_start_level = None
+        self._levelup_end_level = None
+
+        return start, end, diff
 
     def set_experience_modifier(self, modifier: float) -> None:
         """Sets the experience modifier for this monster."""

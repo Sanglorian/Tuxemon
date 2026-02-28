@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 
@@ -11,8 +11,11 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_MISSIONS
-from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_SIZE
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 
 class NumberPickerState(PygameMenuState):
@@ -20,10 +23,11 @@ class NumberPickerState(PygameMenuState):
     A compact number picker using +/- buttons instead of a long list.
     """
 
-    name = "NumberPickerState"
+    name: ClassVar[str] = "NumberPickerState"
 
     def __init__(
         self,
+        client: BaseClient,
         min_value: int,
         max_value: int,
         callback: Callable[[int], None],
@@ -49,7 +53,7 @@ class NumberPickerState(PygameMenuState):
 
         width = int(0.5 * width)
         height = int(0.5 * height)
-        super().__init__(width=width, height=height, **kwargs)
+        super().__init__(client=client, width=width, height=height, **kwargs)
 
         if escape_key_exits is not None:
             self.escape_key_exits = escape_key_exits

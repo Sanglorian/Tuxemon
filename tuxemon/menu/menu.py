@@ -59,26 +59,40 @@ from tuxemon.sprite import (
     VisualSpriteList,
 )
 from tuxemon.state.state import State
-from tuxemon.tools import scale, transform_resource_filename
+from tuxemon.tools import transform_resource_filename
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text_renderer import TextRenderer
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.menu.alert import AlertManager
     from tuxemon.platform.events import PlayerInput
+    from tuxemon.prepare import DisplayContext
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
 class FontSettings:
-    smaller: int = scale(FONT_SIZE_SMALLER)
-    small: int = scale(FONT_SIZE_SMALL)
-    medium: int = scale(FONT_SIZE)
-    big: int = scale(FONT_SIZE_BIG)
-    bigger: int = scale(FONT_SIZE_BIGGER)
-    biggest: int = scale(FONT_SIZE_BIGGEST)
+    smaller: int
+    small: int
+    medium: int
+    big: int
+    bigger: int
+    biggest: int
+
+    @classmethod
+    def from_context(cls, context: DisplayContext) -> FontSettings:
+        s = context.scaling.scale_int
+        return cls(
+            smaller=s(FONT_SIZE_SMALLER),
+            small=s(FONT_SIZE_SMALL),
+            medium=s(FONT_SIZE),
+            big=s(FONT_SIZE_BIG),
+            bigger=s(FONT_SIZE_BIGGER),
+            biggest=s(FONT_SIZE_BIGGEST),
+        )
 
 
 T = TypeVar("T", covariant=True)
@@ -94,6 +108,7 @@ class PygameMenuState(State):
 
     def __init__(
         self,
+        client: BaseClient,
         width: int = 1,
         height: int = 1,
         theme: Theme | None = None,
@@ -101,8 +116,10 @@ class PygameMenuState(State):
         font_settings: FontSettings | None = None,
         **kwargs: Any,
     ) -> None:
-        self.font_type = font_settings or FontSettings()
-        super().__init__()
+        super().__init__(client=client, **kwargs)
+        self.font_type = font_settings or FontSettings.from_context(
+            self.client.context
+        )
         theme = theme or get_theme()
         self._initialize_attributes()
         self._create_menu(width, height, theme, sound_engine, **kwargs)
@@ -198,7 +215,7 @@ class PygameMenuState(State):
         )
 
     def _create_image_from_surface(
-        self, surface: Surface, position=POSITION_CENTER
+        self, surface: Surface, position: str = POSITION_CENTER
     ) -> BaseImage:
         temp_path = "/tmp/tuxemon_sprite.png"
         image.save(surface, temp_path)
@@ -367,8 +384,10 @@ class Menu(Generic[T], State):
     # if true, then menu items can be selected with the mouse/touch
     touch_aware = True
 
-    def __init__(self, selected_index: int = 0, **kwargs: Any) -> None:
-        super().__init__()
+    def __init__(
+        self, client: BaseClient, selected_index: int = 0, **kwargs: Any
+    ) -> None:
+        super().__init__(client=client, **kwargs)
 
         self.rect = self.rect.copy()  # do not remove!
         self.selected_index = selected_index
@@ -395,6 +414,7 @@ class Menu(Generic[T], State):
         self.reload_sounds()  # load default sounds
         self._input_handler = MenuInputHandler(self)
         self._text_renderer = TextRenderer(
+            scaling=self.client.context.scaling,
             font=self.font,
             font_filename=self.font_filename,
             font_color=self.font_color,
@@ -407,6 +427,7 @@ class Menu(Generic[T], State):
             get_selected_item=self.get_selected_item,
             animate=self.animate,
             duration=self.cursor_move_duration,
+            context=self.client.context,
             remove_animations=self.remove_animations_of,
         )
 
@@ -556,8 +577,8 @@ class Menu(Generic[T], State):
         # expand the bounding box by the border and some padding
         # TODO: do not hardcode these values
         # border is 12, padding is the rest
-        rect1.width += scale(18)
-        rect1.height += scale(19)
+        rect1.width += self.client.context.scaling.scale_int(18)
+        rect1.height += self.client.context.scaling.scale_int(19)
         rect1.topleft = 0, 0
 
         # set our rect and adjust the centers to match
@@ -692,12 +713,12 @@ class Menu(Generic[T], State):
         if size < self.min_font_size:
             size = self.min_font_size
 
-        self.line_spacing = scale(line_spacing)
+        self.line_spacing = self.client.context.scaling.scale_int(line_spacing)
 
         if self.client.config.large_gui:
-            self.font_size = scale(size + 1)
+            self.font_size = self.client.context.scaling.scale_int(size + 1)
         else:
-            self.font_size = scale(size)
+            self.font_size = self.client.context.scaling.scale_int(size)
 
         self.font = Font(font, self.font_size)
         return self.font
@@ -961,8 +982,10 @@ class PopUpMenu(Menu[T]):
     name: ClassVar[str] = "PopUpMenu"
     ANIMATION_DURATION = 0.20
 
-    def __init__(self, initial_scale: float = 0.1, **kwargs: Any):
-        super().__init__(**kwargs)
+    def __init__(
+        self, client: BaseClient, initial_scale: float = 0.1, **kwargs: Any
+    ):
+        super().__init__(client=client, **kwargs)
         self.initial_scale = initial_scale
 
     def _calculate_initial_rect(self, final_rect: Rect) -> Rect:

@@ -13,11 +13,12 @@ from tuxemon.db import DialogueProfile, NpcModel
 from tuxemon.entity.appearance import AppearanceManager
 from tuxemon.entity.bag import BagHandler
 from tuxemon.entity.battle import BattlesHandler
+from tuxemon.entity.behavior.base import BehaviorPolicy
 from tuxemon.entity.entity import Entity
 from tuxemon.entity.party import PartyHandler
-from tuxemon.entity.path import PathController
+from tuxemon.entity.path.controller import PathController
 from tuxemon.entity.routing import RoutingPolicy
-from tuxemon.entity.sheet import CombatSheet, get_combat_sheet
+from tuxemon.entity.sheet import CombatSheet
 from tuxemon.entity.steps import StepManager
 from tuxemon.game_variables import GameVariablesManager, PlayerVariablesManager
 from tuxemon.locale.locale import T
@@ -90,7 +91,7 @@ class NPC(Entity):
         self._custom_name: str | None = None
         # general
         self.gender: str | None = None
-        self.behavior: str | None = "wander"  # not used for now
+        self.behavior_policy: BehaviorPolicy | None = None
         self._variables = GameVariablesManager()
         self.battle_handler = BattlesHandler()
         # Tracks Tuxepedia (monster seen or caught)
@@ -188,7 +189,7 @@ class NPC(Entity):
     @property
     def path(self) -> list[tuple[int, int]]:
         """Returns the current movement path assigned to the NPC."""
-        return self.path_controller.path
+        return self.path_controller.path.to_list()
 
     @property
     def move_destination(self) -> tuple[int, int] | None:
@@ -196,7 +197,17 @@ class NPC(Entity):
         return self.path_controller.move_destination
 
     def combat_sheet(self) -> CombatSheet:
-        return get_combat_sheet(self.template)
+        a = self.appearance_manager.state
+
+        sheet = a.combat_sheet or self.template.combat_sheet
+        fw = a.combat_frame_width or self.template.combat_frame_width
+        fh = a.combat_frame_height or self.template.combat_frame_height
+
+        return CombatSheet(
+            file_path=f"gfx/sprites/player/{sheet}.png",
+            frame_w=fw,
+            frame_h=fh,
+        )
 
     def get_state(self, session: Session) -> NPCState:
         """
@@ -304,7 +315,7 @@ class NPC(Entity):
     def abort_movement(self, preserve_position: bool = False) -> None:
         self.path_controller.abort_movement(preserve_position)
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         """
         Handles NPC movement updates, including animations, physics, and
         navigation.
@@ -314,12 +325,10 @@ class NPC(Entity):
         - Animation state of the NPC.
         - Movement logic, including path progression and direct movement
             requests.
-
-        Parameters:
-            time_delta: The time elapsed since the last update
-            (from clock.tick()/1000.0).
         """
-        # Update sprite animations based on movement state.
-        self.sprite_controller.update(time_delta)
-        self.update_physics(time_delta)
-        self.path_controller.update(time_delta)
+        if self.behavior_policy:
+            self.behavior_policy.update(self, self.path_controller, dt)
+
+        self.update_physics(dt)
+        self.path_controller.update(dt)
+        self.sprite_controller.update(dt)

@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.surface import Surface
 from pygame.transform import scale
 
-from tuxemon.platform.events import PlayerInput
 from tuxemon.state.state import State
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +24,12 @@ class ZoomOutTransition(State):
     force_draw = True
 
     def __init__(
-        self, image: Surface, scale: float = 0.1, speed: float = 0.5
+        self,
+        client: BaseClient,
+        image: Surface,
+        scale: float = 0.1,
+        speed: float = 0.5,
+        **kwargs: Any,
     ) -> None:
         """
         Parameters:
@@ -32,15 +40,15 @@ class ZoomOutTransition(State):
                 Defaults to 0.5, meaning the image will decrease in size by 50%
                 every second.
         """
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         logger.info("Initializing Zoom Out transition")
         self.image = image
         self.scale = scale
         self.speed = speed  # scale factor per second
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         if self.scale < 1.0:
-            self.scale += self.speed * time_delta
+            self.scale += self.speed * dt
         else:
             self.scale = 1.0
 
@@ -75,7 +83,12 @@ class ZoomInTransition(State):
     force_draw = True
 
     def __init__(
-        self, image: Surface, scale: float = 1.0, speed: float = 0.5
+        self,
+        client: BaseClient,
+        image: Surface,
+        scale: float = 1.0,
+        speed: float = 0.5,
+        **kwargs: Any,
     ) -> None:
         """
         Parameters:
@@ -86,15 +99,15 @@ class ZoomInTransition(State):
                 Defaults to 0.5, meaning the image will decrease in size by 50%
                 every second.
         """
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         logger.info("Initializing Zoom In transition")
         self.image = image
         self.scale = scale
         self.speed = speed  # scale factor per second
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         if self.scale > 0.1:
-            self.scale -= self.speed * time_delta
+            self.scale -= self.speed * dt
         else:
             self.scale = 0.1
 

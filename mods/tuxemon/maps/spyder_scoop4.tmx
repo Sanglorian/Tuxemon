@@ -159,8 +159,7 @@
   </object>
   <object id="40" name="Create LapinouA" type="event" x="32" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_lapinoua,2,4"/>
-    <property name="act2" value="char_wander spyder_scoop_lapinoua"/>
+    <property name="act1" value="create_npc spyder_scoop_lapinoua,2,4,wander"/>
     <property name="cond1" value="not char_exists spyder_scoop_lapinoua"/>
     <property name="cond2" value="not variable_set scooplapinoua:yes"/>
    </properties>
@@ -178,8 +177,7 @@
   </object>
   <object id="42" name="Create LapinouB" type="event" x="160" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_lapinoub,2,4"/>
-    <property name="act2" value="char_wander spyder_scoop_lapinoub"/>
+    <property name="act1" value="create_npc spyder_scoop_lapinoub,2,4,wander"/>
     <property name="cond1" value="not char_exists spyder_scoop_lapinoub"/>
     <property name="cond2" value="not variable_set scooplapinoub:yes"/>
    </properties>
@@ -197,8 +195,7 @@
   </object>
   <object id="44" name="Create LapinouC" type="event" x="32" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_lapinouc,2,16"/>
-    <property name="act2" value="char_wander spyder_scoop_lapinouc"/>
+    <property name="act1" value="create_npc spyder_scoop_lapinouc,2,16,wander"/>
     <property name="cond1" value="not char_exists spyder_scoop_lapinouc"/>
     <property name="cond2" value="not variable_set scooplapinouc:yes"/>
    </properties>
@@ -216,8 +213,7 @@
   </object>
   <object id="46" name="Create CochiniA" type="event" x="80" y="160" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_cochinia,5,10"/>
-    <property name="act2" value="char_wander spyder_scoop_cochinia"/>
+    <property name="act1" value="create_npc spyder_scoop_cochinia,5,10,wander"/>
     <property name="cond1" value="not char_exists spyder_scoop_cochinia"/>
     <property name="cond2" value="not variable_set scoopcochinia:yes"/>
    </properties>
@@ -235,8 +231,7 @@
   </object>
   <object id="48" name="Create CochiniB" type="event" x="32" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_cochinib,2,19"/>
-    <property name="act2" value="char_wander spyder_scoop_cochinib"/>
+    <property name="act1" value="create_npc spyder_scoop_cochinib,2,19,wander"/>
     <property name="cond1" value="not char_exists spyder_scoop_cochinib"/>
     <property name="cond2" value="not variable_set scoopcochinib:yes"/>
    </properties>
@@ -254,8 +249,7 @@
   </object>
   <object id="50" name="Create CochiniC" type="event" x="160" y="288" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_cochinic,10,18"/>
-    <property name="act2" value="char_wander spyder_scoop_cochinic"/>
+    <property name="act1" value="create_npc spyder_scoop_cochinic,10,18,wander"/>
     <property name="cond1" value="not char_exists spyder_scoop_cochinic"/>
     <property name="cond2" value="not variable_set scoopcochinic:yes"/>
    </properties>

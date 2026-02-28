@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 from tuxemon.state.builder import StateBuilder
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.state.repository import StateRepository
     from tuxemon.state.state import State
 
@@ -20,10 +21,13 @@ class StateFactory:
     using StateBuilder for construction.
     """
 
-    def __init__(self, state_repository: StateRepository) -> None:
+    def __init__(
+        self, client: BaseClient, state_repository: StateRepository
+    ) -> None:
         """
         Initializes the factory with a StateRepository to look up state classes.
         """
+        self._client = client
         self._state_repository = state_repository
 
     def create_state(self, state_name: str, **kwargs: Any) -> State:
@@ -52,6 +56,7 @@ class StateFactory:
             raise RuntimeError(f"Cannot find state: {state_name}")
 
         builder = StateBuilder(state_cls)
+        builder.add_attribute("client", self._client)
         for key, value in kwargs.items():
             builder.add_attribute(key, value)
 

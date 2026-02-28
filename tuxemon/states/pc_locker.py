@@ -122,7 +122,9 @@ class ItemTakeState(PygameMenuState):
 
     name: ClassVar[str] = "ItemTakeState"
 
-    def __init__(self, box_name: str, character: NPC) -> None:
+    def __init__(
+        self, client: BaseClient, box_name: str, character: NPC, **kwargs: Any
+    ) -> None:
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_PC_LOCKER)
@@ -143,7 +145,11 @@ class ItemTakeState(PygameMenuState):
         rows = math.ceil(len(self.box) / columns) * num_widgets
 
         super().__init__(
-            height=height, width=width, columns=columns, rows=rows
+            client=client,
+            height=height,
+            width=width,
+            columns=columns,
+            rows=rows,
         )
 
         column_width = fix_measure(self.menu._width, 0.33)
@@ -200,6 +206,7 @@ class ItemTakeState(PygameMenuState):
             def inner() -> None:
                 self.client.state_manager.push_state(
                     QuantityMenu(
+                        client=self.client,
                         callback=callback,
                         max_quantity=max_quantity,
                         quantity=1,
@@ -242,9 +249,7 @@ class ItemTakeState(PygameMenuState):
             label = T.translate(itm.name).upper() + " x" + str(itm.quantity)
             iid = itm.instance_id.hex
             new_image = self._create_image(itm.sprite)
-            new_image.scale(
-                self.client.context.scale, self.client.context.scale
-            )
+            new_image.scale(self.factor, self.factor)
             menu.add.banner(
                 new_image,
                 partial(self.locker_options, iid, handler),
@@ -268,10 +273,12 @@ class ItemBoxState(PygameMenuState):
 
     name: ClassVar[str] = "ItemBoxState"
 
-    def __init__(self, character: NPC) -> None:
+    def __init__(
+        self, client: BaseClient, character: NPC, **kwargs: Any
+    ) -> None:
         _, height = SCREEN_SIZE
 
-        super().__init__(height=height)
+        super().__init__(client=client, height=height, **kwargs)
 
         self.animation_offset = 0
         self.char = character
@@ -341,6 +348,9 @@ class ItemStorageState(ItemBoxState):
 
     name: ClassVar[str] = "ItemStorageState"
 
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
+
     def get_menu_items_map(self) -> Sequence[tuple[str, MenuGameObj]]:
         item_boxes = self.char.item_boxes
         menu_items_map = []
@@ -368,6 +378,9 @@ class ItemDropOffState(ItemBoxState):
 
     name: ClassVar[str] = "ItemDropOffState"
 
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
+
     def get_menu_items_map(self) -> Sequence[tuple[str, MenuGameObj]]:
         item_boxes = self.char.item_boxes
         menu_items_map = []
@@ -386,11 +399,21 @@ class ItemDropOff(ItemMenuState):
 
     name: ClassVar[str] = "ItemDropOff"
 
-    def __init__(self, box_name: str, character: NPC) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        box_name: str,
+        character: NPC,
+        **kwargs: Any,
+    ) -> None:
         items_filtered = ItemFilter(character.items)
         items_filtered.set_filter_all_visible()
         super().__init__(
-            character=character, source=self.name, item_filter=items_filtered
+            client=client,
+            character=character,
+            source=self.name,
+            item_filter=items_filtered,
+            **kwargs,
         )
 
         self.box_name = box_name
@@ -433,6 +456,7 @@ class ItemDropOff(ItemMenuState):
 
         self.client.push_state(
             QuantityMenu(
+                client=self.client,
                 callback=partial(deposit, game_object),
                 max_quantity=game_object.quantity,
                 quantity=1,

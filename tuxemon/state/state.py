@@ -7,15 +7,12 @@ import random
 from abc import ABC
 from collections.abc import Callable, Iterable
 from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from pygame.rect import Rect
 
-from tuxemon.event import get_event_bus
 from tuxemon.event.eventbus import Listener
 from tuxemon.graphics import load_animated_sprite, load_sprite, load_surface
-from tuxemon.prepare import SCREEN_SIZE
-from tuxemon.session import local_session
 from tuxemon.sprite import Sprite, SpriteGroup
 from tuxemon.state.animation_mixin import AnimationMixin
 from tuxemon.state.render_mixin import RenderMixin
@@ -23,6 +20,7 @@ from tuxemon.state.render_mixin import RenderMixin
 if TYPE_CHECKING:
     from pygame.surface import Surface
 
+    from tuxemon.base_client import BaseClient
     from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
@@ -43,11 +41,10 @@ class State(AnimationMixin, RenderMixin, ABC):
     """
 
     name: ClassVar[str] = "State"
-    rect = Rect((0, 0), SCREEN_SIZE)
     transparent = False  # ignore all background/borders
     force_draw = False  # draw even if completely under another state
 
-    def __init__(self) -> None:
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any) -> None:
         """
         Constructor
 
@@ -64,17 +61,49 @@ class State(AnimationMixin, RenderMixin, ABC):
         # All sprites that draw on the screen
         self.sprites: SpriteGroup[Sprite] = SpriteGroup()
 
-        self.client = local_session.client
-        self.event_bus = get_event_bus()
+        self.client = client
+        self.event_bus = client.event_bus
+        self.rect = Rect((0, 0), self._get_resolution())
 
     def __init_subclass__(cls: type[State], **kwargs: Any) -> None:
-        """Ensure subclasses define a class variable 'name'."""
         super().__init_subclass__(**kwargs)
+
+        # Ensure subclass defines its own `name`
         if "name" not in cls.__dict__:
             logger.error(f"Missing 'name' in subclass: {cls.__name__}")
             raise TypeError(
                 f"{cls.__name__} must define a class variable 'name'"
             )
+
+        # Ensure subclass explicitly defines __init__(self, client, ...)
+        init = cls.__dict__.get("__init__")
+        if init is None:
+            raise TypeError(
+                f"{cls.__name__} must define its own __init__(self, client, ...)"
+            )
+
+        # Inspect signature to ensure first parameter after self is `client`
+        import inspect
+
+        sig = inspect.signature(init)
+        params = list(sig.parameters.values())
+
+        if len(params) < 2 or params[1].name != "client":
+            raise TypeError(
+                f"{cls.__name__}.__init__ must accept `client` as its second parameter"
+            )
+
+    def _get_resolution(self) -> tuple[int, int]:
+        ctx = getattr(self.client, "context", None)
+        if ctx is not None:
+            res = getattr(ctx, "resolution", None)
+            if isinstance(res, tuple) and len(res) == 2:
+                return cast(tuple[int, int], res)
+        return (1, 1)
+
+    @property
+    def factor(self) -> int:
+        return self.client.context.scale
 
     def load_sprite(self, filename: str, **kwargs: Any) -> Sprite:
         """Load a sprite and add it to this state."""
@@ -125,15 +154,16 @@ class State(AnimationMixin, RenderMixin, ABC):
         """
         return event
 
-    def update(self, time_delta: float) -> None:
+    def scale_int(self, value: int) -> int:
+        """Convenience wrapper for client scaling."""
+        return self.client.context.scaling.scale_int(value)
+
+    def update(self, dt: float) -> None:
         """
         Time update function for state. Must be overloaded in children.
-
-        Parameters:
-            time_delta: Amount of time in fractional seconds since last update.
         """
-        self.update_animations(time_delta)
-        self.sprites.update(time_delta)
+        self.update_animations(dt)
+        self.sprites.update(dt)
 
     def resume(self) -> None:
         """

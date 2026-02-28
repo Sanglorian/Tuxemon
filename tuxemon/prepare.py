@@ -12,6 +12,11 @@ import pygame as pg
 
 from tuxemon.platform.const.sizes import NATIVE_RESOLUTION
 from tuxemon.platform.const.sizes import TILE_SIZE as NATIVE_TILE_SIZE
+from tuxemon.scaling import (
+    DefaultScaling,
+    ScalingStrategy,
+    make_default_scaling,
+)
 from tuxemon.user_config import CONFIG
 
 logger = logging.getLogger(__name__)
@@ -21,8 +26,10 @@ logger = logging.getLogger(__name__)
 class DisplayContext:
     screen: pg.Surface
     rect: pg.Rect
-    scale: int
+    resolution: tuple[int, int]
     tile_size: tuple[int, int]
+    scale: int
+    scaling: ScalingStrategy
 
 
 _default_surface = pg.Surface((1, 1))
@@ -31,8 +38,10 @@ _default_rect = _default_surface.get_rect()
 DISPLAY_CONTEXT: DisplayContext = DisplayContext(
     screen=_default_surface,
     rect=_default_rect,
-    scale=1,
+    resolution=(1, 1),
     tile_size=(1, 1),
+    scale=1,
+    scaling=DefaultScaling(1),
 )
 
 
@@ -54,17 +63,7 @@ def pygame_init() -> DisplayContext:
     pg.init()
     pg.display.set_caption(CONFIG.window_caption)
 
-    # Compute scale
-    scale = 1
-    if CONFIG.large_gui:
-        scale = 2
-    elif CONFIG.scaling:
-        scale = int(SCREEN_SIZE[0] / NATIVE_RESOLUTION[0])
-
-    tile_size = (
-        NATIVE_TILE_SIZE[0] * scale,
-        NATIVE_TILE_SIZE[1] * scale,
-    )
+    scaling = make_default_scaling(CONFIG, NATIVE_RESOLUTION)
 
     # Fullscreen flags
     fullscreen = pg.FULLSCREEN if CONFIG.fullscreen else 0
@@ -78,7 +77,7 @@ def pygame_init() -> DisplayContext:
     if CONFIG.vsync:
         pg.display.set_allow_screensaver()
 
-    screen = pg.display.set_mode(SCREEN_SIZE, flags, vsync=CONFIG.vsync)
+    screen = pg.display.set_mode(CONFIG.resolution, flags, vsync=CONFIG.vsync)
     rect = screen.get_rect()
 
     pg.mouse.set_visible(not CONFIG.controller.hide_mouse)
@@ -86,8 +85,10 @@ def pygame_init() -> DisplayContext:
     DISPLAY_CONTEXT = DisplayContext(
         screen=screen,
         rect=rect,
-        scale=scale,
-        tile_size=tile_size,
+        resolution=CONFIG.resolution,
+        tile_size=scaling.scale_point(NATIVE_TILE_SIZE),
+        scale=scaling._scale,
+        scaling=scaling,
     )
 
     return DISPLAY_CONTEXT
@@ -112,8 +113,10 @@ def headless_init() -> DisplayContext:
     DISPLAY_CONTEXT = DisplayContext(
         screen=screen,
         rect=rect,
-        scale=1,
+        resolution=CONFIG.resolution,
         tile_size=NATIVE_TILE_SIZE,
+        scale=1,
+        scaling=DefaultScaling(1),
     )
 
     return DISPLAY_CONTEXT

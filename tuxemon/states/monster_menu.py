@@ -19,12 +19,11 @@ from tuxemon.menu.interface import ExpBar, HpBar, MenuItem
 from tuxemon.menu.menu import Menu
 from tuxemon.monster.filter import MonsterFilter
 from tuxemon.monster.monster import Monster
+from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const.graphics import BG_MONSTERS, TRANSPARENT_COLOR
 from tuxemon.platform.const.sizes import PARTY_LIMIT
-from tuxemon.prepare import SCREEN_SIZE
-from tuxemon.scaling import DefaultScaling
 from tuxemon.sprite import Sprite
-from tuxemon.tools import open_choice_dialog, open_dialog, scale
+from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.menu_options import (
     MenuOptions,
@@ -38,6 +37,7 @@ if TYPE_CHECKING:
     from tuxemon.entity.party import PartyHandler
     from tuxemon.item.item import Item
     from tuxemon.monster.monster import Monster
+    from tuxemon.prepare import DisplayContext
 
 LAYER_MONSTER_ICONS = 20
 LAYER_PORTRAIT = 30
@@ -58,32 +58,35 @@ class MonsterMenuState(Menu[Monster | None]):
 
     def __init__(
         self,
+        client: BaseClient,
         monsters: list[Monster],
         monster_filter: MonsterFilter | None = None,
+        **kwargs: Any,
     ) -> None:
-        super().__init__()
-        self.scaling = DefaultScaling()
+        super().__init__(client=client, **kwargs)
         self.monster_filter = monster_filter or MonsterFilter()
         self.monsters = self.monster_filter.get_filtered_monsters(monsters)
 
         # make a text area to show messages
-        self.text_area = TextArea(self.font, self.font_color, (96, 96, 96))
-        self.text_area.rect = Rect(self.scaling.scale_tuple((20, 80, 80, 100)))
+        self.text_area = TextArea(
+            font=self.font,
+            font_color=self.font_color,
+            scaling=self.client.context.scaling,
+            font_shadow=(96, 96, 96),
+        )
+        rect = self.client.context.scaling.scale_tuple((20, 80, 80, 100))
+        self.text_area.rect = Rect(rect)
         self.sprites.add(self.text_area, layer=100)
         self.monster_stats_display = MonsterStatsDisplay(self)
         self.monster_sprite_displays: list[MonsterSpriteDisplay] = []
         self.monster_portrait_display = MonsterPortraitDisplay(self)
 
         # Set up the border images used for the monster slots
-        self.hp_bar = HpBar()
-        self.exp_bar = ExpBar()
+        self.hp_bar = HpBar(self.client.context)
+        self.exp_bar = ExpBar(self.client.context)
         self.slot_renderer = MonsterSlotRenderer(
-            self.font, self.hp_bar, self.font_color
+            self.client.context, self.font, self.hp_bar, self.font_color
         )
-
-        # Load monster visuals
-        for monster in self.monsters:
-            monster.load_sprites()
 
     def calc_menu_items_rect(self) -> Rect:
         width, height = self.rect.size
@@ -106,8 +109,9 @@ class MonsterMenuState(Menu[Monster | None]):
         self.monster_portrait_display.animate_down()
 
         # position and animate the monster portrait
-        width = SCREEN_SIZE[0] // 2
-        height = SCREEN_SIZE[1] // int(PARTY_LIMIT * 1.5)
+        _width, _height = self.client.context.resolution
+        width = _width // 2
+        height = _height // int(PARTY_LIMIT * 1.5)
 
         # make 6 slots
         for _ in range(PARTY_LIMIT):
@@ -219,7 +223,7 @@ class MonsterMenuHandler:
             "source": self.name,
             "monsters": self.party.monsters,
         }
-        self.client.push_state("MonsterInfoState", kwargs=params)
+        self.client.push_state("MonsterInfoState", **params)
 
     def monster_techs(self, monster: Monster) -> None:
         """Displays monster techniques."""
@@ -229,7 +233,7 @@ class MonsterMenuHandler:
             "source": self.name,
             "monsters": self.party.monsters,
         }
-        self.client.push_state("MonsterMovesState", kwargs=params)
+        self.client.push_state("MonsterMovesState", **params)
 
     def remove_item_direct(self, monster: Monster) -> None:
         item = monster.held_item
@@ -249,7 +253,9 @@ class MonsterMenuHandler:
         items_filtered.add_filter(lambda item: item.behaviors.holdable)
 
         menu = self.client.push_state(
-            ItemMenuState(self.party.owner, self.name, items_filtered)
+            ItemMenuState(
+                self.client, self.party.owner, self.name, items_filtered
+            )
         )
         menu.on_menu_selection = lambda menu_item: self._equip_from_picker(monster, menu_item)  # type: ignore[method-assign]
 
@@ -403,7 +409,7 @@ class MonsterMenuHandler:
     def open_monster_menu(self) -> None:
         """Pushes the monster menu state."""
         self.monster_menu = self.client.push_state(
-            MonsterMenuState(self.party.monsters)
+            MonsterMenuState(self.client, self.party.monsters)
         )
 
         self.monster_menu.on_menu_selection = lambda item: self.handle_selection(item, self.monster_menu)  # type: ignore[assignment]
@@ -441,7 +447,9 @@ class MonsterStatsDisplay:
     def __init__(self, menu_state: MonsterMenuState) -> None:
         self.menu_state = menu_state
         self.sprite = TextArea(
-            self.menu_state.font, self.menu_state.font_color
+            font=self.menu_state.font,
+            font_color=self.menu_state.font_color,
+            scaling=self.menu_state.client.context.scaling,
         )
         self.menu_state.sprites.add(self.sprite, layer=LAYER_MONSTER_ICONS)
 
@@ -470,7 +478,7 @@ class MonsterStatsDisplay:
         )
 
         self.sprite.image = self.menu_state.shadow_text(text)
-        width, height = SCREEN_SIZE
+        width, height = self.menu_state.client.context.resolution
         self.sprite.rect.topleft = (width // 10, height // 2 + 50)
 
 
@@ -486,6 +494,8 @@ class MonsterSpriteDisplay:
 
     def __init__(self, menu_state: MonsterMenuState) -> None:
         self.menu_state = menu_state
+        self.scaling = self.menu_state.client.context.scaling
+        self.resolution = self.menu_state.client.context.resolution
         self.sprite: Sprite | None = None
         self.monster: Monster | None = None
 
@@ -502,13 +512,14 @@ class MonsterSpriteDisplay:
             if self.sprite:
                 self.menu_state.sprites.remove(self.sprite)
 
-            self.sprite = monster.get_sprite("menu", 0.25, 2.5)
+            renderer = MonsterRenderer(monster, scale=2.5, frame_duration=0.25)
+            self.sprite = renderer.get_sprite("menu")
             self.menu_state.sprites.add(self.sprite, layer=LAYER_MONSTER_ICONS)
 
-            width = SCREEN_SIZE[0]
+            width = self.resolution[0]
             margin = int(width * 0.005)
             self.sprite.rect.x = width - (self.sprite.rect.width + margin)
-            self.sprite.rect.y = rect.y + scale(10)
+            self.sprite.rect.y = rect.y + self.scaling.scale_int(10)
 
         else:
             self.remove_sprite()
@@ -523,6 +534,8 @@ class MonsterSpriteDisplay:
 class MonsterPortraitDisplay:
     def __init__(self, menu_state: MonsterMenuState) -> None:
         self.menu_state = menu_state
+        self.scaling = self.menu_state.client.context.scaling
+        self.resolution = self.menu_state.client.context.resolution
         self.portrait = Sprite()
         self.portrait.rect = Rect(0, 0, 0, 0)
         self.menu_state.sprites.add(self.portrait, layer=LAYER_PORTRAIT)
@@ -531,14 +544,17 @@ class MonsterPortraitDisplay:
         image = None
         if monster is not None:
             try:
-                sprite = monster.get_sprite("front")
+                scale = self.menu_state.client.context.scale
+                renderer = MonsterRenderer(monster, scale=scale)
+                sprite = renderer.get_sprite("front")
                 image = sprite.image
-            except AttributeError:
+            except Exception:
                 pass
+
         image = image or Surface((1, 1), SRCALPHA)
 
         self.portrait.image = image
-        width, height = SCREEN_SIZE
+        width, height = self.resolution
         self.portrait.rect = image.get_rect(
             centerx=width // 4,
             top=height // 12,
@@ -547,7 +563,7 @@ class MonsterPortraitDisplay:
     def animate_down(self) -> None:
         ani = self.menu_state.animate(
             self.portrait.rect,
-            y=-scale(5),
+            y=-self.scaling.scale_int(5),
             duration=1,
             transition="in_out_quad",
             relative=True,
@@ -557,7 +573,7 @@ class MonsterPortraitDisplay:
     def animate_up(self) -> None:
         ani = self.menu_state.animate(
             self.portrait.rect,
-            y=scale(5),
+            y=self.scaling.scale_int(5),
             duration=1,
             transition="in_out_quad",
             relative=True,
@@ -594,7 +610,15 @@ class MonsterSlotBorder:
 class MonsterSlotRenderer:
     """Unified renderer for monster slot layout."""
 
-    def __init__(self, font: Font, hp_bar: HpBar, font_color: ColorLike):
+    def __init__(
+        self,
+        context: DisplayContext,
+        font: Font,
+        hp_bar: HpBar,
+        font_color: ColorLike,
+    ):
+        self.context = context
+        self.scaling = context.scaling
         self.font = font
         self.hp_bar = hp_bar
         self.font_color = font_color
@@ -616,20 +640,32 @@ class MonsterSlotRenderer:
         if not monster:
             return
 
-        padding = scale(6)
+        padding = self.scaling.scale_int(6)
         content = rect.inflate(-padding, -padding)
 
         upper_label = f"{monster.name}{monster.gender_symbol}"
 
-        text_rect = rect.inflate(-scale(6), -scale(6))
-        draw_text(surface, upper_label, text_rect, font=self.font)
+        text_rect = rect.inflate(-padding, -padding)
+        draw_text(
+            surface,
+            upper_label,
+            text_rect,
+            scaling=self.scaling,
+            font=self.font,
+        )
 
-        text_rect.top = rect.bottom - scale(7)
+        text_rect.top = rect.bottom - self.scaling.scale_int(7)
         bottom_label = f"  Lv {monster.level}"
-        draw_text(surface, bottom_label, text_rect, font=self.font)
+        draw_text(
+            surface,
+            bottom_label,
+            text_rect,
+            scaling=self.scaling,
+            font=self.font,
+        )
 
         hp_width = int(content.width * 0.35)
-        hp_rect = Rect(0, 0, hp_width, scale(8))
+        hp_rect = Rect(0, 0, hp_width, self.scaling.scale_int(8))
         hp_rect.right = content.right
         hp_rect.centery = content.centery
 
@@ -644,13 +680,13 @@ class MonsterSlotRenderer:
         monster: Monster,
         content: Rect,
     ) -> None:
-        icon_y = content.top + scale(4)
+        icon_y = content.top + self.scaling.scale_int(4)
 
         for i, status in enumerate(monster.status.get_statuses()):
             if status.icon:
                 img = load_and_scale(status.icon)
                 x = int(content.width * 0.45) + i * (
-                    img.get_width() + scale(4)
+                    img.get_width() + self.scaling.scale_int(4)
                 )
                 x += content.left
                 surface.blit(img, (x, icon_y))
@@ -659,6 +695,6 @@ class MonsterSlotRenderer:
             item_img = load_and_scale(monster.held_item.sprite, 1.5)
             x = int(content.width * 0.45) + len(
                 monster.status.get_statuses()
-            ) * (scale(4) + item_img.get_width())
+            ) * (self.scaling.scale_int(4) + item_img.get_width())
             x += content.left
             surface.blit(item_img, (x, icon_y))

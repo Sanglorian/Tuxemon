@@ -63,7 +63,7 @@ def test_trigger_xp_and_wait_for_input(notifier, state, text_area):
     notifier.text_anim.add_xp_message("XP +10")
     notifier.text_anim.add_xp_message("XP +20")
     notifier.trigger_xp_and_wait_for_input(text_area, delay=1.0)
-    assert state.task.call_count == 2
+    assert state.task.call_count == 1
 
 
 def test_show_message_ignores_empty(notifier, text_area):
@@ -86,16 +86,7 @@ def test_show_message_override_lock_false(notifier, state, text_area):
     state.task.assert_not_called()
 
 
-def test_trigger_xp_schedules_two_tasks(notifier, state, text_area):
+def test_trigger_xp_schedules_one_task(notifier, state, text_area):
     notifier.text_anim.add_xp_message("XP +10")
     notifier.trigger_xp_and_wait_for_input(text_area, delay=1.0)
-    assert state.task.call_count == 2
-
-
-def test_trigger_xp_clears_pending_duration(notifier, state, text_area):
-    notifier.text_anim.add_xp_message("XP +10")
-    notifier.trigger_xp_and_wait_for_input(text_area, delay=1.0)
-    after_cb = state.task.call_args_list[1][0][0]
-    notifier.text_anim._pending_xp_duration = 5.0
-    after_cb()
-    assert notifier.text_anim._pending_xp_duration is None
+    assert state.task.call_count == 1

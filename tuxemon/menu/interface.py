@@ -2,13 +2,12 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from pygame import draw as pg_draw
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon import tools
 from tuxemon.graphics import ColorLike, load_and_scale
 from tuxemon.platform.const.graphics import (
     BLACK_COLOR,
@@ -23,18 +22,23 @@ from tuxemon.platform.const.graphics import (
 from tuxemon.sprite import Sprite
 from tuxemon.ui.graphic_box import GraphicBox
 
+if TYPE_CHECKING:
+    from tuxemon.prepare import DisplayContext
+
 
 class Bar:
     """Common bar class for UI elements."""
 
     _graphics_cache: dict[str, Surface] = {}
-    INNER_TOP_PADDING = tools.scale(2)
-    INNER_BOTTOM_PADDING = tools.scale(2)
-    INNER_LEFT_PADDING = tools.scale(9)
-    INNER_RIGHT_PADDING = tools.scale(2)
+
+    BASE_INNER_TOP_PADDING = 2
+    BASE_INNER_BOTTOM_PADDING = 2
+    BASE_INNER_LEFT_PADDING = 9
+    BASE_INNER_RIGHT_PADDING = 2
 
     def __init__(
         self,
+        context: DisplayContext,
         value: float,
         border_filename: str,
         fg_color: ColorLike = WHITE_COLOR,
@@ -49,11 +53,18 @@ class Bar:
             fg_color: The foreground color of the bar.
             bg_color: The background color of the bar.
         """
+        self.context = context
         self._value = max(0.0, min(1.0, value))
         self.border_filename = border_filename
         self.fg_color = fg_color
         self.bg_color = bg_color
         self.border: GraphicBox | None = None
+
+        s = context.scaling.scale_int
+        self.INNER_TOP_PADDING = s(self.BASE_INNER_TOP_PADDING)
+        self.INNER_BOTTOM_PADDING = s(self.BASE_INNER_BOTTOM_PADDING)
+        self.INNER_LEFT_PADDING = s(self.BASE_INNER_LEFT_PADDING)
+        self.INNER_RIGHT_PADDING = s(self.BASE_INNER_RIGHT_PADDING)
 
     @property
     def value(self) -> float:
@@ -135,7 +146,7 @@ class Bar:
 class HpBar(Bar):
     """HP bar for UI elements."""
 
-    def __init__(self, value: float = 1.0) -> None:
+    def __init__(self, context: DisplayContext, value: float = 1.0) -> None:
         """
         Initializes the HP bar with a given value.
 
@@ -143,6 +154,7 @@ class HpBar(Bar):
             value: The initial value of the HP bar.
         """
         super().__init__(
+            context,
             max(0.0, min(1.0, value)),
             GFX_HP_BAR,
             HP_COLOR_FG,
@@ -153,7 +165,7 @@ class HpBar(Bar):
 class ExpBar(Bar):
     """EXP bar for UI elements."""
 
-    def __init__(self, value: float = 1.0) -> None:
+    def __init__(self, context: DisplayContext, value: float = 1.0) -> None:
         """
         Initializes the EXP bar with a given value.
 
@@ -161,6 +173,7 @@ class ExpBar(Bar):
             value: The initial value of the EXP bar.
         """
         super().__init__(
+            context,
             max(0.0, min(1.0, value)),
             GFX_XP_BAR,
             XP_COLOR_FG,

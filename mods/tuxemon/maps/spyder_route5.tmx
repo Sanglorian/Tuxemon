@@ -281,8 +281,7 @@
   </object>
   <object id="55" name="Create Hunter" type="event" x="96" y="128" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_route5_hunter,6,8"/>
-    <property name="act2" value="char_wander spyder_route5_hunter"/>
+    <property name="act1" value="create_npc spyder_route5_hunter,6,8,wander"/>
     <property name="cond1" value="not char_exists spyder_route5_hunter"/>
    </properties>
   </object>

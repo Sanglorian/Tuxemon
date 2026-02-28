@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.surface import Surface
 from pygame.transform import scale
 
-from tuxemon.platform.events import PlayerInput
 from tuxemon.state.state import State
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +24,11 @@ class PixelationTransition(State):
     force_draw = True
 
     def __init__(
-        self, duration: float = 1.0, scale_factor: float = 10.0
+        self,
+        client: BaseClient,
+        duration: float = 1.0,
+        scale_factor: float = 10.0,
+        **kwargs: Any,
     ) -> None:
         """
         Parameters:
@@ -30,22 +37,15 @@ class PixelationTransition(State):
                 to the screen, with higher values resulting in a more
                 extreme effect.
         """
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         logger.info("Initializing Pixelation transition")
         self.duration = duration
         self.scale_factor = scale_factor
         self.start_time = 0.0
         self.elapsed_time = 0.0
 
-    def update(self, time_delta: float) -> None:
-        """
-        Update function for state.
-
-        Parameters:
-            time_delta: Time since last update in seconds
-
-        """
-        self.elapsed_time += time_delta
+    def update(self, dt: float) -> None:
+        self.elapsed_time += dt
         if self.elapsed_time > self.duration:
             logger.info("Pixelation transition finished.")
             self.client.pop_state()

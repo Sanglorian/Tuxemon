@@ -14,7 +14,6 @@ from pytmx.pytmx import TiledMap
 
 from tuxemon.graphics import scaled_image_loader
 from tuxemon.locale.locale import T
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.db import Direction, EventObject
@@ -171,17 +170,19 @@ class TuxemonMap(AbstractMap):
         tiled_map: TiledMap,
         maps: dict[str, Any],
         filename: str,
+        resolution: tuple[int, int],
     ) -> None:
         self._collision_map = collision_map
         self._surface_map = surface_map
         self._collision_lines_map = collisions_lines_map
         self._data = tiled_map
         self._filename = filename
+        self._resolution = resolution
         self._maps = maps
         self._renderer: pyscroll.BufferedRenderer | None = None
 
-        self._events = events
-        self._inits = inits
+        self._events: list[EventObject] = list(events)
+        self._inits: list[EventObject] = list(inits)
 
         self._config = self._parse_config(maps)
 
@@ -305,24 +306,22 @@ class TuxemonMap(AbstractMap):
         clamp = self._config.edges == "clamped"
         self._renderer = pyscroll.BufferedRenderer(
             visual_data,
-            SCREEN_SIZE,
+            self._resolution,
             clamp_camera=clamp,
             tall_sprites=self.SPRITE_LAYER_INDEX,
         )
 
     def add_events(self, new_events: Sequence[EventObject]) -> None:
-        """Append new events to the existing events list."""
-        self._events = list(self._events) + list(new_events)
+        self._events.extend(new_events)
 
     def add_inits(self, new_inits: Sequence[EventObject]) -> None:
-        """Append new init events to the existing inits list."""
-        self._inits = list(self._inits) + list(new_inits)
+        self._inits.extend(new_inits)
 
     def clear_events(self) -> None:
-        self._events = []
+        self._events.clear()
 
     def clear_inits(self) -> None:
-        self._inits = []
+        self._inits.clear()
 
     def reload_tiles(self) -> None:
         """Reload the map tiles."""

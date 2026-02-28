@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pygame
 from pygame.surface import Surface
@@ -14,11 +14,11 @@ from tuxemon.locale.locale import T
 from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BLACK_COLOR, WHITE_COLOR
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.platform.events import PlayerInput
     from tuxemon.sprite import Sprite
 
@@ -41,12 +41,14 @@ class EvolutionTransition(State):
 
     def __init__(
         self,
+        client: BaseClient,
         original: str,
         evolved: str,
         is_devolution: bool = False,
+        **kwargs: Any,
     ) -> None:
         self.is_devolution = is_devolution
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         self.original_monster = self._get_monster(original)
         self.evolved_monster = self._get_monster(evolved)
         if not self.original_monster or not self.evolved_monster:
@@ -78,12 +80,12 @@ class EvolutionTransition(State):
             4: self.evolved_sprite,
         }
 
-        screen_width, screen_height = SCREEN_SIZE
+        screen_width, screen_height = self.client.context.resolution
         sprite_width, sprite_height = self.original_sprite.image.get_size()
         self.x = (screen_width - sprite_width) // 2
         self.y = (screen_height - sprite_height) // 2
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         current_time = pygame.time.get_ticks()
         self.elapsed_time = (current_time - self.transition_start_time) / 1000
         self.percentage = (self.elapsed_time / self.total_seconds) * 100
@@ -175,7 +177,7 @@ class EvolutionTransition(State):
             menu2_rect=sprites.menu2_rect,
         )
         assert handler
-        return handler.get_sprite("front", self.client.context.scale)
+        return handler.get_sprite("front", self.factor)
 
     def _white_image(self, sprite: Surface) -> Surface:
         for x in range(sprite.get_width()):

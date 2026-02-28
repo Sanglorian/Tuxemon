@@ -16,6 +16,7 @@ from tuxemon.menu.quantity import QuantityAndCostMenu, QuantityAndPriceMenu
 from tuxemon.states.shop_base import ShopMenuState
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.economy.economy import Economy
     from tuxemon.entity.npc import NPC
 
@@ -27,11 +28,13 @@ class ShopItemMenuState(ShopMenuState[Item]):
 
     def __init__(
         self,
+        client: BaseClient,
         buyer: NPC,
         seller: NPC,
         economy: Economy,
+        **kwargs: Any,
     ) -> None:
-        super().__init__(buyer, seller, economy)
+        super().__init__(client, buyer, seller, economy, **kwargs)
         self.update_background(self.economy.model.background)
 
     def _get_asset_image(self, asset: MenuItem[Item]) -> Surface | None:
@@ -131,6 +134,9 @@ class ShopItemBuyMenuState(ShopItemMenuState):
 
     name: ClassVar[str] = "ShopItemBuyMenuState"
 
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
+
     def on_menu_selection(self, menu_item: MenuItem[Item]) -> None:
         item = menu_item.game_object
         price: int = menu_item.metadata.get("price", 1)
@@ -156,6 +162,7 @@ class ShopItemBuyMenuState(ShopItemMenuState):
 
         self.client.state_manager.push_state(
             QuantityAndPriceMenu(
+                client=self.client,
                 callback=partial(buy_item),
                 max_quantity=max_quantity,
                 quantity=1,
@@ -169,6 +176,9 @@ class ShopItemSellMenuState(ShopItemMenuState):
     """State for selling items."""
 
     name: ClassVar[str] = "ShopItemSellMenuState"
+
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
 
     def on_menu_selection(self, menu_item: MenuItem[Item]) -> None:
         item = menu_item.game_object
@@ -199,6 +209,7 @@ class ShopItemSellMenuState(ShopItemMenuState):
 
         self.client.state_manager.push_state(
             QuantityAndCostMenu(
+                client=self.client,
                 callback=partial(sell_item),
                 max_quantity=item.quantity,
                 quantity=1,

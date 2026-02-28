@@ -2,16 +2,19 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
-from tuxemon.platform.events import PlayerInput
+from tuxemon.platform.platform_pygame.events import KeyBindingRules
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 
 class SetKeyState(PygameMenuState):
@@ -22,14 +25,11 @@ class SetKeyState(PygameMenuState):
 
     name: ClassVar[str] = "SetKeyState"
 
-    def __init__(self, value: str, **kwargs: Any) -> None:
-        """
-        Used when initializing the state
-        """
+    def __init__(self, client: BaseClient, value: str, **kwargs: Any) -> None:
         theme = get_theme()
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-        super().__init__(**kwargs)
+        super().__init__(client=client, **kwargs)
         self.menu.add.label(
             T.translate("options_new_input_key0").upper(),
             font_size=self.font_type.small,
@@ -38,44 +38,29 @@ class SetKeyState(PygameMenuState):
         self.reset_theme()
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
-        invalid_keys = [
-            pygame.K_UP,
-            pygame.K_DOWN,
-            pygame.K_RIGHT,
-            pygame.K_LEFT,
-            pygame.K_RSHIFT,
-            pygame.K_LSHIFT,
-            pygame.K_RETURN,
-            pygame.K_ESCAPE,
-            pygame.K_BACKSPACE,
-        ]
+        """
+        Accepts a PlayerInput event and binds the first valid keycode.
+        Assumes event.value is already normalized by InputConfig.
+        """
+        if not event.pressed:
+            return None
 
-        pressed_key = next(
-            (
-                k
-                for k in range(len(pygame.key.get_pressed()))
-                if pygame.key.get_pressed()[k]
-            ),
-            None,
-        )
+        pressed_key = self.client.config.input.normalize_key(event.value)
 
-        if (
-            isinstance(pressed_key, int)
-            and (event.pressed or event.value == "")
-            and pressed_key not in invalid_keys
-        ):
-            assert pressed_key
+        if pressed_key is None:
+            return None  # ignore unmappable input
+
+        if KeyBindingRules.is_valid_binding(pressed_key):
             self.client.remove_state_by_name("SetKeyState")
-            pressed_key_str = pygame.key.name(pressed_key)
-            if event.value == pressed_key_str:
-                # Update the configuration file with the new key
-                self.client.config.update_control(self.value, pressed_key)
-                keyboard = self.client.input_manager.core_devices.keyboard
-                if keyboard is not None:
-                    keyboard.reload_mapping(
-                        self.client.config.input.keyboard_button_map
-                    )
-                    return event
+            self.client.config.update_control(self.value, pressed_key)
+
+            keyboard = self.client.input_manager.core_devices.keyboard
+            if keyboard is not None:
+                keyboard.reload_mapping(
+                    self.client.config.input.keyboard_button_map
+                )
+
+            return None
 
         return None
 
@@ -87,7 +72,6 @@ class SetKeyState(PygameMenuState):
         )
 
     def animate_open(self) -> Animation:
-        """Animate the menu popping in."""
         self.animation_size = 0.0
         ani = self.animate(self, animation_size=1.0, duration=0.2)
         ani.schedule(self.update_animation_size, ScheduleType.ON_UPDATE)

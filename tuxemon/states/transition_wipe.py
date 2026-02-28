@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import logging
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame import draw as pg_draw
 from pygame.surface import Surface
 
 from tuxemon.graphics import ColorLike
 from tuxemon.platform.const.graphics import BLACK_COLOR
-from tuxemon.platform.events import PlayerInput
 from tuxemon.state.state import State
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +27,12 @@ class WipeTransition(State):
 
     def __init__(
         self,
+        client: BaseClient,
         image: Surface,
         direction: str,
         speed: int = 250,
         color: ColorLike = BLACK_COLOR,
+        **kwargs: Any,
     ) -> None:
         """
         Parameters:
@@ -37,7 +42,7 @@ class WipeTransition(State):
             speed: The pixels per second. Defaults to 250.
             color: The color to use for the flash effect. Defaults to black.
         """
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         logger.info("Initializing Wipe transition")
         self.image = image
         self.direction = direction
@@ -48,8 +53,8 @@ class WipeTransition(State):
         self.height = self.client.context.screen.get_height()
         self.width = self.client.context.screen.get_width()
 
-    def update(self, time_delta: float) -> None:
-        self.update_wipe_position(time_delta)
+    def update(self, dt: float) -> None:
+        self.update_wipe_position(dt)
         self.check_boundary()
 
     def update_wipe_position(self, time_delta: float) -> None:

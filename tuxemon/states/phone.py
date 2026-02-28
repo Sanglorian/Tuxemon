@@ -20,6 +20,7 @@ from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure, open_dialog
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
 
 
@@ -28,7 +29,9 @@ class NuPhone(PygameMenuState):
 
     name: ClassVar[str] = "NuPhone"
 
-    def __init__(self, character: NPC) -> None:
+    def __init__(
+        self, client: BaseClient, character: NPC, **kwargs: Any
+    ) -> None:
         width, height = SCREEN_SIZE
         self.char = character
 
@@ -46,7 +49,12 @@ class NuPhone(PygameMenuState):
         rows = math.ceil(len(self.menu_apps) / columns) * 3
 
         super().__init__(
-            height=height, width=width, columns=columns, rows=rows
+            client=client,
+            height=height,
+            width=width,
+            columns=columns,
+            rows=rows,
+            **kwargs,
         )
 
         self.add_menu_items(self.menu, self.menu_apps)
@@ -119,9 +127,7 @@ class NuPhone(PygameMenuState):
                 change = self._get_app_callback(item)
 
                 new_image = self._create_image(item.sprite)
-                new_image.scale(
-                    self.client.context.scale, self.client.context.scale
-                )
+                new_image.scale(self.factor, self.factor)
 
                 # App image (banner)
                 menu.add.banner(

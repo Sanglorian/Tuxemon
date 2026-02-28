@@ -17,12 +17,13 @@ from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_JOURNAL_INFO
 from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_LB
-from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
+    from tuxemon.platform.events import PlayerInput
 
 lookup_cache: dict[str, MonsterModel] = {}
 
@@ -102,15 +103,11 @@ class JournalInfoState(PygameMenuState):
         # type
         path1 = f"gfx/ui/icons/element/{monster.types[0]}_type_small.png"
         type_image_1 = self._create_image(path1)
-        type_image_1.scale(
-            self.client.context.scale, self.client.context.scale
-        )
+        type_image_1.scale(self.factor, self.factor)
         if len(monster.types) > 1:
             path2 = f"gfx/ui/icons/element/{monster.types[1]}_type_small.png"
             type_image_2 = self._create_image(path2)
-            type_image_2.scale(
-                self.client.context.scale, self.client.context.scale
-            )
+            type_image_2.scale(self.factor, self.factor)
             menu.add.image(type_image_1, float=True).translate(
                 fxw(11.4 / 256), fxh(47.8 / 144)
             )
@@ -242,7 +239,7 @@ class JournalInfoState(PygameMenuState):
         )
         if handler is None:
             return
-        sprite = handler.get_sprite("front", scale=self.client.context.scale)
+        sprite = handler.get_sprite("front", scale=self.factor)
         new_image = self._create_image_from_surface(sprite.image)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
@@ -250,10 +247,12 @@ class JournalInfoState(PygameMenuState):
 
     def __init__(
         self,
+        client: BaseClient,
         character: NPC,
         monster: MonsterModel | None,
         source: str,
         reveal: bool = False,
+        **kwargs: Any,
     ) -> None:
         if not lookup_cache:
             _lookup_monsters()
@@ -265,7 +264,7 @@ class JournalInfoState(PygameMenuState):
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         self.char = character
         self.source = source

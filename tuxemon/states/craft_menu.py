@@ -42,7 +42,7 @@ class CraftMenuState(PygameMenuState):
         self.crafting_system = CraftingSystem()
         self.crafting_system.set_current_method(self.method)
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         width = int(0.8 * width)
         height = int(0.8 * height)

@@ -263,7 +263,7 @@ class JournalInfoState(PygameMenuState):
         self.source = source
         self.is_visible = self.char.tuxepedia.is_caught(monster.slug) or reveal
         self._monster = monster
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         super().__init__(client=client, height=height, width=width, **kwargs)
 

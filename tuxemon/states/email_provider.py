@@ -79,7 +79,7 @@ class EmailState(PygameMenuState):
         else:
             self.current_map = UNKNOWN_MAP_SLUG
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         width = int(width * 0.8)
         height = int(height * 0.8)
 
@@ -142,7 +142,7 @@ class EmailReadState(PygameMenuState):
     ) -> None:
         self.email = email
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         width = int(width * 0.7)
         height = int(height * 0.7)
 

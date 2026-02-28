@@ -29,7 +29,7 @@ class CalendarState(PygameMenuState):
     ) -> None:
         self.session = session
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         width = int(width * 0.8)
         height = int(height * 0.8)

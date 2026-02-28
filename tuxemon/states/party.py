@@ -40,7 +40,7 @@ class PartyState(PygameMenuState):
     ) -> None:
         self.party = party
         self.char = party.owner
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         super().__init__(client=client, height=height, width=width, **kwargs)
 
         theme = self._setup_theme(BG_PARTY)

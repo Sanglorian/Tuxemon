@@ -32,7 +32,7 @@ class ImageState(PygameMenuState):
         image: str | None = None,
         **kwargs: Any,
     ) -> None:
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         image_path = f"gfx/ui/background/{background}.png"
         native = NATIVE_RESOLUTION
 

@@ -58,7 +58,7 @@ class NuPhoneRenaming(PygameMenuState):
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
         self.char = character
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         super().__init__(client=client, height=height, width=width, **kwargs)
 

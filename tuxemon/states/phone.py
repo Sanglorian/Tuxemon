@@ -31,7 +31,7 @@ class NuPhone(PygameMenuState):
     def __init__(
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         self.char = character
 
         self.menu_apps: list[Item] = []

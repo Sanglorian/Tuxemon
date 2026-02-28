@@ -28,7 +28,7 @@ class ParkState(PygameMenuState):
     ) -> None:
         self.session = session
         self.park_session = session.client.park_session
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         width = int(0.8 * width)
         height = int(0.8 * height)
         super().__init__(client=client, height=height, width=width, **kwargs)

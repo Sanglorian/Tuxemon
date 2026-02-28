@@ -39,7 +39,7 @@ class EvolutionState(PygameMenuState):
         self.char = character
         self.is_devolution = is_devolution
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         super().__init__(client=client, height=height, width=width, **kwargs)
 

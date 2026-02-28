@@ -445,7 +445,7 @@ class MonsterInfoState(PygameMenuState):
         if not lookup_tastes:
             _lookup_tastes()
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         self._monster = monster
         self._source = source

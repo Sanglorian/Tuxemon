@@ -99,7 +99,7 @@ class JournalChoice(PygameMenuState):
         if not lookup_cache:
             _lookup_monsters()
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         columns = 2
 

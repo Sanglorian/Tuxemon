@@ -27,7 +27,7 @@ class DatePickerState(PygameMenuState):
     ):
         self.callback = callback
         self.selected_month: int | None = None
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         escape_key_exits = kwargs.pop("escape_key_exits", None)
 
         super().__init__(client=client, width=width, height=height, **kwargs)

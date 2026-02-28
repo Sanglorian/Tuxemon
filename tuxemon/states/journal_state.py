@@ -122,7 +122,7 @@ class JournalState(PygameMenuState):
 
         self._monster_list = monster_list
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         columns = 2
 

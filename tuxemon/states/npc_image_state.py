@@ -28,7 +28,7 @@ class NpcImageState(PygameMenuState):
         **kwargs: Any,
     ) -> None:
         image_path = f"gfx/ui/background/{background}.png"
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         super().__init__(client=client, height=height, width=width, **kwargs)
         theme = self._setup_theme(image_path)
         self._menu_config["theme"] = theme

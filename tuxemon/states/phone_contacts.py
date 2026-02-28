@@ -159,7 +159,7 @@ class NuPhoneContacts(PygameMenuState):
         for relation in self.char.relationships.connections.values():
             relation.apply_decay(self.char.steps)
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         super().__init__(client=client, height=height, width=width, **kwargs)
 

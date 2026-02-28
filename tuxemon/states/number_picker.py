@@ -43,7 +43,7 @@ class NumberPickerState(PygameMenuState):
         self.title = title or T.translate("select_number")
         self.current_value = min_value
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         width = int(0.5 * width)
         height = int(0.5 * height)
         super().__init__(client=client, width=width, height=height, **kwargs)

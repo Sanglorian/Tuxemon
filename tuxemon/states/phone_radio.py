@@ -126,7 +126,7 @@ class NuPhoneRadioBase(PygameMenuState, ABC):
         else:
             self.current_map = UNKNOWN_MAP_SLUG
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         super().__init__(client=client, height=height, width=width, **kwargs)
 

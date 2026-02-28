@@ -209,7 +209,7 @@ class MonsterTakeState(PygameMenuState):
         self.box = self.monster_boxes.get_monsters(self.box_name)
         self.swap_target = swap_target
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         columns = 3
         num_widgets = 3
@@ -339,7 +339,7 @@ class MonsterBoxState(PygameMenuState):
     def __init__(
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         super().__init__(client=client, height=height, **kwargs)
 

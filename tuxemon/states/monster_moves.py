@@ -341,7 +341,7 @@ class MonsterMovesState(PygameMenuState):
         if not lookup_cache:
             _lookup_monsters()
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         self._monster = monster
         self._source = source

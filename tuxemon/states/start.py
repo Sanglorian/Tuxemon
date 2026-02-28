@@ -142,7 +142,7 @@ class StartState(PygameMenuState):
         )
 
     def __init__(self, client: BaseClient, **kwargs: Any) -> None:
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         super().__init__(client=client, height=height, width=width, **kwargs)
 
@@ -217,7 +217,7 @@ class ModsChoice(PygameMenuState):
         self, client: BaseClient, mods: list[str], **kwargs: Any
     ) -> None:
         self.mods = mods
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         super().__init__(client=client, height=height, width=width, **kwargs)
 

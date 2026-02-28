@@ -25,7 +25,7 @@ class ColorState(PygameMenuState):
         return None
 
     def __init__(self, client: BaseClient, color: str, **kwargs: Any) -> None:
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         _color = string_to_colorlike(color)
 
         super().__init__(client=client, height=height, width=width, **kwargs)

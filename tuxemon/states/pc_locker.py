@@ -128,7 +128,7 @@ class ItemTakeState(PygameMenuState):
         self.char = character
         self.box = self.char.item_boxes.get_items(self.box_name)
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         columns = 3
         num_widgets = 2
@@ -272,7 +272,7 @@ class ItemBoxState(PygameMenuState):
     def __init__(
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         super().__init__(client=client, height=height, **kwargs)
 

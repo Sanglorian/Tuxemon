@@ -210,7 +210,7 @@ class CharacterState(PygameMenuState):
         if not lookup_cache:
             _lookup_monsters()
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         self.char = character
 
         bg = (

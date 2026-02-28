@@ -70,7 +70,7 @@ class WorldMenuState(PygameMenuState):
     ) -> None:
         """Initialize menu state and build menu separately."""
         self.char = character
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         super().__init__(client=client, height=height, **kwargs)
         self.menu_manager = menu_manager
         self.menu_manager.set_menu_renderer(self)

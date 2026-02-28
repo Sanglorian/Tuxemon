@@ -30,7 +30,7 @@ class DifficultyPickState(PygameMenuState):
         difficulties: list[str] = DIFFICULTIES,
         **kwargs: Any,
     ) -> None:
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         super().__init__(client=client, height=height, width=width, **kwargs)
 
         self.on_pick = on_pick

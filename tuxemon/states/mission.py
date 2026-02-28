@@ -37,7 +37,7 @@ class MissionState(PygameMenuState):
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
         self.character = character
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         width = int(0.8 * width)
         height = int(0.8 * height)
         super().__init__(client=client, height=height, width=width, **kwargs)
@@ -90,7 +90,7 @@ class SingleMissionState(PygameMenuState):
     ) -> None:
         self.mission = mission
         self.character = character
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
         width = int(0.8 * width)
         height = int(0.8 * height)
 

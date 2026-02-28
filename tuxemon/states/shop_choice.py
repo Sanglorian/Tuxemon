@@ -41,7 +41,7 @@ class ShopChoiceState(PygameMenuState):
 
         self.economy = npc.economy
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         super().__init__(
             client=client,

@@ -172,7 +172,6 @@ class GameVariablesManager:
         entries: Sequence[tuple[str, Any, str | None, str | None]],
     ) -> bool:
         for key, expected, description, scope in entries:
-
             # Scope-aware resolution
             if scope == "player":
                 current = self.player.get(key)
@@ -198,7 +197,6 @@ class GameVariablesManager:
         missing: list[str] = []
 
         for key, expected, description, scope in entries:
-
             # Scope-aware resolution
             if scope == "player":
                 current = self.player.get(key)

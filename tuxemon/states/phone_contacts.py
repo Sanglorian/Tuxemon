@@ -117,7 +117,6 @@ class NuPhoneContacts(PygameMenuState):
 
         connections = self.char.relationships.get_all_connections()
         for slug, contact in connections.items():
-
             menu.add.button(
                 title=T.translate(slug),
                 action=partial(self.choice, slug),

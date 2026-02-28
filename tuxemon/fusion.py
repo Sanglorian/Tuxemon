@@ -132,7 +132,7 @@ class Body:
         """
 
         if not filename:
-            filename = "fusion/%s.json" % self.name
+            filename = f"fusion/{self.name}.json"
 
         output = self.to_json()
         with open(filename, "w") as f:

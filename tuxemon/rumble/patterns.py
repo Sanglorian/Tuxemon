@@ -43,7 +43,7 @@ def explosion_pattern() -> list[tuple[float, float]]:
 
 
 def combine_patterns(
-    *patterns: list[tuple[float, float]]
+    *patterns: list[tuple[float, float]],
 ) -> list[tuple[float, float]]:
     """Concatenate multiple patterns into one sequence."""
     sequence: list[tuple[float, float]] = []

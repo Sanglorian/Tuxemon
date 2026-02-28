@@ -28,7 +28,6 @@ def test_detect_single_joystick_allowed(detector):
             "tuxemon.platform.joystick_detector.Joystick", return_value=mock_js
         ),
     ):
-
         result = detector.detect()
         assert result == [mock_js]
 
@@ -43,7 +42,6 @@ def test_detect_blacklisted_joystick(detector):
             "tuxemon.platform.joystick_detector.Joystick", return_value=mock_js
         ),
     ):
-
         result = detector.detect()
         assert result == []
 
@@ -65,7 +63,6 @@ def test_detect_multiple_mixed(detector):
             side_effect=fake_joystick,
         ),
     ):
-
         result = detector.detect()
         assert result == [js_good]
 
@@ -78,6 +75,5 @@ def test_detect_initialization_failure(detector):
             side_effect=Exception("boom"),
         ),
     ):
-
         result = detector.detect()
         assert result == []

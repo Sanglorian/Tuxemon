@@ -64,8 +64,12 @@ class ItemController:
                         self.session.client, self.char.monsters
                     )
                     self.session.client.push_state(monster_menu)
-                    monster_menu.is_valid_entry = partial(self.item.validate_monster, self.session)  # type: ignore[method-assign]
-                    monster_menu.on_menu_selection = self.get_monster_targeted_action(key)  # type: ignore[assignment]
+                    monster_menu.is_valid_entry = partial(
+                        self.item.validate_monster, self.session
+                    )  # type: ignore[method-assign]
+                    monster_menu.on_menu_selection = (
+                        self.get_monster_targeted_action(key)
+                    )  # type: ignore[assignment]
                 else:
                     result = self.item.use(self.session, self.char, None)
                     self.session.client.remove_state_by_name("ItemMenuState")

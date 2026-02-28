@@ -99,7 +99,6 @@ class EffectProcessor:
 
         for effect in self.effects:
             if isinstance(effect, CoreEffect):
-
                 # Technique with target
                 if user and target:
                     if effect.should_run_tech(session, source, user, target):
@@ -136,7 +135,6 @@ class EffectProcessor:
 
         for effect in self.effects:
             if isinstance(effect, CoreEffect):
-
                 if target:
                     if effect.should_run_item(session, source, target, target):
                         result = effect.apply_item_target(
@@ -170,7 +168,6 @@ class EffectProcessor:
 
         for effect in self.effects:
             if isinstance(effect, CoreEffect):
-
                 if effect.should_run_status(session, source):
                     result = effect.apply_status(session, source)
                     self._merge_results_status(meta_result, result)

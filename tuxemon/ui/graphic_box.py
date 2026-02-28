@@ -53,7 +53,7 @@ class TileLayout:
 
         if len(tiles) != self.grid_size**2:
             raise ValueError(
-                f"Expected {self.grid_size ** 2} tiles, got {len(tiles)}"
+                f"Expected {self.grid_size**2} tiles, got {len(tiles)}"
             )
 
         return tiles

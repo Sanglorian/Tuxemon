@@ -269,7 +269,6 @@ class EventAction(ABC):
 
 
 class ActionManager:
-
     def __init__(self, root_path: Path | None = None) -> None:
         if root_path is None:
             root_path = LIBDIR.parent

@@ -5,13 +5,12 @@ from __future__ import annotations
 import logging
 from collections import defaultdict
 from collections.abc import Mapping, MutableMapping
-from typing import TYPE_CHECKING, DefaultDict
+from typing import TYPE_CHECKING
 
 from tuxemon.map.region import RegionProperties
 from tuxemon.platform.const.sizes import SURFACE_KEYS
 
 if TYPE_CHECKING:
-
     from tuxemon.entity.entity import Entity
     from tuxemon.entity.npc import NPC
     from tuxemon.map.manager import MapManager
@@ -174,7 +173,7 @@ class CollisionManager:
         Returns:
             A dictionary of collision tiles.
         """
-        collision_dict: DefaultDict[
+        collision_dict: defaultdict[
             tuple[int, int], RegionProperties | None
         ] = defaultdict(RegionProperties)
 

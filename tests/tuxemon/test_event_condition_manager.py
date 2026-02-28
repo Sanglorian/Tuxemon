@@ -85,9 +85,7 @@ def test_evaluate_condition_met(evaluator):
 
 
 def test_evaluate_condition_failed(evaluator):
-    evaluator.condition_manager.get_condition.return_value.test.return_value = (
-        False
-    )
+    evaluator.condition_manager.get_condition.return_value.test.return_value = False
     result = evaluator.evaluate(MagicMock())
     assert result is False
 

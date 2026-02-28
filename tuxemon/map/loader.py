@@ -156,7 +156,9 @@ class MapLoader:
         yaml_collision, events = self._process_events(yaml_files)
         self._merge_events(txmn_map, yaml_collision, events)
 
-    def _process_events(self, yaml_files: list[Path]) -> tuple[
+    def _process_events(
+        self, yaml_files: list[Path]
+    ) -> tuple[
         MutableMapping[tuple[int, int], RegionProperties | None],
         defaultdict[str, list[EventObject]],
     ]:
@@ -603,8 +605,9 @@ class TMXMapLoader:
             Rect((region.x, region.y, region.width, region.height)), grid_size
         )
         for tile_x, tile_y in tiles_inside_rect(rect, grid_size):
-            yield (tile_x, tile_y), extract_region_properties(
-                region_conditions
+            yield (
+                (tile_x, tile_y),
+                extract_region_properties(region_conditions),
             )
 
     def load_event(

@@ -257,7 +257,9 @@ class MonsterMenuHandler:
                 self.client, self.party.owner, self.name, items_filtered
             )
         )
-        menu.on_menu_selection = lambda menu_item: self._equip_from_picker(monster, menu_item)  # type: ignore[method-assign]
+        menu.on_menu_selection = lambda menu_item: self._equip_from_picker(
+            monster, menu_item
+        )  # type: ignore[method-assign]
 
     def _equip_from_picker(
         self, monster: Monster, menu_item: MenuItem[Item | None]
@@ -412,7 +414,9 @@ class MonsterMenuHandler:
             MonsterMenuState(self.client, self.party.monsters)
         )
 
-        self.monster_menu.on_menu_selection = lambda item: self.handle_selection(item, self.monster_menu)  # type: ignore[assignment]
+        self.monster_menu.on_menu_selection = lambda item: (
+            self.handle_selection(item, self.monster_menu)
+        )  # type: ignore[assignment]
 
         original_on_change = self.monster_menu.on_menu_selection_change
 

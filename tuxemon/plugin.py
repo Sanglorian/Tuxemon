@@ -67,7 +67,6 @@ class PluginDiscovery(ABC):
 
 
 class FileSystemPluginDiscovery(PluginDiscovery):
-
     def __init__(
         self,
         folders: list[Path],

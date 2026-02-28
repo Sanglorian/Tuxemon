@@ -110,8 +110,10 @@ def test_calculate_affinity_score(elements, attackers, defenders, expected_fn):
         (
             ["fire", "metal"],
             "fire",
-            lambda e: e["fire"].lookup_multiplier("fire")
-            * e["metal"].lookup_multiplier("fire"),
+            lambda e: (
+                e["fire"].lookup_multiplier("fire")
+                * e["metal"].lookup_multiplier("fire")
+            ),
         ),
         (
             ["aether", "fire"],

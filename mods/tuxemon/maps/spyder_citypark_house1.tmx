@@ -38,8 +38,7 @@
  <objectgroup color="#ffff00" id="6" name="Events">
   <object id="59" name="Create Maniac" type="event" x="48" y="80" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_citypark_house_maniac,3,5"/>
-    <property name="act2" value="char_wander spyder_citypark_house_maniac"/>
+    <property name="act1" value="create_npc spyder_citypark_house_maniac,3,5,wander"/>
     <property name="cond1" value="not char_exists spyder_citypark_house_maniac"/>
    </properties>
   </object>

@@ -13,7 +13,7 @@ from pygame.joystick import JoystickType
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon import graphics, prepare
+from tuxemon import graphics
 from tuxemon.platform.const import buttons, events
 from tuxemon.platform.events import (
     EventQueueHandler,
@@ -109,6 +109,24 @@ class PlayStationMapping(InputMappingStrategy):
                 abs(value) > 0.2,
             )
         return (None, False)
+
+
+class KeyBindingRules:
+    RESERVED_KEYS = {
+        pg.K_ESCAPE,
+        pg.K_RETURN,
+        pg.K_BACKSPACE,
+        pg.K_LSHIFT,
+        pg.K_RSHIFT,
+        pg.K_UP,
+        pg.K_DOWN,
+        pg.K_LEFT,
+        pg.K_RIGHT,
+    }
+
+    @classmethod
+    def is_valid_binding(cls, key: int) -> bool:
+        return key not in cls.RESERVED_KEYS
 
 
 class PygameEventHandler(InputHandler[Event]):
@@ -304,6 +322,17 @@ class PygameKeyboardInput(PygameEventHandler):
     ) -> None:
         super().__init__(event_map or self.default_input_map)
         self._initialize_buttons_from_map(self.event_map)
+        self._needs_rebuild: bool = False
+        self._pending_map: Mapping[int | None, int] | None = None
+
+    def update_state(self, dt: float) -> None:
+        if self._needs_rebuild:
+            assert self._pending_map is not None
+            self.event_map = self._pending_map
+            self._initialize_buttons_from_map(self._pending_map)
+            self._needs_rebuild = False
+
+        super().update_state(dt)
 
     def process_event(self, input_event: Event) -> None:
         """
@@ -320,8 +349,8 @@ class PygameKeyboardInput(PygameEventHandler):
 
     def reload_mapping(self, new_map: Mapping[int | None, int]) -> None:
         """Update the key→button mapping in place."""
-        self.event_map = new_map
-        self._initialize_buttons_from_map(new_map)
+        self._pending_map = new_map
+        self._needs_rebuild = True
 
     def _initialize_buttons_from_map(
         self, mapping: Mapping[int | None, int]
@@ -402,8 +431,9 @@ class DPadButtonInfo:
 
 
 class TouchOverlayUI:
-    def __init__(self, transparency: int) -> None:
+    def __init__(self, transparency: int, resolution: tuple[int, int]) -> None:
         self.transparency = transparency
+        self.resolution = resolution
         self.dpad: DPadInfo
         self.a_button: DPadButtonInfo
         self.b_button: DPadButtonInfo
@@ -418,7 +448,7 @@ class TouchOverlayUI:
         dpad_surface = graphics.load_and_scale(DPAD_IMAGE)
         dpad_position = (
             0,
-            prepare.SCREEN_SIZE[1] - dpad_surface.get_height(),
+            self.resolution[1] - dpad_surface.get_height(),
         )
 
         width, height = dpad_surface.get_width(), dpad_surface.get_height()
@@ -473,7 +503,7 @@ class TouchOverlayUI:
         )
 
         button_position = (
-            prepare.SCREEN_SIZE[0] - int(button_surface.get_width() * scale),
+            self.resolution[0] - int(button_surface.get_width() * scale),
             pos_y,
         )
 
@@ -512,9 +542,10 @@ class TouchOverlayUI:
 class PygameTouchOverlayInput(PygameEventHandler):
     default_input_map: ClassVar[Mapping[int | None, int]] = {}
 
-    def __init__(self, transparency: int) -> None:
+    def __init__(self, transparency: int, resolution: tuple[int, int]) -> None:
         super().__init__()
-        self.ui = TouchOverlayUI(transparency)
+        self.ui = TouchOverlayUI(transparency, resolution)
+        self.resolution = resolution
         self.buttons = {
             buttons.UP: PlayerInput(buttons.UP),
             buttons.DOWN: PlayerInput(buttons.DOWN),
@@ -535,8 +566,8 @@ class PygameTouchOverlayInput(PygameEventHandler):
 
         if input_event.type in (pg.FINGERDOWN, pg.FINGERUP, pg.FINGERMOTION):
             touch_pos = (
-                int(input_event.x * prepare.SCREEN_SIZE[0]),
-                int(input_event.y * prepare.SCREEN_SIZE[1]),
+                int(input_event.x * self.resolution[0]),
+                int(input_event.y * self.resolution[1]),
             )
             finger_id = input_event.fingerid
 

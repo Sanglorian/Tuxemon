@@ -228,4 +228,4 @@ class Vector2(Vector):
         return Vector2(self.x, self.y)
 
     def __repr__(self) -> str:
-        return f"Vector3({self.x}, {self.y})"
+        return f"Vector2({self.x}, {self.y})"

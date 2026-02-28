@@ -35,6 +35,7 @@ def setup_user_environment() -> TuxemonConfig:
             default_flow_style=False,
             indent=4,
         )
+        loaded_config.reload_config()
         logger.info(
             f"Configuration loaded and saved to {paths.USER_CONFIG_PATH}"
         )

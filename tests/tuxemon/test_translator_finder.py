@@ -1,152 +1,158 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
+import pytest
 
 from tuxemon.locale.finder import LocaleFinder
 
 
-class TestLocaleFinder(unittest.TestCase):
+@pytest.fixture
+def temp_root():
+    with TemporaryDirectory() as tmp:
+        yield Path(tmp)
 
-    def setUp(self):
-        self.tmp_dir = TemporaryDirectory()
-        self.root_dir = Path(self.tmp_dir.name)
 
-    def tearDown(self):
-        self.tmp_dir.cleanup()
+def test_init(temp_root):
+    finder = LocaleFinder([temp_root])
+    assert finder.root_dirs == (temp_root,)
+    assert finder._scanned is False
 
-    def test_init(self):
-        locale_finder = LocaleFinder([self.root_dir])
-        self.assertEqual(locale_finder.root_dirs, (self.root_dir,))
-        self.assertFalse(locale_finder._scanned)
 
-    def test_scan(self):
-        locale_dir = self.root_dir / "locale"
-        locale_dir.mkdir()
-        category_dir = locale_dir / "category"
-        category_dir.mkdir()
-        file_path = category_dir / "example.po"
-        file_path.touch()
+def test_scan(temp_root):
+    locale_dir = temp_root / "locale"
+    locale_dir.mkdir()
+    category_dir = locale_dir / "category"
+    category_dir.mkdir()
+    (category_dir / "example.po").touch()
 
-        locale_finder = LocaleFinder([self.root_dir], auto_scan=True)
-        self.assertTrue(locale_finder._scanned)
-        self.assertEqual(len(locale_finder.get_locales()), 1)
+    finder = LocaleFinder([temp_root], auto_scan=True)
+    assert finder._scanned is True
+    assert len(finder.get_locales()) == 1
 
-    def test_search_locales(self):
-        locale_dir = self.root_dir / "locale"
-        locale_dir.mkdir()
-        category_dir = locale_dir / "category"
-        category_dir.mkdir()
-        file_path = category_dir / "example.po"
-        file_path.touch()
 
-        locale_finder = LocaleFinder([self.root_dir])
-        locales = list(locale_finder.search_locales())
-        self.assertEqual(len(locales), 1)
+def test_search_locales(temp_root):
+    locale_dir = temp_root / "locale"
+    locale_dir.mkdir()
+    category_dir = locale_dir / "category"
+    category_dir.mkdir()
+    (category_dir / "example.po").touch()
 
-    def test_has_locale(self):
-        locale_dir = self.root_dir / "locale"
-        locale_dir.mkdir()
-        category_dir = locale_dir / "category"
-        category_dir.mkdir()
-        file_path = category_dir / "example.po"
-        file_path.touch()
+    finder = LocaleFinder([temp_root])
+    locales = list(finder.search_locales())
+    assert len(locales) == 1
 
-        locale_finder = LocaleFinder([self.root_dir], auto_scan=True)
-        self.assertTrue(locale_finder.has_locale("locale"))
 
-    def test_reset(self):
-        locale_dir = self.root_dir / "locale"
-        locale_dir.mkdir()
-        category_dir = locale_dir / "category"
-        category_dir.mkdir()
-        file_path = category_dir / "example.po"
-        file_path.touch()
+def test_has_locale(temp_root):
+    locale_dir = temp_root / "locale"
+    locale_dir.mkdir()
+    category_dir = locale_dir / "category"
+    category_dir.mkdir()
+    (category_dir / "example.po").touch()
 
-        locale_finder = LocaleFinder([self.root_dir], auto_scan=True)
-        self.assertTrue(locale_finder._scanned)
-        locale_finder.reset()
-        self.assertFalse(locale_finder._scanned)
+    finder = LocaleFinder([temp_root], auto_scan=True)
+    assert finder.has_locale("locale")
 
-    def test_get_locales(self):
-        locale_dir = self.root_dir / "locale"
-        locale_dir.mkdir()
-        category_dir = locale_dir / "category"
-        category_dir.mkdir()
-        file_path = category_dir / "example.po"
-        file_path.touch()
 
-        locale_finder = LocaleFinder([self.root_dir], auto_scan=True)
-        locales = locale_finder.get_locales()
-        self.assertEqual(len(locales), 1)
+def test_reset(temp_root):
+    locale_dir = temp_root / "locale"
+    locale_dir.mkdir()
+    category_dir = locale_dir / "category"
+    category_dir.mkdir()
+    (category_dir / "example.po").touch()
 
-    def test_get_locale_names(self):
-        locale_dir1 = self.root_dir / "locale1"
-        locale_dir1.mkdir()
-        locale_dir2 = self.root_dir / "locale2"
-        locale_dir2.mkdir()
-        category_dir = locale_dir1 / "category"
-        category_dir.mkdir()
-        file_path = category_dir / "example.po"
-        file_path.touch()
+    finder = LocaleFinder([temp_root], auto_scan=True)
+    assert finder._scanned is True
 
-        locale_finder = LocaleFinder([self.root_dir], auto_scan=True)
-        locale_names = locale_finder.get_locale_names()
-        self.assertEqual(len(locale_names), 2)
+    finder.reset()
+    assert finder._scanned is False
 
-    def test_invalid_root_dir(self):
-        locale_finder = LocaleFinder([Path("invalid_dir")])
-        self.assertEqual(locale_finder.root_dirs, (Path("invalid_dir"),))
-        self.assertFalse(locale_finder._scanned)
 
-    def test_empty_root_dir(self):
-        locale_finder = LocaleFinder([self.root_dir], auto_scan=True)
-        self.assertTrue(locale_finder._scanned)
-        self.assertEqual(len(locale_finder.get_locales()), 0)
+def test_get_locales(temp_root):
+    locale_dir = temp_root / "locale"
+    locale_dir.mkdir()
+    category_dir = locale_dir / "category"
+    category_dir.mkdir()
+    (category_dir / "example.po").touch()
 
-    def test_multiple_root_dirs(self):
-        root1 = self.root_dir / "root1"
-        root2 = self.root_dir / "root2"
-        root1.mkdir()
-        root2.mkdir()
+    finder = LocaleFinder([temp_root], auto_scan=True)
+    assert len(finder.get_locales()) == 1
 
-        category1 = root1 / "locale1" / "category"
-        category1.mkdir(parents=True)
-        (category1 / "example1.po").touch()
 
-        category2 = root2 / "locale2" / "category"
-        category2.mkdir(parents=True)
-        (category2 / "example2.po").touch()
+def test_get_locale_names(temp_root):
+    locale1 = temp_root / "locale1"
+    locale2 = temp_root / "locale2"
+    locale1.mkdir()
+    locale2.mkdir()
 
-        finder = LocaleFinder([root1, root2], auto_scan=True)
-        locales = finder.get_locales()
-        self.assertEqual(len(locales), 2)
-        self.assertIn("locale1", finder.get_locale_names())
-        self.assertIn("locale2", finder.get_locale_names())
+    category = locale1 / "category"
+    category.mkdir()
+    (category / "example.po").touch()
 
-    def test_non_po_file_ignored(self):
-        locale_dir = self.root_dir / "locale"
-        category_dir = locale_dir / "category"
-        category_dir.mkdir(parents=True)
-        (category_dir / "not_po.txt").touch()
+    finder = LocaleFinder([temp_root], auto_scan=True)
+    names = finder.get_locale_names()
 
-        finder = LocaleFinder([self.root_dir], auto_scan=True)
-        self.assertEqual(len(finder.get_locales()), 0)
+    assert len(names) == 2
+    assert "locale1" in names
+    assert "locale2" in names
 
-    def test_empty_category_dir(self):
-        locale_dir = self.root_dir / "locale"
-        category_dir = locale_dir / "category"
-        category_dir.mkdir(parents=True)
 
-        finder = LocaleFinder([self.root_dir], auto_scan=True)
-        self.assertEqual(len(finder.get_locales()), 0)
+def test_invalid_root_dir():
+    finder = LocaleFinder([Path("invalid_dir")])
+    assert finder.root_dirs == (Path("invalid_dir"),)
+    assert finder._scanned is False
 
-    def test_weird_extension_file(self):
-        locale_dir = self.root_dir / "locale"
-        category_dir = locale_dir / "category"
-        category_dir.mkdir(parents=True)
-        (category_dir / "example.po.backup").touch()
 
-        finder = LocaleFinder([self.root_dir], auto_scan=True)
-        self.assertEqual(len(finder.get_locales()), 0)
+def test_empty_root_dir(temp_root):
+    finder = LocaleFinder([temp_root], auto_scan=True)
+    assert finder._scanned is True
+    assert len(finder.get_locales()) == 0
+
+
+def test_multiple_root_dirs(temp_root):
+    root1 = temp_root / "root1"
+    root2 = temp_root / "root2"
+    root1.mkdir()
+    root2.mkdir()
+
+    category1 = root1 / "locale1" / "category"
+    category1.mkdir(parents=True)
+    (category1 / "example1.po").touch()
+
+    category2 = root2 / "locale2" / "category"
+    category2.mkdir(parents=True)
+    (category2 / "example2.po").touch()
+
+    finder = LocaleFinder([root1, root2], auto_scan=True)
+    locales = finder.get_locales()
+
+    assert len(locales) == 2
+    assert "locale1" in finder.get_locale_names()
+    assert "locale2" in finder.get_locale_names()
+
+
+def test_non_po_file_ignored(temp_root):
+    category = temp_root / "locale" / "category"
+    category.mkdir(parents=True)
+    (category / "not_po.txt").touch()
+
+    finder = LocaleFinder([temp_root], auto_scan=True)
+    assert len(finder.get_locales()) == 0
+
+
+def test_empty_category_dir(temp_root):
+    category = temp_root / "locale" / "category"
+    category.mkdir(parents=True)
+
+    finder = LocaleFinder([temp_root], auto_scan=True)
+    assert len(finder.get_locales()) == 0
+
+
+def test_weird_extension_file(temp_root):
+    category = temp_root / "locale" / "category"
+    category.mkdir(parents=True)
+    (category / "example.po.backup").touch()
+
+    finder = LocaleFinder([temp_root], auto_scan=True)
+    assert len(finder.get_locales()) == 0

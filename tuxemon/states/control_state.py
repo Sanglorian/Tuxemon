@@ -110,7 +110,7 @@ class ControlState(PygameMenuState):
 
             def mute_music() -> None:
                 self.client.config.update_attribute(
-                    "gameplay", "music_volume", str(0)
+                    "gameplay", "music_volume", 0
                 )
                 self.client.current_music.set_volume(0)
 
@@ -158,7 +158,7 @@ class ControlState(PygameMenuState):
                 """
                 volume = round(val / 100, 1)
                 self.client.config.update_attribute(
-                    "gameplay", "music_volume", str(volume)
+                    "gameplay", "music_volume", volume
                 )
                 self.client.current_music.set_volume(volume)
 
@@ -168,7 +168,7 @@ class ControlState(PygameMenuState):
                 """
                 volume = round(val / 100, 1)
                 self.client.config.update_attribute(
-                    "gameplay", "sound_volume", str(volume)
+                    "gameplay", "sound_volume", volume
                 )
                 sound = self.menu.get_sound()
                 sound.set_sound_volume(SOUND_TYPE_WIDGET_SELECTION, volume)

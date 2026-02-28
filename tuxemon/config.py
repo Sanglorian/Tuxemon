@@ -552,87 +552,8 @@ class LoggingConfig:
         "critical": logging.CRITICAL,
     }
 
-    def __init__(self, config_model: TuxemonFullConfig) -> None:
-        log = config_model.logging
-        self.loggers = log.loggers.replace(" ", "").split(",")
-        self.debug_logging = log.debug_logging
-        self.debug_level = log.debug_level
-        self.log_to_file = log.dump_to_file
-        self.log_keep_max = log.file_keep_max
-
-    def configure(self) -> None:
-        log_level = self.LOG_LEVELS.get(self.debug_level, logging.INFO)
-
-        if self.debug_logging:
-            warnings.filterwarnings("default")
-
-        for logger_name in self.loggers:
-            if logger_name == "all":
-                print("Enabling logging of all modules.")
-                logger = logging.getLogger()
-            else:
-                print(f"Enabling logging for module: {logger_name}")
-                logger = logging.getLogger(logger_name)
-
-            logger.setLevel(log_level)
-
-            log_formatter = Formatter(
-                "[%(asctime)s] %(name)s - %(levelname)s - %(message)s"
-            )
-
-            if not any(
-                isinstance(h, StreamHandler)
-                and getattr(h, "stream", None) is sys.stdout
-                for h in logger.handlers
-            ):
-                log_strm = StreamHandler(sys.stdout)
-                log_strm.setLevel(log_level)
-                log_strm.setFormatter(log_formatter)
-                logger.addHandler(log_strm)
-
-            if self.log_to_file:
-                self.setup_file_logging(logger, log_formatter, log_level)
-
-        pyscroll_logger = logging.getLogger("orthographic")
-        pyscroll_logger.setLevel(logging.ERROR)
-
-    def setup_file_logging(
-        self, logger: Logger, formatter: Formatter, log_level: int
-    ) -> None:
-        log_dir = paths.USER_STORAGE_DIR / "logs"
-        log_dir.mkdir(parents=True, exist_ok=True)
-
-        formatted_time = time.strftime("%Y-%m-%d_%Hh%Mm%Ss", time.localtime())
-        new_file_path = log_dir / f"{formatted_time}.log"
-
-        if not any(
-            isinstance(h, FileHandler)
-            and getattr(h, "baseFilename", None) == str(new_file_path)
-            for h in logger.handlers
-        ):
-            log_file = FileHandler(new_file_path)
-            log_file.setFormatter(formatter)
-            log_file.setLevel(log_level)
-            logger.addHandler(log_file)
-
-        sorted_files = sorted(
-            log_dir.glob("*.log"),
-            key=lambda f: f.stat().st_mtime,
-            reverse=True,
-        )
-
-        keep = max(1, self.log_keep_max)
-
-        for old_file in sorted_files[keep:]:
-            old_file.unlink(missing_ok=True)
+    def __init__(self, config_model: TuxemonFullConfig):
         self._model = config_model.logging
-        # [logging]
-        # Log levels can be: debug, info, warning, error, or critical
-        # Setting loggers to "all" will enable debug logging for all modules.
-        #   Some available loggers:
-        #     states.combat, states.world, event,
-        #     neteria.server, neteria.client, neteria.core
-        # Comma-separated list of which modules to enable logging on
 
     @property
     def loggers(self) -> list[str]:
@@ -653,3 +574,70 @@ class LoggingConfig:
     @property
     def log_keep_max(self) -> int:
         return self._model.file_keep_max
+
+    def configure(self) -> None:
+        log_level = self.LOG_LEVELS.get(self.debug_level, logging.INFO)
+
+        if self.debug_logging:
+            warnings.filterwarnings("default")
+
+        for logger_name in self.loggers:
+            if logger_name == "all":
+                print("Enabling logging of all modules.")
+                logger = logging.getLogger()
+            else:
+                print(f"Enabling logging for module: {logger_name}")
+                logger = logging.getLogger(logger_name)
+
+            logger.setLevel(log_level)
+
+            formatter = Formatter(
+                "[%(asctime)s] %(name)s - %(levelname)s - %(message)s"
+            )
+
+            # Avoid duplicate stdout handlers
+            if not any(
+                isinstance(h, StreamHandler)
+                and getattr(h, "stream", None) is sys.stdout
+                for h in logger.handlers
+            ):
+                stream = StreamHandler(sys.stdout)
+                stream.setLevel(log_level)
+                stream.setFormatter(formatter)
+                logger.addHandler(stream)
+
+            if self.log_to_file:
+                self._setup_file_logging(logger, formatter, log_level)
+
+        logging.getLogger("orthographic").setLevel(logging.ERROR)
+
+    def _setup_file_logging(
+        self, logger: Logger, formatter: Formatter, log_level: int
+    ) -> None:
+        log_dir = paths.USER_STORAGE_DIR / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+
+        timestamp = time.strftime("%Y-%m-%d_%Hh%Mm%Ss", time.localtime())
+        file_path = log_dir / f"{timestamp}.log"
+
+        # Avoid duplicate file handlers for the same file
+        if not any(
+            isinstance(h, FileHandler)
+            and getattr(h, "baseFilename", None) == str(file_path)
+            for h in logger.handlers
+        ):
+            fh = FileHandler(file_path)
+            fh.setFormatter(formatter)
+            fh.setLevel(log_level)
+            logger.addHandler(fh)
+
+        # Rotation: keep only the newest N files
+        keep = max(1, self.log_keep_max)
+        files = sorted(
+            log_dir.glob("*.log"),
+            key=lambda f: f.stat().st_mtime,
+            reverse=True,
+        )
+
+        for old in files[keep:]:
+            old.unlink(missing_ok=True)

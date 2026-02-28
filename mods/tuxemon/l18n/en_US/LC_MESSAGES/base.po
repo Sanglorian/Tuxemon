@@ -11457,13 +11457,13 @@ msgid "flashback_apr27_start"
 msgstr "The room blurs... A memory surfaces."
 
 msgid "flashback_apr27_maple_1"
-msgstr "Maple: He's getting worse, Callie. I can't stay here. Not with what he's planning."
+msgstr "Maple: He's getting worse, Callie. I can't stay here. Not with… whatever he's getting involved in."
 
 msgid "flashback_apr27_callie_1"
 msgstr "Callie: Maple... you don't know the whole story. He's trying to help-"
 
 msgid "flashback_apr27_maple_2"
-msgstr "Maple: Help? Secret meetings? Codes? Experiments? I won't let my child be part of this."
+msgstr "Maple: Help? Whispers behind closed doors… things he won't explain…\n I can't risk staying here with him like this."
 
 msgid "flashback_apr27_kay_voice"
 msgstr "Girls! Come down for a moment! I've made a breakthrough!"

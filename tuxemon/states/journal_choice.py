@@ -15,7 +15,6 @@ from tuxemon.db import MonsterModel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_JOURNAL_CHOICE, DIMGRAY_COLOR
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
@@ -100,7 +99,7 @@ class JournalChoice(PygameMenuState):
         if not lookup_cache:
             _lookup_monsters()
 
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
 
         columns = 2
 

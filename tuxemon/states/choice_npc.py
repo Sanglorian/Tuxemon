@@ -17,7 +17,6 @@ from tuxemon.entity.sheet import get_combat_sheet
 from tuxemon.graphics import scale_surface
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.ui.menu_options import MenuOptions
 
 if TYPE_CHECKING:
@@ -106,7 +105,7 @@ class ChoiceNpc(PygameMenuState):
         self.menu.add.vertical_fill(self.config.vertical_fill)
 
     def update_animation_size(self) -> None:
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         widgets_size = self.menu.get_size(widget=True)
 
         _width = widgets_size[0]

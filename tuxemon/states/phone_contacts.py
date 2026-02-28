@@ -16,7 +16,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_CONTACTS
 from tuxemon.platform.const.sizes import UNKNOWN_MAP_SLUG
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.relationship import RelationshipConstants
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options
@@ -160,7 +159,7 @@ class NuPhoneContacts(PygameMenuState):
         for relation in self.char.relationships.connections.values():
             relation.apply_decay(self.char.steps)
 
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
 
         super().__init__(client=client, height=height, width=width, **kwargs)
 

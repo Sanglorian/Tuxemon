@@ -21,7 +21,6 @@ from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.quantity import QuantityMenu
 from tuxemon.platform.const.graphics import BG_PC_LOCKER
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.tools import fix_measure, open_choice_dialog, open_dialog
@@ -129,7 +128,7 @@ class ItemTakeState(PygameMenuState):
         self.char = character
         self.box = self.char.item_boxes.get_items(self.box_name)
 
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
 
         columns = 3
         num_widgets = 2
@@ -273,7 +272,7 @@ class ItemBoxState(PygameMenuState):
     def __init__(
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
-        _, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
 
         super().__init__(client=client, height=height, **kwargs)
 
@@ -299,7 +298,7 @@ class ItemBoxState(PygameMenuState):
             menu.add.button(label, callback)
             menu.add.vertical_fill()
 
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         widgets_size = menu.get_size(widget=True)
         b_width, b_height = menu.get_scrollarea().get_border_size()
         menu.resize(

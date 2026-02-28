@@ -17,7 +17,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.platform.const.sizes import UNKNOWN_MAP_SLUG
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -80,7 +79,7 @@ class EmailState(PygameMenuState):
         else:
             self.current_map = UNKNOWN_MAP_SLUG
 
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         width = int(width * 0.8)
         height = int(height * 0.8)
 
@@ -143,7 +142,7 @@ class EmailReadState(PygameMenuState):
     ) -> None:
         self.email = email
 
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         width = int(width * 0.7)
         height = int(height * 0.7)
 

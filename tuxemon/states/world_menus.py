@@ -13,7 +13,6 @@ from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import DIMGRAY_COLOR
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.states.monster_menu import MonsterMenuHandler
 
 if TYPE_CHECKING:
@@ -28,7 +27,9 @@ logger = logging.getLogger(__name__)
 WorldMenuGameObj = Callable[[], object]
 
 
-def add_menu_items_to_pygame_menu(menu: Menu, items: list[MenuItem]) -> None:
+def add_menu_items_to_pygame_menu(
+    menu: Menu, items: list[MenuItem], resolution: tuple[int, int]
+) -> None:
     """Helper function to add items to a pygame_menu.Menu instance."""
     menu.clear()
     menu.add.vertical_fill()
@@ -45,7 +46,7 @@ def add_menu_items_to_pygame_menu(menu: Menu, items: list[MenuItem]) -> None:
             )
         menu.add.vertical_fill()
 
-    width, height = SCREEN_SIZE
+    width, height = resolution
     widgets_size = menu.get_size(widget=True)
     b_width, b_height = menu.get_scrollarea().get_border_size()
     menu.resize(
@@ -69,7 +70,8 @@ class WorldMenuState(PygameMenuState):
     ) -> None:
         """Initialize menu state and build menu separately."""
         self.char = character
-        super().__init__(client=client, height=SCREEN_SIZE[1], **kwargs)
+        width, height = self.client.context.resolution
+        super().__init__(client=client, height=height, **kwargs)
         self.menu_manager = menu_manager
         self.menu_manager.set_menu_renderer(self)
         self.update_menu_from_manager()
@@ -78,7 +80,8 @@ class WorldMenuState(PygameMenuState):
     def update_menu_from_manager(self) -> None:
         """Refreshes the menu display using items provided by the manager."""
         display = self.menu_manager.build_current_menu_items(self.char)
-        add_menu_items_to_pygame_menu(self.menu, display)
+        resolution = self.client.context.resolution
+        add_menu_items_to_pygame_menu(self.menu, display, resolution)
 
     def open_monster_menu(self) -> None:
         self.handler.open_monster_menu()

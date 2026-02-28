@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from tuxemon.graphics import string_to_colorlike
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -26,7 +25,7 @@ class ColorState(PygameMenuState):
         return None
 
     def __init__(self, client: BaseClient, color: str, **kwargs: Any) -> None:
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         _color = string_to_colorlike(color)
 
         super().__init__(client=client, height=height, width=width, **kwargs)

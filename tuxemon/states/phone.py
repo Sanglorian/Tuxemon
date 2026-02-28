@@ -16,7 +16,6 @@ from tuxemon.locale.locale import T
 from tuxemon.map.manager import MAP_TYPES, MapType
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure, open_dialog
 
 if TYPE_CHECKING:
@@ -32,7 +31,7 @@ class NuPhone(PygameMenuState):
     def __init__(
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         self.char = character
 
         self.menu_apps: list[Item] = []

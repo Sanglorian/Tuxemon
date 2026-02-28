@@ -17,7 +17,6 @@ from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_JOURNAL_INFO
 from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_LB
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
@@ -264,7 +263,7 @@ class JournalInfoState(PygameMenuState):
         self.source = source
         self.is_visible = self.char.tuxepedia.is_caught(monster.slug) or reveal
         self._monster = monster
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
 
         super().__init__(client=client, height=height, width=width, **kwargs)
 

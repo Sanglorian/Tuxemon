@@ -10,7 +10,6 @@ from pygame_menu.locals import POSITION_EAST
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.ui.menu_options import MenuOptions
 
 if TYPE_CHECKING:
@@ -69,7 +68,7 @@ class ChoiceState(PygameMenuState):
 
     def update_animation_size(self) -> None:
         widgets_size = self.menu.get_size(widget=True)
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
 
         _width = widgets_size[0]
         _height = widgets_size[1]

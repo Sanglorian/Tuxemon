@@ -10,7 +10,6 @@ from pygame_menu.menu import Menu
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -42,7 +41,7 @@ class ShopChoiceState(PygameMenuState):
 
         self.economy = npc.economy
 
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
 
         super().__init__(
             client=client,

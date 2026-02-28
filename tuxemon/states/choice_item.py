@@ -13,7 +13,6 @@ from tuxemon.database.runtime import db
 from tuxemon.db import ItemModel
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 from tuxemon.ui.menu_options import MenuOptions
 
@@ -71,7 +70,7 @@ class ChoiceItem(PygameMenuState):
     def calculate_window_size(
         self, menu: MenuOptions
     ) -> tuple[int, int, float]:
-        _width, _height = SCREEN_SIZE
+        _width, _height = self.client.context.resolution
 
         if len(menu.options) >= self.config.max_elements:
             height = _height * self.config.max_height_percentage

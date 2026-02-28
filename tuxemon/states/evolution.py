@@ -11,7 +11,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.monster.stats import compare_stats
 from tuxemon.platform.const.graphics import BG_MISSIONS
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -40,7 +39,7 @@ class EvolutionState(PygameMenuState):
         self.char = character
         self.is_devolution = is_devolution
 
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
 
         super().__init__(client=client, height=height, width=width, **kwargs)
 

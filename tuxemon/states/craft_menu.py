@@ -13,7 +13,6 @@ from tuxemon.item.crafting_system import CraftingSystem
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
@@ -43,7 +42,7 @@ class CraftMenuState(PygameMenuState):
         self.crafting_system = CraftingSystem()
         self.crafting_system.set_current_method(self.method)
 
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
 
         width = int(0.8 * width)
         height = int(0.8 * height)

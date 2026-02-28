@@ -17,7 +17,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import local_session
 from tuxemon.ui.menu_options import MenuOptions
 
@@ -139,7 +138,7 @@ class ChoiceMonster(PygameMenuState):
         action.execute_action("clear_tuxepedia", [monster.slug], True)
 
     def update_animation_size(self) -> None:
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         widgets_size = self.menu.get_size(widget=True)
 
         _width = widgets_size[0]

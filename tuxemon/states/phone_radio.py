@@ -16,7 +16,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_CONTACTS
 from tuxemon.platform.const.sizes import UNKNOWN_MAP_SLUG
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
@@ -127,7 +126,7 @@ class NuPhoneRadioBase(PygameMenuState, ABC):
         else:
             self.current_map = UNKNOWN_MAP_SLUG
 
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
 
         super().__init__(client=client, height=height, width=width, **kwargs)
 

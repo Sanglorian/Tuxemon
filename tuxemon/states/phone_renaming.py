@@ -12,7 +12,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_RENAMING
 from tuxemon.platform.const.sizes import PLAYER_NAME_LIMIT
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -59,7 +58,7 @@ class NuPhoneRenaming(PygameMenuState):
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
         self.char = character
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
 
         super().__init__(client=client, height=height, width=width, **kwargs)
 

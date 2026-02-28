@@ -16,7 +16,6 @@ from tuxemon.monster.monster import Monster
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_PARTY
 from tuxemon.platform.const.sizes import U_KM, U_MI
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
@@ -41,7 +40,7 @@ class PartyState(PygameMenuState):
     ) -> None:
         self.party = party
         self.char = party.owner
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         super().__init__(client=client, height=height, width=width, **kwargs)
 
         theme = self._setup_theme(BG_PARTY)

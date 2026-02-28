@@ -8,7 +8,6 @@ from pygame.surface import Surface
 from pygame_menu.locals import ALIGN_CENTER
 
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -29,7 +28,7 @@ class NpcImageState(PygameMenuState):
         **kwargs: Any,
     ) -> None:
         image_path = f"gfx/ui/background/{background}.png"
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         super().__init__(client=client, height=height, width=width, **kwargs)
         theme = self._setup_theme(image_path)
         self._menu_config["theme"] = theme

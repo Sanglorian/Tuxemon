@@ -14,7 +14,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_BANKING
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 
@@ -206,7 +205,7 @@ class NuPhoneBanking(PygameMenuState):
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
         self.char = character
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         super().__init__(client=client, height=height, width=width, **kwargs)
 
         theme = self._setup_theme(BG_PHONE_BANKING)

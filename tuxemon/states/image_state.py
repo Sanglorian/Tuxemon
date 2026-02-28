@@ -8,7 +8,6 @@ from pygame_menu.locals import ALIGN_CENTER
 
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.sizes import NATIVE_RESOLUTION
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -33,7 +32,7 @@ class ImageState(PygameMenuState):
         image: str | None = None,
         **kwargs: Any,
     ) -> None:
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         image_path = f"gfx/ui/background/{background}.png"
         native = NATIVE_RESOLUTION
 

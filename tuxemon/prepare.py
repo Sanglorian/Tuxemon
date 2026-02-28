@@ -45,7 +45,6 @@ DISPLAY_CONTEXT: DisplayContext = DisplayContext(
 )
 
 
-SCREEN_SIZE = CONFIG.resolution
 DEV_TOOLS = CONFIG.dev_tools
 
 

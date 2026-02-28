@@ -11,7 +11,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.platform.const.sizes import MONTH_KEYS
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import Session
 
 if TYPE_CHECKING:
@@ -30,7 +29,7 @@ class CalendarState(PygameMenuState):
     ) -> None:
         self.session = session
 
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
 
         width = int(width * 0.8)
         height = int(height * 0.8)

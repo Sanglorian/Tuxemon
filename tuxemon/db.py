@@ -526,6 +526,10 @@ class ItemBehaviors(Behaviors):
     wear_on_use: bool = Field(
         False, description="Whether using this item increases its wear."
     )
+    block_evolution: bool = Field(
+        False,
+        description="Whether or not this item prevents the holder from evolving.",
+    )
 
 
 class TechBehaviors(Behaviors):

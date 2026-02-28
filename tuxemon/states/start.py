@@ -7,25 +7,26 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from functools import partial
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
 from pygame.surface import Surface
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 
 from tuxemon.database.runtime import db
 from tuxemon.entity.player import Player
 from tuxemon.launcher import GameLauncher
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_START_SCREEN, BLACK_COLOR
 from tuxemon.platform.const.sizes import PLAYER_NPC
-from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.save import get_index_of_latest_save
 from tuxemon.session import local_session
 from tuxemon.state.state import State
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +45,9 @@ class BackgroundState(State):
 
     name: ClassVar[str] = "BackgroundState"
 
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
+
     def draw(self, surface: Surface) -> None:
         surface.fill(BLACK_COLOR)
 
@@ -55,7 +59,7 @@ class StartState(PygameMenuState):
 
     def add_menu_items(
         self,
-        menu: pygame_menu.Menu,
+        menu: Menu,
     ) -> None:
         # If there is a save, then move the cursor to "Load game" first
         index = get_index_of_latest_save()
@@ -138,14 +142,15 @@ class StartState(PygameMenuState):
             button_id="exit",
         )
 
-    def __init__(self) -> None:
+    def __init__(self, client: BaseClient, **kwargs: Any) -> None:
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_START_SCREEN)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
+        self.escape_key_exits = False
         self.client.afk_manager.add_threshold("IntroState", 15.0)
         self.event_bus.subscribe(
             "afk.threshold_reached", self._on_afk_threshold, priority=10
@@ -160,15 +165,6 @@ class StartState(PygameMenuState):
     def shutdown(self) -> None:
         self.unsubscribe("afk.threshold_reached", self._on_afk_threshold)
         super().shutdown()
-
-    def process_event(self, event: PlayerInput) -> PlayerInput | None:
-        if (
-            event.button in (buttons.HOME, buttons.BACK, buttons.B)
-            and event.pressed
-        ):
-            return None
-        else:
-            return super().process_event(event)
 
     def start_battle(self, difficulty: str) -> None:
         Player.create(local_session, slug=PLAYER_NPC)
@@ -196,7 +192,7 @@ class ModsChoice(PygameMenuState):
 
     def add_menu_items(
         self,
-        menu: pygame_menu.Menu,
+        menu: Menu,
     ) -> None:
 
         def new_game(mod_name: str) -> None:
@@ -215,15 +211,17 @@ class ModsChoice(PygameMenuState):
                 button_id=mod_name,
             )
 
-    def __init__(self, mods: list[str]) -> None:
+    def __init__(
+        self, client: BaseClient, mods: list[str], **kwargs: Any
+    ) -> None:
         self.mods = mods
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_START_SCREEN)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
-        super().__init__(height=height, width=width)
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         self.add_menu_items(self.menu)
         self.reset_theme()

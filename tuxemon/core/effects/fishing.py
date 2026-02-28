@@ -159,12 +159,15 @@ class FishingEffect(CoreEffect):
             if self._trigger_next_frame and self._pending_encounter:
                 mon_slug, level = self._pending_encounter
                 exp_req_mod = self._fish.exp_req_mod
-                environment = (
+                env = (
                     self._fish.environment.get("night")
                     if session.time.get_time_variables().stage_of_day
                     == "night"
                     else self._fish.environment.get("default")
                 )
+                env = env or "ocean"
+                session.client.environment_manager.load_environment(env)
+                session.client.environment_manager.lock_environment()
                 rgb = ":".join(map(str, self._fish.animation_color))
                 held_item = None
                 if self._fish.held_items:
@@ -178,7 +181,6 @@ class FishingEffect(CoreEffect):
                         level,
                         exp_req_mod,
                         None,
-                        environment,
                         rgb,
                         held_item,
                     ],

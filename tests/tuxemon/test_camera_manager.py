@@ -5,11 +5,17 @@ from unittest.mock import Mock
 import pytest
 
 from tuxemon.camera.camera import Camera, CameraController, CameraManager
+from tuxemon.prepare import DISPLAY_CONTEXT
 
 
 @pytest.fixture
 def manager():
     return CameraManager()
+
+
+@pytest.fixture
+def context():
+    return DISPLAY_CONTEXT
 
 
 @pytest.fixture
@@ -111,11 +117,11 @@ def test_remove_active_camera_with_multiple_then_clear(manager, cameras):
     assert manager.get_active_camera() == camera2
 
 
-def test_integration_add_and_switch_real_cameras():
+def test_integration_add_and_switch_real_cameras(context):
     player = Mock()
     boundary = Mock()
-    camera1 = Camera(player, boundary)
-    camera2 = Camera(player, boundary)
+    camera1 = Camera(player, boundary, context)
+    camera2 = Camera(player, boundary, context)
     manager = CameraManager()
 
     manager.add_camera("cam1", camera1)

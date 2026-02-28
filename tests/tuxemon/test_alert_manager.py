@@ -7,6 +7,7 @@ import pygame
 
 from tuxemon.event.eventbus import EventBus
 from tuxemon.menu.alert import AlertManager
+from tuxemon.scaling import DefaultScaling
 from tuxemon.ui.text import TextArea
 from tuxemon.user_config import CONFIG
 
@@ -23,8 +24,7 @@ class TestAlertManager(unittest.TestCase):
     def setUp(self):
         font = pygame.font.Font(None, 16)
         self.text_area = TextArea(
-            font=font,
-            font_color=(255, 255, 255),
+            font=font, font_color=(255, 255, 255), scaling=DefaultScaling(1)
         )
         self.event_bus = EventBus()
         self.manager = AlertManager(self.event_bus)

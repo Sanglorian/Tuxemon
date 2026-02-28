@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from tuxemon.combat.damage_tracker import DamageTracker
     from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
-    from tuxemon.technique.technique import Technique
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +32,7 @@ class RewardDataEntry:
 class RewardData:
     winners: list[RewardDataEntry]
     messages: list[str]
-    moves: list[Technique]
+    moves: list[str]
     update: bool
     prize: int
 
@@ -112,8 +111,7 @@ class RewardCalculator:
             all_monsters = set(owner.party.alive)
             non_participants = all_monsters - winners
             for non_participant in non_participants:
-                levels = non_participant.give_experience(awarded_exp)
-                non_participant.moves.update_moves(non_participant, levels)
+                non_participant.give_experience(awarded_exp)
 
     def calculate_winner_entry(
         self, loser: Monster, winner: Monster
@@ -138,7 +136,9 @@ class RewardCalculator:
         self, winner: Monster, entry: RewardDataEntry, rewards_data: RewardData
     ) -> None:
         """Update moves and add messages for a winner."""
-        new_moves = winner.moves.update_moves(winner, entry.levels_gained)
+        new_moves = winner.moves.preview_moves_learned(
+            winner, entry.levels_gained
+        )
         if new_moves:
             rewards_data.moves.extend(new_moves)
 

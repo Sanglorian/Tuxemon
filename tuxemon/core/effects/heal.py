@@ -57,10 +57,11 @@ class HealEffect(CoreEffect):
                 extras=[T.translate("combat_state_festering_item")],
             )
 
+        value: int | float
         if self.heal_type == "fixed":
-            value = self.amount / target.hp
+            value = int(self.amount)
         elif self.heal_type == "percentage":
-            value = self.amount
+            value = float(self.amount)
         else:
             raise ValueError(
                 f"Invalid heal type '{self.heal_type}'. Must be either 'fixed' or 'percentage'."

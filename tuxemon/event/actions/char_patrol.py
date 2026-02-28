@@ -7,6 +7,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any, final
 
+from tuxemon.entity.behavior.base import PatrolBehavior
 from tuxemon.event.eventaction import EventAction
 from tuxemon.map.map import parse_path_parameters
 from tuxemon.session import Session
@@ -47,8 +48,6 @@ class CharPatrolAction(EventAction):
     def __init__(self, *args: Any) -> None:
         super().__init__()
         self.raw_parameters = args
-        self.patrol_points: list[tuple[int, int]] = field(default_factory=list)
-        self.patrol_index: int = 0
 
     def start(self, session: Session) -> None:
         if len(self.raw_parameters) < 2:
@@ -59,28 +58,17 @@ class CharPatrolAction(EventAction):
 
         npc_name = self.raw_parameters[0]
         move_list = self.raw_parameters[1:]
-        self.character = session.get_npc(npc_name)
+        npc = session.get_npc(npc_name)
 
-        if not self.character:
+        if not npc:
             logger.error(f"NPC '{npc_name}' not found")
             return
 
         try:
-            self.patrol_points = list(
-                parse_path_parameters(self.character.tile_pos, move_list)
-            )
+            route = list(parse_path_parameters(npc.tile_pos, move_list))
         except Exception as e:
             logger.error(f"Failed to parse patrol path: {e}")
             return
 
-    def update(self, session: Session, dt: float) -> None:
-        if not self.character or not self.patrol_points:
-            self.stop()
-            return
-
-        if not self.character.moving and not self.character.path:
-            next_pos = self.patrol_points[self.patrol_index]
-            self.character.set_path_and_start([next_pos])
-            self.patrol_index = (self.patrol_index + 1) % len(
-                self.patrol_points
-            )
+        # Assign PatrolBehavior
+        npc.behavior_policy = PatrolBehavior(route)

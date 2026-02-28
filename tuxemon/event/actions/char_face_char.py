@@ -5,48 +5,47 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.entity.path import tile_distance
 from tuxemon.event.eventaction import EventAction
 from tuxemon.map.map import get_direction
 from tuxemon.session import Session
+from tuxemon.tools import tile_distance
 
 
 @final
 @dataclass
-class CharFacePlayerAction(EventAction):
+class CharFaceCharAction(EventAction):
     """
-    Make an NPC face the player when they come within a specified distance.
+    Make an NPC face another character when they come within a specified distance.
 
     Script usage:
         .. code-block::
 
-            char_face_player <npc_slug>,<trigger_dist>,<persistent>
-
     Script parameters:
-        npc_slug: Slug of the NPC that will face the player.
-        trigger_dist: Maximum tile distance at which the NPC will begin
-            facing the player. Defaults to 3.
-        persistent: Whether the NPC should continue tracking the player
-            after the first trigger. Defaults to True.
+        npc_slug: Slug of the NPC that will do the turning.
+        target_slug: Slug of the character (NPC or player) to look at.
+        trigger_dist: Maximum tile distance for the trigger. Defaults to 3.
+        persistent: Whether to continue tracking. Defaults to True.
     """
 
-    name = "char_face_player"
+    name = "char_face_char"
     character: str
+    target: str
     trigger_dist: int = 3
     persistent: bool = True
 
     def start(self, session: Session) -> None:
         self.npc = session.get_npc(self.character)
+        self.target_char = session.get_npc(self.target)
 
     def update(self, session: Session, dt: float) -> None:
-        if not self.npc:
+        if not self.npc or not self.target_char:
             return
 
-        dist = tile_distance(self.npc.tile_pos, session.player.tile_pos)
+        dist = tile_distance(self.npc.tile_pos, self.target_char.tile_pos)
 
         if dist <= self.trigger_dist:
             direction = get_direction(
-                self.npc.tile_pos, session.player.tile_pos
+                self.npc.tile_pos, self.target_char.tile_pos
             )
             self.npc.set_facing(direction)
 

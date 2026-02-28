@@ -24,7 +24,7 @@ from tuxemon.event.eventmiddleware import (
 )
 from tuxemon.faction.manager import FactionManager
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import DEV_TOOLS, TILE_SIZE
+from tuxemon.prepare import DEV_TOOLS
 from tuxemon.save_state import WorldSave
 from tuxemon.session import Session
 from tuxemon.state.state import State
@@ -32,6 +32,7 @@ from tuxemon.world.manager import WorldMenuManager
 from tuxemon.world.transition import WorldTransition
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.network.networking import EventData, update_client
 
 logger = logging.getLogger(__name__)
@@ -44,11 +45,13 @@ class WorldState(State):
 
     def __init__(
         self,
+        client: BaseClient,
         session: Session,
         map_name: str | None = None,
         yaml_name: str | None = None,
+        **kwargs: Any,
     ) -> None:
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         mw = self.client.event_manager.get_middleware_instance(
             InputTranslatorMiddleware
         )
@@ -59,13 +62,15 @@ class WorldState(State):
         self.input_translator_mw = mw
         self.session = session
         self.session.set_world(self)
-        self.tile_size = TILE_SIZE
+        self.tile_size = self.client.context.tile_size
         self.menu_manager = WorldMenuManager(self.client)
         self.transition_manager = WorldTransition(
             self, self.client.movement_manager
         )
         self.player = self.session.player
-        self.camera = Camera(self.player, self.client.boundary)
+        self.camera = Camera(
+            self.player, self.client.boundary, self.client.context
+        )
         self.client.camera_manager.add_camera(self.player.slug, self.camera)
         self.faction_manager = FactionManager(self.client.event_bus)
         self.client.map_transition.change_map(map_name, yaml_name)
@@ -139,18 +144,12 @@ class WorldState(State):
             self.client, self.player, self.client.network_manager
         )
 
-    def update(self, time_delta: float) -> None:
-        """
-        The primary game loop that executes the world's functions every frame.
-
-        Parameters:
-            time_delta: Amount of time passed since last frame.
-        """
-        super().update(time_delta)
-        self.faction_manager.update(time_delta, self.session)
-        self.client.npc_manager.update_npcs(time_delta, self.client)
-        self.client.npc_manager.update_npcs_off_map(time_delta, self.client)
-        self.client.map_renderer.update(time_delta)
+    def update(self, dt: float) -> None:
+        super().update(dt)
+        self.faction_manager.update(dt, self.session)
+        self.client.npc_manager.update_npcs(dt, self.client)
+        self.client.npc_manager.update_npcs_off_map(dt, self.client)
+        self.client.map_renderer.update(dt)
 
     def draw(self, surface: Surface) -> None:
         """Draw the game world to the screen."""

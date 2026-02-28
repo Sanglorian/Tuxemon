@@ -2269,7 +2269,10 @@ msgid "here_to_south"
 msgstr "Von ${{map_name}} nach ${{south}}"
 
 msgid "evolution_confirmation"
-msgstr "{name} versucht, sich zu {evolve} zu entwickeln. Evolution zulassen?"
+msgstr "{name} versucht, sich zu {evolve} zu entwickeln."
+
+msgid "allow_evolution"
+msgstr "Evolution zulassen?"
 
 msgid "tuxemon_stat1"
 msgstr ""

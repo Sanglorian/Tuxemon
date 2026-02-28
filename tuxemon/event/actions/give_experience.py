@@ -67,10 +67,9 @@ class GiveExperienceAction(EventAction):
                     return
             monsters = [monster]
 
-        if monsters:
-            for mon in monsters:
-                level = mon.give_experience(exp)
-                logger.info(f"{mon.name} +{exp} exp")
-                if level > 0:
-                    mon.moves.update_moves(mon, level)
-                    logger.info(f"{mon.name} +{level} levels")
+        if not monsters:
+            return
+
+        for mon in monsters:
+            mon.give_experience(exp)
+            logger.info(f"{mon.name} +{exp} exp")

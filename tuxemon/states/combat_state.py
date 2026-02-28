@@ -38,7 +38,7 @@ import logging
 import random
 from collections.abc import Sequence
 from functools import partial
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.rect import Rect
 
@@ -61,9 +61,9 @@ from tuxemon.item.item import Item
 from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.monster.monster import Monster
+from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.sizes import PARTY_LIMIT
-from tuxemon.prepare import SCREEN_RECT
 from tuxemon.state.state import State
 from tuxemon.states.combat_animations import CombatAnimations
 from tuxemon.states.monster_menu import MonsterMenuState
@@ -78,6 +78,7 @@ from tuxemon.ui.text_alignment import HorizontalAlignment
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.platform.events import PlayerInput
     from tuxemon.sprite import Sprite
 
@@ -107,6 +108,9 @@ class WaitForInputState(State):
 
     name: ClassVar[str] = "WaitForInputState"
 
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
+
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         if event.pressed and event.button == buttons.A:
             self.client.pop_state(self)
@@ -134,7 +138,12 @@ class CombatState(CombatAnimations):
     draw_borders = False
     escape_key_exits = False
 
-    def __init__(self, context: CombatContext) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        context: CombatContext,
+        **kwargs: Any,
+    ) -> None:
         self.session = context.session
         self.phase: CombatPhase | None = None
         self._method_cache = MethodAnimationCache(AnimationManager())
@@ -142,7 +151,7 @@ class CombatState(CombatAnimations):
         self._decision_queue: list[Monster] = []
         self._captured_mon: Monster | None = None
         # player => home areas on screen
-        super().__init__(teams=context.teams)
+        super().__init__(client=client, teams=context.teams, **kwargs)
         self.combat_session = self.client.combat_session
         self.unregister_event_handlers()
         self.register_event_handlers()
@@ -191,25 +200,29 @@ class CombatState(CombatAnimations):
         """
         Update the combat phase.
         """
-        if self.client.current_state:
-            if self.client.current_state.name == "WaitForInputState":
-                return
-        time_left = self.text_anim.get_text_animation_time_left()
-        if time_left <= 0 and all(map(self.is_task_finished, self.animations)):
+        if not self.text_anim.is_animating() and all(
+            map(self.is_task_finished, self.animations)
+        ):
             new_phase = self.machine.determine_next_phase(self.phase)
             if new_phase:
                 self.phase = new_phase
                 self.transition_phase(new_phase)
             self.update_phase()
 
-    def update(self, time_delta: float) -> None:
-        """
-        Update the combat state.
+    def is_blocked(self) -> bool:
+        if self.text_anim.is_animating():
+            return True
 
-        This method is responsible for updating the text animation and the combat phase.
-        """
-        super().update(time_delta)
-        self.text_anim.update_text_animation(time_delta)
+        cs = self.client.current_state
+        if cs and cs.name == "WaitForInputState":
+            return True
+
+        return False
+
+    def update(self, dt: float) -> None:
+        """Update the combat state."""
+        super().update(dt)
+        self.text_anim.update_text_animation(dt)
         self.update_combat_phase()
 
     def transition_phase(self, phase: CombatPhase) -> None:
@@ -335,14 +348,18 @@ class CombatState(CombatAnimations):
 
     def create_combat_dialog(self) -> None:
         """Create the area where battle messages are displayed."""
-        rect_screen = SCREEN_RECT.copy()
+        rect_screen = self.client.context.rect.copy()
         rect = Rect(0, 0, rect_screen.w, rect_screen.h // 4)
         rect.bottomright = rect_screen.w, rect_screen.h
         border = load_and_scale(self.borders_filename)
         dialog_box = GraphicBox(border=border, color=self.background_color)
         dialog_box.rect = rect
 
-        self.text_area = TextArea(self.font, self.font_color)
+        self.text_area = TextArea(
+            font=self.font,
+            font_color=self.font_color,
+            scaling=self.client.context.scaling,
+        )
         self.text_area.rect = dialog_box.calc_inner_rect(dialog_box.rect)
         self.show_combat_dialog(dialog_box, self.text_area)
 
@@ -370,7 +387,9 @@ class CombatState(CombatAnimations):
                 return True
             return False
 
-        state = self.client.push_state(MonsterMenuState(player.monsters))
+        state = self.client.push_state(
+            MonsterMenuState(self.client, player.monsters)
+        )
         state.task(
             partial(
                 self.dialog.alert,
@@ -831,7 +850,7 @@ class CombatState(CombatAnimations):
             )
 
     def update_hud_and_level_up(
-        self, winner: Monster, techniques: list[Technique]
+        self, winner: Monster, techniques: list[str]
     ) -> None:
         """
         Update the HUD and handle level ups for the winner.
@@ -842,7 +861,9 @@ class CombatState(CombatAnimations):
         """
         if winner in self.combat_session.monsters_in_play_right:
             if techniques:
-                tech_list = ", ".join(tech.name.upper() for tech in techniques)
+                tech_list = ", ".join(
+                    T.translate(tech).upper() for tech in techniques
+                )
                 params = {"name": winner.name.upper(), "tech": tech_list}
                 mex = T.format("tuxemon_new_tech", params)
                 self.text_anim.add_xp_message(mex)
@@ -959,13 +980,14 @@ class CombatState(CombatAnimations):
         self.combat_session.reset()
         self.unregister_event_handlers()
         self.client.current_music.stop()
+        self.client.environment_manager.unlock_environment()
         self.clear_combat_states()
         self.phase = None
 
         if new_entry and self._captured_mon:
             self.client.remove_state_by_name("CombatState")
             params = {"monster": self._captured_mon, "source": self.name}
-            self.client.push_state("MonsterInfoState", kwargs=params)
+            self.client.push_state("MonsterInfoState", **params)
         else:
             self.client.push_state("FadeOutTransition", caller=self)
 
@@ -1080,10 +1102,12 @@ class CombatState(CombatAnimations):
         assert user_sprite and target_sprite
 
         if direction == "both":
-            front_user = user.get_sprite(
+            u_renderer = MonsterRenderer(user, scale=self.factor)
+            front_user = u_renderer.get_sprite(
                 "front", midbottom=target_sprite.rect.midbottom
             )
-            back_target = target.get_sprite(
+            t_renderer = MonsterRenderer(user, scale=self.factor)
+            back_target = t_renderer.get_sprite(
                 "back", midbottom=user_sprite.rect.midbottom
             )
             self.sprites.add(front_user)
@@ -1097,7 +1121,8 @@ class CombatState(CombatAnimations):
             _, h_align = self.combat_zone.get_zone(user_sprite.rect)
             side = "front" if h_align is HorizontalAlignment.LEFT else "back"
 
-            front_user = user.get_sprite(
+            renderer = MonsterRenderer(user, scale=self.factor)
+            front_user = renderer.get_sprite(
                 side, midbottom=target_sprite.rect.midbottom
             )
             self.sprites.add(front_user)
@@ -1108,7 +1133,8 @@ class CombatState(CombatAnimations):
             _, h_align = self.combat_zone.get_zone(user_sprite.rect)
             side = "back" if h_align is HorizontalAlignment.LEFT else "front"
 
-            back_target = target.get_sprite(
+            renderer = MonsterRenderer(target, scale=self.factor)
+            back_target = renderer.get_sprite(
                 side, midbottom=user_sprite.rect.midbottom
             )
             self.sprites.add(back_target)

@@ -13,6 +13,8 @@ from tuxemon.db import (
     DialogueProfile,
     NpcModel,
 )
+from tuxemon.entity.appearance import RuntimeAppearance
+from tuxemon.entity.behavior.registry import create_behavior
 from tuxemon.entity.npc import NPC
 from tuxemon.event.eventaction import EventAction
 from tuxemon.item.item import Item
@@ -61,11 +63,19 @@ class CreateNpcAction(EventAction):
             npc, slug, self.tile_pos_x, self.tile_pos_y
         )
 
-        npc.behavior = self.behavior
+        if self.behavior:
+            npc.behavior_policy = create_behavior(self.behavior)
         npc_details = load_party(slug)
+
         npc.template = npc_details.template
         npc.combat = npc_details.combat
         npc.audio = npc_details.audio
+
+        npc.appearance_manager.state = RuntimeAppearance.from_template(
+            npc.template
+        )
+        npc.sprite_controller.update_appearance(npc.appearance_manager.state)
+
         variable_manager = session.player.variable_manager
 
         if npc_details.monsters:
@@ -74,7 +84,6 @@ class CreateNpcAction(EventAction):
         if npc_details.items:
             load_party_items(npc, npc_details, variable_manager)
 
-        npc.sprite_controller.update_template(npc.template)
         npc.dialogue = merge_dialogue(npc_details.speech.profile, None)
 
 

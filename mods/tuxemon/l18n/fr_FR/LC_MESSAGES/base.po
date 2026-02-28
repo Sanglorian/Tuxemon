@@ -5686,7 +5686,10 @@ msgstr ""
 "Bien que, je peux comprendre pourquoi vous n'auriez pas entendu la nouvelle, gambadant avec votre nouveau jouet et tout"
 
 msgid "evolution_confirmation"
-msgstr "{name} essaie d'évoluer en {evolve}. Permettre l'évolution ?"
+msgstr "{name} essaie d'évoluer en {evolve}."
+
+msgid "allow_evolution"
+msgstr "Permettre l'évolution ?"
 
 msgid "tuxemon_stat1"
 msgstr ""

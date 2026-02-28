@@ -11,6 +11,7 @@ from pygame.surface import Surface
 
 from tuxemon.constants.paths import mods_folder
 from tuxemon.platform.const.graphics import FONT_SIZE
+from tuxemon.scaling import DefaultScaling
 from tuxemon.tools import scale
 from tuxemon.ui.draw import (
     RenderMode,
@@ -50,42 +51,82 @@ class TestIterRenderText(unittest.TestCase):
     def test_iter_render_text(self):
         text = "This is a test message"
         renders = list(
-            iter_render_text(text, self.font, self.fg, self.bg, self.rect)
+            iter_render_text(
+                text,
+                self.font,
+                self.fg,
+                self.bg,
+                self.rect,
+                scaling=DefaultScaling(1),
+            )
         )
         self.assertGreater(len(renders), 0)
 
     def test_iter_render_text_empty_string(self):
         text = ""
         renders = list(
-            iter_render_text(text, self.font, self.fg, self.bg, self.rect)
+            iter_render_text(
+                text,
+                self.font,
+                self.fg,
+                self.bg,
+                self.rect,
+                scaling=DefaultScaling(1),
+            )
         )
         self.assertEqual(len(renders), 0)
 
     def test_iter_render_text_single_line(self):
         text = "This is a short message"
         renders = list(
-            iter_render_text(text, self.font, self.fg, self.bg, self.rect)
+            iter_render_text(
+                text,
+                self.font,
+                self.fg,
+                self.bg,
+                self.rect,
+                scaling=DefaultScaling(1),
+            )
         )
         self.assertGreater(len(renders), 0)
 
     def test_iter_render_text_single_word(self):
         text = "This"
         renders = list(
-            iter_render_text(text, self.font, self.fg, self.bg, self.rect)
+            iter_render_text(
+                text,
+                self.font,
+                self.fg,
+                self.bg,
+                self.rect,
+                scaling=DefaultScaling(1),
+            )
         )
         self.assertEqual(len(renders), len(list(build_line(text))))
 
     def test_iter_render_text_skips_trailing_spaces(self):
         text = "This is a test message "
         renders = list(
-            iter_render_text(text, self.font, self.fg, self.bg, self.rect)
+            iter_render_text(
+                text,
+                self.font,
+                self.fg,
+                self.bg,
+                self.rect,
+                scaling=DefaultScaling(1),
+            )
         )
         self.assertEqual(
             len(renders),
             len(
                 list(
                     iter_render_text(
-                        text.strip(), self.font, self.fg, self.bg, self.rect
+                        text.strip(),
+                        self.font,
+                        self.fg,
+                        self.bg,
+                        self.rect,
+                        scaling=DefaultScaling(1),
                     )
                 )
             ),
@@ -100,6 +141,7 @@ class TestIterRenderText(unittest.TestCase):
                 self.fg,
                 self.bg,
                 self.rect,
+                scaling=DefaultScaling(1),
                 h_alignment=HorizontalAlignment.LEFT,
             )
         )
@@ -114,6 +156,7 @@ class TestIterRenderText(unittest.TestCase):
                 self.fg,
                 self.bg,
                 self.rect,
+                scaling=DefaultScaling(1),
                 h_alignment=HorizontalAlignment.CENTER,
             )
         )
@@ -131,6 +174,7 @@ class TestIterRenderText(unittest.TestCase):
                 self.fg,
                 self.bg,
                 self.rect,
+                scaling=DefaultScaling(1),
                 h_alignment=HorizontalAlignment.RIGHT,
             )
         )
@@ -148,6 +192,7 @@ class TestIterRenderText(unittest.TestCase):
                 self.fg,
                 self.bg,
                 self.rect,
+                scaling=DefaultScaling(1),
                 h_alignment=HorizontalAlignment.LEFT,
                 v_alignment=VerticalAlignment.TOP,
             )
@@ -163,6 +208,7 @@ class TestIterRenderText(unittest.TestCase):
                 self.fg,
                 self.bg,
                 self.rect,
+                scaling=DefaultScaling(1),
                 h_alignment=HorizontalAlignment.LEFT,
                 v_alignment=VerticalAlignment.CENTER,
             )
@@ -184,6 +230,7 @@ class TestIterRenderText(unittest.TestCase):
                 self.fg,
                 self.bg,
                 self.rect,
+                scaling=DefaultScaling(1),
                 h_alignment=HorizontalAlignment.LEFT,
                 v_alignment=VerticalAlignment.BOTTOM,
             )
@@ -203,6 +250,7 @@ class TestIterRenderText(unittest.TestCase):
                 self.fg,
                 self.bg,
                 self.rect,
+                scaling=DefaultScaling(1),
                 mode=RenderMode.TOKEN,
             )
         )
@@ -383,6 +431,7 @@ class TestDrawText(unittest.TestCase):
             surface=self.surface,
             text=text,
             rect=self.rect,
+            scaling=DefaultScaling(1),
             h_alignment=HorizontalAlignment.LEFT,
             v_alignment=VerticalAlignment.TOP,
             font=self.font,
@@ -397,6 +446,7 @@ class TestDrawText(unittest.TestCase):
             surface=self.surface,
             text=text,
             rect=self.rect,
+            scaling=DefaultScaling(1),
             h_alignment=HorizontalAlignment.CENTER,
             v_alignment=VerticalAlignment.CENTER,
             font=self.font,
@@ -424,6 +474,7 @@ class TestDrawText(unittest.TestCase):
             surface=self.surface,
             text=text,
             rect=self.rect,
+            scaling=DefaultScaling(1),
             h_alignment=HorizontalAlignment.RIGHT,
             v_alignment=VerticalAlignment.BOTTOM,
             font=self.font,
@@ -450,6 +501,7 @@ class TestDrawText(unittest.TestCase):
             surface=self.surface,
             text=text,
             rect=self.rect,
+            scaling=DefaultScaling(1),
             h_alignment=HorizontalAlignment.LEFT,
             v_alignment=VerticalAlignment.TOP,
             font=self.font,
@@ -466,6 +518,7 @@ class TestDrawText(unittest.TestCase):
             surface=self.surface,
             text=text,
             rect=self.rect,
+            scaling=DefaultScaling(1),
             h_alignment=HorizontalAlignment.LEFT,
             v_alignment=VerticalAlignment.TOP,
             font=self.font,

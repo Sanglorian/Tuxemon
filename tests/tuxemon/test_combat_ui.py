@@ -4,13 +4,21 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from tuxemon.tools import scale
 from tuxemon.ui.combat_bars import CombatBars
 
 
 @pytest.fixture
-def combat_ui():
-    return CombatBars()
+def fake_context():
+    ctx = MagicMock()
+    ctx.scaling = MagicMock()
+    ctx.scaling.scale_int = lambda x: x * 2
+    ctx.scaling.scale_tuple = lambda t: tuple(x * 2 for x in t)
+    return ctx
+
+
+@pytest.fixture
+def combat_ui(fake_context):
+    return CombatBars(fake_context)
 
 
 @pytest.fixture
@@ -62,14 +70,14 @@ def test_draw_bars_hp_and_exp(combat_ui, graphics, hp_ratio, exp_ratio):
         assert not combat_ui._exp_bars[monster].draw.called
 
 
-def test_create_rect_for_bar(combat_ui):
+def test_create_rect_for_bar(combat_ui, fake_context):
     hud = MagicMock()
     hud.image.get_width.return_value = 100
     rect = combat_ui.create_rect_for_bar(hud, 70, 8, 0, 8)
-    assert rect.width == scale(70)
-    assert rect.height == scale(8)
-    assert rect.right == 100 - scale(8)
-    assert rect.top == scale(0)
+    assert rect.width == fake_context.scaling.scale_int(70)
+    assert rect.height == fake_context.scaling.scale_int(8)
+    assert rect.right == 100 - fake_context.scaling.scale_int(8)
+    assert rect.top == fake_context.scaling.scale_int(0)
 
 
 @pytest.mark.parametrize("ratio", [0.0, 0.4, 0.6, 1.0])

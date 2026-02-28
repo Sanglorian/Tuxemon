@@ -4,13 +4,12 @@ import unittest
 
 import pygame
 
+from tuxemon.scaling import DefaultScaling
 from tuxemon.ui.draw import (
     TextOverflow,
     iter_render_text,
 )
 from tuxemon.ui.text import TextArea
-from tuxemon.ui.text_alignment import HorizontalAlignment, VerticalAlignment
-from tuxemon.ui.text_renderer import TextRenderer
 
 
 class DummyChar:
@@ -35,7 +34,9 @@ class TestTextArea(unittest.TestCase):
 
     def setUp(self):
         font = pygame.font.Font(None, 16)
-        self.text_area = TextArea(font=font, font_color=(255, 255, 255))
+        self.text_area = TextArea(
+            font=font, font_color=(255, 255, 255), scaling=DefaultScaling(1)
+        )
         self.text_area._iter = None
 
     def test_initial_state(self):
@@ -125,7 +126,9 @@ class TestTextAreaStress(unittest.TestCase):
 
     def setUp(self):
         font = pygame.font.Font(None, 16)
-        self.text_area = TextArea(font=font, font_color=(255, 255, 255))
+        self.text_area = TextArea(
+            font=font, font_color=(255, 255, 255), scaling=DefaultScaling(1)
+        )
         self.text_area.rect = pygame.Rect(0, 0, 100, 20)
 
     def test_fast_click_before_update(self):
@@ -161,7 +164,9 @@ class TestTextAreaStress(unittest.TestCase):
 
     def test_surface_size_zero(self):
         ta = TextArea(
-            font=pygame.font.Font(None, 16), font_color=(255, 255, 255)
+            font=pygame.font.Font(None, 16),
+            font_color=(255, 255, 255),
+            scaling=DefaultScaling(1),
         )
         ta.rect = pygame.Rect(0, 0, 0, 0)
         ta.text = "ZeroRect"

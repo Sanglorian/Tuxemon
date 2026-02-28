@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pygame
 from pygame.surface import Surface
@@ -19,6 +19,7 @@ from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.platform.events import PlayerInput
     from tuxemon.sprite import Sprite
 
@@ -39,8 +40,14 @@ class TradingTransition(State):
     name: ClassVar[str] = "TradingTransition"
     force_draw = True
 
-    def __init__(self, sent_monster: str, received_monster: str) -> None:
-        super().__init__()
+    def __init__(
+        self,
+        client: BaseClient,
+        sent_monster: str,
+        received_monster: str,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(client=client, **kwargs)
 
         self.sent_monster = sent_monster
         self.received_monster = received_monster
@@ -80,7 +87,7 @@ class TradingTransition(State):
         self.received_x = (3 * screen_width // 4) - (sprite_width // 2)
         self.sprite_y = (screen_height - sprite_height) // 2
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         current_time = pygame.time.get_ticks()
         self.elapsed_time = (current_time - self.transition_start_time) / 1000
         self.percentage = (self.elapsed_time / self.total_seconds) * 100
@@ -169,7 +176,7 @@ class TradingTransition(State):
             menu2_rect=sprites.menu2_rect,
         )
         assert handler
-        return handler.get_sprite("front")
+        return handler.get_sprite("front", self.factor)
 
     def _white_image(self, sprite: Surface) -> Surface:
         for x in range(sprite.get_width()):

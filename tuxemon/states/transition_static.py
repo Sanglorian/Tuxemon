@@ -4,13 +4,15 @@ from __future__ import annotations
 
 import logging
 import random
-from typing import ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.surface import Surface
 
-from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCREEN
 from tuxemon.state.state import State
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 logger = logging.getLogger(__name__)
 
@@ -21,12 +23,14 @@ class StaticTransition(State):
     name: ClassVar[str] = "StaticTransition"
     force_draw = True
 
-    def __init__(self, duration: float = 1.0) -> None:
+    def __init__(
+        self, client: BaseClient, duration: float = 1.0, **kwargs: Any
+    ) -> None:
         """
         Parameters:
             duration: The time in seconds. Defaults to 1.0 seconds.
         """
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         logger.info("Initializing Static transition")
         self.duration = duration
         self.start_time = 0.0
@@ -34,10 +38,10 @@ class StaticTransition(State):
         self.screenshot: Surface | None = None
 
     def resume(self) -> None:
-        self.screenshot = Surface.copy(SCREEN)
+        self.screenshot = Surface.copy(self.client.context.screen)
 
-    def update(self, time_delta: float) -> None:
-        self.elapsed_time += time_delta
+    def update(self, dt: float) -> None:
+        self.elapsed_time += dt
         if self.elapsed_time > self.duration:
             logger.info("Static transition finished.")
             self.client.pop_state()

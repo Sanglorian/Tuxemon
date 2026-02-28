@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from functools import partial
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
-import pygame_menu
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 from pygame_menu.sound import SOUND_TYPE_WIDGET_SELECTION
 
 from tuxemon.animation import Animation, ScheduleType
@@ -15,9 +15,12 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.platform.const import buttons
-from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 
 class ControlState(PygameMenuState):
@@ -25,22 +28,26 @@ class ControlState(PygameMenuState):
 
     name: ClassVar[str] = "ControlState"
 
-    def __init__(self, **kwargs: Any) -> None:
-        """Used when initializing the state."""
+    def __init__(
+        self,
+        client: BaseClient,
+        *args: Any,
+        main_menu: bool = False,
+        **kwargs: Any,
+    ) -> None:
         theme = get_theme()
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-        self.main_menu = "main_menu" in kwargs and kwargs["main_menu"]
-        kwargs.pop("main_menu", None)
-        super().__init__(**kwargs)
+
+        self.main_menu = main_menu
+
+        super().__init__(client, *args, **kwargs)
+
         self.initialize_items(self.menu)
         self.reload_controls()
         self.reset_theme()
 
-    def initialize_items(
-        self,
-        menu: pygame_menu.Menu,
-    ) -> None:
+    def initialize_items(self, menu: Menu) -> None:
         def change_state(
             state: State | str, **change_state_kwargs: Any
         ) -> Callable[[], State]:
@@ -103,7 +110,7 @@ class ControlState(PygameMenuState):
 
             def mute_music() -> None:
                 self.client.config.update_attribute(
-                    "gameplay", "music_volume", str(0)
+                    "gameplay", "music_volume", 0
                 )
                 self.client.current_music.set_volume(0)
 
@@ -151,7 +158,7 @@ class ControlState(PygameMenuState):
                 """
                 volume = round(val / 100, 1)
                 self.client.config.update_attribute(
-                    "gameplay", "music_volume", str(volume)
+                    "gameplay", "music_volume", volume
                 )
                 self.client.current_music.set_volume(volume)
 
@@ -161,7 +168,7 @@ class ControlState(PygameMenuState):
                 """
                 volume = round(val / 100, 1)
                 self.client.config.update_attribute(
-                    "gameplay", "sound_volume", str(volume)
+                    "gameplay", "sound_volume", volume
                 )
                 sound = self.menu.get_sound()
                 sound.set_sound_volume(SOUND_TYPE_WIDGET_SELECTION, volume)

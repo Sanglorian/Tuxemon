@@ -2668,7 +2668,10 @@ msgstr "De ${{map_name}} a ${{east}}"
 
 msgid "evolution_confirmation"
 msgstr ""
-"{name} está tratando de evolucionar en {evolve}. ¿Permitir la evolución?"
+"{name} está tratando de evolucionar en {evolve}."
+
+msgid "allow_evolution"
+msgstr "¿Permitir la evolución?"
 
 msgid "tuxemon_stat1"
 msgstr ""

@@ -4,6 +4,7 @@ import unittest
 from math import pi
 from unittest.mock import MagicMock
 
+from tuxemon import prepare
 from tuxemon.compat import Rect
 from tuxemon.db import Direction, Orientation
 from tuxemon.map.map import (
@@ -25,7 +26,6 @@ from tuxemon.map.map import (
     tiles_inside_rect,
 )
 from tuxemon.math import Vector2
-from tuxemon.prepare import TILE_SIZE
 
 
 class TestParsePathParameters(unittest.TestCase):
@@ -781,19 +781,24 @@ class TestGetExplicitTileExits(unittest.TestCase):
 
 
 class TestGetPosFromTilePos(unittest.TestCase):
+    def setUp(self):
+        self.context = MagicMock()
+        self.context.tile_size = prepare.DISPLAY_CONTEXT.tile_size
+
     def test_get_pos_from_tilepos(self):
         mock_map = MagicMock()
         mock_map.renderer.get_center_offset.return_value = (50, 75)
 
         tile_position = Vector2(3, 4)
+        ts = self.context.tile_size
 
-        expected_px = 3 * TILE_SIZE[0]
-        expected_py = 4 * TILE_SIZE[1]
+        expected_px = 3 * ts[0]
+        expected_py = 4 * ts[1]
         expected_x = expected_px + 50
         expected_y = expected_py + 75
         expected_result = (expected_x, expected_y)
 
-        result = get_pos_from_tilepos(mock_map, tile_position)
+        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
         self.assertEqual(result, expected_result)
 
     def test_different_tile_size(self):
@@ -801,12 +806,13 @@ class TestGetPosFromTilePos(unittest.TestCase):
         mock_map.renderer.get_center_offset.return_value = (50, 75)
 
         tile_position = Vector2(2, 3)
+        ts = self.context.tile_size
 
-        expected_px = 2 * TILE_SIZE[0]
-        expected_py = 3 * TILE_SIZE[1]
+        expected_px = 2 * ts[0]
+        expected_py = 3 * ts[1]
         expected_result = (expected_px + 50, expected_py + 75)
 
-        result = get_pos_from_tilepos(mock_map, tile_position)
+        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
         self.assertEqual(result, expected_result)
 
     def test_tile_position_origin(self):
@@ -814,9 +820,9 @@ class TestGetPosFromTilePos(unittest.TestCase):
         mock_map.renderer.get_center_offset.return_value = (50, 75)
 
         tile_position = Vector2(0, 0)
-
         expected_result = (50, 75)
-        result = get_pos_from_tilepos(mock_map, tile_position)
+
+        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
         self.assertEqual(result, expected_result)
 
     def test_negative_tile_position(self):
@@ -824,12 +830,13 @@ class TestGetPosFromTilePos(unittest.TestCase):
         mock_map.renderer.get_center_offset.return_value = (50, 75)
 
         tile_position = Vector2(-1, -2)
+        ts = self.context.tile_size
 
-        expected_px = -1 * TILE_SIZE[0]
-        expected_py = -2 * TILE_SIZE[1]
+        expected_px = -1 * ts[0]
+        expected_py = -2 * ts[1]
         expected_result = (expected_px + 50, expected_py + 75)
 
-        result = get_pos_from_tilepos(mock_map, tile_position)
+        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
         self.assertEqual(result, expected_result)
 
     def test_large_tile_position(self):
@@ -837,12 +844,13 @@ class TestGetPosFromTilePos(unittest.TestCase):
         mock_map.renderer.get_center_offset.return_value = (50, 75)
 
         tile_position = Vector2(1000, 2000)
+        ts = self.context.tile_size
 
-        expected_px = 1000 * TILE_SIZE[0]
-        expected_py = 2000 * TILE_SIZE[1]
+        expected_px = 1000 * ts[0]
+        expected_py = 2000 * ts[1]
         expected_result = (expected_px + 50, expected_py + 75)
 
-        result = get_pos_from_tilepos(mock_map, tile_position)
+        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
         self.assertEqual(result, expected_result)
 
     def test_zero_center_offset(self):
@@ -850,10 +858,11 @@ class TestGetPosFromTilePos(unittest.TestCase):
         mock_map.renderer.get_center_offset.return_value = (0, 0)
 
         tile_position = Vector2(5, 7)
+        ts = self.context.tile_size
 
-        expected_px = 5 * TILE_SIZE[0]
-        expected_py = 7 * TILE_SIZE[1]
+        expected_px = 5 * ts[0]
+        expected_py = 7 * ts[1]
         expected_result = (expected_px, expected_py)
 
-        result = get_pos_from_tilepos(mock_map, tile_position)
+        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
         self.assertEqual(result, expected_result)

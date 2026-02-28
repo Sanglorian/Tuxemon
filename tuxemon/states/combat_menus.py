@@ -6,7 +6,7 @@ import logging
 from collections import defaultdict
 from collections.abc import Callable, Generator
 from functools import partial
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame import SRCALPHA
 from pygame.rect import Rect
@@ -20,16 +20,17 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu, PopUpMenu
 from tuxemon.monster.monster import Monster
-from tuxemon.prepare import SCALE, SCREEN_RECT, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.sprite import Sprite
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.technique.technique import Technique
-from tuxemon.tools import fix_measure, open_dialog, scale
+from tuxemon.tools import fix_measure, open_dialog
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
     from tuxemon.item.item import Item
     from tuxemon.session import Session
@@ -55,12 +56,14 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
     def __init__(
         self,
+        client: BaseClient,
         session: Session,
         combat: CombatState,
         character: NPC,
         monster: Monster,
+        **kwargs: Any,
     ) -> None:
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         self.rect = self.calculate_menu_rectangle()
         self.session = session
         self.combat_session = self.client.combat_session
@@ -112,7 +115,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     self.sprites.remove(spr)
 
     def calculate_menu_rectangle(self) -> Rect:
-        rect_screen = SCREEN_RECT.copy()
+        rect_screen = self.client.context.rect.copy()
         menu_width = fix_measure(rect_screen.w, 102 / 256)
         menu_height = fix_measure(rect_screen.h, 36 / 144)
         rect = Rect(0, 0, menu_width, menu_height)
@@ -247,12 +250,12 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             return False
 
         menu = self.client.push_state(
-            MonsterMenuState(self.character.monsters)
+            MonsterMenuState(self.client, self.character.monsters)
         )
         menu.on_menu_selection = swap_it  # type: ignore[assignment]
         menu.is_valid_entry = validate  # type: ignore[assignment]
         menu.anchor("bottom", self.rect.top)
-        menu.anchor("right", SCREEN_RECT.right)
+        menu.anchor("right", self.client.context.rect.right)
 
     def open_item_menu(self) -> None:
         """Open menu to choose item to use."""
@@ -264,7 +267,9 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 self.session, self.character.monsters, self.opponents
             )
             menu = self.client.push_state(
-                ItemMenuState(self.character, self.name, items_filtered)
+                ItemMenuState(
+                    self.client, self.character, self.name, items_filtered
+                )
             )
 
             # set next menu after the selection is made
@@ -283,7 +288,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     enqueue_item(item, mon)
                 else:
                     state = self.client.push_state(
-                        MonsterMenuState(self.character.monsters)
+                        MonsterMenuState(self.client, self.character.monsters)
                     )
                     state.is_valid_entry = partial(validate, item)  # type: ignore[method-assign]
                     state.on_menu_selection = partial(enqueue_item, item)  # type: ignore[method-assign]
@@ -336,7 +341,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 self.session, self.opponents
             )
 
-            menu = self.client.push_state(Menu())
+            menu: Menu[Any] = self.client.push_state(Menu(self.client))
             menu.shrink_to_items = True
 
             # No usable moves → show only fallback/skip
@@ -383,7 +388,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
             # position the new menu
             menu.anchor("bottom", self.rect.top)
-            menu.anchor("right", SCREEN_RECT.right)
+            menu.anchor("right", self.client.context.rect.right)
 
             # set next menu after the selection is made
             menu.on_menu_selection = choose_target  # type: ignore[assignment]
@@ -429,7 +434,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     for i, t in enumerate(technique.types.current[:2]):
                         path = f"gfx/ui/icons/element/{t.name.lower()}_type_small.png"
                         try:
-                            icon_surface = load_and_scale(path, SCALE)
+                            icon_surface = load_and_scale(path, self.factor)
                             spr = Sprite()
                             spr.image = icon_surface
                             spr.rect = spr.image.get_rect()
@@ -456,7 +461,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 # --- Draw range icon ---
                 path = f"gfx/ui/icons/range/{technique.range.name.lower()}.png"
                 try:
-                    surf = load_and_scale(path, SCALE)
+                    surf = load_and_scale(path, self.factor)
                     spr = Sprite()
                     spr.image = surf
                     spr.rect = surf.get_rect()
@@ -475,7 +480,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
 
                 path = f"gfx/ui/icons/speed/{speed_val}.png"
                 try:
-                    surf = load_and_scale(path, SCALE)
+                    surf = load_and_scale(path, self.factor)
                     spr = Sprite()
                     spr.image = surf
                     spr.rect = surf.get_rect()
@@ -553,6 +558,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             if len(self.opponents) > 1:
                 state = self.client.push_state(
                     CombatTargetMenuState(
+                        client=self.client,
                         combat=self.combat,
                         character=self.character,
                         monster=self.monster,
@@ -616,12 +622,14 @@ class CombatTargetMenuState(Menu[Monster]):
 
     def __init__(
         self,
+        client: BaseClient,
         combat: CombatState,
         character: NPC,
         monster: Monster,
         technique: Technique,
+        **kwargs: Any,
     ) -> None:
-        super().__init__()
+        super().__init__(client=client, **kwargs)
         self.character = character
         self.monster = monster
         self.combat = combat
@@ -661,12 +669,12 @@ class CombatTargetMenuState(Menu[Monster]):
             raise KeyError(f"Sprite not found for entity: {monster.name}")
         item = MenuItem(self.surface, None, monster.name, monster)
         item.rect = sprite.rect.copy()
-        item.rect.inflate_ip(scale(1), scale(1))
+        item.rect.inflate_ip(self.factor, self.factor)
         return item
 
     def _create_menu(self) -> None:
         """Sets up the menu UI."""
-        rect_screen = SCREEN_RECT.copy()
+        rect_screen = self.client.context.rect.copy()
         rect = Rect(0, 0, rect_screen.w // 2, rect_screen.h // 4)
         rect.bottomright = rect_screen.w, rect_screen.h
 
@@ -678,7 +686,11 @@ class CombatTargetMenuState(Menu[Monster]):
         self.window.rect = rect
         self.sprites.add(self.window, layer=100)
 
-        self.text_area = TextArea(self.font, self.font_color)
+        self.text_area = TextArea(
+            font=self.font,
+            font_color=self.font_color,
+            scaling=self.client.context.scaling,
+        )
         self.text_area.rect = self.window.calc_inner_rect(self.window.rect)
         self.sprites.add(self.text_area, layer=100)
 
@@ -716,7 +728,7 @@ class CombatTargetMenuState(Menu[Monster]):
                 return
 
             selected.image = Surface(selected.rect.size, SRCALPHA)
-            BORDER_OFFSET = scale(12)
+            BORDER_OFFSET = self.client.context.scaling.scale_int(12)
             selected.rect.center = (
                 pos.rect.centerx - BORDER_OFFSET,
                 pos.rect.centery - BORDER_OFFSET,

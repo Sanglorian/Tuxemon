@@ -99,14 +99,17 @@ class TestStateStack(unittest.TestCase):
     def test_get_states_by_name(self):
 
         class StateImpl(State):
-            def __init__(self, name: str) -> None:
+            name = "test_state"
+
+            def __init__(self, client, name: str = "test_state") -> None:
+                super().__init__(client)
                 self._name = name
 
             @property
             def name(self) -> str:
                 return self._name
 
-        state = StateImpl("test_state")
+        state = StateImpl(client=Mock())
         self.stack.push(state)
         self.assertEqual(self.stack.get_states_by_name("test_state")[0], state)
 
@@ -152,15 +155,18 @@ class TestStateStack(unittest.TestCase):
 
     def test_get_states_by_name_multiple_matches(self):
         class NamedState(State):
-            def __init__(self, name):
+            name = "duplicate"
+
+            def __init__(self, client, name="duplicate"):
+                super().__init__(client)
                 self._name = name
 
             @property
             def name(self):
                 return self._name
 
-        state1 = NamedState("duplicate")
-        state2 = NamedState("duplicate")
+        state1 = NamedState(client=Mock(), name="duplicate")
+        state2 = NamedState(client=Mock(), name="duplicate")
         self.stack.push(state2)
         self.stack.push(state1)
         found = self.stack.get_states_by_name("duplicate")

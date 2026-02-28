@@ -9,8 +9,8 @@ from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 from uuid import UUID
 
-import pygame_menu
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
+from pygame_menu.menu import Menu
 from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.animation import ScheduleType
@@ -21,7 +21,7 @@ from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.quantity import QuantityMenu
 from tuxemon.platform.const.graphics import BG_PC_LOCKER
-from tuxemon.prepare import SCALE, SCREEN_SIZE
+from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.tools import fix_measure, open_choice_dialog, open_dialog
@@ -122,12 +122,14 @@ class ItemTakeState(PygameMenuState):
 
     name: ClassVar[str] = "ItemTakeState"
 
-    def __init__(self, box_name: str, character: NPC) -> None:
+    def __init__(
+        self, client: BaseClient, box_name: str, character: NPC, **kwargs: Any
+    ) -> None:
         width, height = SCREEN_SIZE
 
         theme = self._setup_theme(BG_PC_LOCKER)
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
 
         # menu
         theme.title = True
@@ -143,7 +145,11 @@ class ItemTakeState(PygameMenuState):
         rows = math.ceil(len(self.box) / columns) * num_widgets
 
         super().__init__(
-            height=height, width=width, columns=columns, rows=rows
+            client=client,
+            height=height,
+            width=width,
+            columns=columns,
+            rows=rows,
         )
 
         column_width = fix_measure(self.menu._width, 0.33)
@@ -200,6 +206,7 @@ class ItemTakeState(PygameMenuState):
             def inner() -> None:
                 self.client.state_manager.push_state(
                     QuantityMenu(
+                        client=self.client,
                         callback=callback,
                         max_quantity=max_quantity,
                         quantity=1,
@@ -228,9 +235,7 @@ class ItemTakeState(PygameMenuState):
             escape_key_exits=True,
         )
 
-    def add_menu_items(
-        self, menu: pygame_menu.Menu, items: Sequence[Item]
-    ) -> None:
+    def add_menu_items(self, menu: Menu, items: Sequence[Item]) -> None:
         self.item_boxes = self.char.item_boxes
         self.box = self.item_boxes.get_items(self.box_name)
         handler = ItemActionHandler(
@@ -244,7 +249,7 @@ class ItemTakeState(PygameMenuState):
             label = T.translate(itm.name).upper() + " x" + str(itm.quantity)
             iid = itm.instance_id.hex
             new_image = self._create_image(itm.sprite)
-            new_image.scale(SCALE, SCALE)
+            new_image.scale(self.factor, self.factor)
             menu.add.banner(
                 new_image,
                 partial(self.locker_options, iid, handler),
@@ -254,7 +259,7 @@ class ItemTakeState(PygameMenuState):
                 label,
                 selectable=True,
                 font_size=self.font_type.small,
-                align=locals.ALIGN_CENTER,
+                align=ALIGN_CENTER,
                 selection_effect=HighlightSelection(),
             )
 
@@ -268,10 +273,12 @@ class ItemBoxState(PygameMenuState):
 
     name: ClassVar[str] = "ItemBoxState"
 
-    def __init__(self, character: NPC) -> None:
+    def __init__(
+        self, client: BaseClient, character: NPC, **kwargs: Any
+    ) -> None:
         _, height = SCREEN_SIZE
 
-        super().__init__(height=height)
+        super().__init__(client=client, height=height, **kwargs)
 
         self.animation_offset = 0
         self.char = character
@@ -281,7 +288,7 @@ class ItemBoxState(PygameMenuState):
 
     def add_menu_items(
         self,
-        menu: pygame_menu.Menu,
+        menu: Menu,
         items: Sequence[tuple[str, MenuGameObj]],
     ) -> None:
         menu.add.vertical_fill()
@@ -341,6 +348,9 @@ class ItemStorageState(ItemBoxState):
 
     name: ClassVar[str] = "ItemStorageState"
 
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
+
     def get_menu_items_map(self) -> Sequence[tuple[str, MenuGameObj]]:
         item_boxes = self.char.item_boxes
         menu_items_map = []
@@ -368,6 +378,9 @@ class ItemDropOffState(ItemBoxState):
 
     name: ClassVar[str] = "ItemDropOffState"
 
+    def __init__(self, client: BaseClient, *args: Any, **kwargs: Any):
+        super().__init__(client, *args, **kwargs)
+
     def get_menu_items_map(self) -> Sequence[tuple[str, MenuGameObj]]:
         item_boxes = self.char.item_boxes
         menu_items_map = []
@@ -386,11 +399,21 @@ class ItemDropOff(ItemMenuState):
 
     name: ClassVar[str] = "ItemDropOff"
 
-    def __init__(self, box_name: str, character: NPC) -> None:
+    def __init__(
+        self,
+        client: BaseClient,
+        box_name: str,
+        character: NPC,
+        **kwargs: Any,
+    ) -> None:
         items_filtered = ItemFilter(character.items)
         items_filtered.set_filter_all_visible()
         super().__init__(
-            character=character, source=self.name, item_filter=items_filtered
+            client=client,
+            character=character,
+            source=self.name,
+            item_filter=items_filtered,
+            **kwargs,
         )
 
         self.box_name = box_name
@@ -433,6 +456,7 @@ class ItemDropOff(ItemMenuState):
 
         self.client.push_state(
             QuantityMenu(
+                client=self.client,
                 callback=partial(deposit, game_object),
                 max_quantity=game_object.quantity,
                 quantity=1,

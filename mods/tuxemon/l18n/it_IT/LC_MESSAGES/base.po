@@ -3376,7 +3376,10 @@ msgstr "Forfait"
 
 msgid "evolution_confirmation"
 msgstr ""
-"{name} sta provando ad evolversi in {evolve}. Permettere l'evoluzione?"
+"{name} sta provando ad evolversi in {evolve}."
+
+msgid "allow_evolution"
+msgstr "Permettere l'evoluzione?"
 
 msgid "tuxemon_stat2"
 msgstr "{desc}"

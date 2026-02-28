@@ -5,9 +5,13 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from tuxemon.base_client import BaseClient, ClientState
-from tuxemon.config import TuxemonConfig
+
+if TYPE_CHECKING:
+    from tuxemon.config import TuxemonConfig
+    from tuxemon.prepare import DisplayContext
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +26,8 @@ class HeadlessClient(BaseClient):
         config: The configuration for the game.
     """
 
-    def __init__(self, config: TuxemonConfig) -> None:
-        super().__init__(config)
+    def __init__(self, config: TuxemonConfig, context: DisplayContext) -> None:
+        super().__init__(config, context)
 
     def main(self) -> None:
         """
@@ -54,11 +58,6 @@ class HeadlessClient(BaseClient):
         self.command_queue.put(command)
         logger.debug("Queued command for execution in main thread.")
 
-    def update(self, time_delta: float) -> None:
-        """
-        Main loop for entire game.
-
-        Parameters:
-            time_delta: Elapsed time since last frame.
-        """
-        self.update_states(time_delta)
+    def update(self, dt: float) -> None:
+        """Main loop for entire game."""
+        self.update_states(dt)

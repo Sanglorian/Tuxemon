@@ -2,16 +2,19 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pygame
-from pygame_menu import locals
+from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
-from tuxemon.platform.events import PlayerInput
+
+if TYPE_CHECKING:
+    from tuxemon.base_client import BaseClient
+    from tuxemon.platform.events import PlayerInput
 
 
 class SetKeyState(PygameMenuState):
@@ -22,14 +25,11 @@ class SetKeyState(PygameMenuState):
 
     name: ClassVar[str] = "SetKeyState"
 
-    def __init__(self, value: str, **kwargs: Any) -> None:
-        """
-        Used when initializing the state
-        """
+    def __init__(self, client: BaseClient, value: str, **kwargs: Any) -> None:
         theme = get_theme()
-        theme.scrollarea_position = locals.POSITION_EAST
-        theme.widget_alignment = locals.ALIGN_CENTER
-        super().__init__(**kwargs)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
+        super().__init__(client=client, **kwargs)
         self.menu.add.label(
             T.translate("options_new_input_key0").upper(),
             font_size=self.font_type.small,
@@ -87,7 +87,6 @@ class SetKeyState(PygameMenuState):
         )
 
     def animate_open(self) -> Animation:
-        """Animate the menu popping in."""
         self.animation_size = 0.0
         ani = self.animate(self, animation_size=1.0, duration=0.2)
         ani.schedule(self.update_animation_size, ScheduleType.ON_UPDATE)

@@ -69,10 +69,10 @@ class InputHistory:
             self.history.append(translated_event)
             self.last_history_event = translated_event
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         self.update_history(max_age_s=self.combo_window_seconds)
         for button in list(self.held_timers.keys()):
-            self.held_timers[button] += time_delta
+            self.held_timers[button] += dt
 
     def update_history(self, max_age_s: float | None = None) -> None:
         """

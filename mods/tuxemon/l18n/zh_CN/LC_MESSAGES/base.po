@@ -1504,7 +1504,10 @@ msgid "shop_buy_free"
 msgstr "免费!"
 
 msgid "evolution_confirmation"
-msgstr "{name} 正试图进化成 {evolve}. 允许进化?"
+msgstr "{name} 正试图进化成 {evolve}."
+
+msgid "allow_evolution"
+msgstr "允许进化?"
 
 msgid "tuxemon_stat1"
 msgstr ""

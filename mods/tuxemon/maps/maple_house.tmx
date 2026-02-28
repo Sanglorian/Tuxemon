@@ -60,8 +60,7 @@
   </object>
   <object id="32" name="wife appears" type="event" x="128" y="96" width="16" height="16">
    <properties>
-    <property name="act10" value="create_npc npc_wife,8,6,stand"/>
-    <property name="act20" value="char_wander npc_wife"/>
+    <property name="act10" value="create_npc npc_wife,8,6,wander"/>
     <property name="cond10" value="not char_exists npc_wife"/>
    </properties>
   </object>

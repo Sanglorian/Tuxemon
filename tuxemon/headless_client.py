@@ -58,11 +58,6 @@ class HeadlessClient(BaseClient):
         self.command_queue.put(command)
         logger.debug("Queued command for execution in main thread.")
 
-    def update(self, time_delta: float) -> None:
-        """
-        Main loop for entire game.
-
-        Parameters:
-            time_delta: Elapsed time since last frame.
-        """
-        self.update_states(time_delta)
+    def update(self, dt: float) -> None:
+        """Main loop for entire game."""
+        self.update_states(dt)

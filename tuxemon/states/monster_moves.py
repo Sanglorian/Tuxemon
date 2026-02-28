@@ -14,6 +14,7 @@ from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel, SpeedLabel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import TECH_INFO
 from tuxemon.platform.const.sizes import ACCURACY_RANGE, POTENCY_RANGE
@@ -94,7 +95,8 @@ class MonsterMovesState(PygameMenuState):
             ).translate(fxw(83.6 / 256), fxh(_height))
 
         # Monster image (manual position)
-        surface = monster.get_sprite("front").image
+        renderer = MonsterRenderer(monster, scale=self.factor)
+        surface = renderer.get_sprite("front").image
         new_image = self._create_image_from_surface(surface)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)

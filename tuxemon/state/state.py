@@ -151,15 +151,12 @@ class State(AnimationMixin, RenderMixin, ABC):
         """Convenience wrapper for client scaling."""
         return self.client.context.scaling.scale_int(value)
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         """
         Time update function for state. Must be overloaded in children.
-
-        Parameters:
-            time_delta: Amount of time in fractional seconds since last update.
         """
-        self.update_animations(time_delta)
-        self.sprites.update(time_delta)
+        self.update_animations(dt)
+        self.sprites.update(dt)
 
     def resume(self) -> None:
         """

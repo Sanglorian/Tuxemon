@@ -79,25 +79,22 @@ def battlefield(session: Session, monster: Monster) -> None:
 
 
 def get_battle_outcome_music(
-    session: Session, default_music: BattleMusicModel, monster: Monster
+    session: Session, default_music: BattleMusicModel, owner: NPC
 ) -> tuple[str, float] | None:
     """
     Return the appropriate music track based on outcome and participants.
     Player-centric: only trigger music if a player is involved.
     """
-    if not monster.owner:
-        return None
-
     # Require at least one human player still active
     if not any(True for _ in session.client.combat_session.human_players):
         return None
 
     # Use override if present, else fall back to default
-    active_music = monster.owner.get_active_battle_music(default_music)
+    active_music = owner.get_active_battle_music(default_music)
 
     # If the defeated was a player → defeat music
     if (
-        monster.owner.is_player
+        owner.is_player
         and active_music.defeat_music
         and active_music.defeat_music.music
     ):
@@ -108,7 +105,7 @@ def get_battle_outcome_music(
 
     # If the defeated was not a player → victory music
     if (
-        not monster.owner.is_player
+        not owner.is_player
         and active_music.victory_music
         and active_music.victory_music.music
     ):
@@ -118,18 +115,6 @@ def get_battle_outcome_music(
         )
 
     return None
-
-
-def play_outcome_music(
-    session: Session,
-    music: BattleMusicModel,
-    monster: Monster,
-) -> None:
-    track = get_battle_outcome_music(session, music, monster)
-    if track:
-        music_name, volume = track
-        session.client.current_music.play(music_name)
-        session.client.current_music.set_volume(volume)
 
 
 def track_battles(

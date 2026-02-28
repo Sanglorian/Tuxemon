@@ -36,6 +36,7 @@ from tuxemon.monster.stats import (
     IndividualValues,
     StatCalculator,
     TrainingPoints,
+    compare_stats,
     randomize_ivs,
 )
 from tuxemon.monster.status import MonsterStatusHandler
@@ -120,6 +121,11 @@ class Monster:
         self.ramp_counter: int = 0
         self.is_confused: bool = False
         self.money_modifier: float = 0.0
+
+        self._levelup_start_stats: BasicStats | None = None
+        self._levelup_end_stats: BasicStats | None = None
+        self._levelup_start_level: int | None = None
+        self._levelup_end_level: int | None = None
 
         self.acquisition: Acquisition = Acquisition.UNKNOWN
         self.gender = self.assign_gender(self.gender_weights)
@@ -555,8 +561,18 @@ class Monster:
             self.item_handler.held_item.temporary_stat_boosts = BasicStats()
 
     def set_level(self, new_level: int, old_level: int) -> int:
+
+        if new_level > old_level and self._levelup_start_stats is None:
+            self._levelup_start_stats = self.base_stats.copy()
+            self._levelup_start_level = old_level
+
         self.experience_handler.set_level(new_level)
         self.set_stats()
+
+        if new_level > old_level:
+            self._levelup_end_stats = self.base_stats.copy()
+            self._levelup_end_level = new_level
+
         level_delta = new_level - old_level
 
         if level_delta > 0:
@@ -570,6 +586,28 @@ class Monster:
                 logger.debug("No evolution flagged at level-up")
 
         return level_delta
+
+    def consume_levelup_summary(
+        self,
+    ) -> tuple[int | None, int | None, dict[str, tuple[int, int, int]]] | None:
+        if (
+            self._levelup_start_stats is None
+            or self._levelup_end_stats is None
+        ):
+            return None
+
+        diff = compare_stats(
+            self._levelup_start_stats, self._levelup_end_stats
+        )
+        start = self._levelup_start_level
+        end = self._levelup_end_level
+
+        self._levelup_start_stats = None
+        self._levelup_end_stats = None
+        self._levelup_start_level = None
+        self._levelup_end_level = None
+
+        return start, end, diff
 
     def set_experience_modifier(self, modifier: float) -> None:
         """Sets the experience modifier for this monster."""

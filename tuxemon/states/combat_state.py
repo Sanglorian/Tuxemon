@@ -48,7 +48,7 @@ from tuxemon.animation_entity import AnimationManager
 from tuxemon.combat.combat_context import CombatContext
 from tuxemon.combat.machine import CombatMachine, CombatPhase
 from tuxemon.combat.reward_system import RewardSystem
-from tuxemon.combat.utils import play_outcome_music, track_battles
+from tuxemon.combat.utils import get_battle_outcome_music, track_battles
 from tuxemon.database.rules import config_combat
 from tuxemon.db import (
     EffectPhase,
@@ -98,6 +98,7 @@ EVENTS: list[str] = [
     "monster_added",
     "capture_finished",
     "play_sound_combat",
+    "play_music_combat",
     "play_animation_combat",
     "combat_dialog",
 ]
@@ -200,6 +201,9 @@ class CombatState(CombatAnimations):
         """
         Update the combat phase.
         """
+        if self.is_blocked():
+            return
+
         if not self.text_anim.is_animating() and all(
             map(self.is_task_finished, self.animations)
         ):
@@ -214,7 +218,7 @@ class CombatState(CombatAnimations):
             return True
 
         cs = self.client.current_state
-        if cs and cs.name == "WaitForInputState":
+        if cs and cs.name in {"WaitForInputState", "LevelUpSummaryState"}:
             return True
 
         return False
@@ -867,6 +871,7 @@ class CombatState(CombatAnimations):
                 params = {"name": winner.name.upper(), "tech": tech_list}
                 mex = T.format("tuxemon_new_tech", params)
                 self.text_anim.add_xp_message(mex)
+
             owner = winner.get_owner()
             if owner.is_player:
                 self.task(partial(self.animate_exp, winner), interval=2.5)
@@ -878,6 +883,22 @@ class CombatState(CombatAnimations):
                             self._update_hud_details, winner, hud, hud.player
                         ),
                         interval=4.0,
+                    )
+
+                result = winner.consume_levelup_summary()
+                if result:
+                    start, end, diff = result
+
+                    self.task(
+                        partial(
+                            self.client.push_state,
+                            "LevelUpSummaryState",
+                            monster=winner,
+                            start_level=start,
+                            end_level=end,
+                            diff=diff,
+                        ),
+                        interval=4.5,
                     )
 
     def animate_party_status(self) -> None:
@@ -962,9 +983,7 @@ class CombatState(CombatAnimations):
         # Remove monster from damage map
         self.combat_session.damage_tracker.remove_monster(monster)
         if len(self.combat_session.remaining_players) <= 1:
-            play_outcome_music(
-                self.session, self.env.get_battle_music(), monster
-            )
+            self.event_bus.publish("play_music_combat", monster=monster)
 
     def clear_combat_states(self) -> None:
         """
@@ -1171,6 +1190,16 @@ class CombatState(CombatAnimations):
             value if value is not None else self.client.config.sound_volume
         )
         self.client.sound_manager.play_sound(sound, volume)
+
+    def _on_play_music_combat(self, monster: Monster) -> None:
+        """Play the music."""
+        env = self.env.get_battle_music()
+        owner = monster.get_owner()
+        track = get_battle_outcome_music(self.session, env, owner)
+        if track:
+            music_name, volume = track
+            self.client.current_music.play(music_name)
+            self.client.current_music.set_volume(volume)
 
     def _on_play_animation_combat(
         self,

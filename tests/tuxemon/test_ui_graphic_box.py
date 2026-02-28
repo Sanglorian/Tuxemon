@@ -10,7 +10,6 @@ from tuxemon.ui.graphic_box import GraphicBox, TileLayout
 
 
 class TestTileLayout(unittest.TestCase):
-
     def test_init(self):
         image = Surface((9, 9))
         layout = TileLayout(image)
@@ -55,7 +54,6 @@ class TestTileLayout(unittest.TestCase):
 
 
 class TestGraphicBox(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         pygame.init()

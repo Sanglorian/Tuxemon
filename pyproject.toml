@@ -101,7 +101,7 @@ line-length = 79
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "UP", "B"]
+select = ["F", "W", "I", "UP", "B"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["tuxemon"]

@@ -339,7 +339,6 @@ class TestCompare(unittest.TestCase):
 
 
 class TestParseFlag(unittest.TestCase):
-
     def test_parse_flag_truthy(self):
         self.assertTrue(parse_flag("true"))
         self.assertTrue(parse_flag("True"))

@@ -41,7 +41,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install tox 
     - name: Test style with tox
-      run: tox -efmt
+      run: tox -elint
 
   validate-db:
     runs-on: ubuntu-latest

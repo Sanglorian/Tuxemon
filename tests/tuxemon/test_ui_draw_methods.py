@@ -32,7 +32,6 @@ FONT_PATH = mods_folder / "tuxemon/font" / Path(CONFIG.locale.font_file)
 
 
 class TestIterRenderText(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         pygame.init()
@@ -265,7 +264,6 @@ class TestIterRenderText(unittest.TestCase):
 
 
 class TestFontHeight(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         pygame.init()
@@ -299,7 +297,6 @@ class TestFontHeight(unittest.TestCase):
 
 
 class TestConstrainWidth(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         pygame.init()
@@ -370,7 +367,6 @@ class TestConstrainWidth(unittest.TestCase):
 
 
 class TestBlitAlphaFunction(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         pygame.init()
@@ -409,7 +405,6 @@ class TestBlitAlphaFunction(unittest.TestCase):
 
 
 class TestDrawText(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         pygame.init()
@@ -539,7 +534,6 @@ class TestDrawText(unittest.TestCase):
 
 
 class TestBreakTextIntoLines(unittest.TestCase):
-
     @patch("tuxemon.ui.draw.get_text_size")
     def test_empty_text(self, mock_get_text_size):
         text = ""
@@ -617,7 +611,6 @@ class TestBreakTextIntoLines(unittest.TestCase):
 
 
 class TestCalculateAlignmentOffset(unittest.TestCase):
-
     def setUp(self):
         self.container_rect = Rect(0, 0, 100, 100)
         self.content_width = 50

@@ -43,8 +43,6 @@ class ShopChoiceState(PygameMenuState):
         self.economy = npc.economy
 
         width, height = SCREEN_SIZE
-        theme = self._setup_theme(BG_MISSIONS)
-        theme.widget_alignment = ALIGN_CENTER
 
         super().__init__(
             client=client,
@@ -52,6 +50,10 @@ class ShopChoiceState(PygameMenuState):
             width=int(width * 0.4),
             **kwargs,
         )
+
+        theme = self._setup_theme(BG_MISSIONS)
+        theme.widget_alignment = ALIGN_CENTER
+        self._menu_config["theme"] = theme
         self._build_menu(self.menu)
         self.reset_theme()
 

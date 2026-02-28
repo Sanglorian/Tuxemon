@@ -11,7 +11,6 @@ from pygame.surface import Surface
 
 from tuxemon.graphics import ColorLike
 from tuxemon.platform.const.graphics import BLACK_COLOR
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 
 if TYPE_CHECKING:
@@ -59,7 +58,8 @@ class FadeTransitionBase(State):
             self.fade_duration = fade_duration
 
         self.caller = caller
-        self.transition_surface = Surface(SCREEN_SIZE, SRCALPHA)
+        resolution = self.client.context.resolution
+        self.transition_surface = Surface(resolution, SRCALPHA)
         self.transition_surface.fill(color)
         self.task(self.client.pop_state, interval=self.state_duration)
         self.create_fade_animation()

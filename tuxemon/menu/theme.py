@@ -80,7 +80,7 @@ def get_theme(scaling: ScalingStrategy) -> Theme:
     if _theme is not None:
         return _theme
 
-    scale_factor = max(scaling.factor, 1)
+    scale_factor = max(scaling.scale, 1)
     tuxemon_border = BaseImage(
         image_path=transform_resource_filename(CONFIG.menu_border),
     ).scale(scale_factor, scale_factor, smooth=False)

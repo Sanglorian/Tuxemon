@@ -15,7 +15,6 @@ from tuxemon.locale.locale import T
 from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BLACK_COLOR, WHITE_COLOR
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 
 if TYPE_CHECKING:
@@ -81,7 +80,7 @@ class TradingTransition(State):
             4: self.received_sprite,
         }
 
-        screen_width, screen_height = SCREEN_SIZE
+        screen_width, screen_height = self.client.context.resolution
         sprite_width, sprite_height = self.sent_sprite.image.get_size()
         self.sent_x = (screen_width // 4) - (sprite_width // 2)
         self.received_x = (3 * screen_width // 4) - (sprite_width // 2)
@@ -153,7 +152,8 @@ class TradingTransition(State):
         # In phases 1 and 2, only the sent monster is displayed, centered
         if self.phase in (1, 2):
             sprite_image = self.sent_sprite.image
-            center_x = (SCREEN_SIZE[0] - sprite_image.get_width()) // 2
+            width, _ = self.client.context.resolution
+            center_x = (width - sprite_image.get_width()) // 2
             surface.blit(sprite_image, (center_x, self.sprite_y))
         # In phases 3 and 4, both sprites are displayed at their respective positions
         elif self.phase in (3, 4):

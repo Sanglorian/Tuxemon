@@ -13,7 +13,6 @@ from tuxemon.platform.const.graphics import (
     PYGAME_LOGO,
 )
 from tuxemon.platform.events import PlayerInput
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 
 if TYPE_CHECKING:
@@ -40,10 +39,10 @@ class SplashState(State):
         self.task(self.fade_out, interval=self.default_duration)
         self.triggered = False
 
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
 
         # The space between the edge of the screen
-        splash_border = int(SCREEN_SIZE[0] / 20)
+        splash_border = int(width / 20)
 
         # Set up the splash screen logos
         logo = self.load_sprite(PYGAME_LOGO)

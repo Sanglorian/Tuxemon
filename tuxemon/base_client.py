@@ -106,7 +106,10 @@ class BaseClient(ABC):
         self.afk_manager = AFKManager()
         self.input_cache = ScriptInputCache(self.event_bus)
         self.input_manager = InputManager(
-            config, self.afk_manager, self.input_recorder
+            config,
+            self.afk_manager,
+            self.input_recorder,
+            self.context.resolution,
         )
 
         # Set up our networking for multiplayer.

@@ -48,7 +48,12 @@ class SetAppearanceLayerAction(EventAction):
             logger.error(f"NPC {self.character} not found")
             return
 
-        if self.layer in ("outfit", "accessory", "palette", "combat_sheet"):
+        if self.layer not in (
+            "outfit",
+            "accessory",
+            "palette",
+            "combat_sheet",
+        ):
             logger.error(f"Invalid appearance layer '{self.layer}'")
             return
 

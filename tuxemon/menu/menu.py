@@ -616,7 +616,11 @@ class Menu(Generic[T], State):
                 border = load_and_scale(self.borders_filename)
 
             # set the helper to draw the _background
-            self.window = GraphicBox(border, background, self.background_color)
+            self.window = GraphicBox(
+                border=border,
+                background=background,
+                color=self.background_color,
+            )
 
     def update_background(self, new_filename: str) -> None:
         self.background_filename = new_filename

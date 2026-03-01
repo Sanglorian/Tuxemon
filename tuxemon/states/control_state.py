@@ -15,7 +15,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.platform.const import buttons
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 
 if TYPE_CHECKING:
@@ -35,13 +34,14 @@ class ControlState(PygameMenuState):
         main_menu: bool = False,
         **kwargs: Any,
     ) -> None:
-        theme = get_theme()
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_CENTER
-
         self.main_menu = main_menu
 
         super().__init__(client, *args, **kwargs)
+
+        theme = get_theme(self.client.context.scaling)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
+        self._menu_config["theme"] = theme
 
         self.initialize_items(self.menu)
         self.reload_controls()
@@ -221,7 +221,7 @@ class ControlState(PygameMenuState):
             )
 
     def update_animation_size(self) -> None:
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         widgets_size = self.menu.get_size(widget=True)
         _width, _height = widgets_size
         # block width if more than screen width

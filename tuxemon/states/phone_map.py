@@ -14,7 +14,6 @@ from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_MAP
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
@@ -111,17 +110,16 @@ class NuPhoneMap(PygameMenuState):
     def __init__(
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
-        width, height = SCREEN_SIZE
+        self.char = character
+        width, height = client.context.resolution
+
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         theme = self._setup_theme(BG_PHONE_MAP)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-
         theme.title = True
-
-        self.char = character
-
-        super().__init__(client=client, height=height, width=width, **kwargs)
+        self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu)
         self.reset_theme()

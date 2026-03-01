@@ -17,7 +17,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.platform.const.sizes import UNKNOWN_MAP_SLUG
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -80,15 +79,16 @@ class EmailState(PygameMenuState):
         else:
             self.current_map = UNKNOWN_MAP_SLUG
 
-        width, height = SCREEN_SIZE
+        width, height = client.context.resolution
         width = int(width * 0.8)
         height = int(height * 0.8)
+
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         theme = self._setup_theme(BG_MISSIONS)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-
-        super().__init__(client=client, height=height, width=width, **kwargs)
+        self._menu_config["theme"] = theme
         self.initialize_items(self.menu)
         self.reset_theme()
 
@@ -142,15 +142,16 @@ class EmailReadState(PygameMenuState):
     ) -> None:
         self.email = email
 
-        width, height = SCREEN_SIZE
+        width, height = client.context.resolution
         width = int(width * 0.7)
         height = int(height * 0.7)
+
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         theme = self._setup_theme(BG_MISSIONS)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-
-        super().__init__(client=client, height=height, width=width, **kwargs)
+        self._menu_config["theme"] = theme
         self.initialize_items(self.menu)
         self.reset_theme()
 

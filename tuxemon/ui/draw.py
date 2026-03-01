@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 __all__ = ("GraphicBox",)
 
-font_size_cache: dict[str, tuple[int, int]] = {}
+font_size_cache: dict[tuple[int, str], tuple[int, int]] = {}
 
 
 class RenderMode(Enum):
@@ -45,8 +45,6 @@ class TextOverflow(Enum):
     EXPAND = "expand"
     # Moves overflow text to next line (if vertical space allows)
     WRAP = "wrap"
-    # Dynamically reduces font size to fit within bounds
-    SHRINK = "shrink"
 
 
 @dataclass
@@ -61,13 +59,11 @@ def get_font_height(font: Font) -> int:
     return get_text_size("Tg", font)[1]
 
 
-def get_text_size(
-    text: str,
-    font: Font,
-) -> tuple[int, int]:
-    if text not in font_size_cache:
-        font_size_cache[text] = font.size(text)
-    return font_size_cache[text]
+def get_text_size(text: str, font: Font) -> tuple[int, int]:
+    key = (id(font), text)
+    if key not in font_size_cache:
+        font_size_cache[key] = font.size(text)
+    return font_size_cache[key]
 
 
 class OverflowHandler:
@@ -170,8 +166,8 @@ def _iter_chars_for_line(
     Handles horizontal overflow using the provided overflow_handler.
     """
     x_position = x_start
-    for index in range(1, len(line) + 1):
-        char = line[index - 1]
+
+    for char in line:
         advance = font.size(char)[0]
 
         should_render, ellipsis_char = overflow_handler.handle_render_attempt(
@@ -185,10 +181,11 @@ def _iter_chars_for_line(
         if not should_render:
             return
 
+        glyph = text_renderer.get_glyph(char, fg, bg)
+        rect = glyph.get_rect(top=top, left=x_position)
+
         if char != " ":
-            surface = text_renderer.shadow_text(char, bg=bg, fg=fg)
-            update_rect = surface.get_rect(top=top, left=x_position)
-            yield RenderedChar(rect=update_rect, surface=surface, char=char)
+            yield RenderedChar(rect=rect, surface=glyph, char=char)
 
         x_position += advance
 
@@ -207,13 +204,13 @@ def _iter_tokens_for_line(
     Generates RenderedChar objects for each token (word/spacing) in a line.
     Handles horizontal overflow using the provided overflow_handler.
     """
-    x_offset = 0
+    x_position = x_start
+
     for token in tokenize_preserving_spacing(line):
         token_width = font.size(token)[0]
-        current_x = x_start + x_offset
 
         should_render, ellipsis_char = overflow_handler.handle_render_attempt(
-            current_x, token_width, top, fg, bg, text_renderer
+            x_position, token_width, top, fg, bg, text_renderer
         )
 
         if ellipsis_char:
@@ -223,12 +220,13 @@ def _iter_tokens_for_line(
         if not should_render:
             return
 
-        if token.strip():
-            surface = text_renderer.shadow_text(token, bg=bg, fg=fg)
-            update_rect = surface.get_rect(top=top, left=current_x)
-            yield RenderedChar(rect=update_rect, surface=surface, char=token)
+        surface = text_renderer.shadow_text(token, bg=bg, fg=fg)
+        rect = surface.get_rect(top=top, left=x_position)
 
-        x_offset += token_width
+        if token.strip():
+            yield RenderedChar(rect=rect, surface=surface, char=token)
+
+        x_position += token_width
 
 
 def iter_render_text(

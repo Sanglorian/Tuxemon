@@ -79,7 +79,7 @@
  <objectgroup color="#ffff00" id="6" name="Events">
   <object id="15" type="event" x="160" y="304" width="16" height="16">
    <properties>
-    <property name="act10" value="create_npc maple_girl,10,6,wander"/>
+    <property name="act10" value="create_npc maple_wren,10,6,wander"/>
     <property name="cond10" value="is variable_set maple_bedroom1:true"/>
    </properties>
   </object>
@@ -123,7 +123,7 @@
   </object>
   <object id="32" type="event" x="80" y="240" width="16" height="16">
    <properties>
-    <property name="act10" value="pathfind maple_girl,6,18"/>
+    <property name="act10" value="pathfind maple_wren,6,18"/>
     <property name="act20" value="translated_dialog mart_junkyard03"/>
     <property name="act30" value="set_variable maple_got_tuxemon1:true"/>
     <property name="cond10" value="is variable_set got_Fruitera:true"/>
@@ -132,7 +132,7 @@
   </object>
   <object id="34" type="event" x="240" y="240" width="16" height="16">
    <properties>
-    <property name="act10" value="pathfind maple_girl,14,18"/>
+    <property name="act10" value="pathfind maple_wren,14,18"/>
     <property name="act20" value="translated_dialog mart_junkyard04"/>
     <property name="act30" value="set_variable maple_got_tuxemon1:true"/>
     <property name="cond10" value="is variable_set got_Bamboon:true"/>

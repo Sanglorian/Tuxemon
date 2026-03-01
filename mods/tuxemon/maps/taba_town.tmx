@@ -304,8 +304,8 @@
     <property name="act30" value="create_npc knight4,37,39,stand"/>
     <property name="act40" value="create_npc knight3,38,39,stand"/>
     <property name="act60" value="translated_dialog hellolovelypeople"/>
-    <property name="act70" value="create_npc npc_mom,43,46,stand"/>
-    <property name="act80" value="char_face npc_mom,left"/>
+    <property name="act70" value="create_npc callie_wren,43,46,stand"/>
+    <property name="act80" value="char_face callie_wren,left"/>
     <property name="act90" value="set_variable goodbyeoldknight:hedead"/>
     <property name="cond10" value="is variable_set goodbyeoldknight:yes"/>
    </properties>
@@ -347,17 +347,17 @@
     <property name="act040" value="pathfind player,37,47"/>
     <property name="act050" value="char_face player,up"/>
     <property name="act060" value="unlock_controls"/>
-    <property name="act070" value="create_npc npc_wife,33,44"/>
-    <property name="act080" value="pathfind npc_wife,36,47"/>
-    <property name="act090" value="char_face npc_wife,up"/>
+    <property name="act070" value="create_npc wife_wren,33,44"/>
+    <property name="act080" value="pathfind wife_wren,36,47"/>
+    <property name="act090" value="char_face wife_wren,up"/>
     <property name="act100" value="set_variable goodbyeoldknight:helpme"/>
     <property name="cond10" value="is variable_set goodbyeoldknight:heback"/>
    </properties>
   </object>
   <object id="127" name="timetowalk2" type="event" x="736" y="752" width="16" height="16">
    <properties>
-    <property name="act10" value="pathfind npc_mom,38,47"/>
-    <property name="act20" value="char_face npc_mom,up"/>
+    <property name="act10" value="pathfind callie_wren,38,47"/>
+    <property name="act20" value="char_face callie_wren,up"/>
     <property name="act30" value="set_variable talkpls:gone"/>
     <property name="cond10" value="is variable_set talkpls:yes"/>
    </properties>
@@ -427,14 +427,14 @@
     <property name="act010" value="pathfind allie,37,45"/>
     <property name="act020" value="char_face allie,down"/>
     <property name="act030" value="translated_dialog oopsie"/>
-    <property name="act040" value="pathfind npc_mom,38,46"/>
+    <property name="act040" value="pathfind callie_wren,38,46"/>
     <property name="act050" value="translated_dialog ourstuffisours"/>
     <property name="act060" value="char_face allie,right"/>
     <property name="act070" value="translated_dialog oopsie2"/>
-    <property name="act075" value="set_facing_mode npc_mom,locked"/>
-    <property name="act080" value="pathfind npc_mom,38,47"/>
-    <property name="act085" value="set_facing_mode npc_mom,follow_movement"/>
-    <property name="act090" value="char_face npc_mom,up"/>
+    <property name="act075" value="set_facing_mode callie_wren,locked"/>
+    <property name="act080" value="pathfind callie_wren,38,47"/>
+    <property name="act085" value="set_facing_mode callie_wren,follow_movement"/>
+    <property name="act090" value="char_face callie_wren,up"/>
     <property name="act100" value="create_npc knight3,43,46"/>
     <property name="act110" value="char_face knight3,left"/>
     <property name="act120" value="translated_dialog maamiexist"/>
@@ -514,14 +514,14 @@
     <property name="act060" value="char_face knight4,right"/>
     <property name="act070" value="pathfind knight4,39,44"/>
     <property name="act080" value="char_face knight4,left"/>
-    <property name="act090" value="char_face npc_mom,left"/>
+    <property name="act090" value="char_face callie_wren,left"/>
     <property name="act100" value="translated_dialog wherewasshe"/>
-    <property name="act110" value="pathfind npc_mom,43,46"/>
-    <property name="act120" value="char_face npc_mom,up"/>
-    <property name="act130" value="remove_npc npc_mom"/>
-    <property name="act140" value="pathfind npc_wife,33,44"/>
-    <property name="act150" value="char_face npc_wife,up"/>
-    <property name="act160" value="remove_npc npc_wife"/>
+    <property name="act110" value="pathfind callie_wren,43,46"/>
+    <property name="act120" value="char_face callie_wren,up"/>
+    <property name="act130" value="remove_npc callie_wren"/>
+    <property name="act140" value="pathfind wife_wren,33,44"/>
+    <property name="act150" value="char_face wife_wren,up"/>
+    <property name="act160" value="remove_npc wife_wren"/>
     <property name="act170" value="set_variable goodbyeoldknight:finallydone"/>
     <property name="act180" value="unlock_controls"/>
     <property name="cond10" value="is variable_set goodbyeoldknight:howcaniresistyou"/>
@@ -548,14 +548,14 @@
     <property name="act1" value="char_stop player"/>
     <property name="act2" value="lock_controls"/>
     <property name="act3" value="translated_dialog waitdontgo"/>
-    <property name="act4" value="create_npc npc_mom, 39,46"/>
-    <property name="act5" value="pathfind npc_mom,37,40"/>
-    <property name="act6" value="char_face npc_mom,up"/>
+    <property name="act4" value="create_npc callie_wren, 39,46"/>
+    <property name="act5" value="pathfind callie_wren,37,40"/>
+    <property name="act6" value="char_face callie_wren,up"/>
     <property name="act7" value="translated_dialog thetvbescreamin"/>
     <property name="act8" value="set_variable comeinside:yes"/>
-    <property name="act9" value="pathfind npc_mom,43,46"/>
-    <property name="act91" value="char_face npc_mom,up"/>
-    <property name="act92" value="remove_npc npc_mom"/>
+    <property name="act9" value="pathfind callie_wren,43,46"/>
+    <property name="act91" value="char_face callie_wren,up"/>
+    <property name="act92" value="remove_npc callie_wren"/>
     <property name="cond1" value="is variable_set goodbyeoldknight:finallydone"/>
     <property name="cond2" value="not variable_set comeinside:yes"/>
     <property name="cond3" value="is char_at player"/>
@@ -662,10 +662,10 @@
    <properties>
     <property name="act10" value="char_stop player"/>
     <property name="act11" value="lock_controls"/>
-    <property name="act20" value="create_npc npc_mom,38,41,stand"/>
+    <property name="act20" value="create_npc callie_wren,38,41,stand"/>
     <property name="act30" value="translated_dialog timeforround2"/>
-    <property name="act40" value="pathfind npc_mom,38,38"/>
-    <property name="act50" value="char_face npc_mom,up"/>
+    <property name="act40" value="pathfind callie_wren,38,38"/>
+    <property name="act50" value="char_face callie_wren,up"/>
     <property name="act60" value="set_variable moveon:yes"/>
     <property name="act61" value="set_variable stahp:stop"/>
     <property name="act70" value="pathfind player,38,37"/>
@@ -680,9 +680,9 @@
    <properties>
     <property name="act10" value="translated_dialog timeforround22"/>
     <property name="act11" value="set_variable moveplayer:true"/>
-    <property name="act20" value="pathfind npc_mom,43,46"/>
-    <property name="act30" value="char_face npc_mom,up"/>
-    <property name="act40" value="remove_npc npc_mom"/>
+    <property name="act20" value="pathfind callie_wren,43,46"/>
+    <property name="act30" value="char_face callie_wren,up"/>
+    <property name="act40" value="remove_npc callie_wren"/>
     <property name="act50" value="set_variable moveon:bye"/>
     <property name="act60" value="set_variable backhome:no"/>
     <property name="cond1" value="is variable_set moveon:yes"/>

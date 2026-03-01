@@ -149,9 +149,9 @@
     "combat": {},
     "audio": {},
     "template": {
-      "sprite_name": "riverboatcaptain",
-      "combat_sheet": "pirate",
-      "slug": "pirate"
+      "sprite_name": "rogue_copper",
+      "combat_front": "winger",
+      "slug": "winger"
     }
   },
   {
@@ -382,6 +382,26 @@
       "sprite_name": "riverboatcaptain",
       "combat_sheet": "enforcer_rookie",
       "slug": "riverboatcaptain"
+    }
+  },
+  {
+    "slug": "spyder_mansion_berry",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
+    "template": {
+      "sprite_name": "box",
+      "combat_front": "noclass",
+      "slug": "interactive_obj"
+    }
+  },
+  {
+    "slug": "spyder_mansion_grandtux",
+    "speech": {"profile": {"default": {}}},
+    "combat": {},
+    "template": {
+      "sprite_name": "box",
+      "combat_front": "noclass",
+      "slug": "interactive_obj"
     }
   }
 ]

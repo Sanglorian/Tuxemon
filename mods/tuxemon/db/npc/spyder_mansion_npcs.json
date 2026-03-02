@@ -388,6 +388,7 @@
     "slug": "spyder_mansion_berry",
     "speech": {"profile": {"default": {}}},
     "combat": {},
+    "audio": {},
     "template": {
       "sprite_name": "box",
       "combat_sheet": "noclass",
@@ -399,6 +400,7 @@
     "slug": "spyder_mansion_grandtux",
     "speech": {"profile": {"default": {}}},
     "combat": {},
+    "audio": {},
     "template": {
       "sprite_name": "box",
       "combat_sheet": "noclass",

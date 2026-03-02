@@ -899,14 +899,11 @@ msgstr ""
 msgid "liela"
 msgstr "Liela"
 
-msgid "maple_girl"
+msgid "maple_wren"
 msgstr "Klara"
 
 msgid "misa"
 msgstr "Misa"
-
-msgid "npc_wife"
-msgstr ""
 
 msgid "professor"
 msgstr "Professor"

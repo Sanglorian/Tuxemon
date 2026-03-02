@@ -209,7 +209,9 @@ def test_empty_initial_state(recorder, tmpdir_path):
 
 @pytest.fixture
 def manager():
-    return InputManager(DummyConfig(), DummyAFKManager(), InputRecorder())
+    return InputManager(
+        DummyConfig(), DummyAFKManager(), InputRecorder(), (1, 1)
+    )
 
 
 def test_playback_events_flow_through_manager(manager):

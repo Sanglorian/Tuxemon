@@ -123,7 +123,7 @@ def slice_spritesheet(
         for x in range(0, sheet_w, frame_width):
             rect = Rect(x, y, frame_width, frame_height)
             frame = full_sheet.subsurface(rect)
-            scaled = scale_surface(frame, DISPLAY_CONTEXT.scaling.factor)
+            scaled = scale_surface(frame, DISPLAY_CONTEXT.scale)
             frames.append(scaled)
 
     return frames
@@ -177,7 +177,7 @@ def cursor_from_image(image: Surface) -> Sequence[str]:
 
 
 def load_and_scale(
-    filename: str, scale: float = DISPLAY_CONTEXT.scaling.factor
+    filename: str, scale: float = DISPLAY_CONTEXT.scale
 ) -> Surface:
     """
     Load an image and scale it according to game settings.

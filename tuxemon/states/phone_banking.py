@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-# SPDX-License-Identifier: GPL-3.0
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -14,7 +13,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.formatter import CurrencyFormatter
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_BANKING
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 
@@ -205,15 +203,15 @@ class NuPhoneBanking(PygameMenuState):
     def __init__(
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
-        width, height = SCREEN_SIZE
+        self.char = character
+        width, height = client.context.resolution
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         theme = self._setup_theme(BG_PHONE_BANKING)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
         theme.title = True
+        self._menu_config["theme"] = theme
 
-        self.char = character
-
-        super().__init__(client=client, height=height, width=width, **kwargs)
         self.add_menu_items(self.menu)
         self.reset_theme()

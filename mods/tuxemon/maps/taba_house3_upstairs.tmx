@@ -61,8 +61,7 @@
   </object>
   <object id="52" name="Create Client1" type="event" x="48" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc taba_house3_client1,3,4"/>
-    <property name="act2" value="char_wander taba_house3_client1"/>
+    <property name="act1" value="create_npc taba_house3_client1,3,4,wander"/>
     <property name="cond1" value="not char_exists taba_house3_client1"/>
    </properties>
   </object>
@@ -74,8 +73,7 @@
   </object>
   <object id="62" name="Create Client2" type="event" x="160" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc taba_house3_client2,10,4"/>
-    <property name="act2" value="char_wander taba_house3_client2"/>
+    <property name="act1" value="create_npc taba_house3_client2,10,4,wander"/>
     <property name="cond1" value="not char_exists taba_house3_client2"/>
    </properties>
   </object>

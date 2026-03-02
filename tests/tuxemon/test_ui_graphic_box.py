@@ -1,116 +1,141 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
-
 import pygame
+import pytest
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon.ui.graphic_box import GraphicBox, TileLayout
+from tuxemon.ui.graphic_box import GraphicBox
 
 
-class TestTileLayout(unittest.TestCase):
-
-    def test_init(self):
-        image = Surface((9, 9))
-        layout = TileLayout(image)
-        self.assertEqual(layout.grid_size, 3)
-        self.assertIsInstance(layout.tiles, dict)
-
-    def test_init_with_custom_grid_size(self):
-        image = Surface((12, 12))
-        layout = TileLayout(image, grid_size=4)
-        self.assertEqual(layout.grid_size, 4)
-        self.assertIsInstance(layout.tiles, dict)
-
-    def test_extract_tiles(self):
-        image = Surface((9, 9))
-        layout = TileLayout(image)
-        self.assertEqual(len(layout.tiles), 9)
-
-    def test_init_with_custom_grid_size(self):
-        image = Surface((12, 12))
-        layout = TileLayout(image, grid_size=3)
-        self.assertEqual(layout.grid_size, 3)
-
-    def test_extract_tiles_invalid_image_size(self):
-        image = Surface((10, 9))
-        with self.assertRaises(ValueError):
-            TileLayout(image)
-
-    def test_extract_tiles_with_custom_grid_size(self):
-        image = Surface((12, 12))
-        layout = TileLayout(image, grid_size=3)
-        self.assertEqual(len(layout.tiles), 9)
-
-    def test_extract_tiles_empty_image(self):
-        image = Surface((0, 0))
-        with self.assertRaises(ValueError):
-            TileLayout(image)
-
-    def test_extract_tiles_image_with_zero_grid_size(self):
-        image = Surface((9, 9))
-        with self.assertRaises(ValueError):
-            TileLayout(image, grid_size=0)
+@pytest.fixture(scope="session", autouse=True)
+def pygame_init():
+    pygame.init()
+    yield
+    pygame.quit()
 
 
-class TestGraphicBox(unittest.TestCase):
+@pytest.fixture
+def surface():
+    return pygame.display.set_mode((800, 600))
 
-    @classmethod
-    def setUpClass(cls):
-        pygame.init()
 
-    @classmethod
-    def tearDownClass(cls):
-        pygame.quit()
+def test_graphicbox_init_defaults():
+    box = GraphicBox()
+    assert box._background is None
+    assert box._color is None
+    assert box._fill_tiles is False
+    assert box._tiles == {}
+    assert box._tile_size == (0, 0)
 
-    def setUp(self):
-        self.surface = pygame.display.set_mode((800, 600))
 
-    def test_init(self):
-        box = GraphicBox()
-        self.assertIsNone(box._background)
-        self.assertIsNone(box._color)
-        self.assertFalse(box._fill_tiles)
-        self.assertEqual(box._tiles, {})
-        self.assertEqual(box._tile_size, (0, 0))
+def test_graphicbox_set_border_valid():
+    img = Surface((12, 12))  # divisible by 3
+    box = GraphicBox()
+    box._set_border(img)
+    assert box._tile_size == (4, 4)
+    assert len(box._tiles) == 9
 
-    def test_set_border(self):
-        image = Surface((12, 12))
-        box = GraphicBox()
-        box._set_border(image)
-        self.assertEqual(box._tile_size, (4, 4))
 
-    def test_set_border_invalid_size(self):
-        image = Surface((10, 12))
-        box = GraphicBox()
-        with self.assertRaises(ValueError):
-            box._set_border(image)
+def test_graphicbox_set_border_invalid_size():
+    img = Surface((10, 12))  # not divisible by 3
+    box = GraphicBox()
+    with pytest.raises(ValueError):
+        box._set_border(img)
 
-    def test_calc_inner_rect(self):
-        box = GraphicBox()
-        rect = Rect(0, 0, 100, 100)
-        inner_rect = box.calc_inner_rect(rect)
-        self.assertEqual(inner_rect, rect)
 
-        box._tiles = [Surface((10, 10))]
-        box._tile_size = (10, 10)
-        inner_rect = box.calc_inner_rect(rect)
-        self.assertEqual(inner_rect, Rect(10, 10, 80, 80))
+def test_graphicbox_rejects_non_3x3_border():
+    img = Surface((40, 40))  # 40 % 3 != 0
+    with pytest.raises(ValueError):
+        GraphicBox(border=img)
 
-    def test_draw(self):
-        box = GraphicBox()
-        rect = Rect(0, 0, 100, 100)
-        box._draw(self.surface, rect)
 
-        box._background = Surface((100, 100))
-        box._draw(self.surface, rect)
+def test_graphicbox_border_tile_size():
+    img = Surface((30, 30))
+    box = GraphicBox(border=img)
+    assert box._tile_size == (10, 10)
 
-        box._color = (255, 0, 0)
-        box._draw(self.surface, rect)
 
-    def test_update_image(self):
-        box = GraphicBox()
-        box._rect = Rect(0, 0, 100, 100)
+def test_graphicbox_calc_inner_rect_no_tiles():
+    box = GraphicBox()
+    rect = Rect(0, 0, 100, 100)
+    assert box.calc_inner_rect(rect) == rect
+
+
+def test_graphicbox_calc_inner_rect_with_tiles():
+    box = GraphicBox()
+    box._tiles = {"c": Surface((10, 10))}
+    box._tile_size = (10, 10)
+
+    rect = Rect(0, 0, 100, 100)
+    inner = box.calc_inner_rect(rect)
+    assert inner == Rect(10, 10, 80, 80)
+
+
+def test_graphicbox_draw_no_background_or_color(surface):
+    box = GraphicBox()
+    rect = Rect(0, 0, 100, 100)
+    box._draw(surface, rect)  # should not crash
+
+
+def test_graphicbox_draw_with_background(surface):
+    box = GraphicBox()
+    box._background = Surface((100, 100))
+    rect = Rect(0, 0, 100, 100)
+    box._draw(surface, rect)
+
+
+def test_graphicbox_draw_with_color(surface):
+    box = GraphicBox()
+    box._color = (255, 0, 0)
+    rect = Rect(0, 0, 100, 100)
+    box._draw(surface, rect)
+
+
+def test_graphicbox_update_image():
+    box = GraphicBox()
+    box._rect = Rect(0, 0, 100, 100)
+    box.update_image()
+    assert box.image is not None
+
+
+def test_tiles_are_independent_copies():
+    img = Surface((30, 30))
+    img.fill((10, 10, 10))
+    box = GraphicBox(border=img)
+
+    # Mutate original
+    img.fill((200, 0, 0))
+
+    # Tiles should NOT change
+    assert box._tiles["c"].get_at((0, 0)) == (10, 10, 10, 255)
+
+
+def test_border_clipping_no_crash_and_no_overlap(surface):
+    img = Surface((30, 30))
+    img.fill((255, 255, 255))
+    box = GraphicBox(border=img)
+    rect = Rect(0, 0, 37, 37)  # not divisible by tile size
+    box._draw(surface, rect)  # should not crash
+
+
+def test_corner_tiles_positions(surface):
+    img = Surface((30, 30))
+    box = GraphicBox(border=img)
+    rect = Rect(0, 0, 30, 30)
+
+    # Draw into a fresh surface
+    surf = Surface(rect.size)
+    box._draw(surf, rect)
+
+    # Corners must be drawn exactly at these coords
+    assert surf.get_at((0, 0)) is not None
+    assert surf.get_at((29, 0)) is not None
+    assert surf.get_at((0, 29)) is not None
+    assert surf.get_at((29, 29)) is not None
+
+
+def test_update_image_requires_rect():
+    box = GraphicBox()
+    with pytest.raises(RuntimeError):
         box.update_image()
-        self.assertIsNotNone(box.image)

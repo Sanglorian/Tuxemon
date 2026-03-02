@@ -1,272 +1,299 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
 from unittest.mock import MagicMock
 
+import pytest
 from pygame.rect import Rect
 
 from tuxemon.ui.combat_hud import CombatLayoutManager, MonsterUI, Side
 
 
-class TestCombatLayoutManager(unittest.TestCase):
-    def setUp(self):
-        self.npc1 = MagicMock()
-        self.npc1.name = "NPC1"
-        self.npc1.is_player = False
+@pytest.fixture
+def npc1():
+    npc = MagicMock()
+    npc.name = "NPC1"
+    npc.is_player = False
+    return npc
 
-        self.npc2 = MagicMock()
-        self.npc2.name = "NPC2"
-        self.npc2.is_player = False
 
-        self.player_npc = MagicMock()
-        self.player_npc.name = "Player"
-        self.player_npc.is_player = True
+@pytest.fixture
+def npc2():
+    npc = MagicMock()
+    npc.name = "NPC2"
+    npc.is_player = False
+    return npc
 
-        self.monster1 = MagicMock()
-        self.monster1.name = "Monster1"
 
-        self.monster2 = MagicMock()
-        self.monster2.name = "Monster2"
+@pytest.fixture
+def player_npc():
+    npc = MagicMock()
+    npc.name = "Player"
+    npc.is_player = True
+    return npc
 
-        self.layouts = {
-            self.npc1: {
-                "home": [Rect(0, 0, 10, 10)],
-                "monster_box_home": [Rect(5, 5, 10, 10)],
-                "home0": [Rect(0, 0, 10, 10)],
-                "monster_box_home0": [Rect(5, 5, 10, 10)],
-                "home1": [Rect(10, 0, 10, 10)],
-                "monster_box_home1": [Rect(15, 5, 10, 10)],
-            },
-            self.npc2: {
-                "home": [Rect(20, 0, 10, 10)],
-                "monster_box_home": [Rect(25, 5, 10, 10)],
-                "home0": [Rect(20, 0, 10, 10)],
-                "monster_box_home0": [Rect(25, 5, 10, 10)],
-                "home1": [Rect(30, 0, 10, 10)],
-                "monster_box_home1": [Rect(35, 5, 10, 10)],
-            },
-            self.player_npc: {
-                "home": [Rect(40, 0, 10, 10)],
-                "monster_box_home": [Rect(45, 5, 10, 10)],
-                "home0": [Rect(40, 0, 10, 10)],
-                "monster_box_home0": [Rect(45, 5, 10, 10)],
-                "home1": [Rect(50, 0, 10, 10)],
-                "monster_box_home1": [Rect(55, 5, 10, 10)],
-            },
-        }
 
-        self.manager = CombatLayoutManager(self.layouts)
+@pytest.fixture
+def monster1():
+    m = MagicMock()
+    m.name = "Monster1"
+    return m
 
-    def test_assign_player_vs_npc(self):
-        self.manager.assign(
-            nr_players=1,
-            npc=self.player_npc,
-            monster=self.monster1,
-            is_double=False,
-        )
-        ui = self.manager._monster_ui[self.monster1]
-        self.assertEqual(ui.slot_index, 1)
-        self.assertEqual(ui.layout_key, "home")
-        self.assertEqual(
-            self.manager._positions[self.monster1][0], Side.PLAYER
-        )
 
-    def test_assign_npc_vs_npc(self):
-        self.manager.assign(
-            nr_players=2, npc=self.npc1, monster=self.monster1, is_double=False
-        )
-        self.manager.assign(
-            nr_players=2, npc=self.npc2, monster=self.monster2, is_double=False
-        )
+@pytest.fixture
+def monster2():
+    m = MagicMock()
+    m.name = "Monster2"
+    return m
 
-        ui1 = self.manager._monster_ui[self.monster1]
-        ui2 = self.manager._monster_ui[self.monster2]
 
-        self.assertEqual(ui1.slot_index, 1)
-        self.assertEqual(ui2.slot_index, 0)
+@pytest.fixture
+def layouts(npc1, npc2, player_npc):
+    return {
+        npc1: {
+            "home": [Rect(0, 0, 10, 10)],
+            "monster_box_home": [Rect(5, 5, 10, 10)],
+            "home0": [Rect(0, 0, 10, 10)],
+            "monster_box_home0": [Rect(5, 5, 10, 10)],
+            "home1": [Rect(10, 0, 10, 10)],
+            "monster_box_home1": [Rect(15, 5, 10, 10)],
+        },
+        npc2: {
+            "home": [Rect(20, 0, 10, 10)],
+            "monster_box_home": [Rect(25, 5, 10, 10)],
+            "home0": [Rect(20, 0, 10, 10)],
+            "monster_box_home0": [Rect(25, 5, 10, 10)],
+            "home1": [Rect(30, 0, 10, 10)],
+            "monster_box_home1": [Rect(35, 5, 10, 10)],
+        },
+        player_npc: {
+            "home": [Rect(40, 0, 10, 10)],
+            "monster_box_home": [Rect(45, 5, 10, 10)],
+            "home0": [Rect(40, 0, 10, 10)],
+            "monster_box_home0": [Rect(45, 5, 10, 10)],
+            "home1": [Rect(50, 0, 10, 10)],
+            "monster_box_home1": [Rect(55, 5, 10, 10)],
+        },
+    }
 
-        self.assertEqual(
-            self.manager._positions[self.monster1][0], Side.PLAYER
-        )
-        self.assertEqual(
-            self.manager._positions[self.monster2][0], Side.OPPONENT
-        )
 
-    def test_get_open_slot(self):
-        slot = self.manager.get_open_slot(self.player_npc)
-        self.assertEqual(slot, 0)
+@pytest.fixture
+def manager(layouts):
+    return CombatLayoutManager(layouts)
 
-        self.manager._layout_keys[(self.player_npc, self.monster1)] = "home0"
-        slot = self.manager.get_open_slot(self.player_npc)
-        self.assertEqual(slot, 1)
 
-    def test_get_rect_valid(self):
-        rect = self.manager.get_rect(self.player_npc, "home")
-        self.assertEqual(rect.topleft, (40, 0))
+def test_assign_player_vs_npc(manager, player_npc, monster1):
+    manager.assign(
+        nr_players=1,
+        npc=player_npc,
+        monster=monster1,
+        is_double=False,
+    )
+    ui = manager._monster_ui[monster1]
+    assert ui.slot_index == 1
+    assert ui.layout_key == "home"
+    assert manager._positions[monster1][0] == Side.PLAYER
 
-    def test_get_rect_missing_key(self):
-        with self.assertRaises(ValueError):
-            self.manager.get_rect(self.player_npc, "invalid_key")
 
-    def test_assign_hud_and_get_hud(self):
-        sprite = MagicMock()
-        self.manager.assign_hud(self.monster1, sprite)
-        self.assertIs(self.manager.get_hud(self.monster1), sprite)
+def test_assign_npc_vs_npc(manager, npc1, npc2, monster1, monster2):
+    manager.assign(nr_players=2, npc=npc1, monster=monster1, is_double=False)
+    manager.assign(nr_players=2, npc=npc2, monster=monster2, is_double=False)
 
-    def test_delete_hud(self):
-        sprite = MagicMock()
-        sprite.kill = MagicMock()
-        self.manager.assign_hud(self.monster1, sprite)
-        self.manager.delete_hud(self.monster1)
-        sprite.kill.assert_called_once()
-        self.assertIsNone(self.manager.get_hud(self.monster1))
+    ui1 = manager._monster_ui[monster1]
+    ui2 = manager._monster_ui[monster2]
 
-    def test_unassign(self):
-        sprite = MagicMock()
-        sprite.kill = MagicMock()
-        icon = MagicMock()
-        icon.kill = MagicMock()
+    assert ui1.slot_index == 1
+    assert ui2.slot_index == 0
 
-        self.manager._monster_ui[self.monster1] = MonsterUI(
-            slot_index=0,
-            layout_key="home",
-            hud_sprite=sprite,
-            status_icons=[icon],
-            feet_pos=(0, 0),
-        )
-        self.manager._positions[self.monster1] = (Side.PLAYER, 0)
-        self.manager._layout_keys[(self.player_npc, self.monster1)] = "home"
+    assert manager._positions[monster1][0] == Side.PLAYER
+    assert manager._positions[monster2][0] == Side.OPPONENT
 
-        self.manager.unassign(self.player_npc, self.monster1)
 
-        sprite.kill.assert_called_once()
-        icon.kill.assert_called_once()
-        self.assertNotIn(self.monster1, self.manager._monster_ui)
-        self.assertNotIn(self.monster1, self.manager._positions)
-        self.assertNotIn(
-            (self.player_npc, self.monster1), self.manager._layout_keys
-        )
+def test_get_open_slot(manager, player_npc, monster1):
+    slot = manager.get_open_slot(player_npc)
+    assert slot == 0
 
-    def test_reassign_monster_skips(self):
-        self.manager.assign(
-            nr_players=1,
-            npc=self.player_npc,
-            monster=self.monster1,
-            is_double=False,
-        )
-        original_ui = self.manager._monster_ui[self.monster1]
+    manager._layout_keys[(player_npc, monster1)] = "home0"
+    slot = manager.get_open_slot(player_npc)
+    assert slot == 1
 
-        self.manager.assign(
-            nr_players=1,
-            npc=self.player_npc,
-            monster=self.monster1,
-            is_double=False,
-        )
-        reassigned_ui = self.manager._monster_ui[self.monster1]
 
-        self.assertIs(original_ui, reassigned_ui)
+def test_get_rect_valid(manager, player_npc):
+    rect = manager.get_rect(player_npc, "home")
+    assert rect.topleft == (40, 0)
 
-    def test_get_index_default(self):
-        index = self.manager.get_index(self.monster1)
-        self.assertEqual(index, 0)
 
-    def test_get_key_default(self):
-        key = self.manager.get_key(self.player_npc, self.monster1)
-        self.assertEqual(key, "home")
+def test_get_rect_missing_key(manager, player_npc):
+    with pytest.raises(ValueError):
+        manager.get_rect(player_npc, "invalid_key")
 
-    def test_get_feet_position(self):
-        self.manager.assign(
-            nr_players=1,
-            npc=self.player_npc,
-            monster=self.monster1,
-            is_double=False,
-        )
-        feet = self.manager.get_feet_position(self.player_npc, self.monster1)
-        self.assertEqual(feet, (45, 5))
 
-    def test_unassign_twice_safe(self):
-        self.manager.assign(
-            nr_players=1,
-            npc=self.player_npc,
-            monster=self.monster1,
-            is_double=False,
-        )
-        self.manager.unassign(self.player_npc, self.monster1)
-        self.manager.unassign(self.player_npc, self.monster1)
+def test_assign_hud_and_get_hud(manager, monster1):
+    sprite = MagicMock()
+    manager.assign_hud(monster1, sprite)
+    assert manager.get_hud(monster1) is sprite
 
-    def test_multiple_monsters_same_npc(self):
-        self.manager.assign(
-            nr_players=1,
-            npc=self.player_npc,
-            monster=self.monster1,
-            is_double=False,
-        )
-        self.manager.assign(
-            nr_players=1,
-            npc=self.player_npc,
-            monster=self.monster2,
-            is_double=False,
-        )
 
-        index1 = self.manager.get_index(self.monster1)
-        index2 = self.manager.get_index(self.monster2)
+def test_delete_hud(manager, monster1):
+    sprite = MagicMock()
+    sprite.kill = MagicMock()
+    manager.assign_hud(monster1, sprite)
+    manager.delete_hud(monster1)
+    sprite.kill.assert_called_once()
+    assert manager.get_hud(monster1) is None
 
-        self.assertEqual(index1, 1)
-        self.assertEqual(index2, 1)
 
-    def test_double_battle_layout_key(self):
-        self.manager.assign(
-            nr_players=2,
-            npc=self.player_npc,
-            monster=self.monster1,
-            is_double=True,
-        )
-        key = self.manager.get_key(self.player_npc, self.monster1)
-        self.assertIn("home", key)
+def test_unassign(manager, player_npc, monster1):
+    sprite = MagicMock()
+    sprite.kill = MagicMock()
+    icon = MagicMock()
+    icon.kill = MagicMock()
 
-    def test_double_battle_slot_assignment(self):
-        self.manager.assign(
-            nr_players=2,
-            npc=self.player_npc,
-            monster=self.monster1,
-            is_double=True,
-        )
-        self.manager.assign(
-            nr_players=2,
-            npc=self.player_npc,
-            monster=self.monster2,
-            is_double=True,
-        )
+    manager._monster_ui[monster1] = MonsterUI(
+        slot_index=0,
+        layout_key="home",
+        hud_sprite=sprite,
+        status_icons=[icon],
+        feet_pos=(0, 0),
+    )
+    manager._positions[monster1] = (Side.PLAYER, 0)
+    manager._layout_keys[(player_npc, monster1)] = "home"
 
-        ui1 = self.manager._monster_ui[self.monster1]
-        ui2 = self.manager._monster_ui[self.monster2]
+    manager.unassign(player_npc, monster1)
 
-        self.assertIn(ui1.layout_key, ["home0", "home1"])
-        self.assertIn(ui2.layout_key, ["home0", "home1"])
-        self.assertNotEqual(ui1.slot_index, ui2.slot_index)
+    sprite.kill.assert_called_once()
+    icon.kill.assert_called_once()
+    assert monster1 not in manager._monster_ui
+    assert monster1 not in manager._positions
+    assert (player_npc, monster1) not in manager._layout_keys
 
-    def test_double_battle_feet_position(self):
-        self.manager.assign(
-            nr_players=2,
-            npc=self.player_npc,
-            monster=self.monster1,
-            is_double=True,
-        )
-        feet = self.manager.get_feet_position(self.player_npc, self.monster1)
 
-        self.assertIn(feet, [(45, 5), (55, 5)])
+def test_reassign_monster_skips(manager, player_npc, monster1):
+    manager.assign(
+        nr_players=1,
+        npc=player_npc,
+        monster=monster1,
+        is_double=False,
+    )
+    original_ui = manager._monster_ui[monster1]
 
-    def test_double_battle_npc_vs_npc(self):
-        self.manager.assign(
-            nr_players=2, npc=self.npc1, monster=self.monster1, is_double=True
-        )
-        self.manager.assign(
-            nr_players=2, npc=self.npc2, monster=self.monster2, is_double=True
-        )
+    manager.assign(
+        nr_players=1,
+        npc=player_npc,
+        monster=monster1,
+        is_double=False,
+    )
+    reassigned_ui = manager._monster_ui[monster1]
 
-        ui1 = self.manager._monster_ui[self.monster1]
-        ui2 = self.manager._monster_ui[self.monster2]
+    assert original_ui is reassigned_ui
 
-        self.assertIn(ui1.layout_key, ["home0", "home1"])
-        self.assertIn(ui2.layout_key, ["home0", "home1"])
-        self.assertNotEqual(ui1.slot_index, ui2.slot_index)
+
+def test_get_index_default(manager, monster1):
+    index = manager.get_index(monster1)
+    assert index == 0
+
+
+def test_get_key_default(manager, player_npc, monster1):
+    key = manager.get_key(player_npc, monster1)
+    assert key == "home"
+
+
+def test_get_feet_position(manager, player_npc, monster1):
+    manager.assign(
+        nr_players=1,
+        npc=player_npc,
+        monster=monster1,
+        is_double=False,
+    )
+    feet = manager.get_feet_position(player_npc, monster1)
+    assert feet == (45, 5)
+
+
+def test_unassign_twice_safe(manager, player_npc, monster1):
+    manager.assign(
+        nr_players=1,
+        npc=player_npc,
+        monster=monster1,
+        is_double=False,
+    )
+    manager.unassign(player_npc, monster1)
+    manager.unassign(player_npc, monster1)
+
+
+def test_multiple_monsters_same_npc(manager, player_npc, monster1, monster2):
+    manager.assign(
+        nr_players=1,
+        npc=player_npc,
+        monster=monster1,
+        is_double=False,
+    )
+    manager.assign(
+        nr_players=1,
+        npc=player_npc,
+        monster=monster2,
+        is_double=False,
+    )
+
+    index1 = manager.get_index(monster1)
+    index2 = manager.get_index(monster2)
+
+    assert index1 == 1
+    assert index2 == 1
+
+
+def test_double_battle_layout_key(manager, player_npc, monster1):
+    manager.assign(
+        nr_players=2,
+        npc=player_npc,
+        monster=monster1,
+        is_double=True,
+    )
+    key = manager.get_key(player_npc, monster1)
+    assert "home" in key
+
+
+def test_double_battle_slot_assignment(
+    manager, player_npc, monster1, monster2
+):
+    manager.assign(
+        nr_players=2,
+        npc=player_npc,
+        monster=monster1,
+        is_double=True,
+    )
+    manager.assign(
+        nr_players=2,
+        npc=player_npc,
+        monster=monster2,
+        is_double=True,
+    )
+
+    ui1 = manager._monster_ui[monster1]
+    ui2 = manager._monster_ui[monster2]
+
+    assert ui1.layout_key in ["home0", "home1"]
+    assert ui2.layout_key in ["home0", "home1"]
+    assert ui1.slot_index != ui2.slot_index
+
+
+def test_double_battle_feet_position(manager, player_npc, monster1):
+    manager.assign(
+        nr_players=2,
+        npc=player_npc,
+        monster=monster1,
+        is_double=True,
+    )
+    feet = manager.get_feet_position(player_npc, monster1)
+
+    assert feet in [(45, 5), (55, 5)]
+
+
+def test_double_battle_npc_vs_npc(manager, npc1, npc2, monster1, monster2):
+    manager.assign(nr_players=2, npc=npc1, monster=monster1, is_double=True)
+    manager.assign(nr_players=2, npc=npc2, monster=monster2, is_double=True)
+
+    ui1 = manager._monster_ui[monster1]
+    ui2 = manager._monster_ui[monster2]
+
+    assert ui1.layout_key in ["home0", "home1"]
+    assert ui2.layout_key in ["home0", "home1"]
+    assert ui1.slot_index != ui2.slot_index

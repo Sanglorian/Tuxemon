@@ -200,8 +200,7 @@
   </object>
   <object id="542" name="Create Monk" type="event" x="80" y="112" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_cottontown_monk,5,7"/>
-    <property name="act2" value="char_wander spyder_cottontown_monk"/>
+    <property name="act1" value="create_npc spyder_cottontown_monk,5,7,wander"/>
     <property name="cond1" value="not char_exists spyder_cottontown_monk"/>
     <property name="cond2" value="not battle_outcome player,won,spyder_dragonscave_benden"/>
    </properties>

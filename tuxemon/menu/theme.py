@@ -21,7 +21,7 @@ from tuxemon.platform.const.graphics import (
     SCROLLBAR_SLIDER_COLOR,
     TRANSPARENT_COLOR,
 )
-from tuxemon.prepare import DISPLAY_CONTEXT
+from tuxemon.scaling import ScalingStrategy
 from tuxemon.tools import transform_resource_filename
 from tuxemon.user_config import CONFIG
 
@@ -73,14 +73,14 @@ class TuxemonArrowSelection(Selection):
         return self
 
 
-def get_theme() -> Theme:
+def get_theme(scaling: ScalingStrategy) -> Theme:
     """Get Tuxemon default theme."""
     global _theme
 
     if _theme is not None:
         return _theme
 
-    scale_factor = max(DISPLAY_CONTEXT.scaling.factor, 1)
+    scale_factor = max(scaling.scale_int(1), 1)
     tuxemon_border = BaseImage(
         image_path=transform_resource_filename(CONFIG.menu_border),
     ).scale(scale_factor, scale_factor, smooth=False)
@@ -110,8 +110,8 @@ def get_theme() -> Theme:
     )
 
     # Set common font sizes and colors as part of the theme definition
-    theme.widget_font_size = DISPLAY_CONTEXT.scaling.scale_int(FONT_SIZE)
-    theme.title_font_size = DISPLAY_CONTEXT.scaling.scale_int(FONT_SIZE_BIG)
+    theme.widget_font_size = scaling.scale_int(FONT_SIZE)
+    theme.title_font_size = scaling.scale_int(FONT_SIZE_BIG)
     theme.widget_font_color = FONT_COLOR
     theme.selection_color = FONT_COLOR
     theme.scrollbar_color = SCROLLBAR_COLOR

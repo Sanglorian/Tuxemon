@@ -22,7 +22,6 @@ from pygame.sprite import Sprite as PySprite
 from pygame.surface import Surface
 from pygame.transform import rotozoom, scale
 
-from tuxemon import graphics
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 from tuxemon.surfanim import SurfaceAnimation
@@ -428,6 +427,8 @@ class CaptureDeviceSprite(Sprite):
         return "alive"
 
     def update_image(self) -> None:
+        from tuxemon import graphics
+
         mapping = {
             "empty": graphics.load_and_scale(self.icon.icon_empty),
             "faint": graphics.load_and_scale(self.icon.icon_faint),
@@ -446,6 +447,8 @@ class CaptureDeviceSprite(Sprite):
 
     def animate_capture(self, animate: Callable[..., object]) -> None:
         """Fade in + slide up animation for the sprite."""
+        from tuxemon import graphics
+
         sprite = self.sprite
         sprite.image = graphics.convert_alpha_to_colorkey(sprite.image)
         sprite.image.set_alpha(0)
@@ -630,6 +633,56 @@ class RelativeGroup(MenuSpriteGroup[_MenuElement]):
         return dirty
 
 
+# Grid layout semantics (for horizontal orientation):
+#
+#   VisualSpriteList arranges items in column-major order.
+#
+#   Given:
+#       columns = C
+#       len(self) = N
+#       rows = ceil(N / C)
+#
+#   The logical LR (left→right) index layout is:
+#
+#       LR index:
+#           0   1   2   ... C-1
+#           C  C+1 C+2 ... 2C-1
+#           ...
+#
+#   Ragged grid example (N=8, C=3):
+#
+#       LR layout:
+#           0   1   2
+#           3   4   5
+#           6   7   _
+#
+#   TB (top→bottom) index enumerates items column by column:
+#
+#       TB layout:
+#           0   3   6
+#           1   4   7
+#           2   5   _
+#
+#   Movement rules:
+#       - LR movement changes the column (horizontal movement).
+#       - TB movement changes the row (vertical movement).
+#       - Ragged grids may have missing cells in the last row.
+#
+#   Rectangular mode:
+#       - The grid is treated as full rows × columns.
+#       - Virtual cells exist for movement but do not correspond to sprites.
+#       - Movement wraps through the full grid before mapping back to LR.
+#
+#   Vertical orientation:
+#       - LR/TB semantics are swapped.
+#       - Layout grows top→bottom first, then left→right.
+#
+# These rules ensure consistent cursor movement and layout across:
+#   - horizontal vs vertical orientation
+#   - ragged vs rectangular grids
+#   - arbitrary item counts
+
+
 class VisualSpriteList(RelativeGroup[_MenuElement]):
     """
     Sprite group which can be configured to arrange the children
@@ -637,7 +690,8 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
     """
 
     # default, and only implemented
-    orientation: Literal["horizontal"] = "horizontal"
+    orientation: Literal["horizontal", "vertical"] = "horizontal"
+    rectangular: bool = False
     expand = True  # True: fill all space of parent. False: more compact
     _2d_movement_dict: Final = {
         buttons.LEFT: ("lr", -1),
@@ -704,103 +758,192 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
         if not len(self):
             return
 
-        # max_width = 0
-        max_height = 0
-        for item in self.sprites():
-            # max_width = max(max_width, item.rect.width)
-            max_height = max(max_height, item.rect.height)
-
         self.update_rect_from_parent()
         width, height = self.rect.size
 
+        max_height = max(item.rect.height for item in self.sprites())
+        max_width = max(item.rect.width for item in self.sprites())
+
+        # Auto column/row calculation
         if self.max_width_per_column is not None:
-            self._columns = max(1, width // max(1, self.max_width_per_column))
+            if self.orientation == "horizontal":
+                self._columns = max(
+                    1, width // max(1, self.max_width_per_column)
+                )
+            else:
+                self._columns = max(
+                    1, height // max(1, self.max_width_per_column)
+                )
 
-        items_per_column = math.ceil(len(self) / self._columns)
+        layout = GridLayout(len(self), self.columns, self.rectangular)
+        items_per_column = layout.rows
 
-        if self.expand:
-            logger.debug("expanding menu...")
-            # fill available space
-            line_spacing = self.line_spacing or (height // items_per_column)
+        if self.line_spacing is not None:
+            line_spacing = self.line_spacing
         else:
-            line_spacing = int(max_height * 1.2)
+            # Original behavior
+            if self.expand:
+                line_spacing = (
+                    height // items_per_column
+                    if self.orientation == "horizontal"
+                    else width // items_per_column
+                )
+            else:
+                line_spacing = int(
+                    (
+                        max_height
+                        if self.orientation == "horizontal"
+                        else max_width
+                    )
+                    * 1.2
+                )
 
-        column_spacing = width // self._columns
+        column_spacing = (
+            width // self.columns
+            if self.orientation == "horizontal"
+            else height // self.columns
+        )
 
-        # TODO: pagination API
-
+        # Layout
         for index, item in enumerate(self.sprites()):
-            oy, ox = divmod(index, self._columns)
-            item.rect.topleft = ox * column_spacing, oy * line_spacing
+            row, col = divmod(index, self.columns)
+
+            if self.orientation == "horizontal":
+                item.rect.topleft = col * column_spacing, row * line_spacing
+            else:
+                item.rect.topleft = row * line_spacing, col * column_spacing
 
         self._needs_arrange = False
 
-    def _lr_to_tb_index(
-        self,
-        lr_index: int,
-        orientation: Literal["horizontal"],
-    ) -> int:
-        """Convert left/right index to top/bottom index."""
-        if orientation == "horizontal":
-            rows, remainder = divmod(len(self), self.columns)
-            row, col = divmod(lr_index, self.columns)
+    def _lr_to_tb_index(self, lr_index: int, orientation: str) -> int:
+        layout = GridLayout(len(self), self.columns, self.rectangular)
+        return layout.lr_to_tb(lr_index, orientation)
 
-            n_complete_columns = col if col < remainder else remainder
-            n_incomplete_columns = 0 if col < remainder else col - remainder
-            return (
-                n_complete_columns * (rows + 1)
-                + n_incomplete_columns * rows
-                + row
-            )
-        else:
-            raise NotImplementedError
-
-    def _tb_to_lr_index(
-        self,
-        tb_index: int,
-        orientation: Literal["horizontal"],
-    ) -> int:
-        """Convert top/bottom index to left/right index."""
-        if orientation == "horizontal":
-            rows, remainder = divmod(len(self), self.columns)
-
-            if tb_index < remainder * (rows + 1):
-                col, row = divmod(tb_index, rows + 1)
-            else:
-                col, row = divmod(tb_index - remainder * (rows + 1), rows)
-                col += remainder
-
-            return row * self.columns + col
-        else:
-            raise NotImplementedError
+    def _tb_to_lr_index(self, tb_index: int, orientation: str) -> int:
+        layout = GridLayout(len(self), self.columns, self.rectangular)
+        return layout.tb_to_lr(tb_index, orientation)
 
     def _allowed_input(self) -> Container[int]:
         return set(self._2d_movement_dict)
 
     def _advance_input(self, index: int, button: int) -> int:
-        """Advance the index given the input."""
-
-        # Layout (horizontal):
-        #        0 1 2 3 4 ... columns-1
-        #      0 X X X X X ... X
-        #      1 X X X X X ... X
-        #      2 X X X X X ... X
-        #    ... . . . . . ... .
-        # rows-1 X X X X X ... X
-        #   rows X X _ _ _ ... _
-        #          ^
-        #          |
-        #       remainder=2
-
         index_type, incr = self._2d_movement_dict[button]
 
-        if index_type == "tb":
-            index = self._lr_to_tb_index(index, self.orientation)
+        # Orientation-aware remapping
+        if self.orientation == "vertical":
+            index_type = "tb" if index_type == "lr" else "lr"
 
-        index += incr
-        index %= len(self)
+        layout = GridLayout(len(self), self.columns, self.rectangular)
+
+        # Rectangular mode: direct row/col math
+        if self.rectangular:
+            rows = layout.rows
+            cols = self.columns
+            row, col = divmod(index, cols)
+
+            if index_type == "tb":
+                row = (row + incr) % rows
+            else:
+                col = (col + incr) % cols
+
+            new_index = row * cols + col
+            return new_index % len(self)
+
+        # Ragged mode: use TB/LR conversion
+        if index_type == "tb":
+            index = layout.lr_to_tb(index, self.orientation)
+
+        index = (index + incr) % len(self)
 
         if index_type == "tb":
-            index = self._tb_to_lr_index(index, self.orientation)
+            index = layout.tb_to_lr(index, self.orientation)
 
         return index
+
+
+class GridLayout:
+    """
+    Computes grid geometry for VisualSpriteList.
+
+    Handles:
+    - ragged grids
+    - rectangular grids
+    - horizontal / vertical orientation
+
+    This class is intentionally stateless and pure: it performs
+    only mathematical transformations and never touches sprites.
+    """
+
+    def __init__(self, count: int, columns: int, rectangular: bool):
+        self.count = count
+        self.columns = max(1, columns)
+        self.rectangular = rectangular
+
+        if rectangular:
+            # Full rectangular grid
+            self.rows = math.ceil(count / self.columns)
+        else:
+            # Ragged grid
+            self.rows, self.remainder = divmod(count, self.columns)
+
+    # ------------------------------------------------------------
+    # LR → TB conversion
+    # ------------------------------------------------------------
+    def lr_to_tb(self, lr_index: int, orientation: str) -> int:
+        if self.rectangular:
+            row, col = divmod(lr_index, self.columns)
+            if orientation == "horizontal":
+                return col * self.rows + row
+            else:
+                return row * self.columns + col
+
+        # Ragged grid
+        row, col = divmod(lr_index, self.columns)
+
+        if orientation == "horizontal":
+            n_complete = min(col, self.remainder)
+            n_incomplete = max(0, col - self.remainder)
+            return (
+                n_complete * (self.rows + 1) + n_incomplete * self.rows + row
+            )
+        else:
+            n_complete = min(row, self.remainder)
+            n_incomplete = max(0, row - self.remainder)
+            return (
+                n_complete * (self.rows + 1) + n_incomplete * self.rows + col
+            )
+
+    # ------------------------------------------------------------
+    # TB → LR conversion
+    # ------------------------------------------------------------
+    def tb_to_lr(self, tb_index: int, orientation: str) -> int:
+        if self.rectangular:
+            if orientation == "horizontal":
+                col, row = divmod(tb_index, self.rows)
+                return row * self.columns + col
+            else:
+                row, col = divmod(tb_index, self.columns)
+                return row * self.columns + col
+
+        # Ragged grid
+        if orientation == "horizontal":
+            if tb_index < self.remainder * (self.rows + 1):
+                col, row = divmod(tb_index, self.rows + 1)
+            else:
+                col, row = divmod(
+                    tb_index - self.remainder * (self.rows + 1),
+                    self.rows,
+                )
+                col += self.remainder
+            return row * self.columns + col
+
+        else:
+            if tb_index < self.remainder * (self.rows + 1):
+                row, col = divmod(tb_index, self.rows + 1)
+            else:
+                row, col = divmod(
+                    tb_index - self.remainder * (self.rows + 1),
+                    self.rows,
+                )
+                row += self.remainder
+            return row * self.columns + col

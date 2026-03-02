@@ -20,7 +20,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu, PopUpMenu
 from tuxemon.monster.monster import Monster
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.sprite import Sprite
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.states.monster_menu import MonsterMenuState
@@ -399,7 +398,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     "combat_dialog", message="", dialog_speed="max"
                 )
 
-                screen_w, screen_h = SCREEN_SIZE
+                screen_w, screen_h = self.client.context.resolution
 
                 # --- Clear old sprites if they exist ---
                 if self.range_icon_sprite:
@@ -679,9 +678,8 @@ class CombatTargetMenuState(Menu[Monster]):
         rect.bottomright = rect_screen.w, rect_screen.h
 
         self.window = GraphicBox(
-            load_and_scale(self.borders_filename),
-            None,
-            self.background_color,
+            border=load_and_scale(self.borders_filename),
+            color=self.background_color,
         )
         self.window.rect = rect
         self.sprites.add(self.window, layer=100)
@@ -695,9 +693,7 @@ class CombatTargetMenuState(Menu[Monster]):
         self.sprites.add(self.text_area, layer=100)
 
         self.surface = Surface(self.window.rect.size, SRCALPHA)
-        self.border = GraphicBox(
-            load_and_scale(self.borders_filename), None, None
-        )
+        self.border = GraphicBox(border=load_and_scale(self.borders_filename))
 
     def determine_target(self) -> None:
         """Finds the best target based on technique settings."""

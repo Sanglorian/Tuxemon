@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0
 
 from pathlib import Path
+
 from PIL import Image
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -9,8 +10,8 @@ SPRITE_DIR = SCRIPT_DIR.parent / "mods" / "tuxemon" / "gfx" / "sprites" / "battl
 
 # Expected filenames per monster base
 FILE_MAP = {
-    "front":  "-front.png",
-    "back":   "-back.png",
+    "front": "-front.png",
+    "back": "-back.png",
     "menu01": "-menu01.png",
     "menu02": "-menu02.png",
 }
@@ -24,7 +25,7 @@ def collect_bases(folder: Path) -> list[str]:
     """
     bases = []
     for p in folder.glob("*-front.png"):
-        base = p.name[:-len("-front.png")]
+        base = p.name[: -len("-front.png")]
         bases.append(base)
     return sorted(set(bases))
 
@@ -39,8 +40,7 @@ def build_sheet(base: str, folder: Path) -> bool:
 
     # Validate required files
     required_paths = {
-        key: folder / f"{base}{suffix}"
-        for key, suffix in FILE_MAP.items()
+        key: folder / f"{base}{suffix}" for key, suffix in FILE_MAP.items()
     }
 
     missing = [p.name for p in required_paths.values() if not p.exists()]

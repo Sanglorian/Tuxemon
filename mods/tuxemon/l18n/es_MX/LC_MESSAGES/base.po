@@ -954,14 +954,11 @@ msgstr "Caballero II"
 msgid "liela"
 msgstr "Liela"
 
-msgid "maple_girl"
+msgid "maple_wren"
 msgstr "Maple"
 
 msgid "misa"
 msgstr "Misa"
-
-msgid "npc_wife"
-msgstr "Esposa NPC"
 
 msgid "professor"
 msgstr "Profesor"

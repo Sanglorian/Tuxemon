@@ -5,6 +5,8 @@ from unittest.mock import Mock
 import pygame
 import pytest
 
+import tuxemon.user_config
+from tuxemon.config import PlayerConfig, TuxemonConfig
 from tuxemon.map.view import EntityFacing, SpriteRenderer
 from tuxemon.prepare import DISPLAY_CONTEXT
 from tuxemon.user_config import CONFIG
@@ -141,8 +143,10 @@ def test_tall_sprite_offset(monkeypatch):
         lambda *args, **kwargs: frames,
     )
 
-    monkeypatch.setattr("tuxemon.user_config.CONFIG.player_walkrate", 1.0)
+    fake = TuxemonConfig(config_path=None)
+    fake.config_model.player = PlayerConfig(player_walkrate=1.0)
 
+    monkeypatch.setattr(tuxemon.user_config, "CONFIG", fake)
     renderer = SpriteRenderer(npc)
     renderer.load_sprites(npc.template)
 
@@ -167,7 +171,10 @@ def test_frame_duration():
 
 
 def test_get_animation_frame_updates_rate(monkeypatch):
-    monkeypatch.setattr("tuxemon.user_config.CONFIG.player_walkrate", 1.0)
+    fake = TuxemonConfig(config_path=None)
+    fake.config_model.player = PlayerConfig(player_walkrate=1.0)
+
+    monkeypatch.setattr(tuxemon.user_config, "CONFIG", fake)
 
     npc = Mock(moverate=2.0)
     npc.template = Mock(
@@ -190,7 +197,9 @@ def test_get_animation_frame_updates_rate(monkeypatch):
 
 
 def test_missing_animation_raises(monkeypatch):
-    monkeypatch.setattr("tuxemon.user_config.CONFIG.player_walkrate", 1.0)
+    fake = TuxemonConfig(config_path=None)
+    fake.config_model.player = PlayerConfig(player_walkrate=1.0)
+    monkeypatch.setattr(tuxemon.user_config, "CONFIG", fake)
     npc = Mock(moverate=1.0)
     npc.template = Mock(
         frame_divisor=3,

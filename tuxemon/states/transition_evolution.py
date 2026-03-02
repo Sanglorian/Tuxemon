@@ -14,7 +14,6 @@ from tuxemon.locale.locale import T
 from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BLACK_COLOR, WHITE_COLOR
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 from tuxemon.tools import open_dialog
 
@@ -81,12 +80,12 @@ class EvolutionTransition(State):
             4: self.evolved_sprite,
         }
 
-        screen_width, screen_height = SCREEN_SIZE
+        screen_width, screen_height = self.client.context.resolution
         sprite_width, sprite_height = self.original_sprite.image.get_size()
         self.x = (screen_width - sprite_width) // 2
         self.y = (screen_height - sprite_height) // 2
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         current_time = pygame.time.get_ticks()
         self.elapsed_time = (current_time - self.transition_start_time) / 1000
         self.percentage = (self.elapsed_time / self.total_seconds) * 100

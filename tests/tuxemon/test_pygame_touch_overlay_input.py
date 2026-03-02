@@ -9,7 +9,7 @@ from pygame.event import Event
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon import graphics, prepare
+from tuxemon import graphics
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 from tuxemon.platform.platform_pygame.events import (
@@ -30,7 +30,6 @@ class ButtonRectMapping:
 def pygame_setup_teardown():
     pg.init()
     pg.display.set_mode((0, 0))
-    prepare.SCREEN_SIZE = (800, 600)
 
     # Mock graphics.load_and_scale
     graphics.load_and_scale = lambda filename: Surface((50, 50))
@@ -38,12 +37,11 @@ def pygame_setup_teardown():
     yield
 
     pg.quit()
-    prepare.SCREEN_SIZE = (0, 0)
 
 
 @pytest.fixture
 def touch_input() -> PygameTouchOverlayInput:
-    ti = PygameTouchOverlayInput(128)
+    ti = PygameTouchOverlayInput(128, (800, 600))
     for btn in [
         buttons.UP,
         buttons.DOWN,
@@ -57,11 +55,13 @@ def touch_input() -> PygameTouchOverlayInput:
     return ti
 
 
-def normalized_pos(rect: Rect) -> tuple[float, float]:
+def normalized_pos(
+    rect: Rect, resolution: tuple[int, int]
+) -> tuple[float, float]:
     """Return normalized (x, y) position for a rect center."""
     return (
-        rect.centerx / prepare.SCREEN_SIZE[0],
-        rect.centery / prepare.SCREEN_SIZE[1],
+        rect.centerx / resolution[0],
+        rect.centery / resolution[1],
     )
 
 
@@ -84,7 +84,9 @@ dpad_mappings = [
 def test_touch_dpad(
     touch_input: PygameTouchOverlayInput, mapping: ButtonRectMapping
 ):
-    x, y = normalized_pos(mapping.rect_accessor(touch_input))
+    x, y = normalized_pos(
+        mapping.rect_accessor(touch_input), touch_input.resolution
+    )
     event = Event(pg.FINGERDOWN, fingerid=1, x=x, y=y)
     touch_input.process_event(event)
     assert touch_input.buttons[mapping.button].pressed
@@ -101,14 +103,16 @@ button_mappings = [
 def test_touch_buttons(
     touch_input: PygameTouchOverlayInput, mapping: ButtonRectMapping
 ):
-    x, y = normalized_pos(mapping.rect_accessor(touch_input))
+    x, y = normalized_pos(
+        mapping.rect_accessor(touch_input), touch_input.resolution
+    )
     event = Event(pg.FINGERDOWN, fingerid=1, x=x, y=y)
     touch_input.process_event(event)
     assert touch_input.buttons[mapping.button].pressed
 
 
 def test_touch_release(touch_input: PygameTouchOverlayInput):
-    x, y = normalized_pos(touch_input.ui.dpad.rect.up)
+    x, y = normalized_pos(touch_input.ui.dpad.rect.up, touch_input.resolution)
     touch_input.process_event(Event(pg.FINGERDOWN, fingerid=1, x=x, y=y))
     touch_input.process_event(Event(pg.FINGERUP, fingerid=1, x=x, y=y))
     assert not touch_input.buttons[buttons.UP].pressed
@@ -121,8 +125,12 @@ def test_touch_outside_buttons(touch_input: PygameTouchOverlayInput):
 
 
 def test_simultaneous_presses(touch_input: PygameTouchOverlayInput):
-    up_x, up_y = normalized_pos(touch_input.ui.dpad.rect.up)
-    a_x, a_y = normalized_pos(touch_input.ui.a_button.rect)
+    up_x, up_y = normalized_pos(
+        touch_input.ui.dpad.rect.up, touch_input.resolution
+    )
+    a_x, a_y = normalized_pos(
+        touch_input.ui.a_button.rect, touch_input.resolution
+    )
     events = [
         Event(pg.FINGERDOWN, fingerid=1, x=up_x, y=up_y),
         Event(pg.FINGERDOWN, fingerid=2, x=a_x, y=a_y),
@@ -178,7 +186,7 @@ def test_touch_outside_screen(touch_input: PygameTouchOverlayInput):
 
 
 def test_persistent_press(touch_input: PygameTouchOverlayInput):
-    x, y = normalized_pos(touch_input.ui.dpad.rect.up)
+    x, y = normalized_pos(touch_input.ui.dpad.rect.up, touch_input.resolution)
     touch_input.process_event(Event(pg.FINGERDOWN, fingerid=1, x=x, y=y))
     assert touch_input.buttons[buttons.UP].pressed
 

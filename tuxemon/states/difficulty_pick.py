@@ -11,7 +11,6 @@ from pygame_menu.widgets.selection.highlight import HighlightSelection
 
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -31,7 +30,7 @@ class DifficultyPickState(PygameMenuState):
         difficulties: list[str] = DIFFICULTIES,
         **kwargs: Any,
     ) -> None:
-        width, height = SCREEN_SIZE
+        width, height = client.context.resolution
         super().__init__(client=client, height=height, width=width, **kwargs)
 
         self.on_pick = on_pick

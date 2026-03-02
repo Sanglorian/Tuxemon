@@ -23,15 +23,13 @@ events:
     type: event
   Create Soldier:
     actions:
-    - create_npc eclipse_park_soldier,35,20
-    - char_wander eclipse_park_soldier
+    - create_npc eclipse_park_soldier,35,20,wander
     conditions:
     - not char_exists eclipse_park_soldier
     type: event
   Create Tennis Player:
     actions:
-    - create_npc eclipse_park_tennisplayer,15,25
-    - char_wander eclipse_park_tennisplayer
+    - create_npc eclipse_park_tennisplayer,15,25,wander
     conditions:
     - not char_exists eclipse_park_tennisplayer
     type: event

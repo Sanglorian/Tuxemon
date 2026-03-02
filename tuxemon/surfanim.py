@@ -216,14 +216,9 @@ class SurfaceAnimation:
         """Reset the animation to the beginning and set state to stopped."""
         self._state = State.STOPPED
 
-    def update(self, time_delta: float) -> None:
-        """
-        Update the internal clock with the elapsed time.
-
-        Parameters:
-            time_delta: Time elapsed since last call to update.
-        """
-        self._internal_clock += time_delta
+    def update(self, dt: float) -> None:
+        """Update the internal clock with the elapsed time."""
+        self._internal_clock += dt
 
     def flip(self, flip_axes: FlipAxes) -> None:
         """Flip all frames of an animation along the X-axis and/or Y-axis."""
@@ -530,16 +525,10 @@ class SurfaceAnimationCollection:
             anim_obj.stop()
         self._state = State.STOPPED
 
-    def update(self, time_delta: float) -> None:
-        """
-        Update the internal clock with the elapsed time.
-
-        Parameters:
-            time_delta: Time elapsed since last call to update.
-
-        """
+    def update(self, dt: float) -> None:
+        """Update the internal clock with the elapsed time."""
         for anim_obj in self._animations:
-            anim_obj.update(time_delta)
+            anim_obj.update(dt)
 
 
 T = TypeVar("T", bound=float)

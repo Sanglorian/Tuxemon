@@ -8,8 +8,7 @@ events:
     type: event
   Create Shop Keeper:
     actions:
-    - create_npc spyder_flowerpetshop_denzel,2,5
-    - char_wander spyder_flowerpetshop_denzel
+    - create_npc spyder_flowerpetshop_denzel,2,5,wander
     conditions:
     - not char_exists spyder_flowerpetshop_denzel
     type: event

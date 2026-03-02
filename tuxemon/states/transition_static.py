@@ -40,8 +40,8 @@ class StaticTransition(State):
     def resume(self) -> None:
         self.screenshot = Surface.copy(self.client.context.screen)
 
-    def update(self, time_delta: float) -> None:
-        self.elapsed_time += time_delta
+    def update(self, dt: float) -> None:
+        self.elapsed_time += dt
         if self.elapsed_time > self.duration:
             logger.info("Static transition finished.")
             self.client.pop_state()

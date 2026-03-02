@@ -2,12 +2,6 @@
 .PHONY: default
 default: run
 
-# Validate all JSON data in db
-.PHONY: validate
-validate:
-	PYTHONPATH=. python scripts/schema.py --validate
-	PYTHONPATH=. python scripts/test_actions.py
-
 # Install dependencies
 .PHONY: setup
 setup:

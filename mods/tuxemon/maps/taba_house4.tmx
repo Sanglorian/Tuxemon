@@ -88,8 +88,7 @@
   </object>
   <object id="51" name="Waiter" type="event" x="64" y="32" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc taba_house4_waiter,3,2"/>
-    <property name="act2" value="char_wander taba_house4_waiter"/>
+    <property name="act1" value="create_npc taba_house4_waiter,3,2,wander"/>
     <property name="cond1" value="not char_exists taba_house4_waiter"/>
    </properties>
   </object>

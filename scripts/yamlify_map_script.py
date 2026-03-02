@@ -17,9 +17,9 @@ USAGE
 
 python yamlify_map_script.py FILE0 FILE1 FILE2 ...
 
-You can run the script from the /scripts/ folder like this:
+You can run the script like this:
 
-    python yamlify_map_script.py ../mods/tuxemon/maps/map.tmx
+    python3 scripts/yamlify_map_script.py mods/tuxemon/maps/map.tmx
 """
 
 import logging

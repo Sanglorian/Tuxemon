@@ -89,7 +89,7 @@ class SetMonsterFlairAction(EventAction):
         )
 
         monster.flair_slugs.add(flair_model.slug)
-        scale = session.client.context.scaling.factor
+        scale = session.client.context.scale
         renderer = MonsterRenderer(monster, scale)
         renderer.sprite_handler.refresh_flairs(monster.flairs)
 

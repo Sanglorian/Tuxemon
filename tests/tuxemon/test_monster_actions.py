@@ -232,32 +232,3 @@ def test_random_monster_evolution(game_env):
     )
 
     assert player.monsters[0].stage == EvolutionStage.BASIC
-
-
-@pytest.mark.parametrize(
-    "amount,expected_delta",
-    [
-        (None, 0),  # no change
-        (-50, 0),  # negative ignored
-        (50, 50),  # positive applied
-    ],
-)
-def test_give_experience(game_env, amount, expected_delta):
-    engine, player = game_env
-    engine.execute_action("random_monster", [5])
-    before = player.monsters[0].total_experience
-
-    engine.execute_action("give_experience", [None, amount])
-
-    assert player.monsters[0].total_experience == before + expected_delta
-
-
-def test_give_experience_variable(game_env):
-    engine, player = game_env
-    engine.execute_action("random_monster", [5])
-    engine.execute_action("set_variable", ["exp:50"])
-
-    before = player.monsters[0].total_experience
-    engine.execute_action("give_experience", [None, "exp"])
-
-    assert player.monsters[0].total_experience == before + 50

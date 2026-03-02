@@ -16,7 +16,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_CONTACTS
 from tuxemon.platform.const.sizes import UNKNOWN_MAP_SLUG
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.relationship import RelationshipConstants
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options
@@ -150,13 +149,6 @@ class NuPhoneContacts(PygameMenuState):
     def __init__(
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
-        width, height = SCREEN_SIZE
-
-        theme = self._setup_theme(BG_PHONE_CONTACTS)
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_CENTER
-        theme.title = True
-
         self.char = character
 
         if self.char.current_map:
@@ -167,7 +159,15 @@ class NuPhoneContacts(PygameMenuState):
         for relation in self.char.relationships.connections.values():
             relation.apply_decay(self.char.steps)
 
+        width, height = client.context.resolution
+
         super().__init__(client=client, height=height, width=width, **kwargs)
+
+        theme = self._setup_theme(BG_PHONE_CONTACTS)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
+        theme.title = True
+        self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu)
         self.reset_theme()

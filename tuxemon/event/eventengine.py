@@ -171,9 +171,6 @@ class EventEngine:
     def update(self, dt: float) -> None:
         """
         Check all the MapEvents and start their actions if conditions are met.
-
-        Parameters:
-            dt: Amount of time passed in seconds since last frame.
         """
         if self._suspended:
             return

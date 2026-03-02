@@ -19,7 +19,6 @@ from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_PLAYER1, BG_PLAYER2
 from tuxemon.platform.const.sizes import U_KM, U_MI
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure, format_playtime
 from tuxemon.tuxepedia.reporter import TuxepediaReporter
 
@@ -211,7 +210,7 @@ class CharacterState(PygameMenuState):
         if not lookup_cache:
             _lookup_monsters()
 
-        width, height = SCREEN_SIZE
+        width, height = client.context.resolution
         self.char = character
 
         bg = (
@@ -220,11 +219,12 @@ class CharacterState(PygameMenuState):
             else BG_PLAYER1
         )
 
+        super().__init__(client=client, height=height, width=width, **kwargs)
+
         theme = self._setup_theme(bg)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-
-        super().__init__(client=client, height=height, width=width, **kwargs)
+        self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu)
         self.reset_theme()

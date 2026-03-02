@@ -633,8 +633,7 @@
   </object>
   <object id="217" name="Create Sylvia" type="event" x="224" y="224" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_dryadsgrove_sylvia,14,14"/>
-    <property name="act2" value="char_wander spyder_dryadsgrove_sylvia"/>
+    <property name="act1" value="create_npc spyder_dryadsgrove_sylvia,14,14,wander"/>
     <property name="cond1" value="not char_exists spyder_dryadsgrove_sylvia"/>
     <property name="cond2" value="not battle_outcome player,won,spyder_dryadsgrove_sylvia"/>
    </properties>
@@ -787,8 +786,7 @@
   </object>
   <object id="265" name="Create Boy" type="event" x="400" y="480" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_dryadsgrove_boy,25,30"/>
-    <property name="act2" value="char_wander spyder_dryadsgrove_boy"/>
+    <property name="act1" value="create_npc spyder_dryadsgrove_boy,25,30,wander"/>
     <property name="cond1" value="not char_exists spyder_dryadsgrove_boy"/>
    </properties>
   </object>

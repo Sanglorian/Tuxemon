@@ -10,7 +10,6 @@ from pygame_menu.menu import Menu
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import Session
 
 if TYPE_CHECKING:
@@ -29,15 +28,15 @@ class ParkState(PygameMenuState):
     ) -> None:
         self.session = session
         self.park_session = session.client.park_session
-        width, height = SCREEN_SIZE
+        width, height = client.context.resolution
+        width = int(0.8 * width)
+        height = int(0.8 * height)
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         theme = self._setup_theme(BG_MISSIONS)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-
-        width = int(0.8 * width)
-        height = int(0.8 * height)
-        super().__init__(client=client, height=height, width=width, **kwargs)
+        self._menu_config["theme"] = theme
         self.initialize_items(self.menu)
         self.reset_theme()
 

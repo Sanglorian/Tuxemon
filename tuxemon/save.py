@@ -19,7 +19,6 @@ from pygame.surface import Surface
 
 from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import dump_yaml_io, load_yaml
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.save_state import TIME_FORMAT, SaveData
 from tuxemon.save_upgrader import SAVE_VERSION, upgrade_save
 from tuxemon.user_config import CONFIG
@@ -30,7 +29,7 @@ if TYPE_CHECKING:
 try:
     import cbor
 except ImportError:
-    CONFIG.save_method = "json"
+    CONFIG.update_attribute("game", "save_method", "json", save=False)
 
 
 T = TypeVar("T")
@@ -58,7 +57,7 @@ class SaveMethod(Enum):
 
 def capture_screenshot(session: Session) -> Surface:
     """Capture a screenshot."""
-    screenshot = Surface(SCREEN_SIZE)
+    screenshot = Surface(session.client.context.resolution)
     session.world.draw(screenshot)
     return screenshot
 

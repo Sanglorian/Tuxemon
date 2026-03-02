@@ -16,7 +16,6 @@ from tuxemon.menu.menu import PygameMenuState
 from tuxemon.mission.mission import Mission
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_MISSIONS
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_yes_no_options
 
@@ -38,15 +37,16 @@ class MissionState(PygameMenuState):
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
         self.character = character
-        width, height = SCREEN_SIZE
+        width, height = client.context.resolution
+        width = int(0.8 * width)
+        height = int(0.8 * height)
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         theme = self._setup_theme(BG_MISSIONS)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
+        self._menu_config["theme"] = theme
 
-        width = int(0.8 * width)
-        height = int(0.8 * height)
-        super().__init__(client=client, height=height, width=width, **kwargs)
         self.character.mission_controller.update_mission_progress()
         self.initialize_items(self.menu)
         self.reset_theme()
@@ -90,13 +90,17 @@ class SingleMissionState(PygameMenuState):
     ) -> None:
         self.mission = mission
         self.character = character
-        width, height = SCREEN_SIZE
+        width, height = client.context.resolution
+        width = int(0.8 * width)
+        height = int(0.8 * height)
+
+        super().__init__(client=client, height=height, width=width, **kwargs)
+
         theme = self._setup_theme(BG_MISSIONS)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-        width = int(0.8 * width)
-        height = int(0.8 * height)
-        super().__init__(client=client, height=height, width=width, **kwargs)
+        self._menu_config["theme"] = theme
+
         self.initialize_items(self.menu)
         self.reset_theme()
 

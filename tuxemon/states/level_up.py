@@ -10,7 +10,6 @@ from pygame_menu.menu import Menu
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -39,9 +38,7 @@ class LevelUpSummaryState(PygameMenuState):
         self.end_level = end_level
         self.diff = diff
 
-        width, height = SCREEN_SIZE
-        theme = self._setup_theme(BG_MISSIONS)
-        theme.widget_alignment = ALIGN_CENTER
+        width, height = client.context.resolution
 
         super().__init__(
             client=client,
@@ -49,6 +46,10 @@ class LevelUpSummaryState(PygameMenuState):
             width=int(width // 2),
             **kwargs,
         )
+
+        theme = self._setup_theme(BG_MISSIONS)
+        theme.widget_alignment = ALIGN_CENTER
+        self._menu_config["theme"] = theme
         self._build_menu(self.menu)
         self.reset_theme()
 

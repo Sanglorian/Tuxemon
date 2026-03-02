@@ -11,7 +11,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
 from tuxemon.platform.const.sizes import MONTH_KEYS
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -28,15 +27,16 @@ class DatePickerState(PygameMenuState):
     ):
         self.callback = callback
         self.selected_month: int | None = None
-        width, height = SCREEN_SIZE
+        width, height = client.context.resolution
         escape_key_exits = kwargs.pop("escape_key_exits", None)
+
+        super().__init__(client=client, width=width, height=height, **kwargs)
 
         theme = self._setup_theme(BG_MISSIONS)
         theme.widget_alignment = ALIGN_CENTER
         theme.scrollarea_position = POSITION_EAST
         theme.title = True
-
-        super().__init__(client=client, width=width, height=height, **kwargs)
+        self._menu_config["theme"] = theme
 
         if escape_key_exits is not None:
             self.escape_key_exits = escape_key_exits

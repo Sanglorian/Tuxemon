@@ -2,52 +2,73 @@
 setlocal enabledelayedexpansion
 
 echo === Building Tuxemon Windows Installer ===
+echo.
 
-rem Get the script's directory
+rem ------------------------------------------------------------
+rem  Determine script directory and NSIS script path
+rem ------------------------------------------------------------
 set "ScriptDir=%~dp0"
-
-rem Set the installer script path
 set "ScriptPath=%ScriptDir%setup_windows.nsi"
 
-rem Find the build directory (first match)
+echo Script directory: "%ScriptDir%"
+echo NSIS script:      "%ScriptPath%"
+echo.
+
+rem ------------------------------------------------------------
+rem  Locate the cx_Freeze build directory
+rem  cx_Freeze typically outputs something like:
+rem      build/exe.win-amd64-3.10
+rem  We search for any folder matching exe.*
+rem ------------------------------------------------------------
+echo Searching for cx_Freeze build directory...
 for /d %%a in ("%ScriptDir%..\build\exe.*") do (
     set "TXMNBuildDir=%%~fa"
     goto :found
 )
-:found
 
-rem Validate build directory
+echo [ERROR] No cx_Freeze build directory found under build\exe.*
+exit /b 1
+
+:found
+echo Found build directory: "!TXMNBuildDir!"
+echo.
+
+rem ------------------------------------------------------------
+rem  Validate that the directory actually exists
+rem ------------------------------------------------------------
 if not exist "!TXMNBuildDir!\" (
-    echo [ERROR] Build directory not found: "!TXMNBuildDir!"
+    echo [ERROR] Build directory does not exist: "!TXMNBuildDir!"
     exit /b 1
 )
 
-echo ScriptPath: "!ScriptPath!"
-echo TXMNBuildDir: "!TXMNBuildDir!"
-
-rem Check for NSIS installation
+rem ------------------------------------------------------------
+rem  Check NSIS availability
+rem ------------------------------------------------------------
+echo Checking for NSIS (makensis.exe)...
 where makensis.exe >nul 2>&1
 if errorlevel 1 (
-    echo [ERROR] NSIS not found. Ensure it's installed and added to PATH.
+    echo [ERROR] NSIS not found. Install NSIS or ensure it is in PATH.
     exit /b 1
 )
+echo NSIS found.
+echo.
 
-rem Run NSIS to build the installer
-echo Running NSIS...
-makensis.exe "!ScriptPath!" /V4
+rem ------------------------------------------------------------
+rem  Run NSIS to build the installer
+rem  We pass TXMNBuildDir as a define so NSIS can access it
+rem ------------------------------------------------------------
+echo Running NSIS to build installer...
+makensis.exe /DTXMNBuildDir="!TXMNBuildDir!" "!ScriptPath!" /V4
 if errorlevel 1 (
     echo [ERROR] NSIS build failed.
     exit /b 1
 )
 
-rem Confirm installer was created
-set "InstallerPath=%ScriptDir%tuxemon-installer.exe"
-if not exist "!InstallerPath!" (
-    echo [ERROR] Installer not created: "!InstallerPath!"
-    exit /b 1
-)
-
-echo Installer build complete: "!InstallerPath!"
+echo.
+echo === Installer build completed successfully ===
+echo Installer output should now exist as:
+echo     %ScriptDir%tuxemon-installer.exe
+echo.
 
 endlocal
 exit /b 0

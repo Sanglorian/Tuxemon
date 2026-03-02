@@ -941,14 +941,11 @@ msgstr "Rytíř II"
 msgid "liela"
 msgstr "Liela"
 
-msgid "maple_girl"
+msgid "maple_wren"
 msgstr "Javor"
 
 msgid "misa"
 msgstr "Misa"
-
-msgid "npc_wife"
-msgstr "Manželka NPC"
 
 msgid "professor"
 msgstr "Profesor"

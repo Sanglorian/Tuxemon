@@ -15,7 +15,6 @@ from tuxemon.db import MonsterModel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_JOURNAL_CHOICE, DIMGRAY_COLOR
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
@@ -95,15 +94,12 @@ class JournalChoice(PygameMenuState):
     def __init__(
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
+        self.char = character
+
         if not lookup_cache:
             _lookup_monsters()
-        width, height = SCREEN_SIZE
 
-        theme = self._setup_theme(BG_JOURNAL_CHOICE)
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_LEFT
-
-        self.char = character
+        width, height = client.context.resolution
 
         columns = 2
 
@@ -119,6 +115,11 @@ class JournalChoice(PygameMenuState):
             rows=rows,
             **kwargs,
         )
+
+        theme = self._setup_theme(BG_JOURNAL_CHOICE)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_LEFT
+        self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu, box)
         self.reset_theme()

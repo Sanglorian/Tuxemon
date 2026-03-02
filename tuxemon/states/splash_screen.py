@@ -39,7 +39,7 @@ class SplashState(State):
         self.task(self.fade_out, interval=self.default_duration)
         self.triggered = False
 
-        width, height = self.client.context.resolution
+        width, height = client.context.resolution
 
         # The space between the edge of the screen
         splash_border = int(width / 20)

@@ -17,7 +17,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import local_session
 from tuxemon.ui.menu_options import MenuOptions
 
@@ -54,9 +53,6 @@ class ChoiceMonster(PygameMenuState):
         **kwargs: Any,
     ) -> None:
         self.config = config or MenuMonsterConfig()
-        theme = get_theme().copy()
-        if len(menu.options) > self.config.max_elements:
-            theme.scrollarea_position = POSITION_EAST
 
         rows = (
             math.ceil(len(menu.options) / self.config.number_columns)
@@ -68,6 +64,13 @@ class ChoiceMonster(PygameMenuState):
             rows=rows,
             **kwargs,
         )
+
+        theme = get_theme(self.client.context.scaling).copy()
+
+        if len(menu.options) > self.config.max_elements:
+            theme.scrollarea_position = POSITION_EAST
+
+        self._menu_config["theme"] = theme
 
         for option in menu.get_menu():
             self.add_monster_menu_item(
@@ -135,7 +138,7 @@ class ChoiceMonster(PygameMenuState):
         action.execute_action("clear_tuxepedia", [monster.slug], True)
 
     def update_animation_size(self) -> None:
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         widgets_size = self.menu.get_size(widget=True)
 
         _width = widgets_size[0]

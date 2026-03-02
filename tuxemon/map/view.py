@@ -93,13 +93,13 @@ class SpriteController:
         self.sprite_renderer = SpriteRenderer(npc)
         self.sprite_renderer.load_sprites(npc.template)
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         """
         Update the sprite renderer and reposition the sprite
         based on the NPC's current tile position.
         """
         self.sprite_renderer.set_position(self.npc.tile_pos)
-        self.sprite_renderer.update(time_delta)
+        self.sprite_renderer.update(dt)
 
     def update_appearance(self, appearance: RuntimeAppearance) -> None:
         """
@@ -249,8 +249,8 @@ class SpriteRenderer:
             sheet_path = f"sprites/{template.sprite_name}.png"
             sheet = load_and_scale_with_cache(sheet_path)
 
-        scaled_fw = template.frame_width * DISPLAY_CONTEXT.scaling.factor
-        scaled_fh = template.frame_height * DISPLAY_CONTEXT.scaling.factor
+        scaled_fw = template.frame_width * DISPLAY_CONTEXT.scale
+        scaled_fh = template.frame_height * DISPLAY_CONTEXT.scale
 
         all_frames = slice_spritesheet_surface(
             sheet,
@@ -327,9 +327,9 @@ class SpriteRenderer:
             * template.animation_speed
         )
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         """Update all registered animations."""
-        self.surface_animations.update(time_delta)
+        self.surface_animations.update(dt)
 
     def get_animation_frame(
         self, ani: str, animations: dict[str, SurfaceAnimation], npc: NPC
@@ -383,7 +383,7 @@ class AbstractRenderer(ABC):
         ...
 
     @abstractmethod
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         """Update internal state, animations, etc."""
 
     @abstractmethod
@@ -401,7 +401,7 @@ class NullRenderer(AbstractRenderer):
     def label(self) -> str:
         return "null_renderer"
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         pass
 
     def draw(self, surface: Surface, current_map: AbstractMap | None) -> None:
@@ -449,10 +449,10 @@ class MapRenderer(AbstractRenderer):
         if CONFIG.collision_map:
             self.debug_renderer.draw_debug(current_map, surface)
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
         """Update the map animations."""
-        self.camera_manager.update(time_delta)
-        self.map_animations.update_all(time_delta)
+        self.camera_manager.update(dt)
+        self.map_animations.update_all(dt)
 
     def _prepare_map_rendering(self, current_map: AbstractMap) -> None:
         """Prepares the map renderer for drawing."""

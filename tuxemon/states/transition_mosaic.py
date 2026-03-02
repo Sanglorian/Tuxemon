@@ -55,15 +55,8 @@ class MosaicTransition(State):
                 self.tiles.append(rect)
                 self.tile_surfaces.append(self.screenshot.subsurface(rect))
 
-    def update(self, time_delta: float) -> None:
-        """
-        Update function for state.
-
-        Parameters:
-            time_delta: Time since last update in seconds
-
-        """
-        self.elapsed_time += time_delta
+    def update(self, dt: float) -> None:
+        self.elapsed_time += dt
         if self.elapsed_time > self.duration:
             logger.info("Mosaic transition finished.")
             self.client.pop_state()

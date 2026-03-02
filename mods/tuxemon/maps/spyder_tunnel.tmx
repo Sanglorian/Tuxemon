@@ -107,8 +107,7 @@
   </object>
   <object id="333" name="Create Iris" type="event" x="160" y="240" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_tunnelb_iris,10,15"/>
-    <property name="act2" value="char_wander spyder_tunnelb_iris"/>
+    <property name="act1" value="create_npc spyder_tunnelb_iris,10,15,wander"/>
     <property name="cond1" value="not char_exists spyder_tunnelb_iris"/>
    </properties>
   </object>
@@ -147,8 +146,7 @@
   </object>
   <object id="337" name="Create Tommy" type="event" x="208" y="80" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_tunnelb_tommy,14,4"/>
-    <property name="act2" value="char_wander spyder_tunnelb_tommy"/>
+    <property name="act1" value="create_npc spyder_tunnelb_tommy,14,4,wander"/>
     <property name="cond1" value="not char_exists spyder_tunnelb_tommy"/>
    </properties>
   </object>

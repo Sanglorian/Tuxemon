@@ -38,7 +38,10 @@ class InputDeviceSetup(Protocol):
     """
 
     def setup(
-        self, event_queue: PygameEventQueueHandler, config: TuxemonConfig
+        self,
+        event_queue: PygameEventQueueHandler,
+        config: TuxemonConfig,
+        resolution: tuple[int, int],
     ) -> Any | None:
         """
         Configures and adds the input device to the event queue, returns the
@@ -49,7 +52,10 @@ class InputDeviceSetup(Protocol):
 
 class KeyboardSetup:
     def setup(
-        self, event_queue: PygameEventQueueHandler, config: TuxemonConfig
+        self,
+        event_queue: PygameEventQueueHandler,
+        config: TuxemonConfig,
+        resolution: tuple[int, int],
     ) -> PygameKeyboardInput | None:
         if config.input.keyboard_button_map:
             keyboard = PygameKeyboardInput(config.input.keyboard_button_map)
@@ -71,7 +77,10 @@ class GamepadSetup:
             raise ValueError(f"Unsupported controller type: {controller_type}")
 
     def setup(
-        self, event_queue: PygameEventQueueHandler, config: TuxemonConfig
+        self,
+        event_queue: PygameEventQueueHandler,
+        config: TuxemonConfig,
+        resolution: tuple[int, int],
     ) -> PygameGamepadInput | None:
 
         detector = JoystickDetector()
@@ -99,10 +108,15 @@ class GamepadSetup:
 
 class ControllerOverlaySetup:
     def setup(
-        self, event_queue: PygameEventQueueHandler, config: TuxemonConfig
+        self,
+        event_queue: PygameEventQueueHandler,
+        config: TuxemonConfig,
+        resolution: tuple[int, int],
     ) -> PygameTouchOverlayInput | None:
         if config.controller.overlay:
-            overlay = PygameTouchOverlayInput(config.controller.transparency)
+            overlay = PygameTouchOverlayInput(
+                config.controller.transparency, resolution
+            )
             overlay.load()
             event_queue.set_input(0, 30, overlay)
             logger.info("Controller overlay set up successfully")
@@ -112,7 +126,10 @@ class ControllerOverlaySetup:
 
 class MouseSetup:
     def setup(
-        self, event_queue: PygameEventQueueHandler, config: TuxemonConfig
+        self,
+        event_queue: PygameEventQueueHandler,
+        config: TuxemonConfig,
+        resolution: tuple[int, int],
     ) -> PygameMouseInput | None:
         if not config.controller.hide_mouse:
             mouse = PygameMouseInput()

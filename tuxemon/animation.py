@@ -615,7 +615,7 @@ class Animation(TaskBase):
         else:
             setattr(target, name, value)
 
-    def update(self, time_delta: float) -> None:
+    def update(self, dt: float) -> None:
 
         if self._state in (AnimationState.FINISHED, AnimationState.ABORTED):
             return
@@ -627,7 +627,7 @@ class Animation(TaskBase):
             self.finish()
             return
 
-        self._elapsed += time_delta
+        self._elapsed += dt
 
         if self.delay > 0:
             if self._elapsed >= self.delay:

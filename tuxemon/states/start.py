@@ -20,7 +20,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_START_SCREEN, BLACK_COLOR
 from tuxemon.platform.const.sizes import PLAYER_NPC
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.save import get_index_of_latest_save
 from tuxemon.session import local_session
 from tuxemon.state.state import State
@@ -143,18 +142,21 @@ class StartState(PygameMenuState):
         )
 
     def __init__(self, client: BaseClient, **kwargs: Any) -> None:
-        width, height = SCREEN_SIZE
+        width, height = client.context.resolution
+
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         theme = self._setup_theme(BG_START_SCREEN)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
+        self._menu_config["theme"] = theme
 
-        super().__init__(client=client, height=height, width=width, **kwargs)
         self.escape_key_exits = False
         self.client.afk_manager.add_threshold("IntroState", 15.0)
         self.event_bus.subscribe(
             "afk.threshold_reached", self._on_afk_threshold, priority=10
         )
+
         self.add_menu_items(self.menu)
         self.reset_theme()
 
@@ -215,13 +217,14 @@ class ModsChoice(PygameMenuState):
         self, client: BaseClient, mods: list[str], **kwargs: Any
     ) -> None:
         self.mods = mods
-        width, height = SCREEN_SIZE
+        width, height = client.context.resolution
+
+        super().__init__(client=client, height=height, width=width, **kwargs)
 
         theme = self._setup_theme(BG_START_SCREEN)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-
-        super().__init__(client=client, height=height, width=width, **kwargs)
+        self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu)
         self.reset_theme()

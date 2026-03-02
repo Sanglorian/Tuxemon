@@ -29,8 +29,7 @@ events:
     type: event
   Create Homemaker:
     actions:
-    - create_npc eclipse_crystal_homemaker,22,12
-    - char_wander eclipse_crystal_homemaker
+    - create_npc eclipse_crystal_homemaker,22,12,wander
     conditions:
     - not char_exists eclipse_crystal_homemaker
     type: event

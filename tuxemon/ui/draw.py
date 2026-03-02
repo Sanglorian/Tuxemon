@@ -22,8 +22,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-__all__ = ("GraphicBox",)
-
 font_size_cache: dict[str, tuple[int, int]] = {}
 
 

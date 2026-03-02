@@ -80,11 +80,11 @@ class Bar:
         """Loads the border image."""
         if self.border_filename in self._graphics_cache:
             self.border = GraphicBox(
-                self._graphics_cache[self.border_filename]
+                border=self._graphics_cache[self.border_filename]
             )
         else:
             image = load_and_scale(self.border_filename)
-            self.border = GraphicBox(image)
+            self.border = GraphicBox(border=image)
             self._graphics_cache[self.border_filename] = image
 
     def calc_inner_rect(self, rect: Rect) -> Rect:

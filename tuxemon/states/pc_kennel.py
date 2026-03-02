@@ -21,7 +21,6 @@ from tuxemon.menu.menu import PygameMenuState
 from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const.graphics import BG_PC_KENNEL
 from tuxemon.platform.const.sizes import MAX_KENNEL, PARTY_LIMIT
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.tools import fix_measure, open_choice_dialog, open_dialog
@@ -204,24 +203,15 @@ class MonsterTakeState(PygameMenuState):
         swap_target: Monster | None = None,
         **kwargs: Any,
     ) -> None:
-        width, height = SCREEN_SIZE
-
-        theme = self._setup_theme(BG_PC_KENNEL)
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_CENTER
-
-        # menu
-        theme.title = True
-
-        columns = 3
-
         self.box_name = box_name
         self.char = character
         self.monster_boxes = self.char.monster_boxes
         self.box = self.monster_boxes.get_monsters(self.box_name)
         self.swap_target = swap_target
 
-        # Widgets are like a pygame_menu label, image, etc.
+        width, height = client.context.resolution
+
+        columns = 3
         num_widgets = 3
         rows = math.ceil(len(self.box) / columns) * num_widgets
 
@@ -233,6 +223,12 @@ class MonsterTakeState(PygameMenuState):
             rows=rows,
             **kwargs,
         )
+
+        theme = self._setup_theme(BG_PC_KENNEL)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
+        theme.title = True
+        self._menu_config["theme"] = theme
 
         column_width = fix_measure(self.menu._width, 0.33)
         self.menu._column_max_width = [
@@ -343,7 +339,7 @@ class MonsterBoxState(PygameMenuState):
     def __init__(
         self, client: BaseClient, character: NPC, **kwargs: Any
     ) -> None:
-        _, height = SCREEN_SIZE
+        width, height = client.context.resolution
 
         super().__init__(client=client, height=height, **kwargs)
 
@@ -368,7 +364,7 @@ class MonsterBoxState(PygameMenuState):
             menu.add.button(label, callback)
             menu.add.vertical_fill()
 
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         widgets_size = menu.get_size(widget=True)
         b_width, b_height = menu.get_scrollarea().get_border_size()
         menu.resize(

@@ -19,7 +19,6 @@ from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import INDIV_INFO
 from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_LB, U_M, U_T
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure, transform_resource_filename
 
 if TYPE_CHECKING:
@@ -446,21 +445,20 @@ class MonsterInfoState(PygameMenuState):
         if not lookup_tastes:
             _lookup_tastes()
 
-        width, height = SCREEN_SIZE
+        width, height = client.context.resolution
 
         self._monster = monster
         self._source = source
         self._monsters = monsters
 
-        theme = get_theme().copy()
+        super().__init__(client=client, height=height, width=width, **kwargs)
+
+        theme = get_theme(self.client.context.scaling).copy()
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
         theme.widget_font_shadow = False
         theme.widget_padding = (0, 0)
-
-        super().__init__(
-            client=client, height=height, width=width, theme=theme, **kwargs
-        )
+        self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu, monster)
         self.reset_theme()

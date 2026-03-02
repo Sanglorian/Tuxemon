@@ -599,7 +599,7 @@ class MonsterSlotBorder:
             filename = root + border_type + "_monster_slot_bg.png"
             background = load_image(filename)
 
-            window = GraphicBox(border, background, None)
+            window = GraphicBox(border=border, background=background)
             self.borders[border_type] = window
 
     def get_border(self, selected: bool, filled: bool) -> GraphicBox:

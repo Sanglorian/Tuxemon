@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0
 
-from pathlib import Path
-from PIL import Image
 import re
+from pathlib import Path
+
+from PIL import Image
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 

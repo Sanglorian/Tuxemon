@@ -2,61 +2,16 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from pygame import SRCALPHA
+from pygame import SRCALPHA, draw
 from pygame.rect import Rect
 from pygame.surface import Surface
 from pygame.transform import scale
 
 from tuxemon.graphics import ColorLike
 from tuxemon.sprite import Sprite
+from tuxemon.ui.tile_layout import NineSliceLayout
 
-
-class TileLayout:
-    """
-    Extracts a grid of tiles from a border image and assigns logical names
-    like 'nw', 'n', 'ne', etc. Assumes a 3x3 layout by default.
-    """
-
-    def __init__(self, image: Surface, grid_size: int = 3) -> None:
-        if grid_size <= 0:
-            raise ValueError("Grid size must be a positive integer")
-        self.grid_size = grid_size
-        self.tiles: dict[str, Surface] = self._extract_tiles(image)
-
-    def _extract_tiles(self, image: Surface) -> dict[str, Surface]:
-        if image.get_size() == (0, 0):
-            raise ValueError("Image cannot be empty")
-
-        iw, ih = image.get_size()
-
-        if iw % self.grid_size != 0 or ih % self.grid_size != 0:
-            raise ValueError("Image dimensions must be divisible by grid size")
-
-        tw, th = iw // self.grid_size, ih // self.grid_size
-        layout_map = {
-            (0, 0): "nw",
-            (0, 1): "n",
-            (0, 2): "ne",
-            (1, 0): "w",
-            (1, 1): "c",
-            (1, 2): "e",
-            (2, 0): "sw",
-            (2, 1): "s",
-            (2, 2): "se",
-        }
-
-        tiles: dict[str, Surface] = {}
-        for (row, col), label in layout_map.items():
-            x, y = col * tw, row * th
-            rect = Rect(x, y, tw, th)
-            tiles[label] = image.subsurface(rect)
-
-        if len(tiles) != self.grid_size**2:
-            raise ValueError(
-                f"Expected {self.grid_size**2} tiles, got {len(tiles)}"
-            )
-
-        return tiles
+DEBUG_NINESLICE = False
 
 
 class GraphicBox(Sprite):
@@ -71,8 +26,6 @@ class GraphicBox(Sprite):
 
     The border graphic must contain 9 tiles laid out in a box.
     """
-
-    TILE_GRID_SIZE = 3
 
     def __init__(
         self,
@@ -98,7 +51,7 @@ class GraphicBox(Sprite):
         self._tile_size = 0, 0
 
         if border:
-            self._set_border(border)
+            self.set_border(border)
 
     def calc_inner_rect(self, rect: Rect) -> Rect:
         """
@@ -116,6 +69,27 @@ class GraphicBox(Sprite):
         else:
             return rect
 
+    def set_color(self, color: ColorLike | None) -> None:
+        """
+        Change the fill color at runtime.
+        Passing None disables color fill.
+        """
+        self._color = color
+
+        if color is not None:
+            self._background = None
+            self._fill_tiles = False
+
+        self._needs_update = True
+
+    def set_border(self, image: Surface) -> None:
+        """
+        Public method to change the border at runtime.
+        Re-slices the image using the configured layout class.
+        """
+        self._set_border(image)
+        self._needs_update = True
+
     def _set_border(self, image: Surface) -> None:
         """
         Sets the border image and extracts the individual tiles.
@@ -124,15 +98,19 @@ class GraphicBox(Sprite):
         Parameters:
             image: The border image.
         """
-        layout = TileLayout(image, self.TILE_GRID_SIZE)
+        layout = NineSliceLayout(image)
         self._tiles = layout.tiles
-        self._tile_size = next(iter(self._tiles.values())).get_size()
-        self._needs_update = True
+        self._tile_size = layout.tile_size
 
     def update_image(self) -> None:
         """
         Updates the object's image by drawing the box on a new surface.
         """
+        if not hasattr(self, "_rect") or self._rect.size == (0, 0):
+            raise RuntimeError(
+                "GraphicBox._rect must be set to a non-zero size before update_image()"
+            )
+
         rect = Rect((0, 0), self._rect.size)
         surface = Surface(rect.size, SRCALPHA)
         self._draw(surface, rect)
@@ -172,30 +150,44 @@ class GraphicBox(Sprite):
         """
         left, top = rect.topleft
         tw, th = self._tile_size
-        surface_blit = surface.blit  # cache the blit method
+        blit = self._blit_clipped
 
-        # Draw top and bottom border tiles
+        # Top + bottom
         for x in range(inner.left, inner.right, tw):
-            area = (
-                (0, 0, tw, th)
-                if x + tw < inner.right
-                else (0, 0, tw - (x + tw - inner.right), th)
-            )
-            surface_blit(self._tiles["n"], (x, top), area)
-            surface_blit(self._tiles["s"], (x, inner.bottom), area)
+            remaining = inner.right - x
+            blit(surface, self._tiles["n"], (x, top), remaining, th)
+            blit(surface, self._tiles["s"], (x, inner.bottom), remaining, th)
 
-        # Draw left and right border tiles
+        # Left + right
         for y in range(inner.top, inner.bottom, th):
-            area = (
-                (0, 0, tw, th)
-                if y + th < inner.bottom
-                else (0, 0, tw, th - (y + th - inner.bottom))
-            )
-            surface_blit(self._tiles["w"], (left, y), area)
-            surface_blit(self._tiles["e"], (inner.right, y), area)
+            remaining = inner.bottom - y
+            blit(surface, self._tiles["w"], (left, y), tw, remaining)
+            blit(surface, self._tiles["e"], (inner.right, y), tw, remaining)
 
-        # Draw corner tiles
-        surface_blit(self._tiles["nw"], (left, top))
-        surface_blit(self._tiles["sw"], (left, inner.bottom))
-        surface_blit(self._tiles["ne"], (inner.right, top))
-        surface_blit(self._tiles["se"], (inner.right, inner.bottom))
+        # Corners (no clipping needed)
+        surface.blit(self._tiles["nw"], (left, top))
+        surface.blit(self._tiles["sw"], (left, inner.bottom))
+        surface.blit(self._tiles["ne"], (inner.right, top))
+        surface.blit(self._tiles["se"], (inner.right, inner.bottom))
+
+        if DEBUG_NINESLICE:
+            draw.rect(surface, (255, 0, 0), (x, top, remaining, th), 1)
+
+    def _blit_clipped(
+        self,
+        surface: Surface,
+        tile: Surface,
+        dest: tuple[int, int],
+        max_w: int,
+        max_h: int,
+    ) -> None:
+        area = (
+            0,
+            0,
+            min(tile.get_width(), max_w),
+            min(tile.get_height(), max_h),
+        )
+        surface.blit(tile, dest, area)
+
+    def draw_into(self, surface: Surface, rect: Rect) -> None:
+        self._draw(surface, rect)

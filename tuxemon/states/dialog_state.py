@@ -79,8 +79,8 @@ class DialogState(PopUpMenu[None]):
         final_box_style.update(box_style)
 
         _border = load_and_scale(final_box_style["border"])
-        self.window._set_border(_border)
-        self.window._color = final_box_style["bg_color"]
+        self.window.set_border(_border)
+        self.window.set_color(final_box_style["bg_color"])
         scaling = self.client.context.scaling
         line_spacing = scaling.scale_int(final_box_style["line_spacing"])
 

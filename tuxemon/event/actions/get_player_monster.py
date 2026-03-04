@@ -17,7 +17,6 @@ from tuxemon.tools import compare
 logger = logging.getLogger(__name__)
 
 
-# noinspection PyAttributeOutsideInit
 @final
 @dataclass
 class GetPlayerMonsterAction(EventAction):

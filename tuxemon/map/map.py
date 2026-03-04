@@ -41,6 +41,18 @@ dirs2: Mapping[Direction, Vector2] = {
 short_dirs = {d[0]: dirs2[d] for d in dirs2}
 
 
+def vector2_to_tile_pos(vector: Vector2) -> tuple[int, int]:
+    return (int(vector[0]), int(vector[1]))
+
+
+def get_next_tile_pos(
+    origin: tuple[int, int], direction: Direction
+) -> tuple[int, int]:
+    """Calculates the target tile position one step away from the origin."""
+    target_vec = Vector2(origin) + dirs2[direction]
+    return vector2_to_tile_pos(target_vec)
+
+
 def translate_short_path(
     path: str,
     position: tuple[int, int] = (0, 0),

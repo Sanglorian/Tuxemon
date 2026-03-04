@@ -8,10 +8,10 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from tuxemon.db import Direction, FacingMode
-from tuxemon.map.map import dirs2
+from tuxemon.map.map import dirs2, vector2_to_tile_pos
 from tuxemon.math import Vector2
 from tuxemon.save_state import NPCState
-from tuxemon.tools import tile_distance, vector2_to_tile_pos
+from tuxemon.tools import tile_distance
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
@@ -116,17 +116,27 @@ class Mover:
         self.body.velocity = Vector2(0, 0)
         self.set_state(EntityState.IDLE)
 
+    def _set_movement_speed(self, running: bool) -> None:
+        """Configure moverate and state for running or walking.
+
+        Parameters:
+            running: True for running state, False for walking state.
+        """
+        self.base_moverate = (
+            CONFIG.player_runrate if running else CONFIG.player_walkrate
+        )
+        new_state = EntityState.RUNNING if running else EntityState.WALKING
+        self.set_state(new_state)
+
     def running(self) -> None:
         """Boosts moverate to running speed."""
         if self.body.is_moving:
-            self.base_moverate = CONFIG.player_runrate
-            self.set_state(EntityState.RUNNING)
+            self._set_movement_speed(running=True)
 
     def walking(self) -> None:
         """Resets moverate back to walking speed."""
         if self.body.is_moving:
-            self.base_moverate = CONFIG.player_walkrate
-            self.set_state(EntityState.WALKING)
+            self._set_movement_speed(running=False)
 
     def jump(self) -> None:
         """Triggers a jump animation state."""
@@ -166,6 +176,26 @@ class Mover:
         expected = tile_distance(origin, target)
         traveled = tile_distance(self.body.position, origin)
         return traveled >= expected
+
+    def set_moverate(self, moverate: float) -> None:
+        """Sets the entity's movement rate."""
+        self.base_moverate = moverate
+
+    def set_moverate_modifier(self, modifier: float) -> None:
+        """Sets a new moverate modifier."""
+        self.moverate_modifier = max(0.0, modifier)
+
+    def set_facing(self, direction: Direction) -> None:
+        """Sets the entity's facing direction."""
+        self.facing = direction
+
+    def set_facing_mode(self, facing_mode: FacingMode) -> None:
+        """Sets the entity's facing mode."""
+        self.facing_mode = facing_mode
+
+    def set_move_direction(self, direction: Direction | None = None) -> None:
+        """Sets the move direction of the entity."""
+        self.move_direction = direction
 
 
 class Entity:
@@ -280,23 +310,23 @@ class Entity:
 
     def set_moverate(self, moverate: float) -> None:
         """Sets the entity's movement rate."""
-        self.mover.base_moverate = moverate
+        self.mover.set_moverate(moverate)
 
     def set_moverate_modifier(self, modifier: float) -> None:
         """Sets a new moverate modifier."""
-        self.mover.moverate_modifier = max(0.0, modifier)
+        self.mover.set_moverate_modifier(modifier)
 
     def set_facing(self, direction: Direction) -> None:
         """Sets the entity's facing direction."""
-        self.mover.facing = direction
+        self.mover.set_facing(direction)
 
     def set_facing_mode(self, facing_mode: FacingMode) -> None:
         """Sets the entity's facing mode."""
-        self.mover.facing_mode = facing_mode
+        self.mover.set_facing_mode(facing_mode)
 
     def set_move_direction(self, direction: Direction | None = None) -> None:
         """Sets the move direction of the entity."""
-        self.mover.move_direction = direction
+        self.mover.set_move_direction(direction)
 
     def add_collision(self, tile_pos: tuple[int, int]) -> None:
         """Set the entity's wandering position in the collision zone."""
@@ -305,6 +335,15 @@ class Entity:
     def remove_collision(self) -> None:
         """Remove the entity's wandering position from the collision zone."""
         self.client.collision_manager.remove_collision(self.tile_pos)
+
+    def begin_tile_exit(self) -> None:
+        """Begin transition off current tile by removing collision."""
+        self.remove_collision()
+
+    def complete_tile_entry(self, tile_pos: tuple[int, int]) -> None:
+        """Complete entry onto a tile, finalizing position and triggering callbacks."""
+        self.set_position(tile_pos)
+        self.on_tile_changed()
 
     # === PHYSICS END =========================================================
 

@@ -37,7 +37,6 @@ from tuxemon.compat.rect import ReadOnlyRect
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import Comparison
 from tuxemon.locale.locale import T
-from tuxemon.math import Vector2
 from tuxemon.scaling import ScalingStrategy
 from tuxemon.ui.dialogue import calc_dialog_rect
 from tuxemon.ui.text_alignment import DialogPosition
@@ -267,10 +266,6 @@ def open_choice_dialog(
         escape_key_exits=escape_key_exits,
         config=config,
     )
-
-
-def vector2_to_tile_pos(vector: Vector2) -> tuple[int, int]:
-    return (int(vector[0]), int(vector[1]))
 
 
 def tile_distance(tile0: Iterable[float], tile1: Iterable[float]) -> float:

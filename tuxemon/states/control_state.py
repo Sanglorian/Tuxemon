@@ -15,7 +15,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
 from tuxemon.platform.const import buttons
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.state.state import State
 
 if TYPE_CHECKING:
@@ -35,13 +34,14 @@ class ControlState(PygameMenuState):
         main_menu: bool = False,
         **kwargs: Any,
     ) -> None:
-        theme = get_theme()
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_CENTER
-
         self.main_menu = main_menu
 
         super().__init__(client, *args, **kwargs)
+
+        theme = get_theme(self.client.context.scaling)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
+        self._menu_config["theme"] = theme
 
         self.initialize_items(self.menu)
         self.reload_controls()
@@ -110,7 +110,7 @@ class ControlState(PygameMenuState):
 
             def mute_music() -> None:
                 self.client.config.update_attribute(
-                    "gameplay", "music_volume", str(0)
+                    "gameplay", "music_volume", 0
                 )
                 self.client.current_music.set_volume(0)
 
@@ -158,7 +158,7 @@ class ControlState(PygameMenuState):
                 """
                 volume = round(val / 100, 1)
                 self.client.config.update_attribute(
-                    "gameplay", "music_volume", str(volume)
+                    "gameplay", "music_volume", volume
                 )
                 self.client.current_music.set_volume(volume)
 
@@ -168,7 +168,7 @@ class ControlState(PygameMenuState):
                 """
                 volume = round(val / 100, 1)
                 self.client.config.update_attribute(
-                    "gameplay", "sound_volume", str(volume)
+                    "gameplay", "sound_volume", volume
                 )
                 sound = self.menu.get_sound()
                 sound.set_sound_volume(SOUND_TYPE_WIDGET_SELECTION, volume)
@@ -221,7 +221,7 @@ class ControlState(PygameMenuState):
             )
 
     def update_animation_size(self) -> None:
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         widgets_size = self.menu.get_size(widget=True)
         _width, _height = widgets_size
         # block width if more than screen width

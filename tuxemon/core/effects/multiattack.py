@@ -34,8 +34,7 @@ class MultiAttackEffect(CoreEffect):
     .. code-block:: json
 
         "effects": [
-            "multiattack 3",
-            "damage"
+            "multiattack 3"
         ]
     """
 
@@ -66,6 +65,7 @@ class MultiAttackEffect(CoreEffect):
         success = hit_count > 0
 
         if success:
+            target.current_hp = max(0, target.current_hp - total_damage)
             params = {"hit_count": hit_count}
             extract_text = T.format("combat_multiattack", params)
             extras = [extract_text]

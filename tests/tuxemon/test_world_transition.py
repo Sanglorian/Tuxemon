@@ -20,7 +20,9 @@ def mock_world():
 
 @pytest.fixture
 def transition(mock_world):
-    return WorldTransition(mock_world, mock_world.client.movement_manager)
+    return WorldTransition(
+        mock_world, mock_world.client.movement_manager, (800, 600)
+    )
 
 
 @pytest.fixture
@@ -53,7 +55,6 @@ def test_transition_state_changes(transition, state):
     ],
 )
 def test_set_transition_surface(monkeypatch, transition, color):
-    monkeypatch.setattr("tuxemon.world.transition.SCREEN_SIZE", (800, 600))
     transition.set_transition_surface(color)
     assert transition.transition_surface is not None
     assert transition.transition_surface.get_size() == (800, 600)

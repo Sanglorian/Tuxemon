@@ -17,7 +17,6 @@ from tuxemon.entity.sheet import get_combat_sheet
 from tuxemon.graphics import scale_surface
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.ui.menu_options import MenuOptions
 
 if TYPE_CHECKING:
@@ -53,9 +52,6 @@ class ChoiceNpc(PygameMenuState):
         **kwargs: Any,
     ) -> None:
         self.config = config or MenuNpcConfig()
-        theme = get_theme().copy()
-        if len(menu.options) > self.config.max_elements:
-            theme.scrollarea_position = POSITION_EAST
 
         rows = (
             math.ceil(len(menu.options) / self.config.number_columns)
@@ -68,6 +64,13 @@ class ChoiceNpc(PygameMenuState):
             rows=rows,
             **kwargs,
         )
+
+        theme = get_theme(self.client.context.scaling).copy()
+
+        if len(menu.options) > self.config.max_elements:
+            theme.scrollarea_position = POSITION_EAST
+
+        self._menu_config["theme"] = theme
 
         for option in menu.get_menu():
             self.add_npc_menu_item(
@@ -102,7 +105,7 @@ class ChoiceNpc(PygameMenuState):
         self.menu.add.vertical_fill(self.config.vertical_fill)
 
     def update_animation_size(self) -> None:
-        width, height = SCREEN_SIZE
+        width, height = self.client.context.resolution
         widgets_size = self.menu.get_size(widget=True)
 
         _width = widgets_size[0]

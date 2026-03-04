@@ -275,7 +275,7 @@ class Environment:
     def prepare_background(self, screen_size: tuple[int, int]) -> Surface:
         """Processes the background sprite to fit the screen dimensions."""
         graphics = self.data.get_battle_graphics()
-        scale_int = self.context.scaling.factor
+        scale_int = self.context.scale
         surf = load_and_scale(graphics.background, scale_int)
 
         full_width, full_height = screen_size
@@ -325,7 +325,7 @@ class IslandSheet:
         front_raw = sheet.subsurface(
             (self.frame_w, 0, self.frame_w, self.frame_h)
         )
-        scale_int = self.context.scaling.factor
+        scale_int = self.context.scale
         back_scaled = scale_surface(back_raw, scale_int)
         front_scaled = scale_surface(front_raw, scale_int)
 

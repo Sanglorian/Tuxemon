@@ -3,15 +3,13 @@
 from __future__ import annotations
 
 import logging
-import random
 from dataclasses import dataclass
 from itertools import product
 from typing import final
 
+from tuxemon.entity.behavior.base import WanderBehavior
 from tuxemon.event.eventaction import EventAction
-from tuxemon.map.map import get_coords, get_direction
 from tuxemon.session import Session
-from tuxemon.states.world_state import WorldState
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +20,7 @@ DEFAULT_FREQUENCY = 1
 @dataclass
 class CharWanderAction(EventAction):
     """
-    Make a character wander around the map.
+    Assign a WanderBehavior to a character.
 
     Script usage:
         .. code-block::
@@ -49,14 +47,12 @@ class CharWanderAction(EventAction):
     b_bound_y: int | None = None
 
     def start(self, session: Session) -> None:
-        player = session.player
-        client = session.client
         character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return
-        world = client.get_state_by_name(WorldState)
 
+        # Compute bounds if provided
         if (
             self.t_bound_x is not None
             and self.t_bound_y is not None
@@ -65,39 +61,17 @@ class CharWanderAction(EventAction):
         ):
             top = (self.t_bound_x, self.t_bound_y)
             bottom = (self.b_bound_x, self.b_bound_y)
-            output = generate_coordinates(top, bottom)
+            bounds = generate_coordinates(top, bottom)
         else:
-            output = []
+            bounds = None
 
-        def move() -> None:
-            # Don't interrupt existing movement
-            if character.moving or character.path:
-                return
+        freq = self.frequency or DEFAULT_FREQUENCY
 
-            # character stops if the player looks at it
-            tiles = get_coords(player.tile_pos, client.map_manager.map_size)
-            direction = get_direction(player.tile_pos, character.tile_pos)
-            if character.tile_pos in tiles and player.facing == direction:
-                return
-
-            # Suspend wandering if a dialog window is open
-            if any(
-                state_name in ("WorldMenuState", "DialogState", "ChoiceState")
-                for state_name in session.client.active_state_names
-            ):
-                return
-
-            # Choose a random direction that is free and walk toward it
-            origin = (character.tile_pos[0], character.tile_pos[1])
-            exits = client.pathfinder.get_exits(origin, character.facing)
-            if exits:
-                path = random.choice(exits)
-                if not output or path in output:
-                    character.set_path_and_start([path])
-
-        # Schedule the first move
-        frequency = self.frequency or DEFAULT_FREQUENCY
-        world.schedule_callback(frequency, move)
+        # Assign behavior
+        character.behavior_policy = WanderBehavior(
+            bounds=bounds,
+            frequency=freq,
+        )
 
 
 def generate_coordinates(

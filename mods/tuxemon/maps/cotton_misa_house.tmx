@@ -73,8 +73,7 @@
   </object>
   <object id="54" name="Create Granny" type="event" x="80" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc cotton_misa_gramps,5,4"/>
-    <property name="act2" value="char_wander cotton_misa_gramps"/>
+    <property name="act1" value="create_npc cotton_misa_gramps,5,4,wander"/>
     <property name="cond1" value="not char_exists cotton_misa_gramps"/>
    </properties>
   </object>

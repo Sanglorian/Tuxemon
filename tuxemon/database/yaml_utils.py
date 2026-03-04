@@ -16,10 +16,10 @@ def load_yaml(filepath: Path) -> Any:
         with filepath.open(encoding="utf-8") as file:
             return yaml.safe_load(file)
     except FileNotFoundError:
-        logger.error(f"Config file not found: {filepath}")
+        logger.warning(f"Config file not found: {filepath}")
         raise
     except yaml.YAMLError as exc:
-        logger.error(f"Error parsing YAML file: {exc}")
+        logger.warning(f"Error parsing YAML file: {exc}")
         raise
 
 

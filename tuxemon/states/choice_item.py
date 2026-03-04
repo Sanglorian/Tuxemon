@@ -13,7 +13,6 @@ from tuxemon.database.runtime import db
 from tuxemon.db import ItemModel
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import fix_measure
 from tuxemon.ui.menu_options import MenuOptions
 
@@ -50,8 +49,6 @@ class ChoiceItem(PygameMenuState):
         **kwargs: Any,
     ) -> None:
         self.config = config or MenuItemConfig()
-        theme = get_theme().copy()
-        theme.scrollarea_position = POSITION_EAST
 
         self.width, self.height, self.translate_percentage = (
             self.calculate_window_size(menu)
@@ -59,6 +56,9 @@ class ChoiceItem(PygameMenuState):
         super().__init__(
             client=client, width=self.width, height=self.height, **kwargs
         )
+        theme = get_theme(self.client.context.scaling).copy()
+        theme.scrollarea_position = POSITION_EAST
+        self._menu_config["theme"] = theme
 
         for option in menu.get_menu():
             self.add_item_menu_item(
@@ -70,7 +70,7 @@ class ChoiceItem(PygameMenuState):
     def calculate_window_size(
         self, menu: MenuOptions
     ) -> tuple[int, int, float]:
-        _width, _height = SCREEN_SIZE
+        _width, _height = self.client.context.resolution
 
         if len(menu.options) >= self.config.max_elements:
             height = _height * self.config.max_height_percentage

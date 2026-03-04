@@ -3,9 +3,25 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Protocol, TypeVar, overload
+from typing import TYPE_CHECKING, Protocol, TypeVar, overload
+
+if TYPE_CHECKING:
+    from tuxemon.config import TuxemonConfig
 
 TVarSequence = TypeVar("TVarSequence", bound=tuple[int, ...])
+
+
+def make_default_scaling(
+    config: TuxemonConfig, native_resolution: tuple[int, int]
+) -> DefaultScaling:
+    if config.large_gui:
+        scale = 2
+    elif config.scaling:
+        scale = int(config.resolution[0] / native_resolution[0])
+    else:
+        scale = 1
+
+    return DefaultScaling(scale)
 
 
 class ScalingStrategy(Protocol):
@@ -17,18 +33,12 @@ class ScalingStrategy(Protocol):
     def scale_int(self, value: int) -> int: ...
     def scale_float(self, value: float) -> float: ...
     def scale_sequence(self, seq: Sequence[float]) -> list[float]: ...
-
-    @property
-    def factor(self) -> int: ...
+    def scale_point(self, point: tuple[int, int]) -> tuple[int, int]: ...
 
 
 class DefaultScaling:
     def __init__(self, scale: int):
         self._scale = scale
-
-    @property
-    def factor(self) -> int:
-        return self._scale
 
     def scale_tuple(self, coords: TVarSequence) -> TVarSequence:
         return type(coords)(i * self._scale for i in coords)
@@ -42,6 +52,10 @@ class DefaultScaling:
     def scale_sequence(self, seq: Sequence[float]) -> list[float]:
         return [self.scale_float(x) for x in seq]
 
+    def scale_point(self, point: tuple[int, int]) -> tuple[int, int]:
+        x, y = point
+        return (x * self._scale, y * self._scale)
+
 
 class ResolutionScaling:
     def __init__(
@@ -51,10 +65,6 @@ class ResolutionScaling:
     ):
         self.base_w, self.base_h = base_resolution
         self.curr_w, self.curr_h = current_resolution
-
-    @property
-    def factor(self) -> float:
-        return self.curr_w / self.base_w
 
     def scale_int(self, value: int) -> int:
         # scale uniformly using width ratio
@@ -88,3 +98,9 @@ class ResolutionScaling:
             return (int(x * sx), int(y * sy), int(w * sx), int(h * sy))
 
         raise ValueError("ResolutionScaling only supports 2- or 4-tuples")
+
+    def scale_point(self, point: tuple[int, int]) -> tuple[int, int]:
+        x, y = point
+        sx = self.curr_w / self.base_w
+        sy = self.curr_h / self.base_h
+        return (int(x * sx), int(y * sy))

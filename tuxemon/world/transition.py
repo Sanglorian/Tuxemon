@@ -9,7 +9,6 @@ from pygame import SRCALPHA
 from pygame.surface import Surface
 
 from tuxemon.graphics import ColorLike
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.entity.npc import NPC
@@ -18,12 +17,18 @@ if TYPE_CHECKING:
 
 
 class WorldTransition:
-    def __init__(self, world: WorldState, movement: MovementManager) -> None:
+    def __init__(
+        self,
+        world: WorldState,
+        movement: MovementManager,
+        resolution: tuple[int, int],
+    ) -> None:
         self.world = world
         self.movement = movement
-        self.transition_alpha = 0
+        self.resolution = resolution
+        self.transition_alpha: int = 0
         self.transition_surface: Surface | None = None
-        self.in_transition = False
+        self.in_transition: bool = False
 
     def set_transition_surface(self, color: ColorLike) -> None:
         if (
@@ -32,7 +37,7 @@ class WorldTransition:
         ):
             return
 
-        new_surface = Surface(SCREEN_SIZE, SRCALPHA)
+        new_surface = Surface(self.resolution, SRCALPHA)
         new_surface.fill(color)
         self.transition_surface = new_surface
 

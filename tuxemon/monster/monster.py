@@ -14,6 +14,7 @@ from tuxemon.database.runtime import db
 from tuxemon.db import (
     Acquisition,
     EffectPhase,
+    EvolutionStage,
     GenderType,
     MonsterModel,
     MonsterSpritesModel,
@@ -505,6 +506,15 @@ class Monster:
             f"Added {points_to_add} TP to '{stat_name}'. New total: {new_val}"
         )
         self.set_stats()
+
+    def evolution_rank(self) -> int:
+        stage_order = {
+            EvolutionStage.STAGE2: 4,
+            EvolutionStage.STAGE1: 2,
+            EvolutionStage.BASIC: 2,
+            EvolutionStage.STANDALONE: 1,
+        }
+        return stage_order.get(self.stage, 0)
 
     def set_stats(self) -> None:
         """

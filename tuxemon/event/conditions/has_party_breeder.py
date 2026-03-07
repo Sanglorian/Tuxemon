@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import EvolutionStage, GenderType, SpatialCondition
+from tuxemon.db import EvolutionStage, GenderType
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -27,13 +28,13 @@ class HasPartyBreederCondition(EventCondition):
         character: Either "player" or npc slug name (e.g. "npc_maple").
     """
 
-    name = "has_party_breeder"
+    name: ClassVar[str] = "has_party_breeder"
+    character: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        _character = condition.parameters[0]
-        character = session.get_npc(_character)
+    def test(self, session: Session) -> bool:
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
 
         has_male_evolved_monsters = any(

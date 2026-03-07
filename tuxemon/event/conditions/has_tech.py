@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -23,12 +23,12 @@ class HasTechCondition(EventCondition):
         technique: Technique slug name (e.g. "bullet").
     """
 
-    name = "has_tech"
+    name: ClassVar[str] = "has_tech"
+    technique: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         player = session.player
-        tech = condition.parameters[0]
-        if player.party.has_tech(tech):
+        if player.party.has_tech(self.technique):
             return True
         else:
             return False

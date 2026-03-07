@@ -515,11 +515,12 @@ class MapRenderer(AbstractRenderer):
         """Retrieves surfaces for map animations."""
         return [
             WorldSurfaces(
-                anim.get_current_frame(), Vector2(data.position), data.layer
+                info.animation.get_current_frame(),
+                Vector2(info.position),
+                info.layer,
             )
-            for data in self.map_animations._cache.values()
-            for anim in [data.animation]
-            if not anim.is_finished() and anim.visibility
+            for info in self.map_animations._cache.values()
+            if info.visible and not info.animation.is_finished()
         ]
 
     def _position_surfaces(

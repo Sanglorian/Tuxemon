@@ -2,7 +2,12 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import logging
+import sys
+import time
+import warnings
 from collections.abc import Mapping
+from logging import FileHandler, Formatter, Logger, StreamHandler
 from pathlib import Path
 from typing import Any, Literal
 
@@ -10,6 +15,7 @@ import pygame
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from tuxemon.animation import Animation
+from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import dump_yaml_io, load_yaml
 from tuxemon.platform.const import buttons, events
 
@@ -548,15 +554,16 @@ class InputConfig:
 class LoggingConfig:
     """Reactive logging configuration wrapper."""
 
-    def __init__(self, config_model: TuxemonFullConfig) -> None:
+    LOG_LEVELS = {
+        "debug": logging.DEBUG,
+        "info": logging.INFO,
+        "warning": logging.WARNING,
+        "error": logging.ERROR,
+        "critical": logging.CRITICAL,
+    }
+
+    def __init__(self, config_model: TuxemonFullConfig):
         self._model = config_model.logging
-        # [logging]
-        # Log levels can be: debug, info, warning, error, or critical
-        # Setting loggers to "all" will enable debug logging for all modules.
-        #   Some available loggers:
-        #     states.combat, states.world, event,
-        #     neteria.server, neteria.client, neteria.core
-        # Comma-separated list of which modules to enable logging on
 
     @property
     def loggers(self) -> list[str]:
@@ -577,3 +584,70 @@ class LoggingConfig:
     @property
     def log_keep_max(self) -> int:
         return self._model.file_keep_max
+
+    def configure(self) -> None:
+        log_level = self.LOG_LEVELS.get(self.debug_level, logging.INFO)
+
+        if self.debug_logging:
+            warnings.filterwarnings("default")
+
+        for logger_name in self.loggers:
+            if logger_name == "all":
+                print("Enabling logging of all modules.")
+                logger = logging.getLogger()
+            else:
+                print(f"Enabling logging for module: {logger_name}")
+                logger = logging.getLogger(logger_name)
+
+            logger.setLevel(log_level)
+
+            formatter = Formatter(
+                "[%(asctime)s] %(name)s - %(levelname)s - %(message)s"
+            )
+
+            # Avoid duplicate stdout handlers
+            if not any(
+                isinstance(h, StreamHandler)
+                and getattr(h, "stream", None) is sys.stdout
+                for h in logger.handlers
+            ):
+                stream = StreamHandler(sys.stdout)
+                stream.setLevel(log_level)
+                stream.setFormatter(formatter)
+                logger.addHandler(stream)
+
+            if self.log_to_file:
+                self._setup_file_logging(logger, formatter, log_level)
+
+        logging.getLogger("orthographic").setLevel(logging.ERROR)
+
+    def _setup_file_logging(
+        self, logger: Logger, formatter: Formatter, log_level: int
+    ) -> None:
+        log_dir = paths.USER_STORAGE_DIR / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+
+        timestamp = time.strftime("%Y-%m-%d_%Hh%Mm%Ss", time.localtime())
+        file_path = log_dir / f"{timestamp}.log"
+
+        # Avoid duplicate file handlers for the same file
+        if not any(
+            isinstance(h, FileHandler)
+            and getattr(h, "baseFilename", None) == str(file_path)
+            for h in logger.handlers
+        ):
+            fh = FileHandler(file_path)
+            fh.setFormatter(formatter)
+            fh.setLevel(log_level)
+            logger.addHandler(fh)
+
+        # Rotation: keep only the newest N files
+        keep = max(1, self.log_keep_max)
+        files = sorted(
+            log_dir.glob("*.log"),
+            key=lambda f: f.stat().st_mtime,
+            reverse=True,
+        )
+
+        for old in files[keep:]:
+            old.unlink(missing_ok=True)

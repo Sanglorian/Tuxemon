@@ -59,10 +59,12 @@ def setup_combat():
 @pytest.mark.parametrize(
     "strategy_cls",
     [
-        DefaultExperienceStrategy,
-        EqualExperienceStrategy,
-        OverkillExperienceStrategy,
-        DamageProportionalExperienceStrategy,
+        pytest.param(DefaultExperienceStrategy, id="default"),
+        pytest.param(EqualExperienceStrategy, id="equal"),
+        pytest.param(OverkillExperienceStrategy, id="overkill"),
+        pytest.param(
+            DamageProportionalExperienceStrategy, id="damage_proportional"
+        ),
     ],
 )
 def test_basic_strategies(strategy_cls, setup_combat):

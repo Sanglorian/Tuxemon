@@ -15,12 +15,12 @@ class DummyMonster:
 @pytest.mark.parametrize(
     "interval, initial_steps, added, expected_ticks",
     [
-        (0, 0, 10, 0),  # interval disabled
-        (5, 0, 4, 0),  # not enough to trigger
-        (5, 0, 5, 1),  # exactly one interval
-        (5, 3, 4, 1),  # crosses from 3→7
-        (5, 0, 12, 2),  # two intervals
-        (3, 2, 10, 3),  # 2→12 crosses 3,6,9
+        pytest.param(0, 0, 10, 0, id="interval_disabled"),
+        pytest.param(5, 0, 4, 0, id="not_enough_for_tick"),
+        pytest.param(5, 0, 5, 1, id="exactly_one_interval"),
+        pytest.param(5, 3, 4, 1, id="crosses_interval_boundary"),
+        pytest.param(5, 0, 12, 2, id="two_intervals"),
+        pytest.param(3, 2, 10, 3, id="three_intervals"),
     ],
 )
 def test_add_steps(interval, initial_steps, added, expected_ticks):
@@ -32,9 +32,9 @@ def test_add_steps(interval, initial_steps, added, expected_ticks):
 @pytest.mark.parametrize(
     "value, ticks, expected",
     [
-        (5, 1, -5),
-        (5, 3, -15),
-        (0, 10, 0),  # zero value → no change
+        pytest.param(5, 1, -5, id="flat_damage_one_tick"),
+        pytest.param(5, 3, -15, id="flat_damage_three_ticks"),
+        pytest.param(0, 10, 0, id="zero_value_no_damage"),
     ],
 )
 def test_compute_hp_change_flat_damage(value, ticks, expected):
@@ -49,8 +49,8 @@ def test_compute_hp_change_flat_damage(value, ticks, expected):
 @pytest.mark.parametrize(
     "hp, percent, ticks, expected",
     [
-        (100, 10, 1, -10),
-        (200, 25, 2, -100),  # 25% of 200 = 50 per tick
+        pytest.param(100, 10, 1, -10, id="max_hp_10pct_1tick"),
+        pytest.param(200, 25, 2, -100, id="max_hp_25pct_2ticks"),
     ],
 )
 def test_compute_hp_change_percent_max_hp_damage(hp, percent, ticks, expected):
@@ -65,8 +65,8 @@ def test_compute_hp_change_percent_max_hp_damage(hp, percent, ticks, expected):
 @pytest.mark.parametrize(
     "current_hp, percent, ticks, expected",
     [
-        (100, 10, 1, -10),
-        (80, 50, 2, -80),  # 50% of 80 = 40 per tick
+        pytest.param(100, 10, 1, -10, id="current_hp_10pct_1tick"),
+        pytest.param(80, 50, 2, -80, id="current_hp_50pct_2ticks"),
     ],
 )
 def test_compute_hp_change_percent_current_hp_damage(
@@ -83,8 +83,8 @@ def test_compute_hp_change_percent_current_hp_damage(
 @pytest.mark.parametrize(
     "hp, percent, ticks, expected",
     [
-        (100, 10, 1, 10),
-        (200, 25, 2, 100),  # 25% of 200 = 50 per tick
+        pytest.param(100, 10, 1, 10, id="max_hp_heal_10pct_1tick"),
+        pytest.param(200, 25, 2, 100, id="max_hp_heal_25pct_2ticks"),
     ],
 )
 def test_compute_hp_change_percent_max_hp_heal(hp, percent, ticks, expected):
@@ -99,8 +99,8 @@ def test_compute_hp_change_percent_max_hp_heal(hp, percent, ticks, expected):
 @pytest.mark.parametrize(
     "current_hp, percent, ticks, expected",
     [
-        (100, 10, 1, 10),
-        (80, 50, 2, 80),  # 50% of 80 = 40 per tick
+        pytest.param(100, 10, 1, 10, id="current_hp_heal_10pct_1tick"),
+        pytest.param(80, 50, 2, 80, id="current_hp_heal_50pct_2ticks"),
     ],
 )
 def test_compute_hp_change_percent_current_hp_heal(
@@ -117,9 +117,11 @@ def test_compute_hp_change_percent_current_hp_heal(
 @pytest.mark.parametrize(
     "effect_type, value",
     [
-        (StepEffectType.NONE, 10),
-        (StepEffectType.FLAT_DAMAGE, 0),
-        (StepEffectType.PERCENT_MAX_HP_DAMAGE, 0),
+        pytest.param(StepEffectType.NONE, 10, id="none_effect"),
+        pytest.param(StepEffectType.FLAT_DAMAGE, 0, id="flat_zero"),
+        pytest.param(
+            StepEffectType.PERCENT_MAX_HP_DAMAGE, 0, id="percent_zero"
+        ),
     ],
 )
 def test_compute_hp_change_none_or_zero(effect_type, value):

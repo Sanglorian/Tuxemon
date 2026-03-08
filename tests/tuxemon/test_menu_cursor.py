@@ -81,7 +81,13 @@ def test_hide_cursor(controller):
     assert controller.arrow not in controller.sprites
 
 
-@pytest.mark.parametrize("animate_flag", [True, False])
+@pytest.mark.parametrize(
+    "animate_flag",
+    [
+        pytest.param(True, id="true"),
+        pytest.param(False, id="false"),
+    ],
+)
 def test_trigger_cursor_update(controller, animate_flag):
     item = MagicMock()
     item.rect.midleft = (10, 20)

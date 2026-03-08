@@ -17,7 +17,15 @@ def test_initial_state():
     assert cd.locked is False
 
 
-@pytest.mark.parametrize("duration", [0, 1, 5, 999])
+@pytest.mark.parametrize(
+    "duration",
+    [
+        pytest.param(0, id="duration_0"),
+        pytest.param(1, id="duration_1"),
+        pytest.param(5, id="duration_5"),
+        pytest.param(999, id="duration_999"),
+    ],
+)
 def test_trigger_sets_remaining_to_duration(duration):
     cd = Cooldown(duration=duration)
     cd.trigger()
@@ -28,10 +36,10 @@ def test_trigger_sets_remaining_to_duration(duration):
 @pytest.mark.parametrize(
     "start, tick_amount, expected",
     [
-        (5, 1, 4),
-        (5, 2, 3),
-        (1, 5, 0),
-        (0, 1, 0),
+        pytest.param(5, 1, 4, id="tick_1_from_5"),
+        pytest.param(5, 2, 3, id="tick_2_from_5"),
+        pytest.param(1, 5, 0, id="tick_past_zero"),
+        pytest.param(0, 1, 0, id="tick_from_zero"),
     ],
 )
 def test_tick_reduces_remaining(start, tick_amount, expected):
@@ -85,12 +93,12 @@ def test_tick_respects_locked():
 
 
 @pytest.mark.parametrize(
-    "remaining,frozen_turns,ticks,expected_remaining,expected_frozen",
+    "remaining, frozen_turns, ticks, expected_remaining, expected_frozen",
     [
-        (4, 2, 1, 4, 1),
-        (4, 2, 2, 4, 0),
-        (4, 1, 2, 3, 0),
-        (4, 0, 1, 3, 0),
+        pytest.param(4, 2, 1, 4, 1, id="frozen_blocks_one_tick"),
+        pytest.param(4, 2, 2, 4, 0, id="frozen_blocks_two_ticks"),
+        pytest.param(4, 1, 2, 3, 0, id="freeze_expires_then_ticks"),
+        pytest.param(4, 0, 1, 3, 0, id="no_freeze_normal_tick"),
     ],
 )
 def test_freeze_behavior(
@@ -108,12 +116,12 @@ def test_freeze_behavior(
 
 
 @pytest.mark.parametrize(
-    "remaining,haste_turns,ticks,expected_remaining,expected_haste",
+    "remaining, haste_turns, ticks, expected_remaining, expected_haste",
     [
-        (6, 2, 1, 4, 1),
-        (6, 2, 2, 2, 0),
-        (3, 1, 1, 1, 0),
-        (1, 1, 2, 0, 0),
+        pytest.param(6, 2, 1, 4, 1, id="haste_one_tick"),
+        pytest.param(6, 2, 2, 2, 0, id="haste_two_ticks"),
+        pytest.param(3, 1, 1, 1, 0, id="single_haste_tick"),
+        pytest.param(1, 1, 2, 0, 0, id="haste_expires_before_zero"),
     ],
 )
 def test_haste_behavior(
@@ -131,10 +139,10 @@ def test_haste_behavior(
 
 
 @pytest.mark.parametrize(
-    "initial_remaining,shield,expected_after_trigger,expected_shield",
+    "initial_remaining, shield, expected_after_trigger, expected_shield",
     [
-        (10, True, 10, False),
-        (10, False, 5, False),
+        pytest.param(10, True, 10, False, id="shield_blocks_and_breaks"),
+        pytest.param(10, False, 5, False, id="no_shield_normal_trigger"),
     ],
 )
 def test_shield_behavior(
@@ -153,10 +161,10 @@ def test_shield_behavior(
 @pytest.mark.parametrize(
     "initial, add_amount, max_value, expected",
     [
-        (0, 1, 5, 1),
-        (1, 2, 5, 3),
-        (3, 10, 5, 5),
-        (5, 1, 5, 5),
+        pytest.param(0, 1, 5, 1, id="add_from_zero"),
+        pytest.param(1, 2, 5, 3, id="normal_increase"),
+        pytest.param(3, 10, 5, 5, id="clamped_overflow"),
+        pytest.param(5, 1, 5, 5, id="already_at_max"),
     ],
 )
 def test_add_increases_remaining_but_clamps(
@@ -176,7 +184,14 @@ def test_add_respects_locked():
     assert cd.remaining == 1
 
 
-@pytest.mark.parametrize("initial", [0, 1, 5])
+@pytest.mark.parametrize(
+    "initial",
+    [
+        pytest.param(0, id="initial_0"),
+        pytest.param(1, id="initial_1"),
+        pytest.param(5, id="initial_5"),
+    ],
+)
 def test_negative_add_does_not_reduce_remaining(initial):
     cd = Cooldown(duration=5)
     cd.remaining = initial
@@ -187,9 +202,9 @@ def test_negative_add_does_not_reduce_remaining(initial):
 @pytest.mark.parametrize(
     "initial,add,expected",
     [
-        (0, 1, 1),
-        (1, 3, 4),
-        (5, 0, 5),
+        pytest.param(0, 1, 1, id="start_0_add_1"),
+        pytest.param(1, 3, 4, id="start_1_add_3"),
+        pytest.param(5, 0, 5, id="start_5_add_0"),
     ],
 )
 def test_charge_accumulates(initial, add, expected):
@@ -202,10 +217,10 @@ def test_charge_accumulates(initial, add, expected):
 @pytest.mark.parametrize(
     "remaining,frozen,haste,ticks,expected_remaining",
     [
-        (5, 1, 2, 1, 5),
-        (5, 0, 2, 1, 3),
-        (5, 0, 2, 2, 1),
-        (5, 0, 0, 3, 2),
+        pytest.param(5, 1, 2, 1, 5, id="frozen_no_progress"),
+        pytest.param(5, 0, 2, 1, 3, id="haste_single_tick"),
+        pytest.param(5, 0, 2, 2, 1, id="haste_two_ticks"),
+        pytest.param(5, 0, 0, 3, 2, id="no_haste_three_ticks"),
     ],
 )
 def test_combined_behavior(

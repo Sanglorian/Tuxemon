@@ -78,13 +78,27 @@ def test_selector_valid(selector):
     assert layout == {"key": (1, 2, 3, 4)}
 
 
-@pytest.mark.parametrize("player_count", [0, 3, -1])
+@pytest.mark.parametrize(
+    "player_count",
+    [
+        pytest.param(0, id="zero_players"),
+        pytest.param(3, id="three_players"),
+        pytest.param(-1, id="negative_players"),
+    ],
+)
 def test_selector_invalid_player_count(selector, player_count):
     with pytest.raises(ValueError):
         selector.select(0, player_count)
 
 
-@pytest.mark.parametrize("index", [-1, 2, 99])
+@pytest.mark.parametrize(
+    "index",
+    [
+        pytest.param(-1, id="negative_index"),
+        pytest.param(2, id="out_of_range_index_2"),
+        pytest.param(99, id="out_of_range_index_99"),
+    ],
+)
 def test_selector_invalid_index(selector, index):
     with pytest.raises(IndexError):
         selector.select(index, 2)

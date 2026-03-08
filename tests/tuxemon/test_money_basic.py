@@ -19,9 +19,9 @@ def test_init(money_manager):
 @pytest.mark.parametrize(
     "initial,delta,expected",
     [
-        (0, 100, 100),
-        (100, -50, 50),
-        (50, -100, 0),
+        pytest.param(0, 100, 100, id="add_from_zero"),
+        pytest.param(100, -50, 50, id="add_negative"),
+        pytest.param(50, -100, 0, id="add_clamped_to_zero"),
     ],
 )
 def test_add_money(money_manager, initial, delta, expected):
@@ -33,8 +33,8 @@ def test_add_money(money_manager, initial, delta, expected):
 @pytest.mark.parametrize(
     "initial,delta,expected",
     [
-        (100, 50, 50),
-        (50, 100, 0),
+        pytest.param(100, 50, 50, id="remove_normal"),
+        pytest.param(50, 100, 0, id="remove_clamped_to_zero"),
     ],
 )
 def test_remove_money(money_manager, initial, delta, expected):

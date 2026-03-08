@@ -32,9 +32,9 @@ def test_init(faction, mocker):
 @pytest.mark.parametrize(
     "rep,expected",
     [
-        (50, None),
-        (150, "test_rank1"),
-        (250, "test_rank2"),
+        pytest.param(50, None, id="below_first_rank"),
+        pytest.param(150, "test_rank1", id="first_rank"),
+        pytest.param(250, "test_rank2", id="second_rank"),
     ],
 )
 def test_get_rank_for_reputation(faction, rep, expected):
@@ -104,9 +104,9 @@ def test_has_member(faction):
 @pytest.mark.parametrize(
     "initial,new_rep,expected",
     [
-        ("test_rank1", 250, "test_rank2"),  # promotion
-        ("test_rank2", 150, "test_rank1"),  # degradation
-        ("test_rank2", 50, None),  # degradation to none
+        pytest.param("test_rank1", 250, "test_rank2", id="promotion_to_rank2"),
+        pytest.param("test_rank2", 150, "test_rank1", id="demotion_to_rank1"),
+        pytest.param("test_rank2", 50, None, id="demotion_to_none"),
     ],
 )
 def test_evaluate_rank_change(faction, initial, new_rep, expected):

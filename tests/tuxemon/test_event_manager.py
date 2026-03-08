@@ -32,13 +32,19 @@ def test_init(event_manager, state_manager):
 @pytest.mark.parametrize(
     "events, active_states, expected_len",
     [
-        ([], [], 0),  # empty events
-        ([Mock(spec=PlayerInput), Mock(spec=PlayerInput)], [], 2),  # no states
-        (
+        pytest.param([], [], 0, id="no_events"),
+        pytest.param(
+            [Mock(spec=PlayerInput), Mock(spec=PlayerInput)],
+            [],
+            2,
+            id="two_events_no_states",
+        ),
+        pytest.param(
             [Mock(spec=PlayerInput), Mock(spec=PlayerInput)],
             [Mock()],
             2,
-        ),  # with state
+            id="two_events_with_state",
+        ),
     ],
 )
 def test_process_events(
@@ -58,9 +64,9 @@ def test_process_events(
 @pytest.mark.parametrize(
     "processed_return, expected",
     [
-        (None, None),  # state absorbs
-        ("same", "same"),  # state returns same event
-        ("modified", "modified"),  # state modifies event
+        pytest.param(None, None, id="absorbed"),
+        pytest.param("same", "same", id="same_event"),
+        pytest.param("modified", "modified", id="modified_event"),
     ],
 )
 def test_propagate_event(

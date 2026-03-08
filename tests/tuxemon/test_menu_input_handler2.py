@@ -54,9 +54,9 @@ def test_disabled_menu_propagates(handler, state):
 @pytest.mark.parametrize(
     "button",
     [
-        buttons.B,
-        buttons.BACK,
-        intentions.MENU_CANCEL,
+        pytest.param(buttons.B, id="button_b"),
+        pytest.param(buttons.BACK, id="button_back"),
+        pytest.param(intentions.MENU_CANCEL, id="intention_cancel"),
     ],
 )
 def test_escape_consumes_when_escape_key_exits_false(handler, state, button):
@@ -68,9 +68,9 @@ def test_escape_consumes_when_escape_key_exits_false(handler, state, button):
 @pytest.mark.parametrize(
     "button",
     [
-        buttons.B,
-        buttons.BACK,
-        intentions.MENU_CANCEL,
+        pytest.param(buttons.B, id="button_b"),
+        pytest.param(buttons.BACK, id="button_back"),
+        pytest.param(intentions.MENU_CANCEL, id="intention_cancel"),
     ],
 )
 def test_escape_propagates_when_escape_key_exits_true(handler, state, button):

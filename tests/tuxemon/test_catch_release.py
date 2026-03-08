@@ -51,7 +51,16 @@ def test_release_two(npc):
     assert npc.monsters[0] is monB
 
 
-@pytest.mark.parametrize("count", [1, 2, 3, 4, 5])
+@pytest.mark.parametrize(
+    "count",
+    [
+        pytest.param(1, id="count_1"),
+        pytest.param(2, id="count_2"),
+        pytest.param(3, id="count_3"),
+        pytest.param(4, id="count_4"),
+        pytest.param(5, id="count_5"),
+    ],
+)
 def test_catch_until_limit(npc, count):
     for _ in range(count):
         npc.party.add_monster(fake_mon(), len(npc.monsters))

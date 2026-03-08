@@ -18,7 +18,7 @@ def test_empty_properties():
 @pytest.mark.parametrize(
     "properties, expected",
     [
-        (
+        pytest.param(
             {"enter_from": "up, left"},
             RegionProperties(
                 enter_from=[Direction.LEFT, Direction.UP],
@@ -27,8 +27,9 @@ def test_empty_properties():
                 entity=None,
                 key=None,
             ),
+            id="enter_from_basic",
         ),
-        (
+        pytest.param(
             {"exit_from": "down"},
             RegionProperties(
                 enter_from=[Direction.UP, Direction.LEFT, Direction.RIGHT],
@@ -37,8 +38,9 @@ def test_empty_properties():
                 entity=None,
                 key=None,
             ),
+            id="exit_from_basic",
         ),
-        (
+        pytest.param(
             {
                 "enter_from": "up, left",
                 "exit_from": "down, right",
@@ -52,8 +54,9 @@ def test_empty_properties():
                 entity=None,
                 key="door",
             ),
+            id="all_fields",
         ),
-        (
+        pytest.param(
             {"key": "slide"},
             RegionProperties(
                 enter_from=list(Direction),
@@ -62,8 +65,9 @@ def test_empty_properties():
                 entity=None,
                 key="slide",
             ),
+            id="key_only_defaults",
         ),
-        (
+        pytest.param(
             {"enter_from": None},
             RegionProperties(
                 enter_from=[],
@@ -72,8 +76,9 @@ def test_empty_properties():
                 entity=None,
                 key=None,
             ),
+            id="enter_from_none",
         ),
-        (
+        pytest.param(
             {"enter_from": "up, up, left"},
             RegionProperties(
                 enter_from=[Direction.LEFT, Direction.UP],
@@ -82,8 +87,9 @@ def test_empty_properties():
                 entity=None,
                 key=None,
             ),
+            id="dedupe_values",
         ),
-        (
+        pytest.param(
             {"enter_from": "Up, Left"},
             RegionProperties(
                 enter_from=[Direction.LEFT, Direction.UP],
@@ -92,8 +98,9 @@ def test_empty_properties():
                 entity=None,
                 key=None,
             ),
+            id="case_insensitive",
         ),
-        (
+        pytest.param(
             {"enter_from": " up , left "},
             RegionProperties(
                 enter_from=[Direction.LEFT, Direction.UP],
@@ -102,8 +109,9 @@ def test_empty_properties():
                 entity=None,
                 key=None,
             ),
+            id="strip_whitespace",
         ),
-        (
+        pytest.param(
             {"endure": "left"},
             RegionProperties(
                 enter_from=[],
@@ -112,8 +120,9 @@ def test_empty_properties():
                 entity=None,
                 key=None,
             ),
+            id="endure_only",
         ),
-        (
+        pytest.param(
             {"Enter_from": "up, left"},
             RegionProperties(
                 enter_from=[Direction.LEFT, Direction.UP],
@@ -122,8 +131,9 @@ def test_empty_properties():
                 entity=None,
                 key=None,
             ),
+            id="case_insensitive_key",
         ),
-        (
+        pytest.param(
             {"exit_from": "left, right"},
             RegionProperties(
                 enter_from=[Direction.UP, Direction.DOWN],
@@ -132,6 +142,7 @@ def test_empty_properties():
                 entity=None,
                 key=None,
             ),
+            id="exit_from_multiple",
         ),
     ],
 )
@@ -142,21 +153,37 @@ def test_extract_region_properties_valid(properties, expected):
 @pytest.mark.parametrize(
     "properties",
     [
-        {"enter_from": "up, invalid"},
-        {"enter_from": ""},
-        {"exit_from": ""},
-        {"enter_from": "slide"},  # invalid slide usage
-        {"enter_from": "up, @, left"},
-        {"enter_from": "up", "key": ""},  # empty key invalid
-        {"speed_modifier": "fast"},
-        {"key": "push_tile", "push_direction": "left"},  # missing strength
-        {"key": "push_tile", "push_direction": "up", "push_strength": "0"},
-        {"key": "push_tile", "push_direction": "banana", "push_strength": "3"},
-        {
-            "key": "push_tile",
-            "push_direction": "right",
-            "push_strength": "strong",
-        },
+        pytest.param({"enter_from": "up, invalid"}, id="invalid_direction"),
+        pytest.param({"enter_from": ""}, id="empty_enter_from"),
+        pytest.param({"exit_from": ""}, id="empty_exit_from"),
+        pytest.param({"enter_from": "slide"}, id="invalid_slide_usage"),
+        pytest.param({"enter_from": "up, @, left"}, id="invalid_symbol"),
+        pytest.param({"enter_from": "up", "key": ""}, id="empty_key"),
+        pytest.param({"speed_modifier": "fast"}, id="unknown_property"),
+        pytest.param(
+            {"key": "push_tile", "push_direction": "left"},
+            id="push_tile_missing_strength",
+        ),
+        pytest.param(
+            {"key": "push_tile", "push_direction": "up", "push_strength": "0"},
+            id="push_tile_strength_zero",
+        ),
+        pytest.param(
+            {
+                "key": "push_tile",
+                "push_direction": "banana",
+                "push_strength": "3",
+            },
+            id="push_tile_invalid_direction",
+        ),
+        pytest.param(
+            {
+                "key": "push_tile",
+                "push_direction": "right",
+                "push_strength": "strong",
+            },
+            id="push_tile_invalid_strength",
+        ),
     ],
 )
 def test_extract_region_properties_invalid(properties):
@@ -271,7 +298,13 @@ def test_slide_with_unknown_keys():
     assert extract_region_properties(properties) == expected
 
 
-@pytest.mark.parametrize("value", ["", "   "])
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param("", id="empty_string"),
+        pytest.param("   ", id="whitespace_only"),
+    ],
+)
 def test_direction_to_list_empty(value):
     with pytest.raises(ValueError):
         direction_to_list(value)

@@ -18,14 +18,14 @@ def test_string_roundtrip():
 @pytest.mark.parametrize(
     "input_str",
     [
-        "1.2.3",
-        "1.2.3a1",
-        "1.2.3b2",
-        "1.2.3rc3",
-        "1.2.3.post1",
-        "1.2.3.dev4",
-        "1!1.2.3",  # epoch
-        "1.2.3+local",  # local version
+        pytest.param("1.2.3", id="simple_release"),
+        pytest.param("1.2.3a1", id="alpha_release"),
+        pytest.param("1.2.3b2", id="beta_release"),
+        pytest.param("1.2.3rc3", id="release_candidate"),
+        pytest.param("1.2.3.post1", id="post_release"),
+        pytest.param("1.2.3.dev4", id="dev_release"),
+        pytest.param("1!1.2.3", id="epoch_version"),
+        pytest.param("1.2.3+local", id="local_version"),
     ],
 )
 def test_valid_pep440_versions(input_str):
@@ -35,10 +35,10 @@ def test_valid_pep440_versions(input_str):
 @pytest.mark.parametrize(
     "invalid",
     [
-        "1.2.x",  # invalid character
-        "1..3",  # empty segment
-        "1.2.3-foo",  # invalid prerelease (SemVer style)
-        "1.2.3+foo+bar",  # invalid local version (only one + allowed)
+        pytest.param("1.2.x", id="invalid_character"),
+        pytest.param("1..3", id="empty_segment"),
+        pytest.param("1.2.3-foo", id="invalid_prerelease_semver_style"),
+        pytest.param("1.2.3+foo+bar", id="invalid_multiple_local_segments"),
     ],
 )
 def test_invalid_pep440_versions(invalid):
@@ -61,13 +61,23 @@ def test_comparison():
 
 
 @pytest.mark.parametrize(
-    "v1,v2,expected",
+    "v1, v2, expected",
     [
-        (Version("1.2.3"), Version("1.2.3"), 0),
-        (Version("1.2.4"), Version("1.2.3"), 1),
-        (Version("1.2.3"), Version("1.2.4"), -1),
-        (Version("2.0.0"), Version("1.9.9"), 1),
-        (Version("1.0.0"), Version("2.0.0"), -1),
+        pytest.param(
+            Version("1.2.3"), Version("1.2.3"), 0, id="equal_versions"
+        ),
+        pytest.param(
+            Version("1.2.4"), Version("1.2.3"), 1, id="v1_greater_patch"
+        ),
+        pytest.param(
+            Version("1.2.3"), Version("1.2.4"), -1, id="v1_smaller_patch"
+        ),
+        pytest.param(
+            Version("2.0.0"), Version("1.9.9"), 1, id="v1_major_greater"
+        ),
+        pytest.param(
+            Version("1.0.0"), Version("2.0.0"), -1, id="v1_major_smaller"
+        ),
     ],
 )
 def test_version_comparator(v1, v2, expected):

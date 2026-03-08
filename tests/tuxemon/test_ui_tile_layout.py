@@ -86,7 +86,16 @@ def test_tilelayout_invalid_grid_sizes():
             TileLayout(img, grid_size=gs)
 
 
-@pytest.mark.parametrize("grid_size", [1, 2, 3, 5, 10])
+@pytest.mark.parametrize(
+    "grid_size",
+    [
+        pytest.param(1, id="grid_1"),
+        pytest.param(2, id="grid_2"),
+        pytest.param(3, id="grid_3"),
+        pytest.param(5, id="grid_5"),
+        pytest.param(10, id="grid_10"),
+    ],
+)
 def test_tilelayout_valid_grid_sizes(grid_size):
     img = Surface((30, 30))
     layout = TileLayout(img, grid_size=grid_size)
@@ -241,7 +250,17 @@ def test_nineslice_tiles_are_independent_copies():
         assert tile.get_at((0, 0)) == (10, 10, 10, 255)
 
 
-@pytest.mark.parametrize("size", [31, 32, 33, 37, 41, 55])
+@pytest.mark.parametrize(
+    "size",
+    [
+        pytest.param(31, id="size_31"),
+        pytest.param(32, id="size_32"),
+        pytest.param(33, id="size_33"),
+        pytest.param(37, id="size_37"),
+        pytest.param(41, id="size_41"),
+        pytest.param(55, id="size_55"),
+    ],
+)
 def test_nineslice_clipping_parametrized(size):
     # Base nine-slice image: 30×30 → tiles 10×10
     img = Surface((30, 30))

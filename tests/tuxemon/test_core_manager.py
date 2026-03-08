@@ -125,18 +125,19 @@ def test_unload_plugin_removes_sys_module(core_manager):
 @pytest.mark.parametrize(
     "raw_effects, setup_classes, expect_empty",
     [
-        (
+        pytest.param(
             [ParameterizableRule(type="effect_type", parameters=["param"])],
             {"effect_type": lambda: MagicMock(spec=PluginObject)},
             False,
+            id="known_effect_type",
         ),
-        (
+        pytest.param(
             [ParameterizableRule(type="unknown_type", parameters=["param"])],
             {},
             True,
+            id="unknown_effect_type",
         ),
     ],
-    ids=["known_effect_type", "unknown_effect_type"],
 )
 def test_parse_effects(
     effect_manager, raw_effects, setup_classes, expect_empty, caplog
@@ -156,26 +157,31 @@ def test_parse_effects(
 @pytest.mark.parametrize(
     "raw_conditions, setup_classes, expect_empty",
     [
-        (
+        pytest.param(
             [
                 LogicCondition(
-                    type="condition_type", parameters=["param"], operator="is"
+                    type="condition_type",
+                    parameters=["param"],
+                    operator="is",
                 )
             ],
             {"condition_type": lambda: MagicMock(spec=PluginObject)},
             False,
+            id="known_condition_type",
         ),
-        (
+        pytest.param(
             [
                 LogicCondition(
-                    type="unknown_type", parameters=["param"], operator="is"
+                    type="unknown_type",
+                    parameters=["param"],
+                    operator="is",
                 )
             ],
             {},
             True,
+            id="unknown_condition_type",
         ),
     ],
-    ids=["known_condition_type", "unknown_condition_type"],
 )
 def test_parse_conditions(
     condition_manager, raw_conditions, setup_classes, expect_empty, caplog

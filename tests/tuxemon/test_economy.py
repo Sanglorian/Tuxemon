@@ -43,8 +43,8 @@ def economy():
 @pytest.mark.parametrize(
     "slug,expected_level,expected_inventory",
     [
-        ("rockitten", 5, 1),
-        ("pairagrin", 1, 50),
+        pytest.param("rockitten", 5, 1, id="rockitten"),
+        pytest.param("pairagrin", 1, 50, id="pairagrin"),
     ],
 )
 def test_get_monster_valid(economy, slug, expected_level, expected_inventory):
@@ -69,32 +69,51 @@ def test_refresh_maps_after_modification(economy):
 @pytest.mark.parametrize(
     "entity_cls,slug,kwargs,quantity,seller_mode,expected_price",
     [
-        (Item, "potion", {"cost": 5}, 2, False, 40),  # buy item
-        (Item, "potion", {"cost": 5}, 1, True, 5),  # sell item
-        (
+        pytest.param(
+            Item,
+            "potion",
+            {"cost": 5},
+            2,
+            False,
+            40,
+            id="buy_item",
+        ),
+        pytest.param(
+            Item,
+            "potion",
+            {"cost": 5},
+            1,
+            True,
+            5,
+            id="sell_item",
+        ),
+        pytest.param(
             Monster,
             "rockitten",
             {"name": "rockitten", "hp": 100},
             1,
             False,
             100,
-        ),  # buy monster
-        (
+            id="buy_monster",
+        ),
+        pytest.param(
             Monster,
             "rockitten",
             {"name": "rockitten", "hp": 100},
             1,
             True,
             50,
-        ),  # sell monster
-        (
+            id="sell_monster",
+        ),
+        pytest.param(
             Monster,
             "unknown_monster",
             {"name": "unknown_monster", "hp": 20},
             1,
             True,
             round(20 * 0.5),
-        ),  # monster w/o model
+            id="monster_without_model",
+        ),
     ],
 )
 def test_calculate_price(

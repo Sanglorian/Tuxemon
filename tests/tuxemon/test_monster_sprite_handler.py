@@ -48,12 +48,12 @@ def test_sheet_loaded_in_constructor(fake_sheet):
 
 
 @pytest.mark.parametrize(
-    "sprite_type,expected",
+    "sprite_type, expected",
     [
-        ("front", (64, 64)),
-        ("back", (64, 64)),
-        ("menu01", (64, 64)),
-        ("menu02", (64, 64)),
+        pytest.param("front", (64, 64), id="front_sprite"),
+        pytest.param("back", (64, 64), id="back_sprite"),
+        pytest.param("menu01", (64, 64), id="menu01_sprite"),
+        pytest.param("menu02", (64, 64), id="menu02_sprite"),
     ],
 )
 def test_slice_sprite(handler, sprite_type, expected):

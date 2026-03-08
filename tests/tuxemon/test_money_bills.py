@@ -52,8 +52,10 @@ def test_get_total_bills(money_manager):
 @pytest.mark.parametrize(
     "method,attr",
     [
-        ("pay_bill_with_money", "money"),
-        ("pay_bill_with_deposit", "bank_account"),
+        pytest.param("pay_bill_with_money", "money", id="overpay_with_money"),
+        pytest.param(
+            "pay_bill_with_deposit", "bank_account", id="overpay_with_deposit"
+        ),
     ],
 )
 def test_overpay_bill(money_manager, method, attr):

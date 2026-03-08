@@ -145,11 +145,21 @@ def test_parallel_nested():
     assert outer._state == AnimationState.FINISHED
 
 
-@pytest.mark.parametrize("count", [1, 2, 5, 10])
+@pytest.mark.parametrize(
+    "count",
+    [
+        pytest.param(1, id="one_task"),
+        pytest.param(2, id="two_tasks"),
+        pytest.param(5, id="five_tasks"),
+        pytest.param(10, id="ten_tasks"),
+    ],
+)
 def test_parallel_many_tasks(count):
     tasks = [DummyTask() for _ in range(count)]
     par = TaskParallel(*tasks)
+
     for _ in range(20):
         par.update(1)
+
     assert par._state == AnimationState.FINISHED
     assert all(t.finished for t in tasks)

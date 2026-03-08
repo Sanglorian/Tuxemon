@@ -8,9 +8,9 @@ from tuxemon.item.stock import INFINITE_ITEMS, Stock
 @pytest.mark.parametrize(
     "initial, expected_quantity, expected_infinite",
     [
-        (1, 1, False),
-        (5, 5, False),
-        (INFINITE_ITEMS, INFINITE_ITEMS, True),
+        pytest.param(1, 1, False, id="init_finite_1"),
+        pytest.param(5, 5, False, id="init_finite_5"),
+        pytest.param(INFINITE_ITEMS, INFINITE_ITEMS, True, id="init_infinite"),
     ],
 )
 def test_initialization(initial, expected_quantity, expected_infinite):
@@ -22,10 +22,10 @@ def test_initialization(initial, expected_quantity, expected_infinite):
 @pytest.mark.parametrize(
     "amount, expected",
     [
-        (10, 10),
-        (0, 0),
-        (-5, 0),  # clamped
-        (INFINITE_ITEMS, INFINITE_ITEMS),
+        pytest.param(10, 10, id="set_positive"),
+        pytest.param(0, 0, id="set_zero"),
+        pytest.param(-5, 0, id="set_negative_clamped"),
+        pytest.param(INFINITE_ITEMS, INFINITE_ITEMS, id="set_infinite"),
     ],
 )
 def test_set(amount, expected):
@@ -37,9 +37,9 @@ def test_set(amount, expected):
 @pytest.mark.parametrize(
     "initial, add_amount, expected",
     [
-        (5, 3, 8),
-        (5, 0, 5),
-        (5, -10, 5),  # negative ignored
+        pytest.param(5, 3, 8, id="add_positive"),
+        pytest.param(5, 0, 5, id="add_zero"),
+        pytest.param(5, -10, 5, id="add_negative_ignored"),
     ],
 )
 def test_add(initial, add_amount, expected):
@@ -57,10 +57,10 @@ def test_add_to_infinite_does_nothing():
 @pytest.mark.parametrize(
     "initial, remove_amount, expected_success, expected_quantity",
     [
-        (5, 3, True, 2),
-        (3, 3, True, 0),
-        (2, 5, False, 2),  # too much
-        (5, -1, False, 5),  # negative invalid
+        pytest.param(5, 3, True, 2, id="remove_normal"),
+        pytest.param(3, 3, True, 0, id="remove_exact"),
+        pytest.param(2, 5, False, 2, id="remove_too_much"),
+        pytest.param(5, -1, False, 5, id="remove_negative_invalid"),
     ],
 )
 def test_remove(initial, remove_amount, expected_success, expected_quantity):
@@ -79,9 +79,9 @@ def test_remove_from_infinite_always_true():
 @pytest.mark.parametrize(
     "value, expected",
     [
-        (INFINITE_ITEMS, True),
-        (0, False),
-        (10, False),
+        pytest.param(INFINITE_ITEMS, True, id="infinite_true"),
+        pytest.param(0, False, id="zero_not_infinite"),
+        pytest.param(10, False, id="finite_not_infinite"),
     ],
 )
 def test_is_infinite(value, expected):
@@ -92,10 +92,10 @@ def test_is_infinite(value, expected):
 @pytest.mark.parametrize(
     "quantity, expected",
     [
-        (INFINITE_ITEMS, True),
-        (0, False),
-        (1, True),
-        (10, True),
+        pytest.param(INFINITE_ITEMS, True, id="has_any_infinite"),
+        pytest.param(0, False, id="has_any_zero"),
+        pytest.param(1, True, id="has_any_one"),
+        pytest.param(10, True, id="has_any_ten"),
     ],
 )
 def test_has_any(quantity, expected):
@@ -106,9 +106,9 @@ def test_has_any(quantity, expected):
 @pytest.mark.parametrize(
     "initial, amount, expected_success, expected_quantity",
     [
-        (5, 3, True, 8),
-        (5, 0, True, 5),
-        (5, -1, False, 5),  # negative rejected
+        pytest.param(5, 3, True, 8, id="try_add_positive"),
+        pytest.param(5, 0, True, 5, id="try_add_zero"),
+        pytest.param(5, -1, False, 5, id="try_add_negative_rejected"),
     ],
 )
 def test_try_add(initial, amount, expected_success, expected_quantity):
@@ -127,10 +127,10 @@ def test_try_add_infinite():
 @pytest.mark.parametrize(
     "initial, amount, expected_success, expected_quantity",
     [
-        (5, 3, True, 2),
-        (5, 5, True, 0),
-        (5, 6, False, 5),  # too much
-        (5, -1, False, 5),  # negative rejected
+        pytest.param(5, 3, True, 2, id="try_remove_normal"),
+        pytest.param(5, 5, True, 0, id="try_remove_exact"),
+        pytest.param(5, 6, False, 5, id="try_remove_too_much"),
+        pytest.param(5, -1, False, 5, id="try_remove_negative_rejected"),
     ],
 )
 def test_try_remove(initial, amount, expected_success, expected_quantity):

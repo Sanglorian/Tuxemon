@@ -57,9 +57,9 @@ def monster(monkeypatch):
 @pytest.mark.parametrize(
     "input_level,expected",
     [
-        (5, 5),
-        (10000, config_monster.level_range[1]),
-        (-100, 1),
+        pytest.param(5, 5, id="normal"),
+        pytest.param(10000, config_monster.level_range[1], id="high"),
+        pytest.param(-100, 1, id="low"),
     ],
 )
 def test_set_level(monster, input_level, expected):

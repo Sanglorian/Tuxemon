@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import random
 from collections.abc import Mapping
-from dataclasses import dataclass, fields
+from dataclasses import astuple, dataclass, fields
 from typing import TYPE_CHECKING, Any
 
 from tuxemon.database.rules import config_monster
@@ -33,18 +33,14 @@ class BasicStats:
         return [field.name for field in fields(cls)]
 
     def sum(self) -> int:
-        total = sum(int(getattr(self, field.name)) for field in fields(self))
-        return total
+        return sum(astuple(self))
 
     def __add__(self, other: BasicStats) -> BasicStats:
         if not isinstance(other, BasicStats):
             return NotImplemented
-        new_stats = BasicStats()
-        for name in self.names():
-            setattr(
-                new_stats, name, getattr(self, name) + getattr(other, name)
-            )
-        return new_stats
+        return self.__class__(
+            *[s + o for s, o in zip(astuple(self), astuple(other))]
+        )
 
     def copy(self) -> BasicStats:
         return BasicStats(
@@ -197,19 +193,18 @@ class StatCalculator:
     def calculate_raw_stats(self, level: int | None = None) -> BasicStats:
         """Calculates stats before taste modifiers are applied."""
         level = level if level is not None else self.level
-        stats = BasicStats()
         multiplier = level + config_monster.coeff_stats
-        level_scale = level / 100
+        tp_contribution = self.training_points.get_contribution(level)
 
+        stats_dict = {}
         for stat in BasicStats.names():
-            base_value = getattr(self.shape.attributes, stat) * multiplier
-            iv_value = getattr(self.individual_values, stat, 0)
-            raw_tp = getattr(self.training_points, stat, 0)
-            scaled_tp = int(raw_tp * level_scale)
-            modifier = getattr(self.custom_stats, stat, 0)
-            total = base_value + iv_value + scaled_tp + modifier
-            setattr(stats, stat, total)
-        return stats
+            base = getattr(self.shape.attributes, stat) * multiplier
+            iv = getattr(self.individual_values, stat, 0)
+            tp = getattr(tp_contribution, stat)
+            mod = getattr(self.custom_stats, stat, 0)
+            stats_dict[stat] = int(base + iv + tp + mod)
+
+        return BasicStats(**stats_dict)
 
     def apply_stat_updates(
         self,

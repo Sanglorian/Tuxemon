@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -33,22 +33,24 @@ class BattleOutcomeCondition(EventCondition):
         Checks if the 'player' has won against 'npc_maple'.
     """
 
-    name = "battle_outcome"
+    name: ClassVar[str] = "battle_outcome"
+    fighter: str
+    outcome: str
+    opponent: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        fighter, outcome, opponent = condition.parameters[:3]
+    def test(self, session: Session) -> bool:
 
-        if outcome not in {"won", "lost", "draw"}:
-            logger.error(f"Invalid outcome '{outcome}'")
+        if self.outcome not in {"won", "lost", "draw"}:
+            logger.error(f"Invalid outcome '{self.outcome}'")
             return False
 
-        character = session.get_npc(fighter)
+        character = session.get_npc(self.fighter)
         if character is None:
-            logger.error(f"Character '{fighter}' not found")
+            logger.error(f"Character '{self.fighter}' not found")
             return False
 
         if not character.battle_handler:
             return False
         return character.battle_handler.has_fought_and_outcome(
-            outcome=outcome, opponent=opponent
+            outcome=self.outcome, opponent=self.opponent
         )

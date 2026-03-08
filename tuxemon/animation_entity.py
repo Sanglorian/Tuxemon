@@ -24,6 +24,13 @@ class AnimationInfo:
     animation: SurfaceAnimation
     position: tuple[int, int]
     layer: int
+    visible: bool = True
+
+    def show(self) -> None:
+        self.visible = True
+
+    def hide(self) -> None:
+        self.visible = False
 
 
 class AnimationManager:
@@ -31,6 +38,16 @@ class AnimationManager:
 
     def __init__(self) -> None:
         self._cache: dict[str, AnimationInfo] = {}
+
+    def show(self, slug: str) -> None:
+        info = self._cache.get(slug)
+        if info:
+            info.show()
+
+    def hide(self, slug: str) -> None:
+        info = self._cache.get(slug)
+        if info:
+            info.hide()
 
     def setup_and_play(
         self,

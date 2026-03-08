@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -30,10 +30,11 @@ class CheckEvolutionCondition(EventCondition):
     eg. "is check_evolution player"
     """
 
-    name = "check_evolution"
+    name: ClassVar[str] = "check_evolution"
+    character: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        target_name = condition.parameters[0]
+    def test(self, session: Session) -> bool:
+        target_name = self.character
         target_character = session.get_npc(target_name)
         if not target_character:
             return False

@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import MissionStatus, SpatialCondition
+from tuxemon.db import MissionStatus
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -37,31 +38,29 @@ class CheckMissionCondition(EventCondition):
         - "is check_mission npc_maple,missionA:missionB,failed,any"
     """
 
-    name = "check_mission"
+    name: ClassVar[str] = "check_mission"
+    character: str
+    mission: str
+    status: str
+    mode: str | None = None
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        params = condition.parameters
-        if len(params) < 3:
-            logger.error("Not enough parameters in check_mission condition.")
-            return False
+    def test(self, session: Session) -> bool:
+        _mode = self.mode if self.mode else "any"
 
-        _character, _mission, _status = params[:3]
-        _mode = params[3].lower() if len(params) > 3 else "any"
-
-        character = session.get_npc(_character)
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"Character '{_character}' not found.")
+            logger.error(f"Character '{self.character}' not found.")
             return False
 
-        if _status not in MissionStatus.__members__:
-            logger.error(f"'{_status}' isn't a valid MissionStatus.")
+        if self.status not in MissionStatus.__members__:
+            logger.error(f"'{self.status}' isn't a valid MissionStatus.")
             return False
-        target_status = MissionStatus[_status]
+        target_status = MissionStatus[self.status]
 
-        if _mission == "all":
+        if self.mission == "all":
             missions = character.mission_controller.get_missions()
         else:
-            mission_slugs = _mission.split(":")
+            mission_slugs = self.mission.split(":")
             missions = [
                 m
                 for m in character.mission_controller.get_missions()

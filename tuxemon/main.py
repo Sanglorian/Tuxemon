@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from tuxemon import log
 from tuxemon.client import LocalPygameClient
 from tuxemon.headless_client import HeadlessClient
 from tuxemon.session import local_session
@@ -29,7 +28,6 @@ def main(
     Sets up logging, creates the game client, configures initial states,
     applies debug options when enabled, and starts the main game loop.
     """
-    log.configure()
 
     import pygame
 
@@ -52,8 +50,6 @@ def headless(config: TuxemonConfig, context: DisplayContext) -> None:
     Configures logging, initializes the headless client, loads the
     headless server state, and runs the main loop without graphics.
     """
-    log.configure()
-
     control = HeadlessClient(config, context)
     control.push_state("HeadlessServerState")
     control.main()

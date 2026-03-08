@@ -1228,6 +1228,18 @@ class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
         except EntryNotFoundError:
             raise RuntimeError(f"Monster {slug} not found")
 
+    def can_evolve_at_level(self, level: int) -> bool:
+        return any(
+            evo.at_level is not None and evo.at_level <= level
+            for evo in self.evolutions
+        )
+
+    def is_underleveled_for_form(self, level: int) -> bool:
+        return any(
+            hist.at_level is not None and hist.at_level > level
+            for hist in self.evolutions
+        )
+
     @field_validator("sprites")
     def set_default_sprites(
         cls,

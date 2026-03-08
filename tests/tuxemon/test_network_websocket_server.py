@@ -93,7 +93,8 @@ def test_listener_rejects_invalid_event(wrapper, caplog):
     websocket = AsyncMock()
     websocket.__aiter__.return_value = iter([json.dumps({"notype": True})])
 
-    asyncio.run(wrapper._listen_to_client("abc", websocket))
+    with caplog.at_level(logging.WARNING):
+        asyncio.run(wrapper._listen_to_client("abc", websocket))
 
     assert "Invalid event payload" in caplog.text
 

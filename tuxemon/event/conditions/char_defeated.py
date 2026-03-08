@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -27,12 +27,13 @@ class CharDefeatedCondition(EventCondition):
         character: Either "player" or character slug name (e.g. "npc_maple")
     """
 
-    name = "char_defeated"
+    name: ClassVar[str] = "char_defeated"
+    character: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        character = session.get_npc(condition.parameters[0])
+    def test(self, session: Session) -> bool:
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{condition.parameters[0]} not found")
+            logger.error(f"{self.character} not found")
             return False
 
         if character.monsters:

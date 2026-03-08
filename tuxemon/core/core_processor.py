@@ -18,7 +18,6 @@ from tuxemon.core.core_effect import (
 from tuxemon.plugin import PluginObject
 
 if TYPE_CHECKING:
-    from tuxemon.db import SpatialCondition
     from tuxemon.item.item import Item
     from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
@@ -267,10 +266,8 @@ class ConditionProcessor:
 
         return result
 
-    def validate(
-        self, session: Session, target: SpatialCondition | None
-    ) -> ConditionValidationResult:
-        return self._validate(session, target, "test")
+    def validate(self, session: Session) -> ConditionValidationResult:
+        return self._validate(session, None, "test")
 
     def validate_monster(
         self, session: Session, target: Monster | None

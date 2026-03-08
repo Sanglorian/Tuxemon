@@ -2,7 +2,8 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from tuxemon.db import SpatialCondition
+from typing import ClassVar
+
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.platform.const.intentions import constants
 from tuxemon.session import Session
@@ -22,14 +23,15 @@ class ButtonHeldCondition(EventCondition):
         frames: The number of frames the button must be held.
     """
 
-    name = "button_held"
+    name: ClassVar[str] = "button_held"
+    button_id: str
+    time_ms: int
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        button_id, time_ms = condition.parameters[:2]
+    def test(self, session: Session) -> bool:
         try:
-            button = constants[button_id.upper()]
+            button = constants[self.button_id.upper()]
         except KeyError:
             raise ValueError("Constant not found")
         return session.client.input_manager.input_history.is_button_held(
-            button, int(time_ms)
+            button, self.time_ms
         )

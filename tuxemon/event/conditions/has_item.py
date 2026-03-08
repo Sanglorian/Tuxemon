@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 from tuxemon.tools import compare
@@ -32,24 +32,26 @@ class HasItemCondition(EventCondition):
         quantity: Quantity to compare with.
     """
 
-    name = "has_item"
+    name: ClassVar[str] = "has_item"
+    character: str
+    item: str
+    operator: str | None = None
+    quantity: int | None = None
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         def op(itm_qty: int, op: str, qty: int) -> bool:
             return compare(op, itm_qty, qty)
 
-        npc_slug, itm_slug = condition.parameters[:2]
-        npc = session.get_npc(npc_slug)
+        npc = session.get_npc(self.character)
         if npc is None:
-            logger.error(f"{npc_slug} doesn't exist.")
+            logger.error(f"{self.character} doesn't exist.")
             return False
-        itm = npc.bag.find_item(itm_slug)
+        itm = npc.bag.find_item(self.item)
         if itm is None:
             return False
         else:
-            if len(condition.parameters) > 2:
-                operator = condition.parameters[2].lower()
-                qty = int(condition.parameters[3])
-                return op(itm.quantity, operator, qty)
+            if self.operator and self.quantity:
+                operator = self.operator.lower()
+                return op(itm.quantity, operator, self.quantity)
             else:
                 return True

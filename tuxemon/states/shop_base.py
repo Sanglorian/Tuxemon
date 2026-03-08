@@ -2,6 +2,7 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import math
 from abc import ABC, abstractmethod
 from collections.abc import Generator
 from typing import (
@@ -27,7 +28,6 @@ from tuxemon.platform.const import buttons
 from tuxemon.platform.const.sizes import MAX_MENU_ITEMS
 from tuxemon.platform.events import PlayerInput
 from tuxemon.sprite import Sprite
-from tuxemon.ui.paginator import Paginator
 from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
@@ -71,6 +71,7 @@ class ShopMenuState(Menu[T], Generic[T], ABC):
         self.sprites.add(self.asset_sprite)
 
         self.menu_items.line_spacing = self.scale_int(7)
+        self.page_size = MAX_MENU_ITEMS
         self.current_page = 0
         self.total_pages = 0
         self.inventory: list[T] = []
@@ -99,7 +100,6 @@ class ShopMenuState(Menu[T], Generic[T], ABC):
         self.transaction_manager = TransactionManager(
             self.buyer_manager, self.seller_manager, self.client.shop_manager
         )
-        self.paginator = Paginator(self.inventory, MAX_MENU_ITEMS)
 
     def calc_internal_rect(self) -> Rect:
         return calc_internal_rect(self.rect)
@@ -159,20 +159,49 @@ class ShopMenuState(Menu[T], Generic[T], ABC):
         if not self.inventory:
             return
 
-        self.paginator.update_items(self.inventory)
-        self.total_pages = self.paginator.total_pages()
+        # Compute total pages
+        if self.page_size:
+            self.total_pages = max(
+                1, math.ceil(len(self.inventory) / self.page_size)
+            )
+        else:
+            self.total_pages = 1
+
+        # Clamp current page
         self.current_page = max(
             0, min(self.current_page, self.total_pages - 1)
         )
 
-        paged_inventory = self.paginator.paginate(self.current_page)
+        # Slice items for this page
+        start = self.current_page * self.page_size
+        end = start + self.page_size
+        paged_inventory = self.inventory[start:end]
+
         self._populate_menu(paged_inventory)
         yield from self.menu_items
 
     def reload_shop(self) -> None:
         self.clear()
         self.inventory = self._filter_inventory()
-        paged_inventory = self.paginator.paginate(self.current_page)
+
+        # Recompute total pages
+        if self.page_size:
+            self.total_pages = max(
+                1, math.ceil(len(self.inventory) / self.page_size)
+            )
+        else:
+            self.total_pages = 1
+
+        # Clamp current page
+        self.current_page = max(
+            0, min(self.current_page, self.total_pages - 1)
+        )
+
+        # Slice items for this page
+        start = self.current_page * self.page_size
+        end = start + self.page_size
+        paged_inventory = self.inventory[start:end]
+
         self._populate_menu(paged_inventory)
         self.selected_index = (
             min(self.selected_index, len(self.menu_items) - 1)
@@ -182,7 +211,7 @@ class ShopMenuState(Menu[T], Generic[T], ABC):
         self.on_menu_selection_change()
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
-        total_pages = self.paginator.total_pages()
+        total_pages = self.total_pages
 
         if event.button == buttons.RIGHT and event.pressed:
             if self.current_page < total_pages - 1:

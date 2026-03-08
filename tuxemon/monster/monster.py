@@ -14,6 +14,7 @@ from tuxemon.database.runtime import db
 from tuxemon.db import (
     Acquisition,
     EffectPhase,
+    EvolutionStage,
     GenderType,
     MonsterModel,
     MonsterSpritesModel,
@@ -272,11 +273,23 @@ class Monster:
 
     @property
     def gender_symbol(self) -> str:
-        if self.gender == GenderType.MALE:
+        if self.is_male:
             return "\u2642"  # ♂
-        if self.gender == GenderType.FEMALE:
+        if self.is_female:
             return "\u2640"  # ♀
         return ""
+
+    @property
+    def is_male(self) -> bool:
+        return self.gender is GenderType.MALE
+
+    @property
+    def is_female(self) -> bool:
+        return self.gender is GenderType.FEMALE
+
+    @property
+    def is_genderless(self) -> bool:
+        return self.gender is GenderType.NEUTER
 
     @property
     def description(self) -> str:
@@ -506,6 +519,15 @@ class Monster:
         )
         self.set_stats()
 
+    def evolution_rank(self) -> int:
+        stage_order = {
+            EvolutionStage.STAGE2: 4,
+            EvolutionStage.STAGE1: 3,
+            EvolutionStage.STANDALONE: 2,
+            EvolutionStage.BASIC: 1,
+        }
+        return stage_order.get(self.stage, 0)
+
     def set_stats(self) -> None:
         """
         Set or improve stats.
@@ -645,6 +667,9 @@ class Monster:
             self.gender = old_monster.gender
         else:  # Re-roll if incompatible
             self.gender = self.assign_gender(self.gender_weights)
+            logger.info(
+                f"{self.name} changed gender from {old_monster.gender} to {self.gender} upon evolution."
+            )
 
         self.birthdate = old_monster.birthdate
         self.capture_date = old_monster.capture_date

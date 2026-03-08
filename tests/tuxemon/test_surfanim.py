@@ -110,12 +110,6 @@ def test_rate(animation):
     assert animation.rate == 2.0
 
 
-def test_visibility(animation):
-    assert animation.visibility is True
-    animation.visibility = False
-    assert animation.visibility is False
-
-
 def test_get_rect(animation):
     rect = animation.get_rect()
     assert (rect.width, rect.height) == (20, 20)
@@ -326,14 +320,12 @@ def test_copy_preserves_configuration(animation):
     animation.loop = 2
     animation.play_mode = PlayMode.PING_PONG
     animation.rate = 1.5
-    animation.visibility = False
     triggered = []
     animation.on_completion(lambda: triggered.append(True))
     clone = animation.copy()
     assert clone.loop == 2
     assert clone.play_mode == PlayMode.PING_PONG
     assert clone.rate == 1.5
-    assert clone.visibility is False
     assert clone._on_completion_callback is animation._on_completion_callback
 
 

@@ -39,6 +39,16 @@ class Taste:
         if slug in cls._tastes:
             return cls._tastes[slug]
 
+        if slug == "tasteless":
+            taste = cls(
+                slug="tasteless",
+                taste_type="neutral",
+                rarity_score=1.0,
+                modifiers=ModifiersHandler([]),
+            )
+            cls._tastes[slug] = taste
+            return taste
+
         try:
             model = TasteModel.lookup(slug, db)
             taste = cls(

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+from dataclasses import dataclass
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -18,8 +19,12 @@ def mock_plugin_manager():
 @pytest.fixture
 def condition_manager(mock_plugin_manager):
 
+    @dataclass
     class DummyCondition(EventCondition):
         name = "char_at"
+        a: str = ""
+        b: int = 0
+        c: str = ""
 
         def test(self, session, condition_data):
             return True
@@ -35,6 +40,7 @@ def test_get_condition_found(condition_manager):
     mock_cond_data = MagicMock(spec=SpatialCondition)
     mock_cond_data.type = "char_at"
     mock_cond_data.operator = "is"
+    mock_cond_data.parameters = []
     condition = condition_manager.get_condition(mock_cond_data)
     assert condition is not None
     assert condition.is_expected is True

@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import ClassVar
 
-from tuxemon.db import EvolutionStage, GenderType
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -38,12 +37,12 @@ class HasPartyBreederCondition(EventCondition):
             return False
 
         has_male_evolved_monsters = any(
-            mon.stage != EvolutionStage.BASIC and mon.gender == GenderType.MALE
+            mon.evolution_rank() > 1 and mon.is_male
             for mon in character.monsters
         )
+
         has_female_evolved_monsters = any(
-            mon.stage != EvolutionStage.BASIC
-            and mon.gender == GenderType.FEMALE
+            mon.evolution_rank() > 1 and mon.is_female
             for mon in character.monsters
         )
 

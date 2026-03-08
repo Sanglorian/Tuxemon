@@ -146,9 +146,9 @@ def test_animation_sets_rect_size():
 @pytest.mark.parametrize(
     "target_size",
     [
-        (5, 5),
-        (10, 20),
-        (40, 80),
+        pytest.param((5, 5), id="5x5"),
+        pytest.param((10, 20), id="10x20"),
+        pytest.param((40, 80), id="40x80"),
     ],
 )
 def test_width_height_trigger_rescale(surface_10x20, target_size):
@@ -182,7 +182,16 @@ def test_update_image_preserves_center_on_rescale(surface_10x20):
     assert s.rect.size == (30, 60)
 
 
-@pytest.mark.parametrize("angle", [0, 90, 180, 270, 45])
+@pytest.mark.parametrize(
+    "angle",
+    [
+        pytest.param(0, id="0deg"),
+        pytest.param(90, id="90deg"),
+        pytest.param(180, id="180deg"),
+        pytest.param(270, id="270deg"),
+        pytest.param(45, id="45deg"),
+    ],
+)
 def test_rotation_triggers_update(surface_32x32, angle):
     s = Sprite(image=surface_32x32)
     _ = s.image  # initial update

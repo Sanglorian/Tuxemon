@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import logging
-import math
 from collections.abc import Callable, Container, Iterator, Sequence
+from math import ceil
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -22,6 +22,7 @@ from pygame.sprite import Sprite as PySprite
 from pygame.surface import Surface
 from pygame.transform import rotate, rotozoom, scale
 
+from tuxemon.menu.grid_index_model import GridIndexModel
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 from tuxemon.surfanim import SurfaceAnimation
@@ -591,8 +592,13 @@ class MenuSpriteGroup(SpriteGroup[_MenuElement]):
         if event.pressed and event.button in self._allowed_input():
             seeking_index = True
             while seeking_index:
-                index = self._advance_input(index, event.button)
+                try:
+                    new_index = self._advance_input(index, event.button)
+                except IndexError:
+                    # Invalid move → stay where you are
+                    return index
 
+                index = new_index
                 seeking_index = not self.sprites()[index].enabled
 
         return index
@@ -627,7 +633,12 @@ class RelativeGroup(MenuSpriteGroup[_MenuElement]):
         else:
             self.rect = Rect(self.parent.rect)
 
-    def draw(self, surface: Surface) -> list[FRect | Rect]:
+    def draw(
+        self,
+        surface: Surface,
+        bgd: Surface | None = None,
+        special_flags: int = 0,
+    ) -> list[FRect | Rect]:
         self.update_rect_from_parent()
         topleft = self.rect.topleft
 
@@ -637,70 +648,22 @@ class RelativeGroup(MenuSpriteGroup[_MenuElement]):
             s.rect.move_ip(topleft)
 
         try:
-            dirty = super().draw(surface)
+            dirty = super().draw(
+                surface=surface, bgd=bgd, special_flags=special_flags
+            )
         finally:
             for s in self.sprites():
                 s.rect.move_ip((-topleft[0], -topleft[1]))
         return dirty
 
 
-# Grid layout semantics (for horizontal orientation):
-#
-#   VisualSpriteList arranges items in column-major order.
-#
-#   Given:
-#       columns = C
-#       len(self) = N
-#       rows = ceil(N / C)
-#
-#   The logical LR (left→right) index layout is:
-#
-#       LR index:
-#           0   1   2   ... C-1
-#           C  C+1 C+2 ... 2C-1
-#           ...
-#
-#   Ragged grid example (N=8, C=3):
-#
-#       LR layout:
-#           0   1   2
-#           3   4   5
-#           6   7   _
-#
-#   TB (top→bottom) index enumerates items column by column:
-#
-#       TB layout:
-#           0   3   6
-#           1   4   7
-#           2   5   _
-#
-#   Movement rules:
-#       - LR movement changes the column (horizontal movement).
-#       - TB movement changes the row (vertical movement).
-#       - Ragged grids may have missing cells in the last row.
-#
-#   Rectangular mode:
-#       - The grid is treated as full rows × columns.
-#       - Virtual cells exist for movement but do not correspond to sprites.
-#       - Movement wraps through the full grid before mapping back to LR.
-#
-#   Vertical orientation:
-#       - LR/TB semantics are swapped.
-#       - Layout grows top→bottom first, then left→right.
-#
-# These rules ensure consistent cursor movement and layout across:
-#   - horizontal vs vertical orientation
-#   - ragged vs rectangular grids
-#   - arbitrary item counts
-
-
 class VisualSpriteList(RelativeGroup[_MenuElement]):
     """
-    Sprite group which can be configured to arrange the children
-    sprites into columns.
+    UI wrapper around GridIndexModel.
+
+    Layout and movement semantics are defined in GridIndexModel.
     """
 
-    # default, and only implemented
     orientation: Literal["horizontal", "vertical"] = "horizontal"
     rectangular: bool = False
     expand = True  # True: fill all space of parent. False: more compact
@@ -717,6 +680,69 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
         self._columns = 1
         self.line_spacing: int | None = None
         self.max_width_per_column: int | None = None
+        self.page_size: int | None = None
+        self.current_page: int = 0
+
+    @property
+    def total_pages(self) -> int:
+        if self.page_size is None:
+            return 1
+
+        # Count only slots that actually exist
+        real_items = sum(1 for s in self.sprites() if s.enabled)
+        return max(1, ceil(real_items / self.page_size))
+
+    @property
+    def has_next_page(self) -> bool:
+        return (
+            self.page_size is not None
+            and self.current_page < self.total_pages - 1
+        )
+
+    @property
+    def has_prev_page(self) -> bool:
+        return self.page_size is not None and self.current_page > 0
+
+    def set_page(self, page: int) -> None:
+        if self.page_size is None:
+            return
+        self.current_page = max(0, min(page, self.total_pages - 1))
+        self._needs_arrange = True
+
+    def next_page(self) -> None:
+        if self.has_next_page:
+            self.current_page += 1
+            self._needs_arrange = True
+
+    def prev_page(self) -> None:
+        if self.has_prev_page:
+            self.current_page -= 1
+            self._needs_arrange = True
+
+    def next_page_wrap(self) -> None:
+        if self.page_size is None:
+            return
+        self.current_page = (self.current_page + 1) % self.total_pages
+        self._needs_arrange = True
+
+    def prev_page_wrap(self) -> None:
+        if self.page_size is None:
+            return
+        self.current_page = (self.current_page - 1) % self.total_pages
+        self._needs_arrange = True
+
+    def page_label(self) -> str:
+        if self.page_size is None:
+            return ""
+        return f"{self.current_page + 1}/{self.total_pages}"
+
+    def _index_model(self) -> GridIndexModel:
+        return GridIndexModel(
+            count=len(self),
+            columns=self.columns,
+            rectangular=self.rectangular,
+            orientation=self.orientation,
+        )
 
     @property
     def columns(self) -> int:
@@ -726,6 +752,46 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
     def columns(self, value: int) -> None:
         self._columns = value
         self._needs_arrange = True
+
+    def _visible_indices(self) -> range:
+        if self.page_size is None:
+            return range(len(self))
+        start = self.current_page * self.page_size
+        end = start + self.page_size
+        return range(start, min(end, len(self)))
+
+    def snap_selection(self, old_index: int) -> int:
+        visible = list(self._visible_indices())
+        if not visible:
+            return old_index
+
+        sprites = self.sprites()
+        enabled = {i: sprites[i].enabled for i in range(len(sprites))}
+
+        first_visible = visible[0]
+        first_enabled = next((i for i in visible if enabled[i]), None)
+
+        if old_index in visible:
+            # If the page contains any disabled items, the page’s
+            # “primary enabled slot” wins.
+            if any(not enabled[i] for i in visible):
+                return (
+                    first_enabled
+                    if first_enabled is not None
+                    else first_visible
+                )
+
+            # All items enabled → keep old_index
+            return old_index
+
+        # Special rule for page_size == 2:
+        # Always snap to first_visible, even if disabled.
+        if self.page_size == 2:
+            return first_visible
+
+        # General rule for other page sizes:
+        # Snap to first enabled, else first visible.
+        return first_enabled if first_enabled is not None else first_visible
 
     def calc_bounding_rect(self) -> Rect:
         if self._needs_arrange:
@@ -748,91 +814,97 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
         super().remove(*items)
         self._needs_arrange = True
 
-    def clear(
-        self, surface: Any = None, bgsurf: Any = None, special_flags: int = 0
-    ) -> None:
-        for i in self.sprites():
-            super().remove(i)
+    def clear_items(self) -> None:
+        """Remove all sprites from this list."""
+        self.empty()
         self._needs_arrange = True
 
-    def draw(self, surface: Surface) -> list[FRect | Rect]:
+    def draw(
+        self,
+        surface: Surface,
+        bgd: Surface | None = None,
+        special_flags: int = 0,
+    ) -> list[FRect | Rect]:
         if self._needs_arrange:
             self.arrange_menu_items()
-        dirty = super().draw(surface)
+        dirty = super().draw(
+            surface=surface, bgd=bgd, special_flags=special_flags
+        )
         return dirty
 
     def arrange_menu_items(self) -> None:
         """
-        Iterate through menu items and position them in the menu.
-        Defaults to a multi-column layout with items placed horizontally first.
+        Arrange sprites using LR semantics consistent with GridLayout.
+
+        - Horizontal orientation → LR = row-major
+        - Vertical orientation   → LR = column-major
+
+        This ensures layout, movement, and LR/TB index transforms all agree.
         """
         if not len(self):
             return
 
         self.update_rect_from_parent()
-        width, height = self.rect.size
+        W, H = self.rect.size
 
-        max_height = max(item.rect.height for item in self.sprites())
-        max_width = max(item.rect.width for item in self.sprites())
+        max_h = max(s.rect.height for s in self.sprites())
+        max_w = max(s.rect.width for s in self.sprites())
 
-        # Auto column/row calculation
+        # Auto column calculation
         if self.max_width_per_column is not None:
-            if self.orientation == "horizontal":
-                self._columns = max(
-                    1, width // max(1, self.max_width_per_column)
-                )
-            else:
-                self._columns = max(
-                    1, height // max(1, self.max_width_per_column)
-                )
+            primary = W if self.orientation == "horizontal" else H
+            self._columns = max(
+                1, primary // max(1, self.max_width_per_column)
+            )
 
-        layout = GridLayout(len(self), self.columns, self.rectangular)
-        items_per_column = layout.rows
+        # Pagination: determine visible LR indices
+        visible = list(self._visible_indices())
+        if not visible:
+            return
 
+        visible_set = set(visible)
+        for i, sprite in enumerate(self.sprites()):
+            sprite.visible = i in visible_set
+
+        start = visible[0]
+
+        # Page-local model
+        page_model = GridIndexModel(
+            count=len(visible),
+            columns=self.columns,
+            rectangular=self.rectangular,
+            orientation=self.orientation,
+        )
+
+        rows = page_model.layout.rows
+        cols = self.columns
+
+        # Line spacing
         if self.line_spacing is not None:
             line_spacing = self.line_spacing
         else:
-            # Original behavior
+            base = max_h if self.orientation == "horizontal" else max_w
             if self.expand:
-                line_spacing = (
-                    height // items_per_column
-                    if self.orientation == "horizontal"
-                    else width // items_per_column
-                )
+                primary = H if self.orientation == "horizontal" else W
+                line_spacing = primary // max(1, rows or 1)
             else:
-                line_spacing = int(
-                    (
-                        max_height
-                        if self.orientation == "horizontal"
-                        else max_width
-                    )
-                    * 1.2
-                )
+                line_spacing = int(base * 1.2)
 
+        # Column spacing
         column_spacing = (
-            width // self.columns
-            if self.orientation == "horizontal"
-            else height // self.columns
+            W // cols if self.orientation == "horizontal" else H // cols
         )
 
-        # Layout
-        for index, item in enumerate(self.sprites()):
-            row, col = divmod(index, self.columns)
-
-            if self.orientation == "horizontal":
-                item.rect.topleft = col * column_spacing, row * line_spacing
-            else:
-                item.rect.topleft = row * line_spacing, col * column_spacing
+        for lr_index in visible:
+            item = self.sprites()[lr_index]
+            local_lr = lr_index - start
+            row, col = page_model.lr_to_rowcol(local_lr)
+            item.rect.topleft = (
+                col * column_spacing,
+                row * line_spacing,
+            )
 
         self._needs_arrange = False
-
-    def _lr_to_tb_index(self, lr_index: int, orientation: str) -> int:
-        layout = GridLayout(len(self), self.columns, self.rectangular)
-        return layout.lr_to_tb(lr_index, orientation)
-
-    def _tb_to_lr_index(self, tb_index: int, orientation: str) -> int:
-        layout = GridLayout(len(self), self.columns, self.rectangular)
-        return layout.tb_to_lr(tb_index, orientation)
 
     def _allowed_input(self) -> Container[int]:
         return set(self._2d_movement_dict)
@@ -840,121 +912,62 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
     def _advance_input(self, index: int, button: int) -> int:
         index_type, incr = self._2d_movement_dict[button]
 
-        # Orientation-aware remapping
+        # Orientation swap: keep LR/TB semantics consistent
         if self.orientation == "vertical":
             index_type = "tb" if index_type == "lr" else "lr"
 
-        layout = GridLayout(len(self), self.columns, self.rectangular)
+        visible = list(self._visible_indices())
+        local_index = visible.index(index)
 
-        # Rectangular mode: direct row/col math
+        # Page-local model (real items only)
+        page_model = GridIndexModel(
+            count=len(visible),
+            columns=self.columns,
+            rectangular=self.rectangular,
+            orientation=self.orientation,
+        )
+
         if self.rectangular:
-            rows = layout.rows
-            cols = self.columns
-            row, col = divmod(index, cols)
+            # Build a fully rectangular virtual grid
+            rows = ceil(len(visible) / self.columns)
+            rect_count = rows * self.columns
 
-            if index_type == "tb":
-                row = (row + incr) % rows
-            else:
-                col = (col + incr) % cols
-
-            new_index = row * cols + col
-            return new_index % len(self)
-
-        # Ragged mode: use TB/LR conversion
-        if index_type == "tb":
-            index = layout.lr_to_tb(index, self.orientation)
-
-        index = (index + incr) % len(self)
-
-        if index_type == "tb":
-            index = layout.tb_to_lr(index, self.orientation)
-
-        return index
-
-
-class GridLayout:
-    """
-    Computes grid geometry for VisualSpriteList.
-
-    Handles:
-    - ragged grids
-    - rectangular grids
-    - horizontal / vertical orientation
-
-    This class is intentionally stateless and pure: it performs
-    only mathematical transformations and never touches sprites.
-    """
-
-    def __init__(self, count: int, columns: int, rectangular: bool):
-        self.count = count
-        self.columns = max(1, columns)
-        self.rectangular = rectangular
-
-        if rectangular:
-            # Full rectangular grid
-            self.rows = math.ceil(count / self.columns)
-        else:
-            # Ragged grid
-            self.rows, self.remainder = divmod(count, self.columns)
-
-    # ------------------------------------------------------------
-    # LR → TB conversion
-    # ------------------------------------------------------------
-    def lr_to_tb(self, lr_index: int, orientation: str) -> int:
-        if self.rectangular:
-            row, col = divmod(lr_index, self.columns)
-            if orientation == "horizontal":
-                return col * self.rows + row
-            else:
-                return row * self.columns + col
-
-        # Ragged grid
-        row, col = divmod(lr_index, self.columns)
-
-        if orientation == "horizontal":
-            n_complete = min(col, self.remainder)
-            n_incomplete = max(0, col - self.remainder)
-            return (
-                n_complete * (self.rows + 1) + n_incomplete * self.rows + row
-            )
-        else:
-            n_complete = min(row, self.remainder)
-            n_incomplete = max(0, row - self.remainder)
-            return (
-                n_complete * (self.rows + 1) + n_incomplete * self.rows + col
+            rect_model = GridIndexModel(
+                count=rect_count,
+                columns=self.columns,
+                rectangular=True,
+                orientation=self.orientation,
             )
 
-    # ------------------------------------------------------------
-    # TB → LR conversion
-    # ------------------------------------------------------------
-    def tb_to_lr(self, tb_index: int, orientation: str) -> int:
-        if self.rectangular:
-            if orientation == "horizontal":
-                col, row = divmod(tb_index, self.rows)
-                return row * self.columns + col
-            else:
-                row, col = divmod(tb_index, self.columns)
-                return row * self.columns + col
+            # Move in the virtual rectangle
+            new_virtual = rect_model.move_rectangular(
+                local_index, index_type, incr
+            )
 
-        # Ragged grid
-        if orientation == "horizontal":
-            if tb_index < self.remainder * (self.rows + 1):
-                col, row = divmod(tb_index, self.rows + 1)
-            else:
-                col, row = divmod(
-                    tb_index - self.remainder * (self.rows + 1),
-                    self.rows,
-                )
-                col += self.remainder
-            return row * self.columns + col
+            # Map back into real items (wrap)
+            return visible[new_virtual % len(visible)]
 
-        else:
-            if tb_index < self.remainder * (self.rows + 1):
-                row, col = divmod(tb_index, self.rows + 1)
-            else:
-                row, col = divmod(
-                    tb_index - self.remainder * (self.rows + 1),
-                    self.rows,
-                )
-                row += self.remainder
-            return row * self.columns + col
+        # Special case: 1-column ragged lists behave like simple vertical menus
+        if not self.rectangular and self.columns == 1 and index_type == "tb":
+            new_index = (local_index + incr) % len(visible)
+            return visible[new_index]
+
+        # Ragged TB movement: treat TB as linear over visible items, no wrap
+        if index_type == "tb":
+            tb = page_model.lr_to_tb(local_index)
+            new_tb = tb + incr
+
+            # No wrap in ragged mode
+            if not (0 <= new_tb < len(visible)):
+                raise IndexError
+
+            new_local = page_model.tb_to_lr(new_tb)
+            return visible[new_local]
+
+        # General LR movement in ragged mode
+        new_local = page_model.move(local_index, index_type, incr)
+
+        # Validate ragged cell (raises IndexError if invalid)
+        page_model.lr_to_rowcol(new_local)
+
+        return visible[new_local]

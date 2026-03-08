@@ -557,7 +557,7 @@ class Menu(Generic[T], State):
 
     def clear(self) -> None:
         """Clears all menu items."""
-        self.menu_items.clear()
+        self.menu_items.clear_items()
         self.invalidate_layout("items cleared")
 
     def fit_border(self) -> None:
@@ -669,6 +669,11 @@ class Menu(Generic[T], State):
         if self._needs_refresh:
             self.refresh_layout()
             self.validate_layout("refresh layout")
+
+        if self.menu_items:
+            self.selected_index = self.menu_items.snap_selection(
+                self.selected_index
+            )
 
         if not self.transparent:
             self.window.draw(surface, self.rect)

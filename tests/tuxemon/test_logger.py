@@ -42,12 +42,12 @@ def reset_logging():
 @pytest.mark.parametrize(
     "level_str,expected",
     [
-        ("debug", logging.DEBUG),
-        ("info", logging.INFO),
-        ("warning", logging.WARNING),
-        ("error", logging.ERROR),
-        ("critical", logging.CRITICAL),
-        ("unknown", logging.INFO),
+        pytest.param("debug", logging.DEBUG, id="debug"),
+        pytest.param("info", logging.INFO, id="info"),
+        pytest.param("warning", logging.WARNING, id="warning"),
+        pytest.param("error", logging.ERROR, id="error"),
+        pytest.param("critical", logging.CRITICAL, id="critical"),
+        pytest.param("unknown", logging.INFO, id="fallback-to-info"),
     ],
 )
 def test_log_level_mapping(level_str, expected, base_model, mock_storage):
@@ -59,10 +59,10 @@ def test_log_level_mapping(level_str, expected, base_model, mock_storage):
 @pytest.mark.parametrize(
     "loggers_str,expected",
     [
-        ("all", ["all"]),
-        ("a,b,c", ["a", "b", "c"]),
-        (" a,  b ,c ", ["a", "b", "c"]),
-        ("", [""]),
+        pytest.param("all", ["all"], id="all"),
+        pytest.param("a,b,c", ["a", "b", "c"], id="simple-list"),
+        pytest.param(" a,  b ,c ", ["a", "b", "c"], id="whitespace-trim"),
+        pytest.param("", [""], id="empty-string"),
     ],
 )
 def test_logger_list_parsing(loggers_str, expected, base_model, mock_storage):

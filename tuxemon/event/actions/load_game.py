@@ -6,11 +6,12 @@ import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon import save
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.entity.player import Player
 from tuxemon.event.eventaction import EventAction
 from tuxemon.platform.const.sizes import PLAYER_NPC
+from tuxemon.save_manager import SaveManager
+from tuxemon.save_slots import resolve_save_index
 from tuxemon.session import Session
 from tuxemon.states.world_state import WorldState
 
@@ -21,39 +22,32 @@ logger = logging.getLogger(__name__)
 @dataclass
 class LoadGameAction(EventAction):
     """
-    Loads the game.
+    Loads a game from a specific save slot.
 
-    If the index parameter is absent, then it'll load
-    slot4.save
-
-    index = 0 > slot 1
-    index = 1 > slot 2
-    index = 2 > slot 3
+    The `index` parameter refers to the UI slot index (0-2).
+    Slot resolution is handled by `resolve_save_index()`, which converts
+    the UI index (0-based) into a save slot number (1-based).
 
     Script usage:
         .. code-block::
 
-            load_game [index]
+            load_game <index>
 
     Script parameters:
-        index: Selected index.
-
-    eg: "load_game" (slot4.save)
-    eg: "load_game 1"
+        index: UI slot index (0-2). Must always be provided.
     """
 
     name = "load_game"
-    index: int | None = None
+    index: int
 
     def start(self, session: Session) -> None:
         client = session.client
-        index = 4 if self.index is None else self.index + 1
+        slot = resolve_save_index(self.index)
 
         client.map_loader.clear_cache()
         logger.info("Loading!")
 
-        save_path = save.get_save_path(index)
-        save_data = save.load(save_path)
+        save_data = SaveManager.load(slot)
         if not save_data:
             return
 
@@ -64,8 +58,7 @@ class LoadGameAction(EventAction):
             client.remove_state_by_name("WorldMenuState")
         except ValueError:
             client.remove_state_by_name("LoadMenuState")
-            if self.index is not None:
-                client.remove_state_by_name("StartState")
+            client.remove_state_by_name("StartState")
 
         npc_state = save_data.npc_state
         if npc_state is None:

@@ -51,6 +51,8 @@ class GameConfig(BaseModel):
     save_prefix: str = "slot"
     save_extension: str = "save"
     save_method: str = "json"
+    save_slots: int = 6
+    save_slots_per_page: int = 3
     locale: str = "en_US"
     translation_mode: str = "none"
     font_file: str = "PressStart2P.ttf"
@@ -240,6 +242,14 @@ class TuxemonConfig:
     @property
     def save_prefix(self) -> str:
         return self.config_model.game.save_prefix
+
+    @property
+    def save_slots(self) -> int:
+        return self.config_model.game.save_slots
+
+    @property
+    def save_slots_per_page(self) -> int:
+        return self.config_model.game.save_slots_per_page
 
     @property
     def save_extension(self) -> str:

@@ -97,11 +97,15 @@ class MenuCursorController(Generic[T]):
         """
         Calculates margin using ratios derived from the original hardcoded scale values.
         """
+        img = self.arrow.image
+        width = img.get_width()
+        height = img.get_height()
+
         x = -self.context.scaling.scale_int(
-            int(self.arrow.image.get_width() / CURSOR_X_RATIO_DENOMINATOR)
+            int(width / CURSOR_X_RATIO_DENOMINATOR)
         )
         y = -self.context.scaling.scale_int(
-            int(self.arrow.image.get_height() / CURSOR_Y_RATIO_DENOMINATOR)
+            int(height / CURSOR_Y_RATIO_DENOMINATOR)
         )
         return (x, y)
 
@@ -139,7 +143,9 @@ class MenuCursorController(Generic[T]):
             item: Menu item to update.
             focus: True to apply focus, False to remove it.
         """
-        if item:
+        if item is None:
+            return
+        if item.in_focus != focus:
             item.in_focus = focus
             item.update_image()
 
@@ -158,7 +164,8 @@ class MenuCursorController(Generic[T]):
             return None
 
         x, y = item.rect.midleft
-        x -= self.context.scaling.scale_int(2)
+        x += self.arrow.x_offset
+        y += self.arrow.y_offset
 
         if animate:
             self.remove_animations(self.arrow.rect)
@@ -169,7 +176,8 @@ class MenuCursorController(Generic[T]):
                 duration=self.duration,
             )
         else:
-            self.arrow.rect.midright = (x, y)
+            self.arrow.rect.right = x
+            self.arrow.rect.centery = y
             return None
 
     def update_selection_focus(

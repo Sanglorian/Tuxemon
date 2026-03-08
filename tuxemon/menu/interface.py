@@ -80,11 +80,11 @@ class Bar:
         """Loads the border image."""
         if self.border_filename in self._graphics_cache:
             self.border = GraphicBox(
-                self._graphics_cache[self.border_filename]
+                border=self._graphics_cache[self.border_filename]
             )
         else:
             image = load_and_scale(self.border_filename)
-            self.border = GraphicBox(image)
+            self.border = GraphicBox(border=image)
             self._graphics_cache[self.border_filename] = image
 
     def calc_inner_rect(self, rect: Rect) -> Rect:
@@ -230,11 +230,11 @@ class MenuItem(Generic[T], Sprite):
 
         self.update_image()
 
-    def update_image(self) -> None:
+    def update_image(self, source: Surface | None = None) -> None:
         """
         Update the image of the sprite, applying focus/enabled visual changes.
         """
-        super().update_image()
+        super().update_image(source=source)
 
         if self._image is None:
             return

@@ -11,7 +11,7 @@ from tuxemon.state.state import State
 def mock_client():
     client = MagicMock()
     client.event_bus = MagicMock()
-    client.context.scaling.factor = 1
+    client.context.scale = 1
     client.context.scaling.scale_int = lambda x: x
     return client
 

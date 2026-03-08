@@ -30,10 +30,14 @@ class SetLanguage(PygameMenuState):
         self, client: BaseClient, main_menu: bool, **kwargs: Any
     ) -> None:
         self.main_menu = main_menu
-        theme = get_theme()
+
+        super().__init__(client=client, **kwargs)
+
+        theme = get_theme(self.client.context.scaling)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-        super().__init__(client=client, **kwargs)
+        self._menu_config["theme"] = theme
+
         self.initialize_items(self.menu)
         self.reset_theme()
 

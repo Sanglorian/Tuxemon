@@ -13,7 +13,6 @@ from tuxemon.item.crafting_system import CraftingSystem
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.tools import open_dialog
 
 if TYPE_CHECKING:
@@ -40,16 +39,19 @@ class CraftMenuState(PygameMenuState):
         self.character = character
         self.file_yaml = file_yaml
         self.method = method
-        width, height = SCREEN_SIZE
+        self.crafting_system = CraftingSystem()
+        self.crafting_system.set_current_method(self.method)
 
-        theme = self._setup_theme(BG_MISSIONS)
-        theme.scrollarea_position = POSITION_EAST
+        width, height = client.context.resolution
 
         width = int(0.8 * width)
         height = int(0.8 * height)
         super().__init__(client=client, height=height, width=width, **kwargs)
-        self.crafting_system = CraftingSystem()
-        self.crafting_system.set_current_method(self.method)
+
+        theme = self._setup_theme(BG_MISSIONS)
+        theme.scrollarea_position = POSITION_EAST
+        self._menu_config["theme"] = theme
+
         self.initialize_items(self.menu)
         self.reset_theme()
 

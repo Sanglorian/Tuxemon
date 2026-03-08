@@ -11,7 +11,6 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_MISSIONS
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -44,16 +43,16 @@ class NumberPickerState(PygameMenuState):
         self.title = title or T.translate("select_number")
         self.current_value = min_value
 
-        width, height = SCREEN_SIZE
+        width, height = client.context.resolution
+        width = int(0.5 * width)
+        height = int(0.5 * height)
+        super().__init__(client=client, width=width, height=height, **kwargs)
 
         theme = self._setup_theme(BG_MISSIONS)
         theme.widget_alignment = ALIGN_CENTER
         theme.scrollarea_position = POSITION_EAST
         theme.title = True
-
-        width = int(0.5 * width)
-        height = int(0.5 * height)
-        super().__init__(client=client, width=width, height=height, **kwargs)
+        self._menu_config["theme"] = theme
 
         if escape_key_exits is not None:
             self.escape_key_exits = escape_key_exits

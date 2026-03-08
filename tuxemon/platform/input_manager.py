@@ -22,7 +22,6 @@ from tuxemon.platform.input_visualizer import InputVisualizer
 from tuxemon.platform.platform_pygame.events import (
     PygameEventQueueHandler,
 )
-from tuxemon.prepare import SCREEN_SIZE
 
 if TYPE_CHECKING:
     from tuxemon.config import TuxemonConfig
@@ -43,6 +42,7 @@ class InputManager:
         config: TuxemonConfig,
         afk_manager: AFKManager,
         recorder: InputRecorder,
+        resolution: tuple[int, int],
     ) -> None:
         """
         Initializes the input manager with the given config.
@@ -50,10 +50,11 @@ class InputManager:
         self.afk_manager = afk_manager
         self.config = config
         self.recorder = recorder
+        self.resolution = resolution
         self.event_queue = PygameEventQueueHandler()
         self.input_history = InputHistory(config)
         self.combo_manager = ComboManager()
-        self.input_visualizer = InputVisualizer(SCREEN_SIZE)
+        self.input_visualizer = InputVisualizer(self.resolution)
         self.core_devices = CoreDevices()
         self.extra_devices: dict[str, Any] = {}
         self._device_setups: dict[str, InputDeviceSetup] = {
@@ -67,7 +68,9 @@ class InputManager:
     def setup_inputs(self) -> None:
         for name, setup_strategy in self._device_setups.items():
             try:
-                device = setup_strategy.setup(self.event_queue, self.config)
+                device = setup_strategy.setup(
+                    self.event_queue, self.config, self.resolution
+                )
                 if device:
                     if hasattr(self.core_devices, name):
                         setattr(self.core_devices, name, device)
@@ -101,10 +104,10 @@ class InputManager:
 
             yield event
 
-    def update(self, time_delta: float) -> None:
-        self.input_history.update(time_delta)
-        self.event_queue.update_handlers(time_delta)
-        self.afk_manager.update(time_delta)
+    def update(self, dt: float) -> None:
+        self.input_history.update(dt)
+        self.event_queue.update_handlers(dt)
+        self.afk_manager.update(dt)
 
     def draw_overlay(self, screen: Surface) -> None:
         if self.core_devices.overlay:

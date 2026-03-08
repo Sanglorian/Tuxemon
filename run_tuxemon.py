@@ -112,8 +112,12 @@ def handle_fatal_error(e: Exception) -> None:
 
 def launch_game(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
-    platform = "headless" if args.headless else "pygame"
-    context = init_display(platform)
+
+    from tuxemon.platform import platform
+    platform.init()
+
+    platform_mode = "headless" if args.headless else "pygame"
+    context = init_display(platform_mode)
 
     from tuxemon import main as tuxemon_main
 

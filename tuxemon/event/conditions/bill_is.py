@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 from tuxemon.tools import compare
@@ -35,29 +35,32 @@ class BillIsCondition(EventCondition):
     eg. "is bill_is player,bill_slug,equals,name_variable" (name_variable:75)
     """
 
-    name = "bill_is"
+    name: ClassVar[str] = "bill_is"
+    character: str
+    bill_slug: str
+    operator: str
+    amount: str | int
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         player = session.player
-        character_name, _bill, operator, _amount = condition.parameters[:4]
-        character = session.get_npc(character_name)
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"Character '{character_name}' not found")
+            logger.error(f"Character '{self.character}' not found")
             return False
 
         money_manager = character.money_controller.money_manager
-        bill = money_manager.get_bill(_bill)
+        bill = money_manager.get_bill(self.bill_slug)
         if bill is None:
             return False
 
-        if not _amount.isdigit():
+        if isinstance(self.amount, str):
             amount = 0
-            if player.game_variables.has(_amount):
-                amount = int(player.game_variables.get(_amount, 0))
+            if player.game_variables.has(self.amount):
+                amount = int(player.game_variables.get(self.amount, 0))
         else:
-            amount = int(_amount)
+            amount = self.amount
 
         if bill.amount == 0:
             return False
         else:
-            return compare(operator, bill.amount, amount)
+            return compare(self.operator, bill.amount, amount)

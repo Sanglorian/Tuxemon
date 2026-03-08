@@ -11,7 +11,6 @@ from tuxemon.celestial_handler import get_phase_progress
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_MISSIONS
-from tuxemon.prepare import SCREEN_SIZE
 from tuxemon.session import Session
 
 if TYPE_CHECKING:
@@ -31,16 +30,17 @@ class CelestialState(PygameMenuState):
         self.session = session
         self.celestial = session.celestial
 
-        width, height = SCREEN_SIZE
-
-        theme = self._setup_theme(BG_MISSIONS)
-        theme.scrollarea_position = POSITION_EAST
-        theme.widget_alignment = ALIGN_CENTER
+        width, height = client.context.resolution
 
         width = int(width * 0.8)
         height = int(height * 0.8)
 
         super().__init__(client=client, height=height, width=width, **kwargs)
+
+        theme = self._setup_theme(BG_MISSIONS)
+        theme.scrollarea_position = POSITION_EAST
+        theme.widget_alignment = ALIGN_CENTER
+        self._menu_config["theme"] = theme
         self.initialize_items(self.menu)
         self.reset_theme()
 

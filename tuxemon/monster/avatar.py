@@ -23,7 +23,7 @@ def get_avatar(session: Session, avatar: str) -> Sprite | None:
     Returns:
         The sprite for the monster or NPC avatar, or None if not found.
     """
-    scale_int = session.client.context.scaling.factor
+    scale_int = session.client.context.scale
 
     if avatar.isdigit():
         monster = session.player.monsters[int(avatar)]

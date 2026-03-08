@@ -145,7 +145,6 @@ class SurfaceAnimation:
         self._loop = loop
         self._completed_loops: int = 0
         self._rate: float = 1.0
-        self._visibility: bool = True
         self._on_completion_callback: Callable[..., Any] | None = None
 
         # The time that the play() function was last called.
@@ -216,14 +215,9 @@ class SurfaceAnimation:
         """Reset the animation to the beginning and set state to stopped."""
         self._state = State.STOPPED
 
-    def update(self, time_delta: float) -> None:
-        """
-        Update the internal clock with the elapsed time.
-
-        Parameters:
-            time_delta: Time elapsed since last call to update.
-        """
-        self._internal_clock += time_delta
+    def update(self, dt: float) -> None:
+        """Update the internal clock with the elapsed time."""
+        self._internal_clock += dt
 
     def flip(self, flip_axes: FlipAxes) -> None:
         """Flip all frames of an animation along the X-axis and/or Y-axis."""
@@ -291,7 +285,6 @@ class SurfaceAnimation:
 
         new_anim._frame_manager = self._frame_manager
         new_anim.rate = self.rate
-        new_anim._visibility = self._visibility
         new_anim._on_completion_callback = self._on_completion_callback
         new_anim._internal_clock = self._internal_clock
 
@@ -340,14 +333,6 @@ class SurfaceAnimation:
                 self._on_completion_callback()
 
         return self._state
-
-    @property
-    def visibility(self) -> bool:
-        return self._visibility
-
-    @visibility.setter
-    def visibility(self, visibility: bool) -> None:
-        self._visibility = bool(visibility)
 
     @property
     def elapsed(self) -> float:
@@ -530,16 +515,10 @@ class SurfaceAnimationCollection:
             anim_obj.stop()
         self._state = State.STOPPED
 
-    def update(self, time_delta: float) -> None:
-        """
-        Update the internal clock with the elapsed time.
-
-        Parameters:
-            time_delta: Time elapsed since last call to update.
-
-        """
+    def update(self, dt: float) -> None:
+        """Update the internal clock with the elapsed time."""
         for anim_obj in self._animations:
-            anim_obj.update(time_delta)
+            anim_obj.update(dt)
 
 
 T = TypeVar("T", bound=float)

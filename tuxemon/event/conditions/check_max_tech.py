@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.database.rules import config_monster
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.monster.monster import Monster
 from tuxemon.session import Session
@@ -32,7 +32,7 @@ class CheckMaxTechCondition(EventCondition):
 
     Script parameters:
         character: Either "player" or NPC slug name (e.g. "npc_maple").
-        nr: Optional integer specifying the minimum number of techniques.
+        number: Optional integer specifying the minimum number of techniques.
             Defaults to the config_monster.max_moves.
 
     Examples:
@@ -40,37 +40,29 @@ class CheckMaxTechCondition(EventCondition):
         - "is check_max_tech npc_maple,2"
     """
 
-    name = "check_max_tech"
+    name: ClassVar[str] = "check_max_tech"
+    character: str
+    number: int | None = None
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        target_name = condition.parameters[0]
-
-        target_character = session.get_npc(target_name)
+    def test(self, session: Session) -> bool:
+        target_character = session.get_npc(self.character)
         if target_character is None:
-            logger.error(f"Character '{target_name}' not found.")
+            logger.error(f"Character '{self.character}' not found.")
             return False
 
         try:
             max_techs = (
-                int(condition.parameters[1])
-                if len(condition.parameters) > 1
-                else config_monster.max_moves
+                self.number if self.number else config_monster.max_moves
             )
         except ValueError:
-            logger.error(
-                f"Invalid technique threshold: {condition.parameters[1]}"
-            )
+            logger.error(f"Invalid technique threshold: {self.number}")
             return False
 
         logger.debug(f"Technique threshold set to: {max_techs}")
 
         matching_monsters: list[Monster] = []
         for monster in target_character.monsters:
-            threshold = (
-                int(condition.parameters[1])
-                if len(condition.parameters) > 1
-                else monster.max_moves
-            )
+            threshold = self.number if self.number else monster.max_moves
 
             num_moves = len(monster.moves.current_moves)
             logger.debug(

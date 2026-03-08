@@ -20,9 +20,8 @@ from pygame.rect import FRect, Rect
 from pygame.sprite import DirtySprite, Group, LayeredUpdates
 from pygame.sprite import Sprite as PySprite
 from pygame.surface import Surface
-from pygame.transform import rotozoom, scale
+from pygame.transform import rotate, rotozoom, scale
 
-from tuxemon import graphics
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 from tuxemon.surfanim import SurfaceAnimation
@@ -53,12 +52,16 @@ class Sprite(DirtySprite):
         self.visible: bool = True
         self._rotation: int = 0
         self._rect = Rect(0, 0, 0, 0)
-        self.image = image
-        self.animation = animation
+        self._animation: SurfaceAnimation | None = None
         self._width: int = 0
         self._height: int = 0
         self._needs_rescale: bool = False
         self._needs_update: bool = False
+
+        self.image = image
+        if animation is not None:
+            self.animation = animation
+
         self.player: bool = False
         self.base_image: Surface | None = None
 
@@ -90,7 +93,6 @@ class Sprite(DirtySprite):
         Returns:
             The area of the surface that was modified.
         """
-        # should draw to surface without generating a cached copy
         if rect is None:
             rect = surface.get_rect()
         return self._draw(surface, rect)
@@ -141,25 +143,30 @@ class Sprite(DirtySprite):
 
     @property
     def image(self) -> Surface:
-        """
-        Get the image of the sprite.
+        if not self.visible:
+            return Sprite._dummy_image
 
-        Returns:
-            The image of the sprite.
-        """
-        # should always be a cached copy
         if self.animation is not None:
-            return self.animation.get_current_frame()
+            frame = self.animation.get_current_frame()
+
+            if not (self._width or self._height or self._rotation):
+                return frame
+
+            if (
+                self._needs_update
+                or self._needs_rescale
+                or self._image is None
+            ):
+                self.update_image(source=frame)
+                self._needs_update = False
+
+            return self._image or Sprite._dummy_image
 
         if self._needs_update:
             self.update_image()
             self._needs_update = False
-            self._needs_rescale = False
-        return (
-            self._image
-            if self._image and self.visible
-            else Sprite._dummy_image
-        )
+
+        return self._image if self._image else Sprite._dummy_image
 
     @image.setter
     def image(self, image: Surface | None) -> None:
@@ -190,53 +197,64 @@ class Sprite(DirtySprite):
 
     @animation.setter
     def animation(self, animation: SurfaceAnimation | None) -> None:
-        """
-        Set the animation of the sprite.
-
-        Parameters:
-            animation: The new animation of the sprite.
-        """
         self._animation = animation
         if animation is not None:
-            self.image = None
+            self._image = None
+            self._needs_update = True
+
+            self._width = 0
+            self._height = 0
+            self._needs_rescale = False
+
             self.rect.size = animation.get_rect().size
-
-    def update_image(self) -> None:
-        """
-        Update the image of the sprite.
-        """
-        image: Surface | None = None
-        if self._original_image is not None and self._needs_rescale:
-            w = self.rect.width if self._width is None else self._width
-            h = self.rect.height if self._height is None else self._height
-            if (w, h) != self._original_image.get_size():
-                image = scale(self._original_image, (w, h))
-            center = self.rect.center
-            self.rect.size = w, h
-            self.rect.center = center
         else:
-            image = self._original_image
+            self._needs_update = True
 
-        if image is not None and self._rotation:
-            image = (
-                rotozoom(image, self._rotation, 1)
-                if self._rotation != 0
-                else image
-            )
+    def update_image(self, source: Surface | None = None) -> None:
+        base = source if source is not None else self._original_image
+        if base is None:
+            self._image = None
+            return
+
+        if self._width or self._height:
+            w = self._width or base.get_width()
+            h = self._height or base.get_height()
+        else:
+            w, h = base.get_size()
+
+        if (w, h) != base.get_size():
+            image = scale(base, (w, h))
+        else:
+            image = base
+
+        center = self.rect.center
+        self.rect.size = (w, h)
+        self.rect.center = center
+
+        if self._rotation:
+            if self._rotation % 90 == 0:
+                image = rotate(image, self._rotation)
+            else:
+                image = rotozoom(image, self._rotation, 1)
             rect = image.get_rect(center=self.rect.center)
             self.rect.size = rect.size
             self.rect.center = rect.center
 
-        self._width, self._height = self.rect.size
         self._image = image
+        self._width, self._height = w, h
+        self._needs_rescale = False
 
     def reset_to_base_image(self) -> None:
         """
         Resets the sprite's image to its base image.
         """
         if self.base_image:
-            self.image = self.base_image.copy()
+            self._rotation = 0
+            self._width = 0
+            self._height = 0
+            self._needs_rescale = False
             self._needs_update = True
+            self.image = self.base_image.copy()
         else:
             logger.warning("base_image is not set. Cannot reset.")
 
@@ -252,17 +270,13 @@ class Sprite(DirtySprite):
 
     @width.setter
     def width(self, width: int) -> None:
-        """
-        Set the width of the sprite.
-
-        Parameters:
-            width: The new width of the sprite.
-        """
         width = round(width)
-        if not width == self._width:
-            self._width = width
-            self._needs_rescale = True
-            self._needs_update = True
+        self._width = width
+        center = self.rect.center
+        self.rect.width = width
+        self.rect.center = center
+        self._needs_rescale = True
+        self._needs_update = True
 
     @property
     def height(self) -> int:
@@ -276,17 +290,13 @@ class Sprite(DirtySprite):
 
     @height.setter
     def height(self, height: int) -> None:
-        """
-        Set the height of the sprite.
-
-        Parameters:
-            height: The new height of the sprite.
-        """
         height = round(height)
-        if not height == self._height:
-            self._height = height
-            self._needs_rescale = True
-            self._needs_update = True
+        self._height = height
+        center = self.rect.center
+        self.rect.height = height
+        self.rect.center = center
+        self._needs_rescale = True
+        self._needs_update = True
 
     @property
     def rotation(self) -> int:
@@ -307,9 +317,9 @@ class Sprite(DirtySprite):
             value: The new rotation of the sprite.
         """
         value = round(value) % 360
-        if not value == self._rotation:
+        if value != self._rotation:
             self._rotation = value
-            self._needs_update = True
+        self._needs_update = True
 
     def get_size(self) -> tuple[int, int]:
         """
@@ -427,7 +437,9 @@ class CaptureDeviceSprite(Sprite):
             return "effected"
         return "alive"
 
-    def update_image(self) -> None:
+    def update_image(self, source: Surface | None = None) -> None:
+        from tuxemon import graphics
+
         mapping = {
             "empty": graphics.load_and_scale(self.icon.icon_empty),
             "faint": graphics.load_and_scale(self.icon.icon_faint),
@@ -446,6 +458,8 @@ class CaptureDeviceSprite(Sprite):
 
     def animate_capture(self, animate: Callable[..., object]) -> None:
         """Fade in + slide up animation for the sprite."""
+        from tuxemon import graphics
+
         sprite = self.sprite
         sprite.image = graphics.convert_alpha_to_colorkey(sprite.image)
         sprite.image.set_alpha(0)

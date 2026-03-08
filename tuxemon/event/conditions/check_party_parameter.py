@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.conditions.common import CommonCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
@@ -37,29 +37,29 @@ class CheckPartyParameterCondition(EventCondition):
     translated: "is there 1 monster in the party at level 5? True/False"
     """
 
-    name = "check_party_parameter"
+    name: ClassVar[str] = "check_party_parameter"
+    character: str
+    attribute: str
+    value: str
+    operator: str
+    times: int
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        (
-            _character,
-            _attribute,
-            _value,
-            _operator,
-            _times,
-        ) = condition.parameters[:5]
-        character = session.get_npc(_character)
+    def test(self, session: Session) -> bool:
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
         if not character.monsters:
             logger.warning(f"{character.name} has no monsters")
             return False
         party = len(character.monsters)
-        times = party if int(_times) > party else int(_times)
+        times = party if self.times > party else self.times
 
         count = sum(
             1
             for monster in character.monsters
-            if CommonCondition.check_parameter(monster, _attribute, _value)
+            if CommonCondition.check_parameter(
+                monster, self.attribute, self.value
+            )
         )
-        return compare(_operator, count, times)
+        return compare(self.operator, count, times)

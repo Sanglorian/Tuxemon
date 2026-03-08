@@ -11,7 +11,7 @@ import pygame
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.database.runtime import db
 from tuxemon.db import MusicStatus
-from tuxemon.platform import mixer as mixer2
+from tuxemon.platform import platform
 from tuxemon.platform.const.sizes import (
     MUSIC_FADEIN,
     MUSIC_FADEOUT,
@@ -35,9 +35,9 @@ class MusicPlayerState:
     ) -> None:
         try:
             path = self.get_path(filename)
-            mixer2.music.load(path)
-            mixer2.music.set_volume(volume)
-            mixer2.music.play(loops=loop, fade_ms=fade_ms)
+            platform.mixer.music.load(path)
+            platform.mixer.music.set_volume(volume)
+            platform.mixer.music.play(loops=loop, fade_ms=fade_ms)
         except Exception as e:
             logger.error(f"Error loading music: {e}")
 
@@ -66,7 +66,7 @@ class MusicPlayerState:
     def pause(self) -> None:
         if self.status == MusicStatus.PLAYING:
             self.status = MusicStatus.PAUSED
-            mixer2.music.pause()
+            platform.mixer.music.pause()
         elif self.status == MusicStatus.PAUSED:
             logger.warning("Music is already paused.")
         else:
@@ -75,7 +75,7 @@ class MusicPlayerState:
     def unpause(self) -> None:
         if self.status == MusicStatus.PAUSED:
             self.status = MusicStatus.PLAYING
-            mixer2.music.unpause()
+            platform.mixer.music.unpause()
         elif self.status == MusicStatus.STOPPED:
             logger.warning("Music is stopped, cannot unpause.")
         else:
@@ -89,28 +89,28 @@ class MusicPlayerState:
                 self.fadeout(fadeout_time)
             self.status = MusicStatus.STOPPED
             self.current_song = None
-            mixer2.music.stop()
+            platform.mixer.music.stop()
         else:
             logger.warning("Music cannot be stopped, none is playing.")
 
     def fadeout(self, time: int) -> None:
-        mixer2.music.fadeout(time)
+        platform.mixer.music.fadeout(time)
 
     def is_playing(self) -> bool:
-        return bool(mixer2.music.get_busy())
+        return bool(platform.mixer.music.get_busy())
 
     def is_playing_same_song(self, song: str) -> bool:
         return self.status == MusicStatus.PLAYING and self.current_song == song
 
     def set_volume(self, volume: float) -> None:
         if self.status == MusicStatus.PLAYING:
-            mixer2.music.set_volume(volume)
+            platform.mixer.music.set_volume(volume)
         else:
             logger.warning("Music is not playing, set volume not applied.")
 
     def decrease_volume(self, amount: float = 0.1) -> None:
         if self.status == MusicStatus.PLAYING:
-            current_volume = mixer2.music.get_volume()
+            current_volume = platform.mixer.music.get_volume()
             new_volume = max(0.0, current_volume - amount)
             self.set_volume(new_volume)
         else:
@@ -120,7 +120,7 @@ class MusicPlayerState:
 
     def increase_volume(self, amount: float = 0.1) -> None:
         if self.status == MusicStatus.PLAYING:
-            current_volume = mixer2.music.get_volume()
+            current_volume = platform.mixer.music.get_volume()
             new_volume = min(1.0, current_volume + amount)
             self.set_volume(new_volume)
         else:
@@ -130,7 +130,7 @@ class MusicPlayerState:
 
     def get_volume(self) -> float | None:
         if self.status == MusicStatus.PLAYING:
-            return float(mixer2.music.get_volume())
+            return float(platform.mixer.music.get_volume())
         else:
             logger.warning("Music is not playing, cannot get volume.")
             return None

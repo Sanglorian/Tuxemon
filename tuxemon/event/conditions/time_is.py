@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 from tuxemon.time_handler import TimeSnapshot
@@ -50,44 +50,45 @@ class TimeIsCondition(EventCondition):
             is time_is date,equals,4-30
     """
 
-    name = "time_is"
+    name: ClassVar[str] = "time_is"
+    property_name: str
+    operation: str
+    value: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         snapshot = session.time.get_time_variables()
 
-        property_name: str = condition.parameters[0]
-        operation: str = condition.parameters[1]
-        raw_value: str = condition.parameters[2]
+        if self.property_name == "date":
+            return self._compare_date(snapshot, self.operation, self.value)
 
-        if property_name == "date":
-            return self._compare_date(snapshot, operation, raw_value)
-
-        if not hasattr(snapshot, property_name):
-            logger.error(f"Invalid time property '{property_name}'")
+        if not hasattr(snapshot, self.property_name):
+            logger.error(f"Invalid time property '{self.property_name}'")
             return False
 
-        value = getattr(snapshot, property_name)
+        value = getattr(snapshot, self.property_name)
         numeric_properties = {"hour", "day_of_year", "year", "month", "day"}
 
         # Numeric path
-        if property_name in numeric_properties:
+        if self.property_name in numeric_properties:
             try:
                 v1 = float(value)
-                v2 = float(raw_value)
+                v2 = float(self.value)
             except ValueError:
-                logger.error(f"Expected numeric value for '{property_name}'")
+                logger.error(
+                    f"Expected numeric value for '{self.property_name}'"
+                )
                 return False
-            return compare(operation, v1, v2)
+            return compare(self.operation, v1, v2)
 
         # String path (equals / not_equals only)
-        if operation in ("equals", "=="):
-            return str(value) == raw_value
+        if self.operation in ("equals", "=="):
+            return str(value) == self.value
 
-        if operation in ("not_equals", "!="):
-            return str(value) != raw_value
+        if self.operation in ("not_equals", "!="):
+            return str(value) != self.value
 
         logger.error(
-            f"Operation '{operation}' not valid for non-numeric property '{property_name}'"
+            f"Operation '{self.operation}' not valid for non-numeric property '{self.property_name}'"
         )
         return False
 

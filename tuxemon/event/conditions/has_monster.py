@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -27,14 +27,15 @@ class HasMonsterCondition(EventCondition):
         monster: Monster slug name (e.g. "rockitten").
     """
 
-    name = "has_monster"
+    name: ClassVar[str] = "has_monster"
+    character: str
+    monster: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        _character, _monster = condition.parameters[:2]
-        character = session.get_npc(_character)
+    def test(self, session: Session) -> bool:
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
-        if character.party.find_monster(_monster):
+        if character.party.find_monster(self.monster):
             return True
         return False

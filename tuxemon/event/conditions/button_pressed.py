@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.platform.const.intentions import constants
 from tuxemon.session import Session
@@ -24,14 +24,13 @@ class ButtonPressedCondition(EventCondition):
         button: A button/intention key (E.g. "INTERACT").
     """
 
-    name = "button_pressed"
+    name: ClassVar[str] = "button_pressed"
+    button: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        button = str(condition.parameters[0])
-
+    def test(self, session: Session) -> bool:
         try:
-            button_id = constants[button]
+            button_id = constants[self.button]
         except KeyError:
-            raise ValueError(f"Cannot support key type: {button}")
+            raise ValueError(f"Cannot support key type: {self.button}")
 
         return session.client.input_cache.was_button_pressed(button_id)

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.graphics import string_to_colorlike
 from tuxemon.session import Session
@@ -38,21 +38,22 @@ class CheckWorldCondition(EventCondition):
           Checks if NPC "npc_maple" currently has a speech bubble.
     """
 
-    name = "check_world"
+    name: ClassVar[str] = "check_world"
+    param: str
+    value: str | None = None
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        params = condition.parameters
-        if params[0] == "layer":
-            if len(params) > 1:
-                rgb = string_to_colorlike(params[1])
-                return session.client.map_renderer.layer_color == rgb
-            return True
-        if params[0] == "bubble":
-            if len(params) < 2:
+    def test(self, session: Session) -> bool:
+        if self.param == "layer":
+            if self.value is None:
+                return True
+            rgb = string_to_colorlike(self.value)
+            return session.client.map_renderer.layer_color == rgb
+        if self.param == "bubble":
+            if self.value is None:
                 return False
-            char = session.get_npc(params[1])
+            char = session.get_npc(self.value)
             if char is None:
-                logger.error(f"{params[1]} not found")
+                logger.error(f"{self.value} not found")
                 return False
             return session.client.map_renderer.bubble_manager.has_bubble(char)
         return False

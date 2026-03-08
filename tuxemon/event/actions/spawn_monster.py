@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, final
 
-from tuxemon.db import Acquisition, EvolutionStage, StatType
+from tuxemon.db import Acquisition, EvolutionStage
 from tuxemon.element import ElementTypesHandler
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale.locale import T
@@ -22,7 +22,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-# noinspection PyAttributeOutsideInit
 @final
 @dataclass
 class SpawnMonsterAction(EventAction):
@@ -148,27 +147,20 @@ def _determine_seed(mother: Monster, father: Monster) -> Monster:
     Choose the genetic seed parent using a biologically inspired
     hierarchy with trace logging.
     """
-
-    stage_order: dict[EvolutionStage, int] = {
-        EvolutionStage.STAGE2: 3,
-        EvolutionStage.STAGE1: 2,
-        EvolutionStage.STANDALONE: 1,
-    }
-    stage_mother = stage_order.get(mother.stage, 0)
-    stage_father = stage_order.get(father.stage, 0)
     logger.debug(
-        f"Evolution stage - Mother: {stage_mother}, Father: {stage_father}"
+        f"Evolution stage - Mother: {mother.stage}, Father: {father.stage}"
     )
 
-    if stage_mother > stage_father:
+    if mother.evolution_rank() > father.evolution_rank():
         logger.debug("Seed chosen based on higher evolution stage: Mother")
         return mother
-    elif stage_father > stage_mother:
+    elif father.evolution_rank() > mother.evolution_rank():
         logger.debug("Seed chosen based on higher evolution stage: Father")
         return father
 
-    stats_mother = sum(mother.return_stat(s) for s in StatType)
-    stats_father = sum(father.return_stat(s) for s in StatType)
+    stats_mother = mother.base_stats.sum()
+    stats_father = father.base_stats.sum()
+
     logger.debug(
         f"Total stats - Mother: {stats_mother}, Father: {stats_father}"
     )
@@ -261,7 +253,7 @@ def _determine_tastes(mother: Monster, father: Monster) -> tuple[str, str]:
     warm_slug = _mutate_taste(taste_warm, "warm")
     cold_slug = _mutate_taste(taste_cold, "cold")
 
-    return (taste_warm.slug, taste_cold.slug)
+    return (warm_slug, cold_slug)
 
 
 def _mutate_taste(

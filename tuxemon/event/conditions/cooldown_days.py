@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -24,18 +24,18 @@ class CooldownDaysCondition(EventCondition):
         variable: The game variable where the cooldown date is stored.
     """
 
-    name = "cooldown_days"
+    name: ClassVar[str] = "cooldown_days"
+    timeframe: int
+    variable: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        timeframe = int(condition.parameters[0])
-        variable = condition.parameters[1]
+    def test(self, session: Session) -> bool:
         player = session.player
 
-        if player.game_variables.has(variable):
-            cooldown_day = int(player.game_variables.get(variable))
+        if player.game_variables.has(self.variable):
+            cooldown_day = int(player.game_variables.get(self.variable))
             if session.time.get_ordinal() < cooldown_day:
                 return False  # Event is still on cooldown.
 
-        new_cooldown_day = session.time.get_ordinal() + timeframe
-        player.game_variables.set(variable, new_cooldown_day)
+        new_cooldown_day = session.time.get_ordinal() + self.timeframe
+        player.game_variables.set(self.variable, new_cooldown_day)
         return True

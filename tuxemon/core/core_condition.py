@@ -10,7 +10,6 @@ from tuxemon.session import Session
 from tuxemon.tools import cast_dataclass_parameters
 
 if TYPE_CHECKING:
-    from tuxemon.db import SpatialCondition
     from tuxemon.item.item import Item
     from tuxemon.monster.monster import Monster
     from tuxemon.status.status import Status
@@ -33,8 +32,8 @@ class CoreCondition:
     def __post_init__(self) -> None:
         cast_dataclass_parameters(self)
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        """Test conditions related to SpatialCondition's attributes."""
+    def test(self, session: Session) -> bool:
+        """Test conditions."""
         return False
 
     def test_with_monster(self, session: Session, target: Monster) -> bool:

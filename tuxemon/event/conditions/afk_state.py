@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -24,9 +24,10 @@ class AFKStateCondition(EventCondition):
         is afk_state warn:kick
     """
 
-    name = "afk_state"
+    name: ClassVar[str] = "afk_state"
+    level: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         afk_manager = session.client.afk_manager
-        levels = condition.parameters[0].split(":")
+        levels = self.level.split(":")
         return any(afk_manager.is_threshold_met(level) for level in levels)

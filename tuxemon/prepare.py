@@ -54,10 +54,6 @@ def pygame_init() -> DisplayContext:
 
     core_init()
 
-    from tuxemon import platform
-
-    platform.init()
-
     logger.debug("pygame init")
     pg.init()
     pg.display.set_caption(CONFIG.window_caption)
@@ -66,9 +62,10 @@ def pygame_init() -> DisplayContext:
 
     # Fullscreen flags
     fullscreen = pg.FULLSCREEN if CONFIG.fullscreen else 0
-    from tuxemon.platform import is_android
 
-    if is_android():
+    from tuxemon.platform import platform
+
+    if platform.is_android():
         fullscreen = pg.FULLSCREEN
 
     flags = pg.HWSURFACE | pg.DOUBLEBUF | fullscreen

@@ -12,7 +12,6 @@ from tuxemon.session import Session
 logger = logging.getLogger(__name__)
 
 
-# noinspection PyAttributeOutsideInit
 @final
 @dataclass
 class CopyVariableAction(EventAction):

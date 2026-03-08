@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.platform.const.sizes import SURFACE_KEYS
 from tuxemon.session import Session
@@ -28,24 +28,25 @@ class CharInCondition(EventCondition):
         value: value (eg surfable) inside the tileset.
     """
 
-    name = "char_in"
+    name: ClassVar[str] = "char_in"
+    character: str
+    value: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         client = session.client
-        character = session.get_npc(condition.parameters[0])
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{condition.parameters[0]} not found")
+            logger.error(f"{self.character} not found")
             return False
-        prop = condition.parameters[1]
 
         tiles = []
-        if prop in SURFACE_KEYS:
+        if self.value in SURFACE_KEYS:
             tiles = client.collision_manager.get_all_tile_properties(
-                client.map_manager.surface_map, prop
+                client.map_manager.surface_map, self.value
             )
         else:
             tiles = client.collision_manager.check_collision_zones(
-                client.map_manager.collision_map, prop
+                client.map_manager.collision_map, self.value
             )
         if tiles:
             return character.tile_pos in tiles

@@ -303,5 +303,10 @@ class ConditionEvaluator:
                 f"Condition type '{map_condition.type}' not found."
             )
 
-        result = condition.test(self.session, map_condition)
+        try:
+            self.session.current_condition_box = map_condition.box
+            result = condition.test(self.session)
+        finally:
+            self.session.current_condition_box = None
+
         return result == condition.is_expected

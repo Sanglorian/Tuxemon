@@ -3,20 +3,13 @@
 import pytest
 
 from tuxemon.boundary import Dimensions, MapConditionBoundary
-from tuxemon.db import BoundingBox, Operator, SpatialCondition
+from tuxemon.db import BoundingBox
 
 
 @pytest.fixture
 def make_boundary():
-    def _make(box):
-        condition = SpatialCondition(
-            type="",
-            parameters=[],
-            box=box,
-            operator=Operator.IS,
-            name="unknown",
-        )
-        return MapConditionBoundary(condition)
+    def _make(box: BoundingBox):
+        return MapConditionBoundary(box)
 
     return _make
 

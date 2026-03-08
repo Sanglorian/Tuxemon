@@ -145,7 +145,6 @@ class SurfaceAnimation:
         self._loop = loop
         self._completed_loops: int = 0
         self._rate: float = 1.0
-        self._visibility: bool = True
         self._on_completion_callback: Callable[..., Any] | None = None
 
         # The time that the play() function was last called.
@@ -286,7 +285,6 @@ class SurfaceAnimation:
 
         new_anim._frame_manager = self._frame_manager
         new_anim.rate = self.rate
-        new_anim._visibility = self._visibility
         new_anim._on_completion_callback = self._on_completion_callback
         new_anim._internal_clock = self._internal_clock
 
@@ -335,14 +333,6 @@ class SurfaceAnimation:
                 self._on_completion_callback()
 
         return self._state
-
-    @property
-    def visibility(self) -> bool:
-        return self._visibility
-
-    @visibility.setter
-    def visibility(self, visibility: bool) -> None:
-        self._visibility = bool(visibility)
 
     @property
     def elapsed(self) -> float:

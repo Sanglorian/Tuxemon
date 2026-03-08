@@ -102,7 +102,7 @@ class GraphicBox(Sprite):
         self._tiles = layout.tiles
         self._tile_size = layout.tile_size
 
-    def update_image(self) -> None:
+    def update_image(self, source: Surface | None = None) -> None:
         """
         Updates the object's image by drawing the box on a new surface.
         """

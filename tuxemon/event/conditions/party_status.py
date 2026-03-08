@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 from tuxemon.tools import compare
@@ -32,19 +32,22 @@ class PartyStatusCondition(EventCondition):
         status_name: Slug of the status to check (e.g. "poison").
     """
 
-    name = "party_status"
+    name: ClassVar[str] = "party_status"
+    character: str
+    operator: str
+    value: int
+    status: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        _character, _operator, _value, _status_name = condition.parameters[:4]
-        character = session.get_npc(_character)
+    def test(self, session: Session) -> bool:
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
 
         count = sum(
             1
             for m in character.monsters
             if (current_status := m.status.current_status) is not None
-            and current_status.slug == _status_name
+            and current_status.slug == self.status
         )
-        return compare(_operator, count, int(_value))
+        return compare(self.operator, count, self.value)

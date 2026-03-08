@@ -156,7 +156,15 @@ def test_negative_offset(renderer):
     assert surf.get_height() > 0
 
 
-@pytest.mark.parametrize("text", ["é", "漢", "🙂", "漢字🙂"])
+@pytest.mark.parametrize(
+    "text",
+    [
+        pytest.param("é", id="latin-accented"),
+        pytest.param("漢", id="cjk"),
+        pytest.param("🙂", id="emoji"),
+        pytest.param("漢字🙂", id="mixed-cjk-emoji"),
+    ],
+)
 def test_unicode_characters(renderer, text):
     surf = renderer.shadow_text(text)
     assert surf.get_width() > 0

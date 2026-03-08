@@ -75,7 +75,9 @@ def test_net_controller_loop_ignores_unknown_events(
         lambda: [("abc", {"type": "SOMETHING_ELSE"})],
     )
 
-    events = controller_server.net_controller_loop()
+    with caplog.at_level(logging.WARNING):
+        events = controller_server.net_controller_loop()
+
     assert events == []
     assert "Unknown network event" in caplog.text
 
@@ -89,7 +91,9 @@ def test_net_controller_loop_handles_bad_json(
         lambda: [("abc", "{not valid json}")],
     )
 
-    events = controller_server.net_controller_loop()
+    with caplog.at_level(logging.WARNING):
+        events = controller_server.net_controller_loop()
+
     assert events == []
     assert "Invalid JSON" in caplog.text
 

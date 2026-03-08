@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """
-Platform-specific implementations and configurations.
+Unified platform abstraction for Tuxemon.
 """
 
 from __future__ import annotations
@@ -10,15 +10,7 @@ import logging
 import os
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Protocol
-
-__all__ = (
-    "init",
-    "mixer",
-    "get_user_storage_dir",
-    "get_system_storage_dirs",
-    "is_android",
-)
+from typing import Any, BinaryIO, Protocol
 
 logger = logging.getLogger(__name__)
 
@@ -39,15 +31,29 @@ class MusicProtocol(Protocol):
 
 class MixerProtocol(Protocol):
     def pre_init(
-        self,
-        *,
-        frequency: int,
-        size: int,
-        channels: int,
-        buffer: int,
+        self, *, frequency: int, size: int, channels: int, buffer: int
     ) -> None: ...
 
     music: MusicProtocol
+
+
+class AndroidPathLike(Protocol):
+    def getPath(self) -> str: ...
+
+
+class AndroidAssetsLike(Protocol):
+    def open(self, name: str) -> BinaryIO: ...
+    def list(self, path: str) -> list[str]: ...
+
+
+class AndroidContextProtocol(Protocol):
+    def getExternalFilesDir(self, arg: str | None) -> AndroidPathLike: ...
+    def getObbDir(self) -> AndroidPathLike: ...
+    def getAssets(self) -> AndroidAssetsLike: ...
+
+
+class AndroidModuleProtocol(Protocol):
+    context: AndroidContextProtocol
 
 
 class DummyMusic(MusicProtocol):
@@ -82,200 +88,275 @@ class DummyMusic(MusicProtocol):
 
 
 class DummyMixer(MixerProtocol):
+    music: MusicProtocol = DummyMusic()
+
     def pre_init(self, *args: Any, **kwargs: Any) -> None:
         pass
 
-    music: MusicProtocol = DummyMusic()
+
+ASSET_ROOT = "<asset-root>"
 
 
-class AndroidContextProtocol(Protocol):
-    def getExternalFilesDir(self, arg: str | None) -> Any: ...
-
-
-class AndroidModuleProtocol(Protocol):
-    context: AndroidContextProtocol
-
-
-_pygame_mixer_in_use: bool = False
-android_module: AndroidModuleProtocol | None = None
-mixer: MixerProtocol = DummyMixer()
-
-
-def is_android() -> bool:
-    """Checks if the platform is Android."""
-    return android_module is not None
-
-
-def _init_mixer() -> None:
+class ResourceHandle:
     """
-    Determines and initializes the appropriate sound mixer (Android or Pygame).
-    Sets the global 'mixer' and '_pygame_mixer_in_use' variables.
+    Represents either a filesystem path or an Android asset.
     """
-    global android_module, mixer, _pygame_mixer_in_use
 
-    try:
-        import android
-        import android.mixer as android_mixer
+    def __init__(self, *, path: Path | None = None, asset: str | None = None):
+        self.path = path
+        self.asset = asset
 
-        mixer = android_mixer
-        android_module = android
-    except ImportError:
-        pass
-    else:
-        logger.info("Using Android mixer")
-        _pygame_mixer_in_use = False
-        return
+    def is_asset(self) -> bool:
+        return self.asset is not None
 
-    try:
-        import pygame.mixer as pygame_mixer
+    def exists(self, android: AndroidModuleProtocol | None) -> bool:
+        if self.path is not None:
+            return self.path.exists()
 
-        mixer = pygame_mixer  # replaces DummyMixer
-        _pygame_mixer_in_use = True
-    except ImportError:
-        logger.error("Neither Android nor Pygame mixer found")
-    else:
-        logger.info("Using Pygame mixer")
+        if self.asset is None:
+            return False
 
+        if self.asset == ASSET_ROOT:
+            return True  # virtual directory
 
-def _pre_init_sound() -> None:
-    """
-    Initializes the sound system settings for low latency.
-    Requires _init_mixer() to have been called first.
-    """
-    if _pygame_mixer_in_use and mixer is not None:
-        logger.debug("pre-init pygame mixer")
+        if android is None:
+            return False
+
+        assets = android.context.getAssets()
         try:
-            # Use mixer.pre_init() to set low-latency settings
-            mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=1024)
+            dirname, _, filename = self.asset.rpartition("/")
+            entries = assets.list(dirname)
+            return filename in entries
         except Exception as e:
-            logger.error(f"Failed to initialize Pygame mixer: {e}")
+            logger.error(
+                f"Error checking Android asset existence for {self.asset}: {e}"
+            )
+            return False
 
+    def open(self, android: AndroidModuleProtocol | None) -> Any:
+        if self.path is not None:
+            return self.path.open("rb")
 
-def init() -> None:
-    """
-    Initializes platform-specific sub-systems.
-    This includes selecting the sound mixer and calling pre_init() for low latency.
-    This function should be called before pygame.init().
-    """
-    _init_mixer()
-    _pre_init_sound()
+        if self.asset is None:
+            raise RuntimeError(
+                "ResourceHandle has neither a path nor an asset name"
+            )
 
+        if self.asset == ASSET_ROOT:
+            raise IsADirectoryError("Cannot open asset root")
 
-def get_user_storage_dir() -> Path:
-    """
-    Legacy wrapper: returns the user storage directory.
-    """
-    return UserStorage(android_module).user_dir()
+        if android is None:
+            raise RuntimeError(
+                "Attempted to open an Android asset without Android context"
+            )
 
+        return android.context.getAssets().open(self.asset)
 
-def get_system_storage_dirs() -> Sequence[Path]:
-    """
-    Legacy wrapper: returns system storage directories.
-    """
-    return SystemStorage(android_module).system_dirs()
+    def __repr__(self) -> str:
+        if self.path:
+            return f"<Resource path={self.path}>"
+        return f"<Resource asset={self.asset}>"
 
 
 class SystemStorage:
     """
-    Cross-platform abstraction for system storage directories.
-    Provides immutable storage paths for built-in mods/resources.
+    Immutable storage for built-in resources.
     """
 
-    def __init__(self, android_module: Any | None = None) -> None:
-        self.android_module = android_module
+    def __init__(self, android: AndroidModuleProtocol | None):
+        self.android = android
 
-    def system_dirs(self) -> Sequence[Path]:
+    def system_dirs(self) -> Sequence[ResourceHandle]:
         """
-        Return system storage directories depending on platform.
+        Return all system-level resource roots.
+        On desktop: real filesystem paths.
+        On Android: asset root + OBB directory (if present).
+        Always returns a list, never None.
         """
-        paths: list[Path] = []
+        dirs: list[ResourceHandle] = []
 
-        if self.android_module is None:
-            # Linux / Unix-like defaults
-            paths.extend(
-                [
-                    Path("/usr/share/tuxemon/"),
-                    Path("/usr/local/share/tuxemon/"),
-                ]
-            )
+        # Desktop / Linux
+        if self.android is None:
+            # Standard installation paths
+            for base in ("/usr/share/tuxemon", "/usr/local/share/tuxemon"):
+                dirs.append(ResourceHandle(path=Path(base)))
 
-            # Respect XDG_DATA_DIRS
+            # XDG_DATA_DIRS
             try:
-                xdg_data_dirs = os.environ.get("XDG_DATA_DIRS", "")
-                if xdg_data_dirs:
-                    for data_dir in xdg_data_dirs.split(":"):
-                        path = Path(data_dir) / "tuxemon"
-                        if path.is_dir():
-                            paths.append(path)
-                        else:
-                            logger.debug(
-                                f"Checked non-existent XDG data directory: {path}"
-                            )
+                xdg = os.environ.get("XDG_DATA_DIRS", "")
+                for entry in xdg.split(":"):
+                    p = Path(entry) / "tuxemon"
+                    if p.is_dir():
+                        dirs.append(ResourceHandle(path=p))
             except Exception as e:
-                logger.error(f"Error handling XDG_DATA_DIRS: {e}")
+                logger.error(f"Error reading XDG_DATA_DIRS: {e}")
+            return dirs
 
-        else:
-            # Android-specific immutable storage
+        # Android
+        # Asset root (virtual)
+        dirs.append(ResourceHandle(asset=ASSET_ROOT))
+
+        # OBB directory
+        try:
+            obb_path = Path(self.android.context.getObbDir().getPath())
+            if obb_path.is_dir():
+                dirs.append(ResourceHandle(path=obb_path))
+        except Exception as e:
+            logger.error(f"Error reading Android OBB dir: {e}")
+
+        return dirs
+
+    def resolve(self, name: str) -> ResourceHandle | None:
+        """
+        Resolve a resource name into a ResourceHandle.
+        Searches:
+          - filesystem dirs (desktop + Android OBB)
+          - Android assets (if available)
+        """
+        # Filesystem search
+        for base in self.system_dirs():
+            if base.path is not None:
+                candidate = base.path / name
+                if candidate.exists():
+                    return ResourceHandle(path=candidate)
+
+        # Android assets
+        if self.android is not None:
+            assets = self.android.context.getAssets()
             try:
-                # APK assets (read-only)
-                # NOTE: getAssets() is not a real filesystem path.
-                asset_dir = Path(self.android_module.context.getAssets())
-                paths.append(asset_dir)
-
-                # OBB expansion files
-                obb_dir = Path(
-                    self.android_module.context.getObbDir().getPath()
-                )
-                if obb_dir.is_dir():
-                    paths.append(obb_dir)
-
+                dirname, _, filename = name.rpartition("/")
+                entries = assets.list(dirname)
+                if filename in entries:
+                    return ResourceHandle(asset=name)
             except Exception as e:
-                logger.error(f"Error handling Android system storage: {e}")
+                logger.error(f"Error listing Android assets for {name}: {e}")
 
-        return paths
-
-    def list_mods(self) -> list[str]:
-        """
-        Return a list of available mods/resources from system storage.
-        """
-        mods: list[str] = []
-        for directory in self.system_dirs():
-            if directory.is_dir():
-                for item in directory.iterdir():
-                    if item.is_dir():
-                        mods.append(item.name)
-        return mods
+        return None
 
 
 class UserStorage:
     """
-    Cross-platform abstraction for user storage directories.
-    Provides mutable storage paths for saves, configs, cache, downloaded mods.
+    Mutable storage for saves, configs, mods, cache.
     """
 
-    def __init__(self, android_module: Any | None = None) -> None:
-        self.android_module = android_module
+    def __init__(self, android: AndroidModuleProtocol | None):
+        self.android = android
 
     def user_dir(self) -> Path:
-        """
-        Return the user storage directory depending on platform.
-        """
-        if self.android_module is None:
-            return Path.home() / ".tuxemon"
+        fallback = Path.home() / ".tuxemon"
+
+        if self.android is None:
+            return fallback
 
         try:
             return Path(
-                self.android_module.context.getExternalFilesDir(None).getPath()
+                self.android.context.getExternalFilesDir(None).getPath()
             )
         except Exception as e:
-            logger.error(f"Error handling Android user storage: {e}")
-            return Path.home() / ".tuxemon"
+            logger.error(f"Error reading Android user storage: {e}")
+            return fallback
 
     def ensure_dirs(self) -> None:
-        """
-        Ensure that required user subdirectories exist.
-        """
         base = self.user_dir()
         for sub in ["saves", "config", "mods", "cache"]:
-            path = base / sub
-            path.mkdir(parents=True, exist_ok=True)
+            (base / sub).mkdir(parents=True, exist_ok=True)
+
+
+class PlatformError(Exception):
+    pass
+
+
+class Platform:
+    """
+    Unified platform abstraction.
+    """
+
+    def __init__(self) -> None:
+        self.android: AndroidModuleProtocol | None = None
+        self.mixer: MixerProtocol = DummyMixer()
+        self._pygame_mixer_in_use: bool = False
+
+        self._system_storage: SystemStorage | None = None
+        self._user_storage: UserStorage | None = None
+
+    @property
+    def system_storage(self) -> SystemStorage:
+        if self._system_storage is None:
+            self._system_storage = SystemStorage(self.android)
+        return self._system_storage
+
+    @property
+    def user_storage(self) -> UserStorage:
+        if self._user_storage is None:
+            self._user_storage = UserStorage(self.android)
+        return self._user_storage
+
+    def init(self) -> None:
+        self._detect_android()
+        self._init_mixer()
+        self._pre_init_sound()
+
+        # Refresh storage after detection
+        self._system_storage = SystemStorage(self.android)
+        self._user_storage = UserStorage(self.android)
+
+    def _detect_android(self) -> None:
+        try:
+            import android
+
+            # More robust detection
+            if hasattr(android, "context") or hasattr(android, "activity"):
+                self.android = android
+                logger.info("Android platform detected")
+            else:
+                logger.warning(
+                    "Android module found but missing context/activity; falling back to desktop"
+                )
+                self.android = None
+
+        except ImportError:
+            self.android = None
+            logger.info("Running on desktop platform")
+
+    def is_android(self) -> bool:
+        return self.android is not None
+
+    def _init_mixer(self) -> None:
+        if self.android is not None:
+            try:
+                import android.mixer as android_mixer
+
+                self.mixer = android_mixer
+                self._pygame_mixer_in_use = False
+                logger.info("Using Android mixer")
+                return
+            except ImportError:
+                logger.error(
+                    "Android detected but android.mixer not available"
+                )
+
+        try:
+            import pygame.mixer as pygame_mixer
+
+            self.mixer = pygame_mixer
+            self._pygame_mixer_in_use = True
+            logger.info("Using Pygame mixer")
+        except ImportError:
+            logger.error("No mixer available; using DummyMixer")
+            self.mixer = DummyMixer()
+            self._pygame_mixer_in_use = False
+
+    def _pre_init_sound(self) -> None:
+        if self._pygame_mixer_in_use:
+            try:
+                self.mixer.pre_init(
+                    frequency=44100,
+                    size=-16,
+                    channels=2,
+                    buffer=1024,
+                )
+            except Exception as e:
+                logger.error(f"Failed to pre-init pygame mixer: {e}")
+
+
+platform = Platform()

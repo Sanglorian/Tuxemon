@@ -143,7 +143,8 @@ def test_global_event_triggers_only_once(event_engine):
 
 def test_completed_events_are_removed(event_engine):
     running = MagicMock()
-    running.is_running.return_value = False
+    running.is_running.return_value = True
+    running.process.return_value = False
     running.state = EventState.COMPLETED
     event_engine.running_events = {1: running}
     event_engine.update_running_events(0.1)
@@ -153,14 +154,29 @@ def test_completed_events_are_removed(event_engine):
 def test_map_change_aborts_event_processing(event_engine):
     running = MagicMock()
     running.is_running.return_value = True
-    running.tick.return_value = True
-    event_engine.running_events = {1: running}
-    event_engine.current_map = "mapA"
 
     def change_map(*args, **kwargs):
         event_engine.current_map = "mapB"
         return True
 
-    running.tick.side_effect = change_map
+    running.process.side_effect = change_map
+    event_engine.running_events = {1: running}
+    event_engine.current_map = "mapA"
     event_engine.update_running_events(0.1)
-    running.tick.assert_called_once()
+    running.step.assert_called_once()
+
+
+def test_cancel_event(event_engine):
+    running = MagicMock()
+    event_engine.running_events = {1: running}
+    event_engine.cancel_event(1)
+    running.cancel.assert_called_once()
+
+
+def test_cancel_all_events(event_engine):
+    r1 = MagicMock()
+    r2 = MagicMock()
+    event_engine.running_events = {1: r1, 2: r2}
+    event_engine.cancel_all_events()
+    r1.cancel.assert_called_once()
+    r2.cancel.assert_called_once()

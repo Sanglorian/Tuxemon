@@ -120,31 +120,31 @@
     <property name="cond1" value="not char_exists spyder_basement_garret"/>
    </properties>
   </object>
-  <object id="46" name="Create Roger" type="event" x="336" y="224" width="16" height="16">
+  <object id="46" name="Create Roger" type="event" x="320" y="240" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_basement_roger,21,14"/>
+    <property name="act1" value="create_npc spyder_basement_roger,20,15"/>
     <property name="cond1" value="not char_exists spyder_basement_roger"/>
    </properties>
   </object>
-  <object id="47" name="Create Catholi" type="event" x="176" y="320" width="16" height="16">
+  <object id="47" name="Create Catholi" type="event" x="208" y="288" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_basement_catholi,11,20"/>
+    <property name="act1" value="create_npc spyder_basement_catholi,13,18"/>
     <property name="cond1" value="not char_exists spyder_basement_catholi"/>
    </properties>
   </object>
-  <object id="49" name="Create Coralli" type="event" x="304" y="32" width="16" height="16">
+  <object id="49" name="Create Coralli" type="event" x="336" y="32" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_basement_coralli,19,2"/>
+    <property name="act1" value="create_npc spyder_basement_coralli,21,2"/>
     <property name="cond1" value="not char_exists spyder_basement_coralli"/>
    </properties>
   </object>
-  <object id="50" name="Create Bobby" type="event" x="112" y="80" width="16" height="16">
+  <object id="50" name="Create Bobby" type="event" x="96" y="96" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_basement_bobby,7,5"/>
+    <property name="act1" value="create_npc spyder_basement_bobby,6,6"/>
     <property name="cond1" value="not char_exists spyder_basement_bobby"/>
    </properties>
   </object>
-  <object id="51" name="Talk Coralli" type="event" x="336" y="112" width="32" height="16">
+  <object id="51" name="Talk Coralli" type="event" x="336" y="48" width="16" height="48">
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_basement_coralli"/>
@@ -159,7 +159,7 @@
     <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
-  <object id="52" name="Talk Bobby" type="event" x="144" y="112" width="16" height="16">
+  <object id="52" name="Talk Bobby" type="event" x="112" y="96" width="48" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_basement_bobby"/>
@@ -173,7 +173,7 @@
     <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
-  <object id="54" name="Talk Roger" type="event" x="304" y="272" width="16" height="48">
+  <object id="54" name="Talk Roger" type="event" x="320" y="256" width="16" height="64">
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_basement_roger"/>
@@ -187,7 +187,7 @@
     <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
-  <object id="56" name="Talk Catholi" type="event" x="144" y="288" width="96" height="16">
+  <object id="56" name="Talk Catholi" type="event" x="208" y="304" width="16" height="48">
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_basement_catholi"/>
@@ -278,6 +278,57 @@
     <property name="act1" value="char_talk spyder_basement_roger,post_battle_lose"/>
     <property name="behav1" value="talk spyder_basement_roger"/>
     <property name="cond1" value="is battle_outcome player,won,spyder_basement_roger"/>
+   </properties>
+  </object>
+  <object id="70" name="Create TM Ice Shield" type="event" x="336" y="224" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_mansion_tmiceshield,21,14"/>
+    <property name="cond1" value="not char_exists spyder_mansion_tmiceshield"/>
+    <property name="cond2" value="not variable_set mansion_tmiceshield:yes"/>
+   </properties>
+  </object>
+  <object id="71" name="TM Ice Shield" type="event" x="336" y="208" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog tm_ice_shield,,center,center,center"/>
+    <property name="act2" value="add_item tm_ice_shield"/>
+    <property name="act3" value="remove_npc spyder_mansion_tmiceshield"/>
+    <property name="act4" value="set_variable mansion_tmiceshield:yes"/>
+    <property name="behav1" value="talk spyder_mansion_tmiceshield"/>
+    <property name="cond1" value="not variable_set mansion_tmiceshield:yes"/>
+   </properties>
+  </object>
+  <object id="72" name="Create Grand Tuxeball" type="event" x="160" y="32" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_mansion_grandtux,10,2"/>
+    <property name="cond1" value="not char_exists spyder_mansion_grandtux"/>
+    <property name="cond2" value="not variable_set mansion_grandtux:yes"/>
+   </properties>
+  </object>
+  <object id="73" name="Grand Tuxeball" type="event" x="144" y="32" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog tuxeball_grand,,center,center,center"/>
+    <property name="act2" value="add_item tuxeball_grand"/>
+    <property name="act3" value="remove_npc spyder_mansion_grandtux"/>
+    <property name="act4" value="set_variable mansion_grandtux:yes"/>
+    <property name="behav1" value="talk spyder_mansion_grandtux"/>
+    <property name="cond1" value="not variable_set mansion_grandtux:yes"/>
+   </properties>
+  </object>
+  <object id="74" name="Create Tea" type="event" x="32" y="32" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_mansion_tea,1,2"/>
+    <property name="cond1" value="not char_exists spyder_mansion_tea"/>
+    <property name="cond2" value="not variable_set mansion_tea:yes"/>
+   </properties>
+  </object>
+  <object id="75" name="Tea" type="event" x="16" y="32" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog tea,,center,center,center"/>
+    <property name="act2" value="add_item tea"/>
+    <property name="act3" value="remove_npc spyder_mansion_tea"/>
+    <property name="act4" value="set_variable mansion_tea:yes"/>
+    <property name="behav1" value="talk spyder_mansion_tea"/>
+    <property name="cond1" value="not variable_set mansion_tea:yes"/>
    </properties>
   </object>
  </objectgroup>

@@ -90,7 +90,7 @@
     <property name="cond1" value="not environment_is interior"/>
    </properties>
   </object>
-  <object id="32" name="Talk Mickey" type="event" x="160" y="144" width="16" height="32">
+  <object id="32" name="Talk Mickey" type="event" x="64" y="160" width="48" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_top_mickey"/>
@@ -105,9 +105,9 @@
     <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
-  <object id="33" name="Create Mickey" type="event" x="48" y="144" width="16" height="16">
+  <object id="33" name="Create Mickey" type="event" x="48" y="160" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_top_mickey,3,9"/>
+    <property name="act1" value="create_npc spyder_top_mickey,3,10"/>
     <property name="cond1" value="not char_exists spyder_top_mickey"/>
    </properties>
   </object>
@@ -117,9 +117,9 @@
     <property name="cond1" value="not char_exists spyder_top_jackson"/>
    </properties>
   </object>
-  <object id="35" name="Create Russell" type="event" x="128" y="208" width="16" height="16">
+  <object id="35" name="Create Russell" type="event" x="112" y="208" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_top_russell,8,13"/>
+    <property name="act1" value="create_npc spyder_top_russell,7,13"/>
     <property name="cond1" value="not char_exists spyder_top_russell"/>
    </properties>
   </object>
@@ -141,7 +141,7 @@
     <property name="cond1" value="not char_exists spyder_top_ricardo"/>
    </properties>
   </object>
-  <object id="41" name="Talk Russell" type="event" x="48" y="208" width="16" height="32">
+  <object id="41" name="Talk Russell" type="event" x="48" y="208" width="64" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_top_russell"/>
@@ -172,7 +172,7 @@
     <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
-  <object id="48" name="Talk Jackson" type="event" x="176" y="208" width="80" height="16">
+  <object id="48" name="Talk Jackson" type="event" x="240" y="160" width="16" height="48">
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_top_jackson"/>
@@ -264,6 +264,57 @@
     <property name="act1" value="char_talk spyder_top_ricardo,post_battle_lose"/>
     <property name="behav1" value="talk spyder_top_ricardo"/>
     <property name="cond1" value="is battle_outcome player,won,spyder_top_ricardo"/>
+   </properties>
+  </object>
+  <object id="64" name="Create TM Ubuntu" type="event" x="16" y="144" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_mansion_tmubuntu,1,9"/>
+    <property name="cond1" value="not char_exists spyder_mansion_tmubuntu"/>
+    <property name="cond2" value="not variable_set mansion_tmubuntu:yes"/>
+   </properties>
+  </object>
+  <object id="65" name="TM Ubuntu" type="event" x="16" y="160" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog tm_ubuntu,,center,center,center"/>
+    <property name="act2" value="add_item tm_ubuntu"/>
+    <property name="act3" value="remove_npc spyder_mansion_tmubuntu"/>
+    <property name="act4" value="set_variable mansion_tmubuntu:yes"/>
+    <property name="behav1" value="talk spyder_mansion_tmubuntu"/>
+    <property name="cond1" value="not variable_set mansion_tmubuntu:yes"/>
+   </properties>
+  </object>
+  <object id="66" name="Create Metal Berry" type="event" x="336" y="288" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_mansion_berry,21,18"/>
+    <property name="cond1" value="not char_exists spyder_mansion_berry"/>
+    <property name="cond2" value="not variable_set mansion_berry:yes"/>
+   </properties>
+  </object>
+  <object id="67" name="Metal Berry" type="event" x="320" y="288" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog metal_berry,,center,center,center"/>
+    <property name="act2" value="add_item metal_berry"/>
+    <property name="act3" value="remove_npc spyder_mansion_berry"/>
+    <property name="act4" value="set_variable mansion_berry:yes"/>
+    <property name="behav1" value="talk spyder_mansion_berry"/>
+    <property name="cond1" value="not variable_set mansion_berry:yes"/>
+   </properties>
+  </object>
+  <object id="68" name="Create Potion" type="event" x="16" y="32" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_mansion_potion,1,2"/>
+    <property name="cond1" value="not char_exists spyder_mansion_potion"/>
+    <property name="cond2" value="not variable_set mansion_potion:yes"/>
+   </properties>
+  </object>
+  <object id="69" name="Potion" type="event" x="0" y="32" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog potion,,center,center,center"/>
+    <property name="act2" value="add_item potion"/>
+    <property name="act3" value="remove_npc spyder_mansion_potion"/>
+    <property name="act4" value="set_variable mansion_potion:yes"/>
+    <property name="behav1" value="talk spyder_mansion_potion"/>
+    <property name="cond1" value="not variable_set mansion_potion:yes"/>
    </properties>
   </object>
  </objectgroup>

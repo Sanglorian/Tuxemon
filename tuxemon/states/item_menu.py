@@ -2,6 +2,7 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import math
 from collections.abc import Generator
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -27,7 +28,6 @@ from tuxemon.platform.events import PlayerInput
 from tuxemon.session import local_session
 from tuxemon.sprite import Sprite
 from tuxemon.tools import open_choice_dialog, open_dialog
-from tuxemon.ui.paginator import Paginator
 from tuxemon.ui.text import TextArea
 
 if TYPE_CHECKING:
@@ -97,7 +97,6 @@ class ItemMenuState(Menu[Item]):
             center=self.backpack_center,
             layer=100,
         )
-        self.paginator = Paginator(self.inventory, self.page_size)
 
     def calc_internal_rect(self) -> Rect:
         # area in the screen where the item list is
@@ -186,15 +185,23 @@ class ItemMenuState(Menu[Item]):
             self.current_page = 0
             return
 
-        self.total_pages = self.paginator.total_pages()
+        # Compute total pages using VisualSpriteList pagination
+        if self.page_size:
+            self.total_pages = max(
+                1, math.ceil(len(self.inventory) / self.page_size)
+            )
+        else:
+            self.total_pages = 1
 
+        # Clamp current page
         self.current_page = max(
             0, min(self.current_page, self.total_pages - 1)
         )
 
-        start_index = self.current_page * self.page_size
-        end_index = (self.current_page + 1) * self.page_size
-        page_items = self.inventory[start_index:end_index]
+        # Slice items for this page
+        start = self.current_page * self.page_size
+        end = start + self.page_size
+        page_items = self.inventory[start:end]
 
         for obj in self.sorter.sort(page_items):
             enable = self.is_valid_entry(obj)
@@ -236,9 +243,23 @@ class ItemMenuState(Menu[Item]):
         self.clear()
         self.inventory = self.filter_controller.get_filtered_inventory()
 
-        total_pages, page_items = self.paginator.calculate_page_data(
-            self.current_page
+        # Recompute total pages
+        if self.page_size:
+            self.total_pages = max(
+                1, math.ceil(len(self.inventory) / self.page_size)
+            )
+        else:
+            self.total_pages = 1
+
+        # Clamp current page
+        self.current_page = max(
+            0, min(self.current_page, self.total_pages - 1)
         )
+
+        # Slice items for this page
+        start = self.current_page * self.page_size
+        end = start + self.page_size
+        page_items = self.inventory[start:end]
 
         if not page_items:
             self.selected_index = -1
@@ -272,7 +293,7 @@ class ItemMenuState(Menu[Item]):
         Returns:
             Optional[PlayerInput]: The processed event or None if it's not handled.
         """
-        total_pages = self.paginator.total_pages()
+        total_pages = self.total_pages
         if event.button == buttons.RIGHT and event.pressed:
             # Move to the next page if possible
             if self.current_page < total_pages - 1:
@@ -289,8 +310,7 @@ class ItemMenuState(Menu[Item]):
 
     def update_page_number_display(self, total_items: int) -> None:
         internal_rect = self.calc_internal_rect()
-        total_pages, _ = self.paginator.calculate_page_data(self.current_page)
-        page_text = f"{self.current_page + 1}/{total_pages}"
+        page_text = f"{self.current_page + 1}/{self.total_pages}"
         image = self.shadow_text(page_text)
         self.page_number_display.image = image
         self.page_number_display.rect.bottomright = internal_rect.bottomright

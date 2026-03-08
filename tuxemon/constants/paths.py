@@ -4,7 +4,7 @@ import logging
 import sys
 from pathlib import Path
 
-from tuxemon.platform import get_system_storage_dirs, get_user_storage_dir
+from tuxemon.platform import platform
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ CORE_CONDITION_PATH = LIBDIR.joinpath(*PLUGIN_CATEGORY_MAP["core_conditions"])
 
 # main game and config dir
 # Ensure this doesn't depend on pygame
-USER_STORAGE_DIR = get_user_storage_dir()
+USER_STORAGE_DIR = platform.user_storage.user_dir()
 logger.debug(f"userdir: {USER_STORAGE_DIR}")
 
 # config file paths
@@ -91,7 +91,7 @@ logger.debug(f"l18: {L18N_MO_FILES}")
 
 # shared locations
 system_installed_folders = [
-    path.resolve() for path in get_system_storage_dirs()
+    h.path for h in platform.system_storage.system_dirs() if h.path is not None
 ]
 logger.debug(f"system folders: {system_installed_folders}")
 

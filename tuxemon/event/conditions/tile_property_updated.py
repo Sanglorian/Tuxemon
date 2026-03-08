@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -28,10 +28,11 @@ class TilePropertyUpdatedCondition(EventCondition):
         moverate: The expected movement rate value.
     """
 
-    name = "tile_property_updated"
+    name: ClassVar[str] = "tile_property_updated"
+    label: str
+    moverate: float
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        label, moverate = condition.parameters
+    def test(self, session: Session) -> bool:
         return session.client.collision_manager.all_tiles_modified(
-            label, float(moverate)
+            self.label, self.moverate
         )

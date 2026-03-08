@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+import logging
 from unittest.mock import MagicMock
 
 import pygame as pg
@@ -143,7 +144,10 @@ def test_update_client_map_unknown_cuuid(client, caplog):
     event_data = MagicMock()
     event_data.map_name = "forest"
     event_data.char_dict = {"hp": 100}
-    client.update_client_map("missing", event_data)
+
+    with caplog.at_level(logging.WARNING):
+        client.update_client_map("missing", event_data)
+
     assert "Unknown client missing" in caplog.text
 
 

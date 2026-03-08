@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -29,23 +29,25 @@ class StepTrackerCondition(EventCondition):
         milestone: Step milestone to check.
     """
 
-    name = "step_tracker"
+    name: ClassVar[str] = "step_tracker"
+    character: str
+    tracker_id: str
+    milestone: float
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        _character, tracker_id, milestone = condition.parameters
-        character = session.get_npc(_character)
+    def test(self, session: Session) -> bool:
+        character = session.get_npc(self.character)
 
         if character is None:
             return False
 
-        tracker = character.step_tracker.get_tracker(tracker_id)
+        tracker = character.step_tracker.get_tracker(self.tracker_id)
         if not tracker:
             return False
 
         try:
-            milestone_value = float(milestone)
+            milestone_value = self.milestone
         except ValueError:
-            logger.error(f"Invalid milestone value: '{milestone}'")
+            logger.error(f"Invalid milestone value: '{self.milestone}'")
             return False
 
         return tracker.has_triggered_milestone(

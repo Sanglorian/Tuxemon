@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+import logging
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -114,7 +115,10 @@ def test_get_persistent_npc_states_skips_missing_session(
 ):
     npc = MagicMock(slug="npc_1", persistence=True, session=None)
     npc_manager.add_npc(npc)
-    states = npc_manager.get_persistent_npc_states(session)
+
+    with caplog.at_level(logging.WARNING):
+        states = npc_manager.get_persistent_npc_states(session)
+
     assert states == []
     assert "missing session" in caplog.text
 

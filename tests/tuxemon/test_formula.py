@@ -69,10 +69,10 @@ def test_simple_heal_empty_factors(heal_env):
 @pytest.mark.parametrize(
     "args,expected",
     [
-        ((12, 12, 1.5, 8, 20), 1.5),
-        ((2, 12, 1.5, 8, 20), 0.0),
-        ((-5, -10, 1.5, -8, -2), 0.0),
-        ((12, 12, 0, 8, 20), 0.0),
+        pytest.param((12, 12, 1.5, 8, 20), 1.5, id="base"),
+        pytest.param((2, 12, 1.5, 8, 20), 0.0, id="low_start"),
+        pytest.param((-5, -10, 1.5, -8, -2), 0.0, id="negative_values"),
+        pytest.param((12, 12, 0, 8, 20), 0.0, id="zero_multiplier"),
     ],
 )
 def test_time_based_multiplier(args, expected):
@@ -169,7 +169,7 @@ def test_basic_multiplier(elements):
 @pytest.mark.parametrize(
     "vals,expected",
     [
-        ((2.0, 0.5), 1.0),
+        pytest.param((2.0, 0.5), 1.0, id="pair"),
     ],
 )
 def test_multiple_attack_types(elements, vals, expected):
@@ -201,8 +201,8 @@ def test_additional_factors(elements):
 @pytest.mark.parametrize(
     "atk,tgt",
     [
-        ([], ["water"]),
-        (["fire"], []),
+        pytest.param([], ["water"], id="empty_atk"),
+        pytest.param(["fire"], [], id="empty_tgt"),
     ],
 )
 def test_empty_attack_or_target(elements, atk, tgt):
@@ -309,7 +309,7 @@ def monster():
 @pytest.mark.parametrize(
     "initial,amount,op,expected",
     [
-        (10, 5.0, "add", 15),
+        pytest.param(10, 5.0, "add", 15, id="add"),
     ],
 )
 def test_add_operation(monster, initial, amount, op, expected):
@@ -322,7 +322,7 @@ def test_add_operation(monster, initial, amount, op, expected):
 @pytest.mark.parametrize(
     "base,initial,amount,op,expected",
     [
-        (10, 0, 1.5, "multiply", 15),
+        pytest.param(10, 0, 1.5, "multiply", 15, id="multiply"),
     ],
 )
 def test_multiply_operation(monster, base, initial, amount, op, expected):
@@ -367,7 +367,7 @@ def tech():
 @pytest.mark.parametrize(
     "initial,amount,op,expected",
     [
-        (10.0, 5.0, "add", 15.0),
+        pytest.param(10.0, 5.0, "add", 15.0, id="add"),
     ],
 )
 def test_add_operation_tech(tech, initial, amount, op, expected):
@@ -380,7 +380,7 @@ def test_add_operation_tech(tech, initial, amount, op, expected):
 @pytest.mark.parametrize(
     "initial,amount,op,expected",
     [
-        (0.0, 1.5, "multiply", 15.0),
+        pytest.param(0.0, 1.5, "multiply", 15.0, id="multiply"),
     ],
 )
 def test_multiply_operation_tech(tech, initial, amount, op, expected):
@@ -425,7 +425,7 @@ def test_set_health_percentage(monster_hp):
 @pytest.mark.parametrize(
     "value,expected",
     [
-        (10, 100),
+        pytest.param(10, 100, id="add_10"),
     ],
 )
 def test_adjust_health_add(monster_hp, value, expected):
@@ -436,7 +436,7 @@ def test_adjust_health_add(monster_hp, value, expected):
 @pytest.mark.parametrize(
     "value,expected",
     [
-        (-30, 70),
+        pytest.param(-30, 70, id="subtract_30"),
     ],
 )
 def test_adjust_health_subtract(monster_hp, value, expected):
@@ -444,7 +444,13 @@ def test_adjust_health_subtract(monster_hp, value, expected):
     assert monster_hp.current_hp == expected
 
 
-@pytest.mark.parametrize("value", [1.5, 9999])
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param(1.5, id="value_1_5"),
+        pytest.param(9999, id="value_9999"),
+    ],
+)
 def test_hp_max_limit(monster_hp, value):
     set_health(monster_hp, value)
     assert monster_hp.current_hp == monster_hp.hp
@@ -461,20 +467,38 @@ def test_set_health_to_zero(monster_hp):
     assert monster_hp.current_hp == 0
 
 
-@pytest.mark.parametrize("value", [-100, -200])
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param(-100, id="value_minus_100"),
+        pytest.param(-200, id="value_minus_200"),
+    ],
+)
 def test_hp_min_limit(monster_hp, value):
     monster_hp.is_fainted = True
     set_health(monster_hp, value, adjust=True)
     assert monster_hp.current_hp == 0
 
 
-@pytest.mark.parametrize("value", [0.5, 0.25])
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param(0.5, id="percentage_50"),
+        pytest.param(0.25, id="percentage_25"),
+    ],
+)
 def test_set_health_percentage_param(monster_hp, value):
     set_health(monster_hp, value)
     assert monster_hp.current_hp == int(monster_hp.hp * value)
 
 
-@pytest.mark.parametrize("value", [50, 200])
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param(50, id="cap_50"),
+        pytest.param(200, id="cap_200"),
+    ],
+)
 def test_adjust_health_cap(monster_hp, value):
     set_health(monster_hp, value, adjust=True)
     assert monster_hp.current_hp == monster_hp.hp

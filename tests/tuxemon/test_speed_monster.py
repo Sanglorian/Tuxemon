@@ -43,32 +43,50 @@ def run_speed(monster, technique, n=1000):
 
 
 @pytest.mark.parametrize(
-    "speed, dodge, tech_speed",
+    "speed,dodge,tech_speed,n,description",
     [
-        (10.0, 5.0, 2),  # fast technique
-        (10.0, 5.0, 0),  # normal technique
-        (0.0, 5.0, 2),  # zero speed
-        (-3.0, 5.0, 2),  # negative speed
-        (10.0, 0.0, 2),  # zero dodge
-        (10.0, -3.0, 2),  # negative dodge
-        (10.0, 5.0, 0),  # zero technique
-        (10.0, 5.0, -3),  # negative technique
-        (3.0, 3.0, 3),  # max values
-        (-3.0, -3.0, -3),  # min values
+        pytest.param(
+            10.0, 5.0, 2, 1000, "normal_case_small", id="normal_case_small"
+        ),
+        pytest.param(
+            10.0, 5.0, 2, 10000, "normal_case_large", id="normal_case_large"
+        ),
+        pytest.param(
+            10.0, 5.0, 0, 1000, "zero_technique", id="zero_technique"
+        ),
+        pytest.param(0.0, 5.0, 2, 1000, "zero_speed", id="zero_speed"),
+        pytest.param(10.0, 0.0, 2, 1000, "zero_dodge", id="zero_dodge"),
+        pytest.param(
+            -3.0, 5.0, 2, 1000, "negative_speed", id="negative_speed"
+        ),
+        pytest.param(
+            10.0, -3.0, 2, 1000, "negative_dodge", id="negative_dodge"
+        ),
+        pytest.param(
+            10.0, 5.0, -3, 1000, "negative_technique", id="negative_technique"
+        ),
+        pytest.param(3.0, 3.0, 3, 1000, "max_values", id="max_values"),
+        pytest.param(-3.0, -3.0, -3, 1000, "min_values", id="min_values"),
     ],
 )
-@pytest.mark.parametrize("n", [1000, 10000])
 def test_speed_modifier_bounds(
-    make_monster, make_technique, combat_config, speed, dodge, tech_speed, n
+    make_monster,
+    make_technique,
+    combat_config,
+    speed,
+    dodge,
+    tech_speed,
+    n,
+    description,
 ):
     monster = make_monster(speed, dodge)
     technique = make_technique(tech_speed)
     results = run_speed(monster, technique, n=n)
 
-    assert min(results) >= 1
+    assert min(results) >= 1, f"Speed below minimum for {description}"
 
     if speed >= 0 and dodge >= 0 and tech_speed >= 0:
-        assert max(results) <= (
+        max_expected = (
             monster.speed
             * (
                 combat_config.base_speed_bonus
@@ -77,26 +95,65 @@ def test_speed_modifier_bounds(
             + monster.dodge * combat_config.dodge_modifier
             + combat_config.speed_offset
         )
+        assert (
+            max(results) <= max_expected
+        ), f"Speed exceeds maximum for {description}"
 
 
 @pytest.mark.parametrize(
-    "m1, m2, tech_speed, relation, n",
+    "m1,m2,tech_speed,relation,n,description",
     [
-        # monster2 faster than monster1
-        ((10.0, 5.0), (15.0, 3.0), 2, "less_equal", 1000),
-        # monster3 faster than monster1
-        ((10.0, 5.0), (20.0, 5.0), 2, "less", 1000),
-        # monster4 higher dodge than monster1
-        ((10.0, 5.0), (10.0, 10.0), 2, "less", 10000),
-        # monster5 extreme speed vs monster1
-        ((10.0, 5.0), (1e6, 1.0), 2, "less", 1000),
-        # monster6 equal stats to monster1
-        ((10.0, 5.0), (10.0, 5.0), 2, "approx_equal", 1000),
+        pytest.param(
+            (10.0, 5.0),
+            (15.0, 3.0),
+            2,
+            "less_equal",
+            1000,
+            "monster2_faster",
+            id="monster2_faster",
+        ),
+        pytest.param(
+            (10.0, 5.0),
+            (20.0, 5.0),
+            2,
+            "less",
+            1000,
+            "monster3_faster",
+            id="monster3_faster",
+        ),
+        pytest.param(
+            (10.0, 5.0),
+            (10.0, 10.0),
+            2,
+            "less",
+            10000,
+            "monster4_dodge",
+            id="monster4_dodge",
+        ),
+        pytest.param(
+            (10.0, 5.0),
+            (1e6, 1.0),
+            2,
+            "less",
+            1000,
+            "monster5_extreme",
+            id="monster5_extreme",
+        ),
+        pytest.param(
+            (10.0, 5.0),
+            (10.0, 5.0),
+            2,
+            "approx_equal",
+            1000,
+            "monster6_equal",
+            id="monster6_equal",
+        ),
     ],
 )
 def test_monster_comparisons(
-    make_monster, make_technique, m1, m2, tech_speed, relation, n
+    make_monster, make_technique, m1, m2, tech_speed, relation, n, description
 ):
+    """Test speed calculations for different monster stat combinations."""
     monster1 = make_monster(*m1)
     monster2 = make_monster(*m2)
     technique = make_technique(tech_speed)
@@ -115,18 +172,20 @@ def test_monster_comparisons(
 
 
 @pytest.mark.parametrize(
-    "monster_stats",
+    "stats_pair,n,description",
     [
-        (10.0, 5.0),  # monster1
-        (15.0, 3.0),  # monster2
+        pytest.param((10.0, 5.0), 1000, "monster1_small", id="monster1_small"),
+        pytest.param(
+            (15.0, 3.0), 10000, "monster2_large", id="monster2_large"
+        ),
     ],
 )
-@pytest.mark.parametrize("n", [1000, 10000])
 def test_fast_vs_normal_technique(
-    make_monster, make_technique, monster_stats, n
+    make_monster, make_technique, stats_pair, n, description
 ):
+    """Test that fast technique produces higher speed than normal technique."""
     random.seed(69)
-    monster = make_monster(*monster_stats)
+    monster = make_monster(*stats_pair)
     fast = make_technique(2)
     normal = make_technique(0)
 

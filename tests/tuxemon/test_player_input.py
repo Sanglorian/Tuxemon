@@ -8,12 +8,31 @@ from tuxemon.platform.events import PlayerInput
 @pytest.mark.parametrize(
     "kwargs, attr, expected",
     [
-        (dict(button=1, value=1.0, hold_time=1), "pressed", True),
-        (dict(button=1, value=1.0, hold_time=2), "held", True),
-        (dict(button=1, value=0.0, hold_time=1), "pressed", False),
-        (dict(button=1, value=1.0, hold_time=0), "held", True),
+        pytest.param(
+            dict(button=1, value=1.0, hold_time=1),
+            "pressed",
+            True,
+            id="pressed_true",
+        ),
+        pytest.param(
+            dict(button=1, value=1.0, hold_time=2),
+            "held",
+            True,
+            id="held_true",
+        ),
+        pytest.param(
+            dict(button=1, value=0.0, hold_time=1),
+            "pressed",
+            False,
+            id="pressed_false",
+        ),
+        pytest.param(
+            dict(button=1, value=1.0, hold_time=0),
+            "held",
+            True,
+            id="held_true_zero",
+        ),
     ],
-    ids=["pressed_true", "held_true", "pressed_false", "held_true_zero"],
 )
 def test_playerinput_properties(kwargs, attr, expected):
     inp = PlayerInput(**kwargs)

@@ -49,7 +49,14 @@ def mock_character():
     return mock
 
 
-@pytest.mark.parametrize("items", [[], [1], [1, 2, 3]])
+@pytest.mark.parametrize(
+    "items",
+    [
+        pytest.param([], id="empty_queue"),
+        pytest.param([1], id="single_item"),
+        pytest.param([1, 2, 3], id="multiple_items"),
+    ],
+)
 def test_teleport_queue_enqueue_dequeue(items):
     queue = TeleportQueue()
 

@@ -278,11 +278,11 @@ def test_resume_called_when_popping_state(resume_state_manager):
 
 # Parametrize Push/Pop
 @pytest.mark.parametrize(
-    "first,second",
+    "first, second",
     [
-        ("a", "b"),
-        ("alpha", "beta"),
-        ("state1", "state2"),
+        pytest.param("a", "b", id="push_pop_a_b"),
+        pytest.param("alpha", "beta", id="push_pop_alpha_beta"),
+        pytest.param("state1", "state2", id="push_pop_state1_state2"),
     ],
 )
 def test_push_pop_parametrized(state_manager, register_state, first, second):

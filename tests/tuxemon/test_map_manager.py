@@ -44,20 +44,20 @@ def mock_map():
 @pytest.mark.parametrize(
     "attr, expected",
     [
-        ("events", ()),
-        ("inits", ()),
-        ("current_map", None),
-        ("maps", {}),
-        ("map_slug", ""),
-        ("map_name", "Unknown Location"),
-        ("map_desc", ""),
-        ("map_inside", False),
-        ("map_size", (0, 0)),
-        ("map_type", MapType()),
-        ("map_north", ""),
-        ("map_south", ""),
-        ("map_east", ""),
-        ("map_west", ""),
+        pytest.param("events", (), id="init_events"),
+        pytest.param("inits", (), id="init_inits"),
+        pytest.param("current_map", None, id="init_current_map"),
+        pytest.param("maps", {}, id="init_maps"),
+        pytest.param("map_slug", "", id="init_map_slug"),
+        pytest.param("map_name", "Unknown Location", id="init_map_name"),
+        pytest.param("map_desc", "", id="init_map_desc"),
+        pytest.param("map_inside", False, id="init_map_inside"),
+        pytest.param("map_size", (0, 0), id="init_map_size"),
+        pytest.param("map_type", MapType(), id="init_map_type"),
+        pytest.param("map_north", "", id="init_map_north"),
+        pytest.param("map_south", "", id="init_map_south"),
+        pytest.param("map_east", "", id="init_map_east"),
+        pytest.param("map_west", "", id="init_map_west"),
     ],
 )
 def test_init(map_manager, attr, expected):
@@ -133,9 +133,9 @@ def test_map_type_property_logs_warning_for_invalid_type(
 @pytest.mark.parametrize(
     "slug, expected",
     [
-        (None, "notype"),
-        ("town", "town"),
-        ("unknown", "notype"),
+        pytest.param(None, "notype", id="slug_none_defaults"),
+        pytest.param("town", "town", id="slug_known"),
+        pytest.param("unknown", "notype", id="slug_unknown_defaults"),
     ],
 )
 def test_map_type_slug_variants(map_manager, slug, expected):
@@ -146,13 +146,15 @@ def test_map_type_slug_variants(map_manager, slug, expected):
 @pytest.mark.parametrize(
     "prop, expected",
     [
-        ("collision_lines_map", set()),
-        ("surface_map", {}),
-        ("collision_map", {}),
-        ("map_north", ""),
-        ("map_south", ""),
-        ("map_east", ""),
-        ("map_west", ""),
+        pytest.param(
+            "collision_lines_map", set(), id="no_map_collision_lines"
+        ),
+        pytest.param("surface_map", {}, id="no_map_surface"),
+        pytest.param("collision_map", {}, id="no_map_collision"),
+        pytest.param("map_north", "", id="no_map_north"),
+        pytest.param("map_south", "", id="no_map_south"),
+        pytest.param("map_east", "", id="no_map_east"),
+        pytest.param("map_west", "", id="no_map_west"),
     ],
 )
 def test_properties_without_map(map_manager, prop, expected):
@@ -226,10 +228,10 @@ def test_inits_sorted(map_manager, mock_map):
 @pytest.mark.parametrize(
     "slug, expected",
     [
-        ("town", "town"),
-        ("shop", "shop"),
-        ("unknown", "notype"),
-        (None, "notype"),
+        pytest.param("town", "town", id="slug_town"),
+        pytest.param("shop", "shop", id="slug_shop"),
+        pytest.param("unknown", "notype", id="slug_unknown_defaults"),
+        pytest.param(None, "notype", id="slug_none_defaults"),
     ],
 )
 def test_map_type_slug(map_manager, slug, expected):

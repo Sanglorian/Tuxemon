@@ -74,14 +74,14 @@ def test_add_item_to_locker(handler, item):
 @pytest.mark.parametrize(
     "qty1, qty2, expected",
     [
-        (1, 5, 6),
-        (0, 0, None),
-        (3, 0, 3),
+        pytest.param(1, 5, 6, id="add_then_add_total_6"),
+        pytest.param(0, 0, None, id="add_zero_then_zero_removes_item"),
+        pytest.param(3, 0, 3, id="add_then_add_zero_keeps_3"),
     ],
 )
 def test_add_item_existing(handler, item, qty1, qty2, expected):
-    result1 = handler.add_item(item, quantity=qty1)
-    result2 = handler.add_item(item, quantity=qty2)
+    handler.add_item(item, quantity=qty1)
+    handler.add_item(item, quantity=qty2)
 
     found = handler.find_item("test_item")
 

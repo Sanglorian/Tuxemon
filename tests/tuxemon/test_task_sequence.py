@@ -127,11 +127,21 @@ def test_sequence_child_abort_advances():
     assert t2.updated == 1
 
 
-@pytest.mark.parametrize("count", [1, 2, 5, 10])
+@pytest.mark.parametrize(
+    "count",
+    [
+        pytest.param(1, id="one_task"),
+        pytest.param(2, id="two_tasks"),
+        pytest.param(5, id="five_tasks"),
+        pytest.param(10, id="ten_tasks"),
+    ],
+)
 def test_sequence_multiple_tasks(count):
     tasks = [DummyTask() for _ in range(count)]
     seq = TaskSequence(*tasks)
+
     for _ in range(20):
         seq.update(1)
+
     assert seq._state == AnimationState.FINISHED
     assert all(t.finished for t in tasks)

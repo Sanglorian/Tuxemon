@@ -54,8 +54,10 @@ def test_infinite_stock_quantity(manager):
 @pytest.mark.parametrize(
     "item, start_qty, decrease, expected_success, expected_final",
     [
-        ("antidote", 5, 3, True, 2),  # success case
-        ("rare_candy", 2, 5, False, 2),  # insufficient stock
+        pytest.param("antidote", 5, 3, True, 2, id="decrease_success"),
+        pytest.param(
+            "rare_candy", 2, 5, False, 2, id="decrease_insufficient_stock"
+        ),
     ],
 )
 def test_decrease_stock(
@@ -63,7 +65,9 @@ def test_decrease_stock(
 ):
     label = manager.get_full_label("economy1", item)
     manager.set_quantity(label, start_qty)
+
     success = manager.decrease_stock(label, decrease)
+
     assert success is expected_success
     assert manager.get_quantity(label) == expected_final
 
@@ -78,8 +82,10 @@ def test_increase_stock(manager):
 @pytest.mark.parametrize(
     "item, stock, unit_price, buyer_money, expected_max",
     [
-        ("tuxeball", 10, 2, 15, 7),  # finite stock
-        ("ultra_ball", INFINITE_ITEMS, 5, 23, 4),  # infinite stock
+        pytest.param("tuxeball", 10, 2, 15, 7, id="finite_stock"),
+        pytest.param(
+            "ultra_ball", INFINITE_ITEMS, 5, 23, 4, id="infinite_stock"
+        ),
     ],
 )
 def test_get_max_affordable_quantity(
@@ -87,7 +93,9 @@ def test_get_max_affordable_quantity(
 ):
     label = manager.get_full_label("economy1", item)
     manager.set_quantity(label, stock)
+
     max_qty = manager.get_max_affordable_quantity(
         label, unit_price=unit_price, buyer_money=buyer_money
     )
+
     assert max_qty == expected_max

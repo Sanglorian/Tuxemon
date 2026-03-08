@@ -23,14 +23,30 @@ from tuxemon.tuxepedia.reporter import TuxepediaReporter
 @pytest.mark.parametrize(
     "initial_status,initial_appearance,update_to,expected_status,expected_appearance,expected_caught",
     [
-        # init defaults
-        (SeenStatus.SEEN, 1, None, SeenStatus.SEEN, 1, 0),
-        # update to caught
-        (SeenStatus.SEEN, 1, SeenStatus.CAUGHT, SeenStatus.CAUGHT, 2, 1),
-        # cannot downgrade caught to seen
-        (SeenStatus.CAUGHT, 1, SeenStatus.SEEN, SeenStatus.CAUGHT, 1, 0),
-        # reset entry
-        (SeenStatus.CAUGHT, 5, "reset", SeenStatus.SEEN, 1, 0),
+        pytest.param(
+            SeenStatus.SEEN, 1, None, SeenStatus.SEEN, 1, 0, id="defaults"
+        ),
+        pytest.param(
+            SeenStatus.SEEN,
+            1,
+            SeenStatus.CAUGHT,
+            SeenStatus.CAUGHT,
+            2,
+            1,
+            id="caught",
+        ),
+        pytest.param(
+            SeenStatus.CAUGHT,
+            1,
+            SeenStatus.SEEN,
+            SeenStatus.CAUGHT,
+            1,
+            0,
+            id="no_downgrade",
+        ),
+        pytest.param(
+            SeenStatus.CAUGHT, 5, "reset", SeenStatus.SEEN, 1, 0, id="reset"
+        ),
     ],
 )
 def test_monster_entry_behaviors(
@@ -72,10 +88,10 @@ def test_init():
 @pytest.mark.parametrize(
     "slug,expected_status,expected_appearance,expected_caught,is_registered",
     [
-        ("nut", SeenStatus.CAUGHT, 5, 0, True),
-        ("rockitten", SeenStatus.SEEN, 2, 0, True),
-        ("flowey", SeenStatus.SEEN, 1, 0, True),
-        ("unknown", None, 0, 0, False),
+        pytest.param("nut", SeenStatus.CAUGHT, 5, 0, True, id="nut"),
+        pytest.param("rockitten", SeenStatus.SEEN, 2, 0, True, id="rockitten"),
+        pytest.param("flowey", SeenStatus.SEEN, 1, 0, True, id="flowey"),
+        pytest.param("unknown", None, 0, 0, False, id="unknown"),
     ],
 )
 def test_data_accessors(
@@ -111,8 +127,7 @@ def manager(event_bus):
 @pytest.mark.parametrize(
     "slug,status,expected_event,expected_status,expected_appearance,expected_caught,expect_error",
     [
-        # Case 1: add new entry as seen
-        (
+        pytest.param(
             "rockitten",
             SeenStatus.SEEN,
             EVENT_MONSTER_ADDED,
@@ -120,9 +135,9 @@ def manager(event_bus):
             1,
             0,
             None,
+            id="add_seen",
         ),
-        # Case 2: update existing entry to caught
-        (
+        pytest.param(
             "rockitten",
             SeenStatus.CAUGHT,
             EVENT_MONSTER_STATUS_UPDATED,
@@ -130,9 +145,9 @@ def manager(event_bus):
             2,
             1,
             None,
+            id="update_caught",
         ),
-        # Case 3: remove entry
-        (
+        pytest.param(
             "nut",
             SeenStatus.CAUGHT,
             EVENT_MONSTER_REMOVED,
@@ -140,9 +155,9 @@ def manager(event_bus):
             1,
             0,
             None,
+            id="remove_entry",
         ),
-        # Case 4: remove non-existent entry (error expected)
-        (
+        pytest.param(
             "ghost",
             SeenStatus.SEEN,
             EVENT_MONSTER_REMOVED,
@@ -150,6 +165,7 @@ def manager(event_bus):
             0,
             0,
             ValueError,
+            id="remove_nonexistent",
         ),
     ],
 )
@@ -209,8 +225,8 @@ def test_add_update_remove(
 @pytest.mark.parametrize(
     "remove_seen_only,expected_total,expected_remaining,expected_removed",
     [
-        (True, 1, 1, 2),  # remove only seen monsters
-        (False, 0, 0, 3),  # remove all monsters (3 removed)
+        pytest.param(True, 1, 1, 2, id="only_seen"),
+        pytest.param(False, 0, 0, 3, id="all"),
     ],
 )
 def test_reset(
@@ -274,8 +290,8 @@ def test_get_unregistered_monsters(reporter):
 @pytest.mark.parametrize(
     "total_game,expected_registered,expected_caught",
     [
-        (10, 3 / 10, 1 / 10),
-        (0, 0.0, 0.0),
+        pytest.param(10, 3 / 10, 1 / 10, id="total_10"),
+        pytest.param(0, 0.0, 0.0, id="total_0"),
     ],
 )
 def test_completeness_report(
@@ -291,21 +307,33 @@ def test_completeness_report(
 @pytest.mark.parametrize(
     "entries",
     [
-        # Case 1: simple seen + caught
-        {
-            "rockitten": {"status": SeenStatus.SEEN, "appearance_count": 1},
-            "nut": {"status": SeenStatus.CAUGHT, "appearance_count": 2},
-        },
-        # Case 2: larger counts
-        {
-            "ghost": {"status": SeenStatus.SEEN, "appearance_count": 5},
-            "dragon": {"status": SeenStatus.CAUGHT, "appearance_count": 10},
-        },
-        # Case 3: only seen monsters
-        {
-            "flowey": {"status": SeenStatus.SEEN, "appearance_count": 3},
-            "leafy": {"status": SeenStatus.SEEN, "appearance_count": 7},
-        },
+        pytest.param(
+            {
+                "rockitten": {
+                    "status": SeenStatus.SEEN,
+                    "appearance_count": 1,
+                },
+                "nut": {"status": SeenStatus.CAUGHT, "appearance_count": 2},
+            },
+            id="simple",
+        ),
+        pytest.param(
+            {
+                "ghost": {"status": SeenStatus.SEEN, "appearance_count": 5},
+                "dragon": {
+                    "status": SeenStatus.CAUGHT,
+                    "appearance_count": 10,
+                },
+            },
+            id="larger",
+        ),
+        pytest.param(
+            {
+                "flowey": {"status": SeenStatus.SEEN, "appearance_count": 3},
+                "leafy": {"status": SeenStatus.SEEN, "appearance_count": 7},
+            },
+            id="seen_only",
+        ),
     ],
 )
 def test_encode_decode_roundtrip(entries, event_bus):

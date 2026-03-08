@@ -207,10 +207,10 @@ def test_viewport_top_left_calculation(camera_setup):
 @pytest.mark.parametrize(
     "coords, expected",
     [
-        ((0.0, 0.0), (0, 0)),
-        ((-1.0, -2.0), (-16, -32)),
-        ((0.25, 0.75), (4, 12)),
-        ((100.0, 200.0), (1600, 3200)),
+        pytest.param((0.0, 0.0), (0, 0), id="origin"),
+        pytest.param((-1.0, -2.0), (-16, -32), id="negative_coords"),
+        pytest.param((0.25, 0.75), (4, 12), id="fractional_coords"),
+        pytest.param((100.0, 200.0), (1600, 3200), id="large_coords"),
     ],
 )
 def test_project(coords, expected, context):
@@ -220,10 +220,10 @@ def test_project(coords, expected, context):
 @pytest.mark.parametrize(
     "pixels, expected",
     [
-        ((0, 0), (0, 0)),
-        ((-16, -32), (-1, -2)),
-        ((4, 12), (0, 0)),
-        ((1600, 3200), (100, 200)),
+        pytest.param((0, 0), (0, 0), id="origin"),
+        pytest.param((-16, -32), (-1, -2), id="negative_pixels"),
+        pytest.param((4, 12), (0, 0), id="fractional_back_to_origin"),
+        pytest.param((1600, 3200), (100, 200), id="large_pixels"),
     ],
 )
 def test_unproject(pixels, expected, context):

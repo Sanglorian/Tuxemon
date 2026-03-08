@@ -13,17 +13,23 @@ from tuxemon.script.parser import (
 @pytest.mark.parametrize(
     "input_str, expected",
     [
-        ("spam", ["spam"]),
-        ("spam ", ["spam"]),
-        (" spam", ["spam"]),
-        (" spam ", ["spam"]),
-        ("spam , eggs  ", ["spam", "eggs"]),
-        ("spam , eggs,", ["spam", "eggs", ""]),
-        ("spam , eggs  ,, ", ["spam", "eggs", "", ""]),
-        ("", []),
-        (",", ["", ""]),
-        ("spam\\,eggs,ham", ["spam,eggs", "ham"]),
-        ("spam\\,eggs\\,ham", ["spam,eggs,ham"]),
+        pytest.param("spam", ["spam"], id="single"),
+        pytest.param("spam ", ["spam"], id="trailing_space"),
+        pytest.param(" spam", ["spam"], id="leading_space"),
+        pytest.param(" spam ", ["spam"], id="both_spaces"),
+        pytest.param("spam , eggs  ", ["spam", "eggs"], id="two_items"),
+        pytest.param(
+            "spam , eggs,", ["spam", "eggs", ""], id="ends_with_comma"
+        ),
+        pytest.param(
+            "spam , eggs  ,, ", ["spam", "eggs", "", ""], id="double_empty"
+        ),
+        pytest.param("", [], id="empty"),
+        pytest.param(",", ["", ""], id="just_comma"),
+        pytest.param(
+            "spam\\,eggs,ham", ["spam,eggs", "ham"], id="escaped_comma"
+        ),
+        pytest.param("spam\\,eggs\\,ham", ["spam,eggs,ham"], id="escaped_two"),
     ],
 )
 def test_split_escaped(input_str, expected):
@@ -33,16 +39,26 @@ def test_split_escaped(input_str, expected):
 @pytest.mark.parametrize(
     "text, expected",
     [
-        ("spam", ("spam", [])),
-        ("spam eggs", ("spam", ["eggs"])),
-        ("spam eggs,parrot", ("spam", ["eggs", "parrot"])),
-        ("spam , ", ("spam", ["", ""])),
-        ("spam eggs, ", ("spam", ["eggs", ""])),
-        ("spam,eggs", ("spam,eggs", [])),
-        ("   spam   ", ("", ["spam"])),
-        ("spam ,,", ("spam", ["", "", ""])),
-        ("spam ex parrot", ("spam", ["ex parrot"])),
-        ("spam eggs,  ex parrot", ("spam", ["eggs", "ex parrot"])),
+        pytest.param("spam", ("spam", []), id="single"),
+        pytest.param("spam eggs", ("spam", ["eggs"]), id="one_arg"),
+        pytest.param(
+            "spam eggs,parrot", ("spam", ["eggs", "parrot"]), id="two_args"
+        ),
+        pytest.param("spam , ", ("spam", ["", ""]), id="empty_args"),
+        pytest.param(
+            "spam eggs, ", ("spam", ["eggs", ""]), id="trailing_empty"
+        ),
+        pytest.param("spam,eggs", ("spam,eggs", []), id="comma_in_type"),
+        pytest.param("   spam   ", ("", ["spam"]), id="leading_spaces"),
+        pytest.param("spam ,,", ("spam", ["", "", ""]), id="double_empty"),
+        pytest.param(
+            "spam ex parrot", ("spam", ["ex parrot"]), id="space_arg"
+        ),
+        pytest.param(
+            "spam eggs,  ex parrot",
+            ("spam", ["eggs", "ex parrot"]),
+            id="mixed",
+        ),
     ],
 )
 def test_parse_action_string(text, expected):
@@ -57,17 +73,25 @@ def test_no_type():
 @pytest.mark.parametrize(
     "text, expected",
     [
-        ("spam eggs", ("spam", "eggs", [])),
-        (" spam eggs ", ("", "spam", ["eggs"])),
-        ("spam eggs, ", ("spam", "eggs,", [])),
-        ("spam eggs, parrot", ("spam", "eggs,", ["parrot"])),
-        (
+        pytest.param("spam eggs", ("spam", "eggs", []), id="basic"),
+        pytest.param(
+            " spam eggs ", ("", "spam", ["eggs"]), id="leading_spaces"
+        ),
+        pytest.param(
+            "spam eggs, ", ("spam", "eggs,", []), id="comma_after_type"
+        ),
+        pytest.param(
+            "spam eggs, parrot", ("spam", "eggs,", ["parrot"]), id="one_arg"
+        ),
+        pytest.param(
             " spam eggs parrot, cheese, ",
             ("", "spam", ["eggs parrot", "cheese", ""]),
+            id="multi_args",
         ),
-        (
+        pytest.param(
             "spam eggs  ex parrot, cheese shop",
             ("spam", "eggs", ["ex parrot", "cheese shop"]),
+            id="spaces_and_args",
         ),
     ],
 )
@@ -78,12 +102,20 @@ def test_parse_condition_string(text, expected):
 @pytest.mark.parametrize(
     "text, expected",
     [
-        ("walk", ("walk", [])),
-        ("walk north", ("walk", ["north"])),
-        ("move npc1, npc2", ("move", ["npc1", "npc2"])),
-        ("  animate  idle  ", ("", ["animate  idle"])),
-        ("trigger a\\,b,c", ("trigger", ["a,b", "c"])),
-        ("trigger a\\,b\\,c", ("trigger", ["a,b,c"])),
+        pytest.param("walk", ("walk", []), id="walk"),
+        pytest.param("walk north", ("walk", ["north"]), id="walk_arg"),
+        pytest.param(
+            "move npc1, npc2", ("move", ["npc1", "npc2"]), id="two_args"
+        ),
+        pytest.param(
+            "  animate  idle  ", ("", ["animate  idle"]), id="spaces"
+        ),
+        pytest.param(
+            "trigger a\\,b,c", ("trigger", ["a,b", "c"]), id="escaped_one"
+        ),
+        pytest.param(
+            "trigger a\\,b\\,c", ("trigger", ["a,b,c"]), id="escaped_two"
+        ),
     ],
 )
 def test_parse_behav_string(text, expected):
@@ -116,12 +148,12 @@ def reconstruct_behav(behav_type: str, args: list[str]) -> str:
 @pytest.mark.parametrize(
     "text",
     [
-        "walk",
-        "walk north",
-        "move npc1, npc2",
-        "trigger a\\,b,c",
-        "trigger a\\,b\\,c",
-        "  animate idle  ",
+        pytest.param("walk", id="walk"),
+        pytest.param("walk north", id="walk_arg"),
+        pytest.param("move npc1, npc2", id="two_args"),
+        pytest.param("trigger a\\,b,c", id="escaped_one"),
+        pytest.param("trigger a\\,b\\,c", id="escaped_two"),
+        pytest.param("  animate idle  ", id="spaces"),
     ],
 )
 def test_roundtrip_behav(text):
@@ -135,13 +167,13 @@ def test_roundtrip_behav(text):
 @pytest.mark.parametrize(
     "text",
     [
-        "spam",
-        "spam eggs",
-        "spam eggs,parrot",
-        "spam eggs, ex parrot",
-        "spam a\\,b,c",
-        "spam a\\,b\\,c",
-        "   spam   ",
+        pytest.param("spam", id="single"),
+        pytest.param("spam eggs", id="one_arg"),
+        pytest.param("spam eggs,parrot", id="two_args"),
+        pytest.param("spam eggs, ex parrot", id="space_arg"),
+        pytest.param("spam a\\,b,c", id="escaped_one"),
+        pytest.param("spam a\\,b\\,c", id="escaped_two"),
+        pytest.param("   spam   ", id="spaces"),
     ],
 )
 def test_roundtrip_action(text):
@@ -155,12 +187,12 @@ def test_roundtrip_action(text):
 @pytest.mark.parametrize(
     "text",
     [
-        "spam eggs",
-        "spam eggs, parrot",
-        "spam eggs  ex parrot, cheese shop",
-        "spam eggs, a\\,b,c",
-        "spam eggs, a\\,b\\,c",
-        " spam eggs parrot, cheese, ",
+        pytest.param("spam eggs", id="basic"),
+        pytest.param("spam eggs, parrot", id="one_arg"),
+        pytest.param("spam eggs  ex parrot, cheese shop", id="multi"),
+        pytest.param("spam eggs, a\\,b,c", id="escaped_one"),
+        pytest.param("spam eggs, a\\,b\\,c", id="escaped_two"),
+        pytest.param(" spam eggs parrot, cheese, ", id="spaces"),
     ],
 )
 def test_roundtrip_condition(text):

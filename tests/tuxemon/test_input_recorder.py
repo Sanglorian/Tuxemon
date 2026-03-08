@@ -143,7 +143,13 @@ def test_load_nonexistent_file(recorder, tmpdir_path):
     assert recorder.load_from_file(path, "missing") is None
 
 
-@pytest.mark.parametrize("btn1,btn2", [(1, 2), (5, 9)])
+@pytest.mark.parametrize(
+    "btn1,btn2",
+    [
+        pytest.param(1, 2, id="recordings_btn1_1_btn2_2"),
+        pytest.param(5, 9, id="recordings_btn1_5_btn2_9"),
+    ],
+)
 def test_multiple_recordings(recorder, session, btn1, btn2):
     recorder.start_recording(session)
     recorder.record_event(make_event(button=btn1))

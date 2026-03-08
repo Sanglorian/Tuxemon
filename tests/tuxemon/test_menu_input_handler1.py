@@ -73,7 +73,11 @@ def handler(menu):
 
 @pytest.mark.parametrize(
     "button",
-    [buttons.B, buttons.BACK, intentions.MENU_CANCEL],
+    [
+        pytest.param(buttons.B, id="button_b"),
+        pytest.param(buttons.BACK, id="button_back"),
+        pytest.param(intentions.MENU_CANCEL, id="intention_cancel"),
+    ],
 )
 def test_escape_buttons_always_consume(handler, menu, button):
     event = make_event(button)
@@ -82,7 +86,10 @@ def test_escape_buttons_always_consume(handler, menu, button):
 
 @pytest.mark.parametrize(
     "button",
-    [buttons.A, intentions.SELECT],
+    [
+        pytest.param(buttons.A, id="button_a"),
+        pytest.param(intentions.SELECT, id="intention_select"),
+    ],
 )
 def test_confirm_buttons_always_consume(handler, menu, button):
     event = make_event(button)
@@ -91,7 +98,12 @@ def test_confirm_buttons_always_consume(handler, menu, button):
 
 @pytest.mark.parametrize(
     "button",
-    [buttons.UP, buttons.DOWN, buttons.LEFT, buttons.RIGHT],
+    [
+        pytest.param(buttons.UP, id="button_up"),
+        pytest.param(buttons.DOWN, id="button_down"),
+        pytest.param(buttons.LEFT, id="button_left"),
+        pytest.param(buttons.RIGHT, id="button_right"),
+    ],
 )
 def test_cursor_buttons_always_consume(handler, menu, button):
     event = make_event(button)

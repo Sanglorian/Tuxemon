@@ -36,11 +36,11 @@ def test_init(animation):
 
 
 @pytest.mark.parametrize(
-    "index,expected",
+    "index, expected",
     [
-        (0, (10, 10)),
-        (1, (20, 20)),
-        (2, (0, 0)),
+        pytest.param(0, (10, 10), id="frame0_size"),
+        pytest.param(1, (20, 20), id="frame1_size"),
+        pytest.param(2, (0, 0), id="frame2_size"),
     ],
 )
 def test_get_frame(animation, index, expected):
@@ -128,11 +128,11 @@ def test_flip(animation):
 
 
 @pytest.mark.parametrize(
-    "value,low,high,expected",
+    "value, low, high, expected",
     [
-        (5, 2, 10, 5),
-        (1, 2, 10, 2),
-        (11, 2, 10, 10),
+        pytest.param(5, 2, 10, 5, id="within_range"),
+        pytest.param(1, 2, 10, 2, id="below_range_clipped"),
+        pytest.param(11, 2, 10, 10, id="above_range_clipped"),
     ],
 )
 def test_clip(value, low, high, expected):
@@ -273,11 +273,11 @@ def test_add_multiple_animations(animation):
 
 
 @pytest.mark.parametrize(
-    "method,state",
+    "method, state",
     [
-        ("play", State.PLAYING),
-        ("pause", State.PAUSED),
-        ("stop", State.STOPPED),
+        pytest.param("play", State.PLAYING, id="play_sets_playing"),
+        pytest.param("pause", State.PAUSED, id="pause_sets_paused"),
+        pytest.param("stop", State.STOPPED, id="stop_sets_stopped"),
     ],
 )
 def test_collection_state_transitions(collection, method, state):
@@ -355,17 +355,25 @@ def test_copy_does_not_share_playback_progress(animation):
 
 
 @pytest.mark.parametrize(
-    "start,action,expected",
+    "start, action, expected",
     [
-        (State.STOPPED, "pause", State.STOPPED),  # illegal pause
-        (State.STOPPED, "stop", State.STOPPED),  # idempotent
-        (State.STOPPED, "play", State.PLAYING),
-        (State.PLAYING, "play", State.PLAYING),  # idempotent
-        (State.PLAYING, "pause", State.PAUSED),
-        (State.PLAYING, "stop", State.STOPPED),
-        (State.PAUSED, "pause", State.PAUSED),  # idempotent
-        (State.PAUSED, "stop", State.STOPPED),
-        (State.PAUSED, "play", State.PLAYING),
+        pytest.param(
+            State.STOPPED, "pause", State.STOPPED, id="stopped_pause_illegal"
+        ),
+        pytest.param(
+            State.STOPPED, "stop", State.STOPPED, id="stopped_stop_idempotent"
+        ),
+        pytest.param(State.STOPPED, "play", State.PLAYING, id="stopped_play"),
+        pytest.param(
+            State.PLAYING, "play", State.PLAYING, id="playing_play_idempotent"
+        ),
+        pytest.param(State.PLAYING, "pause", State.PAUSED, id="playing_pause"),
+        pytest.param(State.PLAYING, "stop", State.STOPPED, id="playing_stop"),
+        pytest.param(
+            State.PAUSED, "pause", State.PAUSED, id="paused_pause_idempotent"
+        ),
+        pytest.param(State.PAUSED, "stop", State.STOPPED, id="paused_stop"),
+        pytest.param(State.PAUSED, "play", State.PLAYING, id="paused_play"),
     ],
 )
 def test_state_machine_matrix(animation, start, action, expected):
@@ -388,7 +396,12 @@ def test_seek_clamps_and_sets_paused(animation):
 
 
 @pytest.mark.parametrize(
-    "initial", [State.STOPPED, State.PLAYING, State.PAUSED]
+    "initial",
+    [
+        pytest.param(State.STOPPED, id="stopped"),
+        pytest.param(State.PLAYING, id="playing"),
+        pytest.param(State.PAUSED, id="paused"),
+    ],
 )
 def test_rewind_preserves_state(animation, initial):
     if initial == State.PLAYING:

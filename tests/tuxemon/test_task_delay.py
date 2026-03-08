@@ -97,7 +97,15 @@ def test_delay_update_before_start_does_nothing():
     assert d._state == AnimationState.NOT_STARTED
 
 
-@pytest.mark.parametrize("duration", [0.0, 0.1, 1.0, 5.0])
+@pytest.mark.parametrize(
+    "duration",
+    [
+        pytest.param(0.0, id="duration_0_0"),
+        pytest.param(0.1, id="duration_0_1"),
+        pytest.param(1.0, id="duration_1_0"),
+        pytest.param(5.0, id="duration_5_0"),
+    ],
+)
 def test_delay_parametrized(duration):
     d = DelayTask(duration)
     d.start()

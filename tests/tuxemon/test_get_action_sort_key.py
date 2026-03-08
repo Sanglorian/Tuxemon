@@ -43,7 +43,13 @@ def test_none_user(monster, tech):
     assert key.tie_breaker == 0.0
 
 
-@pytest.mark.parametrize("sort_type", ["meta", "potion"])
+@pytest.mark.parametrize(
+    "sort_type",
+    [
+        pytest.param("meta", id="sort_meta"),
+        pytest.param("potion", id="sort_potion"),
+    ],
+)
 def test_meta_and_potion_actions(monster, tech, sort_type):
     tech.sort = sort_type
     action = EnqueuedAction(user=monster, method=tech, target=monster)
@@ -71,12 +77,12 @@ def test_damage_action(monster, tech):
 @pytest.mark.parametrize(
     "key,expected",
     [
-        ("potion", 0),
-        ("utility", 1),
-        ("quest", 2),
-        ("meta", 3),
-        ("damage", 4),
-        ("unknown", 5),
+        pytest.param("potion", 0, id="sort_potion"),
+        pytest.param("utility", 1, id="sort_utility"),
+        pytest.param("quest", 2, id="sort_quest"),
+        pytest.param("meta", 3, id="sort_meta"),
+        pytest.param("damage", 4, id="sort_damage"),
+        pytest.param("unknown", 5, id="sort_unknown"),
     ],
 )
 def test_get_sort_index(key, expected):
@@ -90,6 +96,12 @@ def test_get_sort_index_with_empty_sort_order():
     assert TestSortManager.get_sort_index("unknown") == 0
 
 
-@pytest.mark.parametrize("value", ["", "   "])
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param("", id="empty_string"),
+        pytest.param("   ", id="whitespace_string"),
+    ],
+)
 def test_get_sort_index_empty_or_whitespace(value):
     assert SortManager.get_sort_index(value) == len(SortManager.SORT_ORDER)

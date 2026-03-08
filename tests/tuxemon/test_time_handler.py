@@ -42,10 +42,10 @@ def test_get_current_time(time_handler):
 @pytest.mark.parametrize(
     "dt,expected",
     [
-        (datetime(2022, 1, 1, 0, 0, 0), "false"),
-        (datetime(2022, 1, 1, 6, 0, 0), "true"),
-        (datetime(2022, 1, 1, 18, 0, 0), "false"),
-        (datetime(2022, 1, 1, 12, 0, 0), "true"),
+        pytest.param(datetime(2022, 1, 1, 0, 0, 0), "false", id="midnight"),
+        pytest.param(datetime(2022, 1, 1, 6, 0, 0), "true", id="six_am"),
+        pytest.param(datetime(2022, 1, 1, 18, 0, 0), "false", id="six_pm"),
+        pytest.param(datetime(2022, 1, 1, 12, 0, 0), "true", id="noon"),
     ],
 )
 def test_day_night_cycle(time_handler, dt, expected):
@@ -55,13 +55,19 @@ def test_day_night_cycle(time_handler, dt, expected):
 @pytest.mark.parametrize(
     "dt,expected",
     [
-        (datetime(2022, 1, 1, 0, 0, 0), "night"),
-        (datetime(2022, 1, 1, 4, 0, 0), "dawn"),
-        (datetime(2022, 1, 1, 7, 0, 0), "dawn"),
-        (datetime(2022, 1, 1, 10, 0, 0), "morning"),
-        (datetime(2022, 1, 1, 14, 0, 0), "afternoon"),
-        (datetime(2022, 1, 1, 17, 0, 0), "dusk"),
-        (datetime(2022, 1, 1, 20, 0, 0), "night"),
+        pytest.param(
+            datetime(2022, 1, 1, 0, 0, 0), "night", id="midnight_night"
+        ),
+        pytest.param(datetime(2022, 1, 1, 4, 0, 0), "dawn", id="early_dawn"),
+        pytest.param(datetime(2022, 1, 1, 7, 0, 0), "dawn", id="late_dawn"),
+        pytest.param(datetime(2022, 1, 1, 10, 0, 0), "morning", id="morning"),
+        pytest.param(
+            datetime(2022, 1, 1, 14, 0, 0), "afternoon", id="afternoon"
+        ),
+        pytest.param(datetime(2022, 1, 1, 17, 0, 0), "dusk", id="dusk"),
+        pytest.param(
+            datetime(2022, 1, 1, 20, 0, 0), "night", id="evening_night"
+        ),
     ],
 )
 def test_stage_of_day(time_handler, dt, expected):
@@ -71,11 +77,11 @@ def test_stage_of_day(time_handler, dt, expected):
 @pytest.mark.parametrize(
     "dt,expected",
     [
-        (datetime(2022, 1, 1), "winter"),
-        (datetime(2022, 3, 20), "winter"),
-        (datetime(2022, 6, 20), "spring"),
-        (datetime(2022, 9, 20), "summer"),
-        (datetime(2022, 12, 20), "autumn"),
+        pytest.param(datetime(2022, 1, 1), "winter", id="jan"),
+        pytest.param(datetime(2022, 3, 20), "winter", id="mar20"),
+        pytest.param(datetime(2022, 6, 20), "spring", id="jun20"),
+        pytest.param(datetime(2022, 9, 20), "summer", id="sep20"),
+        pytest.param(datetime(2022, 12, 20), "autumn", id="dec20"),
     ],
 )
 def test_season_northern(time_handler, dt, expected):
@@ -85,11 +91,11 @@ def test_season_northern(time_handler, dt, expected):
 @pytest.mark.parametrize(
     "dt,expected",
     [
-        (datetime(2022, 1, 1), "summer"),
-        (datetime(2022, 3, 20), "summer"),
-        (datetime(2022, 6, 20), "autumn"),
-        (datetime(2022, 9, 20), "winter"),
-        (datetime(2022, 12, 20), "spring"),
+        pytest.param(datetime(2022, 1, 1), "summer", id="jan"),
+        pytest.param(datetime(2022, 3, 20), "summer", id="mar20"),
+        pytest.param(datetime(2022, 6, 20), "autumn", id="jun20"),
+        pytest.param(datetime(2022, 9, 20), "winter", id="sep20"),
+        pytest.param(datetime(2022, 12, 20), "spring", id="dec20"),
     ],
 )
 def test_season_southern(dt, expected):
@@ -100,11 +106,11 @@ def test_season_southern(dt, expected):
 @pytest.mark.parametrize(
     "year,expected",
     [
-        (2020, True),
-        (2019, False),
-        (2024, True),
-        (1900, False),
-        (2000, True),
+        pytest.param(2020, True, id="2020"),
+        pytest.param(2019, False, id="2019"),
+        pytest.param(2024, True, id="2024"),
+        pytest.param(1900, False, id="1900"),
+        pytest.param(2000, True, id="2000"),
     ],
 )
 def test_is_leap_year(time_handler, year, expected):

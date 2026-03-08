@@ -41,7 +41,13 @@ def test_initial_state(transition):
     assert transition.in_transition is False
 
 
-@pytest.mark.parametrize("state", [True, False])
+@pytest.mark.parametrize(
+    "state",
+    [
+        pytest.param(True, id="state_true"),
+        pytest.param(False, id="state_false"),
+    ],
+)
 def test_transition_state_changes(transition, state):
     transition.set_transition_state(state)
     assert transition.in_transition is state
@@ -50,8 +56,8 @@ def test_transition_state_changes(transition, state):
 @pytest.mark.parametrize(
     "color",
     [
-        (0, 0, 0, 255),
-        (255, 0, 0, 255),
+        pytest.param((0, 0, 0, 255), id="black"),
+        pytest.param((255, 0, 0, 255), id="red"),
     ],
 )
 def test_set_transition_surface(monkeypatch, transition, color):
@@ -94,8 +100,8 @@ def test_draw_with_zero_alpha_does_not_blit(transition, fake_surface):
 @pytest.mark.parametrize(
     "method, initial, final",
     [
-        ("fade_out", 0, 255),
-        ("fade_in", 255, 0),
+        pytest.param("fade_out", 0, 255, id="fade_out"),
+        pytest.param("fade_in", 255, 0, id="fade_in"),
     ],
 )
 def test_fade_alpha_animation(
@@ -115,11 +121,18 @@ def test_fade_alpha_animation(
 
 @pytest.mark.parametrize(
     "duration",
-    [1.0, 0.0, -1.0],
+    [
+        pytest.param(1.0, id="duration_positive"),
+        pytest.param(0.0, id="duration_zero"),
+        pytest.param(-1.0, id="duration_negative"),
+    ],
 )
 @pytest.mark.parametrize(
     "with_character",
-    [True, False],
+    [
+        pytest.param(True, id="with_character"),
+        pytest.param(False, id="no_character"),
+    ],
 )
 def test_fade_out_edge_cases(
     monkeypatch, transition, mock_world, duration, with_character
@@ -135,12 +148,11 @@ def test_fade_out_edge_cases(
         duration=duration,
         round_values=True,
     )
+    mm = mock_world.client.movement_manager
     if with_character:
-        mm = mock_world.client.movement_manager
         mm.stop_char.assert_called_with(character)
         mm.lock_controls.assert_called_with(character)
     else:
-        mm = mock_world.client.movement_manager
         mm.stop_char.assert_not_called()
         mm.lock_controls.assert_not_called()
     assert transition.in_transition is True
@@ -148,11 +160,18 @@ def test_fade_out_edge_cases(
 
 @pytest.mark.parametrize(
     "duration",
-    [1.0, 0.0, -1.0],
+    [
+        pytest.param(1.0, id="duration_positive"),
+        pytest.param(0.0, id="duration_zero"),
+        pytest.param(-1.0, id="duration_negative"),
+    ],
 )
 @pytest.mark.parametrize(
     "with_character",
-    [True, False],
+    [
+        pytest.param(True, id="with_character"),
+        pytest.param(False, id="no_character"),
+    ],
 )
 def test_fade_in_edge_cases(
     monkeypatch, transition, mock_world, duration, with_character

@@ -104,12 +104,18 @@ def test_large_mission_list(mission_manager):
 @pytest.mark.parametrize(
     "initial, new, expected",
     [
-        (
+        pytest.param(
             MissionStatus.PENDING,
             MissionStatus.COMPLETED,
             MissionStatus.COMPLETED,
+            id="pending_to_completed",
         ),
-        (MissionStatus.PENDING, MissionStatus.PENDING, MissionStatus.PENDING),
+        pytest.param(
+            MissionStatus.PENDING,
+            MissionStatus.PENDING,
+            MissionStatus.PENDING,
+            id="pending_to_pending",
+        ),
     ],
 )
 def test_update_status(mission, initial, new, expected):
@@ -150,9 +156,9 @@ def test_check_all_prerequisites_with_unmet_conditions(
 @pytest.mark.parametrize(
     "potion_qty, lotion_state, expected",
     [
-        (1, 2, True),
-        (1, 1, False),
-        (1, "missing", False),
+        pytest.param(1, 2, True, id="enough_items"),
+        pytest.param(1, 1, False, id="not_enough_lotion"),
+        pytest.param(1, "missing", False, id="lotion_missing"),
     ],
 )
 def test_check_required_items(
@@ -178,9 +184,9 @@ def test_check_required_items(
 @pytest.mark.parametrize(
     "lvl1, lvl2, expected",
     [
-        (3, 5, True),
-        (3, 4, False),
-        (3, None, False),
+        pytest.param(3, 5, True, id="both_meet_requirements"),
+        pytest.param(3, 4, False, id="second_too_low"),
+        pytest.param(3, None, False, id="second_missing"),
     ],
 )
 def test_check_required_monsters(character, mission, lvl1, lvl2, expected):
@@ -211,7 +217,13 @@ def test_encode_missions(mission_manager, controller, mission):
     assert encoded[0]["status"] == MissionStatus.PENDING
 
 
-@pytest.mark.parametrize("result", [True, False])
+@pytest.mark.parametrize(
+    "result",
+    [
+        pytest.param(True, id="connected_true"),
+        pytest.param(False, id="connected_false"),
+    ],
+)
 def test_check_connected_missions(
     mission_manager, controller, mission, result
 ):

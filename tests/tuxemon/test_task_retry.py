@@ -155,7 +155,14 @@ def test_retry_update_before_start_does_nothing():
     assert retry._current_attempt == 0
 
 
-@pytest.mark.parametrize("attempts", [1, 2, 5])
+@pytest.mark.parametrize(
+    "attempts",
+    [
+        pytest.param(1, id="one_attempt"),
+        pytest.param(2, id="two_attempts"),
+        pytest.param(5, id="five_attempts"),
+    ],
+)
 def test_retry_parametrized_attempt_counts(attempts):
     t = AlwaysAbortTask()
     retry = RetryTask(t, max_attempts=attempts)

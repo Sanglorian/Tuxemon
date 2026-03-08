@@ -108,20 +108,12 @@ def test_apply_base_stat_calculation(calculator):
 @pytest.mark.parametrize(
     "stat, value, expected",
     [
-        ("hp", 100, int(100 * 0.9)),
-        ("speed", 30, int(30 * 1.2)),
-        ("melee", 20, int(20 * 1.1)),
-        ("armour", 10, 10),
-        ("dodge", 10, 10),
-        ("ranged", 5, 5),
-    ],
-    ids=[
-        "hp_mod",
-        "speed_mod",
-        "melee_mod",
-        "armour_no_mod",
-        "dodge_no_mod",
-        "ranged_no_mod",
+        pytest.param("hp", 100, int(100 * 0.9), id="hp_mod"),
+        pytest.param("speed", 30, int(30 * 1.2), id="speed_mod"),
+        pytest.param("melee", 20, int(20 * 1.1), id="melee_mod"),
+        pytest.param("armour", 10, 10, id="armour_no_mod"),
+        pytest.param("dodge", 10, 10, id="dodge_no_mod"),
+        pytest.param("ranged", 5, 5, id="ranged_no_mod"),
     ],
 )
 def test_apply_stat_updates(calculator, mock_tastes, stat, value, expected):
@@ -136,11 +128,10 @@ def test_apply_stat_updates(calculator, mock_tastes, stat, value, expected):
 @pytest.mark.parametrize(
     "stat, value, expected_multiplier",
     [
-        ("speed", 50, 1.2),
-        ("melee", 40, 1.1),
-        ("armour", 20, 1.0),
+        pytest.param("speed", 50, 1.2, id="speed_update"),
+        pytest.param("melee", 40, 1.1, id="melee_update"),
+        pytest.param("armour", 20, 1.0, id="armour_no_update"),
     ],
-    ids=["speed_update", "melee_update", "armour_no_update"],
 )
 def test_update_stat(
     calculator, mock_tastes, stat, value, expected_multiplier

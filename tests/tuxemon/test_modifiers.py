@@ -92,8 +92,8 @@ def test_add_modifier():
 @pytest.mark.parametrize(
     "current_types, expected",
     [
-        (["fire"], 0.5),
-        (["water"], 1.0),
+        pytest.param(["fire"], 0.5, id="fire_weak"),
+        pytest.param(["water"], 1.0, id="water_neutral"),
     ],
 )
 def test_weakest_link(elements, monster, current_types, expected):
@@ -110,8 +110,8 @@ def test_weakest_link(elements, monster, current_types, expected):
 @pytest.mark.parametrize(
     "current_types, expected",
     [
-        (["fire"], 0.5),
-        (["water"], 1.0),
+        pytest.param(["fire"], 0.5, id="fire_weak"),
+        pytest.param(["water"], 1.0, id="water_neutral"),
     ],
 )
 def test_strongest_link(elements, monster, current_types, expected):
@@ -128,8 +128,8 @@ def test_strongest_link(elements, monster, current_types, expected):
 @pytest.mark.parametrize(
     "current_types, expected",
     [
-        (["fire"], 0.5),
-        (["water"], 1.0),
+        pytest.param(["fire"], 0.5, id="fire_weak"),
+        pytest.param(["water"], 1.0, id="water_neutral"),
     ],
 )
 def test_cumulative_damage(elements, monster, current_types, expected):
@@ -146,8 +146,8 @@ def test_cumulative_damage(elements, monster, current_types, expected):
 @pytest.mark.parametrize(
     "current_types, expected",
     [
-        (["fire"], 0.5),
-        (["water"], 1.0),
+        pytest.param(["fire"], 0.5, id="fire_weak"),
+        pytest.param(["water"], 1.0, id="water_neutral"),
     ],
 )
 def test_average_damage(elements, monster, current_types, expected):
@@ -164,8 +164,8 @@ def test_average_damage(elements, monster, current_types, expected):
 @pytest.mark.parametrize(
     "current_types, expected",
     [
-        (["fire"], 0.5),
-        (["water"], 1.0),
+        pytest.param(["fire"], 0.5, id="fire_weak"),
+        pytest.param(["water"], 1.0, id="water_neutral"),
     ],
 )
 def test_first_applicable_damage(elements, monster, current_types, expected):

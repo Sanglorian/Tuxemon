@@ -35,17 +35,23 @@ def test_buy_existing_investment(pm):
     assert pytest.approx(inv.purchase_price) == 150.0
 
 
-@pytest.mark.parametrize("symbol", ["$$$", "###"])
+@pytest.mark.parametrize(
+    "symbol",
+    [
+        pytest.param("$$$", id="invalid_symbol_dollars"),
+        pytest.param("###", id="invalid_symbol_hashes"),
+    ],
+)
 def test_buy_invalid_symbol(pm, symbol):
     with pytest.raises(ValueError):
         pm.buy_shares(symbol, 5, 100.0)
 
 
 @pytest.mark.parametrize(
-    "shares,price",
+    "shares, price",
     [
-        (-5, 100.0),
-        (5, -100.0),
+        pytest.param(-5, 100.0, id="negative_shares"),
+        pytest.param(5, -100.0, id="negative_price"),
     ],
 )
 def test_buy_negative_shares_or_price(pm, shares, price):

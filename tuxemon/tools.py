@@ -17,8 +17,7 @@ from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from enum import Enum
 from fractions import Fraction
-from functools import cache, lru_cache
-from math import hypot
+from functools import lru_cache
 from operator import add, eq, ge, gt, le, lt, mul, ne, sub
 from types import UnionType
 from typing import (
@@ -37,7 +36,6 @@ from tuxemon.compat.rect import ReadOnlyRect
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import Comparison
 from tuxemon.locale.locale import T
-from tuxemon.math import Vector2
 from tuxemon.scaling import ScalingStrategy
 from tuxemon.ui.dialogue import calc_dialog_rect
 from tuxemon.ui.text_alignment import DialogPosition
@@ -267,16 +265,6 @@ def open_choice_dialog(
         escape_key_exits=escape_key_exits,
         config=config,
     )
-
-
-def vector2_to_tile_pos(vector: Vector2) -> tuple[int, int]:
-    return (int(vector[0]), int(vector[1]))
-
-
-def tile_distance(tile0: Iterable[float], tile1: Iterable[float]) -> float:
-    x0, y0 = tile0
-    x1, y1 = tile1
-    return hypot(x1 - x0, y1 - y0)
 
 
 def number_or_variable(variables: dict[str, Any], value: str) -> float:

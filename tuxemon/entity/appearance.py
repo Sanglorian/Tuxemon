@@ -5,6 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
+from pygame import BLEND_RGBA_MULT
+
+from tuxemon.graphics import ColorLike
 from tuxemon.map.view import load_and_scale_with_cache
 
 if TYPE_CHECKING:
@@ -21,6 +24,7 @@ class RuntimeAppearance:
     outfit: str | None = None
     accessory: str | None = None
     palette: str | None = None
+    color: ColorLike | None = None
 
     combat_frame_width: int | None = None
     combat_frame_height: int | None = None
@@ -32,6 +36,7 @@ class RuntimeAppearance:
             "outfit": self.outfit,
             "accessory": self.accessory,
             "palette": self.palette,
+            "color": self.color,
             "combat_frame_width": self.combat_frame_width,
             "combat_frame_height": self.combat_frame_height,
         }
@@ -55,6 +60,7 @@ class RuntimeAppearance:
             outfit=data.get("outfit"),
             accessory=data.get("accessory"),
             palette=data.get("palette"),
+            color=data.get("color"),
             combat_frame_width=data.get(
                 "combat_frame_width", template.combat_frame_width
             ),
@@ -146,14 +152,21 @@ class AppearanceManager:
 
         base = load_and_scale_with_cache(base_path)
 
-        final = base.copy()
+        if self.state.color:
+            tinted = base.copy()
+            tinted.fill(self.state.color, special_flags=BLEND_RGBA_MULT)
+            final = tinted
+        else:
+            final = base.copy()
 
+        # Outfit
         if self.state.outfit:
             final.blit(
                 load_and_scale_with_cache(f"sprites/{self.state.outfit}.png"),
                 (0, 0),
             )
 
+        # Accessory
         if self.state.accessory:
             final.blit(
                 load_and_scale_with_cache(
@@ -162,6 +175,7 @@ class AppearanceManager:
                 (0, 0),
             )
 
+        # Palette
         if self.state.palette:
             final.blit(
                 load_and_scale_with_cache(f"sprites/{self.state.palette}.png"),

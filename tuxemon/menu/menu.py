@@ -670,11 +670,6 @@ class Menu(Generic[T], State):
             self.refresh_layout()
             self.validate_layout("refresh layout")
 
-        if self.menu_items:
-            self.selected_index = self.menu_items.snap_selection(
-                self.selected_index
-            )
-
         if not self.transparent:
             self.window.draw(surface, self.rect)
 

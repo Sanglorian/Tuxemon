@@ -59,15 +59,14 @@ class TechController:
             def action_use() -> None:
                 self.session.client.remove_state_by_name("ChoiceState")
                 monster_menu = MonsterMenuState(
-                    self.session.client, self.char.monsters
+                    self.session.client,
+                    self.char.monsters,
+                    on_selection=self.get_monster_targeted_action(key),
+                    is_valid_entry=partial(
+                        self.technique.validate_monster, self.session
+                    ),
                 )
                 self.session.client.push_state(monster_menu)
-                monster_menu.is_valid_entry = partial(
-                    self.technique.validate_monster, self.session
-                )  # type: ignore[method-assign]
-                monster_menu.on_menu_selection = (
-                    self.get_monster_targeted_action(key)
-                )  # type: ignore[assignment]
 
             return action_use
 
@@ -93,9 +92,12 @@ class TechController:
 
     def get_monster_targeted_action(
         self, key: str
-    ) -> Callable[[MenuItem[Monster]], None]:
-        def action(menu_item: MenuItem[Monster]) -> None:
+    ) -> Callable[[MenuItem[Monster | None]], None]:
+        def action(menu_item: MenuItem[Monster | None]) -> None:
             monster = menu_item.game_object
+            if monster is None:
+                return
+
             result = self.technique.use(self.session, monster, monster)
             self.session.client.remove_state_by_name("MonsterMenuState")
             self.session.client.remove_state_by_name("TechniqueMenuState")

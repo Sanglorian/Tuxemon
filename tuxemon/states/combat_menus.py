@@ -214,8 +214,12 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
     def open_swap_menu(self) -> None:
         """Open menus to swap monsters in party."""
 
-        def swap_it(menuitem: MenuItem[Monster]) -> None:
+        def swap_it(menuitem: MenuItem[Monster | None]) -> None:
             added = menuitem.game_object
+
+            if added is None:
+                return
+
             swap = Technique.create("swap")
             status = self.monster.status.current_status
             message = status.name.lower() if status else ""
@@ -243,16 +247,19 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 return False
             return True
 
-        def validate(menu_item: MenuItem[Monster]) -> bool:
-            if isinstance(menu_item, Monster):
-                return validate_monster(menu_item)
-            return False
+        def validate(mon: Monster | None) -> bool:
+            if mon is None:
+                return False
+            return validate_monster(mon)
 
         menu = self.client.push_state(
-            MonsterMenuState(self.client, self.character.monsters)
+            MonsterMenuState(
+                self.client,
+                self.character.monsters,
+                on_selection=swap_it,
+                is_valid_entry=validate,
+            )
         )
-        menu.on_menu_selection = swap_it  # type: ignore[assignment]
-        menu.is_valid_entry = validate  # type: ignore[assignment]
         menu.anchor("bottom", self.rect.top)
         menu.anchor("right", self.client.context.rect.right)
 
@@ -286,11 +293,14 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     mon = MenuItem(surface, None, None, enemy)
                     enqueue_item(item, mon)
                 else:
-                    state = self.client.push_state(
-                        MonsterMenuState(self.client, self.character.monsters)
+                    self.client.push_state(
+                        MonsterMenuState(
+                            self.client,
+                            self.character.monsters,
+                            on_selection=partial(enqueue_item, item),
+                            is_valid_entry=partial(validate, item),
+                        )
                     )
-                    state.is_valid_entry = partial(validate, item)  # type: ignore[method-assign]
-                    state.on_menu_selection = partial(enqueue_item, item)  # type: ignore[method-assign]
 
         def validate_item(item: Item | None) -> bool:
             if item and item.behaviors.throwable:
@@ -300,13 +310,17 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                 return True
             return True
 
-        def validate(item: Item, menu_item: MenuItem[Monster]) -> bool:
-            if isinstance(menu_item, Monster):
-                return item.validate_monster(self.session, menu_item)
-            return False
+        def validate(item: Item, monster: Monster | None) -> bool:
+            if monster is None:
+                return False
+            return item.validate_monster(self.session, monster)
 
-        def enqueue_item(item: Item, menu_item: MenuItem[Monster]) -> None:
+        def enqueue_item(
+            item: Item, menu_item: MenuItem[Monster | None]
+        ) -> None:
             target = menu_item.game_object
+            if target is None:
+                return
 
             # check target status
             status = target.status.current_status

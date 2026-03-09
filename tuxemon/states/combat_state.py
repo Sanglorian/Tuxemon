@@ -375,24 +375,31 @@ class CombatState(CombatAnimations):
             player: Player who has to select a Tuxemon.
         """
 
-        def add(menuitem: MenuItem[Monster]) -> None:
+        def add(menuitem: MenuItem[Monster | None]) -> None:
             monster = menuitem.game_object
+            if monster is None:
+                return
             self.combat_session.add_monster_into_play(
                 self.session, player, monster
             )
             self.client.remove_state_by_name("MonsterMenuState")
 
-        def validate(menu_item: MenuItem[Monster]) -> bool:
-            if isinstance(menu_item, Monster):
-                if menu_item.is_fainted:
-                    return False
-                if menu_item in self.combat_session.active_monsters:
-                    return False
-                return True
-            return False
+        def validate(monster: Monster | None) -> bool:
+            if monster is None:
+                return False
+            if monster.is_fainted:
+                return False
+            if monster in self.combat_session.active_monsters:
+                return False
+            return True
 
         state = self.client.push_state(
-            MonsterMenuState(self.client, player.monsters)
+            MonsterMenuState(
+                self.client,
+                player.monsters,
+                on_selection=add,
+                is_valid_entry=validate,
+            )
         )
         state.task(
             partial(
@@ -402,8 +409,6 @@ class CombatState(CombatAnimations):
             ),
             interval=0,
         )
-        state.is_valid_entry = validate  # type: ignore[assignment]
-        state.on_menu_selection = add  # type: ignore[assignment]
         state.escape_key_exits = False
 
     def handle_monster_entry(

@@ -37,8 +37,11 @@ class BreedingAction(EventAction):
     character: str
     gender: str
 
-    def set_var(self, menu_item: MenuItem[Monster]) -> None:
+    def set_var(self, menu_item: MenuItem[Monster | None]) -> None:
         monster = menu_item.game_object
+        if monster is None:
+            return
+
         parent = (
             "breeding_mother" if self.gender == "female" else "breeding_father"
         )
@@ -69,12 +72,14 @@ class BreedingAction(EventAction):
             self.stop()
             return
 
-        menu = session.client.push_state(
+        session.client.push_state(
             MonsterMenuState(
-                session.client, self.char.monsters, monster_filter
+                session.client,
+                self.char.monsters,
+                monster_filter,
+                on_selection=self.set_var,
             )
         )
-        menu.on_menu_selection = self.set_var  # type: ignore[assignment]
 
     def update(self, session: Session, dt: float) -> None:
         try:

@@ -20,7 +20,11 @@ RESOURCES_DIR = normpath(join(dirname(__file__), "../../../tuxemon/resources"))
 
 # assume run from tests folder
 DB_ROOT = join(RESOURCES_DIR, "db")
-DB_TABLES = ["item", "technique", "monster"]  # tables to check for translation slugs
+DB_TABLES = [
+    "item",
+    "technique",
+    "monster",
+]  # tables to check for translation slugs
 MAP_ROOT = join(RESOURCES_DIR, "maps")
 MASTER_FILENAME = "en_US.json"
 LOCALE_PATH = join(DB_ROOT, "locale", MASTER_FILENAME)
@@ -34,7 +38,7 @@ def load_keys(filename):
 def iter_dialog_keys(file):
     c1 = re.compile('.*translated_dialog(_chain)? (.*)".*')
     c2 = re.compile('.*translated_dialog_choice (.*)".*')
-    with open(file, "r") as f:
+    with open(file) as f:
         for line in f:
             match = c1.match(line)
             if match:
@@ -73,14 +77,14 @@ def test_translation_slugs():
             with open(join(record_file)) as _fp:
                 record = json.load(_fp)
             errors = [
-                "{} - {}".format(key, value)
+                f"{key} - {value}"
                 for key, value in record.items()
                 if key.endswith("_trans") and value not in master_keys
             ]
 
             if errors:
                 if test_pass:
-                    print("%s Errors:" % table.title())
+                    print(f"{table.title()} Errors:")
                 test_pass = False
                 errors.insert(0, record_file)
                 errors.append("")

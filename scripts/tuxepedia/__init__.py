@@ -1,8 +1,8 @@
 """
-    Tuxepedia module init
+Tuxepedia module init
 
-    author: Andy Mender <andymenderunix@gmail.com>
-    license: GPLv3
+author: Andy Mender <andymenderunix@gmail.com>
+license: GPLv3
 """
 
 import os.path

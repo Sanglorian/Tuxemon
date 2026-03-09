@@ -15,7 +15,9 @@ print(
     sep="\n",
 )
 
-os.makedirs(os.path.expanduser("~/.tuxemon/cache/downloaded_packages"), exist_ok=True)
+os.makedirs(
+    os.path.expanduser("~/.tuxemon/cache/downloaded_packages"), exist_ok=True
+)
 
 ip = input("Enter the server URL with format: http://ip:port/\n> ")
 man = Manager(ip)

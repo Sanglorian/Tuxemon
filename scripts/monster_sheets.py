@@ -6,7 +6,9 @@ from pathlib import Path
 from PIL import Image
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-SPRITE_DIR = SCRIPT_DIR.parent / "mods" / "tuxemon" / "gfx" / "sprites" / "battle"
+SPRITE_DIR = (
+    SCRIPT_DIR.parent / "mods" / "tuxemon" / "gfx" / "sprites" / "battle"
+)
 
 # Expected filenames per monster base
 FILE_MAP = {

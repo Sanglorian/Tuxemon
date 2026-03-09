@@ -10,8 +10,8 @@ if TYPE_CHECKING:
     from tuxemon.client import LocalPygameClient
     from tuxemon.config import TuxemonConfig
 
-class MyStartupRule(StartupRule):
 
+class MyStartupRule(StartupRule):
     name: ClassVar[str] = "MyStartupRule"
 
     def __init__(

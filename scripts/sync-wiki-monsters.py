@@ -7,6 +7,5 @@
 from scripts.tuxepedia.api import TuxepediaStore
 
 if __name__ == "__main__":
-
     # Fetch all our monster data.
     TuxepediaStore().sync_with_remote(completed_monsters=True)

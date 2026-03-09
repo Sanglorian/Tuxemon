@@ -45,7 +45,9 @@ def download_bytes(url: str, filepath: str) -> bool:
     """
     if os.path.isfile(filepath):
         filename = os.path.basename(filepath)
-        print(f"Aborting download! Animation GIF file already exists: {filename}")
+        print(
+            f"Aborting download! Animation GIF file already exists: {filename}"
+        )
         return False
 
     req = requests.get(url)
@@ -127,13 +129,16 @@ def download_technique_animations(wiki_url: str) -> None:
     print(f"Getting animations and metadata from URL: {wiki_url}")
 
     # Animation GIF path
-    animations_url = f"{wiki_url}/index.php?title=Category:Used_Technique_Animation"
+    animations_url = (
+        f"{wiki_url}/index.php?title=Category:Used_Technique_Animation"
+    )
     anim_source = requests.get(animations_url)
     anim_tree = html.fromstring(anim_source.content)
 
     with tempfile.TemporaryDirectory() as tmp_dirname:
-
-        elements = anim_tree.xpath("//li[@class='gallerybox']//a[@class='image']")
+        elements = anim_tree.xpath(
+            "//li[@class='gallerybox']//a[@class='image']"
+        )
         with open(CREDITS_FILENAME, "w") as credits_file:
             print("### Technique Animations", file=credits_file)
             print("", file=credits_file)
@@ -142,7 +147,9 @@ def download_technique_animations(wiki_url: str) -> None:
                 gif_url = urljoin(animations_url, element[0].get("src"))
                 gif_filename = element.get("href").split("/File:")[-1]
                 filename = gif_url.split("/")[-1]
-                print(f"Downloading animation [{index}/{len(elements)}] - {filename}")
+                print(
+                    f"Downloading animation [{index}/{len(elements)}] - {filename}"
+                )
 
                 temppath = os.path.join(tmp_dirname, filename)
 

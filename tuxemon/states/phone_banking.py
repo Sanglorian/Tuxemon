@@ -100,10 +100,12 @@ class NuPhoneBanking(PygameMenuState):
 
         if op == "pay":
             max_value = mm.get_money()
-            callback = lambda amount: self._pay(amount, bill_name)
+            def callback(amount):
+                return self._pay(amount, bill_name)
         else:
             max_value = mm.get_bank_balance()
-            callback = lambda amount: self._e_pay(amount, bill_name)
+            def callback(amount):
+                return self._e_pay(amount, bill_name)
 
         self._open_amount_picker(
             max_value=max_value,

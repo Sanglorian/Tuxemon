@@ -99,4 +99,6 @@ if __name__ == "__main__":
         elif path.is_dir() and args.recursive:
             beautify_po_in_directory(path, args.remove_obsolete)
         else:
-            print(f"Error: Path '{path}' is neither a valid file nor directory.")
+            print(
+                f"Error: Path '{path}' is neither a valid file nor directory."
+            )

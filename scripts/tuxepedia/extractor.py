@@ -1,9 +1,8 @@
-# coding=utf-8
 """
-    Tuxepedia HTML extractor
+Tuxepedia HTML extractor
 
-    author: Andy Mender <andymenderunix@gmail.com>
-    license: GPLv3
+author: Andy Mender <andymenderunix@gmail.com>
+license: GPLv3
 """
 
 import logging
@@ -110,7 +109,6 @@ class TuxepediaWebExtractor:
 
         # extract monster records ("tr", table row HTML blocks) from the table
         for monster_row in table.findall("tr"):
-
             # ignore elements which are not actual table rows
             if "data-row-number" not in monster_row.attrib:
                 continue
@@ -219,7 +217,9 @@ class TuxepediaWebExtractor:
         main_sprites_table = rows[0]
         face_sprites_table = rows[1]
 
-        txmn_name = fix_name(self.get_monster_name(monster_row)).replace("_", "-")
+        txmn_name = fix_name(self.get_monster_name(monster_row)).replace(
+            "_", "-"
+        )
 
         # sprites JSON template
         sprites = {
@@ -250,7 +250,9 @@ class TuxepediaWebExtractor:
 
             # skip if no sprite was found
             if a is None:
-                self.get_logger().warning("%s not found for %s", sprite_type, txmn_name)
+                self.get_logger().warning(
+                    "%s not found for %s", sprite_type, txmn_name
+                )
                 continue
 
             img = a.find("img")
@@ -274,7 +276,9 @@ class TuxepediaWebExtractor:
                 "Stored %s sprite at %s", txmn_name, local_sprite_path
             )
 
-            sprites[sprite_type] = full_path[sprite_type].format(txmn_name.lower())
+            sprites[sprite_type] = full_path[sprite_type].format(
+                txmn_name.lower()
+            )
 
         return sprites
 
@@ -328,7 +332,7 @@ class TuxepediaWebExtractor:
 
             # log output
             self.get_logger().debug(
-                "Stored {} sprite at {}".format(txmn_name, local_sprite_path)
+                f"Stored {txmn_name} sprite at {local_sprite_path}"
             )
 
             sprites[sprite_type] = sprite_file
@@ -395,7 +399,9 @@ class TuxepediaWebExtractor:
             href = a.get("href")
 
             # extract the direct URL to the sound file
-            sound_entry = self.url_to_html(self.tuxepedia_url + href, params={})
+            sound_entry = self.url_to_html(
+                self.tuxepedia_url + href, params={}
+            )
             sound = sound_entry.xpath(WEB_PATHS.monster_sound_xpath)[0]
             sound_url = sound.get("href")
 
@@ -415,7 +421,7 @@ class TuxepediaWebExtractor:
 
             # log output
             self.get_logger().debug(
-                "Stored {} sprite at {}".format(txmn_name, local_cry_path)
+                f"Stored {txmn_name} sprite at {local_cry_path}"
             )
             return cry_file
         except Exception as e:
@@ -438,9 +444,7 @@ class TuxepediaWebExtractor:
         content = self._exec_request(url, params, headers)
 
         if content is None:
-            self.get_logger().warning(
-                "Couldn't retrieve" " content from {}".format(url)
-            )
+            self.get_logger().warning(f"Couldn't retrieve content from {url}")
             return None
 
         return html.fromstring(content)
@@ -485,7 +489,9 @@ class TuxepediaWebExtractor:
         else:
             headers = {**self.headers, **headers}
 
-        response = requests.get(url, params=params, headers=headers, stream=stream)
+        response = requests.get(
+            url, params=params, headers=headers, stream=stream
+        )
 
         if response.status_code != 200:
             return None
@@ -497,4 +503,6 @@ class TuxepediaWebExtractor:
 
 
 def fix_name(name):
-    return name.replace(" ♂", "_male").replace(" ♀", "_female").replace(" ", "_")
+    return (
+        name.replace(" ♂", "_male").replace(" ♀", "_female").replace(" ", "_")
+    )

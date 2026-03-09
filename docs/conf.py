@@ -75,7 +75,9 @@ def generate_script_lists(_: object) -> None:
         outfile.write_text("\n".join(sorted(lines)))
         print(f"Generated {outfile} with {len(lines)} entries")
 
-    write_list("tuxemon.event.actions", "Action", HANDCRAFTED_DIR / "action_list.rst")
+    write_list(
+        "tuxemon.event.actions", "Action", HANDCRAFTED_DIR / "action_list.rst"
+    )
     write_list(
         "tuxemon.event.conditions",
         "Condition",

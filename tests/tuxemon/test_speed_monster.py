@@ -95,9 +95,9 @@ def test_speed_modifier_bounds(
             + monster.dodge * combat_config.dodge_modifier
             + combat_config.speed_offset
         )
-        assert (
-            max(results) <= max_expected
-        ), f"Speed exceeds maximum for {description}"
+        assert max(results) <= max_expected, (
+            f"Speed exceeds maximum for {description}"
+        )
 
 
 @pytest.mark.parametrize(

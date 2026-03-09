@@ -49,7 +49,8 @@ def test_chain_animations(monkeypatch):
         "tuxemon.state.animation_mixin.AnimationGroup", lambda: mock_group
     )
     d = Dummy()
-    fn = lambda: None
+    def fn():
+        return None
     d.chain_animations(fn, start_delay=0.5)
     mock_group.chain_animations.assert_called_once_with(fn, start_delay=0.5)
 

@@ -211,7 +211,8 @@ def test_get_queued_states_by_source(queue):
 
 
 def test_state_skipped_due_to_unmet_condition(queue):
-    condition = lambda: False
+    def condition():
+        return False
     queue.queue_state("locked_state", condition=condition)
 
     activated = queue.handle_next_queued_state()

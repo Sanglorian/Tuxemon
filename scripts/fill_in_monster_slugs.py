@@ -43,7 +43,7 @@ suffix_table = {
 
 # build table of regex for searching
 for name, suffix in suffix_table.items():
-    pattern = '(?P<ident>\s*)"(?P<key>{0})":(?P<space>\s+)"(?P<value>.*)"'.format(name)
+    pattern = rf'(?P<ident>\s*)"(?P<key>{name})":(?P<space>\s+)"(?P<value>.*)"'
     regex_table[name] = re.compile(pattern)
 
 for table in db_tables:
@@ -70,7 +70,7 @@ for table in db_tables:
                 old = working_dict[name]["match"]
                 # the next couple lines can be used to get json to copy/paste to master locale
                 value = working_dict[name]["value"]
-                print('    "{}": "{}",'.format(repl, value))
+                print(f'    "{repl}": "{value}",')
                 # new = old.replace('""', '"{}"'.format(repl))
                 # data = data.replace(old, new)
                 # changed = True

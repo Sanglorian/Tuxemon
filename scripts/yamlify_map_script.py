@@ -27,7 +27,7 @@ import sys
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, DefaultDict
+from typing import Any
 from xml.etree.ElementTree import Element
 
 from tuxemon.database.yaml_utils import dump_yaml_io, load_yaml
@@ -36,7 +36,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__file__)
 
 
-def renumber_event(event_node: Element) -> DefaultDict[Any, list]:
+def renumber_event(event_node: Element) -> defaultdict[Any, list]:
     groups = (
         ("act", []),
         ("cond", []),

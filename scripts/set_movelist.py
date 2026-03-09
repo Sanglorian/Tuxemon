@@ -53,31 +53,27 @@ mons_without_a_moveset = set()
 
 
 def set_moves(f, data, moves):
-    moves_string = """"moveset": [
-        {
+    moves_string = f""""moveset": [
+        {{
             "level_learned": 2,
-            "technique": "%s"
-        },
-        {
+            "technique": "{moves[0]}"
+        }},
+        {{
             "level_learned": 2,
-            "technique": "%s"
-        },
-        {
+            "technique": "{moves[1]}"
+        }},
+        {{
             "level_learned": 2,
-            "technique": "%s"
-        }
-    ],""" % (
-        moves[0],
-        moves[1],
-        moves[2],
-    )
+            "technique": "{moves[2]}"
+        }}
+    ],"""
     out = re.sub(r'"moveset": \[(.*?)\],', moves_string, data, flags=re.S)
     f.truncate(0)
     f.write(out)
 
 
 def slugify(data):
-    return "%s" % (data.lower().replace(" ", "_").replace("-", "_"))
+    return "{}".format(data.lower().replace(" ", "_").replace("-", "_"))
 
 
 for x in range(0, 2000):
@@ -91,13 +87,13 @@ for x in range(0, 2000):
 
 
 for mon, moves in mons.items():
-    path = "tuxemon/resources/db/monster/%s.json" % mon.lower()
+    path = f"tuxemon/resources/db/monster/{mon.lower()}.json"
     data = None
     try:
-        with open(path, "r") as f:
+        with open(path) as f:
             data = f.read()
             updated_mons.add(path)
-    except IOError:
+    except OSError:
         missing_json_file.add(mon)
         continue
 
@@ -108,11 +104,7 @@ for mon, moves in mons.items():
 if missing_json_file:
     path = "mons_without_a_json_file.txt"
     print(
-        "%s mons have movelists, but don't have a json file. See %s for a summary"
-        % (
-            len(missing_json_file),
-            path,
-        )
+        f"{len(missing_json_file)} mons have movelists, but don't have a json file. See {path} for a summary"
     )
     print(missing_json_file)
     if PRINT_SUMMARY:
@@ -124,7 +116,7 @@ monster_path = "tuxemon/resources/db/monster/*.json"
 jsons = glob.glob(monster_path)
 for path in jsons:
     if path not in updated_mons:
-        with open(path, "r") as f2:
+        with open(path) as f2:
             data = f2.read()
             t = loads(data)["types"][0]
             moves = [slugify(m) for m in defaults[t]]
@@ -138,12 +130,8 @@ for path in jsons:
 if mons_without_a_moveset:
     path = "mons_without_a_moveset.txt"
     print(
-        "%s existing mons didn't have a movelist defined in the excel doc. "
-        "Used default moveset for type. See %s for a summary"
-        % (
-            len(mons_without_a_moveset),
-            path,
-        )
+        f"{len(mons_without_a_moveset)} existing mons didn't have a movelist defined in the excel doc. "
+        f"Used default moveset for type. See {path} for a summary"
     )
     print(mons_without_a_moveset)
     if PRINT_SUMMARY:

@@ -28,8 +28,11 @@ jobs:
     - name: Install linting tools
       run: pip install tox
 
-    - name: Run style checks
-      run: tox -estyle
+    - name: Run formatter
+      run: tox -e format
+
+    - name: Run linter
+      run: tox -e lint
 
   test:
     runs-on: ubuntu-latest
@@ -54,8 +57,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install tox
 
-    - name: Test style with tox
-      run: tox -elint
+    - name: Run tests
+      run: tox -e py3
 
   validate-db:
     runs-on: ubuntu-latest

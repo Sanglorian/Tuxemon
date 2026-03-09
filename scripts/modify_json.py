@@ -1,4 +1,4 @@
-""" modify_json
+"""modify_json
 
 This script allows the user to add or change a certain value to all json files included in a folder.
 This is done by taking a folder filled with json files, and creating a new folder at a target

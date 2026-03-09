@@ -71,7 +71,7 @@ def get_animation_flip_axes(animation_name: str) -> str:
 
 def create_json(data_row):
     name = data_row.name.lower().replace(" ", "_").replace("-", "_")
-    name_trans["technique_%s_name" % name] = data_row.name.strip()
+    name_trans[f"technique_{name}_name"] = data_row.name.strip()
     types = [t.strip().lower() for t in data_row.element.split(",")]
     effects = []
     if data_row.power:
@@ -88,7 +88,9 @@ def create_json(data_row):
         "accuracy": data_row.accuracy,
         "effects": effects,
         "flip_axes": get_animation_flip_axes(data_row.animation),
-        "healing_power": float(data_row.healing_power) if data_row.healing_power else 0,
+        "healing_power": float(data_row.healing_power)
+        if data_row.healing_power
+        else 0,
         "is_fast": bool(data_row.is_fast),
         "potency": data_row.potency,
         "power": float(data_row.power) if data_row.power else 0,
@@ -106,7 +108,7 @@ def create_json(data_row):
         "types": types,
     }
 
-    path = "tuxemon/resources/db/technique/%s.json" % name
+    path = f"tuxemon/resources/db/technique/{name}.json"
     with open(path, "w") as f:
         dump(template, f, indent=2, separators=(",", ": "), sort_keys=True)
         f.write("\n")
@@ -115,7 +117,9 @@ def create_json(data_row):
 name_trans = {}
 
 for y in range(2, 6000):
-    row = DataRow(*(tech_sheet.cell(row=y, column=x).value for x in range(1, 16)))
+    row = DataRow(
+        *(tech_sheet.cell(row=y, column=x).value for x in range(1, 16))
+    )
     if row.name is None:
         break
     create_json(row)

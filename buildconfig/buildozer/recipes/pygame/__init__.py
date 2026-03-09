@@ -5,7 +5,6 @@ from pythonforandroid.toolchain import current_directory
 
 
 class Pygame2Recipe(CompiledComponentsPythonRecipe):
-
     version = "2.0.0-dev7"
     url = "https://github.com/pygame/pygame/archive/android-2.0.0-dev7.tar.gz"
 
@@ -27,7 +26,9 @@ class Pygame2Recipe(CompiledComponentsPythonRecipe):
     def prebuild_arch(self, arch):
         super().prebuild_arch(arch)
         with current_directory(self.get_build_dir(arch.arch)):
-            setup_template = open(join("buildconfig", "Setup.Android.SDL2.in")).read()
+            setup_template = open(
+                join("buildconfig", "Setup.Android.SDL2.in")
+            ).read()
             env = self.get_recipe_env(arch)
             env["ANDROID_ROOT"] = join(self.ctx.ndk_platform, "usr")
 
@@ -43,7 +44,9 @@ class Pygame2Recipe(CompiledComponentsPythonRecipe):
             setup_file = setup_template.format(
                 sdl_includes=(
                     " -I"
-                    + join(self.ctx.bootstrap.build_dir, "jni", "SDL", "include")
+                    + join(
+                        self.ctx.bootstrap.build_dir, "jni", "SDL", "include"
+                    )
                     + " -L"
                     + join(self.ctx.bootstrap.build_dir, "libs", str(arch))
                     + " -L"
@@ -66,7 +69,7 @@ class Pygame2Recipe(CompiledComponentsPythonRecipe):
             open("Setup", "w").write(setup_file)
 
     def get_recipe_env(self, arch):
-        env = super(Pygame2Recipe, self).get_recipe_env(arch)
+        env = super().get_recipe_env(arch)
         env["USE_SDL2"] = "1"
         env["PYGAME_CROSS_COMPILE"] = "TRUE"
         env["PYGAME_ANDROID"] = "TRUE"

@@ -2,6 +2,7 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterator
 from typing import TYPE_CHECKING
 
@@ -27,6 +28,8 @@ from tuxemon.ui.text_renderer import TextRenderer
 
 if TYPE_CHECKING:
     from tuxemon.scaling import ScalingStrategy
+
+logger = logging.getLogger(__name__)
 
 
 class TextAreaDiagnostics:
@@ -150,6 +153,13 @@ class TextArea(Sprite):
         if not self._text:
             self.drawing_text = False
             self.image = Surface(self.rect.size, SRCALPHA)
+            return
+
+        if self.rect.width == 0 or self.rect.height == 0:
+            logger.error(
+                f"[TextArea] ERROR: Cannot render text — rect is zero-sized: {self.rect}"
+            )
+            self.drawing_text = False
             return
 
         if self.animated:

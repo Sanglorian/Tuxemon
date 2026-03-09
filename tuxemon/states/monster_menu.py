@@ -61,9 +61,14 @@ class MonsterMenuState(Menu[Monster | None]):
         client: BaseClient,
         monsters: list[Monster],
         monster_filter: MonsterFilter | None = None,
+        *,
+        on_selection: Callable[[MenuItem[Monster | None]], None] | None = None,
+        is_valid_entry: Callable[[Monster | None], bool] | None = None,
         **kwargs: Any,
-    ) -> None:
+    ):
         super().__init__(client=client, **kwargs)
+        self._external_on_selection = on_selection
+        self._external_is_valid_entry = is_valid_entry
         self.monster_filter = monster_filter or MonsterFilter()
         self.monsters = self.monster_filter.get_filtered_monsters(monsters)
 
@@ -122,22 +127,14 @@ class MonsterMenuState(Menu[Monster | None]):
 
         self.refresh_menu_items()
 
-    def on_menu_selection(
-        self,
-        menu_item: MenuItem[Monster | None],
-    ) -> None:
-        pass
+    def on_menu_selection(self, item: MenuItem[Monster | None]) -> None:
+        if self._external_on_selection:
+            return self._external_on_selection(item)
+        return None
 
     def is_valid_entry(self, monster: Monster | None) -> bool:
-        """
-        Used to determine if a given monster should be selectable.
-
-        When other code creates a MonsterMenu, it should overwrite this method
-        to suit its needs.
-
-        Parameters:
-            monster: The monster corresponding to the menu item, if any.
-        """
+        if self._external_is_valid_entry:
+            return self._external_is_valid_entry(monster)
         return monster is not None
 
     def refresh_menu_items(self) -> None:
@@ -257,9 +254,9 @@ class MonsterMenuHandler:
                 self.client, self.party.owner, self.name, items_filtered
             )
         )
-        menu.on_menu_selection = lambda menu_item: self._equip_from_picker(
+        menu.on_menu_selection = lambda menu_item: self._equip_from_picker(  # type: ignore[method-assign]
             monster, menu_item
-        )  # type: ignore[method-assign]
+        )
 
     def _equip_from_picker(
         self, monster: Monster, menu_item: MenuItem[Item | None]
@@ -411,12 +408,14 @@ class MonsterMenuHandler:
     def open_monster_menu(self) -> None:
         """Pushes the monster menu state."""
         self.monster_menu = self.client.push_state(
-            MonsterMenuState(self.client, self.party.monsters)
+            MonsterMenuState(
+                self.client,
+                self.party.monsters,
+                on_selection=lambda item: self.handle_selection(
+                    item, self.monster_menu
+                ),
+            )
         )
-
-        self.monster_menu.on_menu_selection = lambda item: (
-            self.handle_selection(item, self.monster_menu)
-        )  # type: ignore[assignment]
 
         original_on_change = self.monster_menu.on_menu_selection_change
 

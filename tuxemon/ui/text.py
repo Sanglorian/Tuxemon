@@ -155,13 +155,6 @@ class TextArea(Sprite):
             self.image = Surface(self.rect.size, SRCALPHA)
             return
 
-        if self.rect.width == 0 or self.rect.height == 0:
-            logger.error(
-                f"[TextArea] ERROR: Cannot render text — rect is zero-sized: {self.rect}"
-            )
-            self.drawing_text = False
-            return
-
         if self.animated:
             self._start_text_animation()
         else:

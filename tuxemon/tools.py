@@ -17,7 +17,7 @@ from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from enum import Enum
 from fractions import Fraction
-from functools import lru_cache
+from functools import cache
 from operator import add, eq, ge, gt, le, lt, mul, ne, sub
 from types import UnionType
 from typing import (

@@ -56,6 +56,7 @@ class CharacterState(PygameMenuState):
     ) -> None:
         def fxw(r: float) -> int:
             return fix_measure(menu._width, r)
+
         def fxh(r: float) -> int:
             return fix_measure(menu._height, r)
 

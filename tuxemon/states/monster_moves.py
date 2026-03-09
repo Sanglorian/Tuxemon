@@ -63,8 +63,10 @@ class MonsterMovesState(PygameMenuState):
     ) -> None:
         def fxw(r: float) -> int:
             return fix_measure(menu._width, r)
+
         def fxh(r: float) -> int:
             return fix_measure(menu._height, r)
+
         menu._width = fxw(248 / 256)
 
         # Name (white, manual position)
@@ -246,8 +248,10 @@ class MonsterMovesState(PygameMenuState):
             self.speed_icon_widget: Any | None = None
 
         width, height = self.client.context.resolution
+
         def fxw(r: float) -> int:
             return fix_measure(width, r)
+
         def fxh(r: float) -> int:
             return fix_measure(height, r)
 

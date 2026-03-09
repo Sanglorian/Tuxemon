@@ -7,9 +7,8 @@ import pytest
 from tuxemon.db import Direction, FacingMode
 from tuxemon.entity.path.controller import PathController
 from tuxemon.entity.path.path_view import PathView
-from tuxemon.map.map import dirs2
+from tuxemon.map.map import dirs2, tile_distance, vector2_to_tile_pos
 from tuxemon.math import Vector2
-from tuxemon.tools import tile_distance, vector2_to_tile_pos
 
 
 class SimpleNPC:
@@ -25,16 +24,20 @@ class SimpleNPC:
         self.moving = False
         self.move_direction = None
         self.ignore_collisions = False
-        self.mover = None
         self.sprite_controller = None
         self.client = None
         self._moverate_modifier = 1.0
+        self.mover = MoverCompat(self)
 
     def set_facing(self, d):
         self.facing = d
+        if self.mover:
+            self.mover.facing = d
 
     def set_move_direction(self, d=None):
         self.move_direction = d
+        if self.mover:
+            self.mover.move_direction = d
 
     def set_position(self, pos):
         self.position = Vector2(float(pos[0]), float(pos[1]))
@@ -51,15 +54,56 @@ class SimpleNPC:
 
     def set_moverate_modifier(self, m):
         self._moverate_modifier = m
+        if self.mover:
+            self.mover.set_moverate_modifier(m)
+
+    def begin_tile_exit(self):
+        self.remove_collision()
+
+    def complete_tile_entry(self, tile_pos):
+        self.set_position(tile_pos)
+        self.on_tile_changed()
+
+
+class MoverCompat:
+    """Compatibility wrapper for test doubles to mimic Mover interface."""
+
+    def __init__(self, owner):
+        self._owner = owner
+        self.moverate_modifier = 1.0
+        self.move_direction = None
+        self.facing = Direction.DOWN
+        self.facing_mode = FacingMode.FOLLOW_MOVEMENT
+        self.base_moverate = 0.0
+        self.move = None
+
+    def set_moverate_modifier(self, modifier):
+        self.moverate_modifier = max(0.0, modifier)
+        self._owner._moverate_modifier = self.moverate_modifier
+
+    def set_move_direction(self, direction=None):
+        self.move_direction = direction
+        self._owner.move_direction = direction
+
+    def set_facing(self, direction):
+        self.facing = direction
+        self._owner.facing = direction
+
+    def set_facing_mode(self, facing_mode):
+        self.facing_mode = facing_mode
+
+    def set_moverate(self, moverate):
+        self.base_moverate = moverate
+
+    def has_reached_next_tile(self, origin, target):
+        return True
 
 
 @pytest.fixture
 def mk_npc_with_mocks():
     def _mk():
         npc = SimpleNPC()
-        mover = MagicMock()
-        mover.move = MagicMock()
-        npc.mover = mover
+        npc.mover.move = MagicMock()
         npc.facing_mode = FacingMode.FOLLOW_MOVEMENT
         sprite = MagicMock()
         sprite.play_animation = MagicMock()

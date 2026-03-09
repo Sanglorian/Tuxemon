@@ -18,9 +18,7 @@ from tuxemon.entity.path.path_view import PathExecutionState, PathView
 from tuxemon.entity.path.policies.animation import MovementAnimationPolicy
 from tuxemon.entity.path.policies.reroute import ReroutePolicy
 from tuxemon.entity.path.policies.tile_effects import TileEffectProcessor
-from tuxemon.map.map import dirs2, get_direction
-from tuxemon.math import Vector2
-from tuxemon.tools import vector2_to_tile_pos
+from tuxemon.map.map import get_direction, get_next_tile_pos
 
 if TYPE_CHECKING:
     from tuxemon.entity.npc import NPC
@@ -186,7 +184,7 @@ class PathController:
                 self.exec.origin = self.owner.tile_pos
                 self.exec.target = target
                 self.owner.mover.move(move_dir)
-                self.owner.remove_collision()
+                self.owner.begin_tile_exit()
             else:
                 commands = self.reroute_policy.on_obstruction(
                     self.owner,
@@ -219,8 +217,7 @@ class PathController:
         assert origin is not None and target is not None
 
         if self.owner.mover.has_reached_next_tile(origin, target):
-            self.owner.set_position(target)
-            self.owner.on_tile_changed()
+            self.owner.complete_tile_entry(target)
             self.path.consume()
             self.exec.reset()
             tile = self._map_manager.collision_map.get(self.owner.tile_pos)
@@ -234,15 +231,8 @@ class PathController:
             if self.path:
                 self.next_waypoint()
 
-    def _get_next_tile_pos(
-        self, origin: tuple[int, int], direction: Direction
-    ) -> tuple[int, int]:
-        """Calculates the target tile position one step away from the origin."""
-        target_vec = Vector2(origin) + dirs2[direction]
-        return vector2_to_tile_pos(target_vec)
-
     def move_one_tile(self, direction: Direction) -> None:
-        target = self._get_next_tile_pos(self.owner.tile_pos, direction)
+        target = get_next_tile_pos(self.owner.tile_pos, direction)
         self.path.push(target)
 
     def move_multiple_tiles(self, direction: Direction, strength: int) -> None:
@@ -273,7 +263,7 @@ class PathController:
         steps: list[tuple[int, int]] = []
 
         for _ in range(strength):
-            candidate = self._get_next_tile_pos(origin, direction)
+            candidate = get_next_tile_pos(origin, direction)
 
             if candidate == origin:
                 logger.debug(f"Skipping duplicate tile: {candidate}")
@@ -335,7 +325,7 @@ class PathController:
             last = self.path.next()
             self.path = PathView([last] if last else [])
             self.pathfinding = None
-            self.owner.set_move_direction()
+            self.owner.mover.set_move_direction()
             return
 
         # Default: fully stop and clear everything
@@ -351,9 +341,8 @@ class PathController:
         is retained; otherwise, it reverts to its last recorded origin.
         """
         if not preserve_position and self.exec.origin is not None:
-            self.owner.set_position(self.exec.origin)
-            self.owner.on_tile_changed()
-        self.owner.set_move_direction()
+            self.owner.complete_tile_entry(self.exec.origin)
+        self.owner.mover.set_move_direction()
         self.owner.stop_moving()
         self.cancel_path()
 
@@ -364,7 +353,7 @@ class PathController:
         if isinstance(cmd, PushCommand):
             self.move_multiple_tiles(cmd.direction, cmd.strength)
         elif isinstance(cmd, SpeedCommand):
-            self.owner.set_moverate_modifier(cmd.modifier)
+            self.owner.mover.set_moverate_modifier(cmd.modifier)
         elif isinstance(cmd, ContinueCommand):
             self.move_one_tile(cmd.direction)
         elif isinstance(cmd, RepathCommand):

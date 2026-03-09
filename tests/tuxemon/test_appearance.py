@@ -55,6 +55,7 @@ def test_to_dict_roundtrip():
         "outfit": None,
         "accessory": None,
         "palette": None,
+        "color": None,
         "combat_frame_width": None,
         "combat_frame_height": None,
     }

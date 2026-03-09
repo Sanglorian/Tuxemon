@@ -6,9 +6,8 @@ from dataclasses import dataclass
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.map.map import get_direction
+from tuxemon.map.map import get_direction, tile_distance
 from tuxemon.session import Session
-from tuxemon.tools import tile_distance
 
 
 @final

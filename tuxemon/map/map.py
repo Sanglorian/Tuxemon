@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Generator, Mapping, Sequence
+from collections.abc import Generator, Iterable, Mapping, Sequence
 from itertools import product
-from math import atan2, pi
+from math import atan2, hypot, pi
 from typing import TYPE_CHECKING, TypeVar
 
 from tuxemon.camera.camera import project
@@ -39,6 +39,12 @@ dirs2: Mapping[Direction, Vector2] = {
 }
 # just the first letter of the direction => vector
 short_dirs = {d[0]: dirs2[d] for d in dirs2}
+
+
+def tile_distance(tile0: Iterable[float], tile1: Iterable[float]) -> float:
+    x0, y0 = tile0
+    x1, y1 = tile1
+    return hypot(x1 - x0, y1 - y0)
 
 
 def vector2_to_tile_pos(vector: Vector2) -> tuple[int, int]:

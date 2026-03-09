@@ -8,10 +8,9 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from tuxemon.db import Direction, FacingMode
-from tuxemon.map.map import dirs2, vector2_to_tile_pos
+from tuxemon.map.map import dirs2, tile_distance, vector2_to_tile_pos
 from tuxemon.math import Vector2
 from tuxemon.save_state import NPCState
-from tuxemon.tools import tile_distance
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
@@ -117,11 +116,7 @@ class Mover:
         self.set_state(EntityState.IDLE)
 
     def _set_movement_speed(self, running: bool) -> None:
-        """Configure moverate and state for running or walking.
-
-        Parameters:
-            running: True for running state, False for walking state.
-        """
+        """Configure moverate and state for running or walking."""
         self.base_moverate = (
             CONFIG.player_runrate if running else CONFIG.player_walkrate
         )

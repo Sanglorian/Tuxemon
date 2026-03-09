@@ -21,7 +21,14 @@ def checker():
 # BoundaryChecker tests
 
 
-@pytest.mark.parametrize("point", [(0, 0), (-1, -1), (999, 999)])
+@pytest.mark.parametrize(
+    "point",
+    [
+        pytest.param((0, 0), id="origin"),
+        pytest.param((-1, -1), id="negative_coords"),
+        pytest.param((999, 999), id="large_coords"),
+    ],
+)
 def test_default_boundary_rejects_all(checker, point):
     assert not checker.is_within_boundaries(point)
 
@@ -38,8 +45,8 @@ def test_set_rectangular_boundary(checker):
 @pytest.mark.parametrize(
     "point, expected_x, expected_y",
     [
-        ((3, 4), True, True),
-        ((6, 4), False, True),
+        pytest.param((3, 4), True, True, id="point_inside"),
+        pytest.param((6, 4), False, True, id="point_x_outside"),
     ],
 )
 def test_get_boundary_validity_rectangular(
@@ -60,10 +67,10 @@ def test_get_boundary_validity_raises_on_non_rectangular(checker):
 @pytest.mark.parametrize(
     "point, expected",
     [
-        ((10, 10), True),
-        ((13, 13), True),
-        ((16, 10), False),
-        ((10, 16), False),
+        pytest.param((10, 10), True, id="center"),
+        pytest.param((13, 13), True, id="inside"),
+        pytest.param((16, 10), False, id="outside_x"),
+        pytest.param((10, 16), False, id="outside_y"),
     ],
 )
 def test_set_circular_boundary(checker, point, expected):
@@ -94,13 +101,13 @@ def test_repr_shows_reject_all_boundary(checker):
 @pytest.mark.parametrize(
     "point, expected",
     [
-        ((0, 0), True),
-        ((9, 0), True),
-        ((0, 9), True),
-        ((9, 9), True),
-        ((10, 5), False),
-        ((5, 10), False),
-        ((10, 10), False),
+        pytest.param((0, 0), True, id="bottom_left"),
+        pytest.param((9, 0), True, id="bottom_right_inside"),
+        pytest.param((0, 9), True, id="top_left_inside"),
+        pytest.param((9, 9), True, id="top_right_inside"),
+        pytest.param((10, 5), False, id="right_edge_outside"),
+        pytest.param((5, 10), False, id="top_edge_outside"),
+        pytest.param((10, 10), False, id="corner_outside"),
     ],
 )
 def test_rectangular_boundary_edges(checker, point, expected):
@@ -134,8 +141,8 @@ def test_intersection_requires_all_boundaries():
 @pytest.mark.parametrize(
     "mode, expected",
     [
-        ("union", False),
-        ("intersection", True),
+        pytest.param("union", False, id="union_empty_false"),
+        pytest.param("intersection", True, id="intersection_empty_true"),
     ],
 )
 def test_empty_composite(mode, expected):

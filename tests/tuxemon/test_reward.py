@@ -125,7 +125,15 @@ def test_reward_system_basic(setup_combat):
     assert rewards.update
 
 
-@pytest.mark.parametrize("multiplier", [2.0, 0.5, 0.0, -1.0])
+@pytest.mark.parametrize(
+    "multiplier",
+    [
+        pytest.param(2.0, id="double_money"),
+        pytest.param(0.5, id="half_money"),
+        pytest.param(0.0, id="zero_money"),
+        pytest.param(-1.0, id="negative_multiplier"),
+    ],
+)
 def test_calculate_money_with_item_multiplier(setup_combat, multiplier):
     loser, winner, _, _, _, _, _ = setup_combat
     type(loser).held_item = PropertyMock(return_value=None)
@@ -137,23 +145,23 @@ def test_calculate_money_with_item_multiplier(setup_combat, multiplier):
 
 
 @pytest.mark.parametrize(
-    "item,expected_func",
+    "item, expected_func",
     [
-        (
+        pytest.param(
             None,
             lambda l, w, d: int(
                 (l.total_experience // l.level) * l.experience_modifier
             ),
+            id="no_item_default_exp",
         ),
-        (
+        pytest.param(
             DummyItem(ExperienceMethod.XP_TRANSMITTER, 2.0),
-            lambda l, w, d: (
-                calculate_experience_base(
-                    l.total_experience, l.level, l.experience_modifier
-                )
-                // 2
-                // len(d.get_attackers(l))
-            ),
+            lambda l, w, d: calculate_experience_base(
+                l.total_experience, l.level, l.experience_modifier
+            )
+            // 2
+            // len(d.get_attackers(l)),
+            id="xp_transmitter",
         ),
     ],
 )
@@ -243,8 +251,20 @@ def test_award_rewards_non_player_monster(setup_combat):
 @pytest.mark.parametrize(
     "loser_stats,winner_stats,tp_gain,expected_len",
     [
-        (BasicStats(hp=10, melee=20), BasicStats(hp=5, melee=10), 3, 2),
-        (BasicStats(hp=5, melee=5), BasicStats(hp=10, melee=10), None, 0),
+        pytest.param(
+            BasicStats(hp=10, melee=20),
+            BasicStats(hp=5, melee=10),
+            3,
+            2,
+            id="loser_stronger_tp_gain_3",
+        ),
+        pytest.param(
+            BasicStats(hp=5, melee=5),
+            BasicStats(hp=10, melee=10),
+            None,
+            0,
+            id="loser_weaker_no_tp_gain",
+        ),
     ],
 )
 def test_calculate_tps_awards(

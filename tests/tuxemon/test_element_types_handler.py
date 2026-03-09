@@ -77,9 +77,19 @@ def test_primary_type(handler):
 @pytest.mark.parametrize(
     "attackers, defenders, expected_fn",
     [
-        (["fire"], ["metal"], lambda e: e["fire"].lookup_multiplier("metal")),
-        (["metal"], ["fire"], lambda e: e["metal"].lookup_multiplier("fire")),
-        (
+        pytest.param(
+            ["fire"],
+            ["metal"],
+            lambda e: e["fire"].lookup_multiplier("metal"),
+            id="fire_vs_metal",
+        ),
+        pytest.param(
+            ["metal"],
+            ["fire"],
+            lambda e: e["metal"].lookup_multiplier("fire"),
+            id="metal_vs_fire",
+        ),
+        pytest.param(
             ["fire", "metal"],
             ["fire", "metal"],
             lambda e: (
@@ -88,11 +98,13 @@ def test_primary_type(handler):
                 * e["metal"].lookup_multiplier("fire")
                 * e["metal"].lookup_multiplier("metal")
             ),
+            id="dual_vs_dual",
         ),
-        (
+        pytest.param(
             ["fire", "aether"],
             ["metal"],
             lambda e: e["fire"].lookup_multiplier("metal"),
+            id="aether_ignored_fire_vs_metal",
         ),
     ],
 )
@@ -106,21 +118,33 @@ def test_calculate_affinity_score(elements, attackers, defenders, expected_fn):
 @pytest.mark.parametrize(
     "defenders, attacker, expected_fn",
     [
-        (["metal"], "fire", lambda e: e["metal"].lookup_multiplier("fire")),
-        (
+        pytest.param(
+            ["metal"],
+            "fire",
+            lambda e: e["metal"].lookup_multiplier("fire"),
+            id="metal_resists_fire",
+        ),
+        pytest.param(
             ["fire", "metal"],
             "fire",
             lambda e: (
                 e["fire"].lookup_multiplier("fire")
                 * e["metal"].lookup_multiplier("fire")
             ),
+            id="dual_defenders_fire_attacker",
         ),
-        (
+        pytest.param(
             ["aether", "fire"],
             "metal",
             lambda e: e["fire"].lookup_multiplier("metal"),
+            id="aether_ignored_fire_vs_metal",
         ),
-        (["fire", "metal"], "aether", lambda e: 1.0),
+        pytest.param(
+            ["fire", "metal"],
+            "aether",
+            lambda e: 1.0,
+            id="aether_neutral",
+        ),
     ],
 )
 def test_resistance(elements, defenders, attacker, expected_fn):

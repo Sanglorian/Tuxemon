@@ -44,11 +44,11 @@ def test_dirty_flags(manager):
 @pytest.mark.parametrize(
     "key, expected",
     [
-        ("hp", 10),  # player
-        ("daytime", True),  # player
-        ("weather", "rain"),  # world
-        ("difficulty", 2),  # world
-        ("missing", None),  # not found anywhere
+        pytest.param("hp", 10, id="resolve_hp"),
+        pytest.param("daytime", True, id="resolve_daytime"),
+        pytest.param("weather", "rain", id="resolve_weather"),
+        pytest.param("difficulty", 2, id="resolve_difficulty"),
+        pytest.param("missing", None, id="resolve_missing"),
     ],
 )
 def test_resolve_value(manager, key, expected):
@@ -58,13 +58,19 @@ def test_resolve_value(manager, key, expected):
 @pytest.mark.parametrize(
     "conditions, expected",
     [
-        ([{"hp": 10}], True),
-        ([{"hp": 5}], False),
-        ([{"weather": "rain"}], True),
-        ([{"weather": "sun"}], False),
-        ([{"hp": 10}, {"weather": "rain"}], True),
-        ([{"hp": 10}, {"weather": "sun"}], False),
-        ([], True),  # empty = always true
+        pytest.param([{"hp": 10}], True, id="dict_hp_match"),
+        pytest.param([{"hp": 5}], False, id="dict_hp_mismatch"),
+        pytest.param([{"weather": "rain"}], True, id="dict_weather_match"),
+        pytest.param([{"weather": "sun"}], False, id="dict_weather_mismatch"),
+        pytest.param(
+            [{"hp": 10}, {"weather": "rain"}], True, id="dict_multi_match"
+        ),
+        pytest.param(
+            [{"hp": 10}, {"weather": "sun"}],
+            False,
+            id="dict_multi_partial_mismatch",
+        ),
+        pytest.param([], True, id="dict_empty_true"),
     ],
 )
 def test_check_logic_dict(manager, conditions, expected):
@@ -74,25 +80,39 @@ def test_check_logic_dict(manager, conditions, expected):
 @pytest.mark.parametrize(
     "conditions, expected",
     [
-        ([GameCondition(key="hp", value=10)], True),
-        ([GameCondition(key="hp", value=5)], False),
-        ([GameCondition(key="weather", value="rain")], True),
-        ([GameCondition(key="weather", value="sun")], False),
-        (
+        pytest.param(
+            [GameCondition(key="hp", value=10)], True, id="cond_hp_match"
+        ),
+        pytest.param(
+            [GameCondition(key="hp", value=5)], False, id="cond_hp_mismatch"
+        ),
+        pytest.param(
+            [GameCondition(key="weather", value="rain")],
+            True,
+            id="cond_weather_match",
+        ),
+        pytest.param(
+            [GameCondition(key="weather", value="sun")],
+            False,
+            id="cond_weather_mismatch",
+        ),
+        pytest.param(
             [
                 GameCondition(key="hp", value=10),
                 GameCondition(key="weather", value="rain"),
             ],
             True,
+            id="cond_multi_match",
         ),
-        (
+        pytest.param(
             [
                 GameCondition(key="hp", value=10),
                 GameCondition(key="weather", value="sun"),
             ],
             False,
+            id="cond_multi_partial_mismatch",
         ),
-        ([], True),
+        pytest.param([], True, id="cond_empty_true"),
     ],
 )
 def test_check_conditions(manager, conditions, expected):
@@ -102,10 +122,26 @@ def test_check_conditions(manager, conditions, expected):
 @pytest.mark.parametrize(
     "cond, expected",
     [
-        (GameCondition(key="hp", value=10, scope="player"), True),
-        (GameCondition(key="hp", value=10, scope="world"), False),
-        (GameCondition(key="weather", value="rain", scope="world"), True),
-        (GameCondition(key="weather", value="rain", scope="player"), False),
+        pytest.param(
+            GameCondition(key="hp", value=10, scope="player"),
+            True,
+            id="scope_player_match",
+        ),
+        pytest.param(
+            GameCondition(key="hp", value=10, scope="world"),
+            False,
+            id="scope_world_mismatch",
+        ),
+        pytest.param(
+            GameCondition(key="weather", value="rain", scope="world"),
+            True,
+            id="scope_world_match",
+        ),
+        pytest.param(
+            GameCondition(key="weather", value="rain", scope="player"),
+            False,
+            id="scope_player_mismatch",
+        ),
     ],
 )
 def test_check_conditions_scope(manager, cond, expected):

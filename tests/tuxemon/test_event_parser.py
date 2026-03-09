@@ -72,8 +72,16 @@ def test_malformed_condition(parser, box):
 @pytest.mark.parametrize(
     "behav_list, expected_names",
     [
-        (["jump:up", "slide:left"], ["behav10", "behav20"]),
-        (["a:1", "b:2", "c:3"], ["behav10", "behav20", "behav30"]),
+        pytest.param(
+            ["jump:up", "slide:left"],
+            ["behav10", "behav20"],
+            id="two_behaviors_jump_slide",
+        ),
+        pytest.param(
+            ["a:1", "b:2", "c:3"],
+            ["behav10", "behav20", "behav30"],
+            id="three_behaviors_abc",
+        ),
     ],
 )
 def test_multiple_behaviors(parser, box, behav_list, expected_names):

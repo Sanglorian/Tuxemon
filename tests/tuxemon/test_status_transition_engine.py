@@ -44,35 +44,37 @@ def test_stacking(engine):
 @pytest.mark.parametrize(
     "category, attr, transition, expected_outcome, expected_reason",
     [
-        # POSITIVE category
-        (
+        pytest.param(
             CategoryStatus.POSITIVE,
             "on_positive_status",
             ResponseStatus.REPLACED,
             ResponseStatus.REPLACED,
             BlockedReason.REPLACED,
+            id="pos_replace",
         ),
-        (
+        pytest.param(
             CategoryStatus.POSITIVE,
             "on_positive_status",
             ResponseStatus.REMOVED,
             ResponseStatus.REMOVED,
             BlockedReason.REMOVED,
+            id="pos_remove",
         ),
-        # NEGATIVE category
-        (
+        pytest.param(
             CategoryStatus.NEGATIVE,
             "on_negative_status",
             ResponseStatus.REPLACED,
             ResponseStatus.REPLACED,
             BlockedReason.REPLACED,
+            id="neg_replace",
         ),
-        (
+        pytest.param(
             CategoryStatus.NEGATIVE,
             "on_negative_status",
             ResponseStatus.REMOVED,
             ResponseStatus.REMOVED,
             BlockedReason.REMOVED,
+            id="neg_remove",
         ),
     ],
 )

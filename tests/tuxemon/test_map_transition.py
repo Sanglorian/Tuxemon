@@ -50,7 +50,14 @@ def test_change_map(deps, transition):
     deps["boundary"].set_rectangular_boundary.assert_called_once()
 
 
-@pytest.mark.parametrize("size", [(10, 10), (20, 15), (1, 1)])
+@pytest.mark.parametrize(
+    "size",
+    [
+        pytest.param((10, 10), id="size_10x10"),
+        pytest.param((20, 15), id="size_20x15"),
+        pytest.param((1, 1), id="size_1x1"),
+    ],
+)
 def test_update_boundaries_parametrized(deps, transition, size):
     deps["map_manager"].map_size = size
     transition._update_boundaries()

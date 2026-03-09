@@ -19,7 +19,7 @@ from tuxemon.relationship import (
 @pytest.mark.parametrize(
     "kwargs, expected_state",
     [
-        (
+        pytest.param(
             {
                 "relationship_type": "friend",
                 "strength": 75,
@@ -34,8 +34,9 @@ from tuxemon.relationship import (
                 "decay_rate": 0.02,
                 "decay_threshold": 1000,
             },
+            id="friend_init",
         ),
-        (
+        pytest.param(
             {
                 "relationship_type": "rival",
                 "strength": 50,
@@ -50,9 +51,9 @@ from tuxemon.relationship import (
                 "decay_rate": 0.1,
                 "decay_threshold": 200,
             },
+            id="rival_init",
         ),
     ],
-    ids=["friend_init", "rival_init"],
 )
 def test_connection_initialization(kwargs, expected_state):
     connection = Connection(**kwargs)
@@ -79,10 +80,9 @@ def test_apply_decay_no_decay():
 @pytest.mark.parametrize(
     "strength, expected",
     [
-        (5, 4),  # minimum strength decay
-        (95, 94),  # maximum strength decay
+        pytest.param(5, 4, id="min_strength"),
+        pytest.param(95, 94, id="max_strength"),
     ],
-    ids=["min_strength", "max_strength"],
 )
 def test_apply_decay_strength_variants(strength, expected):
     connection = Connection(
@@ -198,10 +198,17 @@ def test_update_connection_decay_threshold(relationships, connection):
 @pytest.mark.parametrize(
     "new_strength, expected",
     [
-        (999, RelationshipConstants.STRENGTH[1]),  # clamp to max
-        (-50, RelationshipConstants.STRENGTH[0]),  # clamp to min
+        pytest.param(
+            999,
+            RelationshipConstants.STRENGTH[1],
+            id="clamp_max",
+        ),
+        pytest.param(
+            -50,
+            RelationshipConstants.STRENGTH[0],
+            id="clamp_min",
+        ),
     ],
-    ids=["clamp_max", "clamp_min"],
 )
 def test_update_connection_strength_clamps(
     relationships, connection, new_strength, expected

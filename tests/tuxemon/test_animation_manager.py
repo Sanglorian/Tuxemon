@@ -36,9 +36,11 @@ def manager():
 @pytest.mark.parametrize(
     "loop_input,expected",
     [
-        (LoopMode.INFINITE, LoopMode.INFINITE.value),
-        (LoopMode.NO_LOOP, LoopMode.NO_LOOP.value),
-        (3, 3),  # raw int
+        pytest.param(
+            LoopMode.INFINITE, LoopMode.INFINITE.value, id="infinite"
+        ),
+        pytest.param(LoopMode.NO_LOOP, LoopMode.NO_LOOP.value, id="no_loop"),
+        pytest.param(3, 3, id="raw_int"),
     ],
 )
 def test_get_or_create_animation_creates_new(

@@ -87,12 +87,16 @@ def test_check_button_release(gamepad_input):
 
 
 @pytest.mark.parametrize(
-    "axis,value,expected",
+    "axis, value, expected",
     [
-        (HORIZONTAL_AXIS, 0.5, buttons.RIGHT),
-        (HORIZONTAL_AXIS, -0.5, buttons.LEFT),
-        (VERTICAL_AXIS, 0.5, buttons.DOWN),
-        (VERTICAL_AXIS, -0.5, buttons.UP),
+        pytest.param(
+            HORIZONTAL_AXIS, 0.5, buttons.RIGHT, id="horizontal_right"
+        ),
+        pytest.param(
+            HORIZONTAL_AXIS, -0.5, buttons.LEFT, id="horizontal_left"
+        ),
+        pytest.param(VERTICAL_AXIS, 0.5, buttons.DOWN, id="vertical_down"),
+        pytest.param(VERTICAL_AXIS, -0.5, buttons.UP, id="vertical_up"),
     ],
 )
 def test_axis_motion(gamepad_input, axis, value, expected):
@@ -102,11 +106,19 @@ def test_axis_motion(gamepad_input, axis, value, expected):
 
 
 @pytest.mark.parametrize(
-    "axis,prev_state,value,expected_release",
+    "axis, prev_state, value, expected_release",
     [
-        (HORIZONTAL_AXIS, -1, 0.1, buttons.LEFT),
-        (VERTICAL_AXIS, -1, 0.1, buttons.UP),
-        (HORIZONTAL_AXIS, 1, 0.6, None),
+        pytest.param(
+            HORIZONTAL_AXIS,
+            -1,
+            0.1,
+            buttons.LEFT,
+            id="release_left_small_change",
+        ),
+        pytest.param(
+            VERTICAL_AXIS, -1, 0.1, buttons.UP, id="release_up_small_change"
+        ),
+        pytest.param(HORIZONTAL_AXIS, 1, 0.6, None, id="no_release_no_press"),
     ],
 )
 def test_axis_small_or_no_change(
@@ -174,8 +186,13 @@ def test_axis_direction_change(gamepad_input):
 @pytest.mark.parametrize(
     "event",
     [
-        Event(pg.JOYBUTTONDOWN, button=99, joy=0),
-        Event(pg.JOYAXISMOTION, axis=99, value=0.5, joy=0),
+        pytest.param(
+            Event(pg.JOYBUTTONDOWN, button=99, joy=0), id="unknown_button"
+        ),
+        pytest.param(
+            Event(pg.JOYAXISMOTION, axis=99, value=0.5, joy=0),
+            id="unknown_axis",
+        ),
     ],
 )
 def test_unknown_inputs_are_ignored(gamepad_input, event):

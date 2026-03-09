@@ -74,7 +74,13 @@ def test_conditional_runs_false_branch():
     assert t_true.updated == 0
 
 
-@pytest.mark.parametrize("predicate", [True, False])
+@pytest.mark.parametrize(
+    "predicate",
+    [
+        pytest.param(True, id="predicate_true"),
+        pytest.param(False, id="predicate_false"),
+    ],
+)
 def test_conditional_starts_only_selected_task(predicate):
     t_true = DummyTask()
     t_false = DummyTask()

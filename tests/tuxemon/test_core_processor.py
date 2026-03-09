@@ -168,16 +168,10 @@ def test_no_target(session, core_condition):
 @pytest.mark.parametrize(
     "is_expected, test_result, expected",
     [
-        (True, True, True),  # passes with op
-        (True, False, False),  # fails with op
-        (False, False, True),  # passes without op
-        (False, True, False),  # fails without op
-    ],
-    ids=[
-        "expected_true_pass",
-        "expected_true_fail",
-        "expected_false_pass",
-        "expected_false_fail",
+        pytest.param(True, True, True, id="expected_true_pass"),
+        pytest.param(True, False, False, id="expected_true_fail"),
+        pytest.param(False, False, True, id="expected_false_pass"),
+        pytest.param(False, True, False, id="expected_false_fail"),
     ],
 )
 def test_condition_variants(

@@ -143,7 +143,13 @@ def test_race_update_before_start_does_nothing():
     assert race._state == AnimationState.NOT_STARTED
 
 
-@pytest.mark.parametrize("winner_type", [InstantFinishTask, InstantAbortTask])
+@pytest.mark.parametrize(
+    "winner_type",
+    [
+        pytest.param(InstantFinishTask, id="instant_finish"),
+        pytest.param(InstantAbortTask, id="instant_abort"),
+    ],
+)
 def test_race_parametrized_winner_types(winner_type):
     winner = winner_type()
     loser = DummyTask()

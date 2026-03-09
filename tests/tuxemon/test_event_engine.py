@@ -60,7 +60,13 @@ def test_start_event(event_engine):
     assert 1 in event_engine.running_events
 
 
-@pytest.mark.parametrize("event_id", [99, 303])
+@pytest.mark.parametrize(
+    "event_id",
+    [
+        pytest.param(99, id="id_99"),
+        pytest.param(303, id="id_303"),
+    ],
+)
 def test_register_global_event_prevents_duplicates(event_engine, event_id):
     event = make_event(event_id, event_engine._test_box)
     event_engine.global_events = [event]
@@ -69,7 +75,13 @@ def test_register_global_event_prevents_duplicates(event_engine, event_id):
     assert len(event_engine.global_events) == 1
 
 
-@pytest.mark.parametrize("event_id", [77, 404])
+@pytest.mark.parametrize(
+    "event_id",
+    [
+        pytest.param(77, id="id_77"),
+        pytest.param(404, id="id_404"),
+    ],
+)
 def test_unregister_global_event(event_engine, event_id):
     event = make_event(event_id, event_engine._test_box)
     event_engine.global_events = [event]

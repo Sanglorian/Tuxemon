@@ -29,8 +29,8 @@ def test_subclass_must_implement_methods():
 @pytest.mark.parametrize(
     "preprocess_return, postprocess_return, expected_pre, expected_post",
     [
-        (None, "event", None, "event"),
-        ("event", None, "event", None),
+        pytest.param(None, "event", None, "event", id="pre_none_post_event"),
+        pytest.param("event", None, "event", None, id="pre_event_post_none"),
     ],
 )
 def test_consuming_middleware(

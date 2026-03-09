@@ -34,46 +34,26 @@ class TextAreaDiagnostics:
         self.enabled = enabled
         self.border_color = (255, 0, 0, 128)
         self.line_color = (255, 0, 0, 80)
-        self.maxline_color = (0, 255, 255, 60)
-        self.text_color = (200, 200, 200)
+        self.maxline_color = (0, 255, 255, 120)
 
-    def draw_outline(self, surface: Surface) -> None:
+    def draw(self, surface: Surface, font: Font) -> None:
         if not self.enabled:
             return
-        rect(surface, self.border_color, surface.get_rect(), width=5)
 
-    def draw_line_guides(self, surface: Surface, font: Font) -> None:
-        if not self.enabled:
-            return
+        rect(surface, self.border_color, surface.get_rect(), width=2)
+
         line_height = get_font_height(font)
-        for i in range(surface.get_height() // line_height):
-            y = i * line_height
-            line(
-                surface,
-                self.line_color,
-                (0, y),
-                (surface.get_width(), y),
-                width=5,
-            )
+        h = surface.get_height()
+        w = surface.get_width()
 
-    def draw_maxline_guides(self, surface: Surface, font: Font) -> None:
-        if not self.enabled:
-            return
-        max_lines = surface.get_height() // get_font_height(font)
-        for i in range(max_lines):
-            y = i * get_font_height(font)
-            line(
-                surface,
-                self.maxline_color,
-                (0, y),
-                (surface.get_width(), y),
-                width=5,
-            )
+        for y in range(0, h, line_height):
+            line(surface, self.line_color, (0, y), (w, y), width=1)
+
+        last_y = (h // line_height - 1) * line_height
+        line(surface, self.maxline_color, (0, last_y), (w, last_y), width=2)
 
 
 class TextArea(Sprite):
-    """Area of the screen that can draw text."""
-
     animated = True
 
     def __init__(
@@ -92,31 +72,67 @@ class TextArea(Sprite):
     ) -> None:
         super().__init__()
         self.rect = Rect(0, 0, 0, 0)
+        self.image = Surface(self.rect.size, SRCALPHA)
         self.drawing_text = False
+
         self.font = font
         self.font_color = font_color
         self.font_shadow = font_shadow
         self.scaling = scaling
+
         self._text_renderer = TextRenderer(
             scaling=scaling,
             font=self.font,
             font_color=self.font_color,
             font_shadow_color=self.font_shadow,
         )
+
         self.background_color = background_color
         self.background_image = background_image
         self.h_alignment = h_alignment
         self.v_alignment = v_alignment
         self.overflow_behavior = overflow_behavior
         self.line_spacing = line_spacing
+
         self.diagnostics = TextAreaDiagnostics(enabled=debug_rendering)
-        self._rendered_text = None
-        self._text_rect = None
+
         self._text = ""
         self._iter: Iterator[RenderedChar] | None = None
 
+    def _render_background(self) -> Surface:
+        surf = Surface(self.rect.size, SRCALPHA)
+        if self.background_color:
+            surf.fill(self.background_color)
+        if self.background_image:
+            surf.blit(self.background_image, (0, 0))
+        return surf
+
+    def _render_base_layer(self) -> Surface:
+        base = self._render_background()
+        self.diagnostics.draw(base, self.font)
+        return base
+
+    def _render_static_text(self) -> None:
+        base = self._render_base_layer()
+        text_surface = self._text_renderer.shadow_text(self._text)
+        base.blit(text_surface, (0, 0))
+        self.image = base
+
     def __iter__(self) -> TextArea:
         return self
+
+    def __next__(self) -> None:
+        if not self.animated:
+            raise StopIteration
+        if self._iter is None:
+            self.drawing_text = False
+            raise StopIteration
+        try:
+            rendered_char = next(self._iter)
+            self.image.blit(rendered_char.surface, rendered_char.rect)
+        except StopIteration:
+            self.drawing_text = False
+            raise
 
     def __len__(self) -> int:
         return len(self._text)
@@ -129,7 +145,6 @@ class TextArea(Sprite):
     def text(self, value: str) -> None:
         if value == self._text:
             return
-
         self._text = value
 
         if not self._text:
@@ -140,49 +155,14 @@ class TextArea(Sprite):
         if self.animated:
             self._start_text_animation()
         else:
-            self.image = self._text_renderer.shadow_text(self._text)
-
-    def __next__(self) -> None:
-        if self.animated:
-            if self._iter is None:
-                self.drawing_text = False
-                raise StopIteration
-            try:
-                rendered_char = next(self._iter)
-                self.image.blit(rendered_char.surface, rendered_char.rect)
-            except StopIteration:
-                self.drawing_text = False
-                raise
-        else:
-            raise StopIteration
+            self._render_static_text()
 
     def set_overflow_behavior(self, behavior: TextOverflow) -> None:
         self.overflow_behavior = behavior
 
-    def set_background(
-        self,
-        background_color: ColorLike | None = None,
-        background_image: Surface | None = None,
-    ) -> None:
-        self.image = Surface(self.rect.size, SRCALPHA)
-
-        if background_color:
-            self.image.fill(background_color)
-        if background_image:
-            self.image.blit(background_image, (0, 0))
-
     def _start_text_animation(self) -> None:
         self.drawing_text = True
-        self.image = Surface(self.rect.size, SRCALPHA)
-
-        if self.background_color:
-            self.image.fill(self.background_color)
-        if self.background_image:
-            self.image.blit(self.background_image, (0, 0))
-
-        self.diagnostics.draw_outline(self.image)
-        self.diagnostics.draw_line_guides(self.image, self.font)
-        self.diagnostics.draw_maxline_guides(self.image, self.font)
+        self.image = self._render_base_layer()
 
         self._iter = iter_render_text(
             text=self._text,

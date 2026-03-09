@@ -38,12 +38,20 @@ def test_mouse_button_up(mouse_input: PygameMouseInput):
     assert not mouse_input.buttons[buttons.MOUSELEFT].pressed
 
 
-@pytest.mark.parametrize("button", [1, 2, 3])
+@pytest.mark.parametrize(
+    "button",
+    [
+        pytest.param(1, id="mouse_button_1"),
+        pytest.param(2, id="mouse_button_2"),
+        pytest.param(3, id="mouse_button_3"),
+    ],
+)
 def test_other_mouse_buttons(mouse_input: PygameMouseInput, button: int):
     mouse_input.process_event(
         Event(pg.MOUSEBUTTONDOWN, button=button, pos=(50, 60))
     )
     assert mouse_input.buttons[buttons.MOUSELEFT].pressed
+
     mouse_input.process_event(
         Event(pg.MOUSEBUTTONUP, button=button, pos=(50, 60))
     )

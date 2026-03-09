@@ -12,9 +12,9 @@ from tuxemon.item.item import Item
 @pytest.mark.parametrize(
     "max_wear, expected",
     [
-        (0, False),
-        (1, True),
-        (10, True),
+        pytest.param(0, False, id="zero"),
+        pytest.param(1, True, id="one"),
+        pytest.param(10, True, id="ten"),
     ],
 )
 def test_has_wear(max_wear, expected):
@@ -25,11 +25,11 @@ def test_has_wear(max_wear, expected):
 @pytest.mark.parametrize(
     "max_wear, current, expected",
     [
-        (0, 0, False),  # no wear system
-        (5, 0, False),
-        (5, 4, False),
-        (5, 5, True),
-        (5, 10, True),
+        pytest.param(0, 0, False, id="no_wear"),
+        pytest.param(5, 0, False, id="fresh"),
+        pytest.param(5, 4, False, id="almost"),
+        pytest.param(5, 5, True, id="exact"),
+        pytest.param(5, 10, True, id="over"),
     ],
 )
 def test_is_broken(max_wear, current, expected):
@@ -40,12 +40,12 @@ def test_is_broken(max_wear, current, expected):
 @pytest.mark.parametrize(
     "max_wear, current, expected",
     [
-        (0, 0, 0.0),
-        (10, 0, 0.0),
-        (10, 5, 0.5),
-        (10, 10, 1.0),
-        (10, 20, 1.0),  # clamped
-        (10, -5, 0.0),  # clamped
+        pytest.param(0, 0, 0.0, id="zero"),
+        pytest.param(10, 0, 0.0, id="fresh"),
+        pytest.param(10, 5, 0.5, id="half"),
+        pytest.param(10, 10, 1.0, id="full"),
+        pytest.param(10, 20, 1.0, id="over_clamp"),
+        pytest.param(10, -5, 0.0, id="under_clamp"),
     ],
 )
 def test_ratio(max_wear, current, expected):
@@ -56,11 +56,11 @@ def test_ratio(max_wear, current, expected):
 @pytest.mark.parametrize(
     "max_wear, current, amount, expected_current, expected_broke",
     [
-        (0, 0, 1, 0, False),  # no wear system
-        (5, 0, 1, 1, False),
-        (5, 4, 1, 5, True),  # breaks on reaching max
-        (5, 4, 10, 5, True),  # clamped
-        (5, 5, 1, 5, True),  # already broken
+        pytest.param(0, 0, 1, 0, False, id="no_system"),
+        pytest.param(5, 0, 1, 1, False, id="normal"),
+        pytest.param(5, 4, 1, 5, True, id="break_on_reach"),
+        pytest.param(5, 4, 10, 5, True, id="clamped"),
+        pytest.param(5, 5, 1, 5, True, id="already_broken"),
     ],
 )
 def test_increase_no_random(
@@ -82,10 +82,10 @@ def test_increase_random_break():
 @pytest.mark.parametrize(
     "break_chance, random_value, expected",
     [
-        (0.0, 0.0, False),
-        (0.5, 0.6, False),
-        (0.5, 0.4, True),
-        (1.0, 0.999, True),
+        pytest.param(0.0, 0.0, False, id="never"),
+        pytest.param(0.5, 0.6, False, id="mid_high"),
+        pytest.param(0.5, 0.4, True, id="mid_low"),
+        pytest.param(1.0, 0.999, True, id="always"),
     ],
 )
 def test_should_break(monkeypatch, break_chance, random_value, expected):
@@ -103,10 +103,10 @@ def test_reset():
 @pytest.mark.parametrize(
     "current, amount, expected",
     [
-        (5, -1, 0),  # full repair
-        (5, 0, 5),
-        (5, 2, 3),
-        (5, 10, 0),  # clamped
+        pytest.param(5, -1, 0, id="full repair"),
+        pytest.param(5, 0, 5, id="none"),
+        pytest.param(5, 2, 3, id="partial"),
+        pytest.param(5, 10, 0, id="clamped"),
     ],
 )
 def test_repair(current, amount, expected):
@@ -162,10 +162,10 @@ def test_try_repair_no_wear():
 @pytest.mark.parametrize(
     "current, amount, expected",
     [
-        (5, -1, 0),  # full repair
-        (5, 0, 5),
-        (5, 2, 3),
-        (5, 10, 0),
+        pytest.param(5, -1, 0, id="full repair"),
+        pytest.param(5, 0, 5, id="none"),
+        pytest.param(5, 2, 3, id="partial"),
+        pytest.param(5, 10, 0, id="clamped"),
     ],
 )
 def test_try_repair_with_wear(current, amount, expected):

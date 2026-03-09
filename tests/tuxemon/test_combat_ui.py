@@ -45,8 +45,8 @@ def test_init(combat_ui):
 @pytest.mark.parametrize(
     "hp_ratio, exp_ratio",
     [
-        (0.75, 0.5),  # player
-        (0.5, 0.0),  # opponent
+        pytest.param(0.75, 0.5, id="player_with_exp"),
+        pytest.param(0.5, 0.0, id="opponent_no_exp"),
     ],
 )
 def test_draw_bars_hp_and_exp(combat_ui, graphics, hp_ratio, exp_ratio):
@@ -61,7 +61,9 @@ def test_draw_bars_hp_and_exp(combat_ui, graphics, hp_ratio, exp_ratio):
     combat_ui._hp_bars = {monster: MagicMock()}
     combat_ui._exp_bars = {monster: MagicMock()}
     combat_ui.create_rect_for_bar = MagicMock(return_value=MagicMock())
+
     combat_ui.draw_bars(hud, graphics)
+
     combat_ui._hp_bars[monster].draw.assert_called_once()
 
     if is_player:
@@ -80,7 +82,15 @@ def test_create_rect_for_bar(combat_ui, fake_context):
     assert rect.top == fake_context.scaling.scale_int(0)
 
 
-@pytest.mark.parametrize("ratio", [0.0, 0.4, 0.6, 1.0])
+@pytest.mark.parametrize(
+    "ratio",
+    [
+        pytest.param(0.0, id="ratio_0_0"),
+        pytest.param(0.4, id="ratio_0_4"),
+        pytest.param(0.6, id="ratio_0_6"),
+        pytest.param(1.0, id="ratio_1_0"),
+    ],
+)
 def test_get_hp_bar_initializes_with_monster_value(combat_ui, ratio):
     monster = MagicMock()
     monster.hp_ratio = ratio
@@ -88,7 +98,15 @@ def test_get_hp_bar_initializes_with_monster_value(combat_ui, ratio):
     assert bar.value == ratio
 
 
-@pytest.mark.parametrize("ratio", [0.0, 0.2, 0.4, 0.9])
+@pytest.mark.parametrize(
+    "ratio",
+    [
+        pytest.param(0.0, id="ratio_0_0"),
+        pytest.param(0.2, id="ratio_0_2"),
+        pytest.param(0.4, id="ratio_0_4"),
+        pytest.param(0.9, id="ratio_0_9"),
+    ],
+)
 def test_get_exp_bar_initializes_with_monster_value(combat_ui, ratio):
     monster = MagicMock()
     monster.experience_progress_percent = ratio

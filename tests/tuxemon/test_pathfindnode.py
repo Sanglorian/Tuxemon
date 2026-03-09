@@ -21,13 +21,13 @@ def grandchild_node(child_node):
 
 
 @pytest.mark.parametrize(
-    "value,parent,expected_depth",
+    "value, parent, expected_depth",
     [
-        ((1, 2), None, 0),
-        ((1, 2), PathfindNode((0, 0)), 1),
-        ((3, 4), None, 0),
-        ((2147483647, 2147483647), None, 0),
-        ((-2147483648, -2147483648), None, 0),
+        pytest.param((1, 2), None, 0, id="no_parent_depth0"),
+        pytest.param((1, 2), PathfindNode((0, 0)), 1, id="with_parent_depth1"),
+        pytest.param((3, 4), None, 0, id="simple_no_parent"),
+        pytest.param((2147483647, 2147483647), None, 0, id="max_int_values"),
+        pytest.param((-2147483648, -2147483648), None, 0, id="min_int_values"),
     ],
 )
 def test_initialization_and_values(value, parent, expected_depth):
@@ -36,7 +36,13 @@ def test_initialization_and_values(value, parent, expected_depth):
     assert node.get_depth() == expected_depth
 
 
-@pytest.mark.parametrize("value", [(), (1000000, 1000000)])
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param((), id="empty_tuple"),
+        pytest.param((1000000, 1000000), id="large_values"),
+    ],
+)
 def test_edge_and_large_values(value):
     node = PathfindNode(value)
     assert node.get_value() == value
@@ -50,8 +56,11 @@ def test_parent_and_depth(root_node):
 
 
 @pytest.mark.parametrize(
-    "value,expected_str",
-    [((1, 2), "(1, 2)"), ((0, 0), "(0, 0)")],
+    "value, expected_str",
+    [
+        pytest.param((1, 2), "(1, 2)", id="simple_1_2"),
+        pytest.param((0, 0), "(0, 0)", id="simple_0_0"),
+    ],
 )
 def test_string_representation_simple(value, expected_str):
     node = PathfindNode(value)
@@ -66,8 +75,11 @@ def test_string_representation_multi_level(grandchild_node):
 
 
 @pytest.mark.parametrize(
-    "invalid_parent,expected_exception",
-    [("invalid_parent", AttributeError), (None, ValueError)],
+    "invalid_parent, expected_exception",
+    [
+        pytest.param("invalid_parent", AttributeError, id="non_node_parent"),
+        pytest.param(None, ValueError, id="none_parent"),
+    ],
 )
 def test_invalid_parent_assignment(invalid_parent, expected_exception):
     node = PathfindNode((1, 2))
@@ -117,10 +129,10 @@ def test_branching_path_reconstruction(root_node):
 
 
 @pytest.mark.parametrize(
-    "g_cost,h_cost,other_g,other_h,expected",
+    "g_cost, h_cost, other_g, other_h, expected",
     [
-        (1.0, 2.0, 2.0, 2.0, True),  # f_cost 3.0 < 4.0
-        (2.0, 2.0, 1.0, 2.0, False),  # f_cost 4.0 > 3.0
+        pytest.param(1.0, 2.0, 2.0, 2.0, True, id="3_lt_4"),
+        pytest.param(2.0, 2.0, 1.0, 2.0, False, id="4_gt_3"),
     ],
 )
 def test_node_comparison_by_f_cost(g_cost, h_cost, other_g, other_h, expected):

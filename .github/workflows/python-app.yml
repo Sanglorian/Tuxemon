@@ -4,11 +4,6 @@ on:
   workflow_call:
 
 jobs:
-  lint:
-    uses: ./.github/workflows/lint.yml
-    with:
-      RUN_LINT: false  # Linting is skipped
-
   python-app:
     runs-on: ubuntu-latest
 

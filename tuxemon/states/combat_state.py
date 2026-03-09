@@ -179,6 +179,7 @@ class CombatState(CombatAnimations):
                 "Environment not set. Use set_environment before proceeding."
             )
         self.env = env
+        self.transition_none_normal()
 
     @staticmethod
     def is_task_finished(task: TaskBase) -> bool:

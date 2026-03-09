@@ -60,6 +60,7 @@ def test_initial_state(text_area):
 
 
 def test_text_setter_triggers_animation(text_area):
+    text_area.rect = pygame.Rect(0, 0, 200, 50)
     text_area._start_text_animation = lambda: setattr(
         text_area, "drawing_text", True
     )

@@ -6,6 +6,9 @@ import logging
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar
 
+from pygame import SRCALPHA
+from pygame.surface import Surface
+
 from tuxemon.graphics import load_and_scale
 from tuxemon.menu.menu import PopUpMenu
 from tuxemon.platform.const import buttons
@@ -93,17 +96,25 @@ class DialogState(PopUpMenu[None]):
             v_alignment=final_box_style["v_alignment"],
             line_spacing=line_spacing,
         )
-        self.dialog_box.rect = self.calc_internal_rect()
         self.sprites.add(self.dialog_box)
+
+    def on_open(self) -> None:
+        """Start the dialog when the state is opened."""
+        super().on_open()
+
+        internal_rect = self.calc_internal_rect()
+        logger.debug(f"DialogState.on_open: internal rect {internal_rect}")
+        self.dialog_box.rect = internal_rect
+
+        self.dialog_box.image = Surface(internal_rect.size, SRCALPHA)
+        self.dialog_box.image = self.dialog_box._render_background()
 
         if self.avatar:
             avatar_rect = self.calc_final_rect()
             self.avatar.rect.bottomleft = avatar_rect.left, avatar_rect.top
-            self.sprites.add(self.avatar)
 
-    def on_open(self) -> None:
-        """Start the dialog when the state is opened."""
         self.next_text()
+
         if not self.text_queue and not self.auto_close:
             self._timer_active = False
 

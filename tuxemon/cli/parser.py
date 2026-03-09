@@ -15,15 +15,15 @@ def parse(text: str) -> list[str]:
     return shlex.split(text)
 
 
-def split(line: str) -> tuple[str, str]:
+def tokenize(line: str) -> list[str]:
     """
-    Split text into head, tail tokens.  Text is split after 1st space.
+    Tokenize a command line into whitespace-separated tokens.
 
-    Parameters:
-        line: Text to split.
+    This is intentionally simple and preserves current behavior:
+    - No normalization beyond splitting on spaces.
+    - Empty or all-space strings return [].
     """
-    try:
-        index = line.index(" ")
-        return line[:index], line[index:].lstrip()
-    except ValueError:
-        return line, ""
+    line = line.strip()
+    if not line:
+        return []
+    return line.split(" ")

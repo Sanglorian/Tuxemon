@@ -205,7 +205,6 @@ class AlertManager:
     ) -> None:
         """Advance to the next line of a split-line alert."""
         if self._active_split_state:
-
             line = self._active_split_state.current_line()
 
             if line is not None:

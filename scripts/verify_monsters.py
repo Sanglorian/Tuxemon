@@ -71,7 +71,7 @@ errors = set()
 
 for fn in glob(monster_glob):
     filename = basename(fn)
-    print("verifying {}...".format(filename))
+    print(f"verifying {filename}...")
 
     with open(fn) as fp:
         data = json.load(fp)
@@ -87,7 +87,7 @@ for fn in glob(monster_glob):
     for fn in sprites:
         path = join(resources_folder, fn)
         if not exists(path):
-            print("\tcannot find {}".format(path))
+            print(f"\tcannot find {path}")
             errors.add(filename)
 
 if errors:

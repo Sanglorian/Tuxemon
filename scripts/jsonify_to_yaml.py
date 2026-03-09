@@ -78,7 +78,9 @@ def convert_json_in_directory(
     print(f"Searching for JSON files in '{directory_path}'...")
     found_files = False
     iterator = (
-        directory_path.rglob("*.json") if recursive else directory_path.glob("*.json")
+        directory_path.rglob("*.json")
+        if recursive
+        else directory_path.glob("*.json")
     )
 
     for file_path in iterator:
@@ -112,16 +114,22 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.path:
-        print("Usage: python jsonify_to_yaml.py <file_or_directory_path> [-r] [-f]")
+        print(
+            "Usage: python jsonify_to_yaml.py <file_or_directory_path> [-r] [-f]"
+        )
         print("Use --help for more options.")
     else:
         target_path: Path = Path(args.path)
 
         if target_path.is_file():
             if target_path.suffix.lower() != ".json":
-                print(f"Warning: '{target_path}' does not appear to be a JSON file.")
+                print(
+                    f"Warning: '{target_path}' does not appear to be a JSON file."
+                )
             convert_json_to_yaml(target_path, args.force)
         elif target_path.is_dir():
             convert_json_in_directory(target_path, args.recursive, args.force)
         else:
-            print(f"Error: Path '{target_path}' is neither a file nor a directory.")
+            print(
+                f"Error: Path '{target_path}' is neither a file nor a directory."
+            )

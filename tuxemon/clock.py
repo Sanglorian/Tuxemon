@@ -252,7 +252,7 @@ class Scheduler:
                 retval = item.func(dt)
                 # do not change the following line to "if not retval"!
                 # some items will return None, but False is a special value
-                if retval == False:
+                if not retval:
                     self._next_tick_items.remove(item)
 
         # check the next scheduled item that is not called each tick
@@ -299,7 +299,7 @@ class Scheduler:
 
             if item.interval:
                 # callbacks can unschedule themselves by returning false
-                replace = not retval == False
+                replace = not not retval
                 item.next_ts = item.last_ts + item.interval
                 item.last_ts = now
 

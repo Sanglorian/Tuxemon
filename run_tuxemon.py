@@ -19,31 +19,37 @@ logger = logging.getLogger(__name__)
 
 
 def build_parser() -> ArgumentParser:
-    parser = ArgumentParser(description="Start the Tuxemon game or headless server.")
+    parser = ArgumentParser(
+        description="Start the Tuxemon game or headless server."
+    )
 
     parser.add_argument(
-        "-m", "--mod",
+        "-m",
+        "--mod",
         dest="mod",
         metavar="MOD_DIR",
         type=str,
         help="Specify a custom mod directory to use",
     )
     parser.add_argument(
-        "-l", "--load",
+        "-l",
+        "--load",
         dest="slot",
         metavar="SAVE_SLOT",
         type=int,
         help="Load a saved game from the specified slot",
     )
     parser.add_argument(
-        "-t", "--test-map",
+        "-t",
+        "--test-map",
         dest="test_map",
         metavar="MAP_NAME",
         type=str,
         help="Load a map directly (skipping title screen)",
     )
     parser.add_argument(
-        "-s", "--headless",
+        "-s",
+        "--headless",
         action="store_true",
         default=False,
         help="Run in headless mode (no graphical interface).",
@@ -69,10 +75,12 @@ def parse_args(argv: list[str] | None = None) -> Namespace:
 def init_display(platform: str = "pygame") -> DisplayContext:
     if platform == "pygame":
         from tuxemon.prepare import pygame_init
+
         return pygame_init()
 
     if platform == "headless":
         from tuxemon.prepare import headless_init
+
         return headless_init()
 
     raise ValueError(f"Unsupported platform: {platform}")
@@ -105,6 +113,7 @@ def handle_fatal_error(e: Exception) -> None:
     if sys.platform == "win32" and hasattr(sys, "frozen"):
         try:
             import ctypes
+
             msg = f"{error_msg}\n\nSee tuxemon_error.log for details."
             ctypes.windll.user32.MessageBoxW(0, msg, "Tuxemon Error", 1)
         except Exception:
@@ -117,6 +126,7 @@ def launch_game(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
 
     from tuxemon.platform import platform
+
     platform.init()
 
     platform_mode = "headless" if args.headless else "pygame"
@@ -135,7 +145,9 @@ def launch_game(argv: list[str] | None = None) -> None:
         if args.headless:
             tuxemon_main.headless(config=config, context=context)
         else:
-            tuxemon_main.main(config=config, context=context, load_slot=args.slot)
+            tuxemon_main.main(
+                config=config, context=context, load_slot=args.slot
+            )
 
     except Exception as e:
         handle_fatal_error(e)

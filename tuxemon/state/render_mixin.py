@@ -9,7 +9,6 @@ if TYPE_CHECKING:
 
 
 class RenderMixin:
-
     def draw(self, surface: Surface) -> None:
         """
         Render the state to the surface passed. Must be overloaded in children.

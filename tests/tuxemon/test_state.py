@@ -123,7 +123,10 @@ def test_stop_scheduled_callbacks(mock_client):
 
 def test_subscribe(mock_client):
     s = DummyState(mock_client)
-    cb = lambda: None
+
+    def cb():
+        return None
+
     s.subscribe("event", cb, priority=5)
     mock_client.event_bus.subscribe.assert_called_once_with("event", cb, 5)
 
@@ -131,7 +134,10 @@ def test_subscribe(mock_client):
 def test_unsubscribe(mock_client):
     mock_client.event_bus.has_listeners_for_event.return_value = True
     s = DummyState(mock_client)
-    cb = lambda: None
+
+    def cb():
+        return None
+
     s.unsubscribe("event", cb)
     mock_client.event_bus.unsubscribe.assert_called_once_with("event", cb)
 

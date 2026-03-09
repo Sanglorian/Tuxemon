@@ -90,8 +90,8 @@ def test_change_map_order_of_operations(deps, transition):
     deps["npc_manager"].clear_npcs.side_effect = lambda: call_order.append(
         "clear_npcs"
     )
-    deps["map_loader"].load_map_data.side_effect = (
-        lambda name: call_order.append("load_map") or map_data
+    deps["map_loader"].load_map_data.side_effect = lambda name: (
+        call_order.append("load_map") or map_data
     )
     transition.change_map("test_map")
     assert call_order == ["clear_npcs", "load_map"]

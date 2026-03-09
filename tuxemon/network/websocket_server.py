@@ -201,9 +201,9 @@ class WebsocketServerWrapper:
                         )
                         continue
                     if cuuid in self.registry:
-                        self.registry[cuuid][
-                            "last_message_at"
-                        ] = datetime.now()
+                        self.registry[cuuid]["last_message_at"] = (
+                            datetime.now()
+                        )
                     self.incoming_queue.put((cuuid, event_data))
                 except json.JSONDecodeError:
                     logger.error(f"Invalid JSON from client {cuuid}")

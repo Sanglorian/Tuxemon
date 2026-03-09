@@ -56,7 +56,6 @@ class ConfusedEffect(CoreEffect):
         tech: list[Technique] = []
 
         if status.has_phase(EffectPhase.PRE_CHECKING):
-
             if random.random() < self.chance:
                 host.is_confused = True
 

@@ -722,7 +722,6 @@ class TestPairsFunction(unittest.TestCase):
 
 
 class TestGetExplicitTileExits(unittest.TestCase):
-
     def test_no_endure_no_exit_from(self):
         position = (1, 1)
         tile = MagicMock(endure=None, exit_from=[])

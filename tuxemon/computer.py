@@ -48,7 +48,6 @@ class MenuProvider:
 
 
 class CalendarProvider(MenuProvider):
-
     name: ClassVar[str] = "menu_calendar"
     target_tags = ["calendar"]
 
@@ -71,7 +70,6 @@ class CalendarProvider(MenuProvider):
 
 
 class EmailProvider(MenuProvider):
-
     name: ClassVar[str] = "menu_email"
     target_tags = ["email"]
 

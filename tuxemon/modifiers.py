@@ -129,9 +129,8 @@ class ModifiersHandler:
     def __init__(
         self,
         modifiers: list[Modifier] | None = None,
-        attribute_handlers: None | (
-            dict[str, Callable[[Modifier, Monster], float | None]]
-        ) = None,
+        attribute_handlers: None
+        | (dict[str, Callable[[Modifier, Monster], float | None]]) = None,
     ) -> None:
         self._modifiers: dict[str, list[Modifier]] = {}
         self._attribute_handlers = (

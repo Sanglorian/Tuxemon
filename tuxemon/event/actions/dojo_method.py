@@ -77,7 +77,6 @@ class DojoMethodAction(EventAction):
             return
 
         if self.option == "technique":
-
             learnable_moves = [
                 Technique.create(tech.technique)
                 for tech in self.monster.moves.moveset

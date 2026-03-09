@@ -156,11 +156,13 @@ def test_calculate_money_with_item_multiplier(setup_combat, multiplier):
         ),
         pytest.param(
             DummyItem(ExperienceMethod.XP_TRANSMITTER, 2.0),
-            lambda l, w, d: calculate_experience_base(
-                l.total_experience, l.level, l.experience_modifier
-            )
-            // 2
-            // len(d.get_attackers(l)),
+            lambda l, w, d: (
+                calculate_experience_base(
+                    l.total_experience, l.level, l.experience_modifier
+                )
+                // 2
+                // len(d.get_attackers(l))
+            ),
             id="xp_transmitter",
         ),
     ],

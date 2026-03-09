@@ -75,7 +75,6 @@ class Shake_Effect(Structure):
 
 
 class Rumble(ABC):
-
     @abstractmethod
     def rumble(self, params: RumbleParams) -> None:
         """Start or simulate a rumble effect on the controller."""
@@ -92,7 +91,6 @@ class Rumble(ABC):
 
 
 class DummyRumble(Rumble):
-
     def __init__(self) -> None:
         logger.info(
             "DummyRumble initialized. No hardware effects will be played."

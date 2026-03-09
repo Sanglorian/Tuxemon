@@ -25,9 +25,9 @@ class DamageReport:
 
 class DamageTracker:
     def __init__(self) -> None:
-        self._damage_map: dict[tuple[Monster, Monster], list[DamageReport]] = (
-            {}
-        )
+        self._damage_map: dict[
+            tuple[Monster, Monster], list[DamageReport]
+        ] = {}
 
     def log_damage(
         self, attacker: Monster, defender: Monster, damage: int, turn: int

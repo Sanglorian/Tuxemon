@@ -54,7 +54,9 @@ def process_collisions(tmx_filename: Path):
 
     if yaml_filename.exists():
         logger.error(f"YAML file already exists: {yaml_filename}")
-        yaml_filename = tmx_filename.with_name(f"{tmx_filename.stem}_copy.yaml")
+        yaml_filename = tmx_filename.with_name(
+            f"{tmx_filename.stem}_copy.yaml"
+        )
         logger.error(f"Creating a copy: {yaml_filename}")
 
     yaml_doc = {"collisions": []}

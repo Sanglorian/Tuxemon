@@ -42,8 +42,12 @@ class JournalInfoState(PygameMenuState):
     name: ClassVar[str] = "JournalInfoState"
 
     def add_menu_items(self, menu: Menu, monster: MonsterModel) -> None:
-        fxw: Callable[[float], int] = lambda r: fix_measure(menu._width, r)
-        fxh: Callable[[float], int] = lambda r: fix_measure(menu._height, r)
+        def fxw(r: float) -> int:
+            return fix_measure(menu._width, r)
+
+        def fxh(r: float) -> int:
+            return fix_measure(menu._height, r)
+
         menu._width = fxw(248 / 256)
 
         # evolutions

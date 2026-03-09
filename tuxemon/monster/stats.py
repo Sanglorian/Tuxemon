@@ -151,7 +151,6 @@ class TrainingPoints(BasicStats):
 
 
 class StatCalculator:
-
     def __init__(
         self,
         base_stats: BasicStats,

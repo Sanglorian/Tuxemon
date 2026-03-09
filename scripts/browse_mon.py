@@ -35,7 +35,9 @@ def collect_animation_slugs(folder: Path) -> dict[str, list[Path]]:
 
     # Sort frames numerically
     for slug in sequences:
-        sequences[slug].sort(key=lambda p: int(FRAME_PATTERN.match(p.name).group(2)))
+        sequences[slug].sort(
+            key=lambda p: int(FRAME_PATTERN.match(p.name).group(2))
+        )
 
     return sequences
 
@@ -58,7 +60,9 @@ def build_sheet(slug: str, frames: list[Path], out_folder: Path):
     for frame_path in frames:
         with Image.open(frame_path) as img:
             if img.size != (frame_w, frame_h):
-                print(f" [X] Inconsistent frame size in {frame_path.name}: {img.size}")
+                print(
+                    f" [X] Inconsistent frame size in {frame_path.name}: {img.size}"
+                )
                 return None
 
     # Compute output sheet size

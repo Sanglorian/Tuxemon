@@ -101,8 +101,9 @@ def test_set_moves(handler, monster):
         patch.object(
             MonsterMovesHandler,
             "is_eligible",
-            side_effect=lambda m, slug, method=None: slug
-            in {"technique1", "technique2"},
+            side_effect=lambda m, slug, method=None: (
+                slug in {"technique1", "technique2"}
+            ),
         ),
     ):
         mock_create.side_effect = lambda slug: MagicMock(slug=slug)

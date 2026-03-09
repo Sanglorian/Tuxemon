@@ -11,13 +11,13 @@ logger = logging.getLogger(__name__)
 
 
 def or_filter(
-    *filters: Callable[[Technique], bool]
+    *filters: Callable[[Technique], bool],
 ) -> Callable[[Technique], bool]:
     return lambda tech: any(f(tech) for f in filters)
 
 
 def and_filter(
-    *filters: Callable[[Technique], bool]
+    *filters: Callable[[Technique], bool],
 ) -> Callable[[Technique], bool]:
     return lambda tech: all(f(tech) for f in filters)
 

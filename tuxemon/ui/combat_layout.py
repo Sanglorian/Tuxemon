@@ -45,7 +45,6 @@ def load_layouts_from_yaml(
 
 
 class LayoutRepository:
-
     def __init__(
         self,
         yaml_path: Path,
@@ -82,7 +81,7 @@ class LayoutSelector:
         if not (0 <= player_index < len(layout_names)):
             raise IndexError(
                 f"Player index {player_index} out of range for {total_players} players "
-                f"(expected 0-{len(layout_names)-1})"
+                f"(expected 0-{len(layout_names) - 1})"
             )
 
         layout_name = layout_names[player_index]

@@ -6,8 +6,12 @@ from pathlib import Path
 from PIL import Image
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-COMBAT_DIR = SCRIPT_DIR.parent / "mods" / "tuxemon" / "gfx" / "sprites" / "player"
-OUTPUT_DIR = SCRIPT_DIR.parent / "mods" / "tuxemon" / "gfx" / "sprites" / "sheet"
+COMBAT_DIR = (
+    SCRIPT_DIR.parent / "mods" / "tuxemon" / "gfx" / "sprites" / "player"
+)
+OUTPUT_DIR = (
+    SCRIPT_DIR.parent / "mods" / "tuxemon" / "gfx" / "sprites" / "sheet"
+)
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 

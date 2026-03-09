@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 class RuleBackground(StartupRule):
-
     name: ClassVar[str] = "RuleBackground"
 
     def __init__(self, client: LocalPygameClient):
@@ -32,7 +31,6 @@ class RuleBackground(StartupRule):
 
 
 class RuleIntro(StartupRule):
-
     name: ClassVar[str] = "RuleIntro"
 
     def __init__(self, client: LocalPygameClient, config: TuxemonConfig):
@@ -47,7 +45,6 @@ class RuleIntro(StartupRule):
 
 
 class RuleLoadSlot(StartupRule):
-
     name: ClassVar[str] = "RuleLoadSlot"
 
     def __init__(
@@ -65,7 +62,6 @@ class RuleLoadSlot(StartupRule):
 
 
 class RuleSplash(StartupRule):
-
     name: ClassVar[str] = "RuleSplash"
 
     def __init__(
@@ -87,7 +83,6 @@ class RuleSplash(StartupRule):
 
 
 class RuleMods(StartupRule):
-
     name: ClassVar[str] = "RuleMods"
 
     def __init__(self, client: LocalPygameClient, config: TuxemonConfig):

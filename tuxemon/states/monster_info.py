@@ -61,8 +61,12 @@ class MonsterInfoState(PygameMenuState):
         monster: Monster,
     ) -> None:
 
-        fxw: Callable[[float], int] = lambda r: fix_measure(menu._width, r)
-        fxh: Callable[[float], int] = lambda r: fix_measure(menu._height, r)
+        def fxw(r: float) -> int:
+            return fix_measure(menu._width, r)
+
+        def fxh(r: float) -> int:
+            return fix_measure(menu._height, r)
+
         menu._width = fxw(1)
 
         background = self._create_image(INDIV_INFO)

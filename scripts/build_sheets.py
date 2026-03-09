@@ -72,7 +72,9 @@ def build_sheet(base: str, folder: Path) -> bool:
         for col, suffix in enumerate(suffixes):
             img_path = folder / f"{base}{suffix}"
             with Image.open(img_path) as img:
-                canvas.paste(img.convert("RGBA"), (col * frame_w, row * frame_h))
+                canvas.paste(
+                    img.convert("RGBA"), (col * frame_w, row * frame_h)
+                )
 
     # Save sheet in the same folder
     output_path = folder / f"{base}.png"

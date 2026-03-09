@@ -219,7 +219,6 @@ def test_update_all(manager, mock_animation_model, mock_surface_animation):
             return_value=mock_surface_animation,
         ),
     ):
-
         manager.get_or_create_animation("test_slug", duration=0.5, loop=1)
         manager.update_all(0.16)
         mock_surface_animation.update.assert_called_once_with(0.16)

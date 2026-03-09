@@ -61,8 +61,12 @@ class MonsterMovesState(PygameMenuState):
         menu: Menu,
         monster: Monster,
     ) -> None:
-        fxw: Callable[[float], int] = lambda r: fix_measure(menu._width, r)
-        fxh: Callable[[float], int] = lambda r: fix_measure(menu._height, r)
+        def fxw(r: float) -> int:
+            return fix_measure(menu._width, r)
+
+        def fxh(r: float) -> int:
+            return fix_measure(menu._height, r)
+
         menu._width = fxw(248 / 256)
 
         # Name (white, manual position)
@@ -244,8 +248,12 @@ class MonsterMovesState(PygameMenuState):
             self.speed_icon_widget: Any | None = None
 
         width, height = self.client.context.resolution
-        fxw: Callable[[float], int] = lambda r: fix_measure(width, r)
-        fxh: Callable[[float], int] = lambda r: fix_measure(height, r)
+
+        def fxw(r: float) -> int:
+            return fix_measure(width, r)
+
+        def fxh(r: float) -> int:
+            return fix_measure(height, r)
 
         # Clear previous type icons (remove from menu, not just hide)
         for w in self.type_icon_widgets:

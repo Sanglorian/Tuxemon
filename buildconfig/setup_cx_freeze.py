@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 from cx_Freeze import Executable, setup
+
 from tuxemon.database.yaml_utils import load_yaml
 
 # Ensure tuxemon package is discoverable when run from buildconfig/

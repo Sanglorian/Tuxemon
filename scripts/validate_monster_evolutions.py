@@ -30,7 +30,9 @@ def validate_monsters(monsters):
         for entry in data.get("history", []):
             target = entry["slug"]
             if target not in all_slugs:
-                errors.append(f"{slug}: history references unknown monster '{target}'")
+                errors.append(
+                    f"{slug}: history references unknown monster '{target}'"
+                )
 
             for ref in entry.get("evolves_from", []):
                 if ref not in all_slugs:

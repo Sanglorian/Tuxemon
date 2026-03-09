@@ -15,13 +15,13 @@ logger = logging.getLogger(__name__)
 
 
 def or_monster_filter(
-    *filters: Callable[[Monster], bool]
+    *filters: Callable[[Monster], bool],
 ) -> Callable[[Monster], bool]:
     return lambda monster: any(f(monster) for f in filters)
 
 
 def and_monster_filter(
-    *filters: Callable[[Monster], bool]
+    *filters: Callable[[Monster], bool],
 ) -> Callable[[Monster], bool]:
     return lambda monster: all(f(monster) for f in filters)
 

@@ -354,7 +354,6 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             # Normal case → show all moves with enabled/disabled state
             else:
                 for tech in self.monster.moves.get_moves():
-
                     usable = any(
                         tech.can_use(self.session, opponent)
                         for opponent in self.opponents

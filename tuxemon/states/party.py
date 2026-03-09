@@ -56,8 +56,12 @@ class PartyState(PygameMenuState):
         menu: Menu,
         monsters: list[Monster],
     ) -> None:
-        fxw: Callable[[float], int] = lambda r: fix_measure(menu._width, r)
-        fxh: Callable[[float], int] = lambda r: fix_measure(menu._height, r)
+        def fxw(r: float) -> int:
+            return fix_measure(menu._width, r)
+
+        def fxh(r: float) -> int:
+            return fix_measure(menu._height, r)
+
         menu._auto_centering = False
         # party
         lab1: Any = menu.add.label(

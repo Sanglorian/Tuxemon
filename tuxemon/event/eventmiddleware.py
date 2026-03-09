@@ -51,7 +51,6 @@ class EventMiddleware(ABC):
 
 
 class InputTranslatorMiddleware(EventMiddleware):
-
     def preprocess(self, event: PlayerInput) -> PlayerInput | None:
         new_button_id = event.button
 

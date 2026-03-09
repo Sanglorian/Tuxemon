@@ -101,7 +101,9 @@ def main(src_filepath, dst_filepath, output_filepath):
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if hover:
                     source, screen_rect, surf_rect = hover
-                    y = (surf_rect[1] // tileheight) * (dst_rect.width // tilewidth)
+                    y = (surf_rect[1] // tileheight) * (
+                        dst_rect.width // tilewidth
+                    )
                     dst_index = (surf_rect[0] // tilewidth) + y
 
                     mapping[src_index] = dst_index
@@ -130,7 +132,9 @@ def main(src_filepath, dst_filepath, output_filepath):
                 if dst_index is None:
                     hover = None
                 else:
-                    screen_rect, surf_rect = get_tile_by_index(dst_rect, dst_index)
+                    screen_rect, surf_rect = get_tile_by_index(
+                        dst_rect, dst_index
+                    )
                     hover = dst, screen_rect, surf_rect
 
         screen.fill(0)
@@ -147,7 +151,9 @@ def main(src_filepath, dst_filepath, output_filepath):
             for i0, i1 in mapping.items():
                 screen_rect0, surf_rect0 = get_tile_by_index(src_rect, i0)
                 screen_rect1, surf_rect1 = get_tile_by_index(dst_rect, i1)
-                screen_rect0.x = surf_rect0.x + (tilewidth * (preview_scale_factor + 4))
+                screen_rect0.x = surf_rect0.x + (
+                    tilewidth * (preview_scale_factor + 4)
+                )
                 surf = dst.subsurface(surf_rect1)
                 screen.blit(surf, screen_rect0)
 
@@ -163,7 +169,9 @@ def main(src_filepath, dst_filepath, output_filepath):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Create tileset migration mapping.")
+    parser = argparse.ArgumentParser(
+        description="Create tileset migration mapping."
+    )
     parser.add_argument("source", help="Source tileset image")
     parser.add_argument("destination", help="Destination tileset image")
     parser.add_argument("output", help="Output YAML mapping file")

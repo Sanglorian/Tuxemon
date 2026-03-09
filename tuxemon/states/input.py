@@ -61,7 +61,8 @@ class InputMenu(Menu[InputMenuObj]):
         initial: str = "",
         char_limit: int = 99,
         random: bool = False,
-        button_injectors: None | (
+        button_injectors: None
+        | (
             list[
                 Callable[
                     [InputMenu], Generator[MenuItem[InputMenuObj], None, None]

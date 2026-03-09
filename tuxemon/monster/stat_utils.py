@@ -75,7 +75,6 @@ def apply_stat_modifiers(
 
         # STEP-BASED LOGIC
         if step_delta is not None:
-
             actual_step = (
                 random.randint(step_delta - max_dev, step_delta + max_dev)
                 if max_dev

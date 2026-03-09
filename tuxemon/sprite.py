@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import logging
-import math
 from collections.abc import Callable, Container, Iterator, Sequence
+from math import ceil
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -20,9 +20,9 @@ from pygame.rect import FRect, Rect
 from pygame.sprite import DirtySprite, Group, LayeredUpdates
 from pygame.sprite import Sprite as PySprite
 from pygame.surface import Surface
-from pygame.transform import rotozoom, scale
+from pygame.transform import rotate, rotozoom, scale
 
-from tuxemon import graphics
+from tuxemon.menu.grid_index_model import GridIndexModel
 from tuxemon.platform.const import buttons
 from tuxemon.platform.events import PlayerInput
 from tuxemon.surfanim import SurfaceAnimation
@@ -53,12 +53,16 @@ class Sprite(DirtySprite):
         self.visible: bool = True
         self._rotation: int = 0
         self._rect = Rect(0, 0, 0, 0)
-        self.image = image
-        self.animation = animation
+        self._animation: SurfaceAnimation | None = None
         self._width: int = 0
         self._height: int = 0
         self._needs_rescale: bool = False
         self._needs_update: bool = False
+
+        self.image = image
+        if animation is not None:
+            self.animation = animation
+
         self.player: bool = False
         self.base_image: Surface | None = None
 
@@ -90,7 +94,6 @@ class Sprite(DirtySprite):
         Returns:
             The area of the surface that was modified.
         """
-        # should draw to surface without generating a cached copy
         if rect is None:
             rect = surface.get_rect()
         return self._draw(surface, rect)
@@ -141,25 +144,30 @@ class Sprite(DirtySprite):
 
     @property
     def image(self) -> Surface:
-        """
-        Get the image of the sprite.
+        if not self.visible:
+            return Sprite._dummy_image
 
-        Returns:
-            The image of the sprite.
-        """
-        # should always be a cached copy
         if self.animation is not None:
-            return self.animation.get_current_frame()
+            frame = self.animation.get_current_frame()
+
+            if not (self._width or self._height or self._rotation):
+                return frame
+
+            if (
+                self._needs_update
+                or self._needs_rescale
+                or self._image is None
+            ):
+                self.update_image(source=frame)
+                self._needs_update = False
+
+            return self._image or Sprite._dummy_image
 
         if self._needs_update:
             self.update_image()
             self._needs_update = False
-            self._needs_rescale = False
-        return (
-            self._image
-            if self._image and self.visible
-            else Sprite._dummy_image
-        )
+
+        return self._image if self._image else Sprite._dummy_image
 
     @image.setter
     def image(self, image: Surface | None) -> None:
@@ -190,53 +198,64 @@ class Sprite(DirtySprite):
 
     @animation.setter
     def animation(self, animation: SurfaceAnimation | None) -> None:
-        """
-        Set the animation of the sprite.
-
-        Parameters:
-            animation: The new animation of the sprite.
-        """
         self._animation = animation
         if animation is not None:
-            self.image = None
+            self._image = None
+            self._needs_update = True
+
+            self._width = 0
+            self._height = 0
+            self._needs_rescale = False
+
             self.rect.size = animation.get_rect().size
-
-    def update_image(self) -> None:
-        """
-        Update the image of the sprite.
-        """
-        image: Surface | None = None
-        if self._original_image is not None and self._needs_rescale:
-            w = self.rect.width if self._width is None else self._width
-            h = self.rect.height if self._height is None else self._height
-            if (w, h) != self._original_image.get_size():
-                image = scale(self._original_image, (w, h))
-            center = self.rect.center
-            self.rect.size = w, h
-            self.rect.center = center
         else:
-            image = self._original_image
+            self._needs_update = True
 
-        if image is not None and self._rotation:
-            image = (
-                rotozoom(image, self._rotation, 1)
-                if self._rotation != 0
-                else image
-            )
+    def update_image(self, source: Surface | None = None) -> None:
+        base = source if source is not None else self._original_image
+        if base is None:
+            self._image = None
+            return
+
+        if self._width or self._height:
+            w = self._width or base.get_width()
+            h = self._height or base.get_height()
+        else:
+            w, h = base.get_size()
+
+        if (w, h) != base.get_size():
+            image = scale(base, (w, h))
+        else:
+            image = base
+
+        center = self.rect.center
+        self.rect.size = (w, h)
+        self.rect.center = center
+
+        if self._rotation:
+            if self._rotation % 90 == 0:
+                image = rotate(image, self._rotation)
+            else:
+                image = rotozoom(image, self._rotation, 1)
             rect = image.get_rect(center=self.rect.center)
             self.rect.size = rect.size
             self.rect.center = rect.center
 
-        self._width, self._height = self.rect.size
         self._image = image
+        self._width, self._height = w, h
+        self._needs_rescale = False
 
     def reset_to_base_image(self) -> None:
         """
         Resets the sprite's image to its base image.
         """
         if self.base_image:
-            self.image = self.base_image.copy()
+            self._rotation = 0
+            self._width = 0
+            self._height = 0
+            self._needs_rescale = False
             self._needs_update = True
+            self.image = self.base_image.copy()
         else:
             logger.warning("base_image is not set. Cannot reset.")
 
@@ -252,17 +271,13 @@ class Sprite(DirtySprite):
 
     @width.setter
     def width(self, width: int) -> None:
-        """
-        Set the width of the sprite.
-
-        Parameters:
-            width: The new width of the sprite.
-        """
         width = round(width)
-        if not width == self._width:
-            self._width = width
-            self._needs_rescale = True
-            self._needs_update = True
+        self._width = width
+        center = self.rect.center
+        self.rect.width = width
+        self.rect.center = center
+        self._needs_rescale = True
+        self._needs_update = True
 
     @property
     def height(self) -> int:
@@ -276,17 +291,13 @@ class Sprite(DirtySprite):
 
     @height.setter
     def height(self, height: int) -> None:
-        """
-        Set the height of the sprite.
-
-        Parameters:
-            height: The new height of the sprite.
-        """
         height = round(height)
-        if not height == self._height:
-            self._height = height
-            self._needs_rescale = True
-            self._needs_update = True
+        self._height = height
+        center = self.rect.center
+        self.rect.height = height
+        self.rect.center = center
+        self._needs_rescale = True
+        self._needs_update = True
 
     @property
     def rotation(self) -> int:
@@ -307,9 +318,9 @@ class Sprite(DirtySprite):
             value: The new rotation of the sprite.
         """
         value = round(value) % 360
-        if not value == self._rotation:
+        if value != self._rotation:
             self._rotation = value
-            self._needs_update = True
+        self._needs_update = True
 
     def get_size(self) -> tuple[int, int]:
         """
@@ -427,7 +438,9 @@ class CaptureDeviceSprite(Sprite):
             return "effected"
         return "alive"
 
-    def update_image(self) -> None:
+    def update_image(self, source: Surface | None = None) -> None:
+        from tuxemon import graphics
+
         mapping = {
             "empty": graphics.load_and_scale(self.icon.icon_empty),
             "faint": graphics.load_and_scale(self.icon.icon_faint),
@@ -446,6 +459,8 @@ class CaptureDeviceSprite(Sprite):
 
     def animate_capture(self, animate: Callable[..., object]) -> None:
         """Fade in + slide up animation for the sprite."""
+        from tuxemon import graphics
+
         sprite = self.sprite
         sprite.image = graphics.convert_alpha_to_colorkey(sprite.image)
         sprite.image.set_alpha(0)
@@ -577,8 +592,13 @@ class MenuSpriteGroup(SpriteGroup[_MenuElement]):
         if event.pressed and event.button in self._allowed_input():
             seeking_index = True
             while seeking_index:
-                index = self._advance_input(index, event.button)
+                try:
+                    new_index = self._advance_input(index, event.button)
+                except IndexError:
+                    # Invalid move → stay where you are
+                    return index
 
+                index = new_index
                 seeking_index = not self.sprites()[index].enabled
 
         return index
@@ -613,7 +633,12 @@ class RelativeGroup(MenuSpriteGroup[_MenuElement]):
         else:
             self.rect = Rect(self.parent.rect)
 
-    def draw(self, surface: Surface) -> list[FRect | Rect]:
+    def draw(
+        self,
+        surface: Surface,
+        bgd: Surface | None = None,
+        special_flags: int = 0,
+    ) -> list[FRect | Rect]:
         self.update_rect_from_parent()
         topleft = self.rect.topleft
 
@@ -623,7 +648,9 @@ class RelativeGroup(MenuSpriteGroup[_MenuElement]):
             s.rect.move_ip(topleft)
 
         try:
-            dirty = super().draw(surface)
+            dirty = super().draw(
+                surface=surface, bgd=bgd, special_flags=special_flags
+            )
         finally:
             for s in self.sprites():
                 s.rect.move_ip((-topleft[0], -topleft[1]))
@@ -632,12 +659,13 @@ class RelativeGroup(MenuSpriteGroup[_MenuElement]):
 
 class VisualSpriteList(RelativeGroup[_MenuElement]):
     """
-    Sprite group which can be configured to arrange the children
-    sprites into columns.
+    UI wrapper around GridIndexModel.
+
+    Layout and movement semantics are defined in GridIndexModel.
     """
 
-    # default, and only implemented
-    orientation: Literal["horizontal"] = "horizontal"
+    orientation: Literal["horizontal", "vertical"] = "horizontal"
+    rectangular: bool = False
     expand = True  # True: fill all space of parent. False: more compact
     _2d_movement_dict: Final = {
         buttons.LEFT: ("lr", -1),
@@ -652,6 +680,69 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
         self._columns = 1
         self.line_spacing: int | None = None
         self.max_width_per_column: int | None = None
+        self.page_size: int | None = None
+        self.current_page: int = 0
+
+    @property
+    def total_pages(self) -> int:
+        if self.page_size is None:
+            return 1
+
+        # Count only slots that actually exist
+        real_items = sum(1 for s in self.sprites() if s.enabled)
+        return max(1, ceil(real_items / self.page_size))
+
+    @property
+    def has_next_page(self) -> bool:
+        return (
+            self.page_size is not None
+            and self.current_page < self.total_pages - 1
+        )
+
+    @property
+    def has_prev_page(self) -> bool:
+        return self.page_size is not None and self.current_page > 0
+
+    def set_page(self, page: int) -> None:
+        if self.page_size is None:
+            return
+        self.current_page = max(0, min(page, self.total_pages - 1))
+        self._needs_arrange = True
+
+    def next_page(self) -> None:
+        if self.has_next_page:
+            self.current_page += 1
+            self._needs_arrange = True
+
+    def prev_page(self) -> None:
+        if self.has_prev_page:
+            self.current_page -= 1
+            self._needs_arrange = True
+
+    def next_page_wrap(self) -> None:
+        if self.page_size is None:
+            return
+        self.current_page = (self.current_page + 1) % self.total_pages
+        self._needs_arrange = True
+
+    def prev_page_wrap(self) -> None:
+        if self.page_size is None:
+            return
+        self.current_page = (self.current_page - 1) % self.total_pages
+        self._needs_arrange = True
+
+    def page_label(self) -> str:
+        if self.page_size is None:
+            return ""
+        return f"{self.current_page + 1}/{self.total_pages}"
+
+    def _index_model(self) -> GridIndexModel:
+        return GridIndexModel(
+            count=len(self),
+            columns=self.columns,
+            rectangular=self.rectangular,
+            orientation=self.orientation,
+        )
 
     @property
     def columns(self) -> int:
@@ -661,6 +752,46 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
     def columns(self, value: int) -> None:
         self._columns = value
         self._needs_arrange = True
+
+    def _visible_indices(self) -> range:
+        if self.page_size is None:
+            return range(len(self))
+        start = self.current_page * self.page_size
+        end = start + self.page_size
+        return range(start, min(end, len(self)))
+
+    def snap_selection(self, old_index: int) -> int:
+        visible = list(self._visible_indices())
+        if not visible:
+            return old_index
+
+        sprites = self.sprites()
+        enabled = {i: sprites[i].enabled for i in range(len(sprites))}
+
+        first_visible = visible[0]
+        first_enabled = next((i for i in visible if enabled[i]), None)
+
+        if old_index in visible:
+            # If the page contains any disabled items, the page’s
+            # “primary enabled slot” wins.
+            if any(not enabled[i] for i in visible):
+                return (
+                    first_enabled
+                    if first_enabled is not None
+                    else first_visible
+                )
+
+            # All items enabled → keep old_index
+            return old_index
+
+        # Special rule for page_size == 2:
+        # Always snap to first_visible, even if disabled.
+        if self.page_size == 2:
+            return first_visible
+
+        # General rule for other page sizes:
+        # Snap to first enabled, else first visible.
+        return first_enabled if first_enabled is not None else first_visible
 
     def calc_bounding_rect(self) -> Rect:
         if self._needs_arrange:
@@ -683,124 +814,160 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
         super().remove(*items)
         self._needs_arrange = True
 
-    def clear(
-        self, surface: Any = None, bgsurf: Any = None, special_flags: int = 0
-    ) -> None:
-        for i in self.sprites():
-            super().remove(i)
+    def clear_items(self) -> None:
+        """Remove all sprites from this list."""
+        self.empty()
         self._needs_arrange = True
 
-    def draw(self, surface: Surface) -> list[FRect | Rect]:
+    def draw(
+        self,
+        surface: Surface,
+        bgd: Surface | None = None,
+        special_flags: int = 0,
+    ) -> list[FRect | Rect]:
         if self._needs_arrange:
             self.arrange_menu_items()
-        dirty = super().draw(surface)
+        dirty = super().draw(
+            surface=surface, bgd=bgd, special_flags=special_flags
+        )
         return dirty
 
     def arrange_menu_items(self) -> None:
         """
-        Iterate through menu items and position them in the menu.
-        Defaults to a multi-column layout with items placed horizontally first.
+        Arrange sprites using LR semantics consistent with GridLayout.
+
+        - Horizontal orientation → LR = row-major
+        - Vertical orientation   → LR = column-major
+
+        This ensures layout, movement, and LR/TB index transforms all agree.
         """
         if not len(self):
             return
 
-        # max_width = 0
-        max_height = 0
-        for item in self.sprites():
-            # max_width = max(max_width, item.rect.width)
-            max_height = max(max_height, item.rect.height)
-
         self.update_rect_from_parent()
-        width, height = self.rect.size
+        W, H = self.rect.size
 
+        max_h = max(s.rect.height for s in self.sprites())
+        max_w = max(s.rect.width for s in self.sprites())
+
+        # Auto column calculation
         if self.max_width_per_column is not None:
-            self._columns = max(1, width // max(1, self.max_width_per_column))
+            primary = W if self.orientation == "horizontal" else H
+            self._columns = max(
+                1, primary // max(1, self.max_width_per_column)
+            )
 
-        items_per_column = math.ceil(len(self) / self._columns)
+        # Pagination: determine visible LR indices
+        visible = list(self._visible_indices())
+        if not visible:
+            return
 
-        if self.expand:
-            logger.debug("expanding menu...")
-            # fill available space
-            line_spacing = self.line_spacing or (height // items_per_column)
+        visible_set = set(visible)
+        for i, sprite in enumerate(self.sprites()):
+            sprite.visible = i in visible_set
+
+        start = visible[0]
+
+        # Page-local model
+        page_model = GridIndexModel(
+            count=len(visible),
+            columns=self.columns,
+            rectangular=self.rectangular,
+            orientation=self.orientation,
+        )
+
+        rows = page_model.layout.rows
+        cols = self.columns
+
+        # Line spacing
+        if self.line_spacing is not None:
+            line_spacing = self.line_spacing
         else:
-            line_spacing = int(max_height * 1.2)
+            base = max_h if self.orientation == "horizontal" else max_w
+            if self.expand:
+                primary = H if self.orientation == "horizontal" else W
+                line_spacing = primary // max(1, rows or 1)
+            else:
+                line_spacing = int(base * 1.2)
 
-        column_spacing = width // self._columns
+        # Column spacing
+        column_spacing = (
+            W // cols if self.orientation == "horizontal" else H // cols
+        )
 
-        # TODO: pagination API
-
-        for index, item in enumerate(self.sprites()):
-            oy, ox = divmod(index, self._columns)
-            item.rect.topleft = ox * column_spacing, oy * line_spacing
+        for lr_index in visible:
+            item = self.sprites()[lr_index]
+            local_lr = lr_index - start
+            row, col = page_model.lr_to_rowcol(local_lr)
+            item.rect.topleft = (
+                col * column_spacing,
+                row * line_spacing,
+            )
 
         self._needs_arrange = False
-
-    def _lr_to_tb_index(
-        self,
-        lr_index: int,
-        orientation: Literal["horizontal"],
-    ) -> int:
-        """Convert left/right index to top/bottom index."""
-        if orientation == "horizontal":
-            rows, remainder = divmod(len(self), self.columns)
-            row, col = divmod(lr_index, self.columns)
-
-            n_complete_columns = col if col < remainder else remainder
-            n_incomplete_columns = 0 if col < remainder else col - remainder
-            return (
-                n_complete_columns * (rows + 1)
-                + n_incomplete_columns * rows
-                + row
-            )
-        else:
-            raise NotImplementedError
-
-    def _tb_to_lr_index(
-        self,
-        tb_index: int,
-        orientation: Literal["horizontal"],
-    ) -> int:
-        """Convert top/bottom index to left/right index."""
-        if orientation == "horizontal":
-            rows, remainder = divmod(len(self), self.columns)
-
-            if tb_index < remainder * (rows + 1):
-                col, row = divmod(tb_index, rows + 1)
-            else:
-                col, row = divmod(tb_index - remainder * (rows + 1), rows)
-                col += remainder
-
-            return row * self.columns + col
-        else:
-            raise NotImplementedError
 
     def _allowed_input(self) -> Container[int]:
         return set(self._2d_movement_dict)
 
     def _advance_input(self, index: int, button: int) -> int:
-        """Advance the index given the input."""
-
-        # Layout (horizontal):
-        #        0 1 2 3 4 ... columns-1
-        #      0 X X X X X ... X
-        #      1 X X X X X ... X
-        #      2 X X X X X ... X
-        #    ... . . . . . ... .
-        # rows-1 X X X X X ... X
-        #   rows X X _ _ _ ... _
-        #          ^
-        #          |
-        #       remainder=2
-
         index_type, incr = self._2d_movement_dict[button]
 
+        # Orientation swap: keep LR/TB semantics consistent
+        if self.orientation == "vertical":
+            index_type = "tb" if index_type == "lr" else "lr"
+
+        visible = list(self._visible_indices())
+        local_index = visible.index(index)
+
+        # Page-local model (real items only)
+        page_model = GridIndexModel(
+            count=len(visible),
+            columns=self.columns,
+            rectangular=self.rectangular,
+            orientation=self.orientation,
+        )
+
+        if self.rectangular:
+            # Build a fully rectangular virtual grid
+            rows = ceil(len(visible) / self.columns)
+            rect_count = rows * self.columns
+
+            rect_model = GridIndexModel(
+                count=rect_count,
+                columns=self.columns,
+                rectangular=True,
+                orientation=self.orientation,
+            )
+
+            # Move in the virtual rectangle
+            new_virtual = rect_model.move_rectangular(
+                local_index, index_type, incr
+            )
+
+            # Map back into real items (wrap)
+            return visible[new_virtual % len(visible)]
+
+        # Special case: 1-column ragged lists behave like simple vertical menus
+        if not self.rectangular and self.columns == 1 and index_type == "tb":
+            new_index = (local_index + incr) % len(visible)
+            return visible[new_index]
+
+        # Ragged TB movement: treat TB as linear over visible items, no wrap
         if index_type == "tb":
-            index = self._lr_to_tb_index(index, self.orientation)
+            tb = page_model.lr_to_tb(local_index)
+            new_tb = tb + incr
 
-        index += incr
-        index %= len(self)
+            # No wrap in ragged mode
+            if not (0 <= new_tb < len(visible)):
+                raise IndexError
 
-        if index_type == "tb":
-            index = self._tb_to_lr_index(index, self.orientation)
+            new_local = page_model.tb_to_lr(new_tb)
+            return visible[new_local]
 
-        return index
+        # General LR movement in ragged mode
+        new_local = page_model.move(local_index, index_type, incr)
+
+        # Validate ragged cell (raises IndexError if invalid)
+        page_model.lr_to_rowcol(new_local)
+
+        return visible[new_local]

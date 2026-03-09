@@ -60,7 +60,13 @@ def test_remove_bubble(manager, npc, surface):
     assert npc not in manager._bubbles
 
 
-@pytest.mark.parametrize("present", [False, True])
+@pytest.mark.parametrize(
+    "present",
+    [
+        pytest.param(False, id="no_bubble"),
+        pytest.param(True, id="has_bubble"),
+    ],
+)
 def test_has_bubble(manager, npc, surface, present):
     if present:
         manager.add_bubble(npc, surface)

@@ -20,9 +20,9 @@ def test_addition():
 @pytest.mark.parametrize(
     "vector, scalar, expected",
     [
-        (Vector2(1, 2), 2, (2, 4)),
-        (Vector2(1, 2), -1, (-1, -2)),
-        (Vector2(3, -3), 0, (0, 0)),
+        pytest.param(Vector2(1, 2), 2, (2, 4), id="positive_scalar"),
+        pytest.param(Vector2(1, 2), -1, (-1, -2), id="negative_scalar"),
+        pytest.param(Vector2(3, -3), 0, (0, 0), id="zero_scalar"),
     ],
 )
 def test_scalar_multiplication(vector, scalar, expected):
@@ -50,9 +50,11 @@ def test_getitem():
 @pytest.mark.parametrize(
     "vector, expected",
     [
-        (Vector2(3, 4), 5.0),
-        (Vector2(0, 0), 0.0),
-        (Vector2(1, 1), pytest.approx(1.41, abs=0.01)),
+        pytest.param(Vector2(3, 4), 5.0, id="magnitude_3_4"),
+        pytest.param(Vector2(0, 0), 0.0, id="magnitude_zero"),
+        pytest.param(
+            Vector2(1, 1), pytest.approx(1.41, abs=0.01), id="magnitude_diag"
+        ),
     ],
 )
 def test_vector2_magnitude(vector, expected):

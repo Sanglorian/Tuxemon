@@ -131,10 +131,10 @@ def npc_manager():
 
 
 @pytest.mark.parametrize(
-    "a,b,expected",
+    "a, b, expected",
     [
-        ((0, 0), (3, 4), 5.0),
-        ((1.2, 2.3), (1.2, 2.3), 0.0),
+        pytest.param((0, 0), (3, 4), 5.0, id="3_4_5_triangle"),
+        pytest.param((1.2, 2.3), (1.2, 2.3), 0.0, id="same_point"),
     ],
 )
 def test_tile_distance(a, b, expected):
@@ -143,7 +143,12 @@ def test_tile_distance(a, b, expected):
 
 @pytest.mark.parametrize(
     "direction",
-    [Direction.LEFT, Direction.RIGHT, Direction.UP, Direction.DOWN],
+    [
+        pytest.param(Direction.LEFT, id="left"),
+        pytest.param(Direction.RIGHT, id="right"),
+        pytest.param(Direction.UP, id="up"),
+        pytest.param(Direction.DOWN, id="down"),
+    ],
 )
 def test_move_one_tile_appends_expected_tile(
     mk_npc_with_mocks, pathfinder, map_manager, npc_manager, direction
@@ -151,7 +156,9 @@ def test_move_one_tile_appends_expected_tile(
     npc = mk_npc_with_mocks()
     npc.tile_pos = (4, 4)
     pc = PathController(npc, pathfinder, map_manager, npc_manager)
+
     pc.move_one_tile(direction)
+
     expected = vector2_to_tile_pos(Vector2(npc.tile_pos) + dirs2[direction])
     assert pc.path.next() == expected
 
@@ -271,21 +278,31 @@ def test_stress_obstruction_loop(mk_npc_with_mocks, map_manager, npc_manager):
     assert True
 
 
-@pytest.mark.parametrize("steps,expected_calls", [(60, 1), (120, 1)])
+@pytest.mark.parametrize(
+    "steps, expected_calls",
+    [
+        pytest.param(60, 1, id="one_second"),
+        pytest.param(120, 1, id="two_seconds"),
+    ],
+)
 def test_stress_cooldown_throttling(
     mk_npc_with_mocks, map_manager, npc_manager, steps, expected_calls
 ):
     pf = MagicMock()
     pf.pathfind.return_value = [(1, 1)]
     pf.is_tile_traversable.return_value = True
+
     npc = mk_npc_with_mocks()
     pc = PathController(npc, pf, map_manager, npc_manager)
+
     map_manager.collision_map.get.return_value = None
     pc.pathfinding = (1, 1)
     pc._repath_cooldown = 1.0
+
     for _ in range(steps):
         pc.update(1.0 / 60.0)
         pc.process_movement()
+
     assert pf.pathfind.call_count == expected_calls
 
 
@@ -422,10 +439,10 @@ def test_process_movement_retries_path_when_cooldown_expires(
 
 
 @pytest.mark.parametrize(
-    "initial_cooldown,delta,expected",
+    "initial_cooldown, delta, expected",
     [
-        (1.0, 0.3, 0.7),
-        (1.0, 1.0, 0.0),
+        pytest.param(1.0, 0.3, 0.7, id="partial_reduce"),
+        pytest.param(1.0, 1.0, 0.0, id="full_reduce"),
     ],
 )
 def test_update_reduces_repath_cooldown(
@@ -445,10 +462,10 @@ def test_update_reduces_repath_cooldown(
 
 
 @pytest.mark.parametrize(
-    "blocking,expected_cooldown",
+    "blocking, expected_cooldown",
     [
-        (None, None),
-        ("blocker", 0.5),
+        pytest.param(None, None, id="no_blocker"),
+        pytest.param("blocker", 0.5, id="blocked_sets_cooldown"),
     ],
 )
 def test_obstruction_handling(
@@ -457,6 +474,7 @@ def test_obstruction_handling(
     pf = MagicMock()
     pf.pathfind.return_value = [(1, 1)]
     pf.is_tile_traversable.return_value = False
+
     npc_manager = MagicMock()
     if blocking:
         npc = MagicMock()
@@ -480,10 +498,10 @@ def test_obstruction_handling(
 
 
 @pytest.mark.parametrize(
-    "path_return,expected_len",
+    "path_return, expected_len",
     [
-        ([(1, 1), (2, 2)], 2),
-        ([(x, x) for x in range(10)], 10),
+        pytest.param([(1, 1), (2, 2)], 2, id="two_steps"),
+        pytest.param([(x, x) for x in range(10)], 10, id="ten_steps"),
     ],
 )
 def test_retry_path_after_cooldown(
@@ -496,6 +514,7 @@ def test_retry_path_after_cooldown(
     npc = mk_npc_with_mocks()
     npc.tile_pos = (0, 0)
     pc = PathController(npc, pf, map_manager, npc_manager)
+
     map_manager.collision_map.get.return_value = None
     pc.pathfinding = path_return[-1]
     pc._repath_cooldown = 0.0

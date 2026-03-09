@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -22,8 +22,8 @@ class LocationInsideCondition(EventCondition):
     eg. "is location_inside"
     """
 
-    name = "location_inside"
+    name: ClassVar[str] = "location_inside"
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         client = session.client
         return client.map_manager.map_inside

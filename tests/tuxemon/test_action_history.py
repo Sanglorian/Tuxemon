@@ -25,10 +25,10 @@ def history():
 @pytest.mark.parametrize(
     "turns",
     [
-        [1],
-        [1, 2],
-        [1, 1, 1],
-        [3, 2, 1, 4],
+        pytest.param([1], id="single_turn"),
+        pytest.param([1, 2], id="two_turns"),
+        pytest.param([1, 1, 1], id="three_same_turns"),
+        pytest.param([3, 2, 1, 4], id="mixed_turns"),
     ],
 )
 def test_add_action_and_count(history, make_action, turns):
@@ -41,10 +41,10 @@ def test_add_action_and_count(history, make_action, turns):
 @pytest.mark.parametrize(
     "turns,query,expected_count",
     [
-        ([1, 1, 2], 1, 2),
-        ([2, 2, 2], 2, 3),
-        ([1, 2, 3], 4, 0),
-        ([5, 5, 5, 1], 5, 3),
+        pytest.param([1, 1, 2], 1, 2, id="two_matches"),
+        pytest.param([2, 2, 2], 2, 3, id="three_matches"),
+        pytest.param([1, 2, 3], 4, 0, id="no_matches"),
+        pytest.param([5, 5, 5, 1], 5, 3, id="three_of_five"),
     ],
 )
 def test_get_actions_by_turn(
@@ -60,12 +60,12 @@ def test_get_actions_by_turn(
 @pytest.mark.parametrize(
     "turns,start,end,expected_count",
     [
-        ([1, 2, 3], 1, 3, 3),
-        ([1, 2, 3], 2, 3, 2),
-        ([1, 2, 3], 3, 3, 1),
-        ([1, 5, 10], 2, 9, 1),
-        ([4, 4, 4], 4, 4, 3),
-        ([1, 2, 3], 10, 20, 0),
+        pytest.param([1, 2, 3], 1, 3, 3, id="full_range"),
+        pytest.param([1, 2, 3], 2, 3, 2, id="from_two"),
+        pytest.param([1, 2, 3], 3, 3, 1, id="single_value"),
+        pytest.param([1, 5, 10], 2, 9, 1, id="middle_only"),
+        pytest.param([4, 4, 4], 4, 4, 3, id="all_same"),
+        pytest.param([1, 2, 3], 10, 20, 0, id="out_of_range"),
     ],
 )
 def test_get_actions_by_turn_range(
@@ -81,10 +81,10 @@ def test_get_actions_by_turn_range(
 @pytest.mark.parametrize(
     "turns,expected_index",
     [
-        ([1], 0),
-        ([1, 2], 1),
-        ([5, 5, 5], 2),
-        ([3, 1, 4, 2], 3),
+        pytest.param([1], 0, id="one_action"),
+        pytest.param([1, 2], 1, id="two_actions"),
+        pytest.param([5, 5, 5], 2, id="three_same"),
+        pytest.param([3, 1, 4, 2], 3, id="mixed_actions"),
     ],
 )
 def test_get_last_action(history, make_action, turns, expected_index):
@@ -111,10 +111,10 @@ def test_clear(history, make_action):
 @pytest.mark.parametrize(
     "turns",
     [
-        [],
-        [1],
-        [1, 2],
-        [1, 2, 3, 4],
+        pytest.param([], id="empty"),
+        pytest.param([1], id="one"),
+        pytest.param([1, 2], id="two"),
+        pytest.param([1, 2, 3, 4], id="four"),
     ],
 )
 def test_repr_contains_count(history, make_action, turns):

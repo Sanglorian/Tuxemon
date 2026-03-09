@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -30,15 +30,16 @@ class VariableLowestCondition(EventCondition):
         is variable_lowest jimmy,arthur:jimmy:clara
     """
 
-    name = "variable_lowest"
+    name: ClassVar[str] = "variable_lowest"
+    key_to_check: str
+    keys_to_check: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
+    def test(self, session: Session) -> bool:
         game_variables = session.player.game_variables
-        key_to_check, _keys_to_check = condition.parameters
-        keys_to_check = _keys_to_check.split(":")
+        keys_to_check = self.keys_to_check.split(":")
 
-        if not game_variables.has(key_to_check):
-            logger.error(f"{key_to_check} is not in the game variables.")
+        if not game_variables.has(self.key_to_check):
+            logger.error(f"{self.key_to_check} is not in the game variables.")
             return False
 
         lowest_value, lowest_keys = game_variables.find_lowest(keys_to_check)
@@ -48,4 +49,4 @@ class VariableLowestCondition(EventCondition):
                 f"Multiple lowest keys found: {lowest_keys} with value {lowest_value}"
             )
 
-        return key_to_check == lowest_keys[0] if lowest_keys else False
+        return self.key_to_check == lowest_keys[0] if lowest_keys else False

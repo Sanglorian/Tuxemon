@@ -13,13 +13,17 @@ def translator():
 
 
 @pytest.mark.parametrize(
-    "button,value,expected_button",
+    "button, value, expected_button",
     [
-        (buttons.UP, 1, intentions.UP),
-        (buttons.DOWN, 1, intentions.DOWN),
-        ("UNKNOWN", 1, "UNKNOWN"),
-        (events.UNICODE, "n", intentions.NOCLIP),
-        (events.UNICODE, "x", events.UNICODE),
+        pytest.param(buttons.UP, 1, intentions.UP, id="up_pressed"),
+        pytest.param(buttons.DOWN, 1, intentions.DOWN, id="down_pressed"),
+        pytest.param("UNKNOWN", 1, "UNKNOWN", id="unknown_passthrough"),
+        pytest.param(
+            events.UNICODE, "n", intentions.NOCLIP, id="unicode_n_noclip"
+        ),
+        pytest.param(
+            events.UNICODE, "x", events.UNICODE, id="unicode_x_passthrough"
+        ),
     ],
 )
 def test_translate_buttons(translator, button, value, expected_button):

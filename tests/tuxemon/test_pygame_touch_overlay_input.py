@@ -72,15 +72,27 @@ def test_mock_load_and_scale():
 
 
 # Explicit mappings for dpad
-dpad_mappings = [
-    ButtonRectMapping(buttons.UP, lambda ti: ti.ui.dpad.rect.up),
-    ButtonRectMapping(buttons.DOWN, lambda ti: ti.ui.dpad.rect.down),
-    ButtonRectMapping(buttons.LEFT, lambda ti: ti.ui.dpad.rect.left),
-    ButtonRectMapping(buttons.RIGHT, lambda ti: ti.ui.dpad.rect.right),
-]
-
-
-@pytest.mark.parametrize("mapping", dpad_mappings)
+@pytest.mark.parametrize(
+    "mapping",
+    [
+        pytest.param(
+            ButtonRectMapping(buttons.UP, lambda ti: ti.ui.dpad.rect.up),
+            id="touch_dpad_up",
+        ),
+        pytest.param(
+            ButtonRectMapping(buttons.DOWN, lambda ti: ti.ui.dpad.rect.down),
+            id="touch_dpad_down",
+        ),
+        pytest.param(
+            ButtonRectMapping(buttons.LEFT, lambda ti: ti.ui.dpad.rect.left),
+            id="touch_dpad_left",
+        ),
+        pytest.param(
+            ButtonRectMapping(buttons.RIGHT, lambda ti: ti.ui.dpad.rect.right),
+            id="touch_dpad_right",
+        ),
+    ],
+)
 def test_touch_dpad(
     touch_input: PygameTouchOverlayInput, mapping: ButtonRectMapping
 ):
@@ -99,7 +111,19 @@ button_mappings = [
 ]
 
 
-@pytest.mark.parametrize("mapping", button_mappings)
+@pytest.mark.parametrize(
+    "mapping",
+    [
+        pytest.param(
+            ButtonRectMapping(buttons.A, lambda ti: ti.ui.a_button.rect),
+            id="touch_A_button",
+        ),
+        pytest.param(
+            ButtonRectMapping(buttons.B, lambda ti: ti.ui.b_button.rect),
+            id="touch_B_button",
+        ),
+    ],
+)
 def test_touch_buttons(
     touch_input: PygameTouchOverlayInput, mapping: ButtonRectMapping
 ):

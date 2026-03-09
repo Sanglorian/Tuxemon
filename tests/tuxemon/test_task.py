@@ -30,26 +30,45 @@ def test_task_runs_callback_after_interval(cb):
     cb.assert_called_once()
 
 
-@pytest.mark.parametrize("times", [0, -5])
+@pytest.mark.parametrize(
+    "times",
+    [pytest.param(0, id="zero_times"), pytest.param(-5, id="negative_times")],
+)
 def test_times_must_be_positive_or_minus_one(cb, times):
     with pytest.raises(ValueError):
         Task(cb, DEFAULT_INTERVAL, times)
 
 
-@pytest.mark.parametrize("callback", ["not callable", 123, None])
+@pytest.mark.parametrize(
+    "callback",
+    [
+        pytest.param("not callable", id="string_not_callable"),
+        pytest.param(123, id="integer_not_callable"),
+        pytest.param(None, id="none_not_callable"),
+    ],
+)
 def test_callback_must_be_callable(callback):
     with pytest.raises(TypeError):
         Task(callback, DEFAULT_INTERVAL)
 
 
-@pytest.mark.parametrize("dt", [0, 0.0])
+@pytest.mark.parametrize(
+    "dt", [pytest.param(0, id="zero_int"), pytest.param(0.0, id="zero_float")]
+)
 def test_task_runs_immediately_when_interval_zero(cb, dt):
     task = Task(cb, 0)
     task.update(dt)
     cb.assert_called_once()
 
 
-@pytest.mark.parametrize("times", [1, 2, 3])
+@pytest.mark.parametrize(
+    "times",
+    [
+        pytest.param(1, id="once"),
+        pytest.param(2, id="twice"),
+        pytest.param(3, id="thrice"),
+    ],
+)
 def test_task_runs_correct_number_of_times(cb, times):
     task = Task(cb, DEFAULT_INTERVAL, times)
 
@@ -94,7 +113,13 @@ def test_is_finish_false(cb):
     assert not task.is_finish()
 
 
-@pytest.mark.parametrize("new_delay", [2.0, 5.0])
+@pytest.mark.parametrize(
+    "new_delay",
+    [
+        pytest.param(2.0, id="delay_2_seconds"),
+        pytest.param(5.0, id="delay_5_seconds"),
+    ],
+)
 def test_reset_delay_when_greater_than_interval(cb, new_delay):
     task = Task(cb, DEFAULT_INTERVAL)
     task.reset_delay(new_delay)

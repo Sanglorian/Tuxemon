@@ -149,7 +149,14 @@ def test_loop_update_before_start_does_nothing():
     assert loop._state == AnimationState.NOT_STARTED
 
 
-@pytest.mark.parametrize("times", [1, 2, 5])
+@pytest.mark.parametrize(
+    "times",
+    [
+        pytest.param(1, id="one_loop"),
+        pytest.param(2, id="two_loops"),
+        pytest.param(5, id="five_loops"),
+    ],
+)
 def test_loop_parametrized(times):
     t = InstantFinishTask()
     loop = LoopTask(t, times=times)

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import SpatialCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -27,15 +27,13 @@ class CharGenderCondition(EventCondition):
         gender: Expected gender string to compare against the character's gender
     """
 
-    name = "char_gender"
+    name: ClassVar[str] = "char_gender"
+    character: str
+    gender: str
 
-    def test(self, session: Session, condition: SpatialCondition) -> bool:
-        if len(condition.parameters) < 2:
-            logger.error("char_gender requires <character> <gender>")
-            return False
-
-        char_slug = condition.parameters[0]
-        expected_gender = condition.parameters[1].strip().lower()
+    def test(self, session: Session) -> bool:
+        char_slug = self.character
+        expected_gender = self.gender.strip().lower()
 
         character = session.get_npc(char_slug)
         if character is None:

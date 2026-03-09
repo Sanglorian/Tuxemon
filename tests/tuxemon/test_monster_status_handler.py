@@ -232,28 +232,57 @@ def test_decode_status(mock_lookup, monster):
 @pytest.mark.parametrize(
     "slug, expected",
     [
-        ("test", True),
-        ("other", False),
+        pytest.param("test", True, id="status_present"),
+        pytest.param("other", False, id="status_absent"),
     ],
 )
 def test_has_status_param(monster, slug, expected):
     s = MagicMock(slug="test")
     s.host = monster
+
     handler = MonsterStatusHandler([s])
+
     assert handler.has_status(slug) == expected
 
 
 @pytest.mark.parametrize(
     "current_category, transition, expect_applied, expect_empty",
     [
-        # Positive category
-        (CategoryStatus.POSITIVE, ResponseStatus.REPLACED, True, False),
-        (CategoryStatus.POSITIVE, ResponseStatus.REMOVED, False, True),
-        # Negative category
-        (CategoryStatus.NEGATIVE, ResponseStatus.REPLACED, True, False),
-        (CategoryStatus.NEGATIVE, ResponseStatus.REMOVED, False, True),
-        # Neutral category defaults to replaced
-        (None, ResponseStatus.REPLACED, True, False),
+        pytest.param(
+            CategoryStatus.POSITIVE,
+            ResponseStatus.REPLACED,
+            True,
+            False,
+            id="positive_replaced",
+        ),
+        pytest.param(
+            CategoryStatus.POSITIVE,
+            ResponseStatus.REMOVED,
+            False,
+            True,
+            id="positive_removed",
+        ),
+        pytest.param(
+            CategoryStatus.NEGATIVE,
+            ResponseStatus.REPLACED,
+            True,
+            False,
+            id="negative_replaced",
+        ),
+        pytest.param(
+            CategoryStatus.NEGATIVE,
+            ResponseStatus.REMOVED,
+            False,
+            True,
+            id="negative_removed",
+        ),
+        pytest.param(
+            None,
+            ResponseStatus.REPLACED,
+            True,
+            False,
+            id="neutral_defaults_replaced",
+        ),
     ],
 )
 def test_apply_status_transitions(

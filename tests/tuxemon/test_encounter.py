@@ -63,8 +63,8 @@ class DummyHeldItem:
 @pytest.mark.parametrize(
     "roll_value, expected",
     [
-        (0, True),  # encounter succeeds
-        (200, False),  # encounter fails
+        pytest.param(0, True, id="low_roll_succeeds"),
+        pytest.param(200, False, id="high_roll_fails"),
     ],
 )
 def test_probability_gate(monkeypatch, roll_value, expected):

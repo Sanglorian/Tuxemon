@@ -27,10 +27,10 @@ def test_initial_state(mover, body):
 @pytest.mark.parametrize(
     "direction, expected",
     [
-        (Direction.RIGHT, Vector2(5, 0)),
-        (Direction.LEFT, Vector2(-5, 0)),
-        (Direction.UP, Vector2(0, -5)),
-        (Direction.DOWN, Vector2(0, 5)),
+        pytest.param(Direction.RIGHT, Vector2(5, 0), id="move_right"),
+        pytest.param(Direction.LEFT, Vector2(-5, 0), id="move_left"),
+        pytest.param(Direction.UP, Vector2(0, -5), id="move_up"),
+        pytest.param(Direction.DOWN, Vector2(0, 5), id="move_down"),
     ],
 )
 def test_move_sets_state_and_velocity(mover, body, direction, expected):

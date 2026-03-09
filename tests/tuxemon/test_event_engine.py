@@ -60,7 +60,13 @@ def test_start_event(event_engine):
     assert 1 in event_engine.running_events
 
 
-@pytest.mark.parametrize("event_id", [99, 303])
+@pytest.mark.parametrize(
+    "event_id",
+    [
+        pytest.param(99, id="id_99"),
+        pytest.param(303, id="id_303"),
+    ],
+)
 def test_register_global_event_prevents_duplicates(event_engine, event_id):
     event = make_event(event_id, event_engine._test_box)
     event_engine.global_events = [event]
@@ -69,7 +75,13 @@ def test_register_global_event_prevents_duplicates(event_engine, event_id):
     assert len(event_engine.global_events) == 1
 
 
-@pytest.mark.parametrize("event_id", [77, 404])
+@pytest.mark.parametrize(
+    "event_id",
+    [
+        pytest.param(77, id="id_77"),
+        pytest.param(404, id="id_404"),
+    ],
+)
 def test_unregister_global_event(event_engine, event_id):
     event = make_event(event_id, event_engine._test_box)
     event_engine.global_events = [event]
@@ -131,7 +143,8 @@ def test_global_event_triggers_only_once(event_engine):
 
 def test_completed_events_are_removed(event_engine):
     running = MagicMock()
-    running.is_running.return_value = False
+    running.is_running.return_value = True
+    running.process.return_value = False
     running.state = EventState.COMPLETED
     event_engine.running_events = {1: running}
     event_engine.update_running_events(0.1)
@@ -141,14 +154,29 @@ def test_completed_events_are_removed(event_engine):
 def test_map_change_aborts_event_processing(event_engine):
     running = MagicMock()
     running.is_running.return_value = True
-    running.tick.return_value = True
-    event_engine.running_events = {1: running}
-    event_engine.current_map = "mapA"
 
     def change_map(*args, **kwargs):
         event_engine.current_map = "mapB"
         return True
 
-    running.tick.side_effect = change_map
+    running.process.side_effect = change_map
+    event_engine.running_events = {1: running}
+    event_engine.current_map = "mapA"
     event_engine.update_running_events(0.1)
-    running.tick.assert_called_once()
+    running.step.assert_called_once()
+
+
+def test_cancel_event(event_engine):
+    running = MagicMock()
+    event_engine.running_events = {1: running}
+    event_engine.cancel_event(1)
+    running.cancel.assert_called_once()
+
+
+def test_cancel_all_events(event_engine):
+    r1 = MagicMock()
+    r2 = MagicMock()
+    event_engine.running_events = {1: r1, 2: r2}
+    event_engine.cancel_all_events()
+    r1.cancel.assert_called_once()
+    r2.cancel.assert_called_once()

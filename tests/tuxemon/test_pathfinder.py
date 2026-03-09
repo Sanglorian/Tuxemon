@@ -42,8 +42,8 @@ def pathfinder(client):
 @pytest.mark.parametrize(
     "exits, expected",
     [
-        ([], None),
-        ([], None),
+        pytest.param([], None, id="no_exits_none"),
+        pytest.param([], None, id="no_exits_duplicate_case"),
     ],
 )
 def test_pathfind_no_exits(client, pathfinder, exits, expected):
@@ -52,6 +52,7 @@ def test_pathfind_no_exits(client, pathfinder, exits, expected):
     pathfinder.get_exits = MagicMock(return_value=exits)
 
     result = pathfinder.pathfind((0, 0), (1, 1), Direction.DOWN)
+
     assert result is expected
 
 
@@ -66,9 +67,13 @@ def test_pathfind_same_start_and_dest(client, pathfinder):
 @pytest.mark.parametrize(
     "within_bounds, pos, skip_nodes, expected",
     [
-        (True, (1, 1), {(2, 2)}, True),
-        (False, (1, 1), {(2, 2)}, False),
-        (True, (2, 2), {(2, 2)}, False),
+        pytest.param(
+            True, (1, 1), {(2, 2)}, True, id="valid_in_bounds_not_skipped"
+        ),
+        pytest.param(False, (1, 1), {(2, 2)}, False, id="out_of_bounds"),
+        pytest.param(
+            True, (2, 2), {(2, 2)}, False, id="position_in_skip_nodes"
+        ),
     ],
 )
 def test_is_valid_position(

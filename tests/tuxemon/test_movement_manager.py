@@ -83,10 +83,17 @@ def test_stop_and_reset_char(movement_manager, mock_npc, mock_event_manager):
     mock_npc.abort_movement.assert_called_once()
 
 
-@pytest.mark.parametrize("allowed, expected", [(True, True), (False, False)])
+@pytest.mark.parametrize(
+    "allowed, expected",
+    [
+        pytest.param(True, True, id="movement_allowed"),
+        pytest.param(False, False, id="movement_not_allowed"),
+    ],
+)
 def test_is_movement_allowed(movement_manager, mock_npc, allowed, expected):
     if allowed:
         movement_manager.allow_char_movement.add("npc_1")
+
     assert movement_manager.is_movement_allowed(mock_npc) is expected
 
 

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+import logging
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -41,8 +42,8 @@ def persistent_npcs(session):
 @pytest.mark.parametrize(
     "map_name, expected_location",
     [
-        ("map_a", "npcs"),  # NPC on current map
-        ("map_b", "npcs_off_map"),  # NPC off current map
+        pytest.param("map_a", "npcs", id="npc_on_current_map"),
+        pytest.param("map_b", "npcs_off_map", id="npc_off_current_map"),
     ],
 )
 @patch("tuxemon.npc_manager.NPC.from_save")
@@ -51,12 +52,15 @@ def test_load_persistent_npc_states(
 ):
     fake_npc = MagicMock(slug=f"npc_{expected_location}")
     MockNPC.return_value = fake_npc
+
     state = MagicMock(
         player_slug=f"npc_{expected_location}",
         player_name="NPC Test",
         current_map=map_name,
     )
+
     npc_manager.load_persistent_npc_states(session, [state])
+
     assert f"npc_{expected_location}" in getattr(
         npc_manager, expected_location
     )
@@ -111,7 +115,10 @@ def test_get_persistent_npc_states_skips_missing_session(
 ):
     npc = MagicMock(slug="npc_1", persistence=True, session=None)
     npc_manager.add_npc(npc)
-    states = npc_manager.get_persistent_npc_states(session)
+
+    with caplog.at_level(logging.WARNING):
+        states = npc_manager.get_persistent_npc_states(session)
+
     assert states == []
     assert "missing session" in caplog.text
 

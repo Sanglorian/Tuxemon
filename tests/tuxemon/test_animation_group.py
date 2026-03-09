@@ -43,9 +43,11 @@ def test_animate_adds_animation_to_group(group, dummy_target):
 @pytest.mark.parametrize(
     "kwargs",
     [
-        {"x": 0},
-        {"duration": 1.0, "x": 5},
-        {"duration": 0.5, "opacity": 1},
+        pytest.param({"x": 0}, id="x_only"),
+        pytest.param({"duration": 1.0, "x": 5}, id="duration_and_x"),
+        pytest.param(
+            {"duration": 0.5, "opacity": 1}, id="duration_and_opacity"
+        ),
     ],
 )
 def test_animate_parametrized(group, dummy_target, kwargs):
@@ -78,8 +80,8 @@ def test_task_invalid_schedule_type_raises(group, dummy_callback):
 @pytest.mark.parametrize(
     "schedule_type",
     [
-        "on finish",
-        "on interval",
+        pytest.param("on finish", id="on_finish"),
+        pytest.param("on interval", id="on_interval"),
     ],
 )
 def test_task_parametrized_schedule_types(

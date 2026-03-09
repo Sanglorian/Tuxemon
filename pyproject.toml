@@ -110,3 +110,18 @@ ignore = []
 max-line-length = 79
 exclude = [".env/*", ".git"]
 max-complexity = 10
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --tb=short"
+
+markers = [
+    "unit: Unit tests (no external dependencies)",
+    "integration: Integration tests (use real objects)",
+    "slow: Slow tests (> 1 second)",
+    "pygame: Tests requiring pygame",
+    "asyncio: Async tests",
+]

@@ -7,6 +7,7 @@ from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame import SRCALPHA
+from pygame.rect import Rect
 from pygame.surface import Surface
 
 from tuxemon.graphics import load_and_scale
@@ -43,6 +44,7 @@ class DialogState(PopUpMenu[None]):
     def __init__(
         self,
         client: BaseClient,
+        rect: Rect,
         text: Sequence[str] = (),
         avatar: Sprite | None = None,
         box_style: dict[str, Any] | None = None,
@@ -54,7 +56,7 @@ class DialogState(PopUpMenu[None]):
         dialog_speed: str | None = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(client=client, **kwargs)
+        super().__init__(client=client, rect=rect.copy(), **kwargs)
         self.text_queue = list(text)
         self.avatar = avatar
         self.on_complete = on_complete
@@ -87,9 +89,12 @@ class DialogState(PopUpMenu[None]):
         scaling = self.client.context.scaling
         line_spacing = scaling.scale_int(final_box_style["line_spacing"])
 
+        internal_rect = self.calc_internal_rect().copy()
+
         self.dialog_box = TextArea(
             font=self.font,
             font_color=final_box_style["font_color"],
+            rect=internal_rect,
             scaling=self.client.context.scaling,
             font_shadow=final_box_style["font_shadow"],
             h_alignment=final_box_style["h_alignment"],

@@ -63,6 +63,7 @@ class TextArea(Sprite):
         self,
         font: Font,
         font_color: ColorLike,
+        rect: Rect,
         scaling: ScalingStrategy,
         font_shadow: ColorLike = FONT_SHADOW_COLOR,
         background_color: ColorLike | None = None,
@@ -74,7 +75,7 @@ class TextArea(Sprite):
         line_spacing: int = 0,
     ) -> None:
         super().__init__()
-        self.rect = Rect(0, 0, 0, 0)
+        self.rect = rect.copy()
         self.image = Surface(self.rect.size, SRCALPHA)
         self.drawing_text = False
 

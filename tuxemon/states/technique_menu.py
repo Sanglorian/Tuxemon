@@ -66,10 +66,10 @@ class TechniqueMenuState(Menu[Technique]):
         self.text_area = TextArea(
             font=self.font,
             font_color=self.font_color,
+            rect=rect,
             scaling=self.client.context.scaling,
             font_shadow=(96, 96, 128),
         )
-        self.text_area.rect = rect
         self.sprites.add(self.text_area, layer=100)
 
     def calc_internal_rect(self) -> Rect:

@@ -52,31 +52,25 @@ class InputDisplay:
         self.area_rect = area_rect
 
         # Prompt area
-        self.prompt = TextArea(
-            font=font,
-            font_color=font_color,
-            scaling=self.scaling,
-            font_shadow=(96, 96, 96),
-        )
-        self.prompt.animated = False
-        self.prompt.rect = Rect(
+        rect_prompt_area = Rect(
             area_rect.x + self.scaling.scale_int(self.config.prompt_offset_x),
             area_rect.y + self.scaling.scale_int(self.config.prompt_offset_y),
             self.scaling.scale_int(self.config.prompt_width),
             self.scaling.scale_int(self.config.prompt_height),
         )
+        self.prompt = TextArea(
+            font=font,
+            font_color=font_color,
+            rect=rect_prompt_area,
+            scaling=self.scaling,
+            font_shadow=(96, 96, 96),
+        )
+        self.prompt.animated = False
         self.prompt.text = prompt_text
         self.sprites.add(self.prompt)
 
         # Input text area
-        self.text_area = TextArea(
-            font=font,
-            font_color=font_color,
-            scaling=self.scaling,
-            font_shadow=(96, 96, 96),
-        )
-        self.text_area.animated = False
-        self.text_area.rect = Rect(
+        rect_text_area = Rect(
             area_rect.x
             + self.scaling.scale_int(self.config.text_area_offset_x),
             area_rect.y
@@ -84,6 +78,14 @@ class InputDisplay:
             self.scaling.scale_int(self.config.text_area_width),
             self.scaling.scale_int(self.config.text_area_height),
         )
+        self.text_area = TextArea(
+            font=font,
+            font_color=font_color,
+            rect=rect_text_area,
+            scaling=self.scaling,
+            font_shadow=(96, 96, 96),
+        )
+        self.text_area.animated = False
         self.text_area.text = initial_input_string
         self.sprites.add(self.text_area)
 
@@ -91,6 +93,7 @@ class InputDisplay:
         self.char_counter = TextArea(
             font=font,
             font_color=font_color,
+            rect=Rect(0, 0, 50, 30),
             scaling=self.scaling,
             font_shadow=(96, 96, 96),
         )

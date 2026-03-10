@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypedDict, TypeVar
 
-from pygame import image
+from pygame import SRCALPHA, image
 from pygame.font import Font
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -611,13 +611,15 @@ class Menu(Generic[T], State):
                 background = load_image(self.background_filename)
 
             # load and scale the menu borders
-            border = None
             if self.draw_borders:
                 border = load_and_scale(self.borders_filename)
+            else:
+                border = Surface((1, 1), SRCALPHA)
 
-            # set the helper to draw the _background
+            # set the helper to draw the background
             self.window = GraphicBox(
-                border=border,
+                self.rect.copy(),
+                border,
                 background=background,
                 color=self.background_color,
             )

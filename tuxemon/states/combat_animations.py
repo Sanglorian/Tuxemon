@@ -112,9 +112,6 @@ class CombatAnimations(Menu[None], ABC):
         self.sprites.add(dialog_box, layer=HUD_LAYER)
         self.sprites.add(text_area, layer=HUD_LAYER)
 
-    def animate_open(self) -> None:
-        self.transition_none_normal()
-
     def transition_none_normal(self) -> None:
         """From newly opened to normal."""
         self.animate_parties_in()

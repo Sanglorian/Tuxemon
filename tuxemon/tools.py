@@ -231,9 +231,9 @@ def open_dialog(
 
     return client.push_state(
         "DialogState",
+        rect=dialog_rect,
         text=text,
         avatar=avatar,
-        rect=dialog_rect,
         box_style=box_style,
         on_complete=on_complete,
         dialog_speed=dialog_speed,

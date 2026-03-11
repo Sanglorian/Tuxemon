@@ -2,6 +2,11 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import pygame
 import pytest
+from pygame import SRCALPHA
+from pygame.color import Color
+from pygame.font import Font
+from pygame.rect import Rect
+from pygame.surface import Surface
 
 from tuxemon.scaling import DefaultScaling
 from tuxemon.ui.draw import TextOverflow, iter_render_text
@@ -11,7 +16,7 @@ from tuxemon.ui.text_alignment import HorizontalAlignment, VerticalAlignment
 
 class DummyChar:
     def __init__(self, ch="X"):
-        self.surface = pygame.Surface((1, 1))
+        self.surface = Surface((1, 1))
         self.rect = self.surface.get_rect()
 
 
@@ -29,14 +34,20 @@ def pygame_init():
 
 @pytest.fixture
 def font():
-    return pygame.font.Font(None, 16)
+    return Font(None, 16)
 
 
 @pytest.fixture
-def text_area(font):
+def rect():
+    return Rect(0, 0, 100, 40)
+
+
+@pytest.fixture
+def text_area(font, rect):
     ta = TextArea(
         font=font,
         font_color=(255, 255, 255),
+        rect=rect,
         scaling=DefaultScaling(1),
     )
     ta._iter = None
@@ -44,14 +55,18 @@ def text_area(font):
 
 
 @pytest.fixture
-def stress_text_area(font):
-    ta = TextArea(
+def small_rect():
+    return Rect(0, 0, 100, 20)
+
+
+@pytest.fixture
+def stress_text_area(font, small_rect):
+    return TextArea(
         font=font,
         font_color=(255, 255, 255),
+        rect=small_rect,
         scaling=DefaultScaling(1),
     )
-    ta.rect = pygame.Rect(0, 0, 100, 20)
-    return ta
 
 
 def test_initial_state(text_area):
@@ -59,14 +74,17 @@ def test_initial_state(text_area):
     assert text_area.drawing_text is False
 
 
-def test_text_setter_triggers_animation(text_area):
-    text_area.rect = pygame.Rect(0, 0, 200, 50)
-    text_area._start_text_animation = lambda: setattr(
-        text_area, "drawing_text", True
+def test_text_setter_triggers_animation(font):
+    ta = TextArea(
+        font=font,
+        font_color=(255, 255, 255),
+        rect=Rect(0, 0, 200, 50),
+        scaling=DefaultScaling(1),
     )
-    text_area.text = "Hello"
-    assert text_area.text == "Hello"
-    assert text_area.drawing_text is True
+    ta._start_text_animation = lambda: setattr(ta, "drawing_text", True)
+    ta.text = "Hello"
+    assert ta.text == "Hello"
+    assert ta.drawing_text is True
 
 
 def test_len_returns_length(text_area):
@@ -97,15 +115,21 @@ def test_overflow_behavior_setter(text_area):
     assert text_area.overflow_behavior == TextOverflow.WRAP
 
 
-def test_start_text_animation_resets_surface(text_area):
-    text_area.rect = pygame.Rect(0, 0, 10, 10)
+def test_start_text_animation_resets_surface(font):
+    ta = TextArea(
+        font=font,
+        font_color=(255, 255, 255),
+        rect=Rect(0, 0, 10, 10),
+        scaling=DefaultScaling(1),
+    )
+
     global iter_render_text
     old_iter = iter_render_text
     iter_render_text = dummy_iter_render_text
     try:
-        text_area.text = "abc"
-        assert text_area.drawing_text is True
-        assert text_area._iter is not None
+        ta.text = "abc"
+        assert ta.drawing_text is True
+        assert ta._iter is not None
     finally:
         iter_render_text = old_iter
 
@@ -187,34 +211,27 @@ def test_empty_string_animation_state(stress_text_area):
     assert stress_text_area.text == ""
 
 
-def test_background_and_diagnostics_integration(font):
+def test_background_and_diagnostics_integration(font, rect):
     ta = TextArea(
         font=font,
         font_color=(255, 255, 255),
+        rect=rect,
         scaling=DefaultScaling(1),
         debug_rendering=True,
     )
-    ta.rect = pygame.Rect(0, 0, 50, 20)
     ta.text = "Hi"
-    assert ta.image is not None
     px = ta.image.get_at((0, 0))
     assert px.a > 0
 
 
-def test_static_rendering_draws_text(font):
-    ta = TextArea(
-        font=font,
-        font_color=(255, 255, 255),
-        scaling=DefaultScaling(1),
-    )
-    ta.animated = False
-    ta.rect = pygame.Rect(0, 0, 100, 30)
-    ta.text = "Hello"
+def test_static_rendering_draws_text(text_area):
+    text_area.animated = False
+    text_area.text = "Hello"
 
     nonzero = False
-    for x in range(ta.image.get_width()):
-        for y in range(ta.image.get_height()):
-            if ta.image.get_at((x, y)).a > 0:
+    for x in range(text_area.image.get_width()):
+        for y in range(text_area.image.get_height()):
+            if text_area.image.get_at((x, y)).a > 0:
                 nonzero = True
                 break
         if nonzero:
@@ -223,19 +240,13 @@ def test_static_rendering_draws_text(font):
     assert nonzero, "Static text should be drawn immediately"
 
 
-def test_animation_iterates_one_char_per_symbol(font):
-    ta = TextArea(
-        font=font,
-        font_color=(255, 255, 255),
-        scaling=DefaultScaling(1),
-    )
-    ta.rect = pygame.Rect(0, 0, 200, 50)
-    ta.text = "ABC"
+def test_animation_iterates_one_char_per_symbol(text_area):
+    text_area.text = "ABC"
 
     count = 0
     try:
         while True:
-            next(ta)
+            next(text_area)
             count += 1
     except StopIteration:
         pass
@@ -243,7 +254,7 @@ def test_animation_iterates_one_char_per_symbol(font):
     assert count == 3
 
 
-def test_overflow_behavior_passed_to_iter(font, monkeypatch):
+def test_overflow_behavior_passed_to_iter(text_area, monkeypatch):
     captured = {}
 
     def fake_iter_render_text(**kwargs):
@@ -254,14 +265,8 @@ def test_overflow_behavior_passed_to_iter(font, monkeypatch):
         "tuxemon.ui.text.iter_render_text", fake_iter_render_text
     )
 
-    ta = TextArea(
-        font=font,
-        font_color=(255, 255, 255),
-        scaling=DefaultScaling(1),
-    )
-    ta.rect = pygame.Rect(0, 0, 50, 20)
-    ta.set_overflow_behavior(TextOverflow.WRAP)
-    ta.text = "Hello"
+    text_area.set_overflow_behavior(TextOverflow.WRAP)
+    text_area.text = "Hello"
 
     assert captured["overflow_behavior"] == TextOverflow.WRAP
 
@@ -280,52 +285,47 @@ def test_alignment_parameters_passed(font, monkeypatch):
     ta = TextArea(
         font=font,
         font_color=(255, 255, 255),
+        rect=Rect(0, 0, 100, 40),
         scaling=DefaultScaling(1),
         h_alignment=HorizontalAlignment.CENTER,
         v_alignment=VerticalAlignment.BOTTOM,
     )
-    ta.rect = pygame.Rect(0, 0, 100, 40)
     ta.text = "Hello"
 
     assert captured["h_alignment"] == HorizontalAlignment.CENTER
     assert captured["v_alignment"] == VerticalAlignment.BOTTOM
 
 
-def test_image_initialized_in_constructor(font):
-    ta = TextArea(
-        font=font,
-        font_color=(255, 255, 255),
-        scaling=DefaultScaling(1),
-    )
-    assert hasattr(ta, "image")
-    assert isinstance(ta.image, pygame.Surface)
+def test_image_initialized_in_constructor(text_area):
+    assert hasattr(text_area, "image")
+    assert isinstance(text_area.image, Surface)
 
 
 def test_static_text_does_not_use_background(font):
     ta = TextArea(
         font=font,
         font_color=(255, 255, 255),
+        rect=Rect(0, 0, 100, 30),
         scaling=DefaultScaling(1),
         background_color=(255, 0, 0),
     )
     ta.animated = False
-    ta.rect = pygame.Rect(0, 0, 100, 30)
     ta.text = "Hello"
     px = ta.image.get_at((0, 0))
-    assert px == pygame.Color(255, 0, 0)
+    assert px == Color(255, 0, 0)
 
 
 def test_animated_text_uses_background(font):
     ta = TextArea(
         font=font,
         font_color=(255, 255, 255),
+        rect=Rect(0, 0, 100, 30),
         scaling=DefaultScaling(1),
         background_color=(0, 255, 0),
     )
-    ta.rect = pygame.Rect(0, 0, 100, 30)
     ta.text = "Hi"
     px = ta.image.get_at((0, 0))
-    assert px == pygame.Color(0, 255, 0)
+    assert px == Color(0, 255, 0)
 
 
 def test_iter_returns_self(text_area):
@@ -336,10 +336,10 @@ def test_empty_text_resets_image(font):
     ta = TextArea(
         font=font,
         font_color=(255, 255, 255),
+        rect=Rect(0, 0, 50, 20),
         scaling=DefaultScaling(1),
     )
-    ta.rect.update(0, 0, 50, 20)
-    ta.image = pygame.Surface((50, 20), pygame.SRCALPHA)
+    ta.image = Surface((50, 20), SRCALPHA)
     ta.text = ""
     assert ta.image.get_size() == (50, 20)
     px = ta.image.get_at((0, 0))

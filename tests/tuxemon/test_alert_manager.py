@@ -4,6 +4,8 @@ import time
 
 import pygame
 import pytest
+from pygame.font import Font
+from pygame.rect import Rect
 
 from tuxemon.event.eventbus import EventBus
 from tuxemon.menu.alert import AlertManager
@@ -21,13 +23,16 @@ def pygame_init():
 
 @pytest.fixture
 def font():
-    return pygame.font.Font(None, 16)
+    return Font(None, 16)
 
 
 @pytest.fixture
 def text_area(font):
     return TextArea(
-        font=font, font_color=(255, 255, 255), scaling=DefaultScaling(1)
+        font=font,
+        font_color=(255, 255, 255),
+        rect=Rect(0, 0, 200, 50),
+        scaling=DefaultScaling(1),
     )
 
 

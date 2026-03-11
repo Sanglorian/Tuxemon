@@ -179,6 +179,7 @@ class CombatState(CombatAnimations):
                 "Environment not set. Use set_environment before proceeding."
             )
         self.env = env
+        self.transition_none_normal()
 
     @staticmethod
     def is_task_finished(task: TaskBase) -> bool:
@@ -363,9 +364,9 @@ class CombatState(CombatAnimations):
         self.text_area = TextArea(
             font=self.font,
             font_color=self.font_color,
+            rect=dialog_box.calc_inner_rect(dialog_box.rect),
             scaling=self.client.context.scaling,
         )
-        self.text_area.rect = dialog_box.calc_inner_rect(dialog_box.rect)
         self.show_combat_dialog(dialog_box, self.text_area)
 
     def ask_player_for_monster(self, player: NPC) -> None:

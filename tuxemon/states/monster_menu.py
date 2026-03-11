@@ -73,14 +73,14 @@ class MonsterMenuState(Menu[Monster | None]):
         self.monsters = self.monster_filter.get_filtered_monsters(monsters)
 
         # make a text area to show messages
+        rect = self.client.context.scaling.scale_tuple((20, 80, 80, 100))
         self.text_area = TextArea(
             font=self.font,
             font_color=self.font_color,
+            rect=Rect(rect),
             scaling=self.client.context.scaling,
             font_shadow=(96, 96, 96),
         )
-        rect = self.client.context.scaling.scale_tuple((20, 80, 80, 100))
-        self.text_area.rect = Rect(rect)
         self.sprites.add(self.text_area, layer=100)
         self.monster_stats_display = MonsterStatsDisplay(self)
         self.monster_sprite_displays: list[MonsterSpriteDisplay] = []
@@ -452,6 +452,7 @@ class MonsterStatsDisplay:
         self.sprite = TextArea(
             font=self.menu_state.font,
             font_color=self.menu_state.font_color,
+            rect=Rect(0, 0, 1, 1),
             scaling=self.menu_state.client.context.scaling,
         )
         self.menu_state.sprites.add(self.sprite, layer=LAYER_MONSTER_ICONS)

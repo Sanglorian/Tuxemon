@@ -11681,9 +11681,6 @@ msgstr "Marion"
 msgid "spyder_route2_graf"
 msgstr "Graf"
 
-msgid "spyder_maniac"
-msgstr "Maniac"
-
 # msgid "spyder_citypark_florist"
 # msgstr "Florist"
 

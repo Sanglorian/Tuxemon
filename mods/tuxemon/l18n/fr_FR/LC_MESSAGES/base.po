@@ -3594,9 +3594,6 @@ msgstr "Marion"
 msgid "spyder_route2_graf"
 msgstr "Graffiti"
 
-msgid "spyder_maniac"
-msgstr "Maniaque"
-
 msgid "spyder_citypark_frances"
 msgstr "Frances"
 

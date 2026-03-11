@@ -2793,9 +2793,6 @@ msgstr "Nonna"
 msgid "spyder_route2_marion"
 msgstr "Marion"
 
-msgid "spyder_maniac"
-msgstr "Maniaco"
-
 msgid "spyder_shopkeeper"
 msgstr "Bottegaio"
 

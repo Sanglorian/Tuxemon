@@ -6028,9 +6028,6 @@ msgstr "店员"
 msgid "spyder_route2_roddick"
 msgstr "罗迪克"
 
-msgid "spyder_maniac"
-msgstr "狂人"
-
 # msgid "spyder_citypark_florist"
 # msgstr "Florist"
 msgid "spyder_citypark_frances"

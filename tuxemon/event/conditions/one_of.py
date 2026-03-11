@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.event import MapCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -26,22 +26,24 @@ class OneOfCondition(EventCondition):
         variable: The variable to check.
         values: Value to check for (multiple values separated by ":").
 
-    eg. "is one_of stage_of_day,afternoon:dusk:morning"
-
+    eg. "is one_of name_variable,option1:option2:option3"
     """
 
-    name = "one_of"
+    name: ClassVar[str] = "one_of"
+    variable: str
+    values: str
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
+    def test(self, session: Session) -> bool:
         player = session.player
-        key = condition.parameters[0]
-        values = condition.parameters[1].split(":")
+        values = self.values.split(":")
 
-        if key not in player.game_variables:
+        if not player.game_variables.has(self.variable):
             return False
 
         result = [
-            value for value in values if player.game_variables[key] == value
+            value
+            for value in values
+            if player.game_variables.get(self.variable) == value
         ]
 
         return bool(result)

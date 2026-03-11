@@ -1,24 +1,32 @@
 {
-  "animation": null,
   "modifiers": [],
+  "behaviors": {},
   "category": "negative",
   "effects": [
     {
       "type": "confused",
-      "parameters": ["0.5"]
+      "parameters": [
+        "0.5"
+      ]
     }
   ],
-  "flip_axes": "",
   "icon": "gfx/ui/icons/status/icon_confused.png",
-  "range": "special",
-  "repl_pos": "replaced",
-  "repl_neg": "replaced",
-  "repl_tech": "empty",
-  "sfx": "sfx_pulse",
+  "on_positive_status": "replaced",
+  "on_negative_status": "replaced",
+  "on_tech_use": "empty",
   "slug": "confused",
   "sort": "meta",
   "cond_id": 19,
   "use_failure": null,
   "use_success": "combat_state_confused_get",
-  "gain_cond": null
+  "gain_cond": null,
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_pulse",
+    "volume": 1.5
+  }
 }

@@ -1,22 +1,20 @@
 {
   "tech_id": 137,
   "accuracy": 0.8,
-  "animation": "flameball_red",
   "effects": [
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "very_slow",
   "potency": 0.0,
   "power": 1.4,
   "range": "ranged",
   "recharge": 1,
-  "sfx": "sfx_blaster",
   "slug": "magma",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": true,
@@ -26,11 +24,23 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["rock", "flame"],
+  "tags": [
+    "rock",
+    "flame"
+  ],
   "types": [
     "fire"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "flameball_red",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_flamethrower",
+    "volume": 1.5
+  }
 }

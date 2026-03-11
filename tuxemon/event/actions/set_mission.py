@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.event import get_npc
+from tuxemon.db import MissionStatus
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -30,16 +31,31 @@ class SetMissionAction(EventAction):
     name = "set_mission"
     character: str
 
-    def start(self) -> None:
-        character = get_npc(self.session, self.character)
+    def start(self, session: Session) -> None:
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{self.character} not found")
+            logger.error(f"Character '{self.character}' not found.")
             return
 
         missions = (
             character.mission_controller.get_missions_with_met_prerequisites()
         )
         if not missions:
+            logger.info(f"No missions met prerequisites for {self.character}.")
             return
-        else:
-            character.mission_controller.update_mission_progress()
+
+        for mission in missions:
+            if mission.assigned_to not in (None, character.slug):
+                continue
+
+            if mission.assigned_to is None:
+                character.mission_controller.assign_mission(mission)
+
+            mission.check_step_conditions(character)
+
+            progress = mission.get_progress()
+            if progress >= 100.0:
+                mission.update_status(MissionStatus.COMPLETED)
+                if mission.repeatable:
+                    mission.completed_steps.clear()
+                    mission.update_status(MissionStatus.PENDING)

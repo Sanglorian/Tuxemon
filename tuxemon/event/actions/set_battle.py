@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.battle import Battle
 from tuxemon.db import OutputBattle
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SetBattleAction(EventAction):
     """
-    Append a new element in player.battles.
+    Appends a new battle to the player's battle history.
 
     Script usage:
         .. code-block::
@@ -25,31 +25,35 @@ class SetBattleAction(EventAction):
             set_battle <fighter>,<result>,<opponent>
 
     Script parameters:
-        fighter: Npc slug name (e.g. "npc_maple").
-        result: One among "won", "lost" and "draw".
-        opponent: Npc slug name (e.g. "npc_maple").
+        fighter_slug: The slug of the battle participant (e.g., "player").
+        outcome: The desired battle outcome ("won", "lost", or "draw").
+        opponent_slug: The slug of the opponent (e.g., "npc_maple").
 
-    eg. "set_battle player,won,npc_maple"
-        -> player won against npc_maple
-
+    Example:
+        `set_battle player,won,npc_maple`
+        Add the 'player' has won against 'npc_maple' to the history.
     """
 
     name = "set_battle"
-    fighter: str
+    fighter_slug: str
     outcome: str
-    opponent: str
+    opponent_slug: str
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        if self.outcome not in list(OutputBattle):
+            raise ValueError(
+                f"{self.outcome} isn't among {list(OutputBattle)}"
+            )
 
-        _output = list(OutputBattle)
-        if self.outcome not in _output:
-            raise ValueError(f"{self.outcome} isn't among {_output}")
+        character = session.get_npc(self.fighter_slug)
+        if character is None:
+            logger.error(f"Character '{self.fighter_slug}' not found")
+            return
 
-        battle = Battle()
-        battle.fighter = self.fighter
-        battle.outcome = OutputBattle(self.outcome)
-        battle.opponent = self.opponent
-        battle.steps = int(player.steps)
-        logger.info(f"{self.fighter} {self.outcome} against {self.opponent}")
-        player.battles.append(battle)
+        character.battle_handler.record_battle(
+            opponent=self.opponent_slug,
+            outcome=OutputBattle(self.outcome),
+        )
+        logger.info(
+            f"{self.fighter_slug} {self.outcome} against {self.opponent_slug}"
+        )

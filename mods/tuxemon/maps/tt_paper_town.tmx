@@ -75,7 +75,7 @@
  <objectgroup color="#ffff00" id="7" name="Events">
   <object id="458" name="Teleport to Forest Route 1" type="event" x="208" y="0" width="48" height="16">
    <properties>
-    <property name="act1" value="transition_teleport tt_forest_route1.tmx,8,38,0.3"/>
+    <property name="act1" value="transition_teleport player,tt_forest_route1.tmx,8,38,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -83,7 +83,7 @@
   </object>
   <object id="467" name="Teleport to Sea Route" type="event" x="0" y="288">
    <properties>
-    <property name="act1" value="transition_teleport tt_searoute1.tmx,39,35,0.3"/>
+    <property name="act1" value="transition_teleport player,tt_searoute1.tmx,39,35,0.3"/>
     <property name="act2" value="char_face player,left"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,left"/>

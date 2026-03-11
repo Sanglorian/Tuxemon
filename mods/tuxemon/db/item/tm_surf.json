@@ -1,25 +1,35 @@
 {
   "conditions": [
     {
-      "type": "type",
-      "parameters": ["water"],
+      "type": "base",
+      "parameters": [
+        "types",
+        "water"
+      ],
       "operator": "is"
     },
     {
-      "type": "shape",
-      "parameters": ["piscine:polliwog:leviathan"],
+      "type": "base",
+      "parameters": [
+        "shape",
+        "piscine:polliwog:leviathan"
+      ],
       "operator": "is"
     },
     {
       "type": "has_tech",
-      "parameters": ["surf"],
+      "parameters": [
+        "surf"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["surf"]
+      "parameters": [
+        "surf"
+      ]
     }
   ],
   "slug": "tm_surf",
@@ -36,5 +46,14 @@
   },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
-  "use_success": "generic_success"
+  "use_success": "generic_success",
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": null,
+    "volume": 0.0
+  }
 }

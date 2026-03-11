@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
-import uuid
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
+from tuxemon.tools import get_valid_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -32,30 +32,43 @@ class WithdrawMonsterAction(EventAction):
         variable: Name of the variable where to store the monster id.
         character: Either "player" or npc slug name (e.g. "npc_maple").
             the one who is going to receive the monster
-
     """
 
     name = "withdraw_monster"
     variable: str
     character: str
 
-    def start(self) -> None:
-        player = self.session.player
-        if self.variable not in player.game_variables:
-            logger.error(f"Game variable {self.variable} not found")
-            return
+    def start(self, session: Session) -> None:
+        player = session.player
 
-        monster_id = uuid.UUID(player.game_variables[self.variable])
+        monster_id = get_valid_uuid(player.game_variables, self.variable)
+        if monster_id is None:
+            logger.info(
+                f"No valid monster selected for variable '{self.variable}'"
+            )
+            return  # Exit early if no valid UUID
         monster = player.monster_boxes.get_monsters_by_iid(monster_id)
         if monster is None:
             logger.error("Monster not found")
             return
-        player.monster_boxes.remove_monster(monster)
 
-        character = get_npc(self.session, self.character)
+        player.monster_boxes.remove_from_box("monster", None, monster)
+
+        character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return
 
-        character.add_monster(monster, len(character.monsters))
-        logger.info(f"{character.name} withdrawn {monster.name}!")
+        if character.party.transfer_monster_to_party(monster):
+            logger.info(
+                f"{character.name} withdrew {monster.name} into party!"
+            )
+        else:
+            if character.party.send_monster_to_box(monster):
+                logger.info(
+                    f"{character.name}'s party was full. {monster.name} sent to box instead."
+                )
+            else:
+                logger.error(
+                    f"Failed to withdraw monster '{monster.name}' from box"
+                )

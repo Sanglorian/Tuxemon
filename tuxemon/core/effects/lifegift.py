@@ -1,44 +1,68 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat import fainted
-from tuxemon.core.core_effect import StatusEffect, StatusEffectResult
-from tuxemon.formula import simple_lifeleech
+from tuxemon.core.core_effect import CoreEffect, StatusEffectResult
+from tuxemon.db import EffectPhase
+from tuxemon.formula import calculate_hp_transfer
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.status.status import Status
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
-class LifeGiftEffect(StatusEffect):
+class LifeGiftEffect(CoreEffect):
     """
-    This effect has a chance to apply the lifegift status effect.
+    Applies the "lifegift" status effect.
 
-    Parameters:
-        user: The monster losing HPs.
-        target: The monster getting HPs.
-        divisor: The number by which target HP is to be divided.
+    This effect transfers HP from a linked monster to the host monster,
+    simulating a gift of life energy. The amount transferred is determined
+    by dividing the linked monster's HP by the specified divisor.
 
+    **Parameters**
+
+      - ``divisor``: Integer value used to calculate the HP transfer amount.
+      - The linked monster's HP is divided by this number to determine
+        how much HP is gifted.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "lifegift 2"
+        ]
     """
 
     name = "lifegift"
     divisor: int
 
-    def apply(self, status: Status, target: Monster) -> StatusEffectResult:
+    def apply_status(
+        self, session: Session, status: Status
+    ) -> StatusEffectResult:
         lifegift: bool = False
-        user = status.link
-        assert user
-        if status.phase == "perform_action_status" and not fainted(user):
-            damage = simple_lifeleech(user, target, self.divisor)
-            user.current_hp = max(0, user.current_hp - damage)
-            target.current_hp = min(target.hp, target.current_hp + damage)
+        host = status.host
+        linked = status.linked_monster
+        if (
+            status.has_phase(EffectPhase.PERFORM_STATUS)
+            and linked
+            and not linked.is_fainted
+        ):
+            damage = calculate_hp_transfer(linked, host, self.divisor)
+            logger.debug(
+                f"[LifeGift] {linked.name} gifted {damage} HP to {host.name}"
+            )
+            linked.current_hp = max(0, linked.current_hp - damage)
+            host.current_hp = min(host.hp, host.current_hp + damage)
             lifegift = True
-        if fainted(user):
-            target.status.clear()
+        if linked and linked.is_fainted:
+            host.status.clear_status(session)
 
         return StatusEffectResult(name=status.name, success=lifegift)

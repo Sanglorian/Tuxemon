@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import shlex
@@ -11,21 +11,19 @@ def parse(text: str) -> list[str]:
 
     Parameters:
         text: Text to split into tokens.
-
     """
     return shlex.split(text)
 
 
-def split(line: str) -> tuple[str, str]:
+def tokenize(line: str) -> list[str]:
     """
-    Split text into head, tail tokens.  Text is split after 1st space.
+    Tokenize a command line into whitespace-separated tokens.
 
-    Parameters:
-        line: Text to split.
-
+    This is intentionally simple and preserves current behavior:
+    - No normalization beyond splitting on spaces.
+    - Empty or all-space strings return [].
     """
-    try:
-        index = line.index(" ")
-        return line[:index], line[index:].lstrip()
-    except ValueError:
-        return line, ""
+    line = line.strip()
+    if not line:
+        return []
+    return line.split(" ")

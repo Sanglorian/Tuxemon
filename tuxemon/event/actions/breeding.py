@@ -1,14 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.menu.interface import MenuItem
-from tuxemon.monster import Monster
-from tuxemon.states.monster import MonsterMenuState
+from tuxemon.monster.filter import MonsterFilter
+from tuxemon.monster.monster import Monster
+from tuxemon.session import Session
+from tuxemon.states.monster_menu import MonsterMenuState
+
+logger = logging.getLogger(__name__)
 
 
 @final
@@ -21,40 +26,63 @@ class BreedingAction(EventAction):
     Script usage:
         .. code-block::
 
-            breeding <gender>
+            breeding <character>,<gender>
 
     Script parameters:
+        character: Either "player" or character slug name (e.g. "npc_maple").
         gender: Gender (male or female).
-
     """
 
     name = "breeding"
+    character: str
     gender: str
 
-    def validate(self, target: Optional[Monster]) -> bool:
-        if target:
-            if target.gender == self.gender and target.stage != "basic":
-                return True
-        return False
-
-    def set_var(self, menu_item: MenuItem[Monster]) -> None:
-        player = self.session.player
+    def set_var(self, menu_item: MenuItem[Monster | None]) -> None:
         monster = menu_item.game_object
+        if monster is None:
+            return
 
         parent = (
             "breeding_mother" if self.gender == "female" else "breeding_father"
         )
-        player.game_variables[parent] = str(monster.instance_id.hex)
+        self.char.game_variables.set(parent, monster.instance_id.hex)
         self.session.client.pop_state()
 
-    def start(self) -> None:
-        # pull up the monster menu so we know which one we are saving
-        menu = self.session.client.push_state(MonsterMenuState())
-        menu.is_valid_entry = self.validate  # type: ignore[assignment]
-        menu.on_menu_selection = self.set_var  # type: ignore[assignment]
+    def start(self, session: Session) -> None:
+        self.session = session
+        char = session.get_npc(self.character)
 
-    def update(self) -> None:
+        if not char:
+            logger.error(f"{self.character} not found")
+            return
+
+        self.char = char
+
+        monster_filter = MonsterFilter()
+        monster_filter.set_filter_custom_and(
+            lambda m: m.gender.value == self.gender,
+            lambda m: m.stage.value != "basic",
+        )
+
+        valid_monsters = monster_filter.get_filtered_monsters(
+            self.char.monsters
+        )
+        if not valid_monsters:
+            logger.error(f"No {self.gender} monsters available for breeding.")
+            self.stop()
+            return
+
+        session.client.push_state(
+            MonsterMenuState(
+                session.client,
+                self.char.monsters,
+                monster_filter,
+                on_selection=self.set_var,
+            )
+        )
+
+    def update(self, session: Session, dt: float) -> None:
         try:
-            self.session.client.get_state_by_name(MonsterMenuState)
+            session.client.get_state_by_name("MonsterMenuState")
         except ValueError:
             self.stop()

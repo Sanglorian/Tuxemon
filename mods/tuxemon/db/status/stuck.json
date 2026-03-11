@@ -1,30 +1,42 @@
 {
-  "animation": null,
   "modifiers": [],
+  "behaviors": {},
   "category": "negative",
-	"conditions": [
+  "conditions": [
     {
       "type": "current_hp",
-      "parameters": [">", "0"],
+      "parameters": [
+        ">",
+        "0"
+      ],
       "operator": "is"
     }
-	],
+  ],
   "effects": [
     {
       "type": "stuck",
-      "parameters": ["2", "melee:touch"]
+      "parameters": [
+        "2",
+        "melee:touch"
+      ]
     }
   ],
-  "flip_axes": "",
   "icon": "gfx/ui/icons/status/icon_stuck.png",
-  "range": "special",
-  "repl_pos": "replaced",
-  "repl_neg": "replaced",
-  "sfx": "sfx_pulse",
+  "on_positive_status": "replaced",
+  "on_negative_status": "replaced",
   "slug": "stuck",
   "sort": "meta",
   "cond_id": 18,
   "use_failure": null,
   "use_success": "combat_state_stuck_get",
-  "gain_cond": null
+  "gain_cond": null,
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_pulse",
+    "volume": 1.5
+  }
 }

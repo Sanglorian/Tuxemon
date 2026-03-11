@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.event import MapCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -26,21 +26,12 @@ class LocationNameCondition(EventCondition):
 
     eg. "is location_name routeb"
     eg. "is location_name routeb:routea"
-
     """
 
-    name = "location_name"
+    name: ClassVar[str] = "location_name"
+    location: str
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
+    def test(self, session: Session) -> bool:
         client = session.client
-        ret: bool = False
-        name = condition.parameters[0]
-        names: list[str] = []
-        if name.find(":") > 1:
-            names = name.split(":")
-        else:
-            names.append(name)
-
-        if client.map_slug in names:
-            ret = True
-        return ret
+        slugs = [s for s in self.location.split(":") if s]
+        return client.map_manager.map_slug in slugs

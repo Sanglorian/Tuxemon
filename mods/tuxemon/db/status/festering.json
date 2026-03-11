@@ -1,21 +1,27 @@
 {
-  "animation": null,
   "modifiers": [],
+  "behaviors": {},
   "category": "negative",
   "effects": [
     {
       "type": "festering"
     }
   ],
-  "flip_axes": "",
   "icon": "gfx/ui/icons/status/icon_festering.png",
-  "range": "special",
-  "repl_neg": "replaced",
-  "sfx": "sfx_pulse",
+  "on_negative_status": "replaced",
   "slug": "festering",
   "sort": "meta",
   "cond_id": 20,
   "use_failure": null,
   "use_success": "combat_state_festering_get",
-  "gain_cond": null
+  "gain_cond": null,
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_pulse",
+    "volume": 1.5
+  }
 }

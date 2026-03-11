@@ -1,27 +1,33 @@
 {
   "tech_id": 17,
   "accuracy": 1,
-  "animation": "bite",
   "effects": [
     {
       "type": "give",
-      "parameters": ["diehard", "own_monster"]
+      "parameters": [
+        "diehard",
+        "own_monster"
+      ]
     },
     {
       "type": "give",
-      "parameters": ["grabbed", "enemy_monster"]
+      "parameters": [
+        "grabbed",
+        "enemy_monster"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
   "recharge": 3,
-  "sfx": "sfx_blaster",
   "slug": "clamp_on",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -31,11 +37,24 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["bug", "bite", "fury"],
+  "tags": [
+    "bug",
+    "bite",
+    "fury"
+  ],
   "types": [
-    "aether"
+    "normal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "bite",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_squeak",
+    "volume": 1.5
+  }
 }

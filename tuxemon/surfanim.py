@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 # Based on pyganim: A sprite animation module for Pygame.
 # By Al Sweigart al@inventwithpython.com
 # http://inventwithpython.com/pyganim
@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import bisect
 import itertools
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from enum import Enum
-from typing import Any, Final, Optional, TypeVar, Union
+from typing import Any, TypeVar
 
 # TODO: Feature idea: if the same image file is specified, re-use the Surface
 import pygame
@@ -20,13 +20,23 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 
 
+class FlipAxes(str, Enum):
+    NONE = ""
+    X = "x"
+    Y = "y"
+    XY = "xy"
+
+
+class PlayMode(Enum):
+    FORWARD = 1
+    BACKWARD = 2
+    PING_PONG = 3
+
+
 class State(Enum):
     PLAYING = "playing"
     PAUSED = "paused"
     STOPPED = "stopped"
-
-
-dummy_image: Final = Surface((0, 0))
 
 
 class FrameManager:
@@ -42,9 +52,9 @@ class FrameManager:
                 seconds.
     """
 
-    def __init__(
-        self, frames: Sequence[tuple[Union[str, Surface], float]]
-    ) -> None:
+    _dummy_image: Surface = Surface((0, 0))
+
+    def __init__(self, frames: Sequence[tuple[str | Surface, float]]) -> None:
         self.images: list[Surface] = []
 
         # durations stores the durations (in seconds) of each frame.
@@ -101,8 +111,8 @@ class FrameManager:
         Returns a specific frame from the sequence, or a dummy image if the
         frame number is out of range.
         """
-        if frame_num >= len(self.images):
-            return dummy_image
+        if frame_num < 0 or frame_num >= len(self.images):
+            return FrameManager._dummy_image
         return self.images[frame_num]
 
 
@@ -121,24 +131,27 @@ class SurfaceAnimation:
 
     def __init__(
         self,
-        frames: Sequence[tuple[Union[str, Surface], float]],
-        loop: bool = True,
+        frames: Sequence[tuple[str | Surface, float]],
+        loop: int = -1,
+        play_mode: PlayMode = PlayMode.FORWARD,
     ) -> None:
         self._frame_manager = FrameManager(frames)
         # Obtain constant precision setting the initial value to 2^32:
         # https://randomascii.wordpress.com/2012/02/13/dont-store-that-in-a-float/
-        self._internal_clock = float(2**32)
+        self._internal_clock: float = float(2**32)
 
-        self._state = State.STOPPED
+        self._state: State = State.STOPPED
+        self._play_mode = play_mode
         self._loop = loop
-        self._rate = 1.0
-        self._visibility = True
+        self._completed_loops: int = 0
+        self._rate: float = 1.0
+        self._on_completion_callback: Callable[..., Any] | None = None
 
         # The time that the play() function was last called.
-        self._playing_start_time = 0.0
+        self._playing_start_time: float = 0.0
 
         # The time that the pause() function was last called.
-        self._paused_start_time = 0.0
+        self._paused_start_time: float = 0.0
 
     def get_frame(self, frame_num: int) -> Surface:
         return self._frame_manager.get_frame(frame_num)
@@ -147,66 +160,85 @@ class SurfaceAnimation:
         return self.get_frame(self.frames_played)
 
     def is_finished(self) -> bool:
-        """Return ``True`` if this animation has finished playing."""
-        return not self.loop and self.elapsed >= self.duration
+        if self._loop == -1:
+            return False
+        if self._state == State.STOPPED:
+            return False  # not playing yet
 
-    def play(self, start_time: Optional[float] = None) -> None:
+        if self._state == State.PLAYING:
+            total_elapsed = (
+                self._internal_clock - self._playing_start_time
+            ) * self.rate
+        else:  # PAUSED
+            total_elapsed = (
+                self._paused_start_time - self._playing_start_time
+            ) * self.rate
+
+        allowed_cycles = self._loop + 1
+        completed = int(total_elapsed // self.duration)
+
+        return completed >= allowed_cycles
+
+    def play(self, start_time: float | None = None) -> None:
         """Start playing the animation."""
         if start_time is None:
             start_time = self._internal_clock
 
         if self._state == State.PLAYING:
-            if self.is_finished():
-                # if the animation doesn't loop and has already finished, then
-                # calling play() causes it to replay from the beginning.
+            if self.loop != -1 and self.is_finished():
+                # If non-looping and finished, restart from the beginning
                 self._playing_start_time = start_time
+                self._state = State.PLAYING
+            return  # Already playing, do nothing
         elif self._state == State.STOPPED:
-            # if animation was stopped, start playing from the beginning
+            # Start playing from the beginning
             self._playing_start_time = start_time
+            self._state = State.PLAYING
         elif self._state == State.PAUSED:
-            # if animation was paused, start playing from where it was paused
+            # Resume from the paused position
             self._playing_start_time = start_time - (
                 self._paused_start_time - self._playing_start_time
             )
-        self._state = State.PLAYING
+            self._state = State.PLAYING
 
-    def pause(self, start_time: Optional[float] = None) -> None:
-        """Stop having the animation progress."""
+    def pause(self, start_time: float | None = None) -> None:
+        """Pause the animation at its current frame."""
         if start_time is None:
             start_time = self._internal_clock
 
-        if self._state == State.PAUSED:
-            return  # do nothing
-        elif self._state == State.PLAYING:
+        if self._state == State.PLAYING:
             self._paused_start_time = start_time
-        elif self._state == State.STOPPED:
-            rightNow = self._internal_clock
-            self._playing_start_time = rightNow
-            self._paused_start_time = rightNow
-        self._state = State.PAUSED
+            self._state = State.PAUSED
+        # Do nothing if already paused or stopped
 
     def stop(self) -> None:
-        """Reset the animation to the beginning frame, and stop."""
-        if self._state == State.STOPPED:
-            return  # do nothing
+        """Reset the animation to the beginning and set state to stopped."""
         self._state = State.STOPPED
 
-    def update(self, time_delta: float) -> None:
-        """
-        Update the internal clock with the elapsed time.
+    def update(self, dt: float) -> None:
+        """Update the internal clock with the elapsed time."""
+        self._internal_clock += dt
 
-        Parameters:
-            time_delta: Time elapsed since last call to update.
-
-        """
-        self._internal_clock += time_delta
-
-    def flip(self, flip_axes: str) -> None:
+    def flip(self, flip_axes: FlipAxes) -> None:
         """Flip all frames of an animation along the X-axis and/or Y-axis."""
-        # Empty string - animation won't be flipped
-        flip_x = "x" in flip_axes
-        flip_y = "y" in flip_axes
+        if flip_axes == FlipAxes.NONE:
+            return
+        flip_x = flip_axes in {FlipAxes.X, FlipAxes.XY}
+        flip_y = flip_axes in {FlipAxes.Y, FlipAxes.XY}
         self._frame_manager.flip_images(flip_x, flip_y)
+
+    def rewind(self) -> None:
+        """Rewind the animation to the beginning without changing its state."""
+        self._playing_start_time = self._internal_clock
+        if self._state == State.PAUSED:
+            self._paused_start_time = self._internal_clock
+
+    def seek_to_time(self, elapsed: float) -> None:
+        elapsed = clip(elapsed, 0, self.duration)
+        self._playing_start_time = self._internal_clock - (elapsed / self.rate)
+        if self._state in (State.PAUSED, State.STOPPED):
+            self._paused_start_time = self._internal_clock
+            self._state = State.PAUSED
 
     def _get_max_size(self) -> tuple[int, int]:
         """
@@ -218,7 +250,6 @@ class SurfaceAnimation:
 
         Returns:
             Max size in the form (width, height).
-
         """
         return self._frame_manager.get_max_size()
 
@@ -231,10 +262,33 @@ class SurfaceAnimation:
 
         Returns:
             Rect object of maximum size.
-
         """
         max_width, max_height = self._frame_manager.get_max_size()
         return Rect(0, 0, max_width, max_height)
+
+    def on_completion(self, callback: Callable[..., Any]) -> None:
+        """Set a callback function to be called when the animation completes."""
+        if not callable(callback):
+            raise TypeError("Callback must be a callable function.")
+        self._on_completion_callback = callback
+
+    def copy(self) -> SurfaceAnimation:
+        """
+        Returns a new SurfaceAnimation instance that shares the same frames
+        but has its own independent playback state (timers, loop count, etc).
+        """
+        new_anim = SurfaceAnimation(
+            frames=[(Surface((0, 0)), 0.1)],
+            loop=self._loop,
+            play_mode=self._play_mode,
+        )
+
+        new_anim._frame_manager = self._frame_manager
+        new_anim.rate = self.rate
+        new_anim._on_completion_callback = self._on_completion_callback
+        new_anim._internal_clock = self._internal_clock
+
+        return new_anim
 
     @property
     def rate(self) -> float:
@@ -248,104 +302,63 @@ class SurfaceAnimation:
         self._rate = rate
 
     @property
-    def loop(self) -> bool:
+    def loop(self) -> int:
         return self._loop
 
     @loop.setter
-    def loop(self, loop: bool) -> None:
-        if self.state == State.PLAYING and self._loop and not loop:
-            # If we are turning off looping while the animation is playing,
-            # we need to modify the _playing_start_time so that the rest of
-            # the animation will play, and then stop. Otherwise, the
-            # animation will immediately stop playing if it has already looped.
+    def loop(self, loop: int) -> None:
+        if loop < -1:
+            raise ValueError("loop must be -1 (infinite) or >= 0")
+
+        # If we are turning off infinite looping while the animation is playing,
+        # adjust the start time so the current cycle finishes instead of stopping
+        # immediately.
+        if self.state == State.PLAYING and self._loop == -1 and loop >= 0:
             self._playing_start_time = self._internal_clock - self.elapsed
-        self._loop = bool(loop)
+
+        self._loop = loop
+        self._completed_loops = 0
 
     @property
     def state(self) -> State:
-        if self.is_finished():
-            # If finished playing, then set state to STOPPED.
+        """
+        Get the current state of the animation.
+        Calls the on_completion callback if the animation has just finished.
+        """
+        if self._state == State.PLAYING and self.is_finished():
+            # If a non-looping animation finishes, its state becomes STOPPED
             self._state = State.STOPPED
+            if self._on_completion_callback:
+                # Call the registered callback function
+                self._on_completion_callback()
 
         return self._state
 
-    @state.setter
-    def state(self, state: State) -> None:
-        if state not in (State.PLAYING, State.PAUSED, State.STOPPED):
-            raise ValueError(
-                "state must be one of surfanim.PLAYING, surfanim.PAUSED, or "
-                "surfanim.STOPPED",
-            )
-        if state == State.PLAYING:
-            self.play()
-        elif state == State.PAUSED:
-            self.pause()
-        elif state == State.STOPPED:
-            self.stop()
-
-    @property
-    def visibility(self) -> bool:
-        return self._visibility
-
-    @visibility.setter
-    def visibility(self, visibility: bool) -> None:
-        self._visibility = bool(visibility)
-
     @property
     def elapsed(self) -> float:
-        # NOTE: Do to floating point rounding errors, this doesn't work
-        # precisely.
-
-        # To prevent infinite recursion, don't use the self.state property,
-        # just read/set self._state directly because the state getter calls
-        # this method.
-
-        # Find out how long ago the play()/pause() functions were called.
         if self._state == State.STOPPED:
-            # if stopped, then just return 0
-            return 0
+            return 0.0
 
         if self._state == State.PLAYING:
-            # If playing, then draw the current frame (based on when the
-            # animation started playing). If not looping and the animation
-            # has gone through all the frames already, then draw the last
-            # frame.
-            elapsed = (
+            total_elapsed = (
                 self._internal_clock - self._playing_start_time
             ) * self.rate
-        elif self._state == State.PAUSED:
-            # If paused, then draw the frame that was playing at the time the
-            # SurfaceAnimation object was paused
-            elapsed = (
+        else:  # PAUSED
+            total_elapsed = (
                 self._paused_start_time - self._playing_start_time
             ) * self.rate
-        if self._loop:
-            elapsed = elapsed % self.duration
-        else:
-            elapsed = clip(elapsed, 0, self.duration)
-        elapsed += 0.00001  # done to compensate for rounding errors
-        return elapsed
 
-    @elapsed.setter
-    def elapsed(self, elapsed: float) -> None:
-        # NOTE: Do to floating point rounding errors, this doesn't work
-        # precisely.
-        elapsed += 0.00001  # done to compensate for rounding errors
-        # TODO - I really need to find a better way to handle the floating
-        # point thing.
+        if self._loop == -1:
+            return total_elapsed % self.duration
 
-        # Set the elapsed time to a specific value.
-        if self._loop:
-            elapsed = elapsed % self.duration
-        else:
-            elapsed = clip(elapsed, 0, self.duration)
+        allowed_cycles = self._loop + 1
+        completed = int(total_elapsed // self.duration)
+        self._completed_loops = completed
 
-        rightNow = self._internal_clock
-        self._playing_start_time = rightNow - (elapsed * self.rate)
+        if completed >= allowed_cycles:
+            return self.duration
 
-        if self.state in (State.PAUSED, State.STOPPED):
-            self.state = State.PAUSED  # if stopped, then set to paused
-            self._paused_start_time = rightNow
+        return total_elapsed % self.duration
 
     @property
     def progress(self) -> float:
@@ -356,18 +369,68 @@ class SurfaceAnimation:
 
     @property
     def frames_played(self) -> int:
-        """Get the number of frames that have been played."""
-        return bisect.bisect(self._frame_manager.start_times, self.elapsed) - 1
+        """Get the number of frames that have been played, considering direction."""
+        total_frames = len(self._frame_manager.images)
+        if total_frames == 0:
+            return 0
+
+        # Calculate base frame index as if playing forward
+        base_frame_index = (
+            bisect.bisect(self._frame_manager.start_times, self.elapsed) - 1
+        )
+
+        if self._play_mode == PlayMode.FORWARD:
+            return base_frame_index
+        elif self._play_mode == PlayMode.BACKWARD:
+            return total_frames - 1 - base_frame_index
+        elif self._play_mode == PlayMode.PING_PONG:
+            # Determine if playing forward or backward in the current cycle
+            cycle_duration = self.duration
+            half_cycle = cycle_duration / 2
+
+            if self.elapsed < half_cycle:
+                # First half of the animation: forward playback
+                return base_frame_index
+            else:
+                # Second half: backward playback
+                return (
+                    total_frames
+                    - 1
+                    - (
+                        bisect.bisect(
+                            self._frame_manager.start_times,
+                            self.elapsed - half_cycle,
+                        )
+                        - 1
+                    )
+                )
 
     @frames_played.setter
     def frames_played(self, frame_num: int) -> None:
-        """Change the elapsed time to the beginning of a specific frame."""
+        """Change the elapsed time to the beginning of a specific frame, considering play mode."""
         total_frames = len(self._frame_manager.images)
-        if self.loop:
+        if total_frames == 0:
+            return
+
+        if self.loop == -1:
             frame_num = frame_num % total_frames
         else:
             frame_num = clip(frame_num, 0, total_frames - 1)
-        self.elapsed = self._frame_manager.start_times[frame_num]
+
+        if self._play_mode == PlayMode.FORWARD:
+            new_elapsed = self._frame_manager.start_times[frame_num]
+
+        elif self._play_mode == PlayMode.BACKWARD:
+            reversed_index = total_frames - 1 - frame_num
+            new_elapsed = self._frame_manager.start_times[reversed_index]
+
+        elif self._play_mode == PlayMode.PING_PONG:
+            new_elapsed = self._frame_manager.start_times[frame_num]
+
+        else:
+            new_elapsed = self._frame_manager.start_times[frame_num]
+
+        self.seek_to_time(new_elapsed)
 
     @property
     def frames_remaining(self) -> int:
@@ -379,15 +442,21 @@ class SurfaceAnimation:
         """Get the total duration of the animation."""
         return self._frame_manager.start_times[-1]
 
+    @property
+    def play_mode(self) -> PlayMode:
+        return self._play_mode
+
+    @play_mode.setter
+    def play_mode(self, mode: PlayMode) -> None:
+        self._play_mode = mode
+
 
 class SurfaceAnimationCollection:
     def __init__(
         self,
-        *animations: Union[
-            SurfaceAnimation,
-            Sequence[SurfaceAnimation],
-            Mapping[Any, SurfaceAnimation],
-        ],
+        *animations: SurfaceAnimation
+        | Sequence[SurfaceAnimation]
+        | Mapping[Any, SurfaceAnimation],
     ) -> None:
         self._animations: list[SurfaceAnimation] = []
         self.add(*animations)
@@ -395,11 +464,9 @@ class SurfaceAnimationCollection:
 
     def add(
         self,
-        *animations: Union[
-            SurfaceAnimation,
-            Sequence[SurfaceAnimation],
-            Mapping[Any, SurfaceAnimation],
-        ],
+        *animations: SurfaceAnimation
+        | Sequence[SurfaceAnimation]
+        | Mapping[Any, SurfaceAnimation],
     ) -> None:
         for animation in animations:
             if isinstance(animation, SurfaceAnimation):
@@ -431,13 +498,13 @@ class SurfaceAnimationCollection:
     def is_finished(self) -> bool:
         return all(a.is_finished() for a in self._animations)
 
-    def play(self, start_time: Optional[float] = None) -> None:
+    def play(self, start_time: float | None = None) -> None:
         for anim_obj in self._animations:
             anim_obj.play(start_time)
 
         self._state = State.PLAYING
 
-    def pause(self, start_time: Optional[float] = None) -> None:
+    def pause(self, start_time: float | None = None) -> None:
         for anim_obj in self._animations:
             anim_obj.pause(start_time)
 
@@ -448,16 +515,10 @@ class SurfaceAnimationCollection:
             anim_obj.stop()
         self._state = State.STOPPED
 
-    def update(self, time_delta: float) -> None:
-        """
-        Update the internal clock with the elapsed time.
-
-        Parameters:
-            time_delta: Time elapsed since last call to update.
-
-        """
+    def update(self, dt: float) -> None:
+        """Update the internal clock with the elapsed time."""
         for anim_obj in self._animations:
-            anim_obj.update(time_delta)
+            anim_obj.update(dt)
 
 
 T = TypeVar("T", bound=float)

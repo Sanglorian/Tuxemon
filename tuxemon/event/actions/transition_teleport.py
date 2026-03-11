@@ -1,14 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import ColorLike, string_to_colorlike
-from tuxemon.prepare import BLACK_COLOR, TRANS_TIME, fetch
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.platform.const.graphics import BLACK_COLOR
+from tuxemon.platform.const.sizes import TRANS_TIME
+from tuxemon.session import Session
+from tuxemon.teleporter import TeleportRequest
 
 
 @final
@@ -23,63 +25,61 @@ class TransitionTeleportAction(EventAction):
     Script usage:
         .. code-block::
 
-            transition_teleport <map_name>,<x>,<y>[,trans_time][,rgb]
+            transition_teleport <character>,<map_name>,<x>,<y>[,trans_time][,rgb]
 
     Script parameters:
+        character: Slug of the character to teleport.
         map_name: Name of the map to teleport to.
         x: X coordinate of the map to teleport to.
         y: Y coordinate of the map to teleport to.
-        trans_time: Transition time in seconds - default 0.3
-        rgb: color (eg red > 255,0,0 > 255:0:0) - default rgb(0,0,0)
-
+        trans_time: (Optional) Transition time in seconds. Default is 0.3.
+        rgb: (Optional) Transition color in RGB format (e.g. "255:0:0" for red).
+             Default is black (0,0,0).
     """
 
     name = "transition_teleport"
+    character: str
     map_name: str
     x: int
     y: int
-    trans_time: Optional[float] = None
-    rgb: Optional[str] = None
+    trans_time: float | None = None
+    rgb: str | None = None
 
-    def start(self) -> None:
-        self.world = self.session.client.get_state_by_name(WorldState)
+    def start(self, session: Session) -> None:
 
-        target_map = fetch("maps", self.map_name)
+        char = session.get_npc(self.character)
+        if char is None:
+            return
 
-        if self.world.npcs and self.world.current_map.filename != target_map:
-            self.world.npcs = [
-                npc for npc in self.world.npcs if not (npc.moving or npc.path)
-            ]
+        teleport_queue = session.client.teleporter.teleport_queue
 
-        if self.world.teleporter.delayed_teleport:
+        if not teleport_queue.is_empty():
             self.stop()
             return
 
-        self.session.client.current_music.stop()
-
-        # Start the screen transition
         _time = TRANS_TIME if self.trans_time is None else self.trans_time
         rgb: ColorLike = BLACK_COLOR
         if self.rgb:
             rgb = string_to_colorlike(self.rgb)
-        self.setup_delayed_teleport()
-        self.world.transition_manager.fade_and_teleport(
+
+        request = TeleportRequest(
+            char=None,
+            mapname=self.map_name,
+            x=self.x,
+            y=self.y,
+            facing=None,
+            source_map=char.current_map,
+            source_x=char.tile_pos[0],
+            source_y=char.tile_pos[1],
+        )
+        teleport_queue.enqueue(request)
+
+        session.world.prepare_for_teleport()
+        session.world.transition_manager.fade_and_teleport(
             _time,
             rgb,
-            lambda: self.world.teleporter.handle_delayed_teleport(
-                self.world.player
-            ),
+            char,
+            lambda: session.client.teleporter.handle_next_teleport(char),
         )
 
-    def update(self) -> None:
-        if self.done:
-            return
-
-    def setup_delayed_teleport(self) -> None:
-        """Configure delayed teleport after the screen transition."""
-        self.world.teleporter.delayed_char = None
-        self.world.teleporter.delayed_teleport = True
-        self.world.teleporter.delayed_mapname = self.map_name
-        self.world.teleporter.delayed_x = self.x
-        self.world.teleporter.delayed_y = self.y
         self.stop()

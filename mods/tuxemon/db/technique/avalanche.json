@@ -1,27 +1,30 @@
 {
   "tech_id": 33,
   "accuracy": 0.8,
-  "animation": "rockfall_193",
   "effects": [
     {
       "type": "give",
-      "parameters": ["exhausted","enemy_monster"]
+      "parameters": [
+        "exhausted",
+        "enemy_monster"
+      ]
     },
     {
       "type": "splash",
-      "parameters": ["2"]
+      "parameters": [
+        "2"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "extremely_slow",
   "potency": 0.8,
   "power": 2.25,
   "range": "ranged",
   "recharge": 3,
-  "sfx": "sfx_crumble3",
   "slug": "avalanche",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -31,11 +34,24 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["calamity"],
+  "tags": [
+    "calamity",
+    "ice",
+    "rock"
+  ],
   "types": [
     "earth"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "rockfall_193",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_crumble3",
+    "volume": 1.5
+  }
 }

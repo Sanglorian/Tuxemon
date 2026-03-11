@@ -1,66 +1,72 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
-from typing import final
+from typing import TYPE_CHECKING, final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.prepare import KENNEL
-from tuxemon.states.pc_kennel import HIDDEN_LIST
+from tuxemon.platform.const.sizes import KENNEL
+from tuxemon.tools import parse_flag
+
+if TYPE_CHECKING:
+    from tuxemon.session import Session
+
+logger = logging.getLogger(__name__)
 
 
 @final
 @dataclass
 class SetKennelVisibleAction(EventAction):
     """
-    Set the kennel visible or hidden.
+    Set a kennel's visibility state for a character.
 
     From hidden to visible:
-    set_kennel_visible name_kennel,true
+        set_kennel_visible player,name_kennel,true
 
     From visible to hidden:
-    set_kennel_visible name_kennel,false
+        set_kennel_visible player,name_kennel,false
 
     Script usage:
         .. code-block::
 
-            set_kennel_visible <kennel>,<visible>
+            set_kennel_visible <character>,<kennel>,<visible>
 
     Script parameters:
+        character: Either "player" or NPC slug name (e.g. "npc_maple").
         kennel: Name of the kennel.
-        visible: true/false.
-
+        visible: Optional string flag to set visibility.
+            Accepts "true", "1", "yes" for visible (case-insensitive).
+            Defaults to False when omitted or invalid.
     """
 
     name = "set_kennel_visible"
+    npc_slug: str
     kennel: str
-    visible: str
+    visible: str | None = None
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        character = session.get_npc(self.npc_slug)
+        if character is None:
+            logger.error(f"{self.npc_slug} not found")
+            return
+
         kennel = self.kennel
-        visible = self.visible
+        is_visible = parse_flag(self.visible)
 
         if kennel == KENNEL:
-            raise ValueError(
-                f"{kennel} cannot be made invisible.",
+            raise ValueError(f"{kennel} cannot be made invisible.")
+        if not character.monster_boxes.has_box(kennel, "monster"):
+            return
+
+        try:
+            character.monster_boxes.set_box_hidden(
+                kennel, "monster", not is_visible
             )
-        else:
-            if player.monster_boxes.has_box(kennel, "monster"):
-                if visible == "true":
-                    if kennel in HIDDEN_LIST:
-                        HIDDEN_LIST.remove(kennel)
-                    else:
-                        return
-                elif visible == "false":
-                    if kennel in HIDDEN_LIST:
-                        return
-                    else:
-                        HIDDEN_LIST.append(kennel)
-                else:
-                    raise ValueError(
-                        f"{visible} is invalid, must be true or false",
-                    )
-            else:
-                return
+            logger.info(
+                f"Set kennel '{kennel}' visibility for {self.npc_slug}: "
+                f"{'visible' if is_visible else 'hidden'}"
+            )
+        except ValueError as e:
+            logger.error(str(e))

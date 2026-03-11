@@ -98,8 +98,8 @@
   </object>
   <object id="56" name="Environment" type="event" x="0" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:interior"/>
-    <property name="cond1" value="not variable_set environment:interior"/>
+    <property name="act1" value="set_environment interior"/>
+    <property name="cond1" value="not environment_is interior"/>
    </properties>
   </object>
   <object id="57" name="Music" type="event" x="16" y="0" width="16" height="16">
@@ -110,14 +110,14 @@
   </object>
   <object id="58" name="2nd floor1" type="event" x="80" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_candy_hospital2.tmx,17,2,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_candy_hospital2.tmx,17,2,0.3"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
    </properties>
   </object>
   <object id="59" name="2nd floor2" type="event" x="96" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_candy_hospital2.tmx,18,2,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_candy_hospital2.tmx,18,2,0.3"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
    </properties>
@@ -141,7 +141,7 @@
     <property name="act61" value="translated_dialog spyder_hospital_billie2"/>
     <property name="act62" value="char_plague spyderbite,inoculated"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
     <property name="cond3" value="not variable_set hospitalcure:yes"/>
    </properties>
   </object>

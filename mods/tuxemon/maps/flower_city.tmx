@@ -109,7 +109,7 @@
  <objectgroup color="#ffff00" id="7" name="Events">
   <object id="118" name="Teleport to Route 4" type="event" x="0" y="64" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route4.tmx,19,3,0.3"/>
+    <property name="act10" value="transition_teleport player,route4.tmx,19,3,0.3"/>
     <property name="act20" value="char_face player,left"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,left"/>
@@ -117,7 +117,7 @@
   </object>
   <object id="119" name="Teleport to Route 4" type="event" x="0" y="80" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route4.tmx,19,4,0.3"/>
+    <property name="act10" value="transition_teleport player,route4.tmx,19,4,0.3"/>
     <property name="act20" value="char_face player,left"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,left"/>
@@ -125,7 +125,7 @@
   </object>
   <object id="195" name="Teleport to Side Route A" type="event" x="176" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport routea.tmx,11,39,0.3"/>
+    <property name="act10" value="transition_teleport player,routea.tmx,11,39,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -133,7 +133,7 @@
   </object>
   <object id="196" name="Teleport to Side Route A" type="event" x="192" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport routea.tmx,12,39,0.3"/>
+    <property name="act10" value="transition_teleport player,routea.tmx,12,39,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -147,7 +147,7 @@
   </object>
   <object id="201" name="Teleport to Route 5" type="event" x="624" y="240" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route5.tmx,0,15,0.3"/>
+    <property name="act10" value="transition_teleport player,route5.tmx,0,15,0.3"/>
     <property name="act20" value="char_face player,right"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -155,7 +155,7 @@
   </object>
   <object id="203" name="Teleport to Route 5" type="event" x="592" y="256" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport route5.tmx,0,15,0.3"/>
+    <property name="act10" value="transition_teleport player,route5.tmx,0,15,0.3"/>
     <property name="act20" value="char_face player,right"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -163,7 +163,7 @@
   </object>
   <object id="204" name="Teleport to Dojo" type="event" x="48" y="272" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport dojo1.tmx,11,11,0.3"/>
+    <property name="act10" value="transition_teleport player,dojo1.tmx,11,11,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -173,7 +173,7 @@
    <properties>
     <property name="act1" value="translated_dialog Cotton_Mart"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
    </properties>
   </object>
   <object id="208" name="Sign: Flower City" type="event" x="32" y="48" width="16" height="16">
@@ -181,19 +181,19 @@
     <property name="act10" value="translated_dialog cotton_town"/>
     <property name="act20" value="translated_dialog cotton_town_description"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
    </properties>
   </object>
   <object id="209" name="Sign: Flower East" type="event" x="608" y="208" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog route5"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
    </properties>
   </object>
   <object id="220" name="Teleport to Leather Town" type="event" x="224" y="624" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport leather_town.tmx,39,5"/>
+    <property name="act10" value="transition_teleport player,leather_town.tmx,39,5"/>
     <property name="act20" value="char_face player,left"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -201,7 +201,7 @@
   </object>
   <object id="221" name="Teleport to Leather Town" type="event" x="192" y="624" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport leather_town.tmx,39,4"/>
+    <property name="act10" value="transition_teleport player,leather_town.tmx,39,4"/>
     <property name="act20" value="char_face player,left"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -209,7 +209,7 @@
   </object>
   <object id="222" name="Teleport to Timber Town" type="event" x="624" y="512" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport timber_town.tmx,33,39"/>
+    <property name="act10" value="transition_teleport player,timber_town.tmx,33,39"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -217,7 +217,7 @@
   </object>
   <object id="223" name="Teleport to Timber Town" type="event" x="624" y="544" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport timber_town.tmx,34,39"/>
+    <property name="act10" value="transition_teleport player,timber_town.tmx,34,39"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -225,7 +225,7 @@
   </object>
   <object id="224" name="Teleport to Leather Town" type="event" x="208" y="624" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport leather_town.tmx,39,4"/>
+    <property name="act10" value="transition_teleport player,leather_town.tmx,39,4"/>
     <property name="act20" value="char_face player,left"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -233,7 +233,7 @@
   </object>
   <object id="225" name="Teleport to Timber Town" type="event" x="624" y="528" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport timber_town.tmx,33,39"/>
+    <property name="act10" value="transition_teleport player,timber_town.tmx,33,39"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>

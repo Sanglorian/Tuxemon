@@ -1,18 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 
 @final
 @dataclass
-class LockControlsAction(
-    EventAction,
-):
+class LockControlsAction(EventAction):
     """
     Lock player controls
 
@@ -20,10 +19,9 @@ class LockControlsAction(
         .. code-block::
 
             lock_controls
-
     """
 
     name = "lock_controls"
 
-    def start(self) -> None:
-        self.session.client.push_state("SinkState")
+    def start(self, session: Session) -> None:
+        session.client.push_state("SinkState")

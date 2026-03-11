@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -31,20 +32,20 @@ class PrintAction(EventAction):
     """
 
     name = "print"
-    variables: Optional[str] = None
+    variables: str | None = None
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
 
         if self.variables:
             variables = [var for var in self.variables.split(":") if var]
             for variable in variables:
-                if player.game_variables and variable in player.game_variables:
-                    print(f"{variable}: {player.game_variables[variable]}")
+                if player.game_variables.has(variable):
+                    print(f"{variable}: {player.game_variables.get(variable)}")
                 else:
                     print(f"'{variable}' has not been set yet by map actions.")
         else:
-            if player.game_variables:
-                print(player.game_variables)
+            if player.game_variables.get_state():
+                print(player.game_variables.get_state())
             else:
                 print("No game variables have been set.")

@@ -1,15 +1,27 @@
 {
   "conditions": [
     {
+      "type": "base",
+      "parameters": [
+        "tags",
+        "gadgets:calamity:bomber"
+      ],
+      "operator": "is"
+    },
+    {
       "type": "has_tech",
-      "parameters": ["panjandrum"],
+      "parameters": [
+        "panjandrum"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["panjandrum"]
+      "parameters": [
+        "panjandrum"
+      ]
     }
   ],
   "slug": "tm_panjandrum",
@@ -26,5 +38,14 @@
   },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
-  "use_success": "generic_success"
+  "use_success": "generic_success",
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": null,
+    "volume": 0.0
+  }
 }

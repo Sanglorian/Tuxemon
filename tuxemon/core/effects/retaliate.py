@@ -1,60 +1,70 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat import fainted
-from tuxemon.core.core_effect import StatusEffect, StatusEffectResult
-from tuxemon.db import Range
+from tuxemon.core.core_effect import CoreEffect, StatusEffectResult
+from tuxemon.db import EffectPhase, Range
 from tuxemon.formula import simple_damage_calculate
-from tuxemon.monster import Monster
+from tuxemon.monster.monster import Monster
 from tuxemon.status.status import Status
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
+    from tuxemon.session import Session
     from tuxemon.status.status import Status
 
 
 @dataclass
-class RetaliateEffect(StatusEffect):
+class RetaliateEffect(CoreEffect):
     """
-    Retaliate:
-    Accumulate all damage taken between entering this state and next dealing
-    damage. The accumulated damage is then added to your next attack, dealing
-    additional damage to the target.
+    Applies the "retaliate" status effect.
 
-    Note: The accumulated damage is reset after the next attack.
+    This effect causes the host monster to retaliate against attackers by
+    accumulating damage taken between entering the retaliate state and the
+    next time the host deals damage. The accumulated damage is then added
+    to the host's next attack, dealing additional damage to the attacker.
+    After the retaliatory strike, the accumulated damage is reset.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "retaliate"
+        ]
     """
 
     name = "retaliate"
 
-    def apply(self, status: Status, target: Monster) -> StatusEffectResult:
-        done: bool = False
-        assert status.combat_state
-        combat = status.combat_state
-        log = combat._action_queue
-        turn = combat._turn
-        action = log.get_last_action(turn, target, "target")
+    def apply_status(
+        self, session: Session, status: Status
+    ) -> StatusEffectResult:
+        host = status.host
+
+        if not status.has_phase(EffectPhase.PERFORM_STATUS):
+            return StatusEffectResult(name=status.name, success=False)
+
+        combat = session.client.combat_session
+        action = combat.action_queue.get_last_action(
+            combat.turn, host, "target"
+        )
 
         if (
             action
             and isinstance(action.method, Technique)
             and isinstance(action.user, Monster)
             and action.method.range != Range.special
+            and action.method.hit
+            and action.target.instance_id == host.instance_id
+            and not action.user.is_fainted
         ):
-            method = action.method
-            attacker = action.user
-            dam, mul = simple_damage_calculate(method, attacker, target)
+            damage, _ = simple_damage_calculate(
+                action.method, action.user, host
+            )
+            action.user.current_hp = max(0, action.user.current_hp - damage)
+            return StatusEffectResult(name=status.name, success=True)
 
-            if (
-                status.phase == "perform_action_status"
-                and method.hit
-                and action.target.instance_id == target.instance_id
-                and method.range != Range.special
-                and not fainted(attacker)
-            ):
-                attacker.current_hp = max(0, attacker.current_hp - dam)
-                done = True
-        return StatusEffectResult(name=status.name, success=done)
+        return StatusEffectResult(name=status.name, success=False)

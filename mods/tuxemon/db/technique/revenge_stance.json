@@ -1,23 +1,26 @@
 {
   "tech_id": 181,
   "accuracy": 1,
-  "animation": "amethyst_absorb",
   "effects": [
     {
       "type": "give",
-      "parameters": ["revenge", "enemy_monster"]
+      "parameters": [
+        "revenge",
+        "enemy_monster"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "extremely_fast",
   "potency": 1,
   "power": 0,
   "range": "special",
   "recharge": 1,
-  "sfx": "sfx_blaster",
   "slug": "revenge_stance",
-  "sort": "meta",
+  "sort": "damage",
   "modifiers": [],
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": false,
     "enemy_team": false,
@@ -27,11 +30,24 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["soldier", "shielded", "fury"],
+  "tags": [
+    "soldier",
+    "shielded",
+    "fury"
+  ],
   "types": [
-    "metal"
+    "normal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "amethyst_absorb",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_kick",
+    "volume": 1.5
+  }
 }

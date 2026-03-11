@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -8,7 +8,7 @@ from enum import Enum
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -36,16 +36,15 @@ class CameraModeAction(EventAction):
     name = "camera_mode"
     mode: str
 
-    def start(self) -> None:
-        world = self.session.client.get_state_by_name(WorldState)
-        camera = world.camera_manager.get_active_camera()
+    def start(self, session: Session) -> None:
+        camera = session.client.camera_manager.get_active_camera()
         if camera is None:
             logger.error("No active camera found.")
             return
         mode = CameraMode(self.mode)
         if mode == CameraMode.FREE_ROAMING:
             camera.free_roaming_enabled = True
-            if camera.follows_entity:
+            if camera.is_following():
                 camera.unfollow()
         else:
             camera.reset_to_entity_center()

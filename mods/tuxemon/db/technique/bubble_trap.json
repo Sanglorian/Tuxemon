@@ -1,26 +1,27 @@
 {
   "tech_id": 57,
   "accuracy": 0.75,
-  "animation": "bomb_bright",
   "effects": [
     {
       "type": "give",
-      "parameters": ["grabbed", "enemy_monster:own_monster"]
+      "parameters": [
+        "grabbed",
+        "enemy_monster:own_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 2.25,
   "range": "reach",
   "recharge": 3,
-  "sfx": "sfx_bubbles",
   "slug": "bubble_trap",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,12 +31,23 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["summoner", "mental"],
+  "tags": [
+    "summoner",
+    "mental"
+  ],
   "types": [
-    "fire",
-    "metal"
+    "cosmic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "bomb_bright",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_bubbles",
+    "volume": 1.5
+  }
 }

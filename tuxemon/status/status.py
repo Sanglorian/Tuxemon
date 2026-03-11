@@ -1,208 +1,252 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
-import uuid
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
+from uuid import UUID, uuid4
 
-from tuxemon.constants import paths
-from tuxemon.core.core_condition import CoreCondition
-from tuxemon.core.core_effect import StatusEffect, StatusEffectResult
-from tuxemon.core.core_manager import ConditionManager, EffectManager
-from tuxemon.core.core_processor import ConditionProcessor, EffectProcessor
-from tuxemon.db import (
-    CategoryStatus,
-    Range,
-    ResponseStatus,
-    db,
+from tuxemon.core.asset import get_assets
+from tuxemon.core.core_effect import StatusEffectResult
+from tuxemon.core.core_processor import (
+    ConditionProcessor,
+    ConditionValidationResult,
+    EffectProcessor,
 )
-from tuxemon.locale import T
+from tuxemon.database.runtime import db
+from tuxemon.db import EffectPhase, StatusModel
+from tuxemon.locale.locale import T
+from tuxemon.modifiers import ModifiersHandler
+from tuxemon.monster.stats import BasicStats
+from tuxemon.status.lifecycle import Lifecycle
+from tuxemon.status.step_effect_engine import StepEffectEngine
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
-    from tuxemon.states.combat.combat import CombatState
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
-
-SIMPLE_PERSISTANCE_ATTRIBUTES = (
-    "slug",
-    "steps",
-)
 
 
 class Status:
     """
     Particular status that tuxemon monsters can be affected.
-
     """
 
-    def __init__(self, save_data: Optional[Mapping[str, Any]] = None) -> None:
-        save_data = save_data or {}
+    def __init__(
+        self,
+        host: Monster,
+        db_data: StatusModel,
+        instance_id: UUID | None = None,
+        steps: float = 0.0,
+    ) -> None:
+        self._host = host
+        self.slug = db_data.slug
+        self.instance_id: UUID = instance_id or uuid4()
 
-        self.instance_id = uuid.uuid4()
-        self.steps = 0.0
-        self.bond = False
-        self.counter = 0
-        self.cond_id = 0
-        self.animation: Optional[str] = None
-        self.category: Optional[CategoryStatus] = None
-        self.combat_state: Optional[CombatState] = None
-        self.description = ""
-        self.flip_axes = ""
-        self.gain_cond = ""
-        self.icon = ""
-        self.link: Optional[Monster] = None
-        self.name = ""
-        self.nr_turn = 0
-        self.duration = 0
-        self.phase: Optional[str] = None
-        self.range = Range.melee
-        self.repl_pos: Optional[ResponseStatus] = None
-        self.repl_neg: Optional[ResponseStatus] = None
-        self.repl_tech: Optional[str] = None
-        self.repl_item: Optional[str] = None
-        self.sfx = ""
-        self.sort = ""
-        self.slug = ""
-        self.use_success = ""
-        self.use_failure = ""
+        self.sort = db_data.sort
+        self.icon = db_data.icon
+        self.behaviors = db_data.behaviors
+        self.bond = db_data.bond
+        self.category = db_data.category
+        self.cond_id = db_data.cond_id
+        self.visuals = db_data.visuals
+        self.sound = db_data.sound
+        self.on_tech_use = db_data.on_tech_use
+        self.on_item_use = db_data.on_item_use
+        self.on_positive_status = db_data.on_positive_status
+        self.on_negative_status = db_data.on_negative_status
 
-        self.effect_manager = EffectManager(
-            StatusEffect, paths.CORE_EFFECT_PATH
-        )
-        self.condition_manager = ConditionManager(
-            CoreCondition, paths.CORE_CONDITION_PATH
-        )
-
-        self.set_state(save_data)
-
-    def load(self, slug: str) -> None:
-        """
-        Loads and sets this status's attributes from the status
-        database. The status is looked up in the database by slug.
-
-        Parameters:
-            The slug of the status to look up in the database.
-        """
-        try:
-            results = db.lookup(slug, table="status")
-        except KeyError:
-            raise RuntimeError(f"Status {slug} not found")
-
-        self.slug = results.slug  # a short English identifier
-        self.name = T.translate(self.slug)
-        self.description = T.translate(f"{self.slug}_description")
-
-        self.sort = results.sort
-
-        # status use notifications (translated!)
-        self.gain_cond = T.maybe_translate(results.gain_cond)
-        self.use_success = T.maybe_translate(results.use_success)
-        self.use_failure = T.maybe_translate(results.use_failure)
-
-        self.icon = results.icon
-        self.counter = self.counter
-        self.steps = self.steps
-
-        self.modifiers = results.modifiers
-        # monster stats
-        self.statspeed = results.statspeed
-        self.stathp = results.stathp
-        self.statarmour = results.statarmour
-        self.statmelee = results.statmelee
-        self.statranged = results.statranged
-        self.statdodge = results.statdodge
-        # status fields
-        self.duration = results.duration
-        self.bond = results.bond or self.bond
-        self.category = results.category or self.category
-        self.repl_neg = results.repl_neg or self.repl_neg
-        self.repl_pos = results.repl_pos or self.repl_pos
-        self.repl_tech = results.repl_tech or self.repl_tech
-        self.repl_item = results.repl_item or self.repl_item
-
-        self.range = results.range or Range.melee
-        self.cond_id = results.cond_id or self.cond_id
-
-        self.effects = self.effect_manager.parse_effects(results.effects)
-        self.conditions = self.condition_manager.parse_conditions(
-            results.conditions
-        )
+        self.core_assets = get_assets()
+        self.conditions = self.core_assets.parse_conditions(db_data.conditions)
         self.condition_handler = ConditionProcessor(self.conditions)
-        self.effect_handler = EffectProcessor(self.effects)
+        self.effect_defs = db_data.effects
 
-        # Load the animation sprites that will be used for this status
-        self.animation = results.animation
-        self.flip_axes = results.flip_axes
+        self.lifecycle = Lifecycle()
+        self.lifecycle.duration = db_data.duration
+        self.lifecycle.max_stacks = db_data.max_stacks
 
-        # Load the sound effect for this status
-        self.sfx = results.sfx
+        self.step_engine = StepEffectEngine(initial_steps=steps)
+        self.step_engine.interval = db_data.step_interval
+        self.step_engine.effect_type = db_data.step_effect_type
+        self.step_engine.value = db_data.step_effect_value
+        self.stat_modifiers = db_data.stat_modifiers
+
+        self.modifiers = ModifiersHandler(db_data.modifiers)
+        self.temporary_stat_boosts = BasicStats()
+        self._effect_applied: set[str] = set()
+        self._linked_monster: Monster | None = None
+        self.phase: EffectPhase = EffectPhase.DEFAULT
+
+        self.gain_cond = T.maybe_translate(db_data.gain_cond)
+        self.use_success = T.maybe_translate(db_data.use_success)
+        self.use_failure = T.maybe_translate(db_data.use_failure)
+
+    @classmethod
+    def create(cls, slug: str, host: Monster, steps: float = 0.0) -> Status:
+        db_data = StatusModel.lookup(slug, db)
+        return cls(host=host, db_data=db_data, steps=steps)
+
+    @classmethod
+    def from_save(cls, host: Monster, save_data: Mapping[str, Any]) -> Status:
+        slug = save_data["slug"]
+        db_data = StatusModel.lookup(slug, db)
+
+        instance_id = None
+        if "instance_id" in save_data:
+            instance_id = UUID(save_data["instance_id"])
+
+        return cls(
+            host=host,
+            db_data=db_data,
+            instance_id=instance_id,
+            steps=save_data.get("steps", 0.0),
+        )
+
+    @property
+    def name(self) -> str:
+        return T.translate(self.slug)
+
+    @property
+    def description(self) -> str:
+        return T.translate(f"{self.slug}_description")
+
+    @property
+    def host(self) -> Monster:
+        """Returns the monster associated with this status."""
+        return self._host
+
+    @property
+    def steps(self) -> float:
+        return self.step_engine.steps
+
+    @steps.setter
+    def steps(self, value: float) -> None:
+        self.step_engine.steps = value
+
+    @property
+    def linked_monster(self) -> Monster | None:
+        """Returns the monster linked to this status effect."""
+        return self._linked_monster
+
+    @property
+    def nr_turn(self) -> int:
+        return self.lifecycle.turn
+
+    def has_phase(self, phase: EffectPhase) -> bool:
+        """Returns True if the current phase is equal to the provided phase, False otherwise."""
+        return self.phase == phase
+
+    def set_phase(self, phase: EffectPhase) -> None:
+        """Sets the phase to the provided value."""
+        self.phase = phase
 
     def advance_round(self) -> None:
-        """
-        Advance the counter for this status if used.
+        """Advance the counter for this status if used."""
+        self.lifecycle.advance_use()
 
+    def is_use_expired(self, max_uses: int = 1) -> bool:
         """
-        self.counter += 1
+        Checks if the status has reached its use-based expiration threshold.
+        """
+        return self.lifecycle.is_use_expired(max_uses)
 
-    def validate_monster(self, target: Monster) -> bool:
+    def validate_monster(self, session: Session, target: Monster) -> bool:
         """
         Check if the target meets all conditions that the status has on its use.
         """
-        return self.condition_handler.validate(target=target)
+        return self.condition_handler.validate_monster(
+            session=session, target=target
+        ).passed
 
-    def use(self, target: Monster) -> StatusEffectResult:
+    def debug_validate_monster(
+        self, session: Session, target: Monster
+    ) -> ConditionValidationResult:
+        """Developer API: returns full structured validation result."""
+        return self.condition_handler.validate_monster(
+            session=session, target=target
+        )
+
+    def set_linked_monster(self, monster: Monster) -> None:
+        """Assigns a linked monster that benefits from this status."""
+        self._linked_monster = monster
+
+    def has_exceeded_duration(self) -> bool:
+        """Checks if the status has lasted beyond its intended duration."""
+        return self.lifecycle.has_exceeded_duration()
+
+    def use(self, session: Session, phase: EffectPhase) -> StatusEffectResult:
         """
         Applies the status's effects using EffectProcessor and returns the results.
         """
+        self.effects = self.core_assets.parse_effects(self.effect_defs)
+        self.effect_handler = EffectProcessor(self.effects)
+        self.set_phase(phase)
         result = self.effect_handler.process_status(
+            session=session,
             source=self,
-            target=target,
         )
-
+        if session.client:
+            session.client.active_effect_manager.add_status(self)
         return result
 
+    def tick_turn(self) -> None:
+        self.lifecycle.tick_turn()
+        logger.debug(
+            f"[Status Duration] {self.slug} turn {self.lifecycle.turn} "
+            f"of {self.lifecycle.duration} at stack {self.lifecycle.stack_level}."
+        )
+
+    def stack(self) -> None:
+        old, new = self.lifecycle.stack()
+        logger.debug(
+            f"Status '{self.slug}' stacked from {old} to {new}. "
+            f"Duration/Uses refreshed."
+        )
+
+    def tick_steps(
+        self, session: Session, steps: float
+    ) -> StatusEffectResult | None:
+        """
+        Advance step counter and trigger effect if interval reached.
+        """
+        ticks = self.step_engine.add_steps(steps)
+        if ticks <= 0:
+            return None
+
+        logger.debug(
+            f"[Status Step Tick] {self.slug} triggered for {ticks} ticks."
+        )
+
+        self.step_engine.compute_hp_change(self.host, ticks)
+
+        return self.use(session, EffectPhase.ON_STEP_INTERVAL)
+
+    def is_already_applied(self, effect_name: str) -> bool:
+        """Check if a specific core effect has already been triggered for this status."""
+        return effect_name in self._effect_applied
+
+    def mark_applied(self, effect_name: str) -> None:
+        """Mark a core effect as applied so it doesn't run again."""
+        self._effect_applied.add(effect_name)
+
     def get_state(self) -> Mapping[str, Any]:
-        """
-        Prepares a dictionary of the status to be saved to a file.
-
-        """
-        save_data = {
-            attr: getattr(self, attr)
-            for attr in SIMPLE_PERSISTANCE_ATTRIBUTES
-            if getattr(self, attr)
+        """Prepares a dictionary of the status to be saved."""
+        return {
+            "slug": self.slug,
+            "steps": self.steps,
+            "instance_id": self.instance_id.hex,
         }
-
-        save_data["instance_id"] = str(self.instance_id.hex)
-
-        return save_data
-
-    def set_state(self, save_data: Mapping[str, Any]) -> None:
-        """
-        Loads information from saved data.
-
-        """
-        if not save_data:
-            return
-
-        self.load(save_data["slug"])
-
-        for key, value in save_data.items():
-            if key == "instance_id" and value:
-                self.instance_id = uuid.UUID(value)
-            elif key in SIMPLE_PERSISTANCE_ATTRIBUTES:
-                setattr(self, key, value)
 
 
 def decode_status(
-    json_data: Optional[Sequence[Mapping[str, Any]]],
+    json_data: Sequence[Mapping[str, Any]] | None, monster: Monster
 ) -> list[Status]:
-    return [Status(save_data=cond) for cond in json_data or {}]
+    if not json_data:
+        return []
+    return [Status.from_save(host=monster, save_data=s) for s in json_data]
 
 
-def encode_status(
-    conds: Sequence[Status],
-) -> Sequence[Mapping[str, Any]]:
+def encode_status(conds: Sequence[Status]) -> Sequence[Mapping[str, Any]]:
     return [cond.get_state() for cond in conds]

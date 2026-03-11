@@ -1,13 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import re
 from collections.abc import Sequence
 
 
-def split_escaped(
-    string_to_split: str,
-    delimeter: str = ",",
-) -> Sequence[str]:
+def split_escaped(string_to_split: str, delimeter: str = ",") -> Sequence[str]:
     """
     Splits a string by the specified deliminator excluding escaped ones.
 
@@ -17,18 +14,21 @@ def split_escaped(
 
     Returns:
         A list of the split string.
-
     """
-    # Split by "," unless it is escaped by a "\"
+    if not string_to_split.strip():
+        return []
+
+    # Split by delimiter unless it is escaped by a "\"
     split_list = re.split(r"(?<!\\)" + delimeter, string_to_split)
 
-    # Remove the escape character from the split list
-    split_list = [w.replace(r"\,", ",") for w in split_list]
-
-    # strip whitespace around each
-    split_list = [i.strip() for i in split_list]
-
-    return split_list
+    # Clean up segments:
+    # 1. Replace escaped delimiters
+    # 2. Strip whitespace
+    # 3. Filter out empty strings
+    return [
+        item.replace(f"\\{delimeter}", delimeter).strip()
+        for item in split_list
+    ]
 
 
 def parse_action_string(text: str) -> tuple[str, Sequence[str]]:

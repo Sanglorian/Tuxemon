@@ -1,23 +1,26 @@
 {
   "tech_id": 113,
   "accuracy": 1,
-  "animation": "drip_red_alt",
   "effects": [
     {
       "type": "give",
-      "parameters": ["poison", "enemy_monster"]
+      "parameters": [
+        "poison",
+        "enemy_monster"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
   "recharge": 1,
-  "sfx": "sfx_blaster",
   "slug": "poison_courtship",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -27,11 +30,22 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["bug"],
+  "tags": [
+    "bug"
+  ],
   "types": [
-    "aether"
+    "venom"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "drip_red_alt",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_bubbles",
+    "volume": 1.5
+  }
 }

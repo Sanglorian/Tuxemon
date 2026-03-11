@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.session import Session
+from tuxemon.teleporter import TeleportRequest
 
 logger = logging.getLogger(__name__)
 
@@ -17,18 +17,21 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TeleportAction(EventAction):
     """
-    Teleport the player to a particular map and tile coordinates.
+    Teleport a character to a specific map and tile coordinates.
+
+    If a screen transition is in progress, the teleport will be queued
+    and executed at the apex of the transition.
 
     Script usage:
         .. code-block::
 
-            teleport <map_name>,<x>,<y>
+            teleport <character>,<map_name>,<x>,<y>
 
     Script parameters:
+        character: Slug of the character to teleport.
         map_name: Name of the map to teleport to.
         x: X coordinate of the map to teleport to.
         y: Y coordinate of the map to teleport to.
-
     """
 
     name = "teleport"
@@ -37,27 +40,34 @@ class TeleportAction(EventAction):
     x: int
     y: int
 
-    def start(self) -> None:
-        world = self.session.client.get_state_by_name(WorldState)
+    def start(self, session: Session) -> None:
+        teleport_queue = session.client.teleporter.teleport_queue
 
-        char = get_npc(self.session, self.character)
+        char = session.get_npc(self.character)
         if char is None:
-            logger.error(f"{self.character} not found")
+            logger.error(
+                f"TeleportAction: Character '{self.character}' not found."
+            )
             return
 
-        self.session.client.current_music.stop()
+        request = TeleportRequest(
+            char=char,
+            mapname=self.map_name,
+            x=self.x,
+            y=self.y,
+            source_map=char.current_map,
+            source_x=char.tile_pos[0],
+            source_y=char.tile_pos[1],
+        )
 
-        # Check to see if we're also performing a transition. If we are, wait
-        # to perform the teleport at the apex of the transition
-        if world.transition_manager.in_transition:
-            if not world.teleporter.delayed_teleport:
-                world.teleporter.delayed_char = char
-                world.teleporter.delayed_teleport = True
-                world.teleporter.delayed_mapname = self.map_name
-                world.teleporter.delayed_x = self.x
-                world.teleporter.delayed_y = self.y
-        else:
-            # Teleport the character immediately
-            world.teleporter.teleport_character(
-                char, self.map_name, self.x, self.y
+        if session.world.transition_manager.in_transition:
+            teleport_queue.enqueue(request)
+            logger.info(
+                f"Queued teleport for '{char.slug}' to {self.map_name} ({self.x}, {self.y})"
             )
+        else:
+            session.client.teleporter.execute_teleport(char, request)
+            logger.info(
+                f"Teleported '{char.slug}' to {self.map_name} ({self.x}, {self.y})"
+            )
+        session.client.movement_manager.unlock_controls(char)

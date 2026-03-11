@@ -1,14 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
-from tuxemon.db import db
-from tuxemon.event import get_npc
+from tuxemon.database.runtime import db
 from tuxemon.event.eventaction import EventAction
 from tuxemon.item.item import Item
+from tuxemon.session import Session
+
+logger = logging.getLogger(__name__)
 
 
 @final
@@ -27,58 +30,48 @@ class AddItemAction(EventAction):
         quantity: Quantity of the item to add or to reduce. By default it is 1.
         npc_slug: Slug of the trainer that will receive the item. It
             defaults to the current player.
-
     """
 
     name = "add_item"
     item_slug: str
-    quantity: Optional[int] = None
-    npc_slug: Optional[str] = None
+    quantity: int | None = None
+    npc_slug: str | None = None
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
         self.npc_slug = self.npc_slug or "player"
-        trainer = get_npc(self.session, self.npc_slug)
+        trainer = session.get_npc(self.npc_slug)
         if not trainer:
             raise ValueError(f"NPC '{self.npc_slug}' not found")
 
-        # check item existence
-        _item: str = ""
-        if self.item_slug not in db.database["item"]:
-            if self.item_slug in player.game_variables:
-                _item = player.game_variables[self.item_slug]
-            else:
-                raise ValueError(
-                    f"{self.item_slug} doesn't exist (item or variable)."
-                )
+        if self.item_slug in db.database["item"]:
+            item_id = self.item_slug
+        elif player.game_variables.has(self.item_slug):
+            item_id = player.game_variables.get(self.item_slug)
         else:
-            _item = self.item_slug
+            raise ValueError(
+                f"{self.item_slug} doesn't exist (item or variable)."
+            )
 
-        itm = Item()
-        itm.load(_item)
-        existing = trainer.find_item(_item)
+        bag = trainer.bag
+        existing = bag.find_item(item_id)
+
+        qty = self.quantity if self.quantity is not None else 1
+
         if existing:
-            if self.quantity is None:
-                existing.quantity += 1
-            elif self.quantity < 0:
-                diff = existing.quantity + self.quantity
-                if diff <= 0:
-                    trainer.remove_item(existing)
-                else:
-                    existing.quantity = diff
-            elif self.quantity > 0:
-                existing.quantity += self.quantity
-            else:
-                existing.quantity += 1
-        else:
-            if self.quantity is None:
-                itm.quantity = 1
-                trainer.add_item(itm)
-            elif self.quantity > 0:
-                itm.quantity = self.quantity
-                trainer.add_item(itm)
-            elif self.quantity < 0:
-                return
-            else:
-                itm.quantity = 1
-                trainer.add_item(itm)
+            if qty > 0:
+                existing.increase_quantity(qty)
+            elif qty < 0:
+                bag.remove_item(existing, abs(qty))
+            # qty == 0 → do nothing
+            return
+
+        # No existing item
+        if qty > 0:
+            itm = Item.create(item_id)
+            success = bag.add_item(itm, qty)
+            if not success:
+                logger.warning(
+                    f"AddItemAction: Ignored invalid quantity {qty} for item '{item_id}' "
+                    f"when adding to NPC '{trainer.slug}'."
+                )

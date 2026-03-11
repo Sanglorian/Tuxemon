@@ -1,26 +1,27 @@
 {
   "tech_id": 160,
   "accuracy": 0.7,
-  "animation": "x_attack",
   "effects": [
     {
       "type": "damage"
     },
     {
       "type": "switch",
-      "parameters": ["own_monster", "random"]
+      "parameters": [
+        "own_monster",
+        "random"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.7,
   "power": 2.2,
   "range": "melee",
   "recharge": 3,
-  "sfx": "sfx_blaster",
   "slug": "shapechange",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,11 +31,22 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["shapeshifter"],
+  "tags": [
+    "shapeshifter"
+  ],
   "types": [
-    "water"
+    "cosmic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "x_attack",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_pulse",
+    "volume": 1.5
+  }
 }

@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import os
+import inspect
+import logging
 import sys
 from collections.abc import Iterable, Sequence
+from typing import TYPE_CHECKING
 
 from prompt_toolkit import PromptSession
 
@@ -12,13 +14,13 @@ from tuxemon.cli.clicommand import CLICommand
 from tuxemon.cli.context import InvokeContext
 from tuxemon.cli.exceptions import CommandNotFoundError, ParseError
 from tuxemon.cli.formatter import Formatter
-from tuxemon.plugin import (
-    DefaultPluginLoader,
-    FileSystemPluginDiscovery,
-    PluginManager,
-    get_available_classes,
-)
-from tuxemon.session import Session
+from tuxemon.constants.paths import get_plugin_paths, mods_folder
+from tuxemon.plugin import PluginManager
+
+if TYPE_CHECKING:
+    from tuxemon.session import Session
+
+logger = logging.getLogger(__name__)
 
 
 class MetaCommand(CLICommand):
@@ -27,7 +29,6 @@ class MetaCommand(CLICommand):
 
     Parameters:
         commands: Sequence of commands to make available at the prompt.
-
     """
 
     name = "Meta Command"
@@ -70,9 +71,8 @@ class CommandProcessor:
     def __init__(self, session: Session, prompt: str = "> ") -> None:
         self.prompt = prompt
         self.session = session
-        folder = os.path.join(os.path.dirname(__file__), "commands")
-        # TODO: add folder(s) from mods
-        commands = list(self.collect_commands(folder))
+        self.client = session.client
+        commands = list(self.collect_commands())
         self.root_command = MetaCommand(commands)
 
     def run(self) -> None:
@@ -86,11 +86,11 @@ class CommandProcessor:
             current_command=self.root_command,
             formatter=Formatter(),
         )
-        session = PromptSession()
+        self.prompt_session: PromptSession[str] = PromptSession()
 
-        while True:
+        while self.client.is_running:
             try:
-                line = session.prompt(self.prompt)
+                line = self.prompt_session.prompt(self.prompt)
                 if line:
                     try:
                         command, tail = self.root_command.resolve(ctx, line)
@@ -111,23 +111,61 @@ class CommandProcessor:
             except KeyboardInterrupt:
                 print("Got KeyboardInterrupt")
                 print("Press CTRL-D to quit.")
+                break
 
-        event_engine = self.session.client.event_engine
-        event_engine.execute_action("quit")
+        self.quit()
 
-    def collect_commands(self, folder: str) -> Iterable[CLICommand]:
+    def quit(self) -> None:
         """
-        Use plugins to load CLICommand classes for commands.
-
-        Parameters:
-            folder: Folder to search.
+        Gracefully shuts down the command processor and exits the client.
         """
-        discovery = FileSystemPluginDiscovery([folder])
-        loader = DefaultPluginLoader()
-        pm = PluginManager(discovery, loader)
-        pm.INCLUDE_PATTERNS = ["commands"]
-        pm.EXCLUDE_CLASSES = ["CLICommand"]
-        pm.collect_plugins()
-        for cmd_class in get_available_classes(pm, interface=CLICommand):
-            if cmd_class.usable_from_root:
-                yield cmd_class()
+        self.client.quit()
+
+    def collect_commands(self) -> Iterable[CLICommand]:
+        """
+        Use plugins to load CLICommand classes from all mod folders.
+        """
+        existing_command_folders = get_plugin_paths(
+            base_path=mods_folder,
+            category="commands",
+            subfolder=None,
+        )
+
+        if not existing_command_folders:
+            logger.debug("No existing command folders to search.")
+            return []
+
+        command_dict = {}
+
+        try:
+            pm = PluginManager.from_directory(
+                plugin_folders=existing_command_folders,
+                root_path=mods_folder.parent,
+                include=["commands"],
+                exclude=["CLICommand"],
+            )
+
+            logger.info(f"Discovered plugin modules: {pm.modules}")
+
+            for plugin in pm.get_all_plugins(interface=CLICommand):
+                cmd_class = plugin.plugin_object
+
+                if (
+                    not inspect.isabstract(cmd_class)
+                    and cmd_class.usable_from_root
+                ):
+                    if cmd_class.name in command_dict:
+                        logger.warning(
+                            f"Overwriting command '{cmd_class.name}' "
+                            f"from {cmd_class.__module__}"
+                        )
+
+                    command_dict[cmd_class.name] = cmd_class()
+                    logger.info(f"Registered command: {cmd_class.name}")
+
+        except Exception:
+            logger.error(
+                "Error loading commands from mod folders", exc_info=True
+            )
+
+        return command_dict.values()

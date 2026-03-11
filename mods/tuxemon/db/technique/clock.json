@@ -1,23 +1,26 @@
 {
   "tech_id": 105,
   "accuracy": 1,
-  "animation": "clock",
   "effects": [
     {
       "type": "give",
-      "parameters": ["confused", "enemy_monster"]
+      "parameters": [
+        "confused",
+        "enemy_monster"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
   "recharge": 1,
-  "sfx": "sfx_blaster",
   "slug": "clock",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -27,11 +30,24 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["gadgets", "leadership", "mental"],
+  "tags": [
+    "gadgets",
+    "leadership",
+    "mental"
+  ],
   "types": [
-    "aether"
+    "cosmic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "clock",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_machine_beep",
+    "volume": 1.5
+  }
 }

@@ -1,26 +1,27 @@
 {
   "tech_id": 186,
   "accuracy": 1,
-  "animation": "amethyst",
   "effects": [
     {
       "type": "give",
-      "parameters": ["flinching", "enemy_monster"]
+      "parameters": [
+        "flinching",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "slow",
   "potency": 0.8,
   "power": 3,
   "range": "melee",
   "recharge": 3,
-  "sfx": "sfx_blaster",
   "slug": "one_million_talons",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,11 +31,22 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["bird"],
+  "tags": [
+    "bird"
+  ],
   "types": [
-    "fire"
+    "sky"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "amethyst",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_kick",
+    "volume": 1.5
+  }
 }

@@ -14,6 +14,7 @@ EXAMPLES:
     python3 scripts/snap_map.py mods/tuxemon/maps/*tmx
 
 """
+
 import xml.etree.ElementTree as ET
 
 import click
@@ -48,7 +49,9 @@ def snap_objects(tree):
 
 
 @click.command()
-@click.option("--write", "-w", is_flag=True, help="write the changes back to the file")
+@click.option(
+    "--write", "-w", is_flag=True, help="write the changes back to the file"
+)
 @click.argument("filename", nargs=-1)
 def click_shim(filename, write):
     """

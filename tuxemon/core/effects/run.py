@@ -1,100 +1,91 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING
 
 from tuxemon import formula
-from tuxemon.combat import set_var
-from tuxemon.core.core_effect import TechEffect, TechEffectResult
-from tuxemon.locale import T
+from tuxemon.combat.utils import set_var
+from tuxemon.core.core_effect import CoreEffect, TechEffectResult
+from tuxemon.locale.locale import T
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
-    from tuxemon.states.combat.combat import CombatState
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 
 
 @dataclass
-class RunEffect(TechEffect):
+class RunEffect(CoreEffect):
     """
-    Run allows monster to run.
+    Applies the "run" effect to a technique.
 
+    This effect represents a combat action where the monster attempts to
+    flee from battle. The chance of success depends on the escape method,
+    the number of previous attempts, and combat conditions.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "run"
+        ]
     """
 
     name = "run"
 
-    def apply(
-        self, tech: Technique, user: Monster, target: Monster
+    def apply_tech_target(
+        self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
-        extra: list[str] = []
-        ran: bool = False
-        combat = tech.combat_state
-        player = user.owner
-        assert combat and player
+        self.session = session
+        self.combat_session = session.client.combat_session
 
-        game_variables = player.game_variables
-        attempts = game_variables.get("run_attempts", 0)
+        self.game_vars = session.player.game_variables
+        attempts = self.game_vars.get("run_attempts", 0)
+        escape_method = self._determine_escape_method(user)
 
-        method = self._determine_escape_method(user, combat, game_variables)
-        if not method:
-            return self._default_result(tech)
+        if not escape_method:
+            return TechEffectResult(name=tech.name, success=True)
 
-        if formula.attempt_escape(method, user, target, attempts):
-            self._trigger_escape(combat, player, game_variables, extra)
-            ran = True
+        success = formula.attempt_escape(escape_method, user, target, attempts)
+        extras: list[str] = []
+
+        if success:
+            self._handle_successful_escape(extras)
         else:
-            game_variables["run_attempts"] = attempts + 1
+            self.game_vars.set("run_attempts", attempts + 1)
 
-        return TechEffectResult(name=tech.name, success=ran, extras=extra)
+        return TechEffectResult(name=tech.name, success=success, extras=extras)
 
-    def _determine_escape_method(
-        self,
-        user: Monster,
-        combat: CombatState,
-        game_variables: dict[str, Any],
-    ) -> Optional[str]:
+    def _determine_escape_method(self, user: Monster) -> str | None:
         """
-        Determine the appropriate escape method based on combat state.
+        Determines which escape method to use based on monster position.
         """
-        escape_method = str(game_variables.get("method_escape", "default"))
-        escape_ai_method = str(
-            game_variables.get("method_escape_ai", "default")
-        )
+        method_player = str(self.game_vars.get("method_escape", "default"))
+        method_ai = str(self.game_vars.get("method_escape_ai", "default"))
 
-        if user in combat.monsters_in_play_right:
-            return escape_method
-        elif user in combat.monsters_in_play_left:
-            return escape_ai_method
-        else:
-            return None
+        if user in self.combat_session.monsters_in_play_right:
+            return method_player
+        elif user in self.combat_session.monsters_in_play_left:
+            return method_ai
+        return None
 
-    def _trigger_escape(
-        self,
-        combat: CombatState,
-        player: NPC,
-        game_variables: dict[str, Any],
-        extra: list[str],
-    ) -> None:
-        """
-        Handle the escape trigger and clean up the combat state.
-        """
-        combat._run = True
-        extra.append(T.translate("combat_player_run"))
-        game_variables["run_attempts"] = 0
+    def _handle_successful_escape(self, extras: list[str]) -> None:
+        self.combat_session.set_variable("run", True)
+        extras.append(T.translate("combat_player_run"))
+        self.game_vars.set("run_attempts", 0)
         set_var(self.session, "battle_last_result", self.name)
 
-        # Clean up combat for all players
-        players_to_remove = list(combat.players)
-        for player in players_to_remove:
-            combat.clean_combat()
-            del combat.monsters_in_play[player]
-            combat.players.remove(player)
+        self._clean_combat_state()
 
-    def _default_result(self, tech: Technique) -> TechEffectResult:
-        """
-        Return the default result for the RunEffect.
-        """
-        return TechEffectResult(name=tech.name, success=True)
+    def _clean_combat_state(self) -> None:
+        event_bus = self.session.client.event_bus
+        event_bus.publish("clean_combat")
+
+        for player in self.combat_session.players:
+            self.combat_session.field_monsters.remove_npc(player)
+            self.combat_session.remove_player(player)
+
+        self.combat_session.reset()

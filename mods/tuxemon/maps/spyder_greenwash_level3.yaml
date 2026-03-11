@@ -1,64 +1,4 @@
 events:
-  Teleport to Level 2a:
-    actions:
-    - transition_teleport spyder_greenwash_level2.tmx,4,4,0.3
-    - char_face player,down
-    conditions:
-    - is char_at player
-    - is char_facing player,up
-    x: 1
-    y: 2
-    width: 1
-    height: 2
-    type: "event"
-  Teleport to Level 2b:
-    actions:
-    - transition_teleport spyder_greenwash_level2.tmx,5,4,0.3
-    - char_face player,down
-    conditions:
-    - is char_at player
-    - is char_facing player,up
-    x: 2
-    y: 2
-    width: 1
-    height: 2
-    type: "event"
-  PC1:
-    actions:
-    - translated_dialog spyder_greenwash_pc_message3
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed K_RETURN
-    x: 7
-    y: 3
-    type: "event"
-  PC2:
-    actions:
-    - translated_dialog spyder_greenwash_pc_message2
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed K_RETURN
-    x: 9
-    y: 3
-    type: "event"
-  PC3:
-    actions:
-    - translated_dialog spyder_greenwash_pc_message1
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed K_RETURN
-    x: 10
-    y: 10
-    type: "event"
-  Note:
-    actions:
-    - translated_dialog spyder_greenwash_note1
-    conditions:
-    - is char_facing_tile player
-    - is button_pressed K_RETURN
-    x: 8
-    y: 3
-    type: "event"
   FlashBack Incident:
     actions:
     - lock_controls
@@ -90,44 +30,11 @@ events:
     - set_variable incident_greenwash:done
     - unlock_controls
     - set_variable flashback:off
-    - set_layer
-    - transition_teleport spyder_candy_cafe.tmx,4,7
+    - transition_teleport player,spyder_candy_cafe.tmx,4,7
     - char_face player,left
     conditions:
     - is variable_set incident_greenwash:yes
-    type: "event"
-  Flashback Fossilator:
-    actions:
-    - lock_controls
-    - set_template player,invisible
-    - set_layer 102:51:0:128
-    - create_npc spyder_greenwash_looten,9,11
-    - char_face spyder_greenwash_looten,up
-    - create_npc spyder_greenwash_selby,10,11
-    - char_face spyder_greenwash_selby,up
-    - create_npc spyder_greenwash_chip,11,11
-    - char_face spyder_greenwash_chip,up
-    - translated_dialog spyder_fossilator_flashback1
-    - translated_dialog spyder_fossilator_flashback2,,bottomright
-    - translated_dialog spyder_fossilator_flashback3,,bottomleft
-    - translated_dialog spyder_fossilator_flashback4,,bottomright
-    - translated_dialog spyder_fossilator_flashback5
-    - translated_dialog spyder_fossilator_flashback6,,bottomright
-    - translated_dialog spyder_fossilator_flashback7
-    - pathfind spyder_greenwash_looten,4,4
-    - remove_npc spyder_greenwash_looten
-    - pathfind spyder_greenwash_chip,4,4
-    - remove_npc spyder_greenwash_chip
-    - remove_npc spyder_greenwash_selby
-    - set_variable unveildefossilator:done
-    - set_layer
-    - unlock_controls
-    - set_variable flashback:off
-    - transition_teleport spyder_greenwash_level2.tmx,9,2
-    - char_face player,up
-    conditions:
-    - is variable_set unveildefossilator:yes
-    type: "event"
+    type: event
   Flashback Dempsey:
     actions:
     - camera_position 3,4
@@ -152,12 +59,104 @@ events:
     - pathfind spyder_greenwash_looten,2,4
     - remove_npc spyder_greenwash_looten
     - set_variable dempsey_flashback:done
-    - set_layer
+    - set_layer 0:0:0:255
     - unlock_controls
     - camera_position
     - set_variable flashback:off
-    - transition_teleport spyder_greenwash_level2.tmx,13,2
+    - transition_teleport player,spyder_greenwash_level2.tmx,13,2
     - char_face player,up
     conditions:
     - is variable_set dempsey_flashback:yes
-    type: "event"
+    type: event
+  Flashback Fossilator:
+    actions:
+    - lock_controls
+    - set_template player,invisible
+    - set_layer 102:51:0:128
+    - create_npc spyder_greenwash_looten,9,11
+    - char_face spyder_greenwash_looten,up
+    - create_npc spyder_greenwash_selby,10,11
+    - char_face spyder_greenwash_selby,up
+    - create_npc spyder_greenwash_chip,11,11
+    - char_face spyder_greenwash_chip,up
+    - translated_dialog spyder_fossilator_flashback1
+    - translated_dialog spyder_fossilator_flashback2,,bottomright
+    - translated_dialog spyder_fossilator_flashback3,,bottomleft
+    - translated_dialog spyder_fossilator_flashback4,,bottomright
+    - translated_dialog spyder_fossilator_flashback5
+    - translated_dialog spyder_fossilator_flashback6,,bottomright
+    - translated_dialog spyder_fossilator_flashback7
+    - pathfind spyder_greenwash_looten,4,4
+    - remove_npc spyder_greenwash_looten
+    - pathfind spyder_greenwash_chip,4,4
+    - remove_npc spyder_greenwash_chip
+    - remove_npc spyder_greenwash_selby
+    - set_variable unveildefossilator:done
+    - set_layer 0:0:0:255
+    - unlock_controls
+    - set_variable flashback:off
+    - transition_teleport player,spyder_greenwash_level2.tmx,9,2
+    - char_face player,up
+    conditions:
+    - is variable_set unveildefossilator:yes
+    type: event
+  Note:
+    actions:
+    - translated_dialog spyder_greenwash_note1
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    type: event
+    x: 8
+    y: 3
+  PC1:
+    actions:
+    - translated_dialog spyder_greenwash_pc_message3
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    type: event
+    x: 7
+    y: 3
+  PC2:
+    actions:
+    - translated_dialog spyder_greenwash_pc_message2
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    type: event
+    x: 9
+    y: 3
+  PC3:
+    actions:
+    - translated_dialog spyder_greenwash_pc_message1
+    conditions:
+    - is char_facing_tile player
+    - is button_pressed INTERACT
+    type: event
+    x: 10
+    y: 10
+  Teleport to Level 2a:
+    actions:
+    - transition_teleport player,spyder_greenwash_level2.tmx,4,4,0.3
+    - char_face player,down
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    height: 2
+    type: event
+    width: 1
+    x: 1
+    y: 2
+  Teleport to Level 2b:
+    actions:
+    - transition_teleport player,spyder_greenwash_level2.tmx,5,4,0.3
+    - char_face player,down
+    conditions:
+    - is char_at player
+    - is char_facing player,up
+    height: 2
+    type: event
+    width: 1
+    x: 2
+    y: 2

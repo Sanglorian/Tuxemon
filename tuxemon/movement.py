@@ -1,27 +1,37 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional
+from heapq import heappop, heappush
+from typing import TYPE_CHECKING
 
-from tuxemon.boundary import BoundaryChecker
-from tuxemon.map import (
+from tuxemon.db import Direction
+from tuxemon.map.map import (
     dirs2,
     get_adjacent_position,
     get_coords_ext,
     get_explicit_tile_exits,
     pairs,
 )
-from tuxemon.prepare import CONFIG
+from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
+    from tuxemon.boundary import BoundaryChecker
     from tuxemon.db import Direction
-    from tuxemon.npc import NPC
-    from tuxemon.states.world.worldstate import CollisionMap, WorldState
+    from tuxemon.entity.npc import NPC
+    from tuxemon.event.eventmanager import EventManager
+    from tuxemon.map.collision_manager import CollisionManager, CollisionMap
+    from tuxemon.map.manager import MapManager
+    from tuxemon.npc_manager import NPCManager
+    from tuxemon.platform.input_manager import InputManager
 
 logger = logging.getLogger(__name__)
+
+
+def manhattan_distance(pos: tuple[int, int], target: tuple[int, int]) -> float:
+    return abs(pos[0] - target[0]) + abs(pos[1] - target[1])
 
 
 class PathfindNode:
@@ -30,16 +40,21 @@ class PathfindNode:
     def __init__(
         self,
         value: tuple[int, int],
-        parent: Optional[PathfindNode] = None,
+        parent: PathfindNode | None = None,
+        g_cost: float = 0.0,
+        h_cost: float = 0.0,
     ) -> None:
         self.parent = parent
         self.value = value
+        self.g_cost = g_cost
+        self.h_cost = h_cost
+        self.f_cost = self.g_cost + self.h_cost
         if self.parent:
             self.depth: int = self.parent.depth + 1
         else:
             self.depth = 0
 
-    def get_parent(self) -> Optional[PathfindNode]:
+    def get_parent(self) -> PathfindNode | None:
         return self.parent
 
     def set_parent(self, parent: PathfindNode) -> None:
@@ -57,7 +72,7 @@ class PathfindNode:
 
     def reconstruct_path(self) -> list[tuple[int, int]]:
         path = []
-        current: Optional[PathfindNode] = self
+        current: PathfindNode | None = self
         while current:
             path.append(current.value)
             current = current.parent
@@ -69,20 +84,80 @@ class PathfindNode:
             s += str(self.parent)
         return s
 
+    def __lt__(self, other: PathfindNode) -> bool:
+        return (self.f_cost, self.depth) < (other.f_cost, other.depth)
+
+
+class MovementManager:
+    def __init__(
+        self,
+        event_manager: EventManager,
+        input_manager: InputManager,
+    ) -> None:
+        self.event_manager = event_manager
+        self.input_manager = input_manager
+        self.wants_to_move_char: dict[str, Direction] = {}
+        self.allow_char_movement: set[str] = set()
+
+    def queue_movement(self, char_slug: str, direction: Direction) -> None:
+        """Queues the movement request for a character."""
+        self.wants_to_move_char[char_slug] = direction
+
+    def move_char(self, character: NPC, direction: Direction) -> None:
+        """Initiates movement of the character in the specified direction."""
+        character.set_move_direction(direction)
+
+    def stop_char(self, character: NPC) -> None:
+        """Stops the character and releases movement controls."""
+        self.wants_to_move_char.pop(character.slug, None)
+        self.event_manager.release_controls(self.input_manager)
+        character.cancel_movement()
+
+    def unlock_controls(self, character: NPC) -> None:
+        """Allows the specified character to move if movement is requested."""
+        self.allow_char_movement.add(character.slug)
+        if self.has_pending_movement(character):
+            self.move_char(character, self.wants_to_move_char[character.slug])
+
+    def lock_controls(self, character: NPC) -> None:
+        """Prevents the specified character from moving."""
+        self.allow_char_movement.discard(character.slug)
+
+    def stop_and_reset_char(self, character: NPC) -> None:
+        """Stops the character and aborts all ongoing movement actions."""
+        self.wants_to_move_char.pop(character.slug, None)
+        self.event_manager.release_controls(self.input_manager)
+        character.abort_movement()
+
+    def is_movement_allowed(self, character: NPC) -> bool:
+        """
+        Checks if movement is currently allowed for the specified character.
+        """
+        return character.slug in self.allow_char_movement
+
+    def has_pending_movement(self, character: NPC) -> bool:
+        """
+        Checks if the specified character has a pending movement request.
+        """
+        return character.slug in self.wants_to_move_char
+
 
 class Pathfinder:
     def __init__(
-        self, world_state: WorldState, boundary_checker: BoundaryChecker
+        self,
+        npc_manager: NPCManager,
+        map_manager: MapManager,
+        collision_manager: CollisionManager,
+        boundary: BoundaryChecker,
     ) -> None:
-        """
-        Initializes the Pathfinder instance with the given world state.
-        """
-        self.world_state = world_state
-        self.boundary_checker = boundary_checker
+        self.npc_manager = npc_manager
+        self.map_manager = map_manager
+        self.collision_manager = collision_manager
+        self.boundary = boundary
 
     def pathfind(
         self, start: tuple[int, int], dest: tuple[int, int], facing: Direction
-    ) -> Optional[Sequence[tuple[int, int]]]:
+    ) -> Sequence[tuple[int, int]] | None:
         """
         Attempts to find a path from the start position to the destination position.
 
@@ -96,70 +171,43 @@ class Pathfinder:
             A sequence of positions representing the path if found, or None if no path
                 exists.
         """
-        pathnode = self.pathfind_r(
-            dest=dest,
-            queue=[PathfindNode(start)],
-            known_nodes=set(),
-            facing=facing,
-        )
         logger.info(f"Pathfinding from {start} to {dest}.")
-        if pathnode:
-            path = pathnode.reconstruct_path()
-            return path
-        else:
-            character = self.world_state.get_entity_pos(start)
-            if character:
-                logger.error(
-                    f"{character.name}'s pathfinding failed in {self.world_state.current_map.filename}."
-                )
-            else:
-                logger.error(f"No character found at start position {start}.")
-            return None
+        open_set: list[PathfindNode] = []
+        g_costs: dict[tuple[int, int], float] = {start: 0.0}
+        known_nodes: set[tuple[int, int]] = set()
 
-    def pathfind_r(
-        self,
-        dest: tuple[int, int],
-        queue: list[PathfindNode],
-        known_nodes: set[tuple[int, int]],
-        facing: Direction,
-    ) -> Optional[PathfindNode]:
-        """
-        A recursive helper method that explores possible paths to the destination.
+        start_node = PathfindNode(
+            start, g_cost=0.0, h_cost=manhattan_distance(start, dest)
+        )
+        heappush(open_set, start_node)
 
-        Parameters:
-            dest: The destination position as a tuple of (x, y) coordinates.
-            queue: A deque of PathfindNode objects representing the current nodes to
-                explore.
-            known_nodes: A set of positions that have already been explored.
-            facing: The direction the character is currently facing, which guides path
-                exploration.
+        while open_set:
+            current_node = heappop(open_set)
+            current_pos = current_node.get_value()
 
-        Returns:
-            The PathfindNode representing the destination if found, or None if no path exists.
-        """
-        if not queue:
-            return None
-        collision_map = self.world_state.get_collision_map()
-        while queue:
-            node = queue.pop(0)
-            logger.debug(f"Checking node {node.get_value()}.")
-            if node.get_value() == dest:
+            if current_pos == dest:
                 logger.info(f"Destination {dest} reached.")
-                return node
-            for adj_pos in self.get_exits(
-                position=node.get_value(),
+                return current_node.reconstruct_path()
+
+            for neighbor_pos in self.get_exits(
+                position=current_pos,
                 facing=facing,
-                collision_map=collision_map,
                 skip_nodes=known_nodes,
             ):
-                if adj_pos not in known_nodes:
-                    known_nodes.add(adj_pos)
-                    new_node = PathfindNode(adj_pos)
-                    new_node.set_parent(node)
-                    queue.append(new_node)
-                    logger.debug(
-                        f"Added adjacent position {adj_pos} to the queue."
+                new_g_cost = g_costs[current_pos] + 1
+
+                if new_g_cost < g_costs.get(neighbor_pos, float("inf")):
+                    g_costs[neighbor_pos] = new_g_cost
+                    neighbor_h_cost = manhattan_distance(neighbor_pos, dest)
+                    neighbor_node = PathfindNode(
+                        value=neighbor_pos,
+                        parent=current_node,
+                        g_cost=new_g_cost,
+                        h_cost=neighbor_h_cost,
                     )
+                    heappush(open_set, neighbor_node)
+                    known_nodes.add(neighbor_pos)
+
         logger.warning(f"No path found to destination {dest}.")
         return None
 
@@ -181,117 +229,181 @@ class Pathfinder:
         """
         return (
             position not in skip_nodes
-            and self.boundary_checker.is_within_boundaries(position)
+            and self.boundary.is_within_boundaries(position)
         )
 
     def get_exits(
         self,
         position: tuple[int, int],
         facing: Direction,
-        collision_map: Optional[CollisionMap] = None,
-        skip_nodes: Optional[set[tuple[int, int]]] = None,
+        collision_map: CollisionMap | None = None,
+        skip_nodes: set[tuple[int, int]] | None = None,
     ) -> Sequence[tuple[int, int]]:
         """
-        Retrieves a list of adjacent tiles that can be moved into from the given position.
+        Determines all adjacent tiles that can be traversed from the given position.
 
         Parameters:
-            position: The original position as a tuple of (x, y) coordinates.
-            facing: The direction the character is currently facing, used to determine
-                valid exits.
-            collision_map: An optional mapping of collisions with entities and terrain.
-            skip_nodes: A set of nodes to skip during the exit check.
+            position: The current tile coordinates (x, y).
+            facing: The direction the character is currently facing.
+            collision_map: Optional preloaded collision map; defaults to current map's
+                collision data.
+            skip_nodes: Optional set of positions to exclude from traversal.
 
         Returns:
-            A sequence of adjacent and traversable tile positions.
+            A list of adjacent tile positions that are valid for movement.
         """
-        # get tile-level and npc/entity blockers
-        collision_map = collision_map or self.world_state.get_collision_map()
+        collision_map = (
+            collision_map or self.collision_manager.get_collision_map()
+        )
         skip_nodes = skip_nodes or set()
-        logger.debug(f"Getting exits for position {position}.")
+        logger.debug(f"[get_exits] Position: {position}, Facing: {facing}")
+        logger.debug(f"[get_exits] Skip nodes: {skip_nodes}")
 
-        # Get explicit 'continue' and 'exits' based on tile data if it exists
-        exits = []
         tile_data = collision_map.get(position)
-        if tile_data is not None:
-            exits = get_explicit_tile_exits(
-                position, tile_data, facing, skip_nodes
-            )
-            logger.debug(f"Found explicit exits: {exits}.")
-        else:
-            logger.debug(
-                f"No tile data found for position {position}. "
-                "No explicit exits can be determined."
-            )
+        exits = (
+            get_explicit_tile_exits(position, tile_data, facing, skip_nodes)
+            if tile_data
+            else []
+        )
+        logger.debug(f"[get_exits] Found explicit exits: {exits}")
 
         adjacent_tiles = set()
-        # Loop through all directions dynamically using dirs2
+
         for direction, vector in dirs2.items():
             neighbor = get_adjacent_position(position, direction)
-            # If we have specific exits defined, make sure the neighbor is one of them
-            # Also, skip this neighbor if it's in the list of nodes we want to avoid
-            # We only need to check the edges since we can't go out of bounds
-            if (exits and neighbor not in exits) or not self.is_valid_position(
-                neighbor, skip_nodes
+            logger.debug(
+                f"[get_exits] Checking direction: {direction}, Neighbor: {neighbor}"
+            )
+
+            if self.is_tile_traversable_from(
+                position, neighbor, direction, exits, collision_map, skip_nodes
             ):
-                logger.debug(
-                    f"Skipping neighbor {neighbor} (not valid or not an exit)."
-                )
-                continue
+                adjacent_tiles.add(neighbor)
 
-            if (position, direction) in self.world_state.collision_lines_map:
-                logger.debug(
-                    f"Wall detected between {position} and {neighbor}."
-                )
-                continue
-
-            # test if this tile has special movement handling
-            # NOTE: Do not refact. into a dict.get(xxxxx, None) style check
-            # NOTE: None has special meaning in this check
-            try:
-                tile_data = collision_map[neighbor]
-            except KeyError:
-                pass
-            else:
-                # None means tile is blocked with no specific data
-                if tile_data is None:
-                    continue
-
-                try:
-                    if pairs(direction) not in tile_data.enter_from:
-                        continue
-                except KeyError:
-                    continue
-
-            logger.debug(f"Neighbor {neighbor} is free to move into.")
-            adjacent_tiles.add(neighbor)
-
-        logger.debug(f"Adjacent tiles found: {adjacent_tiles}.")
+        logger.debug(f"[get_exits] Final adjacent tiles: {adjacent_tiles}")
         return list(adjacent_tiles)
 
-    def is_tile_traversable(self, npc: NPC, tile: tuple[int, int]) -> bool:
-        """Checks if a tile is traversable for the given NPC."""
-        _map_size = self.world_state.map_size
-        _exit = tile in self.get_exits(npc.tile_pos, npc.facing)
+    def is_explicitly_allowed(
+        self,
+        neighbor: tuple[int, int],
+        exits: list[tuple[float, ...]],
+    ) -> bool:
+        """
+        Checks whether a neighbor tile is explicitly allowed based on exit rules.
 
-        _direction = []
+        Parameters:
+            neighbor: The adjacent tile to evaluate.
+            exits: A list of explicitly allowed exit positions.
+
+        Returns:
+            True if no explicit exits are defined or if the neighbor is in the list;
+            False otherwise.
+        """
+        return not exits or neighbor in exits
+
+    def is_tile_enterable(
+        self,
+        neighbor: tuple[int, int],
+        direction: Direction,
+        collision_map: CollisionMap,
+    ) -> bool:
+        """
+        Determines whether a tile can be entered from a given direction.
+
+        Parameters:
+            neighbor: The tile to enter.
+            direction: The direction from which entry is attempted.
+            collision_map: The map containing tile data and entry rules.
+
+        Returns:
+            True if the tile allows entry from the given direction; False otherwise.
+        """
+        try:
+            tile_data = collision_map[neighbor]
+        except KeyError:
+            # Missing tile data implies traversable space by default.
+            return True
+
+        # Check if data exists AND if the entry rule allows it
+        if tile_data is None:
+            return False
+
+        # Check if tile is blocked by entity
+        if tile_data.entity is not None:
+            return False
+
+        # Check if the reversed direction is in the tile's allowed entry directions.
+        return pairs(direction) in tile_data.enter_from
+
+    def is_tile_traversable_from(
+        self,
+        position: tuple[int, int],
+        neighbor: tuple[int, int],
+        direction: Direction,
+        exits: list[tuple[float, ...]],
+        collision_map: CollisionMap,
+        skip_nodes: set[tuple[int, int]],
+    ) -> bool:
+        """
+        Evaluates whether a neighboring tile is traversable from the current position.
+
+        Parameters:
+            position: The current tile position.
+            neighbor: The adjacent tile to evaluate.
+            direction: The direction of movement toward the neighbor.
+            exits: A list of explicitly allowed exit positions.
+            collision_map: The map containing tile data and entry rules.
+            skip_nodes: A set of positions to exclude from traversal.
+
+        Returns:
+            True if the neighbor tile is traversable; False otherwise.
+        """
+        if not self.is_explicitly_allowed(neighbor, exits):
+            logger.debug(f"[traversable] {neighbor} not in explicit exits")
+            return False
+        if not self.is_valid_position(neighbor, skip_nodes):
+            logger.debug(
+                f"[traversable] {neighbor} is invalid (boundary or skipped)"
+            )
+            return False
+        if (position, direction) in self.map_manager.collision_lines_map:
+            logger.debug(
+                f"[traversable] Wall between {position} and {neighbor}"
+            )
+            return False
+        if not self.is_tile_enterable(neighbor, direction, collision_map):
+            logger.debug(
+                f"[traversable] Cannot enter {neighbor} from {direction}"
+            )
+            return False
+
+        logger.debug(f"[traversable] {neighbor} is traversable")
+        return True
+
+    def is_tile_traversable(
+        self,
+        tile_pos: tuple[int, int],
+        facing: Direction,
+        tile: tuple[int, int],
+        ignore_collisions: bool,
+    ) -> bool:
+        """Checks if a tile is traversable for the given NPC."""
+        if ignore_collisions:
+            return True
+
+        if tile not in self.get_exits(tile_pos, facing):
+            return False
+
+        # Check for collisions with moving entities
+        _map_size = self.map_manager.map_size
         for neighbor in get_coords_ext(tile, _map_size):
-            char = self.world_state.get_entity_pos(neighbor)
+            char = self.npc_manager.get_entity_pos(neighbor)
             if (
                 char
                 and char.moving
                 and char.moverate == CONFIG.player_walkrate
-                and npc.facing != char.facing
+                and facing != char.facing
             ):
-                _direction.append(char)
+                return False
 
-        return _exit and not _direction or npc.ignore_collisions
-
-    def get_tile_moverate(
-        self, npc: NPC, destination: tuple[int, int]
-    ) -> float:
-        """Gets the movement speed modifier for the given tile."""
-        surface_map = self.world_state.surface_map
-        tile_properties = surface_map.get(destination, {})
-        rate = next(iter(tile_properties.values()), 1.0)
-        _moverate = npc.moverate * rate
-        return _moverate
+        return True

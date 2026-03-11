@@ -1,32 +1,50 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat import get_target_monsters
-from tuxemon.core.core_effect import TechEffect, TechEffectResult
+from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 from tuxemon.formula import simple_heal
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 
 
 @dataclass
-class StepHealingEffect(TechEffect):
+class StepHealingEffect(CoreEffect):
     """
-    This effect calculates healing to the target based on the combined
-    step count of the party. The healing is scaled using a specified
-    formula, which is logarithmic.
+    Applies the "step_healing" effect to a technique.
 
-    Parameters:
-        objectives: The targets for this effect, specified as a string
-            (e.g., "enemy_monster" or "enemy_monster:own_monster").
-        healing_factor: A factor used to scale the healing calculation.
-        scaling_constant: A constant used in the healing calculation formula.
+    This effect restores HP to one or more target monsters based on the
+    number of steps taken by the user's party. The healing scales
+    logarithmically, providing diminishing returns as the step count
+    increases. This mechanic ties exploration and movement directly into
+    combat recovery.
+
+    **Parameters**
+
+    - ``objectives``: Colon-separated string specifying which monsters are
+      healed. Examples:
+      - ``enemy_monster`` → heals only the enemy.
+      - ``own_monster`` → heals only the user.
+      - ``enemy_monster:own_monster`` → heals both the enemy and the user.
+    - ``healing_factor``: Float multiplier applied to the logarithmic healing
+      formula.
+    - ``scaling_constant``: Float divisor used in the healing formula to
+      normalize step counts.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "step_healing own_monster 1.2 100"
+        ]
     """
 
     name = "step_healing"
@@ -34,20 +52,21 @@ class StepHealingEffect(TechEffect):
     healing_factor: float
     scaling_constant: float
 
-    def apply(
-        self, tech: Technique, user: Monster, target: Monster
+    def apply_tech_target(
+        self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
         monsters: list[Monster] = []
         extra: list[str] = []
         done: bool = False
-        combat = tech.combat_state
-        assert combat
+        hit = session.client.combat_session.get_tech_hit(user)
 
         objectives = self.objectives.split(":")
-        tech.hit = tech.accuracy >= combat._random_tech_hit.get(user, 0.0)
+        tech.hit = tech.accuracy >= hit
 
         if tech.hit:
-            monsters = get_target_monsters(objectives, tech, user, target)
+            monsters = session.client.combat_session.get_target_monsters(
+                objectives, user, target
+            )
 
         if monsters:
             for monster in monsters:
@@ -56,10 +75,10 @@ class StepHealingEffect(TechEffect):
                 )
                 tech.healing_power = new_power
                 heal = simple_heal(tech, monster)
-                if monster.current_hp < monster.hp:
-                    heal_amount = min(heal, monster.hp - monster.current_hp)
+                if monster.hp_ratio < 1.0:
+                    heal_amount = min(heal, monster.missing_hp)
                     monster.current_hp += heal_amount
                     done = True
-                elif monster.current_hp == monster.hp:
+                elif monster.hp_ratio == 1.0:
                     extra = ["combat_full_health"]
         return TechEffectResult(name=tech.name, success=done, extras=extra)

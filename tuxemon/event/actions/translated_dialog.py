@@ -1,21 +1,29 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Optional, final
+from typing import Any, final
 
-from tuxemon.db import DialogueModel, db
 from tuxemon.event.eventaction import EventAction
-from tuxemon.graphics import get_avatar, string_to_colorlike
-from tuxemon.locale import process_translate_text
-from tuxemon.states.dialog import DialogState
-from tuxemon.tools import open_dialog
+from tuxemon.graphics import string_to_colorlike
+from tuxemon.locale.locale import T
+from tuxemon.monster.avatar import get_avatar
+from tuxemon.session import Session
+from tuxemon.tools import open_dialog, safe_enum_value
+from tuxemon.ui.dialogue import DialogueStyleCache
+from tuxemon.ui.text_alignment import (
+    DialogPosition,
+    HorizontalAlignment,
+    VerticalAlignment,
+)
+from tuxemon.ui.text_formatter import TextFormatter
 
 logger = logging.getLogger(__name__)
 
-style_cache: dict[str, DialogueModel] = {}
+
+style_cache = DialogueStyleCache()
 
 
 @final
@@ -39,64 +47,67 @@ class TranslatedDialogAction(EventAction):
         position: Position of the dialog box. Can be 'top', 'bottom', 'center',
             'topleft', 'topright', 'bottomleft', 'bottomright', 'right', 'left'.
             Default 'bottom'.
-        alignment: Alignment of text in the dialog box, it can be 'left', 'center'
+        h_alignment: Alignment of text in the dialog box, it can be 'left', 'center'
             or 'right'. Default 'left'.
-        vertical_alignment: Alignment of text in the dialog box, it can be 'bottom',
-            'middle' or 'top'. Default 'top'.
+        v_alignment: Alignment of text in the dialog box, it can be 'bottom',
+            'center' or 'top'. Default 'top'.
         style: a predefined style in db/dialogue/dialogue.json
     """
 
     name = "translated_dialog"
     raw_parameters: str
-    avatar: Optional[str] = None
-    position: Optional[str] = None
-    alignment: Optional[str] = None
-    v_alignment: Optional[str] = None
-    style: Optional[str] = None
+    avatar: str | None = None
+    position: str | None = None
+    h_alignment: str | None = None
+    v_alignment: str | None = None
+    style: str | None = None
 
-    def start(self) -> None:
-        key = process_translate_text(self.session, self.raw_parameters, [])
+    def start(self, session: Session) -> None:
+        key = TextFormatter(session, T).paginate_translation(
+            self.raw_parameters
+        )
+        if key == self.raw_parameters:
+            logger.warning(
+                f"No translation found for key: {self.raw_parameters}"
+            )
 
-        avatar_sprite = None
-        if self.avatar:
-            avatar_sprite = get_avatar(self.session, self.avatar)
+        avatar_sprite = (
+            get_avatar(session, self.avatar) if self.avatar else None
+        )
 
-        dialogue = self.style if self.style else "default"
-        alignment = self.alignment if self.alignment else "left"
-        v_alignment = self.v_alignment if self.v_alignment else "top"
-        style = _get_style(dialogue)
+        dialogue = self.style or session.client.config.dialog_box_style
+        style = style_cache.get(dialogue)
+        h_alignment = safe_enum_value(
+            HorizontalAlignment, self.h_alignment, HorizontalAlignment.LEFT
+        )
+        v_alignment = safe_enum_value(
+            VerticalAlignment, self.v_alignment, VerticalAlignment.TOP
+        )
         box_style: dict[str, Any] = {
             "bg_color": string_to_colorlike(style.bg_color),
             "font_color": string_to_colorlike(style.font_color),
             "font_shadow": string_to_colorlike(style.font_shadow_color),
             "border": style.border_path,
-            "alignment": alignment,
+            "line_spacing": style.line_spacing,
+            "h_alignment": h_alignment,
             "v_alignment": v_alignment,
         }
-        position = self.position if self.position else "bottom"
 
+        position = safe_enum_value(
+            DialogPosition, self.position, DialogPosition.BOTTOM
+        )
         open_dialog(
-            session=self.session,
+            client=session.client,
             text=key,
             avatar=avatar_sprite,
             box_style=box_style,
             position=position,
+            target_coords=None,
+            custom_rect=None,
         )
 
-    def update(self) -> None:
+    def update(self, session: Session, dt: float) -> None:
         try:
-            self.session.client.get_state_by_name(DialogState)
+            session.client.get_state_by_name("DialogState")
         except ValueError:
             self.stop()
-
-
-def _get_style(cache_key: str) -> DialogueModel:
-    if cache_key in style_cache:
-        return style_cache[cache_key]
-    else:
-        try:
-            style = db.lookup(cache_key, table="dialogue")
-            style_cache[cache_key] = style
-            return style
-        except KeyError:
-            raise RuntimeError(f"Dialogue {cache_key} not found")

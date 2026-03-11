@@ -1,31 +1,34 @@
 {
   "tech_id": 100,
   "accuracy": 0.85,
-  "animation": "skull_fire",
   "effects": [
     {
       "type": "give",
-      "parameters": ["slow", "own_monster"]
+      "parameters": [
+        "slow",
+        "own_monster"
+      ]
     },
     {
       "type": "give",
-      "parameters": ["confused", "enemy_monster"]
+      "parameters": [
+        "confused",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "slow",
   "potency": 0.8,
   "power": 2.2,
-  "randomly": false,
   "range": "reach",
   "recharge": 3,
-  "sfx": "sfx_blaster",
   "slug": "oedipus",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -35,11 +38,22 @@
     "own_trainer": false
   },
   "category": "reserved",
-  "tags": ["reserved"],
+  "tags": [
+    "reserved"
+  ],
   "types": [
     "metal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "skull_fire",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_forcefield",
+    "volume": 1.5
+  }
 }

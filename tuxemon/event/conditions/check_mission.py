@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
 from tuxemon.db import MissionStatus
-from tuxemon.event import MapCondition, get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -16,53 +16,61 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CheckMissionCondition(EventCondition):
     """
-    Check to see the character has failed or completed a mission.
-    Check to see if a mission is still pending.
+    Check mission status for one or more missions.
 
     Script usage:
         .. code-block::
 
-            is check_mission <character>,<method>,<status>
+            is check_mission <character>,<method>,<status>[,<mode>]
 
-    Script parameters:
-        character: Either "player" or npc slug name (e.g. "npc_maple").
-        method: Mission or missions.
-        "all" means all the existing missions.
+    Parameters:
+        character: Either "player" or NPC slug (e.g. "npc_maple")
+        method: Mission slug(s), colon-separated (e.g. "mission1:mission2") or "all"
+        status: One of ["pending", "completed", "failed"]
+        mode (optional): "any" (default) or "all"
+            "any" returns True if at least one mission matches status
+            "all" returns True only if all listed missions match status
 
-    eg. "is check_mission player,mission1,completed"
-    eg. "is check_mission player,mission1,pending"
-    eg. "is check_mission player,mission1:mission2,completed"
-    eg. "is check_mission player,all,completed"
-
+    Examples:
+        - "is check_mission player,mission1,completed"
+        - "is check_mission player,mission1:mission2,completed,all"
+        - "is check_mission player,all,pending"
+        - "is check_mission npc_maple,missionA:missionB,failed,any"
     """
 
-    name = "check_mission"
+    name: ClassVar[str] = "check_mission"
+    character: str
+    mission: str
+    status: str
+    mode: str | None = None
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
-        _character, _mission, _status = condition.parameters[:3]
-        character = get_npc(session, _character)
+    def test(self, session: Session) -> bool:
+        _mode = self.mode if self.mode else "any"
+
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"Character '{self.character}' not found.")
             return False
-        # status mission
-        if _status not in list(MissionStatus):
-            logger.error(f"{_status} isn't among {list(MissionStatus)}")
+
+        if self.status not in MissionStatus.__members__:
+            logger.error(f"'{self.status}' isn't a valid MissionStatus.")
             return False
-        # retrieve all missions
-        _missions: list[str] = []
-        if _mission == "all":
-            _missions = [
-                m.slug for m in character.mission_controller.get_missions()
-            ]
+        target_status = MissionStatus[self.status]
+
+        if self.mission == "all":
+            missions = character.mission_controller.get_missions()
         else:
-            _missions = _mission.split(":")
+            mission_slugs = self.mission.split(":")
+            missions = [
+                m
+                for m in character.mission_controller.get_missions()
+                if m.slug in mission_slugs
+            ]
 
-        if not _missions:
+        if not missions:
+            logger.info("No missions matched the criteria.")
             return False
 
-        result = [
-            mission
-            for mission in character.mission_controller.get_missions()
-            if mission.status == _status and mission.slug in _missions
-        ]
-        return bool(result)
+        if _mode == "all":
+            return all(m.status == target_status for m in missions)
+        return any(m.status == target_status for m in missions)

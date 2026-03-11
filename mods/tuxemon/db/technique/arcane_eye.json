@@ -1,23 +1,26 @@
 {
   "tech_id": 158,
   "accuracy": 1,
-  "animation": "crystal_absorb",
   "effects": [
     {
       "type": "give",
-      "parameters": ["elementalshield", "own_monster"]
+      "parameters": [
+        "elementalshield",
+        "own_monster"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
   "recharge": 1,
-  "sfx": "sfx_blaster",
   "slug": "arcane_eye",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": false,
     "enemy_team": false,
@@ -27,11 +30,23 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["gaze", "summoner"],
+  "tags": [
+    "gaze",
+    "summoner"
+  ],
   "types": [
-    "aether"
+    "cosmic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "crystal_absorb",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_pulse",
+    "volume": 1.5
+  }
 }

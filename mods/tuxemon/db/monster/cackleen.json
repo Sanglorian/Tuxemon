@@ -1,66 +1,114 @@
 {
-    "slug": "cackleen",
-    "category": "witch_spirit",
-    "moveset": [
+  "slug": "cackleen",
+  "species": "witch_spirit",
+  "moveset": [
+    {
+      "level_learned": 1,
+      "technique": "struggle",
+      "learning_method": "fallback"
+    },
+    {
+      "level_learned": 1,
+      "technique": "muddle"
+    },
+    {
+      "level_learned": 1,
+      "technique": "mind_vise"
+    },
+    {
+      "level_learned": 4,
+      "technique": "terror"
+    },
+    {
+      "level_learned": 10,
+      "technique": "time_crisis"
+    },
+    {
+      "level_learned": 13,
+      "technique": "phantasmal_force"
+    },
+    {
+      "level_learned": 19,
+      "technique": "changeling"
+    },
+    {
+      "level_learned": 40,
+      "technique": "shadow_blast"
+    }
+  ],
+  "evolutions": [
+    {
+      "at_level": 16,
+      "monster_slug": "brumi",
+      "variables": [
         {
-            "level_learned": 1,
-            "technique": "muddle"
-        },
-        {
-            "level_learned": 1,
-            "technique": "mind_vise"
-        },
-        {
-            "level_learned": 4,
-            "technique": "terror"
-        },
-        {
-            "level_learned": 10,
-            "technique": "time_crisis"
-        },
-        {
-            "level_learned": 13,
-            "technique": "phantasmal_force"
-        },
-        {
-            "level_learned": 19,
-            "technique": "changeling"
-        },
-        {
-            "level_learned": 40,
-            "technique": "shadow_blast"
+          "key": "daytime",
+          "value": "false"
         }
-    ],
-    "evolutions": [
-        {
-            "at_level": 16,
-            "monster_slug": "brumi",
-            "variable": "daytime:false"
-        }
-    ],
-    "history": [
-        {
-            "mon_slug": "brumi",
-            "evo_stage": "stage1"
-        },
-        {
-            "mon_slug": "bewhich",
-            "evo_stage": "stage2"
-        }
-    ],
-    "terrains": ["any"],
-    "tags": ["ghost", "shapeshifter", "darkness", "mental", "gemstone"],
-    "shape": "sprite",
-    "stage": "basic",
-    "types": [
-        "metal",
-        "wood"
-    ],
-    "possible_genders": ["neuter"],
-    "txmn_id": 340,
-    "height": 91,
-    "weight": 40,
-    "catch_rate": 100.0,
-    "lower_catch_resistance": 0.95,
-    "upper_catch_resistance": 1.05
+      ]
+    }
+  ],
+  "history": [
+    {
+      "slug": "cackleen",
+      "stage": "basic",
+      "evolves_from": [],
+      "evolves_into": [
+        "brumi"
+      ]
+    },
+    {
+      "slug": "brumi",
+      "stage": "stage1",
+      "evolves_from": [
+        "cackleen"
+      ],
+      "evolves_into": [
+        "bewhich"
+      ]
+    },
+    {
+      "slug": "bewhich",
+      "stage": "stage2",
+      "evolves_from": [
+        "brumi"
+      ],
+      "evolves_into": []
+    }
+  ],
+  "terrains": [
+    "any"
+  ],
+  "tags": [
+    "ghost",
+    "shapeshifter",
+    "darkness",
+    "mental",
+    "gemstone"
+  ],
+  "shape": "sprite",
+  "stage": "basic",
+  "types": [
+    "shadow",
+    "cosmic"
+  ],
+  "gender_weights": {
+    "neuter": 1.0
+  },
+  "txmn_id": 340,
+  "height": 91,
+  "weight": 40,
+  "sounds": {
+    "combat_call": {
+      "sfx": "sound_yehehe",
+      "volume": 1.5
+    },
+    "faint_call": {
+      "sfx": "sound_cute_04_faint",
+      "volume": 1.5
+    }
+  },
+  "catch_rate": 100.0,
+  "lower_catch_resistance": 0.95,
+  "upper_catch_resistance": 1.05
 }

@@ -1,26 +1,27 @@
 {
   "tech_id": 44,
   "accuracy": 0.8,
-  "animation": "constantburn",
   "effects": [
     {
       "type": "give",
-      "parameters": ["enraged", "own_monster"]
+      "parameters": [
+        "enraged",
+        "own_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "slow",
   "potency": 1,
   "power": 2.25,
   "range": "melee",
   "recharge": 2,
-  "sfx": "sfx_growl",
   "slug": "berserk",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,11 +31,22 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["fury"],
+  "tags": [
+    "fury"
+  ],
   "types": [
-    "fire"
+    "heroic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "constantburn",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_growl",
+    "volume": 1.5
+  }
 }

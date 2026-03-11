@@ -1,26 +1,27 @@
 {
   "tech_id": 43,
   "accuracy": 1,
-  "animation": "sparks_white",
   "effects": [
     {
       "type": "give",
-      "parameters": ["focused", "own_team:enemy_team"]
+      "parameters": [
+        "focused",
+        "own_team:enemy_team"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 1,
   "range": "reach",
   "recharge": 1,
-  "sfx": "sfx_blaster",
   "slug": "muddle",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,12 +31,23 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["ghost", "mental"],
+  "tags": [
+    "ghost",
+    "mental"
+  ],
   "types": [
-    "fire",
-    "metal"
+    "cosmic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "sparks_white",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_sand",
+    "volume": 1.5
+  }
 }

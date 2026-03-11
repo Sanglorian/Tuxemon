@@ -1,22 +1,22 @@
 {
   "tech_id": 99,
   "accuracy": 0.6,
-  "animation": "sparks_gold_alt",
   "effects": [
     {
       "type": "money"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "very_slow",
   "potency": 1,
   "power": 1,
   "range": "melee",
   "recharge": 1,
-  "sfx": "sfx_blaster",
   "slug": "gold_digger",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -26,11 +26,22 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["gemstone"],
+  "tags": [
+    "gemstone"
+  ],
   "types": [
-    "aether"
+    "normal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "sparks_gold_alt",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_shine",
+    "volume": 1.5
+  }
 }

@@ -1,17 +1,21 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
+from collections import deque
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any
 
-from tuxemon import prepare
 from tuxemon.db import Direction
 
 if TYPE_CHECKING:
-    from tuxemon.npc import NPC
-    from tuxemon.states.world.worldstate import WorldState
+    from tuxemon.entity.npc import NPC
+    from tuxemon.map.transition import MapTransition
+    from tuxemon.npc_manager import NPCManager
+    from tuxemon.save_state import NPCState
+    from tuxemon.state.manager import StateManager
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +27,33 @@ class TeleportFaint:
     y: int = 0
 
     @classmethod
-    def from_tuple(cls, data: tuple[str, int, int]) -> TeleportFaint:
-        return cls(data[0], data[1], data[2])
+    def from_dict(cls, data: NPCState) -> TeleportFaint:
+        raw = data.teleport_faint
+
+        if raw is None:
+            return cls()
+
+        if isinstance(raw, tuple):
+            keys = ["map_name", "x", "y"]
+            mapped = dict(zip(keys, raw))
+        elif isinstance(raw, Mapping):
+            mapped = dict(raw)
+        else:
+            # Unexpected format—fallback to empty
+            mapped = {}
+
+        return cls(
+            map_name=mapped.get("map_name", "default.tmx"),
+            x=int(mapped.get("x", 0)),
+            y=int(mapped.get("y", 0)),
+        )
+
+    def to_dict(self) -> Mapping[str, Any]:
+        return {
+            "map_name": self.map_name,
+            "x": self.x,
+            "y": self.y,
+        }
 
     def is_valid(self, map_name: str, x: int, y: int) -> bool:
         return self.map_name == map_name and self.x == x and self.y == y
@@ -32,64 +61,78 @@ class TeleportFaint:
     def is_default(self) -> bool:
         return self.map_name == "default.tmx" and self.x == 0 and self.y == 0
 
-    def to_tuple(self) -> tuple[str, int, int]:
-        return (self.map_name, self.x, self.y)
 
-    def to_list(self) -> list[str]:
-        return [self.map_name, str(self.x), str(self.y)]
+@dataclass
+class TeleportRequest:
+    char: NPC | None
+    mapname: str
+    x: int
+    y: int
+    facing: Direction | None = None
+    source_map: str | None = None
+    source_x: int | None = None
+    source_y: int | None = None
+
+
+class TeleportQueue:
+    def __init__(self) -> None:
+        self.queue: deque[TeleportRequest] = deque()
+
+    def enqueue(self, request: TeleportRequest) -> None:
+        self.queue.append(request)
+
+    def dequeue(self) -> TeleportRequest | None:
+        return self.queue.popleft() if self.queue else None
+
+    def peek(self) -> TeleportRequest | None:
+        return self.queue[0] if self.queue else None
+
+    def clear(self) -> None:
+        self.queue.clear()
+
+    def is_empty(self) -> bool:
+        return not self.queue
 
 
 class Teleporter:
     """
-    Manages teleportation of characters in the game world.
+    Facilitates teleportation of characters within the game world.
 
-    This class provides methods for teleporting characters to specific
-    locations, as well as handling delayed teleportations that occur
-    during screen transitions.
-
-    Attributes:
-        delayed_teleport: Whether a delayed teleportation is pending.
-        delayed_char: The character to teleport, or None if the player.
-        delayed_mapname: The name of the map to teleport to.
-            Must exist in the world state.
-        delayed_x: The X position to teleport to.
-            Must be valid within the map boundaries.
-        delayed_y: The Y position to teleport to.
-            Must be valid within the map boundaries.
-        delayed_facing: The direction to face after teleporting.
-            Should align with the world context.
+    This class is responsible for instant and delayed teleportation of
+    characters to specific locations. It ensures the smooth transition
+    of characters between maps, handles screen state changes, and maintains
+    game world consistency during teleportation.
     """
 
-    def __init__(self, world: WorldState) -> None:
-        self.world = world
-        self.delayed_teleport = False
-        self.delayed_char: Optional[NPC] = None
-        self.delayed_mapname = ""
-        self.delayed_x = 0
-        self.delayed_y = 0
-        self.delayed_facing: Optional[Direction] = None
+    def __init__(
+        self,
+        map_transition: MapTransition,
+        npc_manager: NPCManager,
+        state_manager: StateManager,
+    ) -> None:
+        self.map_transition = map_transition
+        self.npc_manager = npc_manager
+        self.state_manager = state_manager
+        self.teleport_queue = TeleportQueue()
+        self.last_teleport_request: TeleportRequest | None = None
 
-    def handle_delayed_teleport(self, character: NPC) -> None:
-        if self.delayed_teleport:
-            self.execute_delayed_teleport(character)
+    def handle_next_teleport(self, character: NPC) -> None:
+        request = self.teleport_queue.dequeue()
+        if request:
+            self.last_teleport_request = request
+            self.execute_teleport(character, request)
 
-    def execute_delayed_teleport(self, character: NPC) -> None:
-        """
-        Executes the delayed teleportation.
-
-        Parameters:
-            char: The character to teleport, or None if the player.
-        """
+    def execute_teleport(
+        self, character: NPC, request: TeleportRequest
+    ) -> None:
         self.teleport_character(
-            self.delayed_char or character,
-            self.delayed_mapname,
-            self.delayed_x,
-            self.delayed_y,
+            request.char or character,
+            request.mapname,
+            request.x,
+            request.y,
         )
-        if self.delayed_facing:
-            (self.delayed_char or character).body.facing = self.delayed_facing
-            self.delayed_facing = None
-        self.delayed_teleport = False
+        if request.facing:
+            (request.char or character).set_facing(request.facing)
 
     def teleport_character(
         self,
@@ -112,9 +155,10 @@ class Teleporter:
             the new map.
         """
         self.prepare_teleport(character)
-        self._switch_map_if_needed(map_name)
-        self._update_character_position(character, x, y)
-        self.finalize_teleport(character)
+        self.map_transition.change_map(map_name)
+        self.map_transition.validate_coordinates(x, y)
+        self.npc_manager.place_npc_on_map(character, map_name, x, y)
+        logger.debug(f"{character.slug} has completed teleportation.")
 
     def prepare_teleport(self, character: NPC) -> None:
         """
@@ -125,42 +169,8 @@ class Teleporter:
             character: The character to prepare for teleportation.
         """
         logger.debug(f"Preparing {character.slug} for teleportation...")
-        self.world.stop_char(character)
 
-        if len(self.world.client.state_manager.active_states) == 2:
-            self.world.client.push_state_with_timeout("TeleporterState", 15)
+        if self.state_manager.is_in_base_map_state():
+            self.state_manager.push_state_with_timeout("TeleporterState", 15)
 
-        self.world.lock_controls(character)
         logger.info(f"{character.slug} is prepared for teleportation.")
-
-    def finalize_teleport(self, character: NPC) -> None:
-        """
-        Finalize the teleportation process by unlocking controls and resetting
-        the character's state.
-
-        Parameters:
-            character: The character to finalize teleportation for.
-        """
-        logger.debug(f"Finalizing teleportation for {character.slug}...")
-        self.world.unlock_controls(character)
-        logger.info(f"{character.slug} has completed teleportation.")
-
-    def _switch_map_if_needed(self, map_name: str) -> None:
-        if (
-            self.world.current_map is None
-            or map_name != self.world.current_map.filename
-        ):
-            target_map = prepare.fetch("maps", map_name)
-            if not target_map:
-                raise ValueError(f"Map '{map_name}' does not exist.")
-            self.world.change_map(target_map)
-
-    def _update_character_position(
-        self, character: NPC, x: int, y: int
-    ) -> None:
-        if not self.world.boundary_checker.is_within_boundaries((x, y)):
-            raise ValueError(
-                f"Coordinates ({x}, {y}) are out of map boundaries."
-            )
-        character.cancel_path()
-        character.set_position((x, y))

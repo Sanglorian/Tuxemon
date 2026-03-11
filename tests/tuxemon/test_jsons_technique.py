@@ -1,35 +1,32 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import json
-import os
 import unittest
+from pathlib import Path
 from typing import Any
 
-from tuxemon import prepare
-
-ALL_TECHNIQUES: int = 247
-MAX_TECH_ID: int = 241
+ALL_TECHNIQUES: int = 274
+MAX_TECH_ID: int = 268
 # effects with simple_damage_calculate()
 SIMPLE_DAMAGE_EFFECT = ("damage", "retaliate", "revenge", "money", "splash")
 # effects with simple_heal()
 SIMPLE_HEAL_EFFECT = ("healing", "photogenesis")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+TECHNIQUE_FOLDER = PROJECT_ROOT / "mods/tuxemon/db/technique"
 
 
-def process_json_data(directory: str) -> list[dict[str, Any]]:
+def process_json_data() -> list[dict[str, Any]]:
     data_list = []
-    directory = f"{prepare.fetch('db')}/{directory}/"
-    for filename in os.listdir(directory):
-        if filename.endswith(".json"):
-            filepath = os.path.join(directory, filename)
-            with open(filepath, "r") as f:
+    for file in TECHNIQUE_FOLDER.iterdir():
+        if file.suffix == ".json" and file.is_file():
+            with file.open("r") as f:
                 data_list.append(json.load(f))
     return data_list
 
 
 class TestTechniqueJSON(unittest.TestCase):
     def setUp(self) -> None:
-        sample_data = "technique"
-        self.data_list = process_json_data(sample_data)
+        self.data_list = process_json_data()
 
     def test_nr_jsons(self) -> None:
         self.assertEqual(len(self.data_list), ALL_TECHNIQUES)

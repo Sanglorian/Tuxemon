@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from abc import ABC
@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 from tuxemon.cli.exceptions import CommandNotFoundError
 from tuxemon.cli.parameter import Parameter
-from tuxemon.cli.parser import split
+from tuxemon.cli.parser import tokenize
 
 if TYPE_CHECKING:
     from tuxemon.cli.context import InvokeContext
@@ -88,10 +88,30 @@ class CLICommand(ABC):
             so the remaining portion of the string will be treated as an
             argument to "char_face".
         """
-        head, tail = split(path)
-        try:
-            command = self.get_subcommand(ctx, head)
-        except CommandNotFoundError:
+        tokens = tokenize(path)
+        if not tokens:
             return self, path
-        else:
-            return command.resolve(ctx, tail)
+
+        current: CLICommand = self
+        idx = 0
+        visited: set[tuple[int, int]] = set()
+
+        while idx < len(tokens):
+            state = (id(current), idx)
+            if state in visited:
+                # Cycle detected: stop and treat remaining tokens as tail
+                tail = " ".join(tokens[idx:])
+                return current, tail
+            visited.add(state)
+
+            name = tokens[idx]
+            try:
+                next_cmd = current.get_subcommand(ctx, name)
+            except CommandNotFoundError:
+                tail = " ".join(tokens[idx:])
+                return current, tail
+            else:
+                current = next_cmd
+                idx += 1
+
+        return current, ""

@@ -1,22 +1,20 @@
 {
   "tech_id": 154,
   "accuracy": 0.8,
-  "animation": "emerald_radiate",
   "effects": [
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.0,
   "power": 2.9,
   "range": "reliable",
   "recharge": 3,
-  "sfx": "sfx_blaster",
   "slug": "viper",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -26,11 +24,22 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["toxic"],
+  "tags": [
+    "toxic"
+  ],
   "types": [
-    "metal"
+    "venom"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "emerald_radiate",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_bubbles",
+    "volume": 1.5
+  }
 }

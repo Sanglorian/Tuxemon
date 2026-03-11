@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.session import Session
 
 
 @final
@@ -36,10 +36,9 @@ class StartCinemaModeAction(EventAction):
     """
 
     name = "start_cinema_mode"
-    aspect_y_ratio: Optional[float] = 2.39
-    aspect_x_ratio: Optional[float] = None
+    aspect_y_ratio: float | None = 2.39
+    aspect_x_ratio: float | None = None
 
-    def start(self) -> None:
-        world = self.session.client.get_state_by_name(WorldState)
-        world.map_renderer.cinema_y_ratio = self.aspect_y_ratio
-        world.map_renderer.cinema_x_ratio = self.aspect_x_ratio
+    def start(self, session: Session) -> None:
+        session.client.map_renderer.cinema_y_ratio = self.aspect_y_ratio
+        session.client.map_renderer.cinema_x_ratio = self.aspect_x_ratio

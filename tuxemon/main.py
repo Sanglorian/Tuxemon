@@ -1,46 +1,38 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional, no_type_check
+from typing import TYPE_CHECKING
 
-from tuxemon import log, prepare
+from tuxemon.client import LocalPygameClient
+from tuxemon.headless_client import HeadlessClient
 from tuxemon.session import local_session
+from tuxemon.startup_state_machine import StartupStateMachine
 
 if TYPE_CHECKING:
-    from pygame.surface import Surface
-
-    from tuxemon.client import LocalPygameClient
     from tuxemon.config import TuxemonConfig
+    from tuxemon.prepare import DisplayContext
 
 logger = logging.getLogger(__name__)
 
 
-def main(load_slot: Optional[int] = None) -> None:
+def main(
+    config: TuxemonConfig,
+    context: DisplayContext,
+    load_slot: int | None = None,
+) -> None:
     """
-    Configure and start the game.
+    Initialize and launch the game using a local Pygame client.
 
-    Add all available states to our scene manager (:class:`tools.Client`)
-    and start the game using the pygame interface.
-
-    Parameters:
-        load_slot: Number of the save slot to load, if any.
-
+    Sets up logging, creates the game client, configures initial states,
+    applies debug options when enabled, and starts the main game loop.
     """
-    log.configure()
-    prepare.init()
-    config = prepare.CONFIG
-    screen = prepare.SCREEN
 
     import pygame
 
-    client = initialize_client(config, screen)
-
-    # global/singleton hack for now
-    setattr(prepare, "GLOBAL_CONTROL", client)
-    # WIP.  Will be more complete with game-view
-    local_session.client = client
+    client = LocalPygameClient.create(config, context)
+    local_session.set_client(client)
 
     configure_game_states(client, config, load_slot)
 
@@ -51,78 +43,43 @@ def main(load_slot: Optional[int] = None) -> None:
     pygame.quit()
 
 
-def initialize_client(
-    config: TuxemonConfig, screen: Surface
-) -> LocalPygameClient:
+def headless(config: TuxemonConfig, context: DisplayContext) -> None:
     """
-    Initialize the LocalPygameClient with the given configuration and screen.
+    Start the game in headless mode for server or automated use.
+
+    Configures logging, initializes the headless client, loads the
+    headless server state, and runs the main loop without graphics.
     """
-    from tuxemon.client import LocalPygameClient
-
-    try:
-        client = LocalPygameClient(config, screen)
-        logger.info("Client initialized successfully.")
-    except (TypeError, ValueError) as e:
-        logger.error(f"Failed to initialize client: {e}")
-        raise
-    except Exception as e:
-        logger.critical(f"Unexpected error during client initialization: {e}")
-        raise
-
-    return client
+    control = HeadlessClient(config, context)
+    control.push_state("HeadlessServerState")
+    control.main()
 
 
 def configure_game_states(
     client: LocalPygameClient,
     config: TuxemonConfig,
-    load_slot: Optional[int] = None,
+    load_slot: int | None = None,
 ) -> None:
-    # background state is used to prevent other states from
-    # being required to track dirty screen areas.  for example,
-    # in the start state, there is a menu on a blank background,
-    # since menus do not clean up dirty areas, the blank,
-    # "Background state" will do that.  The alternative is creating
-    # a system for states to clean up their dirty screen areas.
-    client.push_state("BackgroundState")
-    if not config.skip_titlescreen:
-        client.push_state("StartState")
-
-    if load_slot:
-        client.push_state("LoadMenuState", load_slot=load_slot)
-        client.pop_state()
-
-    elif config.splash:
-        client.push_state("SplashState", parent=client.state_manager)
-        client.push_state("FadeInTransition")
-
-    if config.skip_titlescreen and config.mods and len(config.mods) == 1:
-        destination = f"{prepare.STARTING_MAP}{config.mods[0]}.tmx"
-        map_name = prepare.fetch("maps", destination)
-        client.push_state("WorldState", map_name=map_name)
+    machine = StartupStateMachine(client, config, load_slot)
+    machine.run()
 
 
 def configure_debug_options(client: LocalPygameClient) -> None:
     logger.info("********* DEBUG OPTIONS ENABLED *********")
-    logging.basicConfig(level=logging.DEBUG)
+
+    logger.setLevel(logging.DEBUG)
 
     action = client.event_engine.execute_action
+
     action("add_monster", ("bigfin", 10))
     action("add_monster", ("dandylion", 10))
+
     action("add_item", ("potion",))
     action("add_item", ("cherry",))
     action("add_item", ("tuxeball",))
+
     for _ in range(10):
         action("add_item", ("super_potion",))
+
     for _ in range(100):
         action("add_item", ("apple",))
-
-
-@no_type_check  # FIXME: dead code
-def headless() -> None:
-    """Sets up out headless server and start the game."""
-    from tuxemon.client import HeadlessClient
-
-    control = HeadlessClient()
-    control.auto_state_discovery()
-    control.push_state("HeadlessServerState")
-    control.main()

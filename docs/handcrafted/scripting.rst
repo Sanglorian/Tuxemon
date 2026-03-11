@@ -17,3 +17,24 @@ Actions
 Below is the list of all actions usable inside scripts, along with a description of their parameters, if any.
 
 .. include:: action_list.rst
+
+Behaviors
+---------
+
+Below is the list of all behaviors usable inside scripts, along with a description of their parameters, if any.
+
+.. include:: behavior_list.rst
+
+Core Effects
+---------------
+
+Built-in effects for statuses, items, and techniques.
+
+.. include:: core_effects_list.rst
+
+Core Conditions
+---------------
+
+Built-in conditions for statuses, items, and techniques.
+
+.. include:: core_conditions_list.rst

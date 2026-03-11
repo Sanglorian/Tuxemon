@@ -1,15 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
-import uuid
 from dataclasses import dataclass
-from typing import Optional, Union, final
+from typing import final
 
-from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
-from tuxemon.monster import Monster
+from tuxemon.formula import set_health
+from tuxemon.session import Session
+from tuxemon.tools import get_valid_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -32,28 +32,14 @@ class SetMonsterHealthAction(EventAction):
             hp to be restored to. A int value, which is the number of HP
             to be restored to. If no health is specified, the hp is maxed
             out.
-
     """
 
     name = "set_monster_health"
-    variable: Optional[str] = None
-    health: Optional[Union[int, float]] = None
+    variable: str | None = None
+    health: int | float | None = None
 
-    @staticmethod
-    def set_health(monster: Monster, value: Union[float, int]) -> None:
-        if isinstance(value, float):
-            monster.current_hp = int(monster.hp * value)
-        else:
-            monster.current_hp = int(value)
-        # checks max and min
-        if monster.current_hp <= 0:
-            monster.faint()
-        if monster.current_hp > monster.hp:
-            monster.current_hp = monster.hp
-        logger.info(f"{monster.name}'s {monster.current_hp} HP")
-
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
         if not player.monsters:
             return
 
@@ -61,14 +47,20 @@ class SetMonsterHealthAction(EventAction):
 
         if self.variable is None:
             for mon in player.monsters:
-                self.set_health(mon, monster_health)
+                set_health(mon, monster_health)
+                if mon.is_fainted:
+                    mon.status.apply_faint(session, mon)
         else:
-            if self.variable not in player.game_variables:
-                logger.error(f"Game variable {self.variable} not found")
-                return
-            monster_id = uuid.UUID(player.game_variables[self.variable])
-            monster = get_monster_by_iid(self.session, monster_id)
+            monster_id = get_valid_uuid(player.game_variables, self.variable)
+            if monster_id is None:
+                logger.info(
+                    f"No valid monster selected for variable '{self.variable}'"
+                )
+                return  # Exit early if no valid UUID
+            monster = session.client.get_monster_by_iid(monster_id)
             if monster is None:
                 logger.error("Monster not found")
                 return
-            self.set_health(monster, monster_health)
+            set_health(monster, monster_health)
+            if monster.is_fainted:
+                monster.status.apply_faint(session, monster)

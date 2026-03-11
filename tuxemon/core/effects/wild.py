@@ -1,46 +1,62 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat import fainted
-from tuxemon.core.core_effect import StatusEffect, StatusEffectResult
+from tuxemon.core.core_effect import CoreEffect, StatusEffectResult
+from tuxemon.db import EffectPhase
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.status.status import Status
 
 
 @dataclass
-class WildEffect(StatusEffect):
+class WildEffect(CoreEffect):
     """
-    Wild: 1/4 chance each turn that instead of using the chosen
-    technique, you take 1/8 your maximum HP in unmodified damage.
+    Applies the "wild" status to a monster.
 
-    Parameters:
-        chance: The chance.
-        divisor: The divisor.
+    This effect introduces reckless behavior: each turn there is a chance
+    that the monster will skip its chosen technique and instead take damage
+    equal to a fraction of its maximum HP.
 
+    **Parameters**
+
+    - ``chance``: The probability of avoiding the penalty (float between 0 and 1).
+    - ``divisor``: The divisor used to calculate self-inflicted damage
+      (e.g. 8 for one-eighth of max HP).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "wild 0.25 8"
+        ]
     """
 
     name = "wild"
     chance: float
     divisor: int
 
-    def apply(self, status: Status, target: Monster) -> StatusEffectResult:
+    def apply_status(
+        self, session: Session, status: Status
+    ) -> StatusEffectResult:
         tech: list[Technique] = []
-        if status.phase == "pre_checking" and random.random() > self.chance:
-            user = status.link
-            empty = status.repl_tech
-            assert user and empty
-            skip = Technique()
-            skip.load(empty)
+        if (
+            status.has_phase(EffectPhase.PRE_CHECKING)
+            and random.random() > self.chance
+        ):
+            user = status.host
+            empty = status.on_tech_use
+            assert empty
+            skip = Technique.create(empty)
             tech = [skip]
-            if not fainted(user):
+            if not user.is_fainted:
                 damage = user.hp // self.divisor
                 user.current_hp = max(0, user.current_hp - damage)
         return StatusEffectResult(

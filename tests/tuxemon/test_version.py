@@ -1,126 +1,92 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+import pytest
 
-from tuxemon.version import Version, VersionComparator
-
-
-class TestVersion(unittest.TestCase):
-
-    def test_initialization(self):
-        version = Version(1, 2, 3)
-        self.assertEqual(version.major, 1)
-        self.assertEqual(version.minor, 2)
-        self.assertEqual(version.patch, 3)
-        self.assertEqual(version.pre_release, "")
-        self.assertEqual(version.build_metadata, "")
-
-    def test_string_representation(self):
-        version = Version(1, 2, 3, "alpha", "001")
-        self.assertEqual(str(version), "1.2.3-alpha+001")
-
-    def test_from_string(self):
-        version = Version.from_string("1.2.3-alpha+001")
-        self.assertEqual(version.major, 1)
-        self.assertEqual(version.minor, 2)
-        self.assertEqual(version.patch, 3)
-        self.assertEqual(version.pre_release, "alpha")
-        self.assertEqual(version.build_metadata, "001")
-
-    def test_from_string_invalid(self):
-        with self.assertRaises(ValueError):
-            Version.from_string("invalid.version.string")
-
-    def test_equality(self):
-        version1 = Version(1, 2, 3)
-        version2 = Version(1, 2, 3)
-        version3 = Version(1, 2, 4)
-        self.assertTrue(version1 == version2)
-        self.assertFalse(version1 == version3)
-
-    def test_inequality(self):
-        version1 = Version(1, 2, 3)
-        version2 = Version(1, 2, 4)
-        self.assertTrue(version1 != version2)
-
-    def test_less_than(self):
-        version1 = Version(1, 2, 3)
-        version2 = Version(1, 2, 4)
-        self.assertTrue(version1 < version2)
-
-    def test_less_than_equal(self):
-        version1 = Version(1, 2, 3)
-        version2 = Version(1, 2, 3)
-        version3 = Version(1, 2, 4)
-        self.assertTrue(version1 <= version2)
-        self.assertTrue(version1 <= version3)
-
-    def test_greater_than(self):
-        version1 = Version(1, 2, 4)
-        version2 = Version(1, 2, 3)
-        self.assertTrue(version1 > version2)
-
-    def test_greater_than_equal(self):
-        version1 = Version(1, 2, 3)
-        version2 = Version(1, 2, 3)
-        version3 = Version(1, 2, 2)
-        self.assertTrue(version1 >= version2)
-        self.assertTrue(version1 >= version3)
-
-    def test_validate_version(self):
-        Version.validate_version("1.2.3")
-        Version.validate_version("1.2.3-alpha")
-        Version.validate_version("1.2.3-alpha+001")
-        Version.validate_version("1.2.3+001")
-
-        with self.assertRaises(ValueError):
-            Version.validate_version("1.2")
-        with self.assertRaises(ValueError):
-            Version.validate_version("1.2.3.4")
-        with self.assertRaises(ValueError):
-            Version.validate_version("invalid.version")
+from tuxemon.version import (
+    Version,
+    VersionComparator,
+    __version__,
+    version_info,
+)
 
 
-class TestVersionComparator(unittest.TestCase):
+def test_string_roundtrip():
+    v = Version("1.2.3")
+    assert str(v) == "1.2.3"
 
-    def test_compare_equal(self):
-        version1 = Version(1, 2, 3)
-        version2 = Version(1, 2, 3)
-        self.assertEqual(VersionComparator.compare(version1, version2), 0)
 
-    def test_compare_greater(self):
-        version1 = Version(1, 2, 4)
-        version2 = Version(1, 2, 3)
-        self.assertEqual(VersionComparator.compare(version1, version2), 1)
+@pytest.mark.parametrize(
+    "input_str",
+    [
+        pytest.param("1.2.3", id="simple_release"),
+        pytest.param("1.2.3a1", id="alpha_release"),
+        pytest.param("1.2.3b2", id="beta_release"),
+        pytest.param("1.2.3rc3", id="release_candidate"),
+        pytest.param("1.2.3.post1", id="post_release"),
+        pytest.param("1.2.3.dev4", id="dev_release"),
+        pytest.param("1!1.2.3", id="epoch_version"),
+        pytest.param("1.2.3+local", id="local_version"),
+    ],
+)
+def test_valid_pep440_versions(input_str):
+    Version(input_str)  # should not raise
 
-    def test_compare_less(self):
-        version1 = Version(1, 2, 3)
-        version2 = Version(1, 2, 4)
-        self.assertEqual(VersionComparator.compare(version1, version2), -1)
 
-    def test_compare_major_difference(self):
-        version1 = Version(2, 0, 0)
-        version2 = Version(1, 9, 9)
-        self.assertEqual(VersionComparator.compare(version1, version2), 1)
+@pytest.mark.parametrize(
+    "invalid",
+    [
+        pytest.param("1.2.x", id="invalid_character"),
+        pytest.param("1..3", id="empty_segment"),
+        pytest.param("1.2.3-foo", id="invalid_prerelease_semver_style"),
+        pytest.param("1.2.3+foo+bar", id="invalid_multiple_local_segments"),
+    ],
+)
+def test_invalid_pep440_versions(invalid):
+    with pytest.raises(ValueError):
+        Version(invalid)
 
-        version1 = Version(1, 0, 0)
-        version2 = Version(2, 0, 0)
-        self.assertEqual(VersionComparator.compare(version1, version2), -1)
 
-    def test_compare_minor_difference(self):
-        version1 = Version(1, 1, 0)
-        version2 = Version(1, 2, 0)
-        self.assertEqual(VersionComparator.compare(version1, version2), -1)
+def test_equality():
+    assert Version("1.2.3") == Version("1.2.3")
+    assert Version("1.2.3") != Version("1.2.4")
 
-        version1 = Version(1, 2, 0)
-        version2 = Version(1, 1, 0)
-        self.assertEqual(VersionComparator.compare(version1, version2), 1)
 
-    def test_compare_patch_difference(self):
-        version1 = Version(1, 2, 3)
-        version2 = Version(1, 2, 4)
-        self.assertEqual(VersionComparator.compare(version1, version2), -1)
+def test_comparison():
+    assert Version("1.2.3") < Version("1.2.4")
+    assert Version("1.2.3a1") < Version("1.2.3b1")
+    assert Version("1.2.3b1") < Version("1.2.3rc1")
+    assert Version("1.2.3rc1") < Version("1.2.3")
+    assert Version("1.2.3") < Version("1.2.3.post1")
+    assert Version("1.2.3.dev1") < Version("1.2.3")
 
-        version1 = Version(1, 2, 4)
-        version2 = Version(1, 2, 3)
-        self.assertEqual(VersionComparator.compare(version1, version2), 1)
+
+@pytest.mark.parametrize(
+    "v1, v2, expected",
+    [
+        pytest.param(
+            Version("1.2.3"), Version("1.2.3"), 0, id="equal_versions"
+        ),
+        pytest.param(
+            Version("1.2.4"), Version("1.2.3"), 1, id="v1_greater_patch"
+        ),
+        pytest.param(
+            Version("1.2.3"), Version("1.2.4"), -1, id="v1_smaller_patch"
+        ),
+        pytest.param(
+            Version("2.0.0"), Version("1.9.9"), 1, id="v1_major_greater"
+        ),
+        pytest.param(
+            Version("1.0.0"), Version("2.0.0"), -1, id="v1_major_smaller"
+        ),
+    ],
+)
+def test_version_comparator(v1, v2, expected):
+    assert VersionComparator.compare(v1, v2) == expected
+
+
+def test_dunder_version_is_string():
+    assert isinstance(__version__, str)
+
+
+def test_version_info_contains_dunder_version():
+    assert __version__ in version_info()

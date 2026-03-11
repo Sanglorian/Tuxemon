@@ -1,13 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import random as rd
+import logging
+import random
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
-from tuxemon.db import EvolutionStage, MonsterModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import MonsterModel
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
+
+logger = logging.getLogger(__name__)
 
 lookup_cache: dict[str, MonsterModel] = {}
 
@@ -16,66 +21,55 @@ lookup_cache: dict[str, MonsterModel] = {}
 @dataclass
 class RandomMonsterAction(EventAction):
     """
-    Add a monster to the specified trainer's party if there is room.
+    Adds a random monster to the specified trainer's party, if there is room.
 
     Script usage:
         .. code-block::
 
-            random_monster <level>[,npc_slug][,exp][,mon][,shape][,evo]
+            random_monster <level>[,npc_slug][,exp][,mon]
 
     Script parameters:
-        level: Level of the added monster.
-        npc_slug: Slug of the trainer that will receive the monster. It
-            defaults to the current player.
-        exp: Experience modifier
-        mon: Money modifier
-        shape: Shape (eg. varmint, brute, etc.)
-        evo: Stage (eg. basic, stage1, etc.)
+        level: The level of the added monster.
+        npc_slug: The slug of the trainer to receive the monster
+            Defaults to the current player.
+        exp: A modifier for the monster's experience.
+        mon: A modifier for the monster's money yield.
 
+    Additional selection rules:
+        - Only monsters with ``randomly = True`` are considered.
+        - Monsters that would evolve at or before the given level
+          (``monster.can_evolve_at_level(level)``) are excluded.
+        - Monsters whose current form requires a higher level than the one
+          provided (``monster.is_underleveled_for_form(level)``) are excluded.
+        - Monsters with ``txmn_id <= 0`` are ignored.
     """
 
     name = "random_monster"
     monster_level: int
-    trainer_slug: Optional[str] = None
-    exp: Optional[float] = None
-    money: Optional[float] = None
-    shape: Optional[str] = None
-    evo: Optional[str] = None
+    trainer_slug: str | None = None
+    exp: float | None = None
+    money: float | None = None
 
-    def start(self) -> None:
+    def start(self, session: Session) -> None:
         if not lookup_cache:
             _lookup_monsters()
-
-        valid_evos = list(EvolutionStage)
-
-        if self.evo and self.evo not in valid_evos:
-            raise ValueError(f"{self.evo} is not a valid evolution stage.")
 
         filters = [
             monster.slug
             for monster in lookup_cache.values()
             if monster.txmn_id > 0
             and monster.randomly
-            and (not self.shape or monster.shape == self.shape)
-            and (not self.evo or monster.stage == self.evo)
+            and not monster.can_evolve_at_level(self.monster_level)
+            and not monster.is_underleveled_for_form(self.monster_level)
         ]
 
         if not filters:
-            if self.shape and not self.evo:
-                raise ValueError(f"No monsters found with shape: {self.shape}")
-            elif self.evo and not self.shape:
-                raise ValueError(
-                    f"No monsters found with evolution stage: {self.evo}"
-                )
-            else:
-                raise ValueError(
-                    f"No monsters found with evolution stage: {self.evo} and shape: {self.shape}.\n"
-                    "Please open an issue on Github to request new monsters with these characteristics."
-                )
+            logger.error("No valid monsters found for the given criteria.")
+            return
 
-        monster_slug = rd.choice(filters)
+        monster_slug = random.choice(filters)
 
-        self.session.client.event_engine.execute_action(
+        session.client.event_engine.execute_action(
             "add_monster",
             [
                 monster_slug,
@@ -89,8 +83,9 @@ class RandomMonsterAction(EventAction):
 
 
 def _lookup_monsters() -> None:
-    monsters = list(db.database["monster"])
-    for mon in monsters:
-        results = db.lookup(mon, table="monster")
-        if results.txmn_id > 0:
-            lookup_cache[mon] = results
+    global lookup_cache
+    lookup_cache = {
+        mon_name: result
+        for mon_name in db.database["monster"]
+        if (result := MonsterModel.lookup(mon_name, db)).txmn_id > 0
+    }

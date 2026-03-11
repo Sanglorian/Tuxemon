@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.event import MapCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -21,15 +21,14 @@ class HasTechCondition(EventCondition):
 
     Script parameters:
         technique: Technique slug name (e.g. "bullet").
-
     """
 
-    name = "has_tech"
+    name: ClassVar[str] = "has_tech"
+    technique: str
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
+    def test(self, session: Session) -> bool:
         player = session.player
-        tech = condition.parameters[0]
-        if player.has_tech(tech):
+        if player.party.has_tech(self.technique):
             return True
         else:
             return False

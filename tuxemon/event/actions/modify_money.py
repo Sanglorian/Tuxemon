@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -30,38 +30,52 @@ class ModifyMoneyAction(EventAction):
 
     eg. "modify_money player,-50"
     eg. "modify_money player,,name_variable"
-
     """
 
     name = "modify_money"
     character: str
-    amount: Optional[int] = None
-    variable: Optional[str] = None
+    amount: int | None = None
+    variable: str | None = None
 
-    def start(self) -> None:
-        character = get_npc(self.session, self.character)
+    def start(self, session: Session) -> None:
+        character = session.get_npc(self.character)
 
         if character is None:
             logger.error(f"Character '{self.character}' not found")
             return
 
-        player = self.session.player
+        player = session.player
         money_manager = character.money_controller.money_manager
+
         if self.amount is None:
             if self.variable:
-                _amount = player.game_variables.get(self.variable, 0)
-                if isinstance(_amount, int):
-                    amount = int(_amount)
-                elif isinstance(_amount, float):
-                    _value = float(_amount)
-                    _wallet = money_manager.get_money()
-                    amount = int(_wallet * _value)
+                raw_value = player.game_variables.get(self.variable, 0)
+
+                if isinstance(raw_value, int):
+                    amount = raw_value
+
+                elif isinstance(raw_value, float):
+                    wallet = money_manager.get_money()
+                    amount = int(wallet * raw_value)
+
                 else:
-                    raise ValueError("It must be float or int")
+                    raise ValueError(
+                        f"Variable '{self.variable}' must be int or float, got {type(raw_value).__name__}"
+                    )
             else:
                 amount = 0
         else:
             amount = self.amount
 
+        current_money = money_manager.get_money()
+        if amount < 0 and current_money + amount < 0:
+            raise ValueError(
+                f"Cannot remove {abs(amount)} money: only {current_money} available"
+            )
+
         money_manager.add_money(amount)
-        logger.info(f"{character.name}'s money changed by {amount}")
+
+        logger.debug(
+            f"{character.name}'s money changed by {amount}. "
+            f"New balance: {money_manager.get_money()}"
+        )

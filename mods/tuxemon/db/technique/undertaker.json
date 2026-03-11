@@ -1,27 +1,30 @@
 {
   "tech_id": 152,
   "accuracy": 1,
-  "animation": "x_attack",
   "effects": [
     {
       "type": "give",
-      "parameters": ["prickly", "enemy_monster"]
+      "parameters": [
+        "prickly",
+        "enemy_monster"
+      ]
     },
     {
       "type": "sacrifice",
-      "parameters": ["1"]
+      "parameters": [
+        "1"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "extremely_slow",
   "potency": 1,
   "power": 1,
   "range": "melee",
   "recharge": 1,
-  "sfx": "sfx_blaster",
   "slug": "undertaker",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -31,11 +34,23 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["ghost", "ground"],
+  "tags": [
+    "ghost",
+    "ground"
+  ],
   "types": [
-    "earth"
+    "shadow"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "x_attack",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_pulse",
+    "volume": 1.5
+  }
 }

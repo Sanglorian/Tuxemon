@@ -1,53 +1,69 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat import set_var
-from tuxemon.core.core_effect import TechEffect, TechEffectResult
-from tuxemon.db import OutputBattle
-from tuxemon.locale import T
+from tuxemon.combat.utils import set_var
+from tuxemon.core.core_effect import CoreEffect, TechEffectResult
+from tuxemon.locale.locale import T
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
-    from tuxemon.states.combat.combat import CombatState
+    from tuxemon.entity.npc import NPC
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 
 
 @dataclass
-class ForfeitEffect(TechEffect):
+class ForfeitEffect(CoreEffect):
     """
-    Forfeit allows player to forfeit.
+    Applies the "forfeit" effect in combat.
 
+    This effect represents surrendering a battle. When triggered, it ends the
+    combat session, faints all monsters belonging to the forfeiting player,
+    and records the outcome as a forfeit.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "forfeit"
+        ]
     """
 
     name = "forfeit"
 
-    def apply(
-        self, tech: Technique, user: Monster, target: Monster
+    def apply_tech_target(
+        self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
-        combat = tech.combat_state
-        player = user.owner
-        assert combat and player
-        set_var(self.session, "battle_last_result", self.name)
-        set_var(self.session, "teleport_clinic", OutputBattle.lost.value)
-        combat._run = True
-        params = {"npc": combat.players[1].name.upper()}
-        extra = [T.format("combat_forfeit", params)]
-        self._clean_combat_state(combat)
-        # Faint all player monsters
-        for mon in player.monsters:
-            mon.faint()
+        self.client = session.client
+        player = user.get_owner()
 
-        return TechEffectResult(name=tech.name, success=True, extras=extra)
+        set_var(session, "battle_last_result", self.name)
+        self.client.combat_session.set_variable("run", True)
 
-    def _clean_combat_state(self, combat: CombatState) -> None:
-        """
-        Clean up the combat state by removing all players and monsters.
-        """
-        for remove in combat.players:
-            combat.clean_combat()
-            del combat.monsters_in_play[remove]
-            combat.players.remove(remove)
+        params = {"npc": self.client.combat_session.right_player.name.upper()}
+        extras = [T.format("combat_forfeit", params)]
+
+        self._clean_combat_state()
+        self._faint_all_monsters(player)
+
+        return TechEffectResult(name=tech.name, success=True, extras=extras)
+
+    def _clean_combat_state(self) -> None:
+        event_bus = self.client.event_bus
+        event_bus.publish("clean_combat")
+
+        combat_session = self.client.combat_session
+        for player in combat_session.players:
+            combat_session.field_monsters.remove_npc(player)
+            combat_session.remove_player(player)
+
+        combat_session.reset()
+
+    def _faint_all_monsters(self, char: NPC) -> None:
+        for monster in char.monsters:
+            monster.current_hp = 0

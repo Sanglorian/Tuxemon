@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="15" height="16" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="92">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="15" height="16" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="92">
  <properties>
   <property name="edges" value="clamped"/>
   <property name="inside" type="bool" value="true"/>
@@ -65,23 +65,25 @@
  <objectgroup color="#ffff00" id="6" name="Events">
   <object id="34" name="Go upstairs" type="event" x="64" y="32" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_wayfarer_inn2.tmx,5,2,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_wayfarer_inn2.tmx,5,2,0.3"/>
     <property name="act2" value="char_face player,right"/>
+    <property name="act3" value="set_teleport_faint player,spyder_wayfarer_inn1.tmx,11,9"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,right"/>
    </properties>
   </object>
   <object id="35" name="Go to the other upstairs" type="event" x="160" y="48" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_wayfarer_inn2.tmx,9,3,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_wayfarer_inn2.tmx,9,3,0.3"/>
     <property name="act2" value="char_face player,left"/>
+    <property name="act3" value="set_teleport_faint player,spyder_wayfarer_inn1.tmx,11,9"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,left"/>
    </properties>
   </object>
   <object id="39" name="Teleport to Route 3" type="event" x="160" y="160" width="48" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_route3.tmx,4,5,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_route3.tmx,4,5,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -89,7 +91,7 @@
   </object>
   <object id="40" name="Teleport to Route 3" type="event" x="176" y="16" width="32" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_route3.tmx,2,3,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_route3.tmx,2,3,0.3"/>
     <property name="act2" value="char_face player,left"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -115,6 +117,7 @@
     <property name="act21" value="lock_controls"/>
     <property name="act30" value="char_face spyder_wayfarer1_norm,up"/>
     <property name="act40" value="wait 1"/>
+    <property name="act45" value="play_sound coinecho"/>
     <property name="act50" value="char_face spyder_wayfarer1_norm,down"/>
     <property name="act51" value="unlock_controls"/>
     <property name="act60" value="translated_dialog okaythen2"/>
@@ -128,7 +131,7 @@
     <property name="act1" value="translated_dialog spyder_wayfarer_shopkeeper"/>
     <property name="act2" value="translated_dialog_choice yes:no,chooses"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
     <property name="cond3" value="not variable_set chooses:yes"/>
    </properties>
   </object>
@@ -165,6 +168,7 @@
     <property name="act2" value="add_monster botbot,10"/>
     <property name="act3" value="set_variable gotbotbot:yes"/>
     <property name="act4" value="char_plague spyderbite,infected"/>
+    <property name="act5" value="set_monster_attribute add_monster,acquisition,gifted"/>
     <property name="cond1" value="is variable_set wayfarer1_botbot:yes"/>
     <property name="cond2" value="is variable_set quebotbot:yes"/>
     <property name="cond3" value="not variable_set gotbotbot:yes"/>
@@ -176,7 +180,8 @@
     <property name="act1" value="translated_dialog spyder_wayfarer1_maniac1"/>
     <property name="act2" value="add_monster botbot,10"/>
     <property name="act3" value="set_variable gotbotbot:yes"/>
-    <property name="act4" value="translated_dialog botbot,,center,center,middle"/>
+    <property name="act4" value="translated_dialog botbot,,center,center,center"/>
+    <property name="act5" value="set_monster_attribute add_monster,acquisition,gifted"/>
     <property name="cond1" value="is variable_set wayfarer1_botbot:yes"/>
     <property name="cond2" value="is variable_set quebotbot:yes"/>
     <property name="cond3" value="not variable_set gotbotbot:yes"/>
@@ -205,14 +210,13 @@
   </object>
   <object id="56" name="Talk Morton" type="event" x="64" y="96" width="16" height="16">
    <properties>
-    <property name="act10" value="translated_dialog spyder_wayfarer1_morton1"/>
-    <property name="act11" value="char_plague spyderbite,infected,spyder_wayfarer1_morton"/>
-    <property name="act12" value="add_monster mrmoswitch,14,spyder_wayfarer1_morton,5,10"/>
+    <property name="act10" value="char_talk spyder_wayfarer1_morton,pre_battle"/>
+    <property name="act11" value="add_monster mrmoswitch,14,spyder_wayfarer1_morton,5,10"/>
+    <property name="act12" value="char_plague spyderbite,infected,spyder_wayfarer1_morton"/>
     <property name="act13" value="start_battle player,spyder_wayfarer1_morton"/>
-    <property name="act14" value="translated_dialog spyder_wayfarer1_morton2"/>
-    <property name="act16" value="set_variable wayfarer1morton:yes"/>
+    <property name="act14" value="char_talk spyder_wayfarer1_morton,post_battle_lose"/>
     <property name="behav1" value="talk spyder_wayfarer1_morton"/>
-    <property name="cond1" value="not variable_set wayfarer1morton:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_wayfarer1_morton"/>
    </properties>
   </object>
   <object id="57" name="Create Jessie" type="event" x="80" y="240" width="16" height="16">
@@ -224,15 +228,14 @@
   </object>
   <object id="58" name="Talk Jessie" type="event" x="64" y="240" width="16" height="16">
    <properties>
-    <property name="act10" value="translated_dialog spyder_wayfarer1_jessie1"/>
-    <property name="act11" value="char_plague spyderbite,infected,spyder_wayfarer1_jessie"/>
-    <property name="act12" value="add_monster lapinou,12,spyder_wayfarer1_jessie,5,10"/>
-    <property name="act13" value="add_monster cairfrey,12,spyder_wayfarer1_jessie,5,10"/>
+    <property name="act10" value="char_talk spyder_wayfarer1_jessie,pre_battle"/>
+    <property name="act11" value="add_monster lapinou,12,spyder_wayfarer1_jessie,5,10"/>
+    <property name="act12" value="add_monster cairfrey,12,spyder_wayfarer1_jessie,5,10"/>
+    <property name="act13" value="char_plague spyderbite,infected,spyder_wayfarer1_jessie"/>
     <property name="act14" value="start_battle player,spyder_wayfarer1_jessie"/>
-    <property name="act15" value="translated_dialog spyder_wayfarer1_jessie2"/>
-    <property name="act16" value="set_variable wayfarer1jessie:yes"/>
+    <property name="act15" value="char_talk spyder_wayfarer1_jessie,post_battle_lose"/>
     <property name="behav1" value="talk spyder_wayfarer1_jessie"/>
-    <property name="cond1" value="not variable_set wayfarer1jessie:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_wayfarer1_jessie"/>
    </properties>
   </object>
   <object id="59" name="Create Nightshade" type="event" x="64" y="208" width="16" height="16">
@@ -243,15 +246,14 @@
   </object>
   <object id="60" name="Talk Nightshade" type="event" x="48" y="208" width="16" height="16">
    <properties>
-    <property name="act10" value="translated_dialog spyder_wayfarer1_nightshade1"/>
-    <property name="act11" value="char_plague spyderbite,infected,spyder_wayfarer1_nightshade"/>
-    <property name="act12" value="add_monster lapinou,12,spyder_wayfarer1_nightshade,5,10"/>
-    <property name="act13" value="add_monster elofly,12,spyder_wayfarer1_nightshade,5,10"/>
+    <property name="act10" value="char_talk spyder_wayfarer1_nightshade,pre_battle"/>
+    <property name="act11" value="add_monster lapinou,12,spyder_wayfarer1_nightshade,5,10"/>
+    <property name="act12" value="add_monster elofly,12,spyder_wayfarer1_nightshade,5,10"/>
+    <property name="act13" value="char_plague spyderbite,infected,spyder_wayfarer1_nightshade"/>
     <property name="act14" value="start_battle player,spyder_wayfarer1_nightshade"/>
-    <property name="act15" value="translated_dialog spyder_wayfarer1_nightshade2"/>
-    <property name="act16" value="set_variable wayfarer1nightshade:yes"/>
+    <property name="act15" value="char_talk spyder_wayfarer1_nightshade,post_battle_lose"/>
     <property name="behav1" value="talk spyder_wayfarer1_nightshade"/>
-    <property name="cond1" value="not variable_set wayfarer1nightshade:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_wayfarer1_nightshade"/>
    </properties>
   </object>
   <object id="61" name="Create Victor" type="event" x="208" y="32" width="16" height="16">
@@ -262,13 +264,12 @@
   </object>
   <object id="62" name="Talk Victor" type="event" x="208" y="48" width="16" height="16">
    <properties>
-    <property name="act10" value="translated_dialog spyder_wayfarer1_victor1"/>
+    <property name="act10" value="char_talk spyder_wayfarer1_victor,pre_battle"/>
     <property name="act12" value="add_monster squabbit,14,spyder_wayfarer1_victor,5,10"/>
     <property name="act13" value="start_battle player,spyder_wayfarer1_victor"/>
-    <property name="act14" value="translated_dialog spyder_wayfarer1_victor2"/>
-    <property name="act16" value="set_variable wayfarer1victor:yes"/>
+    <property name="act14" value="char_talk spyder_wayfarer1_victor,post_battle_lose"/>
     <property name="behav1" value="talk spyder_wayfarer1_victor"/>
-    <property name="cond1" value="not variable_set wayfarer1victor:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_wayfarer1_victor"/>
    </properties>
   </object>
   <object id="63" name="Create Morningstar" type="event" x="32" y="32" width="16" height="16">
@@ -279,52 +280,51 @@
   </object>
   <object id="64" name="Talk Morningstar" type="event" x="16" y="32" width="16" height="16">
    <properties>
-    <property name="act10" value="translated_dialog spyder_wayfarer1_morningstar1"/>
-    <property name="act11" value="char_plague spyderbite,infected,spyder_wayfarer1_morningstar"/>
+    <property name="act10" value="char_talk spyder_wayfarer1_morningstar,pre_battle"/>
+    <property name="act11" value="add_monster cairfrey,12,spyder_wayfarer1_morningstar,5,10"/>
     <property name="act12" value="add_monster cairfrey,12,spyder_wayfarer1_morningstar,5,10"/>
-    <property name="act13" value="add_monster cairfrey,12,spyder_wayfarer1_morningstar,5,10"/>
+    <property name="act13" value="char_plague spyderbite,infected,spyder_wayfarer1_morningstar"/>
     <property name="act14" value="start_battle player,spyder_wayfarer1_morningstar"/>
-    <property name="act15" value="translated_dialog spyder_wayfarer1_morningstar2"/>
-    <property name="act16" value="set_variable wayfarer1morningstar:yes"/>
+    <property name="act15" value="char_talk spyder_wayfarer1_morningstar,post_battle_lose"/>
     <property name="behav1" value="talk spyder_wayfarer1_morningstar"/>
-    <property name="cond1" value="not variable_set wayfarer1morningstar:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_wayfarer1_morningstar"/>
    </properties>
   </object>
   <object id="71" name="Talk Morningstar" type="event" x="32" y="48" width="16" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_wayfarer1_morningstar"/>
-    <property name="act03" value="translated_dialog spyder_wayfarer1_morningstar1"/>
+    <property name="act02" value="pathfind_to_char player,spyder_wayfarer1_morningstar"/>
+    <property name="act03" value="char_talk spyder_wayfarer1_morningstar,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
-    <property name="act05" value="char_plague spyderbite,infected,spyder_wayfarer1_morningstar"/>
+    <property name="act05" value="add_monster cairfrey,12,spyder_wayfarer1_morningstar,5,10"/>
     <property name="act06" value="add_monster cairfrey,12,spyder_wayfarer1_morningstar,5,10"/>
-    <property name="act07" value="add_monster cairfrey,12,spyder_wayfarer1_morningstar,5,10"/>
+    <property name="act07" value="char_plague spyderbite,infected,spyder_wayfarer1_morningstar"/>
     <property name="act08" value="start_battle player,spyder_wayfarer1_morningstar"/>
-    <property name="act09" value="translated_dialog spyder_wayfarer1_morningstar2"/>
-    <property name="act10" value="set_variable wayfarer1morningstar:yes"/>
-    <property name="cond1" value="not variable_set wayfarer1morningstar:yes"/>
+    <property name="act09" value="char_talk spyder_wayfarer1_morningstar,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_wayfarer1_morningstar"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="72" name="Talk Victor" type="event" x="176" y="32" width="32" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_wayfarer1_victor"/>
-    <property name="act03" value="translated_dialog spyder_wayfarer1_victor1"/>
+    <property name="act02" value="pathfind_to_char player,spyder_wayfarer1_victor"/>
+    <property name="act03" value="char_talk spyder_wayfarer1_victor,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
-    <property name="act05" value="char_plague spyderbite,infected,spyder_wayfarer1_victor"/>
-    <property name="act06" value="add_monster squabbit,14,spyder_wayfarer1_victor,5,10"/>
+    <property name="act05" value="add_monster squabbit,14,spyder_wayfarer1_victor,5,10"/>
+    <property name="act06" value="char_plague spyderbite,infected,spyder_wayfarer1_victor"/>
     <property name="act07" value="start_battle player,spyder_wayfarer1_victor"/>
-    <property name="act08" value="translated_dialog spyder_wayfarer1_victor2"/>
-    <property name="act09" value="set_variable wayfarer1victor:yes"/>
-    <property name="cond1" value="not variable_set wayfarer1victor:yes"/>
+    <property name="act08" value="char_talk spyder_wayfarer1_victor,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_wayfarer1_victor"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="75" name="Environment" type="event" x="16" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:interior"/>
-    <property name="cond1" value="not variable_set environment:interior"/>
+    <property name="act1" value="set_environment interior"/>
+    <property name="cond1" value="not environment_is interior"/>
    </properties>
   </object>
   <object id="76" name="Create Ratcher" type="event" x="96" y="112" width="16" height="16">
@@ -336,14 +336,13 @@
   </object>
   <object id="77" name="Talk Ratcher" type="event" x="80" y="112" width="16" height="16">
    <properties>
-    <property name="act10" value="translated_dialog spyder_wayfarer1_ratcher1"/>
-    <property name="act11" value="char_plague spyderbite,infected,spyder_wayfarer1_ratcher"/>
-    <property name="act12" value="add_monster lapinou,14,spyder_wayfarer1_ratcher,5,10"/>
+    <property name="act10" value="char_talk spyder_wayfarer1_ratcher,pre_battle"/>
+    <property name="act11" value="add_monster lapinou,14,spyder_wayfarer1_ratcher,5,10"/>
+    <property name="act12" value="char_plague spyderbite,infected,spyder_wayfarer1_ratcher"/>
     <property name="act13" value="start_battle player,spyder_wayfarer1_ratcher"/>
-    <property name="act14" value="translated_dialog spyder_wayfarer1_ratcher2"/>
-    <property name="act15" value="set_variable wayfarer1ratcher:yes"/>
+    <property name="act14" value="char_talk spyder_wayfarer1_ratcher,post_battle_lose"/>
     <property name="behav1" value="talk spyder_wayfarer1_ratcher"/>
-    <property name="cond1" value="not variable_set wayfarer1ratcher:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_wayfarer1_ratcher"/>
    </properties>
   </object>
   <object id="78" name="Create Bismuth" type="event" x="16" y="240" width="16" height="16">
@@ -355,63 +354,62 @@
   </object>
   <object id="79" name="Talk Bismuth" type="event" x="16" y="224" width="16" height="16">
    <properties>
-    <property name="act10" value="translated_dialog spyder_wayfarer1_bismuth1"/>
-    <property name="act11" value="char_plague spyderbite,infected,spyder_wayfarer1_bismuth"/>
-    <property name="act12" value="add_monster hydrone,14,spyder_wayfarer1_bismuth,5,10"/>
+    <property name="act10" value="char_talk spyder_wayfarer1_bismuth,pre_battle"/>
+    <property name="act11" value="add_monster hydrone,14,spyder_wayfarer1_bismuth,5,10"/>
+    <property name="act12" value="char_plague spyderbite,infected,spyder_wayfarer1_bismuth"/>
     <property name="act13" value="start_battle player,spyder_wayfarer1_bismuth"/>
-    <property name="act14" value="translated_dialog spyder_wayfarer1_bismuth2"/>
-    <property name="act15" value="set_variable wayfarer1bismuth:yes"/>
+    <property name="act14" value="char_talk spyder_wayfarer1_bismuth,post_battle_lose"/>
     <property name="behav1" value="talk spyder_wayfarer1_bismuth"/>
-    <property name="cond1" value="not variable_set wayfarer1bismuth:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_wayfarer1_bismuth"/>
    </properties>
   </object>
   <object id="82" name="Post Talk Jessie" type="event" x="112" y="224" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_wayfarer1_jessie2"/>
+    <property name="act1" value="char_talk spyder_wayfarer1_jessie,post_battle_lose"/>
     <property name="behav1" value="talk spyder_wayfarer1_jessie"/>
-    <property name="cond1" value="is variable_set wayfarer1jessie:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_wayfarer1_jessie"/>
    </properties>
   </object>
   <object id="83" name="Post Talk Nightshade" type="event" x="112" y="208" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_wayfarer1_nightshade2"/>
+    <property name="act1" value="char_talk spyder_wayfarer1_nightshade,post_battle_lose"/>
     <property name="behav1" value="talk spyder_wayfarer1_nightshade"/>
-    <property name="cond1" value="is variable_set wayfarer1nightshade:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_wayfarer1_nightshade"/>
    </properties>
   </object>
   <object id="84" name="Post Talk Bismuth" type="event" x="112" y="192" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_wayfarer1_bismuth2"/>
+    <property name="act1" value="char_talk spyder_wayfarer1_bismuth,post_battle_lose"/>
     <property name="behav1" value="talk spyder_wayfarer1_bismuth"/>
-    <property name="cond1" value="is variable_set wayfarer1bismuth:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_wayfarer1_bismuth"/>
    </properties>
   </object>
   <object id="85" name="Post Talk Morton" type="event" x="32" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_wayfarer1_morton2"/>
+    <property name="act1" value="char_talk spyder_wayfarer1_morton,post_battle_lose"/>
     <property name="behav1" value="talk spyder_wayfarer1_morton"/>
-    <property name="cond1" value="is variable_set wayfarer1morton:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_wayfarer1_morton"/>
    </properties>
   </object>
   <object id="86" name="Post Talk Ratcher" type="event" x="48" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_wayfarer1_ratcher2"/>
+    <property name="act1" value="char_talk spyder_wayfarer1_ratcher,post_battle_lose"/>
     <property name="behav1" value="talk spyder_wayfarer1_ratcher"/>
-    <property name="cond1" value="is variable_set wayfarer1ratcher:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_wayfarer1_ratcher"/>
    </properties>
   </object>
   <object id="87" name="Post Talk Morningstar" type="event" x="64" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_wayfarer1_morningstar2"/>
+    <property name="act1" value="char_talk spyder_wayfarer1_morningstar,post_battle_lose"/>
     <property name="behav1" value="talk spyder_wayfarer1_morningstar"/>
-    <property name="cond1" value="is variable_set wayfarer1morningstar:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_wayfarer1_morningstar"/>
    </properties>
   </object>
   <object id="88" name="Post Talk Victor" type="event" x="208" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_wayfarer1_victor2"/>
+    <property name="act1" value="char_talk spyder_wayfarer1_victor,post_battle_lose"/>
     <property name="behav1" value="talk spyder_wayfarer1_victor"/>
-    <property name="cond1" value="is variable_set wayfarer1victor:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_wayfarer1_victor"/>
    </properties>
   </object>
   <object id="89" name="Guestbook" type="event" x="160" y="96" width="16" height="16">
@@ -419,18 +417,19 @@
     <property name="act1" value="translated_dialog spyder_enforcershq_trigger"/>
     <property name="act2" value="translated_dialog_choice no:yes,enforcers_response"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
    </properties>
   </object>
   <object id="90" name="Trigger Flashback" type="event" x="160" y="80" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_nimrod_room.tmx,8,6"/>
+    <property name="act1" value="transition_teleport player,spyder_nimrod_room.tmx,8,6"/>
     <property name="cond1" value="is variable_set enforcers_response:yes"/>
    </properties>
   </object>
   <object id="91" name="Default Template" type="event" x="144" y="80" width="16" height="16">
    <properties>
-    <property name="act1" value="set_template player,default"/>
+    <property name="act1" value="set_layer"/>
+    <property name="act2" value="set_template player,default"/>
     <property name="cond1" value="is char_sprite player,invisible"/>
     <property name="cond2" value="is variable_set enforcers_response:done"/>
    </properties>

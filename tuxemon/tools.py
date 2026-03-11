@@ -1,45 +1,58 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """
-
 Do not import platform-specific libraries such as pygame.
 Graphics/audio operations should go to their own modules.
 
 As the game library is developed and matures, move these into larger modules
 if more appropriate.  Ideally this should be kept small.
-
 """
 
 from __future__ import annotations
 
 import logging
-import typing
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import fields
-from operator import add, eq, floordiv, ge, gt, le, lt, mul, ne, sub
+from datetime import date, datetime, time, timedelta
+from decimal import Decimal
+from enum import Enum
+from fractions import Fraction
+from functools import cache
+from operator import add, eq, ge, gt, le, lt, mul, ne, sub
+from types import UnionType
 from typing import (
     TYPE_CHECKING,
     Any,
+    Literal,
     NoReturn,
-    Optional,
-    Protocol,
     TypeVar,
-    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
 )
+from uuid import UUID
 
-from tuxemon import prepare
 from tuxemon.compat.rect import ReadOnlyRect
+from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import Comparison
-from tuxemon.locale import T, replace_text
-from tuxemon.math import Vector2
+from tuxemon.locale.locale import T
+from tuxemon.scaling import ScalingStrategy
+from tuxemon.ui.dialogue import calc_dialog_rect
+from tuxemon.ui.text_alignment import DialogPosition
+from tuxemon.ui.text_formatter import TextFormatter
 
 if TYPE_CHECKING:
     from pygame.rect import Rect
 
+    from tuxemon.base_client import BaseClient
+    from tuxemon.game_variables import ScopeVariablesManager
     from tuxemon.item.item import Item
     from tuxemon.session import Session
     from tuxemon.sprite import Sprite
-    from tuxemon.state import State
+    from tuxemon.state.state import State
+    from tuxemon.states.choice_state import MenuStateConfig
+    from tuxemon.technique.technique import Technique
+    from tuxemon.ui.menu_options import MenuOptions
 
 
 logger = logging.getLogger(__name__)
@@ -49,31 +62,26 @@ logger = logging.getLogger(__name__)
 Never = NoReturn
 
 TVar = TypeVar("TVar")
-TVarSequence = TypeVar("TVarSequence", bound=tuple[int, ...])
 
-ValidParameterSingleType = Optional[type[Any]]
-ValidParameterTypes = Union[
-    ValidParameterSingleType,
-    Sequence[ValidParameterSingleType],
-]
+
+ValidParameterSingleType = type[Any] | None
+ValidParameterTypes = (
+    ValidParameterSingleType | Sequence[ValidParameterSingleType]
+)
+
+
+def safe_floordiv(a: float, b: float) -> int:
+    if b == 0:
+        return int(a)  # no-op fallback
+    return int(a // b)
+
 
 ops_dict: Mapping[str, Callable[[float, float], int]] = {
     "+": add,
     "-": sub,
     "*": mul,
-    "/": floordiv,
+    "/": safe_floordiv,
 }
-
-
-class NamedTupleProtocol(Protocol):
-    """Protocol for arbitrary NamedTuple objects."""
-
-    @property
-    def _fields(self) -> tuple[str, ...]:
-        pass
-
-
-NamedTupleTypeVar = TypeVar("NamedTupleTypeVar", bound=NamedTupleProtocol)
 
 
 def get_cell_coordinates(
@@ -97,146 +105,166 @@ def transform_resource_filename(*filename: str) -> str:
 
     Returns:
         The absolute path of the resource.
-
     """
-    return prepare.fetch(*filename)
+    return fetch_asset(*filename)
 
 
-def scale_sequence(sequence: TVarSequence) -> TVarSequence:
+def get_screen_rect(sprite: Sprite, internal_rect: Rect) -> Rect:
     """
-    Scale a sequence of integers by the configured scale factor.
+    Converts a rectangle from HUD local coordinates to screen coordinates.
 
     Parameters:
-        sequence: Sequence to scale.
+        sprite: The HUD sprite whose position on screen defines the base.
+        internal_rect: The Rect relative to sprite.image.
 
     Returns:
-        Scaled sequence.
-
+        A Rect object in screen coordinates.
     """
-    return type(sequence)(i * prepare.SCALE for i in sequence)
+    return internal_rect.move(sprite.rect.topleft)
 
 
-def scale(number: int) -> int:
+def scale(number: int, scaling: ScalingStrategy | None = None) -> int:
+    """Scale a number by the configured scale factor."""
+    if scaling is None:
+        from tuxemon.prepare import DISPLAY_CONTEXT
+
+        scaling = DISPLAY_CONTEXT.scaling
+
+    return scaling.scale_int(number)
+
+
+TEnum = TypeVar("TEnum", bound=Enum)
+
+
+def safe_enum_value(
+    enum_class: type[TEnum],
+    value: str | None,
+    default: TEnum,
+    raise_on_error: bool = False,
+) -> TEnum:
     """
-    Scale an integer by the configured scale factor.
-
-    Parameter:
-        number: Integer to scale.
-
-    Returns:
-        Scaled integer.
-
+    Attempts to convert a string to an enum member.
+    Raises or falls back to default on failure.
     """
-    return prepare.SCALE * number
+    try:
+        return enum_class(value)
+    except (ValueError, TypeError) as e:
+        if raise_on_error:
+            raise ValueError(
+                f"Invalid value for {enum_class.__name__}: {value!r}"
+            ) from e
+        logger.warning(
+            f"Invalid value for {enum_class.__name__}: {value!r}, using default: {default}"
+        )
+        return default
 
 
-def calc_dialog_rect(screen_rect: Rect, position: str) -> Rect:
-    """
-    Return a rect that is the area for a dialog box on the screen.
+def get_valid_uuid(
+    game_variables: ScopeVariablesManager, variable_name: str
+) -> UUID | None:
+    """Safely retrieves a valid UUID from game variables."""
+    raw_value: str | None = game_variables.get(variable_name)
 
-    Note:
-        This only works with Pygame rects, as it modifies the attributes.
+    if raw_value in ("no_choice", "no_options", None):
+        logger.info(
+            f"Monster selection result for '{variable_name}': {raw_value}"
+        )
+        return None
 
-    Parameters:
-        screen_rect: Rectangle of the screen.
-        position: Position of the dialog box. Can be 'top', 'bottom', 'center',
-            'topleft', 'topright', 'bottomleft', 'bottomright', 'right', 'left'.
+    try:
+        return UUID(str(raw_value))
+    except (ValueError, TypeError) as e:
+        logger.warning(
+            f"Invalid UUID format for '{variable_name}': {raw_value} ({e})"
+        )
+        return None
 
-    Returns:
-        Rectangle for a dialog.
-    """
-    rect = screen_rect.copy()
-    if prepare.CONFIG.large_gui:
-        rect.height = int(rect.height * 0.4)
-    else:
-        rect.height = int(rect.height * 0.25)
-        rect.width = int(rect.width * 0.8)
 
-    if position == "top":
-        rect.top = screen_rect.top
-        rect.centerx = screen_rect.centerx
-    elif position == "bottom":
-        rect.bottom = screen_rect.bottom
-        rect.centerx = screen_rect.centerx
-    elif position == "center":
-        rect.center = screen_rect.center
-    elif position == "topleft":
-        rect.topleft = screen_rect.topleft
-    elif position == "topright":
-        rect.topright = screen_rect.topright
-    elif position == "bottomleft":
-        rect.bottomleft = screen_rect.bottomleft
-    elif position == "bottomright":
-        rect.bottomright = screen_rect.bottomright
-    elif position == "left":
-        rect.left = screen_rect.left
-        rect.centery = screen_rect.centery
-    elif position == "right":
-        rect.right = screen_rect.right
-        rect.centery = screen_rect.centery
-    else:
-        raise ValueError("Invalid position.")
-
-    return rect
+def fix_measure(measure: int, percentage: float) -> int:
+    """it returns the correct measure based on percentage"""
+    return round(measure * percentage)
 
 
 def open_dialog(
-    session: Session,
+    client: BaseClient,
     text: Sequence[str],
-    avatar: Optional[Sprite] = None,
-    box_style: dict[str, Any] = {},
-    position: str = "bottom",
+    avatar: Sprite | None = None,
+    box_style: dict[str, Any] | None = None,
+    position: DialogPosition = DialogPosition.BOTTOM,
+    target_coords: tuple[int, int] | Rect | None = None,
+    custom_rect: Rect | None = None,
+    on_complete: Callable[[], None] | None = None,
+    dialog_speed: str | None = None,
 ) -> State:
     """
-    Open a dialog with the standard window size.
+    Open a dialog with the standard window size or a custom size/position.
 
     Parameters:
-        session: Game session.
-        text: List of strings.
-        avatar: Optional avatar sprite.
+        client: Game client.
+        text: List of strings for the dialog content.
+        avatar: Optional avatar sprite to display in the dialog.
         box_style: Dictionary containing background color, font color, etc.
         position: Position of the dialog box. Can be 'top', 'bottom', 'center',
-            'topleft', 'topright', 'bottomleft', 'bottomright'.
+            'topleft', 'topright', 'bottomleft', 'bottomright', 'right', 'left',
+            or 'at_target' (if target_coords is a point).
+            If target_coords is provided, this position will be relative to the target.
+            Otherwise, it will be relative to the screen.
+            This parameter is ignored if custom_rect is provided.
+        target_coords: Optional. A tuple (x, y) representing a point, or a Pygame Rect.
+            If provided, the 'position' will be relative to this point/rect.
+            Ignored if custom_rect is provided.
+        custom_rect: Optional. A Pygame Rect object specifying the exact area for the dialog.
+            If provided, 'position' and 'target_coords' will be ignored.
+        dialog_speed: Characters-per-frame delay for text rendering. If `None`, falls
+            back to the client's configured default. Use 'slow' for instant text display.
 
     Returns:
         The pushed dialog state.
-
     """
-    rect = calc_dialog_rect(session.client.screen.get_rect(), position)
-    return session.client.push_state(
+    box_style = box_style or {}
+    if custom_rect is not None:
+        dialog_rect = custom_rect
+    else:
+        dialog_rect = calc_dialog_rect(
+            client.context.rect, position, target_coords=target_coords
+        )
+
+    return client.push_state(
         "DialogState",
+        rect=dialog_rect,
         text=text,
         avatar=avatar,
-        rect=rect,
         box_style=box_style,
+        on_complete=on_complete,
+        dialog_speed=dialog_speed,
     )
 
 
 def open_choice_dialog(
-    session: Session,
-    menu: Sequence[tuple[str, str, Callable[[], None]]],
+    client: BaseClient,
+    menu: MenuOptions,
     escape_key_exits: bool = False,
+    config: MenuStateConfig | None = None,
 ) -> State:
     """
-    Open a dialog choice with the standard window size.
+    Opens a dialog choice using the standard window size.
 
     Parameters:
-        session: Game session.
-        menu: Optional menu object.
+        client: The LocalPygameClient instance.
+        menu: A MenuOptions instance.
+        escape_key_exits: Whether pressing the escape key will close the
+            dialog (default: False).
+        config: Configuration for the menu.
 
     Returns:
-        The pushed dialog choice state.
-
+        The newly pushed dialog choice state.
     """
-    return session.client.push_state(
+    return client.push_state(
         "ChoiceState",
         menu=menu,
         escape_key_exits=escape_key_exits,
+        config=config,
     )
-
-
-def vector2_to_tile_pos(vector: Vector2) -> tuple[int, int]:
-    return (int(vector[0]), int(vector[1]))
 
 
 def number_or_variable(variables: dict[str, Any], value: str) -> float:
@@ -274,96 +302,262 @@ def number_or_variable(variables: dict[str, Any], value: str) -> float:
             )
 
 
-# TODO: stability/testing
 def cast_value(
     i: tuple[tuple[ValidParameterTypes, str], Any],
 ) -> Any:
+    """
+    Attempt to cast a raw value into one of the expected types.
+
+    Parameters:
+        i: A tuple containing ((constructors, param_name), value).
+           - constructors: sequence of type constructors or typing hints
+           - param_name: name of the parameter (for error messages)
+           - value: the raw value to cast
+
+    Returns:
+        The value cast to one of the expected types.
+
+    Raises:
+        ValueError: if the value cannot be cast to any of the expected types.
+    """
     (type_constructors, param_name), value = i
 
-    # Normalize type constructors to a list
-    if not isinstance(type_constructors, Sequence):
+    # Normalize constructors into a list
+    if not isinstance(type_constructors, Sequence) or isinstance(
+        type_constructors, type
+    ):
         type_constructors = [type_constructors]
 
-    # Early return for None or empty string if None is in type constructors
-    if value is None or value == "":
-        if None in type_constructors or type(None) in type_constructors:
+    # Expand Union/Optional types
+    expanded: list[Any] = []
+    for c in type_constructors:
+        if c is None:
+            expanded.append(type(None))
+        elif get_origin(c) == UnionType:
+            expanded.extend(get_args(c))
+        else:
+            expanded.append(c)
+
+    constructors_to_try: list[Any] = [c for c in expanded if c is not None]
+    is_optional = type(None) in expanded
+
+    # Handle None
+    if value is None:
+        if is_optional:
             return None
+        raise ValueError(f"Parameter '{param_name}' cannot be None.")
 
-    # Check for numeric types first to avoid float > int or int > float
-    numeric_constructors = [float, int]
-    if any(_con in type_constructors for _con in numeric_constructors):
-        for _cons in type_constructors:
-            if _cons is None:
-                return None
-            elif type(value) == _cons:
+    # Handle empty string
+    if isinstance(value, str) and not value.strip():
+        if is_optional:
+            return None
+        if str in constructors_to_try:
+            return ""
+        raise ValueError(f"Parameter '{param_name}' cannot be empty string.")
+
+    # First pass: direct isinstance
+    for constructor in constructors_to_try:
+        if get_origin(constructor) is Literal:
+            continue
+        origin = get_origin(constructor) or constructor
+        try:
+            if isinstance(value, origin):
                 return value
-        # If value is not already of a numeric type, try to cast it
-        for _cons in numeric_constructors:
-            if _cons in type_constructors:
-                try:
-                    return _cons(value)
-                except (ValueError, TypeError):
-                    pass
-
-    # Try to cast value to each type constructor
-    for constructor in type_constructors:
-        if not constructor:
+        except TypeError:
             continue
 
-        if isinstance(value, constructor):
-            return value
+    # Special handling for numerics
+    if any(c in constructors_to_try for c in (int, float, Decimal, Fraction)):
+        try:
+            if (
+                int in constructors_to_try
+                and isinstance(value, str)
+                and value.isdigit()
+            ):
+                return int(value)
+            if int in constructors_to_try:
+                try:
+                    return int(value)
+                except ValueError:
+                    # allow "3.0" → 3
+                    if isinstance(value, str) and "." in value:
+                        return int(float(value))
+            if float in constructors_to_try:
+                return float(value)
+            if Decimal in constructors_to_try:
+                return Decimal(value)
+            if Fraction in constructors_to_try:
+                return Fraction(value)
+        except Exception:
+            pass
 
-        elif typing.get_origin(constructor) is typing.Literal:
-            allowed_values = typing.get_args(constructor)
-            if value in allowed_values:
+    # Special handling for booleans
+    if bool in constructors_to_try:
+        if isinstance(value, str):
+            val = value.strip().lower()
+            if val in ("true", "1", "yes", "on"):
+                return True
+            if val in ("false", "0", "no", "off"):
+                return False
+            raise ValueError(
+                f"Parameter '{param_name}' cannot be cast to bool from string '{value}'."
+            )
+        return bool(value)
+
+    # Special handling for datetime/date/time/timedelta
+    if datetime in constructors_to_try:
+        try:
+            return datetime.fromisoformat(value)
+        except Exception:
+            pass
+    if date in constructors_to_try:
+        try:
+            return date.fromisoformat(value)
+        except Exception:
+            pass
+    if time in constructors_to_try:
+        try:
+            return time.fromisoformat(value)
+        except Exception:
+            pass
+    if timedelta in constructors_to_try:
+        try:
+            return timedelta(seconds=float(value))
+        except Exception:
+            pass
+
+    # Special handling for enums
+    for constructor in constructors_to_try:
+        if isinstance(constructor, type) and issubclass(constructor, Enum):
+            if isinstance(value, constructor):
                 return value
-
-        else:
             try:
                 return constructor(value)
-            except (ValueError, TypeError):
+            except Exception:
                 pass
 
-    # If all attempts fail, raise a ValueError
+    # Handle Literal
+    for constructor in constructors_to_try:
+        if get_origin(constructor) is Literal:
+            allowed_values = get_args(constructor)
+            if value in allowed_values:
+                return value
+            raise ValueError(
+                f"Parameter '{param_name}' must be one of {allowed_values}, got {value!r}"
+            )
+
+    # Handle collections (basic coercion)
+    for constructor in constructors_to_try:
+        origin = get_origin(constructor) or constructor
+        if origin in (list, set, tuple):
+            try:
+                if isinstance(value, str):
+                    parts = value.split(",")
+                    if is_optional:
+                        items = [
+                            p.strip() if p.strip() else None for p in parts
+                        ]
+                    else:
+                        items = [p.strip() for p in parts]
+                    return origin(items)
+                return origin(value)
+            except Exception:
+                pass
+        elif origin is dict:
+            try:
+                if isinstance(value, str):
+                    import json
+
+                    return json.loads(value)
+                return dict(value)
+            except Exception:
+                pass
+
+    # Generic casting fallback
+    for constructor in constructors_to_try:
+        try:
+            return constructor(value)
+        except Exception:
+            continue
+
+    # If all attempts fail
     raise ValueError(
-        f"Error parsing parameter {param_name} with value {value} and "
-        f"constructor list {type_constructors}",
+        f"Error parsing parameter '{param_name}': Cannot cast value {value!r} "
+        f"(type {type(value).__name__}) to any of {constructors_to_try}"
     )
 
 
 def get_types_tuple(
     param_type: ValidParameterSingleType,
 ) -> Sequence[ValidParameterSingleType]:
-    if typing.get_origin(param_type) is Union:
-        return typing.get_args(param_type)
-    # TODO remove # if Python v3.10 (now 3.9)
-    # from types import UnionType
-    # elif typing.get_origin(param_type) is UnionType:
-    #    return typing.get_args(param_type)
-    else:
+    """
+    Expand a typing annotation into its component types.
+    """
+    origin = get_origin(param_type)
+
+    if origin is UnionType:
+        return get_args(param_type)
+
+    if param_type is type(None):
         return (param_type,)
 
+    return (param_type,)
 
-def cast_dataclass_parameters(self: Any) -> None:
+
+@cache
+def get_cached_type_info(cls: type) -> dict[str, tuple[type, ...]]:
     """
-    Takes a dataclass object and casts its __init__ values to the correct type
+    Retrieve and cache type information for dataclass fields.
     """
-    type_hints = typing.get_type_hints(self.__class__)
-    for field in fields(self):
-        if field.init:
-            field_name = field.name  # e.g "map_name"
-            type_hint = type_hints[field_name]  # e.g. Optional[str]
-            constructors = get_types_tuple(
-                type_hint
-            )  # e.g. (<class 'str'>, <class 'NoneType'>)
-            old_value = getattr(self, field_name)
+    type_hints = get_type_hints(cls)
+
+    info = {}
+    for field in fields(cls):
+        if not field.init:
+            continue
+
+        component_types: list[Any] = []
+        for t in get_types_tuple(type_hints[field.name]):
+            if isinstance(t, type):
+                component_types.append(t)
+            elif get_origin(t) is Literal:
+                component_types.append(t)
+            elif t is type(None):
+                component_types.append(type(None))
+
+        info[field.name] = tuple(component_types)
+
+    return info
+
+
+def cast_dataclass_parameters(obj: Any) -> None:
+    """
+    Cast all dataclass fields to their annotated types.
+
+    Args:
+        obj: The dataclass instance to mutate.
+
+    Side effects:
+        Mutates the dataclass instance in place.
+
+    Raises:
+        ValueError: if any field cannot be cast to its annotated type.
+    """
+    field_info = get_cached_type_info(obj.__class__)
+    for field_name, constructors in field_info.items():
+        old_value = getattr(obj, field_name)
+        try:
             new_value = cast_value(((constructors, field_name), old_value))
-            setattr(self, field_name, new_value)
+        except ValueError as e:
+            raise ValueError(
+                f"Failed to cast field '{field_name}' with value {old_value!r}: {e}"
+            ) from e
+        setattr(obj, field_name, new_value)
 
 
-def show_item_result_as_dialog(
+def show_result_as_dialog(
     session: Session,
-    item: Item,
+    entity: Item | Technique,
     result: bool,
 ) -> None:
     """
@@ -371,15 +565,14 @@ def show_item_result_as_dialog(
 
     Parameters:
         session: Game session.
-        item: Item object.
+        entity: Object (Item or Technique).
         result: Boolean indicating success or failure.
-
     """
     msg_type = "use_success" if result else "use_failure"
-    template = getattr(item, msg_type)
+    template = getattr(entity, msg_type)
     if template:
-        message = T.translate(replace_text(session, template))
-        open_dialog(session, [message])
+        message = T.translate(TextFormatter.replace_text(session, template, T))
+        open_dialog(session.client, [message])
 
 
 def round_to_divisible(x: float, base: int = 16) -> int:
@@ -397,7 +590,6 @@ def round_to_divisible(x: float, base: int = 16) -> int:
 
     Returns:
         Rounded number that is divisible by ``base``.
-
     """
     return int(base * round(float(x) / base))
 
@@ -417,7 +609,6 @@ def copy_dict_with_keys(
 
     Returns:
         New mapping with the keys restricted to those in ``keys``.
-
     """
     return {k: source[k] for k in keys if k in source}
 
@@ -428,14 +619,11 @@ def assert_never(value: Never) -> NoReturn:
 
     Parameters:
         value: The value that will be checked for exhaustiveness.
-
     """
     assert False, f"Unhandled value: {value} ({type(value).__name__})"
 
 
-def compare(
-    key: str, value1: Union[int, float], value2: Union[int, float]
-) -> bool:
+def compare(key: str, value1: int | float, value2: int | float) -> bool:
     """
     It compares and it returns a boleean whether is greater_than or not.
 
@@ -453,19 +641,83 @@ def compare(
 
     Returns:
         boolean: true / false
-
     """
-    if key == Comparison.less_than or key == "<":
+    if key == Comparison.LESS_THAN or key == "<":
         return bool(lt(value1, value2))
-    elif key == Comparison.less_or_equal or key == "<=":
+    elif key == Comparison.LESS_OR_EQUAL or key == "<=":
         return bool(le(value1, value2))
-    elif key == Comparison.greater_than or key == ">":
+    elif key == Comparison.GREATER_THAN or key == ">":
         return bool(gt(value1, value2))
-    elif key == Comparison.greater_or_equal or key == ">=":
+    elif key == Comparison.GREATER_OR_EQUAL or key == ">=":
         return bool(ge(value1, value2))
-    elif key == Comparison.equals or key == "==":
+    elif key == Comparison.EQUALS or key == "==":
         return bool(eq(value1, value2))
-    elif key == Comparison.not_equals or key == "!=":
+    elif key == Comparison.NOT_EQUALS or key == "!=":
         return bool(ne(value1, value2))
     else:
         raise ValueError(f"{key} isn't among {list(Comparison)}")
+
+
+def compare_tuple(
+    key: str,
+    value1: tuple[int | float, int | float],
+    value2: tuple[int | float, int | float],
+) -> bool:
+    """
+    Tuple-based comparison using the same Comparison enum
+    and symbolic operators supported by compare().
+    """
+
+    if key == Comparison.LESS_THAN or key == "<":
+        return value1 < value2
+    elif key == Comparison.LESS_OR_EQUAL or key == "<=":
+        return value1 <= value2
+    elif key == Comparison.GREATER_THAN or key == ">":
+        return value1 > value2
+    elif key == Comparison.GREATER_OR_EQUAL or key == ">=":
+        return value1 >= value2
+    elif key == Comparison.EQUALS or key == "==":
+        return value1 == value2
+    elif key == Comparison.NOT_EQUALS or key == "!=":
+        return value1 != value2
+    else:
+        raise ValueError(f"{key} isn't among {list(Comparison)}")
+
+
+def parse_flag(value: str | None) -> bool:
+    """
+    Convert a string flag to a boolean.
+
+    Accepted truthy values: "true", "1", "yes" (case-insensitive).
+    All other values (including None) return False.
+    """
+    return str(value or "").strip().lower() in {"true", "1", "yes"}
+
+
+def check_condition(value: str, dataset: set[str]) -> bool:
+    """
+    Check if a condition is satisfied against a set of values.
+
+    - If the input starts with '!', it asserts that the value is NOT in the dataset.
+    - Otherwise, it asserts that the value IS in the dataset.
+    """
+    value = value.strip().lower()
+    if not value:
+        logging.debug("Empty condition skipped.")
+        return False
+
+    if value.startswith("!"):
+        result = value[1:] not in dataset
+        logging.debug(f"Checking NOT '{value[1:]}' in {dataset}: {result}")
+        return result
+
+    result = value in dataset
+    logging.debug(f"Checking '{value}' in {dataset}: {result}")
+    return result
+
+
+def format_playtime(seconds: float) -> str:
+    """Convert seconds into a human-readable hours and minutes format."""
+    minutes, sec = divmod(int(seconds), 60)
+    hours, min = divmod(minutes, 60)
+    return f"{hours}h {min}m"

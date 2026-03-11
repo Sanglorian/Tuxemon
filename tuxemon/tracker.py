@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ class TrackingData:
         else:
             logger.error(f"TrackingPoint ID '{location_id}' does not exist.")
 
-    def get_location(self, location_id: str) -> Optional[TrackingPoint]:
+    def get_location(self, location_id: str) -> TrackingPoint | None:
         if location_id in self.locations:
             return self.locations[location_id]
         else:
@@ -50,13 +50,13 @@ def decode_tracking(json_data: Mapping[str, Any]) -> TrackingData:
         tracking_data.locations = {
             key: TrackingPoint(**value) for key, value in json_data.items()
         }
+    else:
+        tracking_data.locations = {}
     return tracking_data
 
 
 def encode_tracking(tracking_data: TrackingData) -> Mapping[str, Any]:
     return {
-        "tracker": {
-            location: data.get_state()
-            for location, data in tracking_data.locations.items()
-        }
+        location: data.get_state()
+        for location, data in tracking_data.locations.items()
     }

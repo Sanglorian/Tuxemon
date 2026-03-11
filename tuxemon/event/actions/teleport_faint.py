@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
+from tuxemon.tools import parse_flag
 
 logger = logging.getLogger(__name__)
 
@@ -24,32 +25,36 @@ class TeleportFaintAction(EventAction):
     Script usage:
         .. code-block::
 
-            teleport_faint <character>[,trans_time][,rgb]
+            teleport_faint <character>,<healing>[,trans_time][,rgb]
 
     Script parameters:
         character: Either "player" or npc slug name (e.g. "npc_maple").
+        healing: Trigger healing string flag ("true", "1", "yes" for True),
         trans_time: Transition time in seconds - default 0.3
         rgb: color (eg red > 255,0,0 > 255:0:0) - default rgb(0,0,0)
 
-    eg: "teleport_faint player,3"
-    eg: "teleport_faint player,3,255:0:0:50" (red)
+    eg: "teleport_faint player,true,3"
+    eg: "teleport_faint player,true,3,255:0:0:50" (red)
     """
 
     name = "teleport_faint"
     character: str
-    trans_time: Optional[float] = None
-    rgb: Optional[str] = None
+    healing: str
+    trans_time: float | None = None
+    rgb: str | None = None
 
-    def start(self) -> None:
-        character = get_npc(self.session, self.character)
+    def start(self, session: Session) -> None:
+        character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return
 
-        client = self.session.client
+        healing = parse_flag(self.healing)
+
+        client = session.client
         current_state = client.current_state
         if current_state and current_state.name == "DialogState":
-            client.pop_state()
+            client.remove_state_by_name("DialogState")
 
         if character.teleport_faint.is_default():
             logger.error(
@@ -60,9 +65,11 @@ class TeleportFaintAction(EventAction):
             teleport = character.teleport_faint
 
         action = client.event_engine
+
         action.execute_action(
             "transition_teleport",
             [
+                self.character,
                 teleport.map_name,
                 teleport.x,
                 teleport.y,
@@ -70,3 +77,7 @@ class TeleportFaintAction(EventAction):
                 self.rgb,
             ],
         )
+
+        if healing and character.current_map == teleport.map_name:
+            action.execute_action("set_monster_health")
+            action.execute_action("set_monster_status")

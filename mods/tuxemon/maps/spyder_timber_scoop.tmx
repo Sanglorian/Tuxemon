@@ -44,7 +44,7 @@
  <objectgroup color="#ffff00" id="6" name="Events">
   <object id="13" name="Teleport to Timber City" type="event" x="80" y="160" width="32" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_timber_town.tmx,14,12,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_timber_town.tmx,14,12,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -68,18 +68,18 @@
    <properties>
     <property name="act1" value="char_face spyder_shopassistant,right"/>
     <property name="act2" value="translated_dialog spyder_scoop_welcome"/>
-    <property name="act3" value="open_shop spyder_shopassistant"/>
+    <property name="act3" value="open_shop spyder_shopassistant,both_item"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
    </properties>
   </object>
   <object id="30" name="Open Shop" type="event" x="16" y="112" width="16" height="16">
    <properties>
     <property name="act1" value="char_face spyder_shopassistant,down"/>
     <property name="act2" value="translated_dialog spyder_scoop_welcome"/>
-    <property name="act3" value="open_shop spyder_shopassistant"/>
+    <property name="act3" value="open_shop spyder_shopassistant,both_item"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
    </properties>
   </object>
  </objectgroup>

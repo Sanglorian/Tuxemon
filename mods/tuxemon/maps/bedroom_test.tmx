@@ -48,37 +48,37 @@
  <objectgroup color="#ffff00" id="6" name="Events">
   <object id="9" name="Go Downstairs" type="event" x="112" y="32" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport downstairs_test.tmx,0,2,0.3"/>
+    <property name="act1" value="transition_teleport player,downstairs_test.tmx,0,2,0.3"/>
     <property name="act2" value="char_face down"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="10" name="Use Computer" type="event" x="48" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="change_state PCState,player"/>
+    <property name="act1" value="access_pc player"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
    </properties>
   </object>
   <object id="16" name="Lord Lampy" type="event" x="16" y="16" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog test_lamp"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
    </properties>
   </object>
   <object id="17" name="Lord or Filth" type="event" x="32" y="16" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog test_trash"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
    </properties>
   </object>
   <object id="18" name="tree" type="event" x="128" y="96" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog test_tree"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
    </properties>
   </object>
  </objectgroup>

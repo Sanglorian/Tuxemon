@@ -1,26 +1,27 @@
 {
   "tech_id": 201,
   "accuracy": 1,
-  "animation": "tail",
   "effects": [
     {
       "type": "give",
-      "parameters": ["flinching", "enemy_monster"]
+      "parameters": [
+        "flinching",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.2,
   "power": 1.2,
   "range": "melee",
   "recharge": 1,
-  "sfx": "sfx_blaster",
   "slug": "tail_lash",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -29,12 +30,23 @@
     "own_team": false,
     "own_trainer": false
   },
-  "category": "animal",
-  "tags": ["tail"],
+  "category": "simple",
+  "tags": [
+    "tail"
+  ],
   "types": [
-    "water", "fire"
+    "normal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "tail",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_kick",
+    "volume": 1.5
+  }
 }

@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
-import uuid
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
+from tuxemon.tools import get_valid_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -18,47 +18,56 @@ logger = logging.getLogger(__name__)
 class InfoAction(EventAction):
     """
     Records monster's attribute values inside a game variable.
-    It allows to record the monster's owner attribute values too.
+    It allows recording the monster's owner attribute values too.
 
     Script usage:
-        .. code-block::
 
-            info <variable>,<attribute>
+        .. code-block:: text
+
+           info <variable>,<attribute>
 
     Script parameters:
-        variable: Name of the variable where to store the monster id.
-        attribute: The attribute to check (level, speed, etc.)
 
-    eg. "info name_variable,level"
-    -> if the monster is lv 4, then it'll create a variable called:
+        variable:
+            Name of the variable where to store the monster id.
+
+        attribute:
+            The attribute to check (level, speed, etc.)
+
+    Examples:
+
+        "info name_variable,level"
+        -> if the monster is lv 4, then it'll create a variable called:
         "info_level:4"
-    eg. "info name_variable,owner_steps"
-    -> if the owner walked 69 steps, then it'll create a variable called:
-        "info_owner_steps:69"
 
+        "info name_variable,owner_steps"
+        -> if the owner walked 69 steps, then it'll create a variable called:
+        "info_owner_steps:69"
     """
 
     name = "info"
     variable: str
     attribute: str
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
         attribute = self.attribute
-        variable = self.variable
-        if self.variable not in player.game_variables:
-            logger.error(f"Game variable {variable} not found")
-            return
-        monster_id = uuid.UUID(player.game_variables[variable])
-        monster = get_monster_by_iid(self.session, monster_id)
+        monster_id = get_valid_uuid(player.game_variables, self.variable)
+        if monster_id is None:
+            logger.info(
+                f"No valid monster selected for variable '{self.variable}'"
+            )
+            return  # Exit early if no valid UUID
+        monster = session.client.get_monster_by_iid(monster_id)
         if monster is None:
             monster = player.monster_boxes.get_monsters_by_iid(monster_id)
             if monster is None:
                 logger.error("Monster not found")
                 return
-        character = monster.owner
+
+        character = session.client.get_monster_owner(monster)
         if character is None:
-            logger.error(f"{monster.name}'s owner not found!")
+            logger.error(f"{monster.name}'s owner not found")
             return
 
         attr = None
@@ -68,6 +77,6 @@ class InfoAction(EventAction):
         else:
             attr = getattr(monster, attribute)
 
-        client = self.session.client.event_engine
+        client = session.client.event_engine
         var = f"{self.name}_{attribute}:{attr}"
         client.execute_action("set_variable", [var], True)

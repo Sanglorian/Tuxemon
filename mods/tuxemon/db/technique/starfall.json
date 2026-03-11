@@ -1,30 +1,34 @@
 {
   "tech_id": 56,
   "accuracy": 0.8,
-  "animation": "lightning_bolt_138",
   "effects": [
     {
       "type": "give",
-      "parameters": ["focused", "own_monster"]
+      "parameters": [
+        "focused",
+        "own_monster"
+      ]
     },
     {
-      "type": "give",
-      "parameters": ["tired", "enemy_monster"]
+      "type": "remove",
+      "parameters": [
+        "positive",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 1.25,
   "range": "ranged",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "starfall",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -34,11 +38,24 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["darkness", "celestial", "weather"],
+  "tags": [
+    "darkness",
+    "celestial",
+    "weather"
+  ],
   "types": [
-    "water"
+    "cosmic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "lightning_bolt_138",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_shine",
+    "volume": 1.5
+  }
 }

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import logging
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class CommonAction:
     name = "Common"
 
     @staticmethod
-    def _get_attribute(entity: object, parameter: str) -> Optional[Any]:
+    def _get_attribute(entity: object, parameter: str) -> Any | None:
         """
         Get the attribute of an entity.
 
@@ -109,7 +109,7 @@ class CommonAction:
     @staticmethod
     def get_list_attribute(
         entity: object, parameter: str, index: int
-    ) -> Optional[Any]:
+    ) -> Any | None:
         """
         Get an attribute from a list.
 
@@ -174,7 +174,7 @@ class CommonAction:
     @staticmethod
     def get_dict_attribute(
         entity: object, parameter: str, key: str
-    ) -> Optional[Any]:
+    ) -> Any | None:
         """
         Get an attribute from a dictionary.
 

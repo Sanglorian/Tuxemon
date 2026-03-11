@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
-from tuxemon import prepare
 from tuxemon.event.eventaction import EventAction
+from tuxemon.platform.const.sizes import MUSIC_FADEIN, MUSIC_LOOP, MUSIC_RANGE
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -36,26 +37,23 @@ class PlayMusicAction(EventAction):
         The volume will be based on the main value in the options menu.
         e.g. if you set volume = 0.5 here, but the player has 0.5 among
         its options, then it'll result into 0.25 (0.5*0.5)
-
     """
 
     name = "play_music"
     filename: str
-    volume: Optional[float] = None
-    loop: Optional[int] = None
-    fade_ms: Optional[int] = None
+    volume: float | None = None
+    loop: int | None = None
+    fade_ms: int | None = None
 
-    def start(self) -> None:
-        client = self.session.client
-        loop = prepare.MUSIC_LOOP if self.loop is None else self.loop
-        fade_ms = (
-            prepare.MUSIC_FADEIN if self.fade_ms is None else self.fade_ms
-        )
+    def start(self, session: Session) -> None:
+        client = session.client
+        loop = MUSIC_LOOP if self.loop is None else self.loop
+        fade_ms = MUSIC_FADEIN if self.fade_ms is None else self.fade_ms
         music_volume = client.config.music_volume
         if not self.volume:
             volume = music_volume
         else:
-            lower, upper = prepare.MUSIC_RANGE
+            lower, upper = MUSIC_RANGE
             if lower <= self.volume <= upper:
                 volume = self.volume * music_volume
             else:

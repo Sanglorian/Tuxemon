@@ -1,10 +1,11 @@
 {
   "slug": "liela",
-  "template": 
-    {
-      "sprite_name": "heroine",
-      "combat_front": "heroine",
-      "slug": "heroine"
-    }
-
+  "speech": {"profile": {"default": {}}},
+  "combat": {},
+  "audio": {},
+  "template": {
+    "sprite_name": "heroine",
+    "combat_sheet": "heroine",
+    "slug": "heroine"
+  }
 }

@@ -1,16 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
-import uuid
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.event import get_monster_by_iid
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
-from tuxemon.menu.input import InputMenu
+from tuxemon.locale.locale import T
+from tuxemon.platform.const.sizes import PLAYER_NAME_LIMIT
+from tuxemon.session import Session
+from tuxemon.tools import get_valid_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,6 @@ class RenameMonsterAction(EventAction):
 
     Script parameters:
         variable: Name of the variable where to store the monster id.
-
     """
 
     name = "rename_monster"
@@ -38,30 +37,32 @@ class RenameMonsterAction(EventAction):
         self.monster.name = name
         logger.info(f"Now {T.translate(self.monster.slug)} is {name}!")
 
-    def start(self) -> None:
-        player = self.session.player
-        if self.variable not in player.game_variables:
-            logger.error(f"Game variable {self.variable} not found")
-            return
-
-        monster_id = uuid.UUID(player.game_variables[self.variable])
-        monster = get_monster_by_iid(self.session, monster_id)
+    def start(self, session: Session) -> None:
+        player = session.player
+        monster_id = get_valid_uuid(player.game_variables, self.variable)
+        if monster_id is None:
+            logger.info(
+                f"No valid monster selected for variable '{self.variable}'"
+            )
+            return  # Exit early if no valid UUID
+        monster = session.client.get_monster_by_iid(monster_id)
         if monster is None:
             logger.error("Monster not found")
             return
 
         self.monster = monster
 
-        self.session.client.push_state(
+        session.client.push_state(
             "InputMenu",
             prompt=T.translate("input_monster_name"),
             callback=self.set_monster_name,
             escape_key_exits=False,
             initial=T.translate(self.monster.slug),
+            char_limit=PLAYER_NAME_LIMIT,
         )
 
-    def update(self) -> None:
+    def update(self, session: Session, dt: float) -> None:
         try:
-            self.session.client.get_state_by_name(InputMenu)
+            session.client.get_state_by_name("InputMenu")
         except ValueError:
             self.stop()

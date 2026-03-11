@@ -1,26 +1,27 @@
 {
   "tech_id": 59,
   "accuracy": 0.75,
-  "animation": "sparks_white",
   "effects": [
     {
       "type": "give",
-      "parameters": ["noddingoff", "own_team:enemy_team"]
+      "parameters": [
+        "noddingoff",
+        "own_team:enemy_team"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 2.25,
   "range": "reach",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "sleep_bomb",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,12 +31,22 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["bomber"],
+  "tags": [
+    "bomber"
+  ],
   "types": [
-    "fire",
-    "metal"
+    "cosmic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "sparks_white",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_tornado",
+    "volume": 1.5
+  }
 }

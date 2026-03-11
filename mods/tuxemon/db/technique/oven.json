@@ -1,35 +1,39 @@
 {
   "tech_id": 236,
   "accuracy": 0.8,
-	"animation": null,
-	"conditions": [
+  "conditions": [
     {
       "type": "status",
-      "parameters": ["grabbed"],
+      "parameters": [
+        "grabbed"
+      ],
       "operator": "not"
     },
     {
       "type": "status",
-      "parameters": ["stuck"],
+      "parameters": [
+        "stuck"
+      ],
       "operator": "not"
     }
-	],
+  ],
   "effects": [
     {
       "type": "disappear",
-      "parameters": ["fireball"]
+      "parameters": [
+        "fire_ball"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": true,
+  "speed": "extremely_fast",
   "potency": 1,
   "power": 1,
   "range": "melee",
   "recharge": 4,
-  "sfx": "sfx_blaster",
   "slug": "oven",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -39,11 +43,23 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["flame", "food"],
+  "tags": [
+    "flame",
+    "food"
+  ],
   "types": [
     "fire"
   ],
   "use_failure": "oven_fail",
   "use_success": "oven_success",
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_flames1",
+    "volume": 1.5
+  }
 }

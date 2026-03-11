@@ -1,35 +1,39 @@
 {
   "tech_id": 205,
   "accuracy": 0.8,
-	"animation": null,
-	"conditions": [
+  "conditions": [
     {
       "type": "status",
-      "parameters": ["grabbed"],
+      "parameters": [
+        "grabbed"
+      ],
       "operator": "not"
     },
     {
       "type": "status",
-      "parameters": ["stuck"],
+      "parameters": [
+        "stuck"
+      ],
       "operator": "not"
     }
-	],
-	"effects": [
+  ],
+  "effects": [
     {
       "type": "disappear",
-      "parameters": ["strike"]
+      "parameters": [
+        "strike"
+      ]
     }
-	],
-  "flip_axes": "",
-  "is_fast": true,
+  ],
+  "speed": "extremely_fast",
   "potency": 1,
   "power": 1,
   "range": "melee",
   "recharge": 4,
-  "sfx": "sfx_blaster",
   "slug": "depth_charge",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -39,11 +43,23 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["water", "amphibian"],
+  "tags": [
+    "water",
+    "amphibian"
+  ],
   "types": [
     "water"
   ],
   "use_failure": "depth_charge_fail",
   "use_success": "depth_charge_success",
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_kick",
+    "volume": 1.5
+  }
 }

@@ -141,11 +141,25 @@
             "y": 2560
         },
         {
+            "fileName": "spyder_candy_house1.tmx",
+            "height": 128,
+            "width": 160,
+            "x": 3520,
+            "y": 352
+        },
+        {
             "fileName": "spyder_greenwash.tmx",
             "height": 0,
             "width": 0,
             "x": -320,
             "y": 2688
+        },
+        {
+            "fileName": "spyder_candy_house3.tmx",
+            "height": 128,
+            "width": 160,
+            "x": 3680,
+            "y": 352
         },
         {
             "fileName": "spyder_greenwash_level2.tmx",
@@ -519,6 +533,27 @@
             "y": 2048
         },
         {
+            "fileName": "spyder_timber_cafe.tmx",
+            "height": 192,
+            "width": 192,
+            "x": 3760,
+            "y": 928
+        },
+        {
+            "fileName": "spyder_timber_house.tmx",
+            "height": 128,
+            "width": 160,
+            "x": 3520,
+            "y": 1120
+        },
+        {
+            "fileName": "spyder_timber_scoop.tmx",
+            "height": 176,
+            "width": 208,
+            "x": 3760,
+            "y": 1120
+        },
+        {
             "fileName": "spyder_flower_house2.tmx",
             "height": 128,
             "width": 160,
@@ -531,6 +566,13 @@
             "width": 160,
             "x": 3040,
             "y": 352
+        },
+        {
+            "fileName": "spyder_flower_scoop.tmx",
+            "height": 176,
+            "width": 208,
+            "x": 3760,
+            "y": 544
         },
         {
             "fileName": "spyder_paper_rival_downstairs.tmx",
@@ -554,48 +596,6 @@
             "y": 3312
         },
         {
-            "fileName": "spyder_route7.tmx",
-            "height": 640,
-            "width": 640,
-            "x": 960,
-            "y": -640
-        },
-        {
-            "fileName": "spyder_lion_mountain.tmx",
-            "height": 1600,
-            "width": 640,
-            "x": 1600,
-            "y": -2240
-        },
-        {
-            "fileName": "spyder_crystal_town.tmx",
-            "height": 400,
-            "width": 640,
-            "x": 960,
-            "y": -1040
-        },
-        {
-            "fileName": "spyder_crystal_town_cafe.tmx",
-            "height": 192,
-            "width": 192,
-            "x": 1232,
-            "y": -1232
-        },
-        {
-            "fileName": "spyder_crystal_town_house.tmx",
-            "height": 128,
-            "width": 144,
-            "x": 1424,
-            "y": -1168
-        },
-        {
-            "fileName": "spyder_crystal_center.tmx",
-            "height": 176,
-            "width": 208,
-            "x": 1232,
-            "y": -1408
-        },
-        {
             "fileName": "spyder_datacenter.tmx",
             "height": 320,
             "width": 320,
@@ -603,46 +603,11 @@
             "y": 2240
         },
         {
-            "fileName": "spyder_park_entrance.tmx",
-            "height": 160,
-            "width": 160,
-            "x": 800,
-            "y": -800
-        },
-        {
-            "fileName": "spyder_park.tmx",
-            "height": 640,
-            "width": 640,
-            "x": 1600,
-            "y": -640
-        },
-        {
             "fileName": "spyder_citypark_house1.tmx",
             "height": 128,
             "width": 160,
             "x": 2880,
             "y": 1472
-        },
-        {
-            "fileName": "spyder_park_cave.tmx",
-            "height": 208,
-            "width": 560,
-            "x": 240,
-            "y": -784
-        },
-        {
-            "fileName": "spyder_park_south.tmx",
-            "height": 640,
-            "width": 960,
-            "x": 1280,
-            "y": 0
-        },
-        {
-            "fileName": "spyder_park_cabin.tmx",
-            "height": 96,
-            "width": 160,
-            "x": 2880,
-            "y": -64
         },
         {
             "fileName": "spyder_candy_port.tmx",
@@ -666,34 +631,6 @@
             "y": 2560
         },
         {
-            "fileName": "spyder_routef.tmx",
-            "height": 320,
-            "width": 640,
-            "x": 2240,
-            "y": 1280
-        },
-        {
-            "fileName": "spyder_routei.tmx",
-            "height": 640,
-            "width": 640,
-            "x": 2240,
-            "y": -640
-        },
-        {
-            "fileName": "spyder_routeh.tmx",
-            "height": 640,
-            "width": 640,
-            "x": 2240,
-            "y": 0
-        },
-        {
-            "fileName": "spyder_routeg.tmx",
-            "height": 640,
-            "width": 640,
-            "x": 2240,
-            "y": 640
-        },
-        {
             "fileName": "spyder_candy_inn1.tmx",
             "height": 256,
             "width": 240,
@@ -706,27 +643,6 @@
             "width": 240,
             "x": 784,
             "y": 3200
-        },
-        {
-            "fileName": "spyder_crystal_bank2.tmx",
-            "height": 336,
-            "width": 224,
-            "x": 736,
-            "y": -1376
-        },
-        {
-            "fileName": "spyder_crystal_bank1.tmx",
-            "height": 336,
-            "width": 224,
-            "x": 960,
-            "y": -1376
-        },
-        {
-            "fileName": "spyder_crystal_bank3.tmx",
-            "height": 336,
-            "width": 224,
-            "x": 512,
-            "y": -1376
         },
         {
             "fileName": "spyder_dojo4.tmx",

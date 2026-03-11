@@ -1,31 +1,43 @@
 {
-  "animation": null,
   "modifiers": [],
+  "behaviors": {},
   "category": "negative",
-	"conditions": [
+  "conditions": [
     {
       "type": "current_hp",
-      "parameters": [">", "0"],
+      "parameters": [
+        ">",
+        "0"
+      ],
       "operator": "is"
     }
-	],
+  ],
   "effects": [
     {
       "type": "grabbed",
-      "parameters": ["2", "ranged:reach"]
+      "parameters": [
+        "2",
+        "ranged:reach"
+      ]
     }
   ],
-  "flip_axes": "",
   "icon": "gfx/ui/icons/status/icon_grabbed.png",
-  "range": "special",
-  "repl_pos": "replaced",
-  "repl_neg": "replaced",
+  "on_positive_status": "replaced",
+  "on_negative_status": "replaced",
   "bond": true,
-  "sfx": "sfx_pulse",
   "slug": "grabbed",
   "sort": "meta",
   "cond_id": 5,
   "use_failure": null,
   "use_success": "combat_state_grabbed_get",
-  "gain_cond": null
+  "gain_cond": null,
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_pulse",
+    "volume": 1.5
+  }
 }

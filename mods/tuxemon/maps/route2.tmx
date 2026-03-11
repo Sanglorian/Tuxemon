@@ -47,7 +47,7 @@
  <objectgroup color="#ffff00" id="6" name="Events">
   <object id="30" name="Teleport to City Park" type="event" x="160" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport citypark.tmx,10,39,0.3"/>
+    <property name="act10" value="transition_teleport player,citypark.tmx,10,39,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -55,7 +55,7 @@
   </object>
   <object id="31" name="Teleport to Cotton Town" type="event" x="624" y="128" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport cotton_town.tmx,0,28,0.3"/>
+    <property name="act10" value="transition_teleport player,cotton_town.tmx,0,28,0.3"/>
     <property name="act20" value="char_face player,right"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -71,7 +71,7 @@
   </object>
   <object id="61" name="Teleport to Cotton Town" type="event" x="624" y="144" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport cotton_town.tmx,0,29,0.3"/>
+    <property name="act10" value="transition_teleport player,cotton_town.tmx,0,29,0.3"/>
     <property name="act20" value="char_face player,right"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>
@@ -79,7 +79,7 @@
   </object>
   <object id="62" name="Teleport to City Park" type="event" x="176" y="0" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport citypark.tmx,11,39,0.3"/>
+    <property name="act10" value="transition_teleport player,citypark.tmx,11,39,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -90,28 +90,28 @@
     <property name="act1" value="translated_dialog route2"/>
     <property name="act2" value="translated_dialog route2_description"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
    </properties>
   </object>
   <object id="83" name="Sign: City Park" type="event" x="144" y="32" width="16" height="16">
    <properties>
     <property name="act10" value="translated_dialog citypark"/>
     <property name="cond10" value="is char_facing_tile player"/>
-    <property name="cond20" value="is button_pressed K_RETURN"/>
+    <property name="cond20" value="is button_pressed INTERACT"/>
    </properties>
   </object>
   <object id="84" name="Sign: Column 1" type="event" x="176" y="112" width="16" height="16">
    <properties>
     <property name="act10" value="translated_dialog column1"/>
     <property name="cond10" value="is char_facing_tile player"/>
-    <property name="cond20" value="is button_pressed K_RETURN"/>
+    <property name="cond20" value="is button_pressed INTERACT"/>
    </properties>
   </object>
   <object id="85" name="Sign: Column 2" type="event" x="240" y="80" width="16" height="16">
    <properties>
     <property name="act10" value="translated_dialog column2"/>
     <property name="cond10" value="is char_facing_tile player"/>
-    <property name="cond20" value="is button_pressed K_RETURN"/>
+    <property name="cond20" value="is button_pressed INTERACT"/>
    </properties>
   </object>
   <object id="87" name="create npc" type="event" x="48" y="0" width="16" height="16">
@@ -135,7 +135,7 @@
     <property name="act90" value="translated_dialog_choice sure_i_do:not_really,route2choice"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,left"/>
-    <property name="cond30" value="is button_pressed K_RETURN"/>
+    <property name="cond30" value="is button_pressed INTERACT"/>
     <property name="cond40" value="is variable_set skadoosh:yes"/>
     <property name="cond50" value="not variable_set leavemealone:yes"/>
     <property name="cond60" value="not variable_set sadsong:yes"/>
@@ -172,7 +172,7 @@
     <property name="act080" value="char_face misa,left"/>
     <property name="act090" value="wait 1"/>
     <property name="act100" value="translated_dialog spillit5"/>
-    <property name="act110" value="char_face misa, down"/>
+    <property name="act110" value="char_face misa,down"/>
     <property name="act120" value="wait 1"/>
     <property name="act130" value="translated_dialog spillit6"/>
     <property name="act140" value="char_face misa,right"/>
@@ -430,22 +430,22 @@
     <property name="act50" value="unlock_controls"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,left"/>
-    <property name="cond30" value="is button_pressed K_RETURN"/>
+    <property name="cond30" value="is button_pressed INTERACT"/>
     <property name="cond40" value="is variable_set leavemealone:yes"/>
    </properties>
   </object>
   <object id="137" name="Environment Day" type="event" x="0" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:grass"/>
-    <property name="cond1" value="not variable_set stage_of_day:night"/>
-    <property name="cond2" value="not variable_set environment:grass"/>
+    <property name="act1" value="set_environment grass"/>
+    <property name="cond1" value="not time_is stage_of_day,equals,night"/>
+    <property name="cond2" value="not environment_is grass"/>
    </properties>
   </object>
   <object id="138" name="Environment Night" type="event" x="16" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:night_grass"/>
-    <property name="cond1" value="is variable_set stage_of_day:night"/>
-    <property name="cond2" value="not variable_set environment:night_grass"/>
+    <property name="act1" value="set_environment night_grass"/>
+    <property name="cond1" value="is time_is stage_of_day,equals,night"/>
+    <property name="cond2" value="not environment_is night_grass"/>
    </properties>
   </object>
  </objectgroup>

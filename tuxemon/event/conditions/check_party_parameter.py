@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.event import MapCondition, get_npc
 from tuxemon.event.conditions.common import CommonCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
@@ -35,32 +35,31 @@ class CheckPartyParameterCondition(EventCondition):
 
     eg. "check_party_parameter player,level,5,equals,1"
     translated: "is there 1 monster in the party at level 5? True/False"
-
     """
 
-    name = "check_party_parameter"
+    name: ClassVar[str] = "check_party_parameter"
+    character: str
+    attribute: str
+    value: str
+    operator: str
+    times: int
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
-        (
-            _character,
-            _attribute,
-            _value,
-            _operator,
-            _times,
-        ) = condition.parameters[:5]
-        character = get_npc(session, _character)
+    def test(self, session: Session) -> bool:
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
         if not character.monsters:
             logger.warning(f"{character.name} has no monsters")
             return False
         party = len(character.monsters)
-        times = party if int(_times) > party else int(_times)
+        times = party if self.times > party else self.times
 
         count = sum(
             1
             for monster in character.monsters
-            if CommonCondition.check_parameter(monster, _attribute, _value)
+            if CommonCondition.check_parameter(
+                monster, self.attribute, self.value
+            )
         )
-        return compare(_operator, count, times)
+        return compare(self.operator, count, times)

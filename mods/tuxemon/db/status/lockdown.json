@@ -1,22 +1,28 @@
 {
-  "animation": null,
   "modifiers": [],
+  "behaviors": {},
   "category": "negative",
   "effects": [
     {
       "type": "lockdown"
     }
   ],
-  "flip_axes": "",
   "icon": "gfx/ui/icons/status/icon_lockdown.png",
-  "range": "special",
-  "repl_pos": "replaced",
-  "repl_neg": "replaced",
-  "sfx": "sfx_pulse",
+  "on_positive_status": "replaced",
+  "on_negative_status": "replaced",
   "slug": "lockdown",
   "sort": "meta",
   "cond_id": 23,
   "use_failure": null,
   "use_success": "combat_state_lockdown_get",
-  "gain_cond": null
+  "gain_cond": null,
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_pulse",
+    "volume": 1.5
+  }
 }

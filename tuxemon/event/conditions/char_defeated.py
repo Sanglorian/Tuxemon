@@ -1,12 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.combat import has_status
-from tuxemon.event import MapCondition, get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -26,23 +25,21 @@ class CharDefeatedCondition(EventCondition):
 
     Script parameters:
         character: Either "player" or character slug name (e.g. "npc_maple")
-
     """
 
-    name = "char_defeated"
+    name: ClassVar[str] = "char_defeated"
+    character: str
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
-        character = get_npc(session, condition.parameters[0])
+    def test(self, session: Session) -> bool:
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{condition.parameters[0]} not found")
+            logger.error(f"{self.character} not found")
             return False
 
         if character.monsters:
             for mon in character.monsters:
-                if mon.current_hp <= 0 and not has_status(mon, "faint"):
-                    mon.faint()
-            return all(
-                "faint" in (s.slug for s in mon.status)
-                for mon in character.monsters
-            )
+                if mon.is_fainted and not mon.status.is_fainted:
+                    mon.current_hp = 0
+                    mon.status.apply_faint(session, mon)
+            return all(mon.status.is_fainted for mon in character.monsters)
         return False

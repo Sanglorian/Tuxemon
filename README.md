@@ -1,12 +1,18 @@
 Tuxemon
 ==============
 
-Tuxemon is a free, open source monster-fighting RPG.  It's in constant
-development and improving all the time!  Contributors of all skill and
+Tuxemon is a free, open source monster-fighting RPG. It's in constant
+development and improving all the time! Contributors of all skill and
 level are welcome to join.
 
-[![Build Status](https://travis-ci.org/Tuxemon/Tuxemon.svg?branch=development)](https://travis-ci.org/Tuxemon/Tuxemon)
+![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)
+![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 [![Documentation Status](https://readthedocs.org/projects/tuxemon/badge/?version=latest)](https://tuxemon.readthedocs.io/en/latest/?badge=latest)
+
+[![Discord](https://img.shields.io/badge/Discord-join-blue?logo=discord&logoColor=white)](https://discord.gg/3ZffZwz)
+[![Website](https://img.shields.io/badge/website-tuxemon.org-blue)](https://www.tuxemon.org)
+[![Reddit](https://img.shields.io/reddit/subreddit-subscribers/Tuxemon?style=social)](https://www.reddit.com/r/tuxemon)
+[![YouTube](https://img.shields.io/youtube/channel/subscribers/UC6BJ6H7dB2Dpb8wzcYhDU3w?style=social)](https://www.youtube.com/channel/UC6BJ6H7dB2Dpb8wzcYhDU3w)
 
 ![screenshot](https://www.tuxemon.org/images/featurette-01.png)
 
@@ -41,7 +47,7 @@ often out of date.
 
 ### Windows Source
 
-Requires Python 3.9+ and git.
+Requires Python 3.10+ and git.
 
 Install the latest version of Python 3 from
 [here](https://www.python.org/downloads/)
@@ -142,7 +148,7 @@ python3 run_tuxemon.py
 
 ### Arch Linux
 
-An [AUR package](https://aur.archlinux.org/packages/tuxemon-git/) is availible however manual installation is reccomended.
+An [AUR package](https://aur.archlinux.org/packages/tuxemon-git/) is available however manual installation is recommended.
 
 ```shell
 sudo pacman -S python python-pip python-pillow python-pygame python-pydantic git
@@ -160,7 +166,7 @@ using the script located in the buildconfig folder.
 After this you will need to manually install the mods folder via the following instructions.
 Connect your device to your computer and make a folder called
 "Tuxemon" in "Internal Storage", then copy the mods folder.  Tuxemon
-will also need file system permissions, which you can set in your phones
+will also need file system permissions, which you can set in your phone's
 settings.
 
 Caveat Emptor
@@ -180,6 +186,18 @@ git clone https://github.com/Tuxemon/Tuxemon.git
 ulimit -n 10000; python run_tuxemon.py
 ```
 
+### macOS Sequoia with [uv](https://github.com/astral-sh/uv)
+
+```shell
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew update
+brew install uv python git sdl sdl2_image sdl2_ttf sdl2_mixer portmidi libvorbis
+git clone https://github.com/Tuxemon/Tuxemon.git
+cd Tuxemon
+uv sync
+uv run python run_tuxemon.py
+```
+
 Controls
 --------
 
@@ -193,7 +211,7 @@ Controls
 ##### Debugging
 
 You can enable dev_tools by changing `dev_tools` to `True` in the
-`tuxemon.cfg` file:
+`tuxemon.yaml` file:
 
 ```
 [game]
@@ -214,7 +232,7 @@ CLI Interface
 
 The CLI interface is a very convenient way to debug and develop your
 maps. After you enable the CLI interface, you can use the terminal to
-enter commands.  You could, for example, give your self potions to
+enter commands.  You could, for example, give yourself potions to
 battle, or add a monster directly to your party.  It's also possible to
 change game variables directly.  In fact, any action or condition that
 is usable in the map can be used with the CLI interface.
@@ -222,7 +240,7 @@ is usable in the map can be used with the CLI interface.
 ### Setting up
 
 You can enable cli by changing `cli_enabled` to `True` in the
-`tuxemon.cfg` file:
+`tuxemon.yaml` file:
 
 ```
 [game]
@@ -233,11 +251,11 @@ cli_enabled = True
 
 - `help [command_name]` — Lists all commands, or specific information on a command.
 - `action <action_name> [params]` — Execute EventAction.  Uses same syntax as the map script.
-- `test <condition_name> [params]` — Test EventCondition.  Uses same systax as the map script.
+- `test <condition_name> [params]` — Test EventCondition.  Uses same syntax as the map script.
 - `random_encounter` — Sets you in a wild tuxemon battle, similar to walking in tall grass.
 - `trainer_battle <npc_slug>` — Sets you in a trainer battle with specified npc.
 - `quit` — Quits the game.
-- `whereami` — Prints out the map filename
+- `whereami` — Prints out the map filename.
 - `shell` — Starts the Python shell, that you can use to modify the game directly. For advanced users.
 
 ### CLI Examples
@@ -317,7 +335,7 @@ code in this project is licenced under [the GPLv3](https://www.gnu.org/licenses/
 
 GPL v3+
 
-Copyright (C) 2014-2025 William Edwards <shadowapex@gmail.com>,
+Copyright (C) 2014-2026 William Edwards <shadowapex@gmail.com>,
 Benjamin Bean <superman2k5@gmail.com>
 
 This software is distributed under the GNU General Public Licence as

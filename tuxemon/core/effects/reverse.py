@@ -1,49 +1,65 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat import get_target_monsters
-from tuxemon.core.core_effect import TechEffect, TechEffectResult
+from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 
 
 @dataclass
-class ReverseEffect(TechEffect):
+class ReverseEffect(CoreEffect):
     """
-    Reverse "Switch" effect:
-    it returns the original monster type.
+    Applies the "reverse" effect to a technique.
 
-    Parameters:
-        objectives: The targets (e.g. own_monster, enemy_monster, etc.), if
-            single "enemy_monster" or "enemy_monster:own_monster"
+    This effect resets the type(s) of one or more monsters back to their
+    original default values. It is typically used to undo type-changing
+    effects applied earlier in battle.
 
-    eg reverse enemy_monster
-    eg reverse enemy_monster:own_monster
+    **Parameters**
+
+    - ``objectives``: Colon-separated string specifying which monsters are affected. Examples:
+      - ``enemy_monster`` → resets only the enemy's type(s).
+      - ``own_monster`` → resets only the user's type(s).
+      - ``enemy_monster:own_monster`` → resets both the enemy's and the user's type(s).
+
+    **Examples**
+
+    .. code-block:: json
+
+        "effects": [
+            "reverse enemy_monster"
+        ]
+
+        "effects": [
+            "reverse enemy_monster:own_monster"
+        ]
     """
 
     name = "reverse"
     objectives: str
 
-    def apply(
-        self, tech: Technique, user: Monster, target: Monster
+    def apply_tech_target(
+        self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
-        combat = tech.combat_state
-        assert combat
+        hit = session.client.combat_session.get_tech_hit(user)
 
-        tech.hit = tech.accuracy >= combat._random_tech_hit.get(user, 0.0)
+        tech.hit = tech.accuracy >= hit
 
         if not tech.hit:
             return TechEffectResult(name=tech.name, success=tech.hit)
 
         objectives = self.objectives.split(":")
-        monsters = get_target_monsters(objectives, tech, user, target)
+        monsters = session.client.combat_session.get_target_monsters(
+            objectives, user, target
+        )
         for monster in monsters:
-            monster.reset_types()
+            monster.types.reset_to_default()
 
         return TechEffectResult(name=tech.name, success=True)

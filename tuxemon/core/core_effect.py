@@ -1,16 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, ClassVar, Union
+from typing import TYPE_CHECKING, ClassVar
 
-from tuxemon.session import Session, local_session
 from tuxemon.tools import cast_dataclass_parameters
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.status.status import Status
     from tuxemon.technique.technique import Technique
 
@@ -27,6 +27,7 @@ class TechEffectResult(EffectResult):
     damage: int = 0
     element_multiplier: float = 0.0
     should_tackle: bool = False
+    hit_count: int = 1
 
 
 @dataclass
@@ -41,37 +42,71 @@ class StatusEffectResult(EffectResult):
 
 
 @dataclass
-class Effect:
+class CoreEffect:
     name: ClassVar[str]
-    session: Session = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
-        self.session = local_session
         cast_dataclass_parameters(self)
 
-    def apply(self, *args: Any, **kwargs: Any) -> EffectResult:
-        raise NotImplementedError(
-            "This method should be implemented by subclasses"
-        )
+    def update(self, session: Session, dt: float) -> None:
+        pass
 
+    def is_finished(self) -> bool:
+        return True
 
-@dataclass
-class TechEffect(Effect):
-    def apply(
-        self, tech: Technique, user: Monster, target: Monster
+    def should_run_global(
+        self,
+        session: Session,
+    ) -> bool:
+        return True
+
+    def should_run_tech(
+        self,
+        session: Session,
+        tech: Technique,
+        user: Monster | None,
+        target: Monster | None,
+    ) -> bool:
+        return True
+
+    def should_run_item(
+        self,
+        session: Session,
+        item: Item,
+        user: Monster | None,
+        target: Monster | None,
+    ) -> bool:
+        return True
+
+    def should_run_status(
+        self,
+        session: Session,
+        tech: Status,
+    ) -> bool:
+        return True
+
+    def apply_globally(self, session: Session) -> EffectResult:
+        return EffectResult()
+
+    def apply_tech_target(
+        self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
         return TechEffectResult(name=tech.name)
 
+    def apply_tech(
+        self, session: Session, tech: Technique
+    ) -> TechEffectResult:
+        return TechEffectResult(name=tech.name)
 
-@dataclass
-class ItemEffect(Effect):
-    def apply(
-        self, item: Item, target: Union[Monster, None]
+    def apply_item_target(
+        self, session: Session, item: Item, target: Monster
     ) -> ItemEffectResult:
         return ItemEffectResult(name=item.name)
 
+    def apply_item(self, session: Session, item: Item) -> ItemEffectResult:
+        return ItemEffectResult(name=item.name)
 
-@dataclass
-class StatusEffect(Effect):
-    def apply(self, status: Status, target: Monster) -> StatusEffectResult:
+    def apply_status(
+        self, session: Session, status: Status
+    ) -> StatusEffectResult:
         return StatusEffectResult(name=status.name)

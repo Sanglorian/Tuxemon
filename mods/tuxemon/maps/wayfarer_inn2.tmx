@@ -24,17 +24,17 @@
    eAG9UdsNwkAMuw14rlP1ugNb8FiTlhWYA/UXW4olKypH+aGSlZwTX+LeppRyCRwsb3Gs7YAOGAPV8hbHWg9Q+8RAoiI/ITrIqe7xFy3v+6R94f4jsA3QD/sHRHlnnIPXXPbcwcmj/JCviZ8WtOxz8F5pnVfuc/fR6zXmt8R7nf+Z5zOi+7oG/1ihzX7lS3Ny9J1z7dvZtXwj35k536n1yW/eWe+0Rru0I/dqfZr7b+0bgJRdjw==
   </data>
  </layer>
- <layer id="2" name="Tile Layer 3" width="15" height="16">
+ <layer id="2" name="Tile Layer 2" width="15" height="16">
   <data encoding="base64" compression="zlib">
    eAFjYKAMGMsxMJgAMTkgCKgvmAS9d4QRthQC9RWRqRdhCnEsThGEOmQ2QhTBildkYEgAYnzgqSADw3MgfgbEyKAOqK+egF5HIQYGZyB2AmJqgflAOxcQsJcYu5iAZjBSwRxi7CKkZhowbbwFuuUdEBMTJ8jmbQXq5VFiYOAFYmLiBFkviK0N1KcDxJSCtUSEJQCn/hRN
   </data>
  </layer>
- <layer id="3" name="Tile Layer 2" width="15" height="16">
+ <layer id="3" name="Tile Layer 3" width="15" height="16">
   <data encoding="base64" compression="zlib">
    eAFjYBgcwEudfHdEKGHXWw40U18euxy1RF8qYjfJVo6BwQ6I8QEOHO6OAeqLJaBXHYdefPbRWo4ZGBYsOMKD1naPVPMBQqUFSg==
   </data>
  </layer>
- <layer id="4" name="Above Player" width="15" height="16">
+ <layer id="4" name="Tile Layer 4" width="15" height="16">
   <data encoding="base64" compression="zlib">
    eAFjYBgFoyGACIEnCgwMT4F4FAyNEAAAbskCCg==
   </data>
@@ -47,7 +47,7 @@
  <objectgroup color="#ffff00" id="6" name="Events">
   <object id="17" name="Go downstairs" type="event" x="64" y="32" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport wayfarer_inn1.tmx,3,2,0.3"/>
+    <property name="act10" value="transition_teleport player,wayfarer_inn1.tmx,3,2,0.3"/>
     <property name="act20" value="char_face player,left"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,left"/>
@@ -55,7 +55,7 @@
   </object>
   <object id="23" name="Go to the other downstairs" type="event" x="160" y="48" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport wayfarer_inn1.tmx,11,3,0.3"/>
+    <property name="act10" value="transition_teleport player,wayfarer_inn1.tmx,11,3,0.3"/>
     <property name="act20" value="char_face player,right"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,right"/>

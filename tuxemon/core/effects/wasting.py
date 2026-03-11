@@ -1,36 +1,55 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat import fainted
-from tuxemon.core.core_effect import StatusEffect, StatusEffectResult
+from tuxemon.core.core_effect import CoreEffect, StatusEffectResult
+from tuxemon.db import EffectPhase
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.status.status import Status
 
 
 @dataclass
-class WastingEffect(StatusEffect):
+class WastingEffect(CoreEffect):
     """
-    Wasting: Take #/16 of your maximum HP in damage each turn
-    where # = the number of turns that you have had this status.
+    Applies the "wasting" status effect.
 
-    Parameters:
-        divisor: The divisor.
+    This effect causes a monster to lose a fraction of its maximum HP each
+    turn, with the damage increasing over time. The amount of damage scales
+    based on the number of turns the status has been active.
 
+    **Parameters**
+
+      - ``divisor``: Integer divisor used to calculate base damage.
+      - Example: With ``divisor = 16``, the monster takes
+        ``(max_hp / 16) * nr_turn`` damage each turn.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "wasting 16"
+        ]
     """
 
     name = "wasting"
     divisor: int
 
-    def apply(self, status: Status, target: Monster) -> StatusEffectResult:
+    def apply_status(
+        self, session: Session, status: Status
+    ) -> StatusEffectResult:
         done: bool = False
-        if status.phase == "perform_action_status" and not fainted(target):
-            damage = (target.hp // self.divisor) * status.nr_turn
-            target.current_hp = max(0, target.current_hp - damage)
+        host = status.host
+        if (
+            status.has_phase(EffectPhase.PERFORM_STATUS)
+            and not host.is_fainted
+        ):
+            damage = (host.hp // self.divisor) * status.nr_turn
+            host.current_hp = max(0, host.current_hp - damage)
             done = True
         return StatusEffectResult(name=status.name, success=done)

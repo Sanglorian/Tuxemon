@@ -1,23 +1,26 @@
 {
   "tech_id": 126,
   "accuracy": 1,
-  "animation": "sparks_blue_alt",
   "effects": [
     {
       "type": "switch",
-      "parameters": ["enemy_team:own_team", "random"]
+      "parameters": [
+        "enemy_team:own_team",
+        "random"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
   "recharge": 4,
-  "sfx": "sfx_blaster",
   "slug": "cloud_aether",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -27,11 +30,23 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["weather", "shapeshifter"],
+  "tags": [
+    "weather",
+    "shapeshifter"
+  ],
   "types": [
-    "aether"
+    "cosmic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "sparks_blue_alt",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_tornado",
+    "volume": 1.5
+  }
 }

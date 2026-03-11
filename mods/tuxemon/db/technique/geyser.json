@@ -1,23 +1,26 @@
 {
   "tech_id": 91,
   "accuracy": 1,
-  "animation": "smokebomb_plume",
   "effects": [
     {
       "type": "switch",
-      "parameters": ["enemy_monster", "water"]
+      "parameters": [
+        "enemy_monster",
+        "water"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
   "recharge": 4,
-  "sfx": "sfx_blaster",
   "slug": "geyser",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -27,11 +30,22 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["shapeshifter"],
+  "tags": [
+    "shapeshifter"
+  ],
   "types": [
-    "aether"
+    "water"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "smokebomb_plume",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_bubbles",
+    "volume": 1.5
+  }
 }

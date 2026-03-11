@@ -1,14 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.event import MapCondition, get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
-from tuxemon.states.pc_kennel import HIDDEN_LIST
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +17,7 @@ OPTIONS: list[str] = ["visible", "hidden", "exist"]
 @dataclass
 class KennelCondition(EventCondition):
     """
-    Check if a kennel is hidden or visible.
+    Check if a kennel is hidden, visible, or exists.
 
     Script usage:
         .. code-block::
@@ -31,28 +30,32 @@ class KennelCondition(EventCondition):
         kennel: The name of the kennel to check.
         option: The expected visibility of the kennel ("hidden" or
             "visible") or existence of it ("exist").
-
-    Note: This condition checks if the kennel is in the HIDDEN_LIST. If the
-        kennel is in the list, it is considered hidden; otherwise, it is
-        considered visible.
-
     """
 
-    name = "kennel"
+    name: ClassVar[str] = "kennel"
+    character: str
+    kennel: str
+    option: str
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
-        _character, kennel_name, option = condition.parameters[:3]
-        character = get_npc(session, _character)
+    def test(self, session: Session) -> bool:
+        character = session.get_npc(self.character)
 
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
-        if option == "visible":
-            return kennel_name not in HIDDEN_LIST
-        elif option == "hidden":
-            return kennel_name in HIDDEN_LIST
-        elif option == "exist":
-            return character.monster_boxes.has_box(kennel_name, "monster")
+
+        if self.option == "visible":
+            return character.monster_boxes.has_box(
+                self.kennel, "monster"
+            ) and not character.monster_boxes.is_box_hidden(
+                self.kennel, "monster"
+            )
+        elif self.option == "hidden":
+            return character.monster_boxes.has_box(
+                self.kennel, "monster"
+            ) and character.monster_boxes.is_box_hidden(self.kennel, "monster")
+        elif self.option == "exist":
+            return character.monster_boxes.has_box(self.kennel, "monster")
         else:
-            logger.error(f"The option {option} must be among {OPTIONS}")
+            logger.error(f"The option {self.option} must be among {OPTIONS}")
             return False

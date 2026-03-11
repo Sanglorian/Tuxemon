@@ -1,26 +1,27 @@
 {
   "tech_id": 85,
   "accuracy": 0.8,
-  "animation": "whisp_fire",
   "effects": [
     {
       "type": "give",
-      "parameters": ["poison", "enemy_monster"]
+      "parameters": [
+        "poison",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.8,
   "power": 1.25,
   "range": "reach",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "salamander",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,11 +31,24 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["amphibian", "flame", "toxic"],
+  "tags": [
+    "amphibian",
+    "flame",
+    "toxic"
+  ],
   "types": [
     "fire"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "whisp_fire",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_bubbles",
+    "volume": 1.5
+  }
 }

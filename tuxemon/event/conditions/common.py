@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional, Union
+from typing import Any
 
 logger = logging.getLogger(__name__)
 from dataclasses import dataclass
@@ -17,7 +17,7 @@ class CommonCondition:
     name = "Common"
 
     @staticmethod
-    def _get_attribute(entity: object, parameter: str) -> Optional[Any]:
+    def _get_attribute(entity: object, parameter: str) -> Any | None:
         """
         Get the attribute of an entity.
 
@@ -216,7 +216,7 @@ class CommonCondition:
         entity: object,
         parameter: str,
         operator: str,
-        value: Union[int, float],
+        value: int | float,
     ) -> bool:
         """
         Check if a entity's parameter is greater_than, etc.

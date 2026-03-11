@@ -1,26 +1,27 @@
 {
   "tech_id": 104,
   "accuracy": 0.8,
-  "animation": "x_attack",
   "effects": [
     {
       "type": "give",
-      "parameters": ["slow", "enemy_monster"]
+      "parameters": [
+        "slow",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": true,
+  "speed": "very_fast",
   "potency": 0.6,
   "power": 2.5,
   "range": "ranged",
   "recharge": 3,
-  "sfx": "sfx_blaster",
   "slug": "time_crisis",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,11 +31,23 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["summoner", "mental"],
+  "tags": [
+    "summoner",
+    "mental"
+  ],
   "types": [
-    "metal"
+    "cosmic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "x_attack",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_pulse",
+    "volume": 1.5
+  }
 }

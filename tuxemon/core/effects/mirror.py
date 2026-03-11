@@ -1,81 +1,51 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.core.core_effect import TechEffect, TechEffectResult
+from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 
 
 @dataclass
-class MirrorEffect(TechEffect):
+class MirrorEffect(CoreEffect):
     """
-    A mirror effect that switches the user and target sprites.
+    Applies the "mirror" effect to a technique.
 
-    The direction of the mirror effect can be specified using the `direction` parameter,
-    which can be one of the following:
-    - `both`: Switch both the user and target sprites.
-    - `user_to_target`: Switch the user sprite to face the target.
-    - `target_to_user`: Switch the target sprite to face the user.
+    This effect switches the visual orientation of the user and target
+    sprites during combat. The direction of the mirroring determines
+    which sprites are swapped or reoriented.
+
+    **Parameters**
+
+    - ``direction``: Determines how the sprites are mirrored.
+      - ``both``: Switch both the user and target sprites.
+      - ``user_to_target``: Switch the user sprite to face the target.
+      - ``target_to_user``: Switch the target sprite to face the user.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "mirror both"
+        ]
     """
 
     name = "mirror"
     direction: str
 
-    def apply(
-        self, tech: Technique, user: Monster, target: Monster
+    def apply_tech_target(
+        self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
-        combat = tech.combat_state
-        assert combat
-
-        user_sprite = combat._monster_sprite_map.get(user)
-        target_sprite = combat._monster_sprite_map.get(target)
-
-        assert user_sprite and target_sprite
-
-        if self.direction == "both":
-            front_user = user.get_sprite(
-                "front", midbottom=target_sprite.rect.midbottom
-            )
-            back_target = target.get_sprite(
-                "back", midbottom=user_sprite.rect.midbottom
-            )
-            combat.sprites.add(front_user)
-            combat.sprites.add(back_target)
-            combat._monster_sprite_map[user] = back_target
-            combat._monster_sprite_map[target] = front_user
-            combat.sprites.remove(user_sprite)
-            combat.sprites.remove(target_sprite)
-
-        elif self.direction == "user_to_target":
-            side = (
-                "front"
-                if "left" == combat.get_side(user_sprite.rect)
-                else "back"
-            )
-            front_user = user.get_sprite(
-                side, midbottom=target_sprite.rect.midbottom
-            )
-            combat.sprites.add(front_user)
-            combat._monster_sprite_map[target] = front_user
-            combat.sprites.remove(target_sprite)
-
-        elif self.direction == "target_to_user":
-            side = (
-                "back"
-                if "left" == combat.get_side(user_sprite.rect)
-                else "front"
-            )
-            back_target = target.get_sprite(
-                side, midbottom=user_sprite.rect.midbottom
-            )
-            combat.sprites.add(back_target)
-            combat._monster_sprite_map[user] = back_target
-            combat.sprites.remove(user_sprite)
-
+        event_bus = session.client.event_bus
+        event_bus.publish(
+            "mirror_effect", user=user, target=target, direction=self.direction
+        )
         return TechEffectResult(name=tech.name, success=True)

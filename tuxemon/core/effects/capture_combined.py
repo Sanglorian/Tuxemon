@@ -1,25 +1,48 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from tuxemon import formula
-from tuxemon.core.core_effect import ItemEffect, ItemEffectResult
-from tuxemon.db import SeenStatus
+from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
+from tuxemon.database.rules import config_capdev
+from tuxemon.db import Acquisition
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class CaptureCombinedEffect(ItemEffect):
-    """Attempts to capture the target."""
+class CaptureCombinedEffect(CoreEffect):
+    """
+    Attempts to capture a target monster using a capture device.
+
+    This effect combines multiple modifiers (status and tuxeball type) to
+    determine capture success. It performs a shake check, calculates the
+    number of shakes, and applies capture effects if successful.
+
+    **Parameters**
+
+    - ``category``: The capture category (used for device classification).
+    - ``label``: The capture device label (e.g. ``xero``, ``omni``).
+    - ``lower_bound``: Lower bound modifier applied when type conditions are met.
+    - ``upper_bound``: Upper bound modifier applied when type conditions are met.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "capture_combined omni 0.5 1.5"
+        ]
+    """
 
     name = "capture_combined"
     category: str
@@ -27,16 +50,17 @@ class CaptureCombinedEffect(ItemEffect):
     lower_bound: float
     upper_bound: float
 
-    def apply(
-        self, item: Item, target: Union[Monster, None]
+    def apply_item_target(
+        self, session: Session, item: Item, target: Monster
     ) -> ItemEffectResult:
-        assert target
+        self.session = session
+        self.client = session.client
 
         # Calculate status modifier
         status_modifier = formula.calculate_status_modifier(item, target)
 
         # Calculate tuxeball modifier
-        tuxeball_modifier = self._calculate_tuxeball_modifier(item, target)
+        tuxeball_modifier = self._calculate_tuxeball_modifier(target)
 
         # Perform shake check and capture calculation
         shake_check = formula.shake_check(
@@ -54,48 +78,46 @@ class CaptureCombinedEffect(ItemEffect):
             name=item.name, success=True, num_shakes=shakes
         )
 
-    def _calculate_tuxeball_modifier(
-        self, item: Item, target: Monster
-    ) -> float:
+    def _calculate_tuxeball_modifier(self, target: Monster) -> float:
         """
         Calculate the status effectiveness modifier based on the opponent's
         status.
         """
-        capdev_modifier = formula.config_capdev.capdev_modifier
-        assert item.combat_state
-        our_monster = item.combat_state.monsters_in_play[self.session.player]
+        capdev_modifier = config_capdev.capdev_modifier
+        our_monster = self.client.combat_session.field_monsters.get_monsters(
+            self.session.player
+        )
 
         if not our_monster:
             return capdev_modifier
 
         monster = our_monster[0]
 
-        if not monster.types or not monster.types:
+        if not monster.types.current or not monster.types.current:
             return capdev_modifier
 
         if self.label == "xero":
             return (
                 self.upper_bound
-                if monster.types != target.types
+                if monster.types.current != target.types.current
                 else self.lower_bound
             )
         elif self.label == "omni":
             return (
                 self.lower_bound
-                if monster.types != target.types
+                if monster.types.current != target.types.current
                 else self.upper_bound
             )
         else:
             return capdev_modifier
 
     def _apply_capture_effects(self, item: Item, target: Monster) -> None:
-        assert item.combat_state
-
         if self.session.player.tuxepedia.is_seen(target.slug):
-            item.combat_state._new_tuxepedia = True
-        self.session.player.tuxepedia.add_entry(target.slug, SeenStatus.caught)
+            self.client.combat_session.set_variable("new_tuxepedia", True)
+        self.session.player.tuxepedia.register_caught(target.slug)
         target.capture_device = item.slug
         target.wild = False
-        self.session.player.add_monster(
+        target.set_acquisition(Acquisition.CAPTURED)
+        self.session.player.party.add_monster(
             target, len(self.session.player.monsters)
         )

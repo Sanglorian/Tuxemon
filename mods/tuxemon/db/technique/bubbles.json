@@ -1,22 +1,20 @@
 {
   "tech_id": 214,
   "accuracy": 1.0,
-  "animation": "bubbleattack",
   "effects": [
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.0,
   "power": 1.4,
   "range": "ranged",
   "recharge": 1,
-  "sfx": "sfx_bubbles",
   "slug": "bubbles",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -26,11 +24,23 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["amphibian", "water"],
+  "tags": [
+    "amphibian",
+    "water"
+  ],
   "types": [
     "water"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "bubbleattack",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_bubbles",
+    "volume": 1.5
+  }
 }

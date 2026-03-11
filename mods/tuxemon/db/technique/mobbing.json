@@ -1,22 +1,20 @@
 {
   "tech_id": 115,
   "accuracy": 1,
-  "animation": "pound",
   "effects": [
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "slow",
   "potency": 0.1,
   "power": 1.8,
   "range": "melee",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "mobbing",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -26,11 +24,22 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["leadership"],
+  "tags": [
+    "leadership"
+  ],
   "types": [
-    "water"
+    "shadow"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "pound",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_shine",
+    "volume": 1.5
+  }
 }

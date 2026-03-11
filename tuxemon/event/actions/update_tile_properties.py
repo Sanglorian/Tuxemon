@@ -1,20 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
-from tuxemon.db import SurfaceKeys
 from tuxemon.event.eventaction import EventAction
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.session import Session
 
 
 @final
 @dataclass
 class UpdateTilePropertiesAction(EventAction):
     """
-    Update tile properties. Enable movement and/or the moverate.
+    Update tile properties by modifying movement settings or accessibility.
 
     Script usage:
         .. code-block::
@@ -22,25 +21,20 @@ class UpdateTilePropertiesAction(EventAction):
             update_tile_properties <label>[,moverate]
 
     Script parameters:
-        label: Name of the property
-        moverate: Value of the moverate (eg 1 equal moverate)
-            moverate 0 = not accessible
-            default 1
+        label: The name of the property to update (e.g., surfable, walkable).
+        moverate: The value of the movement rate (e.g., 1 for normal movement,
+            0 for inaccessible).
 
-    eg. "update_tile_properties surfable,0.5"
-
+    Example:
+        "update_tile_properties surfable,0.5" sets the surfable property to 0.5
+        for relevant tiles.
     """
 
     name = "update_tile_properties"
     label: str
-    moverate: Optional[float] = None
+    moverate: float
 
-    def start(self) -> None:
-        world = self.session.client.get_state_by_name(WorldState)
-        coords = world.get_all_tile_properties(world.surface_map, self.label)
-        moverate = 1.0 if self.moverate is None else self.moverate
-        if coords and self.label in SurfaceKeys:
-            prop: dict[str, float] = {}
-            prop[self.label] = moverate
-            for coord in coords:
-                world.surface_map[coord] = prop
+    def start(self, session: Session) -> None:
+        session.client.collision_manager.update_tile_property(
+            self.label, self.moverate
+        )

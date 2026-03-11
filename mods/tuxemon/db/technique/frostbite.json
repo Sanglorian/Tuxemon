@@ -1,27 +1,30 @@
 {
   "tech_id": 87,
   "accuracy": 0.8,
-  "animation": "lance_ice",
   "effects": [
     {
       "type": "give",
-      "parameters": ["poison","enemy_monster"]
+      "parameters": [
+        "poison",
+        "enemy_monster"
+      ]
     },
     {
       "type": "splash",
-      "parameters": ["2"]
+      "parameters": [
+        "2"
+      ]
     }
   ],
-  "flip_axes": "xy",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.5,
   "power": 3,
   "range": "reach",
   "recharge": 3,
-  "sfx": "sfx_blaster",
   "slug": "frostbite",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -31,12 +34,23 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["ice", "bite"],
+  "tags": [
+    "ice",
+    "bite"
+  ],
   "types": [
-    "earth",
-    "water"
+    "frost"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "lance_ice",
+    "flip_axes": "xy",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_bite",
+    "volume": 1.5
+  }
 }

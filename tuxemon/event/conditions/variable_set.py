@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import ClassVar
 
-from tuxemon.event import MapCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -13,36 +12,46 @@ from tuxemon.session import Session
 @dataclass
 class VariableSetCondition(EventCondition):
     """
-    Check to see if a player game variable exists and has a particular value.
-
-    If the variable does not exist it will return ``False``.
+    Checks whether one or more player game variables exist and optionally
+    match specific values.
 
     Script usage:
         .. code-block::
 
-            is variable_set <variable>[:value]
+            is variable_set <variable>[:value],[<variable>[:value] ...]
 
     Script parameters:
-        variable: The variable to check.
-        value: Optional value to check for.
-
+        variable: The first variable to check.
+        value: Optional value for the first variable.
     """
 
-    name = "variable_set"
+    name: ClassVar[str] = "variable_set"
+    required_vars: list[tuple[str, str | None]] = field(
+        default_factory=list, init=False
+    )
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
+    def __init__(self, *args: str):
+        self.required_vars = []
+
+        for arg in args:
+            if ":" in arg:
+                key, _, val = arg.partition(":")
+                self.required_vars.append((key, val if val != "" else None))
+            else:
+                self.required_vars.append((arg, None))
+
+        self.__post_init__()
+
+    def test(self, session: Session) -> bool:
         player = session.player
 
-        parts = condition.parameters[0].split(":")
-        key = parts[0]
-        if len(parts) > 1:
-            value: Optional[str] = parts[1]
-        else:
-            value = None
+        for key, expected in self.required_vars:
+            if not player.game_variables.has(key):
+                return False
+            if (
+                expected is not None
+                and player.game_variables.get(key) != expected
+            ):
+                return False
 
-        exists = key in player.game_variables
-
-        if value is None:
-            return exists
-        else:
-            return exists and player.game_variables[key] == value
+        return True

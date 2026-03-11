@@ -1,27 +1,28 @@
 {
   "tech_id": 193,
-  "accuracy": 0.99,
-  "animation": "shadow_blast",
+  "accuracy": 0.95,
   "effects": [
     {
       "type": "prop_healing",
-      "parameters": ["own_monster","0.2"]
+      "parameters": [
+        "own_monster",
+        "0.2"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
   "healing_power": 0.2,
-  "is_fast": true,
+  "speed": "very_fast",
   "potency": 1,
   "power": 2.8,
   "range": "ranged",
   "recharge": 4,
-  "sfx": "sfx_blaster",
   "slug": "shadow_blast",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -31,11 +32,23 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["ghost", "darkness"],
+  "tags": [
+    "ghost",
+    "darkness"
+  ],
   "types": [
-    "metal"
+    "shadow"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "shadow_blast",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_pulse",
+    "volume": 1.5
+  }
 }

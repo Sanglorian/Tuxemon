@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import cmd
 from collections.abc import Sequence
-from typing import Optional
 
 
 class Formatter:
@@ -12,14 +11,13 @@ class Formatter:
     Print formatted text things.
 
     Currently just supports printing things in a table.
-
     """
 
     def print_table(
         self,
         header: str,
         items: Sequence[str],
-        footer: Optional[str],
+        footer: str | None,
         ruler: str = "=",
         maxcol: int = 120,
     ) -> None:

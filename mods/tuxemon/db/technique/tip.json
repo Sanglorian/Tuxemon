@@ -1,26 +1,27 @@
 {
   "tech_id": 110,
   "accuracy": 1,
-  "animation": "green_circle",
   "effects": [
     {
       "type": "give",
-      "parameters": ["festering", "enemy_monster"]
+      "parameters": [
+        "festering",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.9,
   "power": 2.2,
   "range": "melee",
   "recharge": 3,
-  "sfx": "sfx_blaster",
   "slug": "tip",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,11 +31,22 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["sharp"],
+  "tags": [
+    "sharp"
+  ],
   "types": [
-    "earth"
+    "metal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "green_circle",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_kick",
+    "volume": 1.5
+  }
 }

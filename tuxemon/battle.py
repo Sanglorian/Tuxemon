@@ -1,76 +1,84 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import uuid
+import logging
+import time
 from collections.abc import Mapping, Sequence
-from typing import Any, Optional
+from typing import Any
+from uuid import UUID, uuid4
 
 from tuxemon.db import OutputBattle
+
+logger = logging.getLogger(__name__)
 
 SIMPLE_PERSISTANCE_ATTRIBUTES = (
     "fighter",
     "opponent",
     "outcome",
-    "steps",
+    "timestamp",
+    "location",
+    "turns",
 )
 
 
 class Battle:
-    """
-    Tuxemon Battle.
-    """
+    """Represents a single battle instance between two characters."""
 
-    def __init__(self, save_data: Optional[Mapping[str, Any]] = None) -> None:
-        save_data = save_data or {}
+    def __init__(self) -> None:
+        self.instance_id: UUID = uuid4()
+        self.fighter: str = ""
+        self.opponent: str = ""
+        self.outcome: OutputBattle = OutputBattle.DRAW
+        self.timestamp: float = time.time()
+        self.location: str = ""
+        self.turns: int = 1
 
-        self.instance_id = uuid.uuid4()
-        self.fighter = ""
-        self.opponent = ""
-        self.outcome = OutputBattle.draw
-        self.steps = 0
+    @classmethod
+    def from_save_data(cls, save_data: Mapping[str, Any]) -> Battle:
+        """Creates a Battle instance from saved data."""
+        battle = cls()
 
-        self.set_state(save_data)
+        if "instance_id" in save_data and save_data["instance_id"]:
+            battle.instance_id = UUID(save_data["instance_id"])
+
+        for key in SIMPLE_PERSISTANCE_ATTRIBUTES:
+            if key in save_data:
+                setattr(battle, key, save_data[key])
+
+        return battle
 
     def get_state(self) -> Mapping[str, Any]:
-        """
-        Prepares a dictionary of the battle to be saved to a file.
-
-        Returns:
-            Dictionary containing all the information about the battle.
-        """
+        """Returns a dictionary representing the current battle state."""
         save_data = {
             attr: getattr(self, attr)
             for attr in SIMPLE_PERSISTANCE_ATTRIBUTES
             if getattr(self, attr)
         }
 
-        save_data["instance_id"] = str(self.instance_id.hex)
+        save_data["instance_id"] = self.instance_id.hex
 
         return save_data
 
     def set_state(self, save_data: Mapping[str, Any]) -> None:
-        """
-        Loads information from saved data.
-
-        Parameters:
-            save_data: Data used to reconstruct the battle.
-        """
+        """Updates the battle state from saved data."""
         if not save_data:
             return
 
         for key, value in save_data.items():
             if key == "instance_id" and value:
-                self.instance_id = uuid.UUID(value)
+                self.instance_id = UUID(value)
             elif key in SIMPLE_PERSISTANCE_ATTRIBUTES:
                 setattr(self, key, value)
 
 
 def decode_battle(
-    json_data: Optional[Sequence[Mapping[str, Any]]],
+    json_data: Sequence[Mapping[str, Any]] | None,
 ) -> list[Battle]:
-    return [Battle(save_data=battle) for battle in json_data or {}]
+    """Converts saved battle data into Battle instances."""
+    return [Battle.from_save_data(battle) for battle in (json_data or [])]
 
 
 def encode_battle(battles: Sequence[Battle]) -> Sequence[Mapping[str, Any]]:
+    """Converts Battle instances into savable dictionaries."""
     return [battle.get_state() for battle in battles]

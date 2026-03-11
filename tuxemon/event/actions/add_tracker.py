@@ -1,15 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import TYPE_CHECKING, final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
+from tuxemon.tools import parse_flag
 from tuxemon.tracker import TrackingPoint
+
+if TYPE_CHECKING:
+    from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -28,16 +31,18 @@ class AddTrackerAction(EventAction):
     Script parameters:
         character: Either "player" or character slug name (e.g. "npc_maple").
         location: location name (e.g. "paper_town").
-        visited: if it has been visited or not (true or false), default True
+        visited: Optional string flag indicating if the location was visited.
+            Accepts "true", "1", "yes" for True (case-insensitive).
+            Defaults to True if omitted.
     """
 
     name = "add_tracker"
     character: str
     location: str
-    visited: Optional[bool] = None
+    visited: str | None = None
 
-    def start(self) -> None:
-        character = get_npc(self.session, self.character)
+    def start(self, session: Session) -> None:
+        character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return
@@ -46,6 +51,6 @@ class AddTrackerAction(EventAction):
             logger.error(f"Add msgid '{self.location}' in the 'en_US' base.po")
             return
 
-        visited = True if self.visited is None else self.visited
+        visited = True if self.visited is None else parse_flag(self.visited)
         tracking_point = TrackingPoint(visited)
         character.tracker.add_location(self.location, tracking_point)

@@ -1,23 +1,20 @@
 {
   "tech_id": 120,
   "accuracy": 1,
-  "animation": "amethyst",
   "effects": [
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
-  "potency": 0.6,
+  "speed": "very_slow",
+  "potency": 0.0,
   "power": 3,
-  "randomly": false,
   "range": "touch",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "adamantine",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -27,11 +24,22 @@
     "own_trainer": false
   },
   "category": "reserved",
-  "tags": ["reserved"],
+  "tags": [
+    "reserved"
+  ],
   "types": [
-    "fire"
+    "metal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "amethyst",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_forcefield",
+    "volume": 1.5
+  }
 }

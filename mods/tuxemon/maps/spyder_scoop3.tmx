@@ -15,12 +15,12 @@
    eAGbKs7AMJUEvAWolhR8GaieFHyLlYFhJOBnnKT5k9bqyQ1zAB+UetE=
   </data>
  </layer>
- <layer id="2" name="Tile Layer 4" width="12" height="12">
+ <layer id="2" name="Tile Layer 2" width="12" height="12">
   <data encoding="base64" compression="zlib">
    eAGNjsENgkAURCehBcFmlItVcEfb4cBBoBDEmwnaiDTC/LBjNhuBneQxy9/HDwBwIRb18rY8NVPbtHaC+n4EGlIRzdRO/ZU5PXkQxWbjAXiTrZwTICcn8qU7Ob9NgY6EudK7kZL4Geg+A39th/+df/63w7+PPX/4HzHYPvNi8or0tCv0i0w3+z0D4mQfPg==
   </data>
  </layer>
- <layer id="3" name="Tile Layer 2" width="12" height="12">
+ <layer id="3" name="Tile Layer 3" width="12" height="12">
   <data encoding="base64" compression="zlib">
    eAFjYBgFgz0EFoqS5kJS1ZNmOqpqAL3GAW0=
   </data>
@@ -54,7 +54,7 @@
   </object>
   <object id="2" name="Teleport to Scoop 2" type="event" x="16" y="176" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_scoop2.tmx,7,4,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_scoop2.tmx,7,4,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -62,8 +62,9 @@
   </object>
   <object id="3" name="Teleport to Scoop 4" type="event" x="80" y="32" width="32" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_scoop4.tmx,9,21,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_scoop4.tmx,9,21,0.3"/>
     <property name="act2" value="char_face player,up"/>
+    <property name="act3" value="set_teleport_faint player,spyder_scoop2.tmx,4,4"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
    </properties>
@@ -78,7 +79,7 @@
    <properties>
     <property name="act1" value="translated_dialog spyder_scoop_alyssa2"/>
     <property name="behav1" value="talk spyder_scoop_alyssa"/>
-    <property name="cond1" value="is variable_set scoopalyssa:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_scoop_alyssa"/>
    </properties>
   </object>
   <object id="20" name="Create Taggart" type="event" x="112" y="176" width="16" height="16">
@@ -92,7 +93,7 @@
    <properties>
     <property name="act1" value="translated_dialog spyder_scoop_taggart2"/>
     <property name="behav1" value="talk spyder_scoop_taggart"/>
-    <property name="cond1" value="is variable_set scooptaggart:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_scoop_taggart"/>
    </properties>
   </object>
   <object id="22" name="Create Donald" type="event" x="176" y="144" width="16" height="16">
@@ -105,59 +106,59 @@
    <properties>
     <property name="act1" value="translated_dialog spyder_scoop_donald2"/>
     <property name="behav1" value="talk spyder_scoop_donald"/>
-    <property name="cond1" value="is variable_set scoopdonald:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_scoop_donald"/>
    </properties>
   </object>
   <object id="25" name="Environment" type="event" x="16" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:interior"/>
-    <property name="cond1" value="not variable_set environment:interior"/>
+    <property name="act1" value="set_environment interior"/>
+    <property name="cond1" value="not environment_is interior"/>
    </properties>
   </object>
   <object id="26" name="Talk Alyssa" type="event" x="64" y="144" width="16" height="48">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_scoop_alyssa"/>
-    <property name="act3" value="translated_dialog spyder_scoop_alyssa1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_scoop_alyssa"/>
+    <property name="act3" value="char_talk spyder_scoop_alyssa,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster possessun,40,spyder_scoop_alyssa,5,10"/>
     <property name="act6" value="start_battle player,spyder_scoop_alyssa"/>
     <property name="act7" value="translated_dialog spyder_scoop_alyssa2"/>
-    <property name="act8" value="set_variable scoopalyssa:yes"/>
-    <property name="cond1" value="not variable_set scoopalyssa:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_scoop_alyssa"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="27" name="Talk Taggart" type="event" x="96" y="144" width="16" height="48">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_scoop_taggart"/>
-    <property name="act03" value="translated_dialog spyder_scoop_taggart1"/>
+    <property name="act02" value="pathfind_to_char player,spyder_scoop_taggart"/>
+    <property name="act03" value="char_talk spyder_scoop_taggart,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster elofly,30,spyder_scoop_taggart,5,10"/>
     <property name="act06" value="add_monster elowind,35,spyder_scoop_taggart,5,10"/>
     <property name="act07" value="add_monster lapinou,30,spyder_scoop_taggart,5,10"/>
     <property name="act08" value="start_battle player,spyder_scoop_taggart"/>
     <property name="act09" value="translated_dialog spyder_scoop_taggart2"/>
-    <property name="act10" value="set_variable scooptaggart:yes"/>
-    <property name="cond1" value="not variable_set scooptaggart:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_scoop_taggart"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="28" name="Talk Donald" type="event" x="160" y="160" width="32" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_scoop_donald"/>
-    <property name="act03" value="translated_dialog spyder_scoop_donald1"/>
+    <property name="act02" value="pathfind_to_char player,spyder_scoop_donald"/>
+    <property name="act03" value="char_talk spyder_scoop_donald,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster birdling,35,spyder_scoop_donald,5,10"/>
     <property name="act06" value="add_monster pigabyte,35,spyder_scoop_donald,5,10"/>
     <property name="act07" value="add_monster zunna,35,spyder_scoop_donald,5,10"/>
     <property name="act08" value="start_battle player,spyder_scoop_donald"/>
     <property name="act09" value="translated_dialog spyder_scoop_donald2"/>
-    <property name="act10" value="set_variable scoopdonald:yes"/>
-    <property name="cond1" value="not variable_set scoopdonald:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_scoop_donald"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="33" name="Intro" type="event" x="160" y="48" width="16" height="16">
@@ -165,7 +166,7 @@
     <property name="act1" value="translated_dialog spyder_scoop_cctv"/>
     <property name="act2" value="translated_dialog_choice yes:no,cctv_scoop"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
     <property name="cond3" value="not variable_set cctv_scoop:yes"/>
    </properties>
   </object>

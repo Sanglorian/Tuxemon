@@ -1,21 +1,24 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.graphics import ColorLike, string_to_colorlike
-from tuxemon.prepare import BLACK_COLOR, TRANS_TIME
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.platform.const.graphics import BLACK_COLOR
+from tuxemon.platform.const.sizes import TRANS_TIME
+from tuxemon.session import Session
+from tuxemon.states.world_state import WorldState
 
 
 @final
 @dataclass
 class ScreenTransitionAction(EventAction):
     """
-    Initiate a screen transition.
+    Initiate a screen transition that blocks until both fade out and fade in
+    are complete.
 
     Script usage:
         .. code-block::
@@ -31,22 +34,28 @@ class ScreenTransitionAction(EventAction):
     """
 
     name = "screen_transition"
-    trans_time: Optional[float] = None
-    rgb: Optional[str] = None
+    trans_time: float | None = None
+    rgb: str | None = None
+    elapsed: float = 0.0
 
-    def start(self) -> None:
-        pass
-
-    def update(self) -> None:
-        world = self.session.client.get_state_by_name(WorldState)
-        _time = TRANS_TIME if self.trans_time is None else self.trans_time
-        rgb: ColorLike = BLACK_COLOR
+    def start(self, session: Session) -> None:
+        self._fade_in_triggered = False
+        world = session.client.get_state_by_name(WorldState)
+        self._time = TRANS_TIME if self.trans_time is None else self.trans_time
+        self._rgb: ColorLike = BLACK_COLOR
         if self.rgb:
-            rgb = string_to_colorlike(self.rgb)
+            self._rgb = string_to_colorlike(self.rgb)
 
-        def fade_in() -> None:
-            world.transition_manager.fade_in(_time, rgb)
+        world.transition_manager.fade_out(self._time, self._rgb)
+        self.elapsed = 0.0
 
-        world.transition_manager.fade_out(_time, rgb)
-        world.task(fade_in, _time)
-        self.stop()
+    def update(self, session: Session, dt: float) -> None:
+        self.elapsed += dt
+        world = session.client.get_state_by_name(WorldState)
+
+        if self.elapsed >= self._time and not self._fade_in_triggered:
+            world.transition_manager.fade_in(self._time, self._rgb)
+            self._fade_in_triggered = True
+
+        if self.elapsed >= 2 * self._time:
+            self.stop()

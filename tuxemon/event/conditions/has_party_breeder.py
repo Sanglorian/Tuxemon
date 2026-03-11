@@ -1,12 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.db import EvolutionStage, GenderType
-from tuxemon.event import MapCondition, get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -26,25 +25,24 @@ class HasPartyBreederCondition(EventCondition):
 
     Script parameters:
         character: Either "player" or npc slug name (e.g. "npc_maple").
-
     """
 
-    name = "has_party_breeder"
+    name: ClassVar[str] = "has_party_breeder"
+    character: str
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
-        _character = condition.parameters[0]
-        character = get_npc(session, _character)
+    def test(self, session: Session) -> bool:
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{_character} not found")
+            logger.error(f"{self.character} not found")
             return False
 
         has_male_evolved_monsters = any(
-            mon.stage != EvolutionStage.basic and mon.gender == GenderType.male
+            mon.evolution_rank() > 1 and mon.is_male
             for mon in character.monsters
         )
+
         has_female_evolved_monsters = any(
-            mon.stage != EvolutionStage.basic
-            and mon.gender == GenderType.female
+            mon.evolution_rank() > 1 and mon.is_female
             for mon in character.monsters
         )
 

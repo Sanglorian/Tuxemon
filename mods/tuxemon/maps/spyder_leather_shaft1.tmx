@@ -34,7 +34,7 @@
  <objectgroup color="#ffff00" id="2" name="Events">
   <object id="2" name="Outside" type="event" x="192" y="224" width="32" height="16">
    <properties>
-    <property name="act10" value="transition_teleport spyder_leather_town.tmx,17,4,0.3"/>
+    <property name="act10" value="transition_teleport player,spyder_leather_town.tmx,17,4,0.3"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
    </properties>
@@ -43,7 +43,7 @@
    <properties>
     <property name="act1" value="translated_dialog spyder_leathershaft1_sign"/>
     <property name="cond1" value="is char_facing_tile player"/>
-    <property name="cond2" value="is button_pressed K_RETURN"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
    </properties>
   </object>
   <object id="18" name="Create NPCs" type="event" x="160" y="112" width="16" height="16">

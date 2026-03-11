@@ -1,10 +1,11 @@
 {
   "slug": "zeke",
-  "template": 
-    {
-      "sprite_name": "knight",
-      "combat_front": "knight",
-      "slug": "knight"
-    }
-
+  "speech": {"profile": {"default": {}}},
+  "combat": {},
+  "audio": {},
+  "template": {
+    "sprite_name": "knight",
+    "combat_sheet": "knight",
+    "slug": "knight"
+  }
 }

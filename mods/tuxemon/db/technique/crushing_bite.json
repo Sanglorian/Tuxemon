@@ -1,26 +1,27 @@
 {
   "tech_id": 216,
   "accuracy": 0.9,
-  "animation": "bite_zombie",
   "effects": [
     {
       "type": "give",
-      "parameters": ["stuck", "enemy_monster"]
+      "parameters": [
+        "stuck",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "very_slow",
   "potency": 0.2,
   "power": 1.8,
   "range": "touch",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "crushing_bite",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -29,12 +30,23 @@
     "own_team": false,
     "own_trainer": false
   },
-  "category": "animal",
-  "tags": ["bite"],
+  "category": "simple",
+  "tags": [
+    "bite"
+  ],
   "types": [
-    "earth"
+    "normal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "bite_zombie",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_bite",
+    "volume": 1.5
+  }
 }

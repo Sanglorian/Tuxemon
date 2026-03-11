@@ -1,50 +1,62 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.core.core_effect import StatusEffect, StatusEffectResult
-from tuxemon.locale import T
+from tuxemon.core.core_effect import CoreEffect, StatusEffectResult
+from tuxemon.db import EffectPhase
+from tuxemon.locale.locale import T
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.status.status import Status
 
 
 @dataclass
-class NoddingOffEffect(StatusEffect):
+class NoddingOffEffect(CoreEffect):
     """
-    This effect has a chance to apply the nodding off status effect.
+    Applies the "noddingoff" status effect.
 
-    Sleep lasts for a minimum of one turn.
-    It has a 50% chance to end after each turn.
-    If it has gone on for 5 turns, it ends.
+    This effect simulates a monster falling asleep in battle. Sleep lasts
+    for at least one turn, has a chance to end after each turn, and will
+    always end after five turns if not resolved earlier.
 
-    Parameters:
-        chance: The chance.
+    **Parameters**
 
+    - ``chance``: Float value representing the probability of remaining asleep
+      each turn (e.g., ``0.5`` for 50%).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "noddingoff 0.5"
+        ]
     """
 
     name = "noddingoff"
     chance: float
 
-    def apply(self, status: Status, target: Monster) -> StatusEffectResult:
+    def apply_status(
+        self, session: Session, status: Status
+    ) -> StatusEffectResult:
         extra: list[str] = []
         tech: list[Technique] = []
+        host = status.host
 
-        if status.phase == "pre_checking" and status.repl_tech:
-            skip = Technique()
-            skip.load(status.repl_tech)
+        if status.has_phase(EffectPhase.PRE_CHECKING) and status.on_tech_use:
+            skip = Technique.create(status.on_tech_use)
             tech = [skip]
 
-        if status.phase == "perform_action_tech" and self.wake_up(status):
-            params = {"target": target.name.upper()}
+        if status.has_phase(EffectPhase.PERFORM_TECH) and self.wake_up(status):
+            params = {"target": host.name.upper()}
             extra = [T.format("combat_state_dozing_end", params)]
-            target.status.clear()
+            host.status.clear_status(session)
         return StatusEffectResult(
             name=status.name,
             success=True,
@@ -53,11 +65,8 @@ class NoddingOffEffect(StatusEffect):
         )
 
     def wake_up(self, status: Status) -> bool:
-        if (
-            status.duration >= status.nr_turn > 0
-            and random.random() > self.chance
-        ):
+        if random.random() > self.chance:
             return True
-        if status.nr_turn > status.duration:
+        if status.has_exceeded_duration():
             return True
         return False

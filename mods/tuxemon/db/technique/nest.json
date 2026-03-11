@@ -1,27 +1,28 @@
 {
   "tech_id": 114,
   "accuracy": 0.8,
-  "animation": "ruby_absorb",
   "effects": [
     {
       "type": "give",
-      "parameters": ["sniping", "own_monster"]
+      "parameters": [
+        "sniping",
+        "own_monster"
+      ]
     },
     {
       "type": "healing"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.9,
   "power": 0.0,
   "healing_power": 2.0,
   "range": "special",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "nest",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": false,
     "enemy_team": false,
@@ -31,11 +32,23 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["bird", "healing"],
+  "tags": [
+    "bird",
+    "healing"
+  ],
   "types": [
-    "fire"
+    "sky"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "ruby_absorb",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_tornado",
+    "volume": 1.5
+  }
 }

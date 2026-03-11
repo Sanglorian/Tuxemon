@@ -1,15 +1,27 @@
 {
   "conditions": [
     {
+      "type": "base",
+      "parameters": [
+        "tags",
+        "fists:darkness"
+      ],
+      "operator": "is"
+    },
+    {
       "type": "has_tech",
-      "parameters": ["shadow_boxing"],
+      "parameters": [
+        "shadow_boxing"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "learn_tm",
-      "parameters": ["shadow_boxing"]
+      "parameters": [
+        "shadow_boxing"
+      ]
     }
   ],
   "slug": "tm_shadow_boxing",
@@ -26,5 +38,14 @@
   },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
-  "use_success": "generic_success"
+  "use_success": "generic_success",
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": null,
+    "volume": 0.0
+  }
 }

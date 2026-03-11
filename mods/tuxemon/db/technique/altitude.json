@@ -1,35 +1,39 @@
 {
   "tech_id": 180,
   "accuracy": 0.8,
-	"animation": null,
-	"conditions": [
+  "conditions": [
     {
       "type": "status",
-      "parameters": ["grabbed"],
+      "parameters": [
+        "grabbed"
+      ],
       "operator": "not"
     },
     {
       "type": "status",
-      "parameters": ["stuck"],
+      "parameters": [
+        "stuck"
+      ],
       "operator": "not"
     }
-	],
-	"effects": [
+  ],
+  "effects": [
     {
       "type": "disappear",
-      "parameters": ["hawk"]
+      "parameters": [
+        "hawk"
+      ]
     }
-	],
-  "flip_axes": "",
-  "is_fast": true,
+  ],
+  "speed": "extremely_fast",
   "potency": 1,
   "power": 1,
   "range": "melee",
   "recharge": 4,
-  "sfx": "sfx_blaster",
   "slug": "altitude",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -38,13 +42,23 @@
     "own_team": false,
     "own_trainer": false
   },
-  "category": "simple",
-  "tags": ["bird"],
+  "category": "special",
+  "tags": [
+    "bird"
+  ],
   "types": [
-    "wood",
-    "earth"
+    "sky"
   ],
   "use_failure": "altitude_fail",
   "use_success": "altitude_success",
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_tornado",
+    "volume": 1.5
+  }
 }

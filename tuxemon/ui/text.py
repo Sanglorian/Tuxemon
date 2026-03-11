@@ -1,53 +1,142 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from typing import Literal, Optional, Union
+import logging
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
-import pygame
+from pygame import SRCALPHA
+from pygame.draw import line, rect
 from pygame.font import Font
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from tuxemon import prepare
 from tuxemon.graphics import ColorLike
+from tuxemon.platform.const.graphics import FONT_COLOR, FONT_SHADOW_COLOR
 from tuxemon.sprite import Sprite
-from tuxemon.ui import draw
+from tuxemon.ui.draw import (
+    RenderedChar,
+    TextOverflow,
+    break_text_into_lines,
+    calculate_alignment_offset,
+    get_font_height,
+    iter_render_text,
+)
+from tuxemon.ui.text_alignment import HorizontalAlignment, VerticalAlignment
+from tuxemon.ui.text_renderer import TextRenderer
 
-min_font_size = 7
+if TYPE_CHECKING:
+    from tuxemon.scaling import ScalingStrategy
+
+logger = logging.getLogger(__name__)
+
+
+class TextAreaDiagnostics:
+    def __init__(self, enabled: bool = False) -> None:
+        self.enabled = enabled
+        self.border_color = (255, 0, 0, 128)
+        self.line_color = (255, 0, 0, 80)
+        self.maxline_color = (0, 255, 255, 120)
+
+    def draw(self, surface: Surface, font: Font) -> None:
+        if not self.enabled:
+            return
+
+        rect(surface, self.border_color, surface.get_rect(), width=2)
+
+        line_height = get_font_height(font)
+        h = surface.get_height()
+        w = surface.get_width()
+
+        for y in range(0, h, line_height):
+            line(surface, self.line_color, (0, y), (w, y), width=1)
+
+        last_y = (h // line_height - 1) * line_height
+        line(surface, self.maxline_color, (0, last_y), (w, last_y), width=2)
 
 
 class TextArea(Sprite):
-    """Area of the screen that can draw text."""
-
     animated = True
 
     def __init__(
         self,
         font: Font,
         font_color: ColorLike,
-        font_shadow: ColorLike = prepare.FONT_SHADOW_COLOR,
-        background_color: Optional[ColorLike] = None,
-        background_image: Optional[Surface] = None,
-        alignment: str = "left",
-        vertical_alignment: str = "top",
+        rect: Rect,
+        scaling: ScalingStrategy,
+        font_shadow: ColorLike = FONT_SHADOW_COLOR,
+        background_color: ColorLike | None = None,
+        background_image: Surface | None = None,
+        h_alignment: HorizontalAlignment = HorizontalAlignment.LEFT,
+        v_alignment: VerticalAlignment = VerticalAlignment.TOP,
+        overflow_behavior: TextOverflow = TextOverflow.CLIP,
+        debug_rendering: bool = False,
+        line_spacing: int = 0,
     ) -> None:
         super().__init__()
-        self.rect = Rect(0, 0, 0, 0)
+        self.rect = rect.copy()
+        self.image = Surface(self.rect.size, SRCALPHA)
         self.drawing_text = False
+
         self.font = font
         self.font_color = font_color
         self.font_shadow = font_shadow
+        self.scaling = scaling
+
+        self._text_renderer = TextRenderer(
+            scaling=scaling,
+            font=self.font,
+            font_color=self.font_color,
+            font_shadow_color=self.font_shadow,
+        )
+
         self.background_color = background_color
         self.background_image = background_image
-        self.alignment = alignment
-        self.vertical_alignment = vertical_alignment
-        self._rendered_text = None
-        self._text_rect = None
+        self.h_alignment = h_alignment
+        self.v_alignment = v_alignment
+        self.overflow_behavior = overflow_behavior
+        self.line_spacing = line_spacing
+
+        self.diagnostics = TextAreaDiagnostics(enabled=debug_rendering)
+
         self._text = ""
+        self._iter: Iterator[RenderedChar] | None = None
+
+    def _render_background(self) -> Surface:
+        surf = Surface(self.rect.size, SRCALPHA)
+        if self.background_color:
+            surf.fill(self.background_color)
+        if self.background_image:
+            surf.blit(self.background_image, (0, 0))
+        return surf
+
+    def _render_base_layer(self) -> Surface:
+        base = self._render_background()
+        self.diagnostics.draw(base, self.font)
+        return base
+
+    def _render_static_text(self) -> None:
+        base = self._render_base_layer()
+        text_surface = self._text_renderer.shadow_text(self._text)
+        base.blit(text_surface, (0, 0))
+        self.image = base
 
     def __iter__(self) -> TextArea:
         return self
+
+    def __next__(self) -> None:
+        if not self.animated:
+            raise StopIteration
+        if self._iter is None:
+            self.drawing_text = False
+            raise StopIteration
+        try:
+            rendered_char = next(self._iter)
+            self.image.blit(rendered_char.surface, rendered_char.rect)
+        except StopIteration:
+            self.drawing_text = False
+            raise
 
     def __len__(self) -> int:
         return len(self._text)
@@ -58,146 +147,176 @@ class TextArea(Sprite):
 
     @text.setter
     def text(self, value: str) -> None:
-        if value != self._text:
-            self._text = value
+        if value == self._text:
+            return
+        self._text = value
+
+        if not self._text:
+            self.drawing_text = False
+            self.image = Surface(self.rect.size, SRCALPHA)
+            return
 
         if self.animated:
             self._start_text_animation()
         else:
-            self.image = draw.shadow_text(
-                self.font,
-                self.font_color,
-                self.font_shadow,
-                self._text,
-            )
+            self._render_static_text()
 
-    def __next__(self) -> None:
-        if self.animated:
-            try:
-                dest, scrap = next(self._iter)
-                self.image.blit(scrap, dest)
-            except StopIteration:
-                self.drawing_text = False
-                raise
-        else:
-            raise StopIteration
-
-    next = __next__
-
-    def set_background(
-        self,
-        background_color: Optional[ColorLike] = None,
-        background_image: Optional[Surface] = None,
-    ) -> None:
-        self.image = Surface(self.rect.size, pygame.SRCALPHA)
-
-        if background_color:
-            self.image.fill(background_color)
-        if background_image:
-            self.image.blit(background_image, (0, 0))
+    def set_overflow_behavior(self, behavior: TextOverflow) -> None:
+        self.overflow_behavior = behavior
 
     def _start_text_animation(self) -> None:
         self.drawing_text = True
-        self.image = Surface(self.rect.size, pygame.SRCALPHA)
+        self.image = self._render_base_layer()
 
-        if self.background_color:
-            self.image.fill(self.background_color)
-        if self.background_image:
-            self.image.blit(self.background_image, (0, 0))
-
-        self._iter = draw.iter_render_text(
+        self._iter = iter_render_text(
             text=self._text,
             font=self.font,
             fg=self.font_color,
             bg=self.font_shadow,
             rect=self.image.get_rect(),
-            alignment=self.alignment,
-            vertical_alignment=self.vertical_alignment,
+            scaling=self.scaling,
+            h_alignment=self.h_alignment,
+            v_alignment=self.v_alignment,
+            text_renderer=self._text_renderer,
+            overflow_behavior=self.overflow_behavior,
+            line_spacing=self.line_spacing,
         )
+
+
+class MultilineTextRenderer:
+    def __init__(
+        self,
+        text_renderer: TextRenderer,
+        line_spacing: int = 0,
+    ) -> None:
+        self.text_renderer = text_renderer
+        self.line_spacing = line_spacing
+        self.font = text_renderer.font
+
+    def render_lines(
+        self, text: str, max_width: int
+    ) -> list[tuple[Surface, int]]:
+        """
+        Renders text into a list of Pygame Surfaces, one for each line.
+        It uses the shared `break_text_into_lines` utility for word wrapping.
+
+        Parameters:
+            text: The input text. Newline characters (`\n`) are treated as paragraph breaks.
+                If the text contains literal sequences like `\\n`, they will be interpreted
+                and converted into actual line breaks internally before processing.
+            max_width: The maximum width in pixels for wrapping.
+
+        Returns:
+            A list of tuples, where each tuple contains (Surface, height) for a line.
+            Heights include any added line_spacing.
+        """
+        if not text:
+            return []
+
+        text = text.replace("\\n", "\n")
+
+        string_lines: list[str] = list(
+            break_text_into_lines(
+                text, self.font, max_width, allow_word_overflow=False
+            )
+        )
+
+        rendered_surfaces_with_heights = []
+        for i, line_text in enumerate(string_lines):
+            line_surface: Surface
+
+            if not line_text:
+                line_surface = self.text_renderer.shadow_text(
+                    " ",
+                    fg=self.text_renderer.font_color,
+                    bg=self.text_renderer.font_shadow_color,
+                )
+            else:
+                line_surface = self.text_renderer.shadow_text(
+                    line_text,
+                    fg=self.text_renderer.font_color,
+                    bg=self.text_renderer.font_shadow_color,
+                )
+
+            rendered_surfaces_with_heights.append(
+                (line_surface, line_surface.get_height())
+            )
+
+            if self.line_spacing > 0 and i < len(string_lines) - 1:
+                spacing_surface = Surface(
+                    (max_width, self.line_spacing), SRCALPHA
+                )
+                rendered_surfaces_with_heights.append(
+                    (spacing_surface, self.line_spacing)
+                )
+
+        return rendered_surfaces_with_heights
 
 
 def draw_text(
     surface: Surface,
     text: str,
-    rect: Union[Rect, tuple[int, int, int, int]],
+    rect: Rect | tuple[int, int, int, int],
+    scaling: ScalingStrategy,
     *,
-    justify: Literal["left", "center", "right"] = "left",
-    align: Literal["top", "middle", "bottom"] = "top",
+    h_alignment: HorizontalAlignment = HorizontalAlignment.LEFT,
+    v_alignment: VerticalAlignment = VerticalAlignment.TOP,
     font: Font,
-    font_size: Optional[int] = None,
-    font_color: Optional[ColorLike] = None,
+    font_size: int | None = None,
+    font_color: ColorLike | None = None,
+    text_renderer: TextRenderer | None = None,
 ) -> None:
     """
-    Draws text to a surface.
+    Draws text to a surface within a specified rectangle, handling wrapping and alignment.
 
     If the text exceeds the rect size, it will autowrap. To place text on a
     new line, put TWO newline characters (\\n)  in your text.
 
     Parameters:
-        text: The text that you want to draw to the current menu item.
-        rect: Area where the text will be placed.
-        justify: Left, center, or right justify the text.
-        align: Align the text to the top, middle, or bottom of the menu.
-        font: Font to use to draw the text.
-        font_size: Size of the font in pixels BEFORE scaling is done. *Default: 4*
-        font_color: Tuple of RGB values of the font _color to use.
-
-    .. image:: images/menu/justify_center.png
-
+        surface: The Pygame Surface to draw the text onto.
+        text: The text string to draw.
+        rect: The area (Rect or tuple) where the text will be placed.
+        h_alignment: Horizontal alignment preference (LEFT, CENTER, RIGHT).
+        v_alignment: Vertical alignment preference (TOP, CENTER, BOTTOM).
+        font: The Pygame Font object to use for rendering.
+        font_size: (Optional) Not directly used if a Font object is provided, but kept for API.
+        font_color: (Optional) The color of the font. Defaults to FONT_COLOR if None.
+        text_renderer: (Optional) An existing TextRenderer instance. If None, one will be created.
     """
-    left, top, width, height = rect
-    _left: float = left
-    _top: float = top
+    rect_obj = Rect(rect) if isinstance(rect, tuple) else rect
+
+    if rect_obj.width <= 0 or rect_obj.height <= 0:
+        return
 
     if not font_color:
-        font_color = prepare.FONT_COLOR
+        font_color = FONT_COLOR
+
+    if text_renderer is None:
+        text_renderer = TextRenderer(
+            scaling=scaling, font_color=font_color, font=font
+        )
 
     if not text:
         return
 
-    # Create a list of lines of text
-    lines: list[str] = []
-    wordlist: list[str] = []
-    text_surface = font.render(text, True, font_color)
-    pixels_per_letter = text_surface.get_width() / len(text)
+    ml_renderer = MultilineTextRenderer(text_renderer)
+    line_surfaces_data = ml_renderer.render_lines(text, rect_obj.width)
 
-    # Word wrapping logic
-    for word in text.split():
-        if "\\n" in word:
-            w = word.split("\\n")
-            for item in w:
-                if item == "":
-                    lines.append(" ".join(wordlist))
-                    wordlist = []
-                else:
-                    wordlist.append(item)
-        else:
-            wordlist.append(word)
-            if len(" ".join(wordlist)) * pixels_per_letter > width:
-                lines.append(" ".join(wordlist[:-1]))
-                wordlist = [word]
-    if " ".join(wordlist) != "":
-        lines.append(" ".join(wordlist))
+    if not line_surfaces_data:
+        return
 
-    # Calculate vertical alignment (align)
-    total_text_height = len(lines) * text_surface.get_height()
-    if align == "middle":
-        _top = top + (height - total_text_height) / 2
-    elif align == "bottom":
-        _top = top + height - total_text_height
+    total_text_height = sum(height for _, height in line_surfaces_data)
+    total_text_width = 0
+    if line_surfaces_data:
+        total_text_width = max(s.get_width() for s, _ in line_surfaces_data)
 
-    # Set a spacing variable that we will add to space each line.
-    spacing = 0
-    for line in lines:
-        line_surface = font.render(line, True, font_color)
-        line_width = line_surface.get_width()
+    offset_x, offset_y = calculate_alignment_offset(
+        rect_obj, total_text_width, total_text_height, h_alignment, v_alignment
+    )
 
-        if justify == "center":
-            _left = left + (width - line_width) / 2
-        elif justify == "right":
-            _left = left + width - line_width
-        else:
-            _left = left
+    current_draw_y = rect_obj.top + offset_y
 
-        surface.blit(line_surface, (_left, _top + spacing))
-        spacing += line_surface.get_height()
+    for text_surface, line_height in line_surfaces_data:
+        blit_position = (rect_obj.left + offset_x, current_draw_y)
+        surface.blit(text_surface, blit_position)
+        current_draw_y += line_height

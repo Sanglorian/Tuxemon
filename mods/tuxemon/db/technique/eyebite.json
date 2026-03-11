@@ -1,23 +1,26 @@
 {
   "tech_id": 35,
   "accuracy": 1,
-  "animation": "bite",
   "effects": [
     {
       "type": "give",
-      "parameters": ["exhausted", "enemy_monster"]
+      "parameters": [
+        "exhausted",
+        "enemy_monster"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": true,
+  "speed": "very_fast",
   "potency": 1,
   "power": 0,
   "range": "special",
   "recharge": 3,
-  "sfx": "sfx_blaster",
   "slug": "eyebite",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -27,11 +30,22 @@
     "own_trainer": false
   },
   "category": "exotic",
-  "tags": ["gaze"],
+  "tags": [
+    "gaze"
+  ],
   "types": [
-    "aether"
+    "shadow"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "bite",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_bite",
+    "volume": 1.5
+  }
 }

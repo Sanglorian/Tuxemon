@@ -8,10 +8,11 @@ Download wiki .gifs and save as single frame png files
 If the file names have changed from the wiki, the technique
 json files will need to be updated as well.
 """
+
 import os.path
 import pathlib
-import tempfile
 import sys
+import tempfile
 from urllib.parse import urljoin
 
 import requests
@@ -38,13 +39,15 @@ print("Technique animation dir:", ANIMATION_DIR)
 def download_bytes(url: str, filepath: str) -> bool:
     """
     Downloads a stream of bytes from a given URL to a file path.
-    
+
     Returns:
         True on successful byte stream download, False otherwise
     """
     if os.path.isfile(filepath):
         filename = os.path.basename(filepath)
-        print(f"Aborting download! Animation GIF file already exists: {filename}")
+        print(
+            f"Aborting download! Animation GIF file already exists: {filename}"
+        )
         return False
 
     req = requests.get(url)
@@ -79,7 +82,7 @@ def download_animation_credits(gif_page_url: str) -> str:
     gifpage_source = requests.get(gif_page_url)
     gifpage_tree = html.fromstring(gifpage_source.content)
     credits_blocks = gifpage_tree.xpath("//div[@class='mw-content-ltr']/div/p")
-    
+
     credits_text = ""
     for credits_row in credits_blocks:
         credits_text += credits_row.text.strip() if credits_row.text else ""
@@ -126,12 +129,13 @@ def download_technique_animations(wiki_url: str) -> None:
     print(f"Getting animations and metadata from URL: {wiki_url}")
 
     # Animation GIF path
-    animations_url = f"{wiki_url}/index.php?title=Category:Used_Technique_Animation"
+    animations_url = (
+        f"{wiki_url}/index.php?title=Category:Used_Technique_Animation"
+    )
     anim_source = requests.get(animations_url)
     anim_tree = html.fromstring(anim_source.content)
 
     with tempfile.TemporaryDirectory() as tmp_dirname:
-
         elements = anim_tree.xpath(
             "//li[@class='gallerybox']//a[@class='image']"
         )

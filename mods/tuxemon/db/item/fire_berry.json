@@ -1,20 +1,25 @@
 {
   "conditions": [
     {
-      "type": "type",
-      "parameters": ["fire"],
+      "type": "base",
+      "parameters": [
+        "types",
+        "fire"
+      ],
       "operator": "not"
     }
   ],
   "effects": [
     {
       "type": "switch_type",
-      "parameters": ["fire"]
+      "parameters": [
+        "fire"
+      ]
     }
   ],
   "slug": "fire_berry",
   "sort": "utility",
-  "sprite": "gfx/items/berry.png",
+  "sprite": "gfx/items/fire_berry.png",
   "category": "elements",
   "cost": 450,
   "usable_in": [
@@ -26,5 +31,14 @@
   },
   "use_failure": "generic_failure",
   "use_item": "combat_used_x",
-  "use_success": "generic_success"
+  "use_success": "generic_success",
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": null,
+    "volume": 0.0
+  }
 }

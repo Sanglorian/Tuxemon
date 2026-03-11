@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.event import MapCondition, collide, get_npc
+from tuxemon.boundary import MapConditionBoundary
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -24,14 +25,19 @@ class CharAtCondition(EventCondition):
 
     Script parameters:
         character: Either "player" or character slug name (e.g. "npc_maple").
-
     """
 
-    name = "char_at"
+    name: ClassVar[str] = "char_at"
+    character: str
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
-        character = get_npc(session, condition.parameters[0])
+    def test(self, session: Session) -> bool:
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"{condition.parameters[0]} not found")
+            logger.error(f"{self.character} not found")
             return False
-        return collide(condition, character.tile_pos)
+
+        if session.current_condition_box is None:
+            return False
+
+        map_boundary = MapConditionBoundary(session.current_condition_box)
+        return map_boundary.is_within(character.tile_pos)

@@ -1,59 +1,88 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.core.core_effect import TechEffect, TechEffectResult
-from tuxemon.db import PlagueType
-from tuxemon.locale import T
+from tuxemon.core.core_effect import CoreEffect, TechEffectResult
+from tuxemon.locale.locale import T
+from tuxemon.monster.plague import InfectionResult
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 
 
 @dataclass
-class PlagueEffect(TechEffect):
+class PlagueEffect(CoreEffect):
     """
-    Plague is an effect that can infect a monster with a specific disease,
-    with a configurable spreadness.
+    Applies the "plague" effect to a technique.
 
-    Attributes:
-        plague_slug: The slug of the plague to apply.
-        spreadness: The chance of the plague spreading to the target monster.
+    This effect attempts to infect the target monster with a specific
+    plague defined in the external configuration file ``plagues.yaml``.
+    Each plague has properties such as spreadness, combat messages, and
+    potential minor effects. The effect may also attempt to cure the
+    plague after infection.
+
+    **Parameters**
+
+    - ``plague_slug``: The slug identifier of the plague to apply.
+      Used to look up plague properties (e.g., spreadness, messages)
+      from the configuration file.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "plague black_fever"
+        ]
     """
 
     name = "plague"
     plague_slug: str
-    spreadness: float
 
-    def apply(
-        self, tech: Technique, user: Monster, target: Monster
+    def apply_tech_target(
+        self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
+        result_code = target.plague.try_infect(target, self.plague_slug)
+        success = result_code in (
+            InfectionResult.INFECTED,
+            InfectionResult.CARRIER,
+        )
+        extra = []
+        plague_config = target.plague.get_plague_config(self.plague_slug)
+        params = {"target": target.name.upper(), "user": user.name.upper()}
 
-        if random.random() < self.spreadness and (
-            self.plague_slug not in target.plague
-            or target.plague[self.plague_slug] != PlagueType.inoculated
-        ):
-            target.plague[self.plague_slug] = PlagueType.infected
-            success = True
-        else:
-            success = False
-
-        params = {"target": target.name.upper()}
-        plague_status = target.plague.get(self.plague_slug, None)
-        extra = [
-            T.format(
-                (
-                    "combat_state_plague3"
-                    if plague_status == PlagueType.infected
-                    else "combat_state_plague0"
-                ),
-                params,
+        if success:
+            message_key = target.plague.get_combat_message_key(
+                self.plague_slug
             )
-        ]
+            extra.append(T.format(message_key, params))
+
+            if plague_config:
+                msgid = (
+                    plague_config.message_spread_success
+                    or "combat_state_plague2"
+                )
+                tech.use_tech = T.translate(msgid)
+
+        elif result_code == InfectionResult.MINOR_EFFECT:
+            if plague_config and plague_config.message_minor_effect:
+                extra.append(
+                    T.format(plague_config.message_minor_effect, params)
+                )
+
+        else:  # 'resisted', 'immune', 'already_has', or a failed minor_effect
+            message_key = target.plague.get_combat_message_key(
+                self.plague_slug
+            )
+            extra.append(T.format(message_key, params))
+
+        cured, message = target.plague.try_cure(target, self.plague_slug)
+        if cured and message:
+            extra.append(T.format(message, params))
 
         return TechEffectResult(name=tech.name, success=success, extras=extra)

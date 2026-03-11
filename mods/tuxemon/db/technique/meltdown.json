@@ -1,26 +1,27 @@
 {
   "tech_id": 103,
   "accuracy": 0.7,
-  "animation": "meltdown",
   "effects": [
     {
       "type": "give",
-      "parameters": ["festering", "enemy_monster"]
+      "parameters": [
+        "festering",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "very_slow",
   "potency": 0.2,
   "power": 2.8,
   "range": "reach",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "meltdown",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,12 +31,23 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["bomber", "calamity"],
+  "tags": [
+    "bomber",
+    "calamity"
+  ],
   "types": [
-    "earth",
-    "metal"
+    "venom"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "meltdown",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_tornado",
+    "volume": 1.5
+  }
 }

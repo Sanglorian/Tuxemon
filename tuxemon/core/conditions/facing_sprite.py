@@ -1,38 +1,52 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_condition import CoreCondition
-from tuxemon.event import get_npc_pos
-from tuxemon.map import get_coords, get_direction
+from tuxemon.map.map import get_coords, get_direction
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
 
 
 @dataclass
 class FacingSpriteCondition(CoreCondition):
     """
-    Checks if the player is facing a specific sprite.
-    (eg. maniac, swimmer, log)
+    Checks whether the player is currently facing a specific sprite (e.g. NPC or object).
 
+    **Parameters**
+    - ``sprite``: The name of the sprite to check (e.g. ``maniac``, ``swimmer``, ``log``).
+
+    **Returns**
+    - ``True`` if the player is facing the given sprite.
+    - ``False`` otherwise.
+
+    **Example**
+
+    .. code-block:: json
+
+        "conditions": [
+            "is facing_sprite maniac"
+        ]
     """
 
     name = "facing_sprite"
     sprite: str
 
-    def test_with_monster(self, target: Monster) -> bool:
-        player = self.session.player
-        client = self.session.client
-        tiles = get_coords(player.tile_pos, client.map_size)
+    def test_with_monster(self, session: Session, target: Monster) -> bool:
+        player = session.player
+        client = session.client
+        tiles = get_coords(player.tile_pos, client.map_manager.map_size)
 
-        for coords in tiles:
-            npc = get_npc_pos(self.session, coords)
-            if npc and npc.template.sprite_name == self.sprite:
-                facing = get_direction(player.tile_pos, npc.tile_pos)
-                return player.facing == facing
+        facing_directions = {
+            get_direction(player.tile_pos, npc.tile_pos)
+            for coords in tiles
+            if (npc := session.get_npc_pos(coords))
+            and npc.appearance_manager.state.sprite_name == self.sprite
+        }
 
-        return False
+        return player.facing in facing_directions

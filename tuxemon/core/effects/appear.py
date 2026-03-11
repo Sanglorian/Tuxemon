@@ -1,49 +1,49 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.core.core_effect import TechEffect, TechEffectResult
+from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 
 
 @dataclass
-class AppearEffect(TechEffect):
+class AppearEffect(CoreEffect):
     """
-    Tuxemon re-appears, it follows "disappear".
+    Makes a Tuxemon re-appear after it has previously disappeared.
 
+    This effect resets the monster's ``out_of_range`` state and publishes a
+    ``monster_appeared`` event. It typically follows the ``disappear`` effect.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "appear"
+        ]
     """
 
     name = "appear"
 
-    def apply(
-        self, tech: Technique, user: Monster, target: Monster
+    def apply_tech_target(
+        self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
-        combat = tech.combat_state
-        assert combat
-        # Check if the user is disappeared
-        user_sprite = combat._monster_sprite_map.get(user, None)
-        if user_sprite and not user_sprite.is_visible():
-            # Make the user appear
-            user_sprite.toggle_visible()
+        if user.out_of_range:
             user.out_of_range = False
+            event_bus = session.client.event_bus
+            event_bus.publish("monster_appeared", user=user)
 
-        # Check if the target is disappeared
-        target_sprite = combat._monster_sprite_map.get(target, None)
-        if target_sprite and not target_sprite.is_visible():
-            # If the target is disappeared, don't tackle
-            target_is_disappeared = True
-        else:
-            target_is_disappeared = False
+        target_is_out_of_range = target.out_of_range
 
-        # Return the result
         return TechEffectResult(
             name=tech.name,
-            success=not target_is_disappeared,
-            should_tackle=not target_is_disappeared,
+            success=not target_is_out_of_range,
+            should_tackle=not target_is_out_of_range,
         )

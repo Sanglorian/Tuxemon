@@ -1,27 +1,28 @@
 {
   "tech_id": 26,
   "accuracy": 0.85,
-  "animation": "gloop_orange",
   "effects": [
     {
       "type": "damage"
     },
     {
       "type": "prop_healing",
-      "parameters": ["own_monster", "0.2"]
+      "parameters": [
+        "own_monster",
+        "0.2"
+      ]
     }
   ],
-  "flip_axes": "",
   "healing_power": 2.0,
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 1.25,
   "range": "ranged",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "blossom",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -31,11 +32,24 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["bug", "Plant", "healing"],
+  "tags": [
+    "bug",
+    "Plant",
+    "healing"
+  ],
   "types": [
     "wood"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "gloop_orange",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_squeak",
+    "volume": 1.5
+  }
 }

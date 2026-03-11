@@ -1,18 +1,29 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Optional, final
+from typing import TYPE_CHECKING, Any, final
 
-from tuxemon.db import NpcModel, PartyMemberModel, db
+from tuxemon.database.runtime import db
+from tuxemon.db import (
+    DialogueContent,
+    DialogueProfile,
+    NpcModel,
+)
+from tuxemon.entity.appearance import RuntimeAppearance
+from tuxemon.entity.behavior.registry import create_behavior
+from tuxemon.entity.npc import NPC
 from tuxemon.event.eventaction import EventAction
 from tuxemon.item.item import Item
-from tuxemon.monster import Monster
-from tuxemon.npc import NPC
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.monster.monster import Monster
+
+if TYPE_CHECKING:
+    from tuxemon.db import PartyMemberModel
+    from tuxemon.game_variables import GameVariablesManager
+    from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -33,42 +44,47 @@ class CreateNpcAction(EventAction):
         tile_pos_x: X position to place the NPC on.
         tile_pos_y: Y position to place the NPC on.
         behavior: Behavior of the NPC (e.g. "wander"). Unused for now.
-
     """
 
     name = "create_npc"
     npc_slug: str
     tile_pos_x: int
     tile_pos_y: int
-    behavior: Optional[str] = None
+    behavior: str | None = None
 
-    def start(self) -> None:
-        world = self.session.client.get_state_by_name(WorldState)
-
+    def start(self, session: Session) -> None:
         slug = self.npc_slug
 
-        for element in world.npcs:
-            if element.slug == slug:
-                logger.error(
-                    f"'{slug}' already exists on the map. Skipping creation."
-                )
-                return
+        if session.client.npc_manager.npc_exists(slug):
+            return
 
-        npc = NPC(slug, world=world)
-        client = self.session.client.event_engine
-        client.execute_action(
-            "char_position", [slug, self.tile_pos_x, self.tile_pos_y], True
+        npc = NPC.create(session, slug)
+        session.client.npc_manager.place_npc_on_map(
+            npc, slug, self.tile_pos_x, self.tile_pos_y
         )
-        npc.behavior = self.behavior
+
+        if self.behavior:
+            npc.behavior_policy = create_behavior(self.behavior)
         npc_details = load_party(slug)
+
         npc.template = npc_details.template
-        npc.forfeit = npc_details.forfeit
-        game_variables = self.session.player.game_variables
+        npc.combat = npc_details.combat
+        npc.audio = npc_details.audio
+
+        npc.appearance_manager.state = RuntimeAppearance.from_template(
+            npc.template
+        )
+        npc.sprite_controller.update_appearance(npc.appearance_manager.state)
+
+        variable_manager = session.player.variable_manager
+
         if npc_details.monsters:
-            load_party_monsters(npc, npc_details, game_variables)
+            load_party_monsters(npc, npc_details, variable_manager)
+
         if npc_details.items:
-            load_party_items(npc, npc_details, game_variables)
-        npc.sprite_controller.load_sprites(npc.template)
+            load_party_items(npc, npc_details, variable_manager)
+
+        npc.dialogue = merge_dialogue(npc_details.speech.profile, None)
 
 
 lookup_cache: dict[str, NpcModel] = {}
@@ -78,49 +94,44 @@ def load_party(slug: str) -> NpcModel:
     if slug in lookup_cache:
         return lookup_cache[slug]
     else:
-        npc_details = db.lookup(slug, "npc")
+        npc_details = NpcModel.lookup(slug, db)
         lookup_cache[slug] = npc_details
         return npc_details
 
 
 def load_party_monsters(
-    npc: NPC, party: NpcModel, game_variables: dict[str, Any]
+    npc: NPC, party: NpcModel, variable_manager: GameVariablesManager
 ) -> None:
     """Loads the NPC's party monsters from the database."""
-    npc.monsters = []
+    npc.party.clear_party()
     for npc_monster in party.monsters:
-        if npc_monster.variables and check_variables(
-            npc_monster.variables, game_variables
+        if npc_monster.variables and variable_manager.check_conditions(
+            npc_monster.variables
         ):
             monster = party_monster(npc_monster)
-            npc.add_monster(monster, len(npc.monsters))
+            npc.party.insert_monster_to_party(monster, len(npc.monsters))
 
 
 def party_monster(npc_monster: PartyMemberModel) -> Monster:
     """Creates a new monster object from the database details."""
-    monster = Monster()
-    monster.load_from_db(npc_monster.slug)
+    monster = Monster.spawn_base(npc_monster.slug, npc_monster.level)
     monster.money_modifier = npc_monster.money_mod
-    monster.experience_modifier = npc_monster.exp_req_mod
-    monster.set_level(npc_monster.level)
-    monster.set_moves(npc_monster.level)
-    monster.current_hp = monster.hp
+    monster.set_experience_modifier(npc_monster.exp_req_mod)
     monster.gender = npc_monster.gender
     return monster
 
 
 def load_party_items(
-    npc: NPC, bag: NpcModel, game_variables: dict[str, Any]
+    npc: NPC, bag: NpcModel, variable_manager: GameVariablesManager
 ) -> None:
     """Loads the NPC's items from the database."""
-    npc.items = []
+    npc.bag.clear_items()
     for npc_item in bag.items:
-        if npc_item.variables and check_variables(
-            npc_item.variables, game_variables
+        if npc_item.variables and variable_manager.check_conditions(
+            npc_item.variables
         ):
-            item = Item(save_data=npc_item.model_dump())
-            item.quantity = npc_item.quantity
-            npc.add_item(item)
+            item = Item.create(npc_item.slug)
+            npc.bag.add_item(item, npc_item.quantity)
 
 
 def check_variables(
@@ -132,4 +143,74 @@ def check_variables(
             for key, value in variable.items()
         )
         for variable in npc_vars
+    )
+
+
+def merge_dialogue(
+    source: DialogueProfile | None,
+    fallback: DialogueProfile | None = None,
+) -> DialogueProfile:
+    """
+    Merges a source DialogueProfile with a fallback.
+
+    Dialogue fields from the source take precedence.
+    Location-based overrides from both models are merged.
+    """
+    source = source or DialogueProfile(
+        default=DialogueContent(
+            greeting=None,
+            idle=None,
+            farewell=None,
+            pre_battle=None,
+            post_battle_win=None,
+            post_battle_lose=None,
+            post_battle_draw=None,
+        )
+    )
+    fallback = fallback or DialogueProfile(
+        default=DialogueContent(
+            greeting=None,
+            idle=None,
+            farewell=None,
+            pre_battle=None,
+            post_battle_win=None,
+            post_battle_lose=None,
+            post_battle_draw=None,
+        )
+    )
+
+    # Create the merged default DialogueContent
+    merged_default_content_dict = fallback.default.model_dump(
+        exclude_none=True
+    )
+    merged_default_content_dict.update(
+        source.default.model_dump(exclude_none=True)
+    )
+    merged_default = DialogueContent.model_validate(
+        merged_default_content_dict
+    )
+
+    # Merge the location-based overrides
+    merged_location_based = {
+        **fallback.location_based,
+        **source.location_based,
+    }
+
+    # For any shared locations, we need to perform a deeper merge
+    for location, source_content in source.location_based.items():
+        if location in fallback.location_based:
+            fallback_content = fallback.location_based[location]
+            merged_content_dict = fallback_content.model_dump(
+                exclude_none=True
+            )
+            merged_content_dict.update(
+                source_content.model_dump(exclude_none=True)
+            )
+            merged_location_based[location] = DialogueContent.model_validate(
+                merged_content_dict
+            )
+
+    return DialogueProfile(
+        default=merged_default,
+        location_based=merged_location_based,
     )

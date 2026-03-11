@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.session import Session
 
 
 @final
@@ -22,15 +22,10 @@ class RemoveNpcAction(EventAction):
 
     Script parameters:
         npc_slug: Npc slug name (e.g. "npc_maple").
-
     """
 
     name = "remove_npc"
     npc_slug: str
 
-    def start(self) -> None:
-        # Get a copy of the world state.
-        world = self.session.client.get_state_by_name(WorldState)
-
-        # Get the npc's parameters from the action
-        world.remove_entity(self.npc_slug)
+    def start(self, session: Session) -> None:
+        session.client.npc_manager.remove_npc(self.npc_slug)

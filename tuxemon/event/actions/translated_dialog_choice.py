@@ -1,18 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
 from typing import final
 
-from tuxemon.event import get_npc
+from tuxemon.entity.npc import NPC
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T, replace_text
-from tuxemon.npc import NPC
-from tuxemon.states.choice.choice_state import ChoiceState
+from tuxemon.locale.locale import T
+from tuxemon.session import Session
+from tuxemon.tools import open_choice_dialog
+from tuxemon.ui.menu_options import MenuOptions, create_choice_options
+from tuxemon.ui.text_formatter import TextFormatter
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,6 @@ class TranslatedDialogChoiceAction(EventAction):
     Script parameters:
         choices: List of possible choices, separated by a colon ":".
         variable: Variable to store the result of the choice.
-
     """
 
     name = "translated_dialog_choice"
@@ -39,28 +39,32 @@ class TranslatedDialogChoiceAction(EventAction):
     choices: str
     variable: str
 
-    def start(self) -> None:
+    def start(self, session: Session) -> None:
         def _set_variable(var_value: str, player: NPC) -> None:
-            player.game_variables[self.variable] = var_value
-            self.session.client.pop_state()
+            player.game_variables.set(self.variable, var_value)
+            session.client.pop_state()
 
         # perform text substitutions
-        choices = replace_text(self.session, self.choices)
-        player = get_npc(self.session, "player")
+        choices = TextFormatter.replace_text(session, self.choices, T)
+        player = session.get_npc("player")
         assert player
 
         # make menu options for each string between the colons
         var_list: list[str] = choices.split(":")
-        var_menu: list[tuple[str, str, Callable[[], None]]] = []
 
-        for val in var_list:
-            text = T.translate(val)
-            var_menu.append((text, text, partial(_set_variable, val, player)))
+        actions = {
+            val: partial(_set_variable, val, player) for val in var_list
+        }
+        options = create_choice_options(actions)
 
-        self.session.client.push_state("ChoiceState", menu=var_menu)
+        open_choice_dialog(
+            client=session.client,
+            menu=MenuOptions(options),
+            escape_key_exits=True,
+        )
 
-    def update(self) -> None:
+    def update(self, session: Session, dt: float) -> None:
         try:
-            self.session.client.get_state_by_name(ChoiceState)
+            session.client.get_state_by_name("ChoiceState")
         except ValueError:
             self.stop()

@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.event import MapCondition, get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 
@@ -25,19 +25,15 @@ class CharSpriteCondition(EventCondition):
     Script parameters:
         character: Either "player" or character slug name (e.g. "npc_maple")
         sprite: NPC's sprite (eg maniac, florist, etc.)
-
     """
 
-    name = "char_sprite"
+    name: ClassVar[str] = "char_sprite"
+    character: str
+    sprite: str
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
-        character = get_npc(session, condition.parameters[0])
-        if character is None:
-            logger.error(f"{condition.parameters[0]} not found")
+    def test(self, session: Session) -> bool:
+        target = session.get_npc(self.character)
+        if not target:
             return False
 
-        sprite = condition.parameters[1]
-
-        if character.template.sprite_name == sprite:
-            return True
-        return False
+        return target.appearance_manager.state.sprite_name == self.sprite

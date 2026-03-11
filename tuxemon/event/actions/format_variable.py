@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -7,11 +7,11 @@ from dataclasses import dataclass
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
 
-# noinspection PyAttributeOutsideInit
 @final
 @dataclass
 class FormatVariableAction(EventAction):
@@ -29,15 +29,14 @@ class FormatVariableAction(EventAction):
         type_format: Kind of format (float or int).
 
     eg. "format_variable name_variable,int"
-
     """
 
     name = "format_variable"
     variable: str
     type_format: str
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
         key = self.variable
         type_format = self.type_format
         value = player.game_variables.get(key, None)
@@ -48,12 +47,12 @@ class FormatVariableAction(EventAction):
         if type_format not in _formats:
             raise ValueError(f"{type_format} isn't 'float' or 'int'")
         if type_format == "int":
-            player.game_variables[key] = int(value)
+            player.game_variables.set(key, int(value))
         elif type_format == "-int":
-            player.game_variables[key] = -int(value)
+            player.game_variables.set(key, -int(value))
         elif type_format == "float":
-            player.game_variables[key] = float(value)
+            player.game_variables.set(key, float(value))
         elif type_format == "-float":
-            player.game_variables[key] = -float(value)
+            player.game_variables.set(key, -float(value))
         else:
-            player.game_variables[key] = value
+            player.game_variables.set(key, value)

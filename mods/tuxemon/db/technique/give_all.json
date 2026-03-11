@@ -1,26 +1,27 @@
 {
   "tech_id": 34,
   "accuracy": 1,
-  "animation": "firelion_front",
   "effects": [
     {
       "type": "give",
-      "parameters": ["exhausted", "own_monster"]
+      "parameters": [
+        "exhausted",
+        "own_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 3,
   "range": "melee",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "give_all",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,11 +31,23 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["leadership", "fury"],
+  "tags": [
+    "leadership",
+    "fury"
+  ],
   "types": [
-    "fire"
+    "heroic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "firelion_front",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_shine",
+    "volume": 1.5
+  }
 }

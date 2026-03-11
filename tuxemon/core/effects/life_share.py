@@ -1,43 +1,57 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat import fainted
-from tuxemon.core.core_effect import TechEffect, TechEffectResult
+from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 
 
 @dataclass
-class LifeShareEffect(TechEffect):
+class LifeShareEffect(CoreEffect):
     """
-    Shares the current HP amounts of the two monsters.
+    Applies the "life_share" effect to a technique.
 
-    The direction of the sharing is determined by the `direction` attribute,
-    which can be either "user_to_target" or "target_to_user".
+    This effect redistributes HP between the user and the target based on
+    the specified direction and averaging method. It allows monsters to
+    share their current HP values in different ways, potentially balancing
+    health between them.
 
-    The method of the sharing is determined by the `method` attribute,
-    which can be either "weighted", "geometric" or "simple".
+    **Parameters**
+
+    - ``direction``: Determines the flow of HP sharing.
+      - ``user_to_target``: The user's HP is shared with the target.
+      - ``target_to_user``: The target's HP is shared with the user.
+    - ``method``: Determines how HP values are averaged.
+      - ``weighted``: Weighted average based on each monster's maximum HP.
+      - ``geometric``: Geometric mean, favoring lower HP values.
+      - ``simple``: Simple arithmetic average of both HP values.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "life_share user_to_target weighted"
+        ]
     """
 
     name = "life_share"
     direction: str
     method: str
 
-    def apply(
-        self, tech: Technique, user: Monster, target: Monster
+    def apply_tech_target(
+        self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
-        tech.hit = tech.accuracy >= (
-            tech.combat_state._random_tech_hit.get(user, 0.0)
-            if tech.combat_state
-            else 0.0
-        )
+        hit = session.client.combat_session.get_tech_hit(user)
+        tech.hit = tech.accuracy >= hit
         done = False
         if tech.hit:
             source, dest = (
@@ -45,7 +59,7 @@ class LifeShareEffect(TechEffect):
                 if self.direction == "user_to_target"
                 else (target, user)
             )
-            if not fainted(source) and not fainted(dest):
+            if not source.is_fainted and not dest.is_fainted:
                 if self.method == "weighted":
                     weighted_average(source, dest)
                 elif self.method == "geometric":

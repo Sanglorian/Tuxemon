@@ -1,27 +1,30 @@
 {
   "tech_id": 86,
   "accuracy": 0.6,
-  "animation": "smokebomb_puff_128",
   "effects": [
     {
       "type": "give",
-      "parameters": ["poison", "enemy_monster"]
+      "parameters": [
+        "poison",
+        "enemy_monster"
+      ]
     },
     {
       "type": "splash",
-      "parameters": ["2"]
+      "parameters": [
+        "2"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.5,
   "power": 2.25,
   "range": "ranged",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "rust_bomb",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -31,11 +34,23 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["bomber", "steel"],
+  "tags": [
+    "bomber",
+    "steel"
+  ],
   "types": [
     "metal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "smokebomb_puff_128",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_tornado",
+    "volume": 1.5
+  }
 }

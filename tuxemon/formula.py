@@ -1,215 +1,42 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 import math
 import random
 from collections.abc import Sequence
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING
 
-import yaml
-
-from tuxemon import prepare as pre
-from tuxemon.constants import paths
+from tuxemon.database.rules import (
+    CaptureDeviceEffect,
+    config_capdev,
+    config_capture,
+    config_combat,
+    config_monster,
+    range_map,
+)
+from tuxemon.platform.const.sizes import (
+    COEFF_DAMAGE,
+    COEFF_FEET,
+    COEFF_MILES,
+    COEFF_POUNDS,
+)
 
 if TYPE_CHECKING:
-    from tuxemon.db import Modifier
     from tuxemon.element import Element
+    from tuxemon.entity.npc import NPC
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
-    from tuxemon.npc import NPC
-    from tuxemon.taste import Taste
+    from tuxemon.monster.monster import Monster
     from tuxemon.technique.technique import Technique
 
 logger = logging.getLogger(__name__)
-
-multiplier_cache: dict[tuple[str, str], float] = {}
-
-
-@dataclass
-class CaptureDeviceEffect:
-    target_attribute: str = ""
-    operation: str = ""
-    value: Union[str, int] = 1
-
-
-@dataclass
-class CaptureDeviceConfig:
-    specific_capdev_modifier: Optional[float] = None
-    positive_modifier: float = 1.0
-    negative_modifier: float = 1.2
-    specific_status_modifiers: Optional[dict[str, float]] = None
-    fallback_element_malus: float = 0.2
-    specific_element_modifiers: Optional[dict[str, float]] = None
-    fallback_gender_malus: float = 0.2
-    specific_gender_modifiers: Optional[dict[str, float]] = None
-    fallback_variables_malus: float = 0.2
-    fallback_variables_bonus: float = 1.5
-    specific_variables_modifiers: Optional[list[dict[str, Any]]] = None
-    random_bounds: Optional[tuple[float, float]] = None
-    capdev_persistent_on_success: bool = False
-    capdev_persistent_on_failure: bool = False
-    capdev_effects: Optional[list[CaptureDeviceEffect]] = None
-
-
-@dataclass
-class CaptureDevicesConfig:
-    items: dict[str, CaptureDeviceConfig]
-    status_modifier: float = 1.0
-    capdev_modifier: float = 1.0
-
-
-@dataclass
-class StatWeight:
-    stat: str
-    weight: float
-
-
-@dataclass
-class RangeMapEntry:
-    user_stat: StatWeight
-    target_stat: StatWeight
-
-
-@dataclass
-class CaptureConfig:
-    total_shakes: int
-    shake_constant: int
-    shake_denominator: int
-    shake_divisor: int
-    shake_hp_multiplier: int
-    shake_current_hp_multiplier: int
-    shake_hp_divisor: int
-
-
-@dataclass
-class CombatConfig:
-    letter_time: float
-    action_time: float
-    multiplier_map: dict[float, str]
-    multiplier_range: tuple[float, float]
-    # speed test
-    multiplier_speed: float
-    speed_offset: float
-    dodge_modifier: float
-    base_speed_bonus: float
-    min_speed_modifier: float
-    sort_order: list[str]
-
-    def validate_multiplier_map(self) -> None:
-        min_range, max_range = self.multiplier_range
-        for multiplier in self.multiplier_map.keys():
-            if not (min_range <= multiplier <= max_range):
-                raise ValueError(
-                    f"Multiplier {multiplier} is outside the allowed range: {self.multiplier_range}"
-                )
-
-
-def load_yaml(filepath: str) -> Any:
-    try:
-        with open(filepath) as file:
-            return yaml.safe_load(file)
-    except FileNotFoundError:
-        logger.error(f"Config file not found: {filepath}")
-        raise
-    except yaml.YAMLError as exc:
-        logger.error(f"Error parsing YAML file: {exc}")
-        raise exc
-
-
-class Loader:
-    _config_combat: Optional[CombatConfig] = None
-    _config_capture: Optional[CaptureConfig] = None
-    _range_map: dict[str, RangeMapEntry] = {}
-    _capture_devices: Optional[CaptureDevicesConfig] = None
-
-    @classmethod
-    def get_capture_devices(cls, filename: str) -> CaptureDevicesConfig:
-        yaml_path = f"{paths.mods_folder}/{filename}"
-        if cls._capture_devices is None:
-            raw_map = load_yaml(yaml_path)
-            items = {}
-
-            for slug, data in raw_map["items"].items():
-                # Parse capdev_effects directly as a list
-                capdev_effects = None
-                if "capdev_effects" in data:
-                    capdev_effects = [
-                        CaptureDeviceEffect(
-                            target_attribute=effect["target_attribute"],
-                            operation=effect["operation"],
-                            value=effect["value"],
-                        )
-                        for effect in data["capdev_effects"]
-                    ]
-
-                # Create a new dictionary excluding "capdev_effects" to avoid duplication
-                filtered_data = {
-                    key: value
-                    for key, value in data.items()
-                    if key != "capdev_effects"
-                }
-
-                items[slug] = CaptureDeviceConfig(
-                    **filtered_data,
-                    capdev_effects=capdev_effects,
-                )
-
-            # Handle global settings
-            status_modifier = raw_map.get("status_modifier", 1.0)
-            capdev_modifier = raw_map.get("capdev_modifier", 1.0)
-            cls._capture_devices = CaptureDevicesConfig(
-                status_modifier=status_modifier,
-                capdev_modifier=capdev_modifier,
-                items=items,
-            )
-        return cls._capture_devices
-
-    @classmethod
-    def get_config_combat(cls, filename: str) -> CombatConfig:
-        yaml_path = f"{paths.mods_folder}/{filename}"
-        if cls._config_combat is None:
-            raw_map = load_yaml(yaml_path)
-            cls._config_combat = CombatConfig(**raw_map)
-        return cls._config_combat
-
-    @classmethod
-    def get_config_capture(cls, filename: str) -> CaptureConfig:
-        yaml_path = f"{paths.mods_folder}/{filename}"
-        if cls._config_capture is None:
-            raw_map = load_yaml(yaml_path)
-            cls._config_capture = CaptureConfig(**raw_map)
-        return cls._config_capture
-
-    @classmethod
-    def get_range_map(cls, filename: str) -> dict[str, RangeMapEntry]:
-        yaml_path = f"{paths.mods_folder}/{filename}"
-        if not cls._range_map:
-            raw_map = load_yaml(yaml_path)
-            cls._range_map = {
-                key: RangeMapEntry(
-                    user_stat=StatWeight(
-                        stat=item[0]["user_stat"], weight=item[0]["weight"]
-                    ),
-                    target_stat=StatWeight(
-                        stat=item[1]["target_stat"], weight=item[1]["weight"]
-                    ),
-                )
-                for key, item in raw_map.items()
-            }
-        return cls._range_map
-
-
-config_combat = Loader.get_config_combat("config_combat.yaml")
-config_capdev = Loader.get_capture_devices("capture_devices.yaml")
 
 
 def simple_damage_multiplier(
     attack_types: Sequence[Element],
     target_types: Sequence[Element],
-    additional_factors: Optional[dict[str, float]] = None,
+    additional_factors: dict[str, float] | None = None,
 ) -> float:
     """
     Calculates damage multiplier based on strengths and weaknesses.
@@ -223,52 +50,17 @@ def simple_damage_multiplier(
     Returns:
         The attack multiplier.
     """
-    multiplier = 1.0
-    for attack_type in attack_types:
-        for target_type in target_types:
-            if target_type and not (
-                attack_type.slug == "aether" or target_type.slug == "aether"
-            ):
-                key = (attack_type.slug, target_type.slug)
-                if key in multiplier_cache:
-                    multiplier = multiplier_cache[key]
-                else:
-                    multiplier = attack_type.lookup_multiplier(
-                        target_type.slug
-                    )
-                    multiplier_cache[key] = multiplier
-                min_range, max_range = config_combat.multiplier_range
-                multiplier = min(max_range, max(min_range, multiplier))
-    # Apply additional factors
+    from tuxemon.element import ElementTypesHandler
+
+    multiplier = ElementTypesHandler.calculate_affinity_score(
+        attack_types, target_types
+    )
+    min_range, max_range = config_combat.multiplier_range
+    multiplier = min(max_range, max(min_range, multiplier))
+
     if additional_factors:
-        factor_multiplier = math.prod(additional_factors.values())
-        multiplier *= factor_multiplier
-    return multiplier
+        multiplier *= math.prod(additional_factors.values())
 
-
-def calculate_multiplier(
-    monster_types: Sequence[Element], opponent_types: Sequence[Element]
-) -> float:
-    """
-    Calculate the multiplier for a monster's types against an opponent's types.
-
-    Parameters:
-        monster (Monster): The monster whose types are being used to
-        calculate it.
-        opponent (Monster): The opponent whose types are being used to
-        calculate it.
-
-    Returns:
-        float: The final multiplier that represents the effectiveness of
-        the monster'stypes against the opponent's types.
-    """
-    multiplier = 1.0
-    for _monster in monster_types:
-        for _opponent in opponent_types:
-            if _opponent and not (
-                _monster.slug == "aether" or _opponent.slug == "aether"
-            ):
-                multiplier *= _monster.lookup_multiplier(_opponent.slug)
     return multiplier
 
 
@@ -276,7 +68,7 @@ def simple_damage_calculate(
     technique: Technique,
     user: Monster,
     target: Monster,
-    additional_factors: Optional[dict[str, float]] = None,
+    additional_factors: dict[str, float] | None = None,
 ) -> tuple[int, float]:
     """
     Calculates the damage of a technique based on stats and multiplier.
@@ -291,7 +83,6 @@ def simple_damage_calculate(
     Returns:
         A tuple (damage, multiplier).
     """
-    range_map = Loader.get_range_map("range_map.yaml")
 
     if technique.range not in range_map:
         logger.error(
@@ -304,11 +95,11 @@ def simple_damage_calculate(
     user_strength: float = 0
     user_stat = range_map_entry.user_stat
     if user_stat.stat == "level":
-        user_strength += (pre.COEFF_DAMAGE + user.level) * user_stat.weight
+        user_strength += (COEFF_DAMAGE + user.level) * user_stat.weight
     else:
         user_strength += (
             getattr(user, user_stat.stat, 0)
-            * (pre.COEFF_DAMAGE + user.level)
+            * (COEFF_DAMAGE + user.level)
             * user_stat.weight
         )
     logger.debug(f"User strength: {user_strength}")
@@ -329,7 +120,7 @@ def simple_damage_calculate(
     )
 
     mult = simple_damage_multiplier(
-        (technique.types), (target.types), additional_factors
+        (technique.types.current), (target.types.current), additional_factors
     )
     logger.debug(f"Damage multiplier: {mult}")
 
@@ -341,174 +132,10 @@ def simple_damage_calculate(
     return damage, mult
 
 
-def weakest_link(modifiers: list[Modifier], monster: Monster) -> float:
-    """
-    Returns the smallest damage multiplier that applies to the given
-    monster.
-
-    This function iterates over the damage modifiers and checks if the
-    monster's type matches any of the modifier's values. If a match is
-    found, the function updates the multiplier to the smallest value
-    found.
-
-    Parameters:
-        modifiers: A list of damage modifiers.
-        monster: The monster to check.
-
-    Returns:
-        The smallest damage multiplier that applies to the monster.
-    """
-    multiplier: float = 1.0
-    if modifiers:
-        for modifier in modifiers:
-            if modifier.attribute == "type":
-                if any(t.name in modifier.values for t in monster.types):
-                    multiplier = min(multiplier, modifier.multiplier)
-            elif modifier.attribute == "tag":
-                if any(t in modifier.values for t in monster.tags):
-                    multiplier = min(multiplier, modifier.multiplier)
-            else:
-                raise ValueError(f"{modifier.attribute} isn't implemented.")
-    return multiplier
-
-
-def strongest_link(modifiers: list[Modifier], monster: Monster) -> float:
-    """
-    Returns the largest damage multiplier that applies to the given
-    monster.
-
-    This function iterates over the damage modifiers and checks if the
-    monster's type matches any of the modifier's values. If a match is
-    found, the function updates the multiplier to the largest value found.
-
-    Parameters:
-        modifiers: A list of damage modifiers.
-        monster: The monster to check.
-
-    Returns:
-        The largest damage multiplier that applies to the monster.
-    """
-    multiplier: Optional[float] = None
-    if modifiers:
-        for modifier in modifiers:
-            if modifier.attribute == "type":
-                if any(t.name in modifier.values for t in monster.types):
-                    multiplier = (
-                        max(multiplier, modifier.multiplier)
-                        if multiplier is not None
-                        else modifier.multiplier
-                    )
-            elif modifier.attribute == "tag":
-                if any(t in modifier.values for t in monster.tags):
-                    multiplier = (
-                        max(multiplier, modifier.multiplier)
-                        if multiplier is not None
-                        else modifier.multiplier
-                    )
-            else:
-                raise ValueError(f"{modifier.attribute} isn't implemented.")
-    return multiplier if multiplier is not None else 1.0
-
-
-def cumulative_damage(modifiers: list[Modifier], monster: Monster) -> float:
-    """
-    Returns the cumulative product of all applicable damage multipliers for
-    the given monster.
-
-    This function iterates over the damage modifiers and checks if the monster's
-    type matches any of the modifier's values. If a match is found, the function
-    multiplies the current multiplier with the modifier's multiplier.
-
-    Parameters:
-        modifiers: A list of damage modifiers.
-        monster: The monster to check.
-
-    Returns:
-        The cumulative product of all applicable damage multipliers.
-    """
-    multiplier: float = 1.0
-    if modifiers:
-        for modifier in modifiers:
-            if modifier.attribute == "type":
-                if any(t.name in modifier.values for t in monster.types):
-                    multiplier *= modifier.multiplier
-            elif modifier.attribute == "tag":
-                if any(t in modifier.values for t in monster.tags):
-                    multiplier *= modifier.multiplier
-            else:
-                raise ValueError(f"{modifier.attribute} isn't implemented.")
-    return multiplier
-
-
-def average_damage(modifiers: list[Modifier], monster: Monster) -> float:
-    """
-    Returns the average of all applicable damage multipliers for the given
-    monster.
-
-    This function iterates over the damage modifiers and checks if the monster's
-    type matches any of the modifier's values. If a match is found, the function
-    adds the modifier's multiplier to a list and calculates the average at the
-    end.
-
-    Parameters:
-        modifiers: A list of damage modifiers.
-        monster: The monster to check.
-
-    Returns:
-        The average of all applicable damage multipliers.
-    """
-    applicable_modifiers = []
-    if modifiers:
-        for modifier in modifiers:
-            if modifier.attribute == "type":
-                if any(t.name in modifier.values for t in monster.types):
-                    applicable_modifiers.append(modifier.multiplier)
-            elif modifier.attribute == "tag":
-                if any(t in modifier.values for t in monster.tags):
-                    applicable_modifiers.append(modifier.multiplier)
-            else:
-                raise ValueError(f"{modifier.attribute} isn't implemented.")
-
-    if applicable_modifiers:
-        return sum(applicable_modifiers) / len(applicable_modifiers)
-    else:
-        return 1.0
-
-
-def first_applicable_damage(
-    modifiers: list[Modifier], monster: Monster
-) -> float:
-    """
-    Returns the first applicable damage multiplier for the given monster.
-
-    This function iterates over the damage modifiers and checks if the monster's
-    type matches any of the modifier's values. If a match is found, the function
-    returns the modifier's multiplier immediately.
-
-    Parameters:
-        modifiers: A list of damage modifiers.
-        monster: The monster to check.
-
-    Returns:
-        The first applicable damage multiplier.
-    """
-    if modifiers:
-        for modifier in modifiers:
-            if modifier.attribute == "type":
-                if any(t.name in modifier.values for t in monster.types):
-                    return modifier.multiplier
-            elif modifier.attribute == "tag":
-                if any(t in modifier.values for t in monster.tags):
-                    return modifier.multiplier
-            else:
-                raise ValueError(f"{modifier.attribute} isn't implemented.")
-    return 1.0
-
-
 def simple_heal(
     technique: Technique,
     monster: Monster,
-    additional_factors: Optional[dict[str, float]] = None,
+    additional_factors: dict[str, float] | None = None,
 ) -> int:
     """
     Calculates the simple healing amount based on the technique's healing
@@ -523,7 +150,7 @@ def simple_heal(
     Returns:
         int: The calculated healing amount.
     """
-    base_heal = pre.COEFF_DAMAGE + monster.level * technique.healing_power
+    base_heal = COEFF_DAMAGE + monster.level * technique.healing_power
     if additional_factors:
         factor_multiplier = math.prod(additional_factors.values())
         base_heal = base_heal * factor_multiplier
@@ -581,136 +208,94 @@ def simple_recover(target: Monster, divisor: int) -> int:
 
     Returns:
         Recovered health.
-
     """
-    heal = min(target.hp // divisor, target.hp - target.current_hp)
+    heal = min(target.hp // divisor, target.missing_hp)
     return heal
 
 
-def simple_lifeleech(user: Monster, target: Monster, divisor: int) -> int:
+def calculate_hp_transfer(user: Monster, target: Monster, divisor: int) -> int:
     """
-    Simple lifeleech based on a few factors.
+    Calculates the amount of HP transferred from one monster to another.
 
     Parameters:
-        user: The monster getting HPs.
-        target: The monster losing HPs.
-        divisor: The number by which target HP is to be divided.
+        user: The monster receiving HP.
+        target: The monster donating HP.
+        divisor: Scaling factor based on target's max HP.
 
     Returns:
-        Damage/Gain of HPs.
-
+        The amount of HP to be transferred, capped by target's current HP
+        and user's missing HP.
     """
-    heal = min(
-        target.hp // divisor, target.current_hp, user.hp - user.current_hp
-    )
+    heal = min(target.hp // divisor, target.current_hp, user.missing_hp)
     return heal
 
 
-def update_stat(
-    stat_name: str,
-    stat_value: int,
-    taste_warm: Optional[Taste],
-    taste_cold: Optional[Taste],
-) -> int:
-    """
-    It returns a bonus / malus of the stat based on additional parameters.
-    """
-    modified_stat = float(stat_value)
-
-    if taste_cold:
-        for modifier in taste_cold.modifiers:
-            if stat_name in modifier.values:
-                logger.debug(
-                    f"Applying modifier: {modifier.multiplier} for {stat_name}"
-                )
-                modified_stat *= modifier.multiplier
-
-    if taste_warm:
-        for modifier in taste_warm.modifiers:
-            if stat_name in modifier.values:
-                logger.debug(
-                    f"Applying modifier: {modifier.multiplier} for {stat_name}"
-                )
-                modified_stat *= modifier.multiplier
-
-    return int(modified_stat)
-
-
-def set_weight(kg: float) -> float:
-    """
-    It generates a personalized weight,
-    random number: between +/- 10%.
-    Eg 100 kg +/- 10 kg
-    """
-    _minor, _major = pre.WEIGHT_RANGE
-    if kg == 0:
-        weight = kg
+def set_health(
+    monster: Monster, value: float | int, adjust: bool = False
+) -> None:
+    """Sets or adjusts monster's health, ensuring valid limits."""
+    if adjust:
+        monster.current_hp += (
+            int(monster.hp * value) if isinstance(value, float) else int(value)
+        )
     else:
-        minor = kg + (kg * _minor)
-        major = kg + (kg * _major)
-        weight = round(random.uniform(minor, major), 2)
-    return weight
+        monster.current_hp = (
+            int(monster.hp * value) if isinstance(value, float) else int(value)
+        )
+
+    monster.current_hp = max(0, min(monster.current_hp, monster.hp))
+
+    if monster.is_fainted:
+        monster.current_hp = 0
 
 
-def set_height(cm: float) -> float:
+def set_weight(monster: Monster, value: float) -> float:
     """
-    It generates a personalized height,
-    random number: between +/- 10%.
-    Eg 100 cm +/- 10 cm
+    Sets a personalized weight for each monster.
+    If the current weight already matches the provided value, it remains unchanged.
+    Otherwise, it calculates a random weight within the allowed range.
     """
-    _minor, _major = pre.HEIGHT_RANGE
-    if cm == 0:
-        height = cm
-    else:
-        minor = cm + (cm * _minor)
-        major = cm + (cm * _major)
-        height = round(random.uniform(minor, major), 2)
-    return height
+    if monster.weight == value:
+        return value
+    _minor, _major = config_monster.weight_range
+    min_weight = value * (1 + _minor)
+    max_weight = value * (1 + _major)
+    return round(random.uniform(min_weight, max_weight), 2)
 
 
-def convert_lbs(kg: float) -> float:
+def set_height(monster: Monster, value: float) -> float:
     """
-    It converts kilograms into pounds.
+    Sets a personalized height for each monster.
+    If the current height already matches the provided value, it remains unchanged.
+    Otherwise, it calculates a random height within the allowed range.
     """
-    return round(kg * pre.COEFF_POUNDS, 2)
+    if monster.height == value:
+        return value
+    _minor, _major = config_monster.height_range
+    min_height = value * (1 + _minor)
+    max_height = value * (1 + _major)
+    return round(random.uniform(min_height, max_height), 2)
 
 
-def convert_ft(cm: float) -> float:
-    """
-    It converts centimeters into feet.
-    """
-    return round(cm * pre.COEFF_FEET, 2)
+def convert_lbs(kg: float) -> int:
+    """It converts kilograms into pounds."""
+    return round(kg * COEFF_POUNDS)
+
+
+def convert_ft(cm: float) -> int:
+    """It converts centimeters into feet."""
+    return round(cm * COEFF_FEET)
 
 
 def convert_km(steps: float) -> float:
-    """
-    It converts steps into kilometers.
-    """
+    """It converts steps into kilometers."""
     return round(steps / 1000, 2)
 
 
 def convert_mi(steps: float) -> float:
-    """
-    It converts steps into miles.
-    """
+    """It converts steps into miles."""
     km = convert_km(steps)
-    return round(km * pre.COEFF_MILES, 2)
-
-
-def diff_percentage(part: float, total: float, decimal: int = 1) -> float:
-    """
-    It returns the difference between two numbers in percentage format.
-
-    Parameters:
-        part: The part, number.
-        total: The total, number.
-        decimal: How many decimals, default 1.
-
-    Returns:
-        The difference in percentage.
-
-    """
-    return round(((part - total) / total) * 100, decimal)
+    return round(km * COEFF_MILES, 2)
 
 
 def shake_check(
@@ -727,8 +312,7 @@ def shake_check(
     Returns:
         The shake_check value.
     """
-    config_capture = Loader.get_config_capture("config_capture.yaml")
-    max_catch_rate = pre.CATCH_RATE_RANGE[1]
+    max_catch_rate = config_monster.catch_rate_range[1]
     shake_constant = config_capture.shake_constant
     shake_denominator = config_capture.shake_denominator
     shake_divisor = config_capture.shake_divisor
@@ -800,7 +384,6 @@ def capture(shake_check: float) -> tuple[bool, int]:
         (True) if the monster is captured.
         (False) if the monster escapes after a specific number of shakes.
     """
-    config_capture = Loader.get_config_capture("config_capture.yaml")
     total_shakes = config_capture.total_shakes
     shake_divisor = config_capture.shake_divisor
 
@@ -816,7 +399,8 @@ def calculate_status_modifier(item: Item, target: Monster) -> float:
     config = config_capdev.items.get(item.slug)
     status_modifier = config_capdev.status_modifier
 
-    if config is None or not target.status:
+    status = target.status.current_status
+    if config is None or status is None:
         return status_modifier
 
     logger.debug(f"Base status_modifier: {status_modifier}")
@@ -828,7 +412,7 @@ def calculate_status_modifier(item: Item, target: Monster) -> float:
     positive_modifier = config.positive_modifier
     specific_status = config.specific_status_modifiers
 
-    for status in target.status:
+    for status in target.status.get_statuses():
         if specific_status and status.slug in specific_status:
             specific_modifier = specific_status[status.slug]
             logger.debug(
@@ -926,11 +510,16 @@ def calculate_capdev_modifier(
             ):
                 logger.warning(f"Invalid variables structure: {variables}")
                 continue
-            if (
-                character.game_variables.get(variables["key"])
-                == variables["value"]
+
+            if character.variable_manager.check_logic(
+                [{variables["key"]: variables["value"]}]
             ):
+                logger.debug(
+                    f"Variable match for key '{variables['key']}' == {variables['value']}. "
+                    f"Applying fallback_variables_bonus"
+                )
                 capdev_modifier *= config.fallback_variables_bonus
+
         logger.debug(
             "No matching variable found. Applying fallback_variables_malus"
         )
@@ -957,9 +546,9 @@ def on_capture_fail(item: Item, target: Monster, character: NPC) -> None:
         return
 
     if config.capdev_persistent_on_failure:
-        tuxeball = character.find_item(item.slug)
+        tuxeball = character.bag.find_item(item.slug)
         if tuxeball:
-            tuxeball.quantity += 1
+            tuxeball.increase_quantity()
 
 
 def on_capture_success(item: Item, target: Monster, character: NPC) -> None:
@@ -968,9 +557,9 @@ def on_capture_success(item: Item, target: Monster, character: NPC) -> None:
         return
 
     if config.capdev_persistent_on_success:
-        tuxeball = character.find_item(item.slug)
+        tuxeball = character.bag.find_item(item.slug)
         if tuxeball:
-            tuxeball.quantity += 1
+            tuxeball.increase_quantity()
 
     if config.capdev_effects:
         apply_effects(config.capdev_effects, target)
@@ -1048,23 +637,86 @@ def speed_monster(monster: Monster, technique: Technique) -> int:
     """
     Calculate the speed modifier for the given monster / technique.
     """
-    multiplier_speed = config_combat.multiplier_speed
-    base_speed = float(monster.speed)
-    base_speed_bonus = (
-        multiplier_speed
-        if technique.is_fast
-        else config_combat.base_speed_bonus
+    min_mod = max(config_combat.min_speed_modifier, 1)
+    base_speed = float(max(monster.speed, 0))
+
+    # Calculate modifier based on technique speed
+    speed_adjustment = technique.speed * config_combat.speed_factor
+    speed_bonus = config_combat.base_speed_bonus + speed_adjustment
+
+    # Base calculation
+    speed_modifier = base_speed * speed_bonus
+
+    # Ensure minimum bound
+    speed_modifier = max(speed_modifier, min_mod)
+
+    # Use dodge as a strategic tiebreaker
+    speed_modifier += (
+        max(float(monster.dodge), 0) * config_combat.dodge_modifier
     )
-    speed_modifier = base_speed * base_speed_bonus
-
-    # Add a controlled random element
-    speed_offset = config_combat.speed_offset
-    random_offset = random.uniform(-speed_offset, speed_offset)
-    speed_modifier += random_offset
-
-    # Ensure the speed modifier is not negative
-    speed_modifier = max(speed_modifier, config_combat.min_speed_modifier)
-    # Use dodge as a tiebreaker
-    speed_modifier += float(monster.dodge) * config_combat.dodge_modifier
 
     return int(speed_modifier)
+
+
+def modify_monster_custom_stat(
+    monster: Monster, stat: str, value: float, operation: str
+) -> None:
+    """
+    Helper method to modify a monster's stat based on the specified operation.
+
+    Parameters:
+        monster: The monster instance.
+        stat: The stat to modify.
+        value: The value to apply.
+        operation: "add" for integer addition, "multiply" for float scaling.
+    """
+    logger.debug(f"{value} {operation} operation on {stat}")
+
+    if not hasattr(monster.custom_stats, stat):
+        raise AttributeError(f"Unknown stat '{stat}'")
+
+    current_value = getattr(monster.custom_stats, stat)
+
+    if operation == "add":
+        new_value = current_value + int(value)
+    elif operation == "multiply":
+        base_value = getattr(monster, stat) * value
+        new_value = current_value + int(base_value)
+    else:
+        raise ValueError(f"Invalid operation: {operation}")
+
+    setattr(monster.custom_stats, stat, new_value)
+    monster.set_stats()
+
+
+def modify_technique_custom_stat(
+    tech: Technique, stat: str, value: float, operation: str
+) -> None:
+    """
+    Permanently modify a technique's custom boosts.
+
+    Parameters:
+        tech: The Technique instance.
+        stat: One of: "power", "potency", "accuracy", "healing_power".
+        value: The value to apply.
+        operation: "add" or "multiply".
+    """
+    logger.debug(
+        f"{value} {operation} operation on technique custom stat '{stat}'"
+    )
+
+    if not hasattr(tech.custom_boosts, stat):
+        raise AttributeError(f"Unknown stat '{stat}'")
+
+    current_value = getattr(tech.custom_boosts, stat)
+
+    if operation == "add":
+        new_value = current_value + value
+    elif operation == "multiply":
+        base_value = getattr(tech.base_stats, stat)
+        new_value = current_value + (base_value * value)
+    else:
+        raise ValueError(f"Invalid operation: {operation}")
+
+    setattr(tech.custom_boosts, stat, new_value)
+    tech.reset_current_stats()

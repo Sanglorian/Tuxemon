@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.event import MapCondition, get_npc
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 from tuxemon.tools import compare
@@ -29,20 +29,21 @@ class HasBagCondition(EventCondition):
             "less_or_equal", "greater_than", "greater_or_equal", "equals"
             and "not_equals".
         value: The value to compare the bag with.
-
     """
 
-    name = "has_bag"
+    name: ClassVar[str] = "has_bag"
+    character: str
+    operator: str
+    value: int
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
-        character_name, check, number = condition.parameters[:3]
-        character = get_npc(session, character_name)
+    def test(self, session: Session) -> bool:
+        character = session.get_npc(self.character)
         if character is None:
-            logger.error(f"Character '{character_name}' not found")
+            logger.error(f"Character '{self.character}' not found")
             return False
 
         visible_items = [
             item for item in character.items if item.behaviors.visible
         ]
         bag_size = sum(item.quantity for item in visible_items)
-        return compare(check, bag_size, int(number))
+        return compare(self.operator, bag_size, self.value)

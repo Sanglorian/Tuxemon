@@ -1,18 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """
 
 General "tools" code for pygame graphics operations that don't
 have a home in any specific place.
 
 """
+
 from __future__ import annotations
 
 import logging
-import os
 import re
 from collections.abc import Iterable, Sequence
-from typing import TYPE_CHECKING, Any, Optional, Protocol, Union
+from pathlib import Path
+from typing import Any, Protocol
 
 from pygame.color import Color
 from pygame.image import load
@@ -22,27 +23,24 @@ from pygame.transform import scale
 from pytmx.pytmx import TileFlags
 from pytmx.util_pygame import handle_transformation, smart_convert
 
-from tuxemon import prepare
-from tuxemon.db import db
-from tuxemon.session import Session
+from tuxemon.platform.const.graphics import FUCHSIA_COLOR
+from tuxemon.prepare import DISPLAY_CONTEXT
+from tuxemon.scaling import ScalingStrategy
 from tuxemon.sprite import Sprite
 from tuxemon.surfanim import SurfaceAnimation
-from tuxemon.tools import scale_sequence, transform_resource_filename
-
-if TYPE_CHECKING:
-    from tuxemon.client import LocalPygameClient
+from tuxemon.tools import transform_resource_filename
 
 logger = logging.getLogger(__name__)
 
 
-ColorLike = Union[Color, tuple[int, int, int], tuple[int, int, int, int]]
+ColorLike = Color | tuple[int, int, int] | tuple[int, int, int, int]
 
 
 class LoaderProtocol(Protocol):
     def __call__(
         self,
-        rect: Optional[tuple[int, int, int, int]] = None,
-        flags: Optional[TileFlags] = None,
+        rect: tuple[int, int, int, int] | None = None,
+        flags: TileFlags | None = None,
     ) -> Surface:
         pass
 
@@ -66,7 +64,6 @@ def strip_from_sheet(
 
     Returns:
         Sequence of stripped frames.
-
     """
     frames = []
     for j in range(rows):
@@ -91,12 +88,71 @@ def strip_coords_from_sheet(
 
     Returns:
         Sequence of stripped frames.
-
     """
     frames = []
     for coord in coords:
         location = (coord[0] * size[0], coord[1] * size[1])
         frames.append(sheet.subsurface(Rect(location, size)))
+    return frames
+
+
+def slice_spritesheet(
+    file_path: str,
+    frame_width: int,
+    frame_height: int,
+) -> list[Surface]:
+    """
+    Load a sprite sheet and slice it into individual frames.
+
+    The sheet is assumed to be a grid of equally sized frames.
+    """
+    real_path = transform_resource_filename(file_path)
+    full_sheet = load(real_path).convert_alpha()
+
+    sheet_w, sheet_h = full_sheet.get_size()
+
+    if sheet_w % frame_width != 0 or sheet_h % frame_height != 0:
+        raise ValueError(
+            f"Sheet '{file_path}' has invalid dimensions "
+            f"({sheet_w}x{sheet_h}) for frame size "
+            f"{frame_width}x{frame_height}"
+        )
+
+    frames = []
+    for y in range(0, sheet_h, frame_height):
+        for x in range(0, sheet_w, frame_width):
+            rect = Rect(x, y, frame_width, frame_height)
+            frame = full_sheet.subsurface(rect)
+            scaled = scale_surface(frame, DISPLAY_CONTEXT.scale)
+            frames.append(scaled)
+
+    return frames
+
+
+def slice_spritesheet_surface(
+    sheet: Surface,
+    frame_width: int,
+    frame_height: int,
+) -> list[Surface]:
+    """
+    Slice an already-loaded sprite sheet Surface into frames.
+    """
+    sheet_w, sheet_h = sheet.get_size()
+
+    if sheet_w % frame_width != 0 or sheet_h % frame_height != 0:
+        raise ValueError(
+            f"Sheet has invalid dimensions "
+            f"({sheet_w}x{sheet_h}) for frame size "
+            f"{frame_width}x{frame_height}"
+        )
+
+    frames = []
+    for y in range(0, sheet_h, frame_height):
+        for x in range(0, sheet_w, frame_width):
+            rect = Rect(x, y, frame_width, frame_height)
+            frame = sheet.subsurface(rect)
+            frames.append(frame.copy())
+
     return frames
 
 
@@ -108,13 +164,21 @@ def cursor_from_image(image: Surface) -> Sequence[str]:
     for j in range(rect.height):
         this_row = []
         for i in range(rect.width):
-            pixel = tuple(image.get_at((i, j)))
-            this_row.append(colors.get(pixel, " "))
+            pixel = image.get_at((i, j))
+            pixel_tuple: tuple[int, int, int, int] = (
+                pixel.r,
+                pixel.g,
+                pixel.b,
+                pixel.a,
+            )
+            this_row.append(colors.get(pixel_tuple, " "))
         icon_string.append("".join(this_row))
     return icon_string
 
 
-def load_and_scale(filename: str, scale: float = prepare.SCALE) -> Surface:
+def load_and_scale(
+    filename: str, scale: float = DISPLAY_CONTEXT.scale
+) -> Surface:
     """
     Load an image and scale it according to game settings.
 
@@ -127,7 +191,6 @@ def load_and_scale(filename: str, scale: float = prepare.SCALE) -> Surface:
 
     Returns:
         Loaded and scaled image.
-
     """
     return scale_surface(load_image(filename), scale)
 
@@ -147,10 +210,10 @@ def load_image(filename: str) -> Surface:
 
     Returns:
         Loaded image.
-
     """
     filename = transform_resource_filename(filename)
-    return smart_convert(load(filename), None, True)
+    img: Surface = smart_convert(load(filename), None, True)
+    return img
 
 
 def load_sprite(filename: str, **rect_kwargs: Any) -> Sprite:
@@ -169,9 +232,24 @@ def load_sprite(filename: str, **rect_kwargs: Any) -> Sprite:
 
     Returns:
         Loaded sprite.
-
     """
     sprite = Sprite(image=load_and_scale(filename))
+    sprite.rect = sprite.image.get_rect(**rect_kwargs)
+    return sprite
+
+
+def load_raw_image(filename: str) -> Surface:
+    """
+    Load an image from disk WITHOUT scaling or smart conversion.
+    Used for sprite sheets where slicing must happen before scaling.
+    """
+    filename = transform_resource_filename(filename)
+    return load(filename)
+
+
+def load_surface(surface: Surface, **rect_kwargs: Any) -> Sprite:
+    """Load a surface and return a sprite."""
+    sprite = Sprite(image=surface)
     sprite.rect = sprite.image.get_rect(**rect_kwargs)
     return sprite
 
@@ -179,40 +257,65 @@ def load_sprite(filename: str, **rect_kwargs: Any) -> Sprite:
 def load_animated_sprite(
     filenames: Iterable[str],
     delay: float,
-    scale: float = prepare.SCALE,
+    scale: float,
+    loop: int = -1,
+    **rect_kwargs: Any,
 ) -> Sprite:
     """
     Load a set of images and return an animated sprite.
 
-    Image name will be transformed and converted.
-    Rect attribute will be set.
-
-    Any keyword arguments will be passed to the get_rect method
-    of the image for positioning the rect.
-
     Parameters:
-        filenames: Filenames to load.
-        delay: Frame interval; time between each frame.
-        scale: A scaling factor applied to the images during loading.
-            Defaults to the 'prepare.SCALE' constant.
+        filenames: Iterable of image filenames.
+        delay: Time between frames.
+        scale: Scaling factor.
+        loop: Number of animation loops (-1 = infinite).
+        rect_kwargs: Passed to get_rect() for positioning.
 
     Returns:
-        Loaded animated sprite.
+        Sprite with a SurfaceAnimation.
     """
-    anim = []
-    for filename in filenames:
-        if os.path.exists(filename):
-            image = load_and_scale(filename, scale)
-            anim.append((image, delay))
-        else:
-            logger.error(f"File not found: {filename}")
+    surfaces: list[Surface] = []
 
-    if not anim:
+    for filename in filenames:
+        path = Path(filename)
+        if not path.exists():
+            logger.error(f"File not found: {path}")
+            continue
+
+        image = load_and_scale(path.as_posix(), scale)
+        surfaces.append(image)
+
+    if not surfaces:
         raise ValueError("Cannot create animated sprite: no valid frames.")
 
-    tech = SurfaceAnimation(anim, True)
-    tech.play()
-    return Sprite(animation=tech)
+    animation = create_animation(surfaces, delay, loop)
+    animation.play()
+
+    sprite = Sprite(animation=animation)
+    sprite.rect = surfaces[0].get_rect(**rect_kwargs)
+    return sprite
+
+
+def load_animated_frames(
+    surfaces: list[Surface],
+    delay: float,
+    loop: int = -1,
+    **rect_kwargs: Any,
+) -> Sprite:
+    """
+    Create an animated sprite from already-loaded surfaces.
+    """
+    if not surfaces:
+        raise ValueError("Cannot create animated sprite: no frames provided.")
+
+    frames = [(surf, delay) for surf in surfaces]
+
+    animation = SurfaceAnimation(frames, loop)
+    animation.play()
+
+    sprite = Sprite(animation=animation)
+    sprite.rect = surfaces[0].get_rect(**rect_kwargs)
+    return sprite
 
 
 def scale_surface(surface: Surface, factor: float) -> Surface:
@@ -235,7 +338,6 @@ def load_frames_files(directory: str, name: str) -> Iterable[Surface]:
 
     Yields:
         Loaded and scaled frames.
-
     """
     for filename in animation_frame_files(directory, name):
         yield load_and_scale(filename)
@@ -256,19 +358,21 @@ def animation_frame_files(directory: str, name: str) -> Sequence[str]:
 
     Returns:
         Sequence of filenames.
-
     """
     pattern = re.compile(rf"{name}\.?_?[0-9]+\.png")
-    frames = [
-        os.path.join(directory, filename)
-        for filename in sorted(os.listdir(directory))
-        if pattern.match(filename)
-    ]
+    dir_path = Path(directory)
+    frames = sorted(
+        [
+            file.as_posix()
+            for file in dir_path.iterdir()
+            if file.is_file() and pattern.match(file.name)
+        ]
+    )
     return frames
 
 
 def create_animation(
-    frames: Iterable[Surface], duration: float, loop: bool
+    frames: Iterable[Surface], duration: float, loop: int
 ) -> SurfaceAnimation:
     """
     Create animation from frames, a list of surfaces.
@@ -280,33 +384,25 @@ def create_animation(
 
     Returns:
         Created animation.
-
     """
     data = [(f, duration) for f in frames]
-    animation = SurfaceAnimation(data, loop=loop)
+    animation = SurfaceAnimation(frames=data, loop=loop)
     return animation
 
 
 def scale_sprite(sprite: Sprite, ratio: float) -> None:
     """
-    Scale a sprite's image in place.
-
-    Parameters:
-        sprite: Sprite to rescale.
-        ratio: Amount to scale by.
-
+    Scale a sprite using the new logical-size pipeline.
     """
-    center = sprite.rect.center
-    sprite.rect.width = int(sprite.rect.width * ratio)
-    sprite.rect.height = int(sprite.rect.height * ratio)
-    sprite.rect.center = center
-    assert sprite._original_image
-    sprite._original_image = scale(sprite._original_image, sprite.rect.size)
-    sprite._needs_update = True
+    new_width = int(sprite.rect.width * ratio)
+    new_height = int(sprite.rect.height * ratio)
+
+    sprite.width = new_width
+    sprite.height = new_height
 
 
 def convert_alpha_to_colorkey(
-    surface: Surface, colorkey: ColorLike = prepare.FUCHSIA_COLOR
+    surface: Surface, colorkey: ColorLike = FUCHSIA_COLOR
 ) -> Surface:
     """
     Convert image with per-pixel alpha to normal surface with colorkey.
@@ -321,7 +417,6 @@ def convert_alpha_to_colorkey(
 
     Returns:
         New surface with colorkey.
-
     """
     image = Surface(surface.get_size())
     image.fill(colorkey)
@@ -332,9 +427,10 @@ def convert_alpha_to_colorkey(
 
 def scaled_image_loader(
     filename: str,
-    colorkey: Optional[str],
+    colorkey: str | None,
     *,
     pixelalpha: bool = True,
+    scaling: ScalingStrategy | None = None,
     **kwargs: Any,
 ) -> LoaderProtocol:
     """
@@ -350,26 +446,28 @@ def scaled_image_loader(
 
     Returns:
         The loader to use.
-
     """
+    if scaling is None:
+        scaling = DISPLAY_CONTEXT.scaling
+
     colorkey_color = Color(f"#{colorkey}") if colorkey else None
 
     # load the tileset image
     image = load(filename)
 
     # scale the tileset image to match game scale
-    scaled_size = scale_sequence(image.get_size())
+    scaled_size = scaling.scale_tuple(image.get_size())
     image = scale(image, scaled_size)
 
     def load_image(
-        rect: Optional[tuple[int, int, int, int]] = None,
-        flags: Optional[TileFlags] = None,
+        rect: tuple[int, int, int, int] | None = None,
+        flags: TileFlags | None = None,
     ) -> Surface:
         if rect:
             # scale the rect to match the scaled image
-            rect = scale_sequence(rect)
+            rect = scaling.scale_tuple(rect)
             try:
-                tile = image.subsurface(rect)
+                tile: Surface = image.subsurface(rect)
             except ValueError:
                 logger.error("Tile bounds outside bounds of tileset image")
                 raise
@@ -385,72 +483,6 @@ def scaled_image_loader(
     return load_image
 
 
-def capture_screenshot(game: LocalPygameClient) -> Surface:
-    """
-    Capture a screenshot of the current map.
-
-    Parameters:
-        game: The game object.
-
-    Returns:
-        The captured screenshot.
-
-    """
-    from tuxemon.states.world.worldstate import WorldState
-
-    screenshot = Surface(game.screen.get_size())
-    world = game.get_state_by_name(WorldState)
-    world.draw(screenshot)
-    return screenshot
-
-
-def get_avatar(session: Session, avatar: str) -> Optional[Sprite]:
-    """
-    Retrieves the avatar sprite of a monster or NPC.
-
-    Parameters:
-        session: Game session.
-        avatar: The identifier of the avatar to be used.
-
-    Returns:
-        The sprite for the monster or NPC avatar, or None if not found.
-    """
-    if avatar.isdigit():
-        try:
-            monster = session.player.monsters[int(avatar)]
-            return monster.get_sprite("menu")
-        except IndexError:
-            logger.debug(f"Invalid avatar monster slot: {avatar}")
-            return None
-
-    if avatar in db.database.get("monster", {}):
-        monster_data = db.lookup(avatar, table="monster")
-        if not monster_data.sprites:
-            logger.error(f"Monster '{avatar}' has no sprites")
-            return None
-
-        # Replace MonsterSpriteHandler with direct logic
-        menu_sprites = [
-            transform_resource_filename(f"{monster_data.sprites.menu1}.png"),
-            transform_resource_filename(f"{monster_data.sprites.menu2}.png"),
-        ]
-        try:
-            return load_animated_sprite(menu_sprites, 0.25)
-        except ValueError as e:
-            logger.error(f"Failed to load animated sprite for '{avatar}': {e}")
-            return None
-
-    if avatar in db.database.get("npc", {}):
-        npc_data = db.lookup(avatar, table="npc")
-        path = f"gfx/sprites/player/{npc_data.template.combat_front}.png"
-        sprite = load_sprite(path)
-        scale_sprite(sprite, 0.5)
-        return sprite
-
-    logger.debug(f"Avatar '{avatar}' not found")
-    return None
-
-
 def string_to_colorlike(color: str) -> ColorLike:
     """
     It converts a string into a ColorLike.
@@ -460,13 +492,48 @@ def string_to_colorlike(color: str) -> ColorLike:
 
     Returns:
         The ColorLike.
-
     """
-    rgb: ColorLike = prepare.BLACK_COLOR
-    part = color.split(":")
-    rgb = (
-        (int(part[0]), int(part[1]), int(part[2]), int(part[3]))
-        if len(part) == 4
-        else (int(part[0]), int(part[1]), int(part[2]))
-    )
-    return rgb
+    part = list(map(int, color.split(":")))
+
+    if len(part) == 3:
+        return (part[0], part[1], part[2])
+    elif len(part) == 4:
+        return (part[0], part[1], part[2], part[3])
+
+    raise ValueError("Invalid color format. Expected 'R:G:B' or 'R:G:B:A'")
+
+
+def apply_cinema_bars(
+    aspect_ratio: float,
+    screen: Surface,
+    orientation: str,
+    screen_size: tuple[int, int],
+    black_color: tuple[int, int, int],
+) -> None:
+    """
+    Applies cinema bars (letterboxing) to the screen in either horizontal or vertical orientation.
+    """
+    if orientation == "horizontal":
+        screen_aspect_ratio = screen_size[1] / screen_size[0]
+        if screen_aspect_ratio < aspect_ratio:
+            bar_width = int(
+                screen_size[0] * (1 - screen_aspect_ratio / aspect_ratio) / 2
+            )
+            bar = Surface((bar_width, screen_size[1]))
+            bar.fill(black_color)
+            screen.blit(bar, (0, 0))
+            screen.blit(bar, (screen_size[0] - bar_width, 0))
+    elif orientation == "vertical":
+        screen_aspect_ratio = screen_size[0] / screen_size[1]
+        if screen_aspect_ratio < aspect_ratio:
+            bar_height = int(
+                screen_size[1] * (1 - screen_aspect_ratio / aspect_ratio) / 2
+            )
+            bar = Surface((screen_size[0], bar_height))
+            bar.fill(black_color)
+            screen.blit(bar, (0, 0))
+            screen.blit(bar, (0, screen_size[1] - bar_height))
+    else:
+        raise ValueError(
+            f"Invalid orientation: '{orientation}'. Must be 'horizontal' or 'vertical'."
+        )

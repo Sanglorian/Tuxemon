@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.1-99-gec89c545" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="20" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="130">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="20" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="130">
  <properties>
   <property name="edges" value="clamped"/>
   <property name="map_type" value="route"/>
@@ -37,7 +37,7 @@
  <objectgroup color="#ffff00" id="5" name="Events">
   <object id="44" name="Teleport to Flower City" type="event" x="112" y="624" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_flower_city.tmx,27,0,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_flower_city.tmx,27,0,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -45,7 +45,7 @@
   </object>
   <object id="45" name="Teleport to Flower City" type="event" x="128" y="624" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_flower_city.tmx,28,0,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_flower_city.tmx,28,0,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -53,7 +53,7 @@
   </object>
   <object id="52" name="Teleport to Mansion" type="event" x="112" y="192" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_mansion.tmx,10,17,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_mansion.tmx,10,17,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -61,7 +61,7 @@
   </object>
   <object id="53" name="Teleport to Mansion" type="event" x="96" y="192" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_mansion.tmx,10,17,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_mansion.tmx,10,17,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -125,16 +125,16 @@
   </object>
   <object id="66" name="Environment Day" type="event" x="96" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:grass"/>
-    <property name="cond1" value="not variable_set stage_of_day:night"/>
-    <property name="cond2" value="not variable_set environment:grass"/>
+    <property name="act1" value="set_environment grass"/>
+    <property name="cond1" value="not time_is stage_of_day,equals,night"/>
+    <property name="cond2" value="not environment_is grass"/>
    </properties>
   </object>
   <object id="68" name="Environment Night" type="event" x="80" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:night_grass"/>
-    <property name="cond1" value="is variable_set stage_of_day:night"/>
-    <property name="cond2" value="not variable_set environment:night_grass"/>
+    <property name="act1" value="set_environment night_grass"/>
+    <property name="cond1" value="is time_is stage_of_day,equals,night"/>
+    <property name="cond2" value="not environment_is night_grass"/>
    </properties>
   </object>
   <object id="69" name="Billie" type="event" x="256" y="288" width="32" height="16">
@@ -142,7 +142,7 @@
     <property name="act01" value="char_stop player"/>
     <property name="act02" value="lock_controls"/>
     <property name="act03" value="create_npc spyder_billie,16,11"/>
-    <property name="act04" value="pathfind_to_player spyder_billie"/>
+    <property name="act04" value="pathfind_to_char player,spyder_billie"/>
     <property name="act05" value="unlock_controls"/>
     <property name="act08" value="translated_dialog spyder_routea_billie1"/>
     <property name="act20" value="add_monster billie_choice,20,spyder_billie,5,10"/>
@@ -175,11 +175,10 @@
     <property name="act2" value="add_monster sapsnap,18,spyder_routea_vince,5,10"/>
     <property name="act3" value="start_battle player,spyder_routea_vince"/>
     <property name="act4" value="translated_dialog spyder_routea_vince4"/>
-    <property name="act5" value="set_variable routeavince:yes"/>
     <property name="behav1" value="talk spyder_routea_vince"/>
     <property name="cond1" value="is variable_set vincefirst:yes"/>
     <property name="cond2" value="is variable_set vincesecond:yes"/>
-    <property name="cond3" value="not variable_set routeavince:yes"/>
+    <property name="cond3" value="not battle_outcome player,won,spyder_routea_vince"/>
    </properties>
   </object>
   <object id="72" name="Create Doris" type="event" x="160" y="352" width="16" height="16">
@@ -192,16 +191,16 @@
   <object id="73" name="Talk Doris" type="event" x="64" y="352" width="16" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routea_doris"/>
-    <property name="act3" value="translated_dialog spyder_routea_doris1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_routea_doris"/>
+    <property name="act3" value="char_talk spyder_routea_doris,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster shybulb,12,spyder_routea_doris,5,10"/>
     <property name="act6" value="add_monster trapsnap,14,spyder_routea_doris,5,10"/>
     <property name="act7" value="start_battle player,spyder_routea_doris"/>
-    <property name="act8" value="translated_dialog spyder_routea_doris2"/>
-    <property name="act9" value="set_variable routeadoris:yes"/>
-    <property name="cond1" value="not variable_set routeadoris:yes"/>
+    <property name="act8" value="char_talk spyder_routea_doris,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_routea_doris"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="74" name="Create Dagger" type="event" x="32" y="352" width="16" height="16">
@@ -214,44 +213,44 @@
   <object id="75" name="Talk Dagger" type="event" x="32" y="368" width="16" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routea_dagger"/>
-    <property name="act3" value="translated_dialog spyder_routea_dagger1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_routea_dagger"/>
+    <property name="act3" value="char_talk spyder_routea_dagger,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster cardiwing,16,spyder_routea_dagger,5,10"/>
     <property name="act6" value="start_battle player,spyder_routea_dagger"/>
-    <property name="act7" value="translated_dialog spyder_routea_dagger2"/>
-    <property name="act8" value="set_variable routeadagger:yes"/>
-    <property name="cond1" value="not variable_set routeadagger:yes"/>
+    <property name="act7" value="char_talk spyder_routea_dagger,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_routea_dagger"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="76" name="Talk Doris" type="event" x="160" y="336" width="16" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routea_doris"/>
-    <property name="act3" value="translated_dialog spyder_routea_doris1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_routea_doris"/>
+    <property name="act3" value="char_talk spyder_routea_doris,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster shybulb,12,spyder_routea_doris,5,10"/>
     <property name="act6" value="add_monster trapsnap,14,spyder_routea_doris,5,10"/>
     <property name="act7" value="start_battle player,spyder_routea_doris"/>
-    <property name="act8" value="translated_dialog spyder_routea_doris2"/>
-    <property name="act9" value="set_variable routeadoris:yes"/>
-    <property name="cond1" value="not variable_set routeadoris:yes"/>
+    <property name="act8" value="char_talk spyder_routea_doris,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_routea_doris"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="77" name="Talk Dagger" type="event" x="48" y="352" width="16" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routea_dagger"/>
-    <property name="act3" value="translated_dialog spyder_routea_dagger1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_routea_dagger"/>
+    <property name="act3" value="char_talk spyder_routea_dagger,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster cardiwing,16,spyder_routea_dagger,5,10"/>
     <property name="act6" value="start_battle player,spyder_routea_dagger"/>
-    <property name="act7" value="translated_dialog spyder_routea_dagger2"/>
-    <property name="act8" value="set_variable routeadagger:yes"/>
-    <property name="cond1" value="not variable_set routeadagger:yes"/>
+    <property name="act7" value="char_talk spyder_routea_dagger,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_routea_dagger"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="78" name="Create Koan" type="event" x="32" y="592" width="16" height="16">
@@ -261,19 +260,19 @@
     <property name="cond1" value="not char_exists spyder_routea_koan"/>
    </properties>
   </object>
-  <object id="79" name="Talk Koan" type="event" x="80" y="592" width="16" height="16">
+  <object id="79" name="Talk Koan" type="event" x="48" y="592" width="48" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routea_koan"/>
-    <property name="act3" value="translated_dialog spyder_routea_koan1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_routea_koan"/>
+    <property name="act3" value="char_talk spyder_routea_koan,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster shybulb,12,spyder_routea_koan,5,10"/>
     <property name="act6" value="add_monster budaye,12,spyder_routea_koan,5,10"/>
     <property name="act7" value="start_battle player,spyder_routea_koan"/>
-    <property name="act8" value="translated_dialog spyder_routea_koan2"/>
-    <property name="act9" value="set_variable routeakoan:yes"/>
-    <property name="cond1" value="not variable_set routeakoan:yes"/>
+    <property name="act8" value="char_talk spyder_routea_koan,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_routea_koan"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="80" name="Create Lexi" type="event" x="32" y="480" width="16" height="16">
@@ -282,19 +281,19 @@
     <property name="cond1" value="not char_exists spyder_routea_lexi"/>
    </properties>
   </object>
-  <object id="81" name="Talk Lexi" type="event" x="32" y="512" width="16" height="16">
+  <object id="81" name="Talk Lexi" type="event" x="32" y="496" width="16" height="32">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routea_lexi"/>
-    <property name="act3" value="translated_dialog spyder_routea_lexi1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_routea_lexi"/>
+    <property name="act3" value="char_talk spyder_routea_lexi,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster vamporm,14,spyder_routea_lexi,5,10"/>
     <property name="act6" value="add_monster katapill,14,spyder_routea_lexi,5,10"/>
     <property name="act7" value="start_battle player,spyder_routea_lexi"/>
-    <property name="act8" value="translated_dialog spyder_routea_lexi2"/>
-    <property name="act9" value="set_variable routealexi:yes"/>
-    <property name="cond1" value="not variable_set routealexi:yes"/>
+    <property name="act8" value="char_talk spyder_routea_lexi,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_routea_lexi"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="82" name="Create Lotu" type="event" x="224" y="496" width="16" height="16">
@@ -307,31 +306,31 @@
   <object id="83" name="Talk Lotu" type="event" x="224" y="480" width="16" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routea_lotu"/>
-    <property name="act3" value="translated_dialog spyder_routea_lotu1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_routea_lotu"/>
+    <property name="act3" value="char_talk spyder_routea_lotu,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster narcileaf,14,spyder_routea_lotu,5,10"/>
     <property name="act6" value="add_monster tarpeur,14,spyder_routea_lotu,5,10"/>
     <property name="act7" value="start_battle player,spyder_routea_lotu"/>
-    <property name="act8" value="translated_dialog spyder_routea_lotu2"/>
-    <property name="act9" value="set_variable routealotu:yes"/>
-    <property name="cond1" value="not variable_set routealotu:yes"/>
+    <property name="act8" value="char_talk spyder_routea_lotu,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_routea_lotu"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="84" name="Talk Connie" type="event" x="192" y="432" width="16" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routea_connie"/>
-    <property name="act3" value="translated_dialog spyder_routea_connie1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_routea_connie"/>
+    <property name="act3" value="char_talk spyder_routea_connie,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster sharpfin,14,spyder_routea_connie,5,10"/>
     <property name="act6" value="add_monster bigfin,14,spyder_routea_connie,5,10"/>
     <property name="act7" value="start_battle player,spyder_routea_connie"/>
-    <property name="act8" value="translated_dialog spyder_routea_connie2"/>
-    <property name="act9" value="set_variable routeaconnie:yes"/>
-    <property name="cond1" value="not variable_set routeaconnie:yes"/>
+    <property name="act8" value="char_talk spyder_routea_connie,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_routea_connie"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="85" name="Create Connie" type="event" x="192" y="416" width="16" height="16">
@@ -343,35 +342,22 @@
   <object id="86" name="Create Joe" type="event" x="192" y="544" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_routea_joe,12,34"/>
+    <property name="act2" value="char_face spyder_routea_joe,left"/>
     <property name="cond1" value="not char_exists spyder_routea_joe"/>
    </properties>
   </object>
-  <object id="87" name="Talk Joe1" type="event" x="160" y="544" width="16" height="32">
+  <object id="87" name="Talk Joe1" type="event" x="144" y="544" width="48" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routea_joe"/>
-    <property name="act3" value="translated_dialog spyder_routea_joe1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_routea_joe"/>
+    <property name="act3" value="char_talk spyder_routea_joe,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster katapill,16,spyder_routea_joe,5,10"/>
     <property name="act6" value="start_battle player,spyder_routea_joe"/>
-    <property name="act7" value="translated_dialog spyder_routea_joe2"/>
-    <property name="act8" value="set_variable routeajoe:yes"/>
-    <property name="cond1" value="not variable_set routeajoe:yes"/>
+    <property name="act7" value="char_talk spyder_routea_joe,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_routea_joe"/>
     <property name="cond2" value="is char_at player"/>
-   </properties>
-  </object>
-  <object id="88" name="Talk Joe2" type="event" x="224" y="544" width="16" height="32">
-   <properties>
-    <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routea_joe"/>
-    <property name="act3" value="translated_dialog spyder_routea_joe1"/>
-    <property name="act4" value="unlock_controls"/>
-    <property name="act5" value="add_monster katapill,16,spyder_routea_joe,5,10"/>
-    <property name="act6" value="start_battle player,spyder_routea_joe"/>
-    <property name="act7" value="translated_dialog spyder_routea_joe2"/>
-    <property name="act8" value="set_variable routeajoe:yes"/>
-    <property name="cond1" value="not variable_set routeajoe:yes"/>
-    <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="89" name="Create Rosy" type="event" x="176" y="272" width="16" height="16">
@@ -383,15 +369,15 @@
   <object id="90" name="Talk Rosy" type="event" x="176" y="288" width="16" height="32">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_routea_rosy"/>
-    <property name="act3" value="translated_dialog spyder_routea_rosy1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_routea_rosy"/>
+    <property name="act3" value="char_talk spyder_routea_rosy,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster shammer,16,spyder_routea_rosy,5,10"/>
     <property name="act6" value="start_battle player,spyder_routea_rosy"/>
-    <property name="act7" value="translated_dialog spyder_routea_rosy2"/>
-    <property name="act8" value="set_variable routearosy:yes"/>
-    <property name="cond1" value="not variable_set routearosy:yes"/>
+    <property name="act7" value="char_talk spyder_routea_rosy,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_routea_rosy"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="91" name="Create Maniac" type="event" x="96" y="240" width="16" height="16">
@@ -421,7 +407,7 @@
   </object>
   <object id="95" name="Talk Vince1" type="event" x="48" y="288" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_routea_vince1"/>
+    <property name="act1" value="char_talk spyder_routea_vince,pre_battle"/>
     <property name="act2" value="set_variable vincefirst:yes"/>
     <property name="behav1" value="talk spyder_routea_vince"/>
     <property name="cond1" value="not variable_set vincefirst:yes"/>
@@ -429,7 +415,7 @@
   </object>
   <object id="96" name="Talk Vince2" type="event" x="32" y="288" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_routea_vince2"/>
+    <property name="act1" value="char_talk spyder_routea_vince,post_battle_lose"/>
     <property name="act2" value="set_variable vincesecond:yes"/>
     <property name="behav1" value="talk spyder_routea_vince"/>
     <property name="cond1" value="is variable_set vincefirst:yes"/>
@@ -438,7 +424,7 @@
   </object>
   <object id="109" name="Teleport to Top" type="event" x="80" y="96" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_mansion_top.tmx,7,18,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_mansion_top.tmx,7,18,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -446,7 +432,7 @@
   </object>
   <object id="110" name="Teleport to Top" type="event" x="128" y="96" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_mansion_top.tmx,10,18,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_mansion_top.tmx,10,18,0.3"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -461,7 +447,7 @@
   </object>
   <object id="114" name="Super Potion" type="event" x="144" y="96" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog super_potion,,center,center,middle"/>
+    <property name="act1" value="translated_dialog super_potion,,center,center,center"/>
     <property name="act2" value="add_item super_potion"/>
     <property name="act3" value="remove_npc spyder_routea_super"/>
     <property name="act4" value="set_variable routea_super:yes"/>
@@ -477,7 +463,7 @@
   </object>
   <object id="116" name="Tea" type="event" x="224" y="368" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog tea,,center,center,middle"/>
+    <property name="act1" value="translated_dialog tea,,center,center,center"/>
     <property name="act2" value="add_item tea"/>
     <property name="act3" value="remove_npc spyder_routea_tea"/>
     <property name="act4" value="set_variable routea_tea:yes"/>
@@ -493,7 +479,7 @@
   </object>
   <object id="118" name="Cureall" type="event" x="64" y="464" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog cureall,,center,center,middle"/>
+    <property name="act1" value="translated_dialog cureall,,center,center,center"/>
     <property name="act2" value="add_item cureall"/>
     <property name="act3" value="remove_npc spyder_routea_cureall"/>
     <property name="act4" value="set_variable routea_cureall:yes"/>
@@ -502,23 +488,23 @@
   </object>
   <object id="119" name="Post Talk Koan" type="event" x="16" y="592" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_routea_koan2"/>
+    <property name="act1" value="char_talk spyder_routea_koan,post_battle_lose"/>
     <property name="behav1" value="talk spyder_routea_koan"/>
-    <property name="cond1" value="is variable_set routeakoan:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_routea_koan"/>
    </properties>
   </object>
   <object id="120" name="Post Talk Lexi" type="event" x="16" y="480" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_routea_lexi2"/>
+    <property name="act1" value="char_talk spyder_routea_lexi,post_battle_lose"/>
     <property name="behav1" value="talk spyder_routea_lexi"/>
-    <property name="cond1" value="is variable_set routealexi:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_routea_lexi"/>
    </properties>
   </object>
   <object id="121" name="Post Talk Dagger" type="event" x="16" y="352" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_routea_dagger2"/>
+    <property name="act1" value="char_talk spyder_routea_dagger,post_battle_lose"/>
     <property name="behav1" value="talk spyder_routea_dagger"/>
-    <property name="cond1" value="is variable_set routeadagger:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_routea_dagger"/>
    </properties>
   </object>
   <object id="122" name="Talk Vince4" type="event" x="32" y="304" width="16" height="16">
@@ -527,42 +513,42 @@
     <property name="behav1" value="talk spyder_routea_vince"/>
     <property name="cond1" value="is variable_set vincefirst:yes"/>
     <property name="cond2" value="is variable_set vincesecond:yes"/>
-    <property name="cond3" value="is variable_set routeavince:yes"/>
+    <property name="cond3" value="is battle_outcome player,won,spyder_routea_vince"/>
    </properties>
   </object>
   <object id="123" name="Post Talk Rosy" type="event" x="176" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_routea_rosy2"/>
+    <property name="act1" value="char_talk spyder_routea_rosy,post_battle_lose"/>
     <property name="behav1" value="talk spyder_routea_rosy"/>
-    <property name="cond1" value="is variable_set routearosy:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_routea_rosy"/>
    </properties>
   </object>
   <object id="124" name="Post Talk Doris" type="event" x="160" y="320" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_routea_doris2"/>
+    <property name="act1" value="char_talk spyder_routea_doris,post_battle_lose"/>
     <property name="behav1" value="talk spyder_routea_doris"/>
-    <property name="cond1" value="is variable_set routeadoris:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_routea_doris"/>
    </properties>
   </object>
   <object id="125" name="Post Talk Connie" type="event" x="192" y="400" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_routea_connie2"/>
+    <property name="act1" value="char_talk spyder_routea_connie,post_battle_lose"/>
     <property name="behav1" value="talk spyder_routea_connie"/>
-    <property name="cond1" value="is variable_set routeaconnie:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_routea_connie"/>
    </properties>
   </object>
   <object id="126" name="Post Talk Joe" type="event" x="192" y="528" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_routea_joe2"/>
+    <property name="act1" value="char_talk spyder_routea_joe,post_battle_lose"/>
     <property name="behav1" value="talk spyder_routea_joe"/>
-    <property name="cond1" value="is variable_set routeajoe:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_routea_joe"/>
    </properties>
   </object>
   <object id="127" name="Talk Lotu" type="event" x="240" y="480" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_routea_lotu2"/>
+    <property name="act1" value="char_talk spyder_routea_lotu,post_battle_lose"/>
     <property name="behav1" value="talk spyder_routea_lotu"/>
-    <property name="cond1" value="is variable_set routealotu:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_routea_lotu"/>
    </properties>
   </object>
   <object id="128" name="Create Nurse" type="event" x="80" y="432" width="16" height="16">

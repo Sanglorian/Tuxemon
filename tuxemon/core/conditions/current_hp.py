@@ -1,41 +1,47 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from tuxemon.core.core_condition import CoreCondition
 from tuxemon.tools import compare
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
 
 
 @dataclass
 class CurrentHitPointsCondition(CoreCondition):
     """
-    Compares the Monster's current hitpoints against the given value.
+    Compares the Monster's hit point ratio against a specified value.
 
-    If an integer is passed, it will compare against the number directly, if a
-    decimal between 0.0 and 1.0 is passed it will compare the current hp
-    against the total hp.
+    **Parameters**
+    - ``operator``: The comparison operator (e.g. ``<``, ``>``, ``<=``, ``>=``).
+    - ``hp``: A floating-point value between 0.0 and 1.0 representing the HP ratio
+    to compare against. The Monster's HP ratio is defined as
+    ``current_hp / max_hp``.
 
-    Parameters:
-        operator: The operator <, >, etc.
-        hp: The hp (int or float) to compare with.
+    **Returns**
+    - ``True`` if the comparison evaluates successfully.
+    - ``False`` otherwise.
 
-    Example:
-    "conditions": [
-        "is current_hp <,1.0",
-    ],
+    **Example**
 
+    .. code-block:: json
+
+        "conditions": [
+            "is current_hp <,0.5"
+        ]
+
+    This example checks whether the Monster is below 50% of its maximum HP.
     """
 
     name = "current_hp"
     operator: str
-    hp: Union[int, float]
+    hp: float
 
-    def test_with_monster(self, target: Monster) -> bool:
-        value = target.hp * self.hp if type(self.hp) is float else self.hp
-        return compare(self.operator, target.current_hp, value)
+    def test_with_monster(self, session: Session, target: Monster) -> bool:
+        return compare(self.operator, target.hp_ratio, self.hp)

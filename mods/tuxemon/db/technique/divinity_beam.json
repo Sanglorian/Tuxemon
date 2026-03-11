@@ -1,26 +1,27 @@
 {
   "tech_id": 192,
-  "accuracy": 0.99,
-  "animation": "divinity_beam",
+  "accuracy": 0.95,
   "effects": [
     {
       "type": "give",
-      "parameters": ["blinded", "enemy_monster"]
+      "parameters": [
+        "blinded",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.5,
   "power": 3,
   "range": "ranged",
   "recharge": 4,
-  "sfx": "sfx_blaster",
   "slug": "divinity_beam",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,11 +31,23 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["celestial", "calamity"],
+  "tags": [
+    "celestial",
+    "calamity"
+  ],
   "types": [
-    "metal", "wood"
+    "cosmic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "divinity_beam",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_blaster",
+    "volume": 1.5
+  }
 }

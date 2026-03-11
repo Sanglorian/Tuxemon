@@ -1,404 +1,389 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
-from unittest import skip
-from unittest.mock import Mock
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+from unittest.mock import MagicMock, patch
 
-from tuxemon.state import State, StateManager
+import pytest
+
+from tuxemon.event.eventbus import EventBus
+from tuxemon.state.factory import StateFactory
+from tuxemon.state.manager import StateManager
+from tuxemon.state.repository import StateRepository
+from tuxemon.state.state import State
+from tuxemon.states.input import InputMenu
+from tuxemon.states.world_state import WorldState
 
 
 def create_state(name):
-    mock_state = Mock(spec=State, name=f"mock {name}")
+    mock_state = MagicMock(spec=State, name=f"mock {name}")
     mock_state.__name__ = name
+    mock_state.name = name
+    mock_state.return_value = mock_state
     return mock_state
 
 
-class StateManagerTestBase(unittest.TestCase):
-    def create_and_register_state(self, name):
+@pytest.fixture
+def state_manager():
+    mock_client = MagicMock()
+    mock_client.event_bus = EventBus()
+    return StateManager("head.tail", mock_client, StateRepository())
+
+
+@pytest.fixture
+def register_state(state_manager):
+    def _register(name):
         state = create_state(name)
-        self.sm.register_state(state)
+        state_manager.register_state(state)
         return state
 
+    return _register
 
-class PushWhenEmpty(StateManagerTestBase):
-    def setUp(self):
-        self.sm = StateManager("head.tail")
-        self.create_and_register_state("a")
-        self.state_a = self.sm.push_state("a")
-        self.sm.update(0)
-
-    def test_current_state(self):
-        self.assertEqual(self.state_a, self.sm.current_state)
-
-    def test_pushed_in_active_states(self):
-        self.assertIn(self.state_a, self.sm.active_states)
-
-    def test_pushed_state(self):
-        self.assertEqual(1, self.state_a.resume.call_count)
-        self.assertEqual(0, self.state_a.pause.call_count)
-        self.assertEqual(0, self.state_a.shutdown.call_count)
-
-
-class PushWhenNotEmpty(StateManagerTestBase):
-    def setUp(self):
-        self.sm = StateManager("head.tail")
-        self.create_and_register_state("a")
-        self.create_and_register_state("b")
-        self.state_a = self.sm.push_state("a")
-        self.state_b = self.sm.push_state("b")
-        self.sm.update(0)
-
-    def test_current_state(self):
-        self.assertEqual(self.state_b, self.sm.current_state)
-
-    def test_new_in_active_states(self):
-        self.assertIn(self.state_b, self.sm.active_states)
-
-    def test_old_in_active_states(self):
-        self.assertIn(self.state_a, self.sm.active_states)
-
-    def test_new_state(self):
-        self.assertEqual(1, self.state_b.resume.call_count)
-        self.assertEqual(0, self.state_b.pause.call_count)
-        self.assertEqual(0, self.state_b.shutdown.call_count)
-
-    def test_old_state(self):
-        self.assertEqual(1, self.state_a.resume.call_count)
-        self.assertEqual(1, self.state_a.pause.call_count)
-        self.assertEqual(0, self.state_a.shutdown.call_count)
-
-
-class Pop(StateManagerTestBase):
-    def setUp(self):
-        self.sm = StateManager("head.tail")
-        self.create_and_register_state("a")
-        self.create_and_register_state("b")
-        self.state_a = self.sm.push_state("a")
-        self.state_b = self.sm.push_state("b")
-        self.sm.pop_state()
-        self.sm.update(0)
-
-    def test_current_state(self):
-        self.assertEqual(self.state_a, self.sm.current_state)
-
-    def test_popped_not_in_active_states(self):
-        self.assertNotIn(self.state_b, self.sm.active_states)
-
-    def test_remaining_active_states(self):
-        self.assertIn(self.state_a, self.sm.active_states)
-
-    def test_popped_state(self):
-        self.assertEqual(1, self.state_b.resume.call_count)
-        self.assertEqual(1, self.state_b.pause.call_count)
-        self.assertEqual(1, self.state_b.shutdown.call_count)
-
-    def test_remaining_state(self):
-        self.assertEqual(2, self.state_a.resume.call_count)
-        self.assertEqual(1, self.state_a.pause.call_count)
-        self.assertEqual(0, self.state_a.shutdown.call_count)
-
-    def test_after_last_pop(self):
-        self.sm.pop_state()
-        self.assertIsNone(self.sm.current_state)
-        self.assertEqual(2, self.state_a.resume.call_count)
-        self.assertEqual(2, self.state_a.pause.call_count)
-        self.assertEqual(1, self.state_a.shutdown.call_count)
-        self.assertEqual(1, self.state_b.resume.call_count)
-        self.assertEqual(1, self.state_b.pause.call_count)
-        self.assertEqual(1, self.state_b.shutdown.call_count)
-
-
-class Resume(StateManagerTestBase):
-    def setUp(self):
-        self.sm = StateManager("head.tail")
-        self.create_and_register_state("a")
-        self.create_and_register_state("b")
-        self.state_a = self.sm.push_state("a")
-
-    def test_resume_not_called_before_update(self):
-        self.assertEqual(0, self.state_a.update.call_count)
-        self.assertEqual(0, self.state_a.resume.call_count)
-        self.assertEqual(0, self.state_a.pause.call_count)
-        self.assertEqual(0, self.state_a.shutdown.call_count)
-
-    def test_resume_called_during_update(self):
-        self.sm.update(0)
-        self.assertEqual(1, self.state_a.update.call_count)
-        self.assertEqual(1, self.state_a.resume.call_count)
-        self.assertEqual(0, self.state_a.pause.call_count)
-        self.assertEqual(0, self.state_a.shutdown.call_count)
-
-    def test_resume_called_during_update_after_pop(self):
-        self.state_b = self.sm.push_state("b")
-        self.sm.pop_state()
-        self.sm.update(0)
-        self.assertEqual(1, self.state_a.update.call_count)
-        self.assertEqual(2, self.state_a.resume.call_count)
-        self.assertEqual(1, self.state_a.pause.call_count)
-        self.assertEqual(0, self.state_a.shutdown.call_count)
-
-
-class RemoveWhenCurrent(StateManagerTestBase):
-    def setUp(self):
-        self.sm = StateManager("head.tail")
-        self.create_and_register_state("a")
-        self.create_and_register_state("b")
-        self.state_a = self.sm.push_state("a")
-        self.state_b = self.sm.push_state("b")
-        # remove the current state
-        self.sm.remove_state(self.state_b)
-        self.sm.update(0)
-
-    def test_current_state(self):
-        self.assertEqual(self.state_a, self.sm.current_state)
-
-    def test_removed_not_in_active_states(self):
-        self.assertNotIn(self.state_b, self.sm.active_states)
-
-    def test_remaining_in_active_states(self):
-        self.assertIn(self.state_a, self.sm.active_states)
-
-    def test_removed_state(self):
-        self.assertEqual(1, self.state_b.resume.call_count)
-        self.assertEqual(1, self.state_b.pause.call_count)
-        self.assertEqual(1, self.state_b.shutdown.call_count)
-
-    def test_remaining_state(self):
-        self.assertEqual(2, self.state_a.resume.call_count)
-        self.assertEqual(1, self.state_a.pause.call_count)
-        self.assertEqual(0, self.state_a.shutdown.call_count)
-
-
-class RemoveWhenNotCurrent(StateManagerTestBase):
-    def setUp(self):
-        self.sm = StateManager("head.tail")
-        self.create_and_register_state("a")
-        self.create_and_register_state("b")
-        self.state_a = self.sm.push_state("a")
-        self.state_b = self.sm.push_state("b")
-        # remove a state that is not current
-        self.sm.remove_state(self.state_a)
-        self.sm.update(0)
-
-    def test_current_state(self):
-        self.assertEqual(self.state_b, self.sm.current_state)
-
-    def test_removed_not_in_active_states(self):
-        self.assertNotIn(self.state_a, self.sm.active_states)
-
-    def test_remaining_in_active_states(self):
-        self.assertIn(self.state_b, self.sm.active_states)
-
-    def test_removed_state(self):
-        self.assertEqual(1, self.state_a.resume.call_count)
-        self.assertEqual(1, self.state_a.pause.call_count)
-        self.assertEqual(1, self.state_a.shutdown.call_count)
-
-    def test_remaining_state(self):
-        self.assertEqual(1, self.state_b.resume.call_count)
-        self.assertEqual(0, self.state_b.pause.call_count)
-        self.assertEqual(0, self.state_b.shutdown.call_count)
-
-
-class Replace(StateManagerTestBase):
-    def setUp(self):
-        self.sm = StateManager("head.tail")
-        self.create_and_register_state("a")
-        self.create_and_register_state("b")
-        self.state_a = self.sm.push_state("a")
-        self.state_b = self.sm.replace_state("b")
-        self.sm.update(0)
-
-    def test_current_state(self):
-        self.assertEqual(self.state_b, self.sm.current_state)
-
-    def test_new_in_active_states(self):
-        self.assertIn(self.state_b, self.sm.active_states)
-
-    def test_replaced_not_in_active_states(self):
-        self.assertNotIn(self.state_a, self.sm.active_states)
-
-    def test_new_state(self):
-        self.assertEqual(1, self.state_b.resume.call_count)
-        self.assertEqual(0, self.state_b.pause.call_count)
-        self.assertEqual(0, self.state_b.shutdown.call_count)
-
-    def test_replaced_state(self):
-        self.assertEqual(1, self.state_a.resume.call_count)
-        self.assertEqual(1, self.state_a.pause.call_count)
-        self.assertEqual(1, self.state_a.shutdown.call_count)
-
-
-class Enqueue(StateManagerTestBase):
-    def setUp(self):
-        self.sm = StateManager("head.tail")
-        self.create_and_register_state("a")
-        self.create_and_register_state("b")
-        self.create_and_register_state("c")
-        self.state_a = self.sm.push_state("a")
-        self.state_b = self.sm.push_state("b")
-        self.sm.queue_state("c")
-        self.sm.update(0)
-
-    def test_current_state(self):
-        self.assertEqual(self.state_b, self.sm.current_state)
-
-    def test_queued_not_in_active_states(self):
-        active = set(i.name for i in self.sm.active_states)
-        self.assertNotIn("c", active)
-
-
-class EnqueueThenPop(StateManagerTestBase):
-    def setUp(self):
-        self.sm = StateManager("head.tail")
-        self.create_and_register_state("a")
-        self.create_and_register_state("b")
-        self.create_and_register_state("c")
-        self.state_a = self.sm.push_state("a")
-        self.state_b = self.sm.push_state("b")
-        self.sm.queue_state("c")
-        self.sm.pop_state()
-        self.sm.update(0)
-
-    @skip("need to mock the factory")
-    def test_current_state(self):
-        active = list(i.name for i in self.sm.active_states if i.name == "c")
-        active = list(i.name for i in self.sm.active_states)
-        assert len(active) == 1
-        state_c = active.pop()
-        self.assertEqual(state_c, self.sm.current_state)
-
-    def test_queued_not_in_active_states(self):
-        active = set(i.name for i in self.sm.active_states)
-        self.assertNotIn("c", active)
-
-
-class WhenEmpty(StateManagerTestBase):
-    def setUp(self):
-        self.sm = StateManager("head.tail")
-
-    def test_pop_raises_runtimeError(self):
-        with self.assertRaises(RuntimeError):
-            self.sm.pop_state()
-
-    def test_replace_raises_runtimeError(self):
-        with self.assertRaises(RuntimeError):
-            self.sm.replace_state("foo")
-
-    def test_no_states_current_state_is_none(self):
-        self.assertEqual(self.sm.current_state, None)
-
-
-class TestStateHooks(unittest.TestCase):
-
-    def test_state_hooks(self):
-        state = State()
-        mock_callback = Mock()
-
-        state.register_hook("update", mock_callback)
-        state.update(0.1)
-        mock_callback.assert_called_once_with(0.1)
-        mock_callback.reset_mock()
-
-        state.register_hook("draw", mock_callback)
-        mock_surface = Mock()
-        state.draw(mock_surface)
-        mock_callback.assert_called_once_with(mock_surface)
-        mock_callback.reset_mock()
-
-        state.register_hook("resume", mock_callback)
-        state.resume()
-        mock_callback.assert_called_once()
-        mock_callback.reset_mock()
-
-        state.register_hook("pause", mock_callback)
-        state.pause()
-        mock_callback.assert_called_once()
-        mock_callback.reset_mock()
-
-        state.register_hook("shutdown", mock_callback)
-        state.shutdown()
-        mock_callback.assert_called_once()
-        mock_callback.reset_mock()
-
-        state.unregister_hook("update", mock_callback)
-        state.update(0.1)
-        mock_callback.assert_not_called()
-
-    def test_state_hooks_multiple_callbacks(self):
-        state = State()
-        mock_callback1 = Mock()
-        mock_callback2 = Mock()
-
-        state.register_hook("update", mock_callback1)
-        state.register_hook("update", mock_callback2)
-        state.update(0.1)
-
-        mock_callback1.assert_called_once_with(0.1)
-        mock_callback2.assert_called_once_with(0.1)
-
-    def test_state_hooks_unregister_nonexistent(self):
-        state = State()
-        mock_callback = Mock()
-        state.unregister_hook("update", mock_callback)
-
-    def test_state_hooks_unregister_correct_callback(self):
-        state = State()
-        mock_callback1 = Mock()
-        mock_callback2 = Mock()
-        state.register_hook("update", mock_callback1)
-        state.register_hook("update", mock_callback2)
-        state.unregister_hook("update", mock_callback1)
-        state.update(0.1)
-        mock_callback1.assert_not_called()
-        mock_callback2.assert_called_once()
-
-
-class TestStateManagerHooks(unittest.TestCase):
-
-    def test_global_hooks(self):
-        manager = StateManager("test")
-        mock_callback = Mock()
-
-        manager.register_global_hook("pre_state_update", mock_callback)
-        manager.update(0.1)
-        mock_callback.assert_called_once_with(0.1)
-        mock_callback.reset_mock()
-
-        manager.register_global_hook("post_state_update", mock_callback)
-        manager.update(0.1)
-        mock_callback.assert_called()
-        mock_callback.reset_mock()
-
-        manager.unregister_global_hook("pre_state_update", mock_callback)
-        manager.update(0.1)
-        mock_callback.assert_called_once_with(0.1)
-
-    def test_global_hooks_multiple_callbacks(self):
-        manager = StateManager("test")
-        mock_callback1 = Mock()
-        mock_callback2 = Mock()
-
-        manager.register_global_hook("pre_state_update", mock_callback1)
-        manager.register_global_hook("pre_state_update", mock_callback2)
-        manager.update(0.1)
-
-        mock_callback1.assert_called_once_with(0.1)
-        mock_callback2.assert_called_once_with(0.1)
-
-    def test_global_hooks_unregister_nonexistent(self):
-        manager = StateManager("test")
-        mock_callback = Mock()
-        with self.assertRaises(ValueError):
-            manager.unregister_global_hook("pre_state_update", mock_callback)
-
-    def test_global_hooks_unregister_correct_callback(self):
-        manager = StateManager("test")
-        mock_callback1 = Mock()
-        mock_callback2 = Mock()
-        manager.register_global_hook("pre_state_update", mock_callback1)
-        manager.register_global_hook("pre_state_update", mock_callback2)
-        manager.unregister_global_hook("pre_state_update", mock_callback1)
-        manager.update(0.1)
-        mock_callback1.assert_not_called()
-        mock_callback2.assert_called_once()
+
+# PushWhenEmpty
+def test_push_when_empty(state_manager, register_state):
+    state_a = register_state("a")
+    pushed = state_manager.push_state("a")
+    state_manager.update(0)
+
+    assert pushed == state_manager.current_state
+    assert pushed in state_manager.active_states
+    assert pushed.resume.call_count == 1
+    assert pushed.pause.call_count == 0
+    assert pushed.shutdown.call_count == 0
+
+
+# PushWhenNotEmpty
+def test_push_when_not_empty(state_manager, register_state):
+    state_a = register_state("a")
+    state_b = register_state("b")
+
+    pushed_a = state_manager.push_state("a")
+    pushed_b = state_manager.push_state("b")
+    state_manager.update(0)
+
+    assert state_manager.current_state == pushed_b
+    assert pushed_b in state_manager.active_states
+    assert pushed_a in state_manager.active_states
+
+    assert pushed_b.resume.call_count == 1
+    assert pushed_b.pause.call_count == 0
+    assert pushed_b.shutdown.call_count == 0
+
+    assert pushed_a.resume.call_count == 1
+    assert pushed_a.pause.call_count == 1
+    assert pushed_a.shutdown.call_count == 0
+
+
+# Pop
+def test_pop_state(state_manager, register_state):
+    state_a = register_state("a")
+    state_b = register_state("b")
+
+    pushed_a = state_manager.push_state("a")
+    pushed_b = state_manager.push_state("b")
+
+    state_manager.pop_state()
+    state_manager.update(0)
+
+    assert state_manager.current_state == pushed_a
+    assert pushed_b not in state_manager.active_states
+    assert pushed_a in state_manager.active_states
+
+    assert pushed_b.resume.call_count == 1
+    assert pushed_b.pause.call_count == 1
+    assert pushed_b.shutdown.call_count == 1
+
+    assert pushed_a.resume.call_count == 2
+    assert pushed_a.pause.call_count == 1
+    assert pushed_a.shutdown.call_count == 0
+
+
+# Resume
+def test_resume_called(state_manager, register_state):
+    state_a = register_state("a")
+    pushed_a = state_manager.push_state("a")
+
+    assert pushed_a.update.call_count == 0
+    assert pushed_a.resume.call_count == 0
+
+    state_manager.update(0)
+    assert pushed_a.update.call_count == 1
+    assert pushed_a.resume.call_count == 1
+
+    state_b = register_state("b")
+    pushed_b = state_manager.push_state("b")
+    state_manager.pop_state()
+    state_manager.update(0)
+
+    assert pushed_a.update.call_count == 2
+    assert pushed_a.resume.call_count == 2
+    assert pushed_a.pause.call_count == 1
+
+
+# RemoveWhenCurrent
+def test_remove_when_current(state_manager, register_state):
+    state_a = register_state("a")
+    state_b = register_state("b")
+
+    pushed_a = state_manager.push_state("a")
+    pushed_b = state_manager.push_state("b")
+
+    state_manager.pop_state(pushed_b)
+    state_manager.update(0)
+
+    assert state_manager.current_state == pushed_a
+    assert pushed_b not in state_manager.active_states
+    assert pushed_a in state_manager.active_states
+
+    assert pushed_b.shutdown.call_count == 1
+    assert pushed_a.resume.call_count == 2
+
+
+# RemoveWhenNotCurrent
+def test_remove_when_not_current(state_manager, register_state):
+    state_a = register_state("a")
+    state_b = register_state("b")
+
+    pushed_a = state_manager.push_state("a")
+    pushed_b = state_manager.push_state("b")
+
+    state_manager.pop_state(pushed_a)
+    state_manager.update(0)
+
+    assert state_manager.current_state == pushed_b
+    assert pushed_a not in state_manager.active_states
+    assert pushed_b in state_manager.active_states
+
+    assert pushed_a.shutdown.call_count == 1
+    assert pushed_b.resume.call_count == 1
+
+
+# Replace
+def test_replace_state(state_manager, register_state):
+    state_a = register_state("a")
+    state_b = register_state("b")
+
+    pushed_a = state_manager.push_state("a")
+    pushed_b = state_manager.replace_state("b")
+    state_manager.update(0)
+
+    assert state_manager.current_state == pushed_b
+    assert pushed_b in state_manager.active_states
+    assert pushed_a not in state_manager.active_states
+
+    assert pushed_a.shutdown.call_count == 1
+    assert pushed_b.resume.call_count == 1
+
+
+# Enqueue
+def test_enqueue_state(state_manager, register_state):
+    state_a = register_state("a")
+    state_b = register_state("b")
+    state_c = register_state("c")
+
+    pushed_a = state_manager.push_state("a")
+    pushed_b = state_manager.push_state("b")
+    state_manager.queue_state("c")
+    state_manager.update(0)
+
+    assert state_manager.current_state == pushed_b
+    active_names = {s.name for s in state_manager.active_states}
+    assert "c" not in active_names
+
+
+# EnqueueThenPop
+def test_enqueue_then_pop(state_manager, register_state):
+    state_a = register_state("a")
+    state_b = register_state("b")
+    state_c = register_state("c")
+
+    state_manager.push_state("a")
+    state_manager.push_state("b")
+    state_manager.queue_state("c")
+    state_manager.pop_state()
+    state_manager.update(0)
+
+    active_names = {s.name for s in state_manager.active_states}
+    assert "c" in active_names
+    assert "a" in active_names
+
+
+@patch.object(StateFactory, "create_state")
+def test_enqueue_then_pop_current_state(
+    mock_instance, state_manager, register_state
+):
+    mock_state_c = register_state("c")
+    mock_instance.return_value = mock_state_c
+
+    while state_manager.active_states:
+        state_manager.pop_state()
+
+    state_manager.push_state("c")
+
+    assert mock_state_c in state_manager.active_states
+    active = [s.name for s in state_manager.active_states]
+    assert active == ["c"]
+
+
+# WhenEmpty
+def test_when_empty_pop_raises(state_manager):
+    with pytest.raises(RuntimeError):
+        state_manager.pop_state()
+
+
+def test_when_empty_replace_raises(state_manager):
+    with pytest.raises(RuntimeError):
+        state_manager.replace_state("foo")
+
+
+def test_when_empty_current_state_is_none(state_manager):
+    assert state_manager.current_state is None
+
+
+# TestStateManagerResumeCallCount
+@pytest.fixture
+def resume_state_manager():
+    mock_client = MagicMock()
+    mock_client.event_bus = EventBus()
+    sm = StateManager("game", mock_client, StateRepository())
+
+    world_state = MagicMock(spec=WorldState)
+    world_state.__name__ = "WorldState"
+    world_state.name = "WorldState"
+
+    input_menu = MagicMock(spec=InputMenu)
+    input_menu.__name__ = "InputMenu"
+    input_menu.name = "InputMenu"
+
+    sm.register_state(world_state)
+    sm.register_state(input_menu)
+    sm.push_state(world_state)
+
+    return sm, world_state, input_menu
+
+
+def test_resume_called_when_popping_input_menu(resume_state_manager):
+    sm, world_state, input_menu = resume_state_manager
+    sm.push_state(input_menu)
+    input_menu.confirm()
+    sm.update(0.1)
+    world_state.resume.assert_called()
+
+
+def test_resume_called_when_popping_state(resume_state_manager):
+    sm, world_state, input_menu = resume_state_manager
+    sm.push_state(input_menu)
+    sm.pop_state()
+    world_state.resume.assert_called()
+
+
+# Parametrize Push/Pop
+@pytest.mark.parametrize(
+    "first, second",
+    [
+        pytest.param("a", "b", id="push_pop_a_b"),
+        pytest.param("alpha", "beta", id="push_pop_alpha_beta"),
+        pytest.param("state1", "state2", id="push_pop_state1_state2"),
+    ],
+)
+def test_push_pop_parametrized(state_manager, register_state, first, second):
+    s1 = register_state(first)
+    s2 = register_state(second)
+
+    pushed1 = state_manager.push_state(first)
+    pushed2 = state_manager.push_state(second)
+    state_manager.update(0)
+
+    assert state_manager.current_state == pushed2
+    assert pushed2 in state_manager.active_states
+    assert pushed1 in state_manager.active_states
+
+    state_manager.pop_state()
+    state_manager.update(0)
+
+    assert state_manager.current_state == pushed1
+    assert pushed2 not in state_manager.active_states
+    assert pushed1 in state_manager.active_states
+
+
+# Edge Case: Multiple Queued States
+def test_multiple_queued_states(state_manager, register_state):
+    s1 = register_state("a")
+    s2 = register_state("b")
+    s3 = register_state("c")
+    s4 = register_state("d")
+
+    state_manager.push_state("a")
+    state_manager.push_state("b")
+    state_manager.queue_state("c")
+    state_manager.queue_state("d")
+    state_manager.update(0)
+
+    active_names = {s.__name__ for s in state_manager.active_states}
+    assert "c" not in active_names
+    assert "d" not in active_names
+
+    state_manager.pop_state()
+    state_manager.update(0)
+    active_names = {s.__name__ for s in state_manager.active_states}
+    assert "c" in active_names or "d" in active_names
+
+
+# Edge Case: Replace When Stack Has >1 States
+def test_replace_with_multiple_states(state_manager, register_state):
+    s1 = register_state("a")
+    s2 = register_state("b")
+    s3 = register_state("c")
+
+    state_manager.push_state("a")
+    state_manager.push_state("b")
+    replaced = state_manager.replace_state("c")
+    state_manager.update(0)
+
+    assert state_manager.current_state == replaced
+    active_names = [s.__name__ for s in state_manager.active_states]
+    assert "c" in active_names
+    assert "b" not in active_names
+    assert "a" in active_names
+
+
+# Edge Case: Popping Until Empty and Then Pushing Again
+def test_pop_until_empty_then_push_again(state_manager, register_state):
+    s1 = register_state("a")
+    s2 = register_state("b")
+
+    state_manager.push_state("a")
+    state_manager.push_state("b")
+
+    state_manager.pop_state()
+    state_manager.pop_state()
+    state_manager.update(0)
+
+    assert state_manager.current_state is None
+    assert not state_manager.active_states
+
+    s3 = register_state("c")
+    pushed = state_manager.push_state("c")
+    state_manager.update(0)
+
+    assert state_manager.current_state == pushed
+    assert pushed in state_manager.active_states
+
+
+# Integration Check: Active States Order
+def test_active_states_order(state_manager, register_state):
+    s1 = register_state("a")
+    s2 = register_state("b")
+    s3 = register_state("c")
+
+    state_manager.push_state("a")
+    state_manager.push_state("b")
+    state_manager.push_state("c")
+    state_manager.update(0)
+
+    names = [s.name for s in state_manager.active_states]
+    assert names == ["c", "b", "a"]
+
+    state_manager.pop_state()
+    state_manager.update(0)
+    names = [s.name for s in state_manager.active_states]
+    assert names == ["b", "a"]

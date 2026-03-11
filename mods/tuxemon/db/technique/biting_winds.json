@@ -1,26 +1,27 @@
 {
   "tech_id": 24,
   "accuracy": 0.8,
-  "animation": "explosion_ice_112",
   "effects": [
     {
       "type": "give",
-      "parameters": ["softened", "enemy_monster"]
+      "parameters": [
+        "softened",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "slow",
   "potency": 1,
   "power": 1.25,
   "range": "ranged",
   "recharge": 2,
-  "sfx": "sfx_tornado",
   "slug": "biting_winds",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,12 +31,22 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["weather"],
+  "tags": [
+    "weather"
+  ],
   "types": [
-    "earth",
-    "water"
+    "sky"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "explosion_ice_112",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_tornado",
+    "volume": 1.5
+  }
 }

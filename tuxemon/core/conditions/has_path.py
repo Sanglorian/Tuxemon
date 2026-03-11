@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -8,20 +8,35 @@ from typing import TYPE_CHECKING
 from tuxemon.core.core_condition import CoreCondition
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
 
 
 @dataclass
 class HasPathCondition(CoreCondition):
     """
-    Checks against the creature's evolution paths.
+    Checks whether the target Monster has an evolution path that requires a specific item.
 
-    Accepts a single parameter and returns whether it is applied.
+    **Parameters**
+    - ``expected``: The slug of the item to check for in the Monster's evolution paths.
 
+    **Returns**
+    - ``True`` if any of the Monster's evolutions include the given item.
+    - ``False`` otherwise.
+
+    **Example**
+
+    .. code-block:: json
+
+        "conditions": [
+            "is has_path evolution_stone"
+        ]
     """
 
     name = "has_path"
     expected: str
 
-    def test_with_monster(self, target: Monster) -> bool:
-        return any(t.item == self.expected for t in target.evolutions)
+    def test_with_monster(self, session: Session, target: Monster) -> bool:
+        return any(
+            self.expected in (evo.item or {}) for evo in target.evolutions
+        )

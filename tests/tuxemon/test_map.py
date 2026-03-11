@@ -1,28 +1,132 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import unittest
 from math import pi
 from unittest.mock import MagicMock
 
+from tuxemon import prepare
 from tuxemon.compat import Rect
 from tuxemon.db import Direction, Orientation
-from tuxemon.map import (
+from tuxemon.map.map import (
     angle_of_points,
-    direction_to_list,
     get_adjacent_position,
     get_coord_direction,
     get_coords,
     get_coords_ext,
     get_direction,
     get_explicit_tile_exits,
+    get_pos_from_tilepos,
     orientation_by_angle,
     pairs,
+    parse_path_parameters,
     point_to_grid,
     snap_interval,
     snap_point,
     snap_rect,
     tiles_inside_rect,
 )
+from tuxemon.math import Vector2
+
+
+class TestParsePathParameters(unittest.TestCase):
+    def test_single_move(self):
+        origin = (0, 0)
+        move_list = ["up"]
+        expected_path = [(0, -1)]
+        self.assertEqual(
+            list(parse_path_parameters(origin, move_list)), expected_path
+        )
+
+    def test_multiple_moves(self):
+        origin = (0, 0)
+        move_list = ["up", "right", "down"]
+        expected_path = [(0, -1), (1, -1), (1, 0)]
+        self.assertEqual(
+            list(parse_path_parameters(origin, move_list)), expected_path
+        )
+
+    def test_move_with_tiles(self):
+        origin = (0, 0)
+        move_list = ["up 2", "right 3"]
+        expected_path = [(0, -1), (0, -2), (1, -2), (2, -2), (3, -2)]
+        self.assertEqual(
+            list(parse_path_parameters(origin, move_list)), expected_path
+        )
+
+    def test_invalid_direction(self):
+        origin = (0, 0)
+        move_list = [" invalid"]
+        with self.assertRaises(ValueError):
+            list(parse_path_parameters(origin, move_list))
+
+    def test_empty_move_list(self):
+        origin = (0, 0)
+        move_list = []
+        expected_path = []
+        self.assertEqual(
+            list(parse_path_parameters(origin, move_list)), expected_path
+        )
+
+    def test_invalid_tiles(self):
+        origin = (0, 0)
+        move_list = ["up abc"]
+        with self.assertRaises(ValueError):
+            list(parse_path_parameters(origin, move_list))
+
+    def test_move_list_with_spaces(self):
+        origin = (0, 0)
+        move_list = ["up  ", " right 2"]
+        expected_path = [(0, -1), (1, -1), (2, -1)]
+        self.assertEqual(
+            list(parse_path_parameters(origin, move_list)), expected_path
+        )
+
+    def test_move_list_with_trailing_spaces(self):
+        origin = (0, 0)
+        move_list = ["up  ", " right 2  "]
+        expected_path = [(0, -1), (1, -1), (2, -1)]
+        self.assertEqual(
+            list(parse_path_parameters(origin, move_list)), expected_path
+        )
+
+    def test_boundary_move(self):
+        origin = (0, 0)
+        move_list = ["left 1"]
+        expected_path = [(-1, 0)]
+        self.assertEqual(
+            list(parse_path_parameters(origin, move_list)), expected_path
+        )
+
+    def test_case_insensitivity(self):
+        origin = (0, 0)
+        move_list = ["UP 2", "rIgHt 3"]
+        expected_path = [(0, -1), (0, -2), (1, -2), (2, -2), (3, -2)]
+        self.assertEqual(
+            list(parse_path_parameters(origin, move_list)), expected_path
+        )
+
+    def test_zero_movement(self):
+        origin = (0, 0)
+        move_list = ["up 0"]
+        expected_path = []
+        self.assertEqual(
+            list(parse_path_parameters(origin, move_list)), expected_path
+        )
+
+    def test_large_movement(self):
+        origin = (0, 0)
+        move_list = ["right 10000"]
+        expected_path = [(i, 0) for i in range(1, 10001)]
+        self.assertEqual(
+            list(parse_path_parameters(origin, move_list)), expected_path
+        )
+
+    def test_multiple_invalid_moves(self):
+        origin = (0, 0)
+        move_list = ["invalid", "wrong", "down 2"]
+
+        with self.assertRaises(ValueError):
+            list(parse_path_parameters(origin, move_list))
 
 
 class TestSnapInterval(unittest.TestCase):
@@ -172,11 +276,11 @@ class TestAngleOfPoints(unittest.TestCase):
 class TestOrientationByAngle(unittest.TestCase):
     def test_vertical(self):
         angle = 3 / 2 * pi
-        self.assertEqual(orientation_by_angle(angle), Orientation.vertical)
+        self.assertEqual(orientation_by_angle(angle), Orientation.VERTICAL)
 
     def test_horizontal(self):
         angle = 0.0
-        self.assertEqual(orientation_by_angle(angle), Orientation.horizontal)
+        self.assertEqual(orientation_by_angle(angle), Orientation.HORIZONTAL)
 
     def test_not_aligned(self):
         angle = pi / 4
@@ -228,11 +332,11 @@ class TestOrientationByAngle(unittest.TestCase):
         for angle in angles:
             if angle in {0.0, 2 * pi}:
                 self.assertEqual(
-                    orientation_by_angle(angle), Orientation.horizontal
+                    orientation_by_angle(angle), Orientation.HORIZONTAL
                 )
             elif angle in {pi / 2, 3 * pi / 2}:
                 self.assertEqual(
-                    orientation_by_angle(angle), Orientation.vertical
+                    orientation_by_angle(angle), Orientation.VERTICAL
                 )
             else:
                 with self.assertRaises(ValueError):
@@ -404,16 +508,16 @@ class TestGetCoordDirection(unittest.TestCase):
 
         # Test all directions
         self.assertEqual(
-            get_coord_direction(tile, Direction.up, map_size, radius), (5, 4)
+            get_coord_direction(tile, Direction.UP, map_size, radius), (5, 4)
         )
         self.assertEqual(
-            get_coord_direction(tile, Direction.down, map_size, radius), (5, 6)
+            get_coord_direction(tile, Direction.DOWN, map_size, radius), (5, 6)
         )
         self.assertEqual(
-            get_coord_direction(tile, Direction.left, map_size, radius), (4, 5)
+            get_coord_direction(tile, Direction.LEFT, map_size, radius), (4, 5)
         )
         self.assertEqual(
-            get_coord_direction(tile, Direction.right, map_size, radius),
+            get_coord_direction(tile, Direction.RIGHT, map_size, radius),
             (6, 5),
         )
 
@@ -423,9 +527,9 @@ class TestGetCoordDirection(unittest.TestCase):
         radius = 1
 
         with self.assertRaises(ValueError):
-            get_coord_direction(tile, Direction.up, map_size, radius)
+            get_coord_direction(tile, Direction.UP, map_size, radius)
         with self.assertRaises(ValueError):
-            get_coord_direction(tile, Direction.left, map_size, radius)
+            get_coord_direction(tile, Direction.LEFT, map_size, radius)
 
     def test_negative_coordinates(self):
         map_size = (5, 5)
@@ -433,7 +537,7 @@ class TestGetCoordDirection(unittest.TestCase):
         radius = 2
 
         self.assertEqual(
-            get_coord_direction(tile, Direction.left, map_size, radius),
+            get_coord_direction(tile, Direction.LEFT, map_size, radius),
             (2, 4),
         )
 
@@ -442,18 +546,18 @@ class TestGetCoordDirection(unittest.TestCase):
         radius = 1
 
         self.assertEqual(
-            get_coord_direction((0, 0), Direction.down, map_size, radius),
+            get_coord_direction((0, 0), Direction.DOWN, map_size, radius),
             (0, 1),
         )
         self.assertEqual(
-            get_coord_direction((9, 9), Direction.up, map_size, radius), (9, 8)
+            get_coord_direction((9, 9), Direction.UP, map_size, radius), (9, 8)
         )
         self.assertEqual(
-            get_coord_direction((0, 5), Direction.right, map_size, radius),
+            get_coord_direction((0, 5), Direction.RIGHT, map_size, radius),
             (1, 5),
         )
         self.assertEqual(
-            get_coord_direction((5, 9), Direction.left, map_size, radius),
+            get_coord_direction((5, 9), Direction.LEFT, map_size, radius),
             (4, 9),
         )
 
@@ -463,13 +567,13 @@ class TestGetCoordDirection(unittest.TestCase):
 
         # Test different radii
         self.assertEqual(
-            get_coord_direction(tile, Direction.up, map_size, 2), (5, 3)
+            get_coord_direction(tile, Direction.UP, map_size, 2), (5, 3)
         )
         self.assertEqual(
-            get_coord_direction(tile, Direction.down, map_size, 0), (5, 5)
+            get_coord_direction(tile, Direction.DOWN, map_size, 0), (5, 5)
         )
         self.assertEqual(
-            get_coord_direction(tile, Direction.left, map_size, 3), (2, 5)
+            get_coord_direction(tile, Direction.LEFT, map_size, 3), (2, 5)
         )
 
     def test_large_map(self):
@@ -479,10 +583,10 @@ class TestGetCoordDirection(unittest.TestCase):
 
         # Test with a large map and radius
         self.assertEqual(
-            get_coord_direction(tile, Direction.up, map_size, radius), (50, 40)
+            get_coord_direction(tile, Direction.UP, map_size, radius), (50, 40)
         )
         self.assertEqual(
-            get_coord_direction(tile, Direction.right, map_size, radius),
+            get_coord_direction(tile, Direction.RIGHT, map_size, radius),
             (60, 50),
         )
 
@@ -492,15 +596,15 @@ class TestGetCoordDirection(unittest.TestCase):
 
         # Test invalid map sizes
         with self.assertRaises(ValueError):
-            get_coord_direction(tile, Direction.up, (0, 0), radius)
+            get_coord_direction(tile, Direction.UP, (0, 0), radius)
         with self.assertRaises(ValueError):
-            get_coord_direction(tile, Direction.down, (-1, 5), radius)
+            get_coord_direction(tile, Direction.DOWN, (-1, 5), radius)
 
 
 class TestGetAdjacentPosition(unittest.TestCase):
     def test_get_adjacent_position_up(self):
         position = (0, 0)
-        direction = Direction.up
+        direction = Direction.UP
         expected_neighbor = (0, -1)
         self.assertEqual(
             get_adjacent_position(position, direction), expected_neighbor
@@ -508,7 +612,7 @@ class TestGetAdjacentPosition(unittest.TestCase):
 
     def test_get_adjacent_position_down(self):
         position = (0, 0)
-        direction = Direction.down
+        direction = Direction.DOWN
         expected_neighbor = (0, 1)
         self.assertEqual(
             get_adjacent_position(position, direction), expected_neighbor
@@ -516,7 +620,7 @@ class TestGetAdjacentPosition(unittest.TestCase):
 
     def test_get_adjacent_position_left(self):
         position = (0, 0)
-        direction = Direction.left
+        direction = Direction.LEFT
         expected_neighbor = (-1, 0)
         self.assertEqual(
             get_adjacent_position(position, direction), expected_neighbor
@@ -524,7 +628,7 @@ class TestGetAdjacentPosition(unittest.TestCase):
 
     def test_get_adjacent_position_right(self):
         position = (0, 0)
-        direction = Direction.right
+        direction = Direction.RIGHT
         expected_neighbor = (1, 0)
         self.assertEqual(
             get_adjacent_position(position, direction), expected_neighbor
@@ -538,75 +642,75 @@ class TestGetAdjacentPosition(unittest.TestCase):
 
     def test_get_adjacent_position_invalid_position(self):
         position = "InvalidPosition"
-        direction = Direction.up
+        direction = Direction.UP
         with self.assertRaises(ValueError):
             get_adjacent_position(position, direction)
 
 
 class TestGetDirection(unittest.TestCase):
     def test_up(self):
-        self.assertEqual(get_direction((1, 3), (1, 1)), Direction.up)
+        self.assertEqual(get_direction((1, 3), (1, 1)), Direction.UP)
 
     def test_down(self):
-        self.assertEqual(get_direction((1, 1), (1, 3)), Direction.down)
+        self.assertEqual(get_direction((1, 1), (1, 3)), Direction.DOWN)
 
     def test_left(self):
-        self.assertEqual(get_direction((3, 1), (1, 1)), Direction.left)
+        self.assertEqual(get_direction((3, 1), (1, 1)), Direction.LEFT)
 
     def test_right(self):
-        self.assertEqual(get_direction((1, 1), (3, 1)), Direction.right)
+        self.assertEqual(get_direction((1, 1), (3, 1)), Direction.RIGHT)
 
     def test_diagonal_up_right(self):
-        self.assertEqual(get_direction((1, 1), (3, 3)), Direction.down)
+        self.assertEqual(get_direction((1, 1), (3, 3)), Direction.DOWN)
 
     def test_diagonal_down_left(self):
-        self.assertEqual(get_direction((3, 3), (1, 1)), Direction.up)
+        self.assertEqual(get_direction((3, 3), (1, 1)), Direction.UP)
 
     def test_large_offsets(self):
         self.assertEqual(
-            get_direction((1000, 1000), (1001, 1000)), Direction.right
+            get_direction((1000, 1000), (1001, 1000)), Direction.RIGHT
         )
         self.assertEqual(
-            get_direction((1000, 1000), (999, 1000)), Direction.left
+            get_direction((1000, 1000), (999, 1000)), Direction.LEFT
         )
         self.assertEqual(
-            get_direction((1000, 1000), (1000, 1001)), Direction.down
+            get_direction((1000, 1000), (1000, 1001)), Direction.DOWN
         )
         self.assertEqual(
-            get_direction((1000, 1000), (1000, 999)), Direction.up
+            get_direction((1000, 1000), (1000, 999)), Direction.UP
         )
 
     def test_negative_coordinates(self):
-        self.assertEqual(get_direction((-1, -1), (-2, -1)), Direction.left)
-        self.assertEqual(get_direction((-1, -1), (0, -1)), Direction.right)
-        self.assertEqual(get_direction((-1, -1), (-1, 0)), Direction.down)
-        self.assertEqual(get_direction((-1, -1), (-1, -2)), Direction.up)
+        self.assertEqual(get_direction((-1, -1), (-2, -1)), Direction.LEFT)
+        self.assertEqual(get_direction((-1, -1), (0, -1)), Direction.RIGHT)
+        self.assertEqual(get_direction((-1, -1), (-1, 0)), Direction.DOWN)
+        self.assertEqual(get_direction((-1, -1), (-1, -2)), Direction.UP)
 
     def test_zero_offset(self):
-        self.assertEqual(get_direction((1, 2), (1, 2)), Direction.down)
-        self.assertEqual(get_direction((2, 1), (2, 3)), Direction.down)
-        self.assertEqual(get_direction((3, 1), (1, 1)), Direction.left)
-        self.assertEqual(get_direction((1, 1), (3, 1)), Direction.right)
+        self.assertEqual(get_direction((1, 2), (1, 2)), Direction.DOWN)
+        self.assertEqual(get_direction((2, 1), (2, 3)), Direction.DOWN)
+        self.assertEqual(get_direction((3, 1), (1, 1)), Direction.LEFT)
+        self.assertEqual(get_direction((1, 1), (3, 1)), Direction.RIGHT)
 
     def test_edge_cases(self):
-        self.assertEqual(get_direction((1, 2), (2, 3)), Direction.down)
-        self.assertEqual(get_direction((2, 3), (1, 2)), Direction.up)
-        self.assertEqual(get_direction((2, 1), (4, 2)), Direction.right)
-        self.assertEqual(get_direction((4, 2), (2, 1)), Direction.left)
+        self.assertEqual(get_direction((1, 2), (2, 3)), Direction.DOWN)
+        self.assertEqual(get_direction((2, 3), (1, 2)), Direction.UP)
+        self.assertEqual(get_direction((2, 1), (4, 2)), Direction.RIGHT)
+        self.assertEqual(get_direction((4, 2), (2, 1)), Direction.LEFT)
 
 
 class TestPairsFunction(unittest.TestCase):
     def test_up_down(self):
-        self.assertEqual(pairs(Direction.up), Direction.down)
+        self.assertEqual(pairs(Direction.UP), Direction.DOWN)
 
     def test_down_up(self):
-        self.assertEqual(pairs(Direction.down), Direction.up)
+        self.assertEqual(pairs(Direction.DOWN), Direction.UP)
 
     def test_left_right(self):
-        self.assertEqual(pairs(Direction.left), Direction.right)
+        self.assertEqual(pairs(Direction.LEFT), Direction.RIGHT)
 
     def test_right_left(self):
-        self.assertEqual(pairs(Direction.right), Direction.left)
+        self.assertEqual(pairs(Direction.RIGHT), Direction.LEFT)
 
     def test_invalid_direction(self):
         with self.assertRaises(ValueError):
@@ -617,63 +721,11 @@ class TestPairsFunction(unittest.TestCase):
             pairs(None)
 
 
-class TestDirectionToList(unittest.TestCase):
-    def test_empty_string_with_whitespace(self):
-        with self.assertRaises(ValueError):
-            direction_to_list("    ")
-
-    def test_empty_string(self):
-        with self.assertRaises(ValueError):
-            direction_to_list("")
-
-    def test_single_direction(self):
-        result = direction_to_list("up")
-        self.assertEqual(result, [Direction.up])
-
-    def test_multiple_direction(self):
-        result = direction_to_list("up,down,right")
-        self.assertEqual(len(result), 3)
-
-    def test_single_direction_with_whitespace(self):
-        result = direction_to_list("   up    ")
-        self.assertEqual(len(result), 1)
-
-    def test_mutiple_direction_with_whitespace(self):
-        result = direction_to_list("up   ,down  ,   right")
-        self.assertEqual(len(result), 3)
-
-    def test_repeated_directions(self):
-        result = direction_to_list("up,up,down,down")
-        self.assertEqual(len(result), 2)
-
-    def test_insensitive_duplicates(self):
-        result = direction_to_list("uP,dOWn")
-        self.assertEqual(len(result), 2)
-
-    def test_none_input(self):
-        result = direction_to_list(None)
-        self.assertEqual(result, [])
-
-    def test_very_long_string(self):
-        long_string = ",".join(["up"] * 100)
-        result = direction_to_list(long_string)
-        self.assertEqual(result, [Direction.up])
-
-    def test_unicode_characters(self):
-        with self.assertRaises(ValueError):
-            direction_to_list("ä, ü, up")
-
-    def test_invalid_direction(self):
-        with self.assertRaises(ValueError):
-            direction_to_list("invalid direction")
-
-
 class TestGetExplicitTileExits(unittest.TestCase):
-
     def test_no_endure_no_exit_from(self):
         position = (1, 1)
         tile = MagicMock(endure=None, exit_from=[])
-        facing = Direction.down
+        facing = Direction.DOWN
         skip_nodes = None
 
         exits = get_explicit_tile_exits(position, tile, facing, skip_nodes)
@@ -681,8 +733,8 @@ class TestGetExplicitTileExits(unittest.TestCase):
 
     def test_endure_with_no_skip_nodes(self):
         position = (1, 1)
-        tile = MagicMock(endure=[Direction.down], exit_from=[])
-        facing = Direction.down
+        tile = MagicMock(endure=[Direction.DOWN], exit_from=[])
+        facing = Direction.DOWN
         skip_nodes = None
 
         exits = get_explicit_tile_exits(position, tile, facing, skip_nodes)
@@ -690,8 +742,8 @@ class TestGetExplicitTileExits(unittest.TestCase):
 
     def test_endure_with_skip_nodes(self):
         position = (1, 1)
-        tile = MagicMock(endure=[Direction.down], exit_from=[])
-        facing = Direction.down
+        tile = MagicMock(endure=[Direction.DOWN], exit_from=[])
+        facing = Direction.DOWN
         skip_nodes = {(1, 2)}
 
         exits = get_explicit_tile_exits(position, tile, facing, skip_nodes)
@@ -699,8 +751,8 @@ class TestGetExplicitTileExits(unittest.TestCase):
 
     def test_exit_from_with_multiple_directions(self):
         position = (1, 1)
-        tile = MagicMock(endure=None, exit_from=[Direction.up, Direction.left])
-        facing = Direction.down
+        tile = MagicMock(endure=None, exit_from=[Direction.UP, Direction.LEFT])
+        facing = Direction.DOWN
         skip_nodes = None
 
         exits = get_explicit_tile_exits(position, tile, facing, skip_nodes)
@@ -709,8 +761,8 @@ class TestGetExplicitTileExits(unittest.TestCase):
 
     def test_exit_from_with_skip_nodes(self):
         position = (1, 1)
-        tile = MagicMock(endure=None, exit_from=[Direction.up, Direction.left])
-        facing = Direction.down
+        tile = MagicMock(endure=None, exit_from=[Direction.UP, Direction.LEFT])
+        facing = Direction.DOWN
         skip_nodes = {(1, 0)}
 
         exits = get_explicit_tile_exits(position, tile, facing, skip_nodes)
@@ -720,8 +772,96 @@ class TestGetExplicitTileExits(unittest.TestCase):
     def test_invalid_tile_properties(self):
         position = (1, 1)
         tile = MagicMock(side_effect=TypeError)
-        facing = Direction.down
+        facing = Direction.DOWN
         skip_nodes = None
 
         exits = get_explicit_tile_exits(position, tile, facing, skip_nodes)
         self.assertEqual(exits, [])
+
+
+class TestGetPosFromTilePos(unittest.TestCase):
+    def setUp(self):
+        self.context = MagicMock()
+        self.context.tile_size = prepare.DISPLAY_CONTEXT.tile_size
+
+    def test_get_pos_from_tilepos(self):
+        mock_map = MagicMock()
+        mock_map.renderer.get_center_offset.return_value = (50, 75)
+
+        tile_position = Vector2(3, 4)
+        ts = self.context.tile_size
+
+        expected_px = 3 * ts[0]
+        expected_py = 4 * ts[1]
+        expected_x = expected_px + 50
+        expected_y = expected_py + 75
+        expected_result = (expected_x, expected_y)
+
+        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
+        self.assertEqual(result, expected_result)
+
+    def test_different_tile_size(self):
+        mock_map = MagicMock()
+        mock_map.renderer.get_center_offset.return_value = (50, 75)
+
+        tile_position = Vector2(2, 3)
+        ts = self.context.tile_size
+
+        expected_px = 2 * ts[0]
+        expected_py = 3 * ts[1]
+        expected_result = (expected_px + 50, expected_py + 75)
+
+        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
+        self.assertEqual(result, expected_result)
+
+    def test_tile_position_origin(self):
+        mock_map = MagicMock()
+        mock_map.renderer.get_center_offset.return_value = (50, 75)
+
+        tile_position = Vector2(0, 0)
+        expected_result = (50, 75)
+
+        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
+        self.assertEqual(result, expected_result)
+
+    def test_negative_tile_position(self):
+        mock_map = MagicMock()
+        mock_map.renderer.get_center_offset.return_value = (50, 75)
+
+        tile_position = Vector2(-1, -2)
+        ts = self.context.tile_size
+
+        expected_px = -1 * ts[0]
+        expected_py = -2 * ts[1]
+        expected_result = (expected_px + 50, expected_py + 75)
+
+        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
+        self.assertEqual(result, expected_result)
+
+    def test_large_tile_position(self):
+        mock_map = MagicMock()
+        mock_map.renderer.get_center_offset.return_value = (50, 75)
+
+        tile_position = Vector2(1000, 2000)
+        ts = self.context.tile_size
+
+        expected_px = 1000 * ts[0]
+        expected_py = 2000 * ts[1]
+        expected_result = (expected_px + 50, expected_py + 75)
+
+        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
+        self.assertEqual(result, expected_result)
+
+    def test_zero_center_offset(self):
+        mock_map = MagicMock()
+        mock_map.renderer.get_center_offset.return_value = (0, 0)
+
+        tile_position = Vector2(5, 7)
+        ts = self.context.tile_size
+
+        expected_px = 5 * ts[0]
+        expected_py = 7 * ts[1]
+        expected_result = (expected_px, expected_py)
+
+        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
+        self.assertEqual(result, expected_result)

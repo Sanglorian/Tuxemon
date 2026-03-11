@@ -1,9 +1,10 @@
 """
-    Tuxepedia backend handler
+Tuxepedia backend handler
 
-    author: Andy Mender <andymenderunix@gmail.com>
-    license: GPLv3
+author: Andy Mender <andymenderunix@gmail.com>
+license: GPLv3
 """
+
 import json
 import logging
 import os
@@ -61,17 +62,20 @@ class TuxepediaStore:
             txmn_json_full = tuxepedia.get_monsters()
 
         for txmn_name in txmn_json_full:
-
             # full path to tuxemon JSON file
-            txmn_json_path = os.path.join(RESOURCE_PATHS.monster_stats,
-                                          fix_name(txmn_name.lower()) + ".json")
+            txmn_json_path = os.path.join(
+                RESOURCE_PATHS.monster_stats,
+                fix_name(txmn_name.lower()) + ".json",
+            )
 
             # update tuxemon JSON record if it already exists
             if os.path.isfile(txmn_json_path):
                 self.update_txmn_json(txmn_name, txmn_json_full[txmn_name])
 
                 # log overwrite operation
-                self.get_logger().debug("JSON record for {} exists and was overwritten.".format(txmn_name))
+                self.get_logger().debug(
+                    f"JSON record for {txmn_name} exists and was overwritten."
+                )
 
             # create new tuxemon JSON entry
             else:
@@ -94,8 +98,9 @@ class TuxepediaStore:
         """
 
         # full path to tuxemon JSON file
-        txmn_json_path = os.path.join(RESOURCE_PATHS.monster_stats,
-                                      fix_name(txmn_name.lower()) + ".json")
+        txmn_json_path = os.path.join(
+            RESOURCE_PATHS.monster_stats, fix_name(txmn_name.lower()) + ".json"
+        )
 
         # load previous tuxemon JSON from file
         with open(txmn_json_path) as f:
@@ -103,7 +108,6 @@ class TuxepediaStore:
 
         # diff JSON records and add elements as needed
         for field in txmn_json_new:
-
             # replace existing fields
             if field in txmn_json_old and overwrite:
                 txmn_json_old[field] = txmn_json_new[field]
@@ -128,8 +132,9 @@ class TuxepediaStore:
         txmn_json = None
 
         # full path to tuxemon JSON file
-        txmn_json_path = os.path.join(RESOURCE_PATHS.monster_stats,
-                                      txmn_name.lower() + ".json")
+        txmn_json_path = os.path.join(
+            RESOURCE_PATHS.monster_stats, txmn_name.lower() + ".json"
+        )
 
         if os.path.isfile(txmn_json_path):
             with open(txmn_json_path) as f:
@@ -137,6 +142,8 @@ class TuxepediaStore:
 
         # report if no JSON record was found
         else:
-            self.get_logger().warning("Valid JSON record for {} not found.".format(txmn_name))
+            self.get_logger().warning(
+                f"Valid JSON record for {txmn_name} not found."
+            )
 
         return txmn_json

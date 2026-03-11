@@ -1,14 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import TYPE_CHECKING, final
 
-from tuxemon.db import PlagueType
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
+from tuxemon.monster.plague import InfectionResult, InoculationResult
+from tuxemon.tools import parse_flag
+
+if TYPE_CHECKING:
+    from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -29,29 +32,56 @@ class CharPlagueAction(EventAction):
         condition: Infected, inoculated, or None (removes the plague from the
             character, indicating a healthy state).
         character: Either "player" or character slug name (e.g. "npc_maple").
-
+        enforced_check: Optional string flag to enforce eligibility rules.
+            Accepts "true", "1", or "yes" (case-insensitive).
+            Default is False (eligibility is bypassed).
     """
 
     name = "char_plague"
     plague_slug: str
-    condition: Optional[str] = None
-    character: Optional[str] = None
+    condition: str | None = None
+    character: str | None = None
+    enforced_check: str | None = None
 
-    def start(self) -> None:
-        self.character = "player" if self.character is None else self.character
-        character = get_npc(self.session, self.character)
+    def start(self, session: Session) -> None:
+        target = self.character or "player"
+        character = session.get_npc(target)
+
         if character is None:
             logger.error(f"{self.character} not found")
             return
 
+        enforce = parse_flag(self.enforced_check)
+
+        condition = self.condition.strip().lower() if self.condition else None
         for monster in character.monsters:
-            if self.condition is None:
-                monster.plague = {}
-            elif self.condition == "infected":
-                monster.plague[self.plague_slug] = PlagueType.infected
-            elif self.condition == "inoculated":
-                monster.plague[self.plague_slug] = PlagueType.inoculated
+            if condition is None:
+                monster.plague.clear_plagues()
+            elif condition == "infected":
+                if enforce:
+                    result_infection = monster.plague.try_infect(
+                        monster, self.plague_slug
+                    )
+                    if result_infection not in (
+                        InfectionResult.INFECTED,
+                        InfectionResult.CARRIER,
+                    ):
+                        logger.error(f"Failed to infect {monster.name}")
+                else:
+                    monster.plague.infect(self.plague_slug)
+            elif condition == "inoculated":
+                if enforce:
+                    result_inoculation = monster.plague.try_inoculate(
+                        monster, self.plague_slug
+                    )
+                    if result_inoculation not in (
+                        InoculationResult.INOCULATED,
+                        InoculationResult.ALREADY_INOCULATED,
+                    ):
+                        logger.error(f"Failed to inoculate {monster.name}")
+                else:
+                    monster.plague.inoculate(self.plague_slug)
             else:
                 raise ValueError(
-                    f"{self.condition} must be 'infected' or 'inoculated'."
+                    f"Invalid plague condition '{self.condition}'. Must be 'infected' or 'inoculated'."
                 )

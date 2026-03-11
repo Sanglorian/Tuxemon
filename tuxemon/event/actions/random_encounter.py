@@ -1,21 +1,25 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
-import random
-from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
-from tuxemon.combat import check_battle_legal
-from tuxemon.db import EncounterItemModel
-from tuxemon.encounter import Encounter, EncounterData
+from tuxemon.combat.combat_context import (
+    BattleMode,
+    CombatContext,
+    CombatType,
+)
+from tuxemon.combat.utils import check_battle_legal, check_repellent
 from tuxemon.event.eventaction import EventAction
+from tuxemon.graphics import ColorLike, string_to_colorlike
+from tuxemon.item.item import Item
+from tuxemon.monster.monster import Monster
+from tuxemon.platform.const.graphics import WHITE_COLOR
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
-
-encounter_cache: dict[str, Sequence[EncounterItemModel]] = {}
 
 
 @final
@@ -41,53 +45,99 @@ class RandomEncounterAction(EventAction):
         encounter_slug: Slug of the encounter list.
         total_prob: Total sum of the probabilities.
         rgb: color (eg red > 255,0,0 > 255:0:0) - default rgb(255,255,255)
-
     """
 
     name = "random_encounter"
     encounter_slug: str
-    total_prob: Optional[float] = None
-    rgb: Optional[str] = None
+    total_prob: float | None = None
+    rgb: str | None = None
 
-    def start(self) -> None:
-        player = self.session.player
+    def start(self, session: Session) -> None:
+        player = session.player
+        environment = session.client.environment_manager
+        encounter = session.client.encounter_manager
 
         if not check_battle_legal(player):
             logger.error("Battle is not legal, won't start")
             return
 
-        encounter_data = EncounterData(self.encounter_slug)
-        self.encounter = Encounter(encounter_data)
-        filtered_encounters = self.encounter.get_valid_encounters(player)
+        if check_repellent(player):
+            logger.info(f"Repellent active, skipping encounter.")
+            return
 
-        if not filtered_encounters:
+        if not encounter.load_zone(self.encounter_slug):
+            return
+
+        total_prob = self.total_prob if self.total_prob else 1.0
+        results = encounter.attempt_single_encounter(player, total_prob)
+
+        if results is None:
+            return
+
+        logger.info("Starting random encounter!")
+
+        current_monster = Monster.spawn_base(
+            results.monster.monster, results.level
+        )
+        current_monster.set_experience_modifier(results.monster.exp_req_mod)
+
+        if results.held_item is not None:
+            item = Item.create(results.held_item)
+            output = current_monster.equip_item(item)
+            if not output:
+                return
+
+        current_monster.wild = True
+
+        event_engine = session.client.event_engine
+        event_engine.execute_action(
+            "create_npc", ["wild_encounter", 0, 0], True
+        )
+
+        npc = session.get_npc("wild_encounter")
+        if npc is None:
+            logger.error("'wild_encounter' not found")
+            return
+
+        npc.party.insert_monster_to_party(current_monster, len(npc.monsters))
+        # NOTE: random battles are implemented as trainer battles.
+        #       this is a hack. remove this once trainer/random battlers are fixed
+
+        env = environment.get_active_environment()
+        if env is None:
             logger.error(
-                f"No wild monsters, check 'encounter/{self.encounter_slug}.json'"
+                "No environment defined. Use 'set_environment' before starting combat."
             )
             return
 
-        encounter = self.encounter.choose_encounter(
-            filtered_encounters, self.total_prob
+        context = CombatContext(
+            session=session,
+            teams=[player, npc],
+            combat_type=CombatType.MONSTER,
+            battle_mode=BattleMode.SINGLE,
         )
-        if encounter:
-            held_item = (
-                random.choice(encounter.held_items)
-                if encounter.held_items
-                else None
-            )
-            logger.info("Starting random encounter!")
-            level = self.encounter.get_level(encounter)
-            environment = player.game_variables.get("environment", "grass")
-            rgb = self.rgb if self.rgb else None
-            params = [
-                encounter.monster,
-                level,
-                encounter.exp_req_mod,
-                None,
-                environment,
-                rgb,
-                held_item,
-            ]
-            self.session.client.event_engine.execute_action(
-                "wild_encounter", params, True
-            )
+        session.client.queue_state("CombatState", context=context)
+        player.cancel_movement()
+
+        rgb: ColorLike = WHITE_COLOR
+        if self.rgb:
+            rgb = string_to_colorlike(self.rgb)
+
+        session.client.push_state("FlashTransition", color=rgb)
+
+        sound = env.get_battle_music().battle
+        if sound.music:
+            session.client.current_music.play(sound.music, sound.volume)
+
+    def update(self, session: Session, dt: float) -> None:
+        try:
+            session.client.get_queued_state_by_name("CombatState")
+        except ValueError:
+            try:
+                session.client.get_state_by_name("CombatState")
+            except ValueError:
+                self.stop()
+
+    def cleanup(self, session: Session) -> None:
+        npc = None
+        session.client.npc_manager.remove_npc("wild_encounter")

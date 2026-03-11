@@ -1,26 +1,27 @@
 {
   "tech_id": 12,
   "accuracy": 1,
-  "animation": "pound",
   "effects": [
     {
       "type": "give",
-      "parameters": ["flinching", "enemy_monster"]
+      "parameters": [
+        "flinching",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.1,
   "power": 2.25,
   "range": "melee",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "thunderball",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,11 +31,22 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["rock"],
+  "tags": [
+    "rock"
+  ],
   "types": [
     "earth"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "pound",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_lightning2",
+    "volume": 1.5
+  }
 }

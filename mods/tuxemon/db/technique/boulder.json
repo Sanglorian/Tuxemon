@@ -1,23 +1,26 @@
 {
   "tech_id": 11,
   "accuracy": 1,
-  "animation": "shield_rock",
   "effects": [
     {
       "type": "give",
-      "parameters": ["hardshell", "own_monster"]
+      "parameters": [
+        "hardshell",
+        "own_monster"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 0,
   "range": "special",
   "recharge": 2,
-  "sfx": "sfx_crumble2",
   "slug": "boulder",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": false,
     "enemy_team": false,
@@ -27,11 +30,24 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["rock", "bug", "shielded"],
+  "tags": [
+    "rock",
+    "bug",
+    "shielded"
+  ],
   "types": [
-    "aether"
+    "earth"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "shield_rock",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_crumble1",
+    "volume": 1.5
+  }
 }

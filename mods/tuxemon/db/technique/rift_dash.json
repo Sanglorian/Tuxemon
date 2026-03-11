@@ -1,35 +1,39 @@
 {
   "tech_id": 206,
   "accuracy": 0.8,
-	"animation": null,
-	"conditions": [
+  "conditions": [
     {
       "type": "status",
-      "parameters": ["grabbed"],
+      "parameters": [
+        "grabbed"
+      ],
       "operator": "not"
     },
     {
       "type": "status",
-      "parameters": ["stuck"],
+      "parameters": [
+        "stuck"
+      ],
       "operator": "not"
     }
-	],
-	"effects": [
+  ],
+  "effects": [
     {
       "type": "disappear",
-      "parameters": ["strike"]
+      "parameters": [
+        "strike"
+      ]
     }
-	],
-  "flip_axes": "",
-  "is_fast": true,
+  ],
+  "speed": "extremely_fast",
   "potency": 1,
   "power": 1,
   "range": "melee",
   "recharge": 4,
-  "sfx": "sfx_blaster",
   "slug": "rift_dash",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -39,11 +43,25 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["machine", "electricity", "speed"],
+  "tags": [
+    "machine",
+    "electricity",
+    "speed"
+  ],
   "types": [
-    "metal"
+    "lightning",
+    "cosmic"
   ],
   "use_failure": "rift_dash_fail",
   "use_success": "rift_dash_success",
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": null,
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_kick",
+    "volume": 1.5
+  }
 }

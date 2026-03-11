@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import collections
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+from __future__ import annotations
+
 import time
+from collections import deque
 from collections.abc import Callable
 from heapq import heapify, heappop, heappush, heappushpop
-from typing import Any, Deque, Optional, Union
+from typing import Any
 
 __all__ = ("ScheduledItem", "Scheduler", "Clock")
 
@@ -48,12 +50,12 @@ class Scheduler:
         super().__init__()
         self._time = time_function
         self._last_ts: float = -1
-        self._times: Deque[int] = collections.deque(maxlen=10)
+        self._times: deque[int] = deque(maxlen=10)
         self._scheduled_items: list[ScheduledItem] = []
         self._next_tick_items: list[ScheduledItem] = []
         self.cumulative_time = 0.0
 
-    def _get_nearest_ts(self) -> Union[float, int]:
+    def _get_nearest_ts(self) -> float | int:
         """Schedule from now, unless now is sufficiently close to last_ts, in
         which case use last_ts.  This clusters together scheduled items that
         probably want to be scheduled together.
@@ -250,7 +252,7 @@ class Scheduler:
                 retval = item.func(dt)
                 # do not change the following line to "if not retval"!
                 # some items will return None, but False is a special value
-                if retval == False:
+                if not retval:
                     self._next_tick_items.remove(item)
 
         # check the next scheduled item that is not called each tick
@@ -297,7 +299,7 @@ class Scheduler:
 
             if item.interval:
                 # callbacks can unschedule themselves by returning false
-                replace = not retval == False
+                replace = not not retval
                 item.next_ts = item.last_ts + item.interval
                 item.last_ts = now
 
@@ -323,7 +325,7 @@ class Scheduler:
 
         return result
 
-    def get_idle_time(self) -> Optional[float]:
+    def get_idle_time(self) -> float | None:
         """
         Get the time until the next item is scheduled.
 

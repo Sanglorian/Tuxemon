@@ -1,26 +1,27 @@
 {
   "tech_id": 202,
   "accuracy": 0.9,
-  "animation": "rollingball",
   "effects": [
     {
       "type": "give",
-      "parameters": ["hardshell", "own_monster"]
+      "parameters": [
+        "hardshell",
+        "own_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": true,
+  "speed": "fast",
   "potency": 0.8,
   "power": 1.2,
   "range": "melee",
   "recharge": 1,
-  "sfx": "sfx_blaster",
   "slug": "roll",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -29,12 +30,24 @@
     "own_team": false,
     "own_trainer": false
   },
-  "category": "basic",
-  "tags": ["shielded", "speed"],
+  "category": "simple",
+  "tags": [
+    "shielded",
+    "speed"
+  ],
   "types": [
-    "earth", "wood"
+    "normal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "rollingball",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_forcefield",
+    "volume": 1.5
+  }
 }

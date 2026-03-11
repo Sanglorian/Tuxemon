@@ -1,22 +1,20 @@
 {
   "tech_id": 144,
   "accuracy": 0.95,
-  "animation": "pulse_radiate",
   "effects": [
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.0,
   "power": 2.5,
   "range": "ranged",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "radiance",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -26,12 +24,23 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["light", "leadership"],
+  "tags": [
+    "light",
+    "leadership"
+  ],
   "types": [
-    "wood",
-    "metal"
+    "heroic"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "pulse_radiate",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_shine",
+    "volume": 1.5
+  }
 }

@@ -1,31 +1,37 @@
 {
   "tech_id": 235,
-  "accuracy": 0.9,
-  "animation": "cakechomp",
+  "accuracy": 1.0,
   "effects": [
     {
       "type": "give",
-      "parameters": ["exhausted", "own_monster"]
+      "parameters": [
+        "exhausted",
+        "own_monster"
+      ]
     },
     {
       "type": "give",
-      "parameters": ["noddingoff", "enemy_monster"]
+      "parameters": [
+        "noddingoff",
+        "enemy_monster"
+      ]
     },
     {
       "type": "healing"
     }
   ],
-  "flip_axes": "",
   "healing_power": 1.0,
-  "is_fast": false,
-  "potency": 0.9,
+  "speed": "normal",
+  "potency": 0.8,
   "power": 0.0,
   "range": "special",
   "recharge": 1,
-  "sfx": "sfx_blaster",
   "slug": "potluck",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -34,12 +40,23 @@
     "own_team": false,
     "own_trainer": false
   },
-  "category": "condition_imposer",
-  "tags": ["food"],
+  "category": "special",
+  "tags": [
+    "food"
+  ],
   "types": [
-    "aether"
+    "normal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "cakechomp",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_bounce",
+    "volume": 1.5
+  }
 }

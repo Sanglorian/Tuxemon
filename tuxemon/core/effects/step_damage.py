@@ -1,32 +1,49 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat import get_target_monsters
-from tuxemon.core.core_effect import TechEffect, TechEffectResult
+from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 from tuxemon.formula import simple_damage_calculate
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.technique.technique import Technique
 
 
 @dataclass
-class StepDamageEffect(TechEffect):
+class StepDamageEffect(CoreEffect):
     """
-    This effect calculates damage to the target based on the number of steps
-    taken by the monster. The damage is scaled using a specified formula, which
-    is logarithmic.
+    Applies the "step_damage" effect to a technique.
 
-    Parameters:
-        objectives: The targets for this effect, specified as a string
-            (e.g., "enemy_monster" or "enemy_monster:own_monster").
-        scaling_factor: A factor used to scale the damage calculation.
-        scaling_constant: A constant used in the damage calculation formula.
+    This effect calculates damage to the target based on the number of steps
+    taken by the user monster. The damage scales logarithmically, allowing
+    diminishing returns as the step count increases. This mechanic ties
+    exploration or movement directly into combat effectiveness.
+
+    **Parameters**
+
+    - ``objectives``: Colon-separated string specifying which monsters are
+      affected. Examples:
+      - ``enemy_monster`` → damages only the enemy.
+      - ``own_monster`` → damages only the user.
+      - ``enemy_monster:own_monster`` → damages both the enemy and the user.
+    - ``scaling_factor``: Float multiplier applied to the logarithmic damage
+      formula.
+    - ``scaling_constant``: Float divisor used in the logarithmic formula to
+      normalize step counts.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "step_damage enemy_monster 1.5 100"
+        ]
     """
 
     name = "step_damage"
@@ -34,19 +51,20 @@ class StepDamageEffect(TechEffect):
     scaling_factor: float
     scaling_constant: float
 
-    def apply(
-        self, tech: Technique, user: Monster, target: Monster
+    def apply_tech_target(
+        self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
         damage = 0
         monsters: list[Monster] = []
-        combat = tech.combat_state
-        assert combat
 
         objectives = self.objectives.split(":")
-        tech.hit = tech.accuracy >= combat._random_tech_hit.get(user, 0.0)
+        hit = session.client.combat_session.get_tech_hit(user)
+        tech.hit = tech.accuracy >= hit
 
         if tech.hit:
-            monsters = get_target_monsters(objectives, tech, user, target)
+            monsters = session.client.combat_session.get_target_monsters(
+                objectives, user, target
+            )
 
         if monsters:
             new_power = self.scaling_factor * math.log(
@@ -59,7 +77,9 @@ class StepDamageEffect(TechEffect):
                 monster.current_hp = max(0, monster.current_hp - damage)
                 # to avoid double registration in the self._damage_map
                 if monster != target:
-                    combat.enqueue_damage(user, monster, damage)
+                    session.client.combat_session.enqueue_damage(
+                        user, monster, damage
+                    )
 
         return TechEffectResult(
             name=tech.name,

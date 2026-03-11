@@ -1,26 +1,27 @@
 {
   "tech_id": 20,
   "accuracy": 0.95,
-  "animation": "thunderstrike",
   "effects": [
     {
       "type": "give",
-      "parameters": ["exhausted", "enemy_monster"]
+      "parameters": [
+        "exhausted",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.75,
   "power": 1.25,
   "range": "ranged",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "thunderclap",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,12 +31,22 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["electricity"],
+  "tags": [
+    "electricity"
+  ],
   "types": [
-    "fire",
-    "earth"
+    "lightning"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "thunderstrike",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_lightning2",
+    "volume": 1.5
+  }
 }

@@ -1,70 +1,77 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat import has_effect_param, recharging
-from tuxemon.core.core_effect import StatusEffect, StatusEffectResult
-from tuxemon.locale import T
+from tuxemon.core.core_effect import CoreEffect, StatusEffectResult
+from tuxemon.db import EffectPhase
+from tuxemon.locale.locale import T
 from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.status.status import Status
 
 
 @dataclass
-class ConfusedEffect(StatusEffect):
+class ConfusedEffect(CoreEffect):
     """
-    Confused: Instead of the technique chosen, the Confused monster uses a
-    random technique (from the ones they have available, other than the one
-    chosen) 50% of the time.
+    Applies the "confused" status to a monster.
 
-    Parameters:
-        chance: The chance of the confused effect occurring (float between 0 and 1).
+    This effect causes the monster to sometimes ignore its chosen technique
+    and instead use a random alternative. By default, there is a 50% chance
+    of confusion occurring, but the probability can be configured.
 
+    **Parameters**
+
+    - ``chance``: The probability of the confused effect occurring (float between 0 and 1).
+      Higher values increase the likelihood of confusion.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "confused 0.5"
+        ]
     """
 
     name = "confused"
     chance: float
 
-    def apply(self, status: Status, target: Monster) -> StatusEffectResult:
-        CONFUSED_KEY = self.name
+    def apply_status(
+        self, session: Session, status: Status
+    ) -> StatusEffectResult:
+
+        host = status.host
 
         if not 0 <= self.chance <= 1:
             raise ValueError(f"{self.chance} must be between 0 and 1")
 
         extra: list[str] = []
         tech: list[Technique] = []
-        combat = status.combat_state
-        assert combat
-        if CONFUSED_KEY in combat._combat_variables:
-            combat._combat_variables[CONFUSED_KEY] = "off"
 
-        if status.phase == "pre_checking" and random.random() > self.chance:
-            user = status.link
-            assert user
-            combat._combat_variables[CONFUSED_KEY] = "on"
-            available_techniques = _get_available_techniques(user)
-            if available_techniques:
-                chosen_technique = random.choice(available_techniques)
-                tech = [chosen_technique]
-            elif status.repl_tech:
-                replacement_technique = Technique()
-                replacement_technique.load(status.repl_tech)
-                tech = [replacement_technique]
+        if status.has_phase(EffectPhase.PRE_CHECKING):
+            if random.random() < self.chance:
+                host.is_confused = True
 
-        if (
-            status.phase == "perform_action_tech"
-            and combat._combat_variables[CONFUSED_KEY] == "on"
-        ):
-            replacement = Technique()
-            slug = combat._combat_variables.get("action_tech", "skip")
-            replacement.load(slug)
-            extra = _get_extra_message(target, replacement)
+                available = _get_available_techniques(host)
+                if available:
+                    tech = [random.choice(available)]
+                elif status.on_tech_use:
+                    tech = [Technique.create(status.on_tech_use)]
+            else:
+                host.is_confused = False
+
+        if status.has_phase(EffectPhase.PERFORM_TECH) and host.is_confused:
+            action = session.client.combat_session.get_variable("action_tech")
+            replacement = Technique.create(str(action) or "skip")
+            extra = _get_extra_message(host, replacement)
+            host.is_confused = False
 
         return StatusEffectResult(
             name=status.name,
@@ -77,9 +84,9 @@ class ConfusedEffect(StatusEffect):
 def _get_available_techniques(user: Monster) -> list[Technique]:
     return [
         move
-        for move in user.moves
-        if not recharging(move)
-        and not has_effect_param(move, "give", "condition", "confused")
+        for move in user.moves.get_moves()
+        if not move.is_recharging
+        and not move.has_effect_param("give", "confused")
     ]
 
 

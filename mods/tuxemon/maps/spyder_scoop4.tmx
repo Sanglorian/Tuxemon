@@ -26,7 +26,7 @@
    eAFjYBhYIA+0HoRBYJ0shCaWvE2iemLNHVU39ELAa+g5eUi4GABnPwJM
   </data>
  </layer>
- <layer id="4" name="Above Player" width="12" height="22">
+ <layer id="4" name="Tile Layer 4" width="12" height="22">
   <data encoding="base64" compression="zlib">
    eAHVUEEKgDAMqy8R/P9RfZ/tIRBCKBM2wUJZuzRptoh/xZ52K0fiaIZKo3DodZod1qx4BZ1bxJV5ZyI6/5jRk9/zhW/d73p9h3pEz1zlMDZaz9DQXfDq/haYclzP3qp2esXjOaez+u4BJKgGHg==
   </data>
@@ -62,15 +62,16 @@
   <object id="1" name="Play Music" type="event" x="0" y="0" width="16" height="16"/>
   <object id="2" name="Teleport to Scoop 3" type="event" x="144" y="336" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_scoop3.tmx,5,3,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_scoop3.tmx,5,3,0.3"/>
     <property name="act2" value="char_face player,down"/>
+    <property name="act3" value="set_teleport_faint player,spyder_scoop2.tmx,4,4"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
    </properties>
   </object>
   <object id="3" name="Teleport to Timber Town" type="event" x="176" y="48" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_timber_town.tmx,17,20,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_timber_town.tmx,17,20,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,right"/>
@@ -81,19 +82,18 @@
     <property name="act1" value="create_npc spyder_scoop_orba,2,12"/>
     <property name="act2" value="char_face spyder_scoop_orba,left"/>
     <property name="cond1" value="not char_exists spyder_scoop_orba"/>
-    <property name="cond2" value="not variable_set scooporba:yes"/>
+    <property name="cond2" value="not battle_outcome player,won,spyder_scoop_orba"/>
    </properties>
   </object>
   <object id="31" name="Talk Orba" type="event" x="48" y="192" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_scoop_orba1"/>
+    <property name="act1" value="char_talk spyder_scoop_orba,pre_battle"/>
     <property name="act2" value="add_monster abesnaki,30,spyder_scoop_orba,5,10"/>
     <property name="act3" value="add_monster spighter,30,spyder_scoop_orba,5,10"/>
     <property name="act4" value="start_battle player,spyder_scoop_orba"/>
     <property name="act5" value="translated_dialog spyder_scoop_orba2"/>
-    <property name="act6" value="set_variable scooporba:yes"/>
     <property name="behav1" value="talk spyder_scoop_orba"/>
-    <property name="cond1" value="not variable_set scooporba:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_scoop_orba"/>
    </properties>
   </object>
   <object id="32" name="Create Haf" type="event" x="176" y="208" width="16" height="16">
@@ -127,7 +127,7 @@
    <properties>
     <property name="act1" value="translated_dialog spyder_scoop_arachne2"/>
     <property name="behav1" value="talk spyder_scoop_arachne"/>
-    <property name="cond1" value="is variable_set scooparachne:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_scoop_arachne"/>
     <property name="cond2" value="not variable_set scooplandrace:yes"/>
    </properties>
   </object>
@@ -159,8 +159,7 @@
   </object>
   <object id="40" name="Create LapinouA" type="event" x="32" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_lapinoua,2,4"/>
-    <property name="act2" value="char_wander spyder_scoop_lapinoua"/>
+    <property name="act1" value="create_npc spyder_scoop_lapinoua,2,4,wander"/>
     <property name="cond1" value="not char_exists spyder_scoop_lapinoua"/>
     <property name="cond2" value="not variable_set scooplapinoua:yes"/>
    </properties>
@@ -178,8 +177,7 @@
   </object>
   <object id="42" name="Create LapinouB" type="event" x="160" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_lapinoub,2,4"/>
-    <property name="act2" value="char_wander spyder_scoop_lapinoub"/>
+    <property name="act1" value="create_npc spyder_scoop_lapinoub,2,4,wander"/>
     <property name="cond1" value="not char_exists spyder_scoop_lapinoub"/>
     <property name="cond2" value="not variable_set scooplapinoub:yes"/>
    </properties>
@@ -197,8 +195,7 @@
   </object>
   <object id="44" name="Create LapinouC" type="event" x="32" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_lapinouc,2,16"/>
-    <property name="act2" value="char_wander spyder_scoop_lapinouc"/>
+    <property name="act1" value="create_npc spyder_scoop_lapinouc,2,16,wander"/>
     <property name="cond1" value="not char_exists spyder_scoop_lapinouc"/>
     <property name="cond2" value="not variable_set scooplapinouc:yes"/>
    </properties>
@@ -216,8 +213,7 @@
   </object>
   <object id="46" name="Create CochiniA" type="event" x="80" y="160" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_cochinia,5,10"/>
-    <property name="act2" value="char_wander spyder_scoop_cochinia"/>
+    <property name="act1" value="create_npc spyder_scoop_cochinia,5,10,wander"/>
     <property name="cond1" value="not char_exists spyder_scoop_cochinia"/>
     <property name="cond2" value="not variable_set scoopcochinia:yes"/>
    </properties>
@@ -235,8 +231,7 @@
   </object>
   <object id="48" name="Create CochiniB" type="event" x="32" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_cochinib,2,19"/>
-    <property name="act2" value="char_wander spyder_scoop_cochinib"/>
+    <property name="act1" value="create_npc spyder_scoop_cochinib,2,19,wander"/>
     <property name="cond1" value="not char_exists spyder_scoop_cochinib"/>
     <property name="cond2" value="not variable_set scoopcochinib:yes"/>
    </properties>
@@ -254,8 +249,7 @@
   </object>
   <object id="50" name="Create CochiniC" type="event" x="160" y="288" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_cochinic,10,18"/>
-    <property name="act2" value="char_wander spyder_scoop_cochinic"/>
+    <property name="act1" value="create_npc spyder_scoop_cochinic,10,18,wander"/>
     <property name="cond1" value="not char_exists spyder_scoop_cochinic"/>
     <property name="cond2" value="not variable_set scoopcochinic:yes"/>
    </properties>
@@ -273,14 +267,14 @@
   </object>
   <object id="54" name="Environment" type="event" x="16" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:interior"/>
-    <property name="cond1" value="not variable_set environment:interior"/>
+    <property name="act1" value="set_environment interior"/>
+    <property name="cond1" value="not environment_is interior"/>
    </properties>
   </object>
   <object id="56" name="Talk Arachne 1" type="event" x="144" y="80" width="16" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_scoop_arachne"/>
+    <property name="act02" value="pathfind_to_char player,spyder_scoop_arachne"/>
     <property name="act03" value="translated_dialog spyder_scoop_arachne1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster cardiwing,35,spyder_scoop_arachne,5,10"/>
@@ -288,38 +282,38 @@
     <property name="act07" value="add_monster abesnaki,35,spyder_scoop_arachne,5,10"/>
     <property name="act08" value="start_battle player,spyder_scoop_arachne"/>
     <property name="act09" value="translated_dialog spyder_scoop_arachne2"/>
-    <property name="act10" value="set_variable scooparachne:yes"/>
-    <property name="cond1" value="not variable_set scooparachne:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_scoop_arachne"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="57" name="Talk Weaver" type="event" x="112" y="112" width="16" height="32">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_scoop_weaver"/>
-    <property name="act03" value="translated_dialog spyder_scoop_weaver1"/>
+    <property name="act02" value="pathfind_to_char player,spyder_scoop_weaver"/>
+    <property name="act03" value="char_talk spyder_scoop_weaver,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster cardiling,30,spyder_scoop_weaver,5,10"/>
     <property name="act06" value="add_monster spighter,30,spyder_scoop_weaver,5,10"/>
     <property name="act07" value="start_battle player,spyder_scoop_weaver"/>
     <property name="act08" value="translated_dialog spyder_scoop_weaver2"/>
-    <property name="act09" value="set_variable scoopweaver:yes"/>
-    <property name="cond1" value="not variable_set scoopweaver:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_scoop_weaver"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="59" name="Post Talk Orba" type="event" x="32" y="224" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog spyder_scoop_orba2"/>
     <property name="behav1" value="talk spyder_scoop_orba"/>
-    <property name="cond1" value="is variable_set scooporba:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_scoop_orba"/>
    </properties>
   </object>
   <object id="60" name="Post Talk Weaver" type="event" x="96" y="96" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog spyder_scoop_weaver2"/>
     <property name="behav1" value="talk spyder_scoop_weaver"/>
-    <property name="cond1" value="is variable_set scoopweaver:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_scoop_weaver"/>
     <property name="cond2" value="not variable_set scooplandrace:yes"/>
    </properties>
   </object>
@@ -331,15 +325,14 @@
     <property name="act4" value="add_monster abesnaki,35,spyder_scoop_arachne,5,10"/>
     <property name="act5" value="start_battle player,spyder_scoop_arachne"/>
     <property name="act6" value="translated_dialog spyder_scoop_arachne2"/>
-    <property name="act7" value="set_variable scooparachne:yes"/>
     <property name="behav1" value="talk spyder_scoop_arachne"/>
-    <property name="cond1" value="not variable_set scooparachne:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_scoop_arachne"/>
    </properties>
   </object>
   <object id="62" name="Talk Arachne 2" type="event" x="176" y="96" width="16" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_scoop_arachne"/>
+    <property name="act02" value="pathfind_to_char player,spyder_scoop_arachne"/>
     <property name="act03" value="translated_dialog spyder_scoop_arachne1"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster cardiwing,35,spyder_scoop_arachne,5,10"/>
@@ -347,9 +340,9 @@
     <property name="act07" value="add_monster abesnaki,35,spyder_scoop_arachne,5,10"/>
     <property name="act08" value="start_battle player,spyder_scoop_arachne"/>
     <property name="act09" value="translated_dialog spyder_scoop_arachne2"/>
-    <property name="act10" value="set_variable scooparachne:yes"/>
-    <property name="cond1" value="not variable_set scooparachne:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_scoop_arachne"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
  </objectgroup>

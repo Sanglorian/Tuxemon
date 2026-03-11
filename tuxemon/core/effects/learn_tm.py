@@ -1,46 +1,52 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
-from tuxemon.core.core_effect import ItemEffect, ItemEffectResult
+from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
+from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
     from tuxemon.item.item import Item
-    from tuxemon.monster import Monster
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
 
 
 @dataclass
-class LearnTmEffect(ItemEffect):
+class LearnTmEffect(CoreEffect):
     """
-    This effect teaches the technique in the parameters.
+    Applies the "learn_tm" effect to a monster.
 
-    Parameters:
-        technique: technique's slug (eg. ram, etc.)
+    This effect teaches the target a specific technique defined by its slug.
+    It is typically used when an item (such as a TM or scroll) allows a
+    monster to learn a fixed move.
 
+    **Parameters**
+
+    - ``technique``: The slug identifier of the technique to be taught
+      (e.g., ``ram``, ``ice_beam``).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "learn_tm ice_beam"
+        ]
     """
 
     name = "learn_tm"
     technique: str
 
-    def apply(
-        self, item: Item, target: Union[Monster, None]
+    def apply_item_target(
+        self, session: Session, item: Item, target: Monster
     ) -> ItemEffectResult:
-
-        target_moves = (
-            {tech.slug for tech in target.moves} if target else set()
-        )
-
-        if target and self.technique not in target_moves:
-            client = self.session.client
-            var = f"{self.name}:{str(target.instance_id.hex)}"
-            client.event_engine.execute_action("set_variable", [var], True)
-            client.event_engine.execute_action(
-                "add_tech", [self.name, self.technique], True
-            )
-
-            return ItemEffectResult(name=item.name, success=True)
-
-        return ItemEffectResult(name=item.name)
+        if target.moves.has_move(self.technique):
+            return ItemEffectResult(name=item.name)
+        tech = Technique.create(self.technique)
+        learned = target.moves.learn(target, tech)
+        if not learned:
+            return ItemEffectResult(name=item.name)
+        return ItemEffectResult(name=item.name, success=True)

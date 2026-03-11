@@ -1,26 +1,27 @@
 {
   "tech_id": 239,
   "accuracy": 1.0,
-  "animation": "pollenbullet",
   "effects": [
     {
       "type": "give",
-      "parameters": ["lifeleech", "enemy_monster"]
+      "parameters": [
+        "lifeleech",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 0.25,
   "power": 1.4,
   "range": "touch",
   "recharge": 1,
-  "sfx": "sfx_blaster",
   "slug": "fungal_spore",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,11 +31,22 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["spore"],
+  "tags": [
+    "spore"
+  ],
   "types": [
     "wood"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "pollenbullet",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_bubbles",
+    "volume": 1.5
+  }
 }

@@ -46,7 +46,7 @@
  <objectgroup color="#ffff00" id="4" name="Events">
   <object id="1" name="Teleport to Nimrod Bottom" type="event" x="256" y="288" width="16" height="32">
    <properties>
-    <property name="act1" value="transition_teleport spyder_nimrod_bottom.tmx,16,19,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_nimrod_bottom.tmx,16,19,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,right"/>
@@ -54,7 +54,7 @@
   </object>
   <object id="2" name="Teleport to Nimrod Top" type="event" x="0" y="288" width="32" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_nimrod_top.tmx,0,17,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_nimrod_top.tmx,0,17,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -62,7 +62,7 @@
   </object>
   <object id="7" name="Teleport to Nimrod Bottom" type="event" x="80" y="240" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_nimrod_bottom.tmx,2,15,0.3"/>
+    <property name="act1" value="transition_teleport player,spyder_nimrod_bottom.tmx,2,15,0.3"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
@@ -75,14 +75,13 @@
   </object>
   <object id="14" name="Talk Thatcher" type="event" x="32" y="144" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_nimrod_thatcher1"/>
+    <property name="act1" value="char_talk spyder_nimrod_thatcher,pre_battle"/>
     <property name="act2" value="add_monster squabbit,20,spyder_nimrod_thatcher,5,10"/>
     <property name="act3" value="add_monster viviteel,25,spyder_nimrod_thatcher,5,10"/>
     <property name="act4" value="start_battle player,spyder_nimrod_thatcher"/>
-    <property name="act5" value="translated_dialog spyder_nimrod_thatcher2"/>
-    <property name="act6" value="set_variable nimrodthatcher:yes"/>
+    <property name="act5" value="char_talk spyder_nimrod_thatcher,post_battle_lose"/>
     <property name="behav1" value="talk spyder_nimrod_thatcher"/>
-    <property name="cond1" value="not variable_set nimrodthatcher:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_nimrod_thatcher"/>
    </properties>
   </object>
   <object id="16" name="Create Honour" type="event" x="240" y="64" width="16" height="16">
@@ -94,14 +93,13 @@
   </object>
   <object id="17" name="Talk Honour" type="event" x="256" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_nimrod_honour1"/>
+    <property name="act1" value="char_talk spyder_nimrod_honour,pre_battle"/>
     <property name="act2" value="add_monster embazook,20,spyder_nimrod_honour,5,10"/>
     <property name="act3" value="add_monster sharpfin,20,spyder_nimrod_honour,5,10"/>
     <property name="act4" value="start_battle player,spyder_nimrod_honour"/>
-    <property name="act5" value="translated_dialog spyder_nimrod_honour2"/>
-    <property name="act6" value="set_variable nimrodhonour:yes"/>
+    <property name="act5" value="char_talk spyder_nimrod_honour,post_battle_lose"/>
     <property name="behav1" value="talk spyder_nimrod_honour"/>
-    <property name="cond1" value="not variable_set nimrodhonour:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_nimrod_honour"/>
    </properties>
   </object>
   <object id="18" name="Create Antimony" type="event" x="64" y="176" width="16" height="16">
@@ -112,13 +110,12 @@
   </object>
   <object id="19" name="Talk Antimony" type="event" x="80" y="176" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_nimrod_antimony1"/>
+    <property name="act1" value="char_talk spyder_nimrod_antimony,pre_battle"/>
     <property name="act2" value="add_monster komodraw,30,spyder_nimrod_antimony,5,10"/>
     <property name="act3" value="start_battle player,spyder_nimrod_antimony"/>
-    <property name="act4" value="translated_dialog spyder_nimrod_antimony2"/>
-    <property name="act6" value="set_variable nimrodantimony:yes"/>
+    <property name="act4" value="char_talk spyder_nimrod_antimony,post_battle_lose"/>
     <property name="behav1" value="talk spyder_nimrod_antimony"/>
-    <property name="cond1" value="not variable_set nimrodantimony:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_nimrod_antimony"/>
    </properties>
   </object>
   <object id="20" name="Create Chrome Robo" type="event" x="144" y="176" width="16" height="16">
@@ -126,19 +123,18 @@
     <property name="act1" value="create_npc spyder_nimrod_chromerobo,9,11"/>
     <property name="act2" value="char_face spyder_nimrod_chromerobo,down"/>
     <property name="cond1" value="not char_exists spyder_nimrod_chromerobo"/>
-    <property name="cond2" value="not variable_set nimrodchromerobo_middle:yes"/>
+    <property name="cond2" value="not battle_outcome player,won,spyder_nimrod_chromerobo"/>
    </properties>
   </object>
   <object id="21" name="Talk Chrome Robo" type="event" x="128" y="176" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_nimrod_chromerobo1"/>
+    <property name="act1" value="char_talk spyder_nimrod_chromerobo,pre_battle"/>
     <property name="act2" value="add_monster chrome_robo,20,spyder_nimrod_chromerobo,5,10"/>
     <property name="act3" value="start_battle player,spyder_nimrod_chromerobo"/>
-    <property name="act4" value="translated_dialog spyder_nimrod_chromerobo2"/>
-    <property name="act6" value="set_variable nimrodchromerobo_middle:yes"/>
+    <property name="act4" value="char_talk spyder_nimrod_chromerobo,post_battle_lose"/>
     <property name="act7" value="remove_npc spyder_nimrod_chromerobo"/>
     <property name="behav1" value="talk spyder_nimrod_chromerobo"/>
-    <property name="cond1" value="not variable_set nimrodchromerobo_middle:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_nimrod_chromerobo"/>
    </properties>
   </object>
   <object id="24" name="Create Xeon" type="event" x="160" y="240" width="16" height="16">
@@ -146,17 +142,16 @@
     <property name="act1" value="create_npc spyder_nimrod_xeon,10,15"/>
     <property name="act2" value="char_face spyder_nimrod_xeon,up"/>
     <property name="cond1" value="not char_exists spyder_nimrod_xeon"/>
-    <property name="cond2" value="not variable_set nimrodxeon_middle:yes"/>
+    <property name="cond2" value="not battle_outcome player,won,spyder_nimrod_xeon"/>
    </properties>
   </object>
   <object id="25" name="Talk Xeon" type="event" x="176" y="240" width="16" height="16">
    <properties>
     <property name="act3" value="start_battle player,spyder_nimrod_xeon"/>
-    <property name="act4" value="translated_dialog spyder_nimrod_xeon2"/>
-    <property name="act6" value="set_variable nimrodxeon_middle:yes"/>
+    <property name="act4" value="char_talk spyder_nimrod_xeon,post_battle_lose"/>
     <property name="act7" value="remove_npc spyder_nimrod_xeon"/>
     <property name="behav1" value="talk spyder_nimrod_xeon"/>
-    <property name="cond1" value="not variable_set nimrodxeon_middle:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_nimrod_xeon"/>
    </properties>
   </object>
   <object id="26" name="Create Argon" type="event" x="208" y="144" width="16" height="16">
@@ -168,13 +163,12 @@
   </object>
   <object id="27" name="Talk Argon" type="event" x="192" y="144" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_nimrod_argon1"/>
+    <property name="act1" value="char_talk spyder_nimrod_argon,pre_battle"/>
     <property name="act2" value="add_monster chrome_robo,25,spyder_nimrod_argon,5,10"/>
     <property name="act3" value="start_battle player,spyder_nimrod_argon"/>
-    <property name="act4" value="translated_dialog spyder_nimrod_argon2"/>
-    <property name="act6" value="set_variable nimrodargon:yes"/>
+    <property name="act4" value="char_talk spyder_nimrod_argon,post_battle_lose"/>
     <property name="behav1" value="talk spyder_nimrod_argon"/>
-    <property name="cond1" value="not variable_set nimrodargon:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_nimrod_argon"/>
    </properties>
   </object>
   <object id="29" name="Create Archer" type="event" x="48" y="208" width="16" height="16">
@@ -186,145 +180,144 @@
   </object>
   <object id="30" name="Talk Archer" type="event" x="32" y="208" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_nimrod_archer1"/>
+    <property name="act1" value="char_talk spyder_nimrod_archer,pre_battle"/>
     <property name="act2" value="add_monster sharpfin,20,spyder_nimrod_archer,5,10"/>
     <property name="act3" value="add_monster av8r,20,spyder_nimrod_archer,5,10"/>
     <property name="act4" value="add_monster grimachin,20,spyder_nimrod_archer,5,10"/>
     <property name="act5" value="start_battle player,spyder_nimrod_archer"/>
-    <property name="act6" value="translated_dialog spyder_nimrod_archer2"/>
-    <property name="act7" value="set_variable nimrodarcher:yes"/>
+    <property name="act6" value="char_talk spyder_nimrod_archer,post_battle_lose"/>
     <property name="behav1" value="talk spyder_nimrod_archer"/>
-    <property name="cond1" value="not variable_set nimrodarcher:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_nimrod_archer"/>
    </properties>
   </object>
   <object id="36" name="Environment" type="event" x="16" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:interior"/>
-    <property name="cond1" value="not variable_set environment:interior"/>
+    <property name="act1" value="set_environment interior"/>
+    <property name="cond1" value="not environment_is interior"/>
    </properties>
   </object>
   <object id="37" name="Talk Argon" type="event" x="224" y="144" width="16" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_nimrod_argon"/>
-    <property name="act3" value="translated_dialog spyder_nimrod_argon1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_nimrod_argon"/>
+    <property name="act3" value="char_talk spyder_nimrod_argon,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster chrome_robo,25,spyder_nimrod_argon,5,10"/>
     <property name="act6" value="start_battle player,spyder_nimrod_argon"/>
-    <property name="act7" value="translated_dialog spyder_nimrod_argon2"/>
-    <property name="act8" value="set_variable nimrodargon:yes"/>
-    <property name="cond1" value="not variable_set nimrodargon:yes"/>
+    <property name="act7" value="char_talk spyder_nimrod_argon,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_nimrod_argon"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="38" name="Talk Honour" type="event" x="192" y="64" width="48" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_nimrod_honour"/>
-    <property name="act3" value="translated_dialog spyder_nimrod_honour1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_nimrod_honour"/>
+    <property name="act3" value="char_talk spyder_nimrod_honour,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster embazook,20,spyder_nimrod_honour,5,10"/>
     <property name="act6" value="add_monster sharpfin,20,spyder_nimrod_honour,5,10"/>
     <property name="act7" value="start_battle player,spyder_nimrod_honour"/>
-    <property name="act8" value="translated_dialog spyder_nimrod_honour2"/>
-    <property name="act9" value="set_variable nimrodhonour:yes"/>
-    <property name="cond1" value="not variable_set nimrodhonour:yes"/>
+    <property name="act8" value="char_talk spyder_nimrod_honour,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_nimrod_honour"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="40" name="Talk Xeon" type="event" x="160" y="176" width="16" height="64">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_nimrod_xeon"/>
-    <property name="act3" value="translated_dialog spyder_nimrod_xeon1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_nimrod_xeon"/>
+    <property name="act3" value="char_talk spyder_nimrod_xeon,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster xeon,20,spyder_nimrod_xeon,5,10"/>
     <property name="act6" value="start_battle player,spyder_nimrod_xeon"/>
-    <property name="act7" value="translated_dialog spyder_nimrod_xeon2"/>
-    <property name="act8" value="set_variable nimrodxeon_middle:yes"/>
+    <property name="act7" value="char_talk spyder_nimrod_xeon,post_battle_lose"/>
     <property name="act9" value="remove_npc spyder_nimrod_xeon"/>
-    <property name="cond1" value="not variable_set nimrodxeon_middle:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_nimrod_xeon"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="41" name="Talk Chrome Robo" type="event" x="144" y="192" width="16" height="64">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_nimrod_chromerobo"/>
-    <property name="act3" value="translated_dialog spyder_nimrod_chromerobo1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_nimrod_chromerobo"/>
+    <property name="act3" value="char_talk spyder_nimrod_chromerobo,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster chrome_robo,20,spyder_nimrod_chromerobo,5,10"/>
     <property name="act6" value="start_battle player,spyder_nimrod_chromerobo"/>
-    <property name="act7" value="translated_dialog spyder_nimrod_chromerobo2"/>
-    <property name="act8" value="set_variable nimrodchromerobo_middle:yes"/>
+    <property name="act7" value="char_talk spyder_nimrod_chromerobo,post_battle_lose"/>
     <property name="act9" value="remove_npc spyder_nimrod_chromerobo"/>
-    <property name="cond1" value="not variable_set nimrodchromerobo_middle:yes"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_nimrod_chromerobo"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="42" name="Talk Archer" type="event" x="64" y="208" width="16" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
-    <property name="act02" value="pathfind_to_player spyder_nimrod_archer"/>
-    <property name="act03" value="translated_dialog spyder_nimrod_archer1"/>
+    <property name="act02" value="pathfind_to_char player,spyder_nimrod_archer"/>
+    <property name="act03" value="char_talk spyder_nimrod_archer,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
     <property name="act05" value="add_monster sharpfin,20,spyder_nimrod_archer,5,10"/>
     <property name="act06" value="add_monster av8r,20,spyder_nimrod_archer,5,10"/>
     <property name="act07" value="add_monster grimachin,20,spyder_nimrod_archer,5,10"/>
     <property name="act08" value="start_battle player,spyder_nimrod_archer"/>
-    <property name="act09" value="translated_dialog spyder_nimrod_archer2"/>
-    <property name="act10" value="set_variable nimrodarcher:yes"/>
-    <property name="cond1" value="not variable_set nimrodarcher:yes"/>
+    <property name="act09" value="char_talk spyder_nimrod_archer,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_nimrod_archer"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="43" name="Talk Antimony" type="event" x="64" y="192" width="16" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_player spyder_nimrod_antimony"/>
-    <property name="act3" value="translated_dialog spyder_nimrod_antimony1"/>
+    <property name="act2" value="pathfind_to_char player,spyder_nimrod_antimony"/>
+    <property name="act3" value="char_talk spyder_nimrod_antimony,pre_battle"/>
     <property name="act4" value="unlock_controls"/>
     <property name="act5" value="add_monster komodraw,30,spyder_nimrod_antimony,5,10"/>
     <property name="act6" value="start_battle player,spyder_nimrod_antimony"/>
-    <property name="act7" value="translated_dialog spyder_nimrod_antimony2"/>
-    <property name="act8" value="set_variable nimrodantimony:yes"/>
-    <property name="cond1" value="not variable_set nimrodantimony:yes"/>
+    <property name="act7" value="char_talk spyder_nimrod_antimony,post_battle_lose"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_nimrod_antimony"/>
     <property name="cond2" value="is char_at player"/>
+    <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="45" name="Post Talk Archer" type="event" x="64" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_nimrod_archer2"/>
+    <property name="act1" value="char_talk spyder_nimrod_archer,post_battle_lose"/>
     <property name="behav1" value="talk spyder_nimrod_archer"/>
-    <property name="cond1" value="is variable_set nimrodarcher:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_nimrod_archer"/>
    </properties>
   </object>
   <object id="46" name="Post Talk Antimony" type="event" x="80" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_nimrod_antimony2"/>
+    <property name="act1" value="char_talk spyder_nimrod_antimony,post_battle_lose"/>
     <property name="behav1" value="talk spyder_nimrod_antimony"/>
-    <property name="cond1" value="is variable_set nimrodantimony:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_nimrod_antimony"/>
    </properties>
   </object>
   <object id="47" name="Post Talk Argon" type="event" x="96" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_nimrod_argon2"/>
+    <property name="act1" value="char_talk spyder_nimrod_argon,post_battle_lose"/>
     <property name="behav1" value="talk spyder_nimrod_argon"/>
-    <property name="cond1" value="is variable_set nimrodargon:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_nimrod_argon"/>
    </properties>
   </object>
   <object id="48" name="Post Talk Thatcher" type="event" x="112" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_nimrod_thatcher2"/>
+    <property name="act1" value="char_talk spyder_nimrod_thatcher,post_battle_lose"/>
     <property name="behav1" value="talk spyder_nimrod_thatcher"/>
-    <property name="cond1" value="is variable_set nimrodthatcher:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_nimrod_thatcher"/>
    </properties>
   </object>
   <object id="49" name="Post Talk Honour" type="event" x="128" y="256" width="16" height="16">
    <properties>
-    <property name="act1" value="translated_dialog spyder_nimrod_honour2"/>
+    <property name="act1" value="char_talk spyder_nimrod_honour,post_battle_lose"/>
     <property name="behav1" value="talk spyder_nimrod_honour"/>
-    <property name="cond1" value="is variable_set nimrodhonour:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_nimrod_honour"/>
    </properties>
   </object>
   <object id="50" name="Play Music" type="event" x="0" y="0" width="16" height="16">
@@ -350,13 +343,13 @@
     <property name="act13" value="unlock_controls"/>
     <property name="act14" value="get_party_monster spyder_nimrod_argon"/>
     <property name="act15" value="remove_monster iid_slot_0"/>
-    <property name="cond1" value="is variable_set nimrodargon:yes"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_nimrod_argon"/>
     <property name="cond2" value="not variable_set zircon_argon"/>
    </properties>
   </object>
   <object id="52" name="Flashback Trigger Yes" type="event" x="256" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport spyder_nimrod_room.tmx,8,6"/>
+    <property name="act1" value="transition_teleport player,spyder_nimrod_room.tmx,8,6"/>
     <property name="cond1" value="is variable_set zircon_argon:yes"/>
    </properties>
   </object>
@@ -387,7 +380,8 @@
   </object>
   <object id="55" name="Default Template" type="event" x="208" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="set_template player,default"/>
+    <property name="act1" value="set_layer"/>
+    <property name="act2" value="set_template player,default"/>
     <property name="cond1" value="is char_sprite player,invisible"/>
     <property name="cond2" value="is variable_set zircon_argon:done"/>
    </properties>

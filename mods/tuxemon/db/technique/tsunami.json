@@ -1,22 +1,20 @@
 {
   "tech_id": 170,
   "accuracy": 0.75,
-  "animation": "waterfall",
   "effects": [
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "extremely_slow",
   "potency": 0.0,
   "power": 2.7,
   "range": "reach",
   "recharge": 3,
-  "sfx": "sfx_blaster",
   "slug": "tsunami",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": true,
@@ -26,12 +24,23 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["water", "calamity"],
-  "types": [
+  "tags": [
     "water",
-    "earth"
+    "calamity"
+  ],
+  "types": [
+    "water"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "waterfall",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_bubbles",
+    "volume": 1.5
+  }
 }

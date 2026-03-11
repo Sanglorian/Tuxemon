@@ -1,14 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
-from tuxemon.event import get_npc
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
+from tuxemon.relationship import Connection
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -40,14 +41,14 @@ class AddContactsAction(EventAction):
     name = "add_contacts"
     character: str
     npc_slug: str
-    relation: Optional[str] = None
-    strength: Optional[int] = None
-    steps: Optional[float] = None
-    decay_rate: Optional[float] = None
-    decay_threshold: Optional[int] = None
+    relation: str | None = None
+    strength: int | None = None
+    steps: float | None = None
+    decay_rate: float | None = None
+    decay_threshold: int | None = None
 
-    def start(self) -> None:
-        character = get_npc(self.session, self.character)
+    def start(self, session: Session) -> None:
+        character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return
@@ -69,15 +70,17 @@ class AddContactsAction(EventAction):
         relationships = character.relationships
         contact = relationships.get_connection(self.npc_slug)
         if contact is None:
-            relationships.add_connection(
-                slug=self.npc_slug,
+            new_connection = Connection(
                 relationship_type=self.relation or "unknown",
                 strength=self.strength or 50,
                 steps=self.steps or character.steps,
                 decay_rate=self.decay_rate or 0.01,
                 decay_threshold=self.decay_threshold or 500,
             )
+            relationships.add_connection(
+                slug=self.npc_slug, connection=new_connection
+            )
         else:
-            contact.apply_decay(character)
+            contact.apply_decay(character.steps)
             logger.error(f"{self.npc_slug} already exist")
             return

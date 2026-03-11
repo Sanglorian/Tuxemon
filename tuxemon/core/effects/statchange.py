@@ -1,75 +1,129 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import random
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.core.core_effect import StatusEffect, StatusEffectResult
-from tuxemon.tools import ops_dict
+from tuxemon.core.core_effect import (
+    CoreEffect,
+    ItemEffectResult,
+    StatusEffectResult,
+    TechEffectResult,
+)
+from tuxemon.db import EffectPhase
+from tuxemon.monster.stat_utils import apply_stat_modifiers
+from tuxemon.monster.stats import BasicStats
 
 if TYPE_CHECKING:
-    from tuxemon.monster import Monster
+    from tuxemon.item.item import Item
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
     from tuxemon.status.status import Status
+    from tuxemon.technique.technique import Technique
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
-class StatChangeEffect(StatusEffect):
+class StatChangeEffect(CoreEffect):
     """
-    Change combat stats.
+    Applies the "statchange" status effect.
 
-    JSON SYNTAX:
-        value: The number to change the stat by, default is add, use
-            negative to subtract.
-        dividing: Set this to True to divide instead of adding or
-            subtracting the value.
-        overridetofull: In most cases you won't need this. If ``True`` it
-            will set the stat to its original value rather than the
-            specified value, but due to the way the
-            game is coded, it currently only works on hp.
+    This effect modifies one or more combat-relevant stats of a monster
+    during battle. Changes can be applied either through direct value-based
+    operations (e.g., add, subtract, divide) or through step-based scaling
+    relative to the stat's base value. Step-based scaling supports clamping
+    via ``max_step_limit`` to maintain balance.
 
+    **Supported Stats**
+    - ``speed``
+    - ``armour``
+    - ``melee``
+    - ``ranged``
+    - ``dodge``
+    - ``hp`` → modifies permanent base HP
+    - ``current_hp`` → modifies runtime health
+
+    **Parameters (per stat modifier)**
+    - ``value``: Float, direct adjustment applied to the stat (ignored if ``step`` is used).
+    - ``step``: Integer, step delta for scaling (e.g., +2 steps to speed).
+    - ``max_deviation``: Optional integer, adds randomness to ``step`` or ``value``.
+    - ``max_step_limit``: Float, maximum cumulative scaling boundary (e.g., ±0.5 for ±50%).
+    - ``scaling_mode``: String, either ``linear`` (base * (1 + step)) or ``nonlinear`` (tiered multipliers).
+    - ``operation``: String, arithmetic operation for value logic (``add``, ``subtract``, ``divide``).
+    - ``overridetofull``: Boolean, if ``True`` and stat is HP, restores current HP to maximum.
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "statchange"
+        ]
+
+        "stat_modifiers": {
+            "speed": {
+                "step": 2,
+                "max_deviation": 1,
+                "max_step_limit": 0.5,
+                "scaling_mode": "linear"
+            },
+            "current_hp": {
+                "overridetofull": true
+            }
+        }
     """
 
     name = "statchange"
 
-    def apply(self, status: Status, target: Monster) -> StatusEffectResult:
-        statsmaster = [
-            status.statspeed,
-            status.stathp,
-            status.statarmour,
-            status.statmelee,
-            status.statranged,
-            status.statdodge,
-        ]
-        statslugs = [
-            "speed",
-            "current_hp",
-            "armour",
-            "melee",
-            "ranged",
-            "dodge",
-        ]
-        newstatvalue = 0
-        if status.phase == "perform_action_status":
-            for stat, slugdata in zip(statsmaster, statslugs):
-                if not stat:
-                    continue
-                value = stat.value
-                max_deviation = stat.max_deviation
-                operation = stat.operation
-                override = stat.overridetofull
-                basestatvalue = getattr(target, slugdata)
-                min_value = value - max_deviation
-                max_value = value + max_deviation
-                if max_deviation:
-                    value = random.randint(int(min_value), int(max_value))
+    def apply_status(
+        self, session: Session, status: Status
+    ) -> StatusEffectResult:
+        host = status.host
 
-                if value > 0 and not override:
-                    newstatvalue = ops_dict[operation](basestatvalue, value)
-                if slugdata == "current_hp" and override:
-                    target.current_hp = target.hp
-                if newstatvalue <= 0:
-                    newstatvalue = 1
-                setattr(target, slugdata, newstatvalue)
-        return StatusEffectResult(name=status.name, success=bool(newstatvalue))
+        if status.has_phase(
+            EffectPhase.PERFORM_STATUS
+        ) and not status.is_already_applied(self.name):
+            apply_stat_modifiers(host, status, status.stat_modifiers)
+            status.mark_applied(self.name)
+        elif status.has_phase(EffectPhase.ON_END):
+            status.temporary_stat_boosts = BasicStats()
+
+        return StatusEffectResult(name=status.name, success=True)
+
+    def apply_tech_target(
+        self, session: Session, tech: Technique, user: Monster, target: Monster
+    ) -> TechEffectResult:
+        t = tech.target
+
+        if t["own_monster"]:
+            apply_stat_modifiers(user, tech, tech.stat_modifiers)
+
+        if t["enemy_monster"]:
+            apply_stat_modifiers(target, tech, tech.stat_modifiers)
+
+        if t["own_team"]:
+            for mon in session.client.combat_session.get_own_monsters(user):
+                apply_stat_modifiers(mon, tech, tech.stat_modifiers)
+
+        if t["enemy_team"]:
+            for mon in session.client.combat_session.get_own_monsters(target):
+                apply_stat_modifiers(mon, tech, tech.stat_modifiers)
+
+        if t["own_trainer"]:
+            for mon in session.client.combat_session.get_party(user):
+                apply_stat_modifiers(mon, tech, tech.stat_modifiers)
+
+        if t["enemy_trainer"]:
+            for mon in session.client.combat_session.get_party(target):
+                apply_stat_modifiers(mon, tech, tech.stat_modifiers)
+
+        return TechEffectResult(name=tech.name, success=True)
+
+    def apply_item_target(
+        self, session: Session, item: Item, target: Monster
+    ) -> ItemEffectResult:
+        apply_stat_modifiers(target, item, item.stat_modifiers)
+        return ItemEffectResult(name=item.name, success=True)

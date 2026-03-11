@@ -74,7 +74,7 @@
  <objectgroup color="#ffff00" id="6" name="Events">
   <object id="22" name="Teleport to Top" type="event" x="16" y="16" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport mansion_top.tmx,1,16,0.3"/>
+    <property name="act10" value="transition_teleport player,mansion_top.tmx,1,16,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -82,7 +82,7 @@
   </object>
   <object id="23" name="Teleport to Basement" type="event" x="16" y="256" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport mansion_basement.tmx,6,20,0.3"/>
+    <property name="act10" value="transition_teleport player,mansion_basement.tmx,6,20,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,bottom"/>
@@ -90,7 +90,7 @@
   </object>
   <object id="24" name="Teleport to Basement" type="event" x="32" y="256" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport mansion_basement.tmx,7,20,0.3"/>
+    <property name="act10" value="transition_teleport player,mansion_basement.tmx,7,20,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -98,7 +98,7 @@
   </object>
   <object id="25" name="Teleport to Top" type="event" x="32" y="16" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport mansion_top.tmx,2,16,0.3"/>
+    <property name="act10" value="transition_teleport player,mansion_top.tmx,2,16,0.3"/>
     <property name="act20" value="char_face player,up"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -106,7 +106,7 @@
   </object>
   <object id="27" name="Teleport to Side Route" type="event" x="144" y="272" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport routea.tmx,6,13,0.3"/>
+    <property name="act10" value="transition_teleport player,routea.tmx,6,13,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -114,7 +114,7 @@
   </object>
   <object id="28" name="Teleport to Side Route" type="event" x="160" y="272" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport routea.tmx,7,13,0.3"/>
+    <property name="act10" value="transition_teleport player,routea.tmx,7,13,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -122,7 +122,7 @@
   </object>
   <object id="29" name="Teleport to Basement" type="event" x="240" y="48" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport mansion_basement.tmx,13,3,0.3"/>
+    <property name="act10" value="transition_teleport player,mansion_basement.tmx,13,3,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>
@@ -130,13 +130,13 @@
   </object>
   <object id="30" name="Play Music" type="event" x="0" y="16" width="16" height="16">
    <properties>
-    <property name="act10" value="play_music music_mansion_theme"/>
-    <property name="cond10" value="not music_playing music_mansion_theme"/>
+    <property name="act10" value="play_music music_jester_theme"/>
+    <property name="cond10" value="not music_playing music_jester_theme"/>
    </properties>
   </object>
   <object id="32" name="Teleport to Side Route" type="event" x="176" y="272" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport routea.tmx,7,13,0.3"/>
+    <property name="act10" value="transition_teleport player,routea.tmx,7,13,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,down"/>
@@ -144,7 +144,7 @@
   </object>
   <object id="33" name="Teleport to Basement" type="event" x="256" y="48" width="16" height="16">
    <properties>
-    <property name="act10" value="transition_teleport mansion_basement.tmx,13,3,0.3"/>
+    <property name="act10" value="transition_teleport player,mansion_basement.tmx,13,3,0.3"/>
     <property name="act20" value="char_face player,down"/>
     <property name="cond10" value="is char_at player"/>
     <property name="cond20" value="is char_facing player,up"/>

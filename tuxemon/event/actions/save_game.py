@@ -1,14 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, final
+from typing import final
 
-from tuxemon import save
 from tuxemon.event.eventaction import EventAction
-from tuxemon.locale import T
+from tuxemon.locale.locale import T
+from tuxemon.save_manager import SaveManager
+from tuxemon.save_slots import resolve_save_index
+from tuxemon.session import Session
 from tuxemon.tools import open_dialog
 
 logger = logging.getLogger(__name__)
@@ -18,52 +20,41 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SaveGameAction(EventAction):
     """
-    Saves the game.
+    Saves the game to a specific save slot.
 
-    If the index parameter is absent, then it'll create
-    slot4.save
-
-    index = 0 > slot 1
-    index = 1 > slot 2
-    index = 2 > slot 3
+    The `index` parameter refers to the UI slot index (0-2).
+    Slot resolution is handled by `resolve_save_index()`, which converts
+    the UI index (0-based) into a save slot number (1-based).
 
     Script usage:
         .. code-block::
 
-            save_game [index]
+            save_game <index>
 
     Script parameters:
-        index: Selected index.
-
-    eg: "save_game" (slot4.save)
-    eg: "save_game 1"
-
+        index: UI slot index (0-2). Must always be provided.
     """
 
     name = "save_game"
-    index: Optional[int] = None
+    index: int
 
-    def start(self) -> None:
-        index = 4 if self.index is None else self.index + 1
-        slot = 0 if self.index is None else self.index
+    def start(self, session: Session) -> None:
+        slot = resolve_save_index(self.index)
 
         logger.info("Saving!")
         try:
-            save_data = save.get_save_data(
-                self.session,
-            )
-            save.save(
-                save_data,
-                index,
-            )
-            save.slot_number = slot
+            SaveManager.save(session, slot)
         except Exception as e:
-            raise
-            logger.error("Unable to save game!!")
-            logger.error(e)
-            open_dialog(self.session, [T.translate("save_failure")])
+            logger.error("Unable to save game!")
+            logger.exception(e)
+            open_dialog(
+                session.client,
+                [T.translate("save_failure")],
+                dialog_speed="max",
+            )
         else:
-            if self.index is not None:
-                open_dialog(self.session, [T.translate("save_success")])
-            else:
-                logger.info(T.translate("save_success"))
+            open_dialog(
+                session.client,
+                [T.translate("save_success")],
+                dialog_speed="max",
+            )

@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
-from tuxemon.event import MapCondition
 from tuxemon.event.eventcondition import EventCondition
 from tuxemon.session import Session
 from tuxemon.tools import compare, number_or_variable
@@ -26,15 +26,15 @@ class VariableIsCondition(EventCondition):
             "less_or_equal", "greater_than", "greater_or_equal", "equals"
             and "not_equals".
         value2: Either a variable or a number.
-
     """
 
-    name = "variable_is"
+    name: ClassVar[str] = "variable_is"
+    value1: str
+    operation: str
+    value2: str
 
-    def test(self, session: Session, condition: MapCondition) -> bool:
-        # Read the parameters
+    def test(self, session: Session) -> bool:
         variables = session.player.game_variables
-        operand1 = number_or_variable(variables, condition.parameters[0])
-        operation = condition.parameters[1]
-        operand2 = number_or_variable(variables, condition.parameters[2])
-        return compare(operation, operand1, operand2)
+        operand1 = number_or_variable(variables.get_state(), self.value1)
+        operand2 = number_or_variable(variables.get_state(), self.value2)
+        return compare(self.operation, operand1, operand2)

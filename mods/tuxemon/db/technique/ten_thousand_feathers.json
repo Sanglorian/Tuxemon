@@ -1,26 +1,27 @@
 {
   "tech_id": 188,
   "accuracy": 0.9,
-  "animation": "amethyst",
   "effects": [
     {
       "type": "give",
-      "parameters": ["charging", "own_monster"]
+      "parameters": [
+        "charging",
+        "own_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 3,
   "range": "ranged",
   "recharge": 3,
-  "sfx": "sfx_blaster",
   "slug": "ten_thousand_feathers",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,11 +31,22 @@
     "own_trainer": false
   },
   "category": "powerful",
-  "tags": ["bird"],
+  "tags": [
+    "bird"
+  ],
   "types": [
-    "fire"
+    "sky"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "amethyst",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_tornado",
+    "volume": 1.5
+  }
 }

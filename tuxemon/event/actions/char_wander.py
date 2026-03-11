@@ -1,22 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import itertools
 import logging
-import random
 from dataclasses import dataclass
-from typing import Optional, final
+from itertools import product
+from typing import final
 
-from tuxemon.event import get_npc
+from tuxemon.entity.behavior.base import WanderBehavior
 from tuxemon.event.eventaction import EventAction
-from tuxemon.map import get_coords, get_direction
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
-MIN_FREQUENCY = 0.5
-MAX_FREQUENCY = 5
 DEFAULT_FREQUENCY = 1
 
 
@@ -24,7 +20,7 @@ DEFAULT_FREQUENCY = 1
 @dataclass
 class CharWanderAction(EventAction):
     """
-    Make a character wander around the map.
+    Assign a WanderBehavior to a character.
 
     Script usage:
         .. code-block::
@@ -40,97 +36,49 @@ class CharWanderAction(EventAction):
         b_bound: coordinates bottom_bound vertex (eg 7,9)
 
         eg. char_wander character,,5,7,7,9
-
     """
 
     name = "char_wander"
     character: str
-    frequency: Optional[float] = None
-    t_bound_x: Optional[int] = None
-    t_bound_y: Optional[int] = None
-    b_bound_x: Optional[int] = None
-    b_bound_y: Optional[int] = None
+    frequency: float | None = None
+    t_bound_x: int | None = None
+    t_bound_y: int | None = None
+    b_bound_x: int | None = None
+    b_bound_y: int | None = None
 
-    def start(self) -> None:
-        player = self.session.player
-        client = self.session.client
-        character = get_npc(self.session, self.character)
+    def start(self, session: Session) -> None:
+        character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return
-        world = client.get_state_by_name(WorldState)
 
-        output = self.generate_coordinates()
+        # Compute bounds if provided
+        if (
+            self.t_bound_x is not None
+            and self.t_bound_y is not None
+            and self.b_bound_x is not None
+            and self.b_bound_y is not None
+        ):
+            top = (self.t_bound_x, self.t_bound_y)
+            bottom = (self.b_bound_x, self.b_bound_y)
+            bounds = generate_coordinates(top, bottom)
+        else:
+            bounds = None
 
-        def move() -> None:
-            # Don't interrupt existing movement
-            if character.moving or character.path:
-                return
+        freq = self.frequency or DEFAULT_FREQUENCY
 
-            # character stops if the player looks at it
-            tiles = get_coords(player.tile_pos, client.map_size)
-            direction = get_direction(player.tile_pos, character.tile_pos)
-            if character.tile_pos in tiles and player.facing == direction:
-                return
+        # Assign behavior
+        character.behavior_policy = WanderBehavior(
+            bounds=bounds,
+            frequency=freq,
+        )
 
-            # Suspend wandering if a dialog window is open
-            if any(
-                state_name in ("WorldMenuState", "DialogState", "ChoiceState")
-                for state_name in self.session.client.active_state_names
-            ):
-                return
 
-            # Choose a random direction that is free and walk toward it
-            origin = (character.tile_pos[0], character.tile_pos[1])
-            exits = world.pathfinder.get_exits(origin, character.facing)
-            if exits:
-                path = random.choice(exits)
-                if not output or path in output:
-                    character.path = [path]
-                    character.next_waypoint()
-
-        def schedule() -> None:
-            """
-            Schedules the next wandering action.
-
-            Notes:
-                The timer is randomized between 0.5 and 1.0 of the frequency parameter.
-                Frequency can be set to 0 to indicate that we want to stop wandering.
-            """
-            world.remove_animations_of(schedule)
-            if self.frequency == 0:
-                return
-            else:
-                frequency = min(
-                    MAX_FREQUENCY,
-                    max(MIN_FREQUENCY, self.frequency or DEFAULT_FREQUENCY),
-                )
-                time = (
-                    MIN_FREQUENCY + MIN_FREQUENCY * random.random()
-                ) * frequency
-                world.task(schedule, time)
-
-            move()
-
-        # Schedule the first move
-        schedule()
-
-    def generate_coordinates(self) -> list[tuple[int, int]]:
-        if not hasattr(self, "_coordinates"):
-            top_bound = (
-                (self.t_bound_x, self.t_bound_y)
-                if self.t_bound_x is not None and self.t_bound_y is not None
-                else None
-            )
-            bottom_bound = (
-                (self.b_bound_x, self.b_bound_y)
-                if self.b_bound_x is not None and self.b_bound_y is not None
-                else None
-            )
-            if top_bound and bottom_bound:
-                x_coords = range(top_bound[0], bottom_bound[0] + 1)
-                y_coords = range(top_bound[1], bottom_bound[1] + 1)
-                self._coordinates = list(itertools.product(x_coords, y_coords))
-            else:
-                self._coordinates = []
-        return self._coordinates
+def generate_coordinates(
+    top_bound: tuple[int, int],
+    bottom_bound: tuple[int, int],
+) -> list[tuple[int, int]]:
+    """Generates movement boundaries based on top and bottom bounds."""
+    x_coords = range(top_bound[0], bottom_bound[0] + 1)
+    y_coords = range(top_bound[1], bottom_bound[1] + 1)
+    return list(product(x_coords, y_coords))

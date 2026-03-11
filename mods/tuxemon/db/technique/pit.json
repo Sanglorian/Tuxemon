@@ -1,26 +1,27 @@
 {
   "tech_id": 142,
   "accuracy": 0.8,
-  "animation": "x_attack",
   "effects": [
     {
       "type": "give",
-      "parameters": ["harpooned", "enemy_monster"]
+      "parameters": [
+        "harpooned",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "very_slow",
   "potency": 1.0,
   "power": 2.1,
   "range": "touch",
   "recharge": 3,
-  "sfx": "sfx_blaster",
   "slug": "pit",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {},
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -30,11 +31,23 @@
     "own_trainer": false
   },
   "category": "simple",
-  "tags": ["ground", "summoner"],
+  "tags": [
+    "ground",
+    "summoner"
+  ],
   "types": [
     "earth"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "x_attack",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_crumble1",
+    "volume": 1.5
+  }
 }

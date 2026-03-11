@@ -1,7 +1,7 @@
 Tuxemon
 =========
 
-Copyright (C) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+Copyright (C) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 
 Graphics
 ---------
@@ -312,7 +312,7 @@ is licensed under [XYG Open Source License v1.1](http://kelvinshadewing.net/?id=
 ["LPC Floors"](https://opengameart.org/content/lpc-floors)
 by bluecarrot16, Lanea Zimmerman (Sharm), William Thompson (William.Thompsonj),Hyptosis, SpiderDave, Cougarmint, Stephen Challener (Redshrike), Bonsaiheldin, Tyler Olsen (Roots), Jetrel, jestan, the Open Surge team (http://opensnc.sourceforge.net), Gaurav Munjal, Reemax, Silveira Neto, bleutailfly, Casper Nilsson, NaRNeRZz, Buch, keith karnage, Arthur Carvalho, Guilherme Vieira (n2liquid), Chris Hamons (maintainer).
 is licensed under CC BY-SA 4.0
-tuxemon-themed walls are based on: fruitera-front.png, rockitten-front.png and ghosteeth-front.png
+tuxemon-themed walls are based on: fruitera-sheet.png, rockitten-sheet.png and ghosteeth-sheet.png
 is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
 * ["Core Indoor Stairs"]
@@ -471,7 +471,7 @@ is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/
 
 ### Tuxemon
 
-* ["Bamboon"](https://git.tuxemon.org:3000/tuxemon/tuxemon/blob/development/resources/gfx/sprites/battle/bamboon-front.png)
+* ["Bamboon"](https://git.tuxemon.org:3000/tuxemon/tuxemon/blob/development/resources/gfx/sprites/battle/bamboon-sheet.png)
 by [Mike Bramson](mailto:mnbramson@gmail.com) is licensed under
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
@@ -787,7 +787,7 @@ is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/
 design and front sprite by [Tricoelacanth](https://twitter.com/@tricoelacanth),
 back and menu sprites by ultidonki based on the design by Tricoelacanth, all released under CC-BY-SA 4.0
 
-* ["Teddisun"](https://www.github.com/Tuxemon/Tuxemon/tree/development/mods/tuxemon/gfx/sprites/battle/teddisun-front.png)
+* ["Teddisun"](https://www.github.com/Tuxemon/Tuxemon/tree/development/mods/tuxemon/gfx/sprites/battle/teddisun-sheet.png)
 Character created by Leo (from Discord) and released under the CC-BY-SA 4.0+ license. Front, back, and menu sprites drawn by ultidonki, also released under the CC-BY-SA 4.0+ license based on the design by Leo (from Discord).
 
 ### Bubbles
@@ -804,8 +804,8 @@ is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/
 [Sanglorian](https://wiki.tuxemon.org/index.php?title=Sanglorian)
 is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
-* ["Cherry & Berry Item"](https://forum.tuxemon.org/thread.php?pid=882#p882) by
-[josepharaoh99](https://wiki.tuxemon.org/Josepharaoh99)
+* ["Element Berries"](https://forum.tuxemon.org/thread.php?pid=882#p882) by
+[josepharaoh99](https://wiki.tuxemon.org/Josepharaoh99), colors tweaked by Sanglorian, 
 is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
 * ["Gems"](https://forum.tuxemon.org/thread.php?pid=887#p887) by
@@ -836,6 +836,8 @@ is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/
 
 * ["Revive"](https://wiki.tuxemon.org/File:Shroom3.png) Sprite by BizmasterStudios.  Licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
+* ["Sledgehammer"](https://wiki.tuxemon.org/File:Sledgehammer.png) Sprite by BizmasterStudios.  Licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+
 * ["Restoration"](https://wiki.tuxemon.org/File:ORANGE_2.png) original sprite by josepharaoh99. Modifications by Sanglorian. Licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
 * ["Trepidation"](https://wiki.tuxemon.org/index.php?title=File:Interior_Tiles_by_ArMM1998.png) cut and resized by Jaskrendix from Interior tileset by ArMM1998. Licensed under CC0.
@@ -855,6 +857,8 @@ is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/
 * ["Boost Ranged"](https://wiki.tuxemon.org/File:Boost_4.png) Adapted by Sanglorian from a sprite from [https://github.com/alphaonex86/CatchChallenger-datapack Catch Challenger (CC BY)], art director Jordan Brule. Project developer Herman Brule.
 
 * ["Boost Speed"](https://wiki.tuxemon.org/File:Boost_5.png) Adapted by Sanglorian from a sprite from [https://github.com/alphaonex86/CatchChallenger-datapack Catch Challenger (CC BY)], art director Jordan Brule. Project developer Herman Brule.
+
+* ["Drone"](https://wiki.tuxemon.org/File:Pixel_icons_by_oceansdream16.png) [http://opengameart.org/content/various-inventory-24-pixel-icon-set CC BY 3.0 on OGA, from OceansDream]
 
 * ["Raise Armour"](https://wiki.tuxemon.org/File:Diamond_-_Clint_Bellanger.png) [http://opengameart.org/content/gem-icons CC BY-SA 3.0, on OpenGameArt]
 
@@ -883,6 +887,8 @@ is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/
 * ["Mystery Tea"](https://wiki.tuxemon.org/File:Tea_2.png) [https://opengameart.org/content/infusions-icons CC0]
 
 * ["Tea"](https://wiki.tuxemon.org/File:Tea_1.png) [https://opengameart.org/content/infusions-icons CC0]
+
+* ["Escape Key"](https://wiki.tuxemon.org/File:Item4.png) adapted by Sanglorian from a sprite by tamashihoshi, licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
 * ["Tuxeball Ancient"](https://wiki.tuxemon.org/File:Tuxeball_ancient.png) adapted by JaskRendix from a sprite by tamashihoshi, licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
@@ -938,13 +944,15 @@ is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/
 
 * ["Spyder Pass"](https://wiki.tuxemon.org/File:Item5.png) adapted by Sanglorian from a sprite by tamashihoshi, licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
+* ["Bivouac"](https://wiki.tuxemon.org/File:Pixel_icons_by_oceansdream4.png) [http://opengameart.org/content/various-inventory-24-pixel-icon-set CC BY 3.0 on OGA, from OceansDream]
+
 * ["Tuxepedia App"](https://wiki.tuxemon.org/File:Tuxepedia.png) [https://github.com/Tuxemon/Tuxemon/issues/452 Original source]
 
 * ["Earthmover Key"](https://wiki.tuxemon.org/index.php?title=Earthmover_Key) by Catch Challenger is licensed under CC-BY 4.0.
 
 * ["Hatchet"](https://wiki.tuxemon.org/index.php?title=File:Hatchet.png) [https://opengameart.org/content/icons-items-1 CC0 on OGA]
 
-* ["Fishing Rod"](https://wiki.tuxemon.org/index.php?title=Fishing_Rod) by Catch Challenger is licensed under CC-BY 4.0.
+* ["Fishing Rod"](https://wiki.tuxemon.org/index.php?title=Fishing_Rod) and ["Neptune"](https://wiki.tuxemon.org/File:Super-fishing-rod.png) by Catch Challenger are licensed under CC-BY 4.0. "Poseidon" adapted by JaskRendix from "Neptune". 
 
 * ["Surfboard"](https://wiki.tuxemon.org/File:Surfboard.png) from [https://github.com/alphaonex86/CatchChallenger-datapack Catch Challenger (CC BY)], art director Jordan Brule. Project developer Herman Brule.
 
@@ -1374,6 +1382,18 @@ By JaskRendix
 * ["Misc Hit Preview"](https://wiki.tuxemon.org/File:Misc_Hit_preview.gif)
 [https://opengameart.org/content/pixelated-hit-animations CC BY on OGA]  This work, made by Viktor Hahn (Viktor.Hahn@web.de), is licensed under the Creative Commons Attributio...
 
+* ["Horn"](https://wiki.tuxemon.org/File:Horn.gif)
+Animation by HippasusTwo
+
+* ["Stickyweb"](https://wiki.tuxemon.org/File:Stickyweb.gif)
+Animation by HippasusTwo
+
+* ["Celldivision"](https://wiki.tuxemon.org/File:Celldivision.gif)
+Animation by HippasusTwo
+
+* ["Smellysock"](https://wiki.tuxemon.org/File:Smellysock.gif)
+Animation by HippasusTwo
+
 * ["Needle"](https://wiki.tuxemon.org/images/9/95/Needle.gif)
 Animation by HippasusTwo
 
@@ -1700,6 +1720,42 @@ which is licensed under [CC-0 1.0](https://creativecommons.org/publicdomain/zero
 * ["Venom Type"](https://wiki.tuxemon.org/index.php?title=File:S_Poison01.png)
 Adapted by Sanglorian from a sprite by Henrique Lazarini from the CC0 "496 pixel art icons for medieval/fantasy RPG" set.
 
+* ["Fire Type - Small"](https://wiki.tuxemon.org/File:1.png)
+From the CC0 Superpowers Asset Packs. 
+
+* ["Earth Type - Small"](https://wiki.tuxemon.org/File:4.png)
+From the CC0 Superpowers Asset Packs. 
+
+* ["Cosmic Type - Small"](https://wiki.tuxemon.org/File:Cosmic2.png)
+From the CC0 gems by Winternaut on Open Game Art.
+
+* ["Frost Type - Small"](https://wiki.tuxemon.org/File:Frost-12px.png)
+From CC BY 3.0 sprites [https://opengameart.org/content/rock-rush-tiles-sprites-hud-backgrounds on Open Game Art] by EvidentlyCube. 
+
+* ["Heroic Type - Small"](https://wiki.tuxemon.org/File:Heroic-12px.png)
+From CC BY 3.0 military icons [https://opengameart.org/content/140-military-icons-set-fixed on Open Game Art] by AngryMeteor.com.
+
+* ["Lightning Type - Small"](https://wiki.tuxemon.org/File:3.png)
+From the CC0 Superpowers Asset Packs. 
+
+* ["Metal Type - Small"](https://wiki.tuxemon.org/File:Metal.png)
+From the CC0 Superpowers Asset Packs. 
+
+* ["Normal Type - Small"](https://wiki.tuxemon.org/File:7.png)
+From the CC0 Superpowers Asset Packs. 
+
+* ["Shadow Type - Small"](https://wiki.tuxemon.org/File:Darkness-12px.png)
+From CC BY 3.0 military icons [https://opengameart.org/content/140-military-icons-set-fixed on Open Game Art] by AngryMeteor.com.
+
+* ["Sky Type - Small"](https://wiki.tuxemon.org/File:Sky-12px.png)
+From CC BY 3.0 military icons [https://opengameart.org/content/140-military-icons-set-fixed on Open Game Art] by AngryMeteor.com.
+
+* ["Water Type - Small"](https://wiki.tuxemon.org/File:2.png)
+From the CC0 Superpowers Asset Packs. 
+
+* ["Wood Type - Small"](https://wiki.tuxemon.org/File:5.png)
+From the CC0 Superpowers Asset Packs. 
+
 ### Technique Icons
 
 * ["icon_blinded.png"](https://wiki.tuxemon.org/File:Blind.png)
@@ -1804,9 +1860,6 @@ Adapted by Jaskrendix from a sprite by Henrique Lazarini from the CC0 "496 pixel
 
 * ["icon_stuck.png"](https://wiki.tuxemon.org/File:Slow.png)
 [https://opengameart.org/content/rpg-ui-icons CC0 on OGA]
-
-* ["icon_tired.png"](https://wiki.tuxemon.org/File:Tired.png)
-[https://opengameart.org/content/smoke-fire-animated-particle-16x16 CC BY in OGA]
 
 * ["icon_wasting.png"](https://wiki.tuxemon.org/File:Poison-icon.png)
 Unknown artist. Found in Tuxemon code. 
@@ -2006,72 +2059,43 @@ licensed under [SIL Open Font License, 1.1](http://scripts.sil.org/OFL)
 * ["Noto Sans Japanese"](https://fonts.google.com/noto/specimen/Noto+Sans+JP)
 licensed under [SIL Open Font License, 1.1](http://scripts.sil.org/OFL)
 
-* ["Big Bottom Catroon Normal"](http://openfontlibrary.org/en/font/big-bottom-cartoon-normal) by
+* ["Big Bottom Cartoon Normal"](http://openfontlibrary.org/en/font/big-bottom-cartoon-normal) by
 [KarenBJones](http://openfontlibrary.org/en/member/KarenBJones) is licensed under
 [Bitstream Vera License](http://dejavu-fonts.org/wiki/License)
 
+* ["Pizel"](https://copheemoth.itch.io/pizel) by
+[CopheeMoth](https://copheemoth.itch.io/) is licensed under
+[CC-0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+
+* ["Minimal3x5"](https://fontstruct.com/fontstructions/show/1194671/minimal3x5) by
+[kheftel](https://copheemoth.itch.io/) is licensed under
+[CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+
+* ["Source Han Serif"](https://github.com/adobe-fonts/source-han-serif) by Adobe is licensed under [SIL Open Font License, 1.1](http://scripts.sil.org/OFL)
 
 Music
 ------
-* [A Night Of Dizzy Spells](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [All of Us](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [Arpanauts](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [Ascending](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [Boss Introduction](https://opengameart.org/content/boss-introduction) by Spring
-is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
-* [Chibi Ninja](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [Come and Find Me](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [Come and Find Me - B mix](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [Digital Native](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [Generic 8-bit JRPG Soundtrack](https://opengameart.org/content/generic-8-bit-jrpg-soundtrack) by t4ngr4m
-is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)    * Why do the nations so furiously rage together
-* [HHavok-intro](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [HHavok-main](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [Jumpshot](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [Lunar Joyride](https://opengameart.org/content/lunar-joyride-8-bit) by FoxSynergy
-is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
-* [Melody Eternal](https://opengameart.org/content/melody-eternal) by Trevor Lentz
-is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
-* [Peasant Kingdom](https://opengameart.org/content/peasant-kingdom) by Spring
-is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
-* [Prologue](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [Searching](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [Stand With Us](https://opengameart.org/content/stand-with-us) by Trevor Lentz
-is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
-* [Taking Poison](https://opengameart.org/content/taking-poison) by Trevor Lentz
-is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
-* [The Adventure Begins 8-bit Remix](opengameart.org/content/the-adventure-begins-8-bit-remix) by bart
-is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
-* [Through Pixelated Clouds](https://opengameart.org/content/through-pixelated-clouds-8-bit-airship-remix) by bart
-is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
-* [Underclocked](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [Unending Strike](https://opengameart.org/content/8bit-style-music) by Trevor Lentz
-is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
-* [Valor of Heroes](https://opengameart.org/content/valor-of-heroes) by Trevor Lentz
-is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
-* [We Persist](https://opengameart.org/content/we-persist) by Trevor Lentz
-is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
-* [We're all under the stars](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [We're the Resistors](http://EricSkiff.com/music) by Eric Skiff
-is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-* [back34](https://opengameart.org/content/8bit-style-music) by Tom Peter
-is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
-* Songs from the [JRPG Collection](https://opengameart.org/content/jrpg-collection) and [JRPG Collection 2](https://opengameart.org/content/jrpg-collection-2) by Yubatake are licensed under CC BY 3.0:
+* [A Night Of Dizzy Spells](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+* [All of Us](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+* [Boss Introduction](https://opengameart.org/content/boss-introduction) by Spring is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+* [Chibi Ninja](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+* [Come and Find Me](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+* [Digital Native](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+* [Searching](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+* [HHavok-intro](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+* [HHavok-main](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+* [Jumpshot](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+* [Lunar Joyride](https://opengameart.org/content/lunar-joyride-8-bit) by FoxSynergy is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+* [Melody Eternal](https://opengameart.org/content/melody-eternal) by Trevor Lentz is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
+* [Taking Poison](https://opengameart.org/content/taking-poison) by Trevor Lentz is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
+* [Peasant Kingdom](https://opengameart.org/content/peasant-kingdom) by Spring is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+* [Stand With Us](https://opengameart.org/content/stand-with-us) by Trevor Lentz is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
+* [Jester Theme](https://hydrogene.itch.io/high-quality-8-bit-musics) by Hydrogene is licensed under [CC0](https://creativecommons.org/publicdomain/zero/1.0/)
+* [The Adventure Begins 8-bit Remix](https://opengameart.org/content/the-adventure-begins-8-bit-remix) by bart is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+* [Through Pixelated Clouds](https://opengameart.org/content/through-pixelated-clouds-8-bit-airship-remix) by bart is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+* [back34](https://opengameart.org/content/8bit-style-music) by Tom Peter is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
+
+* Songs from the [JRPG Collection](https://opengameart.org/content/jrpg-collection) and [JRPG Collection 2](https://opengameart.org/content/jrpg-collection-2) by Yubatake are licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/):
   * princess
   * winBattle
   * winBattleBig
@@ -2084,8 +2108,11 @@ is licensed under [CC-BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/
   * mysticIsle
   * battle
   * battleFinal
-* Songs from [Ove's Essential Game Audio Pack Collection](https://opengameart.org/content/oves-essential-game-audio-pack-collection-160-files-updated) by Ove Melaa are licensed under CC BY 3.0;
+
+* Songs from [Ove's Essential Game Audio Pack Collection](https://opengameart.org/content/oves-essential-game-audio-pack-collection-160-files-updated) by Ove Melaa are licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/):
   * All music under `OveMelaaFullScores` and `OveMelaaLoops`
+
+* [Generic 8-bit JRPG Soundtrack](https://opengameart.org/content/generic-8-bit-jrpg-soundtrack) by AVGVSTA is licensed under [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/), including "Enter the Emperor"
 
 Sounds
 --------
@@ -2102,22 +2129,47 @@ Sounds
 [NenadSimic](https://www.freesound.org/people/NenadSimic/) has been dedicated to
 [Public Domain](https://creativecommons.org/publicdomain/zero/1.0/)
 
-* ["Kelvin Shadewing's Soundpack Vol. 1"](http://kelvinshadewing.net/sndPack1.php) by
-[Kelvin Shadewing](http://kelvinshadewing.net) is licensed under
-[XYG Open Source License v1.1](http://kelvinshadewing.net/license.php).
-
-* ["Kelvin Shadewing's Soundpack Vol. 2"](http://kelvinshadewing.net/sndPack2.php) by
-[Kelvin Shadewing](http://kelvinshadewing.net) is licensed under
-[XYG Open Source License v1.1](http://kelvinshadewing.net/license.php).
-
-* ["Kelvin Shadewing's Soundpack Vol. 3"](http://kelvinshadewing.net/sndPack3.php) by
-[Kelvin Shadewing](http://kelvinshadewing.net) is licensed under
-[XYG Open Source License v1.1](http://kelvinshadewing.net/license.php).
+* ["Kelvin Shadewing's Soundpacks Vol. 1, 2 and 3"](http://www.kelvinshadewing.net/res/sounds) by
+[Kelvin Shadewing](http://kelvinshadewing.net) are licensed under
+[CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
 
 * "Tux Sound" by
 [Hyperdriveguy](https://github.com/hyperdriveguy) is licensed under
 [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) based upon [magellanic penguin](http://www.freesound.org/people/soundbytez/sounds/111079/) by [soundbytez](http://www.freesound.org/people/soundbytez/)
 
+* "Ship Bell" by [Mike Koenig](https://soundbible.com/1746-Ship-Bell.html) is licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+
+* "Temple Bell" by [Mike Koenig](https://soundbible.com/1531-Temple-Bell.html) is licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+
+* "Japanese Temple Bell Small" by [Mike Koenig](https://soundbible.com/1496-Japanese-Temple-Bell-Small.html) is licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+
+* "splash-1.wav" by [FreqMan](https://www.freesound.org/people/FreqMan/sounds/25819/) is licensed under CC BY 4.0.
+
+* "cat-purr-twit5.wav" and "cat-meow3.wav" by [Steffcaffrey](https://wiki.tuxemon.org/File:262310_steffcaffrey_cat-purr-twit5.wav) are licensed under CC0.
+
+* "bite-cartoon-style.mp3", "creature-roar.mp3", "robotic-pig.mp3", "crow-caw.mp3" and "game-shot-light-gun.wav" by [josepharaoh99](https://freesound.org/people/Jofae/) are licensed under CC0.
+
+* "Bark.wav", "Steel Clang.wav", "Swords Clash.wav", "Woosh-1.wav" and "Woosh-2.wav" by [Superpowers Asset Packs](https://github.com/sparklinlabs/superpowers-asset-packs) are licensed under CC0.
+
+* "bug_03.ogg", "bug_05.ogg", "bug_09.ogg", "bug_12.ogg", "burble_02.ogg", "burp_02.ogg", "cute_01.ogg" through "cute_04.ogg", "die_04.ogg", "eat_01.ogg", "eat_03.ogg", "grunt_02.ogg" through "grunt_04.ogg", "human_06.ogg", "monster_05.ogg", "monster_06.ogg", "monster_16.ogg", "monster_17.ogg", "monster_19.ogg", "misc_06.ogg", "misc_07.ogg", "misc_10.ogg", "misc_12.ogg", "roar_03.ogg", "roar_05.ogg", "spit_01.ogg", "spit_02.ogg", "troll_01.ogg", "troll_02.ogg" and "weird_09.ogg" by rubberduck ((pack 1)[https://opengameart.org/content/80-cc0-creature-sfx] and (pack 2)[https://opengameart.org/content/80-cc0-creture-sfx-2]) are licensed under CC0.
+
+* "Misc 06 wood and metal.ogg", "Misc_07_metal.ogg" and "Stones_04.ogg" by [rubberduck](https://opengameart.org/users/rubberduck) are licensed under CC0.
+
+* "retro_beep05.ogg", "retro_beep06.ogg", "shoot_02.ogg", "teleport_02.ogg" and "terminal_03.ogg" by [rubberduck](https://opengameart.org/content/50-cc0-sci-fi-sfx) are licensed under CC0.
+
+* "spell_fire_06.ogg" and "spell_fire_07.ogg" by [rubberduck](https://opengameart.org/content/80-cc0-rpg-sfx) is licensed under CC0.
+
+* "Echo-gurgle-whoosh 1.wav" by [Arthur](https://opengameart.org/content/warp-sound-3) is licensed under CC BY-SA 3.0.
+
+* ["Foom_0.wav"](https://opengameart.org/content/spell-4-fire) and [Growl1.wav](https://opengameart.org/content/6-monstrous-growls) by Bart K is licensed under CC BY 3.0.
+
+* "Ice.wav" by [bart](https://opengameart.org/content/ice-spells) is licensed under CC0.
+
+* "ghost_1.ogg" by [The Berklee College of Music](https://opengameart.org/content/scary-ghost-1) is licensed under CC BY 3.0.
+
+* "Insekt.ogg" by [Tim Mortimer](https://opengameart.org/content/chirp-loop) is licensed under CC BY 3.0.
+
+* "coinecho.wav" by [NenadSimic](https://opengameart.org/content/picked-coin-echo-2) is licensed under CC BY 3.0.
 
 Translations
 --------------

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.prepare import CAMERA_SHAKE_RANGE
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.platform.const.sizes import CAMERA_SHAKE_RANGE
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -37,14 +37,13 @@ class CameraShakeAction(EventAction):
     intensity: float
     duration: float
 
-    def start(self) -> None:
-        world = self.session.client.get_state_by_name(WorldState)
+    def start(self, session: Session) -> None:
         lower, upper = CAMERA_SHAKE_RANGE
         if not lower <= self.intensity <= upper:
             logger.error(
                 f"{self.intensity} must be between {lower} and {upper}",
             )
-        camera = world.camera_manager.get_active_camera()
+        camera = session.client.camera_manager.get_active_camera()
         if camera is None:
             logger.error("No active camera found.")
             return

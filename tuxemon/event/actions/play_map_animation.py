@@ -1,15 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
 from typing import final
 
-from tuxemon.animation_entity import setup_and_play_animation
-from tuxemon.event import get_npc
+from tuxemon.db import LoopMode
 from tuxemon.event.eventaction import EventAction
-from tuxemon.states.world.worldstate import WorldState
+from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
 
@@ -42,22 +41,25 @@ class PlayMapAnimationAction(EventAction):
     loop: str
     character: str
 
-    def start(self) -> None:
-        character = get_npc(self.session, self.character)
+    def start(self, session: Session) -> None:
+        character = session.get_npc(self.character)
 
         if character is None:
             logger.error(f"Character '{self.character}' not found")
             return
 
-        world_state = self.session.client.get_state_by_name(WorldState)
-        position = character.tile_pos
-        animations = world_state.map_renderer.map_animations
+        if self.loop == "loop":
+            loop_mode = LoopMode.INFINITE
+        elif self.loop == "noloop":
+            loop_mode = LoopMode.NO_LOOP
+        else:
+            raise ValueError(f"{self.loop} value must be 'loop' or 'noloop'")
 
-        setup_and_play_animation(
-            animation_name=self.animation_name,
+        manager = session.client.map_renderer.map_animations
+        manager.setup_and_play(
+            slug=self.animation_name,
             duration=self.duration,
-            loop=self.loop,
-            position=position,
-            animations=animations,
+            loop=loop_mode,
+            position=character.tile_pos,
             layer=4,
         )

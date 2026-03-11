@@ -1,30 +1,36 @@
 {
   "tech_id": 36,
   "accuracy": 1,
-  "animation": "lightning_bolt_138",
   "effects": [
     {
       "type": "give",
-      "parameters": ["focused", "own_monster"]
+      "parameters": [
+        "focused",
+        "own_monster"
+      ]
     },
     {
-      "type": "give",
-      "parameters": ["tired", "enemy_monster"]
+      "type": "remove",
+      "parameters": [
+        "positive",
+        "enemy_monster"
+      ]
     },
     {
       "type": "damage"
     }
   ],
-  "flip_axes": "",
-  "is_fast": false,
+  "speed": "normal",
   "potency": 1,
   "power": 1,
   "range": "melee",
   "recharge": 1,
-  "sfx": "sfx_blaster",
   "slug": "feint",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -34,11 +40,22 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["sharp"],
+  "tags": [
+    "sharp"
+  ],
   "types": [
-    "aether"
+    "normal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "lightning_bolt_138",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_kick",
+    "volume": 1.5
+  }
 }

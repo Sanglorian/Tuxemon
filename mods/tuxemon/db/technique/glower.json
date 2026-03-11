@@ -1,23 +1,26 @@
 {
   "tech_id": 13,
   "accuracy": 1,
-  "animation": "green_circle",
   "effects": [
     {
       "type": "give",
-      "parameters": ["softened", "enemy_monster"]
+      "parameters": [
+        "softened",
+        "enemy_monster"
+      ]
     }
   ],
-  "flip_axes": "",
-  "is_fast": true,
+  "speed": "very_fast",
   "potency": 1,
   "power": 0,
   "range": "special",
   "recharge": 2,
-  "sfx": "sfx_blaster",
   "slug": "glower",
   "sort": "damage",
   "modifiers": [],
+  "behaviors": {
+    "bypasses_selection": true
+  },
   "target": {
     "enemy_monster": true,
     "enemy_team": false,
@@ -27,11 +30,23 @@
     "own_trainer": false
   },
   "category": "condition_imposer",
-  "tags": ["gaze", "fury"],
+  "tags": [
+    "gaze",
+    "fury"
+  ],
   "types": [
-    "aether"
+    "normal"
   ],
   "use_failure": "combat_miss",
   "use_success": null,
-  "use_tech": "combat_used_x"
+  "use_tech": "combat_used_x",
+  "visuals": {
+    "animation": "green_circle",
+    "flip_axes": "",
+    "loop": 0
+  },
+  "sound": {
+    "sfx": "sfx_shine",
+    "volume": 1.5
+  }
 }

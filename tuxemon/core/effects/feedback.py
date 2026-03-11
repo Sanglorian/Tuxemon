@@ -1,56 +1,73 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from tuxemon.combat import fainted
-from tuxemon.core.core_effect import StatusEffect, StatusEffectResult
-from tuxemon.monster import Monster
-from tuxemon.status.status import Status
+from tuxemon.core.core_effect import CoreEffect, StatusEffectResult
+from tuxemon.db import EffectPhase
+from tuxemon.monster.monster import Monster
 from tuxemon.technique.technique import Technique
+
+if TYPE_CHECKING:
+    from tuxemon.session import Session
+    from tuxemon.status.status import Status
 
 
 @dataclass
-class FeedBackEffect(StatusEffect):
+class FeedBackEffect(CoreEffect):
     """
-    Each time you are hit by a Special move the attacker takes damage equal to
-    your maximum HP divided by the divisor.
+    Applies the "feedback" status to a monster.
 
-    Parameters:
-        divisor: The divisor used to calculate the damage.
-        ranges: The ranges of moves that trigger the effect.
+    This effect reflects damage back to the attacker whenever the host is hit
+    by a qualifying Special move. The reflected damage is equal to the host's
+    maximum HP divided by the specified divisor.
+
+    **Parameters**
+
+    - ``divisor``: The divisor used to calculate reflected damage.
+    - ``ranges``: A colon-separated string of move ranges that trigger the effect
+      (e.g. ``"short:long"``).
+
+    **Example**
+
+    .. code-block:: json
+
+        "effects": [
+            "feedback 4 short:long"
+        ]
     """
 
     name = "feedback"
     divisor: int
     ranges: str
 
-    def apply(self, status: Status, target: Monster) -> StatusEffectResult:
-        done: bool = False
-        ranges = self.ranges.split(":")
-        assert status.combat_state
-        combat = status.combat_state
-        log = combat._action_queue
-        turn = combat._turn
-        action = log.get_last_action(turn, target, "target")
+    def apply_status(
+        self, session: Session, status: Status
+    ) -> StatusEffectResult:
+
+        host = status.host
+
+        if not status.has_phase(EffectPhase.PERFORM_STATUS):
+            return StatusEffectResult(name=status.name, success=False)
+
+        combat = session.client.combat_session
+        action = combat.action_queue.get_last_action(
+            combat.turn, host, "target"
+        )
 
         if (
             action
             and isinstance(action.method, Technique)
             and isinstance(action.user, Monster)
+            and action.method.hit
+            and action.method.range in self.ranges.split(":")
+            and action.target.instance_id == host.instance_id
+            and not action.user.is_fainted
         ):
-            method = action.method
-            attacker = action.user
+            damage = host.hp // self.divisor
+            action.user.current_hp = max(0, action.user.current_hp - damage)
+            return StatusEffectResult(name=status.name, success=True)
 
-            if (
-                status.phase == "perform_action_status"
-                and method.hit
-                and method.range in ranges
-                and action.target.instance_id == target.instance_id
-                and not fainted(attacker)
-            ):
-                damage = target.hp // self.divisor
-                attacker.current_hp = max(0, attacker.current_hp - damage)
-                done = True
-        return StatusEffectResult(name=status.name, success=done)
+        return StatusEffectResult(name=status.name, success=False)

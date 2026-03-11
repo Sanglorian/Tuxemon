@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0
-# Copyright (c) 2014-2025 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 #
 # fusion Module to fuse the face and body of two sprites.
 #               Based on Pokemon Fusion by Alex Onsager
@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 import logging
 from collections.abc import Mapping
-from typing import Any, Optional
+from typing import Any
 
 from PIL import Image as PILImage
 from PIL.Image import Image
@@ -41,7 +41,6 @@ class Body:
         >>> # Fuse the sprites.
         >>> fuse(body=sapsnap, face=vivitron)
         >>> fuse(body=vivitron, face=sapsnap)
-
     """
 
     face_image: Image
@@ -106,11 +105,8 @@ class Body:
         Returns:
             A tuple (x, y) of the face size in pixels.
         """
-
-        img = self.face_image
-        img = img.convert("RGBA")
-        self.face_size = img.getdata().size
-
+        img = self.face_image.convert("RGBA")
+        self.face_size = img.size
         return self.face_size
 
     def to_json(self) -> str:
@@ -120,14 +116,14 @@ class Body:
         Returns:
             A json string of the current instance.
         """
-
-        body_dict = self.__dict__
-        del body_dict["body_image"]
-        del body_dict["face_image"]
-
+        body_dict = {
+            k: v
+            for k, v in self.__dict__.items()
+            if k not in ("body_image", "face_image")
+        }
         return json.dumps(body_dict)
 
-    def save(self, filename: Optional[str] = None) -> None:
+    def save(self, filename: str | None = None) -> None:
         """
         Saves the current instance and all its properties to a json file.
 
@@ -136,7 +132,7 @@ class Body:
         """
 
         if not filename:
-            filename = "fusion/%s.json" % self.name
+            filename = f"fusion/{self.name}.json"
 
         output = self.to_json()
         with open(filename, "w") as f:
@@ -198,13 +194,13 @@ class Body:
         if self.face_image_path:
             self.face_image = PILImage.open(self.face_image_path)
 
-    def get_state(self) -> Optional[Mapping[str, Any]]:
+    def get_state(self) -> Mapping[str, Any] | None:
         if self.name:
             return self.__dict__
 
         return None
 
-    def set_state(self, save_data: Optional[Mapping[str, Any]]) -> None:
+    def set_state(self, save_data: Mapping[str, Any] | None) -> None:
         # TODO: There's no point optimising this until Body is actually used.
         if save_data:
             for attr, value in save_data.items():
@@ -228,36 +224,32 @@ def replace_color(
 
     Returns:
         A PIL Image() object of the image with the given colors replaced.
-
     """
     img = image.convert("RGBA")
-    datas = list(img.getdata())
+    raw = bytearray(img.tobytes())
 
-    r = original_color[0]
-    g = original_color[1]
-    b = original_color[2]
+    r, g, b = original_color
+    new_r, new_g, new_b = replacement_color
 
-    new_r = replacement_color[0]
-    new_g = replacement_color[1]
-    new_b = replacement_color[2]
+    for i in range(0, len(raw), 4):
+        cr = raw[i]
+        cg = raw[i + 1]
+        cb = raw[i + 2]
 
-    newData = []
-    for item in datas:
-        if item[0] == r and item[1] == g and item[2] == b:
-            newData.append((new_r, new_g, new_b, 255))
-        else:
-            newData.append(item)
+        if (cr, cg, cb) == (r, g, b):
+            raw[i] = new_r
+            raw[i + 1] = new_g
+            raw[i + 2] = new_b
+            raw[i + 3] = 255  # alpha
 
-    img.putdata(newData)
-
-    return img
+    return PILImage.frombytes("RGBA", img.size, bytes(raw))
 
 
 def fuse(
     body: Body,
     face: Body,
     save: bool = True,
-    filename: Optional[str] = None,
+    filename: str | None = None,
 ) -> Image:
     """Fuses two sprites together given a body and a face.
 
@@ -287,8 +279,6 @@ def fuse(
         >>> # Fuse the sprites.
         >>> fuse(body=sapsnap, face=vivitron)
         >>> fuse(body=vivitron, face=sapsnap)
-
-
     """
     logger.info(
         f"Starting fusion for body '{body.name}' and face '{face.name}'."

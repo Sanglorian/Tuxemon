@@ -3500,9 +3500,6 @@ msgstr "Enforcer"
 msgid "spyder_route2_roddick"
 msgstr "Roddick"
 
-msgid "spyder_goth"
-msgstr "Gothique"
-
 msgid "spyder_florist"
 msgstr "Fleuriste"
 

@@ -11,12 +11,12 @@
 92,92,92,92,92,92,92,92,92,92,92,92,92,92,92,92,92,92,92,92,
 92,92,92,92,92,92,92,137,137,137,137,137,137,92,92,92,92,92,92,92,
 92,92,92,92,92,137,137,137,137,137,137,137,137,137,137,137,92,92,92,92,
-92,92,92,137,137,137,137,137,137,613,613,613,137,137,137,137,137,92,92,92,
-92,92,92,137,137,137,137,137,613,613,613,613,613,137,137,137,137,137,92,92,
-92,92,137,137,137,137,137,613,613,613,613,613,613,613,137,137,137,137,92,92,
-92,92,137,137,137,137,137,613,613,613,613,613,613,613,137,137,137,137,92,92,
-92,92,137,137,137,137,137,137,613,613,613,613,613,137,137,137,137,137,92,92,
-92,92,92,137,137,137,137,137,137,613,613,613,137,137,137,137,137,137,92,92,
+92,92,92,137,137,137,137,137,137,684,684,684,137,137,137,137,137,92,92,92,
+92,92,92,137,137,137,137,137,906,1269,1269,1269,905,137,137,137,137,137,92,92,
+92,92,137,137,137,137,137,720,1269,1269,1269,1269,1269,722,137,137,137,137,92,92,
+92,92,137,137,137,137,137,720,1269,1269,1269,1269,1269,722,137,137,137,137,92,92,
+92,92,137,137,137,137,137,137,869,1269,1269,1269,868,137,137,137,137,137,92,92,
+92,92,92,137,137,137,137,137,137,758,758,758,137,137,137,137,137,137,92,92,
 92,92,92,137,137,137,137,137,137,137,137,137,137,137,137,137,137,92,92,92,
 92,92,92,92,137,137,137,137,137,137,137,137,137,137,137,137,92,92,92,92,
 92,92,92,92,137,137,137,137,137,137,137,137,137,137,137,137,92,92,92,92,
@@ -104,7 +104,7 @@
  <objectgroup color="#ffff00" id="3" name="Events">
   <object id="1" name="Teleport to Volcano Village" type="event" x="16" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_village.tmx,0,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_village.tmx,0,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -112,7 +112,7 @@
   </object>
   <object id="2" name="Teleport to Volcano Village" type="event" x="32" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_village.tmx,1,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_village.tmx,1,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -120,7 +120,7 @@
   </object>
   <object id="3" name="Teleport to Volcano Village" type="event" x="48" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_village.tmx,2,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_village.tmx,2,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -128,7 +128,7 @@
   </object>
   <object id="4" name="Teleport to Volcano Village" type="event" x="64" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_village.tmx,3,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_village.tmx,3,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -136,7 +136,7 @@
   </object>
   <object id="5" name="Teleport to Volcano Village" type="event" x="80" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_village.tmx,4,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_village.tmx,4,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -144,7 +144,7 @@
   </object>
   <object id="6" name="Teleport to Volcano Village" type="event" x="96" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_village.tmx,5,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_village.tmx,5,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -152,7 +152,7 @@
   </object>
   <object id="7" name="Teleport to Volcano Village" type="event" x="112" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_village.tmx,6,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_village.tmx,6,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -160,7 +160,7 @@
   </object>
   <object id="8" name="Teleport to Volcano Village" type="event" x="128" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_village.tmx,7,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_village.tmx,7,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -168,7 +168,7 @@
   </object>
   <object id="9" name="Teleport to Volcano Village" type="event" x="144" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_village.tmx,8,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_village.tmx,8,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -176,7 +176,7 @@
   </object>
   <object id="10" name="Teleport to Volcano Village" type="event" x="160" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_village.tmx,9,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_village.tmx,9,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -184,7 +184,7 @@
   </object>
   <object id="11" name="Teleport to Volcano Village" type="event" x="176" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_village.tmx,20,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_village.tmx,20,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -192,7 +192,7 @@
   </object>
   <object id="12" name="Teleport to Volcano Village" type="event" x="192" y="304" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_village.tmx,10,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_village.tmx,10,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -200,92 +200,92 @@
   </object>
   <object id="26" name="Teleport to Underwater Cave" type="event" x="128" y="128" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_underwater.tmx,42,42,0.5"/>
+    <property name="act1" value="transition_teleport player,water_underwater.tmx,42,42,0.5"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="27" name="Teleport to Underwater Cave" type="event" x="144" y="144" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_underwater.tmx,42,42,0.5"/>
+    <property name="act1" value="transition_teleport player,water_underwater.tmx,42,42,0.5"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="28" name="Teleport to Underwater Cave" type="event" x="160" y="144" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_underwater.tmx,42,42,0.5"/>
+    <property name="act1" value="transition_teleport player,water_underwater.tmx,42,42,0.5"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="29" name="Teleport to Underwater Cave" type="event" x="176" y="144" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_underwater.tmx,42,42,0.5"/>
+    <property name="act1" value="transition_teleport player,water_underwater.tmx,42,42,0.5"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="30" name="Teleport to Underwater Cave" type="event" x="192" y="128" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_underwater.tmx,42,42,0.5"/>
+    <property name="act1" value="transition_teleport player,water_underwater.tmx,42,42,0.5"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="31" name="Teleport to Underwater Cave" type="event" x="208" y="112" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_underwater.tmx,42,42,0.5"/>
+    <property name="act1" value="transition_teleport player,water_underwater.tmx,42,42,0.5"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="32" name="Teleport to Underwater Cave" type="event" x="208" y="96" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_underwater.tmx,42,42,0.5"/>
+    <property name="act1" value="transition_teleport player,water_underwater.tmx,42,42,0.5"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="33" name="Teleport to Underwater Cave" type="event" x="192" y="80" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_underwater.tmx,42,42,0.5"/>
+    <property name="act1" value="transition_teleport player,water_underwater.tmx,42,42,0.5"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="34" name="Teleport to Underwater Cave" type="event" x="176" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_underwater.tmx,42,42,0.5"/>
+    <property name="act1" value="transition_teleport player,water_underwater.tmx,42,42,0.5"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="35" name="Teleport to Underwater Cave" type="event" x="160" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_underwater.tmx,42,42,0.5"/>
+    <property name="act1" value="transition_teleport player,water_underwater.tmx,42,42,0.5"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="36" name="Teleport to Underwater Cave" type="event" x="144" y="64" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_underwater.tmx,42,42,0.5"/>
+    <property name="act1" value="transition_teleport player,water_underwater.tmx,42,42,0.5"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="37" name="Teleport to Underwater Cave" type="event" x="128" y="80" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_underwater.tmx,42,42,0.5"/>
+    <property name="act1" value="transition_teleport player,water_underwater.tmx,42,42,0.5"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="38" name="Teleport to Underwater Cave" type="event" x="112" y="96" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_underwater.tmx,42,42,0.5"/>
+    <property name="act1" value="transition_teleport player,water_underwater.tmx,42,42,0.5"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="39" name="Teleport to Underwater Cave" type="event" x="112" y="112" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_underwater.tmx,42,42,0.5"/>
+    <property name="act1" value="transition_teleport player,water_underwater.tmx,42,42,0.5"/>
     <property name="cond1" value="is char_at player"/>
    </properties>
   </object>
   <object id="46" name="Create Old Guy 3" type="event" x="112" y="224" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc water_maniac,8,15"/>
-    <property name="cond1" value="not npc_exists water_maniac"/>
+    <property name="cond1" value="not char_exists water_maniac"/>
    </properties>
   </object>
   <object id="47" name="Talk Old Guy 3" type="event" x="128" y="240" width="16" height="16">
@@ -298,14 +298,14 @@
   </object>
   <object id="48" name="Play Music" type="event" x="0" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="play_music music_underclocked"/>
-    <property name="cond1" value="not music_playing music_underclocked"/>
+    <property name="act1" value="play_music music_fields_loop"/>
+    <property name="cond1" value="not music_playing music_fields_loop"/>
    </properties>
   </object>
   <object id="49" name="Set Environment" type="event" x="32" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:sand"/>
-    <property name="cond1" value="not variable_set environment:sand"/>
+    <property name="act1" value="set_environment sand"/>
+    <property name="cond1" value="not environment_is sand"/>
    </properties>
   </object>
   <object id="50" name="Random Encounter" type="event" x="176" y="176" width="48" height="80">

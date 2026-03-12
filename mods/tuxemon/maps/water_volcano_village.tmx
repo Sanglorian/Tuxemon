@@ -145,7 +145,7 @@
  <objectgroup color="#ffff00" id="4" name="Events">
   <object id="4" name="Teleport to Ice Route" type="event" x="0" y="464" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_route_ice.tmx,28,24,0.5"/>
+    <property name="act1" value="transition_teleport player,water_route_ice.tmx,28,24,0.5"/>
     <property name="act2" value="char_face player,left"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,left"/>
@@ -153,7 +153,7 @@
   </object>
   <object id="5" name="Teleport to Volcano Path" type="event" x="0" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_path.tmx,1,19,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_path.tmx,1,19,0.5"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -161,7 +161,7 @@
   </object>
   <object id="6" name="Teleport to Volcano Path" type="event" x="16" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_path.tmx,2,19,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_path.tmx,2,19,0.5"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -169,7 +169,7 @@
   </object>
   <object id="7" name="Teleport to Volcano Path" type="event" x="32" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_path.tmx,3,19,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_path.tmx,3,19,0.5"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -177,7 +177,7 @@
   </object>
   <object id="8" name="Teleport to Volcano Path" type="event" x="48" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_path.tmx,4,19,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_path.tmx,4,19,0.5"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -185,7 +185,7 @@
   </object>
   <object id="9" name="Teleport to Volcano Path" type="event" x="64" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_path.tmx,5,19,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_path.tmx,5,19,0.5"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -193,7 +193,7 @@
   </object>
   <object id="10" name="Teleport to Volcano Path" type="event" x="80" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_path.tmx,6,19,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_path.tmx,6,19,0.5"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -201,7 +201,7 @@
   </object>
   <object id="11" name="Teleport to Volcano Path" type="event" x="96" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_path.tmx,7,19,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_path.tmx,7,19,0.5"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -209,7 +209,7 @@
   </object>
   <object id="12" name="Teleport to Volcano Path" type="event" x="112" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_path.tmx,8,19,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_path.tmx,8,19,0.5"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -217,7 +217,7 @@
   </object>
   <object id="13" name="Teleport to Volcano Path" type="event" x="128" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_path.tmx,9,19,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_path.tmx,9,19,0.5"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -225,7 +225,7 @@
   </object>
   <object id="14" name="Teleport to Volcano Path" type="event" x="144" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_path.tmx,10,19,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_path.tmx,10,19,0.5"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -233,7 +233,7 @@
   </object>
   <object id="15" name="Teleport to Volcano Path" type="event" x="160" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_volcano_path.tmx,11,19,0.5"/>
+    <property name="act1" value="transition_teleport player,water_volcano_path.tmx,11,19,0.5"/>
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
@@ -241,7 +241,7 @@
   </object>
   <object id="16" name="Teleport to Ice Route" type="event" x="0" y="448" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_route_ice.tmx,28,23,0.5"/>
+    <property name="act1" value="transition_teleport player,water_route_ice.tmx,28,23,0.5"/>
     <property name="act2" value="char_face player,left"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,left"/>
@@ -249,7 +249,7 @@
   </object>
   <object id="17" name="Teleport to Ice Route" type="event" x="0" y="432" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_route_ice.tmx,28,22,0.5"/>
+    <property name="act1" value="transition_teleport player,water_route_ice.tmx,28,22,0.5"/>
     <property name="act2" value="char_face player,left"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,left"/>
@@ -257,7 +257,7 @@
   </object>
   <object id="18" name="Teleport to Ice Route" type="event" x="0" y="416" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_route_ice.tmx,28,21,0.5"/>
+    <property name="act1" value="transition_teleport player,water_route_ice.tmx,28,21,0.5"/>
     <property name="act2" value="char_face player,left"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,left"/>
@@ -266,7 +266,7 @@
   <object id="19" name="Create Volcano Guy 1" type="event" x="96" y="368" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc water_scientist,6,23"/>
-    <property name="cond1" value="not npc_exists water_scientist"/>
+    <property name="cond1" value="not char_exists water_scientist"/>
    </properties>
   </object>
   <object id="20" name="Talk Volcano Guy 1" type="event" x="112" y="384" width="16" height="16">
@@ -279,7 +279,7 @@
   <object id="21" name="Create Volcano Guy 2" type="event" x="240" y="256" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc water_niceguy1,15,16"/>
-    <property name="cond1" value="not npc_exists water_niceguy1"/>
+    <property name="cond1" value="not char_exists water_niceguy1"/>
    </properties>
   </object>
   <object id="22" name="Talk Volcano Guy 2" type="event" x="256" y="272" width="16" height="16">
@@ -292,7 +292,7 @@
   <object id="23" name="Create Volcano Guy 3" type="event" x="64" y="48" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc water_niceguy2,4,3"/>
-    <property name="cond1" value="not npc_exists water_niceguy2"/>
+    <property name="cond1" value="not char_exists water_niceguy2"/>
    </properties>
   </object>
   <object id="24" name="Talk Volcano Guy 3" type="event" x="80" y="64" width="16" height="16">
@@ -309,8 +309,8 @@
   </object>
   <object id="26" name="Set Environment" type="event" x="272" y="16" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:sand"/>
-    <property name="cond1" value="not variable_set environment:sand"/>
+    <property name="act1" value="set_environment sand"/>
+    <property name="cond1" value="not environment_is sand"/>
    </properties>
   </object>
  </objectgroup>

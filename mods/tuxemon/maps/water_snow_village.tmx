@@ -145,7 +145,7 @@
  <objectgroup color="#ffff00" id="5" name="Events">
   <object id="1" name="Teleport to Ice Route" type="event" x="176" y="464" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_route_ice.tmx,11,1,0.5"/>
+    <property name="act1" value="transition_teleport player,water_route_ice.tmx,11,1,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -154,7 +154,7 @@
   <object id="6" name="Create Mayor" type="event" x="272" y="208" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc water_snow_mayor,16,13"/>
-    <property name="cond1" value="not npc_exists water_snow_mayor"/>
+    <property name="cond1" value="not char_exists water_snow_mayor"/>
    </properties>
   </object>
   <object id="7" name="Talk Mayor 1" type="event" x="336" y="192" width="16" height="16">
@@ -186,7 +186,7 @@
   </object>
   <object id="11" name="Teleport to Ice Route" type="event" x="192" y="464" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_route_ice.tmx,12,1,0.5"/>
+    <property name="act1" value="transition_teleport player,water_route_ice.tmx,12,1,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -194,7 +194,7 @@
   </object>
   <object id="12" name="Teleport to Ice Route" type="event" x="208" y="464" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_route_ice.tmx,13,1,0.5"/>
+    <property name="act1" value="transition_teleport player,water_route_ice.tmx,13,1,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -202,7 +202,7 @@
   </object>
   <object id="13" name="Teleport to Ice Route" type="event" x="224" y="464" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_route_ice.tmx,14,1,0.5"/>
+    <property name="act1" value="transition_teleport player,water_route_ice.tmx,14,1,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -210,7 +210,7 @@
   </object>
   <object id="14" name="Teleport to Ice Route" type="event" x="240" y="464" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_route_ice.tmx,15,1,0.5"/>
+    <property name="act1" value="transition_teleport player,water_route_ice.tmx,15,1,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -323,13 +323,13 @@
   <object id="27" name="Create Snow Nice Guy 1" type="event" x="160" y="288" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc water_niceguy1,10,18"/>
-    <property name="cond1" value="not npc_exists water_niceguy1"/>
+    <property name="cond1" value="not char_exists water_niceguy1"/>
    </properties>
   </object>
   <object id="28" name="Create Snow Nice Guy 2" type="event" x="336" y="336" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc water_niceguy2,21,21"/>
-    <property name="cond1" value="not npc_exists water_niceguy2"/>
+    <property name="cond1" value="not char_exists water_niceguy2"/>
    </properties>
   </object>
   <object id="29" name="Talk Snow Nice Guy 1" type="event" x="176" y="304" width="16" height="16">
@@ -347,8 +347,8 @@
   </object>
   <object id="31" name="Create Nurse" type="event" x="224" y="432" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_nurse,14,27"/>
-    <property name="cond1" value="not npc_exists spyder_nurse"/>
+    <property name="act1" value="create_npc water_nurse,14,27"/>
+    <property name="cond1" value="not char_exists water_nurse"/>
    </properties>
   </object>
   <object id="32" name="Talk Nurse" type="event" x="240" y="416" width="16" height="16">
@@ -357,7 +357,7 @@
     <property name="act2" value="set_monster_health"/>
     <property name="act3" value="set_monster_status"/>
     <property name="act4" value="translated_dialog water_nurse2"/>
-    <property name="behav1" value="talk spyder_nurse"/>
+    <property name="behav1" value="talk water_nurse"/>
    </properties>
   </object>
   <object id="33" name="Play Music" type="event" x="0" y="0" width="16" height="16">
@@ -368,8 +368,8 @@
   </object>
   <object id="34" name="Set Environment" type="event" x="32" y="0" width="16" height="16">
    <properties>
-    <property name="act1" value="set_variable environment:snow"/>
-    <property name="cond1" value="not variable_set environment:snow"/>
+    <property name="act1" value="set_environment snow"/>
+    <property name="cond1" value="not environment_is snow"/>
    </properties>
   </object>
   <object id="35" name="Level Boost 10" type="event" x="384" y="432" width="16" height="16">

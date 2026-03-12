@@ -3,7 +3,7 @@ events:
   Scenario:
     actions:
     - change_bg gradient_blue
-    - translated_dialog_choice spyder_campaign:xero_campaign,scenario_choice
+    - translated_dialog_choice spyder_campaign:xero_campaign:water_campaign,scenario_choice
     conditions:
     - not variable_set scenario_choice
     - not variable_set gender_choice
@@ -111,6 +111,15 @@ events:
     - transition_teleport player,player_house_bedroom.tmx,4,4,0.3
     conditions:
     - is variable_set scenario_choice:xero_campaign
+    - is variable_set gender_choice
+    - is variable_set race_choice
+    type: event
+  Water:
+    actions:
+    - change_bg gradient_blue
+    - transition_teleport player,water_end_of_desert.tmx,11,32,0.5
+    conditions:
+    - is variable_set scenario_choice:water_campaign
     - is variable_set gender_choice
     - is variable_set race_choice
     type: event

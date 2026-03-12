@@ -261,7 +261,7 @@
  <objectgroup id="3" name="Events">
   <object id="1" name="Teleport to End of Desert" type="event" x="368" y="944" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_end_of_desert.tmx,42,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_end_of_desert.tmx,42,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -269,7 +269,7 @@
   </object>
   <object id="2" name="Teleport to End of Desert" type="event" x="384" y="944" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_end_of_desert.tmx,43,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_end_of_desert.tmx,43,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -277,7 +277,7 @@
   </object>
   <object id="3" name="Teleport to End of Desert" type="event" x="400" y="944" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_end_of_desert.tmx,44,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_end_of_desert.tmx,44,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>
@@ -285,7 +285,7 @@
   </object>
   <object id="4" name="Teleport to End of Desert" type="event" x="416" y="944" width="16" height="16">
    <properties>
-    <property name="act1" value="transition_teleport water_end_of_desert.tmx,45,0,0.5"/>
+    <property name="act1" value="transition_teleport player,water_end_of_desert.tmx,45,0,0.5"/>
     <property name="act2" value="char_face player,down"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,down"/>

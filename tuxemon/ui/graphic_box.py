@@ -52,8 +52,8 @@ class GraphicBox(Sprite):
         self._color = color
         self._fill_tiles = fill_tiles
 
-        self._tiles = {}
-        self._tile_size = (0, 0)
+        self._tiles: dict[str, Surface] = {}
+        self._tile_size: tuple[int, int] = (0, 0)
 
         if border is not None:
             w, h = border.get_width(), border.get_height()
@@ -64,6 +64,10 @@ class GraphicBox(Sprite):
                 self._tile_size = (0, 0)
 
         self._needs_update = True
+
+    @property
+    def inner_rect(self) -> Rect:
+        return self.calc_inner_rect(self._rect)
 
     def calc_inner_rect(self, rect: Rect) -> Rect:
         """
@@ -77,9 +81,15 @@ class GraphicBox(Sprite):
         """
         if self._tiles:
             tw, th = self._tile_size
-            return rect.inflate(-tw * 2, -th * 2)
-        else:
-            return rect
+            inner = rect.inflate(-tw * 2, -th * 2)
+
+            if inner.width < 0 or inner.height < 0:
+                inner.width = max(inner.width, 0)
+                inner.height = max(inner.height, 0)
+
+            return inner
+
+        return rect
 
     def set_color(self, color: ColorLike | None) -> None:
         """
@@ -200,6 +210,3 @@ class GraphicBox(Sprite):
             min(tile.get_height(), max_h),
         )
         surface.blit(tile, dest, area)
-
-    def draw_into(self, surface: Surface, rect: Rect) -> None:
-        self._draw(surface, rect)

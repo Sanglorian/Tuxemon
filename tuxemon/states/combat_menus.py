@@ -700,7 +700,7 @@ class CombatTargetMenuState(Menu[Monster]):
         self.text_area = TextArea(
             font=self.font,
             font_color=self.font_color,
-            rect=self.window.calc_inner_rect(self.window.rect),
+            rect=self.window.inner_rect,
             scaling=self.client.context.scaling,
         )
         self.sprites.add(self.text_area, layer=100)

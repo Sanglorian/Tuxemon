@@ -364,7 +364,7 @@ class CombatState(CombatAnimations):
         self.text_area = TextArea(
             font=self.font,
             font_color=self.font_color,
-            rect=dialog_box.calc_inner_rect(dialog_box.rect),
+            rect=dialog_box.inner_rect,
             scaling=self.client.context.scaling,
         )
         self.show_combat_dialog(dialog_box, self.text_area)

@@ -11,13 +11,14 @@ from tuxemon.ui.graphic_box import GraphicBox
 @pytest.fixture(scope="session", autouse=True)
 def pygame_init():
     pygame.init()
+    pygame.display.set_mode((800, 600))
     yield
     pygame.quit()
 
 
 @pytest.fixture
 def surface():
-    return pygame.display.set_mode((800, 600))
+    return pygame.display.get_surface()
 
 
 @pytest.fixture
@@ -72,18 +73,16 @@ def test_graphicbox_border_tile_size(default_rect):
 def test_graphicbox_calc_inner_rect_no_tiles(default_rect, border_img):
     rect = Rect(0, 0, 100, 100)
     box = GraphicBox(default_rect, border_img)
-    box._tiles = {}  # force no tiles
-    box._tile_size = (0, 0)  # force no tile size
-    assert box.calc_inner_rect(rect) == rect
+    box._tiles = {}
+    box._tile_size = (0, 0)
+    assert box.inner_rect == rect
 
 
 def test_graphicbox_calc_inner_rect_with_tiles(default_rect, border_img):
     box = GraphicBox(default_rect, border_img)
     box._tiles = {"c": Surface((10, 10))}
     box._tile_size = (10, 10)
-
-    rect = Rect(0, 0, 100, 100)
-    inner = box.calc_inner_rect(rect)
+    inner = box.inner_rect
     assert inner == Rect(10, 10, 80, 80)
 
 
@@ -120,11 +119,7 @@ def test_tiles_are_independent_copies(default_rect):
     img = Surface((30, 30))
     img.fill((10, 10, 10))
     box = GraphicBox(default_rect, img)
-
-    # Mutate original
-    img.fill((200, 0, 0))
-
-    # Tiles should NOT change
+    img.fill((200, 0, 0))  # mutate original
     assert box._tiles["c"].get_at((0, 0)) == (10, 10, 10, 255)
 
 
@@ -132,20 +127,16 @@ def test_border_clipping_no_crash_and_no_overlap(default_rect, surface):
     img = Surface((30, 30))
     img.fill((255, 255, 255))
     box = GraphicBox(default_rect, img)
-    rect = Rect(0, 0, 37, 37)  # not divisible by tile size
-    box._draw(surface, rect)  # should not crash
+    rect = Rect(0, 0, 37, 37)
+    box._draw(surface, rect)
 
 
 def test_corner_tiles_positions(default_rect):
     img = Surface((30, 30))
     box = GraphicBox(default_rect, img)
     rect = Rect(0, 0, 30, 30)
-
-    # Draw into a fresh surface
     surf = Surface(rect.size)
     box._draw(surf, rect)
-
-    # Corners must be drawn exactly at these coords
     assert surf.get_at((0, 0)) is not None
     assert surf.get_at((29, 0)) is not None
     assert surf.get_at((0, 29)) is not None
@@ -155,3 +146,85 @@ def test_corner_tiles_positions(default_rect):
 def test_update_image_requires_rect(border_img):
     with pytest.raises(ValueError):
         GraphicBox(Rect(0, 0, 0, 0), border_img)
+
+
+def test_fill_priority_background_over_color(default_rect, border_img):
+    box = GraphicBox(default_rect, border_img)
+    box._background = Surface((10, 10))
+    box._color = (255, 0, 0)
+    box._fill_tiles = True
+    surf = Surface((100, 100))
+    box._draw(surf, default_rect)
+    assert surf.get_at((50, 50)) == box._background.get_at((0, 0))
+
+
+def test_fill_priority_color_over_tiles(default_rect, border_img):
+    box = GraphicBox(default_rect, border_img)
+    box._background = None
+    box._color = (123, 45, 67)
+    box._fill_tiles = True
+    surf = Surface((100, 100))
+    box._draw(surf, default_rect)
+    assert surf.get_at((50, 50)) == (123, 45, 67, 255)
+
+
+def test_set_color_resets_background_and_tiles(default_rect, border_img):
+    box = GraphicBox(default_rect, border_img)
+    box._background = Surface((10, 10))
+    box._fill_tiles = True
+    box.set_color((10, 20, 30))
+    assert box._background is None
+    assert box._fill_tiles is False
+    assert box._color == (10, 20, 30)
+    assert box._needs_update is True
+
+
+def test_set_border_sets_needs_update(default_rect, border_img):
+    box = GraphicBox(default_rect, border_img)
+    box._needs_update = False
+    new_img = Surface((30, 30))
+    box.set_border(new_img)
+    assert box._needs_update is True
+
+
+def test_tiled_fill_repeats_tiles(default_rect, border_img):
+    box = GraphicBox(default_rect, border_img)
+    box._tiles = {"c": Surface((10, 10))}
+    box._tile_size = (10, 10)
+    box._fill_tiles = True
+    surf = Surface((40, 40))
+    inner = Rect(10, 10, 20, 20)
+    box._draw_tiled_fill(surf, inner)
+    assert surf.get_at((10, 10)) == (0, 0, 0, 255)
+    assert surf.get_at((19, 10)) == (0, 0, 0, 255)
+    assert surf.get_at((10, 19)) == (0, 0, 0, 255)
+    assert surf.get_at((19, 19)) == (0, 0, 0, 255)
+
+
+def test_border_edges_drawn(default_rect):
+    img = Surface((30, 30))
+    img.fill((255, 255, 255))
+    box = GraphicBox(default_rect, img)
+    rect = Rect(0, 0, 40, 40)
+    surf = Surface(rect.size)
+    box._draw(surf, rect)
+    assert surf.get_at((15, 0)) != (0, 0, 0, 255)
+    assert surf.get_at((15, 39)) != (0, 0, 0, 255)
+    assert surf.get_at((0, 15)) != (0, 0, 0, 255)
+    assert surf.get_at((39, 15)) != (0, 0, 0, 255)
+
+
+def test_inner_rect_never_negative(default_rect, border_img):
+    box = GraphicBox(Rect(0, 0, 10, 10), border_img)
+    inner = box.inner_rect
+    assert inner.width >= 0
+    assert inner.height >= 0
+
+
+def test_update_image_draws_content(default_rect, border_img):
+    box = GraphicBox(default_rect, border_img)
+    box._color = (50, 100, 150)
+    box.update_image()
+    surf = box.image
+    assert surf.get_at((50, 50)) == (50, 100, 150, 255)
+    assert surf.get_at((0, 0)) != (50, 100, 150, 255)

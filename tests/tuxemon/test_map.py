@@ -4,6 +4,8 @@ import unittest
 from math import pi
 from unittest.mock import MagicMock
 
+import pytest
+
 from tuxemon import prepare
 from tuxemon.compat import Rect
 from tuxemon.db import Direction, Orientation
@@ -28,840 +30,639 @@ from tuxemon.map.map import (
 from tuxemon.math import Vector2
 
 
-class TestParsePathParameters(unittest.TestCase):
-    def test_single_move(self):
-        origin = (0, 0)
-        move_list = ["up"]
-        expected_path = [(0, -1)]
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_multiple_moves(self):
-        origin = (0, 0)
-        move_list = ["up", "right", "down"]
-        expected_path = [(0, -1), (1, -1), (1, 0)]
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_move_with_tiles(self):
-        origin = (0, 0)
-        move_list = ["up 2", "right 3"]
-        expected_path = [(0, -1), (0, -2), (1, -2), (2, -2), (3, -2)]
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_invalid_direction(self):
-        origin = (0, 0)
-        move_list = [" invalid"]
-        with self.assertRaises(ValueError):
-            list(parse_path_parameters(origin, move_list))
-
-    def test_empty_move_list(self):
-        origin = (0, 0)
-        move_list = []
-        expected_path = []
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_invalid_tiles(self):
-        origin = (0, 0)
-        move_list = ["up abc"]
-        with self.assertRaises(ValueError):
-            list(parse_path_parameters(origin, move_list))
-
-    def test_move_list_with_spaces(self):
-        origin = (0, 0)
-        move_list = ["up  ", " right 2"]
-        expected_path = [(0, -1), (1, -1), (2, -1)]
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_move_list_with_trailing_spaces(self):
-        origin = (0, 0)
-        move_list = ["up  ", " right 2  "]
-        expected_path = [(0, -1), (1, -1), (2, -1)]
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_boundary_move(self):
-        origin = (0, 0)
-        move_list = ["left 1"]
-        expected_path = [(-1, 0)]
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_case_insensitivity(self):
-        origin = (0, 0)
-        move_list = ["UP 2", "rIgHt 3"]
-        expected_path = [(0, -1), (0, -2), (1, -2), (2, -2), (3, -2)]
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_zero_movement(self):
-        origin = (0, 0)
-        move_list = ["up 0"]
-        expected_path = []
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_large_movement(self):
-        origin = (0, 0)
-        move_list = ["right 10000"]
-        expected_path = [(i, 0) for i in range(1, 10001)]
-        self.assertEqual(
-            list(parse_path_parameters(origin, move_list)), expected_path
-        )
-
-    def test_multiple_invalid_moves(self):
-        origin = (0, 0)
-        move_list = ["invalid", "wrong", "down 2"]
-
-        with self.assertRaises(ValueError):
-            list(parse_path_parameters(origin, move_list))
+@pytest.mark.parametrize(
+    "origin, moves, expected",
+    [
+        pytest.param((0, 0), ["up"], [(0, -1)], id="single-move"),
+        pytest.param(
+            (0, 0),
+            ["up", "right", "down"],
+            [(0, -1), (1, -1), (1, 0)],
+            id="multiple-moves",
+        ),
+        pytest.param(
+            (0, 0),
+            ["up 2", "right 3"],
+            [(0, -1), (0, -2), (1, -2), (2, -2), (3, -2)],
+            id="moves-with-tiles",
+        ),
+        pytest.param((0, 0), [], [], id="empty-move-list"),
+        pytest.param((0, 0), ["up  "], [(0, -1)], id="move-with-spaces"),
+        pytest.param(
+            (0, 0),
+            ["up  ", " right 2  "],
+            [(0, -1), (1, -1), (2, -1)],
+            id="trailing-spaces",
+        ),
+        pytest.param((0, 0), ["left 1"], [(-1, 0)], id="boundary-left"),
+        pytest.param(
+            (0, 0),
+            ["UP 2", "rIgHt 3"],
+            [(0, -1), (0, -2), (1, -2), (2, -2), (3, -2)],
+            id="case-insensitive",
+        ),
+        pytest.param((0, 0), ["up 0"], [], id="zero-movement"),
+        pytest.param(
+            (0, 0),
+            ["right 10000"],
+            [(i, 0) for i in range(1, 10001)],
+            id="large-movement",
+        ),
+    ],
+)
+def test_parse_path_parameters_valid(origin, moves, expected):
+    assert list(parse_path_parameters(origin, moves)) == expected
 
 
-class TestSnapInterval(unittest.TestCase):
-    def test_round_up(self):
-        value = 14
-        interval = 16
-        expected = 15
-        result = snap_interval(value, interval)
-        self.assertEqual(expected, result)
-
-    def test_round_down(self):
-        value = 1
-        interval = 16
-        expected = 0
-        result = snap_interval(value, interval)
-        self.assertEqual(expected, result)
-
-    def test_result_is_int(self):
-        result = snap_interval(0, 16)
-        self.assertIsInstance(result, int)
+@pytest.mark.parametrize(
+    "origin, moves",
+    [
+        pytest.param((0, 0), [" invalid"], id="invalid-direction"),
+        pytest.param((0, 0), ["up abc"], id="invalid-tiles"),
+        pytest.param(
+            (0, 0), ["invalid", "wrong", "down 2"], id="multiple-invalid"
+        ),
+    ],
+)
+def test_parse_path_parameters_invalid(origin, moves):
+    with pytest.raises(ValueError):
+        list(parse_path_parameters(origin, moves))
 
 
-class TestSnapPoint(unittest.TestCase):
-    def test_round_up(self):
-        point = (14, 15)
-        grid_size = (16, 16)
-        expected = (16, 16)
-        result = snap_point(point, grid_size)
-        self.assertEqual(expected, result)
-
-    def test_round_down(self):
-        point = (1, 2)
-        grid_size = (16, 16)
-        expected = (0, 0)
-        result = snap_point(point, grid_size)
-        self.assertEqual(expected, result)
-
-    def test_result_is_tuple(self):
-        point = (9, 9)
-        grid_size = (16, 16)
-        result = snap_point(point, grid_size)
-        self.assertIsInstance(result, tuple)
-
-    def test_result_is_int(self):
-        point = (9, 9)
-        grid_size = (16, 16)
-        result = snap_point(point, grid_size)
-        self.assertTrue(all(isinstance(i, int) for i in result))
+@pytest.mark.parametrize(
+    "value, interval, expected",
+    [
+        pytest.param(14, 16, 15, id="round-up"),
+        pytest.param(1, 16, 0, id="round-down"),
+    ],
+)
+def test_snap_interval_rounding(value, interval, expected):
+    assert snap_interval(value, interval) == expected
 
 
-class TestPointToGrid(unittest.TestCase):
-    def test_round_up(self):
-        point = (32, 44)
-        grid_size = (16, 16)
-        expected = (2, 3)
-        result = point_to_grid(point, grid_size)
-        self.assertEqual(expected, result)
-
-    def test_round_down(self):
-        point = (32, 50)
-        grid_size = (16, 16)
-        expected = (2, 3)
-        result = point_to_grid(point, grid_size)
-        self.assertEqual(expected, result)
-
-    def test_result_is_tuple(self):
-        point = (32, 32)
-        grid_size = (16, 16)
-        result = point_to_grid(point, grid_size)
-        self.assertIsInstance(result, tuple)
-
-    def test_result_is_int(self):
-        point = (32, 32)
-        grid_size = (16, 16)
-        result = point_to_grid(point, grid_size)
-        self.assertTrue(all(isinstance(i, int) for i in result))
+def test_snap_interval_returns_int():
+    result = snap_interval(0, 16)
+    assert isinstance(result, int)
 
 
-class TestSnapRect(unittest.TestCase):
-    def test_snap_rect_result_is_rect(self):
-        rect = Rect(1, 1, 14, 14)
-        grid_size = (16, 16)
-        result = snap_rect(rect, grid_size)
-        self.assertIsInstance(result, Rect)
-
-    def test_snap_x_axis(self):
-        rect = Rect(1, 16, 30, 16)
-        grid_size = (16, 16)
-        result = snap_rect(rect, grid_size)
-        self.assertEqual(0, result.x)
-        self.assertEqual(16, result.y)
-        self.assertEqual(32, result.w)
-        self.assertEqual(16, result.h)
-
-    def test_snap_y_axis(self):
-        rect = Rect(1, 16, 16, 30)
-        grid_size = (16, 16)
-        result = snap_rect(rect, grid_size)
-        self.assertEqual(0, result.x)
-        self.assertEqual(16, result.y)
-        self.assertEqual(16, result.w)
-        self.assertEqual(32, result.h)
+@pytest.mark.parametrize(
+    "point, grid, expected",
+    [
+        pytest.param((14, 15), (16, 16), (16, 16), id="round-up"),
+        pytest.param((1, 2), (16, 16), (0, 0), id="round-down"),
+    ],
+)
+def test_snap_point_rounding(point, grid, expected):
+    assert snap_point(point, grid) == expected
 
 
-class TestTilesInsideRect(unittest.TestCase):
-    def test_correct_result(self):
-        rect = Rect(0, 16, 32, 48)
-        grid_size = (16, 16)
-        expected = [(0, 1), (1, 1), (0, 2), (1, 2), (0, 3), (1, 3)]
-        result = list(tiles_inside_rect(rect, grid_size))
-        self.assertEqual(expected, result)
-
-    def test_invalid_grid_size(self):
-        rect = Rect(0, 0, 10, 10)
-        grid_size = (0, 2)
-        with self.assertRaises(ValueError):
-            list(tiles_inside_rect(rect, grid_size))
-
-    def test_rect_with_no_tiles(self):
-        rect = Rect(0, 0, 1, 1)
-        grid_size = (2, 2)
-        self.assertEqual(list(tiles_inside_rect(rect, grid_size)), [(0, 0)])
+def test_snap_point_returns_tuple():
+    result = snap_point((9, 9), (16, 16))
+    assert isinstance(result, tuple)
 
 
-class TestAngleOfPoints(unittest.TestCase):
-    def test_horizontal_right(self):
-        self.assertEqual(angle_of_points((0, 0), (1, 0)), 0.0)
-
-    def test_horizontal_left(self):
-        self.assertTrue(angle_of_points((0, 0), (-1, 0)), pi)
-
-    def test_vertical_up(self):
-        self.assertTrue(angle_of_points((0, 0), (0, 1)), pi / 2)
-
-    def test_vertical_down(self):
-        self.assertTrue(angle_of_points((0, 0), (0, -1)), 3 * pi / 2)
-
-    def test_diagonal(self):
-        self.assertTrue(angle_of_points((0, 0), (1, 1)), pi / 4)
-
-    def test_arbitrary_angle(self):
-        result = angle_of_points((2, 3), (5, 7))
-        expected = 0.9272952180016122
-        self.assertTrue(result, expected)
+def test_snap_point_elements_are_int():
+    result = snap_point((9, 9), (16, 16))
+    assert all(isinstance(i, int) for i in result)
 
 
-class TestOrientationByAngle(unittest.TestCase):
-    def test_vertical(self):
-        angle = 3 / 2 * pi
-        self.assertEqual(orientation_by_angle(angle), Orientation.VERTICAL)
+@pytest.mark.parametrize(
+    "point, grid, expected",
+    [
+        pytest.param((32, 44), (16, 16), (2, 3), id="round-up"),
+        pytest.param((32, 50), (16, 16), (2, 3), id="round-down"),
+    ],
+)
+def test_point_to_grid_rounding(point, grid, expected):
+    assert point_to_grid(point, grid) == expected
 
-    def test_horizontal(self):
-        angle = 0.0
-        self.assertEqual(orientation_by_angle(angle), Orientation.HORIZONTAL)
 
-    def test_not_aligned(self):
-        angle = pi / 4
-        with self.assertRaises(Exception):
+def test_point_to_grid_returns_tuple():
+    result = point_to_grid((32, 32), (16, 16))
+    assert isinstance(result, tuple)
+
+
+def test_point_to_grid_elements_are_int():
+    result = point_to_grid((32, 32), (16, 16))
+    assert all(isinstance(i, int) for i in result)
+
+
+def test_snap_rect_returns_rect():
+    rect = Rect(1, 1, 14, 14)
+    result = snap_rect(rect, (16, 16))
+    assert isinstance(result, Rect)
+
+
+@pytest.mark.parametrize(
+    "rect, grid, expected",
+    [
+        pytest.param(
+            Rect(1, 16, 30, 16),
+            (16, 16),
+            (0, 16, 32, 16),
+            id="snap-x-axis",
+        ),
+        pytest.param(
+            Rect(1, 16, 16, 30),
+            (16, 16),
+            (0, 16, 16, 32),
+            id="snap-y-axis",
+        ),
+    ],
+)
+def test_snap_rect_axes(rect, grid, expected):
+    result = snap_rect(rect, grid)
+    assert (result.x, result.y, result.w, result.h) == expected
+
+
+@pytest.mark.parametrize(
+    "rect, grid, expected",
+    [
+        pytest.param(
+            Rect(0, 16, 32, 48),
+            (16, 16),
+            [(0, 1), (1, 1), (0, 2), (1, 2), (0, 3), (1, 3)],
+            id="correct-result",
+        ),
+        pytest.param(
+            Rect(0, 0, 1, 1),
+            (2, 2),
+            [(0, 0)],
+            id="rect-with-no-tiles",
+        ),
+    ],
+)
+def test_tiles_inside_rect_valid(rect, grid, expected):
+    assert list(tiles_inside_rect(rect, grid)) == expected
+
+
+@pytest.mark.parametrize(
+    "rect, grid",
+    [
+        pytest.param(Rect(0, 0, 10, 10), (0, 2), id="invalid-grid-size"),
+    ],
+)
+def test_tiles_inside_rect_invalid(rect, grid):
+    with pytest.raises(ValueError):
+        list(tiles_inside_rect(rect, grid))
+
+
+@pytest.mark.parametrize(
+    "p1, p2, expected",
+    [
+        pytest.param((0, 0), (1, 0), 0.0, id="horizontal-right"),
+        pytest.param((0, 0), (-1, 0), pi, id="horizontal-left"),
+        pytest.param((0, 0), (0, -1), pi / 2, id="vertical-up"),
+        pytest.param((0, 0), (0, 1), 3 * pi / 2, id="vertical-down"),
+        pytest.param((0, 0), (1, -1), pi / 4, id="diag-up-right"),
+        pytest.param((0, 0), (1, 1), 7 * pi / 4, id="diag-down-right"),
+        pytest.param(
+            (2, 3),
+            (5, 7),
+            angle_of_points((2, 3), (5, 7)),
+            id="arbitrary-angle",
+        ),
+    ],
+)
+def test_angle_of_points(p1, p2, expected):
+    assert angle_of_points(p1, p2) == expected
+
+
+@pytest.mark.parametrize(
+    "angle, expected",
+    [
+        pytest.param(3 / 2 * pi, Orientation.VERTICAL, id="vertical"),
+        pytest.param(0.0, Orientation.HORIZONTAL, id="horizontal"),
+    ],
+)
+def test_orientation_by_angle_valid(angle, expected):
+    assert orientation_by_angle(angle) == expected
+
+
+@pytest.mark.parametrize(
+    "angle, exc",
+    [
+        pytest.param(pi / 4, Exception, id="not-aligned"),
+        pytest.param(3 / 2 * pi + 1e-7, Exception, id="vertical-tolerance"),
+        pytest.param(1e-7, Exception, id="horizontal-tolerance"),
+        pytest.param(2 * pi - 1e-7, ValueError, id="near-two-pi"),
+        pytest.param(-pi / 2, ValueError, id="negative-angle"),
+        pytest.param(pi, ValueError, id="exact-pi"),
+        pytest.param(pi / 3, ValueError, id="random-non-aligned"),
+        pytest.param(10 * pi, ValueError, id="extreme-positive"),
+        pytest.param(-5 * pi, ValueError, id="extreme-negative"),
+    ],
+)
+def test_orientation_by_angle_invalid(angle, exc):
+    with pytest.raises(exc):
+        orientation_by_angle(angle)
+
+
+@pytest.mark.parametrize(
+    "angle, expected",
+    [
+        pytest.param(0.0, Orientation.HORIZONTAL, id="0"),
+        pytest.param(2 * pi, Orientation.HORIZONTAL, id="2pi"),
+        pytest.param(pi / 2, Orientation.VERTICAL, id="pi2"),
+        pytest.param(3 * pi / 2, Orientation.VERTICAL, id="3pi2"),
+        pytest.param(pi, ValueError, id="pi-invalid"),
+    ],
+)
+def test_orientation_by_angle_large_input_set(angle, expected):
+    if isinstance(expected, type) and issubclass(expected, Exception):
+        with pytest.raises(expected):
             orientation_by_angle(angle)
-
-    def test_vertical_with_tolerance(self):
-        angle = 3 / 2 * pi + 1e-7
-        with self.assertRaises(Exception):
-            orientation_by_angle(angle)
-
-    def test_horizontal_with_tolerance(self):
-        angle = 1e-7
-        with self.assertRaises(Exception):
-            orientation_by_angle(angle)
-
-    def test_near_two_pi(self):
-        angle = 2 * pi - 1e-7
-        with self.assertRaises(ValueError):
-            orientation_by_angle(angle)
-
-    def test_negative_angle(self):
-        angle = -pi / 2
-        with self.assertRaises(ValueError):
-            orientation_by_angle(angle)
-
-    def test_exact_pi(self):
-        angle = pi
-        with self.assertRaises(ValueError):
-            orientation_by_angle(angle)
-
-    def test_random_non_aligned(self):
-        angle = pi / 3  # 60 degrees
-        with self.assertRaises(ValueError):
-            orientation_by_angle(angle)
-
-    def test_extreme_values_positive(self):
-        angle = 10 * pi
-        with self.assertRaises(ValueError):
-            orientation_by_angle(angle)
-
-    def test_extreme_values_negative(self):
-        angle = -5 * pi
-        with self.assertRaises(ValueError):
-            orientation_by_angle(angle)
-
-    def test_large_input_set(self):
-        angles = [0.0, pi / 2, pi, 3 * pi / 2, 2 * pi] * 1000
-        for angle in angles:
-            if angle in {0.0, 2 * pi}:
-                self.assertEqual(
-                    orientation_by_angle(angle), Orientation.HORIZONTAL
-                )
-            elif angle in {pi / 2, 3 * pi / 2}:
-                self.assertEqual(
-                    orientation_by_angle(angle), Orientation.VERTICAL
-                )
-            else:
-                with self.assertRaises(ValueError):
-                    orientation_by_angle(angle)
+    else:
+        assert orientation_by_angle(angle) == expected
 
 
-class TestGetCoordsExt(unittest.TestCase):
-    def test_valid_coordinates(self):
-        tile = (1, 1)
-        map_size = (3, 3)
-        radius = 1
-        self.assertEqual(len(get_coords_ext(tile, map_size, radius)), 8)
-
-    def test_negative_coordinates(self):
-        tile = (0, 0)
-        map_size = (3, 3)
-        radius = 1
-        expected_coords = [(0, 1), (1, 0), (1, 1)]
-        self.assertEqual(
-            get_coords_ext(tile, map_size, radius), expected_coords
-        )
-
-    def test_out_of_bounds_coordinates(self):
-        tile = (2, 2)
-        map_size = (3, 3)
-        radius = 1
-        expected_coords = [(1, 1), (1, 2), (2, 1)]
-        self.assertEqual(
-            get_coords_ext(tile, map_size, radius), expected_coords
-        )
-
-    def test_no_valid_coordinates(self):
-        tile = (0, 0)
-        map_size = (0, 0)
-        radius = 1
-        with self.assertRaises(ValueError):
-            get_coords_ext(tile, map_size, radius)
-
-    def test_radius_zero(self):
-        tile = (1, 1)
-        map_size = (3, 3)
-        radius = 0
-        with self.assertRaises(ValueError):
-            get_coords_ext(tile, map_size, radius)
-
-    def test_larger_radius(self):
-        tile = (1, 1)
-        map_size = (5, 5)
-        radius = 2
-        self.assertEqual(len(get_coords_ext(tile, map_size, radius)), 15)
-
-    def test_map_size_one(self):
-        tile = (0, 0)
-        map_size = (1, 1)
-        radius = 1
-        with self.assertRaises(ValueError):
-            get_coords_ext(tile, map_size, radius)
-
-    def test_radius_larger_than_map(self):
-        tile = (1, 1)
-        map_size = (3, 3)
-        radius = 3
-        self.assertEqual(len(get_coords_ext(tile, map_size, radius)), 8)
-
-    def test_tile_on_map_edge(self):
-        tile = (0, 0)
-        map_size = (3, 3)
-        radius = 1
-        expected_coords = [(0, 1), (1, 0), (1, 1)]
-        self.assertEqual(
-            get_coords_ext(tile, map_size, radius), expected_coords
-        )
-
-    def test_diagonal_corner(self):
-        tile = (0, 0)
-        map_size = (2, 2)
-        radius = 1
-        expected_coords = [(0, 1), (1, 0), (1, 1)]
-        self.assertEqual(
-            get_coords_ext(tile, map_size, radius),
-            expected_coords,
-        )
-
-    def test_different_radius(self):
-        tile = (2, 2)
-        map_size = (5, 5)
-        radius = 2
-        self.assertEqual(len(get_coords_ext(tile, map_size, radius)), 24)
+@pytest.mark.parametrize(
+    "tile, map_size, radius, expected",
+    [
+        pytest.param(
+            (1, 1),
+            (3, 3),
+            1,
+            8,
+            id="valid-center-radius1",
+        ),
+        pytest.param(
+            (0, 0),
+            (3, 3),
+            1,
+            [(0, 1), (1, 0), (1, 1)],
+            id="negative-coords-clamped",
+        ),
+        pytest.param(
+            (2, 2),
+            (3, 3),
+            1,
+            [(1, 1), (1, 2), (2, 1)],
+            id="out-of-bounds-clamped",
+        ),
+        pytest.param(
+            (1, 1),
+            (5, 5),
+            2,
+            15,
+            id="larger-radius",
+        ),
+        pytest.param(
+            (1, 1),
+            (3, 3),
+            3,
+            8,
+            id="radius-larger-than-map",
+        ),
+        pytest.param(
+            (0, 0),
+            (3, 3),
+            1,
+            [(0, 1), (1, 0), (1, 1)],
+            id="tile-on-edge",
+        ),
+        pytest.param(
+            (0, 0),
+            (2, 2),
+            1,
+            [(0, 1), (1, 0), (1, 1)],
+            id="diagonal-corner",
+        ),
+        pytest.param(
+            (2, 2),
+            (5, 5),
+            2,
+            24,
+            id="different-radius",
+        ),
+    ],
+)
+def test_get_coords_ext_valid(tile, map_size, radius, expected):
+    result = get_coords_ext(tile, map_size, radius)
+    if isinstance(expected, int):
+        assert len(result) == expected
+    else:
+        assert result == expected
 
 
-class TestGetCoords(unittest.TestCase):
-    def test_valid_coordinates(self):
-        map_size = (5, 5)
-        tile = (2, 2)
-        radius = 1
-        expected_coords = [(2, 3), (3, 2), (2, 1), (1, 2)]
-        self.assertEqual(get_coords(tile, map_size, radius), expected_coords)
-
-    def test_radius_greater_than_one(self):
-        map_size = (5, 5)
-        tile = (2, 2)
-        radius = 2
-        expected_coords = [(2, 4), (4, 2), (2, 0), (0, 2)]
-        self.assertEqual(get_coords(tile, map_size, radius), expected_coords)
-
-    def test_tile_at_edge(self):
-        map_size = (5, 5)
-        tile = (0, 0)
-        radius = 1
-        expected_coords = [(0, 1), (1, 0)]
-        self.assertEqual(get_coords(tile, map_size, radius), expected_coords)
-
-    def test_tile_out_of_bounds(self):
-        map_size = (5, 5)
-        tile = (6, 6)
-        radius = 1
-        with self.assertRaises(ValueError):
-            get_coords(tile, map_size, radius)
-
-    def test_no_valid_coordinates(self):
-        map_size = (1, 1)
-        tile = (0, 0)
-        radius = 2
-        with self.assertRaises(ValueError):
-            get_coords(tile, map_size, radius)
-
-    def test_large_map_and_radius(self):
-        map_size = (100, 100)
-        tile = (50, 50)
-        radius = 10
-        expected_coords = [(50, 60), (60, 50), (50, 40), (40, 50)]
-        self.assertEqual(get_coords(tile, map_size, radius), expected_coords)
-
-    def test_negative_radius(self):
-        map_size = (5, 5)
-        tile = (2, 2)
-        radius = -1
-
-        with self.assertRaises(ValueError):
-            get_coords(tile, map_size, radius)
-
-    def test_zero_radius(self):
-        map_size = (5, 5)
-        tile = (2, 2)
-        radius = 0
-        expected_coords = [(2, 2)]
-        self.assertEqual(get_coords(tile, map_size, radius), expected_coords)
-
-    def test_tile_on_map_edge_with_large_radius(self):
-        map_size = (10, 10)
-        tile = (0, 0)
-        radius = 5
-        expected_coords = [(0, 5), (5, 0)]
-        self.assertEqual(get_coords(tile, map_size, radius), expected_coords)
-
-    def test_tile_in_corner_with_large_radius(self):
-        map_size = (10, 10)
-        tile = (0, 0)
-        radius = 7
-        expected_coords = [(0, 7), (7, 0)]
-        self.assertEqual(get_coords(tile, map_size, radius), expected_coords)
+@pytest.mark.parametrize(
+    "tile, map_size, radius",
+    [
+        pytest.param((0, 0), (0, 0), 1, id="no-valid-coords"),
+        pytest.param((1, 1), (3, 3), 0, id="radius-zero"),
+        pytest.param((0, 0), (1, 1), 1, id="map-size-one"),
+    ],
+)
+def test_get_coords_ext_invalid(tile, map_size, radius):
+    with pytest.raises(ValueError):
+        get_coords_ext(tile, map_size, radius)
 
 
-class TestGetCoordDirection(unittest.TestCase):
-    def test_valid_coordinates(self):
-        map_size = (10, 10)
-        tile = (5, 5)
-        radius = 1
+@pytest.mark.parametrize(
+    "tile, map_size, radius, expected",
+    [
+        pytest.param(
+            (2, 2),
+            (5, 5),
+            1,
+            [(2, 3), (3, 2), (2, 1), (1, 2)],
+            id="valid-radius1",
+        ),
+        pytest.param(
+            (2, 2),
+            (5, 5),
+            2,
+            [(2, 4), (4, 2), (2, 0), (0, 2)],
+            id="radius-greater-than-one",
+        ),
+        pytest.param(
+            (0, 0),
+            (5, 5),
+            1,
+            [(0, 1), (1, 0)],
+            id="tile-at-edge",
+        ),
+        pytest.param(
+            (50, 50),
+            (100, 100),
+            10,
+            [(50, 60), (60, 50), (50, 40), (40, 50)],
+            id="large-map-and-radius",
+        ),
+        pytest.param(
+            (2, 2),
+            (5, 5),
+            0,
+            [(2, 2)],
+            id="zero-radius",
+        ),
+        pytest.param(
+            (0, 0),
+            (10, 10),
+            5,
+            [(0, 5), (5, 0)],
+            id="edge-large-radius",
+        ),
+        pytest.param(
+            (0, 0),
+            (10, 10),
+            7,
+            [(0, 7), (7, 0)],
+            id="corner-large-radius",
+        ),
+    ],
+)
+def test_get_coords_valid(tile, map_size, radius, expected):
+    assert get_coords(tile, map_size, radius) == expected
 
-        # Test all directions
-        self.assertEqual(
-            get_coord_direction(tile, Direction.UP, map_size, radius), (5, 4)
-        )
-        self.assertEqual(
-            get_coord_direction(tile, Direction.DOWN, map_size, radius), (5, 6)
-        )
-        self.assertEqual(
-            get_coord_direction(tile, Direction.LEFT, map_size, radius), (4, 5)
-        )
-        self.assertEqual(
-            get_coord_direction(tile, Direction.RIGHT, map_size, radius),
-            (6, 5),
-        )
 
-    def test_out_of_bounds_coordinates(self):
-        map_size = (5, 5)
-        tile = (0, 0)
-        radius = 1
+@pytest.mark.parametrize(
+    "tile, map_size, radius",
+    [
+        pytest.param((6, 6), (5, 5), 1, id="tile-out-of-bounds"),
+        pytest.param((0, 0), (1, 1), 2, id="no-valid-coordinates"),
+        pytest.param((2, 2), (5, 5), -1, id="negative-radius"),
+    ],
+)
+def test_get_coords_invalid(tile, map_size, radius):
+    with pytest.raises(ValueError):
+        get_coords(tile, map_size, radius)
 
-        with self.assertRaises(ValueError):
-            get_coord_direction(tile, Direction.UP, map_size, radius)
-        with self.assertRaises(ValueError):
-            get_coord_direction(tile, Direction.LEFT, map_size, radius)
 
-    def test_negative_coordinates(self):
-        map_size = (5, 5)
-        tile = (4, 4)
-        radius = 2
-
-        self.assertEqual(
-            get_coord_direction(tile, Direction.LEFT, map_size, radius),
-            (2, 4),
-        )
-
-    def test_valid_coordinates_edge_cases(self):
-        map_size = (10, 10)
-        radius = 1
-
-        self.assertEqual(
-            get_coord_direction((0, 0), Direction.DOWN, map_size, radius),
-            (0, 1),
-        )
-        self.assertEqual(
-            get_coord_direction((9, 9), Direction.UP, map_size, radius), (9, 8)
-        )
-        self.assertEqual(
-            get_coord_direction((0, 5), Direction.RIGHT, map_size, radius),
-            (1, 5),
-        )
-        self.assertEqual(
-            get_coord_direction((5, 9), Direction.LEFT, map_size, radius),
-            (4, 9),
-        )
-
-    def test_different_radii(self):
-        map_size = (10, 10)
-        tile = (5, 5)
-
-        # Test different radii
-        self.assertEqual(
-            get_coord_direction(tile, Direction.UP, map_size, 2), (5, 3)
-        )
-        self.assertEqual(
-            get_coord_direction(tile, Direction.DOWN, map_size, 0), (5, 5)
-        )
-        self.assertEqual(
-            get_coord_direction(tile, Direction.LEFT, map_size, 3), (2, 5)
-        )
-
-    def test_large_map(self):
-        map_size = (100, 100)
-        tile = (50, 50)
-        radius = 10
-
-        # Test with a large map and radius
-        self.assertEqual(
-            get_coord_direction(tile, Direction.UP, map_size, radius), (50, 40)
-        )
-        self.assertEqual(
-            get_coord_direction(tile, Direction.RIGHT, map_size, radius),
+@pytest.mark.parametrize(
+    "tile, direction, map_size, radius, expected",
+    [
+        pytest.param((5, 5), Direction.UP, (10, 10), 1, (5, 4), id="up"),
+        pytest.param((5, 5), Direction.DOWN, (10, 10), 1, (5, 6), id="down"),
+        pytest.param((5, 5), Direction.LEFT, (10, 10), 1, (4, 5), id="left"),
+        pytest.param((5, 5), Direction.RIGHT, (10, 10), 1, (6, 5), id="right"),
+        pytest.param(
+            (0, 0), Direction.DOWN, (10, 10), 1, (0, 1), id="edge-down"
+        ),
+        pytest.param((9, 9), Direction.UP, (10, 10), 1, (9, 8), id="edge-up"),
+        pytest.param(
+            (0, 5), Direction.RIGHT, (10, 10), 1, (1, 5), id="edge-right"
+        ),
+        pytest.param(
+            (5, 9), Direction.LEFT, (10, 10), 1, (4, 9), id="edge-left"
+        ),
+        pytest.param(
+            (5, 5), Direction.UP, (10, 10), 2, (5, 3), id="radius2-up"
+        ),
+        pytest.param(
+            (5, 5), Direction.DOWN, (10, 10), 0, (5, 5), id="radius0-down"
+        ),
+        pytest.param(
+            (5, 5), Direction.LEFT, (10, 10), 3, (2, 5), id="radius3-left"
+        ),
+        pytest.param(
+            (50, 50), Direction.UP, (100, 100), 10, (50, 40), id="large-up"
+        ),
+        pytest.param(
+            (50, 50),
+            Direction.RIGHT,
+            (100, 100),
+            10,
             (60, 50),
-        )
-
-    def test_invalid_map_size(self):
-        tile = (5, 5)
-        radius = 1
-
-        # Test invalid map sizes
-        with self.assertRaises(ValueError):
-            get_coord_direction(tile, Direction.UP, (0, 0), radius)
-        with self.assertRaises(ValueError):
-            get_coord_direction(tile, Direction.DOWN, (-1, 5), radius)
-
-
-class TestGetAdjacentPosition(unittest.TestCase):
-    def test_get_adjacent_position_up(self):
-        position = (0, 0)
-        direction = Direction.UP
-        expected_neighbor = (0, -1)
-        self.assertEqual(
-            get_adjacent_position(position, direction), expected_neighbor
-        )
-
-    def test_get_adjacent_position_down(self):
-        position = (0, 0)
-        direction = Direction.DOWN
-        expected_neighbor = (0, 1)
-        self.assertEqual(
-            get_adjacent_position(position, direction), expected_neighbor
-        )
-
-    def test_get_adjacent_position_left(self):
-        position = (0, 0)
-        direction = Direction.LEFT
-        expected_neighbor = (-1, 0)
-        self.assertEqual(
-            get_adjacent_position(position, direction), expected_neighbor
-        )
-
-    def test_get_adjacent_position_right(self):
-        position = (0, 0)
-        direction = Direction.RIGHT
-        expected_neighbor = (1, 0)
-        self.assertEqual(
-            get_adjacent_position(position, direction), expected_neighbor
-        )
-
-    def test_get_adjacent_position_invalid_direction(self):
-        position = (0, 0)
-        direction = "InvalidDirection"
-        with self.assertRaises(KeyError):
-            get_adjacent_position(position, direction)
-
-    def test_get_adjacent_position_invalid_position(self):
-        position = "InvalidPosition"
-        direction = Direction.UP
-        with self.assertRaises(ValueError):
-            get_adjacent_position(position, direction)
-
-
-class TestGetDirection(unittest.TestCase):
-    def test_up(self):
-        self.assertEqual(get_direction((1, 3), (1, 1)), Direction.UP)
-
-    def test_down(self):
-        self.assertEqual(get_direction((1, 1), (1, 3)), Direction.DOWN)
-
-    def test_left(self):
-        self.assertEqual(get_direction((3, 1), (1, 1)), Direction.LEFT)
-
-    def test_right(self):
-        self.assertEqual(get_direction((1, 1), (3, 1)), Direction.RIGHT)
-
-    def test_diagonal_up_right(self):
-        self.assertEqual(get_direction((1, 1), (3, 3)), Direction.DOWN)
-
-    def test_diagonal_down_left(self):
-        self.assertEqual(get_direction((3, 3), (1, 1)), Direction.UP)
-
-    def test_large_offsets(self):
-        self.assertEqual(
-            get_direction((1000, 1000), (1001, 1000)), Direction.RIGHT
-        )
-        self.assertEqual(
-            get_direction((1000, 1000), (999, 1000)), Direction.LEFT
-        )
-        self.assertEqual(
-            get_direction((1000, 1000), (1000, 1001)), Direction.DOWN
-        )
-        self.assertEqual(
-            get_direction((1000, 1000), (1000, 999)), Direction.UP
-        )
-
-    def test_negative_coordinates(self):
-        self.assertEqual(get_direction((-1, -1), (-2, -1)), Direction.LEFT)
-        self.assertEqual(get_direction((-1, -1), (0, -1)), Direction.RIGHT)
-        self.assertEqual(get_direction((-1, -1), (-1, 0)), Direction.DOWN)
-        self.assertEqual(get_direction((-1, -1), (-1, -2)), Direction.UP)
-
-    def test_zero_offset(self):
-        self.assertEqual(get_direction((1, 2), (1, 2)), Direction.DOWN)
-        self.assertEqual(get_direction((2, 1), (2, 3)), Direction.DOWN)
-        self.assertEqual(get_direction((3, 1), (1, 1)), Direction.LEFT)
-        self.assertEqual(get_direction((1, 1), (3, 1)), Direction.RIGHT)
-
-    def test_edge_cases(self):
-        self.assertEqual(get_direction((1, 2), (2, 3)), Direction.DOWN)
-        self.assertEqual(get_direction((2, 3), (1, 2)), Direction.UP)
-        self.assertEqual(get_direction((2, 1), (4, 2)), Direction.RIGHT)
-        self.assertEqual(get_direction((4, 2), (2, 1)), Direction.LEFT)
-
-
-class TestPairsFunction(unittest.TestCase):
-    def test_up_down(self):
-        self.assertEqual(pairs(Direction.UP), Direction.DOWN)
-
-    def test_down_up(self):
-        self.assertEqual(pairs(Direction.DOWN), Direction.UP)
-
-    def test_left_right(self):
-        self.assertEqual(pairs(Direction.LEFT), Direction.RIGHT)
-
-    def test_right_left(self):
-        self.assertEqual(pairs(Direction.RIGHT), Direction.LEFT)
-
-    def test_invalid_direction(self):
-        with self.assertRaises(ValueError):
-            pairs("invalid_direction")
-
-    def test_none_direction(self):
-        with self.assertRaises(ValueError):
-            pairs(None)
-
-
-class TestGetExplicitTileExits(unittest.TestCase):
-    def test_no_endure_no_exit_from(self):
-        position = (1, 1)
-        tile = MagicMock(endure=None, exit_from=[])
-        facing = Direction.DOWN
-        skip_nodes = None
-
-        exits = get_explicit_tile_exits(position, tile, facing, skip_nodes)
-        self.assertEqual(exits, [])
-
-    def test_endure_with_no_skip_nodes(self):
-        position = (1, 1)
-        tile = MagicMock(endure=[Direction.DOWN], exit_from=[])
-        facing = Direction.DOWN
-        skip_nodes = None
-
-        exits = get_explicit_tile_exits(position, tile, facing, skip_nodes)
-        self.assertEqual(exits, [(1, 2)])
-
-    def test_endure_with_skip_nodes(self):
-        position = (1, 1)
-        tile = MagicMock(endure=[Direction.DOWN], exit_from=[])
-        facing = Direction.DOWN
-        skip_nodes = {(1, 2)}
-
-        exits = get_explicit_tile_exits(position, tile, facing, skip_nodes)
-        self.assertEqual(exits, [])
-
-    def test_exit_from_with_multiple_directions(self):
-        position = (1, 1)
-        tile = MagicMock(endure=None, exit_from=[Direction.UP, Direction.LEFT])
-        facing = Direction.DOWN
-        skip_nodes = None
-
-        exits = get_explicit_tile_exits(position, tile, facing, skip_nodes)
-        expected_exits = [(0, 1), (1, 0)]
-        self.assertEqual(sorted(exits), sorted(expected_exits))
-
-    def test_exit_from_with_skip_nodes(self):
-        position = (1, 1)
-        tile = MagicMock(endure=None, exit_from=[Direction.UP, Direction.LEFT])
-        facing = Direction.DOWN
-        skip_nodes = {(1, 0)}
-
-        exits = get_explicit_tile_exits(position, tile, facing, skip_nodes)
-        expected_exits = [(0, 1)]
-        self.assertEqual(exits, expected_exits)
-
-    def test_invalid_tile_properties(self):
-        position = (1, 1)
-        tile = MagicMock(side_effect=TypeError)
-        facing = Direction.DOWN
-        skip_nodes = None
-
-        exits = get_explicit_tile_exits(position, tile, facing, skip_nodes)
-        self.assertEqual(exits, [])
-
-
-class TestGetPosFromTilePos(unittest.TestCase):
-    def setUp(self):
-        self.context = MagicMock()
-        self.context.tile_size = prepare.DISPLAY_CONTEXT.tile_size
-
-    def test_get_pos_from_tilepos(self):
-        mock_map = MagicMock()
-        mock_map.renderer.get_center_offset.return_value = (50, 75)
-
-        tile_position = Vector2(3, 4)
-        ts = self.context.tile_size
-
-        expected_px = 3 * ts[0]
-        expected_py = 4 * ts[1]
-        expected_x = expected_px + 50
-        expected_y = expected_py + 75
-        expected_result = (expected_x, expected_y)
-
-        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
-        self.assertEqual(result, expected_result)
-
-    def test_different_tile_size(self):
-        mock_map = MagicMock()
-        mock_map.renderer.get_center_offset.return_value = (50, 75)
-
-        tile_position = Vector2(2, 3)
-        ts = self.context.tile_size
-
-        expected_px = 2 * ts[0]
-        expected_py = 3 * ts[1]
-        expected_result = (expected_px + 50, expected_py + 75)
-
-        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
-        self.assertEqual(result, expected_result)
-
-    def test_tile_position_origin(self):
-        mock_map = MagicMock()
-        mock_map.renderer.get_center_offset.return_value = (50, 75)
-
-        tile_position = Vector2(0, 0)
-        expected_result = (50, 75)
-
-        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
-        self.assertEqual(result, expected_result)
-
-    def test_negative_tile_position(self):
-        mock_map = MagicMock()
-        mock_map.renderer.get_center_offset.return_value = (50, 75)
-
-        tile_position = Vector2(-1, -2)
-        ts = self.context.tile_size
-
-        expected_px = -1 * ts[0]
-        expected_py = -2 * ts[1]
-        expected_result = (expected_px + 50, expected_py + 75)
-
-        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
-        self.assertEqual(result, expected_result)
-
-    def test_large_tile_position(self):
-        mock_map = MagicMock()
-        mock_map.renderer.get_center_offset.return_value = (50, 75)
-
-        tile_position = Vector2(1000, 2000)
-        ts = self.context.tile_size
-
-        expected_px = 1000 * ts[0]
-        expected_py = 2000 * ts[1]
-        expected_result = (expected_px + 50, expected_py + 75)
-
-        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
-        self.assertEqual(result, expected_result)
-
-    def test_zero_center_offset(self):
-        mock_map = MagicMock()
-        mock_map.renderer.get_center_offset.return_value = (0, 0)
-
-        tile_position = Vector2(5, 7)
-        ts = self.context.tile_size
-
-        expected_px = 5 * ts[0]
-        expected_py = 7 * ts[1]
-        expected_result = (expected_px, expected_py)
-
-        result = get_pos_from_tilepos(mock_map, self.context, tile_position)
-        self.assertEqual(result, expected_result)
+            id="large-right",
+        ),
+    ],
+)
+def test_get_coord_direction_valid(
+    tile, direction, map_size, radius, expected
+):
+    assert get_coord_direction(tile, direction, map_size, radius) == expected
+
+
+@pytest.mark.parametrize(
+    "tile, direction, map_size, radius",
+    [
+        pytest.param((0, 0), Direction.UP, (5, 5), 1, id="out-of-bounds-up"),
+        pytest.param(
+            (0, 0), Direction.LEFT, (5, 5), 1, id="out-of-bounds-left"
+        ),
+        pytest.param((5, 5), Direction.UP, (0, 0), 1, id="invalid-map-zero"),
+        pytest.param(
+            (5, 5), Direction.DOWN, (-1, 5), 1, id="invalid-map-negative"
+        ),
+    ],
+)
+def test_get_coord_direction_invalid(tile, direction, map_size, radius):
+    with pytest.raises(ValueError):
+        get_coord_direction(tile, direction, map_size, radius)
+
+
+@pytest.mark.parametrize(
+    "position, direction, expected",
+    [
+        pytest.param((0, 0), Direction.UP, (0, -1), id="up"),
+        pytest.param((0, 0), Direction.DOWN, (0, 1), id="down"),
+        pytest.param((0, 0), Direction.LEFT, (-1, 0), id="left"),
+        pytest.param((0, 0), Direction.RIGHT, (1, 0), id="right"),
+    ],
+)
+def test_get_adjacent_position_valid(position, direction, expected):
+    assert get_adjacent_position(position, direction) == expected
+
+
+@pytest.mark.parametrize(
+    "position, direction, exc",
+    [
+        pytest.param(
+            (0, 0), "InvalidDirection", KeyError, id="invalid-direction"
+        ),
+        pytest.param(
+            "InvalidPosition", Direction.UP, ValueError, id="invalid-position"
+        ),
+    ],
+)
+def test_get_adjacent_position_invalid(position, direction, exc):
+    with pytest.raises(exc):
+        get_adjacent_position(position, direction)
+
+
+@pytest.mark.parametrize(
+    "a, b, expected",
+    [
+        pytest.param((1, 3), (1, 1), Direction.UP, id="up"),
+        pytest.param((1, 1), (1, 3), Direction.DOWN, id="down"),
+        pytest.param((3, 1), (1, 1), Direction.LEFT, id="left"),
+        pytest.param((1, 1), (3, 1), Direction.RIGHT, id="right"),
+        pytest.param((1, 1), (3, 3), Direction.DOWN, id="diag-up-right"),
+        pytest.param((3, 3), (1, 1), Direction.UP, id="diag-down-left"),
+        pytest.param(
+            (1000, 1000), (1001, 1000), Direction.RIGHT, id="large-right"
+        ),
+        pytest.param(
+            (1000, 1000), (999, 1000), Direction.LEFT, id="large-left"
+        ),
+        pytest.param(
+            (1000, 1000), (1000, 1001), Direction.DOWN, id="large-down"
+        ),
+        pytest.param((1000, 1000), (1000, 999), Direction.UP, id="large-up"),
+        pytest.param((-1, -1), (-2, -1), Direction.LEFT, id="neg-left"),
+        pytest.param((-1, -1), (0, -1), Direction.RIGHT, id="neg-right"),
+        pytest.param((-1, -1), (-1, 0), Direction.DOWN, id="neg-down"),
+        pytest.param((-1, -1), (-1, -2), Direction.UP, id="neg-up"),
+        pytest.param((1, 2), (1, 2), Direction.DOWN, id="zero-offset"),
+        pytest.param((2, 1), (2, 3), Direction.DOWN, id="zero-offset-down"),
+        pytest.param((3, 1), (1, 1), Direction.LEFT, id="zero-offset-left"),
+        pytest.param((1, 1), (3, 1), Direction.RIGHT, id="zero-offset-right"),
+        pytest.param((1, 2), (2, 3), Direction.DOWN, id="edge-down"),
+        pytest.param((2, 3), (1, 2), Direction.UP, id="edge-up"),
+        pytest.param((2, 1), (4, 2), Direction.RIGHT, id="edge-right"),
+        pytest.param((4, 2), (2, 1), Direction.LEFT, id="edge-left"),
+    ],
+)
+def test_get_direction(a, b, expected):
+    assert get_direction(a, b) == expected
+
+
+@pytest.mark.parametrize(
+    "direction, expected",
+    [
+        pytest.param(Direction.UP, Direction.DOWN, id="up-down"),
+        pytest.param(Direction.DOWN, Direction.UP, id="down-up"),
+        pytest.param(Direction.LEFT, Direction.RIGHT, id="left-right"),
+        pytest.param(Direction.RIGHT, Direction.LEFT, id="right-left"),
+    ],
+)
+def test_pairs_valid(direction, expected):
+    assert pairs(direction) == expected
+
+
+@pytest.mark.parametrize(
+    "direction",
+    [
+        pytest.param("invalid_direction", id="invalid-string"),
+        pytest.param(None, id="none"),
+    ],
+)
+def test_pairs_invalid(direction):
+    with pytest.raises(ValueError):
+        pairs(direction)
+
+
+@pytest.mark.parametrize(
+    "tile, facing, skip_nodes, expected",
+    [
+        pytest.param(
+            MagicMock(endure=None, exit_from=[]),
+            Direction.DOWN,
+            None,
+            [],
+            id="no-endure-no-exit",
+        ),
+        pytest.param(
+            MagicMock(endure=[Direction.DOWN], exit_from=[]),
+            Direction.DOWN,
+            None,
+            [(1, 2)],
+            id="endure-no-skip",
+        ),
+        pytest.param(
+            MagicMock(endure=[Direction.DOWN], exit_from=[]),
+            Direction.DOWN,
+            {(1, 2)},
+            [],
+            id="endure-with-skip",
+        ),
+        pytest.param(
+            MagicMock(endure=None, exit_from=[Direction.UP, Direction.LEFT]),
+            Direction.DOWN,
+            None,
+            [(0, 1), (1, 0)],
+            id="exit-from-multiple",
+        ),
+        pytest.param(
+            MagicMock(endure=None, exit_from=[Direction.UP, Direction.LEFT]),
+            Direction.DOWN,
+            {(1, 0)},
+            [(0, 1)],
+            id="exit-from-with-skip",
+        ),
+    ],
+)
+def test_get_explicit_tile_exits(tile, facing, skip_nodes, expected):
+    position = (1, 1)
+    assert sorted(
+        get_explicit_tile_exits(position, tile, facing, skip_nodes)
+    ) == sorted(expected)
+
+
+def test_get_explicit_tile_exits_invalid_tile():
+    position = (1, 1)
+    tile = MagicMock(side_effect=TypeError)
+    facing = Direction.DOWN
+    skip_nodes = None
+    assert get_explicit_tile_exits(position, tile, facing, skip_nodes) == []
+
+
+@pytest.fixture
+def context():
+    ctx = MagicMock()
+    ctx.tile_size = prepare.DISPLAY_CONTEXT.tile_size
+    return ctx
+
+
+@pytest.mark.parametrize(
+    "tilepos, offset",
+    [
+        pytest.param(Vector2(3, 4), (50, 75), id="basic"),
+        pytest.param(Vector2(2, 3), (50, 75), id="different-size"),
+        pytest.param(Vector2(0, 0), (50, 75), id="origin"),
+        pytest.param(Vector2(-1, -2), (50, 75), id="negative"),
+        pytest.param(Vector2(1000, 2000), (50, 75), id="large"),
+        pytest.param(Vector2(5, 7), (0, 0), id="zero-offset"),
+    ],
+)
+def test_get_pos_from_tilepos(tilepos, offset, context):
+    mock_map = MagicMock()
+    mock_map.renderer.get_center_offset.return_value = offset
+
+    ts = context.tile_size
+    expected_px = tilepos.x * ts[0]
+    expected_py = tilepos.y * ts[1]
+    expected = (expected_px + offset[0], expected_py + offset[1])
+
+    assert get_pos_from_tilepos(mock_map, context, tilepos) == expected

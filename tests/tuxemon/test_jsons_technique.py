@@ -1,21 +1,22 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import json
-import unittest
 from pathlib import Path
 from typing import Any
 
-ALL_TECHNIQUES: int = 274
-MAX_TECH_ID: int = 268
-# effects with simple_damage_calculate()
+import pytest
+
+ALL_TECHNIQUES = 274
+MAX_TECH_ID = 268
+
 SIMPLE_DAMAGE_EFFECT = ("damage", "retaliate", "revenge", "money", "splash")
-# effects with simple_heal()
 SIMPLE_HEAL_EFFECT = ("healing", "photogenesis")
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 TECHNIQUE_FOLDER = PROJECT_ROOT / "mods/tuxemon/db/technique"
 
 
-def process_json_data() -> list[dict[str, Any]]:
+def load_technique_data() -> list[dict[str, Any]]:
     data_list = []
     for file in TECHNIQUE_FOLDER.iterdir():
         if file.suffix == ".json" and file.is_file():
@@ -24,133 +25,133 @@ def process_json_data() -> list[dict[str, Any]]:
     return data_list
 
 
-class TestTechniqueJSON(unittest.TestCase):
-    def setUp(self) -> None:
-        self.data_list = process_json_data()
+@pytest.fixture(scope="session")
+def data_list():
+    return load_technique_data()
 
-    def test_nr_jsons(self) -> None:
-        self.assertEqual(len(self.data_list), ALL_TECHNIQUES)
 
-    def test_missing_tech_ids(self) -> None:
-        numbers = []
-        for data in self.data_list:
-            tech_id = data["tech_id"]
-            if tech_id > 0:
-                numbers.append(tech_id)
+def test_nr_jsons(data_list):
+    assert len(data_list) == ALL_TECHNIQUES
 
-        all_numbers = set(range(1, MAX_TECH_ID))
-        given_numbers = set(numbers)
-        missing = all_numbers - given_numbers
-        if missing:
-            self.fail(f"There are missing tech_ids: {missing}")
 
-    def test_duplicate_tech_ids(self) -> None:
-        numbers = []
-        for data in self.data_list:
-            tech_id = data["tech_id"]
-            if tech_id > 0:
-                numbers.append(tech_id)
+def test_missing_tech_ids(data_list):
+    numbers = [d["tech_id"] for d in data_list if d["tech_id"] > 0]
 
-        duplicates = []
-        counts = [0] * (max(numbers) + 1)
-        for num in numbers:
-            counts[num] += 1
-            if counts[num] > 1:
-                duplicates.append(num)
-        if duplicates:
-            self.fail(f"There are duplicates tech_ids: {duplicates}")
+    all_numbers = set(range(1, MAX_TECH_ID))
+    given_numbers = set(numbers)
+    missing = all_numbers - given_numbers
 
-    def test_effects_simple_damage_special(self) -> None:
-        techniques = []
-        for data in self.data_list:
-            slug = data["slug"]
-            effects = data["effects"]
-            ranges = data["range"]
-            if (
-                effects
-                and effects[0] in SIMPLE_DAMAGE_EFFECT
-                and ranges == "special"
-            ):
-                techniques.append(
-                    f"{slug}'s 'special' range cannot be used with {SIMPLE_DAMAGE_EFFECT} effects"
-                )
-        if techniques:
-            print("The following techniques:")
-            for technique in techniques:
-                print(technique)
-            self.fail(
-                f"The 'effect' field cannot contain: {SIMPLE_DAMAGE_EFFECT}."
+    assert not missing, f"Missing tech_ids: {missing}"
+
+
+def test_duplicate_tech_ids(data_list):
+    numbers = [d["tech_id"] for d in data_list if d["tech_id"] > 0]
+
+    seen = set()
+    duplicates = set()
+
+    for n in numbers:
+        if n in seen:
+            duplicates.add(n)
+        seen.add(n)
+
+    assert not duplicates, f"Duplicate tech_ids: {duplicates}"
+
+
+def test_effects_simple_damage_special(data_list):
+    errors = []
+
+    for data in data_list:
+        slug = data["slug"]
+        effects = data["effects"]
+        ranges = data["range"]
+
+        if (
+            effects
+            and effects[0] in SIMPLE_DAMAGE_EFFECT
+            and ranges == "special"
+        ):
+            errors.append(
+                f"{slug}: 'special' range cannot be used with {SIMPLE_DAMAGE_EFFECT}"
             )
 
-    def test_effects_simple_damage_power(self) -> None:
-        techniques = []
-        for data in self.data_list:
-            slug = data["slug"]
-            effects = data["effects"]
-            power = data["power"]
-            if effects and effects[0] in SIMPLE_DAMAGE_EFFECT and power == 0:
-                techniques.append(f"{slug}'s power is {power}")
-        if techniques:
-            print("The following techniques:")
-            for technique in techniques:
-                print(technique)
-            self.fail(f"The 'power' attribute must be > 0.")
+    assert not errors, "Invalid special-range techniques:\n" + "\n".join(
+        errors
+    )
 
-    def test_effects_simple_heal_healing_power(self) -> None:
-        techniques = []
-        for data in self.data_list:
-            slug = data["slug"]
-            effects = data["effects"]
-            if (
-                effects
-                and effects[0] in SIMPLE_HEAL_EFFECT
-                and data["healing_power"]
-                and data["healing_power"] == 0
-            ):
-                healing_power = data["healing_power"]
-                techniques.append(f"{slug}'s healing power is {healing_power}")
-        if techniques:
-            print("The following techniques:")
-            for technique in techniques:
-                print(technique)
-            self.fail(f"The 'healing_power' attribute must be > 0.")
 
-    def test_effects_combinations(self) -> None:
-        techniques = {}
-        combinations = {
-            (
-                "damage",
-                "healing",
-            ): "The 'damage' and 'healing' effect cannot be used together.",
-        }
-        for data in self.data_list:
-            slug = data["slug"]
-            effects = data["effects"]
-            if effects:
-                for combination, error_message in combinations.items():
-                    if all(effect in effects for effect in combination):
-                        techniques.setdefault(error_message, []).append(
-                            f"{slug}'s effects: {effects}."
-                        )
-        for error_message, technique_list in techniques.items():
-            print("The following techniques:")
-            for technique in technique_list:
-                print(technique)
-            self.fail(error_message)
+def test_effects_simple_damage_power(data_list):
+    errors = []
 
-    def test_effects_give(self) -> None:
-        techniques = []
-        for data in self.data_list:
-            slug = data["slug"]
-            effects = data["effects"]
-            potency = data["potency"]
-            if effects:
-                for effect in effects:
-                    root = effect.get("type", "")
-                    if root == "give" and potency == 0.0:
-                        techniques.append(f"{slug}'s potency is {potency}")
-        if techniques:
-            print("The following techniques:")
-            for technique in techniques:
-                print(technique)
-            self.fail(f"The 'potency' attribute must be > 0.")
+    for data in data_list:
+        slug = data["slug"]
+        effects = data["effects"]
+        power = data["power"]
+
+        if effects and effects[0] in SIMPLE_DAMAGE_EFFECT and power == 0:
+            errors.append(f"{slug}: power is 0")
+
+    assert not errors, "Damage techniques must have power > 0:\n" + "\n".join(
+        errors
+    )
+
+
+def test_effects_simple_heal_healing_power(data_list):
+    errors = []
+
+    for data in data_list:
+        slug = data["slug"]
+        effects = data["effects"]
+
+        if effects and effects[0] in SIMPLE_HEAL_EFFECT:
+            healing_power = data.get("healing_power")
+            if healing_power is not None and healing_power == 0:
+                errors.append(f"{slug}: healing_power is 0")
+
+    assert not errors, (
+        "Healing techniques must have healing_power > 0:\n" + "\n".join(errors)
+    )
+
+
+def test_effects_combinations(data_list):
+    forbidden = {
+        (
+            "damage",
+            "healing",
+        ): "The 'damage' and 'healing' effects cannot be used together."
+    }
+
+    errors = {}
+
+    for data in data_list:
+        slug = data["slug"]
+        effects = data["effects"]
+
+        if effects:
+            for combo, message in forbidden.items():
+                if all(effect in effects for effect in combo):
+                    errors.setdefault(message, []).append(
+                        f"{slug}: effects={effects}"
+                    )
+
+    assert not errors, "\n".join(
+        f"{msg}\n" + "\n".join(items) for msg, items in errors.items()
+    )
+
+
+def test_effects_give(data_list):
+    errors = []
+
+    for data in data_list:
+        slug = data["slug"]
+        effects = data["effects"]
+        potency = data["potency"]
+
+        if effects:
+            for effect in effects:
+                if effect.get("type") == "give" and potency == 0.0:
+                    errors.append(f"{slug}: potency is 0")
+
+    assert not errors, "give-effects require potency > 0:\n" + "\n".join(
+        errors
+    )

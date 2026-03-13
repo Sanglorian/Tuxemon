@@ -24,13 +24,6 @@ from tuxemon.database.yaml_utils import dump_yaml_path
 from tuxemon.platform.const import buttons
 
 
-@pytest.fixture(scope="module", autouse=True)
-def pygame_setup_teardown():
-    pygame.init()
-    yield
-    pygame.quit()
-
-
 def write_yaml(dir_path: Path, data) -> Path:
     p = dir_path / "tuxemon.yaml"
     dump_yaml_path(p, data)

@@ -9,13 +9,6 @@ from pygame.surface import Surface
 from tuxemon.ui.tile_layout import NineSliceLayout, TileLayout
 
 
-@pytest.fixture(scope="session", autouse=True)
-def pygame_init():
-    pygame.init()
-    yield
-    pygame.quit()
-
-
 def test_tilelayout_init_default():
     img = Surface((9, 9))
     layout = TileLayout(img)

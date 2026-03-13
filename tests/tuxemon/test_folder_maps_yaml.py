@@ -1,11 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
 from collections.abc import Generator
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from tuxemon.constants.asset_loader import fetch_asset
+from tuxemon.database.runtime import db  # initializes asset loader
 from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.script.parser import parse_action_string
 
@@ -44,187 +46,124 @@ def load_yaml_files(folder_path: str) -> dict[Path, dict]:
     return loaded_data
 
 
-class TestYAMLFiles(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.folder_path = fetch_asset(FOLDER)
-        cls.loaded_data = load_yaml_files(cls.folder_path)
+@pytest.fixture(scope="module")
+def loaded_data():
+    folder_path = fetch_asset(FOLDER)
+    return load_yaml_files(folder_path)
 
-    def test_yaml_event_name_length(self):
-        for path, data in self.loaded_data.items():
-            with self.subTest(file=path.name):
-                for event_name in data[EVENTS_KEY].keys():
-                    with self.subTest(event_name=event_name):
-                        self.assertLessEqual(
-                            len(event_name),
-                            MAX_LENGTH_NAME,
-                            f"Event name exceeds {MAX_LENGTH_NAME} characters.",
+
+def test_yaml_event_name_length(loaded_data):
+    for path, data in loaded_data.items():
+        for event_name in data[EVENTS_KEY].keys():
+            assert len(event_name) <= MAX_LENGTH_NAME, (
+                f"Event name exceeds {MAX_LENGTH_NAME} characters."
+            )
+
+
+def test_yaml_event_labels(loaded_data):
+    for path, data in loaded_data.items():
+        for event_data in data[EVENTS_KEY].values():
+            for name in event_data.keys():
+                assert name in YAML_ATTR, (
+                    f"Attribute '{name}' is not in the list of allowed attributes."
+                )
+
+
+def test_yaml_event_type(loaded_data):
+    for path, data in loaded_data.items():
+        for event_data in data[EVENTS_KEY].values():
+            assert event_data["type"] in YAML_TYPES, (
+                f"Event type '{event_data['type']}' is not in the list of allowed types."
+            )
+
+
+def test_yaml_event_coordinates_and_dimensions(loaded_data):
+    for path, data in loaded_data.items():
+        for event_data in data[EVENTS_KEY].values():
+            for key in ("x", "y", "width", "height"):
+                if key in event_data:
+                    assert isinstance(event_data[key], int), (
+                        f"Value of '{key}' should be an integer."
+                    )
+
+
+def test_actions_structure(loaded_data):
+    for path, data in loaded_data.items():
+        for event_data in data[EVENTS_KEY].values():
+            if "actions" in event_data:
+                for action in event_data["actions"]:
+                    assert isinstance(action, str), (
+                        "Action in event should be a string."
+                    )
+
+
+def test_actions_teleport(loaded_data):
+    for path, data in loaded_data.items():
+        for event_data in data[EVENTS_KEY].values():
+            if "actions" in event_data:
+                for action in event_data["actions"]:
+                    command, params = parse_action_string(action)
+                    if command == "transition_teleport":
+                        try:
+                            fetch_asset(FOLDER, params[1])
+                        except OSError:
+                            pytest.fail(f"Map '{params[1]}' does not exist.")
+
+
+def test_conditions_structure(loaded_data):
+    for path, data in loaded_data.items():
+        for event_data in data[EVENTS_KEY].values():
+            if "conditions" in event_data:
+                for condition in event_data["conditions"]:
+                    assert isinstance(condition, str), (
+                        "Condition in event should be a string."
+                    )
+
+
+def test_conditions_operator(loaded_data):
+    for path, data in loaded_data.items():
+        for event_data in data[EVENTS_KEY].values():
+            if "conditions" in event_data:
+                for condition in event_data["conditions"]:
+                    assert condition.lower().startswith(("is ", "not ")), (
+                        "Condition should start with 'is ' or 'not '."
+                    )
+
+
+def test_collision_attributes(loaded_data):
+    for path, data in loaded_data.items():
+        if COLLISION_KEY in data:
+            for collision in data[COLLISION_KEY]:
+                assert isinstance(collision, dict), (
+                    "Collision entry must be a dictionary."
+                )
+                for attr in ["height", "type", "width", "x", "y"]:
+                    assert attr in collision, (
+                        f"Collision object is missing required attribute '{attr}'."
+                    )
+
+
+def test_collision_attribute_values(loaded_data):
+    for path, data in loaded_data.items():
+        if COLLISION_KEY in data:
+            for collision in data[COLLISION_KEY]:
+                assert collision.get("type") == "collision", (
+                    "The 'type' for a collision object must be 'collision'."
+                )
+                for attr in ["height", "width", "x", "y"]:
+                    if attr in collision:
+                        assert isinstance(collision[attr], int), (
+                            f"The value for '{attr}' must be an integer."
                         )
 
-    def test_yaml_event_labels(self):
-        for path, data in self.loaded_data.items():
-            with self.subTest(file=path.name):
-                for event_data in data[EVENTS_KEY].values():
-                    for name in event_data.keys():
-                        with self.subTest(attribute_name=name):
-                            self.assertIn(
-                                name,
-                                YAML_ATTR,
-                                f"Attribute '{name}' is not in the list of allowed attributes.",
-                            )
 
-    def test_yaml_event_type(self):
-        for path, data in self.loaded_data.items():
-            with self.subTest(file=path.name):
-                for event_data in data[EVENTS_KEY].values():
-                    with self.subTest(event_data=event_data):
-                        self.assertIn(
-                            event_data["type"],
-                            YAML_TYPES,
-                            f"Event type '{event_data['type']}' is not in the list of allowed types.",
-                        )
-
-    def test_yaml_event_coordinates_and_dimensions(self):
-        for path, data in self.loaded_data.items():
-            with self.subTest(file=path.name):
-                for event_data in data[EVENTS_KEY].values():
-                    with self.subTest(event_data=event_data):
-                        # Test 'x'
-                        if "x" in event_data:
-                            self.assertIsInstance(
-                                event_data["x"],
-                                int,
-                                "Value of 'x' should be an integer.",
-                            )
-                        # Test 'y'
-                        if "y" in event_data:
-                            self.assertIsInstance(
-                                event_data["y"],
-                                int,
-                                "Value of 'y' should be an integer.",
-                            )
-                        # Test 'width'
-                        if "width" in event_data:
-                            self.assertIsInstance(
-                                event_data["width"],
-                                int,
-                                "Value of 'width' should be an integer.",
-                            )
-                        # Test 'height'
-                        if "height" in event_data:
-                            self.assertIsInstance(
-                                event_data["height"],
-                                int,
-                                "Value of 'height' should be an integer.",
-                            )
-
-    def test_actions_structure(self):
-        for path, data in self.loaded_data.items():
-            with self.subTest(file=path.name):
-                for event_data in data[EVENTS_KEY].values():
-                    if "actions" in event_data:
-                        for action in event_data["actions"]:
-                            with self.subTest(action=action):
-                                self.assertIsInstance(
-                                    action,
-                                    str,
-                                    "Action in event should be a string.",
-                                )
-
-    def test_actions_teleport(self):
-        for path, data in self.loaded_data.items():
-            with self.subTest(file=path.name):
-                for event_data in data[EVENTS_KEY].values():
-                    if "actions" in event_data:
-                        for action in event_data["actions"]:
-                            command, params = parse_action_string(action)
-                            if command == "transition_teleport":
-                                with self.subTest(action=action):
-                                    try:
-                                        fetch_asset(FOLDER, params[1])
-                                    except OSError:
-                                        self.fail(
-                                            f"Map '{params[1]}' does not exist."
-                                        )
-
-    def test_conditions_structure(self):
-        for path, data in self.loaded_data.items():
-            with self.subTest(file=path.name):
-                for event_data in data[EVENTS_KEY].values():
-                    if "conditions" in event_data:
-                        for condition in event_data["conditions"]:
-                            with self.subTest(condition=condition):
-                                self.assertIsInstance(
-                                    condition,
-                                    str,
-                                    "Condition in event should be a string.",
-                                )
-
-    def test_conditions_operator(self):
-        for path, data in self.loaded_data.items():
-            with self.subTest(file=path.name):
-                for event_data in data[EVENTS_KEY].values():
-                    if "conditions" in event_data:
-                        for condition in event_data["conditions"]:
-                            with self.subTest(condition=condition):
-                                self.assertTrue(
-                                    condition.lower().startswith(
-                                        ("is ", "not ")
-                                    ),
-                                    "Condition should start with 'is ' or 'not '.",
-                                )
-
-    def test_collision_attributes(self):
-        for path, data in self.loaded_data.items():
-            if COLLISION_KEY in data:
-                with self.subTest(file=path.name):
-                    for collision in data[COLLISION_KEY]:
-                        self.assertIsInstance(
-                            collision,
-                            dict,
-                            "Collision entry must be a dictionary.",
-                        )
-                        required_attrs = ["height", "type", "width", "x", "y"]
-                        for attr in required_attrs:
-                            self.assertIn(
-                                attr,
-                                collision,
-                                f"Collision object is missing required attribute '{attr}'.",
-                            )
-
-    def test_collision_attribute_values(self):
-        for path, data in self.loaded_data.items():
-            if COLLISION_KEY in data:
-                with self.subTest(file=path.name):
-                    for collision in data[COLLISION_KEY]:
-                        # Check type
-                        self.assertEqual(
-                            collision.get("type"),
-                            "collision",
-                            "The 'type' for a collision object must be 'collision'.",
-                        )
-                        # Check integer attributes
-                        integer_attrs = ["height", "width", "x", "y"]
-                        for attr in integer_attrs:
-                            if attr in collision:
-                                self.assertIsInstance(
-                                    collision[attr],
-                                    int,
-                                    f"The value for '{attr}' must be an integer.",
-                                )
-
-    def test_collision_no_event_data(self):
-        for path, data in self.loaded_data.items():
-            if COLLISION_KEY in data:
-                with self.subTest(file=path.name):
-                    for collision in data[COLLISION_KEY]:
-                        self.assertNotIn(
-                            "actions",
-                            collision,
-                            "Collision object should not have an 'actions' key.",
-                        )
-                        self.assertNotIn(
-                            "conditions",
-                            collision,
-                            "Collision object should not have a 'conditions' key.",
-                        )
+def test_collision_no_event_data(loaded_data):
+    for path, data in loaded_data.items():
+        if COLLISION_KEY in data:
+            for collision in data[COLLISION_KEY]:
+                assert "actions" not in collision, (
+                    "Collision object should not have an 'actions' key."
+                )
+                assert "conditions" not in collision, (
+                    "Collision object should not have a 'conditions' key."
+                )

@@ -69,13 +69,6 @@ def tmpdir_path(tmp_path):
     return tmp_path
 
 
-@pytest.fixture(scope="module", autouse=True)
-def pygame_env():
-    pygame.init()
-    yield
-    pygame.quit()
-
-
 def make_event(button=1, value=1.0, ts=123.456):
     return PlayerInput(button=button, value=value, timestamp=ts)
 

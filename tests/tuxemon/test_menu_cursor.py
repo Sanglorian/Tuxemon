@@ -13,14 +13,6 @@ from tuxemon.menu.cursor import (
 from tuxemon.sprite import SpriteGroup
 
 
-@pytest.fixture(scope="module", autouse=True)
-def pygame_env():
-    pygame.init()
-    pygame.display.set_mode((0, 0))
-    yield
-    pygame.quit()
-
-
 @pytest.fixture
 def menu_sprites():
     return SpriteGroup()

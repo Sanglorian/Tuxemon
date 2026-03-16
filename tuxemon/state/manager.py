@@ -260,14 +260,14 @@ class StateManager:
     @overload
     def push_state(
         self,
-        state_name: StateType,
+        state_name: State,
         **kwargs: Any,
-    ) -> StateType:
+    ) -> State:
         pass
 
     def push_state(
         self,
-        state_name: str | StateType,
+        state_name: str | State,
         **kwargs: Any,
     ) -> State:
         """
@@ -292,11 +292,10 @@ class StateManager:
         elif isinstance(state_name, str):
             instance = self.state_factory.create_state(state_name, **kwargs)
         else:
-            warnings.warn(
-                "Calling push_state with Type[State] is deprecated, use an instantiated State instead",
-                DeprecationWarning,
+            raise TypeError(
+                "push_state no longer accepts State subclasses; "
+                "pass a state instance or a state name string."
             )
-            instance = state_name(**kwargs) if kwargs else state_name()
 
         self.state_stack.push(instance)
 

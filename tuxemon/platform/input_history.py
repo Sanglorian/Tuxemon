@@ -66,25 +66,31 @@ class InputHistory:
             not self.last_history_event
             or translated_event.button != self.last_history_event.button
         ):
-            self.history.append(translated_event)
+            self.history.append([translated_event, 0.0])
             self.last_history_event = translated_event
 
     def update(self, dt: float) -> None:
-        self.update_history(max_age_s=self.combo_window_seconds)
+        self.update_history(dt, max_age_s=self.combo_window_seconds)
+
         for button in list(self.held_timers.keys()):
             self.held_timers[button] += dt
 
-    def update_history(self, max_age_s: float | None = None) -> None:
+    def update_history(
+        self, dt: float, max_age_s: float | None = None
+    ) -> None:
         """
         Removes inputs from the history if they are older than max_age_s.
         This enforces a 'combo window'.
         """
         max_age_s = max_age_s or self.combo_window_seconds
-        cutoff_time = time.time() - max_age_s
 
-        while self.history and self.history[0].timestamp < cutoff_time:
+        # Age all events
+        for entry in self.history:
+            entry[1] += dt
+
+        # Remove expired events
+        while self.history and self.history[0][1] > max_age_s:
             self.history.popleft()
-
             if not self.history:
                 self.last_history_event = None
 

@@ -4892,6 +4892,9 @@ msgstr "Tuxemon: Xero"
 msgid "spyder_campaign"
 msgstr "Tuxemon: Spyder and the Cathedral"
 
+msgid "water_campaign"
+msgstr "Tuxemon: Waves of Chaos"
+
 # Multiplayer notifications
 msgid "multiplayer_accept"
 msgstr "Accept"
@@ -15433,9 +15436,6 @@ msgstr "Carlos"
 msgid "spyder_granny"
 msgstr "Granny"
 
-msgid "spyder_goth"
-msgstr "Goth"
-
 msgid "spyder_florist"
 msgstr "Florist"
 
@@ -15453,9 +15453,6 @@ msgstr "Marion"
 
 msgid "spyder_route2_graf"
 msgstr "Graf"
-
-msgid "spyder_maniac"
-msgstr "Maniac"
 
 # msgid "spyder_citypark_florist"
 # msgstr "Florist"
@@ -18532,6 +18529,286 @@ msgstr "MAPLE: I got a Fruitera!"
 
 msgid "mart_junkyard05"
 msgstr "CARY: Well, you won this time. But next time, we'll win."
+
+# Water Way
+msgid "water_intro1"
+msgstr "You have just crossed the desert and finally arrived in the Water Region."
+
+msgid "water_intro2"
+msgstr "A Legendary Tuxemon has been sighted near here, causing chaos across the island."
+
+msgid "water_intro3"
+msgstr "With your favourite Tuxemon, Agnite, you've come to help the people and solve their problems."
+
+msgid "water_intro4"
+msgstr "Go and face your biggest trial yet."
+
+msgid "water_traveller_1"
+msgstr "Oh, are you a traveller? Welcome to our island."
+
+msgid "water_traveller_2"
+msgstr "Now might not be the best time to visit. Strange things are happening."
+
+msgid "water_oldman_1"
+msgstr "This castle leads to a very dangerous part of the island."
+
+msgid "water_oldman_2"
+msgstr "Do not enter unless you know what you're doing."
+
+msgid "water_rock1"
+msgstr "Listen -> To -> This -> Guy -> He's -> Super -> Smart ->"
+
+msgid "water_niceguy1_1"
+msgstr "Welcome to our village."
+
+msgid "water_niceguy1_2"
+msgstr "You'll need permission from our mayor to go further on the island, due to how dangerous it's becoming."
+
+msgid "water_niceguy2_1"
+msgstr "Each village on our island has a special relationship with water."
+
+msgid "water_niceguy2_2"
+msgstr "For example, our village is right next to the ocean. Water is all around us."
+
+msgid "water_nurse1"
+msgstr "Let me heal your Tuxemon for you."
+
+msgid "water_nurse2"
+msgstr "All healed. Take care out there."
+
+msgid "water_nice_mayor1"
+msgstr "Hello and welcome to our village. We live in peace with our Tuxemon, floating gently on the ocean. Yes, the whole village floats.\n No, we don't know why.\n One day we woke up and everything was drifting. We decided to just go with it."
+
+msgid "water_nice_mayor2"
+msgstr "You need my permission before you can go any further on the island. Things have been getting unpredictable lately.\n Buildings wobble, the tides act strange, and sometimes the fish stare at us for too long. What brings you here?"
+
+msgid "water_nice_mayor3"
+msgstr "Ah, you've heard of our problems. Strange things are happening in the North, and a mysterious Tuxemon has been sighted.\n People say it glides across the water without touching it, which is impressive and also a little rude."
+
+msgid "water_nice_mayor4"
+msgstr "You and your Tuxemon seem very strong. If you could help us find the strange Tuxemon and put an end to our troubles, we would be grateful.\n Our village doesn't have much, but we can offer moral support and a lot of floating."
+
+msgid "water_nice_mayor5"
+msgstr "Nice Mayor: Oh my goodness. My son has stolen your Agnite. I am so sorry. He has a habit of making terrible decisions at high speed.\n I promise you, this is not normal behaviour. Well, not entirely normal."
+
+msgid "water_nice_mayor6"
+msgstr "Here, take two of my strongest Tuxemon. They have protected this village from storms, sea monsters, and once a very angry seagull.\n Please defeat my son and teach him a lesson before he steals something else."
+
+msgid "water_nice_mayor7"
+msgstr "You received Propellercat and Bugnin. They seem confused but willing."
+
+msgid "water_nice_mayor8"
+msgstr "I'm so sorry my son has stolen your Tuxemon. He thinks strength is something you grab and run away with.\n Please defeat him and help him understand that this is not how life works, even on a floating village."
+
+msgid "water_rude_dude1"
+msgstr "RUDE DUDE: You're not a good Tuxemon trainer. Show me your strongest Tuxemon.\n I want to see what real power looks like, because I definitely don't have any of my own."
+
+msgid "water_rude_dude2"
+msgstr "RUDE DUDE: Wow, this is a cool Tuxemon. You really don't deserve something this strong. Hope you don't mind if I take it.\n Actually, I hope you do mind. That makes it more fun."
+
+msgid "water_rude_dude3"
+msgstr "RUDE DUDE has stolen your Agnite. He sprints away like someone who has never considered consequences."
+
+msgid "water_helper1"
+msgstr "I just saw a little boy run past me toward the outskirts of the village."
+
+msgid "water_goth1"
+msgstr "What? A rude boy with a Tuxemon? Sorry, I haven't seen anyone come past me."
+
+msgid "water_outskirts_niceguy1"
+msgstr "It's so peaceful out here. But it would be nicer if it weren't for the Tuxemon hiding in the grass."
+
+msgid "water_outskirts_niceguy2"
+msgstr "I like flowers."
+
+msgid "water_outskirts_dude1"
+msgstr "Oh no, you found me. I mean... haha. You walked right into my trap.\n I didn't actually set a trap, but pretending I did makes me feel smarter."
+
+msgid "water_outskirts_dude2"
+msgstr "Prepare to face the power of my... your Agnite.\n It likes me more than you. Probably. Maybe. I hope."
+
+msgid "water_outskirts_dude3"
+msgstr "What the... Agnite turned on me. Why would it do that.\n I fed it a snack. It was a rock, but still."
+
+msgid "water_outskirts_dude4"
+msgstr "You got Agnite back. It looks relieved, and also slightly embarrassed for you both."
+
+msgid "water_outskirts_dude5"
+msgstr "Grr... never mind. I have even stronger Tuxemon to defeat you with. Take this.\n I found them behind a tree. They might not even be mine."
+
+msgid "water_outskirts_dude6"
+msgstr "You have defeated the boy and recovered your Tuxemon.\n He looks frustrated, confused, and possibly hungry."
+
+msgid "water_outskirts_dude7"
+msgstr "You can now travel further on the island.\n The boy mutters something about revenge and snacks as he wanders off."
+
+msgid "water_cooldude1"
+msgstr "I'm so cool. I must be the only person who's ever climbed this mountain alone."
+
+msgid "water_cooldude2"
+msgstr "Whoa. What are you doing here."
+
+msgid "water_hiding_guy1"
+msgstr "Ssssh... I'm hiding from Omnichannel."
+
+msgid "water_hiding_guy2"
+msgstr "I don't trust them."
+
+msgid "water_disciple1"
+msgstr "You're almost halfway to the next village. Over this bridge is the halfway point where you can rest."
+
+msgid "water_postboy"
+msgstr "Umm... I think I'm lost. Am I anywhere near Taba Town."
+
+msgid "water_omniblock1"
+msgstr "Omnichannel has restricted access to this section of the island for your safety.\n This area has been classified as a Tier 3 Hazard Zone under our Risk Mitigation Framework.\n Please do not panic. It is inefficient."
+
+msgid "water_omniblock2"
+msgstr "You must obtain the Mayor's authorization to proceed.\n This ensures alignment with our regional compliance protocols and prevents unexpected liability events."
+
+msgid "water_omniblock3"
+msgstr "Omnichannel policy prohibits passage due to a high-risk Legendary Tuxemon ahead.\n Unauthorized entry may result in suboptimal customer experiences."
+
+msgid "water_omniblock4"
+msgstr "I work for Omnichannel now. Operational synergy, you know.\n We strive to deliver scalable safety solutions through proactive intervention and occasional shouting."
+
+msgid "water_omni1"
+msgstr "Omnichannel has designated this village as our regional operations hub.\n This strategic deployment enhances our ability to deliver value-driven security outcomes and also gives us a nice view."
+
+msgid "water_omni2"
+msgstr "Omnichannel will secure the Legendary Tuxemon and deliver optimized hero outcomes for this region.\n Our quarterly reports depend on it."
+
+msgid "water_omni3"
+msgstr "Omnichannel has identified that this village maintains a high-value relationship with water resources.\n Leveraging this asset is key to our long-term sustainability roadmap, or so the brochure says."
+
+msgid "water_omni4"
+msgstr "This village is positioned between two rivers, enabling streamlined waste-flow management.\n We simply place our materials in the river and let natural processes handle the rest.\n It's what we call eco-adjacent disposal."
+
+msgid "water_omni5"
+msgstr "Omnichannel advises against visiting the Snow or Volcano villages ahead.\n Those areas are currently undergoing stability recalibration. That means chaos."
+
+msgid "water_omni6"
+msgstr "Omnichannel will deploy certified field agents to stabilize those villages later.\n Please comply with all directives to ensure a seamless regional experience. Resistance creates paperwork."
+
+msgid "water_nice_river1"
+msgstr "This village used to be peaceful, until Omnichannel moved in."
+
+msgid "water_guide1"
+msgstr "To the North is an icy village being attacked by an angry Tuxemon."
+
+msgid "water_guide2"
+msgstr "To the East is a volcano village where the Legendary Tuxemon is causing chaos."
+
+msgid "water_guide3"
+msgstr "I'm too scared to go anywhere."
+
+msgid "water_iceguy1_1"
+msgstr "Our village has a special relationship with water. It's built on top of a frozen lake."
+
+msgid "water_iceguy2_1"
+msgstr "Help. Our village is being attacked by a dangerous Tuxemon."
+
+msgid "water_iceguy2_2"
+msgstr "Talk to our mayor if you want to help."
+
+msgid "water_mayor1"
+msgstr "A monster is attacking our village. Will you help us.\n The ice is cracking, the houses are shaking, and someone dropped their soup.\n It is chaos."
+
+msgid "water_mayor2"
+msgstr "Talk to me again when you're ready to fight it. The creature keeps circling the lake like it's judging us.\n I don't like being judged by something with claws."
+
+msgid "water_mayor3"
+msgstr "Here it is. The monster is attacking. Help. It is making loud noises and I am not emotionally prepared for this."
+
+msgid "water_mayor4"
+msgstr "By giddy, you've knocked that Tuxemon out to sea. That was impressive.\n The villagers can finally stop screaming. Mostly."
+
+msgid "water_mayor5"
+msgstr "I think you might be strong enough to stop the Legendary Tuxemon in the Volcano village.\n You should go there and help everyone. They are probably panicking too."
+
+msgid "water_conifrost1"
+msgstr "You feel a powerful presence behind you. The temperature drops just enough to make you question your life choices."
+
+msgid "water_conifrost2"
+msgstr "It's the Tuxemon you defeated when it attacked the village.\n It looks calmer now, like it has had a long think about its behaviour."
+
+msgid "water_conifrost3"
+msgstr "Conifrost was impressed by your strength and wants to help you stop the Legendary Tuxemon.\n It nods at you in a very serious, icy way."
+
+msgid "water_conifrost4"
+msgstr "Conifrost joined your team. It stands proudly, as if posing for a dramatic painting."
+
+msgid "water_volcano_guy1"
+msgstr "Our village has a special relationship with water."
+
+msgid "water_volcano_guy2"
+msgstr "We live on a volcano where the heat boils water into steam, turning it into clouds."
+
+msgid "water_volcano_guy3"
+msgstr "I'm scared of the Legendary Tuxemon hiding in the nearby cave."
+
+msgid "water_volcano_guy4"
+msgstr "I need to run away to the Fondent region. I'm sure nothing dramatic is happening there."
+
+msgid "water_volcano_guy5"
+msgstr "It's hiding... the Legendary Tuxemon... in the lake North of here. I'm scared."
+
+msgid "water_volcano_oldman1"
+msgstr "Are you ready to face the Legendary Tuxemon. Most people turn back at this point.\n Some pretend they forgot something at home. Others just faint."
+
+msgid "water_volcano_oldman2"
+msgstr "Walk into the water when you're prepared to face your hardest challenge yet. The entrance is down there.\n Yes, underwater. No, I don't know who designed it."
+
+msgid "water_volcano_oldman3"
+msgstr "That's right. Walk into the water. Don't worry about holding your breath. Something down there handles that for you.\n Probably magic. Or science. Or both."
+
+msgid "water_hint1"
+msgstr "This is the cave of the Legendary Tuxemon."
+
+msgid "water_hint2"
+msgstr "Somewhere in here, the Legendary Tuxemon is hiding. You must stop it and end its madness."
+
+msgid "water_hint3"
+msgstr "Walking inside water will heal your Tuxemon."
+
+msgid "water_hint4"
+msgstr "And don't worry about breathing underwater. A strange power allows you to breathe here."
+
+msgid "water_hint5"
+msgstr "And remember, walking in the water will heal all of your Tuxemon."
+
+msgid "water_unusual1"
+msgstr "Hello, strange person. I assume you've come to meet my friend. They call it the Legendary Tuxemon.\n I call it 'the one who keeps knocking things over'. Names are flexible."
+
+msgid "water_unusual2"
+msgstr "You think it's strange for someone to live underwater. Is it not stranger that you came all this way to meet me.\n People on the surface always rush. Down here, the water decides how fast you go. Usually slow."
+
+msgid "water_unusual3"
+msgstr "My friend is waiting for you to the North. They say they're very excited to meet you. They have been watching you through the currents.\n Not in a creepy way. Mostly."
+
+msgid "water_gemuar_before1"
+msgstr "A frightening monster appears. You feel its power. It must be the Legendary Tuxemon causing all the problems here.\n Even the water seems nervous."
+
+msgid "water_gemuar_before2"
+msgstr "You sense that it wants to test your strength. It watches you like someone deciding whether you're impressive or disappointing."
+
+msgid "water_gemuar_before3"
+msgstr "LEGENDARY TUXEMON: Are you powerful enough to defeat me. Prepare yourself for a difficult battle, if you dare.\n I hope you stretched."
+
+msgid "water_ending1"
+msgstr "You have defeated the Legendary Tuxemon and restored peace to the region.\n The water settles, the wind calms, and someone in the distance sighs with relief."
+
+msgid "water_ending2"
+msgstr "Gemuar is impressed by your talent and has joined your team. It seems curious about what chaos you will stumble into next."
+
+msgid "water_ending3"
+msgstr "Your story in the Water Region has ended. You can keep playing if you want to, but this is the end of the game.\n The villagers will probably talk about you for years, even if they get some details wrong."
+
+msgid "water_ending4"
+msgstr "Well done and thank you for playing. See you in the next Tuxemon mod. Bring snacks next time."
+
+msgid "water_outskirts_dude"
+msgstr "RUDE DUDE"
 
 # JUNKYARD ##
 msgid "junkyard_01"

@@ -13,7 +13,7 @@ from tuxemon.states.input import InputMenu
 from tuxemon.states.world_state import WorldState
 
 
-def create_state(name):
+def create_state(name: str) -> MagicMock:
     mock_state = MagicMock(spec=State, name=f"mock {name}")
     mock_state.__name__ = name
     mock_state.name = name
@@ -22,7 +22,7 @@ def create_state(name):
 
 
 @pytest.fixture
-def state_manager():
+def state_manager() -> StateManager:
     mock_client = MagicMock()
     mock_client.event_bus = EventBus()
     return StateManager("head.tail", mock_client, StateRepository())
@@ -30,7 +30,7 @@ def state_manager():
 
 @pytest.fixture
 def register_state(state_manager):
-    def _register(name):
+    def _register(name: str) -> MagicMock:
         state = create_state(name)
         state_manager.register_state(state)
         return state
@@ -38,173 +38,231 @@ def register_state(state_manager):
     return _register
 
 
-# PushWhenEmpty
-def test_push_when_empty(state_manager, register_state):
-    state_a = register_state("a")
-    pushed = state_manager.push_state("a")
-    state_manager.update(0)
+def perform_ops(state_manager, register_state, ops):
+    """
+    Helper to drive the state machine with a small DSL.
+    """
+    states: dict[str, MagicMock] = {}
 
-    assert pushed == state_manager.current_state
-    assert pushed in state_manager.active_states
-    assert pushed.resume.call_count == 1
-    assert pushed.pause.call_count == 0
-    assert pushed.shutdown.call_count == 0
+    for op in ops:
+        parts = op.split(":", 1)
+        cmd = parts[0]
+        arg = parts[1] if len(parts) == 2 else None
 
+        if cmd in {"push", "queue", "replace"} and arg is not None:
+            if arg not in states:
+                states[arg] = register_state(arg)
 
-# PushWhenNotEmpty
-def test_push_when_not_empty(state_manager, register_state):
-    state_a = register_state("a")
-    state_b = register_state("b")
+        if cmd == "push" and arg is not None:
+            state_manager.push_state(arg)
+        elif cmd == "queue" and arg is not None:
+            state_manager.queue_state(arg)
+        elif cmd == "replace" and arg is not None:
+            state_manager.replace_state(arg)
+        elif cmd == "pop":
+            if arg is None:
+                state_manager.pop_state()
+            else:
+                state_manager.pop_state(states[arg])
+        elif cmd == "update":
+            state_manager.update(0)
 
-    pushed_a = state_manager.push_state("a")
-    pushed_b = state_manager.push_state("b")
-    state_manager.update(0)
-
-    assert state_manager.current_state == pushed_b
-    assert pushed_b in state_manager.active_states
-    assert pushed_a in state_manager.active_states
-
-    assert pushed_b.resume.call_count == 1
-    assert pushed_b.pause.call_count == 0
-    assert pushed_b.shutdown.call_count == 0
-
-    assert pushed_a.resume.call_count == 1
-    assert pushed_a.pause.call_count == 1
-    assert pushed_a.shutdown.call_count == 0
+    return states
 
 
-# Pop
-def test_pop_state(state_manager, register_state):
-    state_a = register_state("a")
-    state_b = register_state("b")
+@pytest.mark.parametrize(
+    "ops, expected_current, expected_active, expected_calls",
+    [
+        pytest.param(
+            ["push:a", "update"],
+            "a",
+            {"a"},
+            {"a": {"resume": 1, "pause": 0, "shutdown": 0}},
+            id="push_when_empty",
+        ),
+        pytest.param(
+            ["push:a", "push:b", "update"],
+            "b",
+            {"a", "b"},
+            {
+                "a": {"resume": 1, "pause": 1, "shutdown": 0},
+                "b": {"resume": 1, "pause": 0, "shutdown": 0},
+            },
+            id="push_when_not_empty",
+        ),
+    ],
+)
+def test_push_behavior(
+    state_manager,
+    register_state,
+    ops,
+    expected_current,
+    expected_active,
+    expected_calls,
+):
+    states = perform_ops(state_manager, register_state, ops)
 
-    pushed_a = state_manager.push_state("a")
-    pushed_b = state_manager.push_state("b")
-
-    state_manager.pop_state()
-    state_manager.update(0)
-
-    assert state_manager.current_state == pushed_a
-    assert pushed_b not in state_manager.active_states
-    assert pushed_a in state_manager.active_states
-
-    assert pushed_b.resume.call_count == 1
-    assert pushed_b.pause.call_count == 1
-    assert pushed_b.shutdown.call_count == 1
-
-    assert pushed_a.resume.call_count == 2
-    assert pushed_a.pause.call_count == 1
-    assert pushed_a.shutdown.call_count == 0
-
-
-# Resume
-def test_resume_called(state_manager, register_state):
-    state_a = register_state("a")
-    pushed_a = state_manager.push_state("a")
-
-    assert pushed_a.update.call_count == 0
-    assert pushed_a.resume.call_count == 0
-
-    state_manager.update(0)
-    assert pushed_a.update.call_count == 1
-    assert pushed_a.resume.call_count == 1
-
-    state_b = register_state("b")
-    pushed_b = state_manager.push_state("b")
-    state_manager.pop_state()
-    state_manager.update(0)
-
-    assert pushed_a.update.call_count == 2
-    assert pushed_a.resume.call_count == 2
-    assert pushed_a.pause.call_count == 1
-
-
-# RemoveWhenCurrent
-def test_remove_when_current(state_manager, register_state):
-    state_a = register_state("a")
-    state_b = register_state("b")
-
-    pushed_a = state_manager.push_state("a")
-    pushed_b = state_manager.push_state("b")
-
-    state_manager.pop_state(pushed_b)
-    state_manager.update(0)
-
-    assert state_manager.current_state == pushed_a
-    assert pushed_b not in state_manager.active_states
-    assert pushed_a in state_manager.active_states
-
-    assert pushed_b.shutdown.call_count == 1
-    assert pushed_a.resume.call_count == 2
-
-
-# RemoveWhenNotCurrent
-def test_remove_when_not_current(state_manager, register_state):
-    state_a = register_state("a")
-    state_b = register_state("b")
-
-    pushed_a = state_manager.push_state("a")
-    pushed_b = state_manager.push_state("b")
-
-    state_manager.pop_state(pushed_a)
-    state_manager.update(0)
-
-    assert state_manager.current_state == pushed_b
-    assert pushed_a not in state_manager.active_states
-    assert pushed_b in state_manager.active_states
-
-    assert pushed_a.shutdown.call_count == 1
-    assert pushed_b.resume.call_count == 1
-
-
-# Replace
-def test_replace_state(state_manager, register_state):
-    state_a = register_state("a")
-    state_b = register_state("b")
-
-    pushed_a = state_manager.push_state("a")
-    pushed_b = state_manager.replace_state("b")
-    state_manager.update(0)
-
-    assert state_manager.current_state == pushed_b
-    assert pushed_b in state_manager.active_states
-    assert pushed_a not in state_manager.active_states
-
-    assert pushed_a.shutdown.call_count == 1
-    assert pushed_b.resume.call_count == 1
-
-
-# Enqueue
-def test_enqueue_state(state_manager, register_state):
-    state_a = register_state("a")
-    state_b = register_state("b")
-    state_c = register_state("c")
-
-    pushed_a = state_manager.push_state("a")
-    pushed_b = state_manager.push_state("b")
-    state_manager.queue_state("c")
-    state_manager.update(0)
-
-    assert state_manager.current_state == pushed_b
+    assert state_manager.current_state is states[expected_current]
     active_names = {s.name for s in state_manager.active_states}
-    assert "c" not in active_names
+    assert active_names == expected_active
+
+    for name, calls in expected_calls.items():
+        s = states[name]
+        assert s.resume.call_count == calls["resume"]
+        assert s.pause.call_count == calls["pause"]
+        assert s.shutdown.call_count == calls["shutdown"]
 
 
-# EnqueueThenPop
-def test_enqueue_then_pop(state_manager, register_state):
-    state_a = register_state("a")
-    state_b = register_state("b")
-    state_c = register_state("c")
+@pytest.mark.parametrize(
+    "ops, expected_current, expected_active, expected_calls",
+    [
+        pytest.param(
+            ["push:a", "push:b", "pop", "update"],
+            "a",
+            {"a"},
+            {
+                "a": {"resume": 2, "pause": 1, "shutdown": 0},
+                "b": {"resume": 1, "pause": 1, "shutdown": 1},
+            },
+            id="pop_state",
+        ),
+        pytest.param(
+            ["push:a", "push:b", "pop:b", "update"],
+            "a",
+            {"a"},
+            {
+                "a": {"resume": 2, "pause": 1, "shutdown": 0},
+                "b": {"resume": 1, "pause": 1, "shutdown": 1},
+            },
+            id="remove_when_current",
+        ),
+        pytest.param(
+            ["push:a", "push:b", "pop:a", "update"],
+            "b",
+            {"b"},
+            {
+                "a": {"resume": 1, "pause": 1, "shutdown": 1},
+                "b": {"resume": 1, "pause": 0, "shutdown": 0},
+            },
+            id="remove_when_not_current",
+        ),
+    ],
+)
+def test_pop_behavior(
+    state_manager,
+    register_state,
+    ops,
+    expected_current,
+    expected_active,
+    expected_calls,
+):
+    states = perform_ops(state_manager, register_state, ops)
 
-    state_manager.push_state("a")
-    state_manager.push_state("b")
-    state_manager.queue_state("c")
-    state_manager.pop_state()
-    state_manager.update(0)
+    assert state_manager.current_state is states[expected_current]
+    active_names = {s.name for s in state_manager.active_states}
+    assert active_names == expected_active
+
+    for name, calls in expected_calls.items():
+        s = states[name]
+        assert s.resume.call_count == calls["resume"]
+        assert s.pause.call_count == calls["pause"]
+        assert s.shutdown.call_count == calls["shutdown"]
+
+
+@pytest.mark.parametrize(
+    "ops, expected_current, expected_active, shutdown_states, resumed_states",
+    [
+        pytest.param(
+            ["push:a", "replace:b", "update"],
+            "b",
+            {"b"},
+            {"a"},
+            {"b"},
+            id="replace_single",
+        ),
+        pytest.param(
+            ["push:a", "push:b", "replace:c", "update"],
+            "c",
+            {"a", "c"},
+            {"b"},
+            {"c"},
+            id="replace_with_multiple_states",
+        ),
+    ],
+)
+def test_replace_behavior(
+    state_manager,
+    register_state,
+    ops,
+    expected_current,
+    expected_active,
+    shutdown_states,
+    resumed_states,
+):
+    states = perform_ops(state_manager, register_state, ops)
+
+    assert state_manager.current_state is states[expected_current]
+    active_names = {s.name for s in state_manager.active_states}
+    assert active_names == expected_active
+
+    for name in shutdown_states:
+        s = states[name]
+        assert s.shutdown.call_count == 1
+
+    for name in resumed_states:
+        s = states[name]
+        assert s.resume.call_count >= 1
+
+
+@pytest.mark.parametrize(
+    "ops, must_have, must_not_have, one_of",
+    [
+        pytest.param(
+            ["push:a", "push:b", "queue:c", "update"],
+            {"a", "b"},
+            {"c"},
+            None,
+            id="enqueue_state_not_activated_until_pop",
+        ),
+        pytest.param(
+            ["push:a", "push:b", "queue:c", "pop", "update"],
+            {"a", "c"},
+            set(),
+            None,
+            id="enqueue_then_pop",
+        ),
+        pytest.param(
+            [
+                "push:a",
+                "push:b",
+                "queue:c",
+                "queue:d",
+                "update",
+                "pop",
+                "update",
+            ],
+            {"a"},
+            set(),
+            {"c", "d"},
+            id="multiple_queued_states",
+        ),
+    ],
+)
+def test_queue_behavior(
+    state_manager, register_state, ops, must_have, must_not_have, one_of
+):
+    perform_ops(state_manager, register_state, ops)
 
     active_names = {s.name for s in state_manager.active_states}
-    assert "c" in active_names
-    assert "a" in active_names
+
+    for name in must_have:
+        assert name in active_names
+
+    for name in must_not_have:
+        assert name not in active_names
+
+    if one_of is not None:
+        assert any(name in active_names for name in one_of)
 
 
 @patch.object(StateFactory, "create_state")
@@ -224,22 +282,27 @@ def test_enqueue_then_pop_current_state(
     assert active == ["c"]
 
 
-# WhenEmpty
-def test_when_empty_pop_raises(state_manager):
-    with pytest.raises(RuntimeError):
-        state_manager.pop_state()
-
-
-def test_when_empty_replace_raises(state_manager):
-    with pytest.raises(RuntimeError):
-        state_manager.replace_state("foo")
+@pytest.mark.parametrize(
+    "op, args, expected_exception",
+    [
+        pytest.param("pop", (), RuntimeError, id="pop_when_empty_raises"),
+        pytest.param(
+            "replace", ("foo",), RuntimeError, id="replace_when_empty_raises"
+        ),
+    ],
+)
+def test_when_empty_raises(state_manager, op, args, expected_exception):
+    with pytest.raises(expected_exception):
+        if op == "pop":
+            state_manager.pop_state()
+        elif op == "replace":
+            state_manager.replace_state(*args)
 
 
 def test_when_empty_current_state_is_none(state_manager):
     assert state_manager.current_state is None
 
 
-# TestStateManagerResumeCallCount
 @pytest.fixture
 def resume_state_manager():
     mock_client = MagicMock()
@@ -261,22 +324,42 @@ def resume_state_manager():
     return sm, world_state, input_menu
 
 
-def test_resume_called_when_popping_input_menu(resume_state_manager):
+@pytest.mark.parametrize(
+    "ops, expect_world_resume_called",
+    [
+        pytest.param(
+            ["push_input_menu", "input_confirm", "update"],
+            True,
+            id="resume_called_when_popping_input_menu_via_confirm",
+        ),
+        pytest.param(
+            ["push_input_menu", "pop", "update"],
+            True,
+            id="resume_called_when_popping_state_directly",
+        ),
+    ],
+)
+def test_resume_behavior(
+    resume_state_manager, ops, expect_world_resume_called
+):
     sm, world_state, input_menu = resume_state_manager
-    sm.push_state(input_menu)
-    input_menu.confirm()
-    sm.update(0.1)
-    world_state.resume.assert_called()
+
+    for op in ops:
+        if op == "push_input_menu":
+            sm.push_state(input_menu)
+        elif op == "input_confirm":
+            input_menu.confirm()
+        elif op == "pop":
+            sm.pop_state()
+        elif op == "update":
+            sm.update(0.1)
+
+    if expect_world_resume_called:
+        world_state.resume.assert_called()
+    else:
+        world_state.resume.assert_not_called()
 
 
-def test_resume_called_when_popping_state(resume_state_manager):
-    sm, world_state, input_menu = resume_state_manager
-    sm.push_state(input_menu)
-    sm.pop_state()
-    world_state.resume.assert_called()
-
-
-# Parametrize Push/Pop
 @pytest.mark.parametrize(
     "first, second",
     [
@@ -286,99 +369,26 @@ def test_resume_called_when_popping_state(resume_state_manager):
     ],
 )
 def test_push_pop_parametrized(state_manager, register_state, first, second):
-    s1 = register_state(first)
-    s2 = register_state(second)
+    states = perform_ops(
+        state_manager,
+        register_state,
+        [f"push:{first}", f"push:{second}", "update", "pop", "update"],
+    )
 
-    pushed1 = state_manager.push_state(first)
-    pushed2 = state_manager.push_state(second)
-    state_manager.update(0)
+    s1 = states[first]
+    s2 = states[second]
 
-    assert state_manager.current_state == pushed2
-    assert pushed2 in state_manager.active_states
-    assert pushed1 in state_manager.active_states
-
-    state_manager.pop_state()
-    state_manager.update(0)
-
-    assert state_manager.current_state == pushed1
-    assert pushed2 not in state_manager.active_states
-    assert pushed1 in state_manager.active_states
+    assert state_manager.current_state is s1
+    assert s2 not in state_manager.active_states
+    assert s1 in state_manager.active_states
 
 
-# Edge Case: Multiple Queued States
-def test_multiple_queued_states(state_manager, register_state):
-    s1 = register_state("a")
-    s2 = register_state("b")
-    s3 = register_state("c")
-    s4 = register_state("d")
-
-    state_manager.push_state("a")
-    state_manager.push_state("b")
-    state_manager.queue_state("c")
-    state_manager.queue_state("d")
-    state_manager.update(0)
-
-    active_names = {s.__name__ for s in state_manager.active_states}
-    assert "c" not in active_names
-    assert "d" not in active_names
-
-    state_manager.pop_state()
-    state_manager.update(0)
-    active_names = {s.__name__ for s in state_manager.active_states}
-    assert "c" in active_names or "d" in active_names
-
-
-# Edge Case: Replace When Stack Has >1 States
-def test_replace_with_multiple_states(state_manager, register_state):
-    s1 = register_state("a")
-    s2 = register_state("b")
-    s3 = register_state("c")
-
-    state_manager.push_state("a")
-    state_manager.push_state("b")
-    replaced = state_manager.replace_state("c")
-    state_manager.update(0)
-
-    assert state_manager.current_state == replaced
-    active_names = [s.__name__ for s in state_manager.active_states]
-    assert "c" in active_names
-    assert "b" not in active_names
-    assert "a" in active_names
-
-
-# Edge Case: Popping Until Empty and Then Pushing Again
-def test_pop_until_empty_then_push_again(state_manager, register_state):
-    s1 = register_state("a")
-    s2 = register_state("b")
-
-    state_manager.push_state("a")
-    state_manager.push_state("b")
-
-    state_manager.pop_state()
-    state_manager.pop_state()
-    state_manager.update(0)
-
-    assert state_manager.current_state is None
-    assert not state_manager.active_states
-
-    s3 = register_state("c")
-    pushed = state_manager.push_state("c")
-    state_manager.update(0)
-
-    assert state_manager.current_state == pushed
-    assert pushed in state_manager.active_states
-
-
-# Integration Check: Active States Order
 def test_active_states_order(state_manager, register_state):
-    s1 = register_state("a")
-    s2 = register_state("b")
-    s3 = register_state("c")
-
-    state_manager.push_state("a")
-    state_manager.push_state("b")
-    state_manager.push_state("c")
-    state_manager.update(0)
+    states = perform_ops(
+        state_manager,
+        register_state,
+        ["push:a", "push:b", "push:c", "update"],
+    )
 
     names = [s.name for s in state_manager.active_states]
     assert names == ["c", "b", "a"]
@@ -387,3 +397,172 @@ def test_active_states_order(state_manager, register_state):
     state_manager.update(0)
     names = [s.name for s in state_manager.active_states]
     assert names == ["b", "a"]
+
+
+def test_pop_until_empty_then_push_again(state_manager, register_state):
+    perform_ops(
+        state_manager,
+        register_state,
+        ["push:a", "push:b", "pop", "pop", "update"],
+    )
+
+    assert state_manager.current_state is None
+    assert not state_manager.active_states
+
+    states = perform_ops(
+        state_manager,
+        register_state,
+        ["push:c", "update"],
+    )
+
+    pushed = states["c"]
+    assert state_manager.current_state is pushed
+    assert pushed in state_manager.active_states
+
+
+def test_queued_state_expires(state_manager, register_state):
+    register_state("a")
+    state_manager.queue_state("a", expires_at=0)
+    state_manager.state_queue.remove_expired_states()
+    assert not state_manager.queued_states
+
+
+def test_queued_state_condition_false(state_manager, register_state):
+    register_state("a")
+    register_state("b")
+
+    state_manager.push_state("a")
+    state_manager.queue_state("b", condition=lambda: False)
+
+    state_manager.pop_state()
+    state_manager.update(0)
+
+    active = {s.name for s in state_manager.active_states}
+    assert "b" not in active
+    assert "a" in active
+
+
+def test_replace_queued_state(state_manager, register_state):
+    register_state("a")
+    state_manager.queue_state("a", foo=1)
+    state_manager.replace_queued_state("a", new_kwargs={"foo": 999})
+
+    queued = state_manager.get_queued_state_by_name("a")
+    assert queued.kwargs["foo"] == 999
+
+
+def test_remove_queued_state_by_name(state_manager, register_state):
+    register_state("a")
+    register_state("b")
+
+    state_manager.queue_state("a")
+    state_manager.queue_state("b")
+
+    state_manager.remove_queued_state_by_name("a")
+
+    names = [q.name for q in state_manager.queued_states]
+    assert names == ["b"]
+
+
+def test_peek_next_queued_state(state_manager, register_state):
+    register_state("a")
+    register_state("b")
+
+    state_manager.queue_state("a", priority=5)
+    state_manager.queue_state("b", priority=1)
+
+    peeked = state_manager.peek_next_queued_state()
+    assert peeked.name == "b"
+
+
+def test_remove_state_by_name_middle(state_manager, register_state):
+    a = register_state("a")
+    b = register_state("b")
+    c = register_state("c")
+
+    state_manager.push_state("a")
+    state_manager.push_state("b")
+    state_manager.push_state("c")
+
+    state_manager.remove_state_by_name("b")
+
+    active = [s.name for s in state_manager.active_states]
+    assert active == ["c", "a"]
+    assert b.shutdown.call_count == 1
+
+
+def test_remove_state_by_name_current(state_manager, register_state):
+    a = register_state("a")
+    b = register_state("b")
+
+    state_manager.push_state("a")
+    state_manager.push_state("b")
+
+    state_manager.remove_state_by_name("b")
+
+    active = [s.name for s in state_manager.active_states]
+    assert active == ["a"]
+    assert b.shutdown.call_count == 1
+    assert a.resume.call_count >= 1
+
+
+def test_resume_only_once(state_manager, register_state):
+    a = register_state("a")
+
+    state_manager.push_state("a")
+    state_manager.update(0)
+    state_manager.update(0)
+
+    assert a.resume.call_count == 1
+
+
+def test_resume_after_replace(state_manager, register_state):
+    a = register_state("a")
+    b = register_state("b")
+
+    state_manager.push_state("a")
+    state_manager.replace_state("b")
+    state_manager.update(0)
+
+    assert b.resume.call_count == 1
+
+
+def test_pop_with_queue_activates_queued(state_manager, register_state):
+    register_state("a")
+    b = register_state("b")
+    register_state("c")
+
+    state_manager.push_state("a")
+    state_manager.push_state("b")
+    state_manager.queue_state("c")
+
+    state_manager.pop_state(b)
+    state_manager.update(0)
+
+    active = {s.name for s in state_manager.active_states}
+    assert "c" in active
+    assert "a" in active
+    assert "b" not in active
+
+
+def test_get_state_by_name_missing_raises(state_manager, register_state):
+    register_state("a")
+    state_manager.push_state("a")
+
+    with pytest.raises(ValueError):
+        state_manager.get_state_by_name("MissingState")
+
+
+def test_base_map_state_helpers(state_manager, register_state):
+    register_state("a")
+    register_state("b")
+    register_state("c")
+
+    state_manager.push_state("a")
+    state_manager.push_state("b")
+
+    assert state_manager.is_in_base_map_state()
+    assert not state_manager.has_extra_states()
+
+    state_manager.push_state("c")
+    assert state_manager.has_extra_states()

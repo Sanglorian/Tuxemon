@@ -74,12 +74,12 @@ class AFKManager:
                 return True
         return False
 
-    def update(self, time_delta: float) -> str | None:
+    def update(self, dt: float) -> str | None:
         """
         Increments idle time and returns the new highest active threshold level
         if the state has changed.
         """
-        self.current_idle_time = max(0.0, self.current_idle_time + time_delta)
+        self.current_idle_time = max(0.0, self.current_idle_time + dt)
 
         new_active_levels: set[str] = self.active_levels.copy()
 

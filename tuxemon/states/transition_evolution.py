@@ -59,9 +59,8 @@ class EvolutionTransition(State):
         self.original_sprite = self._load_sprite(self.original_monster)
         self.evolved_sprite = self._load_sprite(self.evolved_monster)
 
-        self.transition_start_time = pygame.time.get_ticks()
-        self.dialog_opened = False
         self.elapsed_time = 0.0
+        self.dialog_opened = False
         self.percentage = 0.0
         self.total_seconds = TOTAL_SECONDS
         self.original_sprite_copy = self.original_sprite.image.copy()
@@ -86,8 +85,7 @@ class EvolutionTransition(State):
         self.y = (screen_height - sprite_height) // 2
 
     def update(self, dt: float) -> None:
-        current_time = pygame.time.get_ticks()
-        self.elapsed_time = (current_time - self.transition_start_time) / 1000
+        self.elapsed_time += dt
         self.percentage = (self.elapsed_time / self.total_seconds) * 100
 
         self.phase = 0
@@ -209,9 +207,7 @@ class EvolutionTransition(State):
             and event.pressed
         ):
             if self.percentage < 100:
-                self.transition_start_time = pygame.time.get_ticks() - (
-                    self.total_seconds * 1000
-                )
+                self.elapsed_time = self.total_seconds
             else:
                 self.client.current_music.unpause()
                 self.client.pop_state()

@@ -138,10 +138,10 @@ class CameraManager:
         else:
             raise ValueError("Camera not managed by this CameraManager.")
 
-    def update(self, delta_time: float) -> None:
+    def update(self, dt: float) -> None:
         """Updates the active camera with the given time delta."""
         if self.active_camera:
-            self.active_camera.update(delta_time)
+            self.active_camera.update(dt)
 
     def handle_input(self, event: PlayerInput) -> PlayerInput | None:
         """Delegates input handling to the active camera's controller."""
@@ -205,12 +205,12 @@ class CameraTracker:
         self.target_position = Vector2(0, 0)
         self.transition_speed: float = 5.0
 
-    def update(self, delta_time: float) -> Vector2:
+    def update(self, dt: float) -> Vector2:
         """
         Updates camera position based on entity tracking or smooth movement.
         """
         if self.is_moving_smoothly:
-            self._update_smooth_transition(delta_time)
+            self._update_smooth_transition(dt)
         elif self.follows_entity:
             pos = Vector2(self.entity.position.x, self.entity.position.y)
             self.view.position = self.view.get_center(pos)
@@ -225,14 +225,14 @@ class CameraTracker:
         self.transition_speed = distance / duration
         self.is_moving_smoothly = True
 
-    def _update_smooth_transition(self, delta_time: float) -> None:
+    def _update_smooth_transition(self, dt: float) -> None:
         """
         Performs frame-by-frame interpolation toward the target position.
         """
         dx = self.target_position.x - self.view.position.x
         dy = self.target_position.y - self.view.position.y
         distance = self._get_distance(self.view.position, self.target_position)
-        step = self.transition_speed * delta_time
+        step = self.transition_speed * dt
 
         if step >= distance:
             self.view.position = self.target_position
@@ -263,8 +263,6 @@ class CameraTracker:
 class CameraEffects:
     """Handles visual effects applied to the camera view."""
 
-    FRAME_RATE = 60
-
     def __init__(self, view: CameraView):
         """Initializes the effects system with a reference to the camera view."""
         self.view = view
@@ -276,7 +274,7 @@ class CameraEffects:
         self.shake_intensity = intensity
         self.shake_duration = duration
 
-    def update(self) -> None:
+    def update(self, dt: float) -> None:
         """Applies shake jitter to the view and updates remaining duration."""
         if self.shake_duration > 0:
             jitter_x = random.uniform(
@@ -286,7 +284,7 @@ class CameraEffects:
                 -self.shake_intensity, self.shake_intensity
             )
             self.view.position += Vector2(jitter_x, jitter_y)
-            self.shake_duration -= 1 / self.FRAME_RATE
+            self.shake_duration -= dt
         else:
             self.shake_duration = 0.0
 
@@ -305,14 +303,14 @@ class Camera:
         self.boundary = boundary
         self.free_roaming_enabled: bool = False
 
-    def update(self, delta_time: float) -> None:
+    def update(self, dt: float) -> None:
         """Updates the camera tracker, applies movement, and handles visual effects."""
-        move_intent = self.tracker.update(delta_time)
+        move_intent = self.tracker.update(dt)
 
         if move_intent.x != 0 or move_intent.y != 0:
             self.move(dx=int(move_intent.x), dy=int(move_intent.y))
 
-        self.effects.update()
+        self.effects.update(dt)
 
     def get_viewport(self) -> Rect:
         """Returns the visible area of the game world as a Rect."""

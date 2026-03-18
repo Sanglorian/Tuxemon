@@ -16,42 +16,58 @@ DEBUG_NINESLICE = False
 
 class GraphicBox(Sprite):
     """
-    Generic class for drawing graphical boxes.
+    A rect-driven nine-slice UI container.
 
-    Draws a border and can fill in the box with a _color from the border file,
-    an external file, or a solid _color.
+    GraphicBox renders a scalable box using a 3x3 nine-slice border image.
+    The widget fills its inner area using one of three modes:
 
-    box = GraphicBox('border.png')
-    box.draw(surface, rect)
+        • a solid color
+        • a scaled background surface
+        • a tiled center slice from the border image
 
-    The border graphic must contain 9 tiles laid out in a box.
+    The border image must be divisible into a 3x3 grid of equal tiles.
+    Rendering is rect-driven: the widget draws itself into the rectangle
+    defined by its assigned rect, and all scaling/clipping is derived from it.
+
+    Example:
+        box = GraphicBox(rect, border_surface)
+        box.draw(surface, rect)
     """
 
     def __init__(
         self,
-        border: Surface | None = None,
+        rect: Rect,
+        border: Surface,
         background: Surface | None = None,
         color: ColorLike | None = None,
         fill_tiles: bool = False,
     ) -> None:
-        """
-        Initializes the GraphicBox object.
-
-        Parameters:
-            border: The border image.
-            background: The background image.
-            color: The fill color.
-            fill_tiles: Whether to fill the box with tiles from the border image.
-        """
         super().__init__()
+
+        if rect.width <= 0 or rect.height <= 0:
+            raise ValueError("GraphicBox requires a non-zero rect.")
+
+        self._rect = rect.copy()
         self._background = background
         self._color = color
         self._fill_tiles = fill_tiles
-        self._tiles: dict[str, Surface] = {}
-        self._tile_size = 0, 0
 
-        if border:
-            self.set_border(border)
+        self._tiles: dict[str, Surface] = {}
+        self._tile_size: tuple[int, int] = (0, 0)
+
+        if border is not None:
+            w, h = border.get_width(), border.get_height()
+            if w % 3 == 0 and h % 3 == 0:
+                self.set_border(border)
+            else:
+                self._tiles = {}
+                self._tile_size = (0, 0)
+
+        self._needs_update = True
+
+    @property
+    def inner_rect(self) -> Rect:
+        return self.calc_inner_rect(self._rect)
 
     def calc_inner_rect(self, rect: Rect) -> Rect:
         """
@@ -65,9 +81,15 @@ class GraphicBox(Sprite):
         """
         if self._tiles:
             tw, th = self._tile_size
-            return rect.inflate(-tw * 2, -th * 2)
-        else:
-            return rect
+            inner = rect.inflate(-tw * 2, -th * 2)
+
+            if inner.width < 0 or inner.height < 0:
+                inner.width = max(inner.width, 0)
+                inner.height = max(inner.height, 0)
+
+            return inner
+
+        return rect
 
     def set_color(self, color: ColorLike | None) -> None:
         """
@@ -188,6 +210,3 @@ class GraphicBox(Sprite):
             min(tile.get_height(), max_h),
         )
         surface.blit(tile, dest, area)
-
-    def draw_into(self, surface: Surface, rect: Rect) -> None:
-        self._draw(surface, rect)

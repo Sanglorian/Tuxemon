@@ -13,13 +13,6 @@ from tuxemon.surfanim import (
 )
 
 
-@pytest.fixture(scope="session", autouse=True)
-def pygame_init():
-    pygame.init()
-    yield
-    pygame.quit()
-
-
 @pytest.fixture
 def frames():
     return [(Surface((10, 10)), 1.0), (Surface((20, 20)), 2.0)]

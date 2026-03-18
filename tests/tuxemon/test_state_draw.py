@@ -9,13 +9,6 @@ from tuxemon.platform.const.graphics import GREEN_COLOR, RED_COLOR
 from tuxemon.state.draw import EventDebugDrawer, Renderer, StateDrawer
 
 
-@pytest.fixture(scope="session", autouse=True)
-def pygame_init():
-    pygame.init()
-    yield
-    pygame.quit()
-
-
 @pytest.fixture
 def screen():
     return MagicMock()

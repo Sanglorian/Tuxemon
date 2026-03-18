@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Iterator
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pygame import SRCALPHA
 from pygame.draw import line, rect
@@ -265,7 +265,8 @@ def draw_text(
     font_size: int | None = None,
     font_color: ColorLike | None = None,
     text_renderer: TextRenderer | None = None,
-) -> None:
+    return_metrics: bool = False,
+) -> dict[str, Any] | None:
     """
     Draws text to a surface within a specified rectangle, handling wrapping and alignment.
 
@@ -286,9 +287,9 @@ def draw_text(
     rect_obj = Rect(rect) if isinstance(rect, tuple) else rect
 
     if rect_obj.width <= 0 or rect_obj.height <= 0:
-        return
+        return None
 
-    if not font_color:
+    if font_color is None:
         font_color = FONT_COLOR
 
     if text_renderer is None:
@@ -297,18 +298,16 @@ def draw_text(
         )
 
     if not text:
-        return
+        return None
 
     ml_renderer = MultilineTextRenderer(text_renderer)
     line_surfaces_data = ml_renderer.render_lines(text, rect_obj.width)
 
     if not line_surfaces_data:
-        return
+        return None
 
     total_text_height = sum(height for _, height in line_surfaces_data)
-    total_text_width = 0
-    if line_surfaces_data:
-        total_text_width = max(s.get_width() for s, _ in line_surfaces_data)
+    total_text_width = max(s.get_width() for s, _ in line_surfaces_data)
 
     offset_x, offset_y = calculate_alignment_offset(
         rect_obj, total_text_width, total_text_height, h_alignment, v_alignment
@@ -320,3 +319,17 @@ def draw_text(
         blit_position = (rect_obj.left + offset_x, current_draw_y)
         surface.blit(text_surface, blit_position)
         current_draw_y += line_height
+
+    if return_metrics:
+        return {
+            "rect": Rect(
+                rect_obj.left + offset_x,
+                rect_obj.top + offset_y,
+                total_text_width,
+                total_text_height,
+            ),
+            "offset": (offset_x, offset_y),
+            "lines": line_surfaces_data,
+        }
+
+    return None

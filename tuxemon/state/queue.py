@@ -165,7 +165,7 @@ class StateQueue:
         self._state_queue = [
             state
             for state in self._state_queue
-            if not state.expires_at or now <= state.expires_at
+            if state.expires_at is None or now <= state.expires_at
         ]
         heapify(self._state_queue)
         logger.debug("Removed expired states from queue")

@@ -5925,9 +5925,6 @@ msgstr "执法者"
 msgid "spyder_cottontown_barmaid"
 msgstr "服务员"
 
-msgid "spyder_goth"
-msgstr "哥特"
-
 msgid "spyder_florist"
 msgstr "花商"
 
@@ -5939,9 +5936,6 @@ msgstr "店员"
 
 msgid "spyder_route2_roddick"
 msgstr "罗迪克"
-
-msgid "spyder_maniac"
-msgstr "狂人"
 
 # msgid "spyder_citypark_florist"
 # msgstr "Florist"

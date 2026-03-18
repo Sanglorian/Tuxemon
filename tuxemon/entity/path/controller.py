@@ -90,8 +90,8 @@ class PathController:
                 f"{self.owner.tile_pos} to {destination}."
             )
 
-    def update(self, time_delta: float) -> None:
-        self._repath_cooldown = max(0.0, self._repath_cooldown - time_delta)
+    def update(self, dt: float) -> None:
+        self._repath_cooldown = max(0.0, self._repath_cooldown - dt)
 
         if self.path or self.owner.move_direction:
             self.process_movement()

@@ -19,13 +19,6 @@ from tuxemon.user_config import CONFIG
 FONT_PATH = mods_folder / "tuxemon/font" / Path(CONFIG.locale.font_file)
 
 
-@pytest.fixture(scope="session", autouse=True)
-def pygame_init():
-    pygame.init()
-    yield
-    pygame.quit()
-
-
 @pytest.fixture
 def font():
     return Font(FONT_PATH.as_posix(), scale(FONT_SIZE))

@@ -2683,9 +2683,6 @@ msgstr "Esecutore"
 msgid "spyder_cottontown_barmaid"
 msgstr "Barista"
 
-msgid "spyder_goth"
-msgstr "Goth"
-
 msgid "spyder_florist"
 msgstr "Fiorista"
 
@@ -2770,9 +2767,6 @@ msgstr "Nonna"
 
 msgid "spyder_route2_marion"
 msgstr "Marion"
-
-msgid "spyder_maniac"
-msgstr "Maniaco"
 
 msgid "spyder_shopkeeper"
 msgstr "Bottegaio"

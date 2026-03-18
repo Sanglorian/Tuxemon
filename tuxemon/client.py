@@ -102,36 +102,43 @@ class LocalPygameClient(BaseClient):
 
     def main(self) -> None:
         """
-        Initiates the main game loop.
-
-        Since we are using Asteria networking to handle network events,
-        we pass this session.Client instance to networking which in turn
-        executes the "main_loop" method every frame.
-        This leaves the networking component responsible for the main loop.
+        Initiates the main game loop with a fixed timestep.
         """
         update = self.update
         draw = self.draw
         screen = self.screen
         flip = pygame.display.update
         clock = time.time
-        frame_length = 1.0 / self.config.fps
-        time_since_draw = 0.0
-        last_update = clock()
+
+        target_fps = self.config.fps
+        frame_length = 1.0 / target_fps
+
+        last_time = clock()
+        accumulator = 0.0
 
         while self.state != ClientState.DONE:
             if self.state == ClientState.RUNNING:
-                clock_tick = clock() - last_update
-                last_update = clock()
-                time_since_draw += clock_tick
-                update(clock_tick)
-                if time_since_draw >= frame_length:
-                    time_since_draw -= frame_length
-                    draw()
-                    self.input_manager.draw_inputs(screen)
-                    flip()
+                now = clock()
+                dt = now - last_time
+                last_time = now
+
+                # Prevent spiral of death if the game lags
+                if dt > 0.25:
+                    dt = 0.25
+
+                accumulator += dt
+
+                while accumulator >= frame_length:
+                    update(frame_length)
+                    accumulator -= frame_length
+
+                draw()
+                self.input_manager.draw_inputs(screen)
+                flip()
+
                 if self.config.show_fps:
-                    self.renderer.update(clock_tick)
-                time.sleep(0.01)
+                    self.renderer.update(frame_length)
+
             elif self.state == ClientState.EXITING:
                 self.perform_cleanup()
                 self.state = ClientState.DONE

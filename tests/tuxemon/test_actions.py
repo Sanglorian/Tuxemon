@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import unittest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from tuxemon.entity.entity import Body, Mover
 from tuxemon.entity.player import Player
@@ -18,7 +19,7 @@ from tuxemon.tuxepedia.manager import TuxepediaManager
 from tuxemon.user_config import CONFIG
 
 
-def mockPlayer(self) -> None:
+def mockPlayer(self):
     self.name = "Jeff"
     self._variables = GameVariablesManager()
     self.tuxepedia = TuxepediaManager(EventBus())
@@ -26,190 +27,168 @@ def mockPlayer(self) -> None:
     self.mover = Mover(self.body)
 
 
-class TestVariableActions(unittest.TestCase):
-    def setUp(self):
-        action = ActionManager()
-        evaluator = ConditionEvaluator(MagicMock(), MagicMock())
-        behavior = BehaviorManager()
-        self.mock_screen = MagicMock()
-        with patch.object(Player, "__init__", mockPlayer):
-            self.action = EventEngine(
-                local_session, action, evaluator, behavior
-            )
-            local_session.set_player(Player())
-            self.player = local_session.player
-
-    def test_set_variable(self):
-        self.action.execute_action("set_variable", ["name:jimmy"])
-        self.assertEqual(self.player.game_variables.get("name"), "jimmy")
-
-    def test_set_variables_same_key(self):
-        self.action.execute_action("set_variable", ["name:jimmy", "name:saul"])
-        self.assertEqual(self.player.game_variables.get("name"), "saul")
-
-    def test_set_variables_different_key(self):
-        self.action.execute_action(
-            "set_variable", ["first:jimmy", "last:saul"]
-        )
-        self.assertEqual(self.player.game_variables.get("first"), "jimmy")
-        self.assertEqual(self.player.game_variables.get("last"), "saul")
-
-    def test_clear_variable_not_exist(self):
-        self.action.execute_action("clear_variable", ["name"])
-        self.assertIsNone(self.player.game_variables.get("name"))
-
-    def test_clear_variable_exist(self):
-        self.action.execute_action("set_variable", ["name:jimmy"])
-        self.action.execute_action("clear_variable", ["name"])
-        self.assertIsNone(self.player.game_variables.get("name"))
-
-    def test_clear_multiple_variables_exist(self):
-        self.action.execute_action(
-            "set_variable", ["first:jimmy", "last:saul"]
-        )
-        self.action.execute_action("clear_variable", ["first", "last"])
-        self.assertIsNone(self.player.game_variables.get("first"))
-        self.assertIsNone(self.player.game_variables.get("last"))
-
-    def test_clear_multiple_variables_exist_and_not(self):
-        self.action.execute_action("set_variable", ["last:saul"])
-        self.action.execute_action("clear_variable", ["first", "last"])
-        self.assertIsNone(self.player.game_variables.get("first"))
-        self.assertIsNone(self.player.game_variables.get("last"))
-
-    def test_copy_variable(self):
-        self.action.execute_action("set_variable", ["name:jeff"])
-        self.action.execute_action("copy_variable", ["friend", "name"])
-        self.assertEqual(self.player.game_variables.get("friend"), "jeff")
-
-    def test_format_variable_float(self):
-        self.action.execute_action("set_variable", [f"age:{69}"])
-        self.action.execute_action("format_variable", ["age", "float"])
-        self.assertEqual(self.player.game_variables.get("age"), 69.0)
-
-    def test_format_variable_int(self):
-        self.action.execute_action("set_variable", [f"age:{69}"])
-        self.action.execute_action("format_variable", ["age", "int"])
-        self.assertEqual(self.player.game_variables.get("age"), 69)
-
-    def test_format_variable_negative_float(self):
-        self.action.execute_action("set_variable", [f"age:{69}"])
-        self.action.execute_action("format_variable", ["age", "-float"])
-        self.assertEqual(self.player.game_variables.get("age"), -69.0)
-
-    def test_format_variable_negative_int(self):
-        self.action.execute_action("set_variable", [f"age:{69}"])
-        self.action.execute_action("format_variable", ["age", "-int"])
-        self.assertEqual(self.player.game_variables.get("age"), -69)
-
-    def test_format_variable_wrong_format(self):
-        self.action.execute_action("set_variable", [f"age:{69}"])
-        with self.assertRaises(ValueError):
-            self.action.execute_action("format_variable", ["age", "jimmy"])
-
-    def test_random_integer(self):
-        self.action.execute_action("random_integer", ["lucky", 1, 5])
-        self.action.execute_action("format_variable", ["lucky", "int"])
-        self.assertGreaterEqual(self.player.game_variables.get("lucky"), 1)
-        self.assertLessEqual(self.player.game_variables.get("lucky"), 5)
-
-    def test_set_random_variable(self):
-        _params = ["choice", "rockitten:agnite"]
-        self.action.execute_action("set_random_variable", _params)
-        _container = ["rockitten", "agnite"]
-        self.assertIn(self.player.game_variables.get("choice"), _container)
-
-    def test_variable_math_sum(self):
-        self.action.execute_action("set_variable", [f"age:{69}"])
-        self.action.execute_action("random_integer", ["lucky", 1, 5])
-        _params = ["age", "+", "lucky", "result"]
-        self.action.execute_action("variable_math", _params)
-        self.assertGreaterEqual(self.player.game_variables.get("result"), 70)
-        self.assertLessEqual(self.player.game_variables.get("result"), 74)
-
-    def test_variable_math_subtraction(self):
-        self.action.execute_action("set_variable", [f"age:{69}"])
-        self.action.execute_action("random_integer", ["lucky", 1, 5])
-        _params = ["lucky", "-", "age", "result"]
-        with self.assertRaises(AssertionError):
-            self.action.execute_action("variable_math", _params)
-            self.assertGreaterEqual(
-                self.player.game_variables.get("result"), 70
-            )
-            self.assertLessEqual(self.player.game_variables.get("result"), 74)
-        self.assertGreaterEqual(self.player.game_variables.get("result"), -68)
-        self.assertLessEqual(self.player.game_variables.get("result"), -64)
-        _params = ["age", "-", "lucky", "result"]
-        self.action.execute_action("variable_math", _params)
-        self.assertGreaterEqual(self.player.game_variables.get("result"), 64)
-        self.assertLessEqual(self.player.game_variables.get("result"), 68)
-
-    def test_variable_math_division(self):
-        self.action.execute_action("set_variable", [f"age:{69}"])
-        self.action.execute_action("random_integer", ["lucky", 1, 5])
-        _params = ["age", "/", "lucky", "result"]
-        self.action.execute_action("variable_math", _params)
-        _container_int = [69, 34, 23, 17, 13]
-        self.assertIn(self.player.game_variables.get("result"), _container_int)
-
-    def test_variable_math_multiplication(self):
-        self.action.execute_action("set_variable", [f"age:{69}"])
-        self.action.execute_action("random_integer", ["lucky", 1, 5])
-        _params = ["age", "*", "lucky", "result"]
-        self.action.execute_action("variable_math", _params)
-        _container = [69, 138, 207, 276, 345]
-        self.assertIn(self.player.game_variables.get("result"), _container)
+@pytest.fixture
+def patched_player_init():
+    with patch.object(Player, "__init__", mockPlayer):
+        yield
 
 
-class TestActionsSetPlayer(unittest.TestCase):
-    def setUp(self):
-        action = ActionManager()
-        evaluator = ConditionEvaluator(MagicMock(), MagicMock())
-        behavior = BehaviorManager()
-        self.mock_screen = MagicMock()
-        with patch.object(Player, "__init__", mockPlayer):
-            self.action = EventEngine(
-                local_session, action, evaluator, behavior
-            )
-            local_session.set_player(Player())
-            self.player = local_session.player
+@pytest.fixture
+def engine(patched_player_init):
+    action = ActionManager()
+    evaluator = ConditionEvaluator(MagicMock(), MagicMock())
+    behavior = BehaviorManager()
+    eng = EventEngine(local_session, action, evaluator, behavior)
+    local_session.set_player(Player())
+    return eng
 
 
-class TestCharacterActions(unittest.TestCase):
-    def setUp(self):
-        action = ActionManager()
-        evaluator = ConditionEvaluator(MagicMock(), MagicMock())
-        behavior = BehaviorManager()
-        self.mock_screen = MagicMock()
-        local_session.set_client(MagicMock())
-        with patch.object(Player, "__init__", mockPlayer):
-            self.action = EventEngine(
-                local_session, action, evaluator, behavior
-            )
-            local_session.set_player(Player())
-            self.player = local_session.player
+@pytest.fixture
+def player():
+    return local_session.player
 
-    def test_char_speed_between_limits(self):
-        self.player.mover.walking()
-        self.action.execute_action("char_speed", ["player", 6.9])
-        self.assertEqual(self.player.moverate, 6.9)
 
-    def test_char_speed_outside_limits(self):
-        self.player.mover.walking()
-        lower, upper = MOVERATE_RANGE
-        with self.assertRaises(ValueError):
-            self.action.execute_action("char_speed", ["player", lower - 1])
-        with self.assertRaises(ValueError):
-            self.action.execute_action("char_speed", ["player", upper + 1])
+def test_set_variable(engine, player):
+    engine.execute_action("set_variable", ["name:jimmy"])
+    assert player.game_variables.get("name") == "jimmy"
 
-    def test_char_walk(self):
-        self.player.set_moverate(6.9)
-        self.player.body.velocity = Vector2(1, 0)
-        self.action.execute_action("char_walk", ["player"])
-        self.assertEqual(self.player.moverate, CONFIG.player_walkrate)
 
-    def test_char_run(self):
-        self.player.set_moverate(6.9)
-        self.player.body.velocity = Vector2(1, 0)
-        self.action.execute_action("char_run", ["player"])
-        self.assertEqual(self.player.moverate, CONFIG.player_runrate)
+def test_set_variables_same_key(engine, player):
+    engine.execute_action("set_variable", ["name:jimmy", "name:saul"])
+    assert player.game_variables.get("name") == "saul"
+
+
+def test_set_variables_different_key(engine, player):
+    engine.execute_action("set_variable", ["first:jimmy", "last:saul"])
+    assert player.game_variables.get("first") == "jimmy"
+    assert player.game_variables.get("last") == "saul"
+
+
+@pytest.mark.parametrize(
+    "key",
+    [
+        pytest.param("name", id="single-missing"),
+        pytest.param("first", id="multiple-missing-first"),
+    ],
+)
+def test_clear_variable_not_exist(engine, player, key):
+    engine.execute_action("clear_variable", [key])
+    assert player.game_variables.get(key) is None
+
+
+def test_clear_variable_exist(engine, player):
+    engine.execute_action("set_variable", ["name:jimmy"])
+    engine.execute_action("clear_variable", ["name"])
+    assert player.game_variables.get("name") is None
+
+
+def test_clear_multiple_variables(engine, player):
+    engine.execute_action("set_variable", ["first:jimmy", "last:saul"])
+    engine.execute_action("clear_variable", ["first", "last"])
+    assert player.game_variables.get("first") is None
+    assert player.game_variables.get("last") is None
+
+
+def test_copy_variable(engine, player):
+    engine.execute_action("set_variable", ["name:jeff"])
+    engine.execute_action("copy_variable", ["friend", "name"])
+    assert player.game_variables.get("friend") == "jeff"
+
+
+@pytest.mark.parametrize(
+    "fmt, expected",
+    [
+        pytest.param("float", 69.0, id="float"),
+        pytest.param("int", 69, id="int"),
+        pytest.param("-float", -69.0, id="neg-float"),
+        pytest.param("-int", -69, id="neg-int"),
+    ],
+)
+def test_format_variable(engine, player, fmt, expected):
+    engine.execute_action("set_variable", ["age:69"])
+    engine.execute_action("format_variable", ["age", fmt])
+    assert player.game_variables.get("age") == expected
+
+
+def test_format_variable_wrong_format(engine, player):
+    engine.execute_action("set_variable", ["age:69"])
+    with pytest.raises(ValueError):
+        engine.execute_action("format_variable", ["age", "jimmy"])
+
+
+def test_random_integer(engine, player):
+    engine.execute_action("random_integer", ["lucky", 1, 5])
+    engine.execute_action("format_variable", ["lucky", "int"])
+    assert 1 <= player.game_variables.get("lucky") <= 5
+
+
+def test_set_random_variable(engine, player):
+    engine.execute_action(
+        "set_random_variable", ["choice", "rockitten:agnite"]
+    )
+    assert player.game_variables.get("choice") in ["rockitten", "agnite"]
+
+
+def test_variable_math_sum(engine, player):
+    engine.execute_action("set_variable", ["age:69"])
+    engine.execute_action("random_integer", ["lucky", 1, 5])
+    engine.execute_action("variable_math", ["age", "+", "lucky", "result"])
+    assert 70 <= player.game_variables.get("result") <= 74
+
+
+def test_variable_math_subtraction(engine, player):
+    engine.execute_action("set_variable", ["age:69"])
+    engine.execute_action("random_integer", ["lucky", 1, 5])
+
+    engine.execute_action("variable_math", ["lucky", "-", "age", "result"])
+    assert -68 <= player.game_variables.get("result") <= -64
+
+    engine.execute_action("variable_math", ["age", "-", "lucky", "result"])
+    assert 64 <= player.game_variables.get("result") <= 68
+
+
+def test_variable_math_division(engine, player):
+    engine.execute_action("set_variable", ["age:69"])
+    engine.execute_action("random_integer", ["lucky", 1, 5])
+    engine.execute_action("variable_math", ["age", "/", "lucky", "result"])
+    assert player.game_variables.get("result") in [69, 34, 23, 17, 13]
+
+
+def test_variable_math_multiplication(engine, player):
+    engine.execute_action("set_variable", ["age:69"])
+    engine.execute_action("random_integer", ["lucky", 1, 5])
+    engine.execute_action("variable_math", ["age", "*", "lucky", "result"])
+    assert player.game_variables.get("result") in [69, 138, 207, 276, 345]
+
+
+# ---------------------------------------------------------------------------
+# Character Actions
+# ---------------------------------------------------------------------------
+
+
+def test_char_speed_between_limits(engine, player):
+    player.mover.walking()
+    engine.execute_action("char_speed", ["player", 6.9])
+    assert player.moverate == 6.9
+
+
+def test_char_speed_outside_limits(engine, player):
+    lower, upper = MOVERATE_RANGE
+    with pytest.raises(ValueError):
+        engine.execute_action("char_speed", ["player", lower - 1])
+    with pytest.raises(ValueError):
+        engine.execute_action("char_speed", ["player", upper + 1])
+
+
+def test_char_walk(engine, player):
+    player.set_moverate(6.9)
+    player.body.velocity = Vector2(1, 0)
+    engine.execute_action("char_walk", ["player"])
+    assert player.moverate == CONFIG.player_walkrate
+
+
+def test_char_run(engine, player):
+    player.set_moverate(6.9)
+    player.body.velocity = Vector2(1, 0)
+    engine.execute_action("char_run", ["player"])
+    assert player.moverate == CONFIG.player_runrate

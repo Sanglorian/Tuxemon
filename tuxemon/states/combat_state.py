@@ -357,13 +357,14 @@ class CombatState(CombatAnimations):
         rect = Rect(0, 0, rect_screen.w, rect_screen.h // 4)
         rect.bottomright = rect_screen.w, rect_screen.h
         border = load_and_scale(self.borders_filename)
-        dialog_box = GraphicBox(border=border, color=self.background_color)
-        dialog_box.rect = rect
+        dialog_box = GraphicBox(
+            rect=rect, border=border, color=self.background_color
+        )
 
         self.text_area = TextArea(
             font=self.font,
             font_color=self.font_color,
-            rect=dialog_box.calc_inner_rect(dialog_box.rect),
+            rect=dialog_box.inner_rect,
             scaling=self.client.context.scaling,
         )
         self.show_combat_dialog(dialog_box, self.text_area)

@@ -58,9 +58,8 @@ class TradingTransition(State):
         self.sent_sprite = self._load_sprite(self.sent_monster)
         self.received_sprite = self._load_sprite(self.received_monster)
 
-        self.transition_start_time = pygame.time.get_ticks()
-        self.dialog_opened = False
         self.elapsed_time = 0.0
+        self.dialog_opened = False
         self.percentage = 0.0
         self.total_seconds = TOTAL_SECONDS
 
@@ -87,8 +86,7 @@ class TradingTransition(State):
         self.sprite_y = (screen_height - sprite_height) // 2
 
     def update(self, dt: float) -> None:
-        current_time = pygame.time.get_ticks()
-        self.elapsed_time = (current_time - self.transition_start_time) / 1000
+        self.elapsed_time += dt
         self.percentage = (self.elapsed_time / self.total_seconds) * 100
 
         self.phase = 0
@@ -207,9 +205,7 @@ class TradingTransition(State):
             and event.pressed
         ):
             if self.percentage < 100:
-                self.transition_start_time = pygame.time.get_ticks() - (
-                    self.total_seconds * 1000
-                )
+                self.elapsed_time = self.total_seconds
             else:
                 self.client.current_music.unpause()
                 self.client.pop_state()

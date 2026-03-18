@@ -14,13 +14,6 @@ from tuxemon.ui.text import TextArea
 from tuxemon.user_config import CONFIG
 
 
-@pytest.fixture(scope="session", autouse=True)
-def pygame_init():
-    pygame.init()
-    yield
-    pygame.quit()
-
-
 @pytest.fixture
 def font():
     return Font(None, 16)

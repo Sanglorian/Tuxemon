@@ -3500,9 +3500,6 @@ msgstr "Enforcer"
 msgid "spyder_route2_roddick"
 msgstr "Roddick"
 
-msgid "spyder_goth"
-msgstr "Gothique"
-
 msgid "spyder_florist"
 msgstr "Fleuriste"
 
@@ -3518,9 +3515,6 @@ msgstr "Marion"
 #, fuzzy
 msgid "spyder_route2_graf"
 msgstr "Graffiti"
-
-msgid "spyder_maniac"
-msgstr "Maniaque"
 
 msgid "spyder_citypark_frances"
 msgstr "Frances"

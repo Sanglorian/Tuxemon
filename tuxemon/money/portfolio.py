@@ -134,10 +134,10 @@ class MarketDataManager:
         self.prices: dict[str, float] = {}
         self.volatility: float = 0.02  # 2% standard deviation per tick
 
-    def tick(self, delta_time: float) -> None:
+    def tick(self, dt: float) -> None:
         """Updates all prices based on elapsed time."""
         for symbol, price in list(self.prices.items()):
-            change = random.gauss(0, self.volatility) * delta_time
+            change = random.gauss(0, self.volatility) * dt
             new_price = price * (1 + change)
 
             if new_price > 0:

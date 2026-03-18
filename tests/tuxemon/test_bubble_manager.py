@@ -37,7 +37,7 @@ def npc():
 
 
 @pytest.fixture
-def surface():
+def surface_area():
     return Surface((64, 32))
 
 
@@ -48,14 +48,14 @@ def test_init(manager, context):
     assert manager._bubbles == {}
 
 
-def test_add_bubble(manager, npc, surface):
-    manager.add_bubble(npc, surface)
+def test_add_bubble(manager, npc, surface_area):
+    manager.add_bubble(npc, surface_area)
     assert npc in manager._bubbles
-    assert manager._bubbles[npc] is surface
+    assert manager._bubbles[npc] is surface_area
 
 
-def test_remove_bubble(manager, npc, surface):
-    manager.add_bubble(npc, surface)
+def test_remove_bubble(manager, npc, surface_area):
+    manager.add_bubble(npc, surface_area)
     manager.remove_bubble(npc)
     assert npc not in manager._bubbles
 
@@ -67,38 +67,40 @@ def test_remove_bubble(manager, npc, surface):
         pytest.param(True, id="has_bubble"),
     ],
 )
-def test_has_bubble(manager, npc, surface, present):
+def test_has_bubble(manager, npc, surface_area, present):
     if present:
-        manager.add_bubble(npc, surface)
+        manager.add_bubble(npc, surface_area)
     assert manager.has_bubble(npc) is present
 
 
-def test_clear_all_bubbles(manager, npc, surface):
+def test_clear_all_bubbles(manager, npc, surface_area):
     npc2 = MagicMock(spec=NPC)
     surface2 = MagicMock(spec=Surface)
 
-    manager.add_bubble(npc, surface)
+    manager.add_bubble(npc, surface_area)
     manager.add_bubble(npc2, surface2)
 
     manager.clear_all_bubbles()
     assert manager._bubbles == {}
 
 
-def test_get_rendered_bubbles(manager, npc, surface, context, monkeypatch):
+def test_get_rendered_bubbles(
+    manager, npc, surface_area, context, monkeypatch
+):
     current_map = MagicMock(spec=AbstractMap)
 
     monkeypatch.setattr(
         "tuxemon.map.view.get_pos_from_tilepos", lambda m, c, v: (100, 200)
     )
 
-    manager.add_bubble(npc, surface)
+    manager.add_bubble(npc, surface_area)
     rendered = manager.get_rendered_bubbles(current_map)
 
     assert len(rendered) == 1
 
     surf, rect, layer = rendered[0]
 
-    assert surf is surface
+    assert surf is surface_area
     assert isinstance(rect, Rect)
     assert layer == manager.layer
 

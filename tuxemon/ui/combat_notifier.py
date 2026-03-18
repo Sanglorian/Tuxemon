@@ -37,8 +37,8 @@ class TextAnimationManager:
             message
         )
 
-    def update_text_animation(self, time_delta: float) -> None:
-        self._text_time_left -= time_delta
+    def update_text_animation(self, dt: float) -> None:
+        self._text_time_left -= dt
         logger.debug(
             f"Updated animation timer: {self._text_time_left:.2f}s remaining"
         )

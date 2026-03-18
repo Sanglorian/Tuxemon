@@ -691,22 +691,25 @@ class CombatTargetMenuState(Menu[Monster]):
         rect.bottomright = rect_screen.w, rect_screen.h
 
         self.window = GraphicBox(
-            border=load_and_scale(self.borders_filename),
+            rect,
+            load_and_scale(self.borders_filename),
             color=self.background_color,
         )
-        self.window.rect = rect
         self.sprites.add(self.window, layer=100)
 
         self.text_area = TextArea(
             font=self.font,
             font_color=self.font_color,
-            rect=self.window.calc_inner_rect(self.window.rect),
+            rect=self.window.inner_rect,
             scaling=self.client.context.scaling,
         )
         self.sprites.add(self.text_area, layer=100)
 
         self.surface = Surface(self.window.rect.size, SRCALPHA)
-        self.border = GraphicBox(border=load_and_scale(self.borders_filename))
+        self.border = GraphicBox(
+            Rect(0, 0, 1, 1),
+            load_and_scale(self.borders_filename),
+        )
 
     def determine_target(self) -> None:
         """Finds the best target based on technique settings."""

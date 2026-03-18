@@ -9,13 +9,6 @@ from tuxemon.scaling import DefaultScaling
 from tuxemon.ui.text_renderer import TextRenderer
 
 
-@pytest.fixture(scope="session", autouse=True)
-def pygame_init():
-    pygame.init()
-    yield
-    pygame.quit()
-
-
 @pytest.fixture
 def default_renderer():
     return TextRenderer(DefaultScaling(1), (255, 255, 255))

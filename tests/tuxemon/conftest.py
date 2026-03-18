@@ -3,8 +3,17 @@
 import sys
 from pathlib import Path
 
+import pygame
 import pytest
 from _pytest.mark.structures import ParameterSet
+
+
+@pytest.fixture(scope="module", autouse=True)
+def pygame_init():
+    pygame.init()
+    pygame.display.set_mode((800, 600))
+    yield
+    pygame.quit()
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)

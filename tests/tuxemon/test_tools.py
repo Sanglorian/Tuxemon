@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import math
-import unittest
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from enum import Enum
@@ -9,6 +8,8 @@ from fractions import Fraction
 from typing import Literal
 from unittest.mock import MagicMock
 from uuid import UUID
+
+import pytest
 
 from tuxemon.entity.player import Player
 from tuxemon.math import Vector2
@@ -23,370 +24,570 @@ from tuxemon.tools import (
 )
 
 
-class TestRoundToDivisible(unittest.TestCase):
-    def test_round_down(self):
-        result = round_to_divisible(1, 16)
-        self.assertEqual(result, 0)
-
-    def test_round_up(self):
-        result = round_to_divisible(15, 16)
-        self.assertEqual(result, 16)
-
-    def test_round_up_if_half(self):
-        result = round_to_divisible(24, 16)
-        self.assertEqual(result, 32)
-
-    def test_alternate_divisor(self):
-        result = round_to_divisible(51, 100)
-        self.assertEqual(result, 100)
-
-    def test_return_type_is_int(self):
-        result = type(round_to_divisible(0))
-        self.assertEqual(result, int)
-
-
-class TestCopyDictWithKeys(unittest.TestCase):
-    def test(self):
-        source = {"a": 1, "b": 2, "c": 3}
-        keys = ["a", "c"]
-        expected = {"a": 1, "c": 3}
-        result = copy_dict_with_keys(source, keys)
-        self.assertEqual(result, expected)
-
-
-class TestVariableNumber(unittest.TestCase):
-    def setUp(self):
-        self.player = MagicMock(spec=Player)
-        self.player.game_variables = {
-            "my_var": 2,
-            "non_numeric": "text",
-            "none_value": None,
-        }
-
-    def test_numeric_string(self):
-        result = number_or_variable(self.player.game_variables, "1")
-        self.assertEqual(result, 1.0)
-
-        result = number_or_variable(self.player.game_variables, "1.5")
-        self.assertEqual(result, 1.5)
-
-    def test_variable_name(self):
-        result = number_or_variable(self.player.game_variables, "my_var")
-        self.assertEqual(result, 2.0)
-
-    def test_unbound_variable(self):
-        with self.assertRaises(ValueError):
-            number_or_variable(self.player.game_variables, "unbound_var")
-
-    def test_invalid_numeric_string(self):
-        with self.assertRaises(ValueError):
-            number_or_variable(self.player.game_variables, "1.5.3")
-
-        with self.assertRaises(ValueError):
-            number_or_variable(self.player.game_variables, "-1..5")
-
-    def test_empty_string(self):
-        with self.assertRaises(ValueError):
-            number_or_variable(self.player.game_variables, "")
-
-    def test_negative_number(self):
-        result = number_or_variable(self.player.game_variables, "-10")
-        self.assertEqual(result, -10.0)
-
-    def test_zero(self):
-        result = number_or_variable(self.player.game_variables, "0")
-        self.assertEqual(result, 0.0)
-
-    def test_scientific_notation(self):
-        result = number_or_variable(self.player.game_variables, "1e3")
-        self.assertEqual(result, 1000.0)
-
-    def test_non_numeric_variable(self):
-        with self.assertRaises(ValueError):
-            number_or_variable(self.player.game_variables, "non_numeric")
-
-    def test_none_variable(self):
-        with self.assertRaises(ValueError):
-            number_or_variable(self.player.game_variables, "none_value")
-
-
-class TestCastValue(unittest.TestCase):
-    def test_basic_types(self):
-        # int from int
-        self.assertEqual(cast_value(((int, "param"), 42)), 42)
-        # int from string
-        self.assertEqual(cast_value(((int, "param"), "42")), 42)
-        # int from float string
-        self.assertEqual(cast_value(((int, "param"), "3.0")), 3)
-        # float from float
-        self.assertEqual(cast_value(((float, "param"), 3.14)), 3.14)
-        # float from int string
-        self.assertEqual(cast_value(((float, "param"), "42")), 42.0)
-        # str from str
-        self.assertEqual(cast_value(((str, "param"), "hello")), "hello")
-        # str from int
-        self.assertEqual(cast_value(((str, "param"), 123)), "123")
-        # bool from bool
-        self.assertEqual(cast_value(((bool, "param"), True)), True)
-        self.assertEqual(cast_value(((bool, "param"), False)), False)
-        # bool from string
-        self.assertTrue(cast_value(((bool, "param"), "true")))
-        self.assertFalse(cast_value(((bool, "param"), "false")))
-        self.assertTrue(cast_value(((bool, "param"), "yes")))
-        self.assertFalse(cast_value(((bool, "param"), "no")))
-        self.assertTrue(cast_value(((bool, "param"), "1")))
-        self.assertFalse(cast_value(((bool, "param"), "0")))
-
-    def test_none_handling(self):
-        with self.assertRaises(ValueError):
-            cast_value(((str, "param"), None))
-
-    def test_literal_types(self):
-        with self.assertRaises(ValueError):
-            cast_value(((Literal[1, 2, 3], "param"), 4))
-
-    def test_union_types(self):
-        self.assertEqual(cast_value(((int | str, "param"), 123)), 123)
-        self.assertEqual(cast_value(((int | str, "param"), "abc")), "abc")
-        with self.assertRaises(ValueError):
-            cast_value(((int | bool, "param"), "abc"))
-
-    def test_sequence_of_types_combinations(self):
-        with self.assertRaises(ValueError):
-            cast_value(((int, str, bool), True))
-
-    def test_optional_types_and_sequences(self):
-        self.assertEqual(cast_value(((int | None, str), None)), None)
-        with self.assertRaises(ValueError):
-            cast_value(((int | None, None, str), True))
-
-    def test_edge_cases_with_sequences(self):
-        with self.assertRaises(ValueError):
-            cast_value((([], "param"), 42))
-        with self.assertRaises(ValueError):
-            cast_value(((None, None, "param"), None))
-
-    def test_enum_casting(self):
-        class Color(Enum):
-            RED = "red"
-            BLUE = "blue"
-
-        self.assertEqual(cast_value(((Color, "param"), "red")), Color.RED)
-        with self.assertRaises(ValueError):
-            cast_value(((Color, "param"), "green"))
-
-    def test_literal_casting(self):
-        self.assertEqual(
-            cast_value(((Literal["yes", "no"], "param"), "yes")), "yes"
-        )
-        with self.assertRaises(ValueError):
-            cast_value(((Literal["yes", "no"], "param"), "maybe"))
-
-    def test_optional_with_union(self):
-        self.assertEqual(cast_value(((int | None, "param"), None)), None)
-        self.assertEqual(cast_value(((int | None, "param"), 5)), 5)
-
-    def test_uuid_casting(self):
-        uid = "12345678-1234-5678-1234-567812345678"
-        result = cast_value(((UUID, "param"), uid))
-        self.assertIsInstance(result, UUID)
-        self.assertEqual(str(result), uid)
-
-    def test_vector2_casting(self):
-        v = cast_value(((Vector2, "param"), (1, 2)))
-        self.assertIsInstance(v, Vector2)
-        self.assertEqual((v.x, v.y), (1, 2))
-
-    def test_decimal_fraction_casting(self):
-        self.assertEqual(
-            cast_value(((Decimal, "param"), "3.14")), Decimal("3.14")
-        )
-        self.assertEqual(
-            cast_value(((Fraction, "param"), "3/4")), Fraction(3, 4)
-        )
-
-    def test_datetime_casting(self):
-        dt_str = "2025-11-15T14:30:00"
-        d_str = "2025-11-15"
-        t_str = "14:30:00"
-        self.assertEqual(
-            cast_value(((datetime, "param"), dt_str)),
-            datetime.fromisoformat(dt_str),
-        )
-        self.assertEqual(
-            cast_value(((date, "param"), d_str)), date.fromisoformat(d_str)
-        )
-        self.assertEqual(
-            cast_value(((time, "param"), t_str)), time.fromisoformat(t_str)
-        )
-        self.assertEqual(
-            cast_value(((timedelta, "param"), "60")), timedelta(seconds=60)
-        )
-
-    def test_collection_casting(self):
-        self.assertEqual(
-            cast_value(((list, "param"), "1,2,3")), ["1", "2", "3"]
-        )
-        self.assertEqual(cast_value(((set, "param"), "a,b,a")), {"a", "b"})
-        self.assertEqual(cast_value(((tuple, "param"), "x,y")), ("x", "y"))
-        self.assertEqual(
-            cast_value(((dict, "param"), '{"key": "value"}')), {"key": "value"}
-        )
-
-    def test_union_with_optional(self):
-        self.assertEqual(cast_value(((int | None, "param"), None)), None)
-        self.assertEqual(cast_value(((int | None, "param"), "42")), 42)
-
-    def test_datetime_invalid(self):
-        with self.assertRaises(ValueError):
-            cast_value(((datetime, "param"), "not-a-date"))
-
-    def test_fraction_invalid(self):
-        with self.assertRaises(ValueError):
-            cast_value(((Fraction, "param"), "abc"))
-
-    def test_dict_invalid_string(self):
-        with self.assertRaises(ValueError):
-            cast_value(((dict, "param"), "not-json"))
-
-    def test_enum_instance_roundtrip(self):
-        class Color(Enum):
-            RED = "red"
-            BLUE = "blue"
-
-        self.assertEqual(cast_value(((Color, "param"), Color.RED)), Color.RED)
-
-    def test_empty_string_optional(self):
-        self.assertIsNone(cast_value(((int | None, "param"), "")))
-
-    def test_empty_string_casts_to_none_for_optional(self):
-        self.assertIsNone(cast_value(((str | None, "param"), "")))
-        self.assertIsNone(cast_value(((int | None, "param"), "")))
-        self.assertIsNone(cast_value(((int | None, "param"), "")))
-        self.assertEqual(cast_value(((str, "param"), "")), "")
-
-    def test_empty_string_in_collections(self):
-        self.assertEqual(
-            cast_value(((list[str] | None, "param"), ",1.0")), [None, "1.0"]
-        )
-        self.assertEqual(
-            cast_value(((tuple[str] | None, "param"), "a,,b")),
-            ("a", None, "b"),
-        )
-        self.assertEqual(
-            cast_value(((list[str], "param"), "x,,y")), ["x", "", "y"]
-        )
-
-
-class TestCompare(unittest.TestCase):
-    def test_less_than(self):
-        self.assertTrue(compare("<", 2, 3))
-        self.assertFalse(compare("<", 3, 2))
-
-    def test_less_or_equal(self):
-        self.assertTrue(compare("<=", 2, 3))
-        self.assertTrue(compare("<=", 2, 2))
-        self.assertFalse(compare("<=", 3, 2))
-
-    def test_greater_than(self):
-        self.assertTrue(compare(">", 3, 2))
-        self.assertFalse(compare(">", 2, 3))
-
-    def test_greater_or_equal(self):
-        self.assertTrue(compare(">=", 3, 2))
-        self.assertTrue(compare(">=", 2, 2))
-        self.assertFalse(compare(">=", 2, 3))
-
-    def test_equals(self):
-        self.assertTrue(compare("==", 2, 2))
-        self.assertFalse(compare("==", 3, 2))
-
-    def test_not_equals(self):
-        self.assertTrue(compare("!=", 2, 3))
-        self.assertFalse(compare("!=", 2, 2))
-
-    def test_invalid_operator(self):
-        with self.assertRaises(ValueError):
-            compare("invalid", 2, 3)
-
-    def test_float_values(self):
-        self.assertTrue(compare("<", 2.5, 3.0))
-        self.assertTrue(compare(">=", 3.0, 2.5))
-
-    def test_zero_values(self):
-        self.assertTrue(compare("==", 0, 0))
-        self.assertFalse(compare("!=", 0, 0))
-        self.assertTrue(compare(">=", 0, -1))
-        self.assertTrue(compare("<=", 0, 1))
-
-    def test_infinity(self):
-        self.assertTrue(compare(">", math.inf, 5))
-        self.assertTrue(compare("<", -math.inf, 5))
-
-    def test_nan(self):
-        self.assertFalse(compare("==", math.nan, math.nan))
-        self.assertTrue(compare("!=", math.nan, math.nan))
-
-    def test_int_and_float(self):
-        self.assertTrue(compare("==", 2, 2.0))
-        self.assertTrue(compare("<", 2.5, 3))
-
-    def test_invalid_data_types(self):
-        with self.assertRaises(TypeError):
-            compare("<", "a", 5)
-        with self.assertRaises(TypeError):
-            compare(">", 3, "b")
-
-
-class TestParseFlag(unittest.TestCase):
-    def test_parse_flag_truthy(self):
-        self.assertTrue(parse_flag("true"))
-        self.assertTrue(parse_flag("True"))
-        self.assertTrue(parse_flag("1"))
-        self.assertTrue(parse_flag("yes"))
-        self.assertTrue(parse_flag("YeS"))
-
-    def test_parse_flag_falsy(self):
-        self.assertFalse(parse_flag("false"))
-        self.assertFalse(parse_flag("0"))
-        self.assertFalse(parse_flag("no"))
-        self.assertFalse(parse_flag(""))
-        self.assertFalse(parse_flag(None))
-        self.assertFalse(parse_flag("maybe"))
-
-    def test_parse_flag_edge_cases(self):
-        self.assertTrue(parse_flag("  yes  "))
-        self.assertFalse(parse_flag("  no  "))
-        self.assertFalse(parse_flag("YES!"))
-        self.assertFalse(parse_flag("truEly"))
-        self.assertFalse(parse_flag("2"))
-        self.assertFalse(parse_flag("-1"))
-
-
-class TestCheckCondition(unittest.TestCase):
-    def test_check_condition_positive(self):
-        dataset = {"fire", "water", "earth"}
-        self.assertTrue(check_condition("fire", dataset))
-        self.assertTrue(check_condition("Water", dataset))
-        self.assertFalse(check_condition("air", dataset))
-
-    def test_check_condition_negative(self):
-        dataset = {"fire", "water", "earth"}
-        self.assertTrue(check_condition("!air", dataset))
-        self.assertFalse(check_condition("!fire", dataset))
-
-    def test_check_condition_empty(self):
-        dataset = {"fire"}
-        self.assertFalse(check_condition("", dataset))
-        self.assertFalse(check_condition("   ", dataset))
-
-    def test_check_condition_edge_cases(self):
-        dataset = {"fire", "water"}
-        self.assertTrue(check_condition("  fire  ", dataset))
-        self.assertTrue(check_condition("!  earth  ", dataset))
-        self.assertTrue(check_condition("!!fire", dataset))
-        empty_set = set()
-        self.assertFalse(check_condition("fire", empty_set))
-        self.assertTrue(check_condition("!fire", empty_set))
-        self.assertTrue(check_condition("!", dataset))
-        self.assertFalse(check_condition("   ", dataset))
+@pytest.mark.parametrize(
+    "value, divisor, expected",
+    [
+        pytest.param(1, 16, 0, id="round_down"),
+        pytest.param(15, 16, 16, id="round_up"),
+        pytest.param(24, 16, 32, id="round_up_half"),
+        pytest.param(51, 100, 100, id="alternate_divisor"),
+    ],
+)
+def test_round_to_divisible_basic(value, divisor, expected):
+    assert round_to_divisible(value, divisor) == expected
+
+
+def test_return_type_is_int():
+    assert type(round_to_divisible(0)) is int
+
+
+# copy_dict_with_keys
+
+
+@pytest.mark.parametrize(
+    "source, keys, expected",
+    [
+        pytest.param(
+            {"a": 1, "b": 2, "c": 3},
+            ["a", "c"],
+            {"a": 1, "c": 3},
+            id="basic_subset",
+        ),
+    ],
+)
+def test_copy_dict_with_keys(source, keys, expected):
+    assert copy_dict_with_keys(source, keys) == expected
+
+
+# number_or_variable
+
+
+@pytest.fixture
+def player():
+    p = MagicMock(spec=Player)
+    p.game_variables = {
+        "my_var": 2,
+        "non_numeric": "text",
+        "none_value": None,
+    }
+    return p
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        pytest.param("1", 1.0, id="int_string"),
+        pytest.param("1.5", 1.5, id="float_string"),
+    ],
+)
+def test_numeric_string(player, value, expected):
+    assert number_or_variable(player.game_variables, value) == expected
+
+
+def test_variable_name(player):
+    assert number_or_variable(player.game_variables, "my_var") == 2.0
+
+
+def test_unbound_variable(player):
+    with pytest.raises(ValueError):
+        number_or_variable(player.game_variables, "unbound_var")
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param("1.5.3", id="multiple_dots"),
+        pytest.param("-1..5", id="double_dot_negative"),
+    ],
+)
+def test_invalid_numeric_string(player, value):
+    with pytest.raises(ValueError):
+        number_or_variable(player.game_variables, value)
+
+
+def test_empty_string(player):
+    with pytest.raises(ValueError):
+        number_or_variable(player.game_variables, "")
+
+
+def test_negative_number(player):
+    assert number_or_variable(player.game_variables, "-10") == -10.0
+
+
+def test_zero(player):
+    assert number_or_variable(player.game_variables, "0") == 0.0
+
+
+def test_scientific_notation(player):
+    assert number_or_variable(player.game_variables, "1e3") == 1000.0
+
+
+def test_non_numeric_variable(player):
+    with pytest.raises(ValueError):
+        number_or_variable(player.game_variables, "non_numeric")
+
+
+def test_none_variable(player):
+    with pytest.raises(ValueError):
+        number_or_variable(player.game_variables, "none_value")
+
+
+# cast_value
+
+
+@pytest.mark.parametrize(
+    "typeinfo, value, expected",
+    [
+        pytest.param((int, "param"), 42, 42, id="int_from_int"),
+        pytest.param((int, "param"), "42", 42, id="int_from_str"),
+        pytest.param((int, "param"), "3.0", 3, id="int_from_float_str"),
+        pytest.param((float, "param"), 3.14, 3.14, id="float_from_float"),
+        pytest.param((float, "param"), "42", 42.0, id="float_from_str"),
+        pytest.param((str, "param"), "hello", "hello", id="str_from_str"),
+        pytest.param((str, "param"), 123, "123", id="str_from_int"),
+        pytest.param((bool, "param"), True, True, id="bool_true"),
+        pytest.param((bool, "param"), False, False, id="bool_false"),
+        pytest.param((bool, "param"), "true", True, id="bool_from_true_str"),
+        pytest.param(
+            (bool, "param"), "false", False, id="bool_from_false_str"
+        ),
+        pytest.param((bool, "param"), "yes", True, id="bool_from_yes"),
+        pytest.param((bool, "param"), "no", False, id="bool_from_no"),
+        pytest.param((bool, "param"), "1", True, id="bool_from_1"),
+        pytest.param((bool, "param"), "0", False, id="bool_from_0"),
+    ],
+)
+def test_basic_types(typeinfo, value, expected):
+    assert cast_value((typeinfo, value)) == expected
+
+
+def test_none_handling():
+    with pytest.raises(ValueError):
+        cast_value(((str, "param"), None))
+
+
+def test_literal_types():
+    with pytest.raises(ValueError):
+        cast_value(((Literal[1, 2, 3], "param"), 4))
+
+
+@pytest.mark.parametrize(
+    "typeinfo, value, expected",
+    [
+        pytest.param((int | str, "param"), 123, 123, id="union_int"),
+        pytest.param((int | str, "param"), "abc", "abc", id="union_str"),
+    ],
+)
+def test_union_types_valid(typeinfo, value, expected):
+    assert cast_value((typeinfo, value)) == expected
+
+
+def test_union_types_invalid():
+    with pytest.raises(ValueError):
+        cast_value(((int | bool, "param"), "abc"))
+
+
+def test_sequence_of_types_combinations():
+    with pytest.raises(ValueError):
+        cast_value(((int, str, bool), True))
+
+
+@pytest.mark.parametrize(
+    "typeinfo, value, expected",
+    [
+        pytest.param((int | None, "param"), None, None, id="optional_none"),
+        pytest.param((int | None, "param"), 5, 5, id="optional_int"),
+    ],
+)
+def test_optional_with_union(typeinfo, value, expected):
+    assert cast_value((typeinfo, value)) == expected
+
+
+def test_optional_types_and_sequences():
+    assert cast_value(((int | None, str), None)) is None
+    with pytest.raises(ValueError):
+        cast_value(((int | None, None, str), True))
+
+
+def test_edge_cases_with_sequences():
+    with pytest.raises(ValueError):
+        cast_value((([], "param"), 42))
+    with pytest.raises(ValueError):
+        cast_value(((None, None, "param"), None))
+
+
+def test_enum_casting():
+    class Color(Enum):
+        RED = "red"
+        BLUE = "blue"
+
+    assert cast_value(((Color, "param"), "red")) == Color.RED
+
+    with pytest.raises(ValueError):
+        cast_value(((Color, "param"), "green"))
+
+
+def test_literal_casting():
+    assert cast_value(((Literal["yes", "no"], "param"), "yes")) == "yes"
+
+    with pytest.raises(ValueError):
+        cast_value(((Literal["yes", "no"], "param"), "maybe"))
+
+
+def test_uuid_casting():
+    uid = "12345678-1234-5678-1234-567812345678"
+    result = cast_value(((UUID, "param"), uid))
+    assert isinstance(result, UUID)
+    assert str(result) == uid
+
+
+def test_vector2_casting():
+    v = cast_value(((Vector2, "param"), (1, 2)))
+    assert isinstance(v, Vector2)
+    assert (v.x, v.y) == (1, 2)
+
+
+@pytest.mark.parametrize(
+    "typeinfo, value, expected",
+    [
+        pytest.param(
+            (Decimal, "param"), "3.14", Decimal("3.14"), id="decimal"
+        ),
+        pytest.param(
+            (Fraction, "param"), "3/4", Fraction(3, 4), id="fraction"
+        ),
+    ],
+)
+def test_decimal_fraction_casting(typeinfo, value, expected):
+    assert cast_value((typeinfo, value)) == expected
+
+
+def test_datetime_casting():
+    dt_str = "2025-11-15T14:30:00"
+    d_str = "2025-11-15"
+    t_str = "14:30:00"
+
+    assert cast_value(((datetime, "param"), dt_str)) == datetime.fromisoformat(
+        dt_str
+    )
+    assert cast_value(((date, "param"), d_str)) == date.fromisoformat(d_str)
+    assert cast_value(((time, "param"), t_str)) == time.fromisoformat(t_str)
+    assert cast_value(((timedelta, "param"), "60")) == timedelta(seconds=60)
+
+
+@pytest.mark.parametrize(
+    "typeinfo, value, expected",
+    [
+        pytest.param((list, "param"), "1,2,3", ["1", "2", "3"], id="list"),
+        pytest.param((set, "param"), "a,b,a", {"a", "b"}, id="set"),
+        pytest.param((tuple, "param"), "x,y", ("x", "y"), id="tuple"),
+        pytest.param(
+            (dict, "param"), '{"key": "value"}', {"key": "value"}, id="dict"
+        ),
+    ],
+)
+def test_collection_casting(typeinfo, value, expected):
+    assert cast_value((typeinfo, value)) == expected
+
+
+def test_datetime_invalid():
+    with pytest.raises(ValueError):
+        cast_value(((datetime, "param"), "not-a-date"))
+
+
+def test_fraction_invalid():
+    with pytest.raises(ValueError):
+        cast_value(((Fraction, "param"), "abc"))
+
+
+def test_dict_invalid_string():
+    with pytest.raises(ValueError):
+        cast_value(((dict, "param"), "not-json"))
+
+
+def test_enum_instance_roundtrip():
+    class Color(Enum):
+        RED = "red"
+        BLUE = "blue"
+
+    assert cast_value(((Color, "param"), Color.RED)) == Color.RED
+
+
+def test_empty_string_optional():
+    assert cast_value(((int | None, "param"), "")) is None
+
+
+def test_empty_string_casts_to_none_for_optional():
+    assert cast_value(((str | None, "param"), "")) is None
+    assert cast_value(((int | None, "param"), "")) is None
+    assert cast_value(((int | None, "param"), "")) is None
+    assert cast_value(((str, "param"), "")) == ""
+
+
+def test_empty_string_in_collections():
+    assert cast_value(((list[str] | None, "param"), ",1.0")) == [None, "1.0"]
+    assert cast_value(((tuple[str] | None, "param"), "a,,b")) == (
+        "a",
+        None,
+        "b",
+    )
+    assert cast_value(((list[str], "param"), "x,,y")) == ["x", "", "y"]
+
+
+# compare
+
+
+@pytest.mark.parametrize(
+    "op, a, b, expected",
+    [
+        pytest.param("<", 2, 3, True, id="lt_true"),
+        pytest.param("<", 3, 2, False, id="lt_false"),
+    ],
+)
+def test_less_than(op, a, b, expected):
+    assert compare(op, a, b) is expected
+
+
+@pytest.mark.parametrize(
+    "op, a, b, expected",
+    [
+        pytest.param("<=", 2, 3, True, id="le_true_lt"),
+        pytest.param("<=", 2, 2, True, id="le_true_eq"),
+        pytest.param("<=", 3, 2, False, id="le_false"),
+    ],
+)
+def test_less_or_equal(op, a, b, expected):
+    assert compare(op, a, b) is expected
+
+
+@pytest.mark.parametrize(
+    "op, a, b, expected",
+    [
+        pytest.param(">", 3, 2, True, id="gt_true"),
+        pytest.param(">", 2, 3, False, id="gt_false"),
+    ],
+)
+def test_greater_than(op, a, b, expected):
+    assert compare(op, a, b) is expected
+
+
+@pytest.mark.parametrize(
+    "op, a, b, expected",
+    [
+        pytest.param(">=", 3, 2, True, id="ge_true_gt"),
+        pytest.param(">=", 2, 2, True, id="ge_true_eq"),
+        pytest.param(">=", 2, 3, False, id="ge_false"),
+    ],
+)
+def test_greater_or_equal(op, a, b, expected):
+    assert compare(op, a, b) is expected
+
+
+@pytest.mark.parametrize(
+    "op, a, b, expected",
+    [
+        pytest.param("==", 2, 2, True, id="eq_true"),
+        pytest.param("==", 3, 2, False, id="eq_false"),
+    ],
+)
+def test_equals(op, a, b, expected):
+    assert compare(op, a, b) is expected
+
+
+@pytest.mark.parametrize(
+    "op, a, b, expected",
+    [
+        pytest.param("!=", 2, 3, True, id="ne_true"),
+        pytest.param("!=", 2, 2, False, id="ne_false"),
+    ],
+)
+def test_not_equals(op, a, b, expected):
+    assert compare(op, a, b) is expected
+
+
+def test_invalid_operator():
+    with pytest.raises(ValueError):
+        compare("invalid", 2, 3)
+
+
+@pytest.mark.parametrize(
+    "op, a, b, expected",
+    [
+        pytest.param("<", 2.5, 3.0, True, id="float_lt"),
+        pytest.param(">=", 3.0, 2.5, True, id="float_ge"),
+    ],
+)
+def test_float_values(op, a, b, expected):
+    assert compare(op, a, b) is expected
+
+
+@pytest.mark.parametrize(
+    "op, a, b, expected",
+    [
+        pytest.param("==", 0, 0, True, id="zero_eq"),
+        pytest.param("!=", 0, 0, False, id="zero_ne"),
+        pytest.param(">=", 0, -1, True, id="zero_ge"),
+        pytest.param("<=", 0, 1, True, id="zero_le"),
+    ],
+)
+def test_zero_values(op, a, b, expected):
+    assert compare(op, a, b) is expected
+
+
+@pytest.mark.parametrize(
+    "op, a, b, expected",
+    [
+        pytest.param(">", math.inf, 5, True, id="inf_gt"),
+        pytest.param("<", -math.inf, 5, True, id="neg_inf_lt"),
+    ],
+)
+def test_infinity(op, a, b, expected):
+    assert compare(op, a, b) is expected
+
+
+@pytest.mark.parametrize(
+    "op, a, b, expected",
+    [
+        pytest.param("==", math.nan, math.nan, False, id="nan_eq_false"),
+        pytest.param("!=", math.nan, math.nan, True, id="nan_ne_true"),
+    ],
+)
+def test_nan(op, a, b, expected):
+    assert compare(op, a, b) is expected
+
+
+@pytest.mark.parametrize(
+    "op, a, b, expected",
+    [
+        pytest.param("==", 2, 2.0, True, id="int_float_eq"),
+        pytest.param("<", 2.5, 3, True, id="float_int_lt"),
+    ],
+)
+def test_int_and_float(op, a, b, expected):
+    assert compare(op, a, b) is expected
+
+
+@pytest.mark.parametrize(
+    "op, a, b",
+    [
+        pytest.param("<", "a", 5, id="invalid_left"),
+        pytest.param(">", 3, "b", id="invalid_right"),
+    ],
+)
+def test_invalid_data_types(op, a, b):
+    with pytest.raises(TypeError):
+        compare(op, a, b)
+
+
+# parse_flag
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        pytest.param("true", True, id="true_lower"),
+        pytest.param("True", True, id="true_capitalized"),
+        pytest.param("1", True, id="one"),
+        pytest.param("yes", True, id="yes_lower"),
+        pytest.param("YeS", True, id="yes_mixed_case"),
+    ],
+)
+def test_parse_flag_truthy(value, expected):
+    assert parse_flag(value) is expected
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        pytest.param("false", False, id="false_lower"),
+        pytest.param("0", False, id="zero"),
+        pytest.param("no", False, id="no_lower"),
+        pytest.param("", False, id="empty_string"),
+        pytest.param(None, False, id="none_value"),
+        pytest.param("maybe", False, id="invalid_word"),
+    ],
+)
+def test_parse_flag_falsy(value, expected):
+    assert parse_flag(value) is expected
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        pytest.param("  yes  ", True, id="trimmed_yes"),
+        pytest.param("  no  ", False, id="trimmed_no"),
+        pytest.param("YES!", False, id="punctuated_yes"),
+        pytest.param("truEly", False, id="substring_true"),
+        pytest.param("2", False, id="numeric_two"),
+        pytest.param("-1", False, id="negative_one"),
+    ],
+)
+def test_parse_flag_edge_cases(value, expected):
+    assert parse_flag(value) is expected
+
+
+# check_condition
+
+
+@pytest.mark.parametrize(
+    "text, dataset, expected",
+    [
+        pytest.param(
+            "fire", {"fire", "water", "earth"}, True, id="positive_match"
+        ),
+        pytest.param(
+            "Water", {"fire", "water", "earth"}, True, id="case_insensitive"
+        ),
+        pytest.param(
+            "air", {"fire", "water", "earth"}, False, id="missing_value"
+        ),
+    ],
+)
+def test_check_condition_positive(text, dataset, expected):
+    assert check_condition(text, dataset) is expected
+
+
+@pytest.mark.parametrize(
+    "text, dataset, expected",
+    [
+        pytest.param(
+            "!air", {"fire", "water", "earth"}, True, id="negation_missing"
+        ),
+        pytest.param(
+            "!fire", {"fire", "water", "earth"}, False, id="negation_present"
+        ),
+    ],
+)
+def test_check_condition_negative(text, dataset, expected):
+    assert check_condition(text, dataset) is expected
+
+
+@pytest.mark.parametrize(
+    "text, dataset, expected",
+    [
+        pytest.param("", {"fire"}, False, id="empty_string"),
+        pytest.param("   ", {"fire"}, False, id="whitespace_only"),
+    ],
+)
+def test_check_condition_empty(text, dataset, expected):
+    assert check_condition(text, dataset) is expected
+
+
+@pytest.mark.parametrize(
+    "text, dataset, expected",
+    [
+        pytest.param(
+            "  fire  ", {"fire", "water"}, True, id="trimmed_positive"
+        ),
+        pytest.param(
+            "!  earth  ", {"fire", "water"}, True, id="trimmed_negation"
+        ),
+        pytest.param("!!fire", {"fire", "water"}, True, id="double_negation"),
+        pytest.param("fire", set(), False, id="empty_set_positive"),
+        pytest.param("!fire", set(), True, id="empty_set_negation"),
+        pytest.param("!", {"fire", "water"}, True, id="bare_negation"),
+        pytest.param("   ", {"fire", "water"}, False, id="whitespace_again"),
+    ],
+)
+def test_check_condition_edge_cases(text, dataset, expected):
+    assert check_condition(text, dataset) is expected

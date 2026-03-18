@@ -26,17 +26,11 @@ class ButtonRectMapping:
     rect_accessor: Callable[[PygameTouchOverlayInput], Rect]
 
 
-@pytest.fixture(scope="module", autouse=True)
-def pygame_setup_teardown():
-    pg.init()
-    pg.display.set_mode((0, 0))
-
-    # Mock graphics.load_and_scale
-    graphics.load_and_scale = lambda filename: Surface((50, 50))
-
-    yield
-
-    pg.quit()
+@pytest.fixture(autouse=True)
+def mock_load_and_scale(monkeypatch):
+    monkeypatch.setattr(
+        graphics, "load_and_scale", lambda filename: Surface((50, 50))
+    )
 
 
 @pytest.fixture

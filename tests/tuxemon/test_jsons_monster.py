@@ -1,17 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import json
-import unittest
 from pathlib import Path
 from typing import Any
 
-ALL_MONSTERS: int = 411
-MAX_TXMN_ID: int = 393
+import pytest
+
+ALL_MONSTERS = 411
+MAX_TXMN_ID = 393
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MONSTER_FOLDER = PROJECT_ROOT / "mods/tuxemon/db/monster"
 
 
-def process_json_data() -> list[dict[str, Any]]:
+def load_monster_data() -> list[dict[str, Any]]:
     data_list = []
     for file in MONSTER_FOLDER.iterdir():
         if file.suffix == ".json" and file.is_file():
@@ -20,157 +21,140 @@ def process_json_data() -> list[dict[str, Any]]:
     return data_list
 
 
-class TestJSONProcessing(unittest.TestCase):
-    def setUp(self) -> None:
-        self.data_list = process_json_data()
+@pytest.fixture(scope="session")
+def data_list():
+    return load_monster_data()
 
-    def test_nr_jsons(self) -> None:
-        self.assertEqual(len(self.data_list), ALL_MONSTERS)
 
-    def test_missing_txmn_ids(self) -> None:
-        numbers = []
-        for data in self.data_list:
-            txmn_id = data["txmn_id"]
-            if txmn_id > 0:
-                numbers.append(txmn_id)
+def test_nr_jsons(data_list):
+    assert len(data_list) == ALL_MONSTERS
 
-        all_numbers = set(range(1, MAX_TXMN_ID))
-        given_numbers = set(numbers)
-        missing = all_numbers - given_numbers
-        if missing:
-            self.fail(f"There are missing txmn_ids: {missing}")
 
-    def test_duplicate_txmn_ids(self) -> None:
-        numbers = []
-        for data in self.data_list:
-            txmn_id = data["txmn_id"]
-            if txmn_id > 0:
-                numbers.append(txmn_id)
+def test_missing_txmn_ids(data_list):
+    numbers = [d["txmn_id"] for d in data_list if d["txmn_id"] > 0]
 
-        duplicates = []
-        counts = [0] * (max(numbers) + 1)
-        for num in numbers:
-            counts[num] += 1
-            if counts[num] > 1:
-                duplicates.append(num)
-        if duplicates:
-            self.fail(f"There are duplicates txmn_ids: {duplicates}")
+    all_numbers = set(range(1, MAX_TXMN_ID))
+    given_numbers = set(numbers)
+    missing = all_numbers - given_numbers
 
-    def test_history_structure_and_links(self) -> None:
-        errors = []
+    assert not missing, f"Missing txmn_ids: {missing}"
 
-        all_slugs = {data["slug"] for data in self.data_list}
-        stage_order = {"basic": 0, "stage1": 1, "stage2": 2}
 
-        for data in self.data_list:
-            slug = data["slug"]
-            stage = data["stage"]
-            history = data.get("history", [])
-            evolutions = data.get("evolutions", [])
+def test_duplicate_txmn_ids(data_list):
+    numbers = [d["txmn_id"] for d in data_list if d["txmn_id"] > 0]
 
-            # 1. Self-entry must exist
-            if not any(h["slug"] == slug for h in history):
-                errors.append(f"{slug} is missing self-entry in history")
+    seen = set()
+    duplicates = set()
 
-            # 2. All referenced slugs must exist
-            for h in history:
-                for ref in h.get("evolves_from", []) + h.get(
-                    "evolves_into", []
-                ):
-                    if ref not in all_slugs:
-                        errors.append(
-                            f"{slug}'s history references unknown monster '{ref}'"
-                        )
+    for n in numbers:
+        if n in seen:
+            duplicates.add(n)
+        seen.add(n)
 
-            # 3. Evolution slugs must appear in history
-            for evo in evolutions:
-                evo_slug = evo["monster_slug"]
-                if not any(h["slug"] == evo_slug for h in history):
-                    errors.append(
-                        f"{slug}'s history missing evolution '{evo_slug}'"
-                    )
+    assert not duplicates, f"Duplicate txmn_ids: {duplicates}"
 
-            # 4. Standalone monsters should only have self-entry
-            if stage == "standalone":
-                if len(history) != 1 or history[0]["slug"] != slug:
-                    errors.append(
-                        f"{slug} is standalone but has non-self history entries"
-                    )
 
-            # 5. Stage progression check (informational only)
-            # Optional: warn if links point to lower stages, but don't fail
-            for h in history:
-                target = next(
-                    (d for d in self.data_list if d["slug"] == h["slug"]), None
+def test_history_structure_and_links(data_list):
+    errors = []
+
+    all_slugs = {d["slug"] for d in data_list}
+    stage_order = {"basic": 0, "stage1": 1, "stage2": 2}
+
+    slug_to_data = {d["slug"]: d for d in data_list}
+
+    for data in data_list:
+        slug = data["slug"]
+        stage = data["stage"]
+        history = data.get("history", [])
+        evolutions = data.get("evolutions", [])
+
+        # 1. Self-entry must exist
+        if not any(h["slug"] == slug for h in history):
+            errors.append(f"{slug} missing self-entry in history")
+
+        # 2. All referenced slugs must exist
+        for h in history:
+            refs = h.get("evolves_from", []) + h.get("evolves_into", [])
+            for ref in refs:
+                if ref not in all_slugs:
+                    errors.append(f"{slug} history references unknown '{ref}'")
+
+        # 3. Evolution slugs must appear in history
+        for evo in evolutions:
+            evo_slug = evo["monster_slug"]
+            if not any(h["slug"] == evo_slug for h in history):
+                errors.append(f"{slug} history missing evolution '{evo_slug}'")
+
+        # 4. Standalone monsters must have only self-entry
+        if stage == "standalone":
+            if len(history) != 1 or history[0]["slug"] != slug:
+                errors.append(
+                    f"{slug} is standalone but has extra history entries"
                 )
-                if target and h["slug"] != slug:
-                    from_stage = stage_order.get(stage, -1)
-                    to_stage = stage_order.get(target["stage"], -1)
-                    if to_stage <= from_stage:
-                        # This is now allowed, but you can log it if needed
-                        pass  # or log as a warning
 
-        if errors:
-            print("\n History validation errors:")
-            for error in errors:
-                print(" -", error)
-            self.fail("History model validation failed.")
+        # 5. Stage progression check (informational only)
+        for h in history:
+            target = slug_to_data.get(h["slug"])
+            if target and h["slug"] != slug:
+                from_stage = stage_order.get(stage, -1)
+                to_stage = stage_order.get(target["stage"], -1)
+                if to_stage <= from_stage:
+                    pass  # allowed, but could be logged
 
-    def test_moveset_level_learned_evolution_at_level(self) -> None:
-        START_LEVEL = 1
-        errors = []
-        for data in self.data_list:
-            slug = data["slug"]
-            evolutions = data["evolutions"]
-            moveset = data["moveset"]
-            if moveset and evolutions:
-                at_levels = set(
-                    evolution.get("at_level")
-                    for evolution in evolutions
-                    if evolution.get("at_level") is not None
-                )
-                levels = [move["level_learned"] for move in moveset] + list(
-                    at_levels
-                )
-                similar_levels = [
-                    level
-                    for level in set(levels)
-                    if levels.count(level) > 1 and level != START_LEVEL
-                ]
-                if similar_levels:
-                    errors.append(
-                        f"Similar levels found in {slug}: {similar_levels}"
-                    )
-        if errors:
-            print("The following monsters:")
-            for error in errors:
-                print(error)
-            self.fail(
-                f"Levels must be different, only exception lv {START_LEVEL} starting move."
-            )
+    assert not errors, "History model validation failed:\n" + "\n".join(errors)
 
-    def test_moveset_level_sequence(self) -> None:
-        RANGE: int = 34  # more or less between 1 and 100
-        START: int = 1  # starting level
-        INTERVAL: int = 3  # each 3 levels
-        errors = []
-        for data in self.data_list:
-            slug = data["slug"]
-            moveset = data["moveset"]
-            if moveset:
-                levels = [move["level_learned"] for move in moveset]
-                sequence_levels = [START + INTERVAL * i for i in range(RANGE)]
-                invalid_levels = [
-                    level for level in levels if level not in sequence_levels
-                ]
-                if invalid_levels:
-                    errors.append(
-                        f"Invalid levels found in {slug}: {invalid_levels}"
-                    )
-        if errors:
-            print("The following monsters:")
-            for error in errors:
-                print(error)
-            self.fail(
-                "Levels must be in the sequence 1, 4, 7, 10, 13, 16, etc."
-            )
+
+def test_moveset_level_learned_evolution_at_level(data_list):
+    START_LEVEL = 1
+    errors = []
+
+    for data in data_list:
+        slug = data["slug"]
+        evolutions = data["evolutions"]
+        moveset = data["moveset"]
+
+        if moveset and evolutions:
+            at_levels = {
+                evo.get("at_level")
+                for evo in evolutions
+                if evo.get("at_level") is not None
+            }
+
+            levels = [m["level_learned"] for m in moveset] + list(at_levels)
+
+            duplicates = [
+                lvl
+                for lvl in set(levels)
+                if levels.count(lvl) > 1 and lvl != START_LEVEL
+            ]
+
+            if duplicates:
+                errors.append(f"{slug}: duplicate levels {duplicates}")
+
+    assert not errors, "Moveset/evolution level conflicts:\n" + "\n".join(
+        errors
+    )
+
+
+def test_moveset_level_sequence(data_list):
+    RANGE = 34
+    START = 1
+    INTERVAL = 3
+
+    valid_levels = {START + INTERVAL * i for i in range(RANGE)}
+    errors = []
+
+    for data in data_list:
+        slug = data["slug"]
+        moveset = data["moveset"]
+
+        if moveset:
+            levels = [m["level_learned"] for m in moveset]
+            invalid = [lvl for lvl in levels if lvl not in valid_levels]
+
+            if invalid:
+                errors.append(f"{slug}: invalid levels {invalid}")
+
+    assert not errors, (
+        "Invalid moveset levels (must be 1,4,7,10,...):\n" + "\n".join(errors)
+    )

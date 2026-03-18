@@ -25,13 +25,6 @@ def dummy_iter_render_text(**kwargs):
         yield DummyChar()
 
 
-@pytest.fixture(scope="session", autouse=True)
-def pygame_init():
-    pygame.init()
-    yield
-    pygame.quit()
-
-
 @pytest.fixture
 def font():
     return Font(None, 16)

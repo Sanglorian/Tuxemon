@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-import json
 from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 
 ALL_MONSTERS = 411
 MAX_TXMN_ID = 393
@@ -15,9 +15,9 @@ MONSTER_FOLDER = PROJECT_ROOT / "mods/tuxemon/db/monster"
 def load_monster_data() -> list[dict[str, Any]]:
     data_list = []
     for file in MONSTER_FOLDER.iterdir():
-        if file.suffix == ".json" and file.is_file():
-            with file.open("r") as f:
-                data_list.append(json.load(f))
+        if file.suffix in (".yaml", ".yml") and file.is_file():
+            with file.open("r", encoding="utf-8") as f:
+                data_list.append(yaml.safe_load(f))
     return data_list
 
 

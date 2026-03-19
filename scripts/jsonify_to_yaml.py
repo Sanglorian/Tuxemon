@@ -12,6 +12,7 @@ Convert a single JSON file without prompting:
 
 Convert all JSON files in a directory (and its subdirectories):
     python jsonify_to_yaml.py my_json_folder -r
+    python jsonify_to_yaml.py ../mods/tuxemon/db/monster -r
 
 Convert all JSON files in a directory recursively and forced:
     python jsonify_to_yaml.py my_json_folder -r -f

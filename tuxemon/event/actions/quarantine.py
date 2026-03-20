@@ -104,7 +104,7 @@ class QuarantineAction(EventAction):
                 logger.warning(f"Failed to release {monster} to party")
 
     def start(self, session: Session) -> None:
-        character = session.get_npc(self.npc_slug)
+        character = session.client.get_npc(self.npc_slug)
         if character is None:
             logger.error(f"{self.npc_slug} not found")
             return

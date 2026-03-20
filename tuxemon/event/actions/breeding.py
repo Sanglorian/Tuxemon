@@ -50,7 +50,7 @@ class BreedingAction(EventAction):
 
     def start(self, session: Session) -> None:
         self.session = session
-        char = session.get_npc(self.character)
+        char = session.client.get_npc(self.character)
 
         if not char:
             logger.error(f"{self.character} not found")

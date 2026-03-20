@@ -125,7 +125,7 @@ class SpawnMonsterAction(EventAction):
         child.father_iid = father_id
 
         # Add the child to the character's monsters
-        character = session.get_npc(self.character)
+        character = session.client.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             return

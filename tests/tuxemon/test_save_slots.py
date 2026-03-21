@@ -2,7 +2,7 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import pytest
 
-from tuxemon.save_slots import (
+from tuxemon.save_system.save_slots import (
     resolve_save_index,
     ui_to_save_index,
 )

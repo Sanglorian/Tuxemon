@@ -3,8 +3,10 @@
 from pathlib import Path
 
 import pytest
+from pygame.rect import Rect
+from pygame.surface import Surface
 
-from tuxemon.save_manager import SaveManager
+from tuxemon.save_system.save_manager import SaveManager
 
 
 @pytest.fixture
@@ -13,7 +15,7 @@ def fake_save_path(monkeypatch, tmp_path):
         return str(tmp_path / f"slot{slot}.save")
 
     monkeypatch.setattr(
-        "tuxemon.save_manager.get_save_path", _fake_get_save_path
+        "tuxemon.save_system.save_manager.get_save_path", _fake_get_save_path
     )
     return tmp_path
 
@@ -58,7 +60,9 @@ def test_load(monkeypatch, fake_save_path, content, expected_type):
             return None
         return {"data": True}
 
-    monkeypatch.setattr("tuxemon.save_manager.save.load", fake_load)
+    monkeypatch.setattr(
+        "tuxemon.save_system.save_manager.save.load", fake_load
+    )
 
     path = fake_save_path / "slot1.save"
     path.write_text(content)
@@ -124,7 +128,7 @@ def test_exists_mutation(monkeypatch, fake_save_path):
 
 def test_load_mutation(monkeypatch, fake_save_path):
     monkeypatch.setattr(
-        "tuxemon.save_manager.save.load", lambda path: "not-a-save"
+        "tuxemon.save_system.save_manager.save.load", lambda path: "not-a-save"
     )
 
     path = fake_save_path / "slot1.save"
@@ -154,3 +158,77 @@ def test_save_mutation(monkeypatch, fake_session, fake_save_path):
     SaveManager.save(fake_session, 3)
 
     assert fake_session.calls == [("wrong", "wrong")]
+
+
+def test_all_slots(monkeypatch):
+    monkeypatch.setattr(
+        "tuxemon.save_system.save_manager.ui_to_save_index",
+        lambda i: i + 10,
+    )
+    assert SaveManager.all_slots(3) == [10, 11, 12]
+
+
+def test_slot_from_ui(monkeypatch):
+    monkeypatch.setattr(
+        "tuxemon.save_system.save_manager.ui_to_save_index",
+        lambda i: i * 2,
+    )
+    assert SaveManager.slot_from_ui(4) == 8
+
+
+def test_render_empty(monkeypatch):
+    called = {}
+
+    def fake_render(rect, scaling, font):
+        called["ok"] = True
+        return "surface"
+
+    monkeypatch.setattr(
+        "tuxemon.save_system.save_manager.render_empty_slot",
+        fake_render,
+    )
+
+    result = SaveManager.render_empty("rect", "scaling", "font")
+    assert result == "surface"
+    assert called["ok"] is True
+
+
+def test_render_slot(monkeypatch):
+    monkeypatch.setattr(
+        "tuxemon.save_system.save_manager.SaveManager.load",
+        lambda slot: {"dummy": True},
+    )
+    monkeypatch.setattr(
+        "tuxemon.save_system.save_manager.render_thumbnail",
+        lambda data, rect: Surface((10, 10)),
+    )
+    monkeypatch.setattr(
+        "tuxemon.save_system.save_manager.render_slot_text",
+        lambda *args, **kwargs: None,
+    )
+
+    rect = Rect(0, 0, 200, 100)
+    result = SaveManager.render_slot(rect, 1, "scaling", "font")
+
+    assert isinstance(result, Surface)
+
+
+def test_render_slot_missing_data(monkeypatch):
+    monkeypatch.setattr(
+        "tuxemon.save_system.save_manager.SaveManager.load",
+        lambda slot: None,
+    )
+
+    rect = Rect(0, 0, 200, 100)
+
+    with pytest.raises(RuntimeError):
+        SaveManager.render_slot(rect, 1, "scaling", "font")
+
+
+def test_delete_logs_warning(monkeypatch, caplog):
+    monkeypatch.setattr(Path, "exists", lambda self: False)
+
+    caplog.set_level("WARNING", logger="tuxemon.save_system.save_manager")
+
+    SaveManager.delete(1)
+    assert "does not exist" in caplog.text

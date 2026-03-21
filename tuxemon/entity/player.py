@@ -12,7 +12,7 @@ from tuxemon.entity.npc import NPC
 from tuxemon.platform.const.sizes import PLAYER_NPC
 
 if TYPE_CHECKING:
-    from tuxemon.save_state import NPCState
+    from tuxemon.save_system.save_state import NPCState
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

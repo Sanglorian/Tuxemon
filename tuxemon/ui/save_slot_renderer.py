@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from pygame.font import Font
     from pygame.rect import Rect
 
-    from tuxemon.save_state import SaveData
+    from tuxemon.save_system.save_state import SaveData
     from tuxemon.scaling import ScalingStrategy
 
 

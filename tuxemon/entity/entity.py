@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 from tuxemon.db import Direction, FacingMode
 from tuxemon.map.map import dirs2, tile_distance, vector2_to_tile_pos
 from tuxemon.math import Vector2
-from tuxemon.save_state import NPCState
+from tuxemon.save_system.save_state import NPCState
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:

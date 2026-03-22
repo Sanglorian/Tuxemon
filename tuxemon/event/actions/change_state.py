@@ -44,12 +44,11 @@ class ChangeStateAction(EventAction):
             logger.error(
                 f"The state '{self.state_name}' is already active. No action taken."
             )
+            self.stop()
             return
 
         self.client.push_state(self.state_name)
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name(self.state_name)
-        except ValueError:
+        if self.state_name not in session.client.active_state_names:
             self.stop()

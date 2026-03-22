@@ -42,15 +42,18 @@ class RemoveMonsterAction(EventAction):
             logger.info(
                 f"No valid monster selected for variable '{self.variable}'"
             )
+            self.stop()
             return  # Exit early if no valid UUID
         monster = session.client.get_monster_by_iid(monster_id)
         if monster is None:
             logger.error("Monster not found")
+            self.stop()
             return
 
         character = session.client.get_monster_owner(monster)
         if character is None:
             logger.error(f"{monster.name}'s owner not found")
+            self.stop()
             return
 
         logger.info(f"{monster.name} removed from {character.name} party!")

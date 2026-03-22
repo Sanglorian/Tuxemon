@@ -71,12 +71,12 @@ class EventEngine:
         if self.current_map != new_map:
             self.current_map = new_map
 
-    def reset(self) -> None:
+    def reset(self, new_map: AbstractMap | None = None) -> None:
         """Clear out running events.  Use when changing maps."""
         self.running_events = {}
-        self.set_current_map(None)
         self.triggered_global_events = set()
         self._behavior_cache = {}
+        self.set_current_map(new_map)
 
     def suspend(self) -> None:
         """
@@ -188,10 +188,13 @@ class EventEngine:
 
         Actions may be started during this function.
         """
-        for event in self.session.client.map_manager.inits:
+        inits = list(self.session.client.map_manager.inits)
+        events = list(self.session.client.map_manager.events)
+
+        for event in inits:
             self.process_map_event(event)
 
-        for event in self.session.client.map_manager.events:
+        for event in events:
             self.process_map_event(event)
 
     def register_global_event(self, event: EventObject) -> bool:

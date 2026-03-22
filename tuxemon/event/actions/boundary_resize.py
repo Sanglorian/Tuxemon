@@ -44,6 +44,7 @@ class BoundaryResizeAction(EventAction):
             logger.error(
                 f"Boundary '{self.boundary_name}' not found. Cannot move."
             )
+            self.stop()
             return
 
         parts = self.values.split(":")
@@ -53,6 +54,7 @@ class BoundaryResizeAction(EventAction):
             logger.warning(
                 f"Invalid numeric values in boundary_resize: {self.values}"
             )
+            self.stop()
             return
 
         if isinstance(boundary, RectangularBoundary):

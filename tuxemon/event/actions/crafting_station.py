@@ -45,6 +45,7 @@ class CraftingStationAction(EventAction):
             logger.error(
                 f"The state 'CraftMenuState' is already active. No action taken."
             )
+            self.stop()
             return
 
         character = session.get_npc(self.character_slug)
@@ -52,6 +53,7 @@ class CraftingStationAction(EventAction):
             logger.error(
                 f"Character '{self.character_slug}' not found for CraftMenuState."
             )
+            self.stop()
             return
 
         file_yaml = self.file_yaml or "recipes.yaml"
@@ -63,7 +65,5 @@ class CraftingStationAction(EventAction):
         )
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("CraftMenuState")
-        except ValueError:
+        if "CraftMenuState" not in session.client.active_state_names:
             self.stop()

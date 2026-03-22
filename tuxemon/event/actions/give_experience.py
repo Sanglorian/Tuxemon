@@ -61,6 +61,7 @@ class GiveExperienceAction(EventAction):
                 logger.info(
                     f"No valid monster selected for variable '{self.variable}'"
                 )
+                self.stop()
                 return  # Exit early if no valid UUID
 
             monster = session.client.get_monster_by_iid(monster_id)
@@ -68,10 +69,12 @@ class GiveExperienceAction(EventAction):
                 monster = player.monster_boxes.get_monsters_by_iid(monster_id)
                 if monster is None:
                     logger.error("Monster not found")
+                    self.stop()
                     return
             monsters = [monster]
 
         if not monsters:
+            self.stop()
             return
 
         for mon in monsters:
@@ -91,7 +94,5 @@ class GiveExperienceAction(EventAction):
     def update(self, session: Session, dt: float) -> None:
         trigger_ui = parse_flag(self.trigger_ui)
         if trigger_ui:
-            try:
-                session.client.get_state_by_name("LevelUpSummaryState")
-            except ValueError:
+            if "LevelUpSummaryState" not in session.client.active_state_names:
                 self.stop()

@@ -44,12 +44,14 @@ class BoundarySetAction(EventAction):
         if not self.shape and not self.values:
             checker.reset_to_default()
             logger.debug("Boundary reset to default.")
+            self.stop()
             return
 
         if not self.shape or not self.values:
             logger.warning(
                 "BoundarySetAction requires both shape and values, or neither."
             )
+            self.stop()
             return
 
         parts = self.values.split(":")
@@ -59,6 +61,7 @@ class BoundarySetAction(EventAction):
             logger.warning(
                 f"Invalid numeric values in boundary_set: {self.values}"
             )
+            self.stop()
             return
 
         if self.shape == "rectangle" and len(nums) == 4:

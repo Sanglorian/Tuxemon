@@ -44,21 +44,25 @@ class StoreMonsterAction(EventAction):
             logger.info(
                 f"No valid monster selected for variable '{self.variable}'"
             )
+            self.stop()
             return  # Exit early if no valid UUID
         monster = session.client.get_monster_by_iid(monster_id)
         if monster is None:
             logger.error("Monster not found")
+            self.stop()
             return
 
         character = session.client.get_monster_owner(monster)
         if character is None:
             logger.error(f"{monster.name}'s owner not found")
+            self.stop()
             return
 
         box = self.box or KENNEL
 
         if not player.monster_boxes.has_box(box, "monster"):
             logger.error(f"No box found with name {box}")
+            self.stop()
             return
 
         if character.party.transfer_monster_to_box(monster, box):

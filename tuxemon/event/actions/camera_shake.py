@@ -46,6 +46,7 @@ class CameraShakeAction(EventAction):
         camera = session.client.camera_manager.get_active_camera()
         if camera is None:
             logger.error("No active camera found.")
+            self.stop()
             return
         camera.shake(self.intensity, self.duration)
         logger.info("Camera is shaking!")

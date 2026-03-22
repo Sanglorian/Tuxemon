@@ -42,6 +42,7 @@ class SetEconomyAction(EventAction):
         character = session.get_npc(self.npc_slug)
         if character is None:
             logger.error(f"{self.npc_slug} not found")
+            self.stop()
             return
 
         try:
@@ -51,6 +52,7 @@ class SetEconomyAction(EventAction):
             )
         except RuntimeError as e:
             logger.error(f"Error loading economy '{self.economy_slug}': {e}")
+            self.stop()
             return
 
         applier = EconomyApplier()

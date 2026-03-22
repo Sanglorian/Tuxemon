@@ -114,9 +114,7 @@ class CipherDialogAction(EventAction):
         )
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("DialogState")
-        except ValueError:
+        if "DialogState" not in session.client.active_state_names:
             self.stop()
 
 

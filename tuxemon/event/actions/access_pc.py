@@ -60,6 +60,7 @@ class AccessPCAction(EventAction):
 
         character = self.session.get_npc(self.character_slug)
         if not character:
+            self.stop()
             return
 
         tag_list = [
@@ -85,7 +86,5 @@ class AccessPCAction(EventAction):
         )
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("PCState")
-        except ValueError:
+        if "PCState" not in session.client.active_state_names:
             self.stop()

@@ -56,11 +56,13 @@ class TransitionTeleportReturnAction(EventAction):
         char = session.get_npc(self.character)
         if char is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         request = session.client.teleporter.last_teleport_request
         if not request:
             logger.error("No previous teleport request found.")
+            self.stop()
             return
 
         if (
@@ -71,12 +73,14 @@ class TransitionTeleportReturnAction(EventAction):
             logger.error(
                 "Last teleport request is missing source location data."
             )
+            self.stop()
             return
 
         try:
             facing_dir = Direction(self.facing.lower())
         except ValueError:
             logger.warning(f"Invalid facing direction: {self.facing}")
+            self.stop()
             return
 
         char.set_facing(facing_dir)

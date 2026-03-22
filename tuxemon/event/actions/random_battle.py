@@ -85,6 +85,7 @@ class RandomBattleAction(EventAction):
         npc = session.get_npc(self.opponent.slug)
         if npc is None:
             logger.error(f"{self.opponent.slug} not found after creation.")
+            self.stop()
             return
 
         monster_filters = list(lookup_cache_mon.values())
@@ -105,6 +106,7 @@ class RandomBattleAction(EventAction):
         player = session.player
         if not (check_battle_legal(player) and check_battle_legal(npc)):
             logger.warning("Battle is not legal, won't start.")
+            self.stop()
             return
 
         environment = session.client.environment_manager
@@ -113,6 +115,7 @@ class RandomBattleAction(EventAction):
             logger.error(
                 "No environment defined. Use 'set_environment' before starting combat."
             )
+            self.stop()
             return
 
         logger.info(f"Starting battle with '{npc.name}'!")
@@ -128,9 +131,11 @@ class RandomBattleAction(EventAction):
             session.client.current_music.play(sound.music, sound.volume)
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("CombatState")
-        except ValueError:
+        client = session.client
+        if (
+            "CombatState" not in client.active_state_names
+            and not client.has_queued_state("CombatState")
+        ):
             self.stop()
 
     def cleanup(self, session: Session) -> None:

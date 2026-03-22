@@ -34,9 +34,11 @@ class SetPartyStatusAction(EventAction):
         char = session.get_npc(self.character)
         if char is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
         if not char.monsters:
             logger.error(f"{char.name} has no monsters!")
+            self.stop()
             return
 
         _healthy = sum(

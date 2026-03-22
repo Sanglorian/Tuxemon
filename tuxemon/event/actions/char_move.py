@@ -50,6 +50,7 @@ class CharMoveAction(EventAction):
     def start(self, session: Session) -> None:
         if len(self.raw_parameters) < 2:
             logger.error("Insufficient parameters")
+            self.stop()
             return
 
         character_name = self.raw_parameters[0]
@@ -57,6 +58,7 @@ class CharMoveAction(EventAction):
 
         if self.character is None:
             logger.error(f"Character '{character_name}' not found")
+            self.stop()
             return
 
         path_parameters = self.raw_parameters[1:]
@@ -68,6 +70,7 @@ class CharMoveAction(EventAction):
             logger.error(
                 f"Failed to parse path parameters due to invalid input: {e}"
             )
+            self.stop()
             return
 
         if path:

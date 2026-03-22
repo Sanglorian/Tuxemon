@@ -83,9 +83,10 @@ class AddComboAction(EventAction):
 
                 def make_callback(
                     event_name: str | None,
+                    combo_name: str,
                 ) -> Callable[[], None]:
                     def callback() -> None:
-                        logger.info(f"Combo '{combo['name']}' triggered!")
+                        logger.info(f"Combo '{combo_name}' triggered!")
                         if event_name:
                             session.client.event_engine.execute_action(
                                 "call_event", [event_name]
@@ -96,7 +97,9 @@ class AddComboAction(EventAction):
                 profile = ComboProfile(
                     name=combo["name"],
                     buttons=button_sequence,
-                    callback=make_callback(combo.get("event_name")),
+                    callback=make_callback(
+                        combo.get("event_name"), combo["name"]
+                    ),
                     delays_s=delays_s,
                     description=combo.get(
                         "description",

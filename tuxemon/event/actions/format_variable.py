@@ -42,6 +42,7 @@ class FormatVariableAction(EventAction):
         value = player.game_variables.get(key, None)
         if value is None:
             logger.error(f"Game variable {key} doesn't exist")
+            self.stop()
             return
         _formats = ["int", "float", "-int", "-float"]
         if type_format not in _formats:

@@ -166,14 +166,10 @@ class GetPlayerMonsterAction(EventAction):
             menu.escape_key_exits = False
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("MonsterMenuState")
-        except ValueError:
+        if "MonsterMenuState" not in session.client.active_state_names:
             player = session.player
             if self.result and not self.choose:
-                # the player can choose, but returns
                 player.game_variables.set(self.variable_name, "no_choice")
             if not self.result:
-                # the player can't choose (eg no females in the party)
                 player.game_variables.set(self.variable_name, "no_options")
             self.stop()

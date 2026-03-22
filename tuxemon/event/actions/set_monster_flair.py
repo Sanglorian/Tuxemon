@@ -54,17 +54,20 @@ class SetMonsterFlairAction(EventAction):
             logger.info(
                 f"No valid monster selected for variable '{self.variable}'"
             )
+            self.stop()
             return
 
         monster = session.client.get_monster_by_iid(monster_id)
         if monster is None:
             logger.error("Monster not found")
+            self.stop()
             return
 
         try:
             flair_model = FlairModel.lookup(self.flair, db)
         except RuntimeError as e:
             logger.error(str(e))
+            self.stop()
             return
 
         sprite_types = (

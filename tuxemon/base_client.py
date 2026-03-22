@@ -335,6 +335,12 @@ class BaseClient(ABC):
         """
         return self.state_manager.get_queued_state_by_name(state_name)
 
+    def has_queued_state(self, state_name: str) -> bool:
+        return any(
+            s.name == state_name
+            for s in self.state_manager.state_queue.queued_states
+        )
+
     def queue_state(self, state_name: str, **kwargs: Any) -> None:
         """Queue a state"""
         self.state_manager.queue_state(state_name, **kwargs)

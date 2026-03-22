@@ -66,6 +66,7 @@ class OpenShopAction(EventAction):
         character = session.get_npc(self.npc_slug)
         if character is None:
             logger.error(f"NPC '{self.npc_slug}' not found.")
+            self.stop()
             return
 
         # Only item/monster shops require an economy
@@ -95,6 +96,7 @@ class OpenShopAction(EventAction):
                 npc=character,
                 mode="item",
             )
+            self.stop()
             return
 
         if self.menu == "both_monster":
@@ -104,6 +106,7 @@ class OpenShopAction(EventAction):
                 npc=character,
                 mode="monster",
             )
+            self.stop()
             return
 
         if self.menu == "buy_item":

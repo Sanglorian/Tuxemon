@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from tuxemon.save_state import NPCState
+    from tuxemon.save_system.save_state import NPCState
 
 logger = logging.getLogger(__name__)
 

@@ -25,7 +25,7 @@ from tuxemon.event.eventmiddleware import (
 from tuxemon.faction.manager import FactionManager
 from tuxemon.platform.events import PlayerInput
 from tuxemon.prepare import DEV_TOOLS
-from tuxemon.save_state import WorldSave
+from tuxemon.save_system.save_state import WorldSave
 from tuxemon.session import Session
 from tuxemon.state.state import State
 from tuxemon.world.manager import WorldMenuManager

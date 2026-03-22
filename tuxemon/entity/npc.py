@@ -34,7 +34,7 @@ from tuxemon.relationship import (
     decode_relationships,
     encode_relationships,
 )
-from tuxemon.save_state import NPCState
+from tuxemon.save_system.save_state import NPCState
 from tuxemon.step_tracker import StepTrackerManager, decode_steps, encode_steps
 from tuxemon.teleporter import TeleportFaint
 from tuxemon.tracker import TrackingData, decode_tracking, encode_tracking

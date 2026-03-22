@@ -11,7 +11,7 @@ from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.platform.const.sizes import KENNEL, LOCKER
 
 if TYPE_CHECKING:
-    from tuxemon.save_state import NPCState
+    from tuxemon.save_system.save_state import NPCState
 
 logger = logging.getLogger(__name__)
 

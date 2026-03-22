@@ -9,16 +9,21 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Generic, TypeVar
 from uuid import UUID, uuid4
 
-from tuxemon import save
 from tuxemon.celestial_handler import CelestialHandler
-from tuxemon.save_state import TIME_FORMAT, NPCState, SessionSave, WorldSave
+from tuxemon.save_system import save
+from tuxemon.save_system.save_state import (
+    TIME_FORMAT,
+    NPCState,
+    SessionSave,
+    WorldSave,
+)
 from tuxemon.time_handler import TimeHandler
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
     from tuxemon.db import BoundingBox
     from tuxemon.entity.npc import NPC
-    from tuxemon.save_state import SaveData
+    from tuxemon.save_system.save_state import SaveData
     from tuxemon.states.world_state import WorldState
 
 logger = logging.getLogger(__name__)
@@ -41,6 +46,7 @@ class AbstractSession(ABC, Generic[ClientType]):
         self._start_timestamp: float = time.time()
         self._total_playtime: float = 0.0
         self.current_condition_box: BoundingBox | None = None
+        self._current_slot: int | None = None
 
         self._client: ClientType | None = None
         self._world: WorldState | None = None
@@ -145,6 +151,11 @@ class Session(AbstractSession["BaseClient"]):
             raise ValueError("Player is not initialized")
         return self._player
 
+    @property
+    def current_slot(self) -> int | None:
+        """The slot index most recently saved or loaded."""
+        return self._current_slot
+
     def load_state(self, save_data: SaveData) -> None:
         """
         Loads the player, world, and other session-level states from a saved game model.
@@ -164,8 +175,7 @@ class Session(AbstractSession["BaseClient"]):
         save_data = save.get_save_data(self)
         save_path = save.get_save_path(index)
         save.save(save_data, save_path)
-        save.slot_number = slot
-
+        self._current_slot = slot
         return save_data
 
     def get_npc_pos(self, pos: tuple[int, int]) -> NPC | None:

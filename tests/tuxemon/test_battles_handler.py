@@ -7,7 +7,7 @@ import pytest
 from tuxemon.battle import Battle
 from tuxemon.db import OutputBattle
 from tuxemon.entity.battle import BattlesHandler
-from tuxemon.save_state import NPCState
+from tuxemon.save_system.save_state import NPCState
 
 
 @pytest.fixture

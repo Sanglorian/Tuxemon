@@ -117,10 +117,12 @@ class RunningEvent:
             True - event is still alive (delay, long-running action)
             False - event is finished or cancelled
         """
-
         # Delay / timeout
         if not self.tick(dt):
             return self.is_alive()
+
+        max_actions_per_frame = len(self.actions) + 1
+        actions_this_frame = 0
 
         while True:
             if self.is_cancelled():
@@ -129,6 +131,13 @@ class RunningEvent:
 
             # If no action is active, try to load the next one
             if self.current_action is None:
+                if actions_this_frame >= max_actions_per_frame:
+                    logger.warning(
+                        f"Event {self.map_event.id} exhausted action budget "
+                        f"in a single frame — yielding."
+                    )
+                    return True
+
                 next_data = self.get_next_action()
                 if next_data is None:
                     self.complete()
@@ -146,6 +155,7 @@ class RunningEvent:
 
                 action.on_start(session)
                 self.current_action = action
+                actions_this_frame += 1
 
                 # Edge case: action cancelled itself during on_start()
                 if self.current_action.cancelled:
@@ -182,9 +192,6 @@ class RunningEvent:
 
     def get_next_action(self) -> ParameterizableRule | None:
         """Return the next action, or None if the event is completed."""
-        if self.state == EventState.COMPLETED:
-            return None
-
         if self.action_index >= len(self.actions):
             return None
 
@@ -199,8 +206,6 @@ class RunningEvent:
 
     def advance(self) -> None:
         self.action_index += 1
-        if self.action_index >= len(self.actions):
-            self.complete()
 
     def cancel(self) -> None:
         self.state = EventState.CANCELLED
@@ -231,8 +236,6 @@ class RunningEvent:
 
 
 class ConditionState(Enum):
-    WAITING = auto()
-    CHECKING = auto()
     MET = auto()
     FAILED = auto()
     CANCELLED = auto()
@@ -251,11 +254,8 @@ class RunningCondition:
     ) -> None:
         self.map_condition = map_condition
         self.evaluator = evaluator
-        self.state = ConditionState.WAITING
+        self.state = ConditionState.FAILED
         self.result: bool | None = None
-
-    def start_check(self) -> None:
-        self.state = ConditionState.CHECKING
 
     def cancel(self) -> None:
         self.state = ConditionState.CANCELLED
@@ -274,7 +274,6 @@ class RunningCondition:
             self.result = False
             return False
 
-        self.start_check()
         try:
             passed = self.evaluator.evaluate(self.map_condition)
             self.result = passed

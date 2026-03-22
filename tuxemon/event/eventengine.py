@@ -6,15 +6,12 @@ import logging
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
-from tuxemon.event.eventbehavior import (
-    expand_behavior_actions,
-    expand_behavior_conditions,
-)
+from tuxemon.event.eventbehavior import expand_behavior
 from tuxemon.event.running import EventState, RunningCondition, RunningEvent
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
-    from tuxemon.db import EventObject, SpatialCondition
+    from tuxemon.db import EventObject, ParameterizableRule, SpatialCondition
     from tuxemon.event.eventaction import ActionManager
     from tuxemon.event.eventbehavior import BehaviorManager
     from tuxemon.event.running import ConditionEvaluator
@@ -60,6 +57,9 @@ class EventEngine:
 
         self.global_events: list[EventObject] = []
         self.triggered_global_events: set[int] = set()
+        self._behavior_cache: dict[
+            int, tuple[list[SpatialCondition], list[ParameterizableRule]]
+        ] = {}
 
         # debug
         self.partial_events: list[Sequence[tuple[bool, SpatialCondition]]] = (
@@ -73,9 +73,10 @@ class EventEngine:
 
     def reset(self) -> None:
         """Clear out running events.  Use when changing maps."""
-        self.running_events = dict()
+        self.running_events = {}
         self.set_current_map(None)
         self.triggered_global_events = set()
+        self._behavior_cache = {}
 
     def suspend(self) -> None:
         """
@@ -141,7 +142,7 @@ class EventEngine:
         if map_event.id in self.running_events:
             return
 
-        behav_acts = expand_behavior_actions(map_event, self.behavior_manager)
+        _, behav_acts = self._get_behavior_expansion(map_event)
         combined_actions = behav_acts + list(map_event.acts)
         logger.debug(f"Starting map event: {map_event.id}")
 
@@ -175,6 +176,7 @@ class EventEngine:
         if self._suspended:
             return
 
+        self._behavior_cache = {}
         self.partial_events = []
         self.check_global_conditions()
         self.check_conditions()
@@ -230,7 +232,7 @@ class EventEngine:
     def _evaluate_and_queue_event(
         self, event: EventObject, is_global: bool = False
     ) -> None:
-        behav_conds = expand_behavior_conditions(event, self.behavior_manager)
+        behav_conds, _ = self._get_behavior_expansion(event)
         all_conditions = list(event.conds) + behav_conds
 
         if not all_conditions:
@@ -258,11 +260,13 @@ class EventEngine:
         """Cancels the event with the given ID."""
         if event_id in self.running_events:
             self.running_events[event_id].cancel()
+            self.triggered_global_events.discard(event_id)
 
     def cancel_all_events(self) -> None:
         """Cancels all currently running events."""
         for event in self.running_events.values():
             event.cancel()
+        self.triggered_global_events.clear()
 
     def update_running_events(self, dt: float) -> None:
         """
@@ -290,3 +294,16 @@ class EventEngine:
                 EventState.CANCELLED,
             ):
                 self.running_events.pop(event_id, None)
+
+    def _get_behavior_expansion(
+        self, event: EventObject
+    ) -> tuple[list[SpatialCondition], list[ParameterizableRule]]:
+        """
+        Returns cached behavior expansion for an event within the current update cycle.
+        Prevents expand() from being called twice (once for conditions, once for actions).
+        """
+        if event.id not in self._behavior_cache:
+            self._behavior_cache[event.id] = expand_behavior(
+                event, self.behavior_manager
+            )
+        return self._behavior_cache[event.id]

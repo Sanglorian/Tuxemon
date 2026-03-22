@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from pygame import SRCALPHA
 from pygame.rect import Rect
 from pygame.surface import Surface
 
@@ -13,21 +12,15 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PopUpMenu
 from tuxemon.platform.const import buttons
-from tuxemon.save_manager import SaveManager
-from tuxemon.save_slots import ui_to_save_index
+from tuxemon.save_system.save_manager import SaveManager
 from tuxemon.tools import open_choice_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options
-from tuxemon.ui.save_slot_renderer import (
-    render_empty_slot,
-    render_slot_text,
-    render_thumbnail,
-)
 from tuxemon.ui.text import draw_text
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
     from tuxemon.platform.events import PlayerInput
-    from tuxemon.save_state import SaveData
+    from tuxemon.save_system.save_state import SaveData
 
 logger = logging.getLogger(__name__)
 
@@ -131,53 +124,26 @@ class SaveMenuState(PaginatedMenuState):
             rect.width * SLOT_WIDTH_RATIO,
             rect.height // SLOT_HEIGHT_RATIO,
         )
-        for ui_index in range(self.max_slots):
-            item = self.create_menu_item(slot_rect, ui_index)
+        for slot in SaveManager.all_slots(self.max_slots):
+            item = self.create_menu_item(slot_rect, slot)
             self.add(item)
 
-    def create_menu_item(
-        self, slot_rect: Rect, ui_index: int
-    ) -> MenuItem[None]:
-        slot = ui_to_save_index(ui_index)
-
+    def create_menu_item(self, slot_rect: Rect, slot: int) -> MenuItem[None]:
         if SaveManager.exists(slot):
-            image = self.render_slot(slot_rect, slot)
+            image = SaveManager.render_slot(
+                slot_rect,
+                slot,
+                scaling=self.client.context.scaling,
+                font=self.font,
+            )
             return MenuItem(image, T.translate("menu_save"), None, None, True)
         else:
-            image = self.render_empty_slot(slot_rect)
-            return MenuItem(image, T.translate("empty_slot"), None, None, True)
-
-    def render_empty_slot(self, rect: Rect) -> Surface:
-        return render_empty_slot(
-            rect,
-            scaling=self.client.context.scaling,
-            font=self.font,
-        )
-
-    def render_slot(self, rect: Rect, slot: int) -> Surface:
-        slot_image = Surface(rect.size, SRCALPHA)
-        save_data = SaveManager.load(slot)
-
-        if not save_data:
-            logger.critical(f"Save data missing for slot {slot}")
-            raise RuntimeError(
-                f"Critical error: Save data missing for slot {slot}"
+            image = SaveManager.render_empty(
+                slot_rect,
+                scaling=self.client.context.scaling,
+                font=self.font,
             )
-
-        thumb = render_thumbnail(save_data, rect)
-        slot_image.blit(thumb, (rect.width * 0.20, 0))
-
-        text_rect = rect.move(0, rect.height // 2 - 10)
-        render_slot_text(
-            slot_image,
-            text_rect,
-            slot,
-            save_data,
-            scaling=self.client.context.scaling,
-            font=self.font,
-        )
-
-        return slot_image
+            return MenuItem(image, T.translate("empty_slot"), None, None, True)
 
     def _draw_slot_text(
         self, slot_image: Surface, rect: Rect, slot: int, save_data: SaveData
@@ -217,7 +183,7 @@ class SaveMenuState(PaginatedMenuState):
         )
 
     def on_menu_selection(self, menuitem: MenuItem[None]) -> None:
-        slot = ui_to_save_index(self.selected_index)
+        slot = SaveManager.slot_from_ui(self.selected_index)
 
         def positive() -> None:
             self.client.remove_state_by_name("ChoiceState")
@@ -280,55 +246,28 @@ class LoadMenuState(PaginatedMenuState):
             rect.height // SLOT_HEIGHT_RATIO,
         )
 
-        for ui_index in range(self.max_slots):
-            item = self.create_menu_item(slot_rect, ui_index)
+        for slot in SaveManager.all_slots(self.max_slots):
+            item = self.create_menu_item(slot_rect, slot)
             self.add(item)
 
-    def create_menu_item(
-        self, slot_rect: Rect, ui_index: int
-    ) -> MenuItem[None]:
-        slot = ui_to_save_index(ui_index)
-
+    def create_menu_item(self, slot_rect: Rect, slot: int) -> MenuItem[None]:
         if SaveManager.exists(slot):
-            image = self.render_slot(slot_rect, slot)
+            image = SaveManager.render_slot(
+                slot_rect,
+                slot,
+                scaling=self.client.context.scaling,
+                font=self.font,
+            )
             return MenuItem(image, T.translate("menu_load"), None, None, True)
         else:
-            image = self.render_empty_slot(slot_rect)
+            image = SaveManager.render_empty(
+                slot_rect,
+                scaling=self.client.context.scaling,
+                font=self.font,
+            )
             return MenuItem(
                 image, T.translate("empty_slot"), None, None, False
             )
-
-    def render_empty_slot(self, rect: Rect) -> Surface:
-        return render_empty_slot(
-            rect,
-            scaling=self.client.context.scaling,
-            font=self.font,
-        )
-
-    def render_slot(self, rect: Rect, slot: int) -> Surface:
-        slot_image = Surface(rect.size, SRCALPHA)
-        save_data = SaveManager.load(slot)
-
-        if not save_data:
-            logger.critical(f"Save data missing for slot {slot}")
-            raise RuntimeError(
-                f"Critical error: Save data missing for slot {slot}"
-            )
-
-        thumb = render_thumbnail(save_data, rect)
-        slot_image.blit(thumb, (rect.width * 0.20, 0))
-
-        text_rect = rect.move(0, rect.height // 2 - 10)
-        render_slot_text(
-            slot_image,
-            text_rect,
-            slot,
-            save_data,
-            scaling=self.client.context.scaling,
-            font=self.font,
-        )
-
-        return slot_image
 
     def _draw_slot_text(
         self, slot_image: Surface, rect: Rect, slot: int, save_data: SaveData
@@ -361,7 +300,7 @@ class LoadMenuState(PaginatedMenuState):
             )
 
     def on_menu_selection(self, menuitem: MenuItem[None]) -> None:
-        slot = ui_to_save_index(self.selected_index)
+        slot = SaveManager.slot_from_ui(self.selected_index)
 
         if not SaveManager.exists(slot):
             return

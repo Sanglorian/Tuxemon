@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
     from tuxemon.monster.monster import Monster
     from tuxemon.network.manager import NetworkManager
-    from tuxemon.save_state import NPCState
+    from tuxemon.save_system.save_state import NPCState
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)

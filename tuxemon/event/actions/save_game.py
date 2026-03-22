@@ -8,8 +8,8 @@ from typing import final
 
 from tuxemon.event.eventaction import EventAction
 from tuxemon.locale.locale import T
-from tuxemon.save_manager import SaveManager
-from tuxemon.save_slots import resolve_save_index
+from tuxemon.save_system.save_manager import SaveManager
+from tuxemon.save_system.save_slots import resolve_save_index
 from tuxemon.session import Session
 from tuxemon.tools import open_dialog
 

@@ -249,6 +249,12 @@ class BaseLookupModel(ABC):
         pass
 
 
+class DataModel(BaseModel):
+    """Marker base class for models that belong in the database."""
+
+    slug: str
+
+
 class ColorModel(BaseModel):
     red: int = Field(..., ge=0, le=255)
     green: int = Field(..., ge=0, le=255)
@@ -632,7 +638,7 @@ class DynamicMenuEntry(BaseModel):
     enabled: bool = True
 
 
-class ItemModel(BaseModel, BaseLookupModel):
+class ItemModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "item"
     model_config = ConfigDict(title="Item")
     slug: str = Field(..., description="The slug of the item")
@@ -805,7 +811,7 @@ class AttributesModel(BaseModel):
     speed: int = Field(..., description="Speed value")
 
 
-class ShapeModel(BaseModel, BaseLookupModel):
+class ShapeModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "shape"
     slug: str = Field(
         ..., description="Slug of the shape, used as a unique identifier."
@@ -1061,7 +1067,7 @@ class MonsterEvolutionItemModel(BaseModel):
         raise ValueError(f"the held item {v} doesn't exist in the db")
 
 
-class FlairModel(BaseModel, BaseLookupModel):
+class FlairModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "flair"
 
     slug: str = Field(..., description="The unique name of the flair.")
@@ -1150,7 +1156,7 @@ class MonsterSoundsModel(BaseModel):
     )
 
 
-class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
+class MonsterModel(DataModel, BaseLookupModel, validate_assignment=True):
     table_name: ClassVar[str] = "monster"
     slug: str = Field(..., description="The slug of the monster")
     species: str = Field(..., description="The species of monster")
@@ -1523,7 +1529,7 @@ class TargetModel(BaseModel):
         return v
 
 
-class TechniqueModel(BaseModel, BaseLookupModel):
+class TechniqueModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "technique"
     slug: str = Field(..., description="The slug of the technique")
     sort: TechSort = Field(..., description="The sort of technique this is")
@@ -1687,7 +1693,7 @@ class StepEffectType(str, Enum):
     PERCENT_CURRENT_HP_HEAL = "percent_current_hp_heal"
 
 
-class StatusModel(BaseModel, BaseLookupModel):
+class StatusModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "status"
     slug: str = Field(..., description="The slug of the status")
     sort: TechSort = Field(..., description="The sort of status this is")
@@ -1837,7 +1843,7 @@ class BagItemModel(BaseModel):
         raise ValueError(f"the item {v} doesn't exist in the db")
 
 
-class TemplateModel(BaseModel):
+class TemplateModel(DataModel):
     slug: str = Field(
         ..., description="Slug uniquely identifying the template"
     )
@@ -2004,7 +2010,7 @@ class NpcAudioModel(BaseModel):
     )
 
 
-class NpcModel(BaseModel, BaseLookupModel):
+class NpcModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "npc"
     slug: str = Field(..., description="Slug of the name of the NPC")
     birthdate: tuple[int, int] | None = Field(
@@ -2226,7 +2232,7 @@ class BattleMusicModel(BaseModel):
     )
 
 
-class EnvironmentModel(BaseModel, BaseLookupModel):
+class EnvironmentModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "environment"
     slug: str = Field(..., description="Slug of the name of the environment")
     battle_graphics: BattleGraphicsModel
@@ -2451,7 +2457,7 @@ class EncounterType(str, Enum):
     HORDE = "horde"
 
 
-class EncounterModel(BaseModel, BaseLookupModel):
+class EncounterModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "encounter"
     slug: str = Field(
         ..., description="Slug to uniquely identify this encounter"
@@ -2574,7 +2580,7 @@ class EncounterModel(BaseModel, BaseLookupModel):
         return self
 
 
-class DialogueModel(BaseModel, BaseLookupModel):
+class DialogueModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "dialogue"
     slug: str = Field(
         ..., description="Slug to uniquely identify this dialogue"
@@ -2613,7 +2619,7 @@ class ElementItemModel(BaseModel):
         raise ValueError(f"the element {v} doesn't exist in the db")
 
 
-class ElementModel(BaseModel, BaseLookupModel):
+class ElementModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "element"
     slug: str = Field(..., description="Slug uniquely identifying the type")
     icon: str = Field(..., description="The icon to use for the type")
@@ -2652,7 +2658,7 @@ class ElementModel(BaseModel, BaseLookupModel):
         raise ValueError(f"the icon {v} doesn't exist in the db")
 
 
-class TasteModel(BaseModel, BaseLookupModel):
+class TasteModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "taste"
     slug: str = Field(..., description="Slug of the taste")
     name: str = Field(..., description="Name of the taste")
@@ -2722,7 +2728,7 @@ class EconomyMonsterModel(EconomyEntityModel):
         )
 
 
-class EconomyModel(BaseModel, BaseLookupModel):
+class EconomyModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "economy"
     slug: str = Field(..., description="Slug uniquely identifying the economy")
     resale_multiplier: float = Field(..., description="Resale multiplier")
@@ -2790,7 +2796,7 @@ class RankStep(BaseModel):
     requirement: RankRequirement | None = None
 
 
-class FactionModel(BaseModel, BaseLookupModel):
+class FactionModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "faction"
 
     slug: str = Field(..., description="Unique ID of the faction")
@@ -2941,7 +2947,7 @@ class MissionStepModel(BaseModel):
     )
 
 
-class MissionModel(BaseModel, BaseLookupModel):
+class MissionModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "mission"
 
     slug: str = Field(..., description="Slug uniquely identifying the mission")
@@ -3019,7 +3025,7 @@ class MissionModel(BaseModel, BaseLookupModel):
         return v
 
 
-class MusicModel(BaseModel):
+class MusicModel(DataModel):
     slug: str = Field(..., description="Unique slug for the music")
     file: str = Field(..., description="File for the music")
 
@@ -3031,7 +3037,7 @@ class MusicModel(BaseModel):
         raise ValueError(f"the music {v} doesn't exist in the db")
 
 
-class SoundModel(BaseModel):
+class SoundModel(DataModel):
     slug: str = Field(..., description="Unique slug for the sound")
     file: str = Field(..., description="File for the sound")
 
@@ -3043,7 +3049,7 @@ class SoundModel(BaseModel):
         raise ValueError(f"the sound {v} doesn't exist in the db")
 
 
-class AnimationModel(BaseModel, BaseLookupModel):
+class AnimationModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "animation"
     slug: str = Field(..., description="Unique slug for the animation")
     file: str = Field(..., description="File of the animation")
@@ -3095,7 +3101,7 @@ class AnimationModel(BaseModel, BaseLookupModel):
         return v
 
 
-class TerrainModel(BaseModel, BaseLookupModel):
+class TerrainModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "terrain"
     slug: str = Field(..., description="Slug of the terrain")
     name: str = Field(..., description="Name of the terrain condition")
@@ -3116,7 +3122,7 @@ class TerrainModel(BaseModel, BaseLookupModel):
         raise ValueError(f"no translation exists with msgid: {v}")
 
 
-class WeatherModel(BaseModel, BaseLookupModel):
+class WeatherModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "weather"
     slug: str = Field(..., description="Slug of the weather")
     name: str = Field(..., description="Name of the weather condition")
@@ -3143,31 +3149,6 @@ class WeatherModel(BaseModel, BaseLookupModel):
         if has.translation(v):
             return v
         raise ValueError(f"no translation exists with msgid: {v}")
-
-
-DataModel = (
-    EconomyModel
-    | ElementModel
-    | TasteModel
-    | ShapeModel
-    | TerrainModel
-    | WeatherModel
-    | TemplateModel
-    | MissionModel
-    | EncounterModel
-    | DialogueModel
-    | EnvironmentModel
-    | ItemModel
-    | MonsterModel
-    | FlairModel
-    | MusicModel
-    | AnimationModel
-    | NpcModel
-    | SoundModel
-    | StatusModel
-    | TechniqueModel
-    | FactionModel
-)
 
 
 def load_model_map(

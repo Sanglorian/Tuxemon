@@ -430,6 +430,54 @@ class PartyConditionsModel(BaseModel):
         None,
         description="The elemental alignment the party must lean toward for evolution to occur.",
     )
+    party_size: int | None = Field(
+        None,
+        ge=1,
+        le=sizes.PARTY_LIMIT,
+        description="Required number of monsters in the party.",
+    )
+    party_level: int | None = Field(
+        None,
+        ge=1,
+        description="Minimum average level of monsters in the party.",
+    )
+    party_stages: dict[str, int] | None = Field(
+        None,
+        description="Required evolution stages and their minimum counts (e.g. {'stage2': 2}).",
+    )
+
+    @model_validator(mode="after")
+    def at_least_one_condition(self) -> PartyConditionsModel:
+        if not any(
+            [
+                self.monster_slugs,
+                self.monster_types,
+                self.genders,
+                self.alignment,
+                self.party_size,
+                self.party_level,
+                self.party_stages,
+            ]
+        ):
+            raise ValueError("At least one party condition must be specified.")
+        return self
+
+    @field_validator("party_stages")
+    def validate_party_stages(
+        cls, v: dict[str, int] | None
+    ) -> dict[str, int] | None:
+        if v:
+            valid_stages = {stage.value for stage in EvolutionStage}
+            for stage, count in v.items():
+                if stage not in valid_stages:
+                    raise ValueError(
+                        f"Evolution stage '{stage}' is not valid. Must be one of {valid_stages}."
+                    )
+                if not (1 <= count < sizes.PARTY_LIMIT):
+                    raise ValueError(
+                        f"Count for stage '{stage}' must be between 1 and {sizes.PARTY_LIMIT - 1}."
+                    )
+        return v
 
     @field_validator("monster_slugs")
     def validate_monster_slugs(
@@ -441,9 +489,9 @@ class PartyConditionsModel(BaseModel):
                     raise ValueError(
                         f"Monster slug '{slug}' does not exist in the database."
                     )
-                if not (0 <= count < sizes.PARTY_LIMIT):
+                if not (1 <= count < sizes.PARTY_LIMIT):
                     raise ValueError(
-                        f"Count for monster slug '{slug}' must be between 0 and {sizes.PARTY_LIMIT - 1}."
+                        f"Count for monster slug '{slug}' must be between 1 and {sizes.PARTY_LIMIT - 1}."
                     )
         return v
 
@@ -453,9 +501,13 @@ class PartyConditionsModel(BaseModel):
     ) -> dict[str, int] | None:
         if v:
             for type_, count in v.items():
-                if not (0 <= count < sizes.PARTY_LIMIT):
+                if not has.db_entry("element", type_):
                     raise ValueError(
-                        f"Count for monster type '{type_}' must be between 0 and {sizes.PARTY_LIMIT - 1}."
+                        f"Monster type '{type_}' does not exist in the database."
+                    )
+                if not (1 <= count < sizes.PARTY_LIMIT):
+                    raise ValueError(
+                        f"Count for monster type '{type_}' must be between 1 and {sizes.PARTY_LIMIT - 1}."
                     )
         return v
 
@@ -465,11 +517,17 @@ class PartyConditionsModel(BaseModel):
     ) -> dict[GenderType, int] | None:
         if v:
             for gender, count in v.items():
-                if not (0 <= count < sizes.PARTY_LIMIT):
+                if not (1 <= count < sizes.PARTY_LIMIT):
                     raise ValueError(
-                        f"Count for gender '{gender}' must be between 0 and {sizes.PARTY_LIMIT - 1}."
+                        f"Count for gender '{gender}' must be between 1 and {sizes.PARTY_LIMIT - 1}."
                     )
         return v
+
+    @field_validator("alignment")
+    def validate_alignment(cls, v: str | None) -> str | None:
+        if not v or has.db_entry("element", v):
+            return v
+        raise ValueError(f"Alignment '{v}' does not exist in the database.")
 
 
 class Behaviors(BaseModel):
@@ -903,7 +961,7 @@ class MonsterEvolutionItemModel(BaseModel):
     at_level: int | None = Field(
         None,
         description="The level at which the monster evolves.",
-        ge=0,
+        ge=1,
     )
     element: str | None = Field(
         None,
@@ -932,7 +990,6 @@ class MonsterEvolutionItemModel(BaseModel):
     variables: Sequence[GameCondition] = Field(
         default_factory=list,
         description="The game variables that must exist and match a specific value for the monster to evolve.",
-        min_length=1,
     )
     stats: StatsComparison | None = Field(
         None,
@@ -946,6 +1003,7 @@ class MonsterEvolutionItemModel(BaseModel):
     steps: int | None = Field(
         None,
         description="The minimum number of steps the monster must have walked to evolve.",
+        ge=1,
     )
     tech: str | None = Field(
         None,
@@ -970,6 +1028,8 @@ class MonsterEvolutionItemModel(BaseModel):
     probability: float | None = Field(
         None,
         description="Chance (0.0 to 1.0) that this evolution occurs when conditions are met.",
+        ge=0.0,
+        le=1.0,
     )
     held_item: str | None = Field(
         None, description="Item slug the monster must be holding to evolve."
@@ -980,19 +1040,14 @@ class MonsterEvolutionItemModel(BaseModel):
     )
 
     @field_validator("moves")
-    def move_exists(cls, v: Sequence[str]) -> Sequence[str]:
-        if v:
-            for element in v:
-                if not has.db_entry("technique", element):
-                    raise ValueError(
-                        f"A technique {element} doesn't exist in the db"
-                    )
-        return v
-
-    @field_validator("moves")
     def validate_moves(cls, v: Sequence[str]) -> Sequence[str]:
         if not v:
-            raise ValueError(f"Moves must contain at least 1 technique")
+            raise ValueError("Moves must contain at least 1 technique.")
+        for slug in v:
+            if not has.db_entry("technique", slug):
+                raise ValueError(
+                    f"the technique '{slug}' doesn't exist in the db."
+                )
         return v
 
     @field_validator("tech")
@@ -1009,7 +1064,7 @@ class MonsterEvolutionItemModel(BaseModel):
             for taste_value in v.values():
                 if not has.db_entry("taste", taste_value):
                     raise ValueError(
-                        f"The taste '{taste_value}' does not exist in the database."
+                        f"the taste '{taste_value}' does not exist in the database."
                     )
         return v
 
@@ -1036,7 +1091,7 @@ class MonsterEvolutionItemModel(BaseModel):
         for item_slug, weight in v.items():
             if not has.db_entry("item", item_slug):
                 raise ValueError(
-                    f"The item '{item_slug}' doesn't exist in the database."
+                    f"The item '{item_slug}' does not exist in the database."
                 )
             if weight < 0.0:
                 raise ValueError(
@@ -1052,6 +1107,7 @@ class MonsterEvolutionItemModel(BaseModel):
         normalized = {
             slug: weight / total_weight for slug, weight in v.items()
         }
+        logger.debug(f"Item weights normalized: {normalized}")
         return normalized
 
     @field_validator("held_item")

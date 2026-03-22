@@ -45,11 +45,8 @@ def check_party_conditions(
     if conditions_model.monster_types is not None:
         type_counts: dict[str, int] = {}
         for mon in party_handler.monsters:
-            types = mon.types.current
-            for t in types:
-                slug = t.slug
-                type_counts[slug] = type_counts.get(slug, 0) + 1
-
+            for t in mon.types.current:
+                type_counts[t.slug] = type_counts.get(t.slug, 0) + 1
         for type_, required_count in conditions_model.monster_types.items():
             conditions.append(type_counts.get(type_, 0) >= required_count)
 
@@ -57,11 +54,31 @@ def check_party_conditions(
     if conditions_model.genders is not None:
         gender_counts: dict[GenderType, int] = {}
         for mon in party_handler.monsters:
-            gender = mon.gender
-            gender_counts[gender] = gender_counts.get(gender, 0) + 1
-
+            gender_counts[mon.gender] = gender_counts.get(mon.gender, 0) + 1
         for gender, required_count in conditions_model.genders.items():
             conditions.append(gender_counts.get(gender, 0) >= required_count)
+
+    # Check party size
+    if conditions_model.party_size is not None:
+        conditions.append(
+            party_handler.party_size >= conditions_model.party_size
+        )
+
+    # Check party level
+    if conditions_model.party_level is not None:
+        average = party_handler.level_average
+        conditions.append(
+            average is not None and average >= conditions_model.party_level
+        )
+
+    # Check party stages
+    if conditions_model.party_stages is not None:
+        stage_counts: dict[str, int] = {}
+        for mon in party_handler.monsters:
+            stage = mon.stage.value
+            stage_counts[stage] = stage_counts.get(stage, 0) + 1
+        for stage, required_count in conditions_model.party_stages.items():
+            conditions.append(stage_counts.get(stage, 0) >= required_count)
 
     return all(conditions)
 
@@ -113,9 +130,7 @@ def check_location_items_moves(
     # Moves check
     if evolution_item.moves:
         moves_slugs = {mov.slug for mov in monster.moves.get_moves()}
-        conditions.extend(
-            monster in moves_slugs for monster in evolution_item.moves
-        )
+        conditions.extend(move in moves_slugs for move in evolution_item.moves)
 
     if evolution_item.held_item is not None:
         held_item = monster.held_item
@@ -177,21 +192,6 @@ def check_variables(
     conditions.append(
         owner.variable_manager.check_conditions(evolution_item.variables)
     )
-
-
-def check_steps(
-    monster: Monster,
-    evolution_item: MonsterEvolutionItemModel,
-    conditions: list[bool],
-) -> None:
-    """Append a check for required steps taken and trigger experience flags."""
-    if evolution_item.steps is None:
-        return
-
-    result = evolution_item.steps - int(monster.steps)
-    conditions.append(result == 0)
-    monster.steps += 1
-    monster.experience_handler.trigger_experience_flags()
 
 
 def check_bond(

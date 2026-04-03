@@ -44,6 +44,7 @@ class SetFacingModeAction(EventAction):
     def start(self, session: Session) -> None:
         npc = session.get_npc(self.npc_slug)
         if not npc:
+            self.stop()
             return
 
         mode_str = self.mode.strip().lower()

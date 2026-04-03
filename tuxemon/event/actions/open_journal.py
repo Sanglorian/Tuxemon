@@ -47,6 +47,7 @@ class OpenJournalAction(EventAction):
             logger.error(
                 f"The state 'JournalInfoState' is already active. No action taken."
             )
+            self.stop()
             return
 
         journal = MonsterModel.lookup(self.monster_slug, db)
@@ -54,6 +55,7 @@ class OpenJournalAction(EventAction):
             logger.error(
                 f"Monster with slug '{self.monster_slug}' not found for JournalInfoState."
             )
+            self.stop()
             return
 
         self.client.push_state(
@@ -65,7 +67,5 @@ class OpenJournalAction(EventAction):
         )
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("JournalInfoState")
-        except ValueError:
+        if "JournalInfoState" not in session.client.active_state_names:
             self.stop()

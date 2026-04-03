@@ -43,6 +43,7 @@ class UpdateCipherAction(EventAction):
         character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         if self.letters:
@@ -57,5 +58,6 @@ class UpdateCipherAction(EventAction):
         cipher_processor = session.client.cipher_processor
         if cipher_processor is None:
             logger.error(f"Cipher processor isn't enabled")
+            self.stop()
             return
         cipher_processor.set_unlocked_letters(character.unlocked_letters)

@@ -63,7 +63,5 @@ class ChoiceItemAction(EventAction):
         session.client.push_state("ChoiceItem", menu=MenuOptions(options))
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("ChoiceItem")
-        except ValueError:
+        if "ChoiceItem" not in session.client.active_state_names:
             self.stop()

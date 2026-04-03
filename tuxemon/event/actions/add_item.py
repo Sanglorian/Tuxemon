@@ -64,6 +64,7 @@ class AddItemAction(EventAction):
             elif qty < 0:
                 bag.remove_item(existing, abs(qty))
             # qty == 0 → do nothing
+            self.stop()
             return
 
         # No existing item

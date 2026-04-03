@@ -46,6 +46,7 @@ class PlayMapAnimationAction(EventAction):
 
         if character is None:
             logger.error(f"Character '{self.character}' not found")
+            self.stop()
             return
 
         if self.loop == "loop":

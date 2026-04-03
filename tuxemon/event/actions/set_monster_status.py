@@ -51,6 +51,7 @@ class SetMonsterStatusAction(EventAction):
         player = session.player
         steps = player.steps
         if not player.monsters:
+            self.stop()
             return
 
         if self.variable is None:
@@ -62,9 +63,11 @@ class SetMonsterStatusAction(EventAction):
                 logger.info(
                     f"No valid monster selected for variable '{self.variable}'"
                 )
+                self.stop()
                 return  # Exit early if no valid UUID
             monster = session.client.get_monster_by_iid(monster_id)
             if monster is None:
                 logger.error("Monster not found")
+                self.stop()
                 return
             self.set_status(session, monster, self.status, steps)

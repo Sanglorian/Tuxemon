@@ -73,10 +73,12 @@ class ReplaceTechsFromYamlAction(EventAction):
             logger.info(
                 f"No valid monster selected for variable '{self.variable}'"
             )
+            self.stop()
             return  # Exit early if no valid UUID
         monster = session.client.get_monster_by_iid(monster_id)
         if monster is None:
             logger.error("Monster not found")
+            self.stop()
             return
 
         movesets = Loader.get_config_moves(f"{self.yaml_file}.yaml")
@@ -86,6 +88,7 @@ class ReplaceTechsFromYamlAction(EventAction):
             logger.error(
                 f"Moveset '{self.set_name}' not found in '{self.yaml_file}'"
             )
+            self.stop()
             return
 
         move_slugs = [

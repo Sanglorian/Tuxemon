@@ -40,6 +40,7 @@ class BreedingAction(EventAction):
     def set_var(self, menu_item: MenuItem[Monster | None]) -> None:
         monster = menu_item.game_object
         if monster is None:
+            self.stop()
             return
 
         parent = (
@@ -54,6 +55,7 @@ class BreedingAction(EventAction):
 
         if not char:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         self.char = char
@@ -82,7 +84,5 @@ class BreedingAction(EventAction):
         )
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("MonsterMenuState")
-        except ValueError:
+        if "MonsterMenuState" not in session.client.active_state_names:
             self.stop()

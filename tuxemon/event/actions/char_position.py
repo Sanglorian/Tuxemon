@@ -36,6 +36,7 @@ class CharPositionAction(EventAction):
         character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         position = (self.tile_pos_x, self.tile_pos_y)

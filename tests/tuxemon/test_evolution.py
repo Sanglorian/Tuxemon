@@ -8,6 +8,7 @@ from tuxemon.db import (
     Acquisition,
     BondComparison,
     Comparison,
+    EvolutionStage,
     GameCondition,
     GenderType,
     LearningMethod,
@@ -233,26 +234,6 @@ def test_acquisition_conditions(
 
 
 @pytest.mark.parametrize(
-    "party_slugs,expected",
-    [
-        pytest.param({"nut": 1}, True, id="party_single_match"),
-        pytest.param(
-            {"nut": 1, "rockitten": 1}, True, id="party_double_match"
-        ),
-        pytest.param({"agnidon": 1}, False, id="party_no_match"),
-    ],
-)
-def test_party_conditions(evolution_context, party_slugs, expected):
-    mon, _, _ = evolution_context
-    evo = MonsterEvolutionItemModel(
-        monster_slug="rockat",
-        party_conditions=PartyConditionsModel(monster_slugs=party_slugs),
-    )
-    context = {"map_inside": True}
-    assert mon.evolution_handler.can_evolve(evo, context) == expected
-
-
-@pytest.mark.parametrize(
     "taste_attr,taste_value,evo_taste,expected",
     [
         pytest.param(
@@ -380,21 +361,6 @@ def test_variables_conditions(
 
 
 @pytest.mark.parametrize(
-    "steps,evo_steps,expected",
-    [
-        pytest.param(10, 10, True, id="steps_match"),
-        pytest.param(5, 10, False, id="steps_mismatch"),
-    ],
-)
-def test_steps_conditions(evolution_context, steps, evo_steps, expected):
-    mon, _, _ = evolution_context
-    mon.steps = steps
-    evo = MonsterEvolutionItemModel(monster_slug="rockat", steps=evo_steps)
-    context = {"map_inside": True}
-    assert mon.evolution_handler.can_evolve(evo, context) == expected
-
-
-@pytest.mark.parametrize(
     "bond_value,evo_value,expected",
     [
         pytest.param(10, 10, True, id="bond_meets_requirement"),
@@ -500,11 +466,6 @@ def test_probability_conditions(
     assert mon.evolution_handler.can_evolve(evo, context) == expected
 
 
-from unittest.mock import MagicMock
-
-import pytest
-
-
 @pytest.mark.parametrize(
     "held_item_slug,evo_item_slug,expected",
     [
@@ -527,6 +488,26 @@ def test_held_item_conditions(
         held_item=evo_item_slug,
     )
 
+    context = {"map_inside": True}
+    assert mon.evolution_handler.can_evolve(evo, context) == expected
+
+
+@pytest.mark.parametrize(
+    "party_slugs,expected",
+    [
+        pytest.param({"nut": 1}, True, id="party_single_match"),
+        pytest.param(
+            {"nut": 1, "rockitten": 1}, True, id="party_double_match"
+        ),
+        pytest.param({"agnidon": 1}, False, id="party_no_match"),
+    ],
+)
+def test_party_conditions(evolution_context, party_slugs, expected):
+    mon, _, _ = evolution_context
+    evo = MonsterEvolutionItemModel(
+        monster_slug="rockat",
+        party_conditions=PartyConditionsModel(monster_slugs=party_slugs),
+    )
     context = {"map_inside": True}
     assert mon.evolution_handler.can_evolve(evo, context) == expected
 
@@ -601,6 +582,75 @@ def test_party_type_conditions(
     evo = MonsterEvolutionItemModel(
         monster_slug="rockat",
         party_conditions=PartyConditionsModel(monster_types=evo_types),
+    )
+    context = {"map_inside": True}
+    assert mon.evolution_handler.can_evolve(evo, context) == expected
+
+
+@pytest.mark.parametrize(
+    "party_size,evo_size,expected",
+    [
+        pytest.param(2, 2, True, id="party_size_match"),
+        pytest.param(2, 3, False, id="party_size_below"),
+    ],
+)
+def test_party_size_conditions(
+    evolution_context, party_size, evo_size, expected
+):
+    mon, player, _ = evolution_context
+    player.party._monsters = player.party._monsters[:party_size]
+    evo = MonsterEvolutionItemModel(
+        monster_slug="rockat",
+        party_conditions=PartyConditionsModel(party_size=evo_size),
+    )
+    context = {"map_inside": True}
+    assert mon.evolution_handler.can_evolve(evo, context) == expected
+
+
+@pytest.mark.parametrize(
+    "levels,evo_level,expected",
+    [
+        pytest.param([20, 20], 20, True, id="party_level_match"),
+        pytest.param([10, 10], 20, False, id="party_level_below"),
+    ],
+)
+def test_party_level_conditions(
+    evolution_context, levels, evo_level, expected
+):
+    mon, player, _ = evolution_context
+    for m, level in zip(player.party._monsters, levels):
+        m.set_level(level, level)
+    evo = MonsterEvolutionItemModel(
+        monster_slug="rockat",
+        party_conditions=PartyConditionsModel(party_level=evo_level),
+    )
+    context = {"map_inside": True}
+    assert mon.evolution_handler.can_evolve(evo, context) == expected
+
+
+@pytest.mark.parametrize(
+    "stages,evo_stages,expected",
+    [
+        pytest.param(
+            ["basic", "basic"], {"basic": 2}, True, id="party_stages_match"
+        ),
+        pytest.param(
+            ["basic", "basic"],
+            {"stage1": 1},
+            False,
+            id="party_stages_mismatch",
+        ),
+    ],
+)
+def test_party_stages_conditions(
+    evolution_context, stages, evo_stages, expected
+):
+    mon, player, _ = evolution_context
+    for m, stage in zip(player.party._monsters, stages):
+        m.stage = EvolutionStage(stage)
+    evo = MonsterEvolutionItemModel(
+        monster_slug="rockat",
+        party_conditions=PartyConditionsModel(party_stages=evo_stages),
     )
     context = {"map_inside": True}
     assert mon.evolution_handler.can_evolve(evo, context) == expected
@@ -748,7 +798,7 @@ def test_get_eligible_evolution_slug_requires_item_but_not_used(
 
     mon.evolutions = [evolution_item]
     evo.is_eligible_for_evolution = lambda: True
-    evo.can_evolve = lambda item, ctx: False
+    evo.can_evolve = lambda item, ctx, owner=None: False
     registry = MagicMock()
     registry.get_blocked.return_value = []
     player.evolution_registry = registry
@@ -799,11 +849,13 @@ def test_get_eligible_evolution_slug_blocked(evolution_context):
 def test_get_eligible_evolution_slug(evolution_context):
     mon, player, evo = evolution_context
 
-    evolution_item = MonsterEvolutionItemModel(monster_slug="rockat")
+    evolution_item = MonsterEvolutionItemModel.model_construct(
+        monster_slug="rockat", item=None
+    )
     mon.evolutions = [evolution_item]
 
     evo.is_eligible_for_evolution = lambda: True
-    evo.can_evolve = lambda item, ctx: True
+    evo.can_evolve = lambda item, ctx, owner=None: True
 
     registry = MagicMock()
     registry.get_blocked.return_value = []

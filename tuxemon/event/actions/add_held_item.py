@@ -42,19 +42,23 @@ class AddHeldItemAction(EventAction):
             logger.info(
                 f"No valid monster selected for variable '{self.variable}'"
             )
+            self.stop()
             return  # Exit early if no valid UUID
 
         monster = session.client.get_monster_by_iid(monster_id)
         if monster is None:
             logger.error("Monster not found")
+            self.stop()
             return
 
         held = monster.held_item
         if held is not None:
             logger.error(f"{monster.name} held already {held.name}")
+            self.stop()
             return
 
         item = Item.create(self.item)
         output = monster.equip_item(item)
         if not output:
+            self.stop()
             return

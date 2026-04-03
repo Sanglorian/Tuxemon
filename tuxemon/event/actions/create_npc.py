@@ -56,6 +56,7 @@ class CreateNpcAction(EventAction):
         slug = self.npc_slug
 
         if session.client.npc_manager.npc_exists(slug):
+            self.stop()
             return
 
         npc = NPC.create(session, slug)

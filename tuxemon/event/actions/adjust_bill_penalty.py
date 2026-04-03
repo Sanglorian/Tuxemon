@@ -42,6 +42,7 @@ class AdjustBillPenaltyAction(EventAction):
         character = session.get_npc(self.character)
         if character is None:
             logger.error(f"Character '{self.character}' not found")
+            self.stop()
             return
 
         money_manager = character.money_controller.money_manager
@@ -51,6 +52,7 @@ class AdjustBillPenaltyAction(EventAction):
             logger.error(
                 f"Bill '{self.bill_slug}' not found for character '{self.character}'"
             )
+            self.stop()
             return
 
         try:
@@ -64,12 +66,14 @@ class AdjustBillPenaltyAction(EventAction):
                 logger.error(
                     f"Invalid method '{self.method}': must be 'interest' or 'fee'"
                 )
+                self.stop()
                 return
         except Exception as e:
             logger.error(
                 f"Failed to apply {self.method} to bill '{self.bill_slug}' "
                 f"for '{self.character}': {e}"
             )
+            self.stop()
             return
 
         updated_bill = money_manager.get_bill(self.bill_slug)

@@ -48,6 +48,7 @@ class ModifyMonsterBondAction(EventAction):
     def start(self, session: Session) -> None:
         player = session.player
         if not player.monsters:
+            self.stop()
             return
 
         amount_bond = self.amount if self.amount else 1
@@ -67,10 +68,12 @@ class ModifyMonsterBondAction(EventAction):
                 logger.info(
                     f"No valid monster selected for variable '{self.variable}'"
                 )
+                self.stop()
                 return  # Exit early if no valid UUID
             monster = session.client.get_monster_by_iid(monster_id)
             if monster is None:
                 logger.error("Monster not found")
+                self.stop()
                 return
             else:
                 monster.bond_handler.change_bond(amount_bond)

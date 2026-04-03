@@ -46,6 +46,7 @@ class RenamePlayerAction(EventAction):
 
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         session.client.push_state(
@@ -59,7 +60,5 @@ class RenamePlayerAction(EventAction):
         )
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("InputMenu")
-        except ValueError:
+        if "InputMenu" not in session.client.active_state_names:
             self.stop()

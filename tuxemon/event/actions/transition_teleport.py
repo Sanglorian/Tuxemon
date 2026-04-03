@@ -49,6 +49,7 @@ class TransitionTeleportAction(EventAction):
 
         char = session.get_npc(self.character)
         if char is None:
+            self.stop()
             return
 
         teleport_queue = session.client.teleporter.teleport_queue

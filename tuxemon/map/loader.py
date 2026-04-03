@@ -215,10 +215,8 @@ class MapLoader:
             yaml_collision: Collision event data.
             events: Dictionary containing events and init sequences.
         """
-        # Debugging before merging
         logger.debug(f"TMX events before merging: {len(txmn_map.events)}")
         logger.debug(f"TMX inits before merging: {len(txmn_map.inits)}")
-
         txmn_map.collision_map.update(yaml_collision)
         txmn_map.add_events(events["event"])
         txmn_map.add_inits(events["init"])
@@ -303,7 +301,6 @@ class YAMLEventLoader:
                 y = int(collision_data.get("y", 0))
                 w = int(collision_data.get("width", 1))
                 h = int(collision_data.get("height", 1))
-                event_type = str(collision_data.get("type"))
                 coords = [(x + i, y + j) for i in range(w) for j in range(h)]
                 for coord in coords:
                     collision_dict[coord] = None
@@ -329,7 +326,14 @@ class YAMLEventLoader:
         """
         event_parser = EventParser()
         yaml_data: dict[str, dict[str, dict[str, Any]]] = load_yaml(path)
+
         events_dict: dict[str, list[EventObject]] = {"event": [], "init": []}
+
+        if source not in ("event", "init"):
+            logger.warning(
+                f"Unknown event source '{source}', returning empty."
+            )
+            return events_dict
 
         for name, event_data in yaml_data["events"].items():
             _event_type = event_data.get("type")
@@ -342,7 +346,13 @@ class YAMLEventLoader:
                 delay = float(_delay) if _delay is not None else None
                 x, y = event_data.get("x", 0), event_data.get("y", 0)
                 w, h = event_data.get("width", 1), event_data.get("height", 1)
-                box = BoundingBox(x=x, y=y, width=w, height=h)
+                try:
+                    box = BoundingBox(x=x, y=y, width=w, height=h)
+                except Exception as e:
+                    logger.error(
+                        f"Invalid bounding box for event '{name}': {e}"
+                    )
+                    continue
                 event = event_parser.create_event_object(
                     event_data, name, box, priority, timeout, delay
                 )
@@ -496,10 +506,13 @@ class TMXMapLoader:
         inits: list[EventObject] = []
 
         for obj in data.objects:
-            if obj.type == "event":
-                events.append(self.load_event(obj, tile_size))
-            elif obj.type == "init":
-                inits.append(self.load_event(obj, tile_size))
+            try:
+                if obj.type == "event":
+                    events.append(self.load_event(obj, tile_size))
+                elif obj.type == "init":
+                    inits.append(self.load_event(obj, tile_size))
+            except ValueError as e:
+                logger.error(f"Skipping event '{obj.name}': {e}")
 
         return events, inits
 
@@ -651,5 +664,11 @@ class TMXMapLoader:
             elif key.startswith("behav"):
                 event_data["behav"].append(value)
 
-        box = BoundingBox(x=x, y=y, width=w, height=h)
+        try:
+            box = BoundingBox(x=x, y=y, width=w, height=h)
+        except Exception as e:
+            raise ValueError(
+                f"Invalid bounding box for event '{obj.name}': {e}"
+            ) from e
+
         return event_parser.create_event_object(event_data, obj.name, box)

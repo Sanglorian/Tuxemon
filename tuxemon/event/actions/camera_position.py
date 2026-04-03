@@ -36,6 +36,7 @@ class CameraPositionAction(EventAction):
         camera = session.client.camera_manager.get_active_camera()
         if camera is None:
             logger.error("No active camera found.")
+            self.stop()
             return
         if self.x is not None and self.y is not None:
             map_size = session.client.map_manager.map_size
@@ -45,6 +46,7 @@ class CameraPositionAction(EventAction):
                 logger.error(
                     f"({self.x, self.y}) is outside the map bounds {map_size}"
                 )
+                self.stop()
                 return
             self._move_camera(camera, self.x, self.y)
         else:

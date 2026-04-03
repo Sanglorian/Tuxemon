@@ -61,6 +61,7 @@ class TuneRadioAction(EventAction):
             logger.error(
                 f"The state '{self.client.current_state.name}' is already active. No action taken."
             )
+            self.stop()
             return
 
         character = self.session.get_npc(self.character_slug)
@@ -68,6 +69,7 @@ class TuneRadioAction(EventAction):
             logger.error(
                 f"Character '{self.character_slug}' not found for radio tuning."
             )
+            self.stop()
             return
 
         if self.frequency is not None:
@@ -75,6 +77,7 @@ class TuneRadioAction(EventAction):
                 logger.error(
                     f"Frequency {self.frequency} is out of FM range {MIN_FREQ}-{MAX_FREQ}."
                 )
+                self.stop()
                 return
 
             self.client.push_state(

@@ -55,6 +55,7 @@ class ModifyMonsterStatsAction(EventAction):
     def start(self, session: Session) -> None:
         player = session.player
         if not player.monsters:
+            self.stop()
             return
         if self.stat and self.stat not in list(StatType):
             raise ValueError(f"{self.stat} isn't among {list(StatType)}")
@@ -85,10 +86,12 @@ class ModifyMonsterStatsAction(EventAction):
                 logger.info(
                     f"No valid monster selected for variable '{self.variable}'"
                 )
+                self.stop()
                 return  # Exit early if no valid UUID
             monster = session.client.get_monster_by_iid(monster_id)
             if monster is None:
                 logger.error("Monster not found")
+                self.stop()
                 return
 
             for stat in monster_stats:

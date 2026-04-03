@@ -46,20 +46,20 @@ class ShowMonsterAction(EventAction):
             logger.error(
                 f"The state 'MonsterInfoState' is already active. No action taken."
             )
+            self.stop()
             return
 
         monster = self._retrieve_monster(session)
         if monster is None:
             logger.error("Monster not found for MonsterInfoState.")
+            self.stop()
             return
 
         params = {"monster": monster, "source": self.name}
         self.client.push_state("MonsterInfoState", **params)
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("MonsterInfoState")
-        except ValueError:
+        if "MonsterInfoState" not in session.client.active_state_names:
             self.stop()
 
     def _retrieve_monster(self, session: Session) -> Monster | None:

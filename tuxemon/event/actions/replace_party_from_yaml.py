@@ -74,6 +74,7 @@ class ReplacePartyFromYamlAction(EventAction):
         character = session.get_npc(self.character)
         if character is None:
             logger.error("'wild_encounter' not found")
+            self.stop()
             return
 
         parties = Loader.get_config_monsters(f"{self.yaml_file}.yaml")
@@ -83,6 +84,7 @@ class ReplacePartyFromYamlAction(EventAction):
             logger.error(
                 f"Party '{self.set_name}' not found in '{self.yaml_file}'"
             )
+            self.stop()
             return
 
         monster_defs = party.monsters

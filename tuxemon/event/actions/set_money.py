@@ -37,6 +37,7 @@ class SetMoneyAction(EventAction):
 
         if character is None:
             logger.error(f"Character '{self.character}' not found")
+            self.stop()
             return
 
         amount = 0 if self.amount is None else self.amount

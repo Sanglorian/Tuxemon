@@ -22,3 +22,9 @@ def monster_update_listener(
             results = monster.status.tick_statuses_on_steps(session, steps)
             for r in results:
                 logger.info(f"{monster.name} affected by {r.name}")
+        if not monster.waiting_to_evolve:
+            for evolution_item in monster.evolutions:
+                if evolution_item.steps is not None:
+                    if int(monster.steps) >= evolution_item.steps:
+                        monster.waiting_to_evolve = True
+                        break

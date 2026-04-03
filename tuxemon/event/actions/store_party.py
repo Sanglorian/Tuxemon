@@ -41,11 +41,13 @@ class StorePartyAction(EventAction):
         character = session.get_npc(self.character)
         if character is None:
             logger.error(f"Character '{self.character}' not found.")
+            self.stop()
             return
 
         store = self.box or KENNEL
         if self.box and not character.monster_boxes.has_box(store, "monster"):
             logger.error(f"No box found with name '{store}'.")
+            self.stop()
             return
 
         success = character.monster_boxes.store_party_in_box(

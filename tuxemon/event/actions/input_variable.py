@@ -72,7 +72,5 @@ class InputVariableAction(EventAction):
         )
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("InputMenu")
-        except ValueError:
+        if "InputMenu" not in session.client.active_state_names:
             self.stop()

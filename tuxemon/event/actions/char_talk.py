@@ -62,6 +62,7 @@ class CharTalkAction(EventAction):
         character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         dialogue = DialogueProfileManager()
@@ -72,13 +73,12 @@ class CharTalkAction(EventAction):
 
         if line is None:
             logger.error(f"{self.character} line {self.field} doesn't exist.")
+            self.stop()
             return
 
         text = TextFormatter.replace_text(session, line, T)
         open_dialog(client=session.client, text=[T.translate(text)])
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("DialogState")
-        except ValueError:
+        if "DialogState" not in session.client.active_state_names:
             self.stop()

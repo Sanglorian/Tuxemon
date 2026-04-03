@@ -38,6 +38,7 @@ class SetStepTrackerMilestoneShownAction(EventAction):
         character = session.get_npc(self.character)
         if character is None:
             logger.error(f"Character '{self.character}' not found.")
+            self.stop()
             return
 
         tracker = character.step_tracker.get_tracker(self.tracker_id)
@@ -45,12 +46,14 @@ class SetStepTrackerMilestoneShownAction(EventAction):
             logger.warning(
                 f"StepTracker '{self.tracker_id}' not found for character '{self.character}'."
             )
+            self.stop()
             return
 
         if tracker.has_shown_milestone(self.milestone):
             logger.info(
                 f"Milestone {self.milestone} already marked as shown for '{self.character}'."
             )
+            self.stop()
             return
 
         tracker.show_milestone_dialogue(self.milestone)

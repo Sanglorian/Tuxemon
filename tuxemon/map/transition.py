@@ -41,7 +41,6 @@ class MapTransition:
         """Loads the new map or a NullMap and updates relevant game components."""
         current = self.map_manager.current_map
         self._clear_npcs()
-
         if map_name:
             if current is None or map_name != current.filename:
                 map_data = self.map_loader.load_map_data(map_name)
@@ -49,9 +48,8 @@ class MapTransition:
                 map_data = current
         else:
             map_data = self.map_loader.load_null_map(yaml_path)
-
-        self._reset_events(map_data)
         self._update_map_state(map_data)
+        self._reset_events(map_data)
         self._update_boundaries()
 
     def validate_coordinates(self, x: int, y: int) -> None:
@@ -62,8 +60,7 @@ class MapTransition:
 
     def _reset_events(self, map_data: AbstractMap) -> None:
         """Resets and updates event engine for the new map."""
-        self.event_engine.reset()
-        self.event_engine.set_current_map(map_data)
+        self.event_engine.reset(map_data)
 
     def _update_map_state(self, map_data: AbstractMap) -> None:
         """Updates the map manager with new map data."""

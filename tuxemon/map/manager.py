@@ -154,10 +154,6 @@ class MapManager:
         self.current_map = map_data
         self.maps = map_data.maps
         self._map_type_slug = map_data.map_type
-
-        map_data.add_events([])
-        map_data.add_inits([])
-
         if map_data.map_type not in MAP_TYPES:
             logger.warning(
                 f"Invalid map type '{map_data.map_type}', defaulting to 'notype'."
@@ -168,6 +164,7 @@ class MapManager:
             sorted_events = sorted(
                 new_events, key=lambda e: e.priority, reverse=True
             )
+            self.current_map.clear_events()
             self.current_map.add_events(sorted_events)
 
     def set_inits(self, new_inits: Sequence[EventObject]) -> None:
@@ -175,6 +172,7 @@ class MapManager:
             sorted_inits = sorted(
                 new_inits, key=lambda e: e.priority, reverse=True
             )
+            self.current_map.clear_inits()
             self.current_map.add_inits(sorted_inits)
 
     def clear_events(self) -> None:
@@ -190,17 +188,13 @@ class MapManager:
         self.maps = {}
         self._map_type_slug = None
 
-    def remove_event(self, event: EventObject) -> None:
-        if self.current_map:
-            updated = list(self.current_map.events)
-            updated.remove(event)
-            self.current_map.add_events(updated)
-
     def remove_init(self, event: EventObject) -> None:
         if self.current_map:
-            updated = list(self.current_map.inits)
-            updated.remove(event)
-            self.current_map.add_inits(updated)
+            self.current_map.remove_init(event)
+
+    def remove_event(self, event: EventObject) -> None:
+        if self.current_map:
+            self.current_map.remove_event(event)
 
     def get_map_filepath(self) -> str | None:
         """Returns the filepath of the current map."""

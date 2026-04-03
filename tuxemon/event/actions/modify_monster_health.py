@@ -41,6 +41,7 @@ class ModifyMonsterHealthAction(EventAction):
     def start(self, session: Session) -> None:
         player = session.player
         if not player.monsters:
+            self.stop()
             return
 
         monster_health = 1.0 if self.health is None else self.health
@@ -56,10 +57,12 @@ class ModifyMonsterHealthAction(EventAction):
                 logger.info(
                     f"No valid monster selected for variable '{self.variable}'"
                 )
+                self.stop()
                 return  # Exit early if no valid UUID
             monster = session.client.get_monster_by_iid(monster_id)
             if monster is None:
                 logger.error("Monster not found")
+                self.stop()
                 return
             set_health(monster, monster_health, True)
             if monster.is_fainted:

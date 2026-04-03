@@ -40,6 +40,7 @@ class CameraModeAction(EventAction):
         camera = session.client.camera_manager.get_active_camera()
         if camera is None:
             logger.error("No active camera found.")
+            self.stop()
             return
         mode = CameraMode(self.mode)
         if mode == CameraMode.FREE_ROAMING:

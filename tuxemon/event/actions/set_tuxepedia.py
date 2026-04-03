@@ -41,6 +41,7 @@ class SetTuxepediaAction(EventAction):
         character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
         # start tuxepedia operations
         if self.label not in list(SeenStatus):

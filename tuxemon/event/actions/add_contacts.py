@@ -51,6 +51,7 @@ class AddContactsAction(EventAction):
         character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         if self.relation is not None:
@@ -60,6 +61,7 @@ class AddContactsAction(EventAction):
                 logger.error(
                     f"Add msgid 'relation_{self.relation}' in the 'en_US' base.po"
                 )
+                self.stop()
                 return
 
         if self.strength is not None:
@@ -83,4 +85,5 @@ class AddContactsAction(EventAction):
         else:
             contact.apply_decay(character.steps)
             logger.error(f"{self.npc_slug} already exist")
+            self.stop()
             return

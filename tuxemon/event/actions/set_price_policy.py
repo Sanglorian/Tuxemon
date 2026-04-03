@@ -37,15 +37,18 @@ class SetPricePolicyAction(EventAction):
         character = session.get_npc(self.npc_slug)
         if character is None:
             logger.error(f"{self.npc_slug} not found")
+            self.stop()
             return
 
         if not character.economy:
             logger.error(f"NPC '{self.npc_slug}' has no economy set yet.")
+            self.stop()
             return
 
         data = load_policy(self.policy_slug)
         if not data:
             logger.error(f"Unknown PricePolicy slug: '{self.policy_slug}'")
+            self.stop()
             return
 
         policy = StaticYamlPolicy(data)

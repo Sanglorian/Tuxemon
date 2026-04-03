@@ -63,12 +63,15 @@ class RemoveComboAction(EventAction):
             ]
             if not button_sequence:
                 logger.warning(f"Combo '{self.combo_name}' has no buttons.")
+                self.stop()
                 return
         except KeyError as e:
             logger.warning(f"Unknown button name in combo: {e}")
+            self.stop()
             return
         except Exception as e:
             logger.warning(f"Invalid combo definition: {self.values} — {e}")
+            self.stop()
             return
 
         try:

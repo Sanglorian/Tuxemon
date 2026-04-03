@@ -54,6 +54,7 @@ class CharPatrolAction(EventAction):
             logger.error(
                 "Insufficient parameters: requires NPC and patrol path"
             )
+            self.stop()
             return
 
         npc_name = self.raw_parameters[0]
@@ -62,12 +63,14 @@ class CharPatrolAction(EventAction):
 
         if not npc:
             logger.error(f"NPC '{npc_name}' not found")
+            self.stop()
             return
 
         try:
             route = list(parse_path_parameters(npc.tile_pos, move_list))
         except Exception as e:
             logger.error(f"Failed to parse patrol path: {e}")
+            self.stop()
             return
 
         # Assign PatrolBehavior

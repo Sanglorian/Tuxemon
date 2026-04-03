@@ -48,18 +48,21 @@ class LearnTechByMethodAction(EventAction):
             logger.info(
                 f"No valid monster selected for variable '{self.monster_var}'"
             )
+            self.stop()
             return  # Exit early if no valid UUID
 
         monster = session.client.get_monster_by_iid(monster_id)
 
         if monster is None:
             logger.error(f"Monster with ID '{monster_id}' not found")
+            self.stop()
             return
 
         try:
             method_enum = LearningMethod[self.method.upper()]
         except KeyError:
             logger.error(f"Invalid learning method: {self.method}")
+            self.stop()
             return
 
         technique_obj = monster.moves.learn_by_method(

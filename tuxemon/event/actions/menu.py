@@ -48,6 +48,7 @@ class MenuAction(EventAction):
             flags.reset_flags()
             flags.apply_preset("raw")
             session.world.menu_manager.update_menu_display()
+            self.stop()
             return
 
         if self.act in presets:

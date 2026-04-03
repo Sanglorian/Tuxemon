@@ -52,9 +52,6 @@ class ActionContextManager:
         Ensures the action is properly cleaned up, unless it is marked as cancelled.
         Logs a warning if the action is cancelled.
         """
-        if self.action.cancelled:
-            logger.warning("Event is cancelled, not cleaning up")
-            return
         self.action.cleanup(self.session)
 
 
@@ -175,6 +172,7 @@ class EventAction(ABC):
             last_time = time.perf_counter()
             while not self.done and not self.cancelled:
                 if self._skip:
+                    self.stop()
                     return
 
                 now = time.perf_counter()
@@ -209,8 +207,7 @@ class EventAction(ABC):
         method for subclass logic.
         """
         if self.cancelled:
-            logger.debug(f"Action is cancelled, not starting")
-            self.stop()
+            logger.debug("Action is cancelled, not starting")
             return
         try:
             self.start(session)
@@ -234,12 +231,7 @@ class EventAction(ABC):
         """
         if self.cancelled:
             logger.debug("Action is cancelled, not updating")
-            return
-        try:
-            self.stop()
-        except Exception as e:
-            logger.error(f"Error updating action: {e}")
-            raise
+        self.stop()
 
     def cancel(self) -> None:
         """
@@ -260,12 +252,6 @@ class EventAction(ABC):
         if self.cancelled:
             logger.debug("Action is cancelled, not cleaning up")
             return
-        try:
-            # clean up the action
-            pass
-        except Exception as e:
-            logger.error(f"Error cleaning up action: {e}")
-            raise
 
 
 class ActionManager:

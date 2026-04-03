@@ -64,7 +64,5 @@ class TranslatedDialogChoiceAction(EventAction):
         )
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("ChoiceState")
-        except ValueError:
+        if "ChoiceState" not in session.client.active_state_names:
             self.stop()

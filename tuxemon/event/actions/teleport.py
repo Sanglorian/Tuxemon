@@ -48,6 +48,7 @@ class TeleportAction(EventAction):
             logger.error(
                 f"TeleportAction: Character '{self.character}' not found."
             )
+            self.stop()
             return
 
         request = TeleportRequest(

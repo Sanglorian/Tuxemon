@@ -58,6 +58,7 @@ class SetTemplateAction(EventAction):
         target = session.get_npc(self.character)
         if not target:
             logger.error(f"NPC {self.character} not found")
+            self.stop()
             return
 
         if self.sprite == "default":

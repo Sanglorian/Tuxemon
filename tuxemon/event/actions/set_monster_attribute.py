@@ -43,12 +43,14 @@ class SetMonsterAttributeAction(EventAction):
             logger.info(
                 f"No valid monster selected for variable '{self.variable}'"
             )
+            self.stop()
             return  # Exit early if no valid UUID
         monster = session.client.get_monster_by_iid(monster_id)
         if monster is None:
             monster = player.monster_boxes.get_monsters_by_iid(monster_id)
             if monster is None:
                 logger.error("Monster not found")
+                self.stop()
                 return
 
         CommonAction.set_entity_attribute(monster, self.attribute, self.value)

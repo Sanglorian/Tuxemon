@@ -46,6 +46,7 @@ class RandomIntegerAction(EventAction):
                 f"Invalid range for 'random_integer'. Lower bound ({self.lower_bound}) "
                 f"cannot be greater than the upper bound ({self.upper_bound})."
             )
+            self.stop()
             return
 
         player = session.player

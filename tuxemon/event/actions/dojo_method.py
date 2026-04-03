@@ -63,17 +63,20 @@ class DojoMethodAction(EventAction):
             logger.info(
                 f"No valid monster selected for variable '{self.variable_name}'"
             )
+            self.stop()
             return  # Exit early if no valid UUID
 
         monster = session.client.get_monster_by_iid(monster_id)
         if monster is None:
             logger.debug(f"Monster {monster_id} not found.")
+            self.stop()
             return
 
         self.monster = monster
 
         if self.option not in ["monster", "technique"]:
             logger.error(f"{self.option} must be 'monster' or 'technique'")
+            self.stop()
             return
 
         if self.option == "technique":
@@ -86,6 +89,7 @@ class DojoMethodAction(EventAction):
 
             if not learnable_moves:
                 session.player.game_variables.set("dojo_notech", "on")
+                self.stop()
                 return
 
             forget = session.client.push_state(
@@ -121,9 +125,7 @@ class DojoMethodAction(EventAction):
             open_choice_dialog(session.client, MenuOptions(menu_options))
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("DialogState")
-        except ValueError:
+        if "DialogState" not in session.client.active_state_names:
             self.stop()
 
     def devolve(self, slug: str) -> None:
@@ -156,6 +158,7 @@ class DojoMethodAction(EventAction):
         ]
         if not learnable_moves:
             self.player.game_variables.set("dojo_notech", "on")
+            self.stop()
             return
 
         if len(learnable_moves) == 1:
@@ -165,6 +168,7 @@ class DojoMethodAction(EventAction):
             )
             logger.info(f"{tech.name} learned!")
             self.client.sound_manager.play_sound("sound_confirm")
+            self.stop()
             return
 
         relearn = self.client.push_state(

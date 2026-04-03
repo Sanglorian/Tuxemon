@@ -41,6 +41,7 @@ class SetTeleportFaintAction(EventAction):
         character = session.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         character.teleport_faint = TeleportFaint(self.map_name, self.x, self.y)

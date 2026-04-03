@@ -49,6 +49,7 @@ class LoadGameAction(EventAction):
 
         save_data = SaveManager.load(slot)
         if not save_data:
+            self.stop()
             return
 
         try:
@@ -63,6 +64,7 @@ class LoadGameAction(EventAction):
         npc_state = save_data.npc_state
         if npc_state is None:
             logger.error("Save data missing NPC state.")
+            self.stop()
             return
 
         slug = npc_state.player_slug or PLAYER_NPC
@@ -71,6 +73,7 @@ class LoadGameAction(EventAction):
 
         if npc_state.current_map is None:
             logger.error("Save data missing current map.")
+            self.stop()
             return
 
         map_path = fetch_asset("maps", npc_state.current_map)
@@ -80,6 +83,7 @@ class LoadGameAction(EventAction):
 
         if npc_state.tile_pos is None:
             logger.error("Save data missing tile position.")
+            self.stop()
             return
 
         tele_x, tele_y = npc_state.tile_pos

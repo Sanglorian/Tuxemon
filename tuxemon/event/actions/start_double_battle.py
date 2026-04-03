@@ -50,12 +50,14 @@ class StartDoubleBattleAction(EventAction):
         if not character1 or not character2:
             _char = self.character1 if not character1 else self.character2
             logger.error(f"Character not found in map: {_char}")
+            self.stop()
             return
 
         if not (
             check_battle_legal(character1) and check_battle_legal(character2)
         ):
             logger.warning("Battle is not legal, won't start")
+            self.stop()
             return
 
         environment = session.client.environment_manager
@@ -64,6 +66,7 @@ class StartDoubleBattleAction(EventAction):
             logger.error(
                 "No environment defined. Use 'set_environment' before starting combat."
             )
+            self.stop()
             return
 
         fighters = sorted(
@@ -75,6 +78,7 @@ class StartDoubleBattleAction(EventAction):
             logger.error(
                 f"{total_monsters} monsters aren't enough to trigger a double battle ({MONSTERS_DOUBLE})"
             )
+            self.stop()
             return
 
         logger.info(
@@ -94,7 +98,5 @@ class StartDoubleBattleAction(EventAction):
             session.client.current_music.play(filename, sound.volume)
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("CombatState")
-        except ValueError:
+        if "CombatState" not in session.client.active_state_names:
             self.stop()

@@ -52,15 +52,18 @@ class ChangeTasteAction(EventAction):
             logger.info(
                 f"No valid monster selected for variable '{self.variable}'"
             )
+            self.stop()
             return  # Exit early if no valid UUID
 
         monster = session.client.get_monster_by_iid(monster_id)
         if monster is None:
             logger.error("Monster not found")
+            self.stop()
             return
 
         if self.new_taste == "tasteless":
             logger.error("Cannot assign 'tasteless' explicitly.")
+            self.stop()
             return
 
         if self.type_taste not in ("warm", "cold"):
@@ -80,11 +83,13 @@ class ChangeTasteAction(EventAction):
                 logger.warning(
                     f"No alternate {self.type_taste} taste found for {monster.name}."
                 )
+                self.stop()
                 return
         else:
             taste_obj = Taste.get(self.new_taste)
             if not taste_obj:
                 logger.error(f"Taste '{self.new_taste}' not found.")
+                self.stop()
                 return
 
             if taste_obj.taste_type != self.type_taste:
@@ -92,6 +97,7 @@ class ChangeTasteAction(EventAction):
                     f"Taste '{self.new_taste}' is of type '{taste_obj.taste_type}', "
                     f"expected '{self.type_taste}'."
                 )
+                self.stop()
                 return
 
             new_taste = self.new_taste

@@ -38,6 +38,7 @@ class CharFaceCharAction(EventAction):
 
     def update(self, session: Session, dt: float) -> None:
         if not self.npc or not self.target_char:
+            self.stop()
             return
 
         dist = tile_distance(self.npc.tile_pos, self.target_char.tile_pos)

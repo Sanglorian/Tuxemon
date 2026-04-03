@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import random
 from collections.abc import Mapping
-from dataclasses import astuple, dataclass, fields
+from dataclasses import astuple, dataclass, fields, replace
 from typing import TYPE_CHECKING, Any
 
 from tuxemon.database.rules import config_monster
@@ -35,6 +35,19 @@ class BasicStats:
     def sum(self) -> int:
         return sum(astuple(self))
 
+    def to_dict(self) -> Mapping[str, int]:
+        return {
+            field.name: getattr(self, field.name) for field in fields(self)
+        }
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, int]) -> BasicStats:
+        valid_fields = {field.name for field in fields(cls)}
+        return cls(**{k: v for k, v in data.items() if k in valid_fields})
+
+    def copy(self) -> BasicStats:
+        return replace(self)
+
     def __add__(self, other: BasicStats) -> BasicStats:
         if not isinstance(other, BasicStats):
             return NotImplemented
@@ -42,15 +55,14 @@ class BasicStats:
             *[s + o for s, o in zip(astuple(self), astuple(other))]
         )
 
-    def copy(self) -> BasicStats:
-        return BasicStats(
-            armour=self.armour,
-            dodge=self.dodge,
-            hp=self.hp,
-            melee=self.melee,
-            ranged=self.ranged,
-            speed=self.speed,
-        )
+    def __iadd__(self, other: BasicStats) -> BasicStats:
+        if not isinstance(other, BasicStats):
+            return NotImplemented
+        for f in fields(self):
+            setattr(
+                self, f.name, getattr(self, f.name) + getattr(other, f.name)
+            )
+        return self
 
 
 @dataclass
@@ -83,6 +95,7 @@ def randomize_ivs() -> IndividualValues:
     return IndividualValues(**random_data)
 
 
+@dataclass
 class CustomStatBoosts(BasicStats):
     """
     Persistent, user- or modder-defined additive boosts to a monster's base
@@ -129,6 +142,11 @@ class TrainingPoints(BasicStats):
             setattr(contribution, name, int(raw_tp * level_scale))
         return contribution
 
+    def set_stat(self, stat_name: str, value: int) -> None:
+        if not hasattr(self, stat_name):
+            raise ValueError(f"Invalid stat name: {stat_name}")
+        setattr(self, stat_name, value)
+
     def validate(self) -> None:
         """Clamps individual stats and the total to configuration limits."""
         max_stat = config_monster.max_tps
@@ -145,8 +163,7 @@ class TrainingPoints(BasicStats):
         if current_total > max_total:
             ratio = max_total / current_total
             for name in self.names():
-                val = getattr(self, name)
-                setattr(self, name, int(val * ratio))
+                setattr(self, name, int(getattr(self, name) * ratio))
             logger.warning(f"TPs exceeded {max_total} and were scaled down.")
 
 
@@ -181,11 +198,7 @@ class StatCalculator:
         final_stats = self.apply_stat_updates(raw_stats, cold, warm)
 
         if temporary_boosts:
-            for stat in BasicStats.names():
-                boosted = getattr(final_stats, stat) + getattr(
-                    temporary_boosts, stat
-                )
-                setattr(final_stats, stat, boosted)
+            final_stats += temporary_boosts
 
         return final_stats
 
@@ -367,16 +380,15 @@ def randomize_training_points(total_points: int) -> TrainingPoints:
 
     stats = TrainingPoints()
     stat_names = BasicStats.names()
-    num_stats = len(stat_names)
-    remaining_points = total_points
-
-    for i in range(num_stats - 1):
-        max_possible = remaining_points // (num_stats - i)
-        points = random.randint(0, max_possible)
-        setattr(stats, stat_names[i], points)
-        remaining_points -= points
-
-    setattr(stats, stat_names[-1], remaining_points)
+    max_per_stat = config_monster.max_tps
+    remaining = total_points
+    for name in stat_names[:-1]:
+        cap = min(max_per_stat, remaining // len(stat_names))
+        points = random.randint(0, cap)
+        setattr(stats, name, points)
+        remaining -= points
+    setattr(stats, stat_names[-1], min(remaining, max_per_stat))
+    stats.validate()
     return stats
 
 

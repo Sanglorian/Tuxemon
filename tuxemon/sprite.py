@@ -45,7 +45,7 @@ class Sprite(DirtySprite):
 
     def __init__(
         self,
-        *args: Group,
+        *args: Any,
         image: Surface | None = None,
         animation: SurfaceAnimation | None = None,
     ) -> None:
@@ -474,7 +474,10 @@ class CaptureDeviceSprite(Sprite):
 _GroupElement = TypeVar("_GroupElement", bound=Sprite)
 
 
-class SpriteGroup(LayeredUpdates, Generic[_GroupElement]):
+class SpriteGroup(
+    LayeredUpdates,  # type: ignore[type-arg]
+    Generic[_GroupElement],
+):
     """
     Sane variation of a pygame sprite group.
 
@@ -495,8 +498,7 @@ class SpriteGroup(LayeredUpdates, Generic[_GroupElement]):
     def __iter__(self) -> Iterator[_GroupElement]:
         return LayeredUpdates.__iter__(self)
 
-    def sprites(self) -> Sequence[_GroupElement]:
-        # Pygame typing is awful. Ignore Mypy here.
+    def sprites(self) -> list[_GroupElement]:
         return LayeredUpdates.sprites(self)
 
     def __bool__(self) -> bool:
@@ -648,9 +650,7 @@ class RelativeGroup(MenuSpriteGroup[_MenuElement]):
             s.rect.move_ip(topleft)
 
         try:
-            dirty = super().draw(
-                surface=surface, bgd=bgd, special_flags=special_flags
-            )
+            dirty = super().draw(surface=surface)
         finally:
             for s in self.sprites():
                 s.rect.move_ip((-topleft[0], -topleft[1]))
@@ -827,9 +827,7 @@ class VisualSpriteList(RelativeGroup[_MenuElement]):
     ) -> list[FRect | Rect]:
         if self._needs_arrange:
             self.arrange_menu_items()
-        dirty = super().draw(
-            surface=surface, bgd=bgd, special_flags=special_flags
-        )
+        dirty = super().draw(surface=surface)
         return dirty
 
     def arrange_menu_items(self) -> None:

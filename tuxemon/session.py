@@ -23,7 +23,6 @@ if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
     from tuxemon.db import BoundingBox
     from tuxemon.entity.npc import NPC
-    from tuxemon.entity.player import Player
     from tuxemon.save_system.save_state import SaveData
     from tuxemon.states.world_state import WorldState
 
@@ -51,7 +50,7 @@ class AbstractSession(ABC, Generic[ClientType]):
 
         self._client: ClientType | None = None
         self._world: WorldState | None = None
-        self._player: Player | None = None
+        self._player: NPC | None = None
         self._session_state: SessionSave = SessionSave()
 
     @property
@@ -66,7 +65,7 @@ class AbstractSession(ABC, Generic[ClientType]):
 
     @property
     @abstractmethod
-    def player(self) -> Player:
+    def player(self) -> NPC:
         """Returns the player instance."""
 
     def set_client(self, client: ClientType) -> None:
@@ -79,7 +78,7 @@ class AbstractSession(ABC, Generic[ClientType]):
         self._world = world
         logger.debug("World initialized successfully.")
 
-    def set_player(self, player: Player) -> None:
+    def set_player(self, player: NPC) -> None:
         """Sets the player. Can be overridden, but is provided for local convenience."""
         self._player = player
         player.is_player = True
@@ -147,7 +146,7 @@ class Session(AbstractSession["BaseClient"]):
         return self._world
 
     @property
-    def player(self) -> Player:
+    def player(self) -> NPC:
         if self._player is None:
             raise ValueError("Player is not initialized")
         return self._player

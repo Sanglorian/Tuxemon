@@ -63,7 +63,5 @@ class ChoiceMonsterAction(EventAction):
         session.client.push_state("ChoiceMonster", menu=MenuOptions(options))
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("ChoiceMonster")
-        except ValueError:
+        if "ChoiceMonster" not in session.client.active_state_names:
             self.stop()

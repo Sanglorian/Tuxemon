@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
     from tuxemon.monster.monster import Monster
     from tuxemon.network.manager import NetworkManager
-    from tuxemon.save_state import NPCState
+    from tuxemon.save_system.save_state import NPCState
     from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -256,6 +256,5 @@ class NPCManager:
     ) -> None:
         npc.set_current_map(map_name)
         npc.cancel_path()
-        npc.set_position((x, y))
-        npc.on_tile_changed()
+        npc.complete_tile_entry((x, y))
         self.add_npc(npc)

@@ -50,6 +50,7 @@ class SetKennelVisibleAction(EventAction):
         character = session.client.get_npc(self.npc_slug)
         if character is None:
             logger.error(f"{self.npc_slug} not found")
+            self.stop()
             return
 
         kennel = self.kennel
@@ -58,6 +59,7 @@ class SetKennelVisibleAction(EventAction):
         if kennel == KENNEL:
             raise ValueError(f"{kennel} cannot be made invisible.")
         if not character.monster_boxes.has_box(kennel, "monster"):
+            self.stop()
             return
 
         try:

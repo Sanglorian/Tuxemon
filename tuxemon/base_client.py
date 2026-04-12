@@ -33,6 +33,7 @@ from tuxemon.event.running import ConditionEvaluator
 from tuxemon.map.collision_manager import CollisionManager
 from tuxemon.map.loader import MapLoader
 from tuxemon.map.manager import MapManager
+from tuxemon.map.terrain import TerrainManager
 from tuxemon.map.transition import MapTransition
 from tuxemon.map.view import AbstractRenderer, NullRenderer
 from tuxemon.menu.alert import AlertManager
@@ -158,9 +159,8 @@ class BaseClient(ABC):
         self.movement_manager = MovementManager(
             self.event_manager, self.input_manager
         )
-        self.collision_manager = CollisionManager(
-            self.map_manager, self.npc_manager
-        )
+        self.terrain_manager = TerrainManager(self.map_manager)
+        self.collision_manager = CollisionManager(self.map_manager)
         self.pathfinder = Pathfinder(
             self.npc_manager,
             self.map_manager,
@@ -334,6 +334,12 @@ class BaseClient(ABC):
         Query the state stack for a state by the name supplied.
         """
         return self.state_manager.get_queued_state_by_name(state_name)
+
+    def has_queued_state(self, state_name: str) -> bool:
+        return any(
+            s.name == state_name
+            for s in self.state_manager.state_queue.queued_states
+        )
 
     def queue_state(self, state_name: str, **kwargs: Any) -> None:
         """Queue a state"""

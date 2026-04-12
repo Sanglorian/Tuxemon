@@ -7,11 +7,11 @@ from dataclasses import dataclass
 from typing import final
 
 from tuxemon.constants.asset_loader import fetch_asset
-from tuxemon.entity.player import Player
+from tuxemon.entity.npc import NPC
 from tuxemon.event.eventaction import EventAction
 from tuxemon.platform.const.sizes import PLAYER_NPC
-from tuxemon.save_manager import SaveManager
-from tuxemon.save_slots import resolve_save_index
+from tuxemon.save_system.save_manager import SaveManager
+from tuxemon.save_system.save_slots import resolve_save_index
 from tuxemon.session import Session
 from tuxemon.states.world_state import WorldState
 
@@ -49,6 +49,7 @@ class LoadGameAction(EventAction):
 
         save_data = SaveManager.load(slot)
         if not save_data:
+            self.stop()
             return
 
         try:
@@ -63,14 +64,16 @@ class LoadGameAction(EventAction):
         npc_state = save_data.npc_state
         if npc_state is None:
             logger.error("Save data missing NPC state.")
+            self.stop()
             return
 
         slug = npc_state.player_slug or PLAYER_NPC
         npc_state.player_slug = slug
-        Player.create(session, slug=slug)
+        NPC.create_player(session, slug=slug)
 
         if npc_state.current_map is None:
             logger.error("Save data missing current map.")
+            self.stop()
             return
 
         map_path = fetch_asset("maps", npc_state.current_map)
@@ -80,6 +83,7 @@ class LoadGameAction(EventAction):
 
         if npc_state.tile_pos is None:
             logger.error("Save data missing tile position.")
+            self.stop()
             return
 
         tele_x, tele_y = npc_state.tile_pos

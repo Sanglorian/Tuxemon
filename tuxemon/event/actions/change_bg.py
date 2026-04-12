@@ -63,6 +63,7 @@ class ChangeBgAction(EventAction):
         if self.image and self.category:
             if self.category not in CATEGORIES:
                 logger.error(f"{self.category} must be among {CATEGORIES}")
+                self.stop()
                 return
             if self.category == "image":
                 self.image = CATEGORY_PATHS[self.category].format(self.image)
@@ -72,12 +73,14 @@ class ChangeBgAction(EventAction):
                 logger.error(
                     f"Image {self.image} not found in category {self.category}"
                 )
+                self.stop()
                 return
 
         if client.current_state.name != "ImageState":
             if self.background is None:
                 if client.has_extra_states():
                     client.pop_state()
+                    self.stop()
                     return
             else:
                 _background = self.background.split(":")

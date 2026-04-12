@@ -41,7 +41,12 @@ jobs:
         manifest-path: buildconfig/flatpak/org.tuxemon.Tuxemon.yaml
         cache: false
         branch: ${{ steps.flatpak_release_branch.outputs.value }}
-  
+
+    - name: Test Flatpak bundle
+      run: |
+        flatpak install --user --noninteractive Tuxemon.flatpak
+        flatpak run org.tuxemon.Tuxemon -h
+
     - name: Prepare Flatpak directory
       run: |
         mkdir -p Tuxemon-x86_64
@@ -52,3 +57,4 @@ jobs:
       with:
         name: Tuxemon-x86_64
         path: Tuxemon-x86_64/
+

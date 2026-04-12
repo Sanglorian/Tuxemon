@@ -37,6 +37,7 @@ class CharSpeedAction(EventAction):
         character = session.client.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
         if MOVERATE_RANGE[0] < self.speed < MOVERATE_RANGE[1]:
             logger.info(f"{character.name}'s moverate is {self.speed}")

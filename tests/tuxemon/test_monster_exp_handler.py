@@ -196,9 +196,3 @@ def test_excess_experience_not_maxed_out():
 
     if m.level < config_monster.level_range[1]:
         assert m.excess_experience() == 0
-
-
-def test_trigger_experience_flags_sets_both(monster):
-    monster.trigger_experience_flags()
-    assert monster.got_experience
-    assert monster.levelling_up

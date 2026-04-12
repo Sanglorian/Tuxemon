@@ -42,6 +42,7 @@ class ModifyMoneyAction(EventAction):
 
         if character is None:
             logger.error(f"Character '{self.character}' not found")
+            self.stop()
             return
 
         player = session.player

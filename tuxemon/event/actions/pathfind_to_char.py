@@ -77,6 +77,7 @@ class PathfindToCharAction(EventAction):
                 self.moving_entity.tile_pos, final_destination
             )
             self.moving_entity.set_facing(direction)
+            self.stop()
             return
 
         self.moving_entity.pathfind(final_destination)

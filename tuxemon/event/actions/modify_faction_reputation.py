@@ -39,6 +39,7 @@ class ModifyFactionReputationAction(EventAction):
         char = session.client.get_npc(self.character)
         if not char:
             logger.error(f"[Reputation] NPC '{self.character}' not found.")
+            self.stop()
             return
 
         faction_manager = session.world.faction_manager
@@ -47,6 +48,7 @@ class ModifyFactionReputationAction(EventAction):
             logger.error(
                 f"[Reputation] Faction '{self.faction_slug}' not found."
             )
+            self.stop()
             return
 
         faction.modify_reputation(char.slug, self.amount)

@@ -43,6 +43,7 @@ class TransferMoneyAction(EventAction):
         if not character1 or not character2:
             _char = self.slug1 if not character1 else self.slug2
             logger.error(f"Character not found in map: {_char}")
+            self.stop()
             return
 
         try:
@@ -51,6 +52,7 @@ class TransferMoneyAction(EventAction):
             )
         except ValueError as e:
             logger.error(str(e))
+            self.stop()
             return
 
         logger.debug(

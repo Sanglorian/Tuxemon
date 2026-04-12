@@ -51,6 +51,7 @@ class CharLookAction(EventAction):
 
         if not character:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         self.limit_direction: list[Direction] = []
@@ -65,6 +66,7 @@ class CharLookAction(EventAction):
                 state_name in ("WorldMenuState", "DialogState", "ChoiceState")
                 for state_name in session.client.active_state_names
             ):
+                self.stop()
                 return
 
             # Choose a random direction

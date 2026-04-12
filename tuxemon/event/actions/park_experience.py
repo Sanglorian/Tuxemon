@@ -50,10 +50,7 @@ class ParkExperienceAction(EventAction):
 
     def update(self, session: Session, dt: float) -> None:
         if self.option == "stop":
-            try:
-                session.client.get_state_by_name("ParkState")
-            except ValueError:
-                session.client.park_session.reset_session()
+            if "ParkState" not in session.client.active_state_names:
                 self.stop()
         else:
             self.stop()

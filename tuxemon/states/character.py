@@ -2,7 +2,6 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
@@ -197,7 +196,7 @@ class CharacterState(PygameMenuState):
         )
         lab8.translate(fxw(0.45), fxh(0.10))
         # image
-        surface = self.char.combat_sheet().front()
+        surface = self.char.combat_sheet.front()
         scaled = scale_surface(surface, self.factor)
         new_image = self._create_image_from_surface(scaled)
         image_widget = menu.add.image(image_path=new_image.copy())

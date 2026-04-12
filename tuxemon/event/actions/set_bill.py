@@ -57,6 +57,7 @@ class SetBillAction(EventAction):
 
         if character is None:
             logger.error(f"Character '{self.character}' not found.")
+            self.stop()
             return
 
         if not T.has_translation("en_US", self.bill_slug):

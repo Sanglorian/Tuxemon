@@ -14,13 +14,13 @@ from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.menu import Menu
 
 from tuxemon.database.runtime import db
-from tuxemon.entity.player import Player
+from tuxemon.entity.npc import NPC
 from tuxemon.launcher import GameLauncher
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_START_SCREEN, BLACK_COLOR
 from tuxemon.platform.const.sizes import PLAYER_NPC
-from tuxemon.save import get_index_of_latest_save
+from tuxemon.save_system.save import get_index_of_latest_save
 from tuxemon.session import local_session
 from tuxemon.state.state import State
 
@@ -169,7 +169,7 @@ class StartState(PygameMenuState):
         super().shutdown()
 
     def start_battle(self, difficulty: str) -> None:
-        Player.create(local_session, slug=PLAYER_NPC)
+        NPC.create_player(local_session, slug=PLAYER_NPC)
         self.client.push_state(
             "WorldState", session=local_session, map_name=None
         )

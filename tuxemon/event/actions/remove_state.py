@@ -54,6 +54,7 @@ class RemoveStateAction(EventAction):
         else:
             if state_name not in client.active_state_names:
                 logger.error(f"{state_name} isn't active.")
+                self.stop()
                 return
             client.remove_state_by_name(state_name)
             logger.info(f"{state_name} is removed.")

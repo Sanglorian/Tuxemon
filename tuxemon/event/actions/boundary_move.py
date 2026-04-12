@@ -41,6 +41,7 @@ class BoundaryMoveAction(EventAction):
             logger.error(
                 f"Boundary '{self.boundary_name}' not found. Cannot move."
             )
+            self.stop()
             return
 
         parts = self.values.split(":")
@@ -48,6 +49,7 @@ class BoundaryMoveAction(EventAction):
             logger.warning(
                 f"BoundaryMoveAction requires 2 values (dx:dy), got {len(parts)}."
             )
+            self.stop()
             return
 
         try:
@@ -56,6 +58,7 @@ class BoundaryMoveAction(EventAction):
             logger.warning(
                 f"Invalid numeric values in boundary_move: {self.values}"
             )
+            self.stop()
             return
 
         try:

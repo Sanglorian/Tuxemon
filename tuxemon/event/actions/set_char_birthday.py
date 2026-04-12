@@ -47,11 +47,13 @@ class SetPlayerBirthdayAction(EventAction):
 
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         if self.random is not None:
             birthdate = random_month_day()
             self.set_birthday(character, birthdate)
+            self.stop()
             self.stop()
             return
 
@@ -62,7 +64,5 @@ class SetPlayerBirthdayAction(EventAction):
         )
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("DatePickerState")
-        except ValueError:
+        if "DatePickerState" not in session.client.active_state_names:
             self.stop()

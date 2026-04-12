@@ -76,6 +76,7 @@ class QuarantineAction(EventAction):
 
         if not boxes.has_box(self.name, "monster"):
             logger.info(f"Box {self.name} does not exist")
+            self.stop()
             return
 
         box_monsters = [
@@ -86,6 +87,7 @@ class QuarantineAction(EventAction):
 
         if not box_monsters:
             logger.info(f"Box {self.name} is empty")
+            self.stop()
             return
 
         if self.amount is None or self.amount >= len(box_monsters):
@@ -107,6 +109,7 @@ class QuarantineAction(EventAction):
         character = session.client.get_npc(self.npc_slug)
         if character is None:
             logger.error(f"{self.npc_slug} not found")
+            self.stop()
             return
 
         if self.action_type == "in":

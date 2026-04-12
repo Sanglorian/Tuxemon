@@ -41,6 +41,7 @@ class SetEnvironmentAction(EventAction):
         if self.slug is None:
             session.client.environment_manager.unload_environment()
             logger.info("Environment unloaded via event action.")
+            self.stop()
             return
 
         success = session.client.environment_manager.load_environment(
@@ -50,5 +51,6 @@ class SetEnvironmentAction(EventAction):
             logger.info(f"Environment '{self.slug}' successfully loaded.")
         else:
             if session.client.environment_manager.is_locked():
+                self.stop()
                 return
             logger.error(f"Failed to load environment '{self.slug}'.")

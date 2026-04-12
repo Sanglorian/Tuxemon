@@ -58,6 +58,7 @@ class WildEncounterAction(EventAction):
 
         if not check_battle_legal(player):
             logger.warning("battle is not legal, won't start")
+            self.stop()
             return
 
         logger.info("Starting wild encounter!")
@@ -73,6 +74,7 @@ class WildEncounterAction(EventAction):
             item = Item.create(self.held_item)
             output = current_monster.equip_item(item)
             if not output:
+                self.stop()
                 return
         current_monster.wild = True
 
@@ -82,6 +84,7 @@ class WildEncounterAction(EventAction):
         npc = session.client.get_npc(self.name)
         if npc is None:
             logger.error(f"{self.name} not found")
+            self.stop()
             return
 
         npc.party.insert_monster_to_party(current_monster, len(npc.monsters))
@@ -93,6 +96,7 @@ class WildEncounterAction(EventAction):
             logger.error(
                 "No environment defined. Use 'set_environment' before starting combat."
             )
+            self.stop()
             return
 
         context = CombatContext(
@@ -114,14 +118,12 @@ class WildEncounterAction(EventAction):
             session.client.current_music.play(sound.music, sound.volume)
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_queued_state_by_name("CombatState")
-        except ValueError:
-            try:
-                session.client.get_state_by_name("CombatState")
-            except ValueError:
-                self.stop()
+        client = session.client
+        if (
+            "CombatState" not in client.active_state_names
+            and not client.has_queued_state("CombatState")
+        ):
+            self.stop()
 
     def cleanup(self, session: Session) -> None:
-        npc = None
         session.client.npc_manager.remove_npc(self.name)

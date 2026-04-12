@@ -46,10 +46,12 @@ class WithdrawMonsterAction(EventAction):
             logger.info(
                 f"No valid monster selected for variable '{self.variable}'"
             )
+            self.stop()
             return  # Exit early if no valid UUID
         monster = player.monster_boxes.get_monsters_by_iid(monster_id)
         if monster is None:
             logger.error("Monster not found")
+            self.stop()
             return
 
         player.monster_boxes.remove_from_box("monster", None, monster)
@@ -57,6 +59,7 @@ class WithdrawMonsterAction(EventAction):
         character = session.client.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         if character.party.transfer_monster_to_party(monster):

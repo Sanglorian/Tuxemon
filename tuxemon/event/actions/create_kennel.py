@@ -54,6 +54,7 @@ class CreateKennelAction(EventAction):
         character = session.client.get_npc(self.npc_slug)
         if character is None:
             logger.error(f"{self.npc_slug} not found")
+            self.stop()
             return
 
         if not character.monster_boxes.has_box(self.kennel, "monster"):

@@ -143,6 +143,11 @@ class AbstractMap(ABC):
         """Append new init events to the existing inits list."""
 
     @abstractmethod
+    def remove_init(self, event: EventObject) -> None: ...
+
+    @abstractmethod
+    def remove_event(self, event: EventObject) -> None: ...
+    @abstractmethod
     def clear_events(self) -> None: ...
 
     @abstractmethod
@@ -317,6 +322,12 @@ class TuxemonMap(AbstractMap):
     def add_inits(self, new_inits: Sequence[EventObject]) -> None:
         self._inits.extend(new_inits)
 
+    def remove_init(self, event: EventObject) -> None:
+        self._inits.remove(event)
+
+    def remove_event(self, event: EventObject) -> None:
+        self._events.remove(event)
+
     def clear_events(self) -> None:
         self._events.clear()
 
@@ -443,8 +454,14 @@ class NullMap(AbstractMap):
     def add_inits(self, new_inits: Sequence[EventObject]) -> None:
         self._inits.extend(new_inits)
 
+    def remove_init(self, event: EventObject) -> None:
+        self._inits.remove(event)
+
+    def remove_event(self, event: EventObject) -> None:
+        self._events.remove(event)
+
     def clear_events(self) -> None:
-        self._events = []
+        self._events.clear()
 
     def clear_inits(self) -> None:
-        self._inits = []
+        self._inits.clear()

@@ -43,6 +43,7 @@ class SetMonsterLevelAction(EventAction):
         player = session.player
         trigger_ui = parse_flag(self.trigger_ui)
         if not player.monsters:
+            self.stop()
             return
 
         if self.levels_added is None:
@@ -56,10 +57,12 @@ class SetMonsterLevelAction(EventAction):
                 logger.info(
                     f"No valid monster selected for variable '{self.variable}'"
                 )
+                self.stop()
                 return
             monster = session.client.get_monster_by_iid(monster_id)
             if monster is None:
                 logger.error("Monster not found")
+                self.stop()
                 return
             monsters_to_update.append(monster)
         else:
@@ -84,7 +87,5 @@ class SetMonsterLevelAction(EventAction):
     def update(self, session: Session, dt: float) -> None:
         trigger_ui = parse_flag(self.trigger_ui)
         if trigger_ui:
-            try:
-                session.client.get_state_by_name("LevelUpSummaryState")
-            except ValueError:
+            if "LevelUpSummaryState" not in session.client.active_state_names:
                 self.stop()

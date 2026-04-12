@@ -46,6 +46,7 @@ class SetAppearanceLayerAction(EventAction):
         target = session.client.get_npc(self.character)
         if not target:
             logger.error(f"NPC {self.character} not found")
+            self.stop()
             return
 
         if self.layer not in (
@@ -55,6 +56,7 @@ class SetAppearanceLayerAction(EventAction):
             "combat_sheet",
         ):
             logger.error(f"Invalid appearance layer '{self.layer}'")
+            self.stop()
             return
 
         setattr(target.appearance_manager.state, self.layer, self.value)

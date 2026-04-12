@@ -51,11 +51,13 @@ class TradingAction(EventAction):
             logger.info(
                 f"No valid monster selected for variable '{self.variable}'"
             )
+            self.stop()
             return  # Exit early if no valid UUID
 
         player_monster = session.client.get_monster_by_iid(player_monster_id)
         if player_monster is None:
             logger.error("Player's monster not found.")
+            self.stop()
             return
 
         if self.added in db.database["monster"]:
@@ -82,11 +84,13 @@ class TradingAction(EventAction):
                 logger.info(
                     f"No valid monster selected for variable '{self.added}'"
                 )
+                self.stop()
                 return  # Exit early if no valid UUID
 
             other_monster = session.client.get_monster_by_iid(other_monster_id)
             if other_monster is None:
                 logger.error("Other monster not found.")
+                self.stop()
                 return
 
             result = session.client.trade_manager.execute_trade(

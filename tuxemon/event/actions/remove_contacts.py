@@ -36,12 +36,14 @@ class RemoveContactsAction(EventAction):
         character = session.client.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         relationships = character.relationships
         contact = relationships.get_connection(self.slug)
         if contact is None:
             logger.error("Nothing to remove")
+            self.stop()
             return
         else:
             relationships.remove_connection(self.slug)

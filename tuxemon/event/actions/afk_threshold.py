@@ -41,6 +41,7 @@ class AFKThresholdAction(EventAction):
         if self.action == "add":
             if self.duration is None:
                 logger.error("Add threshold requires a duration")
+                self.stop()
                 return
             afk.add_threshold(self.level, self.duration)
             logger.info(
@@ -53,6 +54,7 @@ class AFKThresholdAction(EventAction):
         elif self.action == "modify":
             if self.duration is None:
                 logger.error("Modify threshold requires a duration")
+                self.stop()
                 return
             success = afk.modify_threshold(self.level, self.duration)
             if success:

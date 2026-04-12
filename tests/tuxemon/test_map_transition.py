@@ -43,8 +43,7 @@ def test_change_map(deps, transition):
     deps["map_loader"].load_map_data.return_value = map_data
     transition.change_map("test_map")
     deps["map_loader"].load_map_data.assert_called_once_with("test_map")
-    deps["event_engine"].reset.assert_called_once()
-    deps["event_engine"].set_current_map.assert_called_once_with(map_data)
+    deps["event_engine"].reset.assert_called_once_with(map_data)
     deps["map_manager"].load_map.assert_called_once_with(map_data)
     deps["npc_manager"].clear_npcs.assert_called_once()
     deps["boundary"].set_rectangular_boundary.assert_called_once()
@@ -69,8 +68,7 @@ def test_update_boundaries_parametrized(deps, transition, size):
 def test_reset_events(deps, transition):
     map_data = MagicMock()
     transition._reset_events(map_data)
-    deps["event_engine"].reset.assert_called_once()
-    deps["event_engine"].set_current_map.assert_called_once_with(map_data)
+    deps["event_engine"].reset.assert_called_once_with(map_data)
 
 
 def test_update_map_state(deps, transition):

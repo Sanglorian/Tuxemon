@@ -249,6 +249,12 @@ class BaseLookupModel(ABC):
         pass
 
 
+class DataModel(BaseModel):
+    """Marker base class for models that belong in the database."""
+
+    slug: str
+
+
 class ColorModel(BaseModel):
     red: int = Field(..., ge=0, le=255)
     green: int = Field(..., ge=0, le=255)
@@ -430,6 +436,54 @@ class PartyConditionsModel(BaseModel):
         None,
         description="The elemental alignment the party must lean toward for evolution to occur.",
     )
+    party_size: int | None = Field(
+        None,
+        ge=1,
+        le=sizes.PARTY_LIMIT,
+        description="Required number of monsters in the party.",
+    )
+    party_level: int | None = Field(
+        None,
+        ge=1,
+        description="Minimum average level of monsters in the party.",
+    )
+    party_stages: dict[str, int] | None = Field(
+        None,
+        description="Required evolution stages and their minimum counts (e.g. {'stage2': 2}).",
+    )
+
+    @model_validator(mode="after")
+    def at_least_one_condition(self) -> PartyConditionsModel:
+        if not any(
+            [
+                self.monster_slugs,
+                self.monster_types,
+                self.genders,
+                self.alignment,
+                self.party_size,
+                self.party_level,
+                self.party_stages,
+            ]
+        ):
+            raise ValueError("At least one party condition must be specified.")
+        return self
+
+    @field_validator("party_stages")
+    def validate_party_stages(
+        cls, v: dict[str, int] | None
+    ) -> dict[str, int] | None:
+        if v:
+            valid_stages = {stage.value for stage in EvolutionStage}
+            for stage, count in v.items():
+                if stage not in valid_stages:
+                    raise ValueError(
+                        f"Evolution stage '{stage}' is not valid. Must be one of {valid_stages}."
+                    )
+                if not (1 <= count < sizes.PARTY_LIMIT):
+                    raise ValueError(
+                        f"Count for stage '{stage}' must be between 1 and {sizes.PARTY_LIMIT - 1}."
+                    )
+        return v
 
     @field_validator("monster_slugs")
     def validate_monster_slugs(
@@ -441,9 +495,9 @@ class PartyConditionsModel(BaseModel):
                     raise ValueError(
                         f"Monster slug '{slug}' does not exist in the database."
                     )
-                if not (0 <= count < sizes.PARTY_LIMIT):
+                if not (1 <= count < sizes.PARTY_LIMIT):
                     raise ValueError(
-                        f"Count for monster slug '{slug}' must be between 0 and {sizes.PARTY_LIMIT - 1}."
+                        f"Count for monster slug '{slug}' must be between 1 and {sizes.PARTY_LIMIT - 1}."
                     )
         return v
 
@@ -453,9 +507,13 @@ class PartyConditionsModel(BaseModel):
     ) -> dict[str, int] | None:
         if v:
             for type_, count in v.items():
-                if not (0 <= count < sizes.PARTY_LIMIT):
+                if not has.db_entry("element", type_):
                     raise ValueError(
-                        f"Count for monster type '{type_}' must be between 0 and {sizes.PARTY_LIMIT - 1}."
+                        f"Monster type '{type_}' does not exist in the database."
+                    )
+                if not (1 <= count < sizes.PARTY_LIMIT):
+                    raise ValueError(
+                        f"Count for monster type '{type_}' must be between 1 and {sizes.PARTY_LIMIT - 1}."
                     )
         return v
 
@@ -465,11 +523,17 @@ class PartyConditionsModel(BaseModel):
     ) -> dict[GenderType, int] | None:
         if v:
             for gender, count in v.items():
-                if not (0 <= count < sizes.PARTY_LIMIT):
+                if not (1 <= count < sizes.PARTY_LIMIT):
                     raise ValueError(
-                        f"Count for gender '{gender}' must be between 0 and {sizes.PARTY_LIMIT - 1}."
+                        f"Count for gender '{gender}' must be between 1 and {sizes.PARTY_LIMIT - 1}."
                     )
         return v
+
+    @field_validator("alignment")
+    def validate_alignment(cls, v: str | None) -> str | None:
+        if not v or has.db_entry("element", v):
+            return v
+        raise ValueError(f"Alignment '{v}' does not exist in the database.")
 
 
 class Behaviors(BaseModel):
@@ -632,7 +696,7 @@ class DynamicMenuEntry(BaseModel):
     enabled: bool = True
 
 
-class ItemModel(BaseModel, BaseLookupModel):
+class ItemModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "item"
     model_config = ConfigDict(title="Item")
     slug: str = Field(..., description="The slug of the item")
@@ -805,7 +869,7 @@ class AttributesModel(BaseModel):
     speed: int = Field(..., description="Speed value")
 
 
-class ShapeModel(BaseModel, BaseLookupModel):
+class ShapeModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "shape"
     slug: str = Field(
         ..., description="Slug of the shape, used as a unique identifier."
@@ -903,7 +967,7 @@ class MonsterEvolutionItemModel(BaseModel):
     at_level: int | None = Field(
         None,
         description="The level at which the monster evolves.",
-        ge=0,
+        ge=1,
     )
     element: str | None = Field(
         None,
@@ -932,7 +996,6 @@ class MonsterEvolutionItemModel(BaseModel):
     variables: Sequence[GameCondition] = Field(
         default_factory=list,
         description="The game variables that must exist and match a specific value for the monster to evolve.",
-        min_length=1,
     )
     stats: StatsComparison | None = Field(
         None,
@@ -946,6 +1009,7 @@ class MonsterEvolutionItemModel(BaseModel):
     steps: int | None = Field(
         None,
         description="The minimum number of steps the monster must have walked to evolve.",
+        ge=1,
     )
     tech: str | None = Field(
         None,
@@ -970,6 +1034,8 @@ class MonsterEvolutionItemModel(BaseModel):
     probability: float | None = Field(
         None,
         description="Chance (0.0 to 1.0) that this evolution occurs when conditions are met.",
+        ge=0.0,
+        le=1.0,
     )
     held_item: str | None = Field(
         None, description="Item slug the monster must be holding to evolve."
@@ -980,19 +1046,14 @@ class MonsterEvolutionItemModel(BaseModel):
     )
 
     @field_validator("moves")
-    def move_exists(cls, v: Sequence[str]) -> Sequence[str]:
-        if v:
-            for element in v:
-                if not has.db_entry("technique", element):
-                    raise ValueError(
-                        f"A technique {element} doesn't exist in the db"
-                    )
-        return v
-
-    @field_validator("moves")
     def validate_moves(cls, v: Sequence[str]) -> Sequence[str]:
         if not v:
-            raise ValueError(f"Moves must contain at least 1 technique")
+            raise ValueError("Moves must contain at least 1 technique.")
+        for slug in v:
+            if not has.db_entry("technique", slug):
+                raise ValueError(
+                    f"the technique '{slug}' doesn't exist in the db."
+                )
         return v
 
     @field_validator("tech")
@@ -1009,7 +1070,7 @@ class MonsterEvolutionItemModel(BaseModel):
             for taste_value in v.values():
                 if not has.db_entry("taste", taste_value):
                     raise ValueError(
-                        f"The taste '{taste_value}' does not exist in the database."
+                        f"the taste '{taste_value}' does not exist in the database."
                     )
         return v
 
@@ -1036,7 +1097,7 @@ class MonsterEvolutionItemModel(BaseModel):
         for item_slug, weight in v.items():
             if not has.db_entry("item", item_slug):
                 raise ValueError(
-                    f"The item '{item_slug}' doesn't exist in the database."
+                    f"The item '{item_slug}' does not exist in the database."
                 )
             if weight < 0.0:
                 raise ValueError(
@@ -1052,6 +1113,7 @@ class MonsterEvolutionItemModel(BaseModel):
         normalized = {
             slug: weight / total_weight for slug, weight in v.items()
         }
+        logger.debug(f"Item weights normalized: {normalized}")
         return normalized
 
     @field_validator("held_item")
@@ -1061,7 +1123,7 @@ class MonsterEvolutionItemModel(BaseModel):
         raise ValueError(f"the held item {v} doesn't exist in the db")
 
 
-class FlairModel(BaseModel, BaseLookupModel):
+class FlairModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "flair"
 
     slug: str = Field(..., description="The unique name of the flair.")
@@ -1150,7 +1212,7 @@ class MonsterSoundsModel(BaseModel):
     )
 
 
-class MonsterModel(BaseModel, BaseLookupModel, validate_assignment=True):
+class MonsterModel(DataModel, BaseLookupModel, validate_assignment=True):
     table_name: ClassVar[str] = "monster"
     slug: str = Field(..., description="The slug of the monster")
     species: str = Field(..., description="The species of monster")
@@ -1523,7 +1585,7 @@ class TargetModel(BaseModel):
         return v
 
 
-class TechniqueModel(BaseModel, BaseLookupModel):
+class TechniqueModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "technique"
     slug: str = Field(..., description="The slug of the technique")
     sort: TechSort = Field(..., description="The sort of technique this is")
@@ -1687,7 +1749,7 @@ class StepEffectType(str, Enum):
     PERCENT_CURRENT_HP_HEAL = "percent_current_hp_heal"
 
 
-class StatusModel(BaseModel, BaseLookupModel):
+class StatusModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "status"
     slug: str = Field(..., description="The slug of the status")
     sort: TechSort = Field(..., description="The sort of status this is")
@@ -1837,7 +1899,7 @@ class BagItemModel(BaseModel):
         raise ValueError(f"the item {v} doesn't exist in the db")
 
 
-class TemplateModel(BaseModel):
+class TemplateModel(DataModel):
     slug: str = Field(
         ..., description="Slug uniquely identifying the template"
     )
@@ -2004,7 +2066,7 @@ class NpcAudioModel(BaseModel):
     )
 
 
-class NpcModel(BaseModel, BaseLookupModel):
+class NpcModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "npc"
     slug: str = Field(..., description="Slug of the name of the NPC")
     birthdate: tuple[int, int] | None = Field(
@@ -2226,7 +2288,7 @@ class BattleMusicModel(BaseModel):
     )
 
 
-class EnvironmentModel(BaseModel, BaseLookupModel):
+class EnvironmentModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "environment"
     slug: str = Field(..., description="Slug of the name of the environment")
     battle_graphics: BattleGraphicsModel
@@ -2451,7 +2513,7 @@ class EncounterType(str, Enum):
     HORDE = "horde"
 
 
-class EncounterModel(BaseModel, BaseLookupModel):
+class EncounterModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "encounter"
     slug: str = Field(
         ..., description="Slug to uniquely identify this encounter"
@@ -2574,7 +2636,7 @@ class EncounterModel(BaseModel, BaseLookupModel):
         return self
 
 
-class DialogueModel(BaseModel, BaseLookupModel):
+class DialogueModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "dialogue"
     slug: str = Field(
         ..., description="Slug to uniquely identify this dialogue"
@@ -2613,7 +2675,7 @@ class ElementItemModel(BaseModel):
         raise ValueError(f"the element {v} doesn't exist in the db")
 
 
-class ElementModel(BaseModel, BaseLookupModel):
+class ElementModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "element"
     slug: str = Field(..., description="Slug uniquely identifying the type")
     icon: str = Field(..., description="The icon to use for the type")
@@ -2652,7 +2714,7 @@ class ElementModel(BaseModel, BaseLookupModel):
         raise ValueError(f"the icon {v} doesn't exist in the db")
 
 
-class TasteModel(BaseModel, BaseLookupModel):
+class TasteModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "taste"
     slug: str = Field(..., description="Slug of the taste")
     name: str = Field(..., description="Name of the taste")
@@ -2722,7 +2784,7 @@ class EconomyMonsterModel(EconomyEntityModel):
         )
 
 
-class EconomyModel(BaseModel, BaseLookupModel):
+class EconomyModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "economy"
     slug: str = Field(..., description="Slug uniquely identifying the economy")
     resale_multiplier: float = Field(..., description="Resale multiplier")
@@ -2790,7 +2852,7 @@ class RankStep(BaseModel):
     requirement: RankRequirement | None = None
 
 
-class FactionModel(BaseModel, BaseLookupModel):
+class FactionModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "faction"
 
     slug: str = Field(..., description="Unique ID of the faction")
@@ -2941,7 +3003,7 @@ class MissionStepModel(BaseModel):
     )
 
 
-class MissionModel(BaseModel, BaseLookupModel):
+class MissionModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "mission"
 
     slug: str = Field(..., description="Slug uniquely identifying the mission")
@@ -3019,7 +3081,7 @@ class MissionModel(BaseModel, BaseLookupModel):
         return v
 
 
-class MusicModel(BaseModel):
+class MusicModel(DataModel):
     slug: str = Field(..., description="Unique slug for the music")
     file: str = Field(..., description="File for the music")
 
@@ -3031,7 +3093,7 @@ class MusicModel(BaseModel):
         raise ValueError(f"the music {v} doesn't exist in the db")
 
 
-class SoundModel(BaseModel):
+class SoundModel(DataModel):
     slug: str = Field(..., description="Unique slug for the sound")
     file: str = Field(..., description="File for the sound")
 
@@ -3043,7 +3105,7 @@ class SoundModel(BaseModel):
         raise ValueError(f"the sound {v} doesn't exist in the db")
 
 
-class AnimationModel(BaseModel, BaseLookupModel):
+class AnimationModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "animation"
     slug: str = Field(..., description="Unique slug for the animation")
     file: str = Field(..., description="File of the animation")
@@ -3095,7 +3157,7 @@ class AnimationModel(BaseModel, BaseLookupModel):
         return v
 
 
-class TerrainModel(BaseModel, BaseLookupModel):
+class TerrainModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "terrain"
     slug: str = Field(..., description="Slug of the terrain")
     name: str = Field(..., description="Name of the terrain condition")
@@ -3116,7 +3178,7 @@ class TerrainModel(BaseModel, BaseLookupModel):
         raise ValueError(f"no translation exists with msgid: {v}")
 
 
-class WeatherModel(BaseModel, BaseLookupModel):
+class WeatherModel(DataModel, BaseLookupModel):
     table_name: ClassVar[str] = "weather"
     slug: str = Field(..., description="Slug of the weather")
     name: str = Field(..., description="Name of the weather condition")
@@ -3143,31 +3205,6 @@ class WeatherModel(BaseModel, BaseLookupModel):
         if has.translation(v):
             return v
         raise ValueError(f"no translation exists with msgid: {v}")
-
-
-DataModel = (
-    EconomyModel
-    | ElementModel
-    | TasteModel
-    | ShapeModel
-    | TerrainModel
-    | WeatherModel
-    | TemplateModel
-    | MissionModel
-    | EncounterModel
-    | DialogueModel
-    | EnvironmentModel
-    | ItemModel
-    | MonsterModel
-    | FlairModel
-    | MusicModel
-    | AnimationModel
-    | NpcModel
-    | SoundModel
-    | StatusModel
-    | TechniqueModel
-    | FactionModel
-)
 
 
 def load_model_map(

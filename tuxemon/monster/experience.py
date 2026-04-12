@@ -209,11 +209,6 @@ class MonsterExperience:
             return 0
         return self._total_experience - self.experience_required()
 
-    def trigger_experience_flags(self) -> None:
-        """Sets the flags to indicate experience gain and level-up activity."""
-        self.got_experience = True
-        self.levelling_up = True
-
     def reset_status_flags(self) -> None:
         """Resets the temporary flags used to signal experience/level activity."""
         self.got_experience = False

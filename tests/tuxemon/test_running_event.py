@@ -341,3 +341,118 @@ def test_running_event_reset(simple_event):
     assert running.elapsed_time == 0.0
     assert running.state == EventState.WAITING
     assert running.context == {}
+
+
+def test_advance_does_not_complete_prematurely(simple_event, expanded_actions):
+    event = RunningEvent(simple_event, expanded_actions)
+    event.running()
+    event.advance()
+    event.advance()
+    event.advance()
+    assert event.state == EventState.RUNNING
+    assert event.action_index == 3
+
+
+def test_get_next_action_returns_none_when_index_exhausted(
+    simple_event, expanded_actions
+):
+    event = RunningEvent(simple_event, expanded_actions)
+    event.action_index = len(expanded_actions)
+    assert event.get_next_action() is None
+    assert event.state != EventState.COMPLETED
+
+
+def test_step_returns_false_when_completed(simple_event, expanded_actions):
+    event = RunningEvent(simple_event, expanded_actions)
+    event.complete()
+    result = event.step(Mock(), Mock(), 0.1)
+    assert result is False
+
+
+def test_step_returns_false_when_cancelled(simple_event, expanded_actions):
+    event = RunningEvent(simple_event, expanded_actions)
+    event.cancel()
+    result = event.step(Mock(), Mock(), 0.1)
+    assert result is False
+
+
+def test_step_delegates_to_process_when_running(simple_event):
+    simple_event.delay = None
+    simple_event.timeout = None
+    running = RunningEvent(simple_event, [Mock()])
+    session = Mock()
+    action_manager = Mock()
+    long_action = Mock(done=False, cancelled=False)
+    action_manager.get_action.return_value = long_action
+    running.running()
+    result = running.step(session, action_manager, 0.1)
+    assert result is True
+
+
+def test_is_alive(simple_event, expanded_actions):
+    event = RunningEvent(simple_event, expanded_actions)
+    assert event.is_alive()
+    event.complete()
+    assert not event.is_alive()
+
+
+def test_is_alive_false_when_cancelled(simple_event, expanded_actions):
+    event = RunningEvent(simple_event, expanded_actions)
+    event.cancel()
+    assert not event.is_alive()
+
+
+def test_action_budget_yields_instead_of_spinning(simple_event):
+    simple_event.delay = None
+    simple_event.timeout = None
+
+    n = 5
+    rules = [Mock() for _ in range(n)]
+    running = RunningEvent(simple_event, rules)
+    session = Mock()
+    action_manager = Mock()
+
+    def self_cancelling(*args, **kwargs):
+        return Mock(done=False, cancelled=True)
+
+    action_manager.get_action.side_effect = self_cancelling
+
+    result = running.process(session, action_manager, 0.1)
+
+    assert result is False
+    assert running.state == EventState.COMPLETED
+    assert running.action_index == n
+
+
+def test_cancel_mid_sequence_continues_to_next_action(simple_event):
+    simple_event.delay = None
+    simple_event.timeout = None
+    rule1 = Mock()
+    rule2 = Mock()
+    running = RunningEvent(simple_event, [rule1, rule2])
+    session = Mock()
+    action_manager = Mock()
+
+    cancelled_action = Mock(done=False, cancelled=False)
+    long_action = Mock(done=False, cancelled=False)
+    action_manager.get_action.side_effect = [cancelled_action, long_action]
+
+    result = running.process(session, action_manager, 0.1)
+    assert result is True
+    assert running.current_action is cancelled_action
+
+    cancelled_action.cancelled = True
+
+    result = running.process(session, action_manager, 0.1)
+    assert result is True
+    assert running.current_action is long_action
+    assert running.state != EventState.COMPLETED
+
+
+def test_repr(simple_event, expanded_actions):
+    event = RunningEvent(simple_event, expanded_actions)
+    event.running()
+    r = repr(event)
+    assert "RunningEvent" in r
+    assert str(simple_event.id) in r
+    assert "RUNNING" in r

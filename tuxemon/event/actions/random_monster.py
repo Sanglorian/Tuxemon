@@ -65,6 +65,7 @@ class RandomMonsterAction(EventAction):
 
         if not filters:
             logger.error("No valid monsters found for the given criteria.")
+            self.stop()
             return
 
         monster_slug = random.choice(filters)

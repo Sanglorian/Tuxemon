@@ -47,6 +47,7 @@ class AddStepTrackerAction(EventAction):
         character = session.client.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         steps = round(character.steps)

@@ -35,6 +35,7 @@ class SetMissionAction(EventAction):
         character = session.client.get_npc(self.character)
         if character is None:
             logger.error(f"Character '{self.character}' not found.")
+            self.stop()
             return
 
         missions = (
@@ -42,6 +43,7 @@ class SetMissionAction(EventAction):
         )
         if not missions:
             logger.info(f"No missions met prerequisites for {self.character}.")
+            self.stop()
             return
 
         for mission in missions:

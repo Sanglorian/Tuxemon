@@ -64,6 +64,7 @@ class SpawnMonsterAction(EventAction):
             logger.info(
                 f"No valid monster selected for variable(s): {', '.join(missing)}"
             )
+            self.stop()
             return  # Exit early if either UUID is invalid
 
         mother = session.client.get_monster_by_iid(
@@ -71,6 +72,7 @@ class SpawnMonsterAction(EventAction):
         ) or player.monster_boxes.get_monsters_by_iid(mother_id)
         if mother is None:
             logger.error(f"Mother {mother_id} not found.")
+            self.stop()
             return
 
         father = session.client.get_monster_by_iid(
@@ -78,6 +80,7 @@ class SpawnMonsterAction(EventAction):
         ) or player.monster_boxes.get_monsters_by_iid(father_id)
         if father is None:
             logger.error(f"Father {father_id} not found.")
+            self.stop()
             return
 
         # Determine the seed monster based on the types of the mother and father
@@ -128,6 +131,7 @@ class SpawnMonsterAction(EventAction):
         character = session.client.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
         character.party.add_monster(child, len(character.monsters))
 
@@ -136,9 +140,7 @@ class SpawnMonsterAction(EventAction):
         open_dialog(session.client, [msg], dialog_speed="max")
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("DialogState")
-        except ValueError:
+        if "DialogState" not in session.client.active_state_names:
             self.stop()
 
 

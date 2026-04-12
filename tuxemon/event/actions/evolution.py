@@ -47,11 +47,13 @@ class EvolutionAction(EventAction):
 
         if character is None:
             logger.error(f"{self.npc_slug} not found")
+            self.stop()
             return
 
         self.char = character
 
         if self.client.has_extra_states():
+            self.stop()
             return
 
         self._pending_map: dict[UUID, str] = {}
@@ -70,18 +72,21 @@ class EvolutionAction(EventAction):
         monster_id = get_valid_uuid(self.char.game_variables, variable)
         if monster_id is None:
             logger.info(f"No valid monster selected for variable '{variable}'")
+            self.stop()
             return  # Exit early if no valid UUID
 
         monster = self.client.get_monster_by_iid(monster_id)
 
         if monster is None:
             logger.error(f"Monster '{monster_id}' doesn't exist.")
+            self.stop()
             return
 
         if not monster.evolution_handler.is_valid_evolution_target(evolution):
             logger.error(
                 f"Monster '{evolution}' isn't in the evolutionary path."
             )
+            self.stop()
             return
 
         evolved = Monster.spawn_base(evolution, monster.level)
@@ -94,6 +99,7 @@ class EvolutionAction(EventAction):
         """Process pending evolutions for the character."""
         candidates = [m for m in self.char.monsters if m.waiting_to_evolve]
         if not candidates:
+            self.stop()
             return
 
         monster = candidates[0]
@@ -102,6 +108,7 @@ class EvolutionAction(EventAction):
 
         if not slug:
             monster.waiting_to_evolve = False
+            self.stop()
             return
 
         registry = self.char.evolution_registry
@@ -118,7 +125,5 @@ class EvolutionAction(EventAction):
         )
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("EvolutionState")
-        except ValueError:
+        if "EvolutionState" not in session.client.active_state_names:
             self.stop()

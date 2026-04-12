@@ -45,10 +45,12 @@ class AddTrackerAction(EventAction):
         character = session.client.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         if not T.has_translation("en_US", f"{self.location.lower()}"):
             logger.error(f"Add msgid '{self.location}' in the 'en_US' base.po")
+            self.stop()
             return
 
         visited = True if self.visited is None else parse_flag(self.visited)

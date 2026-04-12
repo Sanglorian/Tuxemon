@@ -11,7 +11,7 @@ from tuxemon.battle import Battle, decode_battle, encode_battle
 from tuxemon.db import OutputBattle
 
 if TYPE_CHECKING:
-    from tuxemon.save_state import NPCState
+    from tuxemon.save_system.save_state import NPCState
 
 logger = logging.getLogger(__name__)
 

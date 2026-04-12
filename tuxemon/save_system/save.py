@@ -19,8 +19,8 @@ from pygame.surface import Surface
 
 from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import dump_yaml_io, load_yaml
-from tuxemon.save_state import TIME_FORMAT, SaveData
-from tuxemon.save_upgrader import SAVE_VERSION, upgrade_save
+from tuxemon.save_system.save_state import TIME_FORMAT, SaveData
+from tuxemon.save_system.save_upgrader import SAVE_VERSION, upgrade_save
 from tuxemon.user_config import CONFIG
 
 if TYPE_CHECKING:
@@ -34,11 +34,7 @@ except ImportError:
 
 T = TypeVar("T")
 
-
 logger = logging.getLogger(__name__)
-
-slot_number: int | None = None
-config = CONFIG
 
 
 class SaveMethod(Enum):
@@ -98,11 +94,13 @@ def save_action(
     path: Path,
     mode: str,
     action_function: Callable[[Any, Any], T],
-    save_method: SaveMethod,
     compress_save: str | None = None,
     compression_kwargs: Mapping[str, Any] | None = None,
     serializer_kwargs: Mapping[str, Any] | None = None,
 ) -> T:
+    """
+    Opens a file (optionally compressed) and calls action_function with it.
+    """
     if compression_kwargs is None:
         compression_kwargs = {}
 
@@ -114,18 +112,12 @@ def save_action(
         compression_tool = importlib.import_module(compress_save)
         open_function = compression_tool.open
 
-    is_binary_mode = save_method == SaveMethod.CBOR
-
-    actual_mode = mode
-    if is_binary_mode and "t" in mode:
-        actual_mode = mode.replace("t", "b")
-    elif not is_binary_mode and "b" in mode:
-        actual_mode = mode.replace("b", "t")
+    is_binary_mode = "b" in mode
 
     with open_function(
         path,
-        mode=actual_mode,
-        encoding="utf-8" if not is_binary_mode else None,
+        mode=mode,
+        encoding=None if is_binary_mode else "utf-8",
         **compression_kwargs,
     ) as file:
         return action_function(file, serializer_kwargs)
@@ -162,13 +154,12 @@ def dump_data(
         else:
             raise ValueError(f"Unsupported save method: {save_method}")
 
-    mode = "wt" if save_method in {SaveMethod.JSON, SaveMethod.YAML} else "wb"
+    mode = "wb" if save_method == SaveMethod.CBOR else "wt"
 
-    return save_action(
+    save_action(
         path=path,
         mode=mode,
         action_function=action_function,
-        save_method=save_method,
         compress_save=compress_save,
         compression_kwargs=compression_kwargs,
         serializer_kwargs=serializer_kwargs,
@@ -193,16 +184,12 @@ def load_data(
         compression_tool = importlib.import_module(compress_save)
         open_function = compression_tool.open
 
-    mode = "rt" if save_method in {SaveMethod.JSON, SaveMethod.YAML} else "rb"
+    mode = "rb" if save_method == SaveMethod.CBOR else "rt"
 
     with open_function(
         path,
         mode=mode,
-        encoding=(
-            "utf-8"
-            if save_method in {SaveMethod.JSON, SaveMethod.YAML}
-            else None
-        ),
+        encoding=(None if save_method == SaveMethod.CBOR else "utf-8"),
         **compression_kwargs,
     ) as file:
         if save_method == SaveMethod.JSON:
@@ -210,6 +197,9 @@ def load_data(
         elif save_method == SaveMethod.CBOR:
             return cbor.load(file, **serializer_kwargs)
         elif save_method == SaveMethod.YAML:
+            # load_yaml expects a Path, not a file handle.
+            # Compressed YAML is not supported; if compress_save is set
+            # alongside YAML the open() above will have already raised.
             return load_yaml(path)
         else:
             raise ValueError(f"Unsupported save method: {save_method}")
@@ -225,68 +215,72 @@ def open_save_file(save_path: Path) -> dict[str, Any] | None:
     Returns:
         Raw dictionary of save data, or None if the file is missing or corrupted.
     """
-    current_save_method = SaveMethod.from_string(config.save_method)
-    package: dict[str, Any] = {}
+    current_save_method = SaveMethod.from_string(CONFIG.save_method)
 
     try:
-        try:
-            package = load_data(
-                save_path,
-                save_method=current_save_method,
-                compress_save=config.compress_save,
+        data = load_data(
+            save_path,
+            save_method=current_save_method,
+            compress_save=CONFIG.compress_save,
+        )
+        # load_data returns Any; narrow to dict[str, Any] before returning.
+        if not isinstance(data, dict):
+            logger.error(
+                f"Save file has unexpected structure (got {type(data).__name__}): {save_path}"
             )
-            return package
-        except ValueError as e:
-            logger.error(f"Cannot decode save: {save_path}", exc_info=True)
             return None
+        return data
+    except ValueError:
+        logger.error(f"Cannot decode save: {save_path}", exc_info=True)
+        return None
     except OSError as e:
-        logger.info(f"OS Error when opening save file {save_path}: {e}")
+        logger.info(f"OS error when opening save file {save_path}: {e}")
         return None
 
 
 def get_save_path(
     slot: int, prefix: str | None = None, extension: str | None = None
 ) -> Path:
-    extension = config.save_extension if extension is None else extension
-    prefix = config.save_prefix if prefix is None else prefix
+    extension = CONFIG.save_extension if extension is None else extension
+    prefix = CONFIG.save_prefix if prefix is None else prefix
     final_extension = (
         extension
-        if config.compress_save is None
-        else f"c{extension}.{config.compress_save}"
+        if CONFIG.compress_save is None
+        else f"c{extension}.{CONFIG.compress_save}"
     )
     return paths.USER_GAME_SAVE_DIR / f"{prefix}{slot}.{final_extension}"
 
 
 def save(save_data: SaveData, save_path: Path) -> None:
     """
-    Saves the current game state to a file using gzip compressed JSON.
+    Saves the current game state to disk using the format and compression
+    specified in CONFIG (save_method and compress_save).
+
+    Uses a temporary file and atomic replacement to avoid corrupting the
+    existing save if a crash occurs mid-write.
 
     Parameters:
         save_data: The data to save.
         save_path: The full path where the save file should be written.
     """
     save_path_tmp = save_path.with_suffix(save_path.suffix + ".tmp")
-    json_kwargs = {
-        "indent": 4,
-        "separators": (",", ": "),
-    }
+    current_save_method = SaveMethod.from_string(CONFIG.save_method)
 
-    current_save_method = SaveMethod.from_string(config.save_method)
     logger.info(f"Saving data to save file: {save_path}")
 
     dump_data(
         save_data,
         save_path_tmp,
         save_method=current_save_method,
-        compress_save=config.compress_save,
+        compress_save=CONFIG.compress_save,
         serializer_kwargs=(
-            json_kwargs if current_save_method == SaveMethod.JSON else {}
+            {"indent": 4, "separators": (",", ": ")}
+            if current_save_method == SaveMethod.JSON
+            else {}
         ),
     )
 
-    # Don't dump straight to the file: if we crash it would corrupt
-    # the save_data
-    # We use a temporal file plus atomic replacement instead
+    # Write to a temp file first; if we crash mid-write the original is intact.
     os.replace(save_path_tmp.as_posix(), save_path.as_posix())
 
 
@@ -299,20 +293,25 @@ def load(save_path: Path) -> SaveData | None:
 
     Returns:
         A SaveData object containing the loaded game state, or None if
-        the file doesn't exist.
+        the file doesn't exist or is unreadable.
     """
     raw_data = open_save_file(save_path)
 
     if raw_data is None:
-        # File not found; it probably wasn't ever created, so don't panic
+        # File not found or corrupt; don't panic, just return None.
         return None
+
     upgraded_data = upgrade_save(raw_data)
     return SaveData(**upgraded_data)
 
 
 def get_index_of_latest_save() -> int | None:
+    """
+    Returns the slot index (0-based) of the most recently saved game,
+    or None if no saves exist.
+    """
     times = []
-    for slot_index in range(3):
+    for slot_index in range(CONFIG.save_slots):
         save_path = get_save_path(slot_index + 1)
         save_data = open_save_file(save_path)
         if save_data is not None:
@@ -321,8 +320,8 @@ def get_index_of_latest_save() -> int | None:
                 TIME_FORMAT,
             )
             times.append((slot_index, time_of_save))
-    if len(times) > 0:
-        s = max(times, key=itemgetter(1))
-        return s[0]
-    else:
-        return None
+
+    if times:
+        return max(times, key=itemgetter(1))[0]
+
+    return None

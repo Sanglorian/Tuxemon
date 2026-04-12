@@ -72,6 +72,7 @@ class GetPendingMovesAction(EventAction):
         )
         if not monsters:
             logger.warning("No monsters found in event_data['check_max_tech']")
+            self.stop()
             return
 
         for mon in monsters:
@@ -81,16 +82,14 @@ class GetPendingMovesAction(EventAction):
                     client=session.client,
                     character=player,
                     techniques=mon.moves.get_moves(),
+                    on_selection=self.set_var,
+                    is_valid_entry=self.validate,
                 )
             )
             menu.escape_key_exits = False
-            menu.is_valid_entry = self.validate  # type: ignore[method-assign]
-            menu.on_menu_selection = self.set_var  # type: ignore[assignment]
 
         session.client.event_data.pop("check_max_tech", None)
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_state_by_name("TechniqueMenuState")
-        except ValueError:
+        if "TechniqueMenuState" not in session.client.active_state_names:
             self.stop()

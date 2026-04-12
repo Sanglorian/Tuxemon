@@ -45,6 +45,7 @@ class ModifyBillAction(EventAction):
 
         if character is None:
             logger.error(f"Character '{self.character}' not found")
+            self.stop()
             return
 
         player = session.player
@@ -61,6 +62,7 @@ class ModifyBillAction(EventAction):
                     bill = money_manager.get_bill(self.bill_slug)
                     if bill is None:
                         logger.error(f"Bill '{self.bill_slug}' not found")
+                        self.stop()
                         return
                     amount = int(bill.amount * raw_value)
 
@@ -84,6 +86,7 @@ class ModifyBillAction(EventAction):
                 money_manager.remove_bill(self.bill_slug, -amount)
         except KeyError as e:
             logger.error(str(e))
+            self.stop()
             return
 
         bill = money_manager.get_bill(self.bill_slug)

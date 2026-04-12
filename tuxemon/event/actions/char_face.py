@@ -39,6 +39,7 @@ class CharFaceAction(EventAction):
         character = session.client.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         # "player" isn't among the Directions (map_loader.py)
@@ -46,6 +47,7 @@ class CharFaceAction(EventAction):
             target = session.client.get_npc(self.direction)
             if target is None:
                 logger.error(f"{self.direction} not found")
+                self.stop()
                 return
             direction = get_direction(character.tile_pos, target.tile_pos)
         else:

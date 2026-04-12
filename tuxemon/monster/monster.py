@@ -77,6 +77,8 @@ class Monster:
         "steps": float,
     }
 
+    _persist_include_falsy = {"current_hp", "steps"}
+
     def __init__(
         self,
         slug: str,
@@ -163,6 +165,21 @@ class Monster:
         self.individual_values = randomize_ivs()
 
         self.body = Body()
+
+    def __repr__(self) -> str:
+        return (
+            f"<Monster {self.slug!r} lv{self.level}"
+            f" hp={self.current_hp}/{self.hp}"
+            f" id={self.instance_id.hex[:8]}>"
+        )
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Monster):
+            return NotImplemented
+        return self.instance_id == other.instance_id
+
+    def __hash__(self) -> int:
+        return hash(self.instance_id)
 
     def _init_assets(self, db_data: MonsterModel) -> None:
         """Store only metadata for assets. No loading, no SpriteLoader."""
@@ -512,7 +529,7 @@ class Monster:
             return
 
         new_val = current_stat_val + points_to_add
-        setattr(self.training_points, stat_name, new_val)
+        self.training_points.set_stat(stat_name, new_val)
         self.training_points.validate()
         logger.debug(
             f"Added {points_to_add} TP to '{stat_name}'. New total: {new_val}"
@@ -583,7 +600,6 @@ class Monster:
             self.item_handler.held_item.temporary_stat_boosts = BasicStats()
 
     def set_level(self, new_level: int, old_level: int) -> int:
-
         if new_level > old_level and self._levelup_start_stats is None:
             self._levelup_start_stats = self.base_stats.copy()
             self._levelup_start_level = old_level
@@ -647,7 +663,8 @@ class Monster:
         """Gets the experience requirement for the given level."""
         return self.experience_handler.experience_required(level_delta)
 
-    def assign_gender(self, weights: dict[GenderType, float]) -> GenderType:
+    @staticmethod
+    def assign_gender(weights: dict[GenderType, float]) -> GenderType:
         """Randomly selects a gender based on weighted probabilities."""
         return random.choices(
             population=list(weights.keys()),
@@ -657,7 +674,10 @@ class Monster:
 
     def transfer_properties_from(self, old_monster: Monster) -> None:
         """Copies essential state and identity properties from the pre-evolved monster."""
-        self.set_level(old_monster.level, old_monster.level)
+        self.experience_handler.set_level(old_monster.level)
+        self.taste_cold = old_monster.taste_cold
+        self.taste_warm = old_monster.taste_warm
+        self.set_stats()
         self.current_hp = min(old_monster.current_hp, self.hp)
         self.moves = old_monster.moves
         self.status = old_monster.status
@@ -665,7 +685,7 @@ class Monster:
 
         if old_monster.gender in self.gender_weights:
             self.gender = old_monster.gender
-        else:  # Re-roll if incompatible
+        else:
             self.gender = self.assign_gender(self.gender_weights)
             logger.info(
                 f"{self.name} changed gender from {old_monster.gender} to {self.gender} upon evolution."
@@ -674,8 +694,6 @@ class Monster:
         self.birthdate = old_monster.birthdate
         self.capture_date = old_monster.capture_date
         self.capture_device = old_monster.capture_device
-        self.taste_cold = old_monster.taste_cold
-        self.taste_warm = old_monster.taste_warm
         self.plague = old_monster.plague
         self.steps = old_monster.steps
         self.bond_handler = old_monster.bond_handler
@@ -683,7 +701,7 @@ class Monster:
         if old_monster.name != T.translate(old_monster.slug):
             self.name = old_monster.name
 
-        for flair_category, new_flair in self.flairs.items():
+        for flair_category in self.flairs:
             if flair_category in old_monster.flairs:
                 self.flairs[flair_category] = old_monster.flairs[
                     flair_category
@@ -695,7 +713,8 @@ class Monster:
         save_data: dict[str, Any] = {
             attr: getattr(self, attr)
             for attr, _type in self._persist_simple.items()
-            if getattr(self, attr)
+            if getattr(self, attr) is not None
+            or attr in self._persist_include_falsy
         }
 
         save_data["instance_id"] = self.instance_id.hex

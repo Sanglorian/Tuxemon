@@ -49,6 +49,7 @@ class CharPlagueAction(EventAction):
 
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         enforce = parse_flag(self.enforced_check)

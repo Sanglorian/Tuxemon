@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from tuxemon.entity.routing import RoutingPolicy
     from tuxemon.item.item import Item
     from tuxemon.monster.monster import Monster
-    from tuxemon.save_state import NPCState
+    from tuxemon.save_system.save_state import NPCState
 
 logger = logging.getLogger(__name__)
 

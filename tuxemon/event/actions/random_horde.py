@@ -58,10 +58,12 @@ class RandomHordeAction(EventAction):
 
         if not check_battle_legal(player):
             logger.error("Battle is not legal, won't start")
+            self.stop()
             return
 
         if check_repellent(player):
             logger.info(f"Repellent active, skipping encounter.")
+            self.stop()
             return
 
         if self.total_prob is not None:
@@ -69,14 +71,17 @@ class RandomHordeAction(EventAction):
                 logger.error(
                     f"Invalid total_prob: {self.total_prob}. Must be between 0 and 100."
                 )
+                self.stop()
                 return
 
         if not encounter.load_zone(self.encounter_slug):
+            self.stop()
             return
 
         results = encounter.attempt_horde_encounter(player, self.total_prob)
 
         if not results:
+            self.stop()
             return
 
         logger.info("Starting random horde!")
@@ -96,6 +101,7 @@ class RandomHordeAction(EventAction):
                 item = Item.create(result.held_item)
                 output = current_monster.equip_item(item)
                 if not output:
+                    self.stop()
                     return
 
                 current_monster.wild = True
@@ -103,6 +109,7 @@ class RandomHordeAction(EventAction):
             horde.append(current_monster)
 
         if not horde:
+            self.stop()
             return
 
         event_engine = session.client.event_engine
@@ -113,6 +120,7 @@ class RandomHordeAction(EventAction):
         npc = session.client.get_npc("wild_encounter")
         if npc is None:
             logger.error("'wild_encounter' not found")
+            self.stop()
             return
 
         npc.party.replace_party(
@@ -128,6 +136,7 @@ class RandomHordeAction(EventAction):
             logger.error(
                 "No environment defined. Use 'set_environment' before starting combat."
             )
+            self.stop()
             return
 
         context = CombatContext(
@@ -150,14 +159,12 @@ class RandomHordeAction(EventAction):
             session.client.current_music.play(sound.music, sound.volume)
 
     def update(self, session: Session, dt: float) -> None:
-        try:
-            session.client.get_queued_state_by_name("CombatState")
-        except ValueError:
-            try:
-                session.client.get_state_by_name("CombatState")
-            except ValueError:
-                self.stop()
+        client = session.client
+        if (
+            "CombatState" not in client.active_state_names
+            and not client.has_queued_state("CombatState")
+        ):
+            self.stop()
 
     def cleanup(self, session: Session) -> None:
-        npc = None
         session.client.npc_manager.remove_npc("wild_encounter")

@@ -45,6 +45,7 @@ class ToggleEvolutionBlockAction(EventAction):
 
         if character is None:
             logger.error(f"Character '{self.npc_slug}' not found.")
+            self.stop()
             return
 
         registry = character.evolution_registry
@@ -56,6 +57,7 @@ class ToggleEvolutionBlockAction(EventAction):
             logger.info(
                 f"No valid monster selected for variable '{self.monster_variable}'"
             )
+            self.stop()
             return  # Exit early if no valid UUID
 
         monster = session.client.get_monster_by_iid(monster_id)
@@ -63,6 +65,7 @@ class ToggleEvolutionBlockAction(EventAction):
             logger.warning(
                 f"Monster with ID '{monster_id}' not found. Cannot toggle evolution block."
             )
+            self.stop()
             return
 
         if self.action == "block":

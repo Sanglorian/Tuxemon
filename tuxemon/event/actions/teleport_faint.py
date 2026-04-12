@@ -47,6 +47,7 @@ class TeleportFaintAction(EventAction):
         character = session.client.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
+            self.stop()
             return
 
         healing = parse_flag(self.healing)
@@ -60,6 +61,7 @@ class TeleportFaintAction(EventAction):
             logger.error(
                 "The teleport_faint variable has not been set, use 'set_teleport_faint'."
             )
+            self.stop()
             return
         else:
             teleport = character.teleport_faint

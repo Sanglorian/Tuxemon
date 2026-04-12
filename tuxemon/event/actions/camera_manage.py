@@ -48,6 +48,7 @@ class CameraManageAction(EventAction):
                 logger.error(
                     f"Cannot add camera '{self.camera_name}': NPC '{self.npc_slug}' not found."
                 )
+                self.stop()
                 return
             camera = Camera(
                 entity, session.client.boundary, session.client.context
@@ -70,6 +71,7 @@ class CameraManageAction(EventAction):
             follow = manager.cameras.get(self.camera_name)
             if not follow:
                 logger.error(f"Camera '{self.camera_name}' not found.")
+                self.stop()
                 return
             entity = session.client.get_npc(self.npc_slug or "player")
             if entity is None:

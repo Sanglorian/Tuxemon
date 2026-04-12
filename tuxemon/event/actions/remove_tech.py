@@ -48,6 +48,7 @@ class RemoveTechAction(EventAction):
             logger.info(
                 f"No valid tech selected for variable '{self.tech_id}'"
             )
+            self.stop()
             return  # Exit early if no valid UUID
         force_remove = parse_flag(self.force_remove)
 

@@ -320,6 +320,7 @@
     <property name="act50" value="set_monster_health"/>
     <property name="act60" value="set_monster_status"/>
     <property name="act70" value="set_variable firstfightend:no"/>
+    <property name="act71" value="save_game 99"/>
     <property name="cond1" value="is variable_set battle_last_result:won"/>
     <property name="cond2" value="is variable_set firstfightend:yes"/>
    </properties>
@@ -337,6 +338,7 @@
     <property name="act50" value="set_monster_health"/>
     <property name="act60" value="set_monster_status"/>
     <property name="act70" value="set_variable firstfightend:no"/>
+    <property name="act71" value="save_game 99"/>
     <property name="cond1" value="not variable_set battle_last_result:won"/>
     <property name="cond2" value="is variable_set firstfightend:yes"/>
    </properties>

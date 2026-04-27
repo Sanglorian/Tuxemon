@@ -18,6 +18,7 @@ from tuxemon.item.item import Item
 from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.menu.quantity import QuantityMenu
 from tuxemon.menu.transitions import SlideRight
 from tuxemon.platform.const.graphics import BG_PC_LOCKER
 from tuxemon.state.state import State

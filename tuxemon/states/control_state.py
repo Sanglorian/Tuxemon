@@ -10,10 +10,10 @@ from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.menu import Menu
 from pygame_menu.sound import SOUND_TYPE_WIDGET_SELECTION
 
-from tuxemon.animation import Animation, ScheduleType
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.theme import get_theme
+from tuxemon.menu.transitions import PopInClamped
 from tuxemon.platform.const import buttons
 from tuxemon.state.state import State
 
@@ -36,7 +36,7 @@ class ControlState(PygameMenuState):
     ) -> None:
         self.main_menu = main_menu
 
-        super().__init__(client, *args, **kwargs)
+        super().__init__(client, *args, transition=PopInClamped(), **kwargs)
 
         theme = get_theme(self.client.context.scaling)
         theme.scrollarea_position = POSITION_EAST
@@ -108,19 +108,27 @@ class ControlState(PygameMenuState):
 
         if not self.main_menu:
 
-            def mute_music() -> None:
-                self.client.config.update_attribute(
-                    "gameplay", "music_volume", 0
-                )
-                self.client.current_music.set_volume(0)
+            def toggle_mute() -> None:
+                self.client.current_music.toggle_mute()
 
-            _volume = self.client.current_music.get_volume()
-            if _volume and _volume > 0.0:
-                menu.add.button(
-                    title=T.translate("menu_mute_music").upper(),
-                    action=mute_music,
-                    font_size=self.font_type.small,
+                # Persist logical volume (0 if muted, user volume otherwise)
+                new_vol = self.client.current_music.get_volume()
+                self.client.config.update_attribute(
+                    "gameplay", "music_volume", new_vol
                 )
+
+            is_muted = self.client.current_music.muted
+            title = (
+                T.translate("menu_unmute_music")
+                if is_muted
+                else T.translate("menu_mute_music")
+            )
+
+            menu.add.button(
+                title=title.upper(),
+                action=toggle_mute,
+                font_size=self.font_type.small,
+            )
 
             _music = self.client.config.music_volume
             default_music = int(float(_music) * 100)
@@ -219,31 +227,6 @@ class ControlState(PygameMenuState):
                 onchange=on_change_hemisphere,
                 font_size=self.font_type.small,
             )
-
-    def update_animation_size(self) -> None:
-        width, height = self.client.context.resolution
-        widgets_size = self.menu.get_size(widget=True)
-        _width, _height = widgets_size
-        # block width if more than screen width
-        _width = width if _width >= width else _width
-        _height = height if _height >= height else _height
-
-        self.menu.resize(
-            max(1, int(_width * self.animation_size)),
-            max(1, int(_height * self.animation_size)),
-        )
-
-    def animate_open(self) -> Animation:
-        """
-        Animate the menu popping in.
-
-        Returns:
-            Popping in animation.
-        """
-        self.animation_size = 0.0
-        ani = self.animate(self, animation_size=1.0, duration=0.2)
-        ani.schedule(self.update_animation_size, ScheduleType.ON_UPDATE)
-        return ani
 
     def reload_controls(self) -> None:
         self.client.config.input.reload_input_map()

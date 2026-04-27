@@ -4712,6 +4712,12 @@ msgstr "Doll"
 msgid "menu_save"
 msgstr "Save"
 
+msgid "menu_autosave"
+msgstr "Autosave"
+
+msgid "menu_no_autosave"
+msgstr "No Autosave"
+
 msgid "menu_up_key"
 msgstr "Up Key"
 
@@ -4786,6 +4792,9 @@ msgstr "Enable"
 
 msgid "disable"
 msgstr "Disable"
+
+msgid "menu_unmute_music"
+msgstr "Unmute Music"
 
 msgid "menu_mute_music"
 msgstr "Mute Music"

@@ -18,7 +18,6 @@ from tuxemon.item.item import Item
 from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.menu.quantity import QuantityMenu
 from tuxemon.menu.transitions import SlideRight
 from tuxemon.platform.const.graphics import BG_PC_LOCKER
 from tuxemon.state.state import State
@@ -199,14 +198,11 @@ class ItemTakeState(PygameMenuState):
             callback: Callable[[int], None], max_quantity: int
         ) -> Callable[[], None]:
             def inner() -> None:
-                self.client.state_manager.push_state(
-                    QuantityMenu(
-                        client=self.client,
-                        callback=callback,
-                        max_quantity=max_quantity,
-                        quantity=1,
-                        shrink_to_items=True,
-                    )
+                self.client.push_state(
+                    "NumberPickerState",
+                    min_value=1,
+                    max_value=max_quantity,
+                    callback=callback,
                 )
 
             return inner
@@ -422,11 +418,8 @@ class ItemDropOff(ItemMenuState):
             self.char.bag.remove_item(itm, quantity)
 
         self.client.push_state(
-            QuantityMenu(
-                client=self.client,
-                callback=partial(deposit, game_object),
-                max_quantity=game_object.quantity,
-                quantity=1,
-                shrink_to_items=True,
-            )
+            "NumberPickerState",
+            min_value=1,
+            max_value=game_object.quantity,
+            callback=partial(deposit, game_object),
         )

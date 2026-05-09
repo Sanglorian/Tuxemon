@@ -4451,7 +4451,7 @@ msgstr ""
 "Which technique do you want to delete?"
 
 msgid "evolution_confirmation"
-msgstr "{name} is trying to evolve into {evolve}."
+msgstr "{name} is trying to evolve into {target}."
 
 msgid "allow_evolution"
 msgstr "Allow evolution?"

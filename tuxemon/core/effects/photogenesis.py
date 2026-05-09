@@ -75,8 +75,7 @@ class PhotogenesisEffect(CoreEffect):
 
         heal = formula.simple_heal(tech, user, factors)
         if heal == 0:
-            extra = [tech.use_failure]
-            return TechEffectResult(name=tech.name, extras=extra)
+            return TechEffectResult(name=tech.name)
 
         if user.hp_ratio < 1.0:
             heal_amount = min(heal, user.missing_hp)

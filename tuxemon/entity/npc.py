@@ -137,6 +137,13 @@ class NPC(Entity):
 
     @classmethod
     def create_player(cls, session: Session, slug: str) -> NPC:
+        npc = cls.create(session, slug)
+        if not session.has_player():
+            session.set_player(npc)
+        return npc
+
+    @classmethod
+    def create_player(cls, session: Session, slug: str) -> NPC:
         if session.has_player():
             session.player.teardown()
         npc = cls.create(session, slug)

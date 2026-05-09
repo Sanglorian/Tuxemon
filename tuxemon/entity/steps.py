@@ -67,13 +67,6 @@ class StepManager:
             session=self.session,
         )
 
-    def cleanup(self) -> None:
-        self.session.client.event_bus.unsubscribe(
-            "entity_moved",
-            self._on_entity_moved,
-            priority=10,
-        )
-
     def _on_entity_moved(
         self,
         entity: Entity,

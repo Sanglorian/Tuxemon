@@ -143,6 +143,14 @@ class NPC(Entity):
         return npc
 
     @classmethod
+    def create_player(cls, session: Session, slug: str) -> NPC:
+        if session.has_player():
+            session.player.teardown()
+        npc = cls.create(session, slug)
+        session.set_player(npc)
+        return npc
+
+    @classmethod
     def from_save(cls, session: Session, save_data: NPCState) -> NPC:
         slug = save_data.player_slug or PLAYER_NPC
         npc_data = NpcModel.lookup(slug, db)
@@ -326,6 +334,9 @@ class NPC(Entity):
 
     def abort_movement(self, preserve_position: bool = False) -> None:
         self.path_controller.abort_movement(preserve_position)
+
+    def teardown(self) -> None:
+        self.step_manager.cleanup()
 
     def update(self, dt: float) -> None:
         """

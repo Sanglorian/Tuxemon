@@ -661,14 +661,6 @@ class CombatState(CombatAnimations):
                 user, target, result_tech.damage
             )
 
-            plague = user.plague.get_most_severe_plague_slug()
-            if plague:
-                m = user.plague.get_suppressed_symptom_message(
-                    user.name, plague
-                )
-                if m:
-                    message += "\n" + m
-
             if method.range != "special":
                 element_damage_key = config_combat.multiplier_map.get(
                     result_tech.element_multiplier
@@ -679,6 +671,15 @@ class CombatState(CombatAnimations):
                     action_time += self.text_anim.compute_text_anim_time(
                         message
                     )
+
+            plague = user.plague.get_most_severe_plague_slug()
+            if plague:
+                m = user.plague.get_suppressed_symptom_message(
+                    user.name, plague
+                )
+                if m:
+                    message += "\n" + m
+
 
         self.text_anim.add_text_animation(
             partial(self.dialog.alert, message, self.text_area), action_time

@@ -1101,6 +1101,12 @@ msgstr "TM: All In"
 msgid "tm_all_in_description"
 msgstr "Technique Manual that teaches the All In technique."
 
+msgid "tm_solar_synthesis"
+msgstr "TM: Solar Synthesis"
+
+msgid "tm_solar_synthesis_description"
+msgstr "Technique Manual that teaches the Solar Synthesis technique."
+
 msgid "tm_blade"
 msgstr "TM: Blade"
 

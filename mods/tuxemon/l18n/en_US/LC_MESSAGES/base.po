@@ -16822,8 +16822,7 @@ msgstr ""
 
 msgid "spyder_dojo_sokka1"
 msgstr ""
-"My tuxemon are all of the Metal type, \n"
-" but they each have a second element, or know a technique with two elements. \n"
+"My tuxemon are all of the Metal type, but they each have a second element, or know a technique with two elements. \n"
 " That makes their strengths and weaknesses more difficult to predict."
 
 msgid "spyder_dojo_sokka2"

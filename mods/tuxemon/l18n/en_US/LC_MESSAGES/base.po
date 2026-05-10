@@ -1983,6 +1983,9 @@ msgstr "{target} flinches and may not act."
 msgid "combat_state_charmed_get"
 msgstr "{target} is charmed and might hesitate to act."
 
+msgid "combat_state_charmed_miss"
+msgstr "{user} is too smitten!"
+
 msgid "combat_state_wild_get"
 msgstr "{target} has gone wild."
 

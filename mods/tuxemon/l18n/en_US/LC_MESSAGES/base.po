@@ -1879,7 +1879,7 @@ msgid "combat_state_festering_item"
 msgstr "The healing fails. The wound festers."
 
 msgid "combat_state_focused_get"
-msgstr "{target} becomes focused."
+msgstr "{target} is focused."
 
 msgid "combat_state_grabbed_get"
 msgstr "{target} is held tight."
@@ -5101,7 +5101,7 @@ msgid "av8r_description"
 msgstr "If the sun is out, it can fly as far or as high as it likes."
 
 msgid "av8r"
-msgstr "Av8r"
+msgstr "AV8R"
 
 msgid "axolightl_description"
 msgstr ""
@@ -6651,7 +6651,7 @@ msgstr ""
 "pranks."
 
 msgid "mrmoswitch"
-msgstr "Mrmoswitch"
+msgstr "mRmOswitch"
 
 msgid "myrmison_description"
 msgstr ""
@@ -12927,7 +12927,7 @@ msgid "spyder_routea_joe1"
 msgstr "I got my report card from school yesterday."
 
 msgid "spyder_routea_joe2"
-msgstr "'Needs improvement.'' Where have I heard that before?"
+msgstr "'Needs improvement.' Where have I heard that before?"
 
 msgid "spyder_routea_koan1"
 msgstr "Flower City is cold but I like where I'm living."
@@ -13185,6 +13185,13 @@ msgid "spyder_timber_firefighter_willtrade"
 msgstr ""
 "Hey, do you want a TIKOAL? I could really do with a CHILLIMP, if you've got "
 "one."
+
+msgid "spyder_flower_fisher1"
+msgstr "It's a slow pleasure, but there's nothing nicer than fishing by the water. \n"
+" Just select your Rod from the Bag while facing the river." 
+
+msgid "spyder_flower_fisher2"
+msgstr "Get yourself a Fishing Rod so you can enjoy the water as I do." 
 
 msgid "spyder_flower_mieke1"
 msgstr ""
@@ -14892,7 +14899,7 @@ msgstr ""
 "was missing!"
 
 msgid "spyder_mansion_drinkingbuddya2"
-msgstr "There you are old friend! Let's get you back to river."
+msgstr "There you are old friend! Let's get you back to the river."
 
 msgid "spyder_mansion_captain1"
 msgstr ""
@@ -15023,7 +15030,7 @@ msgstr ""
 
 msgid "spyder_top_barmaid"
 msgstr ""
-"The big corporations sell monsters\n"
+"The big corporations sell monsters"
 " that can only be morphed using their own proprietary technologies!"
 
 msgid "spyder_top_magician1"

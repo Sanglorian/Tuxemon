@@ -372,7 +372,16 @@ class MonsterMovesState(PygameMenuState):
             if event.button == buttons.A and self.valid_press(event):
                 if self.selected_widget:
                     slug = self.selected_widget.get_id()
-                    technique = Technique.create(slug)
+                    technique = next(
+                        (
+                            t
+                            for t in self._monster.moves.get_moves()
+                            if t.slug == slug
+                        ),
+                        None,
+                    )
+                    if technique is None:
+                        return None
                     if self._is_valid_entry is None or self._is_valid_entry(
                         technique
                     ):

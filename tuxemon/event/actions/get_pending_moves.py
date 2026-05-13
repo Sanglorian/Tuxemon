@@ -7,10 +7,12 @@ from dataclasses import dataclass
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
+from tuxemon.locale.locale import T
 from tuxemon.monster.monster import Monster
 from tuxemon.session import Session
 from tuxemon.states.monster_moves import MonsterMovesState
 from tuxemon.technique.technique import Technique
+from tuxemon.tools import open_dialog
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +61,15 @@ class GetPendingMovesAction(EventAction):
         self.session.player.game_variables.set(
             self.variable_name, technique.instance_id.hex
         )
-        self.session.client.pop_state()
+
+        new_tech = self.new_technique
+        if technique.instance_id == new_tech.instance_id:
+            msg = T.format("tech_no_learn", {"tech": new_tech.name})
+        else:
+            msg = T.format("tech_replaced", {"old": technique.name, "new": new_tech.name})
+
+        client = self.session.client
+        open_dialog(client, [msg], on_complete=client.pop_state)
 
     def start(self, session: Session) -> None:
         self.session = session
@@ -74,6 +84,7 @@ class GetPendingMovesAction(EventAction):
 
         for mon in monsters:
             self.monster = mon
+            self.new_technique = mon.moves.get_moves()[-1]
             state = session.client.push_state(
                 MonsterMovesState(
                     client=session.client,

@@ -1724,6 +1724,12 @@ msgstr "{name} can't be used."
 msgid "tech_cannot_forget"
 msgstr "This technique cannot be removed."
 
+msgid "tech_no_learn"
+msgstr "Decided not to learn {tech}."
+
+msgid "tech_replaced"
+msgstr "{old} replaced with {new}."
+
 msgid "combat_used_x"
 msgstr "{user} used {name}!"
 

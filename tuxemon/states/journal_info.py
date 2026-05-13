@@ -40,6 +40,10 @@ class JournalInfoState(PygameMenuState):
             "font", self.client.config.locale.minimal_font_file
         )
 
+        thin_font = transform_resource_filename(
+            "font", self.client.config.locale.thin_font_file
+        )
+
         menu._width = fxw(248 / 256)
 
         # evolutions
@@ -78,10 +82,10 @@ class JournalInfoState(PygameMenuState):
             underline_offset=self.client.context.scaling.scale_int(1),
             underline_width=self.client.context.scaling.scale_int(1),
         )
-        lab1.translate(fxw(126 / 256), fxh(19.8 / 144))
+        lab1.translate(fxw(126 / 256), fxh(6 / 144))
 
         # weight
-        _weight = f"{mon_weight} {unit_weight}"
+        _weight = f"{T.translate('weight')}: {mon_weight} {unit_weight}"
         lab2: Any = menu.add.label(
             title=_weight,
             label_id="weight",
@@ -90,9 +94,9 @@ class JournalInfoState(PygameMenuState):
             align=ALIGN_LEFT,
             float=True,
         )
-        lab2.translate(fxw(158 / 256), fxh(39 / 144))
+        lab2.translate(fxw(126 / 256), fxh(19 / 144))
         # height
-        _height = f"{mon_height} {unit_height}"
+        _height = f"{T.translate('height')}: {mon_height} {unit_height}"
         lab3: Any = menu.add.label(
             title=_height,
             label_id="height",
@@ -101,7 +105,7 @@ class JournalInfoState(PygameMenuState):
             align=ALIGN_LEFT,
             float=True,
         )
-        lab3.translate(fxw(126 / 256), fxh(39 / 144))
+        lab3.translate(fxw(126 / 256), fxh(25 / 144))
         # type
         if self.is_visible:
             path1 = f"gfx/ui/icons/element/{monster.types[0]}_type_small.png"
@@ -146,9 +150,9 @@ class JournalInfoState(PygameMenuState):
         )
         lab4.translate(fxw((141 / 256) + type_shift), fxh(49 / 144))
         # shape
-        menu_shape = T.translate("monster_menu_shape")
+        menu_shape = T.translate("monster_menu_shape_short")
         _shape = T.translate(monster.shape)
-        shape = f"{menu_shape}: {_shape}"
+        shape = f"{_shape} {menu_shape}"
         lab6: Any = menu.add.label(
             title=shape,
             label_id="shape",
@@ -165,12 +169,13 @@ class JournalInfoState(PygameMenuState):
             title=species,
             label_id="species",
             font_size=self.font_type.biggest,
+            font_name=thin_font,
             align=ALIGN_LEFT,
             float=True,
         )
-        lab7.translate(fxw(126 / 256), fxh(29 / 144))
+        lab7.translate(fxw(126 / 256), fxh(9 / 144))
         # txmn_id
-        _txmn_id = f"{monster.txmn_id}"
+        _txmn_id = f"{monster.txmn_id:03d}"
         lab8: Any = menu.add.label(
             title=_txmn_id,
             label_id="txmn_id",
@@ -179,7 +184,7 @@ class JournalInfoState(PygameMenuState):
             align=ALIGN_LEFT,
             float=True,
         )
-        lab8.translate(fxw(0.6 / 256), fxh(67 / 144))
+        lab8.translate(fxw(3.6 / 256), fxh(66 / 144))
 
         # description
         desc = T.translate(f"{monster.slug}_description")
@@ -189,7 +194,7 @@ class JournalInfoState(PygameMenuState):
             label_id="description",
             font_size=self.font_type.biggest,
             wordwrap=True,
-            leading=35,
+            leading=50,
             align=ALIGN_LEFT,
             float=True,
         )
@@ -248,7 +253,7 @@ class JournalInfoState(PygameMenuState):
         new_image = self._create_image_from_surface(sprite.image)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
-        image_widget.translate(fxw(45.6 / 256), fxh(6 / 144))
+        image_widget.translate(fxw(44.6 / 256), fxh(6 / 144))
 
     def __init__(
         self,

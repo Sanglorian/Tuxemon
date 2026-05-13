@@ -44,7 +44,7 @@ class JournalState(PygameMenuState):
 
         for mon in monsters:
             if self.char.tuxepedia.is_registered(mon.slug):
-                label = f"{mon.txmn_id}. {T.translate(mon.slug).upper()}"
+                label = f"{mon.txmn_id}. {T.translate(mon.slug)}"
                 if self.char.tuxepedia.is_seen(mon.slug):
                     menu.add.button(
                         label,

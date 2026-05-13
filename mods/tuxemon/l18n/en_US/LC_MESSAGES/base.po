@@ -4403,7 +4403,10 @@ msgid "monster_menu_species"
 msgstr "Species"
 
 msgid "monster_menu_shape"
-msgstr "Body Type"
+msgstr "Body Shape"
+
+msgid "monster_menu_shape_short"
+msgstr "Shape"
 
 msgid "monster_menu_release"
 msgstr "Release"

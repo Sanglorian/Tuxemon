@@ -4396,6 +4396,9 @@ msgstr "Pick"
 msgid "monster_menu_desc"
 msgstr "Description"
 
+msgid "monster_menu_type_suffix"
+msgstr "-Type"
+
 msgid "monster_menu_type"
 msgstr "Type(s)"
 

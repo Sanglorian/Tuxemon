@@ -2,6 +2,7 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, ALIGN_LEFT, POSITION_EAST
@@ -17,7 +18,7 @@ from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import TECH_INFO
 from tuxemon.platform.const.sizes import ACCURACY_RANGE, POTENCY_RANGE
 from tuxemon.technique.technique import Technique
-from tuxemon.tools import fix_measure
+from tuxemon.tools import fix_measure, open_dialog
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -39,6 +40,8 @@ class MonsterMovesState(PygameMenuState):
     range_icon_widget: Any | None = None
     speed_icon_widget: Any | None = None
     type_icon_widgets: list[Any] = []
+    _on_selection: Callable[[Technique], None] | None = None
+    _is_valid_entry: Callable[[Technique | None], bool] | None = None
 
     # -------------------------
     # Top section (static per monster)
@@ -68,13 +71,13 @@ class MonsterMovesState(PygameMenuState):
         )
         lab1.translate(fxw(79.4 / 256), fxh(-0.2 / 144))
 
-        # Move buttons (manual positions; uppercase names)
-        moveset: list[Technique] = monster.moves.get_moves()
-        output = sorted(moveset, key=lambda x: x.tech_id)
+        # Move buttons (newest is always last)
+        output: list[Technique] = monster.moves.get_moves()
 
+        step = 9 / 144 if len(output) >= 5 else 12 / 144
         _height = 4.8 / 144
         for tech in output:
-            _height += 12 / 144
+            _height += step
             menu.add.button(
                 title=tech.name.upper(),
                 action=None,
@@ -331,6 +334,8 @@ class MonsterMovesState(PygameMenuState):
         monster: Monster,
         source: str,
         monsters: list[Monster] | None,
+        on_selection: Callable[[Technique], None] | None = None,
+        is_valid_entry: Callable[[Technique | None], bool] | None = None,
         **kwargs: Any,
     ) -> None:
 
@@ -339,6 +344,8 @@ class MonsterMovesState(PygameMenuState):
         self._monster = monster
         self._source = source
         self._monsters = monsters
+        self._on_selection = on_selection
+        self._is_valid_entry = is_valid_entry
 
         super().__init__(client=client, height=height, width=width, **kwargs)
 
@@ -354,6 +361,31 @@ class MonsterMovesState(PygameMenuState):
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         param: dict[str, Any] = {"source": self._source}
         client = self.client
+
+        # Forget-mode: player must pick a technique to forget
+        if self._on_selection is not None:
+            self.update_selected_widget()
+            menu = self.menu.get_current()
+            if self.selected_widget:
+                self.add_menu_technique(menu, self.selected_widget.get_id())
+
+            if event.button == buttons.A and self.valid_press(event):
+                if self.selected_widget:
+                    slug = self.selected_widget.get_id()
+                    technique = Technique.create(slug)
+                    if self._is_valid_entry is None or self._is_valid_entry(
+                        technique
+                    ):
+                        self._on_selection(technique)
+                    else:
+                        open_dialog(
+                            self.client,
+                            [T.translate("tech_cannot_forget")],
+                        )
+                return None
+
+            return super().process_event(event)
+
 
         if self._source in [
             "WorldMenuState",

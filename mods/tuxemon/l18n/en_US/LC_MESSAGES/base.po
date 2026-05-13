@@ -1721,6 +1721,9 @@ msgstr ""
 msgid "cannot_use_tech_monster"
 msgstr "{name} can't be used."
 
+msgid "tech_cannot_forget"
+msgstr "This technique cannot be removed."
+
 msgid "combat_used_x"
 msgstr "{user} used {name}!"
 

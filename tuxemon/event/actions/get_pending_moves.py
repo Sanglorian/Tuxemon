@@ -7,10 +7,9 @@ from dataclasses import dataclass
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.menu.interface import MenuItem
 from tuxemon.monster.monster import Monster
 from tuxemon.session import Session
-from tuxemon.states.technique_menu import TechniqueMenuState
+from tuxemon.states.monster_moves import MonsterMovesState
 from tuxemon.technique.technique import Technique
 
 logger = logging.getLogger(__name__)
@@ -55,8 +54,7 @@ class GetPendingMovesAction(EventAction):
         logger.debug(f"Technique '{technique.slug}' is valid for selection.")
         return True
 
-    def set_var(self, menu_item: MenuItem[Technique]) -> None:
-        technique = menu_item.game_object
+    def set_var(self, technique: Technique) -> None:
 
         self.session.player.game_variables.set(
             self.variable_name, technique.instance_id.hex
@@ -65,7 +63,6 @@ class GetPendingMovesAction(EventAction):
 
     def start(self, session: Session) -> None:
         self.session = session
-        player = session.player
 
         monsters: list[Monster] = session.client.event_data.get(
             "check_max_tech", []
@@ -77,19 +74,20 @@ class GetPendingMovesAction(EventAction):
 
         for mon in monsters:
             self.monster = mon
-            menu = session.client.push_state(
-                TechniqueMenuState(
+            state = session.client.push_state(
+                MonsterMovesState(
                     client=session.client,
-                    character=player,
-                    techniques=mon.moves.get_moves(),
+                    monster=mon,
+                    source="GetPendingMovesAction",
+                    monsters=None,
                     on_selection=self.set_var,
                     is_valid_entry=self.validate,
                 )
             )
-            menu.escape_key_exits = False
+            state.escape_key_exits = False
 
         session.client.event_data.pop("check_max_tech", None)
 
     def update(self, session: Session, dt: float) -> None:
-        if "TechniqueMenuState" not in session.client.active_state_names:
+        if "MonsterMovesState" not in session.client.active_state_names:
             self.stop()

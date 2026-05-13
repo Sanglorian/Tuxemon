@@ -352,11 +352,17 @@ class MonsterMovesState(PygameMenuState):
         theme = self._setup_theme(TECH_INFO)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
+        theme.widget_font_shadow = False
         self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu, monster)
         self.update_selected_widget()
         self.reset_theme()
+
+    def reset_theme(self) -> None:
+        super().reset_theme()
+        if self._menu is not None:
+            self._menu._theme.widget_font_shadow = False
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         param: dict[str, Any] = {"source": self._source}

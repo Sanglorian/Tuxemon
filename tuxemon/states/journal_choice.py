@@ -44,10 +44,9 @@ class JournalChoice(PygameMenuState):
         total_monster = len(monsters)
         pages = math.ceil(total_monster / MAX_PAGE)
 
-        column_width = fix_measure(menu._width, 0.40)
-        btn_x_offset = fix_measure(menu._width, 0.18)
+        btn_x_offset = fix_measure(menu._width, 0.25) - self.client.context.scaling.scale_int(60)
         btn_y_offset = fix_measure(menu._height, 0.01)
-        menu._column_max_width = [column_width, column_width]
+        menu._column_max_width = [None, None]
 
         for page in range(pages):
             start = page * MAX_PAGE
@@ -59,7 +58,7 @@ class JournalChoice(PygameMenuState):
                 and self.char.tuxepedia.is_registered(mon.slug)
             ]
             label = T.format(
-                "page_tuxepedia", {"a": str(start), "b": str(end)}
+                "page_tuxepedia", {"a": str(start+1), "b": str(end)}
             ).upper()
 
             if tuxepedia:
@@ -71,13 +70,13 @@ class JournalChoice(PygameMenuState):
                         monsters=monsters,
                         page=page,
                     ),
-                    font_size=self.font_type.small,
+                    font_size=self.font_type.biggest,
                 ).translate(btn_x_offset, btn_y_offset)
             else:
                 lab1: Any = menu.add.label(
                     label,
                     font_color=DIMGRAY_COLOR,
-                    font_size=self.font_type.small,
+                    font_size=self.font_type.biggest,
                 )
                 lab1.translate(btn_x_offset, btn_y_offset)
 
@@ -107,6 +106,7 @@ class JournalChoice(PygameMenuState):
         )
 
         theme = self._setup_theme(BG_JOURNAL_CHOICE)
+        theme.widget_font_shadow = False
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_LEFT
         self._menu_config["theme"] = theme

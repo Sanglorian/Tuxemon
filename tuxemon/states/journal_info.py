@@ -14,9 +14,9 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const import buttons
-from tuxemon.platform.const.graphics import BG_JOURNAL_INFO
+from tuxemon.platform.const.graphics import BG_JOURNAL_INFO, SEA_BLUE_COLOR
 from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_LB
-from tuxemon.tools import fix_measure
+from tuxemon.tools import fix_measure, transform_resource_filename
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -36,6 +36,10 @@ class JournalInfoState(PygameMenuState):
         def fxh(r: float) -> int:
             return fix_measure(menu._height, r)
 
+        minimal_font = transform_resource_filename(
+            "font", self.client.config.locale.minimal_font_file
+        )
+
         menu._width = fxw(248 / 256)
 
         # evolutions
@@ -51,8 +55,8 @@ class JournalInfoState(PygameMenuState):
         # weight and height
         unit = self.client.config.unit_measure
         if unit == "metric":
-            mon_weight = round(monster.weight, 1)
-            mon_height = round(monster.height, 1)
+            mon_weight = round(monster.weight)
+            mon_height = round(monster.height)
             unit_weight = U_KG
             unit_height = U_CM
         else:
@@ -62,21 +66,27 @@ class JournalInfoState(PygameMenuState):
             unit_height = U_FT
         # name
         menu._auto_centering = False
-        name = T.translate(monster.slug).upper()
+        name = T.translate(monster.slug)
         lab1: Any = menu.add.label(
             title=name,
             label_id="name",
             font_size=self.font_type.biggest,
             align=ALIGN_LEFT,
             float=True,
+            underline=True,
+            underline_color=SEA_BLUE_COLOR,
+            underline_offset=self.client.context.scaling.scale_int(1),
+            underline_width=self.client.context.scaling.scale_int(1),
         )
         lab1.translate(fxw(126 / 256), fxh(19.8 / 144))
+
         # weight
         _weight = f"{mon_weight} {unit_weight}"
         lab2: Any = menu.add.label(
             title=_weight,
             label_id="weight",
-            font_size=self.font_type.small,
+            font_size=self.font_type.biggest,
+            font_name=minimal_font,
             align=ALIGN_LEFT,
             float=True,
         )
@@ -86,38 +96,41 @@ class JournalInfoState(PygameMenuState):
         lab3: Any = menu.add.label(
             title=_height,
             label_id="height",
-            font_size=self.font_type.small,
+            font_size=self.font_type.biggest,
+            font_name=minimal_font,
             align=ALIGN_LEFT,
             float=True,
         )
         lab3.translate(fxw(126 / 256), fxh(39 / 144))
         # type
-        path1 = f"gfx/ui/icons/element/{monster.types[0]}_type_small.png"
-        type_image_1 = self._create_image(path1)
-        type_image_1.scale(self.factor, self.factor)
-        if len(monster.types) > 1:
-            path2 = f"gfx/ui/icons/element/{monster.types[1]}_type_small.png"
-            type_image_2 = self._create_image(path2)
-            type_image_2.scale(self.factor, self.factor)
-            menu.add.image(type_image_1, float=True).translate(
-                fxw(11.4 / 256), fxh(47.8 / 144)
-            )
-            menu.add.image(type_image_2, float=True).translate(
-                fxw(25.4 / 256), fxh(47.8 / 144)
-            )
-        else:
-            menu.add.image(type_image_1, float=True).translate(
-                fxw(11.4 / 256), fxh(47.8 / 144)
-            )
+        if self.is_visible:
+            path1 = f"gfx/ui/icons/element/{monster.types[0]}_type_small.png"
+            type_image_1 = self._create_image(path1)
+            type_image_1.scale(self.factor, self.factor)
+            if len(monster.types) > 1:
+                path2 = f"gfx/ui/icons/element/{monster.types[1]}_type_small.png"
+                type_image_2 = self._create_image(path2)
+                type_image_2.scale(self.factor, self.factor)
+                menu.add.image(type_image_1, float=True).translate(
+                    fxw(11.4 / 256), fxh(47.8 / 144)
+                )
+                menu.add.image(type_image_2, float=True).translate(
+                    fxw(25.4 / 256), fxh(47.8 / 144)
+                )
+            else:
+                menu.add.image(type_image_1, float=True).translate(
+                    fxw(11.4 / 256), fxh(47.8 / 144)
+                )
 
-        # Shift amount for two types
-        type_shift = (15 / 256) if len(monster.types) > 1 else 0
+        # Shift amount for two types (only when visible)
+        type_shift = (15 / 256) if (self.is_visible and len(monster.types) > 1) else 0
 
         types = self._safe_display(types)
         lab5: Any = menu.add.label(
             title=types,
             label_id="type_loaded",
-            font_size=self.font_type.small,
+            font_size=self.font_type.biggest,
+            font_name=minimal_font,
             align=ALIGN_LEFT,
             float=True,
         )
@@ -127,7 +140,7 @@ class JournalInfoState(PygameMenuState):
         lab4: Any = menu.add.label(
             title=_type,
             label_id="type_label",
-            font_size=self.font_type.small,
+            font_size=self.font_type.biggest,
             align=ALIGN_LEFT,
             float=True,
         )
@@ -139,7 +152,7 @@ class JournalInfoState(PygameMenuState):
         lab6: Any = menu.add.label(
             title=shape,
             label_id="shape",
-            font_size=self.font_type.small,
+            font_size=self.font_type.biggest,
             align=ALIGN_LEFT,
             float=True,
         )
@@ -151,21 +164,22 @@ class JournalInfoState(PygameMenuState):
         lab7: Any = menu.add.label(
             title=species,
             label_id="species",
-            font_size=self.font_type.small,
+            font_size=self.font_type.biggest,
             align=ALIGN_LEFT,
             float=True,
         )
         lab7.translate(fxw(126 / 256), fxh(29 / 144))
         # txmn_id
-        _txmn_id = f"ID: {monster.txmn_id}"
+        _txmn_id = f"{monster.txmn_id}"
         lab8: Any = menu.add.label(
             title=_txmn_id,
             label_id="txmn_id",
-            font_size=self.font_type.small,
+            font_size=self.font_type.biggest,
+            font_name=minimal_font,
             align=ALIGN_LEFT,
             float=True,
         )
-        lab8.translate(fxw(124.6 / 256), fxh(10 / 144))
+        lab8.translate(fxw(0.6 / 256), fxh(67 / 144))
 
         # description
         desc = T.translate(f"{monster.slug}_description")
@@ -173,7 +187,7 @@ class JournalInfoState(PygameMenuState):
         lab9: Any = menu.add.label(
             title=desc,
             label_id="description",
-            font_size=self.font_type.small,
+            font_size=self.font_type.biggest,
             wordwrap=True,
             leading=35,
             align=ALIGN_LEFT,
@@ -187,7 +201,7 @@ class JournalInfoState(PygameMenuState):
         lab10: Any = menu.add.label(
             title=evo,
             label_id="evolution",
-            font_size=self.font_type.small,
+            font_size=self.font_type.biggest,
             wordwrap=True,
             align=ALIGN_LEFT,
             float=True,
@@ -210,7 +224,7 @@ class JournalInfoState(PygameMenuState):
                 menu.add.label(
                     title=f"{T.translate(ele).upper()}",
                     align=ALIGN_LEFT,
-                    font_size=self.font_type.smaller,
+                    font_size=self.font_type.biggest,
                 )
                 for ele in elements
             ]
@@ -234,7 +248,7 @@ class JournalInfoState(PygameMenuState):
         new_image = self._create_image_from_surface(sprite.image)
         image_widget = menu.add.image(image_path=new_image.copy())
         image_widget.set_float(origin_position=True)
-        image_widget.translate(fxw(53.6 / 256), fxh(10 / 144))
+        image_widget.translate(fxw(45.6 / 256), fxh(6 / 144))
 
     def __init__(
         self,
@@ -260,6 +274,7 @@ class JournalInfoState(PygameMenuState):
         super().__init__(client=client, height=height, width=width, **kwargs)
 
         theme = self._setup_theme(BG_JOURNAL_INFO)
+        theme.widget_font_shadow = False
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
         self._menu_config["theme"] = theme
@@ -280,9 +295,9 @@ class JournalInfoState(PygameMenuState):
             key=lambda x: x.txmn_id,
         )
 
-        # LEFT / RIGHT → cycle monsters (with repeat)
+        # LEFT / RIGHT / DOWN → cycle monsters (with repeat)
         if (
-            event.button in (buttons.RIGHT, buttons.LEFT)
+            event.button in (buttons.RIGHT, buttons.LEFT, buttons.DOWN, buttons.UP)
             and self.valid_press(event)
             and self.source in ("JournalInfoState", "JournalState")
         ):
@@ -292,7 +307,7 @@ class JournalInfoState(PygameMenuState):
             current_monster_index = monster_models.index(self._monster)
             new_index = (
                 (current_monster_index + 1) % len(monster_models)
-                if event.button == buttons.RIGHT
+                if event.button in (buttons.RIGHT, buttons.DOWN)
                 else (current_monster_index - 1) % len(monster_models)
             )
 

@@ -13,6 +13,7 @@ from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const.graphics import BG_JOURNAL_INFO, SEA_BLUE_COLOR
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_JOURNAL, DIMGRAY_COLOR
 from tuxemon.tools import fix_measure
@@ -69,6 +70,9 @@ class JournalState(PygameMenuState):
                         font_size=self.font_type.biggest,
                         button_id=mon.slug,
                         underline=True,
+                        underline_color=SEA_BLUE_COLOR,
+                        underline_offset=self.client.context.scaling.scale_int(1),
+                        underline_width=self.client.context.scaling.scale_int(1),
                     ).translate(btn_x_offset, btn_y_offset)
             else:
                 label = f"{mon.txmn_id}. -----"

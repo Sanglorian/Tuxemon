@@ -253,6 +253,7 @@
     <property name="act33" value="set_monster_status"/>
     <property name="act34" value="lock_controls"/>
     <property name="act35" value="pathfind spyder_dojo_wan,9,9"/>
+    <property name="act36" value="remove_npc spyder_dojo_wan"/>
     <property name="act37" value="unlock_controls"/>
     <property name="behav1" value="talk spyder_dojo_wan"/>
     <property name="cond1" value="is variable_set wanintro:yes"/>
@@ -297,12 +298,6 @@
     <property name="act1" value="char_talk spyder_dojo_toph,post_battle_lose"/>
     <property name="behav1" value="talk spyder_dojo_toph"/>
     <property name="cond1" value="is battle_outcome player,won,spyder_dojo_toph"/>
-   </properties>
-  </object>
-  <object id="39" name="Remove Wan" type="event" x="336" y="144" width="16" height="16">
-   <properties>
-    <property name="act1" value="remove_npc spyder_dojo_wan"/>
-    <property name="cond1" value="is battle_outcome player,won,spyder_dojo_wan"/>
    </properties>
   </object>
   <object id="40" name="Play Music" type="event" x="0" y="0" width="16" height="16">

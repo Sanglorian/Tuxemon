@@ -15,7 +15,7 @@ from tuxemon.db import MonsterModel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_JOURNAL_CHOICE, DIMGRAY_COLOR
-from tuxemon.tools import fix_measure
+from tuxemon.tools import fix_measure, transform_resource_filename
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -43,6 +43,49 @@ class JournalChoice(PygameMenuState):
 
         total_monster = len(monsters)
         pages = math.ceil(total_monster / MAX_PAGE)
+
+        # floating count badges
+        minimal_font = transform_resource_filename(
+            "font", self.client.config.locale.minimal_font_file
+        )
+        featured = self.char.tuxepedia.get_caught_count()
+        stubs = self.char.tuxepedia.get_seen_count()
+        missing = total_monster - featured - stubs
+
+        menu._auto_centering = False
+        badge_x = fix_measure(menu._width, 0.03)
+        badge_y = fix_measure(menu._height, 0.03)
+        line_gap = fix_measure(menu._height, 0.06)
+
+        badge_featured: Any = menu.add.label(
+            title=T.format("journal_badge_featured", {"n": str(featured)}),
+            font_size=self.font_type.biggest,
+            font_name=minimal_font,
+            float=True,
+            float_origin_position=True,
+            padding=0,
+        )
+        badge_featured.translate(badge_x, badge_y)
+
+        badge_stubs: Any = menu.add.label(
+            title=T.format("journal_badge_stubs", {"n": str(stubs)}),
+            font_size=self.font_type.biggest,
+            font_name=minimal_font,
+            float=True,
+            float_origin_position=True,
+            padding=0,
+        )
+        badge_stubs.translate(badge_x, badge_y + line_gap)
+
+        badge_missing: Any = menu.add.label(
+            title=T.format("journal_badge_missing", {"n": str(missing)}),
+            font_size=self.font_type.biggest,
+            font_name=minimal_font,
+            float=True,
+            float_origin_position=True,
+            padding=0,
+        )
+        badge_missing.translate(badge_x, badge_y + line_gap * 2)
 
         btn_x_offset = fix_measure(menu._width, 0.25) - self.client.context.scaling.scale_int(60)
         btn_y_offset = fix_measure(menu._height, 0.01)

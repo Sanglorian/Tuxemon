@@ -18,7 +18,12 @@ from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import TECH_INFO
 from tuxemon.platform.const.sizes import ACCURACY_RANGE, POTENCY_RANGE
 from tuxemon.technique.technique import Technique
-from tuxemon.tools import fix_measure, open_dialog, scale, transform_resource_filename
+from tuxemon.tools import (
+    fix_measure,
+    open_dialog,
+    scale,
+    transform_resource_filename,
+)
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -210,7 +215,7 @@ class MonsterMovesState(PygameMenuState):
                 progress_text_font=self.minimal_font,
                 float=True,
                 box_border_width=scale(1),
-                progress_text_font_hfactor=1.0, 
+                progress_text_font_hfactor=1.0,
             )
             self.bar_accuracy.translate(
                 fix_measure(width, 4 / 256), fix_measure(height, 74.8 / 144)
@@ -228,7 +233,7 @@ class MonsterMovesState(PygameMenuState):
                 align=ALIGN_LEFT,
                 progress_text_font=self.minimal_font,
                 float=True,
-                progress_text_font_hfactor=1.0, 
+                progress_text_font_hfactor=1.0,
                 box_border_width=scale(1),
             )
             self.bar_potency.translate(

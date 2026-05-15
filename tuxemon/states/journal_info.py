@@ -16,7 +16,7 @@ from tuxemon.monster.sprite import MonsterSpriteHandler, SpriteLoader
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_JOURNAL_INFO, SEA_BLUE_COLOR
 from tuxemon.platform.const.sizes import U_CM, U_FT, U_KG, U_LB
-from tuxemon.tools import fix_measure, transform_resource_filename
+from tuxemon.tools import transform_resource_filename
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -41,7 +41,7 @@ class JournalInfoState(PygameMenuState):
         )
 
 
-        orig_w = menu._width 
+        orig_w = menu._width
         orig_h = menu._height
 
         def fxw(nominal_px: float) -> int:
@@ -58,8 +58,7 @@ class JournalInfoState(PygameMenuState):
                 if len(monster.evolutions) == 1
                 else "yes_evolutions"
             )
-        # types
-        types = " ".join(map(lambda s: T.translate(s), monster.types))
+
         # weight and height
         unit = self.client.config.unit_measure
         if unit == "metric":
@@ -139,8 +138,6 @@ class JournalInfoState(PygameMenuState):
                     float_origin_position=True, padding=0,
                 ).translate(fxw(119), fxh(48))
 
-        # Shift amount for two types (only when visible)
-        type_shift = (15) if (self.is_visible and len(monster.types) > 1) else 0
 
         menu_type_suffix = T.translate("monster_menu_type_suffix")
 

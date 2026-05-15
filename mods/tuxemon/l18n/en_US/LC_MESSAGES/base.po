@@ -4558,13 +4558,13 @@ msgid "page_tuxepedia"
 msgstr "id {a}–{b}"
 
 msgid "journal_badge_featured"
-msgstr "◉ featured {n}"
+msgstr "featured"
 
 msgid "journal_badge_stubs"
-msgstr "stubs {n}"
+msgstr "stubs"
 
 msgid "journal_badge_missing"
-msgstr "missing {n}"
+msgstr "missing"
 
 
 msgid "no_evolution"

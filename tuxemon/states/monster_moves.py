@@ -358,6 +358,8 @@ class MonsterMovesState(PygameMenuState):
         self.add_menu_items(self.menu, monster)
         self.update_selected_widget()
         self.reset_theme()
+        if self.selected_widget:
+            self.add_menu_technique(self.menu, self.selected_widget.get_id())
 
     def reset_theme(self) -> None:
         super().reset_theme()
@@ -370,12 +372,8 @@ class MonsterMovesState(PygameMenuState):
 
         # Forget-mode: player must pick a technique to forget
         if self._on_selection is not None:
-            self.update_selected_widget()
-            menu = self.menu.get_current()
-            if self.selected_widget:
-                self.add_menu_technique(menu, self.selected_widget.get_id())
-
             if event.button == buttons.A and self.valid_press(event):
+                self.update_selected_widget()
                 if self.selected_widget:
                     slug = self.selected_widget.get_id()
                     technique = next(
@@ -399,7 +397,12 @@ class MonsterMovesState(PygameMenuState):
                         )
                 return None
 
-            return super().process_event(event)
+            result = super().process_event(event)
+            self.update_selected_widget()
+            menu = self.menu.get_current()
+            if self.selected_widget:
+                self.add_menu_technique(menu, self.selected_widget.get_id())
+            return result
 
 
         if self._source in [
@@ -431,12 +434,13 @@ class MonsterMovesState(PygameMenuState):
 
             # Everything else → normal menu behavior
             else:
+                result = super().process_event(event)
                 self.update_selected_widget()
                 menu = self.menu.get_current()
                 if self.selected_widget:
                     self.add_menu_technique(
                         menu, self.selected_widget.get_id()
                     )
-                return super().process_event(event)
+                return result
 
         return None

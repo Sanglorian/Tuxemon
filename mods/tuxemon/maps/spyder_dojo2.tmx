@@ -162,7 +162,7 @@
     <property name="act15" value="add_tech iid_slot_1,sunburst"/>
     <property name="act16" value="add_monster coppi,20,spyder_dojo_yangchen,5,10"/>
     <property name="act17" value="add_tech iid_slot_2,oven"/>
-    <property name="act18" value="add_monster vigeuer,20,spyder_dojo_yangchen,5,10"/>
+    <property name="act18" value="add_monster vigueur,20,spyder_dojo_yangchen,5,10"/>
     <property name="act19" value="add_tech iid_slot_3,magma"/>
     <property name="act20" value="start_battle player,spyder_dojo_yangchen"/>
     <property name="act21" value="char_talk spyder_dojo_yangchen,post_battle_lose"/>

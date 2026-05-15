@@ -13,9 +13,12 @@ from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.platform.const.graphics import BG_JOURNAL_INFO, SEA_BLUE_COLOR
 from tuxemon.platform.const import buttons
-from tuxemon.platform.const.graphics import BG_JOURNAL, DIMGRAY_COLOR
+from tuxemon.platform.const.graphics import (
+    BG_JOURNAL,
+    DIMGRAY_COLOR,
+    SEA_BLUE_COLOR,
+)
 from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:

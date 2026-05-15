@@ -15,7 +15,7 @@ from tuxemon.db import MonsterModel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_JOURNAL_CHOICE, DIMGRAY_COLOR
-from tuxemon.tools import fix_measure, transform_resource_filename
+from tuxemon.tools import transform_resource_filename
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient

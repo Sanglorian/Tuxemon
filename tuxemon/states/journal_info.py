@@ -240,6 +240,16 @@ class JournalInfoState(PygameMenuState):
         # description
         desc = T.translate(f"{monster.slug}_description")
         desc = self._safe_display(desc)
+        desc_frame = menu.add.frame_v(
+            fxw(255),
+            fxh(57),
+            float=True,
+            float_origin_position=True,
+            frame_id="description_frame",
+            padding=0,
+        )
+        desc_frame._relax=True
+        desc_frame.translate(fxw(8), fxh(85))
         lab9: Any = menu.add.label(
             title=desc,
             label_id="description",
@@ -247,12 +257,9 @@ class JournalInfoState(PygameMenuState):
             wordwrap=True,
             leading=50,
             align=ALIGN_LEFT,
-            float=True,
-            float_origin_position=True,
             padding=0,
         )
-
-        lab9.translate(fxw(8), fxh(85))
+        desc_frame.pack(lab9)
 
         # evolution monsters
         slugs = [ele.monster_slug for ele in monster.evolutions]

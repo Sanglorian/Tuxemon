@@ -21,13 +21,13 @@ MON_DB_DIR = REPO_ROOT / "mods" / "tuxemon" / "db" / "monster"
 def find_save_path(slot: int) -> Path:
     """Locate the save file for a given slot, supporting json/yaml/cbor."""
     if sys.platform == "win32":
-        base = Path.home() / "AppData" / "Roaming" / "tuxemon" / "saves"
+        base = Path.home() / ".tuxemon" / "saves"
     elif sys.platform == "darwin":
         base = Path.home() / "Library" / "Application Support" / "tuxemon" / "saves"
     else:
         base = Path.home() / ".tuxemon" / "saves"
 
-    for ext in ("json", "yaml", "cbor"):
+    for ext in ("save", "json", "yaml", "cbor"):
         p = base / f"slot{slot}.{ext}"
         if p.exists():
             return p
@@ -46,7 +46,7 @@ def find_save_path(slot: int) -> Path:
 def load_save(path: Path) -> dict:
     suffix = path.suffix.lower()
     text = path.read_text(encoding="utf-8")
-    if suffix == ".json":
+    if suffix in (".json", ".save"):
         return json.loads(text)
     if suffix in (".yaml", ".yml"):
         import yaml
@@ -56,7 +56,7 @@ def load_save(path: Path) -> dict:
 
 def write_save(data: dict, path: Path) -> None:
     suffix = path.suffix.lower()
-    if suffix == ".json":
+    if suffix in (".json", ".save"):
         path.write_text(json.dumps(data, indent=4), encoding="utf-8")
     elif suffix in (".yaml", ".yml"):
         import yaml
@@ -84,7 +84,7 @@ def make_monster_dict(slug: str, level: int) -> dict:
         "taste_cold": None,
         "taste_warm": None,
         "gender": "neuter",
-        "acquisition": "caught",
+        "acquisition": "captured",
         "plague": {},
         "mother_iid": None,
         "father_iid": None,
@@ -130,35 +130,45 @@ def main() -> None:
     all_slugs = sorted(p.stem for p in MON_DB_DIR.glob("*.yaml"))
     print(f"Found {len(all_slugs)} monsters in the database.")
 
+    # --- Boxes ---
     new_monsters = [
         make_monster_dict(slug, args.level)
         for slug in all_slugs
         if slug not in existing
     ]
-    skipped = len(all_slugs) - len(new_monsters)
+    if new_monsters:
+        print(f"Adding {len(new_monsters)} monsters to storage ({len(all_slugs) - len(new_monsters)} already present).")
+        BOX_SIZE = 30
+        boxes: dict = dict(npc_state.get("monster_boxes", {}))
+        idx = 1
+        while f"cheat_box_{idx}" in boxes:
+            idx += 1
+        for i in range(0, len(new_monsters), BOX_SIZE):
+            key = f"cheat_box_{idx}"
+            chunk = new_monsters[i : i + BOX_SIZE]
+            boxes[key] = chunk
+            print(f"  Created {key!r} with {len(chunk)} monsters.")
+            idx += 1
+        npc_state["monster_boxes"] = boxes
+    else:
+        print("All monsters already in storage, skipping box update.")
 
-    if not new_monsters:
-        print("All monsters are already in the save. Nothing to do.")
-        sys.exit(0)
+    # --- Tuxepedia ---
+    tuxepedia: dict = dict(npc_state.get("tuxepedia") or {})
+    needs_update = [s for s in all_slugs if tuxepedia.get(s, {}).get("status") != "caught"]
+    if needs_update:
+        print(f"Marking {len(needs_update)} monsters as caught in tuxepedia.")
+        for slug in all_slugs:
+            entry = tuxepedia.get(slug, {})
+            tuxepedia[slug] = {
+                "status": "caught",
+                "appearance_count": max(entry.get("appearance_count", 0), 1),
+                "caught_count": max(entry.get("caught_count", 0), 1),
+            }
+        npc_state["tuxepedia"] = tuxepedia
+    else:
+        print("Tuxepedia already up to date.")
 
-    print(f"Adding {len(new_monsters)} monsters ({skipped} already present).")
-
-    BOX_SIZE = 30
-    boxes: dict = dict(npc_state.get("monster_boxes", {}))
-
-    # Pick box names that don't clash with existing ones.
-    idx = 1
-    while f"cheat_box_{idx}" in boxes:
-        idx += 1
-
-    for i in range(0, len(new_monsters), BOX_SIZE):
-        key = f"cheat_box_{idx}"
-        chunk = new_monsters[i : i + BOX_SIZE]
-        boxes[key] = chunk
-        print(f"  Created {key!r} with {len(chunk)} monsters.")
-        idx += 1
-
-    npc_state["monster_boxes"] = boxes
     save_data["npc_state"] = npc_state
 
     write_save(save_data, save_path)

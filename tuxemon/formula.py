@@ -92,13 +92,16 @@ def simple_damage_calculate(
 
     range_map_entry = range_map[technique.range]
 
+    user_combat_stats = user.get_combat_stats()
+    target_combat_stats = target.get_combat_stats()
+
     user_strength: float = 0
     user_stat = range_map_entry.user_stat
     if user_stat.stat == "level":
         user_strength += (COEFF_DAMAGE + user.level) * user_stat.weight
     else:
         user_strength += (
-            getattr(user, user_stat.stat, 0)
+            getattr(user_combat_stats, user_stat.stat, 0)
             * (COEFF_DAMAGE + user.level)
             * user_stat.weight
         )
@@ -110,7 +113,7 @@ def simple_damage_calculate(
         target_resist += 1 * target_stat.weight
     else:
         target_resist += (
-            getattr(target, target_stat.stat, 0) * target_stat.weight
+            getattr(target_combat_stats, target_stat.stat, 0) * target_stat.weight
         )
     logger.debug(f"Target resistance: {target_resist}")
 

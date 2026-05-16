@@ -952,7 +952,6 @@ class CombatState(CombatAnimations):
             monster_party
         ) in self.combat_session.field_monsters.get_all_monsters().values():
             for monster in monster_party:
-                monster.get_combat_stats()
                 self.animate_hp(monster)
                 self.apply_status_effects(monster)
                 if monster.is_fainted:

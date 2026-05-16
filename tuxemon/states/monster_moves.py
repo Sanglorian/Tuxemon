@@ -18,7 +18,12 @@ from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import TECH_INFO
 from tuxemon.platform.const.sizes import ACCURACY_RANGE, POTENCY_RANGE
 from tuxemon.technique.technique import Technique
-from tuxemon.tools import fix_measure, open_dialog
+from tuxemon.tools import (
+    fix_measure,
+    open_dialog,
+    scale,
+    transform_resource_filename,
+)
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -54,6 +59,10 @@ class MonsterMovesState(PygameMenuState):
             return fix_measure(menu._height, r)
 
         menu._width = fxw(248 / 256)
+
+        self.minimal_font = transform_resource_filename(
+            "font", self.client.config.locale.minimal_font_file
+        )
 
         # Name (white, manual position)
         menu._auto_centering = False
@@ -180,6 +189,7 @@ class MonsterMovesState(PygameMenuState):
 
         diff_accuracy = round((technique.accuracy / ACCURACY_RANGE[1]) * 100)
         diff_potency = round((technique.potency / POTENCY_RANGE[1]) * 100)
+        show_potency = diff_potency > 0
 
         # Find existing bars (by title) if present
         bar_accuracy: ProgressBar | None = None
@@ -199,7 +209,10 @@ class MonsterMovesState(PygameMenuState):
                 font_size=self.font_type.biggest,
                 width=fix_measure(width, 80 / 256),
                 align=ALIGN_LEFT,
+                progress_text_font=self.minimal_font,
                 float=True,
+                box_border_width=scale(1),
+                progress_text_font_hfactor=1.0,
             )
             self.bar_accuracy.translate(
                 fix_measure(width, 4 / 256), fix_measure(height, 74.8 / 144)
@@ -207,15 +220,22 @@ class MonsterMovesState(PygameMenuState):
         else:
             bar_accuracy.set_value(diff_accuracy)
 
-        # Potency (manual placement)
-        if bar_potency is None:
+        # Potency (manual placement) — omit entirely when potency is 0%
+        if not show_potency:
+            if bar_potency is not None:
+                menu.remove_widget(bar_potency)
+                self.bar_potency = None
+        elif bar_potency is None:
             self.bar_potency = menu.add.progress_bar(
                 T.translate("technique_potency"),
                 default=diff_potency,
                 font_size=self.font_type.biggest,
                 width=fix_measure(width, 80 / 256),
                 align=ALIGN_LEFT,
+                progress_text_font=self.minimal_font,
                 float=True,
+                progress_text_font_hfactor=1.0,
+                box_border_width=scale(1),
             )
             self.bar_potency.translate(
                 fix_measure(width, 4 / 256), fix_measure(height, 99.8 / 144)

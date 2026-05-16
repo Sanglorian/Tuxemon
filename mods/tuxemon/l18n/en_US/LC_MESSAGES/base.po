@@ -1942,7 +1942,7 @@ msgid "combat_state_revenge_get"
 msgstr "When attacked,{target} will take revenge."
 
 msgid "combat_state_sniping_get"
-msgstr "{target} takes aim."
+msgstr "{target} backs away."
 
 msgid "combat_state_softened_get"
 msgstr "{target}'s armor softens."

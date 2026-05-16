@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from tuxemon.constants import paths
-from tuxemon.database import db as _db_module
+from tuxemon.database.runtime import db as _db_module
 from tuxemon.monster.monster import Monster
 from tuxemon.save_system import save as save_module
 from tuxemon.save_system.save import get_save_path

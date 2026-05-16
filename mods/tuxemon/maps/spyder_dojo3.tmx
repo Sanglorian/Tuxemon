@@ -293,12 +293,6 @@
     <property name="cond1" value="is battle_outcome player,won,spyder_dojo_ares"/>
    </properties>
   </object>
-  <object id="37" name="Remove Tu" type="event" x="336" y="144" width="16" height="16">
-   <properties>
-    <property name="act1" value="remove_npc spyder_dojo_tu"/>
-    <property name="cond1" value="is battle_outcome player,won,spyder_dojo_tu"/>
-   </properties>
-  </object>
   <object id="38" name="Play Music" type="event" x="0" y="0" width="16" height="16">
    <properties>
     <property name="act1" value="play_music music_dojo_theme"/>

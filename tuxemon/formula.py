@@ -92,13 +92,16 @@ def simple_damage_calculate(
 
     range_map_entry = range_map[technique.range]
 
+    user_combat_stats = user.get_combat_stats()
+    target_combat_stats = target.get_combat_stats()
+
     user_strength: float = 0
     user_stat = range_map_entry.user_stat
     if user_stat.stat == "level":
         user_strength += (COEFF_DAMAGE + user.level) * user_stat.weight
     else:
         user_strength += (
-            getattr(user, user_stat.stat, 0)
+            getattr(user_combat_stats, user_stat.stat, 0)
             * (COEFF_DAMAGE + user.level)
             * user_stat.weight
         )
@@ -110,7 +113,7 @@ def simple_damage_calculate(
         target_resist += 1 * target_stat.weight
     else:
         target_resist += (
-            getattr(target, target_stat.stat, 0) * target_stat.weight
+            getattr(target_combat_stats, target_stat.stat, 0) * target_stat.weight
         )
     logger.debug(f"Target resistance: {target_resist}")
 
@@ -638,7 +641,8 @@ def speed_monster(monster: Monster, technique: Technique) -> int:
     Calculate the speed modifier for the given monster / technique.
     """
     min_mod = max(config_combat.min_speed_modifier, 1)
-    base_speed = float(max(monster.speed, 0))
+    combat_stats = monster.get_combat_stats()
+    base_speed = float(max(combat_stats.speed, 0))
 
     # Calculate modifier based on technique speed
     speed_adjustment = technique.speed * config_combat.speed_factor
@@ -652,7 +656,7 @@ def speed_monster(monster: Monster, technique: Technique) -> int:
 
     # Use dodge as a strategic tiebreaker
     speed_modifier += (
-        max(float(monster.dodge), 0) * config_combat.dodge_modifier
+        max(float(combat_stats.dodge), 0) * config_combat.dodge_modifier
     )
 
     return int(speed_modifier)

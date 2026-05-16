@@ -641,7 +641,8 @@ def speed_monster(monster: Monster, technique: Technique) -> int:
     Calculate the speed modifier for the given monster / technique.
     """
     min_mod = max(config_combat.min_speed_modifier, 1)
-    base_speed = float(max(monster.speed, 0))
+    combat_stats = monster.get_combat_stats()
+    base_speed = float(max(combat_stats.speed, 0))
 
     # Calculate modifier based on technique speed
     speed_adjustment = technique.speed * config_combat.speed_factor
@@ -655,7 +656,7 @@ def speed_monster(monster: Monster, technique: Technique) -> int:
 
     # Use dodge as a strategic tiebreaker
     speed_modifier += (
-        max(float(monster.dodge), 0) * config_combat.dodge_modifier
+        max(float(combat_stats.dodge), 0) * config_combat.dodge_modifier
     )
 
     return int(speed_modifier)

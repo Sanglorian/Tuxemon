@@ -348,6 +348,7 @@ class CombatState(CombatAnimations):
         if not self.combat_session.action_queue.is_empty():
             action = self.combat_session.action_queue.pop()
             self.perform_action(action.user, action.method, action.target)
+            self.combat_session.action_queue.sort()
             self.task(self.check_party_hp, interval=1)
             self.task(self.animate_party_status, interval=3)
             self.notifier.trigger_xp_and_wait_for_input(self.text_area)

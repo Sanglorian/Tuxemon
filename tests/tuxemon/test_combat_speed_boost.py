@@ -6,12 +6,9 @@ Integration tests: temporary speed boosts affect turn order and damage.
 Covers the fix for get_combat_stats() return value being used in both
 simple_damage_calculate() and speed_monster() instead of raw base stats.
 """
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
 
 from tuxemon.combat.action_queue import ActionQueue, EnqueuedAction
-from tuxemon.combat.sort_manager import SortManager
 from tuxemon.formula import simple_damage_calculate, speed_monster
 from tuxemon.monster.monster import Monster
 from tuxemon.monster.stats import BasicStats

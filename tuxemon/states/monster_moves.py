@@ -193,6 +193,7 @@ class MonsterMovesState(PygameMenuState):
 
         diff_accuracy = round((technique.accuracy / ACCURACY_RANGE[1]) * 100)
         diff_potency = round((technique.potency / POTENCY_RANGE[1]) * 100)
+        show_potency = diff_potency > 0
 
         # Find existing bars (by title) if present
         bar_accuracy: ProgressBar | None = None
@@ -223,8 +224,12 @@ class MonsterMovesState(PygameMenuState):
         else:
             bar_accuracy.set_value(diff_accuracy)
 
-        # Potency (manual placement)
-        if bar_potency is None:
+        # Potency (manual placement) — omit entirely when potency is 0%
+        if not show_potency:
+            if bar_potency is not None:
+                menu.remove_widget(bar_potency)
+                self.bar_potency = None
+        elif bar_potency is None:
             self.bar_potency = menu.add.progress_bar(
                 T.translate("technique_potency"),
                 default=diff_potency,

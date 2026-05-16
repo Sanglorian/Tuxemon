@@ -63,7 +63,7 @@ events:
     actions:
     - char_stop player
     - lock_controls
-    - pathfind player,1,10
+    - pathfind player,1,8
     - set_variable paymuseum:null
     - set_variable notpaidmuseum:yes
     - unlock_controls

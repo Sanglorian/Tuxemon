@@ -229,8 +229,26 @@ def _handle_loss(
                 location=location,
                 turns=turns,
             )
+
+        if loser.is_player:
+            penalty = _calculate_loss_penalty(loser)
+            if penalty > 0:
+                loser.money_controller.money_manager.remove_money(penalty)
+                formatter = CurrencyFormatter()
+                info["lost"] = formatter.format(penalty)
+                return T.format("combat_defeat_trainer", info)
+
         return T.format("combat_defeat", info)
     return ""
+
+
+def _calculate_loss_penalty(loser: NPC) -> int:
+    """Sum level * money_modifier for each fainted monster in the loser's party."""
+    return sum(
+        int(monster.level * monster.money_modifier)
+        for monster in loser.monsters
+        if monster.is_fainted
+    )
 
 
 def _handle_draw(

@@ -1781,6 +1781,9 @@ msgstr "{name} has won and received {prize}!"
 msgid "combat_defeat"
 msgstr "{name} has been defeated!"
 
+msgid "combat_defeat_trainer"
+msgstr "{name} has been defeated and lost {lost}!"
+
 msgid "combat_draw"
 msgstr "All parties have fainted!"
 

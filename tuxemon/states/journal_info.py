@@ -138,7 +138,6 @@ class JournalInfoState(PygameMenuState):
                     float_origin_position=True, padding=0,
                 ).translate(fxw(119), fxh(48))
 
-
         menu_type_suffix = T.translate("monster_menu_type_suffix")
 
         if len(monster.types) > 1:

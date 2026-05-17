@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="294">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="294">
  <properties>
   <property name="east" value="paper_town"/>
   <property name="edges" value="clamped"/>
+  <property name="map_type" value="route"/>
   <property name="scenario" value="spyder"/>
   <property name="slug" value="routec"/>
-  <property name="map_type" value="route"/>
   <property name="west" value="candy_town"/>
  </properties>
  <tileset firstgid="1" source="../gfx/tilesets/core_outdoor.tsx"/>
@@ -52,7 +52,8 @@
   </object>
   <object id="201" name="Create River" type="event" x="80" y="112" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_searoutec_river,5,7,wander"/>
+    <property name="act1" value="create_npc spyder_searoutec_river,5,7"/>
+    <property name="act2" value="char_wander spyder_searoutec_river,0.7"/>
     <property name="cond1" value="not char_exists spyder_searoutec_river"/>
    </properties>
   </object>
@@ -123,7 +124,8 @@
   </object>
   <object id="209" name="Create Beech" type="event" x="128" y="192" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_searoutec_beech,8,14,wander"/>
+    <property name="act1" value="create_npc spyder_searoutec_beech,8,14"/>
+    <property name="act2" value="char_wander spyder_searoutec_beech,0.9"/>
     <property name="cond1" value="not char_exists spyder_searoutec_beech"/>
    </properties>
   </object>
@@ -343,7 +345,8 @@
   </object>
   <object id="258" name="Create Swimmer" type="event" x="240" y="480" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_searoutec_beta,15,30,wander"/>
+    <property name="act1" value="create_npc spyder_searoutec_beta,15,30"/>
+    <property name="act2" value="char_wander spyder_searoutec_beta,0.7"/>
     <property name="cond1" value="not char_exists spyder_searoutec_beta"/>
    </properties>
   </object>

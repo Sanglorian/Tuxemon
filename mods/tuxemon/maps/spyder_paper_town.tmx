@@ -177,16 +177,17 @@
     <property name="cond3" value="is button_pressed INTERACT"/>
    </properties>
   </object>
-  <object id="158" name="Create Conileaf" type="event" x="384" y="32" width="16" height="16">
+  <object id="158" name="Create Rockitten" type="event" x="384" y="32" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_rockittenfrolicking,24,2,wander"/>
     <property name="cond1" value="not char_exists spyder_rockittenfrolicking"/>
     <property name="cond2" value="is variable_set captainreturns:yes"/>
    </properties>
   </object>
-  <object id="160" name="Create Rockitten" type="event" x="400" y="32" width="16" height="16">
+  <object id="160" name="Create Conileaf" type="event" x="416" y="32" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_conileaffrolicking,27,3,wander"/>
+    <property name="act1" value="create_npc spyder_conileaffrolicking,27,3"/>
+    <property name="act2" value="char_wander spyder_conileaffrolicking,1.1"/>
     <property name="cond1" value="not char_exists spyder_conileaffrolicking"/>
     <property name="cond2" value="is variable_set captainreturns:yes"/>
    </properties>

@@ -307,7 +307,8 @@
   </object>
   <object id="74" name="Create Rincewind" type="event" x="224" y="80" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_route4_rincewind,14,5,wander"/>
+    <property name="act1" value="create_npc spyder_route4_rincewind,14,5"/>
+    <property name="act2" value="char_wander spyder_route4_rincewind,0.9"/>
     <property name="cond1" value="not char_exists spyder_route4_rincewind"/>
    </properties>
   </object>

@@ -7,8 +7,8 @@ events:
     type: event
   Create Captain:
     actions:
-    - create_npc spyder_captain,37,8
-    - char_face spyder_captain,left
+    - create_npc spyder_captain,37,13
+    - char_face spyder_captain,up
     conditions:
     - not char_exists spyder_captain
     - is variable_set captainreturns:yes
@@ -22,7 +22,7 @@ events:
   Destination - Candy:
     actions:
     - set_variable rivergoto:nothing
-    - transition_teleport player,spyder_candy_port.tmx,37,13,0.3
+    - transition_teleport player,spyder_candy_port.tmx,37,12,0.3
     - char_face player,down
     conditions:
     - is variable_set rivergoto:candy_port

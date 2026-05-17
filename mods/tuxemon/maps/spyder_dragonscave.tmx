@@ -290,11 +290,12 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_dragonscave_tomas"/>
-    <property name="act3" value="char_talk spyder_dragonscave_tomas,pre_battle"/>
-    <property name="act4" value="unlock_controls"/>
-    <property name="act5" value="add_monster allagon,35,spyder_dragonscave_tomas,5,10"/>
-    <property name="act6" value="start_battle player,spyder_dragonscave_tomas"/>
-    <property name="act7" value="char_talk spyder_dragonscave_tomas,post_battle_lose"/>
+    <property name="act3" value="char_face player,spyder_dragonscave_tomas"/>
+    <property name="act4" value="char_talk spyder_dragonscave_tomas,pre_battle"/>
+    <property name="act5" value="unlock_controls"/>
+    <property name="act6" value="add_monster allagon,35,spyder_dragonscave_tomas,5,10"/>
+    <property name="act7" value="start_battle player,spyder_dragonscave_tomas"/>
+    <property name="act8" value="char_talk spyder_dragonscave_tomas,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_tomas"/>
     <property name="cond2" value="is char_at player"/>
     <property name="cond3" value="not char_defeated player"/>
@@ -304,11 +305,12 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_dragonscave_daenny"/>
-    <property name="act3" value="char_talk spyder_dragonscave_daenny,pre_battle"/>
-    <property name="act4" value="unlock_controls"/>
-    <property name="act5" value="add_monster eaglace,37,spyder_dragonscave_daenny,5,10"/>
-    <property name="act6" value="start_battle player,spyder_dragonscave_daenny"/>
-    <property name="act7" value="char_talk spyder_dragonscave_daenny,post_battle_lose"/>
+    <property name="act3" value="char_face player,spyder_dragonscave_daenny"/>
+    <property name="act4" value="char_talk spyder_dragonscave_daenny,pre_battle"/>
+    <property name="act5" value="unlock_controls"/>
+    <property name="act6" value="add_monster eaglace,37,spyder_dragonscave_daenny,5,10"/>
+    <property name="act7" value="start_battle player,spyder_dragonscave_daenny"/>
+    <property name="act8" value="char_talk spyder_dragonscave_daenny,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_daenny"/>
     <property name="cond2" value="is char_at player"/>
     <property name="cond3" value="not char_defeated player"/>
@@ -318,11 +320,12 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_dragonscave_cailin"/>
-    <property name="act3" value="char_talk spyder_dragonscave_cailin,pre_battle"/>
-    <property name="act4" value="unlock_controls"/>
-    <property name="act5" value="add_monster dragarbor,36,spyder_dragonscave_cailin,5,10"/>
-    <property name="act6" value="start_battle player,spyder_dragonscave_cailin"/>
-    <property name="act7" value="char_talk spyder_dragonscave_cailin,post_battle_lose"/>
+    <property name="act3" value="char_face player,spyder_dragonscave_cailin"/>
+    <property name="act4" value="char_talk spyder_dragonscave_cailin,pre_battle"/>
+    <property name="act5" value="unlock_controls"/>
+    <property name="act6" value="add_monster dragarbor,36,spyder_dragonscave_cailin,5,10"/>
+    <property name="act7" value="start_battle player,spyder_dragonscave_cailin"/>
+    <property name="act8" value="char_talk spyder_dragonscave_cailin,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_cailin"/>
     <property name="cond2" value="is char_at player"/>
     <property name="cond3" value="not char_defeated player"/>
@@ -332,11 +335,12 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_dragonscave_lessa"/>
-    <property name="act3" value="char_talk spyder_dragonscave_lessa,pre_battle"/>
-    <property name="act4" value="unlock_controls"/>
-    <property name="act5" value="add_monster allagon,37,spyder_dragonscave_lessa,5,10"/>
-    <property name="act6" value="start_battle player,spyder_dragonscave_lessa"/>
-    <property name="act7" value="char_talk spyder_dragonscave_lessa,post_battle_lose"/>
+    <property name="act3" value="char_face player,spyder_dragonscave_lessa"/>
+    <property name="act4" value="char_talk spyder_dragonscave_lessa,pre_battle"/>
+    <property name="act5" value="unlock_controls"/>
+    <property name="act6" value="add_monster allagon,37,spyder_dragonscave_lessa,5,10"/>
+    <property name="act7" value="start_battle player,spyder_dragonscave_lessa"/>
+    <property name="act8" value="char_talk spyder_dragonscave_lessa,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_lessa"/>
     <property name="cond2" value="is char_at player"/>
     <property name="cond3" value="not char_defeated player"/>
@@ -346,11 +350,12 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_dragonscave_griffin"/>
-    <property name="act3" value="char_talk spyder_dragonscave_griffin,pre_battle"/>
-    <property name="act4" value="unlock_controls"/>
-    <property name="act5" value="add_monster bigfin,35,spyder_dragonscave_griffin,5,10"/>
-    <property name="act6" value="start_battle player,spyder_dragonscave_griffin"/>
-    <property name="act7" value="char_talk spyder_dragonscave_griffin,post_battle_lose"/>
+    <property name="act3" value="char_face player,spyder_dragonscave_griffin"/>
+    <property name="act4" value="char_talk spyder_dragonscave_griffin,pre_battle"/>
+    <property name="act5" value="unlock_controls"/>
+    <property name="act6" value="add_monster bigfin,35,spyder_dragonscave_griffin,5,10"/>
+    <property name="act7" value="start_battle player,spyder_dragonscave_griffin"/>
+    <property name="act8" value="char_talk spyder_dragonscave_griffin,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_griffin"/>
     <property name="cond2" value="is char_at player"/>
     <property name="cond3" value="not char_defeated player"/>
@@ -360,14 +365,15 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_dragonscave_benden"/>
-    <property name="act03" value="char_talk spyder_dragonscave_benden,pre_battle"/>
-    <property name="act04" value="unlock_controls"/>
-    <property name="act05" value="add_monster dragarbor,36,spyder_dragonscave_benden,5,10"/>
-    <property name="act06" value="add_monster sapragon,38,spyder_dragonscave_benden,5,10"/>
-    <property name="act07" value="start_battle player,spyder_dragonscave_benden"/>
-    <property name="act08" value="char_talk spyder_dragonscave_benden,post_battle_lose"/>
-    <property name="act09" value="set_monster_health"/>
-    <property name="act10" value="set_monster_status"/>
+    <property name="act03" value="char_face player,spyder_dragonscave_benden"/>
+    <property name="act04" value="char_talk spyder_dragonscave_benden,pre_battle"/>
+    <property name="act05" value="unlock_controls"/>
+    <property name="act06" value="add_monster dragarbor,36,spyder_dragonscave_benden,5,10"/>
+    <property name="act07" value="add_monster sapragon,38,spyder_dragonscave_benden,5,10"/>
+    <property name="act08" value="start_battle player,spyder_dragonscave_benden"/>
+    <property name="act09" value="char_talk spyder_dragonscave_benden,post_battle_lose"/>
+    <property name="act10" value="set_monster_health"/>
+    <property name="act11" value="set_monster_status"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_benden"/>
     <property name="cond2" value="is char_at player"/>
     <property name="cond3" value="not char_defeated player"/>
@@ -377,11 +383,12 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_dragonscave_ray"/>
-    <property name="act3" value="char_talk spyder_dragonscave_ray,pre_battle"/>
-    <property name="act4" value="unlock_controls"/>
-    <property name="act5" value="add_monster ghosteeth,40,spyder_dragonscave_ray,5,10"/>
-    <property name="act6" value="start_battle player,spyder_dragonscave_ray"/>
-    <property name="act7" value="char_talk spyder_dragonscave_ray,post_battle_lose"/>
+    <property name="act3" value="char_face player,spyder_dragonscave_ray"/>
+    <property name="act4" value="char_talk spyder_dragonscave_ray,pre_battle"/>
+    <property name="act5" value="unlock_controls"/>
+    <property name="act6" value="add_monster ghosteeth,40,spyder_dragonscave_ray,5,10"/>
+    <property name="act7" value="start_battle player,spyder_dragonscave_ray"/>
+    <property name="act8" value="char_talk spyder_dragonscave_ray,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_ray"/>
     <property name="cond2" value="is char_at player"/>
     <property name="cond3" value="not char_defeated player"/>
@@ -391,13 +398,14 @@
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_nimrod_tru"/>
-    <property name="act03" value="translated_dialog spyder_dragonscave_tru1"/>
-    <property name="act04" value="unlock_controls"/>
-    <property name="act05" value="add_monster embazook,40,spyder_nimrod_tru,5,10"/>
-    <property name="act06" value="add_monster arthrobolt,40,spyder_nimrod_tru,5,10"/>
-    <property name="act07" value="add_monster hydrone,40,spyder_nimrod_tru,5,10"/>
-    <property name="act08" value="start_battle player,spyder_nimrod_tru"/>
-    <property name="act09" value="translated_dialog spyder_dragonscave_tru2"/>
+    <property name="act03" value="char_face player,spyder_nimrod_tru"/>
+    <property name="act04" value="translated_dialog spyder_dragonscave_tru1"/>
+    <property name="act05" value="unlock_controls"/>
+    <property name="act06" value="add_monster embazook,40,spyder_nimrod_tru,5,10"/>
+    <property name="act07" value="add_monster arthrobolt,40,spyder_nimrod_tru,5,10"/>
+    <property name="act08" value="add_monster hydrone,40,spyder_nimrod_tru,5,10"/>
+    <property name="act09" value="start_battle player,spyder_nimrod_tru"/>
+    <property name="act10" value="translated_dialog spyder_dragonscave_tru2"/>
     <property name="cond1" value="is battle_outcome_count player,won,spyder_nimrod_tru,1"/>
     <property name="cond2" value="not battle_outcome_count player,won,spyder_nimrod_tru,2"/>
     <property name="cond3" value="is char_at player"/>
@@ -408,11 +416,12 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_dragonscave_lucille"/>
-    <property name="act3" value="char_talk spyder_dragonscave_lucille,pre_battle"/>
-    <property name="act4" value="unlock_controls"/>
-    <property name="act5" value="add_monster coleorus,40,spyder_dragonscave_lucille,5,10"/>
-    <property name="act6" value="start_battle player,spyder_dragonscave_lucille"/>
-    <property name="act7" value="char_talk spyder_dragonscave_lucille,post_battle_lose"/>
+    <property name="act3" value="char_face player,spyder_dragonscave_lucille"/>
+    <property name="act4" value="char_talk spyder_dragonscave_lucille,pre_battle"/>
+    <property name="act5" value="unlock_controls"/>
+    <property name="act6" value="add_monster coleorus,40,spyder_dragonscave_lucille,5,10"/>
+    <property name="act7" value="start_battle player,spyder_dragonscave_lucille"/>
+    <property name="act8" value="char_talk spyder_dragonscave_lucille,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_lucille"/>
     <property name="cond2" value="is char_at player"/>
     <property name="cond3" value="not char_defeated player"/>
@@ -422,12 +431,13 @@
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_dragonscave_mal"/>
-    <property name="act3" value="char_talk spyder_dragonscave_mal,pre_battle"/>
-    <property name="act4" value="unlock_controls"/>
-    <property name="act5" value="add_monster djinnbo,40,spyder_dragonscave_mal,5,10"/>
-    <property name="act6" value="start_battle player,spyder_dragonscave_mal"/>
-    <property name="act7" value="char_talk spyder_dragonscave_mal,post_battle_lose"/>
-    <property name="act8" value="set_variable dragonscavemal:yes"/>
+    <property name="act3" value="char_face player,spyder_dragonscave_mal"/>
+    <property name="act4" value="char_talk spyder_dragonscave_mal,pre_battle"/>
+    <property name="act5" value="unlock_controls"/>
+    <property name="act6" value="add_monster djinnbo,40,spyder_dragonscave_mal,5,10"/>
+    <property name="act7" value="start_battle player,spyder_dragonscave_mal"/>
+    <property name="act8" value="char_talk spyder_dragonscave_mal,post_battle_lose"/>
+    <property name="act9" value="set_variable dragonscavemal:yes"/>
     <property name="cond1" value="not variable_set dragonscavemal:yes"/>
     <property name="cond2" value="is char_at player"/>
    </properties>

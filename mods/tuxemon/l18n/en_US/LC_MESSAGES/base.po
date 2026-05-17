@@ -16698,8 +16698,8 @@ msgstr ""
 
 msgid "spyder_dojo_fu3a"
 msgstr ""
-"I'm sorry, but I see you don't have any tuxemon that have evolved yet. This "
-"potion won't be of much use to you at the moment."
+"I'm sorry, but I see you don't have any tuxemon that have evolved yet.\n"
+" This potion won't be of much use to you at the moment."
 
 msgid "spyder_dojo_fu3b"
 msgstr ""
@@ -16748,8 +16748,7 @@ msgstr "Do you have a tuxemon that has evolved once? \n"
 
 msgid "spyder_dojo_fu_nochoice"
 msgstr ""
-"I'm ready to assist you, but please, choose the tuxemon that will undergo "
-"the reversal process."
+"I'm ready to assist you, but please, choose the tuxemon that will undergo the reversal process."
 
 msgid "spyder_dojo_zhu3"
 msgstr ""
@@ -16770,13 +16769,12 @@ msgstr "Not enough to cover the cost of the Re-Learner Potion."
 
 msgid "spyder_dojo_xiang3b"
 msgstr ""
-"The Re-Learner Potion has taken effect, your tuxemon's forgotten technique "
-"has been restored."
+"The Re-Learner Potion has taken effect, your tuxemon's forgotten technique has been restored."
 
 msgid "spyder_dojo_xiang3c"
 msgstr ""
-"Unfortunately, the Re-Learner Potion had an unexpected side effect, and your"
-" tuxemon has now forgotten one of its current techniques."
+"Unfortunately, the Re-Learner Potion had an unexpected side effect,\n"
+" and your tuxemon has now forgotten one of its current techniques."
 
 msgid "spyder_dojo_xiang3d"
 msgstr ""
@@ -16931,8 +16929,7 @@ msgstr ""
 
 msgid "spyder_dojo_ares1"
 msgstr ""
-"My tuxemon have great Melee or Ranged stats, or both, so their attacks hit "
-"hard."
+"My tuxemon have great Melee or Ranged stats, or both, so their attacks hit hard."
 
 msgid "spyder_dojo_ares2"
 msgstr ""
@@ -16955,8 +16952,7 @@ msgstr ""
 
 msgid "spyder_dojo_hephastus1"
 msgstr ""
-"My team all have excellent Armor, so melee attacks just bounce off of their"
-" thick hides."
+"My team all have excellent Armor, so melee attacks just bounce off of their thick hides."
 
 msgid "spyder_dojo_hephastus2"
 msgstr ""
@@ -16966,8 +16962,8 @@ msgstr ""
 
 msgid "spyder_dojo_hermes1"
 msgstr ""
-"My team are lightning-quick, with high Speed. By the time you get around to "
-"attacking, we'll have already defeated you."
+"My team are lightning-quick, with high Speed.\n"
+" By the time you get around to attacking, we'll have already defeated you."
 
 msgid "spyder_dojo_hermes2"
 msgstr ""

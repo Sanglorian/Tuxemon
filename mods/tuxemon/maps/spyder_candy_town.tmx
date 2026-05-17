@@ -321,7 +321,7 @@
   <object id="222" name="Talk Eliane 1" type="event" x="96" y="16" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog spyder_candy_eliane1"/>
-    <property name="act2" value="set_random_variable elianeoutput,cureall:restoration:potion:tea"/>
+    <property name="act2" value="set_random_variable elianeoutput,cureall:restoration:potion:tea:refreshing_slice:antidote_grapes:cure_festering"/>
     <property name="act3" value="random_integer luckgiveegg,1,10"/>
     <property name="act4" value="set_variable elianetalkedtoday:yes"/>
     <property name="behav1" value="talk spyder_candy_eliane"/>
@@ -375,6 +375,36 @@
     <property name="act4" value="set_variable elianeoutput:none"/>
     <property name="act5" value="set_variable elianetalkedtoday:no"/>
     <property name="cond1" value="is variable_set elianeoutput:tea"/>
+   </properties>
+  </object>
+  <object id="500" name="Get refreshing_slice" type="event" x="80" y="48" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog spyder_candy_eliane3"/>
+    <property name="act2" value="translated_dialog refreshing_slice,,center,center,center"/>
+    <property name="act3" value="add_item elianeoutput"/>
+    <property name="act4" value="set_variable elianeoutput:none"/>
+    <property name="act5" value="set_variable elianetalkedtoday:no"/>
+    <property name="cond1" value="is variable_set elianeoutput:refreshing_slice"/>
+   </properties>
+  </object>
+  <object id="501" name="Get antidote_grapes" type="event" x="64" y="48" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog spyder_candy_eliane3"/>
+    <property name="act2" value="translated_dialog antidote_grapes,,center,center,center"/>
+    <property name="act3" value="add_item elianeoutput"/>
+    <property name="act4" value="set_variable elianeoutput:none"/>
+    <property name="act5" value="set_variable elianetalkedtoday:no"/>
+    <property name="cond1" value="is variable_set elianeoutput:antidote_grapes"/>
+   </properties>
+  </object>
+  <object id="502" name="Get cure_festering" type="event" x="48" y="48" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog spyder_candy_eliane3"/>
+    <property name="act2" value="translated_dialog cure_festering,,center,center,center"/>
+    <property name="act3" value="add_item elianeoutput"/>
+    <property name="act4" value="set_variable elianeoutput:none"/>
+    <property name="act5" value="set_variable elianetalkedtoday:no"/>
+    <property name="cond1" value="is variable_set elianeoutput:cure_festering"/>
    </properties>
   </object>
   <object id="443" name="Teleport to Candy Port" type="event" x="176" y="624" width="16" height="16">

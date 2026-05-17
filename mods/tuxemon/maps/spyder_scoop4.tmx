@@ -290,6 +290,7 @@
     <property name="cond1" value="not battle_outcome player,won,spyder_scoop_arachne"/>
     <property name="cond2" value="is char_at player"/>
     <property name="cond3" value="not char_defeated player"/>
+    <property name="cond4" value="not variable_set scooplandrace:yes"/>
    </properties>
   </object>
   <object id="57" name="Talk Weaver" type="event" x="112" y="112" width="16" height="32">
@@ -350,6 +351,7 @@
     <property name="cond1" value="not battle_outcome player,won,spyder_scoop_arachne"/>
     <property name="cond2" value="is char_at player"/>
     <property name="cond3" value="not char_defeated player"/>
+    <property name="cond4" value="not variable_set scooplandrace:yes"/>
    </properties>
   </object>
  </objectgroup>

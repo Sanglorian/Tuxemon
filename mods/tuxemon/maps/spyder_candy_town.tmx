@@ -323,7 +323,9 @@
     <property name="act1" value="translated_dialog spyder_candy_eliane1"/>
     <property name="act2" value="set_random_variable elianeoutput,cureall:restoration:potion:tea"/>
     <property name="act3" value="random_integer luckgiveegg,1,10"/>
+    <property name="act4" value="set_variable elianetalkedtoday:yes"/>
     <property name="behav1" value="talk spyder_candy_eliane"/>
+    <property name="cond0" value="is button_pressed INTERACT"/>
     <property name="cond1" value="is cooldown_days 1,elianeflower"/>
    </properties>
   </object>
@@ -331,7 +333,8 @@
    <properties>
     <property name="act1" value="translated_dialog spyder_candy_eliane2"/>
     <property name="behav1" value="talk spyder_candy_eliane"/>
-    <property name="cond1" value="not cooldown_days 1,elianeflower"/>
+    <property name="cond0" value="is button_pressed INTERACT"/>
+    <property name="cond1" value="is variable_set elianetalkedtoday:yes"/>
    </properties>
   </object>
   <object id="194" name="Get cureall" type="event" x="144" y="48" width="16" height="16">
@@ -340,6 +343,7 @@
     <property name="act2" value="translated_dialog cureall,,center,center,center"/>
     <property name="act3" value="add_item elianeoutput"/>
     <property name="act4" value="set_variable elianeoutput:none"/>
+    <property name="act5" value="set_variable elianetalkedtoday:no"/>
     <property name="cond1" value="is variable_set elianeoutput:cureall"/>
    </properties>
   </object>
@@ -349,6 +353,7 @@
     <property name="act2" value="translated_dialog restoration,,center,center,center"/>
     <property name="act3" value="add_item elianeoutput"/>
     <property name="act4" value="set_variable elianeoutput:none"/>
+    <property name="act5" value="set_variable elianetalkedtoday:no"/>
     <property name="cond1" value="is variable_set elianeoutput:restoration"/>
    </properties>
   </object>
@@ -358,6 +363,7 @@
     <property name="act2" value="translated_dialog potion,,center,center,center"/>
     <property name="act3" value="add_item elianeoutput"/>
     <property name="act4" value="set_variable elianeoutput:none"/>
+    <property name="act5" value="set_variable elianetalkedtoday:no"/>
     <property name="cond1" value="is variable_set elianeoutput:potion"/>
    </properties>
   </object>
@@ -367,6 +373,7 @@
     <property name="act2" value="translated_dialog tea,,center,center,center"/>
     <property name="act3" value="add_item elianeoutput"/>
     <property name="act4" value="set_variable elianeoutput:none"/>
+    <property name="act5" value="set_variable elianetalkedtoday:no"/>
     <property name="cond1" value="is variable_set elianeoutput:tea"/>
    </properties>
   </object>

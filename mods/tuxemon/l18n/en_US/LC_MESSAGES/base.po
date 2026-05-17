@@ -1179,7 +1179,13 @@ msgid "tm_blossom"
 msgstr "TM: Blossom"
 
 msgid "tm_blossom_description"
-msgstr "Technique Manual that teaches a Wood Tuxemon the Blossom technique."
+msgstr "Technique Manual that teaches the Blossom technique."
+
+msgid "tm_leaf_barrage"
+msgstr "TM: Leaf Barrage"
+
+msgid "tm_blossom_description"
+msgstr "Technique Manual that teaches the Leaf Barrage technique."
 
 msgid "tm_surf"
 msgstr "TM: Surf"
@@ -13116,8 +13122,6 @@ msgstr ""
 
 msgid "spyder_candy_eliane1"
 msgstr ""
-"Welcome to my market garden.\n"
-" I grow plants.\n"
 " Would you like me to harvest some crops for you?"
 
 msgid "spyder_candy_eliane2"

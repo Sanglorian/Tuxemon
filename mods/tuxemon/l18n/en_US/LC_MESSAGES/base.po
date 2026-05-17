@@ -13969,7 +13969,6 @@ msgstr ""
 "Hey buddy! \n"
 " Are you planning to break into these HQ? Cool! \n"
 " Make sure you're well prepared before you do, because it's difficult to get out once you're inside! \n"
-" You'll need to call your mom to let her know you're safe. Use this app!"
 
 msgid "spyder_scoop_lanth1"
 msgstr "Look how happy the tuxemon are, living so close to one another!"

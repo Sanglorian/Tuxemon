@@ -1,4 +1,22 @@
 events:
+  Swim Encounters Day:
+    actions:
+    - random_encounter spyder_routec,0.15
+    conditions:
+    - is char_sprite player,swimmer
+    - is current_state WorldState
+    - is check_char_parameter player,moving,1
+    - is environment_is ocean
+    type: event
+  Swim Encounters Night:
+    actions:
+    - random_encounter spyder_routec,0.25
+    conditions:
+    - is char_sprite player,swimmer
+    - is current_state WorldState
+    - is check_char_parameter player,moving,1
+    - is environment_is night_ocean
+    type: event
   Play Music:
     actions:
     - play_music music_town_theme

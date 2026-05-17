@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="294">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="296">
  <properties>
   <property name="east" value="paper_town"/>
   <property name="edges" value="clamped"/>
@@ -534,6 +534,24 @@
     <property name="act1" value="char_talk spyder_searoutec_more,post_battle_lose"/>
     <property name="behav1" value="talk spyder_searoutec_more"/>
     <property name="cond1" value="is battle_outcome player,won,spyder_searoutec_more"/>
+   </properties>
+  </object>
+  <object id="294" name="Swim Encounters Day" type="event" x="64" y="16" width="16" height="16">
+   <properties>
+    <property name="act1" value="random_encounter spyder_routec,0.15"/>
+    <property name="cond1" value="is char_sprite player,swimmer"/>
+    <property name="cond2" value="is current_state WorldState"/>
+    <property name="cond3" value="is check_char_parameter player,moving,1"/>
+    <property name="cond4" value="is environment_is ocean"/>
+   </properties>
+  </object>
+  <object id="295" name="Swim Encounters Night" type="event" x="80" y="16" width="16" height="16">
+   <properties>
+    <property name="act1" value="random_encounter spyder_routec,0.25"/>
+    <property name="cond1" value="is char_sprite player,swimmer"/>
+    <property name="cond2" value="is current_state WorldState"/>
+    <property name="cond3" value="is check_char_parameter player,moving,1"/>
+    <property name="cond4" value="is environment_is night_ocean"/>
    </properties>
   </object>
  </objectgroup>

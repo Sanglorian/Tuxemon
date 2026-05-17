@@ -165,4 +165,8 @@ events:
     - set_environment interior
     conditions:
     - not environment_is interior
-
+    height: 1
+    type: event
+    width: 1
+    x: 3
+    y: 3

@@ -147,4 +147,4 @@ class StatusIconManager:
             index = ui.slot_index
             pos = self.get_icon_position(monster, index)
             for icon in ui.status_icons:
-                icon.rect.center = pos
+                icon.rect.topleft = pos

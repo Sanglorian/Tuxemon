@@ -19,6 +19,7 @@ from tuxemon.platform.const.graphics import (
     DIMGRAY_COLOR,
     SEA_BLUE_COLOR,
 )
+from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -38,7 +39,7 @@ class JournalState(PygameMenuState):
     def add_menu_items(self, menu: Menu, monsters: list[MonsterModel]) -> None:
         scale_int = self.client.context.scaling.scale_int
         btn_x_offset = scale_int(4)
-        btn_y_offset = scale_int(1)
+        btn_y_offset = fix_measure(menu._height, 0.01)
         menu._column_max_width = [None, None]
 
         def change_state(state: str, **kwargs: Any) -> MenuGameObj:

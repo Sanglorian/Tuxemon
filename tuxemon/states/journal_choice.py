@@ -15,7 +15,7 @@ from tuxemon.db import MonsterModel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_JOURNAL_CHOICE, DIMGRAY_COLOR
-from tuxemon.tools import transform_resource_filename
+from tuxemon.tools import fix_measure, transform_resource_filename
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -89,7 +89,7 @@ class JournalChoice(PygameMenuState):
         badge_missing.translate(badge_x, badge_y + line_gap * 2)
 
         btn_x_offset = scale_int(4)
-        btn_y_offset = scale_int(1)
+        btn_y_offset = fix_measure(menu._height, 0.01)
         menu._column_max_width = [None, None]
 
         for page in range(pages):

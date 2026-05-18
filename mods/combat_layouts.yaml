@@ -46,10 +46,10 @@ LAYOUT_COORDINATES:
     home0: [110, 18, 96, 70]
     home1: [170, 18, 96, 70]
     hud: [18, 0, 85, 30]
-    hud0: [18, 0, 85, 30]
-    monster_status_icon_slot_0: [15, 17, 9, 9]
-    hud1: [34, 20, 85, 30] # +16 nominal px right, matching home1 direction
-    monster_status_icon_slot_1: [31, 37, 9, 9] # status icon aligned with hud1
+    hud0: [18, 13, 85, 30]
+    monster_status_icon_slot_0: [15, 30, 9, 9]
+    hud1: [34, 28, 85, 30] # +16 nominal px right, matching home1 direction
+    monster_status_icon_slot_1: [31, 45, 9, 9] # status icon aligned with hud1
     party: [18, 12, 85, 30]
     monster_box_home: [188, 64, 2, 2]
     monster_box_home0: [158, 64, 2, 2]

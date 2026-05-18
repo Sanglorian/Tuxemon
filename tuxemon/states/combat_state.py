@@ -52,6 +52,7 @@ from tuxemon.combat.reward_system import RewardSystem
 from tuxemon.combat.utils import get_battle_outcome_music, track_battles
 from tuxemon.database.rules import config_combat
 from tuxemon.db import (
+    AnimationPosition,
     EffectPhase,
     ItemCategory,
     OutputBattle,
@@ -1237,7 +1238,13 @@ class CombatState(CombatAnimations):
         animation = self._method_cache.get(method, is_flipped)
 
         if target_sprite and animation:
-            animation.rect.center = target_sprite.rect.center
+            if (
+                method.visuals
+                and method.visuals.position == AnimationPosition.CENTER
+            ):
+                animation.rect.center = self.client.screen.get_rect().center
+            else:
+                animation.rect.center = target_sprite.rect.center
             assert animation.animation
             start_delay = 0.6
             self.task(animation.animation.play, interval=start_delay)

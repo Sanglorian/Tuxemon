@@ -646,6 +646,11 @@ class MusicProperties(BaseModel):
         raise ValueError(f"the music {v} doesn't exist in the db")
 
 
+class AnimationPosition(str, Enum):
+    MONSTER = "monster"
+    CENTER = "center"
+
+
 class VisualProperties(BaseModel):
     animation: str | None = Field(
         ..., description="The slug or path of the animation to play."
@@ -660,6 +665,14 @@ class VisualProperties(BaseModel):
             "Number of times the visual should loop. "
             "-1 means infinite looping, 0 means play once, "
             "any positive integer means loop that many times."
+        ),
+    )
+    position: AnimationPosition = Field(
+        default=AnimationPosition.MONSTER,
+        description=(
+            "Where to center the animation: over the relevant monster "
+            "(own or enemy, determined by the technique's target) "
+            "or the center of the screen."
         ),
     )
 

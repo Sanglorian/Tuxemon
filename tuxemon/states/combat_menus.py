@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from pygame import SRCALPHA
 from pygame.rect import Rect
 from pygame.surface import Surface
+from pygame.transform import scale as pg_scale
 
 from tuxemon.combat.menu_visibility import MenuProfiles
 from tuxemon.db import EffectPhase, SpeedLabel, State
@@ -745,9 +746,9 @@ class CombatTargetMenuState(Menu[Monster]):
             if pos is None:
                 return
 
-            crosshairs = load_and_scale("gfx/ui/combat/crosshairs.png")
+            s = self.client.context.scaling.scale_int(64)
+            crosshairs = pg_scale(load_and_scale("gfx/ui/combat/crosshairs.png"), (s, s))
             crosshairs_rect = crosshairs.get_rect(center=pos.rect.center)
-            selected.image = Surface(selected.rect.size, SRCALPHA)
             selected.rect = crosshairs_rect.copy()
             selected.image = crosshairs
 

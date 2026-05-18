@@ -345,31 +345,31 @@ msgid "boost_armour"
 msgstr "Boost Armor"
 
 msgid "boost_armour_description"
-msgstr "For the rest of the combat, increase Armor by 20%."
+msgstr "For the rest of the combat, increase Armor by two stages."
 
 msgid "boost_dodge"
 msgstr "Boost Dodge"
 
 msgid "boost_dodge_description"
-msgstr "For the rest of the combat, increase Dodge by 20%."
+msgstr "For the rest of the combat, increase Dodge by two stages."
 
 msgid "boost_melee"
 msgstr "Boost Melee"
 
 msgid "boost_melee_description"
-msgstr "For the rest of the combat, increase Melee by 20%."
+msgstr "For the rest of the combat, increase Melee by two stages."
 
 msgid "boost_ranged"
 msgstr "Boost Ranged"
 
 msgid "boost_ranged_description"
-msgstr "For the rest of the combat, increase Ranged by 20%."
+msgstr "For the rest of the combat, increase Ranged by two stages."
 
 msgid "boost_speed"
 msgstr "Boost Speed"
 
 msgid "boost_speed_description"
-msgstr "For the rest of the combat, increase Speed by 20%."
+msgstr "For the rest of the combat, increase Speed by two stages."
 
 msgid "raise_armour"
 msgstr "Raise Armor"

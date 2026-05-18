@@ -6,8 +6,10 @@ import logging
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, ClassVar
 
+from pygame.surface import Surface
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.menu import Menu
+from pygame_menu.widgets.widget.label import Label
 
 from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import load_yaml
@@ -78,8 +80,8 @@ class NuPhoneMap(PygameMenuState):
 
     where location is the msgid of the location (PO), x and y are coordinates
 
-    If the player is in Cotton Town, then Cotton Town will be underlined and not
-    selectable.
+    The currently focused pin's name is shown in the bottom-right corner.
+    The player icon marks the player's current location.
 
     If there are no trackers (locations), then it'll be not possible to consult
     the app. It'll appear a pop up with: "GPS tracker not updating."
@@ -96,16 +98,16 @@ class NuPhoneMap(PygameMenuState):
         menu.add.image(image_path=new_image.copy())
 
         current_location = _location_for_slug(self.client.map_manager.map_slug)
+        self._pin_to_location: dict[int, str] = {}
 
         for key, value in self.char.tracker.locations.items():
             for map_data in data.map_data:
                 if key == map_data[2]:
                     x = map_data[0]
                     y = map_data[1]
-                    underline = current_location == key
-                    selectable = not underline
+                    is_here = current_location == key
 
-                    if underline:
+                    if is_here:
                         player_icon = self._create_image("gfx/ui/menu/player.png")
                         player_icon.scale(self.factor, self.factor)
                         menu.add.image(player_icon.copy(), float=True).translate(
@@ -113,19 +115,42 @@ class NuPhoneMap(PygameMenuState):
                             fix_measure(menu._height, y),
                         )
 
-                    lab: Any = menu.add.label(
-                        title=T.translate(key),
-                        selectable=selectable,
+                    # Invisible selectable label for cursor navigation; title
+                    # is empty — the name is shown in the bottom-right label.
+                    pin: Any = menu.add.label(
+                        title=" ",
+                        selectable=True,
                         float=True,
-                        underline=underline,
                         font_size=self.font_type.small,
                     )
-                    lab.translate(
+                    pin.translate(
                         fix_measure(menu._width, x),
                         fix_measure(menu._height, y),
                     )
+                    self._pin_to_location[pin.get_id()] = key
+
+        # Bottom-right name display
+        self._name_label: Label = menu.add.label(
+            title="",
+            selectable=False,
+            float=True,
+            font_size=self.font_type.biggest,
+        )
+        self._name_label.translate(
+            fix_measure(menu._width, 0.28),
+            fix_measure(menu._height, 0.88),
+        )
 
         menu.set_title(title=T.translate("app_map")).center_content()
+
+    def draw(self, surface: Surface) -> None:
+        selected = self.menu.get_selected_widget()
+        if selected is not None:
+            key = self._pin_to_location.get(selected.get_id(), "")
+            self._name_label.set_title(T.translate(key) if key else "")
+        else:
+            self._name_label.set_title("")
+        super().draw(surface)
 
     def __init__(
         self, client: BaseClient, character: NPC, **kwargs: Any

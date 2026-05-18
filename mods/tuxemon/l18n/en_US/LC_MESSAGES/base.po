@@ -4184,6 +4184,9 @@ msgstr "Diamond Hill"
 msgid "dryadsgrove"
 msgstr "Dryad's Grove"
 
+msgid "mansion"
+msgstr "Mansion"
+
 msgid "flower_city"
 msgstr "Flower"
 

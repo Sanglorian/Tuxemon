@@ -2025,6 +2025,9 @@ msgstr "{target} is turning ranged attacks back on the attacker."
 msgid "combat_state_immune"
 msgstr "{target} is immune to {method}"
 
+msgid "combat_state_prevented"
+msgstr "{method} prevents {target} from gaining {condition}"
+
 msgid "combat_state_immune_multiple"
 msgstr "{target} are immune to {method}"
 

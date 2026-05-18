@@ -194,6 +194,7 @@
   <object id="221" name="Environment Day" type="event" x="16" y="0" width="16" height="16">
    <properties>
     <property name="act1" value="set_environment ocean"/>
+    <property name="act2" value="set_layer gfx/ui/overlay/torchlight.png"/>
     <property name="cond1" value="not time_is stage_of_day,equals,night"/>
     <property name="cond2" value="not environment_is ocean"/>
    </properties>
@@ -201,6 +202,7 @@
   <object id="228" name="Environment Night" type="event" x="32" y="0" width="16" height="16">
    <properties>
     <property name="act1" value="set_environment night_ocean"/>
+    <property name="act2" value="set_layer gfx/ui/overlay/torchlight.png"/>
     <property name="cond1" value="is time_is stage_of_day,equals,night"/>
     <property name="cond2" value="not environment_is night_ocean"/>
    </properties>

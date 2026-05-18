@@ -6,21 +6,23 @@ map_data:
   - [-0.15, 0.62, "candy_town"]
   - [-0.15, 0.42, "timber_town"]
   - [-0.15, 0.32, "flower_city"]
-  # Outdoor locations — coordinates TBD (please supply x, y as fractions of map width/height)
-  - [0.00, 0.00, "route1"]
-  - [0.00, 0.00, "route2"]
-  - [0.00, 0.00, "route3"]
-  - [0.00, 0.00, "route4"]
-  - [0.00, 0.00, "route5"]
-  - [0.00, 0.00, "route6"]
-  - [0.00, 0.00, "routea"]
+  - [0.059, 0.722, "routec"]
+  - [0.105, 0.674, "route1"]
+  - [0.035, 0.611, "dryadsgrove"]
+  - [0.172, 0.611, "route2"]
+  - [0.172, 0.514, "citypark"]
+  - [-0.02, 0.278, "mansion"]
+  - [0.105, 0.403, "route3"]
+  - [0.043, 0.403, "route4"]
+  - [-0.02, 0.333, "routea"]
+  - [-0.078, 0.41, "route5"]
+  - [-0.078, 0.562, "tunnel"]
+  - [-0.055, 0.618, "route6"]
+  # Coordinates TBD — please supply screen pixel positions:
   - [0.00, 0.00, "routeb"]
-  - [0.00, 0.00, "routec"]
   - [0.00, 0.00, "routed"]
   - [0.00, 0.00, "routee"]
-  - [0.00, 0.00, "tunnel"]
   - [0.00, 0.00, "tunnel_below"]
-  - [0.00, 0.00, "citypark"]
 
 map_groups:
   leather_town:
@@ -41,7 +43,6 @@ map_groups:
     - spyder_cotton_house2
     - spyder_cotton_scoop
     - spyder_cotton_tunnel
-    - spyder_dryadsgrove
     - spyder_healing_center
     - spyder_omnichannel1
     - spyder_omnichannel2
@@ -104,6 +105,12 @@ map_groups:
     - spyder_nimrod_middle
     - spyder_nimrod_room
     - spyder_nimrod_top
+  dryadsgrove:
+    - spyder_dryadsgrove
+  mansion:
+    - spyder_mansion
+    - spyder_mansion_basement
+    - spyder_mansion_top
   route1:
     - spyder_route1
   route2:

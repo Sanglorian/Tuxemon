@@ -14,7 +14,7 @@ LAYOUT_COORDINATES:
   # "Left" refers to where the monster stands, not the HUD.
   LEFT_COMBAT:
     # Position where the monster appears on the left side of the battlefield
-    home: [0, 62, 96, 70]
+    home: [32, 62, 96, 70]
     # Position for the first monster in a 2 vs 2 setup (left side)
     home0: [30, 62, 96, 70] 
     # Position for the second monster in a 2 vs 2 setup (left side)

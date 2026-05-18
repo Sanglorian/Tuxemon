@@ -764,6 +764,15 @@ class CombatTargetMenuState(Menu[Monster]):
             if selected.description:
                 self.dialog.alert(selected.description, self.text_area)
 
+    def update_cursor_visibility(self) -> None:
+        self.hide_cursor()
+
+    def on_open(self) -> None:
+        items = [i for i in self.menu_items if i.enabled]
+        if len(items) == 1:
+            self.on_menu_selection(items[0])
+
+
     def on_menu_selection_change(self) -> None:
         """Handles border updates when selection changes."""
         self.hide_cursor()

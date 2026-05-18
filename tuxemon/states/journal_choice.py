@@ -15,7 +15,7 @@ from tuxemon.db import MonsterModel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_JOURNAL_CHOICE, DIMGRAY_COLOR
-from tuxemon.tools import fix_measure, transform_resource_filename
+from tuxemon.tools import transform_resource_filename
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -52,10 +52,11 @@ class JournalChoice(PygameMenuState):
         stubs = self.char.tuxepedia.get_seen_count()
         missing = total_monster - featured - stubs
 
+        scale_int = self.client.context.scaling.scale_int
         menu._auto_centering = False
-        badge_x = fix_measure(menu._width, 0.03)
-        badge_y = fix_measure(menu._height, 0.03)
-        line_gap = fix_measure(menu._height, 0.06)
+        badge_x = scale_int(8)
+        badge_y = scale_int(4)
+        line_gap = scale_int(9)
 
         badge_featured: Any = menu.add.label(
             title=T.format("journal_badge_featured", {"n": str(featured)}),
@@ -87,8 +88,8 @@ class JournalChoice(PygameMenuState):
         )
         badge_missing.translate(badge_x, badge_y + line_gap * 2)
 
-        btn_x_offset = fix_measure(menu._width, 0.25) - self.client.context.scaling.scale_int(60)
-        btn_y_offset = fix_measure(menu._height, 0.01)
+        btn_x_offset = scale_int(4)
+        btn_y_offset = scale_int(1)
         menu._column_max_width = [None, None]
 
         for page in range(pages):

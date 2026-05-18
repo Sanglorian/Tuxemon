@@ -6,9 +6,11 @@ import logging
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, ClassVar
 
+import pygame
 from pygame.surface import Surface
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
 from pygame_menu.menu import Menu
+from pygame_menu.widgets.selection.none import NoneSelection
 from pygame_menu.widgets.widget.label import Label
 
 from tuxemon.constants import paths
@@ -76,11 +78,10 @@ def _location_for_slug(slug: str) -> str:
 
 class NuPhoneMap(PygameMenuState):
     """
-    If there is no variable, then it'll be shown the Spyder map.
+    Shows a world map with a pin for every location in map_data.
 
-    where location is the msgid of the location (PO), x and y are coordinates
-
-    The currently focused pin's name is shown in the bottom-right corner.
+    Pins for unvisited locations display as "???"; visited ones show their
+    real name in the bottom-right corner when the cursor is on them.
     The player icon marks the player's current location.
 
     If there are no trackers (locations), then it'll be not possible to consult
@@ -98,38 +99,40 @@ class NuPhoneMap(PygameMenuState):
         menu.add.image(image_path=new_image.copy())
 
         current_location = _location_for_slug(self.client.map_manager.map_slug)
-        self._pin_to_location: dict[int, str] = {}
+        known = set(self.char.tracker.locations.keys())
 
-        for key, value in self.char.tracker.locations.items():
-            for map_data in data.map_data:
-                if key == map_data[2]:
-                    x = map_data[0]
-                    y = map_data[1]
-                    is_here = current_location == key
+        # widget id -> display name (real name or "???")
+        self._pin_to_name: dict[int, str] = {}
 
-                    if is_here:
-                        player_icon = self._create_image("gfx/ui/menu/player.png")
-                        player_icon.scale(self.factor, self.factor)
-                        menu.add.image(player_icon.copy(), float=True).translate(
-                            fix_measure(menu._width, x),
-                            fix_measure(menu._height, y),
-                        )
+        for x, y, key in data.map_data:
+            is_here = current_location == key
+            display_name = T.translate(key) if key in known else "???"
 
-                    # Invisible selectable label for cursor navigation; title
-                    # is empty — the name is shown in the bottom-right label.
-                    pin: Any = menu.add.label(
-                        title=" ",
-                        selectable=True,
-                        float=True,
-                        font_size=self.font_type.small,
-                    )
-                    pin.translate(
-                        fix_measure(menu._width, x),
-                        fix_measure(menu._height, y),
-                    )
-                    self._pin_to_location[pin.get_id()] = key
+            if is_here:
+                player_icon = self._create_image("gfx/ui/menu/player.png")
+                player_icon.scale(self.factor, self.factor)
+                menu.add.image(player_icon.copy(), float=True).translate(
+                    fix_measure(menu._width, x),
+                    fix_measure(menu._height, y),
+                )
 
-        # Bottom-right name display
+            # Invisible selectable widget at the pin position for cursor nav.
+            # NoneSelection suppresses the default arrow so we can draw our
+            # own cursor indicator exactly at the pin coordinates in draw().
+            pin: Any = menu.add.label(
+                title=" ",
+                selectable=True,
+                float=True,
+                font_size=self.font_type.small,
+            )
+            pin.set_selection_effect(NoneSelection())
+            pin.translate(
+                fix_measure(menu._width, x),
+                fix_measure(menu._height, y),
+            )
+            self._pin_to_name[pin.get_id()] = display_name
+
+        # Bottom-right name display — updated every frame in draw()
         self._name_label: Label = menu.add.label(
             title="",
             selectable=False,
@@ -146,11 +149,17 @@ class NuPhoneMap(PygameMenuState):
     def draw(self, surface: Surface) -> None:
         selected = self.menu.get_selected_widget()
         if selected is not None:
-            key = self._pin_to_location.get(selected.get_id(), "")
-            self._name_label.set_title(T.translate(key) if key else "")
+            name = self._pin_to_name.get(selected.get_id(), "")
+            self._name_label.set_title(name)
         else:
             self._name_label.set_title("")
+
         super().draw(surface)
+
+        # Draw cursor dot on top of the menu at the exact pin position
+        if selected is not None and selected.get_id() in self._pin_to_name:
+            rect = selected.get_rect()
+            pygame.draw.circle(surface, (255, 255, 255), rect.center, 3)
 
     def __init__(
         self, client: BaseClient, character: NPC, **kwargs: Any

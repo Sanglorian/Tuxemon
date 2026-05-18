@@ -20,6 +20,8 @@ def _mock_monster(speed: int = 0, dodge: int = 0, melee: int = 0) -> MagicMock:
     m = MagicMock(spec=Monster)
     m._combat_stats = BasicStats(speed=speed, dodge=dodge, melee=melee)
     m.get_combat_stats.side_effect = lambda: m._combat_stats
+    m.status = MagicMock()
+    m.status.get_statuses.return_value = []
     return m
 
 

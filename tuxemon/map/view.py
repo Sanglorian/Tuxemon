@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from itertools import chain
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pygame import SRCALPHA
 from pygame.draw import line
@@ -467,9 +467,18 @@ class MapRenderer(AbstractRenderer):
             current_map.initialize_renderer()
         if current_map.renderer is None:
             raise RuntimeError("Map renderer could not be initialized.")
+        # Lazily create seamless renderer for world maps (in case change_map
+        # ran before _resolution was set on MapTransition).
+        if (
+            self.world_index is not None
+            and self.world_index.is_world_map(current_map.filename)
+            and current_map.seamless_renderer is None
+        ):
+            current_map.initialize_seamless_renderer(self.context.resolution)
         center = self._unclamped_camera_centre()
-        assert current_map.renderer
-        current_map.renderer.center(center)
+        active = self._get_active_renderer(current_map)
+        assert active
+        active.center(center)
 
     def _unclamped_camera_centre(self) -> Vector2:
         """Camera centre in scaled pixels derived from the entity's true position.
@@ -535,6 +544,38 @@ class MapRenderer(AbstractRenderer):
         )
         return screen_surfaces
 
+    def _get_active_renderer(self, current_map: AbstractMap) -> Any:
+        """Return seamless_renderer for world maps, clamped renderer otherwise."""
+        if (
+            self.world_index is not None
+            and self.world_index.is_world_map(current_map.filename)
+            and current_map.seamless_renderer is not None
+        ):
+            return current_map.seamless_renderer
+        return current_map.renderer
+
+    def _compute_map_clip_rect(
+        self, current_map: AbstractMap, surface: Surface
+    ) -> Rect:
+        """Screen rect that exactly covers the current map's tile area.
+
+        When the seamless (unclamped) renderer is active, we clip drawing
+        to this rect so the adjacent maps drawn beneath show through at
+        map edges.
+        """
+        camera = self.camera_manager.get_active_camera()
+        if camera is None:
+            return surface.get_rect()
+        entity = camera.tracker.entity
+        ts = self.context.tile_size
+        map_w, map_h = current_map.size
+        screen_w, screen_h = surface.get_size()
+        player_px = entity.position.x * ts[0] + ts[0] / 2
+        player_py = entity.position.y * ts[1] + ts[1] / 2
+        origin_x = screen_w // 2 - int(player_px)
+        origin_y = screen_h // 2 - int(player_py)
+        return Rect(origin_x, origin_y, map_w * ts[0], map_h * ts[1])
+
     def _draw_map_and_sprites(
         self,
         surface: Surface,
@@ -542,8 +583,18 @@ class MapRenderer(AbstractRenderer):
         current_map: AbstractMap,
     ) -> None:
         """Draws the map and sprites onto the surface."""
-        assert current_map.renderer
-        current_map.renderer.draw(surface, surface.get_rect(), screen_surfaces)
+        active = self._get_active_renderer(current_map)
+        assert active
+        if active is current_map.seamless_renderer:
+            # Clip to the map's actual tile area so adjacent maps (drawn
+            # beneath) are visible where the current map has no tiles.
+            clip_rect = self._compute_map_clip_rect(current_map, surface)
+            old_clip = surface.get_clip()
+            surface.set_clip(clip_rect)
+            active.draw(surface, surface.get_rect(), screen_surfaces)
+            surface.set_clip(old_clip)
+        else:
+            active.draw(surface, surface.get_rect(), screen_surfaces)
 
     def _apply_effects(self, surface: Surface) -> None:
         """Applies visual effects to the surface."""

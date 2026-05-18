@@ -80,6 +80,12 @@ class MapTransition:
             current_name, (native_vw, native_vh)
         )
 
+        # Initialize seamless renderer for the current map so it can draw
+        # without clamping, letting adjacent map tiles show through at edges.
+        current_map = self.map_manager.current_map
+        if current_map is not None:
+            current_map.initialize_seamless_renderer(self._resolution)
+
         adjacent: list[AbstractMap] = []
         for entry in entries:
             try:

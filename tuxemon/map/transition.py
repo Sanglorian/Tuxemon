@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from tuxemon.map.manager import MapManager
     from tuxemon.map.tuxemon import AbstractMap
     from tuxemon.npc_manager import NPCManager
+    from tuxemon.world.world_map_index import WorldMapIndex
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,10 @@ class MapTransition:
         self.npc_manager = npc_manager
         self.boundary = boundary
         self.event_engine = event_engine
+        # Set by BaseClient after construction when a world file is found.
+        self.world_index: WorldMapIndex | None = None
+        self._resolution: tuple[int, int] = (0, 0)
+        self._scale: int = 1
 
     def change_map(
         self, map_name: str | None = None, yaml_path: str | None = None
@@ -51,6 +56,45 @@ class MapTransition:
         self._update_map_state(map_data)
         self._reset_events(map_data)
         self._update_boundaries()
+        self._preload_adjacent_maps()
+
+    def _preload_adjacent_maps(self) -> None:
+        """Load maps adjacent to the current one and initialise their seamless renderers."""
+        if not self.world_index or not self._resolution[0]:
+            self.map_manager.clear_adjacent_maps()
+            return
+
+        try:
+            current_name = self.map_manager.get_map_name()
+        except ValueError:
+            self.map_manager.clear_adjacent_maps()
+            return
+
+        if not self.world_index.is_world_map(current_name):
+            self.map_manager.clear_adjacent_maps()
+            return
+
+        native_vw = self._resolution[0] // self._scale
+        native_vh = self._resolution[1] // self._scale
+        entries = self.world_index.get_nearby_entries(
+            current_name, (native_vw, native_vh)
+        )
+
+        adjacent: list[AbstractMap] = []
+        for entry in entries:
+            try:
+                adj_map = self.map_loader.load_map_data(entry.filename)
+                adj_map.initialize_seamless_renderer(self._resolution)
+                adjacent.append(adj_map)
+            except Exception as exc:
+                logger.warning(
+                    f"Failed to preload adjacent map {entry.filename}: {exc}"
+                )
+
+        self.map_manager.set_adjacent_maps(adjacent)
+        logger.debug(
+            f"Preloaded {len(adjacent)} adjacent map(s) for {current_name}"
+        )
 
     def validate_coordinates(self, x: int, y: int) -> None:
         if not self.boundary.is_within_boundaries((x, y)):

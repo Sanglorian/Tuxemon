@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     from tuxemon.map.manager import MapManager
     from tuxemon.map.tuxemon import AbstractMap
     from tuxemon.npc_manager import NPCManager
+    from tuxemon.world.world_map_index import WorldMapIndex
 
 
 class EntityFacing(str, Enum):
@@ -417,12 +418,16 @@ class MapRenderer(AbstractRenderer):
         npc_manager: NPCManager,
         debug_renderer: DebugRenderer,
         context: DisplayContext,
+        map_manager: MapManager | None = None,
+        world_index: WorldMapIndex | None = None,
     ):
         """Initializes the MapRenderer."""
         self.camera_manager = camera_manager
         self.npc_manager = npc_manager
         self.debug_renderer = debug_renderer
         self.context = context
+        self.map_manager = map_manager
+        self.world_index = world_index
         self.layer = Surface(context.rect.size, SRCALPHA)
         self.layer_color: ColorLike | None = None
         self.cinema_x_ratio: float | None = None
@@ -441,6 +446,7 @@ class MapRenderer(AbstractRenderer):
             raise ValueError(
                 "MapRenderer requires a valid AbstractMap to draw."
             )
+        self._draw_adjacent_maps(surface, current_map)
         self._prepare_map_rendering(current_map)
         screen_surfaces = self._get_and_position_surfaces(current_map)
         self._draw_map_and_sprites(surface, screen_surfaces, current_map)
@@ -461,10 +467,60 @@ class MapRenderer(AbstractRenderer):
             current_map.initialize_renderer()
         if current_map.renderer is None:
             raise RuntimeError("Map renderer could not be initialized.")
-        camera = self.camera_manager.get_active_camera()
-        center = camera.get_viewport_center() if camera else Vector2(0, 0)
+        center = self._unclamped_camera_centre()
         assert current_map.renderer
         current_map.renderer.center(center)
+
+    def _unclamped_camera_centre(self) -> Vector2:
+        """Camera centre in scaled pixels derived from the entity's true position.
+
+        Using the entity position directly (rather than pyscroll's clamped
+        viewport centre) ensures adjacent maps are positioned correctly even
+        when the current map renderer has clamp_camera=True.
+        """
+        camera = self.camera_manager.get_active_camera()
+        if camera is None:
+            return Vector2(0, 0)
+        entity = camera.tracker.entity
+        ts = self.context.tile_size
+        return Vector2(
+            entity.position.x * ts[0] + ts[0] / 2,
+            entity.position.y * ts[1] + ts[1] / 2,
+        )
+
+    def _draw_adjacent_maps(
+        self, surface: Surface, current_map: AbstractMap
+    ) -> None:
+        """Render world-adjacent maps behind the current map.
+
+        Each adjacent map's seamless renderer is centred at the world-offset
+        of the camera so that tiles align across map boundaries.
+        """
+        if not self.map_manager or not self.world_index:
+            return
+
+        adjacent = self.map_manager.adjacent_maps
+        if not adjacent:
+            return
+
+        curr_entry = self.world_index.get_entry(current_map.filename)
+        if curr_entry is None:
+            return
+
+        centre = self._unclamped_camera_centre()
+        scale = self.context.scale
+        screen_rect = surface.get_rect()
+
+        for adj_map in adjacent:
+            adj_entry = self.world_index.get_entry(adj_map.filename)
+            if adj_entry is None or adj_map.seamless_renderer is None:
+                continue
+            dx = (curr_entry.world_x - adj_entry.world_x) * scale
+            dy = (curr_entry.world_y - adj_entry.world_y) * scale
+            adj_map.seamless_renderer.center(
+                (centre.x + dx, centre.y + dy)
+            )
+            adj_map.seamless_renderer.draw(surface, screen_rect, [])
 
     def _get_and_position_surfaces(
         self, current_map: AbstractMap

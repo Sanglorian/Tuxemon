@@ -122,6 +122,10 @@ class AbstractMap(ABC):
 
     @property
     @abstractmethod
+    def seamless_renderer(self) -> Any | None: ...
+
+    @property
+    @abstractmethod
     def sprite_layer(self) -> int: ...
 
     @property
@@ -130,6 +134,9 @@ class AbstractMap(ABC):
 
     @abstractmethod
     def initialize_renderer(self) -> None: ...
+
+    @abstractmethod
+    def initialize_seamless_renderer(self, resolution: tuple[int, int]) -> None: ...
 
     @abstractmethod
     def reload_tiles(self) -> None: ...
@@ -185,6 +192,7 @@ class TuxemonMap(AbstractMap):
         self._resolution = resolution
         self._maps = maps
         self._renderer: pyscroll.BufferedRenderer | None = None
+        self._seamless_renderer: pyscroll.BufferedRenderer | None = None
 
         self._events: list[EventObject] = list(events)
         self._inits: list[EventObject] = list(inits)
@@ -255,6 +263,10 @@ class TuxemonMap(AbstractMap):
         return self._renderer
 
     @property
+    def seamless_renderer(self) -> pyscroll.BufferedRenderer | None:
+        return self._seamless_renderer
+
+    @property
     def events(self) -> Sequence[EventObject]:
         return self._events
 
@@ -313,6 +325,15 @@ class TuxemonMap(AbstractMap):
             visual_data,
             self._resolution,
             clamp_camera=clamp,
+            tall_sprites=self.SPRITE_LAYER_INDEX,
+        )
+
+    def initialize_seamless_renderer(self, resolution: tuple[int, int]) -> None:
+        visual_data = pyscroll.data.TiledMapData(self._data)
+        self._seamless_renderer = pyscroll.BufferedRenderer(
+            visual_data,
+            resolution,
+            clamp_camera=False,
             tall_sprites=self.SPRITE_LAYER_INDEX,
         )
 
@@ -435,6 +456,10 @@ class NullMap(AbstractMap):
         return None
 
     @property
+    def seamless_renderer(self) -> Any | None:
+        return None
+
+    @property
     def sprite_layer(self) -> int:
         return 2
 
@@ -446,6 +471,9 @@ class NullMap(AbstractMap):
         pass
 
     def reload_tiles(self) -> None:
+        pass
+
+    def initialize_seamless_renderer(self, resolution: tuple[int, int]) -> None:
         pass
 
     def add_events(self, new_events: Sequence[EventObject]) -> None:

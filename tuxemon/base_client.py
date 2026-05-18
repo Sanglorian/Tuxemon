@@ -14,6 +14,7 @@ from uuid import UUID
 from tuxemon.audio import MusicPlayerState, SoundManager
 from tuxemon.boundary import BoundaryChecker
 from tuxemon.camera.camera import CameraManager
+from tuxemon.world.world_map_index import WorldMapIndex
 from tuxemon.cli.processor import CommandProcessor
 from tuxemon.combat.session import CombatSession
 from tuxemon.constants import paths
@@ -174,6 +175,15 @@ class BaseClient(ABC):
             self.boundary,
             self.event_engine,
         )
+        _spyder_world = paths.mods_folder / "tuxemon" / "maps" / "spyder.world"
+        self.world_index: WorldMapIndex | None = (
+            WorldMapIndex(_spyder_world, _spyder_world.parent)
+            if _spyder_world.exists()
+            else None
+        )
+        self.map_transition.world_index = self.world_index
+        self.map_transition._resolution = context.resolution
+        self.map_transition._scale = context.scale
         self.teleporter = Teleporter(
             self.map_transition,
             self.npc_manager,

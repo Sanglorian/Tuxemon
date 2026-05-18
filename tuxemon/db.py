@@ -2192,6 +2192,14 @@ class BattleHudModel(BaseModel):
     hud_opponent: str = Field(
         ..., description="Sprite used for hud opponent background"
     )
+    double_player: str = Field(
+        "gfx/ui/combat/double_player.png",
+        description="Sprite used for hud player background in double battles",
+    )
+    double_opponent: str = Field(
+        "gfx/ui/combat/double_opponent.png",
+        description="Sprite used for hud opponent background in double battles",
+    )
     tray_player: str = Field(
         ..., description="Sprite used for tray player background"
     )
@@ -2253,6 +2261,8 @@ class BattleHudModel(BaseModel):
         "hud_opponent",
         "tray_player",
         "tray_opponent",
+        "double_player",
+        "double_opponent",
     )
     def file_exists(cls, v: str) -> str:
         if has.file(v):

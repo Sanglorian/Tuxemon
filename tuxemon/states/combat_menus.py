@@ -735,7 +735,7 @@ class CombatTargetMenuState(Menu[Monster]):
         return super().refresh_layout(mutate=mutate)
 
     def _update_borders(self) -> None:
-        """Draws borders around the currently selected monster in 2vs2/1vs2 combat."""
+        """Shows crosshairs over the currently selected monster in 2vs2/1vs2 combat."""
         for sprite in self.menu_items:
             sprite.image.fill((0, 0, 0, 0))
 
@@ -745,13 +745,11 @@ class CombatTargetMenuState(Menu[Monster]):
             if pos is None:
                 return
 
+            crosshairs = load_and_scale("gfx/ui/combat/crosshairs.png")
+            crosshairs_rect = crosshairs.get_rect(center=pos.rect.center)
             selected.image = Surface(selected.rect.size, SRCALPHA)
-            BORDER_OFFSET = self.client.context.scaling.scale_int(12)
-            selected.rect.center = (
-                pos.rect.centerx - BORDER_OFFSET,
-                pos.rect.centery - BORDER_OFFSET,
-            )
-            self.border.draw(selected.image)
+            selected.rect = crosshairs_rect.copy()
+            selected.image = crosshairs
 
             if selected.description:
                 self.dialog.alert(selected.description, self.text_area)

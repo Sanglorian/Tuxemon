@@ -15,7 +15,7 @@ from pygame.transform import scale as pg_scale
 
 from tuxemon.combat.menu_visibility import MenuProfiles
 from tuxemon.db import EffectPhase, SpeedLabel, State
-from tuxemon.graphics import load_and_scale
+from tuxemon.graphics import load_and_scale, load_image
 from tuxemon.item.filter import ItemFilter
 from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
@@ -655,6 +655,7 @@ class CombatTargetMenuState(Menu[Monster]):
         self._external_on_selection = on_selection
         self._external_is_valid_entry = is_valid_entry
         self.targeting_map: defaultdict[str, list[Monster]] = defaultdict(list)
+        self._crosshairs_sprite: Sprite | None = None
 
         self._create_menu()
 
@@ -740,6 +741,10 @@ class CombatTargetMenuState(Menu[Monster]):
         for sprite in self.menu_items:
             sprite.image.fill((0, 0, 0, 0))
 
+        if self._crosshairs_sprite is not None:
+            self._crosshairs_sprite.kill()
+            self._crosshairs_sprite = None
+
         if selected := self.get_selected_item():
             monster = selected.game_object
             pos = self.combat.sprite_map.get_sprite(monster)
@@ -747,10 +752,14 @@ class CombatTargetMenuState(Menu[Monster]):
                 return
 
             s = self.client.context.scaling.scale_int(64)
-            crosshairs = pg_scale(load_and_scale("gfx/ui/combat/crosshairs.png"), (s, s))
-            crosshairs_rect = crosshairs.get_rect(center=pos.rect.center)
-            selected.rect = crosshairs_rect.copy()
-            selected.image = crosshairs
+            crosshairs_image = pg_scale(
+                load_image("gfx/ui/combat/crosshairs.png"), (s, s)
+            )
+            spr = Sprite()
+            spr.image = crosshairs_image
+            spr.rect = crosshairs_image.get_rect(center=pos.rect.center)
+            self.sprites.add(spr, layer=101)
+            self._crosshairs_sprite = spr
 
             if selected.description:
                 self.dialog.alert(selected.description, self.text_area)

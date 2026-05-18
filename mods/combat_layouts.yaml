@@ -10,29 +10,31 @@ LAYOUT_GROUPS:
     - RIGHT_COMBAT
 
 LAYOUT_COORDINATES:
+  # PLAYER layout. Monster appears bottom-left; HUD panel slides in from the right.
+  # "Left" refers to where the monster stands, not the HUD.
   LEFT_COMBAT:
     # Position where the monster appears on the left side of the battlefield
     home: [0, 62, 96, 70]
     # Position for the first monster in a 2 vs 2 setup (left side)
-    home0: [30, 62, 96, 70] # [+30 px right vs home]
+    home0: [30, 62, 96, 70] 
     # Position for the second monster in a 2 vs 2 setup (left side)
-    home1: [-30, 62, 96, 70] # [-30 px left vs home]
+    home1: [-30, 62, 96, 70] 
     # Position of the HUD showing name, level, etc. (left side)
     hud: [145, 45, 110, 50] # fixed HUD for single monster
     # HUD position for the first monster in a 2 vs 2 setup
-    hud0: [145, 25, 110, 50]
-    monster_status_icon_slot_0: [164, 61, 9, 9] # status icon aligned with hud0
-    # HUD position for the second monster in a 2 vs 2 setup (-16 nominal px left, matching home1)
-    hud1: [129, 45, 110, 50]
-    monster_status_icon_slot_1: [148, 81, 9, 9] # status icon aligned with hud1
+    hud0: [145, 38, 110, 50]
+    monster_status_icon_slot_0: [164, 74, 9, 9] # status icon aligned with hud0
+    # HUD position for the second monster in a 2 vs 2 setup 
+    hud1: [129, 55, 110, 50]
+    monster_status_icon_slot_1: [148, 91, 9, 9] # status icon aligned with hud1
     # Tuxeball icon strip (left side, shows number of available monsters)
     party: [145, 57, 110, 50] # placed just below the HUD region
     # Monster box image position for single monster
-    monster_box_home: [48, 108, 2, 2] # [+47 px right, +46 px below vs home]
+    monster_box_home: [48, 108, 2, 2] 
     # Monster box image for first monster in a 2 vs 2 setup
-    monster_box_home0: [78, 108, 2, 2] # [+30 px right vs monster_box_home]
+    monster_box_home0: [78, 108, 2, 2] 
     # Monster box image for second monster in a 2 vs 2 setup
-    monster_box_home1: [18, 108, 2, 2] # [-30 px left vs monster_box_home]
+    monster_box_home1: [18, 108, 2, 2] 
     # These positions define where HUD text lines are drawn.
     # The values are in [x, y, width, height] format, but width/height are unused and set to 1.
     # Line 1 usually shows monster name, gender icon, and level.
@@ -40,23 +42,28 @@ LAYOUT_COORDINATES:
     hud_line1: [12, 11, 1, 1]  # top line: monster, lv, etc.
     hud_line2: [12, 19, 1, 1]  # second line: position hp_bar
 
-
+  # OPPONENT layout. Monster appears upper-right; HUD panel slides in from the left.
+  # "Right" refers to where the monster stands, not the HUD.
   RIGHT_COMBAT:
     home: [140, 18, 96, 70]
+    # Double battle: monster 1 position 
     home0: [110, 18, 96, 70]
+    # Double battle: monster 2 position
     home1: [170, 18, 96, 70]
     hud: [18, 0, 85, 30]
-    hud0: [18, 13, 85, 30]
-    monster_status_icon_slot_0: [15, 30, 9, 9]
-    hud1: [34, 28, 85, 30] # +16 nominal px right, matching home1 direction
-    monster_status_icon_slot_1: [31, 45, 9, 9] # status icon aligned with hud1
+    hud0: [18, -20, 85, 30]
+    monster_status_icon_slot_0: [15, -3, 9, 9]
+    hud1: [34, 33, 85, 30] # +16 nominal px right, matching home1 direction
+    monster_status_icon_slot_1: [31, 50, 9, 9] # status icon aligned with hud1
     party: [18, 12, 85, 30]
     monster_box_home: [188, 64, 2, 2]
     monster_box_home0: [158, 64, 2, 2]
     monster_box_home1: [218, 64, 2, 2]
+    # Text blit offsets within the HUD sprite image
     hud_line1: [5, 5, 1, 1]
     hud_line2: [5, 13, 1, 1]
 
+  # Used only in 3-player battles (not double battles).
   CENTER_COMBAT:
     home: [70, 40, 96, 70]
     home0: [100, 40, 96, 70]

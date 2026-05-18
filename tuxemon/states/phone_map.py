@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.locals import ALIGN_CENTER, POSITION_EAST
@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 class NuPhoneMapConfig:
     map_path: str
     map_data: list[tuple[float, float, str]]
+    map_groups: dict[str, list[str]] = field(default_factory=dict)
 
 
 class Loader:
@@ -47,15 +48,28 @@ class Loader:
                 raise ValueError("Missing required keys in YAML data")
 
             map_data = [(item[0], item[1], item[2]) for item in map_data]
+            map_groups = raw_data.get("map_groups") or {}
 
             cls._config_nuphone_map = NuPhoneMapConfig(
                 map_path=map_path,
                 map_data=map_data,
+                map_groups=map_groups,
             )
         return cls._config_nuphone_map
 
 
 data = Loader.get_config_nuphone_map("nu_phone_map.yaml")
+
+# Reverse lookup: map slug -> location key
+_slug_to_location: dict[str, str] = {}
+for _key, _slugs in data.map_groups.items():
+    for _slug in _slugs:
+        _slug_to_location[_slug] = _key
+
+
+def _location_for_slug(slug: str) -> str:
+    """Return the location key for a map slug, falling back to the slug itself."""
+    return _slug_to_location.get(slug, slug)
 
 
 class NuPhoneMap(PygameMenuState):
@@ -80,25 +94,24 @@ class NuPhoneMap(PygameMenuState):
         new_image = self._create_image(data.map_path)
         new_image.scale(self.factor, self.factor)
         menu.add.image(image_path=new_image.copy())
-        underline = False
-        selectable = True
+
+        current_location = _location_for_slug(self.client.map_manager.map_slug)
 
         for key, value in self.char.tracker.locations.items():
             for map_data in data.map_data:
                 if key == map_data[2]:
                     x = map_data[0]
                     y = map_data[1]
-                    # player is here
-                    if self.client.map_manager.map_slug == key:
-                        underline = True
-                        selectable = False
+                    underline = current_location == key
+                    selectable = not underline
 
-                    player_icon = self._create_image("gfx/ui/menu/player.png")
-                    player_icon.scale(self.factor, self.factor)
-                    menu.add.image(player_icon.copy(), float=True).translate(
-                        fix_measure(menu._width, x),
-                        fix_measure(menu._height, y),
-                    )
+                    if underline:
+                        player_icon = self._create_image("gfx/ui/menu/player.png")
+                        player_icon.scale(self.factor, self.factor)
+                        menu.add.image(player_icon.copy(), float=True).translate(
+                            fix_measure(menu._width, x),
+                            fix_measure(menu._height, y),
+                        )
 
                     lab: Any = menu.add.label(
                         title=T.translate(key),

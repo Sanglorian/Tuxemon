@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import random
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+
+logger = logging.getLogger(__name__)
 
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 from tuxemon.db import BlockedReason
@@ -73,6 +76,9 @@ class GiveEffect(CoreEffect):
             result = monster.status.apply_status(session, status)
             if result.applied:
                 successful_targets.append(monster)
+                logger.info(
+                    f"[COMBAT] give {self.condition} -> {monster.name} (via {tech.name})"
+                )
             elif result.blocked_reason == BlockedReason.IMMUNE_BY_ITEM:
                 immune_info.append(f"{monster.name} ({result.blocked_by})")
             elif result.blocked_by and result.blocked_reason not in (

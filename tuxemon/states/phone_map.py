@@ -157,7 +157,7 @@ class NuPhoneMap(PygameMenuState):
             display_name = T.translate(key) if key in known else "???"
 
             if is_here:
-                player_icon = self._create_image("gfx/ui/menu/player.png")
+                player_icon = self._create_image("gfx/ui/menu/map_player.png")
                 player_icon.scale(self.factor, self.factor)
                 menu.add.image(player_icon.copy(), float=True).translate(
                     self._tx(x, menu._width),

@@ -18,7 +18,7 @@ map_data:
   - [108, 81,  "tunnel"]
   - [114, 89,  "route6"]
   - [130, 79,  "routee"]
-  - [112, 128, "dragonscave"]
+  - [143, 117, "dragonscave"]
   - [130, 79,  "routed"]
 
 map_groups:

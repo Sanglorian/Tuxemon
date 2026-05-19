@@ -59,6 +59,13 @@ _NAV: dict[str, dict[str, str | None]] = {
     "routed":       {"down": "leather_town","left": "flower_city", "right": "leather_town","up": "flower_city"},
 }
 
+# Core locations are always navigable; non-core require a tracker visit.
+_CORE: frozenset[str] = frozenset({
+    "leather_town", "cotton_town", "paper_town",
+    "candy_town",   "timber_town", "flower_city",
+    "route1", "route2", "route3", "route4", "route5", "route6",
+})
+
 _DIR_BUTTON = {
     buttons.UP:    "up",
     buttons.DOWN:  "down",
@@ -154,9 +161,11 @@ class NuPhoneMap(PygameMenuState):
         self._pin_to_name: dict[int, str] = {}
         self._key_to_widget: dict[str, Any] = {}
         self._widget_id_to_key: dict[int, str] = {}
+        self._selectable_keys: set[str] = set()
 
         for x, y, key in data.map_data:
             is_here = current_location == key
+            is_selectable = key in _CORE or key in known
             display_name = T.translate(key) if key in known else "???"
 
             if is_here:
@@ -172,7 +181,7 @@ class NuPhoneMap(PygameMenuState):
             # cursor in draw() at the exact pin coordinates.
             pin: Any = menu.add.label(
                 title=" ",
-                selectable=True,
+                selectable=is_selectable,
                 float=True,
                 font_size=self.font_type.small,
             )
@@ -184,6 +193,8 @@ class NuPhoneMap(PygameMenuState):
             self._pin_to_name[pin.get_id()] = display_name
             self._key_to_widget[key] = pin
             self._widget_id_to_key[pin.get_id()] = key
+            if is_selectable:
+                self._selectable_keys.add(key)
 
         # Name display at nominal (200, 119) — updated every frame in draw()
         self._name_label: Label = menu.add.label(
@@ -224,6 +235,9 @@ class NuPhoneMap(PygameMenuState):
         target_key = nav.get(direction)
         if target_key is None:
             return None  # consume event, no move
+
+        if target_key not in self._selectable_keys:
+            return None  # non-core unvisited — block movement
 
         target = self._key_to_widget.get(target_key)
         if target is not None:

@@ -173,13 +173,13 @@
     <property name="cond1" value="not battle_outcome player,won,spyder_searoutec_carstair"/>
    </properties>
   </object>
-  <object id="215" name="Create Sandy" type="event" x="80" y="224" width="16" height="16">
+  <object id="215" name="Create Sandy" type="event" x="80" y="208" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_searoutec_sandy,5,14"/>
     <property name="cond1" value="not char_exists spyder_searoutec_sandy"/>
    </properties>
   </object>
-  <object id="216" name="Talk Sandy" type="event" x="80" y="208" width="16" height="16">
+  <object id="216" name="Talk Sandy" type="event" x="80" y="192" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_searoutec_sandy,pre_battle"/>
     <property name="act2" value="add_monster sharpfin,22,spyder_searoutec_sandy,5,10"/>
@@ -239,7 +239,7 @@
     <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
-  <object id="226" name="Talk Sandy" type="event" x="80" y="240" width="16" height="48">
+  <object id="226" name="Talk Sandy" type="event" x="80" y="224" width="16" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_searoutec_sandy"/>

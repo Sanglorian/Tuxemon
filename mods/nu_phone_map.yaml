@@ -14,13 +14,12 @@ map_data:
   - [123, 40,  "mansion"]
   - [155, 58,  "route3"]
   - [139, 58,  "route4"]
-  - [123, 48,  "routea"]
   - [108, 59,  "route5"]
   - [108, 81,  "tunnel"]
-  - [108, 81,  "tunnel_below"]
   - [114, 89,  "route6"]
-  - [130, 79,  "routeb"]
   - [130, 79,  "routee"]
+  - [112, 128, "dragonscave"]
+  - [130, 79,  "routed"]
 
 map_groups:
   leather_town:
@@ -33,7 +32,6 @@ map_groups:
     - spyder_leather_scoop
     - spyder_leather_shaft1
     - spyder_leather_shaft2
-    - spyder_routed
   cotton_town:
     - spyder_cotton_town
     - spyder_cotton_artshop
@@ -110,6 +108,7 @@ map_groups:
     - spyder_mansion
     - spyder_mansion_basement
     - spyder_mansion_top
+    - spyder_routea
   route1:
     - spyder_route1
   route2:
@@ -122,18 +121,18 @@ map_groups:
     - spyder_route5
   route6:
     - spyder_route6
-  routea:
-    - spyder_routea
-  routeb:
-    - spyder_routeb
   routec:
     - spyder_routec
   routee:
     - spyder_routee
+    - spyder_routeb
+  routed:
+    - spyder_routed
   tunnel:
     - spyder_tunnel
-  tunnel_below:
     - spyder_tunnel_below
   citypark:
     - spyder_citypark
     - spyder_citypark_house1
+  dragonscave:
+    - spyder_dragonscave

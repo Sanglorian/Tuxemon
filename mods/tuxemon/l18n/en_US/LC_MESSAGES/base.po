@@ -4181,6 +4181,9 @@ msgstr "Cotton"
 msgid "diamond_hill"
 msgstr "Diamond Hill"
 
+msgid "dragonscave"
+msgstr "Dragon's Cave"
+
 msgid "dryadsgrove"
 msgstr "Dryad's Grove"
 

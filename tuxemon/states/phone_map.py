@@ -64,6 +64,7 @@ _CORE: frozenset[str] = frozenset({
     "leather_town", "cotton_town", "paper_town",
     "candy_town",   "timber_town", "flower_city",
     "route1", "route2", "route3", "route4", "route5", "route6",
+    "tunnel", "citypark",
 })
 
 _DIR_BUTTON = {
@@ -214,6 +215,18 @@ class NuPhoneMap(PygameMenuState):
         self._cursor_surface = cursor_img.get_surface()
 
         menu.set_title(title=T.translate("app_map")).center_content()
+
+        # Place cursor on the player's current location if it's selectable,
+        # otherwise fall back to the first selectable core pin.
+        start = self._key_to_widget.get(current_location)
+        if start is None or current_location not in self._selectable_keys:
+            start = next(
+                (self._key_to_widget[k] for k in self._selectable_keys
+                 if k in self._key_to_widget),
+                None,
+            )
+        if start is not None:
+            start.select(update_menu=True)
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         if not event.pressed:

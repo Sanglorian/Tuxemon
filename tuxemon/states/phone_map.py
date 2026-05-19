@@ -141,8 +141,13 @@ class NuPhoneMap(PygameMenuState):
         )
         self._name_label.translate(
             fix_measure(menu._width, 0.28),
-            fix_measure(menu._height, 0.88),
+            fix_measure(menu._height, 0.824),
         )
+
+        # Preload sniping cursor (drawn manually in draw() at exact pin pos)
+        cursor_img = self._create_image("gfx/ui/icons/status/icon_sniping.png")
+        cursor_img.scale(self.factor, self.factor)
+        self._cursor_surface = cursor_img.get_surface()
 
         menu.set_title(title=T.translate("app_map")).center_content()
 
@@ -156,10 +161,15 @@ class NuPhoneMap(PygameMenuState):
 
         super().draw(surface)
 
-        # Draw cursor dot on top of the menu at the exact pin position
+        # Blit sniping icon centred on the selected pin
         if selected is not None and selected.get_id() in self._pin_to_name:
             rect = selected.get_rect()
-            pygame.draw.circle(surface, (255, 255, 255), rect.center, 3)
+            cw = self._cursor_surface.get_width()
+            ch = self._cursor_surface.get_height()
+            surface.blit(
+                self._cursor_surface,
+                (rect.centerx - cw // 2, rect.centery - ch // 2),
+            )
 
     def __init__(
         self, client: BaseClient, character: NPC, **kwargs: Any

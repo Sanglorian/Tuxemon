@@ -1,28 +1,26 @@
 map_path: "gfx/ui/background/spyder_map.png"
 map_data:
-  - [0.20, 0.42, "leather_town"]
-  - [0.20, 0.52, "cotton_town"]
-  - [0.20, 0.62, "paper_town"]
-  - [-0.15, 0.62, "candy_town"]
-  - [-0.15, 0.42, "timber_town"]
-  - [-0.15, 0.32, "flower_city"]
+  - [0.105, 0.514, "leather_town"]
+  - [0.105, 0.611, "cotton_town"]
+  - [0.105, 0.715, "paper_town"]
+  - [-0.055, 0.715, "candy_town"]
+  - [-0.086, 0.500, "timber_town"]
+  - [-0.020, 0.403, "flower_city"]
   - [0.059, 0.722, "routec"]
   - [0.105, 0.674, "route1"]
   - [0.035, 0.611, "dryadsgrove"]
   - [0.172, 0.611, "route2"]
   - [0.172, 0.514, "citypark"]
-  - [-0.02, 0.278, "mansion"]
+  - [-0.020, 0.278, "mansion"]
   - [0.105, 0.403, "route3"]
   - [0.043, 0.403, "route4"]
-  - [-0.02, 0.333, "routea"]
-  - [-0.078, 0.41, "route5"]
+  - [-0.020, 0.333, "routea"]
+  - [-0.078, 0.410, "route5"]
   - [-0.078, 0.562, "tunnel"]
+  - [-0.078, 0.562, "tunnel_below"]
   - [-0.055, 0.618, "route6"]
-  # Coordinates TBD — please supply screen pixel positions:
-  - [0.00, 0.00, "routeb"]
-  - [0.00, 0.00, "routed"]
-  - [0.00, 0.00, "routee"]
-  - [0.00, 0.00, "tunnel_below"]
+  - [0.008, 0.549, "routeb"]
+  - [0.008, 0.549, "routee"]
 
 map_groups:
   leather_town:
@@ -35,6 +33,7 @@ map_groups:
     - spyder_leather_scoop
     - spyder_leather_shaft1
     - spyder_leather_shaft2
+    - spyder_routed
   cotton_town:
     - spyder_cotton_town
     - spyder_cotton_artshop
@@ -129,8 +128,6 @@ map_groups:
     - spyder_routeb
   routec:
     - spyder_routec
-  routed:
-    - spyder_routed
   routee:
     - spyder_routee
   tunnel:

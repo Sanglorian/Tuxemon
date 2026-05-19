@@ -18,7 +18,6 @@ from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.platform.const.graphics import BG_PHONE_MAP
-from tuxemon.tools import fix_measure
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -27,11 +26,15 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# Nominal screen dimensions the pixel coordinates are authored against.
+_NOMINAL_W = 256
+_NOMINAL_H = 144
+
 
 @dataclass
 class NuPhoneMapConfig:
     map_path: str
-    map_data: list[tuple[float, float, str]]
+    map_data: list[tuple[int, int, str]]
     map_groups: dict[str, list[str]] = field(default_factory=dict)
 
 
@@ -51,7 +54,7 @@ class Loader:
             if not map_path or not map_data:
                 raise ValueError("Missing required keys in YAML data")
 
-            map_data = [(item[0], item[1], item[2]) for item in map_data]
+            map_data = [(int(item[0]), int(item[1]), item[2]) for item in map_data]
             map_groups = raw_data.get("map_groups") or {}
 
             cls._config_nuphone_map = NuPhoneMapConfig(
@@ -80,6 +83,7 @@ class NuPhoneMap(PygameMenuState):
     """
     Shows a world map with a pin for every location in map_data.
 
+    Coordinates in map_data are nominal pixel positions on a 256×144 grid.
     Pins for unvisited locations display as "???"; visited ones show their
     real name in the bottom-right corner when the cursor is on them.
     The player icon marks the player's current location.
@@ -89,6 +93,14 @@ class NuPhoneMap(PygameMenuState):
     """
 
     name: ClassVar[str] = "NuPhoneMap"
+
+    def _tx(self, nominal_x: int, menu_width: int) -> int:
+        """Translate x: offset from widget's natural centre to nominal pixel."""
+        return nominal_x * self.factor - menu_width // 2
+
+    def _ty(self, nominal_y: int) -> int:
+        """Translate y: nominal pixel scaled to actual resolution."""
+        return nominal_y * self.factor
 
     def add_menu_items(
         self,
@@ -112,8 +124,8 @@ class NuPhoneMap(PygameMenuState):
                 player_icon = self._create_image("gfx/ui/menu/player.png")
                 player_icon.scale(self.factor, self.factor)
                 menu.add.image(player_icon.copy(), float=True).translate(
-                    fix_measure(menu._width, x),
-                    fix_measure(menu._height, y),
+                    self._tx(x, menu._width),
+                    self._ty(y),
                 )
 
             # Invisible selectable widget at the pin position for cursor nav.
@@ -127,12 +139,12 @@ class NuPhoneMap(PygameMenuState):
             )
             pin.set_selection_effect(NoneSelection())
             pin.translate(
-                fix_measure(menu._width, x),
-                fix_measure(menu._height, y),
+                self._tx(x, menu._width),
+                self._ty(y),
             )
             self._pin_to_name[pin.get_id()] = display_name
 
-        # Bottom-right name display — updated every frame in draw()
+        # Name display at nominal (200, 119) — updated every frame in draw()
         self._name_label: Label = menu.add.label(
             title="",
             selectable=False,
@@ -140,8 +152,8 @@ class NuPhoneMap(PygameMenuState):
             font_size=self.font_type.biggest,
         )
         self._name_label.translate(
-            fix_measure(menu._width, 0.28),
-            fix_measure(menu._height, 0.824),
+            self._tx(200, menu._width),
+            self._ty(119),
         )
 
         # Preload sniping cursor (drawn manually in draw() at exact pin pos)

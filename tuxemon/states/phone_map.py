@@ -43,7 +43,7 @@ _NAV: dict[str, dict[str, str | None]] = {
     "candy_town":   {"down": "routec",      "left": "route6",      "right": "routec",     "up": "route6"},
     "timber_town":  {"down": "tunnel",      "left": "tunnel",      "right": "routee",     "up": "route5"},
     "flower_city":  {"down": "routed",      "left": "route5",      "right": "route4",     "up": "mansion"},
-    "routec":       {"down": "dragonscave", "left": None,          "right": "paper_town", "up": None},
+    "routec":       {"down": "dragonscave", "left": None,          "right": "paper_town", "up": "paper_town"},
     "route1":       {"down": "paper_town",  "left": "paper_town",  "right": "cotton_town","up": "cotton_town"},
     "dryadsgrove":  {"down": "cotton_town", "left": None,          "right": "cotton_town","up": "leather_town"},
     "route2":       {"down": "cotton_town", "left": "cotton_town", "right": "citypark",   "up": "citypark"},

@@ -32,6 +32,9 @@ logger = logging.getLogger(__name__)
 _NOMINAL_W = 256
 _NOMINAL_H = 144
 
+# The menu title bar shifts float widget y positions down; compensate here.
+_TITLE_OFFSET_Y = 10
+
 # Spatial navigation table: key -> direction -> destination key (None = no move)
 _NAV: dict[str, dict[str, str | None]] = {
     "leather_town": {"down": "citypark",    "left": "routed",      "right": "route3",     "up": "route3"},
@@ -134,7 +137,7 @@ class NuPhoneMap(PygameMenuState):
 
     def _ty(self, nominal_y: int) -> int:
         """Translate y: nominal pixel scaled to actual resolution."""
-        return nominal_y * self.factor
+        return (nominal_y - _TITLE_OFFSET_Y) * self.factor
 
     def add_menu_items(
         self,

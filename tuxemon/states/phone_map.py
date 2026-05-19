@@ -17,7 +17,9 @@ from tuxemon.constants import paths
 from tuxemon.database.yaml_utils import load_yaml
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import BG_PHONE_MAP
+from tuxemon.platform.events import PlayerInput
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -29,6 +31,37 @@ logger = logging.getLogger(__name__)
 # Nominal screen dimensions the pixel coordinates are authored against.
 _NOMINAL_W = 256
 _NOMINAL_H = 144
+
+# Spatial navigation table: key -> direction -> destination key (None = no move)
+_NAV: dict[str, dict[str, str | None]] = {
+    "leather_town": {"down": "citypark",    "left": "routed",      "right": "route3",     "up": "route3"},
+    "cotton_town":  {"down": "route1",      "left": "route1",      "right": "route2",     "up": "route2"},
+    "paper_town":   {"down": "routec",      "left": "routec",      "right": "route1",     "up": "route1"},
+    "candy_town":   {"down": "routec",      "left": "route6",      "right": "routec",     "up": "route6"},
+    "timber_town":  {"down": "tunnel",      "left": "tunnel",      "right": "routee",     "up": "route5"},
+    "flower_city":  {"down": "routed",      "left": "route5",      "right": "route4",     "up": "mansion"},
+    "routec":       {"down": "dragonscave", "left": None,          "right": "paper_town", "up": None},
+    "route1":       {"down": "paper_town",  "left": "paper_town",  "right": "cotton_town","up": "cotton_town"},
+    "dryadsgrove":  {"down": "cotton_town", "left": None,          "right": "cotton_town","up": "leather_town"},
+    "route2":       {"down": "cotton_town", "left": "cotton_town", "right": "citypark",   "up": "citypark"},
+    "citypark":     {"down": "route2",      "left": "leather_town","right": None,         "up": "leather_town"},
+    "mansion":      {"down": "flower_city", "left": "flower_city", "right": "flower_city","up": None},
+    "route3":       {"down": "leather_town","left": "route4",      "right": None,         "up": "route4"},
+    "route4":       {"down": None,          "left": "flower_city", "right": None,         "up": "flower_city"},
+    "route5":       {"down": "timber_town", "left": "timber_town", "right": "leather_town","up": "leather_town"},
+    "tunnel":       {"down": "route6",      "left": "timber_town", "right": "route6",     "up": "timber_town"},
+    "route6":       {"down": "candy_town",  "left": "tunnel",      "right": "candy_town", "up": "tunnel"},
+    "routee":       {"down": "tunnel",      "left": "tunnel",      "right": None,         "up": "timber_town"},
+    "dragonscave":  {"down": None,          "left": "routec",      "right": "routec",     "up": "routec"},
+    "routed":       {"down": "leather_town","left": "flower_city", "right": "leather_town","up": "flower_city"},
+}
+
+_DIR_BUTTON = {
+    buttons.UP:    "up",
+    buttons.DOWN:  "down",
+    buttons.LEFT:  "left",
+    buttons.RIGHT: "right",
+}
 
 
 @dataclass
@@ -87,6 +120,7 @@ class NuPhoneMap(PygameMenuState):
     Pins for unvisited locations display as "???"; visited ones show their
     real name in the bottom-right corner when the cursor is on them.
     The player icon marks the player's current location.
+    Directional navigation follows the spatial table in _NAV.
 
     If there are no trackers (locations), then it'll be not possible to consult
     the app. It'll appear a pop up with: "GPS tracker not updating."
@@ -113,8 +147,10 @@ class NuPhoneMap(PygameMenuState):
         current_location = _location_for_slug(self.client.map_manager.map_slug)
         known = set(self.char.tracker.locations.keys())
 
-        # widget id -> display name (real name or "???")
+        # widget id -> display name; key <-> widget (for navigation)
         self._pin_to_name: dict[int, str] = {}
+        self._key_to_widget: dict[str, Any] = {}
+        self._widget_id_to_key: dict[int, str] = {}
 
         for x, y, key in data.map_data:
             is_here = current_location == key
@@ -129,8 +165,8 @@ class NuPhoneMap(PygameMenuState):
                 )
 
             # Invisible selectable widget at the pin position for cursor nav.
-            # NoneSelection suppresses the default arrow so we can draw our
-            # own cursor indicator exactly at the pin coordinates in draw().
+            # NoneSelection suppresses the default arrow; we draw our own
+            # cursor in draw() at the exact pin coordinates.
             pin: Any = menu.add.label(
                 title=" ",
                 selectable=True,
@@ -143,6 +179,8 @@ class NuPhoneMap(PygameMenuState):
                 self._ty(y),
             )
             self._pin_to_name[pin.get_id()] = display_name
+            self._key_to_widget[key] = pin
+            self._widget_id_to_key[pin.get_id()] = key
 
         # Name display at nominal (200, 119) — updated every frame in draw()
         self._name_label: Label = menu.add.label(
@@ -162,6 +200,32 @@ class NuPhoneMap(PygameMenuState):
         self._cursor_surface = cursor_img.get_surface()
 
         menu.set_title(title=T.translate("app_map")).center_content()
+
+    def process_event(self, event: PlayerInput) -> PlayerInput | None:
+        if not event.pressed:
+            return super().process_event(event)
+
+        direction = _DIR_BUTTON.get(event.button)
+        if direction is None:
+            return super().process_event(event)
+
+        selected = self.menu.get_selected_widget()
+        if selected is None:
+            return super().process_event(event)
+
+        current_key = self._widget_id_to_key.get(selected.get_id())
+        if current_key is None:
+            return super().process_event(event)
+
+        nav = _NAV.get(current_key, {})
+        target_key = nav.get(direction)
+        if target_key is None:
+            return None  # consume event, no move
+
+        target = self._key_to_widget.get(target_key)
+        if target is not None:
+            target.select(update_menu=True)
+        return None  # consumed
 
     def draw(self, surface: Surface) -> None:
         selected = self.menu.get_selected_widget()

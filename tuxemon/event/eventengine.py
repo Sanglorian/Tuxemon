@@ -179,8 +179,8 @@ class EventEngine:
         self._behavior_cache = {}
         self.partial_events = []
         self.check_global_conditions()
-        self.update_running_events(dt)
         self.check_conditions()
+        self.update_running_events(dt)
 
     def check_conditions(self) -> None:
         """

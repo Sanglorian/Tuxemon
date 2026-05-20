@@ -37,19 +37,19 @@ _TITLE_OFFSET_Y = 10
 
 # Spatial navigation table: key -> direction -> destination key (None = no move)
 _NAV: dict[str, dict[str, str | None]] = {
-    "leather_town": {"down": "citypark",    "left": "routed",      "right": "route3",     "up": "route3"},
+    "leather_town": {"down": "citypark",    "left": "routed",      "right": "citypark",   "up": "route3"},
     "cotton_town":  {"down": "route1",      "left": "route1",      "right": "route2",     "up": "route2"},
     "paper_town":   {"down": "routec",      "left": "routec",      "right": "route1",     "up": "route1"},
     "candy_town":   {"down": "routec",      "left": "route6",      "right": "routec",     "up": "route6"},
     "timber_town":  {"down": "tunnel",      "left": "tunnel",      "right": "routee",     "up": "route5"},
     "flower_city":  {"down": "routed",      "left": "route5",      "right": "route4",     "up": "mansion"},
-    "routec":       {"down": "dragonscave", "left": None,          "right": "paper_town", "up": "paper_town"},
+    "routec":       {"down": "dragonscave", "left": "candy_town",  "right": "paper_town", "up": "paper_town"},
     "route1":       {"down": "paper_town",  "left": "paper_town",  "right": "cotton_town","up": "cotton_town"},
     "dryadsgrove":  {"down": "cotton_town", "left": None,          "right": "cotton_town","up": "leather_town"},
     "route2":       {"down": "cotton_town", "left": "cotton_town", "right": "citypark",   "up": "citypark"},
     "citypark":     {"down": "route2",      "left": "leather_town","right": None,         "up": "leather_town"},
     "mansion":      {"down": "flower_city", "left": "flower_city", "right": "flower_city","up": None},
-    "route3":       {"down": "leather_town","left": "route4",      "right": None,         "up": "route4"},
+    "route3":       {"down": "leather_town","left": "route4",      "right": "leather_town","up": "route4"},
     "route4":       {"down": None,          "left": "flower_city", "right": "route3",     "up": "flower_city"},
     "route5":       {"down": "timber_town", "left": "timber_town", "right": "leather_town","up": "leather_town"},
     "tunnel":       {"down": "route6",      "left": "timber_town", "right": "route6",     "up": "timber_town"},

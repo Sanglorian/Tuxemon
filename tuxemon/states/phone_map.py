@@ -273,7 +273,7 @@ class NuPhoneMap(PygameMenuState):
             ch = self._cursor_surface.get_height()
             surface.blit(
                 self._cursor_surface,
-                (rect.centerx - cw // 2, rect.centery - ch // 2),
+                (rect.centerx - cw // 2 + 1, rect.centery - ch // 2 - 2),
             )
 
     def __init__(

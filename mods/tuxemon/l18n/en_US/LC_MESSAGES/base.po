@@ -6122,14 +6122,14 @@ msgstr "It smiles because it knows how everyone it meets is going to die."
 msgid "ghosteeth"
 msgstr "Ghosteeth"
 
-msgid "gladiatorbug_description"
+msgid "dynastor_description"
 msgstr ""
-"GLADIATORBUG is a massive insectoid tuxemon with a deep, armored exoskeleton"
+"DYNASTOR is a massive insectoid tuxemon with a deep, armored exoskeleton"
 " and distinctive wings running along its back. Its mandibles can crush "
 "steel. "
 
-msgid "gladiatorbug"
-msgstr "Gladiatorbug"
+msgid "dynastor"
+msgstr "Dynastor"
 
 msgid "gliffary_description"
 msgstr ""

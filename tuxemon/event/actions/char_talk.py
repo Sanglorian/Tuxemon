@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import final
+from typing import ClassVar, final
 
 from tuxemon.entity.dialogue_profile import DialogueProfileManager
 from tuxemon.event.eventaction import EventAction
@@ -58,12 +58,29 @@ class CharTalkAction(EventAction):
     field: str
     location: str | None = None
 
+    _FIELD_TO_OUTCOME: ClassVar[dict[str, str]] = {
+        "post_battle_win": "won",
+        "post_battle_lose": "lost",
+        "post_battle_draw": "draw",
+    }
+
     def start(self, session: Session) -> None:
         character = session.client.get_npc(self.character)
         if character is None:
             logger.error(f"{self.character} not found")
             self.stop()
             return
+
+        expected = self._FIELD_TO_OUTCOME.get(self.field)
+        if expected is not None:
+            player = session.client.get_npc("player")
+            if player is not None and player.battle_handler is not None:
+                last = player.battle_handler.get_last_battle_outcome(
+                    self.character
+                )
+                if last is not None and last != expected:
+                    self.stop()
+                    return
 
         dialogue = DialogueProfileManager()
         content = dialogue.get_npc_dialogue_content(

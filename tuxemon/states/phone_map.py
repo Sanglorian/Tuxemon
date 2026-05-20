@@ -172,8 +172,8 @@ class NuPhoneMap(PygameMenuState):
                 player_icon = self._create_image("gfx/ui/menu/map_player.png")
                 player_icon.scale(self.factor, self.factor)
                 menu.add.image(player_icon.copy(), float=True).translate(
-                    self._tx(x, menu._width) - 2,
-                    self._ty(y) - 2,
+                    self._tx(x, menu._width) - 2 - self.factor,
+                    self._ty(y) - 2 - 5 * self.factor,
                 )
 
             # Invisible selectable widget at the pin position for cursor nav.
@@ -273,7 +273,7 @@ class NuPhoneMap(PygameMenuState):
             ch = self._cursor_surface.get_height()
             surface.blit(
                 self._cursor_surface,
-                (rect.centerx - cw // 2, rect.centery - ch // 2 - 2),
+                (rect.centerx - cw // 2 + self.factor, rect.centery - ch // 2 - 2 - 2 * self.factor),
             )
 
     def __init__(

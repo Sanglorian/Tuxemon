@@ -152,7 +152,7 @@ class NuPhoneMap(PygameMenuState):
     ) -> None:
         new_image = self._create_image(data.map_path)
         new_image.scale(self.factor, self.factor)
-        menu.add.image(image_path=new_image.copy())
+        menu.add.image(image_path=new_image.copy(), float=True).translate(0, -2)
 
         current_location = _location_for_slug(self.client.map_manager.map_slug)
         known = set(self.char.tracker.locations.keys())

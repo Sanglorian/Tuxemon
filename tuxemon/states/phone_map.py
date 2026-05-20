@@ -210,7 +210,7 @@ class NuPhoneMap(PygameMenuState):
         )
 
         # Preload sniping cursor (drawn manually in draw() at exact pin pos)
-        cursor_img = self._create_image("gfx/ui/icons/status/icon_sniping.png")
+        cursor_img = self._create_image("gfx/ui/menu/map_cross.png")
         cursor_img.scale(self.factor, self.factor)
         self._cursor_surface = cursor_img.get_surface()
 

@@ -2,8 +2,8 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import random
 import logging
+import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 

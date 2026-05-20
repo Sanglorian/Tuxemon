@@ -14439,8 +14439,8 @@ msgstr ""
 
 msgid "spyder_omnichannel_dempsey1"
 msgstr ""
-"Did you know that some cultures use the same word for 'crisis' and "
-"'opportunity'?"
+"It's every man, woman and child for themselves!\n
+" Especially the children, they'll make a tasty snack for the dragons."
 
 msgid "spyder_omnichannel_bettger1"
 msgstr "This is going to play havoc on Omnichannel's stock price."

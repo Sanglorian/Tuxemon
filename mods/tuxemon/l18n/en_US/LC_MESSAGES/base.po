@@ -11818,8 +11818,7 @@ msgstr "Cathedral Bill"
 
 msgid "spyder_pay_cathedral"
 msgstr ""
-"SCAN TO PAY. You can scan the QR code and make payment to the Cathedral by "
-"using the Bank App."
+"SCAN TO PAY. You can scan the QR code and make payment to the Cathedral."
 
 msgid "spyder_billing_cathedral1"
 msgstr ""

@@ -321,9 +321,8 @@ class CombatState(CombatAnimations):
         if self.phase == CombatPhase.DECISION:
             # show monster action menu for human players
             if self._decision_queue:
-                if self.combat_session.is_double:
-                    self.handle_pending_actions(self._decision_queue, 2)
-                else:
+                active_names = {s.name for s in self.client.active_states}
+                if "MainCombatMenuState" not in active_names:
                     self.handle_pending_actions(self._decision_queue, 1)
 
         elif self.phase == CombatPhase.ACTION:

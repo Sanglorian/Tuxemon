@@ -69,9 +69,9 @@
     <property name="cond2" value="is char_facing player,up"/>
    </properties>
   </object>
-  <object id="18" name="Create Alyssa" type="event" x="80" y="144" width="16" height="16">
+  <object id="18" name="Create Alyssa" type="event" x="64" y="144" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_alyssa,5,9"/>
+    <property name="act1" value="create_npc spyder_scoop_alyssa,4,9"/>
     <property name="cond1" value="not char_exists spyder_scoop_alyssa"/>
    </properties>
   </object>
@@ -82,9 +82,9 @@
     <property name="cond1" value="is battle_outcome player,won,spyder_scoop_alyssa"/>
    </properties>
   </object>
-  <object id="20" name="Create Taggart" type="event" x="112" y="176" width="16" height="16">
+  <object id="20" name="Create Taggart" type="event" x="96" y="176" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_scoop_taggart,7,11"/>
+    <property name="act1" value="create_npc spyder_scoop_taggart,6,11"/>
     <property name="act2" value="char_face spyder_scoop_taggart,up"/>
     <property name="cond1" value="not char_exists spyder_scoop_taggart"/>
    </properties>
@@ -99,6 +99,7 @@
   <object id="22" name="Create Donald" type="event" x="176" y="160" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_scoop_donald,11,10"/>
+    <property name="act2" value="char_face spyder_scoop_donald,left"/>
     <property name="cond1" value="not char_exists spyder_scoop_donald"/>
    </properties>
   </object>
@@ -115,7 +116,7 @@
     <property name="cond1" value="not environment_is interior"/>
    </properties>
   </object>
-  <object id="26" name="Talk Alyssa" type="event" x="64" y="144" width="16" height="48">
+  <object id="26" name="Talk Alyssa" type="event" x="64" y="160" width="16" height="32">
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_scoop_alyssa"/>
@@ -130,7 +131,7 @@
     <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
-  <object id="27" name="Talk Taggart" type="event" x="96" y="144" width="16" height="48">
+  <object id="27" name="Talk Taggart" type="event" x="96" y="144" width="16" height="32">
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_scoop_taggart"/>

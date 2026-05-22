@@ -13930,7 +13930,7 @@ msgstr ""
 "this country."
 
 msgid "spyder_route5_cleo2"
-msgstr "Oh ancestors, I've failed you!"
+msgstr "Oh ancestors, we've failed you!"
 
 msgid "spyder_route5_tryphaena1"
 msgstr "You know, we're descended from ... You've already heard it? Oh."
@@ -15604,10 +15604,10 @@ msgid "spyder_nimrod_guard"
 msgstr "Guard"
 
 msgid "spyder_route5_cleo"
-msgstr "Cleo"
+msgstr "Cleo and Patra"
 
 msgid "spyder_route5_tryphaena"
-msgstr "Tryphaena"
+msgstr "Tryphaena and Marc"
 
 msgid "spyder_route5_edith"
 msgstr "Edith"

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="9" nextobjectid="75">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="9" nextobjectid="81">
  <properties>
   <property name="east" value="flower_city"/>
   <property name="edges" value="clamped"/>
@@ -308,12 +308,12 @@
     <property name="cond1" value="not char_exists spyder_route5_cleo"/>
    </properties>
   </object>
-  <object id="58" name="Talk Cleo" type="event" x="336" y="80" width="16" height="16">
+  <object id="58" name="Talk Cleo" type="event" x="336" y="64" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_route5_cleo,pre_battle"/>
     <property name="act2" value="add_monster memnomnom,20,spyder_route5_cleo,5,10"/>
     <property name="act3" value="add_monster memnomnom,20,spyder_route5_cleo,5,10"/>
-    <property name="act4" value="start_battle player,spyder_route5_cleo"/>
+    <property name="act4" value="start_double_battle player,spyder_route5_cleo"/>
     <property name="act5" value="char_talk spyder_route5_cleo,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route5_cleo"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_route5_cleo"/>
@@ -325,14 +325,14 @@
     <property name="cond1" value="not char_exists spyder_route5_tryphaena"/>
    </properties>
   </object>
-  <object id="60" name="Talk Tryphaena" type="event" x="272" y="80" width="16" height="16">
+  <object id="60" name="Talk Marc (Double Battle with Try)" type="event" x="272" y="64" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_route5_tryphaena,pre_battle"/>
     <property name="act2" value="add_monster miaownolith,24,spyder_route5_tryphaena,5,10"/>
     <property name="act3" value="add_monster criniotherme,22,spyder_route5_tryphaena,5,10"/>
-    <property name="act4" value="start_battle player,spyder_route5_tryphaena"/>
+    <property name="act4" value="start_double_battle player,spyder_route5_tryphaena"/>
     <property name="act5" value="char_talk spyder_route5_tryphaena,post_battle_lose"/>
-    <property name="behav1" value="talk spyder_route5_tryphaena"/>
+    <property name="behav1" value="talk spyder_route5_marc"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_route5_tryphaena"/>
    </properties>
   </object>
@@ -365,32 +365,30 @@
     <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
-  <object id="63" name="Talk Cleo" type="event" x="320" y="96" width="16" height="16">
+  <object id="63" name="Talk Cleo or Patra" type="event" x="320" y="96" width="32" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_char player,spyder_route5_cleo"/>
     <property name="act3" value="char_face player,spyder_route5_cleo"/>
     <property name="act4" value="char_talk spyder_route5_cleo,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
     <property name="act6" value="add_monster memnomnom,20,spyder_route5_cleo,5,10"/>
     <property name="act7" value="add_monster memnomnom,20,spyder_route5_cleo,5,10"/>
-    <property name="act8" value="start_battle player,spyder_route5_cleo"/>
+    <property name="act8" value="start_double_battle player,spyder_route5_cleo"/>
     <property name="act9" value="char_talk spyder_route5_cleo,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_route5_cleo"/>
     <property name="cond2" value="is char_at player"/>
     <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
-  <object id="64" name="Talk Tryphaena" type="event" x="288" y="96" width="16" height="16">
+  <object id="64" name="Talk Tryphaena or Marc" type="event" x="272" y="96" width="32" height="16">
    <properties>
     <property name="act1" value="lock_controls"/>
-    <property name="act2" value="pathfind_to_char player,spyder_route5_tryphaena"/>
     <property name="act3" value="char_face player,spyder_route5_tryphaena"/>
     <property name="act4" value="char_talk spyder_route5_tryphaena,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
     <property name="act6" value="add_monster miaownolith,24,spyder_route5_tryphaena,5,10"/>
     <property name="act7" value="add_monster criniotherme,22,spyder_route5_tryphaena,5,10"/>
-    <property name="act8" value="start_battle player,spyder_route5_tryphaena"/>
+    <property name="act8" value="start_double_battle player,spyder_route5_tryphaena"/>
     <property name="act9" value="char_talk spyder_route5_tryphaena,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_route5_tryphaena"/>
     <property name="cond2" value="is char_at player"/>
@@ -465,6 +463,54 @@
     <property name="act8" value="unlock_controls"/>
     <property name="act90" value="translated_dialog spyder_output_nurse5"/>
     <property name="behav1" value="talk spyder_route5_nurse"/>
+   </properties>
+  </object>
+  <object id="75" name="Create Patra" type="event" x="336" y="80" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_route5_patra,21,5"/>
+    <property name="cond1" value="not char_exists spyder_route5_patra"/>
+   </properties>
+  </object>
+  <object id="76" name="Talk Patra (Double Battle w Cleo)" type="event" x="320" y="64" width="16" height="16">
+   <properties>
+    <property name="act1" value="char_talk spyder_route5_cleo,pre_battle"/>
+    <property name="act2" value="add_monster memnomnom,20,spyder_route5_cleo,5,10"/>
+    <property name="act3" value="add_monster memnomnom,20,spyder_route5_cleo,5,10"/>
+    <property name="act4" value="start_double_battle player,spyder_route5_cleo"/>
+    <property name="act5" value="char_talk spyder_route5_cleo,post_battle_lose"/>
+    <property name="behav1" value="talk spyder_route5_patra"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_route5_cleo"/>
+   </properties>
+  </object>
+  <object id="77" name="Talk Tryphaena" type="event" x="288" y="64" width="16" height="16">
+   <properties>
+    <property name="act1" value="char_talk spyder_route5_tryphaena,pre_battle"/>
+    <property name="act2" value="add_monster miaownolith,24,spyder_route5_tryphaena,5,10"/>
+    <property name="act3" value="add_monster criniotherme,22,spyder_route5_tryphaena,5,10"/>
+    <property name="act4" value="start_double_battle player,spyder_route5_tryphaena"/>
+    <property name="act5" value="char_talk spyder_route5_tryphaena,post_battle_lose"/>
+    <property name="behav1" value="talk spyder_route5_tryphaena"/>
+    <property name="cond1" value="not battle_outcome player,won,spyder_route5_tryphaena"/>
+   </properties>
+  </object>
+  <object id="78" name="Create Marc" type="event" x="272" y="80" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_route5_marc,17,5"/>
+    <property name="cond1" value="not char_exists spyder_route5_marc"/>
+   </properties>
+  </object>
+  <object id="79" name="Post Talk Patra (Double Battle with Cleo)" type="event" x="288" y="192" width="16" height="16">
+   <properties>
+    <property name="act1" value="char_talk spyder_route5_cleo,post_battle_lose"/>
+    <property name="behav1" value="talk spyder_route5_patra"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_route5_cleo"/>
+   </properties>
+  </object>
+  <object id="80" name="Post Talk Marc" type="event" x="288" y="176" width="16" height="16">
+   <properties>
+    <property name="act1" value="char_talk spyder_route5_tryphaena,post_battle_lose"/>
+    <property name="behav1" value="talk spyder_route5_marc"/>
+    <property name="cond1" value="is battle_outcome player,won,spyder_route5_tryphaena"/>
    </properties>
   </object>
  </objectgroup>

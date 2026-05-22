@@ -601,6 +601,8 @@
     <property name="cond2" value="is current_state WorldState"/>
     <property name="cond3" value="is check_char_parameter player,moving,1"/>
     <property name="cond4" value="is environment_is night_ocean"/>
+   </properties>
+  </object>
   <object id="287" name="Autosave Cotton" type="event" x="208" y="16" width="32" height="16">
    <properties>
     <property name="act1" value="autosave"/>

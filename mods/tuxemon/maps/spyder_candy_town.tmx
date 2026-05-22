@@ -476,6 +476,8 @@
     <property name="cond2" value="is current_state WorldState"/>
     <property name="cond3" value="is check_char_parameter player,moving,1"/>
     <property name="cond4" value="is environment_is night_ocean"/>
+   </properties>
+  </object>
   <object id="451" name="Create TM Leaf Barrage" type="event" x="224" y="448" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_candy_tmleafbarrage,14,28"/>

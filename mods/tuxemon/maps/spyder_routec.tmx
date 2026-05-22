@@ -552,6 +552,8 @@
     <property name="cond2" value="is current_state WorldState"/>
     <property name="cond3" value="is check_char_parameter player,moving,1"/>
     <property name="cond4" value="is environment_is night_ocean"/>
+   </properties>
+  </object>
   <object id="296" name="Autosave Dragon" type="event" x="192" y="384" width="16" height="16">
    <properties>
     <property name="act1" value="autosave"/>

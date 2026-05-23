@@ -212,7 +212,7 @@
     <property name="cond1" value="not char_exists spyder_routea_dagger"/>
    </properties>
   </object>
-  <object id="75" name="Talk Dagger" type="event" x="32" y="368" width="16" height="16">
+  <object id="75" name="Talk Dagger" type="event" x="32" y="368" width="16" height="48">
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_routea_dagger"/>

@@ -603,5 +603,13 @@
     <property name="cond4" value="is environment_is night_ocean"/>
    </properties>
   </object>
+  <object id="285" name="Autosave Cotton" type="event" x="208" y="16" width="32" height="16">
+   <properties>
+    <property name="act1" value="autosave"/>
+    <property name="act2" value="set_variable save1:yes"/>
+    <property name="cond1" value="not variable_set save1:yes"/>
+    <property name="cond2" value="is char_at player"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

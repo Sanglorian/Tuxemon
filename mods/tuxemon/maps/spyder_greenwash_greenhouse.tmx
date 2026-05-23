@@ -221,8 +221,8 @@
     <property name="act3" value="char_face player,spyder_greenwash_gregor"/>
     <property name="act4" value="char_talk spyder_greenwash_gregor,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster sclairus,22,spyder_greenwash_gregor,5,10"/>
-    <property name="act7" value="add_monster cateye,22,spyder_greenwash_gregor,5,10"/>
+    <property name="act6" value="add_monster sclairus,27,spyder_greenwash_gregor,5,10"/>
+    <property name="act7" value="add_monster cateye,27,spyder_greenwash_gregor,5,10"/>
     <property name="act8" value="start_battle player,spyder_greenwash_gregor"/>
     <property name="act9" value="char_talk spyder_greenwash_gregor,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_greenwash_gregor"/>
@@ -244,7 +244,7 @@
     <property name="act3" value="char_face player,spyder_greenwash_alex"/>
     <property name="act4" value="char_talk spyder_greenwash_alex,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster shybulb,25,spyder_greenwash_alex,5,10"/>
+    <property name="act6" value="add_monster shybulb,30,spyder_greenwash_alex,5,10"/>
     <property name="act7" value="start_battle player,spyder_greenwash_alex"/>
     <property name="act8" value="char_talk spyder_greenwash_alex,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_greenwash_alex"/>
@@ -266,8 +266,8 @@
     <property name="act3" value="char_face player,spyder_greenwash_hunt"/>
     <property name="act4" value="char_talk spyder_greenwash_hunt,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster cateye,25,spyder_greenwash_hunt,5,10"/>
-    <property name="act7" value="add_monster propellercat,25,spyder_greenwash_hunt,5,10"/>
+    <property name="act6" value="add_monster cateye,30,spyder_greenwash_hunt,5,10"/>
+    <property name="act7" value="add_monster propellercat,30,spyder_greenwash_hunt,5,10"/>
     <property name="act8" value="start_battle player,spyder_greenwash_hunt"/>
     <property name="act9" value="char_talk spyder_greenwash_hunt,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_greenwash_hunt"/>
@@ -282,8 +282,8 @@
     <property name="act3" value="char_face player,spyder_greenwash_hunt"/>
     <property name="act4" value="char_talk spyder_greenwash_hunt,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster cateye,25,spyder_greenwash_hunt,5,10"/>
-    <property name="act7" value="add_monster propellercat,25,spyder_greenwash_hunt,5,10"/>
+    <property name="act6" value="add_monster cateye,30,spyder_greenwash_hunt,5,10"/>
+    <property name="act7" value="add_monster propellercat,30,spyder_greenwash_hunt,5,10"/>
     <property name="act8" value="start_battle player,spyder_greenwash_hunt"/>
     <property name="act9" value="char_talk spyder_greenwash_hunt,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_greenwash_hunt"/>
@@ -305,7 +305,7 @@
     <property name="act3" value="char_face player,spyder_greenwash_lewis"/>
     <property name="act4" value="char_talk spyder_greenwash_lewis,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster pharfan,24,spyder_greenwash_lewis,5,10"/>
+    <property name="act6" value="add_monster pharfan,29,spyder_greenwash_lewis,5,10"/>
     <property name="act7" value="start_battle player,spyder_greenwash_lewis"/>
     <property name="act8" value="char_talk spyder_greenwash_lewis,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_greenwash_lewis"/>
@@ -320,7 +320,7 @@
     <property name="act3" value="char_face player,spyder_greenwash_lewis"/>
     <property name="act4" value="char_talk spyder_greenwash_lewis,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster pharfan,24,spyder_greenwash_lewis,5,10"/>
+    <property name="act6" value="add_monster pharfan,29,spyder_greenwash_lewis,5,10"/>
     <property name="act7" value="start_battle player,spyder_greenwash_lewis"/>
     <property name="act8" value="char_talk spyder_greenwash_lewis,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_greenwash_lewis"/>
@@ -342,7 +342,7 @@
     <property name="act3" value="char_face player,spyder_greenwash_louis"/>
     <property name="act4" value="char_talk spyder_greenwash_louis,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster cateye,24,spyder_greenwash_louis,5,10"/>
+    <property name="act6" value="add_monster cateye,29,spyder_greenwash_louis,5,10"/>
     <property name="act7" value="start_battle player,spyder_greenwash_louis"/>
     <property name="act8" value="char_talk spyder_greenwash_louis,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_greenwash_louis"/>
@@ -377,7 +377,7 @@
     <property name="act3" value="char_face player,spyder_greenwash_gluck"/>
     <property name="act4" value="char_talk spyder_greenwash_gluck,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster narcileaf,25,spyder_greenwash_gluck,5,10"/>
+    <property name="act6" value="add_monster narcileaf,30,spyder_greenwash_gluck,5,10"/>
     <property name="act7" value="start_battle player,spyder_greenwash_gluck"/>
     <property name="act8" value="char_talk spyder_greenwash_gluck,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_greenwash_gluck"/>
@@ -392,7 +392,7 @@
     <property name="act3" value="char_face player,spyder_greenwash_gluck"/>
     <property name="act4" value="char_talk spyder_greenwash_gluck,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster narcileaf,25,spyder_greenwash_gluck,5,10"/>
+    <property name="act6" value="add_monster narcileaf,30,spyder_greenwash_gluck,5,10"/>
     <property name="act7" value="start_battle player,spyder_greenwash_gluck"/>
     <property name="act8" value="char_talk spyder_greenwash_gluck,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_greenwash_gluck"/>

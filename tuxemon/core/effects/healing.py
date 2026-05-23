@@ -49,6 +49,7 @@ class HealingEffect(CoreEffect):
         if tech.hit:
             targets = session.client.combat_session.get_target_monsters(
                 self.objectives.split(":"), user, target
+            )
 
         if targets:
             for monster in targets:

@@ -76,7 +76,7 @@
   audio: {}
   template:
     sprite_name: picnicker
-    combat_sheet: dynamic_dynasts
+    combat_sheet: picnicker
     slug: picnicker
 - slug: spyder_route5_tryphaena
   speech:
@@ -90,7 +90,7 @@
   audio: {}
   template:
     sprite_name: florist_blue
-    combat_sheet: florist
+    combat_sheet: dynamic_dynasts
     slug: florist
 - slug: spyder_route5_marc
   speech:

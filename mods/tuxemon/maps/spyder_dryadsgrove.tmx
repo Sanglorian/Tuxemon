@@ -913,5 +913,12 @@
     <property name="cond2" value="is char_moved player"/>
    </properties>
   </object>
+   <object id="13319" name="Track dryadsgrove" type="event" x="0" y="0" width="640" height="640">
+   <properties>
+    <property name="act1" value="add_tracker player,dryadsgrove"/>
+    <property name="cond1" value="is char_at player"/>
+    <property name="cond2" value="not tracker player,dryadsgrove"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

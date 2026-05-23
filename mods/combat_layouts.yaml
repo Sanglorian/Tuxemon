@@ -23,10 +23,11 @@ LAYOUT_COORDINATES:
     hud: [145, 45, 110, 50] # fixed HUD for single monster
     # HUD position for the first monster in a 2 vs 2 setup
     hud0: [145, 38, 110, 50]
-    monster_status_icon_slot_0: [157, 73, 9, 9]
+    monster_status_icon: [160, 76, 9, 9]         # status icon for single battle
+    monster_status_icon_slot_0: [159, 74, 9, 9] # status icon for first monster in 2 vs 2 setup
     # HUD position for the second monster in a 2 vs 2 setup 
     hud1: [129, 58, 110, 50]
-    monster_status_icon_slot_1: [141, 93, 9, 9]
+    monster_status_icon_slot_1: [143, 94, 9, 9] # status icon for second monster in 2 vs 2 setup
     # Tuxeball icon strip (left side, shows number of available monsters)
     party: [145, 57, 110, 50] # placed just below the HUD region
     # Monster box image position for single monster
@@ -52,6 +53,7 @@ LAYOUT_COORDINATES:
     home1: [170, 18, 96, 70]
     hud: [18, 0, 85, 30]
     hud0: [18, -4, 85, 30]
+    monster_status_icon: [9, 11, 9, 9]
     monster_status_icon_slot_0: [14, 12, 9, 9]
     hud1: [34, 17, 85, 30]
     monster_status_icon_slot_1: [30, 33, 9, 9]
@@ -70,6 +72,7 @@ LAYOUT_COORDINATES:
     home1: [40, 40, 96, 70]
     hud: [80, 20, 110, 50]
     hud0: [80, 5, 110, 50]
+    monster_status_icon: [93, 35, 9, 9]
     monster_status_icon_slot_0: [99, 41, 9, 9]
     hud1: [64, 35, 110, 50] # -16 nominal px left, matching home1 direction
     monster_status_icon_slot_1: [83, 71, 9, 9] # status icon aligned with hud1

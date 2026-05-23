@@ -49,10 +49,13 @@ class DamageEffect(CoreEffect):
                 tech, user, target
             )
 
+        any_damage = False
         if targets:
             for monster in targets:
                 dmg, m = formula.simple_damage_calculate(tech, user, monster)
                 monster.current_hp = max(0, monster.current_hp - dmg)
+                if dmg:
+                    any_damage = True
                 if monster == target:
                     damage, mult = dmg, m
                 else:
@@ -65,6 +68,6 @@ class DamageEffect(CoreEffect):
             name=tech.name,
             damage=damage,
             element_multiplier=mult,
-            should_tackle=bool(damage),
-            success=bool(damage),
+            should_tackle=any_damage,
+            success=any_damage,
         )

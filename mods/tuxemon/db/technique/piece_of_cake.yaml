@@ -17,8 +17,7 @@ recharge: 2
 slug: piece_of_cake
 sort: damage
 modifiers: []
-behaviors:
-  bypasses_selection: true
+behaviors: {}
 target:
   enemy_monster: false
   enemy_team: false

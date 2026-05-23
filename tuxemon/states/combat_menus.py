@@ -568,8 +568,8 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
             # open menu to choose target of technique
             technique = menu_item.game_object
 
-            # allow to choose target if 1 vs 2 or 2 vs 2
-            if len(self.opponents) > 1:
+            # ask the player to pick an enemy only when the technique needs one
+            if len(self.opponents) > 1 and technique.targets_enemy():
                 self.client.push_state(
                     CombatTargetMenuState(
                         client=self.client,

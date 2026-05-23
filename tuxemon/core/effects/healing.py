@@ -46,10 +46,15 @@ class HealingEffect(CoreEffect):
         hit = session.client.combat_session.get_tech_hit(user)
         tech.hit = tech.accuracy >= hit
 
-        if tech.hit and self.objectives:
-            targets = session.client.combat_session.get_target_monsters(
-                self.objectives.split(":"), user, target
-            )
+        if tech.hit:
+            if self.objectives:
+                targets = session.client.combat_session.get_target_monsters(
+                    self.objectives.split(":"), user, target
+                )
+            else:
+                targets = session.client.combat_session.get_targets(
+                    tech, user, target
+                )
 
         if targets:
             for monster in targets:

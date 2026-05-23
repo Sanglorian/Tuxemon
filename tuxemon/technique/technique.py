@@ -247,7 +247,7 @@ class Technique:
         )
 
     def targets_enemy(self) -> bool:
-        """Returns True if this technique targets an enemy via its target field or any effect's objectives."""
+        """Returns True if this technique needs the player to select a specific enemy target."""
         if self.target.get("enemy_monster"):
             return True
         return any("enemy_monster" in e.parameters for e in self.effect_defs)

@@ -581,11 +581,10 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
                     )
                 )
             else:
-                player = self.party[0]
                 enemy = self.opponents[0]
                 surface = Surface(self.rect.size)
                 if technique.target["own_monster"]:
-                    mon = MenuItem(surface, None, None, player)
+                    mon = MenuItem(surface, None, None, self.monster)
                 else:
                     mon = MenuItem(surface, None, None, enemy)
                 enqueue_technique(technique, mon)
@@ -664,7 +663,13 @@ class CombatTargetMenuState(Menu[Monster]):
         self.targeting_map.clear()
 
         if self.technique.behaviors.bypasses_selection:
-            yield self._create_menu_item(self.monster)
+            if self.technique.target.get("enemy_monster"):
+                for player, monsters in self.combat_session.field_monsters.get_all_monsters().items():
+                    if player != self.character and monsters:
+                        yield self._create_menu_item(monsters[0])
+                        break
+            else:
+                yield self._create_menu_item(self.monster)
             return
 
         for (
@@ -676,7 +681,10 @@ class CombatTargetMenuState(Menu[Monster]):
             )
             self.targeting_map[targeting_class].extend(monsters)
 
-            if not self.technique.target.get(targeting_class):
+            show = self.technique.target.get(targeting_class)
+            if not show and targeting_class == "enemy_monster":
+                show = self.technique.targets_enemy()
+            if not show:
                 continue
 
             for monster in monsters:

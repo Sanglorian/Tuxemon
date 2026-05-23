@@ -4161,7 +4161,7 @@ msgid "lion_mountain"
 msgstr "Lion Mountain"
 
 msgid "candy_town"
-msgstr "Candy"
+msgstr "Candy Town"
 
 msgid "candy_port"
 msgstr "Candy Port"
@@ -4173,7 +4173,7 @@ msgid "citypark"
 msgstr "City Park"
 
 msgid "cotton_town"
-msgstr "Cotton"
+msgstr "Cotton Town"
 
 msgid "diamond_hill"
 msgstr "Diamond Hill"
@@ -4188,13 +4188,13 @@ msgid "mansion"
 msgstr "Mansion"
 
 msgid "flower_city"
-msgstr "Flower"
+msgstr "Flower City"
 
 msgid "leather_town"
-msgstr "Leather"
+msgstr "Leather Town"
 
 msgid "paper_town"
-msgstr "Paper"
+msgstr "Paper Town"
 
 msgid "route1"
 msgstr "Route 1"
@@ -4266,7 +4266,7 @@ msgid "taba_ba_passageway_2"
 msgstr "Taba Battle Area - Passageway 2"
 
 msgid "timber_town"
-msgstr "Timber"
+msgstr "Timber Town"
 
 msgid "tunnel"
 msgstr "Tunnel"

@@ -34,6 +34,7 @@ class HealingEffect(CoreEffect):
     """
 
     name = "healing"
+    objectives: str
 
     def apply_tech_target(
         self, session: Session, tech: Technique, user: Monster, target: Monster
@@ -46,9 +47,8 @@ class HealingEffect(CoreEffect):
         tech.hit = tech.accuracy >= hit
 
         if tech.hit:
-            targets = session.client.combat_session.get_targets(
-                tech, user, target
-            )
+            targets = session.client.combat_session.get_target_monsters(
+                self.objectives.split(":"), user, target
 
         if targets:
             for monster in targets:

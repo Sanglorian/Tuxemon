@@ -32,14 +32,14 @@ class SetLayerAction(EventAction):
 
             * An RGBA colour – ``R,G,B,A`` or ``R:G:B:A``
               (e.g. ``255:0:0:128`` for semi-transparent red).
-            default transparent
+              Default: transparent.
             * An image path relative to the mod root
               (e.g. ``gfx/ui/overlay/torchlight.png``).
             * Omitted or ``none`` – clears the overlay.
 
-    Note: this is not a separate state, so it's advisable
-        to add a 4th value to the rgb, if not you're not
-        going to see the character, ideally 128.
+    Note: this is not a separate state, so it's advisable to add a 4th
+    value to the RGB; without it the character won't be visible
+    (ideally 128).
     """
 
     name = "set_layer"

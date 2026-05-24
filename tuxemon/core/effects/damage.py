@@ -14,18 +14,6 @@ if TYPE_CHECKING:
     from tuxemon.technique.technique import Technique
 
 
-def _matches_tech(tech: "Technique", field: str, value: str) -> bool:
-    if field == "category":
-        return tech.category == value
-    if field == "type":
-        return tech.has_type(value)
-    if field == "range":
-        return tech.range == value
-    if field == "sort":
-        return tech.sort == value
-    return False
-
-
 @dataclass
 class DamageEffect(CoreEffect):
     """
@@ -56,13 +44,7 @@ class DamageEffect(CoreEffect):
         hit = session.client.combat_session.get_tech_hit(user)
         tech.hit = tech.accuracy >= hit
 
-        current_turn = session.client.combat_session.turn
-        protected = any(
-            turn == current_turn and _matches_tech(tech, field, value)
-            for field, value, turn in target.protect_blocklist
-        )
-
-        if tech.hit and not target.out_of_range and not protected:
+        if tech.hit and not target.out_of_range:
             damage, mult = formula.simple_damage_calculate(tech, user, target)
             targets = session.client.combat_session.get_targets(
                 tech, user, target

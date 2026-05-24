@@ -12177,7 +12177,7 @@ msgstr ""
 msgid "spyder_cottontown_hacker2"
 msgstr ""
 "Right, right!\n"
-" There's a data center along the river to the north-east of Timber Town.\n"
+" There's a data center along the river to the south-east of Timber Town.\n"
 " If Omnichannel's done anything to the computer network, they would have done it there."
 
 msgid "spyder_pc_alert"

@@ -14,15 +14,14 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class ProtectEffect(CoreEffect):
+class BlockEffect(CoreEffect):
     """
     Blocks incoming techniques that match a specified criterion for the
     current turn.
 
-    When the protected monster is targeted by a damaging technique whose
-    ``field`` attribute equals ``value``, the damage is negated. Protection
-    expires automatically at the end of the turn — no cleanup technique is
-    required.
+    When the blocking monster is targeted by a technique whose ``field``
+    attribute equals ``value``, all effects are negated. The block expires
+    automatically at the end of the turn — no cleanup technique is required.
 
     **Parameters**
 
@@ -40,21 +39,21 @@ class ProtectEffect(CoreEffect):
     .. code-block:: json
 
         "effects": [
-            "protect category special"
+            "block category special"
         ]
 
-    Multiple protect effects on the same technique stack, blocking all
+    Multiple block effects on the same technique stack, blocking all
     matched criteria simultaneously:
 
     .. code-block:: json
 
         "effects": [
-            "protect type fire",
-            "protect range melee"
+            "block type fire",
+            "block range melee"
         ]
     """
 
-    name = "protect"
+    name = "block"
     field: str
     value: str
 
@@ -62,5 +61,5 @@ class ProtectEffect(CoreEffect):
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
         turn = session.client.combat_session.turn
-        user.protect_blocklist.append((self.field, self.value, turn))
+        user.block_list.append((self.field, self.value, turn))
         return TechEffectResult(name=tech.name, success=True)

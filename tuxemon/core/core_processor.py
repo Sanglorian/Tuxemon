@@ -27,12 +27,12 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _is_protected_against(
+def _is_blocked(
     session: "Session", source: "Technique", target: "Monster"
 ) -> bool:
-    """Return True if target's active protect entries block source this turn."""
+    """Return True if target's active block entries block source this turn."""
     current_turn = session.client.combat_session.turn
-    for field, value, turn in target.protect_blocklist:
+    for field, value, turn in target.block_list:
         if turn != current_turn:
             continue
         if field == "category" and source.category == value:
@@ -115,7 +115,7 @@ class EffectProcessor:
         if not self.effects:
             return meta_result
 
-        if user and target and _is_protected_against(session, source, target):
+        if user and target and _is_blocked(session, source, target):
             return meta_result
 
         for effect in self.effects:

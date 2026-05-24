@@ -14,7 +14,7 @@ effects:
   - altitude
 slug: tm_altitude
 sort: utility
-sprite: gfx/items/tm_generic.png
+sprite: gfx/items/tm_earth.png
 category: technique
 cost: 2500
 usable_in:

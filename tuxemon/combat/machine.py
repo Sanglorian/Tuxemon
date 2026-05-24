@@ -64,9 +64,13 @@ class CombatMachine:
                     "Only one player remaining — transitioning to RAN_AWAY."
                 )
                 return CombatPhase.RAN_AWAY
-            elif len(self.session.action_queue.queue) == len(
-                self.session.active_monsters
-            ):
+            queued = len(self.session.action_queue.queue)
+            pending = sum(
+                1
+                for t, _ in self.session.action_queue.pending
+                if t == self.session.turn
+            )
+            if queued + pending == len(self.session.active_monsters):
                 logger.debug(
                     "All monsters have actions — transitioning to PRE_ACTION."
                 )

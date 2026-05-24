@@ -96,6 +96,9 @@ class EffectProcessor:
         if not self.effects:
             return meta_result
 
+        if target and target.out_of_range:
+            return meta_result
+
         for effect in self.effects:
             if isinstance(effect, CoreEffect):
                 # Technique with target

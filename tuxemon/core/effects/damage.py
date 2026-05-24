@@ -44,7 +44,7 @@ class DamageEffect(CoreEffect):
         hit = session.client.combat_session.get_tech_hit(user)
         tech.hit = tech.accuracy >= hit
 
-        if tech.hit and not target.out_of_range:
+        if tech.hit:
             damage, mult = formula.simple_damage_calculate(tech, user, target)
             targets = session.client.combat_session.get_targets(
                 tech, user, target

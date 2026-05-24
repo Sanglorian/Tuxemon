@@ -269,6 +269,9 @@ class CombatState(CombatAnimations):
                 self.process_player_decisions()
 
         elif phase == CombatPhase.ACTION:
+            if c_session.action_queue.pending:
+                c_session.action_queue.autoclean_pending()
+                c_session.action_queue.from_pending_to_action(c_session.turn)
             c_session.action_queue.sort()
 
         elif phase == CombatPhase.POST_ACTION:
@@ -513,6 +516,9 @@ class CombatState(CombatAnimations):
                 continue
 
             if monster.is_charging:
+                continue
+
+            if self.combat_session.action_queue.has_pending_for(monster):
                 continue
 
             if char in self.combat_session.human_players:

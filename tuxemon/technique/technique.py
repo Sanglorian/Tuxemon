@@ -57,6 +57,7 @@ class Technique:
 
         self.tech_id = db_data.tech_id
         self.sort = db_data.sort
+        self.category = db_data.category
         self.tags = db_data.tags
         self.range = db_data.range
         self.behaviors = db_data.behaviors

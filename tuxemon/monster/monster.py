@@ -114,6 +114,7 @@ class Monster:
         self.steps: float = 0.0
         self.state: str = ""
         self.out_of_range: bool = False
+        self.protect_blocklist: list[tuple[str, str, int]] = []
         self.wild: bool = False
         self.waiting_to_evolve: bool = False
 
@@ -764,6 +765,7 @@ class Monster:
         self.types.reset_to_default()
         self.moves.reset_current_stats()
         self.out_of_range = False
+        self.protect_blocklist.clear()
         self.moves.full_recharge_moves()
 
         if not self.status.is_fainted:

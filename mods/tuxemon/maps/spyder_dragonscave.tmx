@@ -447,7 +447,7 @@
   </object>
   <object id="89" name="Encounters" type="event" x="16" y="208" width="16" height="16">
    <properties>
-    <property name="act1" value="random_encounter spyder_dragonscave,0.6"/>
+    <property name="act1" value="random_encounter spyder_dragonscave,0.3"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_benden"/>
     <property name="cond2" value="is check_char_parameter player,moving,1"/>
    </properties>

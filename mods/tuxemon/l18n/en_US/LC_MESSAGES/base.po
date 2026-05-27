@@ -1263,7 +1263,7 @@ msgid "aardant"
 msgstr "Aardant"
 
 msgid "aardant_description"
-msgstr ""
+msgstr "An innocuous application of Fusion technology."
 
 # Boosters
 msgid "greenwash_badge"

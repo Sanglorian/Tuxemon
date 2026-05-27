@@ -310,8 +310,7 @@ msgstr "Noble Tuxeball"
 
 msgid "tuxeball_noble_description"
 msgstr ""
-"A moderate upgrade to the standard Tuxeball, offering a reliable capture "
-"rate."
+"A moderate upgrade to the standard Tuxeball."
 
 msgid "tuxeball_diurnal"
 msgstr "Diurnal Tuxeball"

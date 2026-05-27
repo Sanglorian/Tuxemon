@@ -129,6 +129,7 @@ class Monster:
         self._levelup_end_stats: BasicStats | None = None
         self._levelup_start_level: int | None = None
         self._levelup_end_level: int | None = None
+        self._pending_techniques: list[str] = []
 
         self.acquisition: Acquisition = Acquisition.UNKNOWN
         self.gender = self.assign_gender(self.gender_weights)
@@ -647,6 +648,14 @@ class Monster:
         self._levelup_end_level = None
 
         return start, end, diff
+
+    def has_pending_levelup(self) -> bool:
+        return self._levelup_start_stats is not None
+
+    def consume_technique_notifications(self) -> list[str]:
+        techniques = self._pending_techniques
+        self._pending_techniques = []
+        return techniques
 
     def set_experience_modifier(self, modifier: float) -> None:
         """Sets the experience modifier for this monster."""

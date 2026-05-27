@@ -144,6 +144,7 @@ class RewardCalculator:
         )
         if new_moves:
             rewards_data.moves.extend(new_moves)
+            winner._pending_techniques.extend(new_moves)
 
         rewards_data.messages.append(
             T.format(

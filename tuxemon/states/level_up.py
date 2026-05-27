@@ -32,6 +32,7 @@ class LevelUpSummaryState(PygameMenuState):
         end_level: int,
         diff: dict[str, tuple[int, int, int]],
         *,
+        techniques: list[str] | None = None,
         use_relative_position: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -39,6 +40,7 @@ class LevelUpSummaryState(PygameMenuState):
         self.start_level = start_level
         self.end_level = end_level
         self.diff = diff
+        self.techniques = techniques or []
 
         width, height = client.context.resolution
 
@@ -70,6 +72,16 @@ class LevelUpSummaryState(PygameMenuState):
             title=f"Lv.{self.start_level} → Lv.{self.end_level}",
             font_size=self.font_type.small,
         )
+
+        if self.techniques:
+            tech_names = ", ".join(T.translate(t) for t in self.techniques)
+            menu.add.label(
+                title=T.format(
+                    "tuxemon_new_tech",
+                    {"name": self.monster.name, "tech": tech_names},
+                ),
+                font_size=self.font_type.small,
+            )
 
         menu.add.vertical_margin(10)
 

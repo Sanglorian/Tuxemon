@@ -860,41 +860,13 @@ class CombatState(CombatAnimations):
         if rewards.update:
             # HUD + XP animation only for the active monster
             main_winner = rewards.winners[0].winner
-            self.update_hud_and_level_up(main_winner, rewards.moves)
+            self.update_hud_and_level_up(main_winner)
 
-            # Level-up summaries for ALL monsters that leveled up
-            for data in rewards.winners:
-                result = data.winner.consume_levelup_summary()
-                if result:
-                    start, end, diff = result
-                    self.task(
-                        partial(
-                            self.client.push_state,
-                            "LevelUpSummaryState",
-                            monster=data.winner,
-                            start_level=start,
-                            end_level=end,
-                            diff=diff,
-                            use_relative_position=True,
-                        ),
-                        interval=4.5,
-                    )
-
-    def update_hud_and_level_up(
-        self, winner: Monster, techniques: list[str]
-    ) -> None:
+    def update_hud_and_level_up(self, winner: Monster) -> None:
         """
         Update the HUD and handle visual level up cues (XP bar and messages).
         """
         if winner in self.combat_session.monsters_in_play_right:
-            if techniques:
-                tech_list = ", ".join(
-                    T.translate(tech) for tech in techniques
-                )
-                params = {"name": winner.name, "tech": tech_list}
-                mex = T.format("tuxemon_new_tech", params)
-                self.text_anim.add_xp_message(mex)
-
             owner = winner.get_owner()
             if owner.is_player:
                 # XP bar animation

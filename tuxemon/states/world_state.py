@@ -150,6 +150,32 @@ class WorldState(State):
         self.client.npc_manager.update_npcs(dt, self.client)
         self.client.npc_manager.update_npcs_off_map(dt, self.client)
         self.client.map_renderer.update(dt)
+        self._check_post_battle_notifications()
+
+    def _check_post_battle_notifications(self) -> None:
+        if self.client.event_engine.running_events:
+            return
+        if "LevelUpSummaryState" in self.client.active_state_names:
+            return
+        player = self.player
+        if player is None:
+            return
+        for monster in player.monsters:
+            if not monster.has_pending_levelup():
+                continue
+            techniques = monster.consume_technique_notifications()
+            result = monster.consume_levelup_summary()
+            if result:
+                start, end, diff = result
+                self.client.push_state(
+                    "LevelUpSummaryState",
+                    monster=monster,
+                    start_level=start,
+                    end_level=end,
+                    diff=diff,
+                    techniques=techniques,
+                )
+                return
 
     def draw(self, surface: Surface) -> None:
         """Draw the game world to the screen."""

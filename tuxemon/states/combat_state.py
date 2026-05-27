@@ -641,22 +641,28 @@ class CombatState(CombatAnimations):
 
         if result_tech.should_tackle:
             user_sprite = self.sprite_map.get_sprite(user)
+            hit_count = max(1, result_tech.hit_count)
+            cycle = 0.8  # seconds between each hit animation in a multi-hit move
 
-            if user_sprite:
-                self.animate_sprite_tackle(user_sprite)
-
-            if target_sprite:
-                self.task(
-                    partial(
-                        self.animate_sprite_take_damage,
-                        target_sprite,
-                    ),
-                    interval=hit_delay + 0.2,
-                )
-                self.task(
-                    partial(self.blink, target_sprite),
-                    interval=hit_delay + 0.6,
-                )
+            for i in range(hit_count):
+                offset = i * cycle
+                if user_sprite:
+                    self.task(
+                        partial(self.animate_sprite_tackle, user_sprite),
+                        interval=offset,
+                    )
+                if target_sprite:
+                    self.task(
+                        partial(
+                            self.animate_sprite_take_damage,
+                            target_sprite,
+                        ),
+                        interval=offset + hit_delay + 0.2,
+                    )
+                    self.task(
+                        partial(self.blink, target_sprite),
+                        interval=offset + hit_delay + 0.6,
+                    )
 
             self.combat_session.enqueue_damage(
                 user, target, result_tech.damage

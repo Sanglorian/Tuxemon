@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from tuxemon import formula
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
+from tuxemon.db import EffectPhase
 from tuxemon.locale.locale import T
 
 if TYPE_CHECKING:
@@ -60,15 +61,24 @@ class MultiAttackEffect(CoreEffect):
 
             hit_count += 1
             dmg, _ = formula.simple_damage_calculate(tech, user, target)
-            total_damage += dmg
+            dealt = min(dmg, target.current_hp)
+            target.current_hp -= dealt
+            total_damage += dealt
+
+            if target.is_fainted:
+                status = target.status.current_status
+                if status:
+                    result = status.use(session, EffectPhase.CHECK_PARTY_HP)
+                    extras.extend(result.extras)
+                # Diehard (or similar) may have restored HP; if still fainted, stop
+                if target.is_fainted:
+                    break
 
         success = hit_count > 0
 
         if success:
-            target.current_hp = max(0, target.current_hp - total_damage)
             params = {"hit_count": hit_count}
-            extract_text = T.format("combat_multiattack", params)
-            extras = [extract_text]
+            extras.insert(0, T.format("combat_multiattack", params))
 
         return TechEffectResult(
             name=tech.name,

@@ -211,15 +211,14 @@ msgid "tuxeball_candy"
 msgstr "Candy Tuxeball"
 
 msgid "tuxeball_candy_description"
-msgstr "Captures Tuxemon and increases its level (+1) upon capture."
+msgstr "Captures Tuxemon and increases its level by one upon capture."
 
 msgid "tuxeball_lavish"
 msgstr "Lavish Tuxeball"
 
 msgid "tuxeball_lavish_description"
 msgstr ""
-"The ultimate capture tool, boasting a significantly higher capture rate than"
-" the Noble Tuxeball."
+"Boasts a significantly higher capture rate than the Noble Tuxeball."
 
 msgid "tuxeball_ancient"
 msgstr "Ancient Tuxeball"
@@ -297,16 +296,14 @@ msgstr "Grand Tuxeball"
 
 msgid "tuxeball_grand_description"
 msgstr ""
-"Offers an even higher capture rate than the Lavish Tuxeball, increasing the "
-"chances of a successful catch."
+"Offers an even higher capture rate than the Lavish Tuxeball."
 
 msgid "tuxeball_majestic"
 msgstr "Majestic Tuxeball"
 
 msgid "tuxeball_majestic_description"
 msgstr ""
-"Boasts the highest capture rate of all, making it the ultimate choice for "
-"catching even the most elusive tuxemon."
+"The ultimate choice for catching even the most elusive tuxemon."
 
 msgid "tuxeball_noble"
 msgstr "Noble Tuxeball"

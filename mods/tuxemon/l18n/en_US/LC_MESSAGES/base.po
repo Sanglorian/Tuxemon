@@ -145,7 +145,7 @@ msgid "revive"
 msgstr "Revive"
 
 msgid "revive_description"
-msgstr "Revives knocked out Tuxemon and restores 20 HP."
+msgstr "Revives knocked out Tuxemon and restores half HP."
 
 msgid "tuxeball"
 msgstr "Tuxeball"

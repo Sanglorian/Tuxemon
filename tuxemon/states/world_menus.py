@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from pygame_menu.menu import Menu
 
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.menu.theme import get_world_menu_theme
 from tuxemon.menu.transitions import SlideRight
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import DIMGRAY_COLOR
@@ -70,14 +69,10 @@ class WorldMenuState(PygameMenuState):
     ) -> None:
         """Initialize menu state and build menu separately."""
         self.char = character
-        _, height = client.context.resolution
+        width, height = client.context.resolution
 
         super().__init__(
-            client=client,
-            height=height,
-            transition=SlideRight(),
-            theme=get_world_menu_theme(client.context.scaling),
-            **kwargs,
+            client=client, height=height, transition=SlideRight(), **kwargs
         )
 
         self.menu_manager = menu_manager

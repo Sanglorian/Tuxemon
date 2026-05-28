@@ -12,7 +12,7 @@ from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.transitions import SlideRight
 from tuxemon.platform.const import buttons
-from tuxemon.platform.const.graphics import DIMGRAY_COLOR, FONT_SIZE_BIGGEST
+from tuxemon.platform.const.graphics import DIMGRAY_COLOR
 from tuxemon.platform.events import PlayerInput
 from tuxemon.states.monster_menu import MonsterMenuHandler
 
@@ -28,21 +28,32 @@ WorldMenuGameObj = Callable[[], object]
 
 
 def add_menu_items_to_pygame_menu(
-    menu: Menu, items: list[MenuItem], resolution: tuple[int, int]
+    menu: Menu,
+    items: list[MenuItem],
+    resolution: tuple[int, int],
+    font_size: int | None = None,
+    font_name: str | None = None,
 ) -> None:
     """Helper function to add items to a pygame_menu.Menu instance."""
     menu.clear()
     menu.add.vertical_fill()
 
+    font_kwargs: dict[str, int | str] = {}
+    if font_size is not None:
+        font_kwargs["font_size"] = font_size
+    if font_name is not None:
+        font_kwargs["font_name"] = font_name
+
     for item in items:
         label = item.label
         callback = item.callback
         if item.enabled:
-            menu.add.button(label, callback)
+            menu.add.button(label, callback, **font_kwargs)
         else:
             menu.add.label(
                 label,
                 font_color=DIMGRAY_COLOR,
+                **font_kwargs,
             )
         menu.add.vertical_fill()
 
@@ -81,24 +92,18 @@ class WorldMenuState(PygameMenuState):
         self.update_menu_from_manager()
         self.handler = MonsterMenuHandler(self.client, self.char.party)
 
-    def setup(self) -> None:
-        super().setup()
-        font = fetch_asset("font", "Arbata.ttf")
-        theme = self._menu.get_theme()
-        theme.widget_font = font
-        theme.title_font = font
-        theme.widget_font_size = self.client.context.scaling.scale_int(
-            FONT_SIZE_BIGGEST
-        )
-        theme.title_font_size = self.client.context.scaling.scale_int(
-            FONT_SIZE_BIGGEST
-        )
-
     def update_menu_from_manager(self) -> None:
         """Refreshes the menu display using items provided by the manager."""
         display = self.menu_manager.build_current_menu_items(self.char)
         resolution = self.client.context.resolution
-        add_menu_items_to_pygame_menu(self.menu, display, resolution)
+        font = fetch_asset("font", "Arbata.ttf")
+        add_menu_items_to_pygame_menu(
+            self.menu,
+            display,
+            resolution,
+            font_size=self.font_type.biggest,
+            font_name=font,
+        )
 
     def open_monster_menu(self) -> None:
         self.handler.open_monster_menu()

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="21" height="21" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="60">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="21" height="21" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="61">
  <properties>
   <property name="edges" value="clamped"/>
   <property name="inside" type="bool" value="true"/>
@@ -223,7 +223,7 @@
   <object id="41" name="PC" type="event" x="16" y="272" width="32" height="16">
    <properties>
     <property name="act1" value="translated_dialog spyder_omnichannel2_pc"/>
-    <property name="act2" value="set_variable omnichannel1wall:yes"/>
+    <property name="act2" value="set_variable omnichannel-ready-wall:yes"/>
     <property name="cond1" value="is char_facing_tile player"/>
     <property name="cond2" value="is button_pressed INTERACT"/>
    </properties>
@@ -243,15 +243,15 @@
   </object>
   <object id="50" name="Create Screen" type="event" x="256" y="128" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_screen,7,18"/>
+    <property name="act1" value="create_npc spyder_screen,16,8"/>
     <property name="cond1" value="not char_exists spyder_screen"/>
-    <property name="cond2" value="not variable_set omnichannel1wall:yes"/>
+    <property name="cond2" value="not variable_set omnichannel2wall:yes"/>
    </properties>
   </object>
   <object id="51" name="Remove Screen" type="event" x="288" y="112" width="16" height="16">
    <properties>
     <property name="act1" value="remove_collision screen"/>
-    <property name="cond1" value="is variable_set omnichannel1wall:yes"/>
+    <property name="cond1" value="is variable_set omnichannel2wall:yes"/>
    </properties>
   </object>
   <object id="52" name="Pass1" type="event" x="288" y="128" width="16" height="16">
@@ -259,7 +259,15 @@
     <property name="act1" value="translated_dialog spyder_omnichannel1_screen"/>
     <property name="cond1" value="is char_facing_tile player"/>
     <property name="cond2" value="is button_pressed INTERACT"/>
-    <property name="cond3" value="not variable_set omnichannel1wall:yes"/>
+    <property name="cond3" value="not variable_set omnichannel-ready-wall:yes"/>
+   </properties>
+  </object>
+  <object id="60" name="Pass2" type="event" x="288" y="128" width="16" height="16">
+   <properties>
+    <property name="act1" value="set_variable omnichannel2wall:yes"/>
+    <property name="cond1" value="is char_facing_tile player"/>
+    <property name="cond2" value="is button_pressed INTERACT"/>
+    <property name="cond3" value="is variable_set omnichannel-ready-wall:yes"/>
    </properties>
   </object>
  </objectgroup>

@@ -48,9 +48,7 @@ class JournalChoice(PygameMenuState):
         minimal_font = transform_resource_filename(
             "font", self.client.config.locale.minimal_font_file
         )
-        thin_font = transform_resource_filename(
-            "font", self.client.config.locale.thin_font_file
-        )
+        arbata = transform_resource_filename("font", "Arbata.ttf")
         valid_slugs = {mon.slug for mon in monsters}
         featured = sum(
             1 for slug in valid_slugs if self.char.tuxepedia.is_caught(slug)
@@ -63,15 +61,13 @@ class JournalChoice(PygameMenuState):
         menu._auto_centering = False
         scale_int = self.client.context.scaling.scale_int
 
-
-
         featured_text = T.format("journal_badge_featured", {"n": ""}).rstrip()
         stubs_text = T.format("journal_badge_stubs", {"n": ""}).rstrip()
         missing_text = T.format("journal_badge_missing", {"n": ""}).rstrip()
 
         badge_featured_lbl: Any = menu.add.label(
             title=featured_text,
-            font_size=self.font_type.biggest,
+            font_size=self.font_type.biggest * 2,
             font_name=minimal_font,
             float=True,
             float_origin_position=True,
@@ -81,8 +77,8 @@ class JournalChoice(PygameMenuState):
 
         badge_featured_num: Any = menu.add.label(
             title=str(featured),
-            font_size=self.font_type.biggest,
-            font_name=thin_font,
+            font_size=self.font_type.biggest * 2,
+            font_name=arbata,
             float=True,
             float_origin_position=True,
             padding=0,
@@ -91,7 +87,7 @@ class JournalChoice(PygameMenuState):
 
         badge_stubs_lbl: Any = menu.add.label(
             title=stubs_text,
-            font_size=self.font_type.biggest,
+            font_size=self.font_type.biggest * 2,
             font_name=minimal_font,
             float=True,
             float_origin_position=True,
@@ -101,8 +97,8 @@ class JournalChoice(PygameMenuState):
 
         badge_stubs_num: Any = menu.add.label(
             title=str(stubs),
-            font_size=self.font_type.biggest,
-            font_name=thin_font,
+            font_size=self.font_type.biggest * 2,
+            font_name=arbata,
             float=True,
             float_origin_position=True,
             padding=0,
@@ -111,7 +107,7 @@ class JournalChoice(PygameMenuState):
 
         badge_missing_lbl: Any = menu.add.label(
             title=missing_text,
-            font_size=self.font_type.biggest,
+            font_size=self.font_type.biggest * 2,
             font_name=minimal_font,
             float=True,
             float_origin_position=True,
@@ -121,8 +117,8 @@ class JournalChoice(PygameMenuState):
 
         badge_missing_num: Any = menu.add.label(
             title=str(missing),
-            font_size=self.font_type.biggest,
-            font_name=thin_font,
+            font_size=self.font_type.biggest * 2,
+            font_name=arbata,
             float=True,
             float_origin_position=True,
             padding=0,
@@ -143,7 +139,7 @@ class JournalChoice(PygameMenuState):
                 and self.char.tuxepedia.is_registered(mon.slug)
             ]
             label = T.format(
-                "page_tuxepedia", {"a": str(start+1), "b": str(end)}
+                "page_tuxepedia", {"a": str(start + 1), "b": str(end)}
             ).upper()
 
             if tuxepedia:
@@ -155,13 +151,15 @@ class JournalChoice(PygameMenuState):
                         monsters=monsters,
                         page=page,
                     ),
-                    font_size=self.font_type.biggest,
+                    font_size=self.font_type.biggest * 2,
+                    font_name=arbata,
                 ).translate(btn_x_offset, btn_y_offset)
             else:
                 lab1: Any = menu.add.label(
                     label,
                     font_color=DIMGRAY_COLOR,
-                    font_size=self.font_type.biggest,
+                    font_size=self.font_type.biggest * 2,
+                    font_name=arbata,
                 )
                 lab1.translate(btn_x_offset, btn_y_offset)
 

@@ -19,7 +19,7 @@ from tuxemon.platform.const.graphics import (
     DIMGRAY_COLOR,
     SEA_BLUE_COLOR,
 )
-from tuxemon.tools import fix_measure
+from tuxemon.tools import fix_measure, transform_resource_filename
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -37,9 +37,13 @@ class JournalState(PygameMenuState):
     name: ClassVar[str] = "JournalState"
 
     def add_menu_items(self, menu: Menu, monsters: list[MonsterModel]) -> None:
-        btn_x_offset = fix_measure(menu._width, 0.25) - self.client.context.scaling.scale_int(60)
+        btn_x_offset = fix_measure(
+            menu._width, 0.25
+        ) - self.client.context.scaling.scale_int(60)
         btn_y_offset = fix_measure(menu._height, 0.01)
         menu._column_max_width = [None, None]
+
+        arbata = transform_resource_filename("font", "Arbata.ttf")
 
         def change_state(state: str, **kwargs: Any) -> MenuGameObj:
             return partial(self.client.push_state, state, **kwargs)
@@ -58,7 +62,8 @@ class JournalState(PygameMenuState):
                             monster=mon,
                             source=self.name,
                         ),
-                        font_size=self.font_type.biggest,
+                        font_size=self.font_type.biggest * 2,
+                        font_name=arbata,
                         button_id=mon.slug,
                     ).translate(btn_x_offset, btn_y_offset)
                 elif self.char.tuxepedia.is_caught(mon.slug):
@@ -70,18 +75,24 @@ class JournalState(PygameMenuState):
                             monster=mon,
                             source=self.name,
                         ),
-                        font_size=self.font_type.biggest,
+                        font_size=self.font_type.biggest * 2,
+                        font_name=arbata,
                         button_id=mon.slug,
                         underline=True,
                         underline_color=SEA_BLUE_COLOR,
-                        underline_offset=self.client.context.scaling.scale_int(1),
-                        underline_width=self.client.context.scaling.scale_int(1),
+                        underline_offset=self.client.context.scaling.scale_int(
+                            1
+                        ),
+                        underline_width=self.client.context.scaling.scale_int(
+                            1
+                        ),
                     ).translate(btn_x_offset, btn_y_offset)
             else:
                 label = f"{mon.txmn_id}. -----"
                 lab: Any = menu.add.label(
                     label,
-                    font_size=self.font_type.biggest,
+                    font_size=self.font_type.biggest * 2,
+                    font_name=arbata,
                     font_color=DIMGRAY_COLOR,
                     label_id=mon.slug,
                 )

@@ -10,6 +10,7 @@ from pygame_menu.menu import Menu
 
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.menu.theme import TuxemonArrowSelection, get_theme
 from tuxemon.menu.transitions import SlideRight
 from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import DIMGRAY_COLOR
@@ -81,6 +82,17 @@ class WorldMenuState(PygameMenuState):
         super().__init__(
             client=client, height=height, transition=SlideRight(), **kwargs
         )
+
+        # Use a World-Menu-only theme whose cursor sits 2 nominal pixels lower
+        # than the shared default, to line up with the taller Arbata items.
+        # Must be set before the menu is first built (in update_menu_from_manager).
+        scaling = self.client.context.scaling
+        scale_factor = max(scaling.scale_int(1), 1)
+        theme = get_theme(scaling).copy()
+        theme.widget_selection_effect = TuxemonArrowSelection(
+            scale_factor, y_offset_nominal=2
+        )
+        self._menu_config["theme"] = theme
 
         self.menu_manager = menu_manager
         self.menu_manager.set_menu_renderer(self)

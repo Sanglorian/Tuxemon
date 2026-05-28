@@ -2075,6 +2075,8 @@ licensed under [SIL Open Font License, 1.1](http://scripts.sil.org/OFL)
 
 * ["Source Han Serif"](https://github.com/adobe-fonts/source-han-serif) by Adobe is licensed under [SIL Open Font License, 1.1](http://scripts.sil.org/OFL)
 
+* ["Arbata Compact"](https://lettercore.itch.io/arbata-compact) by Lettercore is licensed under CC BY 4.0.
+
 Music
 ------
 * [A Night Of Dizzy Spells](http://EricSkiff.com/music) by Eric Skiff is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)

@@ -207,9 +207,7 @@
 - slug: spyder_omnichannel_wu
   speech:
     profile:
-      default:
-        wall_no: spyder_omnichannel_wu1
-        wall_yes: spyder_omnichannel_wu2
+      default: {}
   combat: {}
   audio: {}
   template:

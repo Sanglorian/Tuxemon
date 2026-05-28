@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.menu import Menu
 
+from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.transitions import SlideRight
 from tuxemon.platform.const import buttons
@@ -27,7 +28,11 @@ WorldMenuGameObj = Callable[[], object]
 
 
 def add_menu_items_to_pygame_menu(
-    menu: Menu, items: list[MenuItem], resolution: tuple[int, int]
+    menu: Menu,
+    items: list[MenuItem],
+    resolution: tuple[int, int],
+    font_name: str | None = None,
+    font_size: int | None = None,
 ) -> None:
     """Helper function to add items to a pygame_menu.Menu instance."""
     menu.clear()
@@ -37,11 +42,18 @@ def add_menu_items_to_pygame_menu(
         label = item.label
         callback = item.callback
         if item.enabled:
-            menu.add.button(label, callback)
+            menu.add.button(
+                label,
+                callback,
+                font_name=font_name,
+                font_size=font_size,
+            )
         else:
             menu.add.label(
                 label,
                 font_color=DIMGRAY_COLOR,
+                font_name=font_name,
+                font_size=font_size,
             )
         menu.add.vertical_fill()
 
@@ -84,7 +96,11 @@ class WorldMenuState(PygameMenuState):
         """Refreshes the menu display using items provided by the manager."""
         display = self.menu_manager.build_current_menu_items(self.char)
         resolution = self.client.context.resolution
-        add_menu_items_to_pygame_menu(self.menu, display, resolution)
+        font_name = fetch_asset("font", "Arbata.ttf")
+        font_size = self.font_type.biggest
+        add_menu_items_to_pygame_menu(
+            self.menu, display, resolution, font_name, font_size
+        )
 
     def open_monster_menu(self) -> None:
         self.handler.open_monster_menu()

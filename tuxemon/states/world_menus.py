@@ -8,11 +8,11 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.menu import Menu
 
+from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.menu.theme import get_world_menu_theme
 from tuxemon.menu.transitions import SlideRight
 from tuxemon.platform.const import buttons
-from tuxemon.platform.const.graphics import DIMGRAY_COLOR
+from tuxemon.platform.const.graphics import DIMGRAY_COLOR, FONT_SIZE_BIGGEST
 from tuxemon.platform.events import PlayerInput
 from tuxemon.states.monster_menu import MonsterMenuHandler
 
@@ -73,17 +73,26 @@ class WorldMenuState(PygameMenuState):
         _, height = client.context.resolution
 
         super().__init__(
-            client=client,
-            height=height,
-            transition=SlideRight(),
-            theme=get_world_menu_theme(client.context.scaling),
-            **kwargs,
+            client=client, height=height, transition=SlideRight(), **kwargs
         )
 
         self.menu_manager = menu_manager
         self.menu_manager.set_menu_renderer(self)
         self.update_menu_from_manager()
         self.handler = MonsterMenuHandler(self.client, self.char.party)
+
+    def setup(self) -> None:
+        super().setup()
+        font = fetch_asset("font", "Arbata.ttf")
+        theme = self._menu.get_theme()
+        theme.widget_font = font
+        theme.title_font = font
+        theme.widget_font_size = self.client.context.scaling.scale_int(
+            FONT_SIZE_BIGGEST
+        )
+        theme.title_font_size = self.client.context.scaling.scale_int(
+            FONT_SIZE_BIGGEST
+        )
 
     def update_menu_from_manager(self) -> None:
         """Refreshes the menu display using items provided by the manager."""

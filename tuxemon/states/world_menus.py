@@ -33,29 +33,24 @@ def add_menu_items_to_pygame_menu(
     resolution: tuple[int, int],
     font_name: str | None = None,
     font_size: int | None = None,
+    padding: tuple[int, int] | None = None,
 ) -> None:
     """Helper function to add items to a pygame_menu.Menu instance."""
     menu.clear()
-    menu.add.vertical_fill()
+
+    # Only forward padding when set; pygame_menu falls back to the theme
+    # value when the kwarg is absent, but rejects an explicit None.
+    common: dict[str, Any] = {"font_name": font_name, "font_size": font_size}
+    if padding is not None:
+        common["padding"] = padding
 
     for item in items:
         label = item.label
         callback = item.callback
         if item.enabled:
-            menu.add.button(
-                label,
-                callback,
-                font_name=font_name,
-                font_size=font_size,
-            )
+            menu.add.button(label, callback, **common)
         else:
-            menu.add.label(
-                label,
-                font_color=DIMGRAY_COLOR,
-                font_name=font_name,
-                font_size=font_size,
-            )
-        menu.add.vertical_fill()
+            menu.add.label(label, font_color=DIMGRAY_COLOR, **common)
 
     width, height = resolution
     widgets_size = menu.get_size(widget=True)
@@ -103,8 +98,11 @@ class WorldMenuState(PygameMenuState):
         # multiples of 16. biggest is 8 * scale, so doubling it gives 16 *
         # scale: always a clean multiple of 16 and crisp at any resolution.
         font_size = self.font_type.biggest * 2
+        # Tighten the vertical gap (top/bottom padding) so all entries fit on
+        # screen at this larger font size; (4, 20) is (top&bottom, left&right).
+        padding = (4, 20)
         add_menu_items_to_pygame_menu(
-            self.menu, display, resolution, font_name, font_size
+            self.menu, display, resolution, font_name, font_size, padding
         )
 
     def open_monster_menu(self) -> None:

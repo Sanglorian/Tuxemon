@@ -14480,6 +14480,15 @@ msgstr "Dempsey"
 msgid "spyder_omnichannel_bettger"
 msgstr "Bettger"
 
+msgid "spyder_omnichannel_wu1"
+msgstr "None of your business what goes on beyond this barrier. \n The ... experiments ... require constant supervision. If anything should go wrong ..."
+
+msgid "spyder_omnichannel_wu2"
+msgstr "What have you done? They're loose! \n Awesome killing machines the match for any man or 'mon."
+
+msgid "spyder_omnichannel_wu"
+msgstr "Wu"
+
 msgid "spyder_omnichannel2_pc"
 msgstr "You have lowered the protective screens on all floors."
 

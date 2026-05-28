@@ -17,6 +17,7 @@ from tuxemon.platform.const.graphics import (
     FONT_SHADOW_COLOR,
     FONT_SIZE,
     FONT_SIZE_BIG,
+    FONT_SIZE_BIGGEST,
     SCROLLBAR_COLOR,
     SCROLLBAR_SLIDER_COLOR,
     TRANSPARENT_COLOR,
@@ -125,6 +126,17 @@ def get_theme(scaling: ScalingStrategy) -> Theme:
 
     _theme = theme
     return _theme
+
+
+def get_world_menu_theme(scaling: ScalingStrategy) -> Theme:
+    """Get theme for WorldMenuState: Arbata font at biggest size."""
+    theme = get_theme(scaling).copy()
+    font = fetch_asset("font", "Arbata.ttf")
+    theme.widget_font = font
+    theme.title_font = font
+    theme.widget_font_size = scaling.scale_int(FONT_SIZE_BIGGEST)
+    theme.title_font_size = scaling.scale_int(FONT_SIZE_BIGGEST)
+    return theme
 
 
 _sound_engine: Sound | None = None

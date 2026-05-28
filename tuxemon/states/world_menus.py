@@ -8,12 +8,11 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame_menu.menu import Menu
 
-from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.menu.theme import get_theme
+from tuxemon.menu.theme import get_world_menu_theme
 from tuxemon.menu.transitions import SlideRight
 from tuxemon.platform.const import buttons
-from tuxemon.platform.const.graphics import DIMGRAY_COLOR, FONT_SIZE_BIGGEST
+from tuxemon.platform.const.graphics import DIMGRAY_COLOR
 from tuxemon.platform.events import PlayerInput
 from tuxemon.states.monster_menu import MonsterMenuHandler
 
@@ -71,24 +70,13 @@ class WorldMenuState(PygameMenuState):
     ) -> None:
         """Initialize menu state and build menu separately."""
         self.char = character
-        width, height = client.context.resolution
-
-        arbata_font = fetch_asset("font", "Arbata.ttf")
-        world_theme = get_theme(client.context.scaling).copy()
-        world_theme.widget_font = arbata_font
-        world_theme.title_font = arbata_font
-        world_theme.widget_font_size = client.context.scaling.scale_int(
-            FONT_SIZE_BIGGEST
-        )
-        world_theme.title_font_size = client.context.scaling.scale_int(
-            FONT_SIZE_BIGGEST
-        )
+        _, height = client.context.resolution
 
         super().__init__(
             client=client,
             height=height,
             transition=SlideRight(),
-            theme=world_theme,
+            theme=get_world_menu_theme(client.context.scaling),
             **kwargs,
         )
 

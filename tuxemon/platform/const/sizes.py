@@ -57,7 +57,7 @@ COEFF_FEET: float = 0.032808399
 COEFF_POUNDS: float = 2.2046
 
 # Player / Party Limits
-PLAYER_NAME_LIMIT: int = 15
+PLAYER_NAME_LIMIT: int = 12
 PARTY_LIMIT: int = 6
 MOVERATE_RANGE: tuple[float, float] = (0.0, 20.0)
 TRANS_TIME: float = 0.3

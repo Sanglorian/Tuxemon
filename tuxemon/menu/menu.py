@@ -212,6 +212,9 @@ class PygameMenuState(State):
         if hasattr(theme, "title_font"):
             new.title_font = theme.title_font
 
+        if hasattr(theme, "widget_font_size"):
+            new.widget_font_size = theme.widget_font_size
+
         return new
 
     def _create_image(

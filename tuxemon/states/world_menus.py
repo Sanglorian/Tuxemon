@@ -84,6 +84,7 @@ class WorldMenuState(PygameMenuState):
         font = fetch_asset("font", "Arbata.ttf")
         theme = get_theme(self.client.context.scaling).copy()
         theme.widget_font = font
+        theme.widget_font_size = self.font_type.biggest
         self._menu_config["theme"] = theme
 
         self.menu_manager = menu_manager

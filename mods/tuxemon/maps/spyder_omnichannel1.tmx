@@ -207,12 +207,13 @@
   <object id="51" name="Remove Screen" type="event" x="144" y="256" width="16" height="16">
    <properties>
     <property name="act1" value="remove_collision screen"/>
+    <property name="act2" value="remove_npc spyder_screen"/>
     <property name="cond1" value="is variable_set omnichannel1wall:yes"/>
    </properties>
   </object>
   <object id="53" name="Pass2" type="event" x="144" y="288" width="16" height="16">
    <properties>
-    <property name="act1" value="set variable omnichannel1wall:yes"/>
+    <property name="act1" value="set_variable omnichannel1wall:yes"/>
     <property name="cond1" value="is char_facing_tile player"/>
     <property name="cond2" value="is button_pressed INTERACT"/>
     <property name="cond3" value="is variable_set omnichannel-ready-wall:yes"/>

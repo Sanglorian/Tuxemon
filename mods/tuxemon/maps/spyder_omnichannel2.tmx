@@ -235,12 +235,6 @@
     <property name="cond2" value="is check_char_parameter player,moving,1"/>
     <property name="cond3" value="not battle_outcome player,won,spyder_omnichannel_beaverbrook"/>
    </properties>
-  </object>
-  <object id="49" type="collision" x="256" y="112" width="32" height="32">
-   <properties>
-    <property name="key" value="screen"/>
-   </properties>
-  </object>
   <object id="50" name="Create Screen" type="event" x="256" y="128" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_screen,16,8"/>
@@ -251,6 +245,7 @@
   <object id="51" name="Remove Screen" type="event" x="288" y="112" width="16" height="16">
    <properties>
     <property name="act1" value="remove_collision screen"/>
+    <property name="act2" value="remove_npc spyder_screen"/>
     <property name="cond1" value="is variable_set omnichannel2wall:yes"/>
    </properties>
   </object>

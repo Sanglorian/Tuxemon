@@ -51,7 +51,10 @@ class TextRenderer:
         w, h = fg_surf.get_size()
 
         surf = Surface((int(w + ox), int(h + oy)), SRCALPHA)
-        surf.blit(bg_surf, (ox, oy))
+        # Two cardinal shadow copies (down + right) instead of one diagonal
+        # copy, so diagonal strokes have no gap.
+        surf.blit(bg_surf, (ox, 0))
+        surf.blit(bg_surf, (0, oy))
         surf.blit(fg_surf, (0, 0))
         return surf
 
@@ -93,7 +96,11 @@ class TextRenderer:
             int(math.ceil(a + b))
             for a, b in zip(offset, font_color.get_size())
         ]
+        ox, oy = offset
         image = Surface(size, SRCALPHA)
-        image.blit(shadow_color, tuple(offset))
+        # Two cardinal shadow copies (down + right) instead of one diagonal
+        # copy, so diagonal strokes have no gap.
+        image.blit(shadow_color, (ox, 0))
+        image.blit(shadow_color, (0, oy))
         image.blit(font_color, (0, 0))
         return image

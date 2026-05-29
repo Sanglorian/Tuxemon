@@ -14,7 +14,11 @@ from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.platform.const.graphics import BG_JOURNAL_CHOICE, DIMGRAY_COLOR
+from tuxemon.platform.const.graphics import (
+    BG_JOURNAL_CHOICE,
+    DIMGRAY_COLOR,
+    FONT_SHADOW_COLOR,
+)
 from tuxemon.tools import transform_resource_filename
 
 if TYPE_CHECKING:
@@ -65,65 +69,53 @@ class JournalChoice(PygameMenuState):
         stubs_text = T.format("journal_badge_stubs", {"n": ""}).rstrip()
         missing_text = T.format("journal_badge_missing", {"n": ""}).rstrip()
 
-        badge_featured_lbl: Any = menu.add.label(
-            title=featured_text,
-            font_size=self.font_type.biggest,
-            font_name=minimal_font,
-            float=True,
-            float_origin_position=True,
-            padding=0,
-        )
-        badge_featured_lbl.translate(scale_int(3), scale_int(96))
+        # Pixel-perfect drop shadow: draw a copy of the text in the shadow
+        # colour first (so it sits on a lower z level) offset by 1 nominal
+        # pixel right and down, then the real text on top. Both are whole-pixel
+        # blits of crisp glyph surfaces, so the result stays pixel-perfect.
+        shadow_offset = scale_int(1)
 
-        badge_featured_num: Any = menu.add.label(
-            title=str(featured),
-            font_size=self.font_type.biggest * 2,
-            font_name=arbata,
-            float=True,
-            float_origin_position=True,
-            padding=0,
-        )
-        badge_featured_num.translate(scale_int(10), scale_int(102))
+        def add_shadowed_label(
+            title: str, font_name: str, font_size: int, x: int, y: int
+        ) -> None:
+            menu.add.label(
+                title=title,
+                font_size=font_size,
+                font_name=font_name,
+                font_color=FONT_SHADOW_COLOR,
+                float=True,
+                float_origin_position=True,
+                padding=0,
+            ).translate(x + shadow_offset, y + shadow_offset)
+            menu.add.label(
+                title=title,
+                font_size=font_size,
+                font_name=font_name,
+                float=True,
+                float_origin_position=True,
+                padding=0,
+            ).translate(x, y)
 
-        badge_stubs_lbl: Any = menu.add.label(
-            title=stubs_text,
-            font_size=self.font_type.biggest,
-            font_name=minimal_font,
-            float=True,
-            float_origin_position=True,
-            padding=0,
+        biggest = self.font_type.biggest
+        huge = biggest * 2
+        add_shadowed_label(
+            featured_text, minimal_font, biggest, scale_int(3), scale_int(96)
         )
-        badge_stubs_lbl.translate(scale_int(3), scale_int(112))
-
-        badge_stubs_num: Any = menu.add.label(
-            title=str(stubs),
-            font_size=self.font_type.biggest * 2,
-            font_name=arbata,
-            float=True,
-            float_origin_position=True,
-            padding=0,
+        add_shadowed_label(
+            str(featured), arbata, huge, scale_int(10), scale_int(102)
         )
-        badge_stubs_num.translate(scale_int(10), scale_int(118))
-
-        badge_missing_lbl: Any = menu.add.label(
-            title=missing_text,
-            font_size=self.font_type.biggest,
-            font_name=minimal_font,
-            float=True,
-            float_origin_position=True,
-            padding=0,
+        add_shadowed_label(
+            stubs_text, minimal_font, biggest, scale_int(3), scale_int(112)
         )
-        badge_missing_lbl.translate(scale_int(3), scale_int(128))
-
-        badge_missing_num: Any = menu.add.label(
-            title=str(missing),
-            font_size=self.font_type.biggest * 2,
-            font_name=arbata,
-            float=True,
-            float_origin_position=True,
-            padding=0,
+        add_shadowed_label(
+            str(stubs), arbata, huge, scale_int(10), scale_int(118)
         )
-        badge_missing_num.translate(scale_int(10), scale_int(134))
+        add_shadowed_label(
+            missing_text, minimal_font, biggest, scale_int(3), scale_int(128)
+        )
+        add_shadowed_label(
+            str(missing), arbata, huge, scale_int(10), scale_int(134)
+        )
 
         btn_x_offset = scale_int(44)
         btn_y_offset = scale_int(8)

@@ -140,13 +140,14 @@
     <property name="cond2" value="is char_facing player,up"/>
    </properties>
   </object>
-  <object id="97" name="Create Luzia" type="event" x="176" y="32" width="16" height="16">
+  <object id="97" name="Create Luzia" type="event" x="224" y="32" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_hospital1_luzia,11,2"/>
+    <property name="act2" value="char_face spyder_hospital1_luzia,left"/>
     <property name="cond1" value="not char_exists spyder_hospital1_luzia"/>
    </properties>
   </object>
-  <object id="98" name="Talk Luzia" type="event" x="176" y="80" width="16" height="16">
+  <object id="98" name="Talk Luzia" type="event" x="176" y="32" width="48" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_luzia"/>
@@ -167,7 +168,7 @@
     <property name="cond1" value="not char_exists spyder_hospital1_zekar"/>
    </properties>
   </object>
-  <object id="100" name="Talk Zekar" type="event" x="32" y="224" width="16" height="16">
+  <object id="100" name="Talk Zekar" type="event" x="32" y="144" width="16" height="48">
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_zekar"/>
@@ -195,14 +196,14 @@
     <property name="behav1" value="talk spyder_hospital1_rea"/>
    </properties>
   </object>
-  <object id="103" name="Create Rakez" type="event" x="80" y="80" width="16" height="16">
+  <object id="103" name="Create Rakez" type="event" x="112" y="80" width="16" height="16">
    <properties>
     <property name="act1" value="create_npc spyder_hospital1_rakez,5,5"/>
     <property name="act2" value="char_face spyder_hospital1_rakez,left"/>
     <property name="cond1" value="not char_exists spyder_hospital1_rakez"/>
    </properties>
   </object>
-  <object id="104" name="Talk Rakez" type="event" x="16" y="80" width="16" height="16">
+  <object id="104" name="Talk Rakez" type="event" x="64" y="80" width="48" height="16">
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_rakez"/>
@@ -217,14 +218,14 @@
     <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
-  <object id="105" name="Create Rhizome" type="event" x="256" y="32" width="16" height="16">
+  <object id="105" name="Create Rhizome" type="event" x="80" y="128" width="16" height="16">
    <properties>
-    <property name="act1" value="create_npc spyder_hospital1_rhizome,16,2"/>
+    <property name="act1" value="create_npc spyder_hospital1_rhizome,5,8"/>
     <property name="act2" value="char_face spyder_hospital1_rhizome,left"/>
     <property name="cond1" value="not char_exists spyder_hospital1_rhizome"/>
    </properties>
   </object>
-  <object id="106" name="Talk Rhizome" type="event" x="256" y="48" width="16" height="48">
+  <object id="106" name="Talk Rhizome" type="event" x="80" y="144" width="16" height="48">
    <properties>
     <property name="act01" value="lock_controls"/>
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_rhizome"/>
@@ -267,7 +268,7 @@
     <property name="behav1" value="talk spyder_hospital1_melanie"/>
    </properties>
   </object>
-  <object id="111" name="Post Talk Zekar" type="event" x="48" y="224" width="16" height="16">
+  <object id="111" name="Post Talk Zekar" type="event" x="48" y="112" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_hospital1_zekar,post_battle_lose"/>
     <property name="behav1" value="talk spyder_hospital1_zekar"/>
@@ -281,7 +282,7 @@
     <property name="cond1" value="is battle_outcome player,won,spyder_hospital1_rakez"/>
    </properties>
   </object>
-  <object id="113" name="Post Talk Luzia" type="event" x="176" y="96" width="16" height="16">
+  <object id="113" name="Post Talk Luzia" type="event" x="224" y="16" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_hospital1_luzia,post_battle_lose"/>
     <property name="behav1" value="talk spyder_hospital1_luzia"/>

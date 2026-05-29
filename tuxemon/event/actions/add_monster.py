@@ -11,6 +11,7 @@ from tuxemon.monster.monster import Monster
 from tuxemon.session import Session
 from tuxemon.tools import show_nickname_prompt
 
+
 @final
 @dataclass
 class AddMonsterAction(EventAction):

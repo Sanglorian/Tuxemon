@@ -48,11 +48,11 @@ if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
     from tuxemon.game_variables import ScopeVariablesManager
     from tuxemon.item.item import Item
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
     from tuxemon.sprite import Sprite
     from tuxemon.state.state import State
     from tuxemon.states.choice_state import MenuStateConfig
-    from tuxemon.monster.monster import Monster
     from tuxemon.technique.technique import Technique
     from tuxemon.ui.menu_options import MenuOptions
 

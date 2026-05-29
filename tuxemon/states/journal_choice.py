@@ -7,13 +7,14 @@ from collections.abc import Callable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from pygame_menu.locals import ALIGN_LEFT, POSITION_EAST
+from pygame_menu.locals import ALIGN_LEFT, POSITION_EAST, POSITION_SOUTHEAST
 from pygame_menu.menu import Menu
 
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
+from tuxemon.menu.widgets import add_label
 from tuxemon.platform.const.graphics import (
     BG_JOURNAL_CHOICE,
     DIMGRAY_COLOR,
@@ -69,26 +70,19 @@ class JournalChoice(PygameMenuState):
         stubs_text = T.format("journal_badge_stubs", {"n": ""}).rstrip()
         missing_text = T.format("journal_badge_missing", {"n": ""}).rstrip()
 
-        # Pixel-perfect drop shadow: draw a copy of the text in the shadow
-        # colour first (so it sits on a lower z level) offset by 1 nominal
-        # pixel right and down, then the real text on top. Both are whole-pixel
-        # blits of crisp glyph surfaces, so the result stays pixel-perfect.
-        shadow_offset = scale_int(1)
+        # Each badge is a single shadowed label: the drop shadow is a property
+        # of the label (rendered by ShadowLabel), not a second widget. The
+        # shadow colour/offset/position come from the theme (see __init__).
+        biggest = self.font_type.biggest
+        huge = biggest * 2
 
-        def add_shadowed_label(
+        def badge(
             title: str, font_name: str, font_size: int, x: int, y: int
         ) -> None:
-            menu.add.label(
-                title=title,
-                font_size=font_size,
-                font_name=font_name,
-                font_color=FONT_SHADOW_COLOR,
-                float=True,
-                float_origin_position=True,
-                padding=0,
-            ).translate(x + shadow_offset, y + shadow_offset)
-            menu.add.label(
-                title=title,
+            add_label(
+                menu,
+                title,
+                shadow=True,
                 font_size=font_size,
                 font_name=font_name,
                 float=True,
@@ -96,26 +90,16 @@ class JournalChoice(PygameMenuState):
                 padding=0,
             ).translate(x, y)
 
-        biggest = self.font_type.biggest
-        huge = biggest * 2
-        add_shadowed_label(
+        badge(
             featured_text, minimal_font, biggest, scale_int(3), scale_int(96)
         )
-        add_shadowed_label(
-            str(featured), arbata, huge, scale_int(10), scale_int(102)
-        )
-        add_shadowed_label(
-            stubs_text, minimal_font, biggest, scale_int(3), scale_int(112)
-        )
-        add_shadowed_label(
-            str(stubs), arbata, huge, scale_int(10), scale_int(118)
-        )
-        add_shadowed_label(
+        badge(str(featured), arbata, huge, scale_int(10), scale_int(102))
+        badge(stubs_text, minimal_font, biggest, scale_int(3), scale_int(112))
+        badge(str(stubs), arbata, huge, scale_int(10), scale_int(118))
+        badge(
             missing_text, minimal_font, biggest, scale_int(3), scale_int(128)
         )
-        add_shadowed_label(
-            str(missing), arbata, huge, scale_int(10), scale_int(134)
-        )
+        badge(str(missing), arbata, huge, scale_int(10), scale_int(134))
 
         btn_x_offset = scale_int(44)
         btn_y_offset = scale_int(8)
@@ -181,7 +165,14 @@ class JournalChoice(PygameMenuState):
         )
 
         theme = self._setup_theme(BG_JOURNAL_CHOICE)
+        # Labels are unshadowed by default; ShadowLabels opt in per widget.
+        # These define how that drop shadow looks: 1 nominal pixel down-right.
         theme.widget_font_shadow = False
+        theme.widget_font_shadow_color = FONT_SHADOW_COLOR
+        theme.widget_font_shadow_position = POSITION_SOUTHEAST
+        theme.widget_font_shadow_offset = (
+            self.client.context.scaling.scale_int(1)
+        )
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_LEFT
         self._menu_config["theme"] = theme

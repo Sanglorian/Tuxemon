@@ -256,7 +256,6 @@ class JournalInfoState(PygameMenuState):
             font_size=self.font_type.biggest * 2,
             font_name=arbata,
             wordwrap=True,
-            leading=50,
             align=ALIGN_LEFT,
             padding=0,
         )

@@ -7,19 +7,14 @@ from collections.abc import Callable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from pygame_menu.locals import ALIGN_LEFT, POSITION_EAST, POSITION_SOUTHEAST
+from pygame_menu.locals import ALIGN_LEFT, POSITION_EAST
 from pygame_menu.menu import Menu
 
 from tuxemon.database.runtime import db
 from tuxemon.db import MonsterModel
 from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
-from tuxemon.menu.widgets import add_label
-from tuxemon.platform.const.graphics import (
-    BG_JOURNAL_CHOICE,
-    DIMGRAY_COLOR,
-    FONT_SHADOW_COLOR,
-)
+from tuxemon.platform.const.graphics import BG_JOURNAL_CHOICE, DIMGRAY_COLOR
 from tuxemon.tools import transform_resource_filename
 
 if TYPE_CHECKING:
@@ -70,19 +65,16 @@ class JournalChoice(PygameMenuState):
         stubs_text = T.format("journal_badge_stubs", {"n": ""}).rstrip()
         missing_text = T.format("journal_badge_missing", {"n": ""}).rstrip()
 
-        # Each badge is a single shadowed label: the drop shadow is a property
-        # of the label (rendered by ShadowLabel), not a second widget. The
-        # shadow colour/offset/position come from the theme (see __init__).
+        # Badges are ordinary labels; the drop shadow comes from the theme's
+        # font shadow (pixel-perfect, see tuxemon.menu.widgets).
         biggest = self.font_type.biggest
         huge = biggest * 2
 
         def badge(
             title: str, font_name: str, font_size: int, x: int, y: int
         ) -> None:
-            add_label(
-                menu,
-                title,
-                shadow=True,
+            menu.add.label(
+                title=title,
                 font_size=font_size,
                 font_name=font_name,
                 float=True,
@@ -165,14 +157,7 @@ class JournalChoice(PygameMenuState):
         )
 
         theme = self._setup_theme(BG_JOURNAL_CHOICE)
-        # Labels are unshadowed by default; ShadowLabels opt in per widget.
-        # These define how that drop shadow looks: 1 nominal pixel down-right.
-        theme.widget_font_shadow = False
-        theme.widget_font_shadow_color = FONT_SHADOW_COLOR
-        theme.widget_font_shadow_position = POSITION_SOUTHEAST
-        theme.widget_font_shadow_offset = (
-            self.client.context.scaling.scale_int(1)
-        )
+        # Keep the theme's pixel-perfect font shadow (enabled by default).
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_LEFT
         self._menu_config["theme"] = theme

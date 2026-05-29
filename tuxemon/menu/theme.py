@@ -4,7 +4,11 @@ from pathlib import Path
 
 from pygame.surface import Surface
 from pygame_menu.baseimage import BaseImage
-from pygame_menu.locals import ALIGN_LEFT, SCROLLAREA_POSITION_NONE
+from pygame_menu.locals import (
+    ALIGN_LEFT,
+    POSITION_SOUTHEAST,
+    SCROLLAREA_POSITION_NONE,
+)
 from pygame_menu.sound import SOUND_TYPE_WIDGET_SELECTION, Sound
 from pygame_menu.themes import Theme
 from pygame_menu.widgets.core.selection import Selection
@@ -12,6 +16,7 @@ from pygame_menu.widgets.core.widget import Widget
 from pygame_menu.widgets.widget.menubar import MENUBAR_STYLE_ADAPTIVE
 
 from tuxemon.constants.asset_loader import fetch_asset
+from tuxemon.menu.widgets import install_pixel_perfect_shadow
 from tuxemon.platform.const.graphics import (
     FONT_COLOR,
     FONT_SHADOW_COLOR,
@@ -26,6 +31,9 @@ from tuxemon.tools import transform_resource_filename
 from tuxemon.user_config import CONFIG
 
 _theme: Theme | None = None
+
+# Use Tuxemon's pixel-perfect (unclipped) font shadow everywhere.
+install_pixel_perfect_shadow()
 
 
 class TuxemonArrowSelection(Selection):
@@ -122,6 +130,11 @@ def get_theme(scaling: ScalingStrategy) -> Theme:
     theme.title_font_color = FONT_COLOR
     theme.title_background_color = TRANSPARENT_COLOR
     theme.widget_font_shadow_color = FONT_SHADOW_COLOR
+    # Pixel-perfect drop shadow: 1 nominal pixel down-right (see
+    # install_pixel_perfect_shadow). A down-right offset keeps the text at its
+    # origin, so enabling the unclipped shadow doesn't shift any text.
+    theme.widget_font_shadow_position = POSITION_SOUTHEAST
+    theme.widget_font_shadow_offset = scale_factor
     font = fetch_asset("font", CONFIG.locale.font_file)
     theme.title_font = font
     theme.widget_font = font

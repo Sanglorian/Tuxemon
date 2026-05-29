@@ -1,85 +1,62 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-"""Custom pygame_menu widgets used by Tuxemon menus."""
+"""Rendering patches for pygame_menu used by Tuxemon menus."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-import pygame
+from pygame.surface import Surface
 from pygame_menu.utils import make_surface
-from pygame_menu.widgets import Label
+from pygame_menu.widgets.core.widget import Widget
 
-if TYPE_CHECKING:
-    from pygame_menu.menu import Menu
+_SHADOW_PATCH_APPLIED = False
 
 
-class ShadowLabel(Label):
-    """A label that draws its own pixel-perfect drop shadow.
+def _render_string_unclipped(self: Widget, string: str, color: Any) -> Surface:
+    """Render text (and its font shadow) without clipping the shadow.
 
-    pygame_menu's built-in font shadow is already a per-widget property
-    (``font_shadow``), but it composites the shadow onto a surface sized to
-    the text, so a shadow offset towards the bottom-right loses its right and
-    bottom edges. This subclass enlarges the surface by the shadow offset so
+    pygame_menu's stock renderer composites the shadow onto a surface the size
+    of the text, so a shadow offset towards the bottom-right loses its right
+    and bottom edges. This version enlarges the surface by the shadow offset so
     the shadow is drawn in full.
 
-    Because the shadow is just the same glyph surface blitted at a whole-pixel
-    offset, the result stays pixel-perfect. The shadow is controlled entirely
-    by the inherited ``font_shadow``/``font_shadow_color``/
-    ``font_shadow_offset``/``font_shadow_position`` properties.
+    The shadow is the same glyph surface blitted at a whole-pixel offset, so as
+    long as the text itself is pixel-perfect the drop shadow is too.
     """
+    text = self._font_render_string(string, color)
 
-    def _render_string(
-        self, string: str, color: Any
-    ) -> pygame.surface.Surface:
-        text = self._font_render_string(string, color)
-
-        if not self._font_shadow:
-            surface = make_surface(
-                text.get_width(), text.get_height(), alpha=True
-            )
-            surface.blit(text, (0, 0))
-            return surface
-
-        offset_x = int(self._font_shadow_tuple[0])
-        offset_y = int(self._font_shadow_tuple[1])
-
-        surface = make_surface(
-            text.get_width() + abs(offset_x),
-            text.get_height() + abs(offset_y),
-            alpha=True,
-        )
-        shadow = self._font_render_string(string, self._font_shadow_color)
-        # A negative offset shifts the shadow up/left, so the text moves
-        # down/right within the enlarged surface (and vice versa).
-        surface.blit(shadow, (max(offset_x, 0), max(offset_y, 0)))
-        surface.blit(text, (max(-offset_x, 0), max(-offset_y, 0)))
+    if not self._font_shadow:
+        surface = make_surface(text.get_width(), text.get_height(), alpha=True)
+        surface.blit(text, (0, 0))
         return surface
 
+    offset_x = int(self._font_shadow_tuple[0])
+    offset_y = int(self._font_shadow_tuple[1])
 
-def add_label(
-    menu: Menu, title: str, *, shadow: bool = False, **kwargs: Any
-) -> Any:
-    """Add a label to ``menu``.
+    surface = make_surface(
+        text.get_width() + abs(offset_x),
+        text.get_height() + abs(offset_y),
+        alpha=True,
+    )
+    shadow = self._font_render_string(string, self._font_shadow_color)
+    # A negative offset points the shadow up/left, so the text is what shifts
+    # within the enlarged surface; a positive (down-right) offset leaves the
+    # text at the origin and grows the surface into the empty bottom-right.
+    surface.blit(shadow, (max(offset_x, 0), max(offset_y, 0)))
+    surface.blit(text, (max(-offset_x, 0), max(-offset_y, 0)))
+    return surface
 
-    When ``shadow`` is ``True`` the label is created as a :class:`ShadowLabel`
-    with its font shadow enabled, giving a pixel-perfect drop shadow. The
-    shadow colour, offset and position come from the menu theme (or may be
-    overridden with the usual ``font_shadow_*`` keyword arguments).
 
-    Otherwise this is equivalent to ``menu.add.label(title, **kwargs)``.
+def install_pixel_perfect_shadow() -> None:
+    """Globally replace pygame_menu's clipping font-shadow renderer.
+
+    Idempotent. Every pygame_menu widget (labels, buttons, text inputs, ...)
+    renders text through ``Widget._render_string``, so this upgrades the drop
+    shadow for the whole game in one place.
     """
-    manager = menu.add
-    if not shadow:
-        return manager.label(title, **kwargs)
-
-    kwargs.setdefault("font_shadow", True)
-    label_id = kwargs.pop("label_id", "")
-    # _filter_widget_attributes consumes the recognised keyword arguments and
-    # falls back to theme defaults for anything not supplied.
-    attributes = manager._filter_widget_attributes(kwargs)
-    widget = ShadowLabel(title=title, label_id=label_id)
-    manager._check_kwargs(kwargs)
-    manager._configure_widget(widget=widget, **attributes)
-    manager._append_widget(widget)
-    return widget
+    global _SHADOW_PATCH_APPLIED
+    if _SHADOW_PATCH_APPLIED:
+        return
+    Widget._render_string = _render_string_unclipped  # type: ignore[method-assign]
+    _SHADOW_PATCH_APPLIED = True

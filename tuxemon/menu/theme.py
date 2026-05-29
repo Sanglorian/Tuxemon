@@ -130,11 +130,10 @@ def get_theme(scaling: ScalingStrategy) -> Theme:
     theme.title_font_color = FONT_COLOR
     theme.title_background_color = TRANSPARENT_COLOR
     theme.widget_font_shadow_color = FONT_SHADOW_COLOR
-    # Pixel-perfect drop shadow: 1 nominal pixel down-right (see
-    # install_pixel_perfect_shadow). A down-right offset keeps the text at its
-    # origin, so enabling the unclipped shadow doesn't shift any text.
+    # Drop shadow: 0.5 nominal pixel down-right. The unclipped renderer keeps
+    # the shadow out of the widget's layout box, so it doesn't shift text.
     theme.widget_font_shadow_position = POSITION_SOUTHEAST
-    theme.widget_font_shadow_offset = scale_factor
+    theme.widget_font_shadow_offset = max(1, round(scale_factor / 2))
     font = fetch_asset("font", CONFIG.locale.font_file)
     theme.title_font = font
     theme.widget_font = font

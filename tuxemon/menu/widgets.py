@@ -31,6 +31,7 @@ def _render_string_unclipped(self: Widget, string: str, color: Any) -> Surface:
     text = self._font_render_string(string, color)
 
     if not self._font_shadow:
+        self._rect_size_delta = (0, 0)
         surface = make_surface(text.get_width(), text.get_height(), alpha=True)
         surface.blit(text, (0, 0))
         return surface
@@ -52,6 +53,15 @@ def _render_string_unclipped(self: Widget, string: str, color: Any) -> Surface:
     surface.blit(shadow, (text_x + offset_x, text_y))  # horizontal copy
     surface.blit(shadow, (text_x, text_y + offset_y))  # vertical copy
     surface.blit(text, (text_x, text_y))
+
+    # Keep the shadow out of the layout: report the text-sized box so growing
+    # the surface into the bottom-right doesn't move or clip the widget.
+    # Word-wrapped labels already composite into a text-sized surface, so they
+    # need no adjustment.
+    if getattr(self, "_wordwrap", False):
+        self._rect_size_delta = (0, 0)
+    else:
+        self._rect_size_delta = (-abs(offset_x), -abs(offset_y))
     return surface
 
 

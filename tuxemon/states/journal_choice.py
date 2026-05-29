@@ -67,7 +67,7 @@ class JournalChoice(PygameMenuState):
 
         badge_featured_lbl: Any = menu.add.label(
             title=featured_text,
-            font_size=self.font_type.biggest * 2,
+            font_size=self.font_type.biggest,
             font_name=minimal_font,
             float=True,
             float_origin_position=True,
@@ -87,7 +87,7 @@ class JournalChoice(PygameMenuState):
 
         badge_stubs_lbl: Any = menu.add.label(
             title=stubs_text,
-            font_size=self.font_type.biggest * 2,
+            font_size=self.font_type.biggest,
             font_name=minimal_font,
             float=True,
             float_origin_position=True,
@@ -107,7 +107,7 @@ class JournalChoice(PygameMenuState):
 
         badge_missing_lbl: Any = menu.add.label(
             title=missing_text,
-            font_size=self.font_type.biggest * 2,
+            font_size=self.font_type.biggest,
             font_name=minimal_font,
             float=True,
             float_origin_position=True,

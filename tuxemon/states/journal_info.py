@@ -73,7 +73,7 @@ class JournalInfoState(PygameMenuState):
         lab1: Any = menu.add.label(
             title=name,
             label_id="name",
-            font_size=self.font_type.biggest * 2,
+            font_size=self.font_type.biggest,
             align=ALIGN_LEFT,
             float=True,
             float_origin_position=True,
@@ -90,7 +90,7 @@ class JournalInfoState(PygameMenuState):
         lab2: Any = menu.add.label(
             title=_weight,
             label_id="weight",
-            font_size=self.font_type.biggest * 2,
+            font_size=self.font_type.biggest,
             font_name=minimal_font,
             align=ALIGN_LEFT,
             float=True,
@@ -103,7 +103,7 @@ class JournalInfoState(PygameMenuState):
         lab3: Any = menu.add.label(
             title=_height,
             label_id="height",
-            font_size=self.font_type.biggest * 2,
+            font_size=self.font_type.biggest,
             font_name=minimal_font,
             align=ALIGN_LEFT,
             float=True,
@@ -151,7 +151,7 @@ class JournalInfoState(PygameMenuState):
             lab5a = menu.add.label(
                 title=f"{type1_text}{menu_type_suffix}",
                 label_id="type_loaded_1",
-                font_size=self.font_type.biggest * 2,
+                font_size=self.font_type.biggest,
                 font_name=minimal_font,
                 align=ALIGN_LEFT,
                 float=True,
@@ -166,7 +166,7 @@ class JournalInfoState(PygameMenuState):
             lab5b = menu.add.label(
                 title=f"{type2_text}{menu_type_suffix}",
                 label_id="type_loaded_2",
-                font_size=self.font_type.biggest * 2,
+                font_size=self.font_type.biggest,
                 font_name=minimal_font,
                 align=ALIGN_LEFT,
                 float=True,
@@ -183,7 +183,7 @@ class JournalInfoState(PygameMenuState):
             lab5a = menu.add.label(
                 title=f"{type1_text}{menu_type_suffix}",
                 label_id="type_loaded_1",
-                font_size=self.font_type.biggest * 2,
+                font_size=self.font_type.biggest,
                 font_name=minimal_font,
                 align=ALIGN_LEFT,
                 float=True,
@@ -228,7 +228,7 @@ class JournalInfoState(PygameMenuState):
         lab8: Any = menu.add.label(
             title=_txmn_id,
             label_id="txmn_id",
-            font_size=self.font_type.biggest * 2,
+            font_size=self.font_type.biggest,
             font_name=minimal_font,
             align=ALIGN_LEFT,
             float=True,

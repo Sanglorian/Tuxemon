@@ -70,7 +70,7 @@ from tuxemon.states.combat_animations import CombatAnimations
 from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.status.status import Status
 from tuxemon.technique.technique import Technique
-from tuxemon.tools import assert_never
+from tuxemon.tools import assert_never, show_nickname_prompt
 from tuxemon.ui.combat_notifier import CombatNotifier, TextAnimationManager
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.method_animation import MethodAnimationCache
@@ -1014,10 +1014,24 @@ class CombatState(CombatAnimations):
         self.clear_combat_states()
         self.phase = None
 
-        if new_entry and self._captured_mon:
+        if self._captured_mon:
+            self._prompt_nickname(self._captured_mon, bool(new_entry))
+        else:
+            self.client.push_state("FadeOutTransition", caller=self)
+
+    def _prompt_nickname(self, monster: Monster, new_entry: bool) -> None:
+        show_nickname_prompt(
+            self.client,
+            monster,
+            on_done=partial(self._finish_post_capture, monster, new_entry),
+        )
+
+    def _finish_post_capture(self, monster: Monster, new_entry: bool) -> None:
+        if new_entry:
             self.client.remove_state_by_name("CombatState")
-            params = {"monster": self._captured_mon, "source": self.name}
-            self.client.push_state("MonsterInfoState", **params)
+            self.client.push_state(
+                "MonsterInfoState", monster=monster, source=self.name
+            )
         else:
             self.client.push_state("FadeOutTransition", caller=self)
 

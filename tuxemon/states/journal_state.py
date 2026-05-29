@@ -152,7 +152,6 @@ class JournalState(PygameMenuState):
         )
 
         theme = self._setup_theme(BG_JOURNAL)
-        theme.widget_font_shadow = False
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_LEFT
         self._menu_config["theme"] = theme

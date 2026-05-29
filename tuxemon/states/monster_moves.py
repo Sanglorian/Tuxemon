@@ -266,7 +266,9 @@ class MonsterMovesState(PygameMenuState):
                 img = self._create_image(path)
                 img.scale(self.factor, self.factor)
                 if existing is None:
-                    icon = menu.add.image(img.copy(), image_id=slot_id, float=True)
+                    icon = menu.add.image(
+                        img.copy(), image_id=slot_id, float=True
+                    )
                     icon.translate(fxw(x_positions[i]), fxh(y_position))
                 else:
                     existing.set_image(img)
@@ -282,7 +284,9 @@ class MonsterMovesState(PygameMenuState):
             rimg = self._create_image(path)
             rimg.scale(self.factor, self.factor)
             if existing_range is None:
-                w = menu.add.image(rimg.copy(), image_id="range_icon", float=True)
+                w = menu.add.image(
+                    rimg.copy(), image_id="range_icon", float=True
+                )
                 w.translate(fxw(4 / 256), fxh(86.8 / 144))
             else:
                 existing_range.set_image(rimg)
@@ -352,7 +356,6 @@ class MonsterMovesState(PygameMenuState):
         theme = self._setup_theme(TECH_INFO)
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
-        theme.widget_font_shadow = False
         self._menu_config["theme"] = theme
 
         self.add_menu_items(self.menu, monster)
@@ -360,11 +363,6 @@ class MonsterMovesState(PygameMenuState):
         self.reset_theme()
         if self.selected_widget:
             self.add_menu_technique(self.menu, self.selected_widget.get_id())
-
-    def reset_theme(self) -> None:
-        super().reset_theme()
-        if self._menu is not None:
-            self._menu._theme.widget_font_shadow = False
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         param: dict[str, Any] = {"source": self._source}
@@ -400,9 +398,10 @@ class MonsterMovesState(PygameMenuState):
             result = super().process_event(event)
             self.update_selected_widget()
             if self.selected_widget:
-                self.add_menu_technique(self.menu, self.selected_widget.get_id())
+                self.add_menu_technique(
+                    self.menu, self.selected_widget.get_id()
+                )
             return result
-
 
         if self._source in [
             "WorldMenuState",

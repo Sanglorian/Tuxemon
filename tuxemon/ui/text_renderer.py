@@ -33,8 +33,9 @@ class TextRenderer:
             font_filename, self.scaling.scale_int(FONT_SIZE)
         )
 
-        ox, oy = self.scaling.scale_sequence((0.5, 0.5))
-        self._shadow_offset: tuple[float, ...] = (float(ox), float(oy))
+        # 1 nominal pixel down-right, matching the pygame_menu drop shadow.
+        offset = float(self.scaling.scale_int(1))
+        self._shadow_offset: tuple[float, ...] = (offset, offset)
 
     @lru_cache(maxsize=256)
     def _render_glyph(

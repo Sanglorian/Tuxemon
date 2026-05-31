@@ -2,42 +2,45 @@
 """
 Headless AI-vs-AI battle simulator for Tuxemon.
 
-Runs many battles with randomly assembled teams and reports aggregate stats
-useful for playtesting rule changes (damage formula, technique balance, etc.).
+Two modes:
+  Gauntlet   — many random battles, aggregate win/technique stats.
+  Tournament — single-elimination bracket; winners play winners until a
+               champion emerges, then reports the podium with team rosters,
+               top surviving monsters, and top techniques from winning sides.
 
 Usage:
-    python scripts/battle_sim.py -n 50 -s 3 -l 25
-    python scripts/battle_sim.py --battles 200 --team-size 4 --level 30 -v
+    python scripts/battle_sim.py -n 200 -s 3 -l 25
+    python scripts/battle_sim.py --tournament 16 --team-size 3 --level 25
+    python scripts/battle_sim.py --tournament 32 -s 4 -l 30 -v
 """
 from __future__ import annotations
 
 import argparse
 import logging
+import math
 import random
 import sys
 from collections import defaultdict
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-# Add project root so this can be run from any directory.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-# Initialize DB + translations before importing anything that uses them.
 from tuxemon.core.asset import init_assets
 from tuxemon.prepare import core_init
 
 core_init()
 init_assets()
 
-# ── Patch pre-existing game bug: noddingoff.py accesses status.turn but the ──
-# ── property is actually named nr_turn on the Status class.                  ──
+# Patch pre-existing game bug: noddingoff.py reads status.turn but the
+# property is named nr_turn on the Status class.
 from tuxemon.status.status import Status as _Status  # noqa: E402
 
 if not hasattr(_Status, "turn"):
     _Status.turn = property(lambda self: self.lifecycle.turn)  # type: ignore[attr-defined]
 
 from tuxemon.ai.manager import AIManager
-from tuxemon.boxes import MonsterBoxes
 from tuxemon.combat.combat_context import CombatType
 from tuxemon.combat.machine import CombatMachine, CombatPhase
 from tuxemon.combat.session import CombatSession
@@ -52,23 +55,18 @@ from tuxemon.technique.technique import Technique
 
 logger = logging.getLogger(__name__)
 
-# ── Safety limit ───────────────────────────────────────────────────────────────
 MAX_TURNS = 150
 
 
-# ── Minimal stubs ──────────────────────────────────────────────────────────────
+# ── Stubs ──────────────────────────────────────────────────────────────────────
 
 class _EffectManagerStub:
-    def add_technique(self, tech: Any) -> None:
-        pass
-
-    def add_status(self, status: Any) -> None:
-        pass
+    def add_technique(self, tech: Any) -> None: pass
+    def add_status(self, status: Any) -> None: pass
 
 
 class _EventEngineStub:
-    def execute_action(self, *args: Any, **kwargs: Any) -> None:
-        pass
+    def execute_action(self, *a: Any, **kw: Any) -> None: pass
 
 
 class _MapManagerStub:
@@ -77,8 +75,6 @@ class _MapManagerStub:
 
 
 class SimClient:
-    """Provides the attributes that combat effects access via session.client."""
-
     def __init__(self, combat_session: CombatSession) -> None:
         self.event_bus = get_event_bus()
         self.combat_session = combat_session
@@ -86,61 +82,46 @@ class SimClient:
         self.event_engine = _EventEngineStub()
         self.map_manager = _MapManagerStub()
 
-    def push_state(self, *args: Any, **kwargs: Any) -> None:
-        pass
-
-    def remove_state_by_name(self, *args: Any, **kwargs: Any) -> None:
-        pass
+    def push_state(self, *a: Any, **kw: Any) -> None: pass
+    def remove_state_by_name(self, *a: Any, **kw: Any) -> None: pass
 
 
 class _TimeStub:
     class _Vars:
         hour = 12
         stage_of_day = "day"
-
     def get_time_variables(self) -> "_TimeStub._Vars":
         return self._Vars()
 
 
 class SimSession:
-    """Minimal session wrapper used throughout the combat system."""
-
     def __init__(self, client: SimClient, player: "SimNPC") -> None:
         self.client = client
-        # session.player is accessed by some item/trap effects; safe to be one trainer.
         self.player = player
         self.time = _TimeStub()
 
 
-# ── Fake boxes ─────────────────────────────────────────────────────────────────
-
 class _FakeBoxes:
-    """Overflow box that silently accepts excess monsters."""
-
-    def attempt_add_monster(
-        self, monster: Monster, policy: Any, kennel: Any
-    ) -> bool:
+    def attempt_add_monster(self, monster: Monster, policy: Any, kennel: Any) -> bool:
         return True
-
-    def remove_from_box(self, *args: Any) -> None:
-        pass
+    def remove_from_box(self, *a: Any) -> None: pass
 
 
 # ── SimNPC ─────────────────────────────────────────────────────────────────────
 
 class SimNPC:
-    """
-    Lightweight NPC substitute for the battle simulator.
-
-    Provides all attributes that CombatSession, AIManager, and combat effects
-    access on an NPC, without requiring the full game session stack.
-    """
-
-    # Default slug used when the AI trainer config doesn't have a special entry.
-    # Falls through to `default_decision`, which is fine.
     _DEFAULT_SLUG = "sim_trainer"
-
     is_player: bool = False
+    current_map: str | None = None
+
+    class _TuxepediaStub:
+        def register_seen(self, slug: str) -> None: pass
+
+    class _BattleHandlerStub:
+        def add_battle(self, *a: Any, **kw: Any) -> None: pass
+
+    tuxepedia = _TuxepediaStub()
+    battle_handler = _BattleHandlerStub()
 
     def __init__(
         self,
@@ -153,13 +134,7 @@ class SimNPC:
         self.slug = slug or self._DEFAULT_SLUG
         self.items: list[Item] = []
         self.combat = NpcCombatModel(switch_logic=switch_logic)
-        self._tuxepedia: dict[str, bool] = {}
-
-        boxes: Any = _FakeBoxes()
-        self.party = PartyHandler(
-            monster_boxes=boxes,
-            owner=self,
-        )
+        self.party = PartyHandler(monster_boxes=_FakeBoxes(), owner=self)
         for mon in monsters:
             self.party.add_monster(mon)
 
@@ -171,73 +146,45 @@ class SimNPC:
     def monsters(self) -> list[Monster]:
         return self.party.monsters
 
-    # ── stubs for attributes touched during battle tracking ──────────────────
-
-    class _TuxepediaStub:
-        def register_seen(self, slug: str) -> None:
-            pass
-
-    class _BattleHandlerStub:
-        def add_battle(self, *args: Any, **kwargs: Any) -> None:
-            pass
-
-    tuxepedia = _TuxepediaStub()
-    battle_handler = _BattleHandlerStub()
-
-    # current_map is read by track_battles(); None is acceptable.
-    current_map: str | None = None
-
 
 # ── Routing policy bootstrap ───────────────────────────────────────────────────
 
 def _ensure_routing_policy() -> None:
-    """Register a bare-minimum 'default' routing policy if not yet loaded."""
     if not RoutingPolicyRegistry._policies:
         RoutingPolicyRegistry._policies["default"] = {
-            "force_to_box": False,
-            "kennel_override": None,
-            "locker_override": None,
-            "max_party_size": 6,
-            "allow_party_addition": True,
-            "auto_release_if_box_full": False,
-            "auto_discard_if_box_full": False,
-            "overflow_kennel": None,
-            "overflow_locker": None,
-            "max_box_capacity": None,
-            "nickname_rules": {},
-            "kennel_name_rules": {},
-            "locker_name_rules": {},
+            "force_to_box": False, "kennel_override": None,
+            "locker_override": None, "max_party_size": 6,
+            "allow_party_addition": True, "auto_release_if_box_full": False,
+            "auto_discard_if_box_full": False, "overflow_kennel": None,
+            "overflow_locker": None, "max_box_capacity": None,
+            "nickname_rules": {}, "kennel_name_rules": {}, "locker_name_rules": {},
         }
 
 
 # ── Action resolution ──────────────────────────────────────────────────────────
 
+# Action log entries: (turn, user_slug, tech_slug, target_slug, success)
+ActionEntry = tuple[int, str, str, str, bool]
+
+
 def _resolve_action(
     action: Any,
     c_session: CombatSession,
     session: SimSession,
-) -> tuple[str, str, str, bool] | None:
-    """
-    Apply one action popped from the queue.
-    Returns (user_name, method_slug, target_name, success) or None for statuses.
-    """
-    user = action.user
-    method = action.method
-    target = action.target
+) -> ActionEntry | None:
+    user, method, target = action.user, action.method, action.target
 
     if isinstance(method, Technique) and isinstance(user, Monster):
         result, _ = c_session.apply_technique(session, method, user, target)
         if result.should_tackle:
             c_session.enqueue_damage(user, target, result.damage)
-        return (user.name, method.slug, target.name, result.success)
+        return (c_session.turn, user.slug, method.slug, target.slug, result.success)
 
     elif isinstance(method, Status):
         c_session.apply_status(session, method, target, EffectPhase.PERFORM_STATUS)
-        return None
 
     elif isinstance(method, Item) and user is not None:
         c_session.apply_item(session, method, user, target)
-        return None
 
     return None
 
@@ -245,25 +192,18 @@ def _resolve_action(
 def _drain_action_queue(
     c_session: CombatSession,
     session: SimSession,
-    action_log: list,
+    action_log: list[ActionEntry],
 ) -> None:
-    """Pop and resolve every action currently in the queue."""
     while not c_session.action_queue.is_empty():
         action = c_session.action_queue.pop()
         entry = _resolve_action(action, c_session, session)
         if entry:
-            action_log.append((c_session.turn,) + entry)
+            action_log.append(entry)
         c_session.action_queue.sort()
 
 
-def _remove_fainted(
-    c_session: CombatSession,
-    ai_manager: AIManager,
-) -> None:
-    """Pull fainted monsters off the field and clean up associated state."""
-    for npc, monster_list in list(
-        c_session.field_monsters.get_all_monsters().items()
-    ):
+def _remove_fainted(c_session: CombatSession, ai_manager: AIManager) -> None:
+    for npc, monster_list in list(c_session.field_monsters.get_all_monsters().items()):
         for monster in list(monster_list):
             if monster.is_fainted:
                 c_session.field_monsters.remove_monster(npc, monster)
@@ -274,15 +214,10 @@ def _remove_fainted(
 
 # ── Phase handlers ─────────────────────────────────────────────────────────────
 
-def _phase_housekeeping(
-    c_session: CombatSession,
-    session: SimSession,
-) -> None:
+def _phase_housekeeping(c_session: CombatSession, session: SimSession) -> None:
     new_turn = c_session.next_turn()
     c_session.action_queue.set_current_turn(new_turn)
-    # Pre-populate the queue with actions that were scheduled for this turn
-    # (e.g. second turn of a charge/lock move).  Without this the machine
-    # would stall in DECISION waiting for the locked monster's action.
+    # Pre-populate queue with actions scheduled for this turn (charge/lock moves).
     if c_session.action_queue.pending:
         c_session.action_queue.autoclean_pending()
         c_session.action_queue.from_pending_to_action(new_turn)
@@ -300,8 +235,6 @@ def _phase_decision(
     for monster in list(c_session.active_monsters):
         char = c_session.field_monsters.get_npc_for_monster(monster)
         monster.moves.recharge_moves()
-        # Locked / charging monsters already have their action pre-queued
-        # from the previous turn's schedule_action_in_turns call.
         if monster.locked_turns_left > 0 or monster.is_charging:
             continue
         ai_manager.process_ai_turn(monster, char)
@@ -310,38 +243,39 @@ def _phase_decision(
 def _phase_post_action(
     c_session: CombatSession,
     session: SimSession,
-    action_log: list,
+    action_log: list[ActionEntry],
     ai_manager: AIManager,
 ) -> None:
-    # Status ticks for this turn.
     c_session.apply_statuses(session)
     _drain_action_queue(c_session, session, action_log)
     _remove_fainted(c_session, ai_manager)
 
 
-# ── Battle runner ──────────────────────────────────────────────────────────────
+# ── Battle result ──────────────────────────────────────────────────────────────
 
+@dataclass
 class BattleResult:
-    def __init__(
-        self,
-        winner: SimNPC | None,
-        turns: int,
-        action_log: list,
-    ) -> None:
-        self.winner = winner  # None = draw / turn-limit
-        self.turns = turns
-        self.action_log = action_log  # list[(turn, user, tech, target, success)]
+    winner: SimNPC | None          # None = draw or turn-limit
+    loser: SimNPC | None
+    turns: int
+    action_log: list[ActionEntry]
+    # Slugs of all monsters on the winning team (for win-rate tracking).
+    winner_monster_slugs: list[str] = field(default_factory=list)
+    # Subset of the above that were still alive at the end.
+    winner_surviving_slugs: list[str] = field(default_factory=list)
 
+
+# ── Core battle loop ───────────────────────────────────────────────────────────
 
 def run_battle(npc_a: SimNPC, npc_b: SimNPC) -> BattleResult:
-    """Run one complete AI-vs-AI battle, capturing the winner before state is reset."""
+    """Run one AI-vs-AI battle. Both NPCs should have freshly spawned monsters."""
     event_bus = get_event_bus()
     c_session = CombatSession()
     client = SimClient(c_session)
     session = SimSession(client, npc_a)
     machine = CombatMachine(c_session)
     ai_manager = AIManager(session)
-    action_log: list = []
+    action_log: list[ActionEntry] = []
 
     c_session.set_combat_type(CombatType.TRAINER)
     c_session.set_battle_format(False)
@@ -357,63 +291,46 @@ def run_battle(npc_a: SimNPC, npc_b: SimNPC) -> BattleResult:
     event_bus.subscribe("monster_needed", on_monster_needed)
 
     winner: SimNPC | None = None
+    loser: SimNPC | None = None
     final_turn = 0
 
     try:
         phase: CombatPhase | None = CombatPhase.READY
-
         while phase is not None:
             if phase == CombatPhase.HOUSEKEEPING:
                 _phase_housekeeping(c_session, session)
-
             elif phase == CombatPhase.DECISION:
                 _phase_decision(c_session, session, ai_manager)
-
             elif phase == CombatPhase.PRE_ACTION:
                 c_session.action_queue.sort()
-
             elif phase == CombatPhase.ACTION:
                 _drain_action_queue(c_session, session, action_log)
                 _remove_fainted(c_session, ai_manager)
-
             elif phase == CombatPhase.POST_ACTION:
                 _phase_post_action(c_session, session, action_log, ai_manager)
-
             elif phase in (
-                CombatPhase.HAS_WINNER,
-                CombatPhase.DRAW_MATCH,
-                CombatPhase.RAN_AWAY,
-                CombatPhase.END_COMBAT,
+                CombatPhase.HAS_WINNER, CombatPhase.DRAW_MATCH,
+                CombatPhase.RAN_AWAY, CombatPhase.END_COMBAT,
             ):
                 break
 
             if c_session.turn > MAX_TURNS:
-                logger.debug("Turn limit — draw.")
                 break
 
             next_phase = machine.determine_next_phase(phase)
-
-            if next_phase is None and phase not in (
-                CombatPhase.BEGIN,
-                CombatPhase.READY,
-            ):
-                logger.warning(
-                    "Machine stalled at %s  queue=%d  active=%d",
-                    phase,
-                    len(c_session.action_queue.queue),
-                    len(c_session.active_monsters),
-                )
+            if next_phase is None and phase not in (CombatPhase.BEGIN, CombatPhase.READY):
+                logger.warning("Machine stalled at %s  q=%d  a=%d",
+                               phase, len(c_session.action_queue.queue),
+                               len(c_session.active_monsters))
                 break
-
             if next_phase == CombatPhase.END_COMBAT:
                 break
-
             phase = next_phase
 
-        # Determine winner before reset clears player list.
         remaining = c_session.remaining_players
         if len(remaining) == 1:
             winner = remaining[0]  # type: ignore[assignment]
+            loser = (npc_b if winner is npc_a else npc_a)
         final_turn = c_session.turn
 
     finally:
@@ -421,22 +338,92 @@ def run_battle(npc_a: SimNPC, npc_b: SimNPC) -> BattleResult:
         ai_manager.clear_ai()
         c_session.reset()
 
-    return BattleResult(winner=winner, turns=final_turn, action_log=action_log)
+    # Collect monster stats from the winner's party (monsters still exist post-reset).
+    winner_slugs: list[str] = []
+    surviving_slugs: list[str] = []
+    if winner is not None:
+        for mon in winner.monsters:
+            winner_slugs.append(mon.slug)
+            if not mon.is_fainted:
+                surviving_slugs.append(mon.slug)
+
+    return BattleResult(
+        winner=winner,
+        loser=loser,
+        turns=final_turn,
+        action_log=action_log,
+        winner_monster_slugs=winner_slugs,
+        winner_surviving_slugs=surviving_slugs,
+    )
 
 
-# ── Team / monster helpers ─────────────────────────────────────────────────────
+# ── Team (persistent across tournament rounds) ─────────────────────────────────
+
+@dataclass
+class Team:
+    name: str
+    slugs: list[str]
+    level: int
+    wins: int = 0
+    losses: int = 0
+
+    def make_npc(self) -> SimNPC:
+        monsters: list[Monster] = []
+        for slug in self.slugs:
+            try:
+                monsters.append(Monster.spawn_base(slug, self.level))
+            except Exception as exc:
+                logger.debug("Skipping %s: %s", slug, exc)
+        return SimNPC(self.name, monsters)
+
+    def roster(self) -> str:
+        return "  ".join(self.slugs)
+
+
+# ── Monster / technique stat accumulator ──────────────────────────────────────
+
+@dataclass
+class Stats:
+    """Cross-battle tallies for monsters and techniques."""
+    # How many match wins each monster species contributed to (on winning team)
+    monster_wins: dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    # How many times each species survived to end of a won battle
+    monster_survivals: dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    # How many times each species appeared on any team
+    monster_appearances: dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    # Technique uses by winning team in battles they won
+    winning_tech_uses: dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    # All technique uses
+    total_tech_uses: dict[str, int] = field(default_factory=lambda: defaultdict(int))
+
+    def record(self, result: BattleResult, npc_a: SimNPC, npc_b: SimNPC) -> None:
+        for mon in npc_a.monsters:
+            self.monster_appearances[mon.slug] += 1
+        for mon in npc_b.monsters:
+            self.monster_appearances[mon.slug] += 1
+
+        for _t, user_slug, tech_slug, _tgt, _ok in result.action_log:
+            self.total_tech_uses[tech_slug] += 1
+
+        if result.winner is not None:
+            winner_slug_set = set(result.winner_monster_slugs)
+            for slug in result.winner_monster_slugs:
+                self.monster_wins[slug] += 1
+            for slug in result.winner_surviving_slugs:
+                self.monster_survivals[slug] += 1
+            for _t, user_slug, tech_slug, _tgt, _ok in result.action_log:
+                if user_slug in winner_slug_set:
+                    self.winning_tech_uses[tech_slug] += 1
+
+
+# ── Helpers ────────────────────────────────────────────────────────────────────
 
 def get_monster_pool() -> list[str]:
     from tuxemon.database.runtime import db
-
     return list(db.database["monster"].keys())
 
 
-def build_random_team(
-    pool: list[str],
-    team_size: int,
-    level: int,
-) -> list[Monster]:
+def build_random_team(pool: list[str], team_size: int, level: int) -> list[Monster]:
     slugs = random.sample(pool, min(team_size, len(pool)))
     team: list[Monster] = []
     for slug in slugs:
@@ -447,34 +434,27 @@ def build_random_team(
     return team
 
 
-# ── Simulation loop ────────────────────────────────────────────────────────────
+def _bar(n: int, total: int, width: int = 20) -> str:
+    filled = round(n / total * width) if total else 0
+    return "█" * filled + "░" * (width - filled)
+
+
+# ── Gauntlet mode ──────────────────────────────────────────────────────────────
 
 def simulate(num_battles: int, team_size: int, level: int) -> None:
     _ensure_routing_policy()
-
     pool = get_monster_pool()
-    if len(pool) < team_size:
-        print(
-            f"Monster pool has only {len(pool)} species "
-            f"but team-size is {team_size}. Aborting."
-        )
-        return
 
-    print(
-        f"Running {num_battles} battles | "
-        f"team_size={team_size} | level={level} | "
-        f"pool={len(pool)} species"
-    )
-    print()
+    print(f"Gauntlet: {num_battles} battles | team_size={team_size} | "
+          f"level={level} | pool={len(pool)} species\n")
 
     wins_a = wins_b = draws = errors = 0
     total_turns = 0
-    tech_usage: dict[str, int] = defaultdict(int)
+    stats = Stats()
 
     for i in range(num_battles):
         team_a = build_random_team(pool, team_size, level)
         team_b = build_random_team(pool, team_size, level)
-
         if not team_a or not team_b:
             errors += 1
             continue
@@ -490,6 +470,7 @@ def simulate(num_battles: int, team_size: int, level: int) -> None:
             continue
 
         total_turns += result.turns
+        stats.record(result, npc_a, npc_b)
 
         if result.winner is npc_a:
             wins_a += 1
@@ -498,34 +479,210 @@ def simulate(num_battles: int, team_size: int, level: int) -> None:
         else:
             draws += 1
 
-        for _turn, _user, tech, _target, _ok in result.action_log:
-            tech_usage[tech] += 1
-
         if (i + 1) % max(1, num_battles // 10) == 0:
-            pct = (i + 1) / num_battles * 100
-            print(f"  {i + 1:>{len(str(num_battles))}}/{num_battles}  ({pct:.0f}%)")
+            print(f"  {i+1:>{len(str(num_battles))}}/{num_battles}  "
+                  f"({(i+1)/num_battles*100:.0f}%)")
 
     completed = num_battles - errors
-    print()
-    print("─" * 52)
+    print(f"\n{'─'*52}")
     print(f"Completed : {completed}/{num_battles}   Errors: {errors}")
     if not completed:
         return
-    print(
-        f"Alpha wins: {wins_a:>5}  ({wins_a / completed * 100:5.1f}%)"
-        "  ← randomly-seeded, so ~50% expected"
-    )
-    print(f"Beta  wins: {wins_b:>5}  ({wins_b / completed * 100:5.1f}%)")
-    print(f"Draws     : {draws:>5}  ({draws / completed * 100:5.1f}%)")
-    print(f"Avg turns : {total_turns / completed:.1f}")
+    print(f"Alpha wins: {wins_a:>5}  ({wins_a/completed*100:5.1f}%)")
+    print(f"Beta  wins: {wins_b:>5}  ({wins_b/completed*100:5.1f}%)")
+    print(f"Draws     : {draws:>5}  ({draws/completed*100:5.1f}%)")
+    print(f"Avg turns : {total_turns/completed:.1f}")
+
+    _print_stats(stats, top_n=15)
+
+
+# ── Tournament mode ─────────────────────────────────────────────────────────────
+
+def run_tournament(num_teams: int, team_size: int, level: int) -> None:
+    _ensure_routing_policy()
+    pool = get_monster_pool()
+
+    # Round up to next power of 2.
+    bracket_size = 2 ** math.ceil(math.log2(max(num_teams, 2)))
+    if bracket_size != num_teams:
+        print(f"Rounding up to {bracket_size} teams (next power of 2).")
+        num_teams = bracket_size
+
+    print(f"Tournament: {num_teams} teams | team_size={team_size} | "
+          f"level={level} | pool={len(pool)} species\n")
+
+    # Build all teams upfront.
+    teams: list[Team] = []
+    used_slugs: set[str] = set()
+    while len(teams) < num_teams:
+        available = [s for s in pool if s not in used_slugs]
+        if len(available) < team_size:
+            used_slugs.clear()          # reset exclusion if pool is exhausted
+            available = pool
+        sample = random.sample(available, team_size)
+        used_slugs.update(sample)
+        name = f"Team {len(teams)+1:02d}"
+        teams.append(Team(name=name, slugs=sample, level=level))
+
+    stats = Stats()
+    bracket = list(teams)
+    random.shuffle(bracket)
+
+    round_num = 0
+    losers_r2: list[Team] = []  # semi-final losers (for 3rd place)
+
+    while len(bracket) > 1:
+        round_num += 1
+        num_rounds_total = int(math.log2(num_teams))
+        if len(bracket) == 2:
+            round_label = "Final"
+        elif len(bracket) == 4:
+            round_label = "Semi-finals"
+            losers_r2 = []          # reset in case this is round 2 of a small bracket
+        else:
+            round_label = f"Round {round_num}"
+
+        print(f"── {round_label} {'─'*(44-len(round_label))}")
+
+        next_bracket: list[Team] = []
+        semi_losers: list[Team] = []
+
+        for i in range(0, len(bracket), 2):
+            team_a, team_b = bracket[i], bracket[i + 1]
+            npc_a = team_a.make_npc()
+            npc_b = team_b.make_npc()
+
+            try:
+                result = run_battle(npc_a, npc_b)
+                stats.record(result, npc_a, npc_b)
+            except Exception:
+                logger.exception("Match %s vs %s crashed", team_a.name, team_b.name)
+                result = BattleResult(winner=None, loser=None, turns=0, action_log=[])
+
+            if result.winner is npc_a:
+                winner_team, loser_team = team_a, team_b
+            elif result.winner is npc_b:
+                winner_team, loser_team = team_b, team_a
+            else:
+                # Draw: team with more HP remaining advances; else coin flip.
+                hp_a = sum(m.current_hp for m in npc_a.monsters)
+                hp_b = sum(m.current_hp for m in npc_b.monsters)
+                if hp_a >= hp_b:
+                    winner_team, loser_team = team_a, team_b
+                else:
+                    winner_team, loser_team = team_b, team_a
+
+            winner_team.wins += 1
+            loser_team.losses += 1
+            next_bracket.append(winner_team)
+            semi_losers.append(loser_team)
+
+            outcome = "draw→" if result.winner is None else "def "
+            print(f"  {winner_team.name:<12} {outcome}  {loser_team.name:<12}"
+                  f"  ({result.turns} turns)")
+
+        if len(bracket) == 4:
+            losers_r2 = semi_losers   # save semi-final losers for 3rd place match
+        bracket = next_bracket
+        print()
+
+    champion = bracket[0]
+
+    # 3rd place match (from semi-final losers).
+    if len(losers_r2) == 2:
+        print("── 3rd Place ────────────────────────────────────")
+        team_c, team_d = losers_r2
+        npc_c = team_c.make_npc()
+        npc_d = team_d.make_npc()
+        try:
+            result3 = run_battle(npc_c, npc_d)
+            stats.record(result3, npc_c, npc_d)
+        except Exception:
+            logger.exception("3rd-place match crashed")
+            result3 = BattleResult(winner=None, loser=None, turns=0, action_log=[])
+
+        if result3.winner is npc_c:
+            third, fourth = team_c, team_d
+        elif result3.winner is npc_d:
+            third, fourth = team_d, team_c
+        else:
+            hp_c = sum(m.current_hp for m in npc_c.monsters)
+            hp_d = sum(m.current_hp for m in npc_d.monsters)
+            third, fourth = (team_c, team_d) if hp_c >= hp_d else (team_d, team_c)
+
+        outcome3 = "draw→" if result3.winner is None else "def "
+        print(f"  {third.name:<12} {outcome3}  {fourth.name:<12}"
+              f"  ({result3.turns} turns)")
+        print()
+    else:
+        third = fourth = None
+
+    # ── Podium ────────────────────────────────────────────────────────────────
+    finalist = [t for t in teams if t.wins > 0]
+    finalist.sort(key=lambda t: -t.wins)
+    # The finalist list from bracket gives runner-up as whoever lost to champion.
+    # Reconstruct from bracket history: champion won all rounds; runner-up is
+    # whoever lost the final (the last team removed from next_bracket before it
+    # had 1 team). We already know `losers_r2` for semi; final loser needs tracking.
+    # Simpler: the second-place team is the one with the most wins among non-champions
+    # that isn't already "third".
+
+    print("── Podium ───────────────────────────────────────────")
+    medals = ["1st", "2nd", "3rd"]
+    podium_teams = [champion]
+    # Runner-up: highest-wins non-champion
+    non_champ = [t for t in teams if t is not champion]
+    non_champ.sort(key=lambda t: (-t.wins, t.losses))
+    if non_champ:
+        runner_up = non_champ[0]
+        podium_teams.append(runner_up)
+    if third and third is not champion:
+        podium_teams.append(third)
+
+    for medal, team in zip(medals, podium_teams[:3]):
+        record = f"{team.wins}W-{team.losses}L"
+        print(f"  {medal}  {team.name}  ({record})")
+        print(f"       {team.roster()}")
     print()
 
-    if tech_usage:
-        print("Top 15 most-used techniques:")
-        for tech, count in sorted(
-            tech_usage.items(), key=lambda x: -x[1]
-        )[:15]:
-            print(f"  {tech:<35} {count:>6}")
+    _print_stats(stats, top_n=10)
+
+
+# ── Shared stats printer ───────────────────────────────────────────────────────
+
+def _print_stats(stats: Stats, top_n: int = 15) -> None:
+    # ── Top monsters by win rate ──────────────────────────────────────────────
+    # Only show monsters with at least 3 appearances to filter noise.
+    candidates = {
+        slug: (stats.monster_wins[slug], stats.monster_appearances[slug])
+        for slug in stats.monster_appearances
+        if stats.monster_appearances[slug] >= 3
+    }
+    if candidates:
+        by_winrate = sorted(
+            candidates.items(),
+            key=lambda kv: -(kv[1][0] / kv[1][1]),
+        )[:top_n]
+        total_battles = max(sum(stats.monster_appearances.values()) // 2, 1)
+        print(f"── Top monsters (win rate, min 3 appearances) {'─'*8}")
+        for slug, (wins, apps) in by_winrate:
+            rate = wins / apps
+            survived = stats.monster_survivals.get(slug, 0)
+            print(f"  {slug:<30} {rate*100:5.1f}% wins  "
+                  f"survived {survived}/{wins} won battles")
+        print()
+
+    # ── Top techniques used by winning teams ─────────────────────────────────
+    if stats.winning_tech_uses:
+        total_winning = sum(stats.winning_tech_uses.values())
+        by_uses = sorted(stats.winning_tech_uses.items(), key=lambda kv: -kv[1])[:top_n]
+        print(f"── Top techniques from winning teams {'─'*16}")
+        for tech, count in by_uses:
+            total = stats.total_tech_uses.get(tech, count)
+            win_share = count / total if total else 0
+            bar = _bar(count, by_uses[0][1])
+            print(f"  {tech:<30} {bar}  {count:>5} uses  {win_share*100:.0f}% from winners")
+        print()
 
 
 # ── Entry point ────────────────────────────────────────────────────────────────
@@ -534,22 +691,19 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Tuxemon headless AI-vs-AI battle simulator"
     )
-    parser.add_argument(
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
         "-n", "--battles", type=int, default=20,
-        help="Number of battles to simulate (default: 20)",
+        metavar="N",
+        help="Gauntlet: run N random battles (default: 20)",
     )
-    parser.add_argument(
-        "-s", "--team-size", type=int, default=3,
-        help="Monsters per team (default: 3)",
+    mode.add_argument(
+        "--tournament", type=int, metavar="TEAMS",
+        help="Tournament: single-elimination with TEAMS entries (rounded to power of 2)",
     )
-    parser.add_argument(
-        "-l", "--level", type=int, default=25,
-        help="Level for all monsters (default: 25)",
-    )
-    parser.add_argument(
-        "-v", "--verbose", action="store_true",
-        help="Show DEBUG-level logging",
-    )
+    parser.add_argument("-s", "--team-size", type=int, default=3)
+    parser.add_argument("-l", "--level", type=int, default=25)
+    parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -557,7 +711,10 @@ def main() -> None:
         format="%(levelname)s %(name)s: %(message)s",
     )
 
-    simulate(args.battles, args.team_size, args.level)
+    if args.tournament:
+        run_tournament(args.tournament, args.team_size, args.level)
+    else:
+        simulate(args.battles, args.team_size, args.level)
 
 
 if __name__ == "__main__":

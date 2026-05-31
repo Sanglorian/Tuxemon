@@ -267,7 +267,7 @@ class BattleResult:
 
 # ── Core battle loop ───────────────────────────────────────────────────────────
 
-def run_battle(npc_a: SimNPC, npc_b: SimNPC) -> BattleResult:
+def run_battle(npc_a: SimNPC, npc_b: SimNPC, is_double: bool = False) -> BattleResult:
     """Run one AI-vs-AI battle. Both NPCs should have freshly spawned monsters."""
     event_bus = get_event_bus()
     c_session = CombatSession()
@@ -278,15 +278,18 @@ def run_battle(npc_a: SimNPC, npc_b: SimNPC) -> BattleResult:
     action_log: list[ActionEntry] = []
 
     c_session.set_combat_type(CombatType.TRAINER)
-    c_session.set_battle_format(False)
+    c_session.set_battle_format(is_double)
     c_session.set_players([npc_a, npc_b])
 
     def on_monster_needed(player: SimNPC, ask: bool = False) -> None:
-        bench = c_session.get_bench(player)
-        if bench:
+        while c_session.get_available_positions(player) > 0:
+            bench = c_session.get_bench(player)
+            if not bench:
+                break
             replacement = ai_manager.choose_replacement_monster(player)
-            if replacement:
-                c_session.add_monster_into_play(session, player, replacement)
+            if replacement is None:
+                break
+            c_session.add_monster_into_play(session, player, replacement)
 
     event_bus.subscribe("monster_needed", on_monster_needed)
 
@@ -441,11 +444,12 @@ def _bar(n: int, total: int, width: int = 20) -> str:
 
 # ── Gauntlet mode ──────────────────────────────────────────────────────────────
 
-def simulate(num_battles: int, team_size: int, level: int) -> None:
+def simulate(num_battles: int, team_size: int, level: int, is_double: bool = False) -> None:
     _ensure_routing_policy()
     pool = get_monster_pool()
+    fmt = "Double" if is_double else "Single"
 
-    print(f"Gauntlet: {num_battles} battles | team_size={team_size} | "
+    print(f"Gauntlet [{fmt}]: {num_battles} battles | team_size={team_size} | "
           f"level={level} | pool={len(pool)} species\n")
 
     wins_a = wins_b = draws = errors = 0
@@ -463,7 +467,7 @@ def simulate(num_battles: int, team_size: int, level: int) -> None:
         npc_b = SimNPC("Beta", team_b)
 
         try:
-            result = run_battle(npc_a, npc_b)
+            result = run_battle(npc_a, npc_b, is_double=is_double)
         except Exception:
             logger.exception("Battle %d crashed", i + 1)
             errors += 1
@@ -498,9 +502,10 @@ def simulate(num_battles: int, team_size: int, level: int) -> None:
 
 # ── Tournament mode ─────────────────────────────────────────────────────────────
 
-def run_tournament(num_teams: int, team_size: int, level: int) -> None:
+def run_tournament(num_teams: int, team_size: int, level: int, is_double: bool = False) -> None:
     _ensure_routing_policy()
     pool = get_monster_pool()
+    fmt = "Double" if is_double else "Single"
 
     # Round up to next power of 2.
     bracket_size = 2 ** math.ceil(math.log2(max(num_teams, 2)))
@@ -508,7 +513,7 @@ def run_tournament(num_teams: int, team_size: int, level: int) -> None:
         print(f"Rounding up to {bracket_size} teams (next power of 2).")
         num_teams = bracket_size
 
-    print(f"Tournament: {num_teams} teams | team_size={team_size} | "
+    print(f"Tournament [{fmt}]: {num_teams} teams | team_size={team_size} | "
           f"level={level} | pool={len(pool)} species\n")
 
     # Build all teams upfront.
@@ -553,7 +558,7 @@ def run_tournament(num_teams: int, team_size: int, level: int) -> None:
             npc_b = team_b.make_npc()
 
             try:
-                result = run_battle(npc_a, npc_b)
+                result = run_battle(npc_a, npc_b, is_double=is_double)
                 stats.record(result, npc_a, npc_b)
             except Exception:
                 logger.exception("Match %s vs %s crashed", team_a.name, team_b.name)
@@ -595,7 +600,7 @@ def run_tournament(num_teams: int, team_size: int, level: int) -> None:
         npc_c = team_c.make_npc()
         npc_d = team_d.make_npc()
         try:
-            result3 = run_battle(npc_c, npc_d)
+            result3 = run_battle(npc_c, npc_d, is_double=is_double)
             stats.record(result3, npc_c, npc_d)
         except Exception:
             logger.exception("3rd-place match crashed")
@@ -701,10 +706,16 @@ def main() -> None:
         "--tournament", type=int, metavar="TEAMS",
         help="Tournament: single-elimination with TEAMS entries (rounded to power of 2)",
     )
-    parser.add_argument("-s", "--team-size", type=int, default=3)
+    parser.add_argument("-s", "--team-size", type=int, default=None,
+                        help="Monsters per team (default: 3 singles, 4 doubles)")
     parser.add_argument("-l", "--level", type=int, default=25)
+    parser.add_argument("-d", "--doubles", action="store_true",
+                        help="Run as double battles (2 monsters active per side)")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
+
+    # Default team size: 4 for doubles (2 active + 2 bench), 3 for singles.
+    team_size = args.team_size if args.team_size is not None else (4 if args.doubles else 3)
 
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.WARNING,
@@ -712,9 +723,9 @@ def main() -> None:
     )
 
     if args.tournament:
-        run_tournament(args.tournament, args.team_size, args.level)
+        run_tournament(args.tournament, team_size, args.level, is_double=args.doubles)
     else:
-        simulate(args.battles, args.team_size, args.level)
+        simulate(args.battles, team_size, args.level, is_double=args.doubles)
 
 
 if __name__ == "__main__":

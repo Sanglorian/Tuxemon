@@ -474,6 +474,91 @@ DESIGNED_TEAM_DEFS: list[tuple[str, list[str], dict[str, list[str]]]] = [
         "ampystoma": ["tsunami",    "snowstorm", "sudden_glow",  "water_blast"],
         "krokivip":  ["tsunami",    "frostbite", "all_in",       "water_blast"],
     }),
+
+    # ── Gen-3: counter-teams designed to beat Theta ────────────────────────────
+    # Converged type-coverage insight (iteration 3 analysis):
+    #   laser_beam (lightning+metal):  2x vs ALL 4 Theta (lightning→water×3 + metal→cosmic)
+    #   woodsmash  (heroic+wood):      2x vs ALL 4 Theta (heroic→frost×1 + wood→water/venom×3)
+    #   earthquake (earth, AoE):       2x vs ampystoma; hits both active enemies simultaneously
+    #   tsunami    (water, AoE):       extra AoE doubles pressure; hits both active enemies
+    #
+    # Recharge cycle (EQ=2, WS=2, LB=4, TS=3): never all four on cooldown simultaneously.
+    # Monster selection: all chosen from the top unused pool by HP+attack composite score
+    # (hp ≥ 455, combined attack ≥ 500) to match or exceed Theta's 1558 total HP.
+
+    # Iota — lightning flagship. coproblight/rinocereed are top-score megafauna;
+    # burrlock/glomon add bulk. All carry the full anti-Theta AoE+type core.
+    ("Iota", ["coproblight", "burrlock", "rinocereed", "glomon"], {
+        "coproblight": ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "burrlock":    ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "rinocereed":  ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "glomon":      ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+    }),
+
+    # Kappa — shadowed pursuit. possessun/pharavion/helipi/bolt; all HP ≥ 455.
+    # Standard core; tsunami provides second AoE since give_all proved weaker.
+    ("Kappa", ["possessun", "pharavion", "helipi", "bolt"], {
+        "possessun": ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "pharavion": ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "helipi":    ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "bolt":      ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+    }),
+
+    # Lambda — forest-fire surge. uprout/nut/potturmeist (hp 456–482); uneye
+    # brings the highest raw HP (494) to anchor the team's staying power.
+    ("Lambda", ["uprout", "uneye", "nut", "potturmeist"], {
+        "uprout":      ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "uneye":       ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "nut":         ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "potturmeist": ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+    }),
+
+    # Mu — stone-wall brawlers. cairfrey/chromeye/parappi/stegofor all score ≥ 937.
+    # Identical moveset — the competition here is pure HP/stat bulk vs Theta.
+    ("Mu", ["cairfrey", "chromeye", "parappi", "stegofor"], {
+        "cairfrey":  ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "chromeye":  ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "parappi":   ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "stegofor":  ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+    }),
+
+    # Nu — elemental surge. neutrito/dracune/glombroc/sludgehog; all score ≥ 935.
+    # sludgehog carries sudden_glow to test whether one healer in the lineup
+    # trades better than a straight fourth AoE user.
+    ("Nu", ["neutrito", "dracune", "glombroc", "sludgehog"], {
+        "neutrito":  ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "dracune":   ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "glombroc":  ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "sludgehog": ["earthquake", "woodsmash", "laser_beam", "sudden_glow"],
+    }),
+
+    # Xi — toxic-lightning. pigabyte/gastronium/seirein/hampotamos; all hp ≥ 466.
+    # hampotamos carries frostbite as a high-power finisher on frosty angesnow.
+    ("Xi", ["pigabyte", "gastronium", "seirein", "hampotamos"], {
+        "pigabyte":   ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "gastronium": ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "seirein":    ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "hampotamos": ["earthquake", "woodsmash", "laser_beam", "frostbite"],
+    }),
+
+    # Omicron — broad-front. stomic/jelillow/pawsand/potturney; scores 928–930.
+    # dreamwalk (cosmic+shadow, 100% acc) on potturney for extra anti-Theta typing.
+    ("Omicron", ["stomic", "jelillow", "pawsand", "potturney"], {
+        "stomic":    ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "jelillow":  ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "pawsand":   ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "potturney": ["earthquake", "woodsmash", "laser_beam", "dreamwalk"],
+    }),
+
+    # Pi — precision elite. Best performers from iteration-3 rebuild; pearamanca
+    # (hp 466) and devidra (hp 468) are top-tier. vivipere/angrito round out the
+    # ranged-attack depth. All run the full AoE+type core.
+    ("Pi", ["pearamanca", "angrito", "devidra", "vivipere"], {
+        "pearamanca": ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "angrito":    ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "devidra":    ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+        "vivipere":   ["earthquake", "woodsmash", "laser_beam", "tsunami"],
+    }),
 ]
 
 
@@ -850,6 +935,52 @@ def run_tournament(
     _print_stats(stats, top_n=10)
 
 
+# ── Duel mode: designed teams head-to-head vs a named opponent ────────────────
+
+def run_duel(
+    target_name: str, level: int, num_battles: int,
+    team_size: int, is_double: bool = False,
+) -> None:
+    """Run each designed team against `target_name` for num_battles matches."""
+    _ensure_routing_policy()
+    designed = make_designed_teams(level)
+
+    target = next((t for t in designed if t.name.lower() == target_name.lower()), None)
+    if target is None:
+        names = [t.name for t in designed]
+        print(f"Unknown target '{target_name}'. Known teams: {', '.join(names)}")
+        return
+
+    challengers = [t for t in designed if t is not target]
+    fmt = "Double" if is_double else "Single"
+    print(f"Duel [{fmt}]: each designed team vs {target.name}  "
+          f"({num_battles} battles each, level {level})\n")
+    print(f"  {'Team':<14}  {'W':>4}  {'L':>4}  {'D':>4}  {'Win%':>6}")
+    print(f"  {'─'*14}  {'─'*4}  {'─'*4}  {'─'*4}  {'─'*6}")
+
+    for challenger in challengers:
+        wins = losses = draws = 0
+        for _ in range(num_battles):
+            npc_c = challenger.make_npc()
+            npc_t = target.make_npc()
+            try:
+                result = run_battle(npc_c, npc_t, is_double=is_double)
+            except Exception:
+                logger.exception("Duel %s vs %s crashed", challenger.name, target.name)
+                continue
+            if result.winner is npc_c:
+                wins += 1
+            elif result.winner is npc_t:
+                losses += 1
+            else:
+                draws += 1
+        total = wins + losses + draws
+        pct = wins / total * 100 if total else 0
+        marker = "★ " if challenger.designed else "  "
+        print(f" {marker}{challenger.name:<12}  {wins:>4}  {losses:>4}  {draws:>4}  {pct:>5.1f}%")
+    print()
+
+
 # ── Shared stats printer ───────────────────────────────────────────────────────
 
 def _print_stats(stats: Stats, top_n: int = 15) -> None:
@@ -895,13 +1026,17 @@ def main() -> None:
     )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
-        "-n", "--battles", type=int, default=20,
-        metavar="N",
-        help="Gauntlet: run N random battles (default: 20)",
-    )
-    mode.add_argument(
         "--tournament", type=int, metavar="TEAMS",
         help="Tournament: single-elimination with TEAMS entries (rounded to power of 2)",
+    )
+    mode.add_argument(
+        "--duel", type=str, metavar="TEAM",
+        help="Duel: run each designed team vs TEAM for -n battles each",
+    )
+    parser.add_argument(
+        "-n", "--battles", type=int, default=20,
+        metavar="N",
+        help="Gauntlet battles or duel matches per challenger (default: 20)",
     )
     parser.add_argument("-s", "--team-size", type=int, default=None,
                         help="Monsters per team (default: 3 singles, 4 doubles)")
@@ -929,6 +1064,9 @@ def main() -> None:
         run_tournament(args.tournament, team_size, args.level,
                        is_double=args.doubles, repeats=args.repeat, seed=args.seed,
                        include_designed=args.designed)
+    elif args.duel:
+        run_duel(args.duel, args.level, args.battles, team_size,
+                 is_double=args.doubles)
     else:
         simulate(args.battles, team_size, args.level, is_double=args.doubles)
 

@@ -21,6 +21,7 @@ from tuxemon.menu.interface import MenuItem
 from tuxemon.menu.menu import Menu, PopUpMenu
 from tuxemon.monster.monster import Monster
 from tuxemon.sprite import Sprite
+from tuxemon.states.combat_animations import _use_combat_font
 from tuxemon.states.item_menu import ItemMenuState
 from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.technique.technique import Technique
@@ -63,6 +64,7 @@ class MainCombatMenuState(PopUpMenu[MenuGameObj]):
         **kwargs: Any,
     ) -> None:
         super().__init__(client=client, **kwargs)
+        _use_combat_font(self)
         self.rect = self.calculate_menu_rectangle()
         self.session = session
         self.combat_session = self.client.combat_session
@@ -646,6 +648,7 @@ class CombatTargetMenuState(Menu[Monster]):
         **kwargs: Any,
     ) -> None:
         super().__init__(client=client, **kwargs)
+        _use_combat_font(self)
         self.character = character
         self.monster = monster
         self.combat = combat

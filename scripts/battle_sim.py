@@ -502,52 +502,48 @@ def simulate(num_battles: int, team_size: int, level: int, is_double: bool = Fal
 
 # ── Tournament mode ─────────────────────────────────────────────────────────────
 
-def run_tournament(num_teams: int, team_size: int, level: int, is_double: bool = False) -> None:
-    _ensure_routing_policy()
-    pool = get_monster_pool()
-    fmt = "Double" if is_double else "Single"
-
-    # Round up to next power of 2.
-    bracket_size = 2 ** math.ceil(math.log2(max(num_teams, 2)))
-    if bracket_size != num_teams:
-        print(f"Rounding up to {bracket_size} teams (next power of 2).")
-        num_teams = bracket_size
-
-    print(f"Tournament [{fmt}]: {num_teams} teams | team_size={team_size} | "
-          f"level={level} | pool={len(pool)} species\n")
-
-    # Build all teams upfront.
+def _build_teams(num_teams: int, team_size: int, level: int, pool: list[str]) -> list[Team]:
     teams: list[Team] = []
     used_slugs: set[str] = set()
     while len(teams) < num_teams:
         available = [s for s in pool if s not in used_slugs]
         if len(available) < team_size:
-            used_slugs.clear()          # reset exclusion if pool is exhausted
+            used_slugs.clear()
             available = pool
         sample = random.sample(available, team_size)
         used_slugs.update(sample)
         name = f"Team {len(teams)+1:02d}"
         teams.append(Team(name=name, slugs=sample, level=level))
+    return teams
 
-    stats = Stats()
+
+def _run_bracket(
+    teams: list[Team], is_double: bool, stats: Stats, verbose: bool = True
+) -> tuple[Team, Team | None, Team | None]:
+    """Run one single-elimination bracket. Returns (champion, runner_up, third).
+    Resets wins/losses on each team before starting."""
+    for t in teams:
+        t.wins = 0
+        t.losses = 0
+
     bracket = list(teams)
     random.shuffle(bracket)
-
     round_num = 0
-    losers_r2: list[Team] = []  # semi-final losers (for 3rd place)
+    losers_r2: list[Team] = []
+    final_loser: Team | None = None
 
     while len(bracket) > 1:
         round_num += 1
-        num_rounds_total = int(math.log2(num_teams))
         if len(bracket) == 2:
             round_label = "Final"
         elif len(bracket) == 4:
             round_label = "Semi-finals"
-            losers_r2 = []          # reset in case this is round 2 of a small bracket
+            losers_r2 = []
         else:
             round_label = f"Round {round_num}"
 
-        print(f"── {round_label} {'─'*(44-len(round_label))}")
+        if verbose:
+            print(f"── {round_label} {'─'*(44-len(round_label))}")
 
         next_bracket: list[Team] = []
         semi_losers: list[Team] = []
@@ -569,33 +565,36 @@ def run_tournament(num_teams: int, team_size: int, level: int, is_double: bool =
             elif result.winner is npc_b:
                 winner_team, loser_team = team_b, team_a
             else:
-                # Draw: team with more HP remaining advances; else coin flip.
                 hp_a = sum(m.current_hp for m in npc_a.monsters)
                 hp_b = sum(m.current_hp for m in npc_b.monsters)
-                if hp_a >= hp_b:
-                    winner_team, loser_team = team_a, team_b
-                else:
-                    winner_team, loser_team = team_b, team_a
+                winner_team, loser_team = (team_a, team_b) if hp_a >= hp_b else (team_b, team_a)
 
             winner_team.wins += 1
             loser_team.losses += 1
             next_bracket.append(winner_team)
             semi_losers.append(loser_team)
 
-            outcome = "draw→" if result.winner is None else "def "
-            print(f"  {winner_team.name:<12} {outcome}  {loser_team.name:<12}"
-                  f"  ({result.turns} turns)")
+            if verbose:
+                outcome = "draw→" if result.winner is None else "def "
+                print(f"  {winner_team.name:<12} {outcome}  {loser_team.name:<12}"
+                      f"  ({result.turns} turns)")
 
         if len(bracket) == 4:
-            losers_r2 = semi_losers   # save semi-final losers for 3rd place match
+            losers_r2 = semi_losers
+        if len(bracket) == 2:
+            final_loser = semi_losers[0] if semi_losers else None
         bracket = next_bracket
-        print()
+        if verbose:
+            print()
 
     champion = bracket[0]
+    runner_up = final_loser
 
-    # 3rd place match (from semi-final losers).
+    # 3rd place match
+    third: Team | None = None
     if len(losers_r2) == 2:
-        print("── 3rd Place ────────────────────────────────────")
+        if verbose:
+            print("── 3rd Place ────────────────────────────────────")
         team_c, team_d = losers_r2
         npc_c = team_c.make_npc()
         npc_d = team_d.make_npc()
@@ -607,48 +606,109 @@ def run_tournament(num_teams: int, team_size: int, level: int, is_double: bool =
             result3 = BattleResult(winner=None, loser=None, turns=0, action_log=[])
 
         if result3.winner is npc_c:
-            third, fourth = team_c, team_d
+            third = team_c
         elif result3.winner is npc_d:
-            third, fourth = team_d, team_c
+            third = team_d
         else:
             hp_c = sum(m.current_hp for m in npc_c.monsters)
             hp_d = sum(m.current_hp for m in npc_d.monsters)
-            third, fourth = (team_c, team_d) if hp_c >= hp_d else (team_d, team_c)
+            third = team_c if hp_c >= hp_d else team_d
 
-        outcome3 = "draw→" if result3.winner is None else "def "
-        print(f"  {third.name:<12} {outcome3}  {fourth.name:<12}"
-              f"  ({result3.turns} turns)")
+        if verbose:
+            outcome3 = "draw→" if result3.winner is None else "def "
+            other = team_d if third is team_c else team_c
+            print(f"  {third.name:<12} {outcome3}  {other.name:<12}"
+                  f"  ({result3.turns} turns)\n")
+
+    return champion, runner_up, third
+
+
+def run_tournament(
+    num_teams: int, team_size: int, level: int,
+    is_double: bool = False, repeats: int = 1, seed: int | None = None,
+) -> None:
+    _ensure_routing_policy()
+    pool = get_monster_pool()
+    fmt = "Double" if is_double else "Single"
+
+    bracket_size = 2 ** math.ceil(math.log2(max(num_teams, 2)))
+    if bracket_size != num_teams:
+        print(f"Rounding up to {bracket_size} teams (next power of 2).")
+        num_teams = bracket_size
+
+    print(f"Tournament [{fmt}]: {num_teams} teams | team_size={team_size} | "
+          f"level={level} | repeats={repeats} | pool={len(pool)} species\n")
+
+    # Seed only the team-building RNG so the same squads appear every repeat.
+    if seed is not None:
+        random.seed(seed)
+    teams = _build_teams(num_teams, team_size, level, pool)
+    # From here on, battle RNG is free to vary across repeats.
+    if seed is not None:
+        random.seed(None)
+
+    # Print team rosters once so we can refer to them by number later.
+    if repeats > 1:
+        print("── Teams ────────────────────────────────────────────")
+        for t in teams:
+            print(f"  {t.name}  {t.roster()}")
+        print()
+
+    stats = Stats()
+    # championship_counts[team.name] = [1st_count, 2nd_count, 3rd_count]
+    championship_counts: dict[str, list[int]] = {t.name: [0, 0, 0] for t in teams}
+    verbose_bracket = repeats == 1
+
+    for run_i in range(repeats):
+        if repeats > 1:
+            print(f"── Run {run_i + 1}/{repeats} {'─'*(40-len(str(run_i+1)+str(repeats)))}")
+        champion, runner_up, third = _run_bracket(teams, is_double, stats, verbose=verbose_bracket)
+
+        championship_counts[champion.name][0] += 1
+        if runner_up:
+            championship_counts[runner_up.name][1] += 1
+        if third:
+            championship_counts[third.name][2] += 1
+
+        if repeats > 1:
+            ru_str = f"  2nd {runner_up.name}" if runner_up else ""
+            th_str = f"  3rd {third.name}" if third else ""
+            print(f"  1st {champion.name}{ru_str}{th_str}")
+            print(f"      {champion.roster()}\n")
+
+    # ── Podium (single run) or leaderboard (multi-run) ────────────────────────
+    if repeats == 1:
+        champion, runner_up, third = (
+            max(teams, key=lambda t: t.wins),
+            None, None,
+        )
+        # Re-derive from championship_counts (already set above for run 1)
+        champ_name = max(championship_counts, key=lambda n: championship_counts[n][0])
+        champion = next(t for t in teams if t.name == champ_name)
+        non_champ = [t for t in teams if t is not champion]
+        non_champ.sort(key=lambda t: (-t.wins, t.losses))
+        runner_up = non_champ[0] if non_champ else None
+
+        print("── Podium ───────────────────────────────────────────")
+        medals = ["1st", "2nd", "3rd"]
+        podium = [t for t in [champion, runner_up, third] if t is not None]
+        for medal, team in zip(medals, podium[:3]):
+            print(f"  {medal}  {team.name}  ({team.wins}W-{team.losses}L)")
+            print(f"       {team.roster()}")
         print()
     else:
-        third = fourth = None
-
-    # ── Podium ────────────────────────────────────────────────────────────────
-    finalist = [t for t in teams if t.wins > 0]
-    finalist.sort(key=lambda t: -t.wins)
-    # The finalist list from bracket gives runner-up as whoever lost to champion.
-    # Reconstruct from bracket history: champion won all rounds; runner-up is
-    # whoever lost the final (the last team removed from next_bracket before it
-    # had 1 team). We already know `losers_r2` for semi; final loser needs tracking.
-    # Simpler: the second-place team is the one with the most wins among non-champions
-    # that isn't already "third".
-
-    print("── Podium ───────────────────────────────────────────")
-    medals = ["1st", "2nd", "3rd"]
-    podium_teams = [champion]
-    # Runner-up: highest-wins non-champion
-    non_champ = [t for t in teams if t is not champion]
-    non_champ.sort(key=lambda t: (-t.wins, t.losses))
-    if non_champ:
-        runner_up = non_champ[0]
-        podium_teams.append(runner_up)
-    if third and third is not champion:
-        podium_teams.append(third)
-
-    for medal, team in zip(medals, podium_teams[:3]):
-        record = f"{team.wins}W-{team.losses}L"
-        print(f"  {medal}  {team.name}  ({record})")
-        print(f"       {team.roster()}")
-    print()
+        print("── Championship leaderboard ─────────────────────────")
+        ranked = sorted(
+            championship_counts.items(),
+            key=lambda kv: (-kv[1][0], -kv[1][1], -kv[1][2]),
+        )
+        print(f"  {'Team':<12}  {'1st':>4}  {'2nd':>4}  {'3rd':>4}  Roster")
+        for name, (g, s, b) in ranked:
+            if g + s + b == 0:
+                continue
+            team = next(t for t in teams if t.name == name)
+            print(f"  {name:<12}  {g:>4}  {s:>4}  {b:>4}  {team.roster()}")
+        print()
 
     _print_stats(stats, top_n=10)
 
@@ -711,6 +771,10 @@ def main() -> None:
     parser.add_argument("-l", "--level", type=int, default=25)
     parser.add_argument("-d", "--doubles", action="store_true",
                         help="Run as double battles (2 monsters active per side)")
+    parser.add_argument("-r", "--repeat", type=int, default=1, metavar="N",
+                        help="Re-run the same bracket N times (tournament only)")
+    parser.add_argument("--seed", type=int, default=None,
+                        help="RNG seed for reproducible team generation")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
 
@@ -723,7 +787,8 @@ def main() -> None:
     )
 
     if args.tournament:
-        run_tournament(args.tournament, team_size, args.level, is_double=args.doubles)
+        run_tournament(args.tournament, team_size, args.level,
+                       is_double=args.doubles, repeats=args.repeat, seed=args.seed)
     else:
         simulate(args.battles, team_size, args.level, is_double=args.doubles)
 

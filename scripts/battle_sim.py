@@ -369,6 +369,7 @@ class Team:
     level: int
     wins: int = 0
     losses: int = 0
+    designed: bool = False   # True for hand-crafted teams
 
     def make_npc(self) -> SimNPC:
         monsters: list[Monster] = []
@@ -381,6 +382,49 @@ class Team:
 
     def roster(self) -> str:
         return "  ".join(self.slugs)
+
+    def label(self) -> str:
+        return f"★ {self.name}" if self.designed else self.name
+
+
+# ── Hand-crafted competitive teams ────────────────────────────────────────────
+# Designed from tournament analysis: favour AoE moves (tsunami/snowstorm/
+# earthquake dominate doubles), fester bleed, sudden_glow sustain, and the
+# body shapes / individual monsters that repeated on podiums.
+
+DESIGNED_TEAM_DEFS: list[tuple[str, list[str]]] = [
+    # Alpha: proven champion core + water/frost AoE
+    # cohldrabi (snowstorm+fester), vivitron (best survivor ever, battery_acid),
+    # crankus (tsunami, proven champion), bishosand (proven survivor humanoid)
+    ("Alpha", ["cohldrabi", "vivitron", "crankus", "bishosand"]),
+
+    # Beta: earthquake sweep + sudden_glow sustain
+    # thumpurn (earthquake lv19, frequent podium brute),
+    # deviraptor (earthquake lv31, dragon, Team 03 proven champion),
+    # lightmare (sudden_glow lv4, best sustain move),
+    # rabbitosaur (proven survivor 42/51, varmint)
+    ("Beta", ["thumpurn", "deviraptor", "lightmare", "rabbitosaur"]),
+
+    # Gamma: triple AoE coverage
+    # crustagu (snowstorm+kraken+fester, all three dominant moves),
+    # delfeco (tsunami lv46, individual champion in prior run),
+    # equill (earthquake lv31), gectile (humanoid, Team 03 champion twice)
+    ("Gamma", ["crustagu", "delfeco", "equill", "gectile"]),
+
+    # Delta: fester bleed + water AoE depth
+    # brachifor (snowstorm+fester, Team 12 winner, polliwog),
+    # dandicub (fester lv13, Team 22 runner-up twice),
+    # krokivip (kraken lv37, Team 11 winner),
+    # conifrost (snowstorm lv43)
+    ("Delta", ["brachifor", "dandicub", "krokivip", "conifrost"]),
+]
+
+
+def make_designed_teams(level: int) -> list[Team]:
+    return [
+        Team(name=name, slugs=slugs, level=level, designed=True)
+        for name, slugs in DESIGNED_TEAM_DEFS
+    ]
 
 
 # ── Monster / technique stat accumulator ──────────────────────────────────────
@@ -502,17 +546,21 @@ def simulate(num_battles: int, team_size: int, level: int, is_double: bool = Fal
 
 # ── Tournament mode ─────────────────────────────────────────────────────────────
 
-def _build_teams(num_teams: int, team_size: int, level: int, pool: list[str]) -> list[Team]:
+def _build_teams(
+    num_teams: int, team_size: int, level: int, pool: list[str],
+    reserved_slugs: set[str] | None = None,
+    name_offset: int = 0,
+) -> list[Team]:
     teams: list[Team] = []
-    used_slugs: set[str] = set()
+    used_slugs: set[str] = set(reserved_slugs or [])
     while len(teams) < num_teams:
         available = [s for s in pool if s not in used_slugs]
         if len(available) < team_size:
-            used_slugs.clear()
-            available = pool
+            used_slugs = set(reserved_slugs or [])
+            available = [s for s in pool if s not in used_slugs]
         sample = random.sample(available, team_size)
         used_slugs.update(sample)
-        name = f"Team {len(teams)+1:02d}"
+        name = f"Team {len(teams) + 1 + name_offset:02d}"
         teams.append(Team(name=name, slugs=sample, level=level))
     return teams
 
@@ -626,6 +674,7 @@ def _run_bracket(
 def run_tournament(
     num_teams: int, team_size: int, level: int,
     is_double: bool = False, repeats: int = 1, seed: int | None = None,
+    include_designed: bool = False,
 ) -> None:
     _ensure_routing_policy()
     pool = get_monster_pool()
@@ -636,13 +685,25 @@ def run_tournament(
         print(f"Rounding up to {bracket_size} teams (next power of 2).")
         num_teams = bracket_size
 
+    designed_label = " +4 designed" if include_designed else ""
     print(f"Tournament [{fmt}]: {num_teams} teams | team_size={team_size} | "
-          f"level={level} | repeats={repeats} | pool={len(pool)} species\n")
+          f"level={level} | repeats={repeats}{designed_label} | pool={len(pool)} species\n")
 
     # Seed only the team-building RNG so the same squads appear every repeat.
     if seed is not None:
         random.seed(seed)
-    teams = _build_teams(num_teams, team_size, level, pool)
+
+    if include_designed:
+        designed = make_designed_teams(level)
+        reserved = {slug for t in designed for slug in t.slugs}
+        random_slots = num_teams - len(designed)
+        random_teams = _build_teams(random_slots, team_size, level, pool,
+                                    reserved_slugs=reserved,
+                                    name_offset=len(designed))
+        teams = designed + random_teams
+    else:
+        teams = _build_teams(num_teams, team_size, level, pool)
+
     # From here on, battle RNG is free to vary across repeats.
     if seed is not None:
         random.seed(None)
@@ -651,7 +712,8 @@ def run_tournament(
     if repeats > 1:
         print("── Teams ────────────────────────────────────────────")
         for t in teams:
-            print(f"  {t.name}  {t.roster()}")
+            marker = "★ " if t.designed else "  "
+            print(f" {marker}{t.name:<12}  {t.roster()}")
         print()
 
     stats = Stats()
@@ -702,13 +764,28 @@ def run_tournament(
             championship_counts.items(),
             key=lambda kv: (-kv[1][0], -kv[1][1], -kv[1][2]),
         )
-        print(f"  {'Team':<12}  {'1st':>4}  {'2nd':>4}  {'3rd':>4}  Roster")
+        print(f"  {'Team':<14}  {'1st':>4}  {'2nd':>4}  {'3rd':>4}  Roster")
         for name, (g, s, b) in ranked:
             if g + s + b == 0:
                 continue
             team = next(t for t in teams if t.name == name)
-            print(f"  {name:<12}  {g:>4}  {s:>4}  {b:>4}  {team.roster()}")
+            marker = "★ " if team.designed else "  "
+            print(f" {marker}{name:<12}  {g:>4}  {s:>4}  {b:>4}  {team.roster()}")
         print()
+
+        # Designed vs random summary
+        if include_designed:
+            d_wins = sum(championship_counts[t.name][0] for t in teams if t.designed)
+            r_wins = sum(championship_counts[t.name][0] for t in teams if not t.designed)
+            d_teams = sum(1 for t in teams if t.designed)
+            r_teams = sum(1 for t in teams if not t.designed)
+            print(f"── Designed vs random (out of {repeats} runs) ─────────────")
+            print(f"  Designed ({d_teams} teams): {d_wins} wins  "
+                  f"({d_wins/repeats*100:.0f}% of tournaments)")
+            print(f"  Random   ({r_teams} teams): {r_wins} wins  "
+                  f"({r_wins/repeats*100:.0f}% of tournaments)")
+            expected_pct = d_teams / len(teams) * 100
+            print(f"  (Expected if equal: {expected_pct:.0f}% for designed)\n")
 
     _print_stats(stats, top_n=10)
 
@@ -775,6 +852,8 @@ def main() -> None:
                         help="Re-run the same bracket N times (tournament only)")
     parser.add_argument("--seed", type=int, default=None,
                         help="RNG seed for reproducible team generation")
+    parser.add_argument("--designed", action="store_true",
+                        help="Inject 4 hand-crafted competitive teams into the bracket")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
 
@@ -788,7 +867,8 @@ def main() -> None:
 
     if args.tournament:
         run_tournament(args.tournament, team_size, args.level,
-                       is_double=args.doubles, repeats=args.repeat, seed=args.seed)
+                       is_double=args.doubles, repeats=args.repeat, seed=args.seed,
+                       include_designed=args.designed)
     else:
         simulate(args.battles, team_size, args.level, is_double=args.doubles)
 

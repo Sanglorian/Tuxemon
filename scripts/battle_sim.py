@@ -370,12 +370,21 @@ class Team:
     wins: int = 0
     losses: int = 0
     designed: bool = False   # True for hand-crafted teams
+    # Optional per-monster technique overrides: {slug: [tech1, tech2, tech3, tech4]}
+    # When set, replaces the default level-up moveset with explicit techniques.
+    tech_overrides: dict[str, list[str]] = field(default_factory=dict)
 
     def make_npc(self) -> SimNPC:
         monsters: list[Monster] = []
         for slug in self.slugs:
             try:
-                monsters.append(Monster.spawn_base(slug, self.level))
+                mon = Monster.spawn_base(slug, self.level)
+                if slug in self.tech_overrides:
+                    mon.moves.moves.clear()
+                    for tech_slug in self.tech_overrides[slug]:
+                        tech = Technique.create(tech_slug)
+                        mon.moves.learn(mon, tech, ignore_eligibility=True)
+                monsters.append(mon)
             except Exception as exc:
                 logger.debug("Skipping %s: %s", slug, exc)
         return SimNPC(self.name, monsters)
@@ -388,43 +397,94 @@ class Team:
 
 
 # ── Hand-crafted competitive teams ────────────────────────────────────────────
-# Designed from tournament analysis: favour AoE moves (tsunami/snowstorm/
-# earthquake dominate doubles), fester bleed, sudden_glow sustain, and the
-# body shapes / individual monsters that repeated on podiums.
+# Gen-1 teams (Alpha–Delta): designed from tournament win-rate / survival stats,
+# using each monster's natural level-up moveset.
+#
+# Gen-2 teams (Epsilon–Theta): designed from tag analysis. Each monster is given
+# an explicit 4-move set drawn from the highest-win-% techniques whose tags
+# overlap with the monster's own tags.
+#
+# Dominant techniques by winner-share (doubles):
+#   earthquake  (calamity, ground)  power 2.9 AoE
+#   snowstorm   (calamity, weather) power 3.0 AoE + exhaust
+#   tsunami     (water,    calamity) power 2.7 AoE
+#   all_in      (leadership, fury)  power 3.0
+#   frostbite   (ice, bite)         power 3.0
+#   sudden_glow (healing, light)    healing sustain
+#   fester      (toxic)             damage + toxic on both
+#   flamethrower(flame, gadgets)    power 2.25 fire coverage
+#   kraken      (pseudopod,summoner) power 2.5 water
+#   mudslide    (ground)            power 2.25 earth
 
-DESIGNED_TEAM_DEFS: list[tuple[str, list[str]]] = [
-    # Alpha: proven champion core + water/frost AoE
-    # cohldrabi (snowstorm+fester), vivitron (best survivor ever, battery_acid),
+DESIGNED_TEAM_DEFS: list[tuple[str, list[str], dict[str, list[str]]]] = [
+    # ── Gen-1 ──────────────────────────────────────────────────────────────────
+    # cohldrabi (snowstorm+fester), vivitron (best survivor, battery_acid),
     # crankus (tsunami, proven champion), bishosand (proven survivor humanoid)
-    ("Alpha", ["cohldrabi", "vivitron", "crankus", "bishosand"]),
+    ("Alpha", ["cohldrabi", "vivitron", "crankus", "bishosand"], {}),
 
-    # Beta: earthquake sweep + sudden_glow sustain
-    # thumpurn (earthquake lv19, frequent podium brute),
-    # deviraptor (earthquake lv31, dragon, Team 03 proven champion),
-    # lightmare (sudden_glow lv4, best sustain move),
-    # rabbitosaur (proven survivor 42/51, varmint)
-    ("Beta", ["thumpurn", "deviraptor", "lightmare", "rabbitosaur"]),
+    # thumpurn (earthquake, frequent podium), deviraptor (earthquake, dragon champ),
+    # lightmare (sudden_glow), rabbitosaur (proven survivor 42/51)
+    ("Beta", ["thumpurn", "deviraptor", "lightmare", "rabbitosaur"], {}),
 
-    # Gamma: triple AoE coverage
-    # crustagu (snowstorm+kraken+fester, all three dominant moves),
-    # delfeco (tsunami lv46, individual champion in prior run),
-    # equill (earthquake lv31), gectile (humanoid, Team 03 champion twice)
-    ("Gamma", ["crustagu", "delfeco", "equill", "gectile"]),
+    # crustagu (snowstorm+kraken+fester), delfeco (tsunami, past champion),
+    # equill (earthquake), gectile (humanoid, Team 03 champ)
+    ("Gamma", ["crustagu", "delfeco", "equill", "gectile"], {}),
 
-    # Delta: fester bleed + water AoE depth
-    # brachifor (snowstorm+fester, Team 12 winner, polliwog),
-    # dandicub (fester lv13, Team 22 runner-up twice),
-    # krokivip (kraken lv37, Team 11 winner),
-    # conifrost (snowstorm lv43)
-    ("Delta", ["brachifor", "dandicub", "krokivip", "conifrost"]),
+    # brachifor (snowstorm+fester), dandicub (fester), krokivip (kraken), conifrost (snowstorm)
+    ("Delta", ["brachifor", "dandicub", "krokivip", "conifrost"], {}),
+
+    # ── Gen-2: tag-optimised movesets ──────────────────────────────────────────
+    # Epsilon: asudopt (can learn ALL 13 dominant techs, 41 tags) anchors the team.
+    # seraphice + lucifice are the two best secondary AoE users (6 techs each).
+    # pyraminx brings water+ground AoE depth (tsunami/earthquake/kraken/mudslide).
+    ("Epsilon", ["asudopt", "seraphice", "lucifice", "pyraminx"], {
+        "asudopt":   ["earthquake", "snowstorm", "all_in",       "sudden_glow"],
+        "seraphice": ["earthquake", "snowstorm", "tsunami",      "sudden_glow"],
+        "lucifice":  ["earthquake", "snowstorm", "tsunami",      "flamethrower"],
+        "pyraminx":  ["earthquake", "tsunami",   "kraken",       "mudslide"],
+    }),
+
+    # Zeta: calamity + poison coverage.
+    # pythonova (calamity+toxic: AoE+fester), eruptibus (calamity+fire+bite: AoE+frostbite),
+    # nimbulex (calamity+weather+water: AoE+sustain), bigfin (water+ground: AoE stack).
+    ("Zeta", ["pythonova", "eruptibus", "nimbulex", "bigfin"], {
+        "pythonova": ["earthquake", "snowstorm", "tsunami",      "fester"],
+        "eruptibus": ["earthquake", "snowstorm", "frostbite",    "flamethrower"],
+        "nimbulex":  ["earthquake", "snowstorm", "tsunami",      "sudden_glow"],
+        "bigfin":    ["earthquake", "tsunami",   "kraken",       "mudslide"],
+    }),
+
+    # Eta: fire + earth coverage with sustain.
+    # mingdyn (calamity+healing: AoE+heal), weedlantis (calamity+leadership: AoE+all_in),
+    # volconey (calamity+ground: AoE+mudslide), rooksand (ground+water+fists: AoE+one_two).
+    ("Eta", ["mingdyn", "weedlantis", "volconey", "rooksand"], {
+        "mingdyn":   ["earthquake", "snowstorm", "sudden_glow",  "flamethrower"],
+        "weedlantis":["earthquake", "snowstorm", "tsunami",      "all_in"],
+        "volconey":  ["earthquake", "snowstorm", "tsunami",      "mudslide"],
+        "rooksand":  ["earthquake", "tsunami",   "mudslide",     "one_two"],
+    }),
+
+    # Theta: bite/ice + status sustain depth.
+    # leviadile (toxic+fury+ice+water: fester+frostbite+all_in),
+    # angesnow (ice+healing+weather: snowstorm+frostbite+sudden_glow),
+    # ampystoma (water+weather+light: AoE+sustain), krokivip (bite+water: frostbite+kraken).
+    ("Theta", ["leviadile", "angesnow", "ampystoma", "krokivip"], {
+        "leviadile": ["tsunami",    "fester",    "frostbite",    "all_in"],
+        "angesnow":  ["snowstorm",  "frostbite", "sudden_glow",  "all_in"],
+        "ampystoma": ["tsunami",    "snowstorm", "sudden_glow",  "water_blast"],
+        "krokivip":  ["tsunami",    "frostbite", "all_in",       "water_blast"],
+    }),
 ]
 
 
 def make_designed_teams(level: int) -> list[Team]:
-    return [
-        Team(name=name, slugs=slugs, level=level, designed=True)
-        for name, slugs in DESIGNED_TEAM_DEFS
-    ]
+    teams = []
+    for entry in DESIGNED_TEAM_DEFS:
+        name, slugs = entry[0], entry[1]
+        overrides = entry[2] if len(entry) > 2 else {}
+        teams.append(Team(name=name, slugs=slugs, level=level,
+                          designed=True, tech_overrides=overrides))
+    return teams
 
 
 # ── Monster / technique stat accumulator ──────────────────────────────────────

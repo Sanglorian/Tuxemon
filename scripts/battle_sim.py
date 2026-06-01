@@ -559,6 +559,102 @@ DESIGNED_TEAM_DEFS: list[tuple[str, list[str], dict[str, list[str]]]] = [
         "devidra":    ["earthquake", "woodsmash", "laser_beam", "tsunami"],
         "vivipere":   ["earthquake", "woodsmash", "laser_beam", "tsunami"],
     }),
+
+    # ── Gen-4: counter-teams designed to beat Mu / Iota / Kappa ───────────────
+    # Type-coverage analysis against the Gen-3 meta (Mu/Iota/Kappa monster types):
+    #   Mu:    cairfrey(normal), chromeye(metal+cosmic), parappi(wood+sky), stegofor(wood)
+    #   Iota:  coproblight(earth), burrlock(wood), rinocereed(wood), glomon(earth+water)
+    #   Kappa: possessun(shadow), pharavion(water+heroic), helipi(wood+sky), bolt(metal)
+    #
+    # Attack-type 2x coverage scores vs those 12 monsters:
+    #   sky    (ten_thousand_feathers): 8/12 — earth/heroic/wood defenders
+    #   earth  (earthquake, AoE):       7/12 — fire/lightning/metal/wood defenders
+    #   heroic (give_all):              2/12 — normal/shadow defenders (cairfrey, possessun)
+    #   lightning+metal (laser_beam):   6/12 — metal/sky/water/earth/cosmic defenders
+    # Combined: earthquake+ten_thousand_feathers+give_all covers ALL 12; laser_beam adds
+    # 4x synergy on chromeye (metal+cosmic) and glomon (earth+water).
+    #
+    # Defensive typing: heroic-type monsters take NEUTRAL from all Gen-3 core moves
+    # (earthquake/woodsmash/laser_beam/tsunami). Normal/shadow/venom types have only
+    # ONE Gen-3 weakness (woodsmash via heroic→frost/normal/shadow).
+    # Monster selection: high HP (≥ 400) + minimal Gen-3 weaknesses.
+
+    # Rho — normal-bulk fortress. All four normal-type (1 Gen-3 weakness: woodsmash).
+    # Highest total HP of any Gen-4 team at ~1871. legoplaste/zunna lead on stats.
+    ("Rho", ["legoplaste", "zunna", "ruffalo", "caper"], {
+        "legoplaste": ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "zunna":      ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "ruffalo":    ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "caper":      ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+    }),
+
+    # Sigma — immune core. sampsack+enduros are pure heroic (0 Gen-3 weaknesses);
+    # mystikapi (cosmic) and bumbulus (sky) each have only 1 weakness (laser_beam).
+    # Lowest total HP but best defensive profile; tests whether 0-weakness typing
+    # compensates for moderate bulk.
+    ("Sigma", ["sampsack", "enduros", "mystikapi", "bumbulus"], {
+        "sampsack":  ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "enduros":   ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "mystikapi": ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "bumbulus":  ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+    }),
+
+    # Tau — shadow/venom wall. All four have exactly 1 Gen-3 weakness (woodsmash).
+    # metoxic anchors with the highest HP in this team (hp ~483); ghosteeth/hoarseshoo
+    # round out the shadow-type bulk.
+    ("Tau", ["ghosteeth", "hoarseshoo", "hoarse", "metoxic"], {
+        "ghosteeth":  ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "hoarseshoo": ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "hoarse":     ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "metoxic":    ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+    }),
+
+    # Upsilon — cosmic fortress. happito/sadito/fuzzlet/fuzzina are metal+cosmic or
+    # cosmic+normal (2 Gen-3 weaknesses each) but have HP ≥ 463, total ~1860.
+    # Tests whether very high HP compensates for 2 weaknesses.
+    ("Upsilon", ["happito", "sadito", "fuzzlet", "fuzzina"], {
+        "happito": ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "sadito":  ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "fuzzlet": ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "fuzzina": ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+    }),
+
+    # Phi — wood-wall brawlers. All wood-type (weak to earthquake+woodsmash),
+    # but HP ≥ 457; total ~1853. Direct test: pure offensive coverage beats
+    # typed weakness at high HP.
+    ("Phi", ["baobaraffe", "cacaburr", "sprightly", "narcileaf"], {
+        "baobaraffe": ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "cacaburr":   ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "sprightly":  ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "narcileaf":  ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+    }),
+
+    # Chi — mixed-high-HP block. hoodoll(wood+venom), jeluna(water+cosmic),
+    # sclairus(wood), gourda(wood); all HP ≥ 460; total ~1862.
+    ("Chi", ["hoodoll", "jeluna", "sclairus", "gourda"], {
+        "hoodoll": ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "jeluna":  ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "sclairus":["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "gourda":  ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+    }),
+
+    # Psi — shadow/cosmic depth. bricgard(earth+heroic), lendos(shadow+cosmic),
+    # boltnu(metal), cocrune(earth+shadow); each 2 weaknesses but HP ≥ 457; total ~1849.
+    ("Psi", ["bricgard", "lendos", "boltnu", "cocrune"], {
+        "bricgard": ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "lendos":   ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "boltnu":   ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "cocrune":  ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+    }),
+
+    # Omega — mixed high-HP. slichen(wood), yiinaang(shadow+cosmic),
+    # bedoo(water), pharfan(water); all HP ≥ 456; total ~1847.
+    ("Omega", ["slichen", "yiinaang", "bedoo", "pharfan"], {
+        "slichen":  ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "yiinaang": ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "bedoo":    ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+        "pharfan":  ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
+    }),
 ]
 
 

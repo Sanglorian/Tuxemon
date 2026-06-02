@@ -69,6 +69,12 @@ jobs:
           if_true: 'stable'
           if_false: 'latest'
 
+      - name: Delete existing pre-release to reset published_at
+        if: ${{ env.IS_RELEASE == 'false' }}
+        run: gh release delete latest --yes --cleanup-tag || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Update GitHub release
         uses: softprops/action-gh-release@v2
         with:

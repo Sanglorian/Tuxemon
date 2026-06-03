@@ -1077,6 +1077,230 @@ def run_duel(
     print()
 
 
+# ── Evolutionary / genetic team-building AI ──────────────────────────────────
+
+def _load_tech_pool(min_power: float = 2.0, min_acc: float = 0.6) -> list[str]:
+    """Return slugs of damage techniques that meet power/accuracy thresholds."""
+    from tuxemon.database.runtime import db
+    from tuxemon.db import TechSort
+    result: list[str] = []
+    for slug, data in db.database["technique"].items():
+        if data.sort != TechSort.damage:
+            continue
+        if (data.power or 0.0) >= min_power and (data.accuracy or 0.0) >= min_acc:
+            result.append(slug)
+    return result
+
+
+@dataclass
+class EvoTeam:
+    name: str
+    slugs: list[str]
+    tech_overrides: dict[str, list[str]]
+    wins: int = 0
+    losses: int = 0
+
+    def win_rate(self) -> float:
+        total = self.wins + self.losses
+        return self.wins / total if total else 0.0
+
+    def to_team(self, level: int) -> Team:
+        return Team(
+            name=self.name, slugs=list(self.slugs), level=level,
+            designed=False,
+            tech_overrides={k: list(v) for k, v in self.tech_overrides.items()},
+        )
+
+    def copy(self, new_name: str | None = None) -> "EvoTeam":
+        return EvoTeam(
+            name=new_name or self.name,
+            slugs=list(self.slugs),
+            tech_overrides={k: list(v) for k, v in self.tech_overrides.items()},
+            wins=self.wins,
+            losses=self.losses,
+        )
+
+
+def _evo_random_team(
+    pool: list[str], tech_pool: list[str], team_size: int, name: str,
+) -> EvoTeam:
+    slugs = random.sample(pool, min(team_size, len(pool)))
+    overrides: dict[str, list[str]] = {}
+    if len(tech_pool) >= 4:
+        for slug in slugs:
+            overrides[slug] = random.sample(tech_pool, 4)
+    return EvoTeam(name=name, slugs=slugs, tech_overrides=overrides)
+
+
+def _evo_mutate(
+    evo: EvoTeam, pool: list[str], tech_pool: list[str],
+    mutation_rate: float = 0.25,
+) -> EvoTeam:
+    slugs = list(evo.slugs)
+    overrides = {k: list(v) for k, v in evo.tech_overrides.items()}
+
+    # Maybe swap a monster
+    for i in range(len(slugs)):
+        if random.random() < mutation_rate:
+            available = [s for s in pool if s not in slugs]
+            if available:
+                old = slugs[i]
+                slugs[i] = random.choice(available)
+                overrides.pop(old, None)
+                if len(tech_pool) >= 4:
+                    overrides[slugs[i]] = random.sample(tech_pool, 4)
+
+    # Maybe swap a move slot
+    if len(tech_pool) >= 4:
+        for slug in slugs:
+            if slug in overrides:
+                moves = overrides[slug]
+                for j in range(len(moves)):
+                    if random.random() < mutation_rate:
+                        moves[j] = random.choice(tech_pool)
+
+    return EvoTeam(name=evo.name, slugs=slugs, tech_overrides=overrides)
+
+
+def _evo_crossover(a: EvoTeam, b: EvoTeam, name: str) -> EvoTeam:
+    """Single-point crossover on roster; move-level crossover for shared slots."""
+    n = len(a.slugs)
+    point = random.randint(1, max(1, n - 1))
+    new_slugs = a.slugs[:point] + b.slugs[point:]
+
+    # Deduplicate while preserving order
+    seen: set[str] = set()
+    candidates = b.slugs + a.slugs  # prefer b's slugs for replacements
+    for i, slug in enumerate(new_slugs):
+        if slug in seen:
+            replacement = next((s for s in candidates if s not in seen), slug)
+            new_slugs[i] = replacement
+        seen.add(new_slugs[i])
+
+    # Build overrides with move-level crossover where both parents have the slug
+    overrides: dict[str, list[str]] = {}
+    for slug in new_slugs:
+        moves_a = a.tech_overrides.get(slug)
+        moves_b = b.tech_overrides.get(slug)
+        if moves_a and moves_b:
+            overrides[slug] = [
+                random.choice([moves_a[i], moves_b[i]]) for i in range(len(moves_a))
+            ]
+        elif moves_a:
+            overrides[slug] = list(moves_a)
+        elif moves_b:
+            overrides[slug] = list(moves_b)
+
+    return EvoTeam(name=name, slugs=new_slugs, tech_overrides=overrides)
+
+
+def run_evo(
+    generations: int, population_size: int, battles_per_eval: int,
+    team_size: int, level: int, is_double: bool = False,
+) -> None:
+    _ensure_routing_policy()
+    pool = get_monster_pool()
+    tech_pool = _load_tech_pool()
+    fmt = "Double" if is_double else "Single"
+
+    print(f"Evo [{fmt}]: {generations} gens | pop={population_size} | "
+          f"eval={battles_per_eval} battles/team | team_size={team_size} | level={level}")
+    print(f"  Monster pool: {len(pool)} species | Technique pool: {len(tech_pool)} moves\n")
+
+    if len(tech_pool) < 4:
+        print("Error: technique pool is too small; check min_power/min_acc thresholds.")
+        return
+
+    population: list[EvoTeam] = [
+        _evo_random_team(pool, tech_pool, team_size, f"G0-{i+1:02d}")
+        for i in range(population_size)
+    ]
+
+    elite_count = max(2, population_size // 4)
+    best_ever: EvoTeam | None = None
+
+    for gen in range(1, generations + 1):
+        for evo in population:
+            evo.wins = 0
+            evo.losses = 0
+
+        # Evaluate: each team plays battles_per_eval battles against random opponents
+        others = {id(evo): [e for e in population if e is not evo] for evo in population}
+        for evo in population:
+            for _ in range(battles_per_eval):
+                opp = random.choice(others[id(evo)])
+                npc_a = evo.to_team(level).make_npc()
+                npc_b = opp.to_team(level).make_npc()
+                try:
+                    result = run_battle(npc_a, npc_b, is_double=is_double)
+                except Exception:
+                    continue
+                if result.winner is npc_a:
+                    evo.wins += 1
+                elif result.winner is npc_b:
+                    evo.losses += 1
+
+        population.sort(key=lambda e: -e.win_rate())
+        best = population[0]
+        avg_wr = sum(e.win_rate() for e in population) / len(population)
+
+        if best_ever is None or best.win_rate() > best_ever.win_rate():
+            best_ever = best.copy(best.name)
+
+        roster_preview = " ".join(best.slugs[:3]) + ("…" if len(best.slugs) > 3 else "")
+        print(f"Gen {gen:>3}/{generations}  best {best.win_rate()*100:5.1f}%  "
+              f"avg {avg_wr*100:5.1f}%  [{best.name}]  {roster_preview}")
+
+        # Carry elites into next generation; fill rest with crossover + mutation
+        elites = [population[i].copy(f"G{gen}-E{i+1:02d}") for i in range(elite_count)]
+        next_pop: list[EvoTeam] = list(elites)
+        child_idx = 1
+        while len(next_pop) < population_size:
+            pa, pb = random.sample(elites, 2)
+            child = _evo_crossover(pa, pb, f"G{gen}-C{child_idx:02d}")
+            child = _evo_mutate(child, pool, tech_pool)
+            next_pop.append(child)
+            child_idx += 1
+        population = next_pop
+
+    # ── Champion report ────────────────────────────────────────────────────────
+    champion = best_ever or population[0]
+    print(f"\n── Champion ─────────────────────────────────────────")
+    print(f"  {champion.name}  (win rate {champion.win_rate()*100:.1f}%)")
+    print(f"  Monsters: {' '.join(champion.slugs)}")
+    print("  Discovered moveset:")
+    for slug in champion.slugs:
+        moves = champion.tech_overrides.get(slug, ["(natural)"])
+        print(f"    {slug:<30}  {', '.join(moves)}")
+
+    # Benchmark champion vs all designed teams
+    designed = make_designed_teams(level)
+    print(f"\n── Champion vs designed teams ({battles_per_eval} battles each) ─")
+    champ_team = champion.to_team(level)
+    champ_team.name = "Champion"
+    print(f"  {'Opponent':<14}  {'W':>4}  {'L':>4}  {'D':>4}  {'Win%':>6}")
+    print(f"  {'─'*14}  {'─'*4}  {'─'*4}  {'─'*4}  {'─'*6}")
+    for opp in designed:
+        w = l = d = 0
+        for _ in range(battles_per_eval):
+            npc_c = champ_team.make_npc()
+            npc_o = opp.make_npc()
+            try:
+                result = run_battle(npc_c, npc_o, is_double=is_double)
+            except Exception:
+                continue
+            if result.winner is npc_c:
+                w += 1
+            elif result.winner is npc_o:
+                l += 1
+            else:
+                d += 1
+        total = w + l + d
+        pct = w / total * 100 if total else 0
+        print(f"  {opp.name:<14}  {w:>4}  {l:>4}  {d:>4}  {pct:>5.1f}%")
+    print()
+
+
 # ── Shared stats printer ───────────────────────────────────────────────────────
 
 def _print_stats(stats: Stats, top_n: int = 15) -> None:
@@ -1129,10 +1353,22 @@ def main() -> None:
         "--duel", type=str, metavar="TEAM",
         help="Duel: run each designed team vs TEAM for -n battles each",
     )
+    mode.add_argument(
+        "--evo", type=int, metavar="GENS",
+        help="Evo: run genetic algorithm for GENS generations to discover optimal teams",
+    )
     parser.add_argument(
         "-n", "--battles", type=int, default=20,
         metavar="N",
         help="Gauntlet battles or duel matches per challenger (default: 20)",
+    )
+    parser.add_argument(
+        "--pop", type=int, default=20, metavar="N",
+        help="Evo population size (default: 20)",
+    )
+    parser.add_argument(
+        "--eval-battles", type=int, default=10, metavar="N",
+        help="Evo battles per team per generation for fitness evaluation (default: 10)",
     )
     parser.add_argument("-s", "--team-size", type=int, default=None,
                         help="Monsters per team (default: 3 singles, 4 doubles)")
@@ -1163,6 +1399,9 @@ def main() -> None:
     elif args.duel:
         run_duel(args.duel, args.level, args.battles, team_size,
                  is_double=args.doubles)
+    elif args.evo:
+        run_evo(args.evo, args.pop, args.eval_battles, team_size, args.level,
+                is_double=args.doubles)
     else:
         simulate(args.battles, team_size, args.level, is_double=args.doubles)
 

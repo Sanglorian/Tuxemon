@@ -267,14 +267,19 @@ class BattleResult:
 
 # ── Core battle loop ───────────────────────────────────────────────────────────
 
-def run_battle(npc_a: SimNPC, npc_b: SimNPC, is_double: bool = False) -> BattleResult:
+def run_battle(
+    npc_a: SimNPC,
+    npc_b: SimNPC,
+    is_double: bool = False,
+    ai_factory: "Any | None" = None,
+) -> BattleResult:
     """Run one AI-vs-AI battle. Both NPCs should have freshly spawned monsters."""
     event_bus = get_event_bus()
     c_session = CombatSession()
     client = SimClient(c_session)
     session = SimSession(client, npc_a)
     machine = CombatMachine(c_session)
-    ai_manager = AIManager(session)
+    ai_manager = ai_factory(session) if ai_factory else AIManager(session)
     action_log: list[ActionEntry] = []
 
     c_session.set_combat_type(CombatType.TRAINER)
@@ -1178,18 +1183,87 @@ class PolicyWeights:
                 f"acc={self.w_acc:.3f}  aoe={self.w_aoe:.3f}")
 
 
+@dataclass
+class SwitchPolicy:
+    """Learned weights for choosing which bench monster to send in on a faint."""
+    w_type_adv: float = 1.0   # how super-effective our types are vs active enemies
+    w_type_res: float = 1.0   # how resistant we are to active enemy types
+    w_hp: float = 1.0         # HP fraction of the candidate monster
+    lr: float = 0.05
+    switch_log: list[dict[str, float]] = field(default_factory=list)
+
+    def _features(self, mon: "Monster", opponents: list["Monster"]) -> dict[str, float]:
+        from tuxemon.formula import simple_damage_multiplier
+        if not opponents:
+            return {"type_adv": 1.0, "type_res": 1.0, "hp": mon.hp_ratio}
+        type_adv = sum(
+            simple_damage_multiplier(mon.types.current, opp.types.current)
+            for opp in opponents
+        ) / len(opponents)
+        type_res = sum(
+            1.0 / max(0.01, simple_damage_multiplier(opp.types.current, mon.types.current))
+            for opp in opponents
+        ) / len(opponents)
+        return {"type_adv": type_adv, "type_res": type_res, "hp": mon.hp_ratio}
+
+    def score(self, mon: "Monster", opponents: list["Monster"]) -> float:
+        f = self._features(mon, opponents)
+        return self.w_type_adv * f["type_adv"] + self.w_type_res * f["type_res"] + self.w_hp * f["hp"]
+
+    def record(self, mon: "Monster", opponents: list["Monster"]) -> None:
+        self.switch_log.append(self._features(mon, opponents))
+
+    def update(self, outcome: float) -> None:
+        if outcome == 0.0 or not self.switch_log:
+            return
+        n = len(self.switch_log)
+        for key, attr in (("type_adv", "w_type_adv"), ("type_res", "w_type_res"), ("hp", "w_hp")):
+            avg = sum(d[key] for d in self.switch_log) / n
+            setattr(self, attr, max(0.001, getattr(self, attr) + self.lr * outcome * avg))
+
+    def label(self) -> str:
+        return f"adv={self.w_type_adv:.3f}  res={self.w_type_res:.3f}  hp={self.w_hp:.3f}"
+
+
+class LearningAIManager(AIManager):
+    """Drop-in replacement for AIManager that uses a SwitchPolicy for replacements."""
+
+    def __init__(self, session: "Any", switch_policy: SwitchPolicy) -> None:
+        super().__init__(session)
+        self.switch_policy = switch_policy
+
+    def choose_replacement_monster(self, character: SimNPC) -> "Monster | None":
+        c_session = self.session.client.combat_session
+        available = c_session.get_bench(character)
+        if not available:
+            return None
+
+        opponents: list["Monster"] = (
+            c_session.field_monsters.get_monsters(c_session.right_player)
+            if character is c_session.left_player
+            else c_session.field_monsters.get_monsters(c_session.left_player)
+        )
+
+        # Only apply the learned policy when there is a real choice to make
+        if character.slug == "sim_trainer" and len(available) > 1:
+            best = max(available, key=lambda m: self.switch_policy.score(m, opponents))
+            self.switch_policy.record(best, opponents)
+            return best
+
+        return super().choose_replacement_monster(character)
+
+
 def run_learn(
     n_battles: int, eval_every: int, eval_battles: int,
     team_size: int, level: int, is_double: bool = False,
     lr: float = 0.05,
 ) -> None:
     """
-    Train a move-scoring policy via REINFORCE.
+    Train move-selection and switch-selection policies simultaneously via REINFORCE.
 
-    Side A (sim_trainer): uses the learned scoring weights.
-    Side B (rng_trainer): no config entry → pure random move selection.
-    After each battle the weights are nudged toward features of moves used
-    in victories and away from features of moves used in defeats.
+    Side A (sim_trainer) uses both learned policies; Side B (rng_trainer) uses
+    random move selection and picks the healthiest available bench monster.
+    After each battle both weight vectors are nudged based on the outcome.
     """
     _ensure_routing_policy()
     pool = get_monster_pool()
@@ -1197,12 +1271,16 @@ def run_learn(
 
     print(f"Learn [{fmt}]: {n_battles} training battles | "
           f"eval every {eval_every} | team_size={team_size} | level={level} | lr={lr}")
-    print("  Policy (sim_trainer) vs Random (rng_trainer) — REINFORCE on 4 weights\n")
-    print(f"  {'Battle':>8}  {'Win%':>6}  type   power   acc    aoe")
-    print(f"  {'─'*8}  {'─'*6}  {'─'*5}  {'─'*5}  {'─'*5}  {'─'*5}")
+    print("  Policy vs Random — REINFORCE on move weights (4) + switch weights (3)\n")
+    print(f"  {'Battle':>8}  {'Win%':>6}  "
+          f"{'── Move ──────────────────────────────':38}  "
+          f"── Switch ───────────────────────────")
+    print(f"  {'─'*8}  {'─'*6}  {'─'*38}  {'─'*38}")
 
-    policy = PolicyWeights(lr=lr)
-    policy.inject()
+    move_policy = PolicyWeights(lr=lr)
+    switch_policy = SwitchPolicy(lr=lr)
+    move_policy.inject()
+    ai_factory = lambda s: LearningAIManager(s, switch_policy)
 
     eval_history: list[tuple[int, float]] = []
 
@@ -1215,15 +1293,17 @@ def run_learn(
         npc_a = SimNPC("PolicySide", team_a, slug="sim_trainer")
         npc_b = SimNPC("RandomSide", team_b, slug="rng_trainer")
         policy_slugs = {m.slug for m in npc_a.monsters}
+        switch_policy.switch_log.clear()
 
         try:
-            result = run_battle(npc_a, npc_b, is_double=is_double)
+            result = run_battle(npc_a, npc_b, is_double=is_double, ai_factory=ai_factory)
         except Exception:
             continue
 
         outcome = +1.0 if result.winner is npc_a else (-1.0 if result.winner is npc_b else 0.0)
-        policy.update(result.action_log, policy_slugs, outcome)
-        policy.inject()
+        move_policy.update(result.action_log, policy_slugs, outcome)
+        switch_policy.update(outcome)
+        move_policy.inject()
 
         if i % eval_every == 0:
             ew = et = 0
@@ -1234,8 +1314,14 @@ def run_learn(
                     continue
                 na = SimNPC("EvalPolicy", ta, slug="sim_trainer")
                 nb = SimNPC("EvalRandom", tb, slug="rng_trainer")
+                sp_eval = SwitchPolicy(
+                    w_type_adv=switch_policy.w_type_adv,
+                    w_type_res=switch_policy.w_type_res,
+                    w_hp=switch_policy.w_hp,
+                )
                 try:
-                    r = run_battle(na, nb, is_double=is_double)
+                    r = run_battle(na, nb, is_double=is_double,
+                                   ai_factory=lambda s, sp=sp_eval: LearningAIManager(s, sp))
                 except Exception:
                     continue
                 if r.winner is na:
@@ -1243,22 +1329,35 @@ def run_learn(
                 et += 1
             win_pct = ew / et * 100 if et else 0.0
             eval_history.append((i, win_pct))
-            print(f"  {i:>8}  {win_pct:>5.1f}%  {policy.label()}")
+            print(f"  {i:>8}  {win_pct:>5.1f}%  "
+                  f"{move_policy.label():<38}  {switch_policy.label()}")
 
-    print(f"\n── Final policy weights ─────────────────────────────")
-    print(f"  {policy.label()}")
-    ranked = sorted(
-        [("type effectiveness", policy.w_type), ("move power", policy.w_power),
-         ("accuracy", policy.w_acc), ("AoE bonus", policy.w_aoe)],
+    # ── Final report ───────────────────────────────────────────────────────────
+    print(f"\n── Final move weights ───────────────────────────────")
+    move_ranked = sorted(
+        [("type effectiveness", move_policy.w_type), ("move power", move_policy.w_power),
+         ("accuracy", move_policy.w_acc), ("AoE bonus", move_policy.w_aoe)],
         key=lambda x: -x[1],
     )
-    max_w = ranked[0][1] if ranked else 1.0
-    print("\n  Feature ranking (higher = AI prioritises this more):")
-    for name, w in ranked:
-        bar = _bar(int(w * 100), max(1, int(max_w * 100)))
+    mmax = move_ranked[0][1] if move_ranked else 1.0
+    for name, w in move_ranked:
+        bar = _bar(int(w * 100), max(1, int(mmax * 100)))
         print(f"    {name:<22}  {bar}  {w:.3f}")
+
+    print(f"\n── Final switch weights ─────────────────────────────")
+    sw_ranked = sorted(
+        [("type advantage",  switch_policy.w_type_adv),
+         ("type resistance", switch_policy.w_type_res),
+         ("HP fraction",     switch_policy.w_hp)],
+        key=lambda x: -x[1],
+    )
+    smax = sw_ranked[0][1] if sw_ranked else 1.0
+    for name, w in sw_ranked:
+        bar = _bar(int(w * 100), max(1, int(smax * 100)))
+        print(f"    {name:<22}  {bar}  {w:.3f}")
+
     if len(eval_history) > 1:
-        print(f"\n  Win% vs random over training:")
+        print(f"\n── Win% vs random over training ─────────────────────")
         for battle_n, pct in eval_history:
             bar = _bar(int(pct), 100, width=30)
             print(f"    {battle_n:>6} battles  {bar}  {pct:.1f}%")

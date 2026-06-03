@@ -1197,26 +1197,26 @@ class SwitchPolicy:
         if not opponents:
             return {"type_adv": 1.0, "type_res": 1.0, "hp": mon.hp_ratio}
 
-        my_moves = mon.moves.get_moves()
+        my_damage_moves = [m for m in mon.moves.get_moves() if m.power > 0]
 
-        # type_adv: best technique-type matchup from our moveset vs each opponent's body type
+        # type_adv: best damaging technique matchup from our moveset vs each opponent's body type
         type_adv = sum(
             max(
                 (simple_damage_multiplier(move.types.current, opp.types.current)
-                 for move in my_moves),
+                 for move in my_damage_moves),
                 default=1.0,
             )
             for opp in opponents
         ) / len(opponents)
 
-        # type_res: worst move-type matchup from each opponent's moveset hitting our body type
+        # type_res: worst damaging technique from each opponent hitting our body type
         # (inverse: higher = we resist more)
         type_res = sum(
             1.0 / max(
                 0.01,
                 max(
                     (simple_damage_multiplier(move.types.current, mon.types.current)
-                     for move in opp.moves.get_moves()),
+                     for move in opp.moves.get_moves() if move.power > 0),
                     default=1.0,
                 ),
             )

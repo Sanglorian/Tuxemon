@@ -1535,17 +1535,63 @@ def _evo_crossover(a: EvoTeam, b: EvoTeam, name: str) -> EvoTeam:
     return EvoTeam(name=name, slugs=new_slugs, tech_overrides=overrides)
 
 
+def _train_policies(
+    n_battles: int, team_size: int, level: int,
+    is_double: bool = False, lr: float = 0.05,
+) -> tuple[PolicyWeights, SwitchPolicy]:
+    """Run REINFORCE training and return trained (move_policy, switch_policy)."""
+    pool = get_monster_pool()
+    move_policy = PolicyWeights(lr=lr)
+    switch_policy = SwitchPolicy(lr=lr)
+    move_policy.inject()
+    ai_factory = lambda s: LearningAIManager(s, switch_policy)
+
+    milestone = max(1, n_battles // 4)
+    wins = total = 0
+    print(f"  Pre-training: {n_battles} battles", end="", flush=True)
+    for i in range(1, n_battles + 1):
+        ta = build_random_team(pool, team_size, level)
+        tb = build_random_team(pool, team_size, level)
+        if not ta or not tb:
+            continue
+        na = SimNPC("PolicySide", ta, slug="sim_trainer")
+        nb = SimNPC("RandomSide", tb, slug="rng_trainer")
+        policy_slugs = {m.slug for m in na.monsters}
+        switch_policy.switch_log.clear()
+        try:
+            result = run_battle(na, nb, is_double=is_double, ai_factory=ai_factory)
+        except Exception:
+            continue
+        outcome = +1.0 if result.winner is na else (-1.0 if result.winner is nb else 0.0)
+        if outcome > 0:
+            wins += 1
+        total += 1
+        move_policy.update(result.action_log, policy_slugs, outcome)
+        switch_policy.update(outcome)
+        move_policy.inject()
+        if i % milestone == 0:
+            print(f" {i//milestone*25}%", end="", flush=True)
+
+    win_pct = wins / total * 100 if total else 0.0
+    print(f"  final win%={win_pct:.0f}%")
+    print(f"    Move:   {move_policy.label()}")
+    print(f"    Switch: {switch_policy.label()}\n")
+    return move_policy, switch_policy
+
+
 def run_evo(
     generations: int, population_size: int, battles_per_eval: int,
     team_size: int, level: int, is_double: bool = False,
+    ai_factory: "Any | None" = None,
 ) -> None:
     _ensure_routing_policy()
     pool = get_monster_pool()
     tech_pool = _load_tech_pool()
     fmt = "Double" if is_double else "Single"
+    ai_label = " + learned AI" if ai_factory else ""
 
     print(f"Evo [{fmt}]: {generations} gens | pop={population_size} | "
-          f"eval={battles_per_eval} battles/team | team_size={team_size} | level={level}")
+          f"eval={battles_per_eval} battles/team | team_size={team_size} | level={level}{ai_label}")
     print(f"  Monster pool: {len(pool)} species | Technique pool: {len(tech_pool)} moves\n")
 
     if len(tech_pool) < 4:
@@ -1573,7 +1619,8 @@ def run_evo(
                 npc_a = evo.to_team(level).make_npc()
                 npc_b = opp.to_team(level).make_npc()
                 try:
-                    result = run_battle(npc_a, npc_b, is_double=is_double)
+                    result = run_battle(npc_a, npc_b, is_double=is_double,
+                                       ai_factory=ai_factory)
                 except Exception:
                     continue
                 if result.winner is npc_a:
@@ -1627,7 +1674,8 @@ def run_evo(
             npc_c = champ_team.make_npc()
             npc_o = opp.make_npc()
             try:
-                result = run_battle(npc_c, npc_o, is_double=is_double)
+                result = run_battle(npc_c, npc_o, is_double=is_double,
+                                    ai_factory=ai_factory)
             except Exception:
                 continue
             if result.winner is npc_c:
@@ -1723,6 +1771,10 @@ def main() -> None:
         "--lr", type=float, default=0.05, metavar="F",
         help="Learn: learning rate for REINFORCE weight updates (default: 0.05)",
     )
+    parser.add_argument(
+        "--pre-learn", type=int, default=0, metavar="N",
+        help="Evo: train AI policy for N battles before running the evo loop (default: 0 = off)",
+    )
     parser.add_argument("-s", "--team-size", type=int, default=None,
                         help="Monsters per team (default: 3 singles, 4 doubles)")
     parser.add_argument("-l", "--level", type=int, default=25)
@@ -1753,8 +1805,14 @@ def main() -> None:
         run_duel(args.duel, args.level, args.battles, team_size,
                  is_double=args.doubles)
     elif args.evo:
+        evo_factory = None
+        if args.pre_learn > 0:
+            print(f"── Pre-training AI policy ({args.pre_learn} battles) ──────────────")
+            _, sw = _train_policies(args.pre_learn, team_size, args.level,
+                                    is_double=args.doubles, lr=args.lr)
+            evo_factory = lambda s, _sw=sw: LearningAIManager(s, _sw)
         run_evo(args.evo, args.pop, args.eval_battles, team_size, args.level,
-                is_double=args.doubles)
+                is_double=args.doubles, ai_factory=evo_factory)
     elif args.learn:
         run_learn(args.learn, args.eval_every, args.eval_battles, team_size,
                   args.level, is_double=args.doubles, lr=args.lr)

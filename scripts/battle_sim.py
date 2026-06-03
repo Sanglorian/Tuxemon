@@ -1077,6 +1077,194 @@ def run_duel(
     print()
 
 
+# ── Learning AI: REINFORCE on move-scoring weights ────────────────────────────
+
+# Lazy caches — populated on first access, reused for the rest of the session.
+_learn_tech_cache: dict[str, "Technique | None"] = {}
+_learn_mon_type_cache: dict[str, list] = {}
+
+
+def _cached_technique(slug: str) -> "Technique | None":
+    if slug not in _learn_tech_cache:
+        try:
+            _learn_tech_cache[slug] = Technique.create(slug)
+        except Exception:
+            _learn_tech_cache[slug] = None  # type: ignore[assignment]
+    return _learn_tech_cache[slug]
+
+
+def _cached_mon_types(slug: str) -> list:
+    if slug not in _learn_mon_type_cache:
+        try:
+            mon = Monster.spawn_base(slug, 1)
+            _learn_mon_type_cache[slug] = mon.types.current
+        except Exception:
+            _learn_mon_type_cache[slug] = []
+    return _learn_mon_type_cache[slug]
+
+
+def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
+    """Compute the 4-feature vector for a (technique, target) action."""
+    from tuxemon.database.runtime import db
+    from tuxemon.formula import simple_damage_multiplier
+    from tuxemon.platform.const.sizes import POWER_RANGE
+
+    tech = _cached_technique(tech_slug)
+    if tech is None:
+        return {"type_mult": 1.0, "power": 0.0, "accuracy": 0.0, "is_aoe": 0.0}
+
+    target_types = _cached_mon_types(target_slug)
+    type_mult = (
+        simple_damage_multiplier(tech.types.current, target_types)
+        if target_types else 1.0
+    )
+    tech_data = db.database["technique"].get(tech_slug)
+    is_aoe = 1.0 if (tech_data and tech_data.target and tech_data.target.enemy_team) else 0.0
+
+    return {
+        "type_mult": type_mult,
+        "power": (tech.power or 0.0) / POWER_RANGE[1],
+        "accuracy": tech.accuracy or 0.0,
+        "is_aoe": is_aoe,
+    }
+
+
+_FEAT_KEYS = ("type_mult", "power", "accuracy", "is_aoe")
+_FEAT_ATTRS = {"type_mult": "w_type", "power": "w_power", "accuracy": "w_acc", "is_aoe": "w_aoe"}
+
+
+@dataclass
+class PolicyWeights:
+    w_type: float = 1.0    # type-effectiveness multiplier weight
+    w_power: float = 1.0   # normalised move power weight
+    w_acc: float = 1.0     # accuracy weight
+    w_aoe: float = 1.0     # AoE (enemy_team) bonus weight
+    lr: float = 0.05
+
+    def inject(self) -> None:
+        """Write current weights into the AIConfigLoader cache under 'sim_trainer'."""
+        from tuxemon.ai.ai import AIConfigLoader, SingleTechnique
+        ai_techs = AIConfigLoader.get_ai_techniques("ai_techniques.yaml")
+        ai_techs.techniques["sim_trainer"] = SingleTechnique(
+            elemental_multiplier_weight=self.w_type,
+            power_weight=self.w_power,
+            accuracy_weight=self.w_acc,
+        )
+
+    def update(
+        self,
+        action_log: list[ActionEntry],
+        policy_mon_slugs: set[str],
+        outcome: float,
+    ) -> None:
+        """REINFORCE update on the policy's own actions (+1 win, -1 loss, 0 draw)."""
+        if outcome == 0.0 or not policy_mon_slugs:
+            return
+        feats_used: list[dict[str, float]] = [
+            _action_features(tech_slug, target_slug)
+            for _t, user_slug, tech_slug, target_slug, _ok in action_log
+            if user_slug in policy_mon_slugs
+        ]
+        if not feats_used:
+            return
+        n = len(feats_used)
+        for fkey in _FEAT_KEYS:
+            avg = sum(d[fkey] for d in feats_used) / n
+            attr = _FEAT_ATTRS[fkey]
+            setattr(self, attr, max(0.001, getattr(self, attr) + self.lr * outcome * avg))
+
+    def label(self) -> str:
+        return (f"type={self.w_type:.3f}  power={self.w_power:.3f}  "
+                f"acc={self.w_acc:.3f}  aoe={self.w_aoe:.3f}")
+
+
+def run_learn(
+    n_battles: int, eval_every: int, eval_battles: int,
+    team_size: int, level: int, is_double: bool = False,
+    lr: float = 0.05,
+) -> None:
+    """
+    Train a move-scoring policy via REINFORCE.
+
+    Side A (sim_trainer): uses the learned scoring weights.
+    Side B (rng_trainer): no config entry → pure random move selection.
+    After each battle the weights are nudged toward features of moves used
+    in victories and away from features of moves used in defeats.
+    """
+    _ensure_routing_policy()
+    pool = get_monster_pool()
+    fmt = "Double" if is_double else "Single"
+
+    print(f"Learn [{fmt}]: {n_battles} training battles | "
+          f"eval every {eval_every} | team_size={team_size} | level={level} | lr={lr}")
+    print("  Policy (sim_trainer) vs Random (rng_trainer) — REINFORCE on 4 weights\n")
+    print(f"  {'Battle':>8}  {'Win%':>6}  type   power   acc    aoe")
+    print(f"  {'─'*8}  {'─'*6}  {'─'*5}  {'─'*5}  {'─'*5}  {'─'*5}")
+
+    policy = PolicyWeights(lr=lr)
+    policy.inject()
+
+    eval_history: list[tuple[int, float]] = []
+
+    for i in range(1, n_battles + 1):
+        team_a = build_random_team(pool, team_size, level)
+        team_b = build_random_team(pool, team_size, level)
+        if not team_a or not team_b:
+            continue
+
+        npc_a = SimNPC("PolicySide", team_a, slug="sim_trainer")
+        npc_b = SimNPC("RandomSide", team_b, slug="rng_trainer")
+        policy_slugs = {m.slug for m in npc_a.monsters}
+
+        try:
+            result = run_battle(npc_a, npc_b, is_double=is_double)
+        except Exception:
+            continue
+
+        outcome = +1.0 if result.winner is npc_a else (-1.0 if result.winner is npc_b else 0.0)
+        policy.update(result.action_log, policy_slugs, outcome)
+        policy.inject()
+
+        if i % eval_every == 0:
+            ew = et = 0
+            for _ in range(eval_battles):
+                ta = build_random_team(pool, team_size, level)
+                tb = build_random_team(pool, team_size, level)
+                if not ta or not tb:
+                    continue
+                na = SimNPC("EvalPolicy", ta, slug="sim_trainer")
+                nb = SimNPC("EvalRandom", tb, slug="rng_trainer")
+                try:
+                    r = run_battle(na, nb, is_double=is_double)
+                except Exception:
+                    continue
+                if r.winner is na:
+                    ew += 1
+                et += 1
+            win_pct = ew / et * 100 if et else 0.0
+            eval_history.append((i, win_pct))
+            print(f"  {i:>8}  {win_pct:>5.1f}%  {policy.label()}")
+
+    print(f"\n── Final policy weights ─────────────────────────────")
+    print(f"  {policy.label()}")
+    ranked = sorted(
+        [("type effectiveness", policy.w_type), ("move power", policy.w_power),
+         ("accuracy", policy.w_acc), ("AoE bonus", policy.w_aoe)],
+        key=lambda x: -x[1],
+    )
+    max_w = ranked[0][1] if ranked else 1.0
+    print("\n  Feature ranking (higher = AI prioritises this more):")
+    for name, w in ranked:
+        bar = _bar(int(w * 100), max(1, int(max_w * 100)))
+        print(f"    {name:<22}  {bar}  {w:.3f}")
+    if len(eval_history) > 1:
+        print(f"\n  Win% vs random over training:")
+        for battle_n, pct in eval_history:
+            bar = _bar(int(pct), 100, width=30)
+            print(f"    {battle_n:>6} battles  {bar}  {pct:.1f}%")
+    print()
+
+
 # ── Evolutionary / genetic team-building AI ──────────────────────────────────
 
 def _load_tech_pool(min_power: float = 2.0, min_acc: float = 0.6) -> list[str]:
@@ -1357,6 +1545,10 @@ def main() -> None:
         "--evo", type=int, metavar="GENS",
         help="Evo: run genetic algorithm for GENS generations to discover optimal teams",
     )
+    mode.add_argument(
+        "--learn", type=int, metavar="N",
+        help="Learn: train a move-scoring policy via REINFORCE for N battles",
+    )
     parser.add_argument(
         "-n", "--battles", type=int, default=20,
         metavar="N",
@@ -1368,7 +1560,15 @@ def main() -> None:
     )
     parser.add_argument(
         "--eval-battles", type=int, default=10, metavar="N",
-        help="Evo battles per team per generation for fitness evaluation (default: 10)",
+        help="Evo/Learn battles per eval checkpoint (default: 10)",
+    )
+    parser.add_argument(
+        "--eval-every", type=int, default=50, metavar="N",
+        help="Learn: evaluate policy every N training battles (default: 50)",
+    )
+    parser.add_argument(
+        "--lr", type=float, default=0.05, metavar="F",
+        help="Learn: learning rate for REINFORCE weight updates (default: 0.05)",
     )
     parser.add_argument("-s", "--team-size", type=int, default=None,
                         help="Monsters per team (default: 3 singles, 4 doubles)")
@@ -1402,6 +1602,9 @@ def main() -> None:
     elif args.evo:
         run_evo(args.evo, args.pop, args.eval_battles, team_size, args.level,
                 is_double=args.doubles)
+    elif args.learn:
+        run_learn(args.learn, args.eval_every, args.eval_battles, team_size,
+                  args.level, is_double=args.doubles, lr=args.lr)
     else:
         simulate(args.battles, team_size, args.level, is_double=args.doubles)
 

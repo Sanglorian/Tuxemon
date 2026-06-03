@@ -375,37 +375,37 @@ msgid "raise_armour"
 msgstr "Raise Armor"
 
 msgid "raise_armour_description"
-msgstr "Learn the hardness of the diamond. Increase Armor by 5%."
+msgstr "Learn the hardness of the diamond. Train Armor."
 
 msgid "raise_dodge"
 msgstr "Raise Dodge"
 
 msgid "raise_dodge_description"
-msgstr "Learn the iridescence of the opal. Increase Dodge by 5%."
+msgstr "Learn the iridescence of the opal. Train Dodge."
 
 msgid "raise_hp"
 msgstr "Raise HP"
 
 msgid "raise_hp_description"
-msgstr "Learn the bulk and abundance of quartz. Increase HP by 5%."
+msgstr "Learn the bulk and abundance of quartz. Train HP."
 
 msgid "raise_melee"
 msgstr "Raise Melee"
 
 msgid "raise_melee_description"
-msgstr "Learn the anger of the ruby. Increase Melee by 5%."
+msgstr "Learn the anger of the ruby. Train Melee."
 
 msgid "raise_ranged"
 msgstr "Raise Ranged"
 
 msgid "raise_ranged_description"
-msgstr "Learn the aim of the emerald. Increase Ranged by 5%."
+msgstr "Learn the aim of the emerald. Train Ranged."
 
 msgid "raise_speed"
 msgstr "Raise Speed"
 
 msgid "raise_speed_description"
-msgstr "Learn the reflexes of the spinel. Increase Speed by 5%."
+msgstr "Learn the reflexes of the spinel. Train Speed."
 
 msgid "alpha_seep"
 msgstr "Alpha Seep"

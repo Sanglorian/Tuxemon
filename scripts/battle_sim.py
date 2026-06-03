@@ -1109,14 +1109,17 @@ def _cached_mon_types(slug: str) -> list:
 
 
 def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
-    """Compute the 4-feature vector for a (technique, target) action."""
+    """Compute the 6-feature vector for a (technique, target) action."""
     from tuxemon.database.runtime import db
     from tuxemon.formula import simple_damage_multiplier
     from tuxemon.platform.const.sizes import POWER_RANGE
 
     tech = _cached_technique(tech_slug)
     if tech is None:
-        return {"type_mult": 1.0, "power": 0.0, "accuracy": 0.0, "is_aoe": 0.0}
+        return {
+            "type_mult": 1.0, "power": 0.0, "accuracy": 0.0,
+            "is_aoe": 0.0, "potency": 0.0, "recharge_val": 1.0,
+        }
 
     target_types = _cached_mon_types(target_slug)
     type_mult = (
@@ -1125,25 +1128,38 @@ def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
     )
     tech_data = db.database["technique"].get(tech_slug)
     is_aoe = 1.0 if (tech_data and tech_data.target and tech_data.target.enemy_team) else 0.0
+    recharge_turns = int(tech_data.recharge or 0) if tech_data else 0
+    recharge_val = 1.0 / (1 + recharge_turns)  # 0→1.0, 1→0.5, 2→0.33, 3→0.25
 
     return {
         "type_mult": type_mult,
         "power": (tech.power or 0.0) / POWER_RANGE[1],
         "accuracy": tech.accuracy or 0.0,
         "is_aoe": is_aoe,
+        "potency": tech.potency or 0.0,
+        "recharge_val": recharge_val,
     }
 
 
-_FEAT_KEYS = ("type_mult", "power", "accuracy", "is_aoe")
-_FEAT_ATTRS = {"type_mult": "w_type", "power": "w_power", "accuracy": "w_acc", "is_aoe": "w_aoe"}
+_FEAT_KEYS = ("type_mult", "power", "accuracy", "is_aoe", "potency", "recharge_val")
+_FEAT_ATTRS = {
+    "type_mult": "w_type",
+    "power": "w_power",
+    "accuracy": "w_acc",
+    "is_aoe": "w_aoe",
+    "potency": "w_condition",
+    "recharge_val": "w_recharge",
+}
 
 
 @dataclass
 class PolicyWeights:
-    w_type: float = 1.0    # type-effectiveness multiplier weight
-    w_power: float = 1.0   # normalised move power weight
-    w_acc: float = 1.0     # accuracy weight
-    w_aoe: float = 1.0     # AoE (enemy_team) bonus weight
+    w_type: float = 1.0       # type-effectiveness multiplier weight
+    w_power: float = 1.0      # normalised move power weight
+    w_acc: float = 1.0        # accuracy weight
+    w_aoe: float = 1.0        # AoE (enemy_team) bonus weight
+    w_condition: float = 0.5  # potency: condition-applying strength (e.g. fester=0.8)
+    w_recharge: float = 0.5   # reliability: 1/(1+recharge_turns)
     lr: float = 0.05
 
     def inject(self) -> None:
@@ -1154,6 +1170,7 @@ class PolicyWeights:
             elemental_multiplier_weight=self.w_type,
             power_weight=self.w_power,
             accuracy_weight=self.w_acc,
+            potency_weight=self.w_condition,
         )
 
     def update(
@@ -1180,22 +1197,26 @@ class PolicyWeights:
 
     def label(self) -> str:
         return (f"type={self.w_type:.3f}  power={self.w_power:.3f}  "
-                f"acc={self.w_acc:.3f}  aoe={self.w_aoe:.3f}")
+                f"acc={self.w_acc:.3f}  aoe={self.w_aoe:.3f}  "
+                f"cond={self.w_condition:.3f}  rch={self.w_recharge:.3f}")
 
 
 @dataclass
 class SwitchPolicy:
     """Learned weights for choosing which bench monster to send in on a faint."""
-    w_type_adv: float = 1.0   # how super-effective our types are vs active enemies
-    w_type_res: float = 1.0   # how resistant we are to active enemy types
-    w_hp: float = 1.0         # HP fraction of the candidate monster
+    w_type_adv: float = 1.0       # how super-effective our types are vs active enemies
+    w_type_res: float = 1.0       # how resistant we are to active enemy types
+    w_hp: float = 1.0             # HP fraction of the candidate monster
+    w_candidate_cond: float = -0.5  # penalty if candidate already has status conditions
     lr: float = 0.05
     switch_log: list[dict[str, float]] = field(default_factory=list)
 
     def _features(self, mon: "Monster", opponents: list["Monster"]) -> dict[str, float]:
         from tuxemon.formula import simple_damage_multiplier
+        candidate_cond = 1.0 if mon.status.get_statuses() else 0.0
         if not opponents:
-            return {"type_adv": 1.0, "type_res": 1.0, "hp": mon.hp_ratio}
+            return {"type_adv": 1.0, "type_res": 1.0, "hp": mon.hp_ratio,
+                    "candidate_cond": candidate_cond}
 
         my_damage_moves = [m for m in mon.moves.get_moves() if m.power > 0]
 
@@ -1223,11 +1244,13 @@ class SwitchPolicy:
             for opp in opponents
         ) / len(opponents)
 
-        return {"type_adv": type_adv, "type_res": type_res, "hp": mon.hp_ratio}
+        return {"type_adv": type_adv, "type_res": type_res, "hp": mon.hp_ratio,
+                "candidate_cond": candidate_cond}
 
     def score(self, mon: "Monster", opponents: list["Monster"]) -> float:
         f = self._features(mon, opponents)
-        return self.w_type_adv * f["type_adv"] + self.w_type_res * f["type_res"] + self.w_hp * f["hp"]
+        return (self.w_type_adv * f["type_adv"] + self.w_type_res * f["type_res"]
+                + self.w_hp * f["hp"] + self.w_candidate_cond * f["candidate_cond"])
 
     def record(self, mon: "Monster", opponents: list["Monster"]) -> None:
         self.switch_log.append(self._features(mon, opponents))
@@ -1236,12 +1259,19 @@ class SwitchPolicy:
         if outcome == 0.0 or not self.switch_log:
             return
         n = len(self.switch_log)
-        for key, attr in (("type_adv", "w_type_adv"), ("type_res", "w_type_res"), ("hp", "w_hp")):
+        for key, attr, clamp_positive in (
+            ("type_adv", "w_type_adv", True),
+            ("type_res", "w_type_res", True),
+            ("hp", "w_hp", True),
+            ("candidate_cond", "w_candidate_cond", False),  # allowed to go negative
+        ):
             avg = sum(d[key] for d in self.switch_log) / n
-            setattr(self, attr, max(0.001, getattr(self, attr) + self.lr * outcome * avg))
+            new_val = getattr(self, attr) + self.lr * outcome * avg
+            setattr(self, attr, max(0.001, new_val) if clamp_positive else new_val)
 
     def label(self) -> str:
-        return f"adv={self.w_type_adv:.3f}  res={self.w_type_res:.3f}  hp={self.w_hp:.3f}"
+        return (f"adv={self.w_type_adv:.3f}  res={self.w_type_res:.3f}  "
+                f"hp={self.w_hp:.3f}  cond={self.w_candidate_cond:.3f}")
 
 
 class LearningAIManager(AIManager):
@@ -1290,7 +1320,7 @@ def run_learn(
 
     print(f"Learn [{fmt}]: {n_battles} training battles | "
           f"eval every {eval_every} | team_size={team_size} | level={level} | lr={lr}")
-    print("  Policy vs Random — REINFORCE on move weights (4) + switch weights (3)\n")
+    print("  Policy vs Random — REINFORCE on move weights (6) + switch weights (4)\n")
     print(f"  {'Battle':>8}  {'Win%':>6}  "
           f"{'── Move ──────────────────────────────':38}  "
           f"── Switch ───────────────────────────")
@@ -1337,6 +1367,7 @@ def run_learn(
                     w_type_adv=switch_policy.w_type_adv,
                     w_type_res=switch_policy.w_type_res,
                     w_hp=switch_policy.w_hp,
+                    w_candidate_cond=switch_policy.w_candidate_cond,
                 )
                 try:
                     r = run_battle(na, nb, is_double=is_double,
@@ -1354,8 +1385,14 @@ def run_learn(
     # ── Final report ───────────────────────────────────────────────────────────
     print(f"\n── Final move weights ───────────────────────────────")
     move_ranked = sorted(
-        [("type effectiveness", move_policy.w_type), ("move power", move_policy.w_power),
-         ("accuracy", move_policy.w_acc), ("AoE bonus", move_policy.w_aoe)],
+        [
+            ("type effectiveness", move_policy.w_type),
+            ("move power",         move_policy.w_power),
+            ("accuracy",           move_policy.w_acc),
+            ("AoE bonus",          move_policy.w_aoe),
+            ("condition potency",  move_policy.w_condition),
+            ("reliability",        move_policy.w_recharge),
+        ],
         key=lambda x: -x[1],
     )
     mmax = move_ranked[0][1] if move_ranked else 1.0
@@ -1365,15 +1402,19 @@ def run_learn(
 
     print(f"\n── Final switch weights ─────────────────────────────")
     sw_ranked = sorted(
-        [("type advantage",  switch_policy.w_type_adv),
-         ("type resistance", switch_policy.w_type_res),
-         ("HP fraction",     switch_policy.w_hp)],
+        [
+            ("type advantage",      switch_policy.w_type_adv),
+            ("type resistance",     switch_policy.w_type_res),
+            ("HP fraction",         switch_policy.w_hp),
+            ("avoid conditioned",   switch_policy.w_candidate_cond),
+        ],
         key=lambda x: -x[1],
     )
-    smax = sw_ranked[0][1] if sw_ranked else 1.0
+    smax = max(abs(w) for _, w in sw_ranked) if sw_ranked else 1.0
     for name, w in sw_ranked:
-        bar = _bar(int(w * 100), max(1, int(smax * 100)))
-        print(f"    {name:<22}  {bar}  {w:.3f}")
+        bar = _bar(int(abs(w) * 100), max(1, int(smax * 100)))
+        sign = "-" if w < 0 else " "
+        print(f"    {name:<22}  {sign}{bar}  {w:.3f}")
 
     if len(eval_history) > 1:
         print(f"\n── Win% vs random over training ─────────────────────")
@@ -1391,6 +1432,7 @@ def run_learn(
         w_type_adv=switch_policy.w_type_adv,
         w_type_res=switch_policy.w_type_res,
         w_hp=switch_policy.w_hp,
+        w_candidate_cond=switch_policy.w_candidate_cond,
     )
     for opp_team in designed:
         w = l = d = 0

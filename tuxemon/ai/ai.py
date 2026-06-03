@@ -98,6 +98,7 @@ class SingleTechnique:
     reliable_bonus: float | None = None
     power_weight: float | None = None
     accuracy_weight: float | None = None
+    potency_weight: float | None = None
     elemental_multiplier_weight: float | None = None
     elemental_health_scaling: float | None = None
     elemental_health_threshold: float | None = None

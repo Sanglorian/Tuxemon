@@ -1583,6 +1583,7 @@ def run_evo(
     generations: int, population_size: int, battles_per_eval: int,
     team_size: int, level: int, is_double: bool = False,
     ai_factory: "Any | None" = None,
+    seed_moves: list[str] | None = None,
 ) -> None:
     _ensure_routing_policy()
     pool = get_monster_pool()
@@ -1592,16 +1593,31 @@ def run_evo(
 
     print(f"Evo [{fmt}]: {generations} gens | pop={population_size} | "
           f"eval={battles_per_eval} battles/team | team_size={team_size} | level={level}{ai_label}")
-    print(f"  Monster pool: {len(pool)} species | Technique pool: {len(tech_pool)} moves\n")
+    print(f"  Monster pool: {len(pool)} species | Technique pool: {len(tech_pool)} moves")
+    if seed_moves:
+        print(f"  Seeded moves: {', '.join(seed_moves)}")
+    print()
 
     if len(tech_pool) < 4:
         print("Error: technique pool is too small; check min_power/min_acc thresholds.")
         return
 
-    population: list[EvoTeam] = [
-        _evo_random_team(pool, tech_pool, team_size, f"G0-{i+1:02d}")
-        for i in range(population_size)
-    ]
+    # Build initial population; seed the first few teams with forced moves if requested.
+    seed_count = min(max(1, population_size // 4), population_size) if seed_moves else 0
+    population: list[EvoTeam] = []
+    for i in range(population_size):
+        if i < seed_count and seed_moves:
+            slugs = random.sample(pool, min(team_size, len(pool)))
+            free_slots = max(0, 4 - len(seed_moves))
+            overrides = {
+                slug: seed_moves + random.sample(
+                    [t for t in tech_pool if t not in seed_moves], min(free_slots, len(tech_pool))
+                )
+                for slug in slugs
+            }
+            population.append(EvoTeam(name=f"S0-{i+1:02d}", slugs=slugs, tech_overrides=overrides))
+        else:
+            population.append(_evo_random_team(pool, tech_pool, team_size, f"G0-{i+1:02d}"))
 
     elite_count = max(2, population_size // 4)
     best_ever: EvoTeam | None = None
@@ -1775,6 +1791,10 @@ def main() -> None:
         "--pre-learn", type=int, default=0, metavar="N",
         help="Evo: train AI policy for N battles before running the evo loop (default: 0 = off)",
     )
+    parser.add_argument(
+        "--seed-moves", type=str, default=None, metavar="M1,M2,...",
+        help="Evo: seed the first quarter of the population with these comma-separated move slugs",
+    )
     parser.add_argument("-s", "--team-size", type=int, default=None,
                         help="Monsters per team (default: 3 singles, 4 doubles)")
     parser.add_argument("-l", "--level", type=int, default=25)
@@ -1811,8 +1831,9 @@ def main() -> None:
             _, sw = _train_policies(args.pre_learn, team_size, args.level,
                                     is_double=args.doubles, lr=args.lr)
             evo_factory = lambda s, _sw=sw: LearningAIManager(s, _sw)
+        seed_moves = [m.strip() for m in args.seed_moves.split(",")] if args.seed_moves else None
         run_evo(args.evo, args.pop, args.eval_battles, team_size, args.level,
-                is_double=args.doubles, ai_factory=evo_factory)
+                is_double=args.doubles, ai_factory=evo_factory, seed_moves=seed_moves)
     elif args.learn:
         run_learn(args.learn, args.eval_every, args.eval_battles, team_size,
                   args.level, is_double=args.doubles, lr=args.lr)

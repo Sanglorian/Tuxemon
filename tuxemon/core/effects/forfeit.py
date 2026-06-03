@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tuxemon.combat.utils import set_var
 from tuxemon.core.core_effect import CoreEffect, TechEffectResult
 from tuxemon.locale.locale import T
 
@@ -21,9 +20,13 @@ class ForfeitEffect(CoreEffect):
     """
     Applies the "forfeit" effect in combat.
 
-    This effect represents surrendering a battle. When triggered, it ends the
-    combat session, faints all monsters belonging to the forfeiting player,
-    and records the outcome as a forfeit.
+    This effect represents surrendering a battle. It faints the entire party
+    of the forfeiting player and then lets the normal combat resolution take
+    over. Because the forfeiting player has no monsters left, the regular
+    state machine treats them as defeated and the battle is handled in every
+    way like an ordinary loss: the outcome is recorded as ``lost``, the loss
+    is written to the battle history, and the standard defeat music and
+    messaging are shown.
 
     **Example**
 
@@ -39,30 +42,17 @@ class ForfeitEffect(CoreEffect):
     def apply_tech_target(
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
-        self.client = session.client
         player = user.get_owner()
 
-        set_var(session, "battle_last_result", self.name)
-        self.client.combat_session.set_variable("run", True)
-
-        params = {"npc": self.client.combat_session.right_player.name.upper()}
+        params = {"npc": session.client.combat_session.right_player.name.upper()}
         extras = [T.format("combat_forfeit", params)]
 
-        self._clean_combat_state()
+        # Faint the whole party. The combat state machine will detect the
+        # defeated player on the next resolution and run the same loss flow
+        # (track_battles -> HAS_WINNER) as a regular defeat.
         self._faint_all_monsters(player)
 
         return TechEffectResult(name=tech.name, success=True, extras=extras)
-
-    def _clean_combat_state(self) -> None:
-        event_bus = self.client.event_bus
-        event_bus.publish("clean_combat")
-
-        combat_session = self.client.combat_session
-        for player in combat_session.players:
-            combat_session.field_monsters.remove_npc(player)
-            combat_session.remove_player(player)
-
-        combat_session.reset()
 
     def _faint_all_monsters(self, char: NPC) -> None:
         for monster in char.monsters:

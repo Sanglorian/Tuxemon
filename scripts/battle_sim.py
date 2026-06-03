@@ -1196,14 +1196,33 @@ class SwitchPolicy:
         from tuxemon.formula import simple_damage_multiplier
         if not opponents:
             return {"type_adv": 1.0, "type_res": 1.0, "hp": mon.hp_ratio}
+
+        my_moves = mon.moves.get_moves()
+
+        # type_adv: best technique-type matchup from our moveset vs each opponent's body type
         type_adv = sum(
-            simple_damage_multiplier(mon.types.current, opp.types.current)
+            max(
+                (simple_damage_multiplier(move.types.current, opp.types.current)
+                 for move in my_moves),
+                default=1.0,
+            )
             for opp in opponents
         ) / len(opponents)
+
+        # type_res: worst move-type matchup from each opponent's moveset hitting our body type
+        # (inverse: higher = we resist more)
         type_res = sum(
-            1.0 / max(0.01, simple_damage_multiplier(opp.types.current, mon.types.current))
+            1.0 / max(
+                0.01,
+                max(
+                    (simple_damage_multiplier(move.types.current, mon.types.current)
+                     for move in opp.moves.get_moves()),
+                    default=1.0,
+                ),
+            )
             for opp in opponents
         ) / len(opponents)
+
         return {"type_adv": type_adv, "type_res": type_res, "hp": mon.hp_ratio}
 
     def score(self, mon: "Monster", opponents: list["Monster"]) -> float:

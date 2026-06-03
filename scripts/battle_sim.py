@@ -1380,6 +1380,41 @@ def run_learn(
         for battle_n, pct in eval_history:
             bar = _bar(int(pct), 100, width=30)
             print(f"    {battle_n:>6} battles  {bar}  {pct:.1f}%")
+
+    # ── Benchmark trained policy vs every designed team ────────────────────────
+    designed = make_designed_teams(level)
+    bench_battles = max(eval_battles, 20)
+    print(f"\n── Trained policy vs designed teams ({bench_battles} battles each) ─")
+    print(f"  {'Opponent':<14}  {'W':>4}  {'L':>4}  {'D':>4}  {'Win%':>6}")
+    print(f"  {'─'*14}  {'─'*4}  {'─'*4}  {'─'*4}  {'─'*6}")
+    sp_bench = SwitchPolicy(
+        w_type_adv=switch_policy.w_type_adv,
+        w_type_res=switch_policy.w_type_res,
+        w_hp=switch_policy.w_hp,
+    )
+    for opp_team in designed:
+        w = l = d = 0
+        for _ in range(bench_battles):
+            ta = build_random_team(pool, team_size, level)
+            if not ta:
+                continue
+            na = SimNPC("LearnedPolicy", ta, slug="sim_trainer")
+            nb = opp_team.make_npc()
+            try:
+                r = run_battle(na, nb, is_double=is_double,
+                               ai_factory=lambda s, sp=sp_bench: LearningAIManager(s, sp))
+            except Exception:
+                continue
+            if r.winner is na:
+                w += 1
+            elif r.winner is nb:
+                l += 1
+            else:
+                d += 1
+        total = w + l + d
+        pct = w / total * 100 if total else 0.0
+        bar = _bar(int(pct), 100, width=15)
+        print(f"  {opp_team.name:<14}  {w:>4}  {l:>4}  {d:>4}  {bar} {pct:>5.1f}%")
     print()
 
 

@@ -163,8 +163,10 @@ def _ensure_routing_policy() -> None:
 
 # ── Action resolution ──────────────────────────────────────────────────────────
 
-# Action log entries: (turn, user_slug, tech_slug, target_slug, success)
-ActionEntry = tuple[int, str, str, str, bool]
+# Action log entries:
+#   (turn, user_slug, tech_slug, target_slug, success, target_hp_ratio, target_had_condition)
+# target_hp_ratio and target_had_condition are captured BEFORE the technique is applied.
+ActionEntry = tuple[int, str, str, str, bool, float, bool]
 
 
 def _resolve_action(
@@ -175,10 +177,14 @@ def _resolve_action(
     user, method, target = action.user, action.method, action.target
 
     if isinstance(method, Technique) and isinstance(user, Monster):
+        # Capture target state before the technique lands.
+        target_hp = target.hp_ratio if isinstance(target, Monster) else 1.0
+        target_cond = bool(isinstance(target, Monster) and target.status.get_statuses())
         result, _ = c_session.apply_technique(session, method, user, target)
         if result.should_tackle:
             c_session.enqueue_damage(user, target, result.damage)
-        return (c_session.turn, user.slug, method.slug, target.slug, result.success)
+        return (c_session.turn, user.slug, method.slug, target.slug,
+                result.success, target_hp, target_cond)
 
     elif isinstance(method, Status):
         c_session.apply_status(session, method, target, EffectPhase.PERFORM_STATUS)
@@ -695,7 +701,7 @@ class Stats:
         for mon in npc_b.monsters:
             self.monster_appearances[mon.slug] += 1
 
-        for _t, user_slug, tech_slug, _tgt, _ok in result.action_log:
+        for _t, user_slug, tech_slug, _tgt, _ok, *_ in result.action_log:
             self.total_tech_uses[tech_slug] += 1
 
         if result.winner is not None:
@@ -704,7 +710,7 @@ class Stats:
                 self.monster_wins[slug] += 1
             for slug in result.winner_surviving_slugs:
                 self.monster_survivals[slug] += 1
-            for _t, user_slug, tech_slug, _tgt, _ok in result.action_log:
+            for _t, user_slug, tech_slug, _tgt, _ok, *_ in result.action_log:
                 if user_slug in winner_slug_set:
                     self.winning_tech_uses[tech_slug] += 1
 
@@ -1108,8 +1114,20 @@ def _cached_mon_types(slug: str) -> list:
     return _learn_mon_type_cache[slug]
 
 
-def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
-    """Compute the 6-feature vector for a (technique, target) action."""
+def _action_features(
+    tech_slug: str,
+    target_slug: str,
+    target_hp: float = 1.0,
+    target_conditioned: bool = False,
+) -> dict[str, float]:
+    """Compute the 7-feature vector for a (technique, target) action.
+
+    target_hp and target_conditioned should be captured BEFORE the move lands so
+    we can evaluate whether applying a condition to this particular target was wise:
+    - potency is weighted by target_hp: DoT/disable on a dying target is nearly worthless.
+    - cond_wasted is 1 when a condition move is used against an already-conditioned target
+      (statuses with on_negative_status=replaced get overwritten, potentially wasting both).
+    """
     from tuxemon.database.runtime import db
     from tuxemon.formula import simple_damage_multiplier
     from tuxemon.platform.const.sizes import POWER_RANGE
@@ -1118,7 +1136,7 @@ def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
     if tech is None:
         return {
             "type_mult": 1.0, "power": 0.0, "accuracy": 0.0,
-            "is_aoe": 0.0, "potency": 0.0, "recharge_val": 1.0,
+            "is_aoe": 0.0, "potency": 0.0, "recharge_val": 1.0, "cond_wasted": 0.0,
         }
 
     target_types = _cached_mon_types(target_slug)
@@ -1131,17 +1149,24 @@ def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
     recharge_turns = int(tech_data.recharge or 0) if tech_data else 0
     recharge_val = 1.0 / (1 + recharge_turns)  # 0→1.0, 1→0.5, 2→0.33, 3→0.25
 
+    raw_potency = tech.potency or 0.0
+    # Conditions on healthy targets tick more times → scale by remaining HP fraction.
+    effective_potency = raw_potency * target_hp
+    # Wasted condition: applying a status move to a target that's already conditioned.
+    cond_wasted = 1.0 if (raw_potency > 0 and target_conditioned) else 0.0
+
     return {
         "type_mult": type_mult,
         "power": (tech.power or 0.0) / POWER_RANGE[1],
         "accuracy": tech.accuracy or 0.0,
         "is_aoe": is_aoe,
-        "potency": tech.potency or 0.0,
+        "potency": effective_potency,
         "recharge_val": recharge_val,
+        "cond_wasted": cond_wasted,
     }
 
 
-_FEAT_KEYS = ("type_mult", "power", "accuracy", "is_aoe", "potency", "recharge_val")
+_FEAT_KEYS = ("type_mult", "power", "accuracy", "is_aoe", "potency", "recharge_val", "cond_wasted")
 _FEAT_ATTRS = {
     "type_mult": "w_type",
     "power": "w_power",
@@ -1149,6 +1174,7 @@ _FEAT_ATTRS = {
     "is_aoe": "w_aoe",
     "potency": "w_condition",
     "recharge_val": "w_recharge",
+    "cond_wasted": "w_cond_waste",
 }
 
 
@@ -1158,8 +1184,9 @@ class PolicyWeights:
     w_power: float = 1.0      # normalised move power weight
     w_acc: float = 1.0        # accuracy weight
     w_aoe: float = 1.0        # AoE (enemy_team) bonus weight
-    w_condition: float = 0.5  # potency: condition-applying strength (e.g. fester=0.8)
-    w_recharge: float = 0.5   # reliability: 1/(1+recharge_turns)
+    w_condition: float = 0.5    # potency × target_hp: condition value on a healthy target
+    w_recharge: float = 0.5    # reliability: 1/(1+recharge_turns)
+    w_cond_waste: float = -0.5  # penalty: condition used on already-conditioned target
     lr: float = 0.05
 
     def inject(self) -> None:
@@ -1183,22 +1210,26 @@ class PolicyWeights:
         if outcome == 0.0 or not policy_mon_slugs:
             return
         feats_used: list[dict[str, float]] = [
-            _action_features(tech_slug, target_slug)
-            for _t, user_slug, tech_slug, target_slug, _ok in action_log
+            _action_features(tech_slug, target_slug, target_hp, target_cond)
+            for _t, user_slug, tech_slug, target_slug, _ok, target_hp, target_cond in action_log
             if user_slug in policy_mon_slugs
         ]
         if not feats_used:
             return
         n = len(feats_used)
+        # Weights that should stay positive; cond_wasted is allowed to go negative.
+        _signed_free = {"w_cond_waste"}
         for fkey in _FEAT_KEYS:
             avg = sum(d[fkey] for d in feats_used) / n
             attr = _FEAT_ATTRS[fkey]
-            setattr(self, attr, max(0.001, getattr(self, attr) + self.lr * outcome * avg))
+            new_val = getattr(self, attr) + self.lr * outcome * avg
+            setattr(self, attr, new_val if attr in _signed_free else max(0.001, new_val))
 
     def label(self) -> str:
         return (f"type={self.w_type:.3f}  power={self.w_power:.3f}  "
                 f"acc={self.w_acc:.3f}  aoe={self.w_aoe:.3f}  "
-                f"cond={self.w_condition:.3f}  rch={self.w_recharge:.3f}")
+                f"cond={self.w_condition:.3f}  rch={self.w_recharge:.3f}  "
+                f"waste={self.w_cond_waste:.3f}")
 
 
 @dataclass
@@ -1320,7 +1351,7 @@ def run_learn(
 
     print(f"Learn [{fmt}]: {n_battles} training battles | "
           f"eval every {eval_every} | team_size={team_size} | level={level} | lr={lr}")
-    print("  Policy vs Random — REINFORCE on move weights (6) + switch weights (4)\n")
+    print("  Policy vs Random — REINFORCE on move weights (7) + switch weights (4)\n")
     print(f"  {'Battle':>8}  {'Win%':>6}  "
           f"{'── Move ──────────────────────────────':38}  "
           f"── Switch ───────────────────────────")
@@ -1390,15 +1421,17 @@ def run_learn(
             ("move power",         move_policy.w_power),
             ("accuracy",           move_policy.w_acc),
             ("AoE bonus",          move_policy.w_aoe),
-            ("condition potency",  move_policy.w_condition),
+            ("cond on healthy tgt", move_policy.w_condition),
             ("reliability",        move_policy.w_recharge),
+            ("cond already set",   move_policy.w_cond_waste),
         ],
         key=lambda x: -x[1],
     )
-    mmax = move_ranked[0][1] if move_ranked else 1.0
+    mmax = max(abs(w) for _, w in move_ranked) if move_ranked else 1.0
     for name, w in move_ranked:
-        bar = _bar(int(w * 100), max(1, int(mmax * 100)))
-        print(f"    {name:<22}  {bar}  {w:.3f}")
+        bar = _bar(int(abs(w) * 100), max(1, int(mmax * 100)))
+        sign = "-" if w < 0 else " "
+        print(f"    {name:<24}  {sign}{bar}  {w:.3f}")
 
     print(f"\n── Final switch weights ─────────────────────────────")
     sw_ranked = sorted(

@@ -117,10 +117,11 @@ def technique_score(
             )
     breakdown["healing"] = healing_score
 
-    # Potency (condition-applying strength: e.g. fester=0.8, laser_beam=0.3)
+    # Potency weighted by target HP: conditions tick more times on healthier targets,
+    # so fester vs a 10%-HP target is nearly worthless vs a 100%-HP target.
     potency_score = 0.0
     if config.potency_weight:
-        potency_score = (technique.potency or 0.0) * config.potency_weight
+        potency_score = (technique.potency or 0.0) * opponent.hp_ratio * config.potency_weight
     breakdown["potency"] = potency_score
 
     total_score = sum(breakdown.values())

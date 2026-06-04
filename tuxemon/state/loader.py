@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from tuxemon.constants.paths import get_plugin_paths, mods_folder
+from tuxemon.constants.paths import LIBDIR, get_plugin_paths, mods_folder
 from tuxemon.plugin import PluginManager
 from tuxemon.state.state import State
 
@@ -45,7 +45,7 @@ class StateLoader:
         """
         return PluginManager.from_directory(
             plugin_folders=folders,
-            root_path=mods_folder.parent,
+            root_path=LIBDIR.parent,
             include=include,
             exclude=exclude,
         )

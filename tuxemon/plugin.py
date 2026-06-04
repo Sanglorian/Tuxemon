@@ -22,6 +22,7 @@ from typing import (
 
 from tuxemon.constants.paths import (
     PLUGIN_INCLUDE_PATTERNS,
+    ROOT_DIR,
 )
 
 logger = logging.getLogger(__name__)
@@ -108,9 +109,16 @@ class FileSystemPluginDiscovery(PluginDiscovery):
         try:
             relative = folder.relative_to(self.root_path)
         except ValueError:
-            raise RuntimeError(
-                f"{folder} is not under root path {self.root_path}"
-            )
+            # Path is outside root_path (e.g. mod plugins when root is lib/).
+            # Fall back to a path relative to the install root so the name
+            # includes enough components (e.g. "mods.tuxemon.event.actions")
+            # to pass the plugin filter patterns like "event.actions".
+            try:
+                relative = folder.relative_to(ROOT_DIR)
+            except ValueError:
+                raise RuntimeError(
+                    f"{folder} is not under root path {self.root_path}"
+                )
         return ".".join(relative.parts)
 
 
@@ -266,10 +274,27 @@ class PluginManager:
             module = self.loader.load_plugin(module_name)
             self._loaded_modules[module_name] = module
             return module
-        except ImportError as e:
-            logger.error(
-                f"Skipping module '{module_name}' due to import error: {e}"
-            )
+        except ImportError:
+            # import_module fails for mod plugins in frozen builds because
+            # mods/ is not a Python package on sys.path. Fall back to loading
+            # directly from the source file recorded in _origins.
+            file_path = self._origins.get(module_name)
+            if file_path is not None and file_path.exists():
+                try:
+                    spec = importlib.util.spec_from_file_location(
+                        module_name, file_path
+                    )
+                    if spec is not None and spec.loader is not None:
+                        module = importlib.util.module_from_spec(spec)
+                        sys.modules[module_name] = module
+                        spec.loader.exec_module(module)
+                        self._loaded_modules[module_name] = module
+                        return module
+                except Exception as e2:
+                    logger.error(
+                        f"File-based loading failed for '{module_name}': {e2}"
+                    )
+            logger.error(f"Skipping module '{module_name}'")
             return None
 
     def get_all_plugins(

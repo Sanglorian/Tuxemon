@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Generic, TypeVar
 
 from tuxemon.constants.paths import (
-    ROOT_DIR,
+    LIBDIR,
     get_plugin_paths,
     mods_folder,
 )
@@ -49,7 +49,7 @@ class CoreManager(Generic[LocalInterfaceValue]):
     ) -> None:
         """Load all available plugins using the existing plugin system."""
         if root_path is None:
-            root_path = ROOT_DIR
+            root_path = LIBDIR.parent
 
         core_folders = get_plugin_paths(path, category, subfolder="core")
 

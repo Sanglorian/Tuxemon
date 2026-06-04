@@ -10,7 +10,7 @@ from typing import ClassVar
 
 from tuxemon.constants.paths import (
     CONDITIONS_PATH,
-    ROOT_DIR,
+    LIBDIR,
     get_plugin_paths,
 )
 from tuxemon.db import Operator, SpatialCondition
@@ -37,7 +37,7 @@ class EventCondition:
 class ConditionManager:
     def __init__(self, root_path: Path | None = None) -> None:
         if root_path is None:
-            root_path = ROOT_DIR
+            root_path = LIBDIR.parent
 
         plugin_folders = get_plugin_paths(
             CONDITIONS_PATH, "conditions", subfolder="event"

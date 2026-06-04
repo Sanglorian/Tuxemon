@@ -163,10 +163,8 @@ def _ensure_routing_policy() -> None:
 
 # ── Action resolution ──────────────────────────────────────────────────────────
 
-# Action log entries:
-#   (turn, user_slug, tech_slug, target_slug, success, target_hp_ratio, target_had_condition)
-# target_hp_ratio and target_had_condition are captured BEFORE the technique is applied.
-ActionEntry = tuple[int, str, str, str, bool, float, bool]
+# Action log entries: (turn, user_slug, tech_slug, target_slug, success)
+ActionEntry = tuple[int, str, str, str, bool]
 
 
 def _resolve_action(
@@ -177,14 +175,10 @@ def _resolve_action(
     user, method, target = action.user, action.method, action.target
 
     if isinstance(method, Technique) and isinstance(user, Monster):
-        # Capture target state before the technique lands.
-        target_hp = target.hp_ratio if isinstance(target, Monster) else 1.0
-        target_cond = bool(isinstance(target, Monster) and target.status.get_statuses())
         result, _ = c_session.apply_technique(session, method, user, target)
         if result.should_tackle:
             c_session.enqueue_damage(user, target, result.damage)
-        return (c_session.turn, user.slug, method.slug, target.slug,
-                result.success, target_hp, target_cond)
+        return (c_session.turn, user.slug, method.slug, target.slug, result.success)
 
     elif isinstance(method, Status):
         c_session.apply_status(session, method, target, EffectPhase.PERFORM_STATUS)
@@ -701,7 +695,7 @@ class Stats:
         for mon in npc_b.monsters:
             self.monster_appearances[mon.slug] += 1
 
-        for _t, user_slug, tech_slug, _tgt, _ok, *_ in result.action_log:
+        for _t, user_slug, tech_slug, _tgt, _ok in result.action_log:
             self.total_tech_uses[tech_slug] += 1
 
         if result.winner is not None:
@@ -710,7 +704,7 @@ class Stats:
                 self.monster_wins[slug] += 1
             for slug in result.winner_surviving_slugs:
                 self.monster_survivals[slug] += 1
-            for _t, user_slug, tech_slug, _tgt, _ok, *_ in result.action_log:
+            for _t, user_slug, tech_slug, _tgt, _ok in result.action_log:
                 if user_slug in winner_slug_set:
                     self.winning_tech_uses[tech_slug] += 1
 
@@ -1093,6 +1087,30 @@ def run_duel(
 # Lazy caches — populated on first access, reused for the rest of the session.
 _learn_tech_cache: dict[str, "Technique | None"] = {}
 _learn_mon_type_cache: dict[str, list] = {}
+_learn_cond_cache: dict[str, dict[str, float]] = {}
+
+# Condition category classification.
+# Competitive strategy insight drives the categories:
+#   disable  — sleep/confusion/stun: wastes opponent turns, valuable regardless of HP
+#   dot      — toxic/poison/lifeleech: sustained chip pressure; best against high-HP walls
+#   debuff   — speed cut, attack cut: counters specific opponent archetypes
+# Positive or self-applied statuses are not listed (they are not scored as threats).
+_STATUS_CLASS: dict[str, str] = {
+    "noddingoff": "disable",   # sleep-like: 50% skip, 5-turn cap
+    "confused": "disable",     # 50% chance self-hit
+    "flinching": "disable",    # 1-turn stun
+    "lockdown": "disable",     # can't switch / move locked
+    "grabbed": "disable",      # immobilised
+    "harpooned": "disable",    # can't flee or switch
+    "festering": "dot",        # toxic DoT (applied to both sides by fester)
+    "poison": "dot",           # standard poison DoT
+    "prickly": "dot",          # thorns / reflect damage
+    "lifeleech": "dot",        # drains HP to attacker
+    "blinded": "debuff",       # speed and dodge reduction
+    "slow": "debuff",          # speed reduction
+    "exhausted": "debuff",     # melee and ranged attack reduction
+    "charmed": "debuff",       # attack reduction (lured into bad move)
+}
 
 
 def _cached_technique(slug: str) -> "Technique | None":
@@ -1114,19 +1132,44 @@ def _cached_mon_types(slug: str) -> list:
     return _learn_mon_type_cache[slug]
 
 
-def _action_features(
-    tech_slug: str,
-    target_slug: str,
-    target_hp: float = 1.0,
-    target_conditioned: bool = False,
-) -> dict[str, float]:
-    """Compute the 7-feature vector for a (technique, target) action.
+def _tech_condition_features(tech_slug: str) -> dict[str, float]:
+    """Return {class: potency} for conditions applied to enemies by this technique.
 
-    target_hp and target_conditioned should be captured BEFORE the move lands so
-    we can evaluate whether applying a condition to this particular target was wise:
-    - potency is weighted by target_hp: DoT/disable on a dying target is nearly worthless.
-    - cond_wasted is 1 when a condition move is used against an already-conditioned target
-      (statuses with on_negative_status=replaced get overwritten, potentially wasting both).
+    Reads the technique's 'give' effects, classifies each status slug via
+    _STATUS_CLASS, and skips anything applied to own_monster (self-buffs).
+    Result is cached for the session.
+    """
+    if tech_slug in _learn_cond_cache:
+        return _learn_cond_cache[tech_slug]
+    from tuxemon.database.runtime import db
+    tech = _cached_technique(tech_slug)
+    tech_data = db.database["technique"].get(tech_slug)
+    result: dict[str, float] = {}
+    if tech is not None and tech_data is not None:
+        potency = tech.potency or 0.0
+        if potency > 0.0:
+            for effect in tech_data.effects:
+                if effect.type == "give" and effect.parameters:
+                    status_slug = effect.parameters[0]
+                    # Skip conditions applied to own monster (self-buffs)
+                    target_arg = effect.parameters[1] if len(effect.parameters) > 1 else ""
+                    if "own" in target_arg:
+                        continue
+                    cls = _STATUS_CLASS.get(status_slug)
+                    if cls:
+                        result[cls] = max(result.get(cls, 0.0), potency)
+    _learn_cond_cache[tech_slug] = result
+    return result
+
+
+def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
+    """Compute the 8-feature vector for a (technique, target) action.
+
+    Conditions are split into three strategically distinct classes rather than
+    a single potency scalar, because each class has a different value profile:
+      disable  (sleep, confusion): always powerful — wastes opponent turns
+      dot      (toxic, poison):    pressure vs tanky walls; good regardless of HP
+      debuff   (speed/atk cut):    counters specific attack archetypes
     """
     from tuxemon.database.runtime import db
     from tuxemon.formula import simple_damage_multiplier
@@ -1135,8 +1178,9 @@ def _action_features(
     tech = _cached_technique(tech_slug)
     if tech is None:
         return {
-            "type_mult": 1.0, "power": 0.0, "accuracy": 0.0,
-            "is_aoe": 0.0, "potency": 0.0, "recharge_val": 1.0, "cond_wasted": 0.0,
+            "type_mult": 1.0, "power": 0.0, "accuracy": 0.0, "is_aoe": 0.0,
+            "potency_disable": 0.0, "potency_dot": 0.0, "potency_debuff": 0.0,
+            "recharge_val": 1.0,
         }
 
     target_types = _cached_mon_types(target_slug)
@@ -1149,55 +1193,58 @@ def _action_features(
     recharge_turns = int(tech_data.recharge or 0) if tech_data else 0
     recharge_val = 1.0 / (1 + recharge_turns)  # 0→1.0, 1→0.5, 2→0.33, 3→0.25
 
-    raw_potency = tech.potency or 0.0
-    # Conditions on healthy targets tick more times → scale by remaining HP fraction.
-    effective_potency = raw_potency * target_hp
-    # Wasted condition: applying a status move to a target that's already conditioned.
-    cond_wasted = 1.0 if (raw_potency > 0 and target_conditioned) else 0.0
-
+    cond = _tech_condition_features(tech_slug)
     return {
         "type_mult": type_mult,
         "power": (tech.power or 0.0) / POWER_RANGE[1],
         "accuracy": tech.accuracy or 0.0,
         "is_aoe": is_aoe,
-        "potency": effective_potency,
+        "potency_disable": cond.get("disable", 0.0),
+        "potency_dot": cond.get("dot", 0.0),
+        "potency_debuff": cond.get("debuff", 0.0),
         "recharge_val": recharge_val,
-        "cond_wasted": cond_wasted,
     }
 
 
-_FEAT_KEYS = ("type_mult", "power", "accuracy", "is_aoe", "potency", "recharge_val", "cond_wasted")
+_FEAT_KEYS = (
+    "type_mult", "power", "accuracy", "is_aoe",
+    "potency_disable", "potency_dot", "potency_debuff", "recharge_val",
+)
 _FEAT_ATTRS = {
     "type_mult": "w_type",
     "power": "w_power",
     "accuracy": "w_acc",
     "is_aoe": "w_aoe",
-    "potency": "w_condition",
+    "potency_disable": "w_disable",
+    "potency_dot": "w_dot",
+    "potency_debuff": "w_debuff",
     "recharge_val": "w_recharge",
-    "cond_wasted": "w_cond_waste",
 }
 
 
 @dataclass
 class PolicyWeights:
-    w_type: float = 1.0       # type-effectiveness multiplier weight
-    w_power: float = 1.0      # normalised move power weight
-    w_acc: float = 1.0        # accuracy weight
-    w_aoe: float = 1.0        # AoE (enemy_team) bonus weight
-    w_condition: float = 0.5    # potency × target_hp: condition value on a healthy target
-    w_recharge: float = 0.5    # reliability: 1/(1+recharge_turns)
-    w_cond_waste: float = -0.5  # penalty: condition used on already-conditioned target
+    w_type: float = 1.0     # type-effectiveness multiplier weight
+    w_power: float = 1.0    # normalised move power weight
+    w_acc: float = 1.0      # accuracy weight
+    w_aoe: float = 1.0      # AoE (enemy_team) bonus weight
+    w_disable: float = 1.0  # disable conditions (sleep/confuse): always valuable
+    w_dot: float = 1.0      # DoT conditions (festering/poison): pressure vs tanks
+    w_debuff: float = 1.0   # stat-cut conditions (blinded/exhausted): archetype counter
+    w_recharge: float = 0.5 # reliability: 1/(1+recharge_turns)
     lr: float = 0.05
 
     def inject(self) -> None:
         """Write current weights into the AIConfigLoader cache under 'sim_trainer'."""
         from tuxemon.ai.ai import AIConfigLoader, SingleTechnique
         ai_techs = AIConfigLoader.get_ai_techniques("ai_techniques.yaml")
+        # potency_weight uses the DoT weight: technique_score weights potency × hp_ratio,
+        # which is the semantically correct scoring formula for sustained DoT.
         ai_techs.techniques["sim_trainer"] = SingleTechnique(
             elemental_multiplier_weight=self.w_type,
             power_weight=self.w_power,
             accuracy_weight=self.w_acc,
-            potency_weight=self.w_condition,
+            potency_weight=self.w_dot,
         )
 
     def update(
@@ -1210,44 +1257,51 @@ class PolicyWeights:
         if outcome == 0.0 or not policy_mon_slugs:
             return
         feats_used: list[dict[str, float]] = [
-            _action_features(tech_slug, target_slug, target_hp, target_cond)
-            for _t, user_slug, tech_slug, target_slug, _ok, target_hp, target_cond in action_log
+            _action_features(tech_slug, target_slug)
+            for _t, user_slug, tech_slug, target_slug, _ok in action_log
             if user_slug in policy_mon_slugs
         ]
         if not feats_used:
             return
         n = len(feats_used)
-        # Weights that should stay positive; cond_wasted is allowed to go negative.
-        _signed_free = {"w_cond_waste"}
         for fkey in _FEAT_KEYS:
             avg = sum(d[fkey] for d in feats_used) / n
             attr = _FEAT_ATTRS[fkey]
-            new_val = getattr(self, attr) + self.lr * outcome * avg
-            setattr(self, attr, new_val if attr in _signed_free else max(0.001, new_val))
+            setattr(self, attr, max(0.001, getattr(self, attr) + self.lr * outcome * avg))
 
     def label(self) -> str:
         return (f"type={self.w_type:.3f}  power={self.w_power:.3f}  "
                 f"acc={self.w_acc:.3f}  aoe={self.w_aoe:.3f}  "
-                f"cond={self.w_condition:.3f}  rch={self.w_recharge:.3f}  "
-                f"waste={self.w_cond_waste:.3f}")
+                f"dis={self.w_disable:.3f}  dot={self.w_dot:.3f}  "
+                f"dbf={self.w_debuff:.3f}  rch={self.w_recharge:.3f}")
 
 
 @dataclass
 class SwitchPolicy:
     """Learned weights for choosing which bench monster to send in on a faint."""
-    w_type_adv: float = 1.0       # how super-effective our types are vs active enemies
-    w_type_res: float = 1.0       # how resistant we are to active enemy types
-    w_hp: float = 1.0             # HP fraction of the candidate monster
-    w_candidate_cond: float = -0.5  # penalty if candidate already has status conditions
+    w_type_adv: float = 1.0      # how super-effective our types are vs active enemies
+    w_type_res: float = 1.0      # how resistant we are to active enemy types
+    w_hp: float = 1.0            # HP fraction of the candidate monster
+    w_cand_disabled: float = -1.0  # candidate is asleep/confused — almost never switch in
+    w_cand_dot: float = -0.3       # candidate has DoT — losing HP each turn, less ideal
     lr: float = 0.05
     switch_log: list[dict[str, float]] = field(default_factory=list)
 
     def _features(self, mon: "Monster", opponents: list["Monster"]) -> dict[str, float]:
         from tuxemon.formula import simple_damage_multiplier
-        candidate_cond = 1.0 if mon.status.get_statuses() else 0.0
+        # Classify the candidate's active conditions by strategic type.
+        cand_disabled = 0.0
+        cand_dot = 0.0
+        for s in mon.status.get_statuses():
+            cls = _STATUS_CLASS.get(str(getattr(s, "slug", "")), "")
+            if cls == "disable":
+                cand_disabled = 1.0
+            elif cls == "dot":
+                cand_dot = 1.0
+
         if not opponents:
             return {"type_adv": 1.0, "type_res": 1.0, "hp": mon.hp_ratio,
-                    "candidate_cond": candidate_cond}
+                    "cand_disabled": cand_disabled, "cand_dot": cand_dot}
 
         my_damage_moves = [m for m in mon.moves.get_moves() if m.power > 0]
 
@@ -1276,12 +1330,13 @@ class SwitchPolicy:
         ) / len(opponents)
 
         return {"type_adv": type_adv, "type_res": type_res, "hp": mon.hp_ratio,
-                "candidate_cond": candidate_cond}
+                "cand_disabled": cand_disabled, "cand_dot": cand_dot}
 
     def score(self, mon: "Monster", opponents: list["Monster"]) -> float:
         f = self._features(mon, opponents)
         return (self.w_type_adv * f["type_adv"] + self.w_type_res * f["type_res"]
-                + self.w_hp * f["hp"] + self.w_candidate_cond * f["candidate_cond"])
+                + self.w_hp * f["hp"] + self.w_cand_disabled * f["cand_disabled"]
+                + self.w_cand_dot * f["cand_dot"])
 
     def record(self, mon: "Monster", opponents: list["Monster"]) -> None:
         self.switch_log.append(self._features(mon, opponents))
@@ -1294,7 +1349,8 @@ class SwitchPolicy:
             ("type_adv", "w_type_adv", True),
             ("type_res", "w_type_res", True),
             ("hp", "w_hp", True),
-            ("candidate_cond", "w_candidate_cond", False),  # allowed to go negative
+            ("cand_disabled", "w_cand_disabled", False),  # should stay negative
+            ("cand_dot", "w_cand_dot", False),            # should stay negative
         ):
             avg = sum(d[key] for d in self.switch_log) / n
             new_val = getattr(self, attr) + self.lr * outcome * avg
@@ -1302,7 +1358,8 @@ class SwitchPolicy:
 
     def label(self) -> str:
         return (f"adv={self.w_type_adv:.3f}  res={self.w_type_res:.3f}  "
-                f"hp={self.w_hp:.3f}  cond={self.w_candidate_cond:.3f}")
+                f"hp={self.w_hp:.3f}  dis={self.w_cand_disabled:.3f}  "
+                f"dot={self.w_cand_dot:.3f}")
 
 
 class LearningAIManager(AIManager):
@@ -1351,7 +1408,7 @@ def run_learn(
 
     print(f"Learn [{fmt}]: {n_battles} training battles | "
           f"eval every {eval_every} | team_size={team_size} | level={level} | lr={lr}")
-    print("  Policy vs Random — REINFORCE on move weights (7) + switch weights (4)\n")
+    print("  Policy vs Random — REINFORCE on move weights (8) + switch weights (5)\n")
     print(f"  {'Battle':>8}  {'Win%':>6}  "
           f"{'── Move ──────────────────────────────':38}  "
           f"── Switch ───────────────────────────")
@@ -1398,7 +1455,8 @@ def run_learn(
                     w_type_adv=switch_policy.w_type_adv,
                     w_type_res=switch_policy.w_type_res,
                     w_hp=switch_policy.w_hp,
-                    w_candidate_cond=switch_policy.w_candidate_cond,
+                    w_cand_disabled=switch_policy.w_cand_disabled,
+                    w_cand_dot=switch_policy.w_cand_dot,
                 )
                 try:
                     r = run_battle(na, nb, is_double=is_double,
@@ -1417,21 +1475,21 @@ def run_learn(
     print(f"\n── Final move weights ───────────────────────────────")
     move_ranked = sorted(
         [
-            ("type effectiveness", move_policy.w_type),
-            ("move power",         move_policy.w_power),
-            ("accuracy",           move_policy.w_acc),
-            ("AoE bonus",          move_policy.w_aoe),
-            ("cond on healthy tgt", move_policy.w_condition),
-            ("reliability",        move_policy.w_recharge),
-            ("cond already set",   move_policy.w_cond_waste),
+            ("type effectiveness",  move_policy.w_type),
+            ("move power",          move_policy.w_power),
+            ("accuracy",            move_policy.w_acc),
+            ("AoE bonus",           move_policy.w_aoe),
+            ("disable (sleep/conf)",move_policy.w_disable),
+            ("DoT (toxic/poison)",  move_policy.w_dot),
+            ("debuff (spd/atk cut)",move_policy.w_debuff),
+            ("reliability",         move_policy.w_recharge),
         ],
         key=lambda x: -x[1],
     )
-    mmax = max(abs(w) for _, w in move_ranked) if move_ranked else 1.0
+    mmax = max(w for _, w in move_ranked) if move_ranked else 1.0
     for name, w in move_ranked:
-        bar = _bar(int(abs(w) * 100), max(1, int(mmax * 100)))
-        sign = "-" if w < 0 else " "
-        print(f"    {name:<24}  {sign}{bar}  {w:.3f}")
+        bar = _bar(int(w * 100), max(1, int(mmax * 100)))
+        print(f"    {name:<24}  {bar}  {w:.3f}")
 
     print(f"\n── Final switch weights ─────────────────────────────")
     sw_ranked = sorted(
@@ -1439,7 +1497,8 @@ def run_learn(
             ("type advantage",      switch_policy.w_type_adv),
             ("type resistance",     switch_policy.w_type_res),
             ("HP fraction",         switch_policy.w_hp),
-            ("avoid conditioned",   switch_policy.w_candidate_cond),
+            ("avoid disabled-in",   switch_policy.w_cand_disabled),
+            ("avoid DoT-in",        switch_policy.w_cand_dot),
         ],
         key=lambda x: -x[1],
     )
@@ -1465,7 +1524,8 @@ def run_learn(
         w_type_adv=switch_policy.w_type_adv,
         w_type_res=switch_policy.w_type_res,
         w_hp=switch_policy.w_hp,
-        w_candidate_cond=switch_policy.w_candidate_cond,
+        w_cand_disabled=switch_policy.w_cand_disabled,
+        w_cand_dot=switch_policy.w_cand_dot,
     )
     for opp_team in designed:
         w = l = d = 0

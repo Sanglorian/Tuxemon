@@ -1090,27 +1090,31 @@ _learn_mon_type_cache: dict[str, list] = {}
 _learn_cond_cache: dict[str, dict[str, float]] = {}
 
 # Condition category classification.
-# Competitive strategy insight drives the categories:
-#   disable  — sleep/confusion/stun: wastes opponent turns, valuable regardless of HP
-#   dot      — toxic/poison/lifeleech: sustained chip pressure; best against high-HP walls
-#   debuff   — speed cut, attack cut: counters specific opponent archetypes
-# Positive or self-applied statuses are not listed (they are not scored as threats).
+# Only negative conditions are listed; positive/buff statuses are omitted.
+# burn is NOT in debuff — in this game burn is pure DoT with no attack reduction.
 _STATUS_CLASS: dict[str, str] = {
+    # disable: wastes opponent turns regardless of HP — sleep/confuse/stun
     "noddingoff": "disable",   # sleep-like: 50% skip, 5-turn cap
     "confused": "disable",     # 50% chance self-hit
     "flinching": "disable",    # 1-turn stun
-    "lockdown": "disable",     # can't switch / move locked
+    "lockdown": "disable",     # move/switch locked
     "grabbed": "disable",      # immobilised
     "harpooned": "disable",    # can't flee or switch
-    "festering": "dot",        # toxic DoT (applied to both sides by fester)
+    # dot: sustained chip damage each turn
+    "festering": "dot",        # toxic DoT (fester applies to BOTH sides!)
     "poison": "dot",           # standard poison DoT
-    "prickly": "dot",          # thorns / reflect damage
+    "prickly": "dot",          # reflect / thorns damage
     "lifeleech": "dot",        # drains HP to attacker
-    "blinded": "debuff",       # speed and dodge reduction
-    "slow": "debuff",          # speed reduction
-    "exhausted": "debuff",     # melee and ranged attack reduction
-    "charmed": "debuff",       # attack reduction (lured into bad move)
+    "burn": "dot",             # fire DoT only — no attack debuff in this game
+    # debuff: stat reductions (speed or attack)
+    "blinded": "debuff",       # speed and dodge cut
+    "slow": "debuff",          # speed cut
+    "exhausted": "debuff",     # melee and ranged attack cut
+    "charmed": "debuff",       # attack reduction
 }
+
+# Weights for self-applied conditions are allowed to go negative (they're penalties).
+_SIGNED_WEIGHTS: frozenset[str] = frozenset({"w_s_dis", "w_s_dot", "w_s_dbf"})
 
 
 def _cached_technique(slug: str) -> "Technique | None":
@@ -1133,11 +1137,13 @@ def _cached_mon_types(slug: str) -> list:
 
 
 def _tech_condition_features(tech_slug: str) -> dict[str, float]:
-    """Return {class: potency} for conditions applied to enemies by this technique.
+    """Return condition potency broken out by target side and class.
 
-    Reads the technique's 'give' effects, classifies each status slug via
-    _STATUS_CLASS, and skips anything applied to own_monster (self-buffs).
-    Result is cached for the session.
+    Keys: enemy_disable, enemy_dot, enemy_debuff, self_disable, self_dot, self_debuff.
+    A move can hit both sides (e.g. fester gives festering to both), so both
+    enemy_dot and self_dot will be set.  self_* features are costs — the REINFORCE
+    will drive their weights negative to penalise moves that hurt the user.
+    Result is cached per session.
     """
     if tech_slug in _learn_cond_cache:
         return _learn_cond_cache[tech_slug]
@@ -1151,25 +1157,27 @@ def _tech_condition_features(tech_slug: str) -> dict[str, float]:
             for effect in tech_data.effects:
                 if effect.type == "give" and effect.parameters:
                     status_slug = effect.parameters[0]
-                    # Skip conditions applied to own monster (self-buffs)
-                    target_arg = effect.parameters[1] if len(effect.parameters) > 1 else ""
-                    if "own" in target_arg:
-                        continue
+                    # parameters[1] can be "own_monster", "enemy_monster",
+                    # or compound "enemy_monster:own_monster" / "own_team:enemy_team"
+                    target_arg = effect.parameters[1] if len(effect.parameters) > 1 else "enemy"
                     cls = _STATUS_CLASS.get(status_slug)
                     if cls:
-                        result[cls] = max(result.get(cls, 0.0), potency)
+                        if "enemy" in target_arg:
+                            key = f"enemy_{cls}"
+                            result[key] = max(result.get(key, 0.0), potency)
+                        if "own" in target_arg:
+                            key = f"self_{cls}"
+                            result[key] = max(result.get(key, 0.0), potency)
     _learn_cond_cache[tech_slug] = result
     return result
 
 
 def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
-    """Compute the 8-feature vector for a (technique, target) action.
+    """Compute the 11-feature vector for a (technique, target) action.
 
-    Conditions are split into three strategically distinct classes rather than
-    a single potency scalar, because each class has a different value profile:
-      disable  (sleep, confusion): always powerful — wastes opponent turns
-      dot      (toxic, poison):    pressure vs tanky walls; good regardless of HP
-      debuff   (speed/atk cut):    counters specific attack archetypes
+    Conditions are split by both class and target side.  A move like fester
+    that applies festering to both sides gets a positive enemy_dot AND a
+    negative self_dot — the REINFORCE learns the net value empirically.
     """
     from tuxemon.database.runtime import db
     from tuxemon.formula import simple_damage_multiplier
@@ -1179,7 +1187,8 @@ def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
     if tech is None:
         return {
             "type_mult": 1.0, "power": 0.0, "accuracy": 0.0, "is_aoe": 0.0,
-            "potency_disable": 0.0, "potency_dot": 0.0, "potency_debuff": 0.0,
+            "enemy_disable": 0.0, "enemy_dot": 0.0, "enemy_debuff": 0.0,
+            "self_disable": 0.0, "self_dot": 0.0, "self_debuff": 0.0,
             "recharge_val": 1.0,
         }
 
@@ -1191,7 +1200,7 @@ def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
     tech_data = db.database["technique"].get(tech_slug)
     is_aoe = 1.0 if (tech_data and tech_data.target and tech_data.target.enemy_team) else 0.0
     recharge_turns = int(tech_data.recharge or 0) if tech_data else 0
-    recharge_val = 1.0 / (1 + recharge_turns)  # 0→1.0, 1→0.5, 2→0.33, 3→0.25
+    recharge_val = 1.0 / (1 + recharge_turns)
 
     cond = _tech_condition_features(tech_slug)
     return {
@@ -1199,26 +1208,34 @@ def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
         "power": (tech.power or 0.0) / POWER_RANGE[1],
         "accuracy": tech.accuracy or 0.0,
         "is_aoe": is_aoe,
-        "potency_disable": cond.get("disable", 0.0),
-        "potency_dot": cond.get("dot", 0.0),
-        "potency_debuff": cond.get("debuff", 0.0),
+        "enemy_disable": cond.get("enemy_disable", 0.0),
+        "enemy_dot":     cond.get("enemy_dot", 0.0),
+        "enemy_debuff":  cond.get("enemy_debuff", 0.0),
+        "self_disable":  cond.get("self_disable", 0.0),
+        "self_dot":      cond.get("self_dot", 0.0),
+        "self_debuff":   cond.get("self_debuff", 0.0),
         "recharge_val": recharge_val,
     }
 
 
 _FEAT_KEYS = (
     "type_mult", "power", "accuracy", "is_aoe",
-    "potency_disable", "potency_dot", "potency_debuff", "recharge_val",
+    "enemy_disable", "enemy_dot", "enemy_debuff",
+    "self_disable", "self_dot", "self_debuff",
+    "recharge_val",
 )
 _FEAT_ATTRS = {
-    "type_mult": "w_type",
-    "power": "w_power",
-    "accuracy": "w_acc",
-    "is_aoe": "w_aoe",
-    "potency_disable": "w_disable",
-    "potency_dot": "w_dot",
-    "potency_debuff": "w_debuff",
-    "recharge_val": "w_recharge",
+    "type_mult":     "w_type",
+    "power":         "w_power",
+    "accuracy":      "w_acc",
+    "is_aoe":        "w_aoe",
+    "enemy_disable": "w_e_dis",
+    "enemy_dot":     "w_e_dot",
+    "enemy_debuff":  "w_e_dbf",
+    "self_disable":  "w_s_dis",
+    "self_dot":      "w_s_dot",
+    "self_debuff":   "w_s_dbf",
+    "recharge_val":  "w_recharge",
 }
 
 
@@ -1228,9 +1245,14 @@ class PolicyWeights:
     w_power: float = 1.0    # normalised move power weight
     w_acc: float = 1.0      # accuracy weight
     w_aoe: float = 1.0      # AoE (enemy_team) bonus weight
-    w_disable: float = 1.0  # disable conditions (sleep/confuse): always valuable
-    w_dot: float = 1.0      # DoT conditions (festering/poison): pressure vs tanks
-    w_debuff: float = 1.0   # stat-cut conditions (blinded/exhausted): archetype counter
+    # Enemy-applied conditions (positive: good to inflict on opponent)
+    w_e_dis: float = 1.0    # enemy gets disabled (sleep/confuse/stun)
+    w_e_dot: float = 1.0    # enemy gets DoT (festering/poison/burn)
+    w_e_dbf: float = 1.0    # enemy gets stat debuff (blinded/exhausted)
+    # Self-applied conditions (expected negative: bad to inflict on yourself)
+    w_s_dis: float = -2.0   # we get disabled — almost never worth it
+    w_s_dot: float = -0.5   # we take DoT — fester's cost; sometimes worth it
+    w_s_dbf: float = -0.5   # we get stat-debuffed — give_all etc.
     w_recharge: float = 0.5 # reliability: 1/(1+recharge_turns)
     lr: float = 0.05
 
@@ -1238,13 +1260,13 @@ class PolicyWeights:
         """Write current weights into the AIConfigLoader cache under 'sim_trainer'."""
         from tuxemon.ai.ai import AIConfigLoader, SingleTechnique
         ai_techs = AIConfigLoader.get_ai_techniques("ai_techniques.yaml")
-        # potency_weight uses the DoT weight: technique_score weights potency × hp_ratio,
-        # which is the semantically correct scoring formula for sustained DoT.
+        # potency_weight maps to w_e_dot: technique_score uses potency × hp_ratio
+        # which is correct for DoT (more ticks on healthy targets).
         ai_techs.techniques["sim_trainer"] = SingleTechnique(
             elemental_multiplier_weight=self.w_type,
             power_weight=self.w_power,
             accuracy_weight=self.w_acc,
-            potency_weight=self.w_dot,
+            potency_weight=self.w_e_dot,
         )
 
     def update(
@@ -1267,13 +1289,17 @@ class PolicyWeights:
         for fkey in _FEAT_KEYS:
             avg = sum(d[fkey] for d in feats_used) / n
             attr = _FEAT_ATTRS[fkey]
-            setattr(self, attr, max(0.001, getattr(self, attr) + self.lr * outcome * avg))
+            new_val = getattr(self, attr) + self.lr * outcome * avg
+            # Self-condition weights may go negative; all others clamp to 0.001.
+            setattr(self, attr, new_val if attr in _SIGNED_WEIGHTS else max(0.001, new_val))
 
     def label(self) -> str:
-        return (f"type={self.w_type:.3f}  power={self.w_power:.3f}  "
-                f"acc={self.w_acc:.3f}  aoe={self.w_aoe:.3f}  "
-                f"dis={self.w_disable:.3f}  dot={self.w_dot:.3f}  "
-                f"dbf={self.w_debuff:.3f}  rch={self.w_recharge:.3f}")
+        return (f"type={self.w_type:.3f} pow={self.w_power:.3f} "
+                f"acc={self.w_acc:.3f} aoe={self.w_aoe:.3f} | "
+                f"e_dis={self.w_e_dis:.3f} e_dot={self.w_e_dot:.3f} "
+                f"e_dbf={self.w_e_dbf:.3f} | "
+                f"s_dis={self.w_s_dis:.3f} s_dot={self.w_s_dot:.3f} "
+                f"s_dbf={self.w_s_dbf:.3f} | rch={self.w_recharge:.3f}")
 
 
 @dataclass
@@ -1408,7 +1434,7 @@ def run_learn(
 
     print(f"Learn [{fmt}]: {n_battles} training battles | "
           f"eval every {eval_every} | team_size={team_size} | level={level} | lr={lr}")
-    print("  Policy vs Random — REINFORCE on move weights (8) + switch weights (5)\n")
+    print("  Policy vs Random — REINFORCE on move weights (11) + switch weights (5)\n")
     print(f"  {'Battle':>8}  {'Win%':>6}  "
           f"{'── Move ──────────────────────────────':38}  "
           f"── Switch ───────────────────────────")
@@ -1473,23 +1499,25 @@ def run_learn(
 
     # ── Final report ───────────────────────────────────────────────────────────
     print(f"\n── Final move weights ───────────────────────────────")
-    move_ranked = sorted(
-        [
-            ("type effectiveness",  move_policy.w_type),
-            ("move power",          move_policy.w_power),
-            ("accuracy",            move_policy.w_acc),
-            ("AoE bonus",           move_policy.w_aoe),
-            ("disable (sleep/conf)",move_policy.w_disable),
-            ("DoT (toxic/poison)",  move_policy.w_dot),
-            ("debuff (spd/atk cut)",move_policy.w_debuff),
-            ("reliability",         move_policy.w_recharge),
-        ],
-        key=lambda x: -x[1],
-    )
-    mmax = max(w for _, w in move_ranked) if move_ranked else 1.0
+    move_items = [
+        ("type effectiveness",    move_policy.w_type),
+        ("move power",            move_policy.w_power),
+        ("accuracy",              move_policy.w_acc),
+        ("AoE bonus",             move_policy.w_aoe),
+        ("→ enemy disable",       move_policy.w_e_dis),
+        ("→ enemy DoT",           move_policy.w_e_dot),
+        ("→ enemy debuff",        move_policy.w_e_dbf),
+        ("← self disable (cost)", move_policy.w_s_dis),
+        ("← self DoT (cost)",     move_policy.w_s_dot),
+        ("← self debuff (cost)",  move_policy.w_s_dbf),
+        ("reliability",           move_policy.w_recharge),
+    ]
+    move_ranked = sorted(move_items, key=lambda x: -x[1])
+    mmax = max(abs(w) for _, w in move_ranked) if move_ranked else 1.0
     for name, w in move_ranked:
-        bar = _bar(int(w * 100), max(1, int(mmax * 100)))
-        print(f"    {name:<24}  {bar}  {w:.3f}")
+        bar = _bar(int(abs(w) * 100), max(1, int(mmax * 100)))
+        sign = "-" if w < 0 else " "
+        print(f"    {name:<26}  {sign}{bar}  {w:.3f}")
 
     print(f"\n── Final switch weights ─────────────────────────────")
     sw_ranked = sorted(

@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
 
-from tuxemon.constants.paths import BEHAVS_PATH, LIBDIR, get_plugin_paths
+from tuxemon.constants.paths import BEHAVS_PATH, ROOT_DIR, get_plugin_paths
 from tuxemon.db import (
     Behavior,
     EventObject,
@@ -42,7 +42,7 @@ class EventBehavior(ABC):
 class BehaviorManager:
     def __init__(self, root_path: Path | None = None) -> None:
         if root_path is None:
-            root_path = LIBDIR.parent
+            root_path = ROOT_DIR
 
         plugin_folders = get_plugin_paths(
             BEHAVS_PATH, "behaviors", subfolder="event"

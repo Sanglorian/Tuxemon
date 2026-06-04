@@ -11,7 +11,7 @@ from pathlib import Path
 from types import TracebackType
 from typing import Any, ClassVar
 
-from tuxemon.constants.paths import ACTIONS_PATH, LIBDIR, get_plugin_paths
+from tuxemon.constants.paths import ACTIONS_PATH, ROOT_DIR, get_plugin_paths
 from tuxemon.plugin import PluginManager
 from tuxemon.session import Session
 from tuxemon.tools import cast_dataclass_parameters
@@ -257,7 +257,7 @@ class EventAction(ABC):
 class ActionManager:
     def __init__(self, root_path: Path | None = None) -> None:
         if root_path is None:
-            root_path = LIBDIR.parent
+            root_path = ROOT_DIR
 
         plugin_folders = get_plugin_paths(
             ACTIONS_PATH, "actions", subfolder="event"

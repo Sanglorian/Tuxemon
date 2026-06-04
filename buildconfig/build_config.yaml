@@ -13,8 +13,17 @@ packages:
   - pytmx
   - pyscroll
   - pygame
+  - pygame_menu
   - websockets
   - natsort
+  - babel
+  - cbor
+  - PIL
+  - packaging
+  - prompt_toolkit
+  - pydantic
+  - requests
+  - yaml
   - tuxemon
 
 # Packages that should NOT be included

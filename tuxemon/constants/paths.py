@@ -18,8 +18,13 @@ logger.debug(f"libdir: {LIBDIR}")
 ROOT_PACKAGE_NAME = LIBDIR.name
 logger.debug(f"root package name: {ROOT_PACKAGE_NAME}")
 
-# BASEDIR is where tuxemon was launched from
-BASEDIR = Path(sys.path[0]).resolve()
+# BASEDIR is where tuxemon was launched from.
+# In a cx_Freeze frozen build sys.path[0] points into library.zip, not the
+# install root, so use sys.executable's directory instead.
+if hasattr(sys, "frozen") and sys.frozen:
+    BASEDIR = Path(sys.executable).parent.resolve()
+else:
+    BASEDIR = Path(sys.path[0]).resolve()
 logger.debug(f"basedir: {BASEDIR}")
 
 # In a cx_Freeze build LIBDIR is <install>\lib\tuxemon, so the install root
@@ -33,7 +38,11 @@ mods_folder = (ROOT_DIR / "mods").resolve()
 logger.debug(f"mods: {mods_folder}")
 
 # mods subfolders
-mods_subfolders = [f.name for f in mods_folder.iterdir() if f.is_dir()]
+mods_subfolders = (
+    [f.name for f in mods_folder.iterdir() if f.is_dir()]
+    if mods_folder.exists()
+    else []
+)
 logger.debug(f"Mods subfolders: {mods_subfolders}")
 
 PLUGIN_CATEGORY_MAP = {

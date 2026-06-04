@@ -660,6 +660,87 @@ DESIGNED_TEAM_DEFS: list[tuple[str, list[str], dict[str, list[str]]]] = [
         "bedoo":    ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
         "pharfan":  ["earthquake", "ten_thousand_feathers", "laser_beam", "give_all"],
     }),
+
+    # ── Gen-5: type-immunity counter-teams designed to beat Gen-4 ──────────────
+    #
+    # Analysis of Gen-4's offensive set:
+    #   earthquake (earth):       2x vs fire, lightning
+    #   ten_thousand_feathers (sky): 2x vs earth, heroic, wood
+    #   laser_beam (lightning+metal): 2x vs metal, sky, water, cosmic, earth
+    #   give_all (heroic):        2x vs frost, normal, shadow  /  0.5x vs cosmic, venom
+    #
+    # Defensive insight: pure VENOM types are neutral to all four Gen-4 moves AND
+    # actively RESIST give_all (0.5x). VENOM+SHADOW dual types cancel out (heroic
+    # is 0.5x vs venom × 2.0x vs shadow = 1.0x net). Frost is a TRAP: heroic 2x vs
+    # frost means give_all OHKOs frost mons despite frost resisting other moves.
+    #
+    # Gen-5 offensive coverage — super-effective against EVERY Gen-4 defensive type:
+    #   give_all (heroic):        2x vs normal (Rho), shadow (Tau)
+    #   mind_explosion (cosmic+wood): 2x vs heroic (Sigma), venom (Phi), water (Chi/Omega), earth (Psi)
+    #   laser_beam (lightning+metal): 2x vs sky (Sigma/Phi), water (Chi), cosmic (Upsilon/Chi/Psi), metal (Psi)
+    #   ten_thousand_feathers (sky): 2x vs earth (Psi), heroic (Sigma), wood (Chi/Phi/Omega)
+    #
+    # Every Gen-4 team has at least one 2x-effective move in the Gen-5 set, while
+    # Gen-4's entire offensive set is neutral-or-resisted against venom/venom+shadow.
+
+    # Orion — blob fortress. Three HP=8 blobs fully safe from Gen-4 + puparmor which
+    # resists give_all (heroic 0.5x vs venom) but is 2x to laser_beam (lightning vs metal).
+    # puparmor chosen over metoxic for type diversity.
+    ("Orion", ["metoxic", "dracune", "hoarseshoo", "puparmor"], {
+        "metoxic":    ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "dracune":    ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "hoarseshoo": ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "puparmor":   ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+    }),
+
+    # Lyra — pure venom toxin wall. All four are pure venom type; ALL Gen-4 moves
+    # are either neutral or resisted (give_all 0.5x). metoxic is HP=8 blob;
+    # araignee/poinchin/tumbleworm are HP=7 grubs (armour=7 compensates).
+    ("Lyra", ["metoxic", "araignee", "poinchin", "tumbleworm"], {
+        "metoxic":    ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "araignee":   ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "poinchin":   ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "tumbleworm": ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+    }),
+
+    # Cygnus — spread vulnerabilities. Each Gen-4 move hits AT MOST one monster 2x:
+    # earthquake → none; feathers → hoodoll (wood); laser_beam → leviadile (water);
+    # give_all → none (metoxic/hoarseshoo/dracune all resist or neutralise heroic).
+    ("Cygnus", ["metoxic", "hoarseshoo", "leviadile", "hoodoll"], {
+        "metoxic":    ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "hoarseshoo": ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "leviadile":  ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "hoodoll":    ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+    }),
+
+    # Vela — shadow venom depth. All four are venom/venom+shadow; every Gen-4
+    # move is neutral or resisted. Three HP=8 blobs + spighter (HP=7 grub).
+    ("Vela", ["metoxic", "dracune", "hoarseshoo", "spighter"], {
+        "metoxic":    ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "dracune":    ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "hoarseshoo": ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "spighter":   ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+    }),
+
+    # Crux — max bulk, accepted laser cost. All HP=8 blobs. gastronium/stomic
+    # are metal+venom so 2x to laser_beam, but pure venom gives 0.5x to give_all and
+    # maximum HP/armour makes them durable against neutral hits.
+    ("Crux", ["metoxic", "dracune", "gastronium", "stomic"], {
+        "metoxic":    ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "dracune":    ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "gastronium": ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "stomic":     ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+    }),
+
+    # Aquila — leviathan speed. leviadile/krokivip are HP=8 leviathans (water+venom);
+    # both are 2x to laser_beam but resist give_all and have excellent natural speed
+    # for first-strike potential. metoxic/dracune anchor the safe core.
+    ("Aquila", ["leviadile", "krokivip", "metoxic", "dracune"], {
+        "leviadile":  ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "krokivip":   ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "metoxic":    ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+        "dracune":    ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
+    }),
 ]
 
 

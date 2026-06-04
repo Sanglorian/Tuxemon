@@ -741,6 +741,74 @@ DESIGNED_TEAM_DEFS: list[tuple[str, list[str], dict[str, list[str]]]] = [
         "metoxic":    ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
         "dracune":    ["give_all", "mind_explosion", "laser_beam", "ten_thousand_feathers"],
     }),
+
+    # ── Gen-6: fire-type counter-teams designed to beat Gen-5 ──────────────────
+    #
+    # Gen-5's weakness: all monsters are venom or venom+shadow type.
+    # Fire is 2x vs venom, 4x vs metal+venom — and Gen-5's move set does NOT
+    # include fire counters (earthquake or water moves). Fire types also RESIST
+    # Gen-5's ten_thousand_feathers (sky 0.5x vs fire).
+    #
+    # Defensive insight: pure fire and wood+fire are SAFE from every Gen-5 move:
+    #   give_all (heroic):    1x vs fire, 0.5×2=1x vs wood+fire
+    #   mind_explosion (cosmic+wood): 1x vs fire, 1x vs wood+fire
+    #   laser_beam (lightning+metal): 1x vs fire (metal 0.5x vs fire, lgtng 1x → max 1x)
+    #   feathers (sky):       0.5x vs fire! — RESISTED
+    #
+    # Gen-6 offensive set — replaces feathers with firestorm; coverage unchanged:
+    #   firestorm (fire, AoE):   2x vs venom (Gen-5), metal, wood — primary weapon
+    #   give_all (heroic):       2x vs normal, shadow — handles Gen-4 Rho/Tau
+    #   laser_beam (lightning+metal): 2x vs sky, water, cosmic, metal, earth
+    #   mind_explosion (cosmic+wood): 2x vs heroic, venom, earth, water
+    # Note: feathers → firestorm is a net gain. Feathers covered earth/heroic/wood;
+    # firestorm covers metal/venom/wood (wood overlap). Earth & heroic are still
+    # covered by laser_beam (metal→earth) and mind_explosion (cosmic→heroic).
+    #
+    # Gen-6 vs Gen-3 note: Gen-3 uses earthquake (earth→fire 2x) and tsunami
+    # (water→fire 2x), so fire-type mons take 2x from two Gen-3 moves. However
+    # firestorm also hits Gen-3's common wood/metal types for 2x, so this should
+    # remain competitive.
+
+    # Sagittarius — all-safe fire wall. Every monster is fully immune or resistant
+    # to Gen-5's entire move set. embra/tikoal/tikorch are HP=8 blobs; ruption is
+    # HP=7 brute but brute shape shares the same armour rating (7).
+    ("Sagittarius", ["embra", "tikoal", "tikorch", "ruption"], {
+        "embra":   ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+        "tikoal":  ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+        "tikorch": ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+        "ruption": ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+    }),
+
+    # Perseus — three safe cores + primordia. primordia (fire+frost) resists
+    # feathers (sky 0.5x vs frost as well) but is vulnerable to give_all
+    # (heroic 2x vs frost). Brings diversity at the cost of one exposed slot.
+    ("Perseus", ["embra", "tikoal", "tikorch", "primordia"], {
+        "embra":     ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+        "tikoal":    ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+        "tikorch":   ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+        "primordia": ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+    }),
+
+    # Cassiopeia — safe core + flambear. flambear (fire+cosmic) is 2x to
+    # laser_beam (metal→cosmic) but actively RESISTS give_all (heroic 0.5x vs
+    # cosmic). Tests whether cosmic resistance to heroic offsets the laser cost.
+    ("Cassiopeia", ["embra", "tikoal", "tikorch", "flambear"], {
+        "embra":    ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+        "tikoal":   ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+        "tikorch":  ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+        "flambear": ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+    }),
+
+    # Centaurus — spread vulnerabilities. seirein (fire+shadow) is the only
+    # monster exposed to give_all (heroic 2x vs shadow); the other three are safe.
+    # earthquake hits none (no lightning type); laser_beam hits none; feathers hits
+    # none. Only give_all on seirein is a threat — one move, one target.
+    ("Centaurus", ["embra", "tikoal", "tikorch", "seirein"], {
+        "embra":   ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+        "tikoal":  ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+        "tikorch": ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+        "seirein": ["firestorm", "give_all", "laser_beam", "mind_explosion"],
+    }),
 ]
 
 

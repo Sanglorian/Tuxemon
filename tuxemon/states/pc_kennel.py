@@ -23,7 +23,12 @@ from tuxemon.platform.const.graphics import BG_PC_KENNEL
 from tuxemon.platform.const.sizes import MAX_KENNEL, PARTY_LIMIT
 from tuxemon.state.state import State
 from tuxemon.states.monster_menu import MonsterMenuState
-from tuxemon.tools import fix_measure, open_choice_dialog, open_dialog
+from tuxemon.tools import (
+    fix_measure,
+    open_choice_dialog,
+    open_dialog,
+    transform_resource_filename,
+)
 from tuxemon.ui.menu_options import (
     MenuOptions,
     create_choice_options,
@@ -224,6 +229,7 @@ class MonsterTakeState(PygameMenuState):
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
         theme.title = True
+        theme.title_font = transform_resource_filename("font", "Arbata.ttf")
         self._menu_config["theme"] = theme
 
         column_width = fix_measure(self.menu._width, 0.33)
@@ -286,6 +292,8 @@ class MonsterTakeState(PygameMenuState):
         )
 
     def add_menu_items(self, menu: Menu, items: Sequence[Monster]) -> None:
+        arbata = transform_resource_filename("font", "Arbata.ttf")
+        huge = self.font_type.biggest * 2
         handler = MonsterActionHandler(
             self.client, self.char, self.box_name, self.name
         )
@@ -308,13 +316,15 @@ class MonsterTakeState(PygameMenuState):
             menu.add.progress_bar(
                 level,
                 default=diff,
-                font_size=self.font_type.small,
+                font_name=arbata,
+                font_size=huge,
                 align=ALIGN_CENTER,
             )
             menu.add.button(
                 label,
                 partial(handler.description_dialog, monster),
-                font_size=self.font_type.small,
+                font_name=arbata,
+                font_size=huge,
                 align=ALIGN_CENTER,
                 selection_effect=HighlightSelection(),
             )
@@ -349,6 +359,8 @@ class MonsterBoxState(PygameMenuState):
         menu: Menu,
         items: Sequence[tuple[str, MenuGameObj]],
     ) -> None:
+        arbata = transform_resource_filename("font", "Arbata.ttf")
+        huge = self.font_type.biggest * 2
         menu.add.vertical_fill()
         for key, callback in items:
             player = self.char
@@ -356,7 +368,7 @@ class MonsterBoxState(PygameMenuState):
             label = T.format(
                 f"{T.translate(key).upper()}: {num_mons}/{MAX_BOX}"
             )
-            menu.add.button(label, callback)
+            menu.add.button(label, callback, font_name=arbata, font_size=huge)
             menu.add.vertical_fill()
 
         width, height = self.client.context.resolution

@@ -22,7 +22,12 @@ from tuxemon.menu.transitions import SlideRight
 from tuxemon.platform.const.graphics import BG_PC_LOCKER
 from tuxemon.state.state import State
 from tuxemon.states.item_menu import ItemMenuState
-from tuxemon.tools import fix_measure, open_choice_dialog, open_dialog
+from tuxemon.tools import (
+    fix_measure,
+    open_choice_dialog,
+    open_dialog,
+    transform_resource_filename,
+)
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 
 logger = logging.getLogger(__name__)
@@ -144,6 +149,7 @@ class ItemTakeState(PygameMenuState):
         theme.scrollarea_position = POSITION_EAST
         theme.widget_alignment = ALIGN_CENTER
         theme.title = True
+        theme.title_font = transform_resource_filename("font", "Arbata.ttf")
         self._menu_config["theme"] = theme
 
         column_width = fix_measure(self.menu._width, 0.33)
@@ -227,6 +233,8 @@ class ItemTakeState(PygameMenuState):
         )
 
     def add_menu_items(self, menu: Menu, items: Sequence[Item]) -> None:
+        arbata = transform_resource_filename("font", "Arbata.ttf")
+        huge = self.font_type.biggest * 2
         handler = ItemActionHandler(
             self.client, self.char, self.box_name, self.name
         )
@@ -247,7 +255,8 @@ class ItemTakeState(PygameMenuState):
             menu.add.label(
                 label,
                 selectable=True,
-                font_size=self.font_type.small,
+                font_name=arbata,
+                font_size=huge,
                 align=ALIGN_CENTER,
                 selection_effect=HighlightSelection(),
             )
@@ -281,6 +290,8 @@ class ItemBoxState(PygameMenuState):
         menu: Menu,
         items: Sequence[tuple[str, MenuGameObj]],
     ) -> None:
+        arbata = transform_resource_filename("font", "Arbata.ttf")
+        huge = self.font_type.biggest * 2
         menu.add.vertical_fill()
         for key, callback in items:
             num_itms = self.char.item_boxes.get_items(key)
@@ -289,7 +300,7 @@ class ItemBoxState(PygameMenuState):
                 sum_total.append(ele.quantity)
             box_label = T.translate(key).upper()
             label = f"{box_label} (T{len(num_itms)}-I{sum(sum_total)})"
-            menu.add.button(label, callback)
+            menu.add.button(label, callback, font_name=arbata, font_size=huge)
             menu.add.vertical_fill()
 
         width, height = self.client.context.resolution

@@ -14,6 +14,7 @@ from tuxemon.locale.locale import T
 from tuxemon.menu.menu import PygameMenuState
 from tuxemon.menu.transitions import PopInClamped
 from tuxemon.platform.const.sizes import KENNEL, LOCKER
+from tuxemon.tools import transform_resource_filename
 
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
@@ -23,11 +24,18 @@ if TYPE_CHECKING:
 MenuGameObj = Callable[[], object]
 
 
-def add_menu_items(menu: Menu, items: list[tuple[str, MenuGameObj]]) -> None:
+def add_menu_items(
+    menu: Menu,
+    items: list[tuple[str, MenuGameObj]],
+    font_name: str | None = None,
+    font_size: int | None = None,
+) -> None:
     """Add translated menu entries to a pygame_menu.Menu."""
     for key, callback in items:
         label = T.translate(key).upper()
-        menu.add.button(label, callback)
+        menu.add.button(
+            label, callback, font_name=font_name, font_size=font_size
+        )
 
 
 class PCState(PygameMenuState):
@@ -71,4 +79,7 @@ class PCState(PygameMenuState):
         self.menu_builder = menu_builder
 
         menu_items = self.menu_builder.build_menu_items()
-        add_menu_items(self.menu, menu_items)
+        arbata = transform_resource_filename("font", "Arbata.ttf")
+        add_menu_items(
+            self.menu, menu_items, arbata, self.font_type.biggest * 2
+        )

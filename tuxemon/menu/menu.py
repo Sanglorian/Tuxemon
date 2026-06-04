@@ -490,6 +490,22 @@ class Menu(Generic[T], State):
         self.load_graphics()
         self.reload_sounds()
 
+    def use_arbata_huge(self) -> None:
+        """Switch this menu's text to Arbata at the "huge" size.
+
+        All classic-``Menu`` text (item/technique names, dialogue via
+        ``TextArea``, ``shadow_text`` labels) renders from ``self.font``, so
+        re-pointing the font here covers every category. ``FONT_SIZE_BIGGEST *
+        2`` (16 nominal px) keeps Arbata pixel-perfect, matching the journal
+        and world menus.
+        """
+        self.set_font(
+            size=FONT_SIZE_BIGGEST * 2, font=fetch_asset("font", "Arbata.ttf")
+        )
+        # text_renderer is a cached_property built from self.font; drop it so
+        # it is rebuilt with the new font on next use.
+        self.__dict__.pop("text_renderer", None)
+
     def _setup_cursor_controller(self) -> MenuCursorController[T]:
         return MenuCursorController(
             cursor_filename=self.cursor_filename,

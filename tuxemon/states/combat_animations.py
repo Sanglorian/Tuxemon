@@ -19,13 +19,11 @@ from pygame.transform import flip as pg_flip
 from tuxemon import graphics
 from tuxemon.animation import Animation, ScheduleType
 from tuxemon.combat.utils import build_hud_text
-from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.constants.paths import mods_folder
 from tuxemon.database.rules import config_combat
 from tuxemon.environment import BattleLayout
 from tuxemon.menu.menu import Menu
 from tuxemon.monster.renderer import MonsterRenderer
-from tuxemon.platform.const.graphics import FONT_SIZE_BIGGEST
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.sprite import CaptureDeviceSprite, HordeSprite, Sprite
 from tuxemon.ui.combat_bars import CombatBars
@@ -56,14 +54,9 @@ def _use_combat_font(menu: Menu[Any]) -> None:
 
     Combat text (monster name/level, technique names, dialogue and the combat
     menu) all render through the classic ``Menu`` font, so re-pointing the
-    font here covers every category. ``FONT_SIZE_BIGGEST * 2`` (16 nominal px)
-    keeps Arbata pixel-perfect, matching the journal screens.
+    font covers every category.
     """
-    arbata = fetch_asset("font", "Arbata.ttf")
-    menu.set_font(size=FONT_SIZE_BIGGEST * 2, font=arbata)
-    # text_renderer is a cached_property built from self.font; drop it so it is
-    # rebuilt with the new font on next use.
-    menu.__dict__.pop("text_renderer", None)
+    menu.use_arbata_huge()
 
 
 def toggle_visible(sprite: Sprite) -> None:

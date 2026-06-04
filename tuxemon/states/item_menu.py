@@ -56,6 +56,7 @@ class ItemMenuState(Menu[Item]):
         self.char = character
         self.source = source
         super().__init__(client=client, **kwargs)
+        self.use_arbata_huge()
 
         self.filter_controller = item_filter or ItemFilter(self.char.items)
         self.sorter = sorter or ItemSorter()

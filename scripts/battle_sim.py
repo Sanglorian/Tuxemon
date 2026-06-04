@@ -1090,31 +1090,46 @@ _learn_mon_type_cache: dict[str, list] = {}
 _learn_cond_cache: dict[str, dict[str, float]] = {}
 
 # Condition category classification.
-# Only negative conditions are listed; positive/buff statuses are omitted.
+# Only negative conditions and positive buffs are listed.
 # burn is NOT in debuff — in this game burn is pure DoT with no attack reduction.
 _STATUS_CLASS: dict[str, str] = {
     # disable: wastes opponent turns regardless of HP — sleep/confuse/stun
-    "noddingoff": "disable",   # sleep-like: 50% skip, 5-turn cap
-    "confused": "disable",     # 50% chance self-hit
-    "flinching": "disable",    # 1-turn stun
-    "lockdown": "disable",     # move/switch locked
-    "grabbed": "disable",      # immobilised
-    "harpooned": "disable",    # can't flee or switch
+    "noddingoff": "disable",
+    "confused": "disable",
+    "flinching": "disable",
+    "lockdown": "disable",
+    "grabbed": "disable",
+    "harpooned": "disable",
     # dot: sustained chip damage each turn
-    "festering": "dot",        # toxic DoT (fester applies to BOTH sides!)
-    "poison": "dot",           # standard poison DoT
-    "prickly": "dot",          # reflect / thorns damage
-    "lifeleech": "dot",        # drains HP to attacker
+    "festering": "dot",
+    "poison": "dot",
+    "prickly": "dot",
+    "lifeleech": "dot",
     "burn": "dot",             # fire DoT only — no attack debuff in this game
     # debuff: stat reductions (speed or attack)
-    "blinded": "debuff",       # speed and dodge cut
-    "slow": "debuff",          # speed cut
-    "exhausted": "debuff",     # melee and ranged attack cut
-    "charmed": "debuff",       # attack reduction
+    "blinded": "debuff",
+    "slow": "debuff",
+    "exhausted": "debuff",
+    "charmed": "debuff",
+    # buff_atk: boosts our attack/damage output
+    "enraged": "buff_atk",
+    "sniping": "buff_atk",
+    "chargedup": "buff_atk",   # fully charged: all stats up
+    "charging": "buff_atk",    # charging for next-turn attack
+    "retaliate": "buff_atk",   # counterattack boost
+    "revenge": "buff_atk",     # counterattack boost
+    # buff_def: boosts our defense, evasion, or survival
+    "hardshell": "buff_def",   # armour up
+    "focused": "buff_def",     # dodge/evasion up
+    "diehard": "buff_def",     # survive at 1 HP
+    "elementalshield": "buff_def",
+    # buff_heal: per-turn HP recovery
+    "recover": "buff_heal",
+    "lifegift": "buff_heal",
 }
 
-# Weights for self-applied conditions are allowed to go negative (they're penalties).
-_SIGNED_WEIGHTS: frozenset[str] = frozenset({"w_s_dis", "w_s_dot", "w_s_dbf"})
+# Weights for self-conditions (costs) and enemy-buffs (bad for us) may go negative.
+_SIGNED_WEIGHTS: frozenset[str] = frozenset({"w_s_dis", "w_s_dot", "w_s_dbf", "w_e_buf"})
 
 
 def _cached_technique(slug: str) -> "Technique | None":
@@ -1162,10 +1177,14 @@ def _tech_condition_features(tech_slug: str) -> dict[str, float]:
                     target_arg = effect.parameters[1] if len(effect.parameters) > 1 else "enemy"
                     cls = _STATUS_CLASS.get(status_slug)
                     if cls:
+                        is_buff = cls.startswith("buff")
                         if "enemy" in target_arg:
-                            key = f"enemy_{cls}"
+                            # Enemy receiving a buff is bad for us; collapse all
+                            # buff categories into one "enemy_buff" cost feature.
+                            key = "enemy_buff" if is_buff else f"enemy_{cls}"
                             result[key] = max(result.get(key, 0.0), potency)
                         if "own" in target_arg:
+                            # Self: negative conditions are costs; buffs are gains.
                             key = f"self_{cls}"
                             result[key] = max(result.get(key, 0.0), potency)
     _learn_cond_cache[tech_slug] = result
@@ -1189,6 +1208,8 @@ def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
             "type_mult": 1.0, "power": 0.0, "accuracy": 0.0, "is_aoe": 0.0,
             "enemy_disable": 0.0, "enemy_dot": 0.0, "enemy_debuff": 0.0,
             "self_disable": 0.0, "self_dot": 0.0, "self_debuff": 0.0,
+            "self_buff_atk": 0.0, "self_buff_def": 0.0, "self_buff_heal": 0.0,
+            "enemy_buff": 0.0,
             "recharge_val": 1.0,
         }
 
@@ -1208,12 +1229,16 @@ def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
         "power": (tech.power or 0.0) / POWER_RANGE[1],
         "accuracy": tech.accuracy or 0.0,
         "is_aoe": is_aoe,
-        "enemy_disable": cond.get("enemy_disable", 0.0),
-        "enemy_dot":     cond.get("enemy_dot", 0.0),
-        "enemy_debuff":  cond.get("enemy_debuff", 0.0),
-        "self_disable":  cond.get("self_disable", 0.0),
-        "self_dot":      cond.get("self_dot", 0.0),
-        "self_debuff":   cond.get("self_debuff", 0.0),
+        "enemy_disable":  cond.get("enemy_disable", 0.0),
+        "enemy_dot":      cond.get("enemy_dot", 0.0),
+        "enemy_debuff":   cond.get("enemy_debuff", 0.0),
+        "self_disable":   cond.get("self_disable", 0.0),
+        "self_dot":       cond.get("self_dot", 0.0),
+        "self_debuff":    cond.get("self_debuff", 0.0),
+        "self_buff_atk":  cond.get("self_buff_atk", 0.0),
+        "self_buff_def":  cond.get("self_buff_def", 0.0),
+        "self_buff_heal": cond.get("self_buff_heal", 0.0),
+        "enemy_buff":     cond.get("enemy_buff", 0.0),
         "recharge_val": recharge_val,
     }
 
@@ -1222,20 +1247,26 @@ _FEAT_KEYS = (
     "type_mult", "power", "accuracy", "is_aoe",
     "enemy_disable", "enemy_dot", "enemy_debuff",
     "self_disable", "self_dot", "self_debuff",
+    "self_buff_atk", "self_buff_def", "self_buff_heal",
+    "enemy_buff",
     "recharge_val",
 )
 _FEAT_ATTRS = {
-    "type_mult":     "w_type",
-    "power":         "w_power",
-    "accuracy":      "w_acc",
-    "is_aoe":        "w_aoe",
-    "enemy_disable": "w_e_dis",
-    "enemy_dot":     "w_e_dot",
-    "enemy_debuff":  "w_e_dbf",
-    "self_disable":  "w_s_dis",
-    "self_dot":      "w_s_dot",
-    "self_debuff":   "w_s_dbf",
-    "recharge_val":  "w_recharge",
+    "type_mult":      "w_type",
+    "power":          "w_power",
+    "accuracy":       "w_acc",
+    "is_aoe":         "w_aoe",
+    "enemy_disable":  "w_e_dis",
+    "enemy_dot":      "w_e_dot",
+    "enemy_debuff":   "w_e_dbf",
+    "self_disable":   "w_s_dis",
+    "self_dot":       "w_s_dot",
+    "self_debuff":    "w_s_dbf",
+    "self_buff_atk":  "w_s_batk",
+    "self_buff_def":  "w_s_bdef",
+    "self_buff_heal": "w_s_bheal",
+    "enemy_buff":     "w_e_buf",
+    "recharge_val":   "w_recharge",
 }
 
 
@@ -1253,6 +1284,12 @@ class PolicyWeights:
     w_s_dis: float = -2.0   # we get disabled — almost never worth it
     w_s_dot: float = -0.5   # we take DoT — fester's cost; sometimes worth it
     w_s_dbf: float = -0.5   # we get stat-debuffed — give_all etc.
+    # Self-applied buffs (positive: we want these)
+    w_s_batk: float = 1.0   # self gets attack/accuracy buff (enraged, sniping)
+    w_s_bdef: float = 1.0   # self gets defence/evasion buff (hardshell, focused)
+    w_s_bheal: float = 1.0  # self gets regen buff (recover, lifegift)
+    # Enemy-applied buffs (negative: bad when the opponent buffs themselves)
+    w_e_buf: float = -0.5   # enemy gets buffed (sudden_glow → focused on enemy)
     w_recharge: float = 0.5 # reliability: 1/(1+recharge_turns)
     lr: float = 0.05
 
@@ -1297,9 +1334,11 @@ class PolicyWeights:
         return (f"type={self.w_type:.3f} pow={self.w_power:.3f} "
                 f"acc={self.w_acc:.3f} aoe={self.w_aoe:.3f} | "
                 f"e_dis={self.w_e_dis:.3f} e_dot={self.w_e_dot:.3f} "
-                f"e_dbf={self.w_e_dbf:.3f} | "
+                f"e_dbf={self.w_e_dbf:.3f} e_buf={self.w_e_buf:.3f} | "
                 f"s_dis={self.w_s_dis:.3f} s_dot={self.w_s_dot:.3f} "
-                f"s_dbf={self.w_s_dbf:.3f} | rch={self.w_recharge:.3f}")
+                f"s_dbf={self.w_s_dbf:.3f} "
+                f"s_batk={self.w_s_batk:.3f} s_bdef={self.w_s_bdef:.3f} "
+                f"s_bheal={self.w_s_bheal:.3f} | rch={self.w_recharge:.3f}")
 
 
 @dataclass
@@ -1434,7 +1473,7 @@ def run_learn(
 
     print(f"Learn [{fmt}]: {n_battles} training battles | "
           f"eval every {eval_every} | team_size={team_size} | level={level} | lr={lr}")
-    print("  Policy vs Random — REINFORCE on move weights (11) + switch weights (5)\n")
+    print("  Policy vs Random — REINFORCE on move weights (15) + switch weights (5)\n")
     print(f"  {'Battle':>8}  {'Win%':>6}  "
           f"{'── Move ──────────────────────────────':38}  "
           f"── Switch ───────────────────────────")
@@ -1507,9 +1546,13 @@ def run_learn(
         ("→ enemy disable",       move_policy.w_e_dis),
         ("→ enemy DoT",           move_policy.w_e_dot),
         ("→ enemy debuff",        move_policy.w_e_dbf),
+        ("← enemy buff (cost)",   move_policy.w_e_buf),
         ("← self disable (cost)", move_policy.w_s_dis),
         ("← self DoT (cost)",     move_policy.w_s_dot),
         ("← self debuff (cost)",  move_policy.w_s_dbf),
+        ("→ self atk buff",       move_policy.w_s_batk),
+        ("→ self def buff",       move_policy.w_s_bdef),
+        ("→ self regen buff",     move_policy.w_s_bheal),
         ("reliability",           move_policy.w_recharge),
     ]
     move_ranked = sorted(move_items, key=lambda x: -x[1])

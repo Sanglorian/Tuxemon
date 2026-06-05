@@ -75,13 +75,13 @@ logger = logging.getLogger(__name__)
 def arbata_huge_size(scaling: ScalingStrategy) -> int:
     """Scaled pixel size for Arbata text in the "huge" style.
 
-    Arbata's glyphs fill only three-quarters of its point size (unitsPerEm
-    1024, ascent + descent 768), so rendering it at the bitmap-tuned huge
-    target (``FONT_SIZE_BIGGEST * 2``) leaves it three-quarters as tall as the
-    bitmap fonts it replaces. Scaling the point size up by 4/3 makes one Arbata
-    pixel map to one grid pixel, so the glyphs fill the intended box.
+    Arbata is a pixel font whose em is 16 design pixels (unitsPerEm 1024, 64
+    units per design pixel), so rendering it at ``FONT_SIZE_BIGGEST * 2`` (16)
+    nominal pixels maps one Arbata design pixel to one nominal pixel. A capital
+    letter, 7 design pixels tall, then measures 7 nominal pixels - the same
+    pixel density as the bitmap fonts it sits alongside.
     """
-    return round(scaling.scale_int(FONT_SIZE_BIGGEST * 2) * 4 / 3)
+    return scaling.scale_int(FONT_SIZE_BIGGEST * 2)
 
 
 @dataclass(frozen=True)
@@ -511,8 +511,8 @@ class Menu(Generic[T], State):
         All classic-``Menu`` text (item/technique names, dialogue via
         ``TextArea``, ``shadow_text`` labels) renders from ``self.font``, so
         re-pointing the font here covers every category. ``arbata_huge_size``
-        scales the point size so Arbata's glyphs fill the same box as the
-        bitmap fonts, matching the journal and world menus.
+        renders Arbata at one design pixel per nominal pixel, matching the
+        journal and world menus.
         """
         self.set_font(
             scaled_size=arbata_huge_size(self.client.context.scaling),

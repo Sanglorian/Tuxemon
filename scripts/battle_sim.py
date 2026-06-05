@@ -809,6 +809,98 @@ DESIGNED_TEAM_DEFS: list[tuple[str, list[str], dict[str, list[str]]]] = [
         "tikorch": ["firestorm", "give_all", "laser_beam", "mind_explosion"],
         "seirein": ["firestorm", "give_all", "laser_beam", "mind_explosion"],
     }),
+
+    # ── Gen-7 ─────────────────────────────────────────────────────────────────
+    # Counter-strategy vs Gen-6 (firestorm/give_all/laser_beam/mind_explosion).
+    #
+    # FULL GEN-6 ATTACK-TYPE BREAKDOWN:
+    #   firestorm      = fire (single type)
+    #   give_all       = heroic (single type)
+    #   laser_beam     = lightning + metal (dual type!)
+    #   mind_explosion = cosmic + wood (dual type!)
+    #
+    # AFFINITY FORMULA: calculate_affinity_score multiplies ALL pairwise (user_type,
+    # target_type) combinations. For dual-type moves vs dual-type targets this means
+    # cancellations can occur: mind_explosion (cosmic+wood) vs venom+shadow =
+    # 2.0 × 0.5 × 0.5 × 1.0 = 0.5 — counter-intuitive but verified in combat logs.
+    #
+    # SAFE DEFENSIVE TYPES: only pure fire and pure lightning have no 2× incoming.
+    #   lightning/water → 2× from laser_beam (lightning→water) + mind_explosion (wood→water)
+    #   lightning/sky   → 2× from laser_beam (lightning→sky)
+    #   lightning/earth → 2× from laser_beam (metal→earth) + mind_explosion (wood→earth)
+    #   Any dual type including water/earth/sky gets hit 2× by at least one Gen-6 move.
+    #
+    # OFFENSIVE PLAN: four-weapon system for Gen-5 AND Gen-6 coverage —
+    #   earthquake (earth, touch):  2× vs Gen-6 pure fire (embra/ruption), OHKO
+    #   lava       (fire, ranged):  2× vs ALL Gen-5 venom; 4× vs Gen-5 metal+venom, OHKO
+    #   supernova  (fire, ranged):  same as lava but higher power (3.0 vs 2.9), lower acc (0.75)
+    #   frostbite  (frost, reach):  2× vs Gen-6 wood+fire (tikoal/tikorch)
+    #
+    # KEY: lava/supernova use RANGED range (user ranged vs target DODGE), not reach (vs armour).
+    # Gen-5 blob dodge=135 vs armour=238 — ranged attacks do 238/135=1.76× more damage!
+    # lava (power=2.9, fire, ranged) vs Gen-5 venom blob: mult=2.0, target_res=135
+    # → vivicinder (ranged=238): int(238×32×2.9×2.0/135) = 327 dmg → OHKO (hp=262)!
+    # → agnidon/drokoro (ranged≈205): int(205×32×2.9×2.0/135) ≈ 281 dmg → OHKO!
+    # → foxfire/joulraton (ranged≈140): 192 dmg → 2-shot (earthquake follows up)
+    # supernova (power=3.0) gives same OHKO + applies burn status to Gen-5.
+    # Having TWO fire ranged moves means 50% of random turns are OHKO vs Gen-5,
+    # achieving 78% win rate vs Gen-5 Orion (vs 34% with single lava, 11% with old moveset).
+    #
+    # firestorm (reach: ranged vs armour, 192 dmg) was dropped — lava/supernova are
+    # strictly better because they target the much lower dodge stat.
+    #
+    # GEN-7 MONSTER SELECTION — pure fire or pure lightning only:
+    #   joulraton (lightning, varmint shape): melee=8 → strong earthquake (touch: melee vs dodge),
+    #     pure lightning so safe from all Gen-6, speed=6 > Gen-6 blob speed=4 → attacks first.
+    #   foxfire   (fire, varmint shape): melee=8, same earthquake power, safe, speed=6.
+    #   agnidon/agnite/drokoro (fire, dragon shape): balanced melee=6/ranged=6, speed=6.
+    #   cobarett/hissiorite/vivicinder (fire, serpent shape): ranged=8 maximises lava
+    #     output (ranged: ranged vs dodge) and frostbite (reach: ranged vs armour);
+    #     safe from all Gen-6 attack components.
+    #
+    # All Gen-7 monsters have speed=6 vs Gen-6 blob speed=4 → always go first.
+    # Pure fire resists firestorm (0.5×) and is neutral to laser_beam and mind_explosion.
+    # Pure lightning is neutral to everything in Gen-6's arsenal (≤ 1×).
+
+    # Andromeda — earthquake + dual-fire OHKO. joulraton (melee=8) OHKOs Gen-6 embra/ruption
+    # via earthquake (earth 2×, touch: melee vs low dodge=135). cobarett (ranged=8) OHKOs ALL
+    # Gen-5 venom blobs with lava/supernova (fire 2×, ranged vs low dodge → 327 dmg > hp=262).
+    ("Andromeda", ["joulraton", "cobarett", "agnidon", "agnite"], {
+        "joulraton": ["earthquake", "lava", "supernova", "frostbite"],
+        "cobarett":  ["earthquake", "lava", "supernova", "frostbite"],
+        "agnidon":   ["earthquake", "lava", "supernova", "frostbite"],
+        "agnite":    ["earthquake", "lava", "supernova", "frostbite"],
+    }),
+
+    # Scorpius — lightning anchor + three fire types. joulraton leads with melee=8
+    # earthquake (OHKO on Gen-6 pure fire); hissiorite (serpent ranged=8) and agnite/drokoro
+    # (dragon ranged≈205) OHKO all Gen-5 venom blobs with lava or supernova.
+    ("Scorpius", ["joulraton", "hissiorite", "agnite", "drokoro"], {
+        "joulraton":  ["earthquake", "lava", "supernova", "frostbite"],
+        "hissiorite": ["earthquake", "lava", "supernova", "frostbite"],
+        "agnite":     ["earthquake", "lava", "supernova", "frostbite"],
+        "drokoro":    ["earthquake", "lava", "supernova", "frostbite"],
+    }),
+
+    # Virgo — all-fire team. foxfire (fire varmint, melee=8) as the earthquake anchor;
+    # vivicinder (ranged=8) + agnidon/drokoro (ranged≈205) OHKO all Gen-5 blobs with lava
+    # or supernova. Dual fire ranged = 50% OHKO chance per turn vs Gen-5.
+    ("Virgo", ["foxfire", "vivicinder", "agnidon", "drokoro"], {
+        "foxfire":   ["earthquake", "lava", "supernova", "frostbite"],
+        "vivicinder":["earthquake", "lava", "supernova", "frostbite"],
+        "agnidon":   ["earthquake", "lava", "supernova", "frostbite"],
+        "drokoro":   ["earthquake", "lava", "supernova", "frostbite"],
+    }),
+
+    # Draco — cross-type pairing. foxfire (fire melee=8) + joulraton (lightning melee=8)
+    # as dual earthquake anchors (OHKO Gen-6 embra/ruption); cobarett (ranged=8) and drokoro
+    # (dragon ranged≈202) OHKO Gen-5 blobs with lava/supernova.
+    ("Draco", ["foxfire", "joulraton", "cobarett", "drokoro"], {
+        "foxfire":   ["earthquake", "lava", "supernova", "frostbite"],
+        "joulraton": ["earthquake", "lava", "supernova", "frostbite"],
+        "cobarett":  ["earthquake", "lava", "supernova", "frostbite"],
+        "drokoro":   ["earthquake", "lava", "supernova", "frostbite"],
+    }),
 ]
 
 
@@ -1604,6 +1696,49 @@ class LearningAIManager(AIManager):
         return super().choose_replacement_monster(character)
 
 
+class SelfPlayAIManager(AIManager):
+    """AIManager for self-play: both sides use the learned policy with separate switch logs."""
+
+    def __init__(
+        self,
+        session: "Any",
+        switch_left: "SwitchPolicy",
+        switch_right: "SwitchPolicy",
+    ) -> None:
+        super().__init__(session)
+        self.switch_left = switch_left
+        self.switch_right = switch_right
+
+    def choose_replacement_monster(self, character: SimNPC) -> "Monster | None":
+        c_session = self.session.client.combat_session
+        available = c_session.get_bench(character)
+        if not available:
+            return None
+
+        is_left = character is c_session.left_player
+        opponents: list["Monster"] = (
+            c_session.field_monsters.get_monsters(c_session.right_player)
+            if is_left
+            else c_session.field_monsters.get_monsters(c_session.left_player)
+        )
+
+        if character.slug == "sim_trainer" and len(available) > 1:
+            sp = self.switch_left if is_left else self.switch_right
+            best = max(available, key=lambda m: sp.score(m, opponents))
+            sp.record(best, opponents)
+            return best
+
+        return super().choose_replacement_monster(character)
+
+
+def _sync_switch_policies(sp_a: "SwitchPolicy", sp_b: "SwitchPolicy") -> None:
+    """Average weights of two switch policies in-place so they stay in sync."""
+    for attr in ("w_type_adv", "w_type_res", "w_hp", "w_cand_disabled", "w_cand_dot"):
+        avg = (getattr(sp_a, attr) + getattr(sp_b, attr)) / 2.0
+        setattr(sp_a, attr, avg)
+        setattr(sp_b, attr, avg)
+
+
 def run_learn(
     n_battles: int, eval_every: int, eval_battles: int,
     team_size: int, level: int, is_double: bool = False,
@@ -1622,16 +1757,17 @@ def run_learn(
 
     print(f"Learn [{fmt}]: {n_battles} training battles | "
           f"eval every {eval_every} | team_size={team_size} | level={level} | lr={lr}")
-    print("  Policy vs Random — REINFORCE on move weights (15) + switch weights (5)\n")
+    print("  Self-play — REINFORCE on move weights (15) + switch weights (5)\n")
     print(f"  {'Battle':>8}  {'Win%':>6}  "
           f"{'── Move ──────────────────────────────':38}  "
           f"── Switch ───────────────────────────")
     print(f"  {'─'*8}  {'─'*6}  {'─'*38}  {'─'*38}")
 
     move_policy = PolicyWeights(lr=lr)
-    switch_policy = SwitchPolicy(lr=lr)
+    switch_a = SwitchPolicy(lr=lr)
+    switch_b = SwitchPolicy(lr=lr)
     move_policy.inject()
-    ai_factory = lambda s: LearningAIManager(s, switch_policy)
+    ai_factory = lambda s: SelfPlayAIManager(s, switch_a, switch_b)
 
     eval_history: list[tuple[int, float]] = []
 
@@ -1641,20 +1777,26 @@ def run_learn(
         if not team_a or not team_b:
             continue
 
-        npc_a = SimNPC("PolicySide", team_a, slug="sim_trainer")
-        npc_b = SimNPC("RandomSide", team_b, slug="rng_trainer")
-        policy_slugs = {m.slug for m in npc_a.monsters}
-        switch_policy.switch_log.clear()
+        npc_a = SimNPC("SelfPlayA", team_a, slug="sim_trainer")
+        npc_b = SimNPC("SelfPlayB", team_b, slug="sim_trainer")
+        slugs_a = {m.slug for m in npc_a.monsters}
+        slugs_b = {m.slug for m in npc_b.monsters}
+        switch_a.switch_log.clear()
+        switch_b.switch_log.clear()
 
         try:
             result = run_battle(npc_a, npc_b, is_double=is_double, ai_factory=ai_factory)
         except Exception:
             continue
 
-        outcome = +1.0 if result.winner is npc_a else (-1.0 if result.winner is npc_b else 0.0)
-        move_policy.update(result.action_log, policy_slugs, outcome)
-        switch_policy.update(outcome)
+        # Zero-sum: winner gets +1, loser gets -1 from their own perspective
+        outcome_a = +1.0 if result.winner is npc_a else (-1.0 if result.winner is npc_b else 0.0)
+        move_policy.update(result.action_log, slugs_a, outcome_a)
+        move_policy.update(result.action_log, slugs_b, -outcome_a)
         move_policy.inject()
+        switch_a.update(outcome_a)
+        switch_b.update(-outcome_a)
+        _sync_switch_policies(switch_a, switch_b)
 
         if i % eval_every == 0:
             ew = et = 0
@@ -1666,11 +1808,11 @@ def run_learn(
                 na = SimNPC("EvalPolicy", ta, slug="sim_trainer")
                 nb = SimNPC("EvalRandom", tb, slug="rng_trainer")
                 sp_eval = SwitchPolicy(
-                    w_type_adv=switch_policy.w_type_adv,
-                    w_type_res=switch_policy.w_type_res,
-                    w_hp=switch_policy.w_hp,
-                    w_cand_disabled=switch_policy.w_cand_disabled,
-                    w_cand_dot=switch_policy.w_cand_dot,
+                    w_type_adv=switch_a.w_type_adv,
+                    w_type_res=switch_a.w_type_res,
+                    w_hp=switch_a.w_hp,
+                    w_cand_disabled=switch_a.w_cand_disabled,
+                    w_cand_dot=switch_a.w_cand_dot,
                 )
                 try:
                     r = run_battle(na, nb, is_double=is_double,
@@ -1683,7 +1825,7 @@ def run_learn(
             win_pct = ew / et * 100 if et else 0.0
             eval_history.append((i, win_pct))
             print(f"  {i:>8}  {win_pct:>5.1f}%  "
-                  f"{move_policy.label():<38}  {switch_policy.label()}")
+                  f"{move_policy.label():<38}  {switch_a.label()}")
 
     # ── Final report ───────────────────────────────────────────────────────────
     print(f"\n── Final move weights ───────────────────────────────")
@@ -1894,44 +2036,50 @@ def _train_policies(
     n_battles: int, team_size: int, level: int,
     is_double: bool = False, lr: float = 0.05,
 ) -> tuple[PolicyWeights, SwitchPolicy]:
-    """Run REINFORCE training and return trained (move_policy, switch_policy)."""
+    """Run self-play REINFORCE training and return trained (move_policy, switch_policy)."""
     pool = get_monster_pool()
     move_policy = PolicyWeights(lr=lr)
-    switch_policy = SwitchPolicy(lr=lr)
+    switch_a = SwitchPolicy(lr=lr)
+    switch_b = SwitchPolicy(lr=lr)
     move_policy.inject()
-    ai_factory = lambda s: LearningAIManager(s, switch_policy)
+    ai_factory = lambda s: SelfPlayAIManager(s, switch_a, switch_b)
 
     milestone = max(1, n_battles // 4)
     wins = total = 0
-    print(f"  Pre-training: {n_battles} battles", end="", flush=True)
+    print(f"  Pre-training (self-play): {n_battles} battles", end="", flush=True)
     for i in range(1, n_battles + 1):
         ta = build_random_team(pool, team_size, level)
         tb = build_random_team(pool, team_size, level)
         if not ta or not tb:
             continue
-        na = SimNPC("PolicySide", ta, slug="sim_trainer")
-        nb = SimNPC("RandomSide", tb, slug="rng_trainer")
-        policy_slugs = {m.slug for m in na.monsters}
-        switch_policy.switch_log.clear()
+        na = SimNPC("SelfPlayA", ta, slug="sim_trainer")
+        nb = SimNPC("SelfPlayB", tb, slug="sim_trainer")
+        slugs_a = {m.slug for m in na.monsters}
+        slugs_b = {m.slug for m in nb.monsters}
+        switch_a.switch_log.clear()
+        switch_b.switch_log.clear()
         try:
             result = run_battle(na, nb, is_double=is_double, ai_factory=ai_factory)
         except Exception:
             continue
-        outcome = +1.0 if result.winner is na else (-1.0 if result.winner is nb else 0.0)
-        if outcome > 0:
+        outcome_a = +1.0 if result.winner is na else (-1.0 if result.winner is nb else 0.0)
+        if outcome_a > 0:
             wins += 1
         total += 1
-        move_policy.update(result.action_log, policy_slugs, outcome)
-        switch_policy.update(outcome)
+        move_policy.update(result.action_log, slugs_a, outcome_a)
+        move_policy.update(result.action_log, slugs_b, -outcome_a)
         move_policy.inject()
+        switch_a.update(outcome_a)
+        switch_b.update(-outcome_a)
+        _sync_switch_policies(switch_a, switch_b)
         if i % milestone == 0:
             print(f" {i//milestone*25}%", end="", flush=True)
 
     win_pct = wins / total * 100 if total else 0.0
     print(f"  final win%={win_pct:.0f}%")
     print(f"    Move:   {move_policy.label()}")
-    print(f"    Switch: {switch_policy.label()}\n")
-    return move_policy, switch_policy
+    print(f"    Switch: {switch_a.label()}\n")
+    return move_policy, switch_a
 
 
 def run_evo(

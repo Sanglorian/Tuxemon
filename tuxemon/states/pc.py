@@ -81,5 +81,5 @@ class PCState(PygameMenuState):
         menu_items = self.menu_builder.build_menu_items()
         arbata = transform_resource_filename("font", "Arbata.ttf")
         add_menu_items(
-            self.menu, menu_items, arbata, self.font_type.biggest * 2
+            self.menu, menu_items, arbata, self.font_type.arbata_huge
         )

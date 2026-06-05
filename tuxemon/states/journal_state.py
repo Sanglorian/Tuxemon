@@ -62,7 +62,7 @@ class JournalState(PygameMenuState):
                             monster=mon,
                             source=self.name,
                         ),
-                        font_size=self.font_type.biggest * 2,
+                        font_size=self.font_type.arbata_huge,
                         font_name=arbata,
                         button_id=mon.slug,
                     ).translate(btn_x_offset, btn_y_offset)
@@ -75,7 +75,7 @@ class JournalState(PygameMenuState):
                             monster=mon,
                             source=self.name,
                         ),
-                        font_size=self.font_type.biggest * 2,
+                        font_size=self.font_type.arbata_huge,
                         font_name=arbata,
                         button_id=mon.slug,
                         underline=True,
@@ -91,7 +91,7 @@ class JournalState(PygameMenuState):
                 label = f"{mon.txmn_id}. -----"
                 lab: Any = menu.add.label(
                     label,
-                    font_size=self.font_type.biggest * 2,
+                    font_size=self.font_type.arbata_huge,
                     font_name=arbata,
                     font_color=DIMGRAY_COLOR,
                     label_id=mon.slug,

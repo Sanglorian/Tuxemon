@@ -67,8 +67,21 @@ if TYPE_CHECKING:
     from tuxemon.menu.alert import AlertManager
     from tuxemon.platform.events import PlayerInput
     from tuxemon.prepare import DisplayContext
+    from tuxemon.scaling import ScalingStrategy
 
 logger = logging.getLogger(__name__)
+
+
+def arbata_huge_size(scaling: ScalingStrategy) -> int:
+    """Scaled pixel size for Arbata text in the "huge" style.
+
+    Arbata's glyphs fill only three-quarters of its point size (unitsPerEm
+    1024, ascent + descent 768), so rendering it at the bitmap-tuned huge
+    target (``FONT_SIZE_BIGGEST * 2``) leaves it three-quarters as tall as the
+    bitmap fonts it replaces. Scaling the point size up by 4/3 makes one Arbata
+    pixel map to one grid pixel, so the glyphs fill the intended box.
+    """
+    return round(scaling.scale_int(FONT_SIZE_BIGGEST * 2) * 4 / 3)
 
 
 @dataclass(frozen=True)
@@ -79,6 +92,7 @@ class FontSettings:
     big: int
     bigger: int
     biggest: int
+    arbata_huge: int
 
     @classmethod
     def from_context(cls, context: DisplayContext) -> FontSettings:
@@ -90,6 +104,7 @@ class FontSettings:
             big=s(FONT_SIZE_BIG),
             bigger=s(FONT_SIZE_BIGGER),
             biggest=s(FONT_SIZE_BIGGEST),
+            arbata_huge=arbata_huge_size(context.scaling),
         )
 
 
@@ -495,12 +510,13 @@ class Menu(Generic[T], State):
 
         All classic-``Menu`` text (item/technique names, dialogue via
         ``TextArea``, ``shadow_text`` labels) renders from ``self.font``, so
-        re-pointing the font here covers every category. ``FONT_SIZE_BIGGEST *
-        2`` (16 nominal px) keeps Arbata pixel-perfect, matching the journal
-        and world menus.
+        re-pointing the font here covers every category. ``arbata_huge_size``
+        scales the point size so Arbata's glyphs fill the same box as the
+        bitmap fonts, matching the journal and world menus.
         """
         self.set_font(
-            size=FONT_SIZE_BIGGEST * 2, font=fetch_asset("font", "Arbata.ttf")
+            scaled_size=arbata_huge_size(self.client.context.scaling),
+            font=fetch_asset("font", "Arbata.ttf"),
         )
         # text_renderer is a cached_property built from self.font; drop it so
         # it is rebuilt with the new font on next use.
@@ -779,6 +795,7 @@ class Menu(Generic[T], State):
         size: int = FONT_SIZE,
         font: str | None = None,
         line_spacing: int = 10,
+        scaled_size: int | None = None,
     ) -> Font:
         """
         Set the font properties that the menu uses.
@@ -790,21 +807,28 @@ class Menu(Generic[T], State):
             size: The font size in pixels.
             font: Path to the typeface file (.ttf).
             line_spacing: The spacing in pixels between lines of text.
+            scaled_size: An already-scaled font size in pixels. When given it
+                is used verbatim, bypassing the screen-scale and large_gui
+                adjustments applied to ``size``.
 
         .. image:: images/menu/set_font.png
         """
         if font is None:
             font = self.font_filename
 
-        if size < self.min_font_size:
-            size = self.min_font_size
-
         self.line_spacing = self.client.context.scaling.scale_int(line_spacing)
 
-        if self.client.config.large_gui:
-            self.font_size = self.client.context.scaling.scale_int(size + 1)
+        if scaled_size is not None:
+            self.font_size = scaled_size
         else:
-            self.font_size = self.client.context.scaling.scale_int(size)
+            if size < self.min_font_size:
+                size = self.min_font_size
+            if self.client.config.large_gui:
+                self.font_size = self.client.context.scaling.scale_int(
+                    size + 1
+                )
+            else:
+                self.font_size = self.client.context.scaling.scale_int(size)
 
         self.font = Font(font, self.font_size)
         return self.font

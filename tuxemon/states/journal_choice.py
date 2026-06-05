@@ -68,7 +68,7 @@ class JournalChoice(PygameMenuState):
         # Badges are ordinary labels; the drop shadow comes from the theme's
         # font shadow (pixel-perfect, see tuxemon.menu.widgets).
         biggest = self.font_type.biggest
-        huge = biggest * 2
+        huge = self.font_type.arbata_huge
 
         def badge(
             title: str, font_name: str, font_size: int, x: int, y: int
@@ -119,14 +119,14 @@ class JournalChoice(PygameMenuState):
                         monsters=monsters,
                         page=page,
                     ),
-                    font_size=self.font_type.biggest * 2,
+                    font_size=self.font_type.arbata_huge,
                     font_name=arbata,
                 ).translate(btn_x_offset, btn_y_offset)
             else:
                 lab1: Any = menu.add.label(
                     label,
                     font_color=DIMGRAY_COLOR,
-                    font_size=self.font_type.biggest * 2,
+                    font_size=self.font_type.arbata_huge,
                     font_name=arbata,
                 )
                 lab1.translate(btn_x_offset, btn_y_offset)

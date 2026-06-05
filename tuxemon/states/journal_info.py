@@ -200,7 +200,7 @@ class JournalInfoState(PygameMenuState):
         lab6: Any = menu.add.label(
             title=shape,
             label_id="shape",
-            font_size=self.font_type.biggest * 2,
+            font_size=self.font_type.arbata_huge,
             align=ALIGN_LEFT,
             font_name=arbata,
             float=True,
@@ -215,7 +215,7 @@ class JournalInfoState(PygameMenuState):
         lab7: Any = menu.add.label(
             title=species,
             label_id="species",
-            font_size=self.font_type.biggest * 2,
+            font_size=self.font_type.arbata_huge,
             align=ALIGN_LEFT,
             font_name=arbata,
             float=True,
@@ -253,7 +253,7 @@ class JournalInfoState(PygameMenuState):
         lab9: Any = menu.add.label(
             title=desc,
             label_id="description",
-            font_size=self.font_type.biggest * 2,
+            font_size=self.font_type.arbata_huge,
             font_name=arbata,
             wordwrap=True,
             align=ALIGN_LEFT,
@@ -272,7 +272,7 @@ class JournalInfoState(PygameMenuState):
         lab10: Any = menu.add.label(
             title=self._safe_display(evolution_text),
             label_id="evolution",
-            font_size=self.font_type.biggest * 2,
+            font_size=self.font_type.arbata_huge,
             font_name=arbata,
             wordwrap=True,
             align=ALIGN_LEFT,

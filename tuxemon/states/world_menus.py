@@ -104,12 +104,10 @@ class WorldMenuState(PygameMenuState):
         display = self.menu_manager.build_current_menu_items(self.char)
         resolution = self.client.context.resolution
         font_name = fetch_asset("font", "Arbata.ttf")
-        # Arbata's native pixel grid is 16px, twice that of the bitmap fonts
-        # like PressStart2P (8px). The size constants (e.g. biggest == 8) are
-        # tuned to those 8px fonts, so Arbata only renders pixel-perfect at
-        # multiples of 16. biggest is 8 * scale, so doubling it gives 16 *
-        # scale: always a clean multiple of 16 and crisp at any resolution.
-        font_size = self.font_type.biggest * 2
+        # Arbata's glyphs fill only three-quarters of its point size, so the
+        # bitmap-tuned huge size is scaled up by 4/3 (see arbata_huge_size) to
+        # make one Arbata pixel map to one grid pixel.
+        font_size = self.font_type.arbata_huge
         # Tighten the vertical gap (top/bottom padding) so all entries fit on
         # screen at this larger font size; (4, 20) is (top&bottom, left&right).
         padding = (4, 20)

@@ -234,7 +234,7 @@ class ItemTakeState(PygameMenuState):
 
     def add_menu_items(self, menu: Menu, items: Sequence[Item]) -> None:
         arbata = transform_resource_filename("font", "Arbata.ttf")
-        huge = self.font_type.biggest * 2
+        huge = self.font_type.arbata_huge
         handler = ItemActionHandler(
             self.client, self.char, self.box_name, self.name
         )
@@ -291,7 +291,7 @@ class ItemBoxState(PygameMenuState):
         items: Sequence[tuple[str, MenuGameObj]],
     ) -> None:
         arbata = transform_resource_filename("font", "Arbata.ttf")
-        huge = self.font_type.biggest * 2
+        huge = self.font_type.arbata_huge
         menu.add.vertical_fill()
         for key, callback in items:
             num_itms = self.char.item_boxes.get_items(key)

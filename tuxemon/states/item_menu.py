@@ -20,7 +20,6 @@ from tuxemon.platform.const import buttons
 from tuxemon.platform.const.graphics import (
     BG_ITEMS,
     BG_ITEMS_BACKPACK,
-    DIMGRAY_COLOR,
     FONT_SHADOW_COLOR,
     MISSING_IMAGE,
 )
@@ -336,7 +335,7 @@ class ItemMenuState(Menu[Item]):
     ) -> MenuItem[Item]:
         name = f"{prefix}{item.name}"
         label = f"{name} x {item.quantity}" if show_quantity else name
-        image = self.shadow_text(label, bg=DIMGRAY_COLOR)
+        image = self.shadow_text(label)
         return MenuItem(
             image=image,
             label=name,

@@ -104,8 +104,8 @@ class WorldMenuState(PygameMenuState):
         display = self.menu_manager.build_current_menu_items(self.char)
         resolution = self.client.context.resolution
         font_name = fetch_asset("font", "Arbata.ttf")
-        # Arbata's em is 16 design pixels, so rendering it at this size maps one
-        # design pixel to one nominal pixel (see arbata_huge_size).
+        # Sized so a capital renders at its full seven-row height (7 px per
+        # display scale step); see arbata_huge_size.
         font_size = self.font_type.arbata_huge
         # Tighten the vertical gap (top/bottom padding) so all entries fit on
         # screen at this larger font size; (4, 20) is (top&bottom, left&right).

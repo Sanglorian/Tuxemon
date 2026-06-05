@@ -21,6 +21,7 @@ from tuxemon.platform.const.graphics import (
     BG_ITEMS,
     BG_ITEMS_BACKPACK,
     DIMGRAY_COLOR,
+    FONT_SHADOW_COLOR,
     MISSING_IMAGE,
 )
 from tuxemon.platform.const.sizes import MAX_MENU_ITEMS
@@ -84,7 +85,7 @@ class ItemMenuState(Menu[Item]):
             font_color=self.font_color,
             rect=rect,
             scaling=self.client.context.scaling,
-            font_shadow=(96, 96, 128),
+            font_shadow=FONT_SHADOW_COLOR,
         )
         self.sprites.add(self.text_area, layer=100)
         self.page_number_display = TextArea(

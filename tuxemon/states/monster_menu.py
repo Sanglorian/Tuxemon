@@ -20,7 +20,11 @@ from tuxemon.menu.menu import Menu
 from tuxemon.monster.filter import MonsterFilter
 from tuxemon.monster.monster import Monster
 from tuxemon.monster.renderer import MonsterRenderer
-from tuxemon.platform.const.graphics import BG_MONSTERS, TRANSPARENT_COLOR
+from tuxemon.platform.const.graphics import (
+    BG_MONSTERS,
+    FONT_SHADOW_COLOR,
+    TRANSPARENT_COLOR,
+)
 from tuxemon.platform.const.sizes import PARTY_LIMIT
 from tuxemon.sprite import Sprite
 from tuxemon.tools import open_choice_dialog, open_dialog
@@ -81,7 +85,7 @@ class MonsterMenuState(Menu[Monster | None]):
             font_color=self.font_color,
             rect=Rect(rect),
             scaling=self.client.context.scaling,
-            font_shadow=(96, 96, 96),
+            font_shadow=FONT_SHADOW_COLOR,
         )
         self.sprites.add(self.text_area, layer=100)
         self.monster_stats_display = MonsterStatsDisplay(self)

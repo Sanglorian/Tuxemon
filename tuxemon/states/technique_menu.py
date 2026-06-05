@@ -14,6 +14,7 @@ from tuxemon.monster.renderer import MonsterRenderer
 from tuxemon.platform.const.graphics import (
     BG_MOVES,
     DIMGRAY_COLOR,
+    FONT_SHADOW_COLOR,
     MISSING_IMAGE,
 )
 from tuxemon.session import local_session
@@ -72,7 +73,7 @@ class TechniqueMenuState(Menu[Technique]):
             font_color=self.font_color,
             rect=rect,
             scaling=self.client.context.scaling,
-            font_shadow=(96, 96, 128),
+            font_shadow=FONT_SHADOW_COLOR,
         )
         self.sprites.add(self.text_area, layer=100)
 

@@ -1,0 +1,81 @@
+# SPDX-License-Identifier: GPL-3.0
+# Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
+from unittest.mock import MagicMock, patch
+from uuid import uuid4
+
+from tuxemon.event.actions.dojo_method import DojoMethodAction
+from tuxemon.monster.stats import BasicStats, TrainingPoints
+
+
+def make_action(option="tp"):
+    action = DojoMethodAction(variable_name="mon", option=option)
+    action.client = MagicMock()
+    action.player = MagicMock()
+    action.monster = MagicMock()
+    action.monster.name = "agnite"
+    action.monster.training_points = TrainingPoints(
+        armour=40, speed=30, hp=20, melee=10
+    )
+    return action
+
+
+def test_reset_tps_single_stat():
+    action = make_action()
+
+    action.reset_tps("armour")
+
+    tp = action.monster.training_points
+    assert tp.armour == 0
+    assert tp.speed == 30 and tp.hp == 20 and tp.melee == 10
+    action.monster.set_stats.assert_called_once()
+    action.client.pop_state.assert_called_once()
+
+
+def test_reset_tps_all_stats():
+    action = make_action()
+
+    action.reset_tps(None)
+
+    assert action.monster.training_points.sum() == 0
+    action.monster.set_stats.assert_called_once()
+    action.client.pop_state.assert_called_once()
+
+
+def make_session(monster):
+    session = MagicMock()
+    session.player.game_variables = {"mon": uuid4().hex}
+    session.client.get_monster_by_iid.return_value = monster
+    return session
+
+
+def test_tp_option_builds_menu_with_all_stats():
+    action = make_action()
+    monster = action.monster
+    session = make_session(monster)
+
+    captured = {}
+
+    def fake_create(actions):
+        captured["keys"] = list(actions.keys())
+        return []
+
+    with patch(
+        "tuxemon.event.actions.dojo_method.create_choice_options",
+        side_effect=fake_create,
+    ), patch(
+        "tuxemon.event.actions.dojo_method.open_choice_dialog"
+    ) as open_dialog:
+        action.start(session)
+
+    assert captured["keys"] == BasicStats.names() + ["dojo_tp_all"]
+    open_dialog.assert_called_once()
+
+
+def test_invalid_option_stops():
+    action = make_action(option="bogus")
+    monster = action.monster
+    session = make_session(monster)
+
+    action.start(session)
+
+    assert action._done is True

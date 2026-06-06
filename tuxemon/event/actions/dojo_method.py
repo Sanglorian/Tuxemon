@@ -12,6 +12,7 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.locale.locale import T
 from tuxemon.menu.interface import MenuItem
 from tuxemon.monster.monster import Monster
+from tuxemon.monster.stats import BasicStats
 from tuxemon.states.technique_menu import TechniqueMenuState
 from tuxemon.technique.technique import Technique
 from tuxemon.tools import get_valid_uuid, open_choice_dialog
@@ -41,11 +42,13 @@ class DojoMethodAction(EventAction):
             The name of the variable where the monster ID will be stored.
 
         option:
-            The action to perform. Can be either:
+            The action to perform. Can be one of:
 
             - "technique": Learn any move the monster hasn't acquired from its base
               moveset, without restrictions based on level or evolution stage.
             - "monster": Devolve the monster.
+            - "tp": Reset the monster's training points (TP) to zero. Opens a
+              menu to pick a single statistic or all statistics.
     """
 
     name = "dojo_method"
@@ -74,8 +77,10 @@ class DojoMethodAction(EventAction):
 
         self.monster = monster
 
-        if self.option not in ["monster", "technique"]:
-            logger.error(f"{self.option} must be 'monster' or 'technique'")
+        if self.option not in ["monster", "technique", "tp"]:
+            logger.error(
+                f"{self.option} must be 'monster', 'technique' or 'tp'"
+            )
             self.stop()
             return
 
@@ -100,7 +105,7 @@ class DojoMethodAction(EventAction):
                     on_selection=self.get_tech,
                 )
             )
-        else:
+        elif self.option == "monster":
             actions = {
                 mon.slug: partial(self.devolve, mon.slug)
                 for mon in monster.history
@@ -124,9 +129,32 @@ class DojoMethodAction(EventAction):
 
             open_choice_dialog(session.client, MenuOptions(menu_options))
 
+        else:
+            actions = {
+                name: partial(self.reset_tps, name)
+                for name in BasicStats.names()
+            }
+            actions["dojo_tp_all"] = partial(self.reset_tps, None)
+
+            menu_options = create_choice_options(actions)
+            for opt in menu_options:
+                opt.display_text = T.translate(opt.key)
+
+            open_choice_dialog(session.client, MenuOptions(menu_options))
+
     def update(self, session: Session, dt: float) -> None:
         if "DialogState" not in session.client.active_state_names:
             self.stop()
+
+    def reset_tps(self, stat: str | None) -> None:
+        stats = BasicStats.names() if stat is None else [stat]
+        for name in stats:
+            self.monster.training_points.set_stat(name, 0)
+        self.monster.training_points.validate()
+        self.monster.set_stats()
+        logger.info(f"{self.monster.name}'s training points reset: {stats}")
+        self.client.sound_manager.play("sound_confirm")
+        self.client.pop_state()
 
     def devolve(self, slug: str) -> None:
         devolution = Monster.spawn_base(slug, self.monster.level)

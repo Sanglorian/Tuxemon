@@ -103,8 +103,8 @@ def handle_fatal_error(e: Exception) -> None:
 
     logger.error(full_error)
 
+    error_log = Path.home() / "tuxemon_error.log"
     try:
-        error_log = Path.home() / "tuxemon_error.log"
         error_log.write_text(full_error, encoding="utf-8")
         print(f"Error details saved to: {error_log}", file=sys.stderr)
     except Exception:
@@ -114,7 +114,7 @@ def handle_fatal_error(e: Exception) -> None:
         try:
             import ctypes
 
-            msg = f"{error_msg}\n\nSee tuxemon_error.log in your home folder for details."
+            msg = f"{error_msg}\n\nLog saved to:\n{error_log}"
             ctypes.windll.user32.MessageBoxW(0, msg, "Tuxemon Error", 1)
         except Exception:
             pass

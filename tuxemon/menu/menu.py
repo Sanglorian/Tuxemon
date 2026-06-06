@@ -75,12 +75,20 @@ logger = logging.getLogger(__name__)
 def arbata_huge_size(scaling: ScalingStrategy) -> int:
     """Scaled pixel size for Arbata text in the "huge" style.
 
-    Arbata's capital letters are seven design-pixel rows tall. To stay
-    pixel-perfect at an integer display scale ``s`` each row must occupy ``s``
-    screen pixels, so a capital has to render ``7 * s`` pixels tall. At
-    ``scale_int(FONT_SIZE_BIGGEST * 2)`` Arbata's capital only renders six rows'
-    worth (``6 * s``) - the seven rows squashed into six - so scale the point
-    size by 7/6 to give the capital back its full seven-row height.
+    Arbata is a pixel font and renders pixel-perfect only at its designed size,
+    which its editor reports as "14 pt at 96 DPI" (and integer multiples). In
+    pixels that em is ``14 * 96 / 72 = 18.667`` px, at which each of the font's
+    pixel-rows maps to exactly one screen pixel - so a seven-row capital is
+    seven pixels tall. pygame/SDL_ttf sizes a font by its em height in pixels
+    (72 DPI), so the pixel-perfect size for display scale ``s`` is
+    ``18.667 * s`` px.
+
+    ``scale_int(FONT_SIZE_BIGGEST * 2)`` is ``16 * s`` px; multiplying by 7/6
+    gives ``16 * 7/6 = 18.667``, i.e. the font's real design em. (The 7/6 is
+    that em conversion, not a tuning fudge.) pygame only accepts an integer
+    point size, so the result is rounded: it is exactly on-grid at scales 3 and
+    6 (em 56 and 112 px, 3 and 6 px per row) and within a third of a pixel
+    elsewhere, still rendering the correct ``7 * s`` capital height.
     """
     return round(scaling.scale_int(FONT_SIZE_BIGGEST * 2) * 7 / 6)
 

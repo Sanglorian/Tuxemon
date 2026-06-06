@@ -26,11 +26,16 @@ if TYPE_CHECKING:
 @dataclass
 class MenuNpcConfig:
     max_elements: int = 12
-    max_height_percentage: float = 0.8
+    max_height_percentage: float = 1.0
     number_widgets: int = 3
     number_columns: int = 4
     scale_sprite: float = 1.0
-    vertical_fill: int = 10
+    vertical_fill: int = 5
+    # (vertical, horizontal) padding around each widget. Vertical is kept at
+    # 0 so two rows of full-size sprites fit within the frame height.
+    widget_padding: tuple[int, int] = (0, 20)
+    # Make the selection pane span the whole frame rather than shrink-wrap.
+    fill_frame: bool = True
 
 
 class ChoiceNpc(PygameMenuState):
@@ -55,17 +60,23 @@ class ChoiceNpc(PygameMenuState):
             * self.config.number_widgets
         )
 
+        width, height = client.context.resolution
+
         super().__init__(
             client=client,
+            width=width,
+            height=height,
             columns=self.config.number_columns,
             rows=rows,
             transition=PopInClamped(
-                max_height_percentage=self.config.max_height_percentage
+                max_height_percentage=self.config.max_height_percentage,
+                fill_screen=self.config.fill_frame,
             ),
             **kwargs,
         )
 
         theme = get_theme(self.client.context.scaling).copy()
+        theme.widget_padding = self.config.widget_padding
 
         if len(menu.options) > self.config.max_elements:
             theme.scrollarea_position = POSITION_EAST

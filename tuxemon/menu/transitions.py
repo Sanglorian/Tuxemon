@@ -19,26 +19,35 @@ class MenuTransition(Protocol):
 class PopInClamped:
     """Zoom-in animation that scales the menu while clamping size to screen bounds."""
 
-    def __init__(self, max_height_percentage: float = 0.8) -> None:
+    def __init__(
+        self,
+        max_height_percentage: float = 0.8,
+        fill_screen: bool = False,
+    ) -> None:
         self._base_size: tuple[int, int] | None = None
         self.max_height_percentage = max_height_percentage
+        self.fill_screen = fill_screen
 
     def apply(
         self, menu: Menu, progress: float, context: DisplayContext
     ) -> None:
 
-        if self._base_size is None:
-            size = menu.get_size(widget=True)
-            self._base_size = (int(size[0]), int(size[1]))
-
-        assert self._base_size is not None
-        base_w, base_h = self._base_size
-
         screen_w, screen_h = context.resolution
 
-        # Clamp base size to screen bounds
-        base_w = min(base_w, screen_w)
-        base_h = min(base_h, int(screen_h * self.max_height_percentage))
+        if self.fill_screen:
+            # Pane fills the frame instead of shrink-wrapping the content.
+            base_w = screen_w
+            base_h = int(screen_h * self.max_height_percentage)
+        else:
+            if self._base_size is None:
+                size = menu.get_size(widget=True)
+                self._base_size = (int(size[0]), int(size[1]))
+
+            base_w, base_h = self._base_size
+
+            # Clamp base size to screen bounds
+            base_w = min(base_w, screen_w)
+            base_h = min(base_h, int(screen_h * self.max_height_percentage))
 
         # Avoid zero scale
         scale = max(0.01, progress)

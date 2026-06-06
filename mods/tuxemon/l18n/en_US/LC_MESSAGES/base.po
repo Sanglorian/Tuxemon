@@ -16774,6 +16774,12 @@ msgstr "You'll need a tuxemon with you before I can do anything."
 msgid "dojo_tp_all"
 msgstr "All Stats"
 
+msgid "dojo_tp_all_stats"
+msgstr "all stats"
+
+msgid "dojo_tp_reset_done"
+msgstr "Training in {{stat}} set back to zero."
+
 msgid "spyder_dojo_fu_nochoice"
 msgstr ""
 "I'm ready to assist you, but please, choose the tuxemon that will undergo "

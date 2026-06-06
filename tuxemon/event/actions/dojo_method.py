@@ -15,7 +15,7 @@ from tuxemon.monster.monster import Monster
 from tuxemon.monster.stats import BasicStats
 from tuxemon.states.technique_menu import TechniqueMenuState
 from tuxemon.technique.technique import Technique
-from tuxemon.tools import get_valid_uuid, open_choice_dialog
+from tuxemon.tools import get_valid_uuid, open_choice_dialog, open_dialog
 from tuxemon.ui.menu_options import MenuOptions, create_choice_options
 
 if TYPE_CHECKING:
@@ -147,7 +147,12 @@ class DojoMethodAction(EventAction):
             self.stop()
 
     def reset_tps(self, stat: str | None) -> None:
-        stats = BasicStats.names() if stat is None else [stat]
+        if stat is None:
+            stats = BasicStats.names()
+            label = T.translate("dojo_tp_all_stats")
+        else:
+            stats = [stat]
+            label = T.translate(stat)
         for name in stats:
             self.monster.training_points.set_stat(name, 0)
         self.monster.training_points.validate()
@@ -155,6 +160,10 @@ class DojoMethodAction(EventAction):
         logger.info(f"{self.monster.name}'s training points reset: {stats}")
         self.client.sound_manager.play("sound_confirm")
         self.client.pop_state()
+        open_dialog(
+            self.client,
+            [T.format("dojo_tp_reset_done", {"stat": label})],
+        )
 
     def devolve(self, slug: str) -> None:
         devolution = Monster.spawn_base(slug, self.monster.level)

@@ -22,23 +22,48 @@ def make_action(option="tp"):
 def test_reset_tps_single_stat():
     action = make_action()
 
-    action.reset_tps("armour")
+    with patch(
+        "tuxemon.event.actions.dojo_method.open_dialog"
+    ) as open_dialog, patch(
+        "tuxemon.event.actions.dojo_method.T"
+    ) as mock_t:
+        mock_t.translate.side_effect = lambda key: key
+        mock_t.format.side_effect = lambda key, params: f"{key}:{params}"
+        action.reset_tps("armour")
 
     tp = action.monster.training_points
     assert tp.armour == 0
     assert tp.speed == 30 and tp.hp == 20 and tp.melee == 10
     action.monster.set_stats.assert_called_once()
     action.client.pop_state.assert_called_once()
+    # Feedback dialog is shown after the reset, with the stat label.
+    mock_t.format.assert_called_once_with(
+        "dojo_tp_reset_done", {"stat": "armour"}
+    )
+    open_dialog.assert_called_once()
+    assert open_dialog.call_args.args[1] == ["dojo_tp_reset_done:{'stat': 'armour'}"]
 
 
 def test_reset_tps_all_stats():
     action = make_action()
 
-    action.reset_tps(None)
+    with patch(
+        "tuxemon.event.actions.dojo_method.open_dialog"
+    ) as open_dialog, patch(
+        "tuxemon.event.actions.dojo_method.T"
+    ) as mock_t:
+        mock_t.translate.side_effect = lambda key: key
+        mock_t.format.side_effect = lambda key, params: f"{key}:{params}"
+        action.reset_tps(None)
 
     assert action.monster.training_points.sum() == 0
     action.monster.set_stats.assert_called_once()
     action.client.pop_state.assert_called_once()
+    # "all stats" label is used when resetting everything.
+    mock_t.format.assert_called_once_with(
+        "dojo_tp_reset_done", {"stat": "dojo_tp_all_stats"}
+    )
+    open_dialog.assert_called_once()
 
 
 def make_session(monster):

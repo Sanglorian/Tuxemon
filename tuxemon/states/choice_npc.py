@@ -29,7 +29,7 @@ class MenuNpcConfig:
     max_height_percentage: float = 0.8
     number_widgets: int = 3
     number_columns: int = 4
-    scale_sprite: float = 0.4
+    scale_sprite: float = 1.0
     vertical_fill: int = 10
 
 

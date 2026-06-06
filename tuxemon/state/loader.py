@@ -63,11 +63,16 @@ class StateLoader:
 
         if state_folder.is_dir():
             plugin_folders.append(state_folder)
-            core_includes = [
+            # Scan both .py and .pyc files; cx_Freeze frozen builds may only
+            # have .pyc files on disk.  Using iterdir() instead of glob("*.py")
+            # ensures bytecode-only builds are handled correctly.
+            core_includes = list({
                 f.stem
-                for f in state_folder.glob("*.py")
-                if f.is_file() and f.stem != "State"
-            ]
+                for f in state_folder.iterdir()
+                if f.is_file()
+                and f.suffix in (".py", ".pyc")
+                and f.stem not in ("State", "__init__")
+            })
         else:
             logger.warning(
                 f"State discovery path does not exist: {state_folder}"
@@ -79,12 +84,15 @@ class StateLoader:
             subfolder=None,
         )
 
-        mod_includes = [
+        mod_includes = list({
             f.stem
             for folder in mod_state_folders
-            for f in folder.glob("*.py")
-            if f.is_file() and f.stem != "__init__"
-        ]
+            if folder.is_dir()
+            for f in folder.iterdir()
+            if f.is_file()
+            and f.suffix in (".py", ".pyc")
+            and f.stem != "__init__"
+        })
 
         core_pm = self._build_plugin_manager(
             folders=[state_folder],

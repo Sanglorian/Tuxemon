@@ -274,10 +274,13 @@ class PluginManager:
             module = self.loader.load_plugin(module_name)
             self._loaded_modules[module_name] = module
             return module
-        except ImportError:
+        except Exception as primary_err:
             # import_module fails for mod plugins in frozen builds because
             # mods/ is not a Python package on sys.path. Fall back to loading
             # directly from the source file recorded in _origins.
+            logger.debug(
+                f"Primary load failed for '{module_name}': {primary_err}"
+            )
             file_path = self._origins.get(module_name)
             if file_path is not None and file_path.exists():
                 try:
@@ -294,7 +297,9 @@ class PluginManager:
                     logger.error(
                         f"File-based loading failed for '{module_name}': {e2}"
                     )
-            logger.error(f"Skipping module '{module_name}'")
+            logger.error(
+                f"Skipping module '{module_name}': {primary_err}"
+            )
             return None
 
     def get_all_plugins(

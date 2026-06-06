@@ -16778,7 +16778,7 @@ msgid "dojo_tp_all_stats"
 msgstr "all stats"
 
 msgid "dojo_tp_reset_done"
-msgstr "Training in {{stat}} set back to zero."
+msgstr "Training in {stat} set back to zero."
 
 msgid "spyder_dojo_fu_nochoice"
 msgstr ""

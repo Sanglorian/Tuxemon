@@ -710,4 +710,3 @@ def npc_to_pgrect(
     """Returns a Rect (in screen-coords) version of an NPC's bounding box."""
     pos = get_pos_from_tilepos(current_map, context, npc.position)
     return Rect(pos, context.tile_size)
-    return Rect(pos, context.tile_size)

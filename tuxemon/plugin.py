@@ -329,11 +329,20 @@ class PluginManager:
         """
         Extract all classes from a module that match the interface.
         """
-        predicate = (
-            inspect.isclass
-            if interface is PluginObject
-            else lambda c: inspect.isclass(c) and issubclass(c, interface)
-        )
+        if interface is PluginObject:
+            predicate = inspect.isclass
+        else:
+            def predicate(c: object) -> bool:
+                if not inspect.isclass(c):
+                    return False
+                try:
+                    return issubclass(c, interface)  # type: ignore[arg-type]
+                except TypeError:
+                    # C-extension types and some metaclasses can cause
+                    # ABCMeta.__subclasscheck__ to raise TypeError even
+                    # though inspect.isclass() returned True.
+                    return False
+
         return inspect.getmembers(module, predicate=predicate)
 
     def _get_plugins_from_module(

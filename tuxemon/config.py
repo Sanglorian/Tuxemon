@@ -595,6 +595,18 @@ class LoggingConfig:
         if self.debug_logging:
             warnings.filterwarnings("default")
 
+        # In frozen builds, automatically write INFO-level logs to a file so
+        # problems can be diagnosed without changing tuxemon.yaml.
+        if hasattr(sys, "frozen") and sys.frozen and not self.log_to_file:
+            frozen_formatter = Formatter(
+                "[%(asctime)s] %(name)s - %(levelname)s - %(message)s"
+            )
+            self._setup_file_logging(
+                logging.getLogger(),
+                frozen_formatter,
+                logging.INFO,
+            )
+
         for logger_name in self.loggers:
             if logger_name == "all":
                 print("Enabling logging of all modules.")

@@ -274,7 +274,7 @@ class PluginManager:
             module = self.loader.load_plugin(module_name)
             self._loaded_modules[module_name] = module
             return module
-        except Exception as primary_err:
+        except ImportError as primary_err:
             # import_module fails for mod plugins in frozen builds because
             # mods/ is not a Python package on sys.path. Fall back to loading
             # directly from the source file recorded in _origins.

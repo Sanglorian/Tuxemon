@@ -255,6 +255,13 @@ class EventEngine:
             )
 
         if all_met and event.id not in self.running_events:
+            cond_summary = [
+                f"{rc.map_condition.type}={rc.result}"
+                for rc in running_conditions
+            ]
+            logger.info(
+                f"Event '{event.name}' firing. Conditions: {cond_summary}"
+            )
             self.start_event(event)
             if is_global:
                 self.triggered_global_events.add(event.id)

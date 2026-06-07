@@ -51,6 +51,9 @@ class ConditionManager:
         self.conditions: Mapping[str, type[EventCondition]] = (
             manager.get_class_map(interface=EventCondition)
         )
+        logger.info(
+            f"Registered event conditions: {sorted(self.conditions.keys())}"
+        )
 
     def get_condition(
         self, cond_data: SpatialCondition

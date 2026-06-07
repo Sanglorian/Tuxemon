@@ -56,6 +56,9 @@ class BehaviorManager:
         self.behaviors: Mapping[str, type[EventBehavior]] = (
             manager.get_class_map(interface=EventBehavior)
         )
+        logger.info(
+            f"Registered event behaviors: {sorted(self.behaviors.keys())}"
+        )
 
     def get_behavior(self, name: str) -> EventBehavior | None:
         try:

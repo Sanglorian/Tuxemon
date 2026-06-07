@@ -308,4 +308,10 @@ class ConditionEvaluator:
         finally:
             self.session.current_condition_box = None
 
-        return result == condition.is_expected
+        final = result == condition.is_expected
+        logger.debug(
+            f"Condition '{map_condition.type}': "
+            f"test={result}, is_expected={condition.is_expected}, "
+            f"box={map_condition.box}, final={final}"
+        )
+        return final

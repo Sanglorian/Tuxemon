@@ -595,18 +595,6 @@ class LoggingConfig:
         if self.debug_logging:
             warnings.filterwarnings("default")
 
-        # In frozen builds, automatically write INFO-level logs to a file so
-        # problems can be diagnosed without changing tuxemon.yaml.
-        if hasattr(sys, "frozen") and sys.frozen and not self.log_to_file:
-            frozen_formatter = Formatter(
-                "[%(asctime)s] %(name)s - %(levelname)s - %(message)s"
-            )
-            self._setup_file_logging(
-                logging.getLogger(),
-                frozen_formatter,
-                logging.INFO,
-            )
-
         for logger_name in self.loggers:
             if logger_name == "all":
                 print("Enabling logging of all modules.")
@@ -636,6 +624,20 @@ class LoggingConfig:
                 self._setup_file_logging(logger, formatter, log_level)
 
         logging.getLogger("orthographic").setLevel(logging.ERROR)
+
+        # In frozen builds, write INFO-level logs to a file so problems can be
+        # diagnosed without editing tuxemon.yaml.  This runs AFTER the loop
+        # above so the root logger level set here (INFO) is not overridden back
+        # to ERROR by the user's debug_level setting.
+        if hasattr(sys, "frozen") and sys.frozen and not self.log_to_file:
+            frozen_formatter = Formatter(
+                "[%(asctime)s] %(name)s - %(levelname)s - %(message)s"
+            )
+            root = logging.getLogger()
+            self._setup_file_logging(root, frozen_formatter, logging.INFO)
+            # Lower root logger level so INFO messages reach the file handler.
+            if root.level == logging.NOTSET or root.level > logging.INFO:
+                root.setLevel(logging.INFO)
 
     def _setup_file_logging(
         self, logger: Logger, formatter: Formatter, log_level: int

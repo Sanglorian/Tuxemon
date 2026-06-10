@@ -816,7 +816,7 @@ DESIGNED_TEAM_DEFS: list[tuple[str, list[str], dict[str, list[str]]]] = [
     # FULL GEN-6 ATTACK-TYPE BREAKDOWN:
     #   firestorm      = fire (single type)
     #   give_all       = heroic (single type)
-    #   laser_beam     = lightning + metal (dual type!)
+    #   laser_beam     = lightning (single type; metal was removed in merged PR)
     #   mind_explosion = cosmic + wood (dual type!)
     #
     # AFFINITY FORMULA: calculate_affinity_score multiplies ALL pairwise (user_type,
@@ -824,82 +824,97 @@ DESIGNED_TEAM_DEFS: list[tuple[str, list[str], dict[str, list[str]]]] = [
     # cancellations can occur: mind_explosion (cosmic+wood) vs venom+shadow =
     # 2.0 × 0.5 × 0.5 × 1.0 = 0.5 — counter-intuitive but verified in combat logs.
     #
-    # SAFE DEFENSIVE TYPES: only pure fire and pure lightning have no 2× incoming.
-    #   lightning/water → 2× from laser_beam (lightning→water) + mind_explosion (wood→water)
-    #   lightning/sky   → 2× from laser_beam (lightning→sky)
-    #   lightning/earth → 2× from laser_beam (metal→earth) + mind_explosion (wood→earth)
-    #   Any dual type including water/earth/sky gets hit 2× by at least one Gen-6 move.
+    # SAFE DEFENSIVE TYPES vs Gen-6 (post laser_beam change):
+    #   fire+metal  → 2× from laser_beam (lightning→metal)! AVOID — cobarett is unsafe.
+    #   fire/water  → 2× from laser_beam (lightning→water) + mind_explosion (wood→water)
+    #   fire/sky    → 2× from laser_beam (lightning→sky)
+    #   Safe: pure fire (1.0× neutral to lightning), pure lightning (0.5× resists laser_beam),
+    #         fire+venom (1.0×), fire+shadow (1.0×).
     #
-    # OFFENSIVE PLAN: four-weapon system for Gen-5 AND Gen-6 coverage —
-    #   earthquake (earth, touch):  2× vs Gen-6 pure fire (embra/ruption), OHKO
-    #   lava       (fire, ranged):  2× vs ALL Gen-5 venom; 4× vs Gen-5 metal+venom, OHKO
-    #   supernova  (fire, ranged):  same as lava but higher power (3.0 vs 2.9), lower acc (0.75)
-    #   frostbite  (frost, reach):  2× vs Gen-6 wood+fire (tikoal/tikorch)
+    # OFFENSIVE PLAN: split moveset by shape (varmint vs serpent/dragon) —
+    #
+    # VARMINT MONSTERS (joulraton/foxfire, melee=8, ranged≈140): CANNOT OHKO Gen-5 with lava
+    #   → use firestorm instead of frostbite as 4th move
+    #   earthquake  2× vs Gen-6 pure fire → OHKO embra/ruption (melee=8 stat reaches threshold)
+    #   lava        2× vs Gen-5 venom → 192 dmg (not OHKO but 73% HP, good pressure)
+    #   supernova   same as lava, higher power (3.0), lower accuracy (0.75)
+    #   firestorm   2× vs Gen-5 venom+shadow → 192 dmg (vs frostbite's 48 dmg = 0.5×!)
+    #               Gen-5's three blobs (metoxic/dracune/hoarseshoo) are venom+SHADOW;
+    #               frost_vs_shadow=0.5 makes frostbite terrible, firestorm = fire_vs_venom×
+    #               fire_vs_shadow = 2.0×1.0 = 2.0× → much better for Gen-5 exchanges.
+    #
+    # SERPENT/DRAGON MONSTERS (vivicinder/hissiorite/agnidon/drokoro/agnite, ranged≥205):
+    #   CAN OHKO Gen-5 with lava/supernova → use frostbite for Gen-6 coverage
+    #   earthquake  touch (melee vs dodge), but low melee → not OHKO vs Gen-6 blobs
+    #   lava        fire 2× vs Gen-5 venom, ranged vs dodge → OHKO (281-327 dmg > 262 hp)
+    #   supernova   same as lava, OHKO confirmed
+    #   frostbite   2× vs Gen-6 tikoal/tikorch (fire+wood) → 192 dmg reach (ranged vs armour)
+    #               CRITICAL: after frostbite (192 dmg), tikoal at 70 HP → any move kills it
+    #               on turn 2, Gen-6 attacks once. With firestorm (96 dmg), tikoal at 166 HP
+    #               → 3 turns to kill, Gen-6 attacks twice → vivicinder dies at −30 HP!
     #
     # KEY: lava/supernova use RANGED range (user ranged vs target DODGE), not reach (vs armour).
     # Gen-5 blob dodge=135 vs armour=238 — ranged attacks do 238/135=1.76× more damage!
     # lava (power=2.9, fire, ranged) vs Gen-5 venom blob: mult=2.0, target_res=135
-    # → vivicinder (ranged=238): int(238×32×2.9×2.0/135) = 327 dmg → OHKO (hp=262)!
+    # → vivicinder/hissiorite (ranged=238): int(238×32×2.9×2.0/135) = 327 dmg → OHKO (hp=262)!
     # → agnidon/drokoro (ranged≈205): int(205×32×2.9×2.0/135) ≈ 281 dmg → OHKO!
     # → foxfire/joulraton (ranged≈140): 192 dmg → 2-shot (earthquake follows up)
     # supernova (power=3.0) gives same OHKO + applies burn status to Gen-5.
-    # Having TWO fire ranged moves means 50% of random turns are OHKO vs Gen-5,
-    # achieving 78% win rate vs Gen-5 Orion (vs 34% with single lava, 11% with old moveset).
+    # Having TWO fire ranged moves means 50% of random turns are OHKO vs Gen-5.
     #
-    # firestorm (reach: ranged vs armour, 192 dmg) was dropped — lava/supernova are
-    # strictly better because they target the much lower dodge stat.
-    #
-    # GEN-7 MONSTER SELECTION — pure fire or pure lightning only:
-    #   joulraton (lightning, varmint shape): melee=8 → strong earthquake (touch: melee vs dodge),
-    #     pure lightning so safe from all Gen-6, speed=6 > Gen-6 blob speed=4 → attacks first.
+    # GEN-7 MONSTER SELECTION — no fire+metal (cobarett is 2× weak to laser_beam now):
+    #   joulraton (pure lightning, varmint): melee=8 → earthquake OHKO vs Gen-6 embra/ruption;
+    #     RESISTS laser_beam (lightning_vs_lightning=0.5 → 0.5×). Best defensive anchor.
     #   foxfire   (fire, varmint shape): melee=8, same earthquake power, safe, speed=6.
     #   agnidon/agnite/drokoro (fire, dragon shape): balanced melee=6/ranged=6, speed=6.
-    #   cobarett/hissiorite/vivicinder (fire, serpent shape): ranged=8 maximises lava
-    #     output (ranged: ranged vs dodge) and frostbite (reach: ranged vs armour);
-    #     safe from all Gen-6 attack components.
+    #   hissiorite/vivicinder (fire+venom, serpent shape): ranged=8 maximises lava/supernova
+    #     OHKO output; safe from all Gen-6 attacks (lightning_vs_venom=1.0, no 2× exposure);
+    #     also RESISTS give_all (heroic_vs_venom=0.5 → 0.5×).
     #
     # All Gen-7 monsters have speed=6 vs Gen-6 blob speed=4 → always go first.
-    # Pure fire resists firestorm (0.5×) and is neutral to laser_beam and mind_explosion.
-    # Pure lightning is neutral to everything in Gen-6's arsenal (≤ 1×).
+    # Pure fire is neutral to laser_beam (lightning_vs_fire=1.0) and resists firestorm (0.5×).
+    # joulraton (pure lightning) resists laser_beam (0.5×) AND mind_explosion (wood_vs_lightning=0.5).
 
-    # Andromeda — earthquake + dual-fire OHKO. joulraton (melee=8) OHKOs Gen-6 embra/ruption
-    # via earthquake (earth 2×, touch: melee vs low dodge=135). cobarett (ranged=8) OHKOs ALL
-    # Gen-5 venom blobs with lava/supernova (fire 2×, ranged vs low dodge → 327 dmg > hp=262).
-    ("Andromeda", ["joulraton", "cobarett", "agnidon", "agnite"], {
-        "joulraton": ["earthquake", "lava", "supernova", "frostbite"],
-        "cobarett":  ["earthquake", "lava", "supernova", "frostbite"],
-        "agnidon":   ["earthquake", "lava", "supernova", "frostbite"],
-        "agnite":    ["earthquake", "lava", "supernova", "frostbite"],
+    # Andromeda — lightning anchor + high-ranged fire. joulraton (pure lightning, melee=8)
+    # OHKOs Gen-6 embra/ruption via earthquake AND resists laser_beam (0.5×). vivicinder
+    # (fire+venom, ranged=8) OHKOs ALL Gen-5 venom blobs with lava/supernova (327 dmg > 262 hp).
+    # firestorm (4th slot): 2× vs venom+shadow (192 dmg) >> frostbite (0.5×=48 dmg). Even when
+    # vivicinder "dies" fighting tikoal with firestorm×2, the next Gen-7 monster finishes it.
+    ("Andromeda", ["joulraton", "vivicinder", "agnidon", "agnite"], {
+        "joulraton":  ["earthquake", "lava", "supernova", "firestorm"],
+        "vivicinder": ["earthquake", "lava", "supernova", "firestorm"],
+        "agnidon":    ["earthquake", "lava", "supernova", "firestorm"],
+        "agnite":     ["earthquake", "lava", "supernova", "firestorm"],
     }),
 
-    # Scorpius — lightning anchor + three fire types. joulraton leads with melee=8
-    # earthquake (OHKO on Gen-6 pure fire); hissiorite (serpent ranged=8) and agnite/drokoro
-    # (dragon ranged≈205) OHKO all Gen-5 venom blobs with lava or supernova.
+    # Scorpius — lightning anchor + three fire types. joulraton (pure lightning, melee=8) leads
+    # with earthquake OHKO vs Gen-6 pure fire AND resists Gen-5 laser_beam (0.5×).
+    # hissiorite (serpent ranged=8) OHKOs all Gen-5 venom blobs with lava/supernova.
     ("Scorpius", ["joulraton", "hissiorite", "agnite", "drokoro"], {
-        "joulraton":  ["earthquake", "lava", "supernova", "frostbite"],
-        "hissiorite": ["earthquake", "lava", "supernova", "frostbite"],
-        "agnite":     ["earthquake", "lava", "supernova", "frostbite"],
-        "drokoro":    ["earthquake", "lava", "supernova", "frostbite"],
+        "joulraton":  ["earthquake", "lava", "supernova", "firestorm"],
+        "hissiorite": ["earthquake", "lava", "supernova", "firestorm"],
+        "agnite":     ["earthquake", "lava", "supernova", "firestorm"],
+        "drokoro":    ["earthquake", "lava", "supernova", "firestorm"],
     }),
 
     # Virgo — all-fire team. foxfire (fire varmint, melee=8) as the earthquake anchor;
     # vivicinder (ranged=8) + agnidon/drokoro (ranged≈205) OHKO all Gen-5 blobs with lava
-    # or supernova. Dual fire ranged = 50% OHKO chance per turn vs Gen-5.
+    # or supernova. firestorm gives 2× vs venom+shadow on non-OHKO turns.
     ("Virgo", ["foxfire", "vivicinder", "agnidon", "drokoro"], {
-        "foxfire":   ["earthquake", "lava", "supernova", "frostbite"],
-        "vivicinder":["earthquake", "lava", "supernova", "frostbite"],
-        "agnidon":   ["earthquake", "lava", "supernova", "frostbite"],
-        "drokoro":   ["earthquake", "lava", "supernova", "frostbite"],
+        "foxfire":    ["earthquake", "lava", "supernova", "firestorm"],
+        "vivicinder": ["earthquake", "lava", "supernova", "firestorm"],
+        "agnidon":    ["earthquake", "lava", "supernova", "firestorm"],
+        "drokoro":    ["earthquake", "lava", "supernova", "firestorm"],
     }),
 
-    # Draco — cross-type pairing. foxfire (fire melee=8) + joulraton (lightning melee=8)
-    # as dual earthquake anchors (OHKO Gen-6 embra/ruption); cobarett (ranged=8) and drokoro
-    # (dragon ranged≈202) OHKO Gen-5 blobs with lava/supernova.
-    ("Draco", ["foxfire", "joulraton", "cobarett", "drokoro"], {
-        "foxfire":   ["earthquake", "lava", "supernova", "frostbite"],
-        "joulraton": ["earthquake", "lava", "supernova", "frostbite"],
-        "cobarett":  ["earthquake", "lava", "supernova", "frostbite"],
-        "drokoro":   ["earthquake", "lava", "supernova", "frostbite"],
+    # Draco — dual earthquake anchors + high-ranged fire. foxfire (fire, melee=8) + joulraton
+    # (pure lightning, melee=8) OHKO Gen-6 embra/ruption; joulraton resists laser_beam (0.5×).
+    # hissiorite (fire+venom, ranged=8): OHKO Gen-5 with lava/supernova, firestorm 4th slot.
+    ("Draco", ["foxfire", "joulraton", "hissiorite", "drokoro"], {
+        "foxfire":    ["earthquake", "lava", "supernova", "firestorm"],
+        "joulraton":  ["earthquake", "lava", "supernova", "firestorm"],
+        "hissiorite": ["earthquake", "lava", "supernova", "firestorm"],
+        "drokoro":    ["earthquake", "lava", "supernova", "firestorm"],
     }),
 ]
 

@@ -638,6 +638,18 @@ class LoggingConfig:
             # Lower root logger level so INFO messages reach the file handler.
             if root.level == logging.NOTSET or root.level > logging.INFO:
                 root.setLevel(logging.INFO)
+            # Write the log location to a plain-text file in the install dir so
+            # users can find it without guessing.
+            try:
+                from tuxemon.constants.paths import BASEDIR
+                hint = BASEDIR / "TUXEMON_LOG_LOCATION.txt"
+                log_dir = paths.USER_STORAGE_DIR / "logs"
+                hint.write_text(
+                    f"Tuxemon log files are written to:\n{log_dir}\n",
+                    encoding="utf-8",
+                )
+            except Exception:
+                pass
 
     def _setup_file_logging(
         self, logger: Logger, formatter: Formatter, log_level: int

@@ -139,6 +139,12 @@ def launch_game(argv: list[str] | None = None) -> None:
     config = CONFIG.copy()
     config.logging.configure()
 
+    from tuxemon.constants.paths import USER_STORAGE_DIR
+    logger.info(
+        f"Tuxemon starting. User data dir: {USER_STORAGE_DIR}  "
+        f"Logs: {USER_STORAGE_DIR / 'logs'}"
+    )
+
     try:
         apply_config_from_args(config, args)
 

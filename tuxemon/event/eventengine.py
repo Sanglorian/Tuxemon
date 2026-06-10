@@ -260,7 +260,11 @@ class EventEngine:
                 for rc in running_conditions
             ]
             logger.info(
-                f"Event '{event.name}' firing. Conditions: {cond_summary}"
+                f"Event '{event.name}' (id={event.id}) firing. "
+                f"explicit_conds={len(event.conds)}, "
+                f"behav_conds={len(behav_conds)}, "
+                f"behavs={[b.type for b in event.behavs]}, "
+                f"results={cond_summary}"
             )
             self.start_event(event)
             if is_global:

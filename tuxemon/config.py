@@ -592,15 +592,20 @@ class LoggingConfig:
     def configure(self) -> None:
         log_level = self.LOG_LEVELS.get(self.debug_level, logging.INFO)
 
+        # Frozen (cx_Freeze Win32GUI) builds have no console; a log file is the
+        # only diagnostic output.  Force INFO level and enable file logging.
+        frozen = bool(getattr(sys, "frozen", False))
+        if frozen:
+            log_level = min(log_level, logging.INFO)
+        log_to_file = self.log_to_file or frozen
+
         if self.debug_logging:
             warnings.filterwarnings("default")
 
         for logger_name in self.loggers:
             if logger_name == "all":
-                print("Enabling logging of all modules.")
                 logger = logging.getLogger()
             else:
-                print(f"Enabling logging for module: {logger_name}")
                 logger = logging.getLogger(logger_name)
 
             logger.setLevel(log_level)
@@ -609,8 +614,11 @@ class LoggingConfig:
                 "[%(asctime)s] %(name)s - %(levelname)s - %(message)s"
             )
 
-            # Avoid duplicate stdout handlers
-            if not any(
+            # Only add a stream handler when stdout is available.
+            # Win32GUI frozen builds have sys.stdout = None; writing to None
+            # raises AttributeError and would abort configure() before the
+            # file handler is set up.
+            if sys.stdout is not None and not any(
                 isinstance(h, StreamHandler)
                 and getattr(h, "stream", None) is sys.stdout
                 for h in logger.handlers
@@ -620,30 +628,18 @@ class LoggingConfig:
                 stream.setFormatter(formatter)
                 logger.addHandler(stream)
 
-            if self.log_to_file:
+            if log_to_file:
                 self._setup_file_logging(logger, formatter, log_level)
 
         logging.getLogger("orthographic").setLevel(logging.ERROR)
 
-        # In frozen builds, write INFO-level logs to a file so problems can be
-        # diagnosed without editing tuxemon.yaml.  This runs AFTER the loop
-        # above so the root logger level set here (INFO) is not overridden back
-        # to ERROR by the user's debug_level setting.
-        if hasattr(sys, "frozen") and sys.frozen and not self.log_to_file:
-            frozen_formatter = Formatter(
-                "[%(asctime)s] %(name)s - %(levelname)s - %(message)s"
-            )
-            root = logging.getLogger()
-            self._setup_file_logging(root, frozen_formatter, logging.INFO)
-            # Lower root logger level so INFO messages reach the file handler.
-            if root.level == logging.NOTSET or root.level > logging.INFO:
-                root.setLevel(logging.INFO)
-            # Write the log location to a plain-text file in the install dir so
-            # users can find it without guessing.
+        # Write a plain-text hint so users can find the log directory without
+        # needing to know about hidden dot-folders.
+        if log_to_file and frozen:
             try:
                 from tuxemon.constants.paths import BASEDIR
-                hint = BASEDIR / "TUXEMON_LOG_LOCATION.txt"
                 log_dir = paths.USER_STORAGE_DIR / "logs"
+                hint = BASEDIR / "TUXEMON_LOG_LOCATION.txt"
                 hint.write_text(
                     f"Tuxemon log files are written to:\n{log_dir}\n",
                     encoding="utf-8",

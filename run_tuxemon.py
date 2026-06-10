@@ -132,8 +132,6 @@ def launch_game(argv: list[str] | None = None) -> None:
     platform_mode = "headless" if args.headless else "pygame"
     context = init_display(platform_mode)
 
-    print(get_git_hash())
-
     from tuxemon import main as tuxemon_main
 
     config = CONFIG.copy()
@@ -141,7 +139,8 @@ def launch_game(argv: list[str] | None = None) -> None:
 
     from tuxemon.constants.paths import USER_STORAGE_DIR
     logger.info(
-        f"Tuxemon starting. User data dir: {USER_STORAGE_DIR}  "
+        f"Tuxemon starting. {get_git_hash()}  "
+        f"User data dir: {USER_STORAGE_DIR}  "
         f"Logs: {USER_STORAGE_DIR / 'logs'}"
     )
 

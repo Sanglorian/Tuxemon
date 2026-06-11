@@ -3,11 +3,48 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
+import faulthandler
 import logging
 import sys
+import time
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+BUILD_INFO = "unknown"
+
+if getattr(sys, "frozen", False):
+    # cx_Freeze Win32GUI builds have no console: sys.stdout and sys.stderr
+    # are None, so prints, log output and tracebacks vanish.  Redirect both
+    # to a session log file with raw file I/O before importing any tuxemon
+    # modules, so even import-time crashes are captured.  faulthandler also
+    # writes hard-crash tracebacks (segfaults) there.
+    # Note: this duplicates the ".tuxemon" path from tuxemon.platform on
+    # purpose — importing tuxemon before the redirect would leave any
+    # import-time failure invisible.
+    _log_dir = Path.home() / ".tuxemon" / "logs"
+    _log_dir.mkdir(parents=True, exist_ok=True)
+    _ts = time.strftime("%Y-%m-%d_%Hh%Mm%Ss")
+    _session_log = open(
+        _log_dir / f"session-{_ts}.log",
+        "a",
+        buffering=1,
+        encoding="utf-8",
+        errors="replace",
+    )
+    sys.stdout = _session_log
+    sys.stderr = _session_log
+    faulthandler.enable(_session_log)
+
+    _build_file = Path(sys.executable).parent / "build_info.txt"
+    if _build_file.exists():
+        BUILD_INFO = _build_file.read_text(encoding="utf-8").strip()
+    _session_log.write(
+        f"=== Tuxemon session start {_ts} ===\n"
+        f"build: {BUILD_INFO}\n"
+        f"exe: {sys.executable}\n"
+        f"python: {sys.version}\n"
+    )
 
 from tuxemon.log import get_git_hash
 from tuxemon.user_config import CONFIG, TuxemonConfig
@@ -138,8 +175,14 @@ def launch_game(argv: list[str] | None = None) -> None:
     config.logging.configure()
 
     from tuxemon.constants.paths import USER_STORAGE_DIR
+
+    version = (
+        f"build {BUILD_INFO}"
+        if getattr(sys, "frozen", False)
+        else get_git_hash()
+    )
     logger.info(
-        f"Tuxemon starting. {get_git_hash()}  "
+        f"Tuxemon starting. {version}  "
         f"User data dir: {USER_STORAGE_DIR}  "
         f"Logs: {USER_STORAGE_DIR / 'logs'}"
     )

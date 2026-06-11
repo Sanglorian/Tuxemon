@@ -62,4 +62,15 @@ if __name__ == "__main__":
         ],
     )
 
+    # Stamp the commit into the build so a running exe can report exactly
+    # which code it was built from (read by run_tuxemon.py at startup).
+    sha = os.environ.get("GITHUB_SHA", "unknown")
+    for build_dir in Path("build").glob("exe.*"):
+        info = build_dir / "build_info.txt"
+        info.write_text(
+            f"{config['name']} {config['version']} commit {sha}\n",
+            encoding="utf-8",
+        )
+        print(f"Wrote {info}")
+
     logger.info("Build completed successfully.")

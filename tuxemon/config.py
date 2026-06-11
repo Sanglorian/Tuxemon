@@ -662,12 +662,22 @@ class LoggingConfig:
             and getattr(h, "baseFilename", None) == str(file_path)
             for h in logger.handlers
         ):
-            fh = FileHandler(file_path)
+            fh = FileHandler(file_path, encoding="utf-8", errors="replace")
             fh.setFormatter(formatter)
             fh.setLevel(log_level)
             logger.addHandler(fh)
+            # Direct write, bypassing the logging pipeline: if this line is
+            # missing from the file, the handler itself is broken; if it is
+            # the only line, records are not reaching the handler.
+            fh.stream.write(
+                f"=== Log file opened (logger '{logger.name}', "
+                f"level {log_level}) ===\n"
+            )
+            fh.flush()
 
-        # Rotation: keep only the newest N files
+        # Rotation: keep only the newest N files.  Deleting a file that
+        # another running instance holds open raises PermissionError on
+        # Windows; never let rotation break logging setup.
         keep = max(1, self.log_keep_max)
         files = sorted(
             log_dir.glob("*.log"),
@@ -676,4 +686,7 @@ class LoggingConfig:
         )
 
         for old in files[keep:]:
-            old.unlink(missing_ok=True)
+            try:
+                old.unlink(missing_ok=True)
+            except OSError:
+                pass

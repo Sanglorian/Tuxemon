@@ -17140,7 +17140,7 @@ msgid "spyder_walled_vanderbilt2"
 msgstr "What's your justification?"
 
 msgid "spyder_walled_ford1"
-msgstr "Did you hear about the big earthquake in ocean?"
+msgstr "Did you hear about the big earthquake in the ocean?"
 
 msgid "spyder_walled_ford2"
 msgstr "There was a tsunami alert!"

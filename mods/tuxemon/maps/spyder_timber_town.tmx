@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="392">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="392">
  <properties>
   <property name="edges" value="clamped"/>
   <property name="map_type" value="town"/>
@@ -349,26 +349,6 @@
     <property name="act2" value="char_face player,up"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
-   </properties>
-  </object>
-  <object id="369" name="Surfboard" type="event" x="272" y="320" width="16" height="16">
-   <properties>
-    <property name="act01" value="char_stop player"/>
-    <property name="act02" value="lock_controls"/>
-    <property name="act03" value="create_npc spyder_papertown_mom,26,23"/>
-    <property name="act04" value="pathfind spyder_papertown_mom,17,21"/>
-    <property name="act05" value="unlock_controls"/>
-    <property name="act06" value="char_face player,down"/>
-    <property name="act07" value="char_face spyder_papertown_mom,up"/>
-    <property name="act08" value="translated_dialog spyder_timber_mom1"/>
-    <property name="act09" value="add_item surfboard"/>
-    <property name="act10" value="translated_dialog surfboard,,center,center,center"/>
-    <property name="act11" value="translated_dialog spyder_timber_mom2"/>
-    <property name="act12" value="pathfind spyder_papertown_mom,26,23"/>
-    <property name="act13" value="remove_npc spyder_papertown_mom"/>
-    <property name="act14" value="set_variable timbermom:yes"/>
-    <property name="cond1" value="not variable_set timbermom:yes"/>
-    <property name="cond2" value="is battle_outcome player,won,spyder_scoop_arachne"/>
    </properties>
   </object>
   <object id="376" name="Teleport to Walled Garden" type="event" x="512" y="112" width="16" height="16">

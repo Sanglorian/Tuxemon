@@ -13946,7 +13946,13 @@ msgid "spyder_route5_tryphaena2"
 msgstr "Well, might makes right."
 
 msgid "spyder_timber_mom1"
-msgstr "Hey bojo, your BOARD doesn't work on water. Unless you've got power."
+msgstr "Surprised to see me? You'll never guess how I got here. \n"
+" I surfed! And I've got a board for you too, but I won't be handing it over while monsters are in quarantine. \n"
+" I don't want you making the sea journey without a full team." 
+
+msgid "spyder_timber_mom2"
+msgstr "Great job, sweetie! Here's a Surfboard. Now you've got no excuses not to visit me. \n"
+" Paper Town is just a short trip east across the sea." 
 
 msgid "spyder_outsidewalled_rogue1"
 msgstr "Welcome to the Walled Garden. Gold Pass, please."
@@ -13966,11 +13972,6 @@ msgid "spyder_outsidewalled_midas1"
 msgstr ""
 "Welcome one and all to the Public Garden. \n"
 " Lovers of tuxemon and the sport of tuxemon battling are our honored guests."
-
-msgid "spyder_timber_mom2"
-msgstr ""
-"What I mean to say is, here's a Surfboard! Ride it onto the river and see "
-"what happens!"
 
 msgid "spyder_timber_dante1"
 msgstr "Hey buddy! Cool to see you again. "
@@ -14190,7 +14191,7 @@ msgid "spyder_tunnelb_greta2"
 msgstr "Oh no, I need more!"
 
 msgid "spyder_landrace_hmph"
-msgstr "Oh no, I need more!"
+msgstr "Harrumph!"
 
 msgid "spyder_landrace_explanation"
 msgstr "Ever since Scoop HQ went into lockdown, this Sludgehog has been acting out."

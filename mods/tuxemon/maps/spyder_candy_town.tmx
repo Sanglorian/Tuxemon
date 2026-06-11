@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="454">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="458">
  <properties>
   <property name="east" value="routec"/>
   <property name="edges" value="clamped"/>
@@ -493,6 +493,32 @@
     <property name="act4" value="set_variable candy_tmleafbarrage:yes"/>
     <property name="behav1" value="talk spyder_candy_tmleafbarrage"/>
     <property name="cond1" value="not variable_set candy_tmleafbarrage:yes"/>
+   </properties>
+  </object>
+  <object id="455" name="Create Mom" type="event" x="448" y="464" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_papertown_mom,28,29"/>
+    <property name="cond1" value="not char_exists spyder_papertown_mom"/>
+    <property name="cond2" value="not variable_set timbermom:yes"/>
+   </properties>
+  </object>
+  <object id="456" name="Talk Mom - After Quarantine" type="event" x="464" y="496" width="16" height="16">
+   <properties>
+    <property name="act08" value="translated_dialog spyder_timber_mom2"/>
+    <property name="act09" value="add_item surfboard"/>
+    <property name="act10" value="translated_dialog surfboard,,center,center,center"/>
+    <property name="act11" value="pathfind spyder_papertown_mom,29,34"/>
+    <property name="act12" value="remove_npc spyder_papertown_mom"/>
+    <property name="act14" value="set_variable timbermom:yes"/>
+    <property name="cond1" value="not variable_set timbermom:yes"/>
+    <property name="cond2" value="is variable_set hospitalcure:yes"/>
+   </properties>
+  </object>
+  <object id="457" name="Talk Mom - Quarantine" type="event" x="480" y="480" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog spyder_timber_mom1"/>
+    <property name="behav1" value="talk spyder_papertown_mom"/>
+    <property name="cond1" value="not variable_set hospitalcure:yes"/>
    </properties>
   </object>
  </objectgroup>

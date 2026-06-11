@@ -14114,8 +14114,8 @@ msgstr "What am I doing here, for that matter?"
 
 msgid "spyder_scoop_haf1"
 msgstr ""
-"I chased the people who stole the Restraints into this room. But then the "
-"sick tuxemon got in, and now we're all stuck!"
+"I chased the people who stole the Restraints into this room. But then the sick tuxemon got in, and now we're all stuck!\n"
+" If you can make a way through to the exit, I'll be able to round up any loose monsters."
 
 msgid "spyder_scoop_weaver1"
 msgstr ""
@@ -14188,6 +14188,12 @@ msgstr ""
 
 msgid "spyder_tunnelb_greta2"
 msgstr "Oh no, I need more!"
+
+msgid "spyder_landrace_hmph"
+msgstr "Oh no, I need more!"
+
+msgid "spyder_landrace_explanation"
+msgstr "Ever since Scoop HQ went into lockdown, this Sludgehog has been acting out."
 
 msgid "spyder_tunnelb_tommy1"
 msgstr "Have you seen my sandwich?"

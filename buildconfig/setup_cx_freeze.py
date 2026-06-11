@@ -73,4 +73,31 @@ if __name__ == "__main__":
         )
         print(f"Wrote {info}")
 
+    # Dynamically imported plugins are invisible to cx_Freeze's static
+    # analysis; if one is missing from the output the exe still builds
+    # but breaks at runtime (e.g. events firing without conditions,
+    # techniques always missing). Fail the build instead.
+    critical_modules = [
+        "tuxemon/event/behaviors/talk",
+        "tuxemon/event/behaviors/door",
+        "tuxemon/event/conditions/button_pressed",
+        "tuxemon/event/actions/teleport",
+        "tuxemon/core/effects/damage",
+        "tuxemon/core/conditions",
+    ]
+    for build_dir in Path("build").glob("exe.*"):
+        lib_dir = build_dir / "lib"
+        missing = [
+            mod
+            for mod in critical_modules
+            if not list(lib_dir.glob(f"{mod}*"))
+        ]
+        if missing:
+            sys.exit(
+                f"Frozen build at {build_dir} is missing critical "
+                f"plugin modules: {missing}. Check for directories "
+                "without __init__.py (cx_Freeze skips them)."
+            )
+        print(f"Verified critical plugin modules present in {build_dir}")
+
     logger.info("Build completed successfully.")

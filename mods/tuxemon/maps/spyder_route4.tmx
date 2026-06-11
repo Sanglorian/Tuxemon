@@ -429,7 +429,7 @@
     <property name="act3" value="char_face player,spyder_route4_rosamund"/>
     <property name="act4" value="char_talk spyder_route4_rosamund,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster foofle,18,spyder_route4_rosamund,5,10"/>
+    <property name="act6" value="add_monster flummby,18,spyder_route4_rosamund,5,10"/>
     <property name="act7" value="start_battle player,spyder_route4_rosamund"/>
     <property name="act8" value="char_talk spyder_route4_rosamund,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_route4_rosamund"/>

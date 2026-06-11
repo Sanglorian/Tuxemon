@@ -240,8 +240,8 @@
   <object id="194" name="Talk Ping" type="event" x="400" y="80" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_route6_ping,pre_battle"/>
-    <property name="act2" value="add_monster foofle,35,spyder_route6_ping,5,10"/>
-    <property name="act3" value="add_monster foofle,35,spyder_route6_ping,5,10"/>
+    <property name="act2" value="add_monster tumblequill,35,spyder_route6_ping,5,10"/>
+    <property name="act3" value="add_monster tumbledillo,35,spyder_route6_ping,5,10"/>
     <property name="act4" value="start_battle player,spyder_route6_ping"/>
     <property name="act5" value="char_talk spyder_route6_ping,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route6_ping"/>

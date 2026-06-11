@@ -510,6 +510,7 @@
     <property name="act11" value="pathfind spyder_papertown_mom,29,34"/>
     <property name="act12" value="remove_npc spyder_papertown_mom"/>
     <property name="act14" value="set_variable timbermom:yes"/>
+    <property name="behav1" value="talk spyder_papertown_mom"/>
     <property name="cond1" value="not variable_set timbermom:yes"/>
     <property name="cond2" value="is variable_set hospitalcure:yes"/>
    </properties>

@@ -1,5 +1,5 @@
 tech_id: 55
-accuracy: 0.6
+accuracy: 0.8
 effects:
 - type: damage
 - type: splash

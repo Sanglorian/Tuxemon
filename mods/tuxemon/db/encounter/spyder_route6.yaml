@@ -1,6 +1,6 @@
 monsters:
 - encounter_rate: 10
-  exp_req_mod: 3
+  exp_req_mod: 1
   held_items: []
   level_range:
   - 19
@@ -10,7 +10,7 @@ monsters:
     - key: daytime
       value: "true"
 - encounter_rate: 5
-  exp_req_mod: 3
+  exp_req_mod: 1
   held_items: []
   level_range:
   - 21
@@ -20,7 +20,7 @@ monsters:
     - key: daytime
       value: "true"
 - encounter_rate: 10
-  exp_req_mod: 3
+  exp_req_mod: 1
   held_items: []
   level_range:
   - 19
@@ -30,7 +30,7 @@ monsters:
     - key: daytime
       value: "true"
 - encounter_rate: 10
-  exp_req_mod: 3
+  exp_req_mod: 1
   held_items: []
   level_range:
   - 20
@@ -40,7 +40,7 @@ monsters:
     - key: daytime
       value: "false"
 - encounter_rate: 5
-  exp_req_mod: 3
+  exp_req_mod: 1
   held_items: []
   level_range:
   - 22
@@ -50,7 +50,7 @@ monsters:
     - key: daytime
       value: "false"
 - encounter_rate: 10
-  exp_req_mod: 3
+  exp_req_mod: 1
   held_items: []
   level_range:
   - 20

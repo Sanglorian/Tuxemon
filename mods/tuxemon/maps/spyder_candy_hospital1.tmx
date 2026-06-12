@@ -107,7 +107,7 @@
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_aurora"/>
     <property name="act03" value="char_talk spyder_hospital1_aurora,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
-    <property name="act05" value="add_monster exclawvate,40,spyder_hospital1_aurora,5,10"/>
+    <property name="act05" value="add_monster exclawvate,40,spyder_hospital1_aurora,1.5,10"/>
     <property name="act06" value="start_battle player,spyder_hospital1_aurora"/>
     <property name="act07" value="char_talk spyder_hospital1_aurora,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_hospital1_aurora"/>
@@ -127,10 +127,10 @@
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_eleni"/>
     <property name="act03" value="char_talk spyder_hospital1_eleni,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
-    <property name="act05" value="add_monster boltnu,30,spyder_hospital1_eleni,5,10"/>
-    <property name="act06" value="add_monster taupypus,30,spyder_hospital1_eleni,5,10"/>
-    <property name="act07" value="add_monster snaki,30,spyder_hospital1_eleni,5,10"/>
-    <property name="act08" value="add_monster galnec,30,spyder_hospital1_eleni,5,10"/>
+    <property name="act05" value="add_monster boltnu,30,spyder_hospital1_eleni,1.5,10"/>
+    <property name="act06" value="add_monster taupypus,30,spyder_hospital1_eleni,1.5,10"/>
+    <property name="act07" value="add_monster snaki,30,spyder_hospital1_eleni,1.5,10"/>
+    <property name="act08" value="add_monster galnec,30,spyder_hospital1_eleni,1.5,10"/>
     <property name="act09" value="start_battle player,spyder_hospital1_eleni"/>
     <property name="act10" value="char_talk spyder_hospital1_eleni,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_hospital1_eleni"/>
@@ -151,8 +151,8 @@
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_felu"/>
     <property name="act03" value="char_talk spyder_hospital1_felu,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
-    <property name="act05" value="add_monster anu,30,spyder_hospital1_felu,5,10"/>
-    <property name="act06" value="add_monster galnec,30,spyder_hospital1_felu,5,10"/>
+    <property name="act05" value="add_monster anu,30,spyder_hospital1_felu,1.5,10"/>
+    <property name="act06" value="add_monster galnec,30,spyder_hospital1_felu,1.5,10"/>
     <property name="act07" value="start_battle player,spyder_hospital1_felu"/>
     <property name="act08" value="char_talk spyder_hospital1_felu,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_hospital1_felu"/>
@@ -185,8 +185,8 @@
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_liane"/>
     <property name="act03" value="char_talk spyder_hospital1_liane,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
-    <property name="act05" value="add_monster boltnu,36,spyder_hospital1_liane,5,10"/>
-    <property name="act06" value="add_monster snaki,36,spyder_hospital1_liane,5,10"/>
+    <property name="act05" value="add_monster boltnu,36,spyder_hospital1_liane,1.5,10"/>
+    <property name="act06" value="add_monster snaki,36,spyder_hospital1_liane,1.5,10"/>
     <property name="act07" value="start_battle player,spyder_hospital1_liane"/>
     <property name="act08" value="char_talk spyder_hospital1_liane,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_hospital1_liane"/>
@@ -244,8 +244,8 @@
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_fring"/>
     <property name="act03" value="char_talk spyder_hospital1_fring,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
-    <property name="act05" value="add_monster anu,30,spyder_hospital1_fring,5,10"/>
-    <property name="act06" value="add_monster selket,30,spyder_hospital1_fring,5,10"/>
+    <property name="act05" value="add_monster anu,30,spyder_hospital1_fring,1.5,10"/>
+    <property name="act06" value="add_monster selket,30,spyder_hospital1_fring,1.5,10"/>
     <property name="act07" value="start_battle player,spyder_hospital1_fring"/>
     <property name="act08" value="char_talk spyder_hospital1_fring,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_hospital1_fring"/>
@@ -259,8 +259,8 @@
     <property name="act02" value="pathfind_to_char player,spyder_hospital1_walt"/>
     <property name="act03" value="char_talk spyder_hospital1_walt,pre_battle"/>
     <property name="act04" value="unlock_controls"/>
-    <property name="act05" value="add_monster anu,34,spyder_hospital1_walt,5,10"/>
-    <property name="act06" value="add_monster taupypus,27,spyder_hospital1_walt,5,10"/>
+    <property name="act05" value="add_monster anu,34,spyder_hospital1_walt,1.5,10"/>
+    <property name="act06" value="add_monster taupypus,27,spyder_hospital1_walt,1.5,10"/>
     <property name="act07" value="start_battle player,spyder_hospital1_walt"/>
     <property name="act08" value="char_talk spyder_hospital1_walt,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_hospital1_walt"/>

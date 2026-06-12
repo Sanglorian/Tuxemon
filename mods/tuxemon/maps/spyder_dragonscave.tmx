@@ -114,7 +114,7 @@
   <object id="62" name="Talk Tomas" type="event" x="288" y="512" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_dragonscave_tomas,pre_battle"/>
-    <property name="act2" value="add_monster allagon,40,spyder_dragonscave_tomas,5,10"/>
+    <property name="act2" value="add_monster allagon,40,spyder_dragonscave_tomas,1.5,10"/>
     <property name="act3" value="start_battle player,spyder_dragonscave_tomas"/>
     <property name="act4" value="char_talk spyder_dragonscave_tomas,post_battle_lose"/>
     <property name="behav1" value="talk spyder_dragonscave_tomas"/>
@@ -130,7 +130,7 @@
   <object id="64" name="Talk Lessa" type="event" x="256" y="304" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_dragonscave_lessa,pre_battle"/>
-    <property name="act2" value="add_monster allagon,42,spyder_dragonscave_lessa,5,10"/>
+    <property name="act2" value="add_monster allagon,42,spyder_dragonscave_lessa,1.5,10"/>
     <property name="act3" value="start_battle player,spyder_dragonscave_lessa"/>
     <property name="act4" value="char_talk spyder_dragonscave_lessa,post_battle_lose"/>
     <property name="behav1" value="talk spyder_dragonscave_lessa"/>
@@ -147,7 +147,7 @@
   <object id="66" name="Talk Cailin" type="event" x="112" y="432" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_dragonscave_cailin,pre_battle"/>
-    <property name="act2" value="add_monster dragarbor,41,spyder_dragonscave_cailin,5,10"/>
+    <property name="act2" value="add_monster dragarbor,41,spyder_dragonscave_cailin,1.5,10"/>
     <property name="act3" value="start_battle player,spyder_dragonscave_cailin"/>
     <property name="act4" value="char_talk spyder_dragonscave_cailin,post_battle_lose"/>
     <property name="behav1" value="talk spyder_dragonscave_cailin"/>
@@ -164,7 +164,7 @@
   <object id="68" name="Talk Griffin" type="event" x="96" y="608" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_dragonscave_griffin,pre_battle"/>
-    <property name="act2" value="add_monster bigfin,40,spyder_dragonscave_griffin,5,10"/>
+    <property name="act2" value="add_monster bigfin,40,spyder_dragonscave_griffin,1.5,10"/>
     <property name="act3" value="start_battle player,spyder_dragonscave_griffin"/>
     <property name="act4" value="char_talk spyder_dragonscave_griffin,post_battle_lose"/>
     <property name="behav1" value="talk spyder_dragonscave_griffin"/>
@@ -181,7 +181,7 @@
   <object id="70" name="Talk Daenny" type="event" x="176" y="496" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_dragonscave_daenny,pre_battle"/>
-    <property name="act2" value="add_monster eaglace,42,spyder_dragonscave_daenny,5,10"/>
+    <property name="act2" value="add_monster eaglace,42,spyder_dragonscave_daenny,1.5,10"/>
     <property name="act3" value="start_battle player,spyder_dragonscave_daenny"/>
     <property name="act4" value="char_talk spyder_dragonscave_daenny,post_battle_lose"/>
     <property name="behav1" value="talk spyder_dragonscave_daenny"/>
@@ -197,8 +197,8 @@
   <object id="72" name="Talk Benden" type="event" x="96" y="224" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_dragonscave_benden,pre_battle"/>
-    <property name="act2" value="add_monster dragarbor,41,spyder_dragonscave_benden,5,10"/>
-    <property name="act3" value="add_monster sapragon,43,spyder_dragonscave_benden,5,10"/>
+    <property name="act2" value="add_monster dragarbor,41,spyder_dragonscave_benden,1.5,10"/>
+    <property name="act3" value="add_monster sapragon,43,spyder_dragonscave_benden,1.5,10"/>
     <property name="act4" value="start_battle player,spyder_dragonscave_benden"/>
     <property name="act5" value="char_talk spyder_dragonscave_benden,post_battle_lose"/>
     <property name="act6" value="set_monster_health"/>
@@ -293,7 +293,7 @@
     <property name="act3" value="char_face player,spyder_dragonscave_tomas"/>
     <property name="act4" value="char_talk spyder_dragonscave_tomas,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster allagon,40,spyder_dragonscave_tomas,5,10"/>
+    <property name="act6" value="add_monster allagon,40,spyder_dragonscave_tomas,1.5,10"/>
     <property name="act7" value="start_battle player,spyder_dragonscave_tomas"/>
     <property name="act8" value="char_talk spyder_dragonscave_tomas,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_tomas"/>
@@ -308,7 +308,7 @@
     <property name="act3" value="char_face player,spyder_dragonscave_daenny"/>
     <property name="act4" value="char_talk spyder_dragonscave_daenny,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster eaglace,42,spyder_dragonscave_daenny,5,10"/>
+    <property name="act6" value="add_monster eaglace,42,spyder_dragonscave_daenny,1.5,10"/>
     <property name="act7" value="start_battle player,spyder_dragonscave_daenny"/>
     <property name="act8" value="char_talk spyder_dragonscave_daenny,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_daenny"/>
@@ -323,7 +323,7 @@
     <property name="act3" value="char_face player,spyder_dragonscave_cailin"/>
     <property name="act4" value="char_talk spyder_dragonscave_cailin,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster dragarbor,41,spyder_dragonscave_cailin,5,10"/>
+    <property name="act6" value="add_monster dragarbor,41,spyder_dragonscave_cailin,1.5,10"/>
     <property name="act7" value="start_battle player,spyder_dragonscave_cailin"/>
     <property name="act8" value="char_talk spyder_dragonscave_cailin,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_cailin"/>
@@ -338,7 +338,7 @@
     <property name="act3" value="char_face player,spyder_dragonscave_lessa"/>
     <property name="act4" value="char_talk spyder_dragonscave_lessa,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster allagon,42,spyder_dragonscave_lessa,5,10"/>
+    <property name="act6" value="add_monster allagon,42,spyder_dragonscave_lessa,1.5,10"/>
     <property name="act7" value="start_battle player,spyder_dragonscave_lessa"/>
     <property name="act8" value="char_talk spyder_dragonscave_lessa,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_lessa"/>
@@ -353,7 +353,7 @@
     <property name="act3" value="char_face player,spyder_dragonscave_griffin"/>
     <property name="act4" value="char_talk spyder_dragonscave_griffin,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster bigfin,40,spyder_dragonscave_griffin,5,10"/>
+    <property name="act6" value="add_monster bigfin,40,spyder_dragonscave_griffin,1.5,10"/>
     <property name="act7" value="start_battle player,spyder_dragonscave_griffin"/>
     <property name="act8" value="char_talk spyder_dragonscave_griffin,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_griffin"/>
@@ -368,8 +368,8 @@
     <property name="act03" value="char_face player,spyder_dragonscave_benden"/>
     <property name="act04" value="char_talk spyder_dragonscave_benden,pre_battle"/>
     <property name="act05" value="unlock_controls"/>
-    <property name="act06" value="add_monster dragarbor,41,spyder_dragonscave_benden,5,10"/>
-    <property name="act07" value="add_monster sapragon,43,spyder_dragonscave_benden,5,10"/>
+    <property name="act06" value="add_monster dragarbor,41,spyder_dragonscave_benden,1.5,10"/>
+    <property name="act07" value="add_monster sapragon,43,spyder_dragonscave_benden,1.5,10"/>
     <property name="act08" value="start_battle player,spyder_dragonscave_benden"/>
     <property name="act09" value="char_talk spyder_dragonscave_benden,post_battle_lose"/>
     <property name="act10" value="set_monster_health"/>
@@ -386,7 +386,7 @@
     <property name="act3" value="char_face player,spyder_dragonscave_ray"/>
     <property name="act4" value="char_talk spyder_dragonscave_ray,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster ghosteeth,45,spyder_dragonscave_ray,5,10"/>
+    <property name="act6" value="add_monster ghosteeth,45,spyder_dragonscave_ray,1.5,10"/>
     <property name="act7" value="start_battle player,spyder_dragonscave_ray"/>
     <property name="act8" value="char_talk spyder_dragonscave_ray,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_ray"/>
@@ -401,9 +401,9 @@
     <property name="act03" value="char_face player,spyder_nimrod_tru"/>
     <property name="act04" value="translated_dialog spyder_dragonscave_tru1"/>
     <property name="act05" value="unlock_controls"/>
-    <property name="act06" value="add_monster embazook,45,spyder_nimrod_tru,5,10"/>
-    <property name="act07" value="add_monster arthrobolt,45,spyder_nimrod_tru,5,10"/>
-    <property name="act08" value="add_monster hydrone,45,spyder_nimrod_tru,5,10"/>
+    <property name="act06" value="add_monster embazook,45,spyder_nimrod_tru,1.5,10"/>
+    <property name="act07" value="add_monster arthrobolt,45,spyder_nimrod_tru,1.5,10"/>
+    <property name="act08" value="add_monster hydrone,45,spyder_nimrod_tru,1.5,10"/>
     <property name="act09" value="start_battle player,spyder_nimrod_tru"/>
     <property name="act10" value="translated_dialog spyder_dragonscave_tru2"/>
     <property name="cond1" value="is battle_outcome_count player,won,spyder_nimrod_tru,1"/>
@@ -419,7 +419,7 @@
     <property name="act3" value="char_face player,spyder_dragonscave_lucille"/>
     <property name="act4" value="char_talk spyder_dragonscave_lucille,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster coleorus,45,spyder_dragonscave_lucille,5,10"/>
+    <property name="act6" value="add_monster coleorus,45,spyder_dragonscave_lucille,1.5,10"/>
     <property name="act7" value="start_battle player,spyder_dragonscave_lucille"/>
     <property name="act8" value="char_talk spyder_dragonscave_lucille,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_lucille"/>
@@ -434,7 +434,7 @@
     <property name="act3" value="char_face player,spyder_dragonscave_mal"/>
     <property name="act4" value="char_talk spyder_dragonscave_mal,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster djinnbo,45,spyder_dragonscave_mal,5,10"/>
+    <property name="act6" value="add_monster djinnbo,45,spyder_dragonscave_mal,1.5,10"/>
     <property name="act7" value="start_battle player,spyder_dragonscave_mal"/>
     <property name="act8" value="char_talk spyder_dragonscave_mal,post_battle_lose"/>
     <property name="act9" value="set_variable dragonscavemal:yes"/>

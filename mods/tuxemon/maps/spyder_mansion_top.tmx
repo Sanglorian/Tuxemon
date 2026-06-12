@@ -97,8 +97,8 @@
     <property name="act3" value="char_face player,spyder_top_mickey"/>
     <property name="act4" value="char_talk spyder_top_mickey,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster gectile,25,spyder_top_mickey,5,10"/>
-    <property name="act7" value="add_monster cardiwing,25,spyder_top_mickey,5,10"/>
+    <property name="act6" value="add_monster gectile,25,spyder_top_mickey,1.5,10"/>
+    <property name="act7" value="add_monster cardiwing,25,spyder_top_mickey,1.5,10"/>
     <property name="act8" value="start_battle player,spyder_top_mickey"/>
     <property name="act9" value="char_talk spyder_top_mickey,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_top_mickey"/>
@@ -151,9 +151,9 @@
     <property name="act03" value="char_face player,spyder_top_russell"/>
     <property name="act04" value="char_talk spyder_top_russell,pre_battle"/>
     <property name="act05" value="unlock_controls"/>
-    <property name="act06" value="add_monster av8r,22,spyder_top_russell,5,10"/>
-    <property name="act07" value="add_monster mrmoswitch,22,spyder_top_russell,5,10"/>
-    <property name="act08" value="add_monster k9,22,spyder_top_russell,5,10"/>
+    <property name="act06" value="add_monster av8r,22,spyder_top_russell,1.5,10"/>
+    <property name="act07" value="add_monster mrmoswitch,22,spyder_top_russell,1.5,10"/>
+    <property name="act08" value="add_monster k9,22,spyder_top_russell,1.5,10"/>
     <property name="act09" value="start_battle player,spyder_top_russell"/>
     <property name="act10" value="char_talk spyder_top_russell,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_top_russell"/>
@@ -168,8 +168,8 @@
     <property name="act3" value="char_face player,spyder_top_ricardo"/>
     <property name="act4" value="char_talk spyder_top_ricardo,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster lapinou,22,spyder_top_ricardo,5,10"/>
-    <property name="act7" value="add_monster squabbit,22,spyder_top_ricardo,5,10"/>
+    <property name="act6" value="add_monster lapinou,22,spyder_top_ricardo,1.5,10"/>
+    <property name="act7" value="add_monster squabbit,22,spyder_top_ricardo,1.5,10"/>
     <property name="act8" value="start_battle player,spyder_top_ricardo"/>
     <property name="act9" value="char_talk spyder_top_ricardo,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_top_ricardo"/>
@@ -184,7 +184,7 @@
     <property name="act3" value="char_face player,spyder_top_jackson"/>
     <property name="act4" value="char_talk spyder_top_jackson,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster viviteel,26,spyder_top_jackson,5,10"/>
+    <property name="act6" value="add_monster viviteel,26,spyder_top_jackson,1.5,10"/>
     <property name="act7" value="start_battle player,spyder_top_jackson"/>
     <property name="act8" value="char_talk spyder_top_jackson,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_top_jackson"/>

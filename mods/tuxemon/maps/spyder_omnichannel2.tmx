@@ -17,6 +17,9 @@
  <tileset firstgid="5259" source="../gfx/tilesets/core_indoor_floors.tsx"/>
  <tileset firstgid="9123" source="../gfx/tilesets/core_indoor_walls.tsx"/>
  <tileset firstgid="12987" source="../gfx/tilesets/core_city_and_country.tsx"/>
+ <tileset firstgid="14427" name="Interiors_16x16" tilewidth="16" tileheight="16" tilecount="2592" columns="16">
+  <image source="../gfx/tilesets/Interiors_16x16.png" width="256" height="2592"/>
+ </tileset>
  <layer id="1" name="Tile Layer 1" width="21" height="21">
   <data encoding="base64" compression="zlib">
    eAG7y8vAcJdE/ACoPkILB+ZjYAglA0cA9WwBmokNg+RAZoaTiEH6fCWx41EzR8OTlPQESi+41FOSlqhtJi7zQOLkupMWZoLcgguQ685RM7GH6EgPTwDTKaXs
@@ -29,7 +32,7 @@
  </layer>
  <layer id="3" name="Tile Layer 3" width="21" height="21">
   <data encoding="base64" compression="zlib">
-   eAHFlDlOxEAQAJtDbLB2yrFAAKTcBIgH7BLxAgjhC5xf4PwCx2OAGNhs2ZhDEAAREtViRlitsfBYrGipPJ4ed82hkUVE0lTkpipyC3fQBI16ItKAawjF5/xPNvuu2QmcD3ge4QmenXMV1xq0nfOF/Ksb07qVBX1+R/ZdM0s4u6jrhh7odQ73uXy4fh9txYz5b0LtAN5+xyBtKEbwjUY4p/BMOqZznKF5/iund2AdNsxaNX/Jvq8i9u73oHdgF/aMU/MtfPclnHoHjuHEODX/hu+9hNOvV9uq8WbHyr6PdcC52AFn2f3Zuk3WtgXbsBNYp96p2Nin5gAO4cjUJ/T1TsXGKTVncA4Xpn6cvt6pImH/YUVqfvsm7x+mZzcENRguuD4/V94/TM9uBmZhLtLp3bbVs6tDA5b/yGnnKNr/Aog0Kz0=
+   eAHFlDlOQzEQQIdFUCQRHTsF0LJToIg6SZUTQAlXYL0C6xVYDgPULB1QkyAogAqJN8IW0cg/sRERI73v7/me50XWFxEpFESucyI3cAt3oFHKi5ThCkLxufCTbXzX7CTOJzw1qMOzc67gWoVH53wh/+q+aV11UZ/f0fiumSLODuo6oQu6ncMNlw/X76HtNd/8mFA7gLffMUgbilF8YwnOaTxTjpkMZ2ie/8rpHViDdbNWzV+w78uEvfs96B3YgV3j1Pw9vodfOPUOHMGxcWr+Dd97hrNv2a+qeZsz3uaj476Ot8G51AZn3G5aj9pgbZuwBduBdeqdSo09avbhAA5NfZ6+3qnUOKHmFM7g3NRP0Nc7FRP2HxZT02pM1j9Mz24IhmEkcn1+rqx/mJ7dLMzBfKLTu22rZ1eCMlT+yGnniO1/Aa7gK4c=
   </data>
  </layer>
  <layer id="4" name="Above Player" width="21" height="21">
@@ -281,19 +284,19 @@
   <object id="62" name="Talk Wu No" type="event" x="272" y="160" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog spyder_omnichannel_wu1"/>
+    <property name="behav1" value="talk spyder_omnichannel_wu"/>
     <property name="cond1" value="is char_facing_tile player"/>
     <property name="cond2" value="is button_pressed INTERACT"/>
     <property name="cond3" value="not variable_set omnichannel-ready-wall:yes"/>
-    <property name="behav1" value="talk spyder_omnichannel_wu"/>
    </properties>
   </object>
   <object id="63" name="Talk Wu Yes" type="event" x="272" y="160" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog spyder_omnichannel_wu2"/>
+    <property name="behav1" value="talk spyder_omnichannel_wu"/>
     <property name="cond1" value="is char_facing_tile player"/>
     <property name="cond2" value="is button_pressed INTERACT"/>
     <property name="cond3" value="is variable_set omnichannel-ready-wall:yes"/>
-    <property name="behav1" value="talk spyder_omnichannel_wu"/>
    </properties>
   </object>
  </objectgroup>

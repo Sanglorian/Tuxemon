@@ -14279,6 +14279,9 @@ msgstr ""
 msgid "spyder_route6_gunner2"
 msgstr "You're not a Greenwash employee? I've heard that one before!"
 
+msgid "spyder_route6_mom1"
+msgstr "My latest inventions make training up your team a little less painful. \n"
+
 msgid "spyder_flower_guard"
 msgstr ""
 "Access restricted. Only those who've completed the combat evaluation at "

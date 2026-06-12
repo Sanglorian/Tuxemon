@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="246">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="248">
  <properties>
   <property name="edges" value="clamped"/>
   <property name="map_type" value="route"/>
@@ -618,6 +618,27 @@
     <property name="cond2" value="is current_state WorldState"/>
     <property name="cond3" value="is check_char_parameter player,moving,1"/>
     <property name="cond4" value="is environment_is night_ocean"/>
+   </properties>
+  </object>
+  <object id="246" name="Create Mom" type="event" x="160" y="176" width="16" height="16">
+   <properties>
+    <property name="act1" value="create_npc spyder_papertown_mom,28,29"/>
+    <property name="cond1" value="not char_exists spyder_papertown_mom"/>
+    <property name="cond2" value="not variable_set route6mom:yes"/>
+   </properties>
+  </object>
+  <object id="247" name="Talk Mom" type="event" x="176" y="192" width="16" height="16">
+   <properties>
+    <property name="act01" value="translated_dialog spyder_route6_mom1"/>
+    <property name="act02" value="add_item xp_feeder"/>
+    <property name="act03" value="translated_dialog xp_feeder,,center,center,center"/>
+    <property name="act04" value="add_item xp_transmitter"/>
+    <property name="act05" value="translated_dialog xp_transmitter,,center,center,center"/>
+    <property name="act11" value="pathfind spyder_papertown_mom,4,13"/>
+    <property name="act12" value="remove_npc spyder_papertown_mom"/>
+    <property name="act14" value="set_variable route6mom:yes"/>
+    <property name="behav1" value="talk spyder_papertown_mom"/>
+    <property name="cond1" value="not variable_set route6mom:yes"/>
    </properties>
   </object>
  </objectgroup>

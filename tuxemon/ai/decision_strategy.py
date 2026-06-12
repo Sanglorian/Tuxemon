@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import math
 import random
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
@@ -58,7 +59,7 @@ class AIDecisionStrategy(ABC):
 
     def check_ai_techs(self, user: Monster) -> SingleTechnique | None:
         slug = user.slug if user.wild else user.get_owner().slug
-        return self.ai_techs.techniques.get(slug)
+        return self.ai_techs.techniques.get(slug) or self.ai_techs.techniques.get("default")
 
     def get_fallback_action(
         self, ai: AI, target: Monster
@@ -84,27 +85,34 @@ class AIDecisionStrategy(ABC):
         config: SingleTechnique,
     ) -> tuple[Technique, Monster]:
         """
-        Given a list of (technique, opponent) pairs and a technique config,
-        return the highest-scoring action according to tracker.evaluate_technique().
+        Score each (technique, opponent) pair and sample from a softmax
+        distribution over the scores.  When config.temperature is set,
+        higher temperature means more randomness (less exploitable); lower
+        temperature approaches argmax (deterministic but predictable).
         Falls back to a random valid action if all scores are zero or negative.
         """
-        best_action = None
-        highest_score = float("-inf")
-
+        scored: list[tuple[float, tuple[Technique, Monster]]] = []
         for technique, opponent in valid_actions:
             score = ai.tracker.evaluate_technique(
                 ai.monster, technique, opponent, config
             )
-
             logger.debug(
                 f"AI scoring: {technique.slug} vs {opponent.slug} = {score}"
             )
+            scored.append((score, (technique, opponent)))
 
-            if score > highest_score:
-                highest_score = score
-                best_action = (technique, opponent)
+        if not scored:
+            return random.choice(valid_actions)
 
-        return best_action or random.choice(valid_actions)
+        temperature = config.temperature
+        if temperature and temperature > 0.0:
+            max_score = max(s for s, _ in scored)
+            weights = [math.exp((s - max_score) / temperature) for s, _ in scored]
+            return random.choices([a for _, a in scored], weights=weights, k=1)[0]
+
+        # No temperature set: argmax (legacy behaviour, or scripted trainers).
+        best = max(scored, key=lambda x: x[0])
+        return best[1]
 
 
 class TrainerAIDecisionStrategy(AIDecisionStrategy):

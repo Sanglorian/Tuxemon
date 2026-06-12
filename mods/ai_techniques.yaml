@@ -1,29 +1,45 @@
 techniques:
-  slug: # Can be a monster_slug (wild battle) or trainer_slug (trainer battle).
-    melee_bonus: 1.0  # Optional: Bonus multiplier applied to melee techniques.
-    touch_bonus: 1.0  # Optional: Bonus multiplier applied to touch-based techniques.
-    special_bonus: 1.0  # Optional: Bonus multiplier applied to special techniques.
-    ranged_bonus: 1.0  # Optional: Bonus multiplier applied to ranged techniques.
-    reach_bonus: 1.0  # Optional: Bonus multiplier applied to techniques with extended reach.
-    reliable_bonus: 1.0  # Optional: Bonus multiplier applied to techniques deemed reliable.
+  # ── Default config ────────────────────────────────────────────────────────────
+  # Used for any trainer or wild monster that doesn't have a specific entry below.
+  # Weights were derived from REINFORCE self-play training (500 battles, level 25).
+  #
+  # temperature controls move-selection randomness via softmax sampling:
+  #   low  (e.g. 1.0) → near-deterministic; exploitable by a knowledgeable player.
+  #   mid  (e.g. 6.0) → strategic but unpredictable; ~80% chance of best typed move.
+  #   high (e.g. 20+) → near-random; ignores type chart almost entirely.
+  # Omit temperature (or set to null) to revert to pure argmax (legacy behaviour).
+  default:
+    elemental_multiplier_weight: 4.0   # type effectiveness (dominant factor)
+    power_weight: 2.7                  # normalised move power
+    accuracy_weight: 0.9               # move accuracy
+    potency_weight: 0.6                # DoT/condition potency vs target HP
+    temperature: 6.0
 
-    # Optional: Weight assigned to the base power of a technique. Higher values indicate prioritization of power.
-    power_weight: 1.0
-
-    # Optional: Weight assigned to the accuracy of a technique. Higher values indicate prioritization of precision.
-    accuracy_weight: 1.0
-
-    # Optional: Weight assigned to elemental effectiveness. Higher values indicate prioritization of exploiting elemental advantages.
-    elemental_multiplier_weight: 1.0
-
-    # Optional: Scaling for elemental effectiveness based on opponent's health condition.
-    elemental_health_scaling: 1.0  # Higher values increase effectiveness against opponents with high health.
-    elemental_health_threshold: 1.0  # Threshold for scaling; effectiveness applies if opponent's health is above this percentage.
-
-    # Optional: Threshold and weight for rewarding healing techniques based on the target's health.
-    health_priority_threshold: 0.5  # Techniques are rewarded if the target's health is below this percentage.
-    healing_weight: 1.5  # Determines the significance of healing effectiveness.
-
-    # Optional: Threshold and weight for penalizing healing techniques if the target's health is near full.
-    healing_penalty_threshold: 0.9  # Techniques are penalized if the target's health is above this percentage.
-    healing_penalty_weight: 0.5  # Determines the significance of the penalty applied.
+  # ── Per-trainer / per-monster overrides ───────────────────────────────────────
+  # Key can be a trainer slug (trainer battle) or monster slug (wild battle).
+  # Any field left out inherits nothing from default — specify all relevant fields.
+  # Lower temperature = sharper / harder AI.  Higher = more forgiving / erratic.
+  #
+  # Example — a hard final-boss trainer:
+  #   galaxy_master:
+  #     elemental_multiplier_weight: 4.0
+  #     power_weight: 2.7
+  #     accuracy_weight: 0.9
+  #     potency_weight: 0.6
+  #     temperature: 2.0   # sharper: best move chosen ~96% of the time
+  #
+  # Example — a beginner trainer (more forgiving):
+  #   youngster_bob:
+  #     elemental_multiplier_weight: 4.0
+  #     power_weight: 2.7
+  #     accuracy_weight: 0.9
+  #     potency_weight: 0.6
+  #     temperature: 15.0  # near-random; type chart barely influences choices
+  #
+  # sim_trainer: used by the battle simulator's learned policy (do not remove).
+  sim_trainer:
+    elemental_multiplier_weight: 4.0
+    power_weight: 2.7
+    accuracy_weight: 0.9
+    potency_weight: 0.6
+    temperature: 6.0

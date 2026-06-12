@@ -1871,11 +1871,11 @@ def run_learn(
     print(f"\n── Final switch weights ─────────────────────────────")
     sw_ranked = sorted(
         [
-            ("type advantage",      switch_policy.w_type_adv),
-            ("type resistance",     switch_policy.w_type_res),
-            ("HP fraction",         switch_policy.w_hp),
-            ("avoid disabled-in",   switch_policy.w_cand_disabled),
-            ("avoid DoT-in",        switch_policy.w_cand_dot),
+            ("type advantage",      switch_a.w_type_adv),
+            ("type resistance",     switch_a.w_type_res),
+            ("HP fraction",         switch_a.w_hp),
+            ("avoid disabled-in",   switch_a.w_cand_disabled),
+            ("avoid DoT-in",        switch_a.w_cand_dot),
         ],
         key=lambda x: -x[1],
     )
@@ -1898,11 +1898,11 @@ def run_learn(
     print(f"  {'Opponent':<14}  {'W':>4}  {'L':>4}  {'D':>4}  {'Win%':>6}")
     print(f"  {'─'*14}  {'─'*4}  {'─'*4}  {'─'*4}  {'─'*6}")
     sp_bench = SwitchPolicy(
-        w_type_adv=switch_policy.w_type_adv,
-        w_type_res=switch_policy.w_type_res,
-        w_hp=switch_policy.w_hp,
-        w_cand_disabled=switch_policy.w_cand_disabled,
-        w_cand_dot=switch_policy.w_cand_dot,
+        w_type_adv=switch_a.w_type_adv,
+        w_type_res=switch_a.w_type_res,
+        w_hp=switch_a.w_hp,
+        w_cand_disabled=switch_a.w_cand_disabled,
+        w_cand_dot=switch_a.w_cand_dot,
     )
     for opp_team in designed:
         w = l = d = 0

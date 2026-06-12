@@ -117,8 +117,15 @@ def technique_score(
             )
     breakdown["healing"] = healing_score
 
-    # Potency weighted by target HP: conditions tick more times on healthier targets,
-    # so fester vs a 10%-HP target is nearly worthless vs a 100%-HP target.
+    # Potency weighted by target HP: a pure DoT (e.g. poison/burn) ticks more times
+    # before the target dies, so it yields more total damage on a 100%-HP target than
+    # a 10%-HP one. This is a throughput approximation only — it deliberately ignores
+    # two tactical cases where a low-HP target is the *better* condition target:
+    #   - healing denial (festering blocks healing): most valuable against a low-HP
+    #     enemy trying to recover, ~worthless against a full-HP one — the opposite of
+    #     the weighting below.
+    #   - finishing DoTs: poison/burn on an ~8%-HP target can secure the KO without
+    #     spending another attack, which the raw tick count undervalues.
     potency_score = 0.0
     if config.potency_weight:
         potency_score = (technique.potency or 0.0) * opponent.hp_ratio * config.potency_weight

@@ -107,6 +107,9 @@ class SingleTechnique:
     healing_penalty_threshold: float | None = None
     healing_penalty_weight: float | None = None
     temperature: float | None = None
+    speed_weight: float | None = None
+    speed_urgency_threshold: float | None = None
+    speed_urgency_scale: float | None = None
 
 
 @dataclass

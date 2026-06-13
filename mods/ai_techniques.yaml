@@ -33,6 +33,15 @@ techniques:
   #   Useful for making the AI focus type advantage more on fresh opponents.
   # elemental_health_threshold: HP fraction above which elemental_health_scaling applies.
   #
+  # speed_weight: base preference for faster techniques. Normalized technique speed
+  #   runs from -1.0 (extremely_slow) to +1.0 (extremely_fast); multiplied by this
+  #   weight and added to the score.  Positive = prefer fast moves; negative = prefer
+  #   slow (powerful) moves; null = ignore speed entirely.
+  # speed_urgency_threshold: HP fraction below which speed preference is amplified.
+  #   e.g. 0.3 means "when below 30% HP, value speed more urgently."
+  # speed_urgency_scale: multiplier applied to speed_weight when below the urgency
+  #   threshold. e.g. 3.0 means speed matters 3× more when near death.
+  #
   # health_priority_threshold: reward healing moves when user HP < this fraction
   # healing_weight: reward magnitude for healing when below threshold
   # healing_penalty_threshold: penalise healing moves when user HP > this fraction

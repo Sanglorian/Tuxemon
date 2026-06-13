@@ -1385,7 +1385,7 @@ _STATUS_CLASS: dict[str, str] = {
 }
 
 # Weights for self-conditions (costs) and enemy-buffs (bad for us) may go negative.
-_SIGNED_WEIGHTS: frozenset[str] = frozenset({"w_s_dis", "w_s_dot", "w_s_dbf", "w_e_buf"})
+_SIGNED_WEIGHTS: frozenset[str] = frozenset({"w_s_dis", "w_s_dot", "w_s_dbf", "w_e_buf", "w_speed"})
 
 
 def _cached_technique(slug: str) -> "Technique | None":
@@ -1467,6 +1467,7 @@ def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
             "self_buff_atk": 0.0, "self_buff_def": 0.0, "self_buff_heal": 0.0,
             "enemy_buff": 0.0,
             "recharge_val": 1.0,
+            "speed": 0.0,
         }
 
     target_types = _cached_mon_types(target_slug)
@@ -1496,6 +1497,7 @@ def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
         "self_buff_heal": cond.get("self_buff_heal", 0.0),
         "enemy_buff":     cond.get("enemy_buff", 0.0),
         "recharge_val": recharge_val,
+        "speed": tech.speed / 3.0,
     }
 
 
@@ -1506,6 +1508,7 @@ _FEAT_KEYS = (
     "self_buff_atk", "self_buff_def", "self_buff_heal",
     "enemy_buff",
     "recharge_val",
+    "speed",
 )
 _FEAT_ATTRS = {
     "type_mult":      "w_type",
@@ -1523,6 +1526,7 @@ _FEAT_ATTRS = {
     "self_buff_heal": "w_s_bheal",
     "enemy_buff":     "w_e_buf",
     "recharge_val":   "w_recharge",
+    "speed":          "w_speed",
 }
 
 
@@ -1547,6 +1551,7 @@ class PolicyWeights:
     # Enemy-applied buffs (negative: bad when the opponent buffs themselves)
     w_e_buf: float = -0.5   # enemy gets buffed (sudden_glow → focused on enemy)
     w_recharge: float = 0.5 # reliability: 1/(1+recharge_turns)
+    w_speed: float = 0.0   # technique speed (-1=extremely_slow … +1=extremely_fast); signed
     lr: float = 0.05
 
     def inject(self) -> None:
@@ -1560,6 +1565,7 @@ class PolicyWeights:
             power_weight=self.w_power,
             accuracy_weight=self.w_acc,
             potency_weight=self.w_e_dot,
+            speed_weight=self.w_speed,
         )
 
     def update(
@@ -1594,7 +1600,8 @@ class PolicyWeights:
                 f"s_dis={self.w_s_dis:.3f} s_dot={self.w_s_dot:.3f} "
                 f"s_dbf={self.w_s_dbf:.3f} "
                 f"s_batk={self.w_s_batk:.3f} s_bdef={self.w_s_bdef:.3f} "
-                f"s_bheal={self.w_s_bheal:.3f} | rch={self.w_recharge:.3f}")
+                f"s_bheal={self.w_s_bheal:.3f} | rch={self.w_recharge:.3f} "
+                f"spd={self.w_speed:.3f}")
 
 
 @dataclass
@@ -1860,6 +1867,7 @@ def run_learn(
         ("→ self def buff",       move_policy.w_s_bdef),
         ("→ self regen buff",     move_policy.w_s_bheal),
         ("reliability",           move_policy.w_recharge),
+        ("technique speed",       move_policy.w_speed),
     ]
     move_ranked = sorted(move_items, key=lambda x: -x[1])
     mmax = max(abs(w) for _, w in move_ranked) if move_ranked else 1.0

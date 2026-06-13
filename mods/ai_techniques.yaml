@@ -13,6 +13,8 @@ techniques:
     power_weight: 2.7                  # normalised move power
     accuracy_weight: 0.9               # move accuracy
     potency_weight: 0.6                # DoT/condition potency vs target HP
+    speed_weight: -0.37                # negative: slow moves are typically more powerful;
+                                       # set positive to reward fast moves (e.g. glass-cannon builds)
     temperature: 6.0
 
   # ── All available fields (reference) ─────────────────────────────────────────
@@ -75,4 +77,5 @@ techniques:
     power_weight: 2.7
     accuracy_weight: 0.9
     potency_weight: 0.6
+    speed_weight: -0.37
     temperature: 6.0

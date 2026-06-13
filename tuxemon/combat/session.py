@@ -450,16 +450,23 @@ class CombatSession:
                 if status:
                     status.use(session, EffectPhase.ON_DECISION)
 
-    def apply_statuses(self, session: Session) -> None:
+    def apply_statuses(
+        self, session: Session
+    ) -> list[tuple[Status, Monster]]:
         """
-        Applies and updates status effects for all active monsters.
+        Returns validated (status, monster) pairs for this turn, with turn
+        counters already incremented. The caller executes and records each
+        entry so that execution-time checks (e.g. status already cleared by
+        a curative item) are possible without pre-queuing.
         """
+        to_apply = []
         for monster in self.active_monsters:
             for status in monster.status.get_statuses():
                 if len(self.remaining_players) > 1:
                     if status.validate_monster(session, monster):
                         status.tick_turn()
-                        self.enqueue_action(None, status, monster)
+                        to_apply.append((status, monster))
+        return to_apply
 
     def track_enemy_monsters(self, session: Session) -> None:
         """

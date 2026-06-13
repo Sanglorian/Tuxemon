@@ -47,6 +47,7 @@ from tuxemon.ai.manager import AIManager
 from tuxemon.animation import Task, TaskBase
 from tuxemon.animation_entity import AnimationManager
 from tuxemon.combat.combat_context import CombatContext
+from tuxemon.combat.action_queue import EnqueuedAction
 from tuxemon.combat.machine import CombatMachine, CombatPhase
 from tuxemon.combat.reward_system import RewardSystem
 from tuxemon.combat.utils import get_battle_outcome_music, track_battles
@@ -275,7 +276,13 @@ class CombatState(CombatAnimations):
             if c_session.action_queue.pending:
                 c_session.action_queue.autoclean_pending()
                 c_session.action_queue.from_pending_to_action(c_session.turn)
-            c_session.apply_statuses(self.session)
+            for status, monster in c_session.apply_statuses(self.session):
+                self._handle_status(status, monster)
+                c_session.action_queue.history.add_action(
+                    c_session.turn, EnqueuedAction(None, status, monster)
+                )
+            self.task(self.check_party_hp, interval=1)
+            self.task(self.animate_party_status, interval=3)
 
         elif (
             phase == CombatPhase.RESOLVE_MATCH or phase == CombatPhase.RAN_AWAY

@@ -15,9 +15,33 @@ techniques:
     potency_weight: 0.6                # DoT/condition potency vs target HP
     temperature: 6.0
 
+  # ── All available fields (reference) ─────────────────────────────────────────
+  # Any field omitted from an entry is treated as None (feature disabled).
+  # Fields not set in a per-trainer entry do NOT inherit from default.
+  #
+  # Range bonuses — flat bonus added to the score for moves of that range type:
+  #   melee_bonus, touch_bonus, ranged_bonus, reach_bonus, reliable_bonus, special_bonus
+  #
+  # power_weight: weight on normalised move power (power / 3.0)
+  # accuracy_weight: weight on move accuracy (0.0–1.0)
+  # potency_weight: weight on condition potency × target HP ratio
+  #   (models DoT throughput — more ticks on a healthy target)
+  #
+  # elemental_multiplier_weight: weight on type-effectiveness multiplier
+  # elemental_health_scaling: scale the effectiveness score by this factor when
+  #   the opponent's current HP is above elemental_health_threshold (fraction 0–1).
+  #   Useful for making the AI focus type advantage more on fresh opponents.
+  # elemental_health_threshold: HP fraction above which elemental_health_scaling applies.
+  #
+  # health_priority_threshold: reward healing moves when user HP < this fraction
+  # healing_weight: reward magnitude for healing when below threshold
+  # healing_penalty_threshold: penalise healing moves when user HP > this fraction
+  # healing_penalty_weight: penalty magnitude when above threshold
+  #
+  # temperature: softmax temperature for move selection (see default block above)
+  #
   # ── Per-trainer / per-monster overrides ───────────────────────────────────────
   # Key can be a trainer slug (trainer battle) or monster slug (wild battle).
-  # Any field left out inherits nothing from default — specify all relevant fields.
   # Lower temperature = sharper / harder AI.  Higher = more forgiving / erratic.
   #
   # Example — a hard final-boss trainer:

@@ -12908,6 +12908,15 @@ msgstr ""
 "Don't you even think of trying to steal your tuxemon back from the Hospital.\n"
 " The scanners are set up to reject all known tuxemon and human DNA!"
 
+msgid "spyder_dante_candy"
+msgstr "Oh darn, they took your monsters? I've been thinking about that.\n"
+" They don't exactly keep the fusebox under lock and key.\n"
+" Meet me in the lobby and I'll tell you what I've got planned."
+
+msgid "spyder_hospital_dante1"
+msgstr "Okay, I've switched the lights off.\n"
+" This is your best shot to get your monsters back."
+
 msgid "spyder_route4_billie1"
 msgstr "I've got all the latest gear and the best tuxemon. What have you got?"
 
@@ -14901,11 +14910,13 @@ msgstr ""
 
 msgid "spyder_hospital1_scientist1"
 msgstr ""
-"We didn't want these tuxemon to be seized, but while they're here we're "
-"going to look after them."
+"We didn't want these tuxemon to be seized, but while they're here we're going to look after them.\n"
+" Here, I snuck one of your monsters out. It should be healed of the disease, too."
 
 msgid "spyder_hospital1_scientist2"
-msgstr "Let's make the most of the situation."
+msgstr "Let's make the most of the situation.\n"
+" Here's a monster of yours, out of quarantine.\n"
+" Don't tell anyone I fetched it for you."
 
 msgid "spyder_hospital2_scientist2"
 msgstr "Psst! Look familiar?"

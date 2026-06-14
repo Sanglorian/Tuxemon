@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="11" nextobjectid="111">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="11" nextobjectid="112">
  <properties>
   <property name="inside" type="bool" value="true"/>
   <property name="map_type" value="dungeon"/>
@@ -344,7 +344,7 @@
     <property name="cond2" value="is button_pressed INTERACT"/>
    </properties>
   </object>
-  <object id="107" name="Passcode Number" type="event" x="144" y="192" width="16" height="16">
+  <object id="108" name="Passcode Number" type="event" x="144" y="192" width="16" height="16">
    <properties>
     <property name="act10" value="translated_dialog spyder_hospital_passcode_number"/>
     <property name="act20" value="translated_dialog_choice 2!:02:05:10:2F:II:B:..---,passcode_number"/>
@@ -352,7 +352,7 @@
     <property name="cond2" value="not variable_set passcode_number"/>
    </properties>
   </object>
-  <object id="108" name="Passcode Correct" type="event" x="144" y="192" width="16" height="16">
+  <object id="109" name="Passcode Correct" type="event" x="144" y="192" width="16" height="16">
    <properties>
     <property name="act10" value="transition_teleport player,spyder_candy_hospital2.tmx,11,15,0.3"/>
     <property name="act20" value="clear_variable passcode_color,passcode_number"/>
@@ -360,7 +360,7 @@
     <property name="cond2" value="is variable_set passcode_number:10"/>
    </properties>
   </object>
-  <object id="109" name="Passcode Rejected Color" type="event" x="144" y="192" width="16" height="16">
+  <object id="110" name="Passcode Rejected Color" type="event" x="144" y="192" width="16" height="16">
    <properties>
     <property name="act10" value="translated_dialog spyder_hospital_passcode_rejected"/>
     <property name="act20" value="clear_variable passcode_color,passcode_number"/>
@@ -368,7 +368,7 @@
     <property name="cond2" value="not variable_set passcode_color:blue"/>
    </properties>
   </object>
-  <object id="110" name="Passcode Rejected Number" type="event" x="144" y="192" width="16" height="16">
+  <object id="111" name="Passcode Rejected Number" type="event" x="144" y="192" width="16" height="16">
    <properties>
     <property name="act10" value="translated_dialog spyder_hospital_passcode_rejected"/>
     <property name="act20" value="clear_variable passcode_color,passcode_number"/>

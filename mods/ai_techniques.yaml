@@ -83,3 +83,15 @@ techniques:
     speed_weight: -0.66
     speed_urgency_weight: -0.09
     temperature: 6.0
+
+  # sim_trainer_doubles: separate weights for doubles — trained independently so that
+  # AoE and spread dynamics do not bleed into the singles policy.
+  # Seed values match sim_trainer; update after: python scripts/battle_sim.py --learn N -d
+  sim_trainer_doubles:
+    elemental_multiplier_weight: 4.0
+    power_weight: 2.7
+    accuracy_weight: 0.9
+    potency_weight: 0.6
+    speed_weight: -0.66
+    speed_urgency_weight: -0.09
+    temperature: 6.0

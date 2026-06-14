@@ -1571,20 +1571,22 @@ class PolicyWeights:
     w_speed: float = 0.0        # technique speed (-1=extremely_slow … +1=extremely_fast); signed
     w_speed_urgent: float = 0.0 # speed × (1 - user_hp_ratio): extra value of speed when near death
     lr: float = 0.05
+    key: str = "sim_trainer"    # ai_techniques.yaml key to inject into; use "sim_trainer_doubles" for doubles
 
     def inject(self) -> None:
-        """Write current weights into the AIConfigLoader cache under 'sim_trainer'."""
+        """Write current weights into the AIConfigLoader cache under self.key."""
         from tuxemon.ai.ai import AIConfigLoader, SingleTechnique
         ai_techs = AIConfigLoader.get_ai_techniques("ai_techniques.yaml")
         # potency_weight maps to w_e_dot: technique_score uses potency × hp_ratio
         # which is correct for DoT (more ticks on healthy targets).
-        ai_techs.techniques["sim_trainer"] = SingleTechnique(
+        ai_techs.techniques[self.key] = SingleTechnique(
             elemental_multiplier_weight=self.w_type,
             power_weight=self.w_power,
             accuracy_weight=self.w_acc,
             potency_weight=self.w_e_dot,
             speed_weight=self.w_speed,
             speed_urgency_weight=self.w_speed_urgent,
+            temperature=6.0,
         )
 
     def update(
@@ -1795,16 +1797,18 @@ def run_learn(
     _ensure_routing_policy()
     pool = get_monster_pool()
     fmt = "Double" if is_double else "Single"
+    techs_key = "sim_trainer_doubles" if is_double else "sim_trainer"
 
     print(f"Learn [{fmt}]: {n_battles} training battles | "
           f"eval every {eval_every} | team_size={team_size} | level={level} | lr={lr}")
+    print(f"  Weights stored under key '{techs_key}' (singles and doubles kept separate)")
     print("  Self-play — REINFORCE on move weights (15) + switch weights (5)\n")
     print(f"  {'Battle':>8}  {'Win%':>6}  "
           f"{'── Move ──────────────────────────────':38}  "
           f"── Switch ───────────────────────────")
     print(f"  {'─'*8}  {'─'*6}  {'─'*38}  {'─'*38}")
 
-    move_policy = PolicyWeights(lr=lr)
+    move_policy = PolicyWeights(lr=lr, key=techs_key)
     switch_a = SwitchPolicy(lr=lr)
     switch_b = SwitchPolicy(lr=lr)
     move_policy.inject()
@@ -1818,8 +1822,8 @@ def run_learn(
         if not team_a or not team_b:
             continue
 
-        npc_a = SimNPC("SelfPlayA", team_a, slug="sim_trainer")
-        npc_b = SimNPC("SelfPlayB", team_b, slug="sim_trainer")
+        npc_a = SimNPC("SelfPlayA", team_a, slug=techs_key)
+        npc_b = SimNPC("SelfPlayB", team_b, slug=techs_key)
         slugs_a = {m.slug for m in npc_a.monsters}
         slugs_b = {m.slug for m in npc_b.monsters}
         switch_a.switch_log.clear()
@@ -1846,7 +1850,7 @@ def run_learn(
                 tb = build_random_team(pool, team_size, level)
                 if not ta or not tb:
                     continue
-                na = SimNPC("EvalPolicy", ta, slug="sim_trainer")
+                na = SimNPC("EvalPolicy", ta, slug=techs_key)
                 nb = SimNPC("EvalRandom", tb, slug="rng_trainer")
                 sp_eval = SwitchPolicy(
                     w_type_adv=switch_a.w_type_adv,
@@ -1938,7 +1942,7 @@ def run_learn(
             ta = build_random_team(pool, team_size, level)
             if not ta:
                 continue
-            na = SimNPC("LearnedPolicy", ta, slug="sim_trainer")
+            na = SimNPC("LearnedPolicy", ta, slug=techs_key)
             nb = opp_team.make_npc()
             try:
                 r = run_battle(na, nb, is_double=is_double,
@@ -2081,7 +2085,8 @@ def _train_policies(
 ) -> tuple[PolicyWeights, SwitchPolicy]:
     """Run self-play REINFORCE training and return trained (move_policy, switch_policy)."""
     pool = get_monster_pool()
-    move_policy = PolicyWeights(lr=lr)
+    techs_key = "sim_trainer_doubles" if is_double else "sim_trainer"
+    move_policy = PolicyWeights(lr=lr, key=techs_key)
     switch_a = SwitchPolicy(lr=lr)
     switch_b = SwitchPolicy(lr=lr)
     move_policy.inject()
@@ -2095,8 +2100,8 @@ def _train_policies(
         tb = build_random_team(pool, team_size, level)
         if not ta or not tb:
             continue
-        na = SimNPC("SelfPlayA", ta, slug="sim_trainer")
-        nb = SimNPC("SelfPlayB", tb, slug="sim_trainer")
+        na = SimNPC("SelfPlayA", ta, slug=techs_key)
+        nb = SimNPC("SelfPlayB", tb, slug=techs_key)
         slugs_a = {m.slug for m in na.monsters}
         slugs_b = {m.slug for m in nb.monsters}
         switch_a.switch_log.clear()
@@ -2252,6 +2257,145 @@ def run_evo(
     print()
 
 
+# ── Hill-climb team optimizer ─────────────────────────────────────────────────
+
+def _hillclimb_mutate_one(
+    evo: EvoTeam, pool: list[str], tech_pool: list[str],
+) -> EvoTeam:
+    """Mutate exactly one slot: either swap one monster or change one technique."""
+    slugs = list(evo.slugs)
+    overrides = {k: list(v) for k, v in evo.tech_overrides.items()}
+
+    available_mons = [s for s in pool if s not in slugs]
+    can_swap_mon = bool(available_mons)
+    can_swap_tech = len(tech_pool) >= 4 and bool(slugs)
+
+    if can_swap_mon and can_swap_tech:
+        swap_mon = random.random() < 0.5
+    else:
+        swap_mon = can_swap_mon
+
+    if swap_mon:
+        idx = random.randrange(len(slugs))
+        old = slugs[idx]
+        slugs[idx] = random.choice(available_mons)
+        overrides.pop(old, None)
+        if len(tech_pool) >= 4:
+            overrides[slugs[idx]] = random.sample(tech_pool, 4)
+    elif can_swap_tech:
+        mon_slug = random.choice(slugs)
+        if mon_slug not in overrides:
+            overrides[mon_slug] = random.sample(tech_pool, 4)
+        moves = overrides[mon_slug]
+        moves[random.randrange(len(moves))] = random.choice(tech_pool)
+
+    return EvoTeam(name=evo.name, slugs=slugs, tech_overrides=overrides)
+
+
+def run_hillclimb(
+    n_battles: int,
+    team_size: int,
+    level: int,
+    is_double: bool = False,
+    window: int = 50,
+    ai_factory: "Any | None" = None,
+) -> None:
+    """
+    Hill-climbing team optimizer: random walk that mutates one slot per loss.
+
+    Starts with a random team. After each loss, mutates exactly one slot —
+    either swaps one monster for another from the pool, or changes one technique
+    on one monster. Reports rolling win rate every `window` battles and benchmarks
+    the best team found against all designed teams at the end.
+    """
+    _ensure_routing_policy()
+    pool = get_monster_pool()
+    tech_pool = _load_tech_pool()
+    fmt = "Double" if is_double else "Single"
+    techs_key = "sim_trainer_doubles" if is_double else "sim_trainer"
+
+    print(f"Hillclimb [{fmt}]: {n_battles} battles | window={window} | "
+          f"team_size={team_size} | level={level}")
+    print(f"  Monster pool: {len(pool)} species | Technique pool: {len(tech_pool)} moves\n")
+
+    if len(tech_pool) < 4:
+        print("Error: technique pool too small; check min_power/min_acc thresholds.")
+        return
+
+    current = _evo_random_team(pool, tech_pool, team_size, "HC-start")
+    best: EvoTeam = current.copy("HC-best")
+    best_wr = 0.0
+    wins_window: list[bool] = []
+    mutations = 0
+
+    report_every = max(1, window // 5)
+    win_col = f"Win%(w={window})"
+    print(f"  {'Battle':>8}  {win_col:>14}  {'Mutations':>10}  Team")
+    print(f"  {'─'*8}  {'─'*14}  {'─'*10}  {'─'*40}")
+
+    for i in range(1, n_battles + 1):
+        opp = _evo_random_team(pool, tech_pool, team_size, "opp")
+        npc_a = current.to_team(level).make_npc()
+        npc_a.slug = techs_key
+        npc_b = opp.to_team(level).make_npc()
+        try:
+            result = run_battle(npc_a, npc_b, is_double=is_double, ai_factory=ai_factory)
+        except Exception:
+            continue
+
+        won = result.winner is npc_a
+        wins_window.append(won)
+        if len(wins_window) > window:
+            wins_window.pop(0)
+
+        if not won:
+            current = _hillclimb_mutate_one(current, pool, tech_pool)
+            current.name = f"HC-{i:05d}"
+            mutations += 1
+
+        if i % report_every == 0:
+            wr = sum(wins_window) / len(wins_window) if wins_window else 0.0
+            if wr > best_wr:
+                best_wr = wr
+                best = current.copy(f"HC-best@{i}")
+            roster = " ".join(current.slugs[:3]) + ("…" if len(current.slugs) > 3 else "")
+            print(f"  {i:>8}  {wr*100:>13.1f}%  {mutations:>10}  {roster}")
+
+    print(f"\n── Best team found (rolling win rate {best_wr*100:.1f}%) ──────────────────")
+    print(f"  Monsters: {' '.join(best.slugs)}")
+    print("  Moveset:")
+    for slug_m in best.slugs:
+        moves = best.tech_overrides.get(slug_m, ["(natural)"])
+        print(f"    {slug_m:<30}  {', '.join(moves)}")
+
+    designed = make_designed_teams(level)
+    bench_n = 20
+    print(f"\n── Best team vs designed teams ({bench_n} battles each) ──────────────────")
+    print(f"  {'Opponent':<14}  {'W':>4}  {'L':>4}  {'D':>4}  {'Win%':>6}")
+    print(f"  {'─'*14}  {'─'*4}  {'─'*4}  {'─'*4}  {'─'*6}")
+    for opp_team in designed:
+        w = l = d = 0
+        for _ in range(bench_n):
+            npc_c = best.to_team(level).make_npc()
+            npc_c.slug = techs_key
+            npc_o = opp_team.make_npc()
+            try:
+                result = run_battle(npc_c, npc_o, is_double=is_double, ai_factory=ai_factory)
+            except Exception:
+                continue
+            if result.winner is npc_c:
+                w += 1
+            elif result.winner is npc_o:
+                l += 1
+            else:
+                d += 1
+        total = w + l + d
+        pct = w / total * 100 if total else 0.0
+        bar = _bar(int(pct), 100, width=15)
+        print(f"  {opp_team.name:<14}  {w:>4}  {l:>4}  {d:>4}  {bar} {pct:>5.1f}%")
+    print()
+
+
 # ── Shared stats printer ───────────────────────────────────────────────────────
 
 def _print_stats(stats: Stats, top_n: int = 15) -> None:
@@ -2311,6 +2455,10 @@ def main() -> None:
     mode.add_argument(
         "--learn", type=int, metavar="N",
         help="Learn: train a move-scoring policy via REINFORCE for N battles",
+    )
+    mode.add_argument(
+        "--hillclimb", type=int, metavar="N",
+        help="Hillclimb: random-walk team optimizer — mutate one slot per loss over N battles",
     )
     parser.add_argument(
         "-n", "--battles", type=int, default=20,
@@ -2383,6 +2531,15 @@ def main() -> None:
     elif args.learn:
         run_learn(args.learn, args.eval_every, args.eval_battles, team_size,
                   args.level, is_double=args.doubles, lr=args.lr)
+    elif args.hillclimb:
+        hc_factory = None
+        if args.pre_learn > 0:
+            print(f"── Pre-training AI policy ({args.pre_learn} battles) ──────────────")
+            _, sw = _train_policies(args.pre_learn, team_size, args.level,
+                                    is_double=args.doubles, lr=args.lr)
+            hc_factory = lambda s, _sw=sw: LearningAIManager(s, _sw)
+        run_hillclimb(args.hillclimb, team_size, args.level,
+                      is_double=args.doubles, ai_factory=hc_factory)
     else:
         simulate(args.battles, team_size, args.level, is_double=args.doubles)
 

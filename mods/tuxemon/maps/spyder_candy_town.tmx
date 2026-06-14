@@ -451,6 +451,7 @@
     <property name="act40" value="set_variable party_sick:yes"/>
     <property name="act45" value="pathfind spyder_candy_henrik,30,0"/>
     <property name="act50" value="set_variable confiscation_done:yes"/>
+    <property name="act55" value="set_teleport_faint player,spyder_candy_cafe.tmx,1,10"/>
     <property name="act60" value="char_face spyder_candy_henrik,down"/>
     <property name="act70" value="unlock_controls"/>
     <property name="cond1" value="is variable_set confiscation_candy:yes"/>

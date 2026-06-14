@@ -15027,6 +15027,9 @@ msgstr ""
 msgid "spyder_river_captain2"
 msgstr "Ahoy there! Where would you like to go?"
 
+msgid "spyder_river_captain_nomonsters"
+msgstr "Sorry skipper, I can't take you if you have no monsters to protect yourself."
+
 msgid "spyder_mansion_magician1"
 msgstr ""
 "Welcome to the Bazaar Mansion.\n"

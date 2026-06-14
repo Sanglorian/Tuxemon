@@ -117,18 +117,19 @@ def technique_score(
             )
     breakdown["healing"] = healing_score
 
-    # Speed: normalized to [-1, 1] (extremely_slow=-1, normal=0, extremely_fast=+1).
-    # Urgency scales the weight up when the user is at low HP — going first matters
-    # more when a hit could be fatal.  At full HP the weight is applied as-is.
+    # Speed: two additive terms, both derived from normalised technique speed
+    # (extremely_slow=-1, normal=0, extremely_fast=+1).
+    #   speed_weight       — baseline preference (negative = prefer slow/powerful moves)
+    #   speed_urgency_weight — extra weight scaled by (1 − user HP ratio): zero at
+    #                          full HP, grows linearly as HP falls.  Positive means
+    #                          "prefer fast moves more urgently when near death."
+    # Both weights can be trained via REINFORCE and are independently signed.
+    normalized_speed = technique.speed / 3.0
     speed_score = 0.0
     if config.speed_weight:
-        normalized_speed = technique.speed / 3.0
-        urgency = 1.0
-        if (config.speed_urgency_threshold
-                and user.hp_ratio < config.speed_urgency_threshold
-                and config.speed_urgency_scale):
-            urgency = config.speed_urgency_scale
-        speed_score = normalized_speed * config.speed_weight * urgency
+        speed_score += normalized_speed * config.speed_weight
+    if config.speed_urgency_weight:
+        speed_score += normalized_speed * (1.0 - user.hp_ratio) * config.speed_urgency_weight
     breakdown["speed"] = speed_score
 
     # Potency weighted by target HP: a pure DoT (e.g. poison/burn) ticks more times

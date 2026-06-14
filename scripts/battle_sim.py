@@ -23,7 +23,7 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -163,8 +163,13 @@ def _ensure_routing_policy() -> None:
 
 # ── Action resolution ──────────────────────────────────────────────────────────
 
-# Action log entries: (turn, user_slug, tech_slug, target_slug, success)
-ActionEntry = tuple[int, str, str, str, bool]
+class ActionEntry(NamedTuple):
+    turn: int
+    user_slug: str
+    tech_slug: str
+    target_slug: str
+    success: bool
+    user_hp_ratio: float = 1.0  # user's HP fraction before the technique fires
 
 
 def _resolve_action(
@@ -175,10 +180,12 @@ def _resolve_action(
     user, method, target = action.user, action.method, action.target
 
     if isinstance(method, Technique) and isinstance(user, Monster):
+        hp_ratio = user.current_hp / user.hp if user.hp > 0 else 0.0
         result, _ = c_session.apply_technique(session, method, user, target)
         if result.should_tackle:
             c_session.enqueue_damage(user, target, result.damage)
-        return (c_session.turn, user.slug, method.slug, target.slug, result.success)
+        return ActionEntry(c_session.turn, user.slug, method.slug, target.slug,
+                           result.success, hp_ratio)
 
     elif isinstance(method, Status):
         c_session.apply_status(session, method, target, EffectPhase.PERFORM_STATUS)
@@ -951,8 +958,8 @@ class Stats:
         for mon in npc_b.monsters:
             self.monster_appearances[mon.slug] += 1
 
-        for _t, user_slug, tech_slug, _tgt, _ok in result.action_log:
-            self.total_tech_uses[tech_slug] += 1
+        for entry in result.action_log:
+            self.total_tech_uses[entry.tech_slug] += 1
 
         if result.winner is not None:
             winner_slug_set = set(result.winner_monster_slugs)
@@ -960,9 +967,9 @@ class Stats:
                 self.monster_wins[slug] += 1
             for slug in result.winner_surviving_slugs:
                 self.monster_survivals[slug] += 1
-            for _t, user_slug, tech_slug, _tgt, _ok in result.action_log:
-                if user_slug in winner_slug_set:
-                    self.winning_tech_uses[tech_slug] += 1
+            for entry in result.action_log:
+                if entry.user_slug in winner_slug_set:
+                    self.winning_tech_uses[entry.tech_slug] += 1
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -1385,7 +1392,7 @@ _STATUS_CLASS: dict[str, str] = {
 }
 
 # Weights for self-conditions (costs) and enemy-buffs (bad for us) may go negative.
-_SIGNED_WEIGHTS: frozenset[str] = frozenset({"w_s_dis", "w_s_dot", "w_s_dbf", "w_e_buf", "w_speed"})
+_SIGNED_WEIGHTS: frozenset[str] = frozenset({"w_s_dis", "w_s_dot", "w_s_dbf", "w_e_buf", "w_speed", "w_speed_urgent"})
 
 
 def _cached_technique(slug: str) -> "Technique | None":
@@ -1447,12 +1454,18 @@ def _tech_condition_features(tech_slug: str) -> dict[str, float]:
     return result
 
 
-def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
-    """Compute the 11-feature vector for a (technique, target) action.
+def _action_features(tech_slug: str, target_slug: str,
+                     user_hp_ratio: float = 1.0) -> dict[str, float]:
+    """Compute the feature vector for a (technique, target, context) action.
 
     Conditions are split by both class and target side.  A move like fester
     that applies festering to both sides gets a positive enemy_dot AND a
     negative self_dot — the REINFORCE learns the net value empirically.
+
+    user_hp_ratio is the user's HP fraction before the technique fires.
+    It drives speed_urgency: normalized_speed × (1 - hp_ratio), which is
+    zero at full HP and grows as HP falls — letting the training learn
+    whether fast moves become more valuable near death.
     """
     from tuxemon.database.runtime import db
     from tuxemon.formula import simple_damage_multiplier
@@ -1468,6 +1481,7 @@ def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
             "enemy_buff": 0.0,
             "recharge_val": 1.0,
             "speed": 0.0,
+            "speed_urgency": 0.0,
         }
 
     target_types = _cached_mon_types(target_slug)
@@ -1498,6 +1512,7 @@ def _action_features(tech_slug: str, target_slug: str) -> dict[str, float]:
         "enemy_buff":     cond.get("enemy_buff", 0.0),
         "recharge_val": recharge_val,
         "speed": tech.speed / 3.0,
+        "speed_urgency": (tech.speed / 3.0) * (1.0 - user_hp_ratio),
     }
 
 
@@ -1509,6 +1524,7 @@ _FEAT_KEYS = (
     "enemy_buff",
     "recharge_val",
     "speed",
+    "speed_urgency",
 )
 _FEAT_ATTRS = {
     "type_mult":      "w_type",
@@ -1527,6 +1543,7 @@ _FEAT_ATTRS = {
     "enemy_buff":     "w_e_buf",
     "recharge_val":   "w_recharge",
     "speed":          "w_speed",
+    "speed_urgency":  "w_speed_urgent",
 }
 
 
@@ -1551,7 +1568,8 @@ class PolicyWeights:
     # Enemy-applied buffs (negative: bad when the opponent buffs themselves)
     w_e_buf: float = -0.5   # enemy gets buffed (sudden_glow → focused on enemy)
     w_recharge: float = 0.5 # reliability: 1/(1+recharge_turns)
-    w_speed: float = 0.0   # technique speed (-1=extremely_slow … +1=extremely_fast); signed
+    w_speed: float = 0.0        # technique speed (-1=extremely_slow … +1=extremely_fast); signed
+    w_speed_urgent: float = 0.0 # speed × (1 - user_hp_ratio): extra value of speed when near death
     lr: float = 0.05
 
     def inject(self) -> None:
@@ -1566,6 +1584,7 @@ class PolicyWeights:
             accuracy_weight=self.w_acc,
             potency_weight=self.w_e_dot,
             speed_weight=self.w_speed,
+            speed_urgency_weight=self.w_speed_urgent,
         )
 
     def update(
@@ -1578,9 +1597,9 @@ class PolicyWeights:
         if outcome == 0.0 or not policy_mon_slugs:
             return
         feats_used: list[dict[str, float]] = [
-            _action_features(tech_slug, target_slug)
-            for _t, user_slug, tech_slug, target_slug, _ok in action_log
-            if user_slug in policy_mon_slugs
+            _action_features(entry.tech_slug, entry.target_slug, entry.user_hp_ratio)
+            for entry in action_log
+            if entry.user_slug in policy_mon_slugs
         ]
         if not feats_used:
             return
@@ -1601,7 +1620,7 @@ class PolicyWeights:
                 f"s_dbf={self.w_s_dbf:.3f} "
                 f"s_batk={self.w_s_batk:.3f} s_bdef={self.w_s_bdef:.3f} "
                 f"s_bheal={self.w_s_bheal:.3f} | rch={self.w_recharge:.3f} "
-                f"spd={self.w_speed:.3f}")
+                f"spd={self.w_speed:.3f} spd_urg={self.w_speed_urgent:.3f}")
 
 
 @dataclass
@@ -1868,6 +1887,7 @@ def run_learn(
         ("→ self regen buff",     move_policy.w_s_bheal),
         ("reliability",           move_policy.w_recharge),
         ("technique speed",       move_policy.w_speed),
+        ("speed when low HP",     move_policy.w_speed_urgent),
     ]
     move_ranked = sorted(move_items, key=lambda x: -x[1])
     mmax = max(abs(w) for _, w in move_ranked) if move_ranked else 1.0

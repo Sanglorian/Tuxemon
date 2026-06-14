@@ -13,8 +13,11 @@ techniques:
     power_weight: 2.7                  # normalised move power
     accuracy_weight: 0.9               # move accuracy
     potency_weight: 0.6                # DoT/condition potency vs target HP
-    speed_weight: -0.37                # negative: slow moves are typically more powerful;
+    speed_weight: -0.66                # negative: slow moves are typically more powerful;
                                        # set positive to reward fast moves (e.g. glass-cannon builds)
+    speed_urgency_weight: -0.09        # near-zero: speed advantage when low HP barely
+                                       # outweighs power cost in general play; override
+                                       # positively for glass-cannon / desperation builds
     temperature: 6.0
 
   # ── All available fields (reference) ─────────────────────────────────────────
@@ -39,10 +42,10 @@ techniques:
   #   runs from -1.0 (extremely_slow) to +1.0 (extremely_fast); multiplied by this
   #   weight and added to the score.  Positive = prefer fast moves; negative = prefer
   #   slow (powerful) moves; null = ignore speed entirely.
-  # speed_urgency_threshold: HP fraction below which speed preference is amplified.
-  #   e.g. 0.3 means "when below 30% HP, value speed more urgently."
-  # speed_urgency_scale: multiplier applied to speed_weight when below the urgency
-  #   threshold. e.g. 3.0 means speed matters 3× more when near death.
+  # speed_urgency_weight: additional speed preference scaled by (1 − user HP ratio).
+  #   Zero contribution at full HP; grows linearly as HP falls to zero.  Positive
+  #   means "prefer fast moves more when near death"; negative means the opposite.
+  #   Trained independently of speed_weight via REINFORCE.
   #
   # health_priority_threshold: reward healing moves when user HP < this fraction
   # healing_weight: reward magnitude for healing when below threshold
@@ -77,5 +80,6 @@ techniques:
     power_weight: 2.7
     accuracy_weight: 0.9
     potency_weight: 0.6
-    speed_weight: -0.37
+    speed_weight: -0.66
+    speed_urgency_weight: -0.09
     temperature: 6.0

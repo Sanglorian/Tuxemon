@@ -23,10 +23,44 @@ events:
     type: event
   Choice Floor 2nd:
     actions:
-    - transition_teleport player,spyder_candy_hospital2.tmx,11,15,0.3
+    - translated_dialog spyder_hospital_passcode_color
+    - translated_dialog_choice red:orange:yellow:green:blue:indigo:violet:black,passcode_color
     - set_variable choice_floor:null
     conditions:
     - is variable_set choice_floor:2floor
+    type: event
+  Passcode Number:
+    actions:
+    - translated_dialog spyder_hospital_passcode_number
+    - translated_dialog_choice 2!:02:05:10:2F:II:B:..---,passcode_number
+    conditions:
+    - is variable_set passcode_color
+    - not variable_set passcode_number
+    type: event
+  Passcode Correct:
+    actions:
+    - transition_teleport player,spyder_candy_hospital2.tmx,11,15,0.3
+    - clear_variable passcode_color,passcode_number
+    conditions:
+    - is variable_set passcode_color:blue
+    - is variable_set passcode_number:10
+    type: event
+  Passcode Rejected Color:
+    actions:
+    - translated_dialog spyder_hospital_passcode_rejected
+    - clear_variable passcode_color,passcode_number
+    conditions:
+    - is variable_set passcode_number
+    - not variable_set passcode_color:blue
+    type: event
+  Passcode Rejected Number:
+    actions:
+    - translated_dialog spyder_hospital_passcode_rejected
+    - clear_variable passcode_color,passcode_number
+    conditions:
+    - is variable_set passcode_color:blue
+    - is variable_set passcode_number
+    - not variable_set passcode_number:10
     type: event
   Create Nurse:
     actions:

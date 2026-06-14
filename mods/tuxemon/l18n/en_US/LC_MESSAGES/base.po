@@ -14715,6 +14715,30 @@ msgstr "1° Floor"
 msgid "2floor"
 msgstr "2° Floor"
 
+msgid "red"
+msgstr "Red"
+
+msgid "orange"
+msgstr "Orange"
+
+msgid "yellow"
+msgstr "Yellow"
+
+msgid "green"
+msgstr "Green"
+
+msgid "blue"
+msgstr "Blue"
+
+msgid "indigo"
+msgstr "Indigo"
+
+msgid "violet"
+msgstr "Violet"
+
+msgid "black"
+msgstr "Black"
+
 msgid "spyder_hospital1_aurora"
 msgstr "Aurora"
 
@@ -14751,6 +14775,15 @@ msgstr "Rakez"
 msgid "spyder_hospital1_rhizome"
 msgstr "Rhizome"
 
+msgid "spyder_hospital_passcode_color"
+msgstr "Access to Level 2 restricted. Enter pass code. Color?"
+
+msgid "spyder_hospital_passcode_number"
+msgstr "And number?"
+
+msgid "spyder_hospital_passcode_rejected"
+msgstr "Pass code rejected."
+
 msgid "spyder_hospital_pc_message1"
 msgstr ""
 "E-mail from Researcher 1\n"
@@ -14774,11 +14807,17 @@ msgstr ""
 " 'Researcher 2, I'm not sure I agree with your approach. We need to be more careful and methodical in our research.\n"
 " Your simulations are promising, but we can't rush into conclusions.'"
 
+msgid "spyder_hospital_pc_message_rivalry1b"
+msgstr "And on the monitor, a sticky note: 'Remember Blue.'"
+
 msgid "spyder_hospital_pc_message_rivalry2"
 msgstr ""
 "E-mail from Researcher 2\n"
 " 'Researcher 1, you're always so cautious and slow. We need to take risks and push the boundaries of what's possible.\n"
 " Our research is too important to be held back by your fear of failure.'"
+
+msgid "spyder_hospital_pc_message_rivalry2b"
+msgstr "And on a torn-off piece of paper, 'Binary thinking: 10 to two.'"
 
 msgid "spyder_hospital_pc_message4"
 msgstr ""

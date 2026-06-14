@@ -682,13 +682,15 @@ DESIGNED_TEAM_DEFS: list[tuple[str, list[str], dict[str, list[str]]]] = [
     # frost means give_all OHKOs frost mons despite frost resisting other moves.
     #
     # Gen-5 offensive coverage — super-effective against EVERY Gen-4 defensive type:
-    #   give_all (heroic):        2x vs normal (Rho), shadow (Tau)
-    #   mind_explosion (cosmic+wood): 2x vs heroic (Sigma), venom (Phi), water (Chi/Omega), earth (Psi)
+    #   give_all (heroic):           2x vs normal (Rho), shadow (Tau)
+    #   mind_explosion (cosmic+wood): cosmic=2x×wood=1x → 2x vs heroic (Sigma);
+    #                                 cosmic=2x×wood=0.5x → 1x vs pure venom (Phi) — neutral!
+    #                                 NOTE: does NOT counter venom. Use fire/pyrokinesis for that.
     #   laser_beam (lightning+metal): 2x vs sky (Sigma/Phi), water (Chi), cosmic (Upsilon/Chi/Psi), metal (Psi)
     #   ten_thousand_feathers (sky): 2x vs earth (Psi), heroic (Sigma), wood (Chi/Phi/Omega)
     #
-    # Every Gen-4 team has at least one 2x-effective move in the Gen-5 set, while
-    # Gen-4's entire offensive set is neutral-or-resisted against venom/venom+shadow.
+    # Gen-4's offensive set is neutral-or-resisted vs venom/venom+shadow.
+    # Fire (2x) and cosmic (2x) are the reliable venom counters; pyrokinesis (fire+cosmic) = 4x.
 
     # Orion — blob fortress. Three HP=8 blobs fully safe from Gen-4 + puparmor which
     # resists give_all (heroic 0.5x vs venom) but is 2x to laser_beam (lightning vs metal).
@@ -2299,7 +2301,7 @@ def run_hillclimb(
     is_double: bool = False,
     window: int = 50,
     pressure: float = 0.5,
-    restart_threshold: float = 0.15,
+    restart_threshold: float = 0.25,
     ai_factory: "Any | None" = None,
 ) -> None:
     """
@@ -2310,10 +2312,12 @@ def run_hillclimb(
     on one monster.
 
     pressure (0–1): fraction of battles played against designed teams rather than
-      random opponents. Higher pressure forces the walk to solve the known meta.
+      random opponents. Designed opponents are sampled with weight proportional to
+      how often they beat the current team — harder opponents get more exposure.
 
     restart_threshold: if rolling win rate falls more than this fraction below
       best_wr, snap the current team back to the best seen and continue from there.
+      Default 0.25 gives the walk room to cross valleys before reverting.
     """
     _ensure_routing_policy()
     pool = get_monster_pool()
@@ -2331,6 +2335,20 @@ def run_hillclimb(
         print("Error: technique pool too small; check min_power/min_acc thresholds.")
         return
 
+    # Adaptive opponent difficulty: track wins vs each designed team.
+    # Sampling weight = loss_rate so teams we lose to more get faced more often.
+    opp_wins:   dict[str, int] = {t.name: 0 for t in designed_teams}
+    opp_played: dict[str, int] = {t.name: 0 for t in designed_teams}
+
+    def _opp_weights() -> list[float]:
+        """Loss-rate weights: harder teams (we lose more) get higher weight."""
+        weights = []
+        for t in designed_teams:
+            played = opp_played[t.name]
+            loss_rate = 1.0 - (opp_wins[t.name] / played) if played >= 5 else 0.5
+            weights.append(max(0.05, loss_rate))
+        return weights
+
     current = _evo_random_team(pool, tech_pool, team_size, "HC-start")
     best: EvoTeam = current.copy("HC-best")
     best_wr = 0.0
@@ -2345,9 +2363,11 @@ def run_hillclimb(
 
     for i in range(1, n_battles + 1):
         # Select opponent: designed team (pressure) or fully random
+        opp_team_used: Team | None = None
         if designed_teams and random.random() < pressure:
-            opp_team = random.choice(designed_teams)
-            npc_b = opp_team.make_npc()
+            weights = _opp_weights()
+            opp_team_used = random.choices(designed_teams, weights=weights, k=1)[0]
+            npc_b = opp_team_used.make_npc()
         else:
             opp = _evo_random_team(pool, tech_pool, team_size, "opp")
             npc_b = opp.to_team(level).make_npc()
@@ -2363,6 +2383,11 @@ def run_hillclimb(
         wins_window.append(won)
         if len(wins_window) > window:
             wins_window.pop(0)
+
+        if opp_team_used is not None:
+            opp_played[opp_team_used.name] += 1
+            if won:
+                opp_wins[opp_team_used.name] += 1
 
         if not won:
             current = _hillclimb_mutate_one(current, pool, tech_pool)

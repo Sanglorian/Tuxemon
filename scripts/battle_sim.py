@@ -2298,6 +2298,8 @@ def run_hillclimb(
     level: int,
     is_double: bool = False,
     window: int = 50,
+    pressure: float = 0.5,
+    restart_threshold: float = 0.15,
     ai_factory: "Any | None" = None,
 ) -> None:
     """
@@ -2305,16 +2307,23 @@ def run_hillclimb(
 
     Starts with a random team. After each loss, mutates exactly one slot —
     either swaps one monster for another from the pool, or changes one technique
-    on one monster. Reports rolling win rate every `window` battles and benchmarks
-    the best team found against all designed teams at the end.
+    on one monster.
+
+    pressure (0–1): fraction of battles played against designed teams rather than
+      random opponents. Higher pressure forces the walk to solve the known meta.
+
+    restart_threshold: if rolling win rate falls more than this fraction below
+      best_wr, snap the current team back to the best seen and continue from there.
     """
     _ensure_routing_policy()
     pool = get_monster_pool()
     tech_pool = _load_tech_pool()
     fmt = "Double" if is_double else "Single"
     techs_key = "sim_trainer_doubles" if is_double else "sim_trainer"
+    designed_teams = make_designed_teams(level)
 
     print(f"Hillclimb [{fmt}]: {n_battles} battles | window={window} | "
+          f"pressure={pressure:.0%} designed | restart_delta={restart_threshold:.0%} | "
           f"team_size={team_size} | level={level}")
     print(f"  Monster pool: {len(pool)} species | Technique pool: {len(tech_pool)} moves\n")
 
@@ -2327,17 +2336,24 @@ def run_hillclimb(
     best_wr = 0.0
     wins_window: list[bool] = []
     mutations = 0
+    restarts = 0
 
     report_every = max(1, window // 5)
     win_col = f"Win%(w={window})"
-    print(f"  {'Battle':>8}  {win_col:>14}  {'Mutations':>10}  Team")
-    print(f"  {'─'*8}  {'─'*14}  {'─'*10}  {'─'*40}")
+    print(f"  {'Battle':>8}  {win_col:>14}  {'Mut':>6}  {'Rst':>4}  Team")
+    print(f"  {'─'*8}  {'─'*14}  {'─'*6}  {'─'*4}  {'─'*40}")
 
     for i in range(1, n_battles + 1):
-        opp = _evo_random_team(pool, tech_pool, team_size, "opp")
+        # Select opponent: designed team (pressure) or fully random
+        if designed_teams and random.random() < pressure:
+            opp_team = random.choice(designed_teams)
+            npc_b = opp_team.make_npc()
+        else:
+            opp = _evo_random_team(pool, tech_pool, team_size, "opp")
+            npc_b = opp.to_team(level).make_npc()
+
         npc_a = current.to_team(level).make_npc()
         npc_a.slug = techs_key
-        npc_b = opp.to_team(level).make_npc()
         try:
             result = run_battle(npc_a, npc_b, is_double=is_double, ai_factory=ai_factory)
         except Exception:
@@ -2358,8 +2374,14 @@ def run_hillclimb(
             if wr > best_wr:
                 best_wr = wr
                 best = current.copy(f"HC-best@{i}")
+            elif wr < best_wr - restart_threshold:
+                # Win rate has slipped too far — snap back to best and explore from there
+                current = best.copy(f"HC-{i:05d}")
+                wins_window.clear()
+                restarts += 1
             roster = " ".join(current.slugs[:3]) + ("…" if len(current.slugs) > 3 else "")
-            print(f"  {i:>8}  {wr*100:>13.1f}%  {mutations:>10}  {roster}")
+            note = " ↺" if (wr < best_wr - restart_threshold and restarts > 0) else ""
+            print(f"  {i:>8}  {wr*100:>13.1f}%  {mutations:>6}  {restarts:>4}  {roster}{note}")
 
     print(f"\n── Best team found (rolling win rate {best_wr*100:.1f}%) ──────────────────")
     print(f"  Monsters: {' '.join(best.slugs)}")
@@ -2368,12 +2390,11 @@ def run_hillclimb(
         moves = best.tech_overrides.get(slug_m, ["(natural)"])
         print(f"    {slug_m:<30}  {', '.join(moves)}")
 
-    designed = make_designed_teams(level)
     bench_n = 20
     print(f"\n── Best team vs designed teams ({bench_n} battles each) ──────────────────")
     print(f"  {'Opponent':<14}  {'W':>4}  {'L':>4}  {'D':>4}  {'Win%':>6}")
     print(f"  {'─'*14}  {'─'*4}  {'─'*4}  {'─'*4}  {'─'*6}")
-    for opp_team in designed:
+    for opp_team in designed_teams:
         w = l = d = 0
         for _ in range(bench_n):
             npc_c = best.to_team(level).make_npc()
@@ -2483,7 +2504,11 @@ def main() -> None:
     )
     parser.add_argument(
         "--pre-learn", type=int, default=0, metavar="N",
-        help="Evo: train AI policy for N battles before running the evo loop (default: 0 = off)",
+        help="Evo/Hillclimb: train AI policy for N battles before the main loop (default: 0 = off)",
+    )
+    parser.add_argument(
+        "--hc-pressure", type=float, default=0.5, metavar="F",
+        help="Hillclimb: fraction of battles against designed teams (0=all random, 1=all designed; default: 0.5)",
     )
     parser.add_argument(
         "--seed-moves", type=str, default=None, metavar="M1,M2,...",
@@ -2539,7 +2564,8 @@ def main() -> None:
                                     is_double=args.doubles, lr=args.lr)
             hc_factory = lambda s, _sw=sw: LearningAIManager(s, _sw)
         run_hillclimb(args.hillclimb, team_size, args.level,
-                      is_double=args.doubles, ai_factory=hc_factory)
+                      is_double=args.doubles, pressure=args.hc_pressure,
+                      ai_factory=hc_factory)
     else:
         simulate(args.battles, team_size, args.level, is_double=args.doubles)
 

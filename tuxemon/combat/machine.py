@@ -64,9 +64,14 @@ class CombatMachine:
                     "Only one player remaining — transitioning to RAN_AWAY."
                 )
                 return CombatPhase.RAN_AWAY
-            elif len(self.session.action_queue.queue) == len(
-                self.session.active_monsters
-            ):
+            # Use set coverage rather than count equality so that pre-queued
+            # actions (e.g. from foresight / disappear) don't stall the machine
+            # when the same monster also queues a regular action this turn.
+            active_set = set(self.session.active_monsters)
+            queued_users = {
+                a.user for a in self.session.action_queue.queue
+            } & active_set
+            if active_set and queued_users >= active_set:
                 logger.debug(
                     "All monsters have actions — transitioning to PRE_ACTION."
                 )

@@ -2369,7 +2369,6 @@ def run_hillclimb(
     else:
         current = _evo_random_team(pool, tech_pool, team_size, "HC-start")
     best: EvoTeam = current.copy("HC-best")
-    best_wr = 0.0
     wins_window: list[bool] = []
     mutations = 0
     restarts = 0
@@ -2395,6 +2394,13 @@ def run_hillclimb(
                 d += 1
         total = len(designed_teams)
         return w / total if total else 0.0
+
+    # Benchmark the starting team immediately so best_wr is anchored to it
+    # from battle 1 rather than defaulting to 0.0.  Without this, any mutation
+    # that scores > 0% in the first bench_every battles would displace the seed.
+    print("  Benchmarking starting team…", flush=True)
+    best_wr = _benchmark(current)
+    print(f"  Starting benchmark: {best_wr*100:.1f}%\n")
 
     report_every = max(1, window // 5)
     bench_every = window          # full benchmark sweep every window battles

@@ -2294,6 +2294,31 @@ def _hillclimb_mutate_one(
     return EvoTeam(name=evo.name, slugs=slugs, tech_overrides=overrides)
 
 
+def _parse_hc_seed(spec: str) -> "EvoTeam":
+    """
+    Parse --hc-seed string into an EvoTeam.
+
+    Format: slug:m1,m2,m3,m4+slug:m1,m2,m3,m4+...
+    The move list is optional; omit the colon to use the monster's natural moveset.
+    """
+    slugs: list[str] = []
+    overrides: dict[str, list[str]] = {}
+    for part in spec.split("+"):
+        part = part.strip()
+        if not part:
+            continue
+        if ":" in part:
+            mon_slug, moves_str = part.split(":", 1)
+            mon_slug = mon_slug.strip()
+            moves = [m.strip() for m in moves_str.split(",") if m.strip()]
+            slugs.append(mon_slug)
+            if moves:
+                overrides[mon_slug] = moves
+        else:
+            slugs.append(part.strip())
+    return EvoTeam(name="HC-seed", slugs=slugs, tech_overrides=overrides)
+
+
 def run_hillclimb(
     n_battles: int,
     team_size: int,
@@ -2302,6 +2327,7 @@ def run_hillclimb(
     window: int = 50,
     pressure: float = 0.5,
     restart_threshold: float = 0.25,
+    seed_team: "EvoTeam | None" = None,
     ai_factory: "Any | None" = None,
 ) -> None:
     """
@@ -2337,7 +2363,11 @@ def run_hillclimb(
         print("Error: technique pool too small; check min_power/min_acc thresholds.")
         return
 
-    current = _evo_random_team(pool, tech_pool, team_size, "HC-start")
+    if seed_team is not None:
+        current = seed_team.copy("HC-start")
+        print(f"  Seeding from: {' '.join(current.slugs)}")
+    else:
+        current = _evo_random_team(pool, tech_pool, team_size, "HC-start")
     best: EvoTeam = current.copy("HC-best")
     best_wr = 0.0
     wins_window: list[bool] = []
@@ -2548,6 +2578,15 @@ def main() -> None:
         help="Hillclimb: fraction of battles against designed teams (0=all random, 1=all designed; default: 0.5)",
     )
     parser.add_argument(
+        "--hc-seed", type=str, default=None, metavar="TEAM",
+        help=(
+            "Hillclimb: start from this team instead of a random one. "
+            "Format: slug:m1,m2,m3,m4+slug:m1,m2,m3,m4+... "
+            "Example: vivipere:saber,mind_explosion,shuriken,ten_thousand_feathers+"
+            "conileaf:time_crisis,thunderball,lava,laser_beam"
+        ),
+    )
+    parser.add_argument(
         "--seed-moves", type=str, default=None, metavar="M1,M2,...",
         help="Evo: seed the first quarter of the population with these comma-separated move slugs",
     )
@@ -2600,9 +2639,10 @@ def main() -> None:
             _, sw = _train_policies(args.pre_learn, team_size, args.level,
                                     is_double=args.doubles, lr=args.lr)
             hc_factory = lambda s, _sw=sw: LearningAIManager(s, _sw)
+        hc_seed = _parse_hc_seed(args.hc_seed) if args.hc_seed else None
         run_hillclimb(args.hillclimb, team_size, args.level,
                       is_double=args.doubles, pressure=args.hc_pressure,
-                      ai_factory=hc_factory)
+                      seed_team=hc_seed, ai_factory=hc_factory)
     else:
         simulate(args.battles, team_size, args.level, is_double=args.doubles)
 

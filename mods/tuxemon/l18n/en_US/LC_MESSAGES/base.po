@@ -12868,11 +12868,6 @@ msgstr ""
 "I'm glad I could share that with you. It's been a burden to carry this "
 "secret."
 
-msgid "spyder_barmaid_cafe1"
-msgstr ""
-"Are you okay?\n"
-" I guess all your tuxemon were infected, so the Enforcers took them to the Hospital!"
-
 msgid "spyder_barmaid_cafe2"
 msgstr "You can use the PC to get out some non-infected tuxemon."
 

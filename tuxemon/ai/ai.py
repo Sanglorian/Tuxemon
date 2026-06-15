@@ -109,6 +109,7 @@ class SingleTechnique:
     temperature: float | None = None
     speed_weight: float | None = None
     speed_urgency_weight: float | None = None
+    stat_matchup_weight: float | None = None
 
 
 @dataclass

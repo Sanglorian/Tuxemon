@@ -18,6 +18,11 @@ techniques:
     speed_urgency_weight: -0.09        # near-zero: speed advantage when low HP barely
                                        # outweighs power cost in general play; override
                                        # positively for glass-cannon / desperation builds
+    stat_matchup_weight: 1.0           # reward moves whose range type uses the user's
+                                       # stronger attack stat AND hits the opponent's
+                                       # weaker defensive stat. Score in [-2, +2]:
+                                       #   melee/touch → user melee vs target armour/dodge
+                                       #   reach/ranged → user ranged vs target armour/dodge
     temperature: 6.0
 
   # ── All available fields (reference) ─────────────────────────────────────────
@@ -47,6 +52,20 @@ techniques:
   #   means "prefer fast moves more when near death"; negative means the opposite.
   #   Trained independently of speed_weight via REINFORCE.
   #
+  # stat_matchup_weight: reward choosing moves that exploit the stat matchup.
+  #   Score = (user_align + target_weak) × weight, each term in [-1, +1]:
+  #     user_align:  +1 when move uses user's dominant attack stat (melee or ranged),
+  #                  -1 when it uses the weaker one.
+  #     target_weak: +1 when move hits the opponent's lower defensive stat,
+  #                  -1 when it runs into the higher one.
+  #   A ranged-heavy monster using a ranged move vs a low-dodge target scores +2;
+  #   the same monster using a melee move vs that target scores near 0.
+  #   Range-to-stat mapping (from range_map.yaml):
+  #     melee  → user melee  vs target armour
+  #     touch  → user melee  vs target dodge
+  #     reach  → user ranged vs target armour
+  #     ranged → user ranged vs target dodge
+  #
   # health_priority_threshold: reward healing moves when user HP < this fraction
   # healing_weight: reward magnitude for healing when below threshold
   # healing_penalty_threshold: penalise healing moves when user HP > this fraction
@@ -64,6 +83,7 @@ techniques:
   #     power_weight: 2.7
   #     accuracy_weight: 0.9
   #     potency_weight: 0.6
+  #     stat_matchup_weight: 1.0
   #     temperature: 2.0   # sharper: best move chosen ~96% of the time
   #
   # Example — a beginner trainer (more forgiving):
@@ -82,6 +102,7 @@ techniques:
     potency_weight: 0.6
     speed_weight: -0.66
     speed_urgency_weight: -0.09
+    stat_matchup_weight: 1.0
     temperature: 6.0
 
   # sim_trainer_doubles: separate weights for doubles — trained independently so that
@@ -94,4 +115,5 @@ techniques:
     potency_weight: 0.6
     speed_weight: -0.66
     speed_urgency_weight: -0.09
+    stat_matchup_weight: 1.0
     temperature: 6.0

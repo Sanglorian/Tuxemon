@@ -84,8 +84,9 @@ def technique_score(
             effectiveness_score *= elemental_scaling
     breakdown["effectiveness"] = effectiveness_score
 
-    # Range bonus
-    type_bonus = getattr(config, f"{technique.range}_bonus", 0.0)
+    # Range bonus (flat bonus by technique range category)
+    # Note: technique.range.value gives the clean string ("melee", "touch", etc.)
+    type_bonus = getattr(config, f"{technique.range.value}_bonus", None) or 0.0
     breakdown["type_bonus"] = type_bonus
 
     # Power
@@ -145,6 +146,46 @@ def technique_score(
     if config.potency_weight:
         potency_score = (technique.potency or 0.0) * opponent.hp_ratio * config.potency_weight
     breakdown["potency"] = potency_score
+
+    # Stat matchup: reward moves whose range type uses the user's stronger attack stat
+    # and exploits the opponent's weaker defensive stat.
+    #
+    # Range-to-stat mapping (from range_map.yaml):
+    #   melee  → user melee  vs target armour
+    #   touch  → user melee  vs target dodge
+    #   reach  → user ranged vs target armour
+    #   ranged → user ranged vs target dodge
+    #
+    # user_align:   +1 when the move uses the user's dominant attack stat, -1 when it
+    #               uses the weaker one.
+    # target_weak:  +1 when the move hits the opponent's lower defensive stat, -1 when
+    #               it runs into the higher one.
+    # Combined score ranges [-2, +2]; multiply by stat_matchup_weight.
+    stat_matchup_score = 0.0
+    if config.stat_matchup_weight:
+        cs_user = user.get_combat_stats()
+        cs_opp = opponent.get_combat_stats()
+        u_mel = float(cs_user.melee)
+        u_rng = float(cs_user.ranged)
+        t_arm = float(cs_opp.armour)
+        t_dod = float(cs_opp.dodge)
+        u_sum = u_mel + u_rng or 1.0
+        t_sum = t_arm + t_dod or 1.0
+        r = technique.range.value
+        if r in ("melee", "touch"):
+            user_align = (u_mel - u_rng) / u_sum
+        elif r in ("ranged", "reach"):
+            user_align = (u_rng - u_mel) / u_sum
+        else:
+            user_align = 0.0
+        if r in ("melee", "reach"):
+            target_weak = (t_dod - t_arm) / t_sum   # positive when armour < dodge
+        elif r in ("ranged", "touch"):
+            target_weak = (t_arm - t_dod) / t_sum   # positive when dodge < armour
+        else:
+            target_weak = 0.0
+        stat_matchup_score = (user_align + target_weak) * config.stat_matchup_weight
+    breakdown["stat_matchup"] = stat_matchup_score
 
     total_score = sum(breakdown.values())
 

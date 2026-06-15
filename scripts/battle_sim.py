@@ -2312,11 +2312,12 @@ def run_hillclimb(
     on one monster.
 
     pressure (0–1): fraction of battles played against designed teams rather than
-      random opponents. Designed opponents are sampled with weight proportional to
-      how often they beat the current team — harder opponents get more exposure.
+      random opponents. Designed opponents are sampled uniformly at random so the
+      rolling win rate stays on a fixed distribution throughout the run.
 
-    restart_threshold: if rolling win rate falls more than this fraction below
-      best_wr, snap the current team back to the best seen and continue from there.
+    restart_threshold: if the periodic benchmark win rate (1 battle vs every
+      designed team, uniform) falls more than this fraction below best_wr, snap
+      the current team back to best and continue exploring from there.
       Default 0.25 gives the walk room to cross valleys before reverting.
     """
     _ensure_routing_policy()
@@ -2325,6 +2326,7 @@ def run_hillclimb(
     fmt = "Double" if is_double else "Single"
     techs_key = "sim_trainer_doubles" if is_double else "sim_trainer"
     designed_teams = make_designed_teams(level)
+    random.shuffle(designed_teams)  # randomise list order so no tier bias in early sampling
 
     print(f"Hillclimb [{fmt}]: {n_battles} battles | window={window} | "
           f"pressure={pressure:.0%} designed | restart_delta={restart_threshold:.0%} | "
@@ -2335,20 +2337,6 @@ def run_hillclimb(
         print("Error: technique pool too small; check min_power/min_acc thresholds.")
         return
 
-    # Adaptive opponent difficulty: track wins vs each designed team.
-    # Sampling weight = loss_rate so teams we lose to more get faced more often.
-    opp_wins:   dict[str, int] = {t.name: 0 for t in designed_teams}
-    opp_played: dict[str, int] = {t.name: 0 for t in designed_teams}
-
-    def _opp_weights() -> list[float]:
-        """Loss-rate weights: harder teams (we lose more) get higher weight."""
-        weights = []
-        for t in designed_teams:
-            played = opp_played[t.name]
-            loss_rate = 1.0 - (opp_wins[t.name] / played) if played >= 5 else 0.5
-            weights.append(max(0.05, loss_rate))
-        return weights
-
     current = _evo_random_team(pool, tech_pool, team_size, "HC-start")
     best: EvoTeam = current.copy("HC-best")
     best_wr = 0.0
@@ -2356,17 +2344,42 @@ def run_hillclimb(
     mutations = 0
     restarts = 0
 
+    def _benchmark(team: "EvoTeam") -> float:
+        """
+        Evaluate team against every designed opponent once (uniform, unweighted).
+        Returns fraction of battles won.  Used exclusively for best_wr and restart
+        decisions so comparisons are always on the same distribution.
+        """
+        w = d = 0
+        for opp_t in designed_teams:
+            npc_a2 = team.to_team(level).make_npc()
+            npc_a2.slug = techs_key
+            npc_b2 = opp_t.make_npc()
+            try:
+                res = run_battle(npc_a2, npc_b2, is_double=is_double, ai_factory=ai_factory)
+            except Exception:
+                continue
+            if res.winner is npc_a2:
+                w += 1
+            elif res.winner is None:
+                d += 1
+        total = len(designed_teams)
+        return w / total if total else 0.0
+
     report_every = max(1, window // 5)
+    bench_every = window          # full benchmark sweep every window battles
     win_col = f"Win%(w={window})"
-    print(f"  {'Battle':>8}  {win_col:>14}  {'Mut':>6}  {'Rst':>4}  Team")
-    print(f"  {'─'*8}  {'─'*14}  {'─'*6}  {'─'*4}  {'─'*40}")
+    print(f"  {'Battle':>8}  {win_col:>14}  {'Bench%':>8}  {'Mut':>6}  {'Rst':>4}  Team")
+    print(f"  {'─'*8}  {'─'*14}  {'─'*8}  {'─'*6}  {'─'*4}  {'─'*40}")
+
+    bench_wr: float = 0.0
 
     for i in range(1, n_battles + 1):
-        # Select opponent: designed team (pressure) or fully random
-        opp_team_used: Team | None = None
+        # Designed opponent sampled uniformly — same distribution every battle so
+        # the rolling win rate stays comparable across the whole run.
+        opp_team_used: "Team | None" = None
         if designed_teams and random.random() < pressure:
-            weights = _opp_weights()
-            opp_team_used = random.choices(designed_teams, weights=weights, k=1)[0]
+            opp_team_used = random.choice(designed_teams)
             npc_b = opp_team_used.make_npc()
         else:
             opp = _evo_random_team(pool, tech_pool, team_size, "opp")
@@ -2384,31 +2397,30 @@ def run_hillclimb(
         if len(wins_window) > window:
             wins_window.pop(0)
 
-        if opp_team_used is not None:
-            opp_played[opp_team_used.name] += 1
-            if won:
-                opp_wins[opp_team_used.name] += 1
-
         if not won:
             current = _hillclimb_mutate_one(current, pool, tech_pool)
             current.name = f"HC-{i:05d}"
             mutations += 1
 
-        if i % report_every == 0:
-            wr = sum(wins_window) / len(wins_window) if wins_window else 0.0
-            if wr > best_wr:
-                best_wr = wr
+        if i % bench_every == 0:
+            # Benchmark: one battle vs every designed team, uniform, no weights.
+            # This is the stable metric used for best_wr and restart decisions.
+            bench_wr = _benchmark(current)
+            if bench_wr > best_wr:
+                best_wr = bench_wr
                 best = current.copy(f"HC-best@{i}")
-            elif wr < best_wr - restart_threshold:
-                # Win rate has slipped too far — snap back to best and explore from there
+            elif bench_wr < best_wr - restart_threshold:
                 current = best.copy(f"HC-{i:05d}")
                 wins_window.clear()
                 restarts += 1
-            roster = " ".join(current.slugs[:3]) + ("…" if len(current.slugs) > 3 else "")
-            note = " ↺" if (wr < best_wr - restart_threshold and restarts > 0) else ""
-            print(f"  {i:>8}  {wr*100:>13.1f}%  {mutations:>6}  {restarts:>4}  {roster}{note}")
 
-    print(f"\n── Best team found (rolling win rate {best_wr*100:.1f}%) ──────────────────")
+        if i % report_every == 0:
+            wr = sum(wins_window) / len(wins_window) if wins_window else 0.0
+            roster = " ".join(current.slugs[:3]) + ("…" if len(current.slugs) > 3 else "")
+            note = " ↺" if restarts > 0 and bench_wr < best_wr - restart_threshold else ""
+            print(f"  {i:>8}  {wr*100:>13.1f}%  {bench_wr*100:>7.1f}%  {mutations:>6}  {restarts:>4}  {roster}{note}")
+
+    print(f"\n── Best team found (benchmark win rate {best_wr*100:.1f}% vs {len(designed_teams)} designed teams) ──────────────────")
     print(f"  Monsters: {' '.join(best.slugs)}")
     print("  Moveset:")
     for slug_m in best.slugs:

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="460">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="40" height="40" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="464">
  <properties>
   <property name="east" value="routec"/>
   <property name="edges" value="clamped"/>
@@ -199,7 +199,7 @@
    <properties>
     <property name="act01" value="char_stop player"/>
     <property name="act02" value="lock_controls"/>
-    <property name="act03" value="create_npc spyder_candy_henrik,6,4"/>
+    <property name="act03" value="create_npc spyder_candy_henrik,21,4"/>
     <property name="act04" value="pathfind_to_char player,spyder_candy_henrik,down"/>
     <property name="act05" value="unlock_controls"/>
     <property name="act07" value="char_face spyder_candy_henrik,up"/>
@@ -433,11 +433,8 @@
     <property name="act05" value="wait 0.5"/>
     <property name="act10" value="translated_dialog spyder_enforcer_candy2"/>
     <property name="act15" value="wait 0.5"/>
-    <property name="act20" value="lock_controls"/>
-    <property name="act30" value="pathfind spyder_candy_henrik,30,0"/>
     <property name="act40" value="set_variable confiscation_done:yes"/>
-    <property name="act50" value="char_face spyder_candy_henrik,down"/>
-    <property name="act60" value="unlock_controls"/>
+    <property name="act55" value="set_variable henrik_react:start"/>
     <property name="cond1" value="is variable_set confiscation_candy:yes"/>
     <property name="cond3" value="is party_infected player,spyderbite,none"/>
     <property name="cond4" value="not variable_set confiscation_done:yes"/>
@@ -451,14 +448,10 @@
     <property name="act15" value="wait 1"/>
     <property name="act20" value="translated_dialog spyder_enforcer_candy4"/>
     <property name="act25" value="wait 1"/>
-    <property name="act27" value="lock_controls"/>
     <property name="act30" value="quarantine player,spyderbite,in"/>
     <property name="act40" value="set_variable party_sick:yes"/>
-    <property name="act45" value="pathfind spyder_candy_henrik,30,0"/>
     <property name="act50" value="set_variable confiscation_done:yes"/>
-    <property name="act55" value="set_teleport_faint player,spyder_candy_cafe.tmx,1,10"/>
-    <property name="act60" value="char_face spyder_candy_henrik,down"/>
-    <property name="act70" value="unlock_controls"/>
+    <property name="act70" value="set_variable henrik_react:start"/>
     <property name="cond1" value="is variable_set confiscation_candy:yes"/>
     <property name="cond2" value="not variable_set party_sick:yes"/>
     <property name="cond3" value="is party_infected player,spyderbite,some"/>
@@ -541,14 +534,43 @@
     <property name="act02" value="lock_controls"/>
     <property name="act03" value="create_npc spyder_dante,6,21"/>
     <property name="act04" value="pathfind_to_char player,spyder_dante,down"/>
-    <property name="act05" value="unlock_controls"/>
     <property name="act07" value="char_face spyder_dante,up"/>
     <property name="act10" value="translated_dialog spyder_dante_candy"/>
     <property name="act20" value="set_variable candy_dante_commiserates:yes"/>
-    <property name="act22" value="pathfind spyder_dante,6,21"/>
+    <property name="act21" value="pathfind spyder_dante,6,21"/>
+    <property name="act22" value="unlock_controls"/>
     <property name="act23" value="remove_npc spyder_dante"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="not variable_set candy_dante_commiserates:yes"/>
+   </properties>
+  </object>
+  <object id="461" name="Henrik react - mons" type="event" x="416" y="16" width="16" height="16">
+   <properties>
+    <property name="act20" value="lock_controls"/>
+    <property name="act30" value="pathfind spyder_candy_henrik,21,4"/>
+    <property name="act35" value="remove_npc spyder_candy_henrik"/>
+    <property name="act40" value="set_variable henrik_react:yes"/>
+    <property name="act60" value="unlock_controls"/>
+    <property name="cond1" value="is variable_set henrik_react:start"/>
+    <property name="cond3" value="is party_size player,greater_than,0"/>
+   </properties>
+  </object>
+  <object id="462" name="Henrik react - no mons" type="event" x="416" y="32" width="16" height="16">
+   <properties>
+    <property name="act20" value="lock_controls"/>
+    <property name="act30" value="pathfind spyder_candy_henrik,30,0"/>
+    <property name="act35" value="char_face spyder_candy_henrik,down"/>
+    <property name="act40" value="set_variable henrik_react:yes"/>
+    <property name="act60" value="unlock_controls"/>
+    <property name="cond1" value="is variable_set henrik_react:start"/>
+    <property name="cond3" value="not party_size player,greater_than,0"/>
+   </properties>
+  </object>
+  <object id="463" name="Talk Henrik" type="event" x="512" y="32" width="16" height="16">
+   <properties>
+    <property name="act01" value="translated_dialog spyder_henrik_blocker"/>
+    <property name="behav1" value="talk spyder_candy_henrik"/>
+    <property name="cond1" value="is variable_set henrik_react:yes"/>
    </properties>
   </object>
  </objectgroup>

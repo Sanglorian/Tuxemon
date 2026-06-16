@@ -12893,9 +12893,13 @@ msgstr ""
 " ... Uh ... I mean, good job keeping your tuxemon free from disease.\n"
 " You may go."
 
+msgid "spyder_henrik_blocker"
+msgstr "I can't let you go into the wilds if you don't have any monsters.\n"
+" It's for your own good."
+
 msgid "spyder_enforcer_candy3"
 msgstr ""
-"Ha! I mean, oh dear, your tuxemon are infected and must be quarantined.\n"
+"Ha! I mean, oh dear, have infected tuxemon that must be quarantined.\n"
 " Hand them over now ..."
 
 msgid "spyder_enforcer_candy4"
@@ -12904,7 +12908,8 @@ msgstr ""
 " The scanners are set up to reject all known tuxemon and human DNA!"
 
 msgid "spyder_dante_candy"
-msgstr "Oh darn, they took your monsters? I've been thinking about that.\n"
+msgstr "Oh man, they took your monsters too?\n"
+" I've been thinking about that.\n"
 " They don't exactly keep the fusebox under lock and key.\n"
 " Meet me in the lobby and I'll tell you what I've got planned."
 

@@ -102,6 +102,7 @@ class Monster:
 
         self.types = ElementTypesHandler(db_data.types)
         self.shape: ShapeHandler = ShapeHandler(db_data.shape)
+        self.growth: float = db_data.growth
         self.randomly = db_data.randomly
 
         self.evolutions = list(db_data.evolutions or [])
@@ -561,6 +562,7 @@ class Monster:
             base_stats=self.base_stats,
             level=self.level,
             shape=self.shape,
+            growth=self.growth,
             taste_cold=self.taste_cold,
             taste_warm=self.taste_warm,
             custom_stats=self.custom_stats,
@@ -587,6 +589,7 @@ class Monster:
             base_stats=self.base_stats,
             level=self.level,
             shape=self.shape,
+            growth=self.growth,
             taste_cold=self.taste_cold,
             taste_warm=self.taste_warm,
             custom_stats=self.custom_stats,

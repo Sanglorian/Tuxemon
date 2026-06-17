@@ -56,6 +56,7 @@ tags:
 - bird
 - darkness
 shape: dragon
+growth: 1.2
 stage: stage2
 types:
 - fire

@@ -55,6 +55,7 @@ tags:
 - ground
 - darkness
 shape: dragon
+growth: 1.1
 stage: stage1
 types:
 - fire

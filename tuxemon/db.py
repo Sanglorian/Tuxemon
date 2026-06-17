@@ -1297,6 +1297,11 @@ class MonsterModel(DataModel, BaseLookupModel, validate_assignment=True):
         description="Maximum number of moves this monster can know",
         ge=1,
     )
+    growth: float = Field(
+        default=1.0,
+        description="Multiplier applied to shape-based stats",
+        gt=0.0,
+    )
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> MonsterModel:

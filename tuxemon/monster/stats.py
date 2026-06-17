@@ -178,10 +178,12 @@ class StatCalculator:
         custom_stats: CustomStatBoosts,
         training_points: TrainingPoints,
         individual_values: IndividualValues,
+        growth: float = 1.0,
     ):
         self.base_stats = base_stats
         self.level = level
         self.shape = shape
+        self.growth = growth
         self.taste_cold = taste_cold
         self.taste_warm = taste_warm
         self.custom_stats = custom_stats
@@ -210,7 +212,7 @@ class StatCalculator:
 
         stats_dict = {}
         for stat in BasicStats.names():
-            base = getattr(self.shape.attributes, stat) * multiplier
+            base = getattr(self.shape.attributes, stat) * multiplier * self.growth
             iv = getattr(self.individual_values, stat, 0)
             tp = getattr(tp_contribution, stat)
             mod = getattr(self.custom_stats, stat, 0)
@@ -284,10 +286,11 @@ class StatAnalyzer:
         warm = Taste.get(self.calculator.taste_warm)
 
         for stat_name in BasicStats.names():
-            # Base from shape
+            # Base from shape scaled by growth
             base_part = (
                 getattr(self.calculator.shape.attributes, stat_name)
                 * multiplier
+                * self.calculator.growth
             )
 
             # IVs

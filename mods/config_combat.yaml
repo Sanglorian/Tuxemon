@@ -9,6 +9,10 @@ action_time: 2.0
 # Range of multipliers used to calculate combat effectiveness
 multiplier_range: [0.25, 4.0]  # 0.25 min, 4.0 max
 
+# SEED (Same Element, Extra Damage): bonus damage multiplier applied when
+# the user shares at least one element with the technique it is using.
+seed_multiplier: 1.25
+
 # Mapping of multipliers to their corresponding descriptive msgids
 multiplier_map:
   4: attack_very_effective     # msgid: Maximum effectiveness multiplier

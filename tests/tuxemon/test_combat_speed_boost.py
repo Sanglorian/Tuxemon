@@ -22,6 +22,9 @@ def _mock_monster(speed: int = 0, dodge: int = 0, melee: int = 0) -> MagicMock:
     m.get_combat_stats.side_effect = lambda: m._combat_stats
     m.status = MagicMock()
     m.status.get_statuses.return_value = []
+    # No elements by default, so the SEED (same-element) bonus does not apply.
+    m.types = MagicMock()
+    m.types.current = []
     return m
 
 

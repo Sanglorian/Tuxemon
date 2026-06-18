@@ -133,6 +133,7 @@
   <object id="95" name="3rd floor1" type="event" x="272" y="16" width="16" height="16">
    <properties>
     <property name="act1" value="transition_teleport player,spyder_candy_hospital3.tmx,5,18,0.3"/>
+    <property name="act2" value="set_layer"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
    </properties>
@@ -140,6 +141,7 @@
   <object id="96" name="3rd floor2" type="event" x="288" y="16" width="16" height="16">
    <properties>
     <property name="act1" value="transition_teleport player,spyder_candy_hospital3.tmx,6,18,0.3"/>
+    <property name="act2" value="set_layer"/>
     <property name="cond1" value="is char_at player"/>
     <property name="cond2" value="is char_facing player,up"/>
    </properties>

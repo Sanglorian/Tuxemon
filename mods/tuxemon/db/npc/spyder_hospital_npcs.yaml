@@ -175,7 +175,7 @@
   combat: {}
   audio: {}
   template:
-    sprite_name: scientist_violet
+    sprite_name: scientist
     combat_sheet: scientist
     slug: scientist
 - slug: spyder_hospital1_lesley

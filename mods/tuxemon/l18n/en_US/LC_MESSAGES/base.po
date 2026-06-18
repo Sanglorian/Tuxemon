@@ -14969,6 +14969,9 @@ msgstr "Psst! Look familiar?"
 msgid "spyder_hospital2_scientist1"
 msgstr "We have a cure, but we keep running into the Cathedral's DRM system."
 
+msgid "spyder_hospital_good_luck"
+msgstr "Good luck!"
+
 msgid "spyder_omnichannel_zoolander1"
 msgstr "You really are a diamond in the rough, aren't you?"
 

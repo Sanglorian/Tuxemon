@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="11" nextobjectid="118">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" compressionlevel="0" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="11" nextobjectid="120">
  <properties>
   <property name="inside" type="bool" value="true"/>
   <property name="map_type" value="dungeon"/>
@@ -404,6 +404,20 @@
     <property name="act4" value="quarantine player,spyderbite,out,1"/>
     <property name="behav1" value="talk spyder_hospital1_darling"/>
     <property name="cond1" value="not variable_set quarantine_darling:yes"/>
+   </properties>
+  </object>
+  <object id="118" name="Talk After Garvan" type="event" x="48" y="176" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog spyder_hospital_good_luck"/>
+    <property name="behav1" value="talk spyder_hospital1_smith"/>
+    <property name="cond1" value="is variable_set quarantine_garvan:yes"/>
+   </properties>
+  </object>
+  <object id="119" name="Talk After Darling" type="event" x="304" y="48" width="16" height="16">
+   <properties>
+    <property name="act1" value="translated_dialog spyder_hospital_good_luck"/>
+    <property name="behav1" value="talk spyder_hospital1_darling"/>
+    <property name="cond1" value="is variable_set quarantine_darling:yes"/>
    </properties>
   </object>
  </objectgroup>

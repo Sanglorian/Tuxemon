@@ -390,6 +390,10 @@ class AbstractRenderer(ABC):
     def draw(self, surface: Surface, current_map: AbstractMap | None) -> None:
         """Draw the map and related elements to the surface."""
 
+    @abstractmethod
+    def clear_overlay(self) -> None:
+        """Remove any overlay (colour or image) drawn over the map."""
+
 
 class NullRenderer(AbstractRenderer):
     """A no-op renderer for when no map is loaded."""
@@ -406,6 +410,10 @@ class NullRenderer(AbstractRenderer):
 
     def draw(self, surface: Surface, current_map: AbstractMap | None) -> None:
         surface.fill(BLACK_COLOR)
+
+
+    def clear_overlay(self) -> None:
+        pass
 
 
 class MapRenderer(AbstractRenderer):
@@ -494,6 +502,12 @@ class MapRenderer(AbstractRenderer):
         if self.layer_color and self.layer.get_at((0, 0)) != self.layer_color:
             self.layer.fill(self.layer_color)
         surface.blit(self.layer, (0, 0))
+
+    def clear_overlay(self) -> None:
+        """Reset the world overlay so it does not bleed into the next map."""
+        self.layer_color = None
+        self.layer_image = False
+        self.layer.fill((0, 0, 0, 0))
 
     def _apply_cinema_bars(self, surface: Surface) -> None:
         """Applies cinema bars (letterboxing) to the surface."""

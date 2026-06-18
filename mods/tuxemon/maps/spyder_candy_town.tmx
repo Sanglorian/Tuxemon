@@ -189,6 +189,7 @@
     <property name="act45" value="pathfind spyder_candy_henrik,30,0"/>
     <property name="act50" value="set_variable confiscation_done:yes"/>
     <property name="act60" value="char_face spyder_candy_henrik,down"/>
+    <property name="act65" value="set_teleport_faint player,spyder_candy_cafe.tmx,1,10"/>
     <property name="act70" value="unlock_controls"/>
     <property name="cond1" value="is variable_set confiscation_candy:yes"/>
     <property name="cond3" value="is party_infected player,spyderbite,all"/>
@@ -452,6 +453,7 @@
     <property name="act40" value="set_variable party_sick:yes"/>
     <property name="act50" value="set_variable confiscation_done:yes"/>
     <property name="act70" value="set_variable henrik_react:start"/>
+    <property name="act80" value="set_teleport_faint player,spyder_candy_cafe.tmx,1,10"/>
     <property name="cond1" value="is variable_set confiscation_candy:yes"/>
     <property name="cond2" value="not variable_set party_sick:yes"/>
     <property name="cond3" value="is party_infected player,spyderbite,some"/>
@@ -571,11 +573,6 @@
     <property name="act01" value="translated_dialog spyder_henrik_blocker"/>
     <property name="behav1" value="talk spyder_candy_henrik"/>
     <property name="cond1" value="is variable_set henrik_react:yes"/>
-   </properties>
-  </object>
-  <object id="464" name="Torchlight" type="event" x="368" y="96" width="16" height="16">
-   <properties>
-    <property name="act1" value="set_layer gfx/ui/overlay/torchlight.png"/>
    </properties>
   </object>
  </objectgroup>

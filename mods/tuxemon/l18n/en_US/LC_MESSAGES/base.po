@@ -11812,6 +11812,10 @@ msgid "xero_skip_question"
 msgstr "Do you want to skip the intro?"
 
 # DIALOG TRANSLATIONS ##
+
+msgid "heal_before_leave"
+msgstr "You should heal your monsters before heading off."
+
 # spyder intros
 msgid "spyder_cathedral"
 msgstr "Cathedral"
@@ -14776,7 +14780,8 @@ msgid "spyder_hospital1_rhizome"
 msgstr "Rhizome"
 
 msgid "spyder_hospital_passcode_color"
-msgstr "Access to Level 2 restricted. Enter pass code. Color?"
+msgstr "Access to Level 2 restricted. Enter pass code. \n"
+" Color?"
 
 msgid "spyder_hospital_passcode_number"
 msgstr "And number?"
@@ -14990,6 +14995,10 @@ msgid "spyder_hospital_cure1"
 msgstr ""
 "It's the cure to the Spyder Bite infection! \n"
 " With this, you can cure your own and others' tuxemon."
+
+msgid "spyder_hospital_cure2"
+msgstr ""
+"Your monsters are returned to you."
 
 msgid "spyder_searoutec_nigel3"
 msgstr ""

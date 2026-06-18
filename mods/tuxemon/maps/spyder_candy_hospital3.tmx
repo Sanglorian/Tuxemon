@@ -127,9 +127,16 @@
   <object id="62" name="The cure!" type="event" x="80" y="96" width="32" height="16">
    <properties>
     <property name="act20" value="translated_dialog spyder_hospital_cure1"/>
+    <property name="act21" value="translated_dialog spyder_hospital_cure2"/>
     <property name="act30" value="set_variable hospitalcure:yes"/>
+    <property name="act61" value="lock_controls"/>
     <property name="act62" value="char_plague spyderbite,inoculated"/>
     <property name="act63" value="quarantine player,spyderbite,out"/>
+    <property name="act64" value="set_monster_health"/>
+    <property name="act65" value="set_monster_status"/>
+    <property name="act66" value="screen_transition 1"/>
+    <property name="act67" value="wait 0.5"/>
+    <property name="act68" value="unlock_controls"/>
     <property name="cond1" value="is char_facing_tile player"/>
     <property name="cond2" value="is button_pressed INTERACT"/>
     <property name="cond3" value="not variable_set hospitalcure:yes"/>
@@ -146,7 +153,7 @@
    <properties>
     <property name="act1" value="remove_collision screen"/>
     <property name="act2" value="remove_npc spyder_screen"/>
-    <property name="cond1" value="is has_item player,aardant"/>
+    <property name="cond1" value="is variable_set screendown:yes"/>
    </properties>
   </object>
   <object id="74" name="Enable No-Monster Blackout" type="event" x="0" y="0" width="16" height="16">
@@ -163,6 +170,7 @@
   </object>
   <object id="76" name="Billie confronts" type="event" x="0" y="176" width="192" height="16">
    <properties>
+    <property name="act30" value="lock_controls"/>
     <property name="act40" value="create_npc spyder_billie,5,17"/>
     <property name="act45" value="pathfind_to_char player,spyder_billie"/>
     <property name="act50" value="translated_dialog spyder_hospital_billie1"/>
@@ -174,10 +182,12 @@
     <property name="act56" value="set_monster_attribute add_monster,gender,female"/>
     <property name="act57" value="add_monster viviphyta,45,spyder_billie,1.5,10"/>
     <property name="act58" value="set_monster_attribute add_monster,gender,male"/>
+    <property name="act59" value="unlock_controls"/>
     <property name="act60" value="start_battle player,spyder_billie"/>
     <property name="act61" value="translated_dialog spyder_hospital_billie2"/>
     <property name="act62" value="set_variable hospitalbillie:yes"/>
     <property name="cond1" value="is char_at player"/>
+    <property name="cond2" value="is variable_set hospitalcure:yes"/>
     <property name="cond3" value="not variable_set hospitalbillie:yes"/>
    </properties>
   </object>

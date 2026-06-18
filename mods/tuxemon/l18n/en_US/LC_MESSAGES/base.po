@@ -12899,7 +12899,7 @@ msgstr "I can't let you go into the wilds if you don't have any monsters.\n"
 
 msgid "spyder_enforcer_candy3"
 msgstr ""
-"Ha! I mean, oh dear, have infected tuxemon that must be quarantined.\n"
+"Ha! I mean, oh dear, you have infected tuxemon that must be quarantined.\n"
 " Hand them over now ..."
 
 msgid "spyder_enforcer_candy4"
@@ -12911,7 +12911,7 @@ msgid "spyder_dante_candy"
 msgstr "Oh man, they took your monsters too?\n"
 " I've been thinking about that.\n"
 " They don't exactly keep the fusebox under lock and key.\n"
-" Meet me in the lobby and I'll tell you what I've got planned."
+" Meet me in the hospital lobby and I'll tell you what I've got planned."
 
 msgid "spyder_hospital_dante1"
 msgstr "Okay, I've switched the lights off.\n"

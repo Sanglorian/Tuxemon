@@ -14676,7 +14676,7 @@ msgstr "I am the last and most powerful of the dragonriders."
 msgid "spyder_dragonscave_benden2"
 msgstr ""
 "You have proven yourself a worthy opponent for Drokoro. \n"
-" I will show you to the sacred inner chamber - after I heal you."
+" I will heal you. Then, proceed to the sacred inner chamber."
 
 msgid "spyder_dragonscave_mal1"
 msgstr "You have gotten in our way too many times!"

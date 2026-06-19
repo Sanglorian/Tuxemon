@@ -1236,6 +1236,20 @@ def test_movement_empty_list_returns_zero():
     assert v.determine_cursor_movement(0, E) == 0
 
 
+def test_movement_off_page_index_does_not_crash():
+    # Regression: a selected index living on a different page than the one
+    # currently visible (e.g. restored from a save slot) must not raise
+    # ValueError via visible.index(); it should snap onto the visible page.
+    v = make_list_movement([True, True, True, True, True, True], columns=1)
+    v.page_size = 3
+    v.current_page = 0  # visible page is indices [0, 1, 2]
+    e = make_event(buttons.DOWN)
+
+    # index 4 is not on the visible page; previously this crashed.
+    result = v.determine_cursor_movement(4, e)
+    assert result in list(v._visible_indices())
+
+
 def test_movement_does_not_land_on_disabled():
     flags = [True, False, True, False, True, True, False, True, True]
     v = make_list_movement(flags, columns=3)

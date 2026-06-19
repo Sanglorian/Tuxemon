@@ -249,6 +249,8 @@
     <property name="act6" value="set_variable dragonscavebenden2:yes"/>
     <property name="cond1" value="is battle_outcome player,won,spyder_dragonscave_benden"/>
     <property name="cond2" value="not variable_set dragonscavebenden2:yes"/>
+    <property name="cond3" value="is char_at player"/>
+    <property name="cond4" value="not char_defeated player"/>
    </properties>
   </object>
   <object id="90" name="Teleport to Cotton Tunnel" type="event" x="256" y="16" width="16" height="16">
@@ -385,7 +387,7 @@
     <property name="cond3" value="not char_defeated player"/>
    </properties>
   </object>
-  <object id="100" name="Talk Lucille and Mal" type="event" x="160" y="48" width="16" height="48">
+  <object id="100" name="Talk Lucille and Mal" type="event" x="176" y="48" width="16" height="48">
    <properties>
     <property name="act1" value="lock_controls"/>
     <property name="act2" value="pathfind_to_char player,spyder_dragonscave_lucille"/>

@@ -1579,15 +1579,26 @@ class PolicyWeights:
         """Write current weights into the AIConfigLoader cache under self.key."""
         from tuxemon.ai.ai import AIConfigLoader, SingleTechnique
         ai_techs = AIConfigLoader.get_ai_techniques("ai_techniques.yaml")
-        # potency_weight maps to w_e_dot: technique_score uses potency × hp_ratio
-        # which is correct for DoT (more ticks on healthy targets).
+        existing = ai_techs.techniques.get(self.key)
+        is_doubles = self.key.endswith("_doubles")
         ai_techs.techniques[self.key] = SingleTechnique(
+            # REINFORCE-trained weights (updated every battle)
             elemental_multiplier_weight=self.w_type,
             power_weight=self.w_power,
             accuracy_weight=self.w_acc,
             potency_weight=self.w_e_dot,
             speed_weight=self.w_speed,
             speed_urgency_weight=self.w_speed_urgent,
+            spread_weight=self.w_aoe,       # was trained but never injected before
+            status_weight=self.w_e_dis,     # enemy-disable potency ≈ non-DoT status bonus
+            # Constant weights — preserve from live config or use sensible defaults;
+            # not REINFORCE-trained (no corresponding action feature).
+            stat_matchup_weight=(existing.stat_matchup_weight if existing else None) or 1.0,
+            recharge_weight=(existing.recharge_weight if existing else None) or -0.3,
+            ko_weight=existing.ko_weight if existing else None,
+            target_focus_weight=(existing.target_focus_weight if existing else None) or (
+                -0.5 if is_doubles else None
+            ),
             temperature=6.0,
         )
 

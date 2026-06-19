@@ -236,7 +236,7 @@
     <property name="act1" value="create_npc spyder_nimrod_tru,18,6"/>
     <property name="act2" value="char_face spyder_nimrod_tru,up"/>
     <property name="cond1" value="not char_exists spyder_nimrod_tru"/>
-    <property name="cond2" value="not battle_outcome_count player,won,spyder_nimrod_tru,2"/>
+    <property name="cond2" value="not battle_outcome player,won,spyder_dragonscave_ray"/>
    </properties>
   </object>
   <object id="88" name="Benden Defeated" type="event" x="160" y="48" width="16" height="48">
@@ -376,12 +376,14 @@
     <property name="act43" value="translated_dialog spyder_dragonscave_tru1"/>
     <property name="act50" value="unlock_controls"/>
     <property name="act60" value="add_monster ghosteeth,45,spyder_dragonscave_ray,1.5,10"/>
-    <property name="act61" value="add_monster embazook,45,spyder_nimrod_ray,1.5,10"/>
-    <property name="act62" value="add_monster arthrobolt,45,spyder_nimrod_ray,1.5,10"/>
-    <property name="act63" value="add_monster hydrone,45,spyder_nimrod_ray,1.5,10"/>
+    <property name="act61" value="add_monster embazook,45,spyder_dragonscave_ray,1.5,10"/>
+    <property name="act62" value="add_monster arthrobolt,45,spyder_dragonscave_ray,1.5,10"/>
+    <property name="act63" value="add_monster hydrone,45,spyder_dragonscave_ray,1.5,10"/>
     <property name="act70" value="start_double_battle player,spyder_dragonscave_ray"/>
     <property name="act80" value="char_talk spyder_dragonscave_ray,post_battle_lose"/>
     <property name="act81" value="translated_dialog spyder_dragonscave_tru2"/>
+    <property name="act82" value="pathfind spyder_dragonscave_ray,18,5"/>
+    <property name="act83" value="pathfind spyder_nimrod_tru,18,6"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_dragonscave_ray"/>
     <property name="cond2" value="is char_at player"/>
     <property name="cond3" value="not char_defeated player"/>

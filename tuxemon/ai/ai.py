@@ -110,6 +110,11 @@ class SingleTechnique:
     speed_weight: float | None = None
     speed_urgency_weight: float | None = None
     stat_matchup_weight: float | None = None
+    status_weight: float | None = None
+    recharge_weight: float | None = None
+    ko_weight: float | None = None
+    spread_weight: float | None = None
+    target_focus_weight: float | None = None
 
 
 @dataclass

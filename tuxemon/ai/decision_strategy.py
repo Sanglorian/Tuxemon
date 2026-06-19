@@ -57,8 +57,16 @@ class AIDecisionStrategy(ABC):
     ) -> tuple[Technique, Monster]:
         pass
 
-    def check_ai_techs(self, user: Monster) -> SingleTechnique | None:
+    def check_ai_techs(
+        self, user: Monster, is_double: bool = False
+    ) -> SingleTechnique | None:
         slug = user.slug if user.wild else user.get_owner().slug
+        if is_double:
+            doubles_config = self.ai_techs.techniques.get(
+                f"{slug}_doubles"
+            ) or self.ai_techs.techniques.get("default_doubles")
+            if doubles_config is not None:
+                return doubles_config
         return self.ai_techs.techniques.get(slug) or self.ai_techs.techniques.get("default")
 
     def get_fallback_action(
@@ -73,7 +81,8 @@ class AIDecisionStrategy(ABC):
         ai: AI,
         valid_actions: list[tuple[Technique, Monster]],
     ) -> tuple[Technique, Monster]:
-        config = self.check_ai_techs(ai.monster)
+        is_double = ai.session.client.combat_session.is_double
+        config = self.check_ai_techs(ai.monster, is_double)
         if config is None:
             return random.choice(valid_actions)
         return self.choose_best_scored_move(ai, valid_actions, config)

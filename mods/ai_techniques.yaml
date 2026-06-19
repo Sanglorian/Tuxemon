@@ -66,12 +66,51 @@ techniques:
   #     reach  → user ranged vs target armour
   #     ranged → user ranged vs target dodge
   #
+  # status_weight: flat bonus for moves that apply a condition via the "give" effect.
+  #   Rewards control-oriented play (sleep, confuse, paralyse, enrage, etc.) regardless
+  #   of target HP.  Set alongside potency_weight to also value DoT throughput, or alone
+  #   to focus purely on status infliction.
+  #
+  # recharge_weight: multiplied by technique.cooldown.duration (number of lockout turns).
+  #   Use a negative value to penalise high-recharge moves (e.g. -0.5 per turn).
+  #   Leave null to ignore cooldown entirely.
+  #
+  # ko_weight: bonus proportional to KO potential, clamped to [0, 1].
+  #   Estimated as min(1, normalised_power × type_effectiveness / opponent_hp_ratio).
+  #   Peaks when a strong, effective move can finish a weakened target.
+  #   Encourages opportunistic knock-outs rather than spreading damage evenly.
+  #
+  # spread_weight: flat bonus for moves whose target includes the whole enemy team
+  #   (enemy_team: true in the technique's target model).
+  #   Set positive in doubles to prefer splash / AoE moves; leave null in singles.
+  #   NOTE: a move tagged enemy_team hits whichever target get_targets() returns on
+  #   a hit — it does NOT automatically deal damage to both opponents.
+  #
+  # target_focus_weight: scaled by opponent.hp_ratio for target selection in doubles.
+  #   Negative → prefer weakened targets (KO focus, e.g. -1.0).
+  #   Positive → prefer healthier targets (spread damage, e.g. +1.0).
+  #   Has no effect in singles (only one valid target).
+  #
   # health_priority_threshold: reward healing moves when user HP < this fraction
   # healing_weight: reward magnitude for healing when below threshold
   # healing_penalty_threshold: penalise healing moves when user HP > this fraction
   # healing_penalty_weight: penalty magnitude when above threshold
   #
   # temperature: softmax temperature for move selection (see default block above)
+  #
+  # ── Singles / Doubles differentiation ────────────────────────────────────────
+  # In doubles battles, check_ai_techs looks up "{slug}_doubles" before "{slug}",
+  # and "default_doubles" before "default".  Define a doubles-specific entry when
+  # you want different weights in doubles (e.g. reward spread moves, KO focus).
+  #
+  # Example — doubles entry for a trainer:
+  #   galaxy_master_doubles:
+  #     elemental_multiplier_weight: 4.0
+  #     power_weight: 2.7
+  #     accuracy_weight: 0.9
+  #     spread_weight: 1.0        # prefer spread/AoE moves
+  #     target_focus_weight: -1.0 # prefer weakened target for KO
+  #     temperature: 4.0
   #
   # ── Per-trainer / per-monster overrides ───────────────────────────────────────
   # Key can be a trainer slug (trainer battle) or monster slug (wild battle).
@@ -94,6 +133,21 @@ techniques:
   #     potency_weight: 0.6
   #     temperature: 15.0  # near-random; type chart barely influences choices
   #
+  # default_doubles: fallback config for doubles battles when no trainer/monster-specific
+  # doubles entry exists.  Prioritises spread moves and KO focus over singles defaults.
+  # Seed values match default; tune after: python scripts/battle_sim.py --hillclimb N -d
+  default_doubles:
+    elemental_multiplier_weight: 4.0
+    power_weight: 2.7
+    accuracy_weight: 0.9
+    potency_weight: 0.6
+    speed_weight: -0.66
+    speed_urgency_weight: -0.09
+    stat_matchup_weight: 1.0
+    spread_weight: 0.5          # flat bonus for enemy_team moves in doubles
+    target_focus_weight: -0.5   # prefer weakened targets for KO in doubles
+    temperature: 6.0
+
   # sim_trainer: used by the battle simulator's learned policy (do not remove).
   sim_trainer:
     elemental_multiplier_weight: 4.0
@@ -107,7 +161,7 @@ techniques:
 
   # sim_trainer_doubles: separate weights for doubles — trained independently so that
   # AoE and spread dynamics do not bleed into the singles policy.
-  # Seed values match sim_trainer; update after: python scripts/battle_sim.py --learn N -d
+  # Seed values match default_doubles; update after: python scripts/battle_sim.py --hillclimb N -d
   sim_trainer_doubles:
     elemental_multiplier_weight: 4.0
     power_weight: 2.7
@@ -116,4 +170,6 @@ techniques:
     speed_weight: -0.66
     speed_urgency_weight: -0.09
     stat_matchup_weight: 1.0
+    spread_weight: 0.5
+    target_focus_weight: -0.5
     temperature: 6.0

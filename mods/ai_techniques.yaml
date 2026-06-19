@@ -9,20 +9,19 @@ techniques:
   #   high (e.g. 20+) → near-random; ignores type chart almost entirely.
   # Omit temperature (or set to null) to revert to pure argmax (legacy behaviour).
   default:
-    elemental_multiplier_weight: 4.0   # type effectiveness (dominant factor)
-    power_weight: 2.7                  # normalised move power
-    accuracy_weight: 0.9               # move accuracy
-    potency_weight: 0.6                # DoT/condition potency vs target HP
-    speed_weight: -0.66                # negative: slow moves are typically more powerful;
-                                       # set positive to reward fast moves (e.g. glass-cannon builds)
-    speed_urgency_weight: -0.09        # near-zero: speed advantage when low HP barely
-                                       # outweighs power cost in general play; override
-                                       # positively for glass-cannon / desperation builds
-    stat_matchup_weight: 1.0           # reward moves whose range type uses the user's
-                                       # stronger attack stat AND hits the opponent's
-                                       # weaker defensive stat. Score in [-2, +2]:
-                                       #   melee/touch → user melee vs target armour/dodge
-                                       #   reach/ranged → user ranged vs target armour/dodge
+    elemental_multiplier_weight: 4.047  # type effectiveness (dominant factor; REINFORCE-trained)
+    power_weight: 2.885                 # normalised move power
+    accuracy_weight: 0.739              # AI accepts some risk for high-power moves
+    potency_weight: 1.023               # DoT/condition potency vs target HP
+    status_weight: 0.834                # flat bonus for moves with a "give" (status) effect
+    speed_weight: -0.737                # slow moves preferred (they tend to have higher power)
+    speed_urgency_weight: -0.212        # negative: speed doesn't help when low HP in general play
+    stat_matchup_weight: 1.0            # reward moves whose range type uses the user's
+                                        # stronger attack stat AND hits the opponent's
+                                        # weaker defensive stat. Score in [-2, +2]:
+                                        #   melee/touch → user melee vs target armour/dodge
+                                        #   reach/ranged → user ranged vs target armour/dodge
+    recharge_weight: -0.3               # penalise high-recharge moves (per turn of lockout)
     temperature: 6.0
 
   # ── All available fields (reference) ─────────────────────────────────────────
@@ -137,39 +136,47 @@ techniques:
   # doubles entry exists.  Prioritises spread moves and KO focus over singles defaults.
   # Seed values match default; tune after: python scripts/battle_sim.py --hillclimb N -d
   default_doubles:
-    elemental_multiplier_weight: 4.0
-    power_weight: 2.7
-    accuracy_weight: 0.9
-    potency_weight: 0.6
-    speed_weight: -0.66
-    speed_urgency_weight: -0.09
-    stat_matchup_weight: 1.0
-    spread_weight: 0.5          # flat bonus for enemy_team moves in doubles
-    target_focus_weight: -0.5   # prefer weakened targets for KO in doubles
+    elemental_multiplier_weight: 3.027  # type effectiveness (less dominant than singles)
+    power_weight: 2.209                 # normalised move power
+    accuracy_weight: 0.988              # accuracy matters more in doubles (2 active targets)
+    potency_weight: 1.226               # DoT valued more: more targets to tick on
+    status_weight: 0.922                # flat bonus for moves with a "give" (status) effect
+    speed_weight: -1.099                # slow/powerful moves even more preferred in doubles
+    speed_urgency_weight: -0.289        # negative: speed offers no desperation value in doubles
+    spread_weight: 1.847                # flat bonus for enemy_team moves in doubles
+    target_focus_weight: -0.5           # prefer weakened targets for KO in doubles
+    stat_matchup_weight: 1.0            # reward moves whose range type exploits the stat matchup
+    recharge_weight: -0.3               # penalise high-recharge moves (per turn of lockout)
     temperature: 6.0
 
   # sim_trainer: used by the battle simulator's learned policy (do not remove).
+  # Weights trained via REINFORCE self-play (500 singles battles, level 25, lr=0.05).
   sim_trainer:
-    elemental_multiplier_weight: 4.0
-    power_weight: 2.7
-    accuracy_weight: 0.9
-    potency_weight: 0.6
-    speed_weight: -0.66
-    speed_urgency_weight: -0.09
-    stat_matchup_weight: 1.0
+    elemental_multiplier_weight: 4.047   # type effectiveness — dominant
+    power_weight: 2.885                  # normalised move power
+    accuracy_weight: 0.739               # AI accepts some risk for power in singles
+    potency_weight: 1.023                # DoT throughput
+    status_weight: 0.834                 # flat bonus for status-applying moves
+    speed_weight: -0.737                 # slow/powerful moves strongly preferred
+    speed_urgency_weight: -0.212         # confirmed negative: speed not helpful near death
+    spread_weight: 1.372                 # AoE bonus (high-power moves are often AoE)
+    stat_matchup_weight: 1.0             # constant; not REINFORCE-trained
+    recharge_weight: -0.3                # constant; penalise high-cooldown moves
     temperature: 6.0
 
   # sim_trainer_doubles: separate weights for doubles — trained independently so that
-  # AoE and spread dynamics do not bleed into the singles policy.
-  # Seed values match default_doubles; update after: python scripts/battle_sim.py --hillclimb N -d
+  # singles dynamics do not bleed into doubles policy.
+  # Weights trained via REINFORCE self-play (500 doubles battles, level 25, lr=0.05).
   sim_trainer_doubles:
-    elemental_multiplier_weight: 4.0
-    power_weight: 2.7
-    accuracy_weight: 0.9
-    potency_weight: 0.6
-    speed_weight: -0.66
-    speed_urgency_weight: -0.09
-    stat_matchup_weight: 1.0
-    spread_weight: 0.5
-    target_focus_weight: -0.5
+    elemental_multiplier_weight: 3.027   # type effectiveness — less dominant in doubles
+    power_weight: 2.209                  # normalised move power
+    accuracy_weight: 0.988               # accuracy matters more in doubles (2 active targets)
+    potency_weight: 1.226                # DoT valued more: more targets to tick on
+    status_weight: 0.922                 # flat bonus for status-applying moves
+    speed_weight: -1.099                 # slow/powerful moves even more preferred in doubles
+    speed_urgency_weight: -0.289         # negative: speed offers no desperation value in doubles
+    spread_weight: 1.847                 # AoE preferred more strongly than in singles
+    target_focus_weight: -0.5            # constant; prefer weakened target for KO focus
+    stat_matchup_weight: 1.0             # constant; not REINFORCE-trained
+    recharge_weight: -0.3                # constant; penalise high-cooldown moves
     temperature: 6.0

@@ -199,5 +199,12 @@
     <property name="cond4" value="is environment_is night_ocean"/>
    </properties>
   </object>
- </objectgroup>
+   <object id="2777" name="Track routee" type="event" x="0" y="0" width="320" height="320">
+   <properties>
+    <property name="act1" value="add_tracker player,routee"/>
+    <property name="cond1" value="is char_at player"/>
+    <property name="cond2" value="not tracker player,routee"/>
+   </properties>
+  </object>
+</objectgroup>
 </map>

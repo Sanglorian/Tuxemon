@@ -345,67 +345,67 @@ msgid "boost_armour"
 msgstr "Boost Armor"
 
 msgid "boost_armour_description"
-msgstr "For the rest of the combat, increase Armor by 20%."
+msgstr "For the rest of the combat, increase Armor by two stages."
 
 msgid "boost_dodge"
 msgstr "Boost Dodge"
 
 msgid "boost_dodge_description"
-msgstr "For the rest of the combat, increase Dodge by 20%."
+msgstr "For the rest of the combat, increase Dodge by two stages."
 
 msgid "boost_melee"
 msgstr "Boost Melee"
 
 msgid "boost_melee_description"
-msgstr "For the rest of the combat, increase Melee by 20%."
+msgstr "For the rest of the combat, increase Melee by two stages."
 
 msgid "boost_ranged"
 msgstr "Boost Ranged"
 
 msgid "boost_ranged_description"
-msgstr "For the rest of the combat, increase Ranged by 20%."
+msgstr "For the rest of the combat, increase Ranged by two stages."
 
 msgid "boost_speed"
 msgstr "Boost Speed"
 
 msgid "boost_speed_description"
-msgstr "For the rest of the combat, increase Speed by 20%."
+msgstr "For the rest of the combat, increase Speed by two stages."
 
 msgid "raise_armour"
 msgstr "Raise Armor"
 
 msgid "raise_armour_description"
-msgstr "Learn the hardness of the diamond. Increase Armor by 5%."
+msgstr "Learn the hardness of the diamond. Train Armor."
 
 msgid "raise_dodge"
 msgstr "Raise Dodge"
 
 msgid "raise_dodge_description"
-msgstr "Learn the iridescence of the opal. Increase Dodge by 5%."
+msgstr "Learn the iridescence of the opal. Train Dodge."
 
 msgid "raise_hp"
 msgstr "Raise HP"
 
 msgid "raise_hp_description"
-msgstr "Learn the bulk and abundance of quartz. Increase HP by 5%."
+msgstr "Learn the bulk and abundance of quartz. Train HP."
 
 msgid "raise_melee"
 msgstr "Raise Melee"
 
 msgid "raise_melee_description"
-msgstr "Learn the anger of the ruby. Increase Melee by 5%."
+msgstr "Learn the anger of the ruby. Train Melee."
 
 msgid "raise_ranged"
 msgstr "Raise Ranged"
 
 msgid "raise_ranged_description"
-msgstr "Learn the aim of the emerald. Increase Ranged by 5%."
+msgstr "Learn the aim of the emerald. Train Ranged."
 
 msgid "raise_speed"
 msgstr "Raise Speed"
 
 msgid "raise_speed_description"
-msgstr "Learn the reflexes of the spinel. Increase Speed by 5%."
+msgstr "Learn the reflexes of the spinel. Train Speed."
 
 msgid "alpha_seep"
 msgstr "Alpha Seep"
@@ -414,6 +414,12 @@ msgid "alpha_seep_description"
 msgstr ""
 "Thick, mucosal secretion harvested from the scent glands of apex predators "
 "at the peak of their territorial cycle."
+
+msgid "repellent"
+msgstr "Repellent"
+
+msgid "repellent_description"
+msgstr "Deter wild encounters with this stinky spray."
 
 msgid "fishing_rod"
 msgstr "Fishing Rod"
@@ -1669,6 +1675,9 @@ msgstr "E-Pay"
 msgid "no_money_operation"
 msgstr "{operation} not possible!"
 
+msgid "menu_select"
+msgstr "Select"
+
 msgid "select_number"
 msgstr "Select number"
 
@@ -1702,11 +1711,17 @@ msgstr " "
 msgid "combat_miss"
 msgstr "It missed..."
 
+msgid "combat_splash_partial"
+msgstr "A partial hit! Reduced damage was dealt."
+
 msgid "spyderbite_miss"
 msgstr "And the technique was lost."
 
 msgid "combat_full_health"
-msgstr "But it's already at full health."
+msgstr "But {name} is already at full health."
+
+msgid "combat_state_healed"
+msgstr "{name}'s health was restored."
 
 msgid "combat_forfeit"
 msgstr ""
@@ -2029,6 +2044,9 @@ msgstr "{target} is turning ranged attacks back on the attacker."
 
 msgid "combat_state_immune"
 msgstr "{target} is immune to {method}"
+
+msgid "combat_state_prevented"
+msgstr "{method} prevents {target} from gaining {condition}"
 
 msgid "combat_state_immune_multiple"
 msgstr "{target} are immune to {method}"
@@ -4167,7 +4185,7 @@ msgid "lion_mountain"
 msgstr "Lion Mountain"
 
 msgid "candy_town"
-msgstr "Candy"
+msgstr "Candy Town"
 
 msgid "candy_port"
 msgstr "Candy Port"
@@ -4179,22 +4197,28 @@ msgid "citypark"
 msgstr "City Park"
 
 msgid "cotton_town"
-msgstr "Cotton"
+msgstr "Cotton Town"
 
 msgid "diamond_hill"
 msgstr "Diamond Hill"
 
+msgid "dragonscave"
+msgstr "Dragon's Cave"
+
 msgid "dryadsgrove"
 msgstr "Dryad's Grove"
 
+msgid "mansion"
+msgstr "Mansion"
+
 msgid "flower_city"
-msgstr "Flower"
+msgstr "Flower City"
 
 msgid "leather_town"
-msgstr "Leather"
+msgstr "Leather Town"
 
 msgid "paper_town"
-msgstr "Paper"
+msgstr "Paper Town"
 
 msgid "route1"
 msgstr "Route 1"
@@ -4266,10 +4290,13 @@ msgid "taba_ba_passageway_2"
 msgstr "Taba Battle Area - Passageway 2"
 
 msgid "timber_town"
-msgstr "Timber"
+msgstr "Timber Town"
 
 msgid "tunnel"
 msgstr "Tunnel"
+
+msgid "tunnel_below"
+msgstr "Tunnel (Below)"
 
 msgid "park"
 msgstr "Pepper Park"
@@ -4866,6 +4893,9 @@ msgstr "Northern"
 
 msgid "menu_hemisphere_south"
 msgstr "Southern"
+
+msgid "menu_screen_size"
+msgstr "Screen Size (EXPERIMENTAL)"
 
 msgid "options_new_input_key0"
 msgstr "Press a key to set your new input key"
@@ -6120,14 +6150,14 @@ msgstr "It smiles because it knows how everyone it meets is going to die."
 msgid "ghosteeth"
 msgstr "Ghosteeth"
 
-msgid "gladiatorbug_description"
+msgid "dynastor_description"
 msgstr ""
-"GLADIATORBUG is a massive insectoid tuxemon with a deep, armored exoskeleton"
+"DYNASTOR is a massive insectoid tuxemon with a deep, armored exoskeleton"
 " and distinctive wings running along its back. Its mandibles can crush "
 "steel. "
 
-msgid "gladiatorbug"
-msgstr "Gladiatorbug"
+msgid "dynastor"
+msgstr "Dynastor"
 
 msgid "gliffary_description"
 msgstr ""
@@ -9028,6 +9058,16 @@ msgstr "Female"
 msgid "gender_nonbinary"
 msgstr "Non-binary"
 
+# Player pronoun choice (shown after appearance selection)
+msgid "pronoun_he"
+msgstr "He/Him"
+
+msgid "pronoun_she"
+msgstr "She/Her"
+
+msgid "pronoun_they"
+msgstr "They/Them"
+
 # Player additional gender, since very few ID as 'neuter'
 msgid "gender_enby"
 msgstr "Nonbinary"
@@ -11822,8 +11862,7 @@ msgstr "Cathedral Bill"
 
 msgid "spyder_pay_cathedral"
 msgstr ""
-"SCAN TO PAY. You can scan the QR code and make payment to the Cathedral by "
-"using the Bank App."
+"SCAN TO PAY. You can scan the QR code and make payment to the Cathedral."
 
 msgid "spyder_billing_cathedral1"
 msgstr ""
@@ -13135,8 +13174,6 @@ msgstr ""
 
 msgid "spyder_candy_eliane1"
 msgstr ""
-"Welcome to my market garden.\n"
-" I grow plants.\n"
 " Would you like me to harvest some crops for you?"
 
 msgid "spyder_candy_eliane2"
@@ -13984,7 +14021,6 @@ msgstr ""
 "Hey buddy! \n"
 " Are you planning to break into these HQ? Cool! \n"
 " Make sure you're well prepared before you do, because it's difficult to get out once you're inside! \n"
-" You'll need to call your mom to let her know you're safe. Use this app!"
 
 msgid "spyder_scoop_lanth1"
 msgstr "Look how happy the tuxemon are, living so close to one another!"
@@ -14449,8 +14485,8 @@ msgstr ""
 
 msgid "spyder_omnichannel_dempsey1"
 msgstr ""
-"Did you know that some cultures use the same word for 'crisis' and "
-"'opportunity'?"
+"It's every man, woman and child for themselves!\n
+" Especially the children, they'll make a tasty snack for the dragons."
 
 msgid "spyder_omnichannel_bettger1"
 msgstr "This is going to play havoc on Omnichannel's stock price."
@@ -16713,8 +16749,8 @@ msgstr ""
 
 msgid "spyder_dojo_fu3a"
 msgstr ""
-"I'm sorry, but I see you don't have any tuxemon that have evolved yet. This "
-"potion won't be of much use to you at the moment."
+"I'm sorry, but I see you don't have any tuxemon that have evolved yet.\n"
+" This potion won't be of much use to you at the moment."
 
 msgid "spyder_dojo_fu3b"
 msgstr ""
@@ -16763,8 +16799,7 @@ msgstr "Do you have a tuxemon that has evolved once? \n"
 
 msgid "spyder_dojo_fu_nochoice"
 msgstr ""
-"I'm ready to assist you, but please, choose the tuxemon that will undergo "
-"the reversal process."
+"I'm ready to assist you, but please, choose the tuxemon that will undergo the reversal process."
 
 msgid "spyder_dojo_zhu3"
 msgstr ""
@@ -16785,13 +16820,12 @@ msgstr "Not enough to cover the cost of the Re-Learner Potion."
 
 msgid "spyder_dojo_xiang3b"
 msgstr ""
-"The Re-Learner Potion has taken effect, your tuxemon's forgotten technique "
-"has been restored."
+"The Re-Learner Potion has taken effect, your tuxemon's forgotten technique has been restored."
 
 msgid "spyder_dojo_xiang3c"
 msgstr ""
-"Unfortunately, the Re-Learner Potion had an unexpected side effect, and your"
-" tuxemon has now forgotten one of its current techniques."
+"Unfortunately, the Re-Learner Potion had an unexpected side effect,\n"
+" and your tuxemon has now forgotten one of its current techniques."
 
 msgid "spyder_dojo_xiang3d"
 msgstr ""
@@ -16946,8 +16980,7 @@ msgstr ""
 
 msgid "spyder_dojo_ares1"
 msgstr ""
-"My tuxemon have great Melee or Ranged stats, or both, so their attacks hit "
-"hard."
+"My tuxemon have great Melee or Ranged stats, or both, so their attacks hit hard."
 
 msgid "spyder_dojo_ares2"
 msgstr ""
@@ -16970,8 +17003,7 @@ msgstr ""
 
 msgid "spyder_dojo_hephastus1"
 msgstr ""
-"My team all have excellent Armor, so melee attacks just bounce off of their"
-" thick hides."
+"My team all have excellent Armor, so melee attacks just bounce off of their thick hides."
 
 msgid "spyder_dojo_hephastus2"
 msgstr ""
@@ -16981,8 +17013,8 @@ msgstr ""
 
 msgid "spyder_dojo_hermes1"
 msgstr ""
-"My team are lightning-quick, with high Speed. By the time you get around to "
-"attacking, we'll have already defeated you."
+"My team are lightning-quick, with high Speed.\n"
+" By the time you get around to attacking, we'll have already defeated you."
 
 msgid "spyder_dojo_hermes2"
 msgstr ""

@@ -4,7 +4,7 @@ effects:
 - type: damage
 speed: normal
 potency: 0.0
-power: 2
+power: 1.6
 range: reliable
 recharge: 2
 slug: perfect_cut

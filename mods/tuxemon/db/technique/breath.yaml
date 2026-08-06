@@ -9,7 +9,7 @@ speed: normal
 potency: 1
 power: 0
 range: special
-recharge: 2
+recharge: 3
 slug: breath
 sort: damage
 modifiers: []

@@ -54,6 +54,11 @@ class SplashEffect(CoreEffect):
             damage //= self.divisor
             partial_hit = True
 
+        enemy_side = session.client.combat_session.get_own_monsters(target)
+        if sum(1 for m in targets if m in enemy_side) > 1:
+            damage = int(damage * 0.75)
+
+
         if targets:
             for monster in targets:
                 monster.current_hp = max(0, monster.current_hp - damage)

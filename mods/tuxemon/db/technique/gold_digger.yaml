@@ -10,8 +10,7 @@ recharge: 1
 slug: gold_digger
 sort: damage
 modifiers: []
-behaviors:
-  bypasses_selection: true
+behaviors: {}
 target:
   enemy_monster: true
   enemy_team: false

@@ -45,18 +45,20 @@ class DamageEffect(CoreEffect):
         tech.hit = tech.accuracy >= hit
 
         if tech.hit and not target.out_of_range:
-            damage, mult = formula.simple_damage_calculate(tech, user, target)
             targets = session.client.combat_session.get_targets(
                 tech, user, target
             )
 
         if targets:
             for monster in targets:
-                monster.current_hp = max(0, monster.current_hp - damage)
-                # to avoid double registration in the self._damage_map
-                if monster != target:
+                dmg, m = formula.simple_damage_calculate(tech, user, monster)
+                monster.current_hp = max(0, monster.current_hp - dmg)
+                if monster == target:
+                    damage, mult = dmg, m
+                else:
+                    # to avoid double registration in the self._damage_map
                     session.client.combat_session.enqueue_damage(
-                        user, monster, damage
+                        user, monster, dmg
                     )
 
         return TechEffectResult(

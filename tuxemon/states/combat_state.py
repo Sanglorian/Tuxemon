@@ -270,6 +270,7 @@ class CombatState(CombatAnimations):
         elif phase == CombatPhase.HOUSEKEEPING:
             new_turn = c_session.next_turn()
             c_session.action_queue.set_current_turn(new_turn)
+            c_session.restore_stranded_monsters()
             # reset the stagger counter so this batch of releases starts fresh
             self._entry_index = 0
             # fill all battlefield positions, but on round 1, don't ask

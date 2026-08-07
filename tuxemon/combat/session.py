@@ -448,6 +448,18 @@ class CombatSession:
         for monster in self.active_monsters:
             self.set_tech_hit(monster)
 
+    def restore_stranded_monsters(self) -> None:
+        """
+        Bring back disappeared monsters that have lost the target of their appear technique. 
+        """
+        for monster in self.active_monsters:
+            if monster.out_of_range and not self.action_queue.has_pending_for(
+                monster
+            ):
+                logger.debug(f"{monster.name} has no way back, restoring it")
+                monster.out_of_range = False
+                self.event_bus.publish("monster_appeared", user=monster)
+
     def check_decisions(self, session: Session) -> None:
         for player in list(self.active_players):
             monsters = self.field_monsters.get_monsters(player)

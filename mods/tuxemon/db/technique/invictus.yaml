@@ -1,5 +1,5 @@
 tech_id: 63
-accuracy: 0.75
+accuracy: 0.95
 effects:
 - type: damage
 - type: give

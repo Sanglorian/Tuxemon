@@ -51,9 +51,11 @@ from tuxemon.combat.machine import CombatMachine, CombatPhase
 from tuxemon.combat.reward_system import RewardSystem
 from tuxemon.combat.utils import get_battle_outcome_music, track_battles
 from tuxemon.database.rules import config_combat
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     EffectPhase,
     ItemCategory,
+    MonsterModel,
     OutputBattle,
 )
 from tuxemon.entity.npc import NPC
@@ -160,6 +162,7 @@ class CombatState(CombatAnimations):
         self.text_anim = TextAnimationManager()
         self._decision_queue: deque[Monster] = deque()
         self._captured_mon: Monster | None = None
+        self._captured_mon_is_new: bool = False
         # Counts monsters entering within the current fill batch so their
         # send-out animations can be staggered (see MONSTER_ENTRY_STAGGER).
         self._entry_index = 0
@@ -337,9 +340,8 @@ class CombatState(CombatAnimations):
         if self.phase == CombatPhase.DECISION:
             # show monster action menu for human players
             if self._decision_queue:
-                if self.combat_session.is_double:
-                    self.handle_pending_actions(self._decision_queue, 2)
-                else:
+                active_names = {s.name for s in self.client.active_states}
+                if "MainCombatMenuState" not in active_names:
                     self.handle_pending_actions(self._decision_queue, 1)
 
         elif self.phase == CombatPhase.ACTION:
@@ -1043,7 +1045,6 @@ class CombatState(CombatAnimations):
         self.event_bus.publish("clean_combat")
         for player in self.combat_session.players:
             player.battle_last_used_item_slug = None
-        new_entry = self.combat_session.get_variable("new_tuxepedia")
         self.combat_session.reset()
         self.unregister_event_handlers()
         self.client.current_music.stop()
@@ -1051,10 +1052,19 @@ class CombatState(CombatAnimations):
         self.clear_combat_states()
         self.phase = None
 
-        if new_entry and self._captured_mon:
+        if self._captured_mon_is_new and self._captured_mon:
             self.client.remove_state_by_name("CombatState")
-            params = {"monster": self._captured_mon, "source": self.name}
-            self.client.push_state("MonsterInfoState", **params)
+            journal = MonsterModel.lookup(self._captured_mon.slug, db)
+            if journal is not None:
+                self.client.push_state(
+                    "JournalInfoState",
+                    character=self.session.player,
+                    monster=journal,
+                    source=self.name,
+                    reveal=True,
+                )
+            else:
+                self.client.push_state("FadeOutTransition", caller=self)
         else:
             self.client.push_state("FadeOutTransition", caller=self)
 
@@ -1218,6 +1228,9 @@ class CombatState(CombatAnimations):
         if is_captured:
             owner = monster.get_owner()
             self._captured_mon = monster
+            self._captured_mon_is_new = bool(
+                self.combat_session.get_variable("new_tuxepedia")
+            )
 
             if owner:
                 self.combat_session.field_monsters.remove_npc(owner)

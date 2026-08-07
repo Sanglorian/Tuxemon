@@ -1,5 +1,5 @@
 tech_id: 10
-accuracy: 0.6
+accuracy: 0.8
 effects:
 - type: splash
   parameters:
@@ -14,7 +14,7 @@ sort: damage
 modifiers: []
 behaviors: {}
 target:
-  enemy_monster: true
+  enemy_monster: false
   enemy_team: true
   enemy_trainer: false
   own_monster: false

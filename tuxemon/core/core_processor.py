@@ -191,6 +191,8 @@ class EffectProcessor:
         meta_result.damage += result.damage
         meta_result.element_multiplier += result.element_multiplier
         meta_result.should_tackle |= result.should_tackle
+        meta_result.hit_count = max(meta_result.hit_count, result.hit_count)
+        meta_result.hit_damages.extend(result.hit_damages)
         meta_result.extras.extend(result.extras)
 
     @staticmethod

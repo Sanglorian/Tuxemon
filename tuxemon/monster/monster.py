@@ -65,7 +65,6 @@ class Monster:
 
     _persist_simple = {
         "current_hp": int,
-        "name": str,
         "slug": str,
         "birthdate": tuple[int, int] | None,
         "capture_date": tuple[int, int] | None,
@@ -252,6 +251,12 @@ class Monster:
                 monster.mother_iid = UUID(value) if value else None
             elif key == "father_iid":
                 monster.father_iid = UUID(value) if value else None
+            elif key == "name" and value:
+                # saves used to store the translated species name for every
+                # monster, nickname or not: ignore those so the monster keeps
+                # following the active locale instead of the one it was saved in
+                if value != T.translate(slug):
+                    monster.name = value
             elif key in cls._persist_simple:
                 setattr(monster, key, value)
             elif key == "held_item" and value:
@@ -733,6 +738,11 @@ class Monster:
             if getattr(self, attr) is not None
             or attr in self._persist_include_falsy
         }
+
+        # only a nickname is worth saving: without one the displayed name is
+        # derived from the slug, so it must not be baked into the save file
+        if self._custom_name is not None:
+            save_data["name"] = self._custom_name
 
         save_data["instance_id"] = self.instance_id.hex
         save_data["gender"] = self.gender

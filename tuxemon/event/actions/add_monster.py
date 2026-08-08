@@ -2,13 +2,14 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import final
 
 from tuxemon.database.runtime import db
 from tuxemon.event.eventaction import EventAction
 from tuxemon.monster.monster import Monster
 from tuxemon.session import Session
+from tuxemon.tools import show_nickname_prompt
 
 
 @final
@@ -38,6 +39,11 @@ class AddMonsterAction(EventAction):
     npc_slug: str | None = None
     exp: float | None = None
     money: float | None = None
+    _player_monster: Monster | None = field(
+        default=None, init=False, repr=False
+    )
+    _prompt_shown: bool = field(default=False, init=False, repr=False)
+    _nickname_done: bool = field(default=False, init=False, repr=False)
 
     def start(self, session: Session) -> None:
         player = session.player
@@ -66,3 +72,26 @@ class AddMonsterAction(EventAction):
         trainer.party.add_monster(monster, len(trainer.monsters))
         trainer.tuxepedia.register_caught(monster.slug)
         player.game_variables.set(self.name, monster.instance_id.hex)
+
+        # only the player gets to nickname their own monsters
+        if self.npc_slug == "player":
+            self._player_monster = monster
+
+    def _on_nickname_done(self) -> None:
+        self._nickname_done = True
+
+    def update(self, session: Session, dt: float) -> None:
+        if self._player_monster is None:
+            self.stop()
+            return
+
+        if not self._prompt_shown:
+            self._prompt_shown = True
+            show_nickname_prompt(
+                session.client,
+                self._player_monster,
+                on_done=self._on_nickname_done,
+            )
+
+        if self._nickname_done:
+            self.stop()

@@ -72,7 +72,7 @@ from tuxemon.states.combat_animations import CombatAnimations
 from tuxemon.states.monster_menu import MonsterMenuState
 from tuxemon.status.status import Status
 from tuxemon.technique.technique import Technique
-from tuxemon.tools import assert_never
+from tuxemon.tools import assert_never, show_nickname_prompt
 from tuxemon.ui.combat_notifier import CombatNotifier, TextAnimationManager
 from tuxemon.ui.graphic_box import GraphicBox
 from tuxemon.ui.method_animation import MethodAnimationCache
@@ -1052,6 +1052,17 @@ class CombatState(CombatAnimations):
         self.clear_combat_states()
         self.phase = None
 
+        # the prompt must be pushed after clear_combat_states(), otherwise it
+        # would land underneath the combat state and soft-lock the game
+        if self._captured_mon:
+            show_nickname_prompt(
+                self.client, self._captured_mon, on_done=self._after_capture
+            )
+        else:
+            self._after_capture()
+
+    def _after_capture(self) -> None:
+        """Shows the Tuxepedia entry of a new species, or leaves combat."""
         if self._captured_mon_is_new and self._captured_mon:
             self.client.remove_state_by_name("CombatState")
             journal = MonsterModel.lookup(self._captured_mon.slug, db)

@@ -36,6 +36,7 @@ from tuxemon.compat.rect import ReadOnlyRect
 from tuxemon.constants.asset_loader import fetch_asset
 from tuxemon.db import Comparison
 from tuxemon.locale.locale import T
+from tuxemon.platform.const.sizes import PLAYER_NAME_LIMIT
 from tuxemon.scaling import ScalingStrategy
 from tuxemon.ui.dialogue import calc_dialog_rect
 from tuxemon.ui.text_alignment import DialogPosition
@@ -47,6 +48,7 @@ if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
     from tuxemon.game_variables import ScopeVariablesManager
     from tuxemon.item.item import Item
+    from tuxemon.monster.monster import Monster
     from tuxemon.session import Session
     from tuxemon.sprite import Sprite
     from tuxemon.state.state import State
@@ -265,6 +267,71 @@ def open_choice_dialog(
         escape_key_exits=escape_key_exits,
         config=config,
     )
+
+
+def show_nickname_prompt(
+    client: BaseClient,
+    monster: Monster,
+    on_done: Callable[[], None] | None = None,
+) -> None:
+    """
+    Asks the player whether they want to nickname a monster they just got.
+
+    Answering yes opens the on-screen keyboard and the confirmed text becomes
+    the monster's name; answering no (or confirming an empty string) leaves
+    the species name untouched.
+
+    Parameters:
+        client: Game client.
+        monster: The monster being named.
+        on_done: Called exactly once, after the player answers, whichever
+            path was taken. Use it to chain whatever comes next.
+    """
+    from tuxemon.ui.menu_options import MenuOptions, create_yes_no_options
+
+    finished = False
+
+    def finish() -> None:
+        nonlocal finished
+        if finished:
+            return
+        finished = True
+        if on_done is not None:
+            on_done()
+
+    def close_prompt() -> None:
+        client.remove_state_by_name("ChoiceState")
+        client.remove_state_by_name("DialogState")
+
+    def set_name(name: str) -> None:
+        if name:
+            monster.name = name
+            logger.info(f"Now {T.translate(monster.slug)} is {name}!")
+        finish()
+
+    def yes_action() -> None:
+        close_prompt()
+        client.push_state(
+            "InputMenu",
+            prompt=T.translate("input_monster_name"),
+            callback=set_name,
+            escape_key_exits=False,
+            initial="",
+            char_limit=PLAYER_NAME_LIMIT,
+        )
+
+    def no_action() -> None:
+        close_prompt()
+        finish()
+
+    params = {"name": T.translate(monster.slug)}
+    open_dialog(client, [T.format("give_nickname", params)])
+
+    options = create_yes_no_options(
+        yes_action=yes_action,
+        no_action=no_action,
+    )
+    open_choice_dialog(client, MenuOptions(options), escape_key_exits=False)
 
 
 def number_or_variable(variables: dict[str, Any], value: str) -> float:

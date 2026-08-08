@@ -64,20 +64,25 @@ class CombatMachine:
                     "Only one player remaining — transitioning to RAN_AWAY."
                 )
                 return CombatPhase.RAN_AWAY
-            # A monster may have zero, one or more than one action: charging, locked and disappeared monsters skip the decision phase because
-            # the effect that put them in that state already scheduled their action on the pending queue. 
-            # Conversely, a monster that used foresight in an earlier round picks a new action even though it has another coming.
-            queue = self.session.action_queue
-            actions = list(queue.queue) + [a for _, a in queue.pending]
+            # A monster may have zero, one or more than one action. Charging,
+            # locked and disappeared monsters skip the decision phase because
+            # the effect that put them in that state already scheduled their
+            # action on the pending queue, so they count as decided without
+            # appearing in the queue. Pending actions are deliberately not
+            # counted on their own: a monster that used foresight in an
+            # earlier round still picks a new action even though it has
+            # another one coming, and must not be treated as decided.
+            queue = self.session.action_queue.queue
             active = set(self.session.active_monsters)
-            committed = {action.user for action in actions} & active
+            committed = {m for m in active if self.session.skips_decision(m)}
+            committed |= active & {action.user for action in queue}
             # An action whose user is the trainer rather than a monster
             # (e.g. throwing a tuxeball or using another item) consumes one
             # of that trainer's monsters' turns, even though no monster
             # appears as the action's user. Count each such action as
             # covering one of the trainer's undecided monsters.
             for player in self.session.active_players:
-                npc_actions = sum(1 for a in actions if a.user == player)
+                npc_actions = sum(1 for a in queue if a.user == player)
                 if npc_actions:
                     monsters = self.session.field_monsters.get_monsters(player)
                     uncovered = [m for m in monsters if m not in committed]

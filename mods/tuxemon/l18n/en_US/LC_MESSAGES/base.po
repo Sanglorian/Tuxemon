@@ -415,6 +415,12 @@ msgstr ""
 "Thick, mucosal secretion harvested from the scent glands of apex predators "
 "at the peak of their territorial cycle."
 
+msgid "repellent"
+msgstr "Repellent"
+
+msgid "repellent_description"
+msgstr "Deter wild encounters with this stinky spray."
+
 msgid "fishing_rod"
 msgstr "Fishing Rod"
 
@@ -1669,6 +1675,9 @@ msgstr "E-Pay"
 msgid "no_money_operation"
 msgstr "{operation} not possible!"
 
+msgid "menu_select"
+msgstr "Select"
+
 msgid "select_number"
 msgstr "Select number"
 
@@ -1702,11 +1711,17 @@ msgstr " "
 msgid "combat_miss"
 msgstr "It missed..."
 
+msgid "combat_splash_partial"
+msgstr "A partial hit! Reduced damage was dealt."
+
 msgid "spyderbite_miss"
 msgstr "And the technique was lost."
 
 msgid "combat_full_health"
-msgstr "But it's already at full health."
+msgstr "But {name} is already at full health."
+
+msgid "combat_state_healed"
+msgstr "{name}'s health was restored."
 
 msgid "combat_forfeit"
 msgstr ""
@@ -4170,7 +4185,7 @@ msgid "lion_mountain"
 msgstr "Lion Mountain"
 
 msgid "candy_town"
-msgstr "Candy"
+msgstr "Candy Town"
 
 msgid "candy_port"
 msgstr "Candy Port"
@@ -4182,22 +4197,28 @@ msgid "citypark"
 msgstr "City Park"
 
 msgid "cotton_town"
-msgstr "Cotton"
+msgstr "Cotton Town"
 
 msgid "diamond_hill"
 msgstr "Diamond Hill"
 
+msgid "dragonscave"
+msgstr "Dragon's Cave"
+
 msgid "dryadsgrove"
 msgstr "Dryad's Grove"
 
+msgid "mansion"
+msgstr "Mansion"
+
 msgid "flower_city"
-msgstr "Flower"
+msgstr "Flower City"
 
 msgid "leather_town"
-msgstr "Leather"
+msgstr "Leather Town"
 
 msgid "paper_town"
-msgstr "Paper"
+msgstr "Paper Town"
 
 msgid "route1"
 msgstr "Route 1"
@@ -4269,10 +4290,13 @@ msgid "taba_ba_passageway_2"
 msgstr "Taba Battle Area - Passageway 2"
 
 msgid "timber_town"
-msgstr "Timber"
+msgstr "Timber Town"
 
 msgid "tunnel"
 msgstr "Tunnel"
+
+msgid "tunnel_below"
+msgstr "Tunnel (Below)"
 
 msgid "park"
 msgstr "Pepper Park"
@@ -9033,6 +9057,16 @@ msgstr "Female"
 
 msgid "gender_nonbinary"
 msgstr "Non-binary"
+
+# Player pronoun choice (shown after appearance selection)
+msgid "pronoun_he"
+msgstr "He/Him"
+
+msgid "pronoun_she"
+msgstr "She/Her"
+
+msgid "pronoun_they"
+msgstr "They/Them"
 
 # Player additional gender, since very few ID as 'neuter'
 msgid "gender_enby"
@@ -13941,7 +13975,7 @@ msgstr ""
 "this country."
 
 msgid "spyder_route5_cleo2"
-msgstr "Oh ancestors, I've failed you!"
+msgstr "Oh ancestors, we've failed you!"
 
 msgid "spyder_route5_tryphaena1"
 msgstr "You know, we're descended from ... You've already heard it? Oh."
@@ -15615,10 +15649,10 @@ msgid "spyder_nimrod_guard"
 msgstr "Guard"
 
 msgid "spyder_route5_cleo"
-msgstr "Cleo"
+msgstr "Cleo and Patra"
 
 msgid "spyder_route5_tryphaena"
-msgstr "Tryphaena"
+msgstr "Tryphaena and Marc"
 
 msgid "spyder_route5_edith"
 msgstr "Edith"

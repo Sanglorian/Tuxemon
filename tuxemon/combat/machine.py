@@ -68,9 +68,20 @@ class CombatMachine:
             # the effect that put them in that state already scheduled their action on the pending queue. 
             # Conversely, a monster that used foresight in an earlier round picks a new action even though it has another coming.
             queue = self.session.action_queue
-            committed = {action.user for action in queue.queue}
-            committed |= {action.user for _, action in queue.pending}
+            actions = list(queue.queue) + [a for _, a in queue.pending]
             active = set(self.session.active_monsters)
+            committed = {action.user for action in actions} & active
+            # An action whose user is the trainer rather than a monster
+            # (e.g. throwing a tuxeball or using another item) consumes one
+            # of that trainer's monsters' turns, even though no monster
+            # appears as the action's user. Count each such action as
+            # covering one of the trainer's undecided monsters.
+            for player in self.session.active_players:
+                npc_actions = sum(1 for a in actions if a.user == player)
+                if npc_actions:
+                    monsters = self.session.field_monsters.get_monsters(player)
+                    uncovered = [m for m in monsters if m not in committed]
+                    committed.update(uncovered[:npc_actions])
             if active and active <= committed:
                 logger.debug(
                     "All monsters have actions — transitioning to PRE_ACTION."

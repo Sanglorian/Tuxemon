@@ -290,12 +290,21 @@ class CombatAnimations(Menu[None], ABC):
         # just want the end of the animation, not the entire thing
         ani._elapsed = 0.735
 
-    def animate_hp(self, monster: Monster) -> None:
+    def animate_hp(self, monster: Monster, ratio: float | None = None) -> None:
+        """
+        Animate a monster's HP bar.
+
+        Parameters:
+            monster: The monster whose HP bar is animated.
+            ratio: Explicit ratio to animate to. Defaults to the monster's
+                current HP ratio; an intermediate value is used to step the
+                bar through the individual hits of a multi-hit technique.
+        """
         hp_bar = self.bars.get_hp_bar(monster)
 
         ani = Animation(
             hp_bar,
-            value=monster.hp_ratio,
+            value=monster.hp_ratio if ratio is None else ratio,
             duration=0.7,
             transition="out_quint",
         )

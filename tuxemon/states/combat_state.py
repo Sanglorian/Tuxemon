@@ -94,6 +94,17 @@ logger = logging.getLogger(__name__)
 # the other rather than on top of each other.
 MONSTER_ENTRY_STAGGER = 0.7
 
+# Delay before a technique's animation starts playing over its target, so
+# the animation lines up with the target's damage shake.
+TECHNIQUE_ANIM_START_DELAY = 0.6
+
+# Multi-hit techniques replay the whole tackle/shake/animation cycle once per
+# hit. Cycles are spaced by the technique animation's own length plus this
+# buffer, never closer than MULTI_HIT_MIN_SPACING, so each hit reads as a
+# separate blow instead of blurring into the previous one.
+MULTI_HIT_SPACING_BUFFER = 0.2
+MULTI_HIT_MIN_SPACING = 0.8
+
 
 EVENT_HANDLERS: dict[str, str] = {
     "monster_disappeared": "_on_monster_disappeared",
@@ -674,24 +685,28 @@ class CombatState(CombatAnimations):
         if method.target["own_monster"]:
             target_sprite = self.sprite_map.get_sprite(user)
 
+        # a multi-hit technique stages one cycle per hit instead, see below
+        is_multi_hit = result_tech.hit_count > 1
+
         if result_tech.should_tackle:
-            user_sprite = self.sprite_map.get_sprite(user)
+            if not is_multi_hit:
+                user_sprite = self.sprite_map.get_sprite(user)
 
-            if user_sprite:
-                self.animate_sprite_tackle(user_sprite)
+                if user_sprite:
+                    self.animate_sprite_tackle(user_sprite)
 
-            if target_sprite:
-                self.task(
-                    partial(
-                        self.animate_sprite_take_damage,
-                        target_sprite,
-                    ),
-                    interval=hit_delay + 0.2,
-                )
-                self.task(
-                    partial(self.blink, target_sprite),
-                    interval=hit_delay + 0.6,
-                )
+                if target_sprite:
+                    self.task(
+                        partial(
+                            self.animate_sprite_take_damage,
+                            target_sprite,
+                        ),
+                        interval=hit_delay + 0.2,
+                    )
+                    self.task(
+                        partial(self.blink, target_sprite),
+                        interval=hit_delay + 0.6,
+                    )
 
             self.combat_session.enqueue_damage(
                 user, target, result_tech.damage
@@ -730,19 +745,143 @@ class CombatState(CombatAnimations):
                 break
 
         if result_tech.success:
-            self.event_bus.publish(
-                "play_sound_combat",
-                sound=method.sound.sfx,
-                value=method.sound.volume,
-            )
-            self.event_bus.publish(
-                "play_animation_combat",
+            if is_multi_hit:
+                self._schedule_multi_hit_sequence(
+                    user,
+                    method,
+                    target,
+                    target_sprite,
+                    result_tech.hit_damages,
+                    hit_delay,
+                    is_flipped,
+                )
+            else:
+                self.event_bus.publish(
+                    "play_sound_combat",
+                    sound=method.sound.sfx,
+                    value=method.sound.volume,
+                )
+                self.event_bus.publish(
+                    "play_animation_combat",
+                    method,
+                    target,
+                    target_sprite,
+                    action_time,
+                    is_flipped,
+                )
+
+    def _schedule_multi_hit_sequence(
+        self,
+        user: Monster,
+        method: Technique,
+        target: Monster,
+        target_sprite: Sprite | None,
+        hit_damages: Sequence[int],
+        hit_delay: float,
+        is_flipped: bool,
+    ) -> None:
+        """
+        Play one tackle/shake/sound/animation cycle per hit of a multi-hit
+        technique, stepping the target's HP bar down one hit at a time.
+
+        The damage itself has already been applied by the technique's effect;
+        this only stages the visuals. The technique's animation sprite is
+        cached and reused, so overlapping plays would render as a single
+        animation: the spacing between cycles is what makes each hit visible.
+
+        Parameters:
+            user: The monster using the technique.
+            method: The technique being used.
+            target: The monster being hit.
+            target_sprite: The target's sprite, None if off-screen.
+            hit_damages: Damage dealt by each individual hit.
+            hit_delay: Delay between a cycle starting and its damage shake.
+            is_flipped: Whether the animation should be flipped.
+        """
+        animation = self._method_cache.get(method, is_flipped)
+        anim_duration = (
+            animation.animation.duration
+            if animation and animation.animation
+            else 0.0
+        )
+        spacing = max(
+            MULTI_HIT_MIN_SPACING,
+            TECHNIQUE_ANIM_START_DELAY
+            + anim_duration
+            + MULTI_HIT_SPACING_BUFFER,
+        )
+
+        # rebuild the HP the target had before the chain landed, so the bar
+        # can be stepped through the same intermediate values
+        remaining_hp = target.current_hp + sum(hit_damages)
+
+        for index, damage in enumerate(hit_damages):
+            remaining_hp = max(0, remaining_hp - damage)
+            ratio = remaining_hp / target.hp if target.hp > 0 else 0.0
+            cycle = partial(
+                self._play_hit_cycle,
+                user,
                 method,
                 target,
                 target_sprite,
-                action_time,
+                ratio,
+                hit_delay,
                 is_flipped,
             )
+            if index:
+                self.task(cycle, interval=index * spacing)
+            else:
+                cycle()
+
+    def _play_hit_cycle(
+        self,
+        user: Monster,
+        method: Technique,
+        target: Monster,
+        target_sprite: Sprite | None,
+        hp_ratio: float,
+        hit_delay: float,
+        is_flipped: bool,
+    ) -> None:
+        """
+        Play a single hit of a multi-hit technique: the attacker's tackle,
+        the target's damage shake and blink, the technique's sound and
+        animation, and the HP bar step for this hit.
+        """
+        user_sprite = self.sprite_map.get_sprite(user)
+        if user_sprite:
+            self.animate_sprite_tackle(user_sprite)
+
+        if target_sprite:
+            self.task(
+                partial(self.animate_sprite_take_damage, target_sprite),
+                interval=hit_delay + 0.2,
+            )
+            self.task(
+                partial(self.blink, target_sprite),
+                interval=hit_delay + 0.6,
+            )
+
+        self.task(
+            partial(self.animate_hp, target, hp_ratio),
+            interval=hit_delay + 0.2,
+        )
+
+        self.event_bus.publish(
+            "play_sound_combat",
+            sound=method.sound.sfx,
+            value=method.sound.volume,
+        )
+        # no extra action time: the animation must be gone before the next
+        # hit's cycle re-adds the same cached sprite
+        self.event_bus.publish(
+            "play_animation_combat",
+            method,
+            target,
+            target_sprite,
+            0.0,
+            is_flipped,
+        )
 
     def _handle_npc_item(
         self,
@@ -1287,7 +1426,7 @@ class CombatState(CombatAnimations):
         if target_sprite and animation:
             animation.rect.center = target_sprite.rect.center
             assert animation.animation
-            start_delay = 0.6
+            start_delay = TECHNIQUE_ANIM_START_DELAY
             self.task(animation.animation.play, interval=start_delay)
             self.task(
                 partial(self.sprites.add, animation, layer=50),

@@ -51,9 +51,11 @@ from tuxemon.combat.machine import CombatMachine, CombatPhase
 from tuxemon.combat.reward_system import RewardSystem
 from tuxemon.combat.utils import get_battle_outcome_music, track_battles
 from tuxemon.database.rules import config_combat
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     EffectPhase,
     ItemCategory,
+    MonsterModel,
     OutputBattle,
 )
 from tuxemon.entity.npc import NPC
@@ -84,6 +86,14 @@ if TYPE_CHECKING:
     from tuxemon.sprite import Sprite
 
 logger = logging.getLogger(__name__)
+
+# When several monsters enter the battlefield at once (battle start, or a
+# multi-monster replacement after a double KO), their releases are staggered
+# by this many seconds each instead of all playing on the same frame. This
+# spaces out the send-out animations and combat calls so they play one after
+# the other rather than on top of each other.
+MONSTER_ENTRY_STAGGER = 0.7
+
 
 EVENT_HANDLERS: dict[str, str] = {
     "monster_disappeared": "_on_monster_disappeared",
@@ -152,6 +162,10 @@ class CombatState(CombatAnimations):
         self.text_anim = TextAnimationManager()
         self._decision_queue: deque[Monster] = deque()
         self._captured_mon: Monster | None = None
+        self._captured_mon_is_new: bool = False
+        # Counts monsters entering within the current fill batch so their
+        # send-out animations can be staggered (see MONSTER_ENTRY_STAGGER).
+        self._entry_index = 0
         # player => home areas on screen
         super().__init__(client=client, teams=context.teams, **kwargs)
         self.combat_session = self.client.combat_session
@@ -256,8 +270,13 @@ class CombatState(CombatAnimations):
         elif phase == CombatPhase.HOUSEKEEPING:
             new_turn = c_session.next_turn()
             c_session.action_queue.set_current_turn(new_turn)
+            # reset the stagger counter so this batch of releases starts fresh
+            self._entry_index = 0
             # fill all battlefield positions, but on round 1, don't ask
             c_session.fill_battlefield_positions(ask=new_turn > 1)
+            # confine the stagger to this synchronous batch so a later lone
+            # entry (e.g. a voluntary swap) isn't delayed by a stale count
+            self._entry_index = 0
             c_session.track_enemy_monsters(self.session)
 
         elif phase == CombatPhase.DECISION:
@@ -321,9 +340,8 @@ class CombatState(CombatAnimations):
         if self.phase == CombatPhase.DECISION:
             # show monster action menu for human players
             if self._decision_queue:
-                if self.combat_session.is_double:
-                    self.handle_pending_actions(self._decision_queue, 2)
-                else:
+                active_names = {s.name for s in self.client.active_states}
+                if "MainCombatMenuState" not in active_names:
                     self.handle_pending_actions(self._decision_queue, 1)
 
         elif self.phase == CombatPhase.ACTION:
@@ -433,7 +451,24 @@ class CombatState(CombatAnimations):
         if not sprite:
             raise ValueError(f"Sprite not found for item {capture_device}")
 
-        # Animate release and update HUD
+        # Stagger releases when several monsters enter together so their
+        # send-out animations and combat calls play one after the other.
+        delay = self._entry_index * MONSTER_ENTRY_STAGGER
+        self._entry_index += 1
+
+        release = partial(self._release_monster, player, monster, sprite)
+        if delay > 0:
+            self.task(release, interval=delay)
+        else:
+            release()
+
+    def _release_monster(
+        self,
+        player: NPC,
+        monster: Monster,
+        sprite: Sprite,
+    ) -> None:
+        """Animate a monster's release, reveal its HUD and announce a swap."""
         self.animate_monster_release(player, monster, sprite)
         self.update_hud(player, True, True)
 
@@ -793,6 +828,8 @@ class CombatState(CombatAnimations):
         )
 
     def _handle_status(self, status: Status, target: Monster) -> None:
+        if not target.status.has_status(status.slug):
+            return
         action_time = 0.0
         result = self.combat_session.apply_status(
             self.session, status, target, EffectPhase.PERFORM_STATUS
@@ -1006,7 +1043,8 @@ class CombatState(CombatAnimations):
     def end_combat(self) -> None:
         """End the combat."""
         self.event_bus.publish("clean_combat")
-        new_entry = self.combat_session.get_variable("new_tuxepedia")
+        for player in self.combat_session.players:
+            player.battle_last_used_item_slug = None
         self.combat_session.reset()
         self.unregister_event_handlers()
         self.client.current_music.stop()
@@ -1014,10 +1052,19 @@ class CombatState(CombatAnimations):
         self.clear_combat_states()
         self.phase = None
 
-        if new_entry and self._captured_mon:
+        if self._captured_mon_is_new and self._captured_mon:
             self.client.remove_state_by_name("CombatState")
-            params = {"monster": self._captured_mon, "source": self.name}
-            self.client.push_state("MonsterInfoState", **params)
+            journal = MonsterModel.lookup(self._captured_mon.slug, db)
+            if journal is not None:
+                self.client.push_state(
+                    "JournalInfoState",
+                    character=self.session.player,
+                    monster=journal,
+                    source=self.name,
+                    reveal=True,
+                )
+            else:
+                self.client.push_state("FadeOutTransition", caller=self)
         else:
             self.client.push_state("FadeOutTransition", caller=self)
 
@@ -1181,6 +1228,9 @@ class CombatState(CombatAnimations):
         if is_captured:
             owner = monster.get_owner()
             self._captured_mon = monster
+            self._captured_mon_is_new = bool(
+                self.combat_session.get_variable("new_tuxepedia")
+            )
 
             if owner:
                 self.combat_session.field_monsters.remove_npc(owner)

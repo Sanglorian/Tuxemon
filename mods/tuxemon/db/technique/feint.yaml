@@ -18,8 +18,7 @@ recharge: 1
 slug: feint
 sort: damage
 modifiers: []
-behaviors:
-  bypasses_selection: true
+behaviors: {}
 target:
   enemy_monster: true
   enemy_team: false

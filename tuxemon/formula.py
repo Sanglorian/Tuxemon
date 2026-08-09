@@ -148,13 +148,23 @@ def simple_damage_calculate(
         f"  damage = int({user_strength} * {move_strength} / {target_resist}) = {damage}"
     )
 
+    user_statuses = [s.slug for s in user.status.get_statuses()]
+    target_statuses = [s.slug for s in target.status.get_statuses()]
+
+    status_part = ""
+    if user_statuses:
+        status_part += f" user_status={user_statuses}"
+    if target_statuses:
+        status_part += f" target_status={target_statuses}"
+
     logger.info(
         f"[COMBAT] {user.name} Lv{user.level} -[{technique.name}]-> {target.name} | "
         f"range={technique.range} power={technique.power} mult={mult:.2f} "
-        f"user_str={user_strength:.1f} target_res={target_resist:.1f} => {damage} dmg"
+        f"user_str={user_strength:.1f} target_res={target_resist:.1f}"
+        f"{status_part} => {damage} dmg"
     )
-
     return damage, mult
+
 
 
 def simple_heal(
@@ -208,7 +218,7 @@ def calculate_time_based_multiplier(
         hour += 24
     if peak_hour < start:
         peak_hour += 24
-    if (end or hour or peak_hour) > 47:
+    if end > 47 or hour > 47 or peak_hour > 47:
         return 0.0
 
     if start <= hour < end:
@@ -445,7 +455,7 @@ def calculate_status_modifier(item: Item, target: Monster) -> float:
             )
             status_modifier *= specific_modifier
 
-        if status.category:
+        elif status.category:
             category_modifier = (
                 negative_modifier
                 if status.category == "negative"
@@ -493,16 +503,19 @@ def calculate_capdev_modifier(
         logger.debug(
             f"Checking specific element modifiers for item '{item.slug}' and target types"
         )
+        element_matched = False
         for slug, modifier in specific_element_modifiers.items():
             if target.has_type(slug):
                 logger.debug(
                     f"Target matches element '{slug}'. Applying modifier: {modifier}"
                 )
                 capdev_modifier *= modifier
-        logger.debug(
-            "No matching element found. Applying fallback_element_malus"
-        )
-        capdev_modifier *= config.fallback_element_malus
+                element_matched = True
+        if not element_matched:
+            logger.debug(
+                "No matching element found. Applying fallback_element_malus"
+            )
+            capdev_modifier *= config.fallback_element_malus
 
     specific_gender_modifiers = config.specific_gender_modifiers
 
@@ -510,12 +523,15 @@ def calculate_capdev_modifier(
         logger.debug(
             f"Checking specific gender modifiers for item '{item.slug}' and target gender '{target.gender}'"
         )
+        gender_matched = False
         for slug, modifier in specific_gender_modifiers.items():
             if target.gender == slug:
-                logger.debug(
-                    f"Target matches gender '{slug}'. Applying modifier: {modifier}"
-                )
-                capdev_modifier *= modifier
+                gender_matched = True
+        if not gender_matched:
+            logger.debug(
+                "No matching gender found. Applying fallback_gender_malus"
+            )
+            capdev_modifier *= config.fallback_gender_malus
         logger.debug(
             "No matching gender found. Applying fallback_gender_malus"
         )
@@ -527,6 +543,7 @@ def calculate_capdev_modifier(
         logger.debug(
             f"Checking specific variable modifiers for item '{item.slug}' and target game variables"
         )
+        variable_matched = False
         for variables in specific_variables_modifiers:
             if (
                 not isinstance(variables, dict)
@@ -544,11 +561,13 @@ def calculate_capdev_modifier(
                     f"Applying fallback_variables_bonus"
                 )
                 capdev_modifier *= config.fallback_variables_bonus
+                variable_matched = True
 
-        logger.debug(
-            "No matching variable found. Applying fallback_variables_malus"
-        )
-        capdev_modifier *= config.fallback_variables_malus
+        if not variable_matched:
+            logger.debug(
+                "No matching variable found. Applying fallback_variables_malus"
+            )
+            capdev_modifier *= config.fallback_variables_malus
 
     random_bounds = config.random_bounds
 

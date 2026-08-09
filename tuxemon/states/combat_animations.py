@@ -414,7 +414,9 @@ class CombatAnimations(Menu[None], ABC):
             label_data=label_data,
         )
 
-    def check_hud(self, monster: Monster, filename: str) -> Sprite:
+    def check_hud(
+        self, monster: Monster, filename: str, layer: int = HUD_LAYER
+    ) -> Sprite:
         """
         Checks whether exists or not a hud, it returns a sprite.
         To avoid building over an existing one.
@@ -422,10 +424,13 @@ class CombatAnimations(Menu[None], ABC):
         Parameters:
             monster: Monster who needs to update the hud.
             filename: Filename of the hud.
+            layer: Layer the hud is drawn on.
         """
         sprite = self.hud_manager.get_hud(monster)
         if sprite is None:
-            sprite = self.load_sprite(filename, layer=HUD_LAYER)
+            sprite = self.load_sprite(filename, layer=layer)
+        elif self.sprites.get_layer_of_sprite(sprite) != layer:
+            self.sprites.change_layer(sprite, layer)
 
         return sprite
 
@@ -447,7 +452,8 @@ class CombatAnimations(Menu[None], ABC):
         else:
             hud_graphics = hud_model.hud_player if is_player else hud_model.hud_opponent
 
-        hud = self.check_hud(monster, hud_graphics)
+        layer = self.hud_manager.get_hud_layer(monster, HUD_LAYER)
+        hud = self.check_hud(monster, hud_graphics, layer)
         hud.base_image = hud.image.copy()
         hud.player = is_player
         self.hud_manager.assign_hud(monster, hud)
@@ -969,3 +975,4 @@ class CombatAnimations(Menu[None], ABC):
         # slot it isn't standing in.
         for monster in monsters:
             hud_id = self.hud_manager.get_hud_key(monster)
+            self.build_hud(monster, hud_id, animate)

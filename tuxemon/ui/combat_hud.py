@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+SLOTS_PER_SIDE = 2
 
 class Side(Enum):
     PLAYER = "player"
@@ -105,6 +106,19 @@ class CombatLayoutManager:
             return "hud"
         return f"hud{ui.slot_index}" if ui.is_double else "hud"
 
+    def get_hud_layer(self, monster: Monster, base_layer: int) -> int:
+        """
+        Returns the draw layer of a monster's HUD panel.
+
+        The two panels on a side of a double battle overlap, so the last
+        slot's panel is drawn above the earlier one. A single battle has one
+        panel per side and keeps the base layer.
+        """
+        ui = self._monster_ui.get(monster)
+        if ui is None or not ui.is_double:
+            return base_layer
+        return base_layer - (SLOTS_PER_SIDE - 1 - ui.slot_index)
+
     def get_key(self, npc: NPC, monster: Monster) -> str:
         return self._layout_keys.get((npc, monster), "home")
 
@@ -180,7 +194,7 @@ class CombatLayoutManager:
                 if s == side
             }
 
-            for i in range(2):  # supports up to 2 monsters per side
+            for i in range(SLOTS_PER_SIDE):
                 if i not in used_slots:
                     return i
 

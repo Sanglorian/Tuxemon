@@ -962,9 +962,10 @@ class CombatAnimations(Menu[None], ABC):
 
         # Assign and Build HUDs
         # If there is only 1 monster, we use the ID "hud".
-        # If there are multiple, we use "hud0", "hud1", etc.
-        is_multi = len(monsters) > 1
-
-        for i, monster in enumerate(monsters):
-            hud_id = f"hud{i}" if is_multi else "hud"
-            self.build_hud(monster, hud_id, animate)
+        # If there are multiple, we use "hud0", "hud1", etc. The slot comes
+        # from the layout manager rather than the order of this list, which
+        # is ordered by entry time: a monster entering after its ally would
+        # otherwise get the HUD (and the status icons anchored to it) of the
+        # slot it isn't standing in.
+        for monster in monsters:
+            hud_id = self.hud_manager.get_hud_key(monster)

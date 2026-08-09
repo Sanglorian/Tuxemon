@@ -83,6 +83,28 @@ class CombatLayoutManager:
     def get_index(self, monster: Monster) -> int:
         return self._positions.get(monster, (None, 0))[1]
 
+    def get_ui(self, monster: Monster) -> MonsterUI | None:
+        """Returns the UI data (slot, layout key, sprites) for a monster."""
+        return self._monster_ui.get(monster)
+
+    def get_hud_key(self, monster: Monster) -> str:
+        """
+        Returns the layout key of the HUD panel belonging to a monster.
+
+        Single battles have one HUD per side ("hud"). Double battles have one
+        per slot ("hud0"/"hud1"), and the slot is the one the monster was
+        assigned on the battlefield, not the order it entered play: the HUD
+        has to stay paired with the monster box and the status icons, which
+        are both keyed by slot as well.
+        """
+        ui = self._monster_ui.get(monster)
+        if ui is None:
+            logger.warning(
+                f"No UI found for monster '{monster.name}', using 'hud'"
+            )
+            return "hud"
+        return f"hud{ui.slot_index}" if ui.is_double else "hud"
+
     def get_key(self, npc: NPC, monster: Monster) -> str:
         return self._layout_keys.get((npc, monster), "home")
 

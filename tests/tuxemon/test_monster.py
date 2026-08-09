@@ -25,6 +25,7 @@ def monster(monkeypatch):
         tags = []
         terrains = []
         max_moves = 4
+        exp_group_slug = "default"
         txmn_id = 0
         catch_rate = 100
         upper_catch_resistance = 1.0

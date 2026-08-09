@@ -34,7 +34,8 @@ LAYOUT_COORDINATES:
     # Tuxeball icon strip (left side, shows number of available monsters)
     party: [145, 57, 110, 50] # placed just below the HUD region
     # Monster box image position for single monster
-    monster_box_home: [48, 108, 2, 2] 
+    # Centred on the island, which settles at home's centerx (32 + 96/2 = 80)
+    monster_box_home: [80, 108, 2, 2]
     # Monster box image for first monster in a 2 vs 2 setup
     monster_box_home0: [110, 108, 2, 2]
     # Monster box image for second monster in a 2 vs 2 setup
@@ -56,7 +57,7 @@ LAYOUT_COORDINATES:
     home1: [170, 18, 96, 70]
     hud: [18, 0, 85, 30]
     hud0: [18, -4, 85, 30]
-    monster_status_icon: [9, 11, 9, 9]
+    monster_status_icon: [13, 13, 9, 9]  # aligned with the hp bar, as the slots below
     monster_status_icon_slot_0: [14, 12, 9, 9]
     hud1: [34, 17, 85, 30]
     monster_status_icon_slot_1: [30, 33, 9, 9]

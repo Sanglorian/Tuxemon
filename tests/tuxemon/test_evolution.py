@@ -37,12 +37,18 @@ def evolution_context(monkeypatch):
             db_data = MonsterModel.lookup(slug, None)
         original_init(self, slug, db_data, instance_id)
 
+    def fake_init_assets(self, db_data):
+        # Skip sprite/sound loading, but keep the flair attributes the rest
+        # of Monster relies on.
+        self.flair_slugs = set()
+        self.flairs = {}
+
     monkeypatch.setattr(Monster, "__init__", fake_monster_init)
-    monkeypatch.setattr(Monster, "_init_assets", lambda self, db_data: None)
+    monkeypatch.setattr(Monster, "_init_assets", fake_init_assets)
 
     fake_species_data = MagicMock()
     fake_species_data.species = "test"
-    fake_species_data.stage = "basic"
+    fake_species_data.stage = EvolutionStage.BASIC
     fake_species_data.tags = []
     fake_species_data.terrains = []
     fake_species_data.max_moves = 4
@@ -64,6 +70,7 @@ def evolution_context(monkeypatch):
     fake_species_data.sounds = None
     fake_species_data.height = 1.0
     fake_species_data.weight = 1.0
+    fake_species_data.exp_group_slug = "default"
 
     monkeypatch.setattr(
         MonsterModel, "lookup", lambda slug, db: fake_species_data
@@ -229,6 +236,43 @@ def test_acquisition_conditions(
     evo.acquisition = evo_acquisition
     context = {"map_inside": True}
     assert mon.evolution_handler.can_evolve(evo, context) == expected
+
+
+@pytest.mark.parametrize(
+    "acquisition",
+    [
+        pytest.param(Acquisition.GIFTED, id="gifted"),
+        pytest.param(Acquisition.TRADED, id="traded"),
+        pytest.param(Acquisition.RESCUED, id="rescued"),
+    ],
+)
+def test_acquisition_survives_evolution(evolution_context, acquisition):
+    """The evolved form keeps how the monster was obtained.
+
+    Acquisition drives the experience multiplier and can gate further
+    evolutions, so losing it on evolution would silently strip both.
+    """
+    mon, _, _ = evolution_context
+    mon.set_acquisition(acquisition)
+    expected_multiplier = mon.get_experience_multiplier()
+
+    evolved = Monster("rockat")
+    evolved.transfer_properties_from(mon)
+
+    assert evolved.acquisition == acquisition
+    assert evolved.get_experience_multiplier() == expected_multiplier
+
+
+def test_bond_survives_evolution(evolution_context):
+    """Transferring acquisition must not reset the bond built up so far."""
+    mon, _, _ = evolution_context
+    mon.set_acquisition(Acquisition.GIFTED)
+    mon.bond_handler.bond = 75
+
+    evolved = Monster("rockat")
+    evolved.transfer_properties_from(mon)
+
+    assert evolved.bond_handler.bond == 75
 
 
 @pytest.mark.parametrize(

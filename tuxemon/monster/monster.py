@@ -713,6 +713,9 @@ class Monster:
         self.capture_device = old_monster.capture_device
         self.plague = old_monster.plague
         self.steps = old_monster.steps
+        # Assigned directly rather than through set_acquisition(), which
+        # would reset the bond to the starting value for the method.
+        self.acquisition = old_monster.acquisition
         self.bond_handler = old_monster.bond_handler
 
         min_bond = self.bond_handler.get_effective_min_bond(self.stage)

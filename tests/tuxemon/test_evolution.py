@@ -70,7 +70,6 @@ def evolution_context(monkeypatch):
     fake_species_data.sounds = None
     fake_species_data.height = 1.0
     fake_species_data.weight = 1.0
-    fake_species_data.exp_group_slug = "default"
 
     monkeypatch.setattr(
         MonsterModel, "lookup", lambda slug, db: fake_species_data

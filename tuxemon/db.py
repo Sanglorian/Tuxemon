@@ -1297,19 +1297,6 @@ class MonsterModel(DataModel, BaseLookupModel, validate_assignment=True):
         description="Maximum number of moves this monster can know",
         ge=1,
     )
-    exp_group_slug: str = Field(
-        default="default",
-        description="The experience growth group this monster belongs to",
-    )
-
-    @field_validator("exp_group_slug")
-    def validate_exp_group_slug(cls, v: str) -> str:
-        if v not in config_monster.experience_groups:
-            raise ValueError(
-                f"Experience group '{v}' is not valid. Must be one of "
-                f"{set(config_monster.experience_groups)}."
-            )
-        return v
 
     @classmethod
     def lookup(cls, slug: str, db: ModData) -> MonsterModel:

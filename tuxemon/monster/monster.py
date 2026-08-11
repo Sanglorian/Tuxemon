@@ -156,9 +156,7 @@ class Monster:
         self.status = MonsterStatusHandler()
         self.plague = MonsterPlagueHandler()
         self.item_handler = MonsterItemHandler()
-        self.experience_handler = MonsterExperience(
-            exp_group_slug=db_data.exp_group_slug
-        )
+        self.experience_handler = MonsterExperience()
         self.bond_handler = BondHandler()
 
         self.base_stats: BasicStats = BasicStats()
@@ -241,9 +239,7 @@ class Monster:
         monster.status.decode_status(save_data, monster)
         monster.plague.decode_plagues(save_data)
         monster.bond_handler.set_state(save_data)
-        monster.experience_handler = MonsterExperience.from_state(
-            save_data, exp_group_slug=db_data.exp_group_slug
-        )
+        monster.experience_handler = MonsterExperience.from_state(save_data)
 
         for key, value in save_data.items():
             if key == "body" and value:

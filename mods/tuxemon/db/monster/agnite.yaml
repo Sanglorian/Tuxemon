@@ -73,4 +73,3 @@ sounds:
 catch_rate: 100.0
 lower_catch_resistance: 0.95
 upper_catch_resistance: 1.25
-exp_group_slug: fast

@@ -44,26 +44,10 @@ class MonsterExperience:
         self.levelling_up: bool = False
 
     @classmethod
-    def from_state(
-        cls,
-        save_data: Mapping[str, Any],
-        exp_group_slug: str | None = None,
-    ) -> MonsterExperience:
-        """
-        Rebuilds the handler from saved state.
-
-        Parameters:
-            save_data: The monster's saved state.
-            exp_group_slug: The experience group defined by the monster's
-                species. It takes precedence over the saved value, which is
-                derived data: species tracks are set in the monster database,
-                so a save made before a species changed track (or before the
-                species declared one) should follow the current definition.
-        """
+    def from_state(cls, save_data: Mapping[str, Any]) -> MonsterExperience:
         level = save_data.get("level", 1)
         total_experience = save_data.get("total_experience", 0)
-        if exp_group_slug is None:
-            exp_group_slug = save_data.get("exp_group_slug", "default")
+        exp_group_slug = save_data.get("exp_group_slug", "default")
 
         return cls(
             level=level,

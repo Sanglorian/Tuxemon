@@ -146,13 +146,13 @@
     <property name="act05" value="char_face player,spyder_billie"/>
     <property name="act06" value="unlock_controls"/>
     <property name="act08" value="translated_dialog spyder_routea_billie1"/>
-    <property name="act20" value="add_monster billie_choice,20,spyder_billie,1.5,10"/>
+    <property name="act20" value="add_monster billie_choice,20,spyder_billie,5,10"/>
     <property name="act21" value="set_monster_attribute add_monster,gender,male"/>
-    <property name="act22" value="add_monster cardiwing,17,spyder_billie,1.5,10"/>
+    <property name="act22" value="add_monster cardiwing,17,spyder_billie,5,10"/>
     <property name="act23" value="set_monster_attribute add_monster,gender,female"/>
-    <property name="act24" value="add_monster eyesore,17,spyder_billie,1.5,10"/>
+    <property name="act24" value="add_monster eyesore,17,spyder_billie,5,10"/>
     <property name="act25" value="set_monster_attribute add_monster,gender,female"/>
-    <property name="act26" value="add_monster viviphyta,17,spyder_billie,1.5,10"/>
+    <property name="act26" value="add_monster viviphyta,17,spyder_billie,5,10"/>
     <property name="act27" value="set_monster_attribute add_monster,gender,male"/>
     <property name="act30" value="start_battle player,spyder_billie"/>
     <property name="act71" value="translated_dialog spyder_routea_billie2"/>
@@ -173,7 +173,7 @@
   <object id="71" name="Talk Vince3" type="event" x="48" y="304" width="16" height="16">
    <properties>
     <property name="act1" value="translated_dialog spyder_routea_vince3"/>
-    <property name="act2" value="add_monster sapsnap,18,spyder_routea_vince,1.5,10"/>
+    <property name="act2" value="add_monster sapsnap,18,spyder_routea_vince,5,10"/>
     <property name="act3" value="start_battle player,spyder_routea_vince"/>
     <property name="act4" value="translated_dialog spyder_routea_vince4"/>
     <property name="behav1" value="talk spyder_routea_vince"/>
@@ -196,8 +196,8 @@
     <property name="act3" value="char_face player,spyder_routea_doris"/>
     <property name="act4" value="char_talk spyder_routea_doris,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster shybulb,12,spyder_routea_doris,1.5,10"/>
-    <property name="act7" value="add_monster trapsnap,14,spyder_routea_doris,1.5,10"/>
+    <property name="act6" value="add_monster shybulb,12,spyder_routea_doris,5,10"/>
+    <property name="act7" value="add_monster trapsnap,14,spyder_routea_doris,5,10"/>
     <property name="act8" value="start_battle player,spyder_routea_doris"/>
     <property name="act9" value="char_talk spyder_routea_doris,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_routea_doris"/>
@@ -219,7 +219,7 @@
     <property name="act3" value="char_face player,spyder_routea_dagger"/>
     <property name="act4" value="char_talk spyder_routea_dagger,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster cardiwing,16,spyder_routea_dagger,1.5,10"/>
+    <property name="act6" value="add_monster cardiwing,16,spyder_routea_dagger,5,10"/>
     <property name="act7" value="start_battle player,spyder_routea_dagger"/>
     <property name="act8" value="char_talk spyder_routea_dagger,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_routea_dagger"/>
@@ -234,8 +234,8 @@
     <property name="act3" value="char_face player,spyder_routea_doris"/>
     <property name="act4" value="char_talk spyder_routea_doris,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster shybulb,12,spyder_routea_doris,1.5,10"/>
-    <property name="act7" value="add_monster trapsnap,14,spyder_routea_doris,1.5,10"/>
+    <property name="act6" value="add_monster shybulb,12,spyder_routea_doris,5,10"/>
+    <property name="act7" value="add_monster trapsnap,14,spyder_routea_doris,5,10"/>
     <property name="act8" value="start_battle player,spyder_routea_doris"/>
     <property name="act9" value="char_talk spyder_routea_doris,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_routea_doris"/>
@@ -257,8 +257,8 @@
     <property name="act3" value="char_face player,spyder_routea_koan"/>
     <property name="act4" value="char_talk spyder_routea_koan,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster shybulb,12,spyder_routea_koan,1.5,10"/>
-    <property name="act7" value="add_monster budaye,12,spyder_routea_koan,1.5,10"/>
+    <property name="act6" value="add_monster shybulb,12,spyder_routea_koan,5,10"/>
+    <property name="act7" value="add_monster budaye,12,spyder_routea_koan,5,10"/>
     <property name="act8" value="start_battle player,spyder_routea_koan"/>
     <property name="act9" value="char_talk spyder_routea_koan,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_routea_koan"/>
@@ -279,8 +279,8 @@
     <property name="act3" value="char_face player,spyder_routea_lexi"/>
     <property name="act4" value="char_talk spyder_routea_lexi,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster vamporm,14,spyder_routea_lexi,1.5,10"/>
-    <property name="act7" value="add_monster katapill,14,spyder_routea_lexi,1.5,10"/>
+    <property name="act6" value="add_monster vamporm,14,spyder_routea_lexi,5,10"/>
+    <property name="act7" value="add_monster katapill,14,spyder_routea_lexi,5,10"/>
     <property name="act8" value="start_battle player,spyder_routea_lexi"/>
     <property name="act9" value="char_talk spyder_routea_lexi,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_routea_lexi"/>
@@ -302,8 +302,8 @@
     <property name="act3" value="char_face player,spyder_routea_lotu"/>
     <property name="act4" value="char_talk spyder_routea_lotu,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster narcileaf,14,spyder_routea_lotu,1.5,10"/>
-    <property name="act7" value="add_monster tarpeur,14,spyder_routea_lotu,1.5,10"/>
+    <property name="act6" value="add_monster narcileaf,14,spyder_routea_lotu,5,10"/>
+    <property name="act7" value="add_monster tarpeur,14,spyder_routea_lotu,5,10"/>
     <property name="act8" value="start_battle player,spyder_routea_lotu"/>
     <property name="act9" value="char_talk spyder_routea_lotu,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_routea_lotu"/>
@@ -318,8 +318,8 @@
     <property name="act3" value="char_face player,spyder_routea_connie"/>
     <property name="act4" value="char_talk spyder_routea_connie,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster sharpfin,14,spyder_routea_connie,1.5,10"/>
-    <property name="act7" value="add_monster bigfin,14,spyder_routea_connie,1.5,10"/>
+    <property name="act6" value="add_monster sharpfin,14,spyder_routea_connie,5,10"/>
+    <property name="act7" value="add_monster bigfin,14,spyder_routea_connie,5,10"/>
     <property name="act8" value="start_battle player,spyder_routea_connie"/>
     <property name="act9" value="char_talk spyder_routea_connie,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_routea_connie"/>
@@ -347,7 +347,7 @@
     <property name="act3" value="char_face player,spyder_routea_joe"/>
     <property name="act4" value="char_talk spyder_routea_joe,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster katapill,16,spyder_routea_joe,1.5,10"/>
+    <property name="act6" value="add_monster katapill,16,spyder_routea_joe,5,10"/>
     <property name="act7" value="start_battle player,spyder_routea_joe"/>
     <property name="act8" value="char_talk spyder_routea_joe,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_routea_joe"/>
@@ -368,7 +368,7 @@
     <property name="act3" value="char_face player,spyder_routea_rosy"/>
     <property name="act4" value="char_talk spyder_routea_rosy,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster shammer,16,spyder_routea_rosy,1.5,10"/>
+    <property name="act6" value="add_monster shammer,16,spyder_routea_rosy,5,10"/>
     <property name="act7" value="start_battle player,spyder_routea_rosy"/>
     <property name="act8" value="char_talk spyder_routea_rosy,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_routea_rosy"/>

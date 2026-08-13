@@ -84,6 +84,7 @@
     <property name="act2" value="set_variable spokenmom:yes"/>
     <property name="behav1" value="talk spyder_papertown_mom"/>
     <property name="cond1" value="not variable_set spokenmom:yes"/>
+    <property name="cond2" value="is party_size player,less_than,1"/>
    </properties>
   </object>
   <object id="43" name="Talk mom2" type="event" x="128" y="32" width="16" height="16">
@@ -100,7 +101,6 @@
     <property name="act1" value="translated_dialog spyder_papertown_mom4"/>
     <property name="behav1" value="talk spyder_papertown_mom"/>
     <property name="cond1" value="is battle_outcome player,won,spyder_route3_zoolander"/>
-    <property name="cond2" value="is variable_set spokenmom:yes"/>
     <property name="cond3" value="not variable_set captainreturns:yes"/>
     <property name="cond4" value="is party_size player,greater_than,0"/>
    </properties>
@@ -110,7 +110,6 @@
     <property name="act1" value="translated_dialog spyder_papertown_mom5"/>
     <property name="behav1" value="talk spyder_papertown_mom"/>
     <property name="cond1" value="is variable_set captainreturns:yes"/>
-    <property name="cond2" value="is variable_set spokenmom:yes"/>
     <property name="cond3" value="not variable_set omnichannelradioannounce:yes"/>
     <property name="cond4" value="is party_size player,greater_than,0"/>
    </properties>
@@ -120,7 +119,6 @@
     <property name="act1" value="translated_dialog spyder_papertown_mom6"/>
     <property name="behav1" value="talk spyder_papertown_mom"/>
     <property name="cond1" value="is variable_set captainreturns:yes"/>
-    <property name="cond2" value="is variable_set spokenmom:yes"/>
     <property name="cond3" value="is variable_set omnichannelradioannounce:yes"/>
     <property name="cond4" value="is party_size player,greater_than,0"/>
    </properties>
@@ -130,7 +128,6 @@
     <property name="act1" value="translated_dialog spyder_papertown_mom3"/>
     <property name="behav1" value="talk spyder_papertown_mom"/>
     <property name="cond1" value="is party_size player,greater_than,0"/>
-    <property name="cond2" value="is variable_set spokenmom:yes"/>
     <property name="cond3" value="not battle_outcome player,won,spyder_route3_zoolander"/>
     <property name="cond4" value="is variable_set momthanked:yes"/>
     <property name="cond5" value="not variable_set captainreturns:yes"/>
@@ -147,14 +144,14 @@
     <property name="act41" value="set_variable spokenmomcotton:yes"/>
     <property name="act50" value="add_tracker player,cotton_town"/>
     <property name="act51" value="add_tracker player,paper_town"/>
-    <property name="act60" value="set_variable momthanked:yes"/>
+    <property name="act60" value="set_variable spokenmom:yes"/>
+    <property name="act61" value="set_variable momthanked:yes"/>
     <property name="behav1" value="talk spyder_papertown_mom"/>
     <property name="cond1" value="is variable_set visitcottonmart:yes"/>
     <property name="cond2" value="not variable_set momthanked:yes"/>
     <property name="cond3" value="not battle_outcome player,won,spyder_route3_zoolander"/>
     <property name="cond4" value="not variable_set captainreturns:yes"/>
     <property name="cond5" value="is party_size player,greater_than,0"/>
-    <property name="cond6" value="is variable_set spokenmom:yes"/>
    </properties>
   </object>
   <object id="56" name="Go Outside" type="event" x="64" y="96" width="16" height="16">

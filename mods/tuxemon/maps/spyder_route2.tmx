@@ -343,11 +343,11 @@
     <property name="act06" value="char_face player,down"/>
     <property name="act07" value="char_face spyder_billie,up"/>
     <property name="act08" value="translated_dialog spyder_route2_billie1"/>
-    <property name="act20" value="add_monster billie_choice,6,spyder_billie,1.5,10"/>
+    <property name="act20" value="add_monster billie_choice,6,spyder_billie,5,10"/>
     <property name="act21" value="set_monster_attribute add_monster,gender,male"/>
-    <property name="act22" value="add_monster eyenemy,6,spyder_billie,1.5,10"/>
+    <property name="act22" value="add_monster eyenemy,6,spyder_billie,5,10"/>
     <property name="act23" value="set_monster_attribute add_monster,gender,female"/>
-    <property name="act24" value="add_monster cardiling,3,spyder_billie,1.5,10"/>
+    <property name="act24" value="add_monster cardiling,3,spyder_billie,5,10"/>
     <property name="act25" value="set_monster_attribute add_monster,gender,female"/>
     <property name="act30" value="start_battle player,spyder_billie"/>
     <property name="act71" value="translated_dialog spyder_route2_billie2"/>
@@ -387,7 +387,7 @@
   <object id="161" name="Talk roddick" type="event" x="192" y="48" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_route2_roddick,pre_battle"/>
-    <property name="act2" value="add_monster spighter,8,spyder_route2_roddick,1.5,10"/>
+    <property name="act2" value="add_monster spighter,8,spyder_route2_roddick,5,10"/>
     <property name="act3" value="start_battle player,spyder_route2_roddick"/>
     <property name="act4" value="char_talk spyder_route2_roddick,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route2_roddick"/>
@@ -397,8 +397,8 @@
   <object id="162" name="Talk marion" type="event" x="208" y="48" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_route2_marion,pre_battle"/>
-    <property name="act2" value="add_monster aardorn,7,spyder_route2_marion,1.5,10"/>
-    <property name="act3" value="add_monster aardorn,7,spyder_route2_marion,1.5,10"/>
+    <property name="act2" value="add_monster aardorn,7,spyder_route2_marion,5,10"/>
+    <property name="act3" value="add_monster aardorn,7,spyder_route2_marion,5,10"/>
     <property name="act4" value="start_battle player,spyder_route2_marion"/>
     <property name="act5" value="char_talk spyder_route2_marion,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route2_marion"/>
@@ -408,9 +408,9 @@
   <object id="163" name="Talk graf" type="event" x="224" y="48" width="16" height="16">
    <properties>
     <property name="act1" value="char_talk spyder_route2_graf,pre_battle"/>
-    <property name="act2" value="add_monster cardiling,7,spyder_route2_graf,1.5,10"/>
-    <property name="act3" value="add_monster cataspike,5,spyder_route2_graf,1.5,10"/>
-    <property name="act4" value="add_monster cataspike,5,spyder_route2_graf,1.5,10"/>
+    <property name="act2" value="add_monster cardiling,7,spyder_route2_graf,5,10"/>
+    <property name="act3" value="add_monster cataspike,5,spyder_route2_graf,5,10"/>
+    <property name="act4" value="add_monster cataspike,5,spyder_route2_graf,5,10"/>
     <property name="act5" value="start_battle player,spyder_route2_graf"/>
     <property name="act6" value="char_talk spyder_route2_graf,post_battle_lose"/>
     <property name="behav1" value="talk spyder_route2_graf"/>
@@ -452,7 +452,7 @@
     <property name="act3" value="char_face player,spyder_route2_roddick"/>
     <property name="act4" value="char_talk spyder_route2_roddick,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster spighter,8,spyder_route2_roddick,1.5,10"/>
+    <property name="act6" value="add_monster spighter,8,spyder_route2_roddick,5,10"/>
     <property name="act7" value="start_battle player,spyder_route2_roddick"/>
     <property name="act8" value="char_talk spyder_route2_roddick,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_route2_roddick"/>
@@ -467,8 +467,8 @@
     <property name="act3" value="char_face player,spyder_route2_marion"/>
     <property name="act4" value="char_talk spyder_route2_marion,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster aardorn,7,spyder_route2_marion,1.5,10"/>
-    <property name="act7" value="add_monster aardorn,7,spyder_route2_marion,1.5,10"/>
+    <property name="act6" value="add_monster aardorn,7,spyder_route2_marion,5,10"/>
+    <property name="act7" value="add_monster aardorn,7,spyder_route2_marion,5,10"/>
     <property name="act8" value="start_battle player,spyder_route2_marion"/>
     <property name="act9" value="char_talk spyder_route2_marion,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_route2_marion"/>
@@ -483,9 +483,9 @@
     <property name="act03" value="char_face player,spyder_route2_graf"/>
     <property name="act04" value="char_talk spyder_route2_graf,pre_battle"/>
     <property name="act05" value="unlock_controls"/>
-    <property name="act06" value="add_monster cardiling,7,spyder_route2_graf,1.5,10"/>
-    <property name="act07" value="add_monster cataspike,5,spyder_route2_graf,1.5,10"/>
-    <property name="act08" value="add_monster cataspike,5,spyder_route2_graf,1.5,10"/>
+    <property name="act06" value="add_monster cardiling,7,spyder_route2_graf,5,10"/>
+    <property name="act07" value="add_monster cataspike,5,spyder_route2_graf,5,10"/>
+    <property name="act08" value="add_monster cataspike,5,spyder_route2_graf,5,10"/>
     <property name="act09" value="start_battle player,spyder_route2_graf"/>
     <property name="act10" value="char_talk spyder_route2_graf,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_route2_graf"/>

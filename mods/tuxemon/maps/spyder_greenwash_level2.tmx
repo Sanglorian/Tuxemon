@@ -129,7 +129,7 @@
     <property name="act3" value="char_face player,spyder_greenwash_aissa"/>
     <property name="act4" value="char_talk spyder_greenwash_aissa,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster cateye,27,spyder_greenwash_aissa,1.5,10"/>
+    <property name="act6" value="add_monster cateye,27,spyder_greenwash_aissa,5,10"/>
     <property name="act7" value="start_battle player,spyder_greenwash_aissa"/>
     <property name="act8" value="char_talk spyder_greenwash_aissa,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_greenwash_aissa"/>
@@ -144,8 +144,8 @@
     <property name="act3" value="char_face player,spyder_greenwash_dippel"/>
     <property name="act4" value="char_talk spyder_greenwash_dippel,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster criniotherme,27,spyder_greenwash_dippel,1.5,10"/>
-    <property name="act7" value="add_monster tikorch,27,spyder_greenwash_dippel,1.5,10"/>
+    <property name="act6" value="add_monster criniotherme,27,spyder_greenwash_dippel,5,10"/>
+    <property name="act7" value="add_monster tikorch,27,spyder_greenwash_dippel,5,10"/>
     <property name="act8" value="start_battle player,spyder_greenwash_dippel"/>
     <property name="act9" value="char_talk spyder_greenwash_dippel,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_greenwash_dippel"/>
@@ -160,7 +160,7 @@
     <property name="act3" value="char_face player,spyder_greenwash_moreau"/>
     <property name="act4" value="char_talk spyder_greenwash_moreau,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster sclairus,31,spyder_greenwash_moreau,1.5,10"/>
+    <property name="act6" value="add_monster sclairus,31,spyder_greenwash_moreau,5,10"/>
     <property name="act7" value="start_battle player,spyder_greenwash_moreau"/>
     <property name="act8" value="char_talk spyder_greenwash_moreau,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_greenwash_moreau"/>
@@ -182,7 +182,7 @@
     <property name="act3" value="char_face player,spyder_greenwash_dempsey"/>
     <property name="act4" value="char_talk spyder_greenwash_dempsey,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster masknake,30,spyder_greenwash_dempsey,1.5,10"/>
+    <property name="act6" value="add_monster masknake,30,spyder_greenwash_dempsey,5,10"/>
     <property name="act7" value="start_battle player,spyder_greenwash_dempsey"/>
     <property name="act8" value="char_talk spyder_greenwash_dempsey,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_greenwash_dempsey"/>
@@ -204,7 +204,7 @@
     <property name="act3" value="char_face player,spyder_greenwash_heidenstam"/>
     <property name="act4" value="char_talk spyder_greenwash_heidenstam,pre_battle"/>
     <property name="act5" value="unlock_controls"/>
-    <property name="act6" value="add_monster foofle,15,spyder_greenwash_heidenstam,1.5,10"/>
+    <property name="act6" value="add_monster foofle,15,spyder_greenwash_heidenstam,5,10"/>
     <property name="act7" value="start_battle player,spyder_greenwash_heidenstam"/>
     <property name="act8" value="char_talk spyder_greenwash_heidenstam,post_battle_lose"/>
     <property name="cond1" value="not battle_outcome player,won,spyder_greenwash_heidenstam"/>

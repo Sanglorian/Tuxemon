@@ -11,6 +11,7 @@ from tuxemon.event.eventaction import EventAction
 from tuxemon.locale.locale import T
 from tuxemon.session import Session
 from tuxemon.tools import open_dialog
+from tuxemon.ui.speaker import get_speaker_prefix
 from tuxemon.ui.text_formatter import TextFormatter
 
 logger = logging.getLogger(__name__)
@@ -48,6 +49,8 @@ class CharTalkAction(EventAction):
         - Otherwise, the default dialogue profile is used.
         - If the dialogue field contains multiple lines, one is selected randomly.
         - Dialogue text is formatted before display.
+        - The character's name introduces the line when they take over the
+          conversation, and is left out while they keep talking.
 
     Example:
         char_talk npc_maple,greeting,map_forest
@@ -76,8 +79,9 @@ class CharTalkAction(EventAction):
             self.stop()
             return
 
+        prefix = get_speaker_prefix(session, character, T)
         text = TextFormatter.replace_text(session, line, T)
-        open_dialog(client=session.client, text=[T.translate(text)])
+        open_dialog(client=session.client, text=[prefix + T.translate(text)])
 
     def update(self, session: Session, dt: float) -> None:
         if "DialogState" not in session.client.active_state_names:

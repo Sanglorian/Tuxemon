@@ -121,6 +121,24 @@ class RunningEvent:
         if not self.tick(dt):
             return self.is_alive()
 
+        # Expose the shared context so actions of this event can pass
+        # information to each other (eg who spoke the previous line).
+        session.current_event_context = self.context
+        try:
+            return self._process_actions(session, action_manager, dt)
+        finally:
+            session.current_event_context = None
+
+    def _process_actions(
+        self, session: Session, action_manager: ActionManager, dt: float
+    ) -> bool:
+        """
+        Runs as many of the event's actions as the current frame allows.
+
+        Returns:
+            True - event is still alive (long-running action)
+            False - event is finished or cancelled
+        """
         max_actions_per_frame = len(self.actions) + 1
         actions_this_frame = 0
 

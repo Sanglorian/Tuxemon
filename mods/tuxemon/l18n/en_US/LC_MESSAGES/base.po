@@ -9596,6 +9596,11 @@ msgstr "Acolyte Corren"
 
 # DIALOG TRANSLATIONS ##
 # general dialogs
+# How a speaking character is introduced, eg "Maple: Hello there!".
+# {name} is replaced with the character's name.
+msgid "dialogue_speaker_prefix"
+msgstr "{name}: "
+
 msgid "fishing_rod_failure"
 msgstr "The water ripples, but nothing bites."
 

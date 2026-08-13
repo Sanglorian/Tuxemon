@@ -6,7 +6,7 @@ import logging
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 from uuid import UUID, uuid4
 
 from tuxemon.celestial_handler import CelestialHandler
@@ -46,6 +46,7 @@ class AbstractSession(ABC, Generic[ClientType]):
         self._start_timestamp: float = time.time()
         self._total_playtime: float = 0.0
         self.current_condition_box: BoundingBox | None = None
+        self.current_event_context: dict[str, Any] | None = None
         self._current_slot: int | None = None
 
         self._client: ClientType | None = None

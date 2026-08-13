@@ -73,6 +73,7 @@ class GameplayConfig(BaseModel):
     items_consumed_on_failure: bool = True
     encounter_rate_modifier: float = 1.0
     dialog_speed: Literal["slow", "medium", "fast", "max"] = "slow"
+    dialog_speaker_names: bool = True
     unit_measure: Literal["metric", "imperial"] = "metric"
     hemisphere: Literal["northern", "southern"] = "northern"
     sound_volume: float = 0.2
@@ -277,6 +278,10 @@ class TuxemonConfig:
     @property
     def dialog_speed(self) -> str:
         return self.config_model.gameplay.dialog_speed
+
+    @property
+    def dialog_speaker_names(self) -> bool:
+        return self.config_model.gameplay.dialog_speaker_names
 
     @property
     def unit_measure(self) -> str:

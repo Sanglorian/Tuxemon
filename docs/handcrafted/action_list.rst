@@ -26,6 +26,7 @@
 .. autoscriptinfoclass:: tuxemon.event.actions.change_faction_membership.ChangeFactionMembershipAction
 .. autoscriptinfoclass:: tuxemon.event.actions.change_state.ChangeStateAction
 .. autoscriptinfoclass:: tuxemon.event.actions.change_taste.ChangeTasteAction
+.. autoscriptinfoclass:: tuxemon.event.actions.char_dialog.CharDialogAction
 .. autoscriptinfoclass:: tuxemon.event.actions.char_face.CharFaceAction
 .. autoscriptinfoclass:: tuxemon.event.actions.char_face_char.CharFaceCharAction
 .. autoscriptinfoclass:: tuxemon.event.actions.char_look.CharLookAction

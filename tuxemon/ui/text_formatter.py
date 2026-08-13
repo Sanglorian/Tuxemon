@@ -300,6 +300,7 @@ class TextFormatter:
         self,
         text_slug: str,
         parameters: Mapping[str, str] | None = None,
+        prefix: str | None = None,
     ) -> Sequence[str]:
         """
         Translates a dialog and processes it into a sequence of pages of text,
@@ -310,6 +311,8 @@ class TextFormatter:
             parameters: A dictionary of key-value pairs for additional formatting
                 within the translated string (e.g., {"item_name": "Potion"}).
                 These parameters are applied *after* the initial dynamic replacements.
+            prefix: Optional text prepended before pagination, so it only ever
+                appears on the first page (e.g. a speaker name).
 
         Returns:
             A sequence of formatted text pages.
@@ -320,6 +323,9 @@ class TextFormatter:
 
         # Apply general dynamic replacements from TextFormatter
         processed_text = self.format_text(translated_text)
+
+        if prefix:
+            processed_text = prefix + processed_text
 
         # Use the injected paginator to split the text into pages
         pages = self.paginator.paginate_text(processed_text)

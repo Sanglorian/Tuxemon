@@ -7,25 +7,18 @@ from pygame.rect import Rect
 
 from tuxemon.database.runtime import db
 from tuxemon.db import ParameterizableRule
-from tuxemon.event.actions.char_dialog import style_cache as char_dialog_styles
-from tuxemon.event.actions.translated_dialog import (
-    style_cache as translated_dialog_styles,
-)
+from tuxemon.event.actions.translated_dialog import style_cache
 from tuxemon.event.eventaction import ActionManager
 from tuxemon.event.running import RunningEvent
+from tuxemon.ui.dialogue import calc_dialog_rect
+from tuxemon.ui.text_alignment import DialogPosition
 
 
 @pytest.fixture(scope="module", autouse=True)
 def dialogue_styles():
-    """
-    The dialog actions look up their box style in the database.
-
-    Each action module holds its own cache, and a cache built before the
-    database was loaded stays empty, so they are filled individually.
-    """
+    """The dialog action looks up its box style in the database."""
     db.load("dialogue", validate=False)
-    for cache in (char_dialog_styles, translated_dialog_styles):
-        cache.preload(["default"])
+    style_cache.preload(["default"])
 
 
 def make_character(slug, name):
@@ -82,8 +75,8 @@ def run_event(session, *actions):
 def test_speaker_is_named_once_per_exchange(session):
     pages = run_event(
         session,
-        ("char_dialog", "npc_maple", "unit_test_line_1"),
-        ("char_dialog", "npc_maple", "unit_test_line_2"),
+        ("translated_dialog", "unit_test_line_1", "speaker=npc_maple"),
+        ("translated_dialog", "unit_test_line_2", "speaker=npc_maple"),
     )
 
     assert pages == [["Maple: unit_test_line_1"], ["unit_test_line_2"]]
@@ -92,9 +85,9 @@ def test_speaker_is_named_once_per_exchange(session):
 def test_speaker_is_named_again_when_it_changes(session):
     pages = run_event(
         session,
-        ("char_dialog", "npc_maple", "unit_test_line_1"),
-        ("char_dialog", "npc_cleo", "unit_test_line_2"),
-        ("char_dialog", "npc_maple", "unit_test_line_3"),
+        ("translated_dialog", "unit_test_line_1", "speaker=npc_maple"),
+        ("translated_dialog", "unit_test_line_2", "speaker=npc_cleo"),
+        ("translated_dialog", "unit_test_line_3", "speaker=npc_maple"),
     )
 
     assert pages == [
@@ -107,9 +100,9 @@ def test_speaker_is_named_again_when_it_changes(session):
 def test_speakerless_dialog_does_not_break_the_exchange(session):
     pages = run_event(
         session,
-        ("char_dialog", "npc_maple", "unit_test_line_1"),
+        ("translated_dialog", "unit_test_line_1", "speaker=npc_maple"),
         ("translated_dialog", "unit_test_line_2"),
-        ("char_dialog", "npc_maple", "unit_test_line_3"),
+        ("translated_dialog", "unit_test_line_3", "speaker=npc_maple"),
     )
 
     assert pages == [
@@ -121,11 +114,11 @@ def test_speakerless_dialog_does_not_break_the_exchange(session):
 
 def test_separate_events_are_separate_exchanges(session):
     first = run_event(
-        session, ("char_dialog", "npc_maple", "unit_test_line_1")
+        session, ("translated_dialog", "unit_test_line_1", "speaker=npc_maple")
     )
     session.client.push_state.reset_mock()
     second = run_event(
-        session, ("char_dialog", "npc_maple", "unit_test_line_2")
+        session, ("translated_dialog", "unit_test_line_2", "speaker=npc_maple")
     )
 
     assert first == [["Maple: unit_test_line_1"]]
@@ -134,7 +127,8 @@ def test_separate_events_are_separate_exchanges(session):
 
 def test_unknown_character_still_shows_the_dialog(session):
     pages = run_event(
-        session, ("char_dialog", "npc_nobody", "unit_test_line_1")
+        session,
+        ("translated_dialog", "unit_test_line_1", "speaker=npc_nobody"),
     )
 
     assert pages == [["unit_test_line_1"]]
@@ -144,16 +138,57 @@ def test_names_can_be_turned_off(session):
     session.client.config.dialog_speaker_names = False
 
     pages = run_event(
-        session, ("char_dialog", "npc_maple", "unit_test_line_1")
+        session, ("translated_dialog", "unit_test_line_1", "speaker=npc_maple")
     )
 
     assert pages == [["unit_test_line_1"]]
 
 
 def test_event_context_is_released_after_processing(session):
-    run_event(session, ("char_dialog", "npc_maple", "unit_test_line_1"))
+    run_event(
+        session, ("translated_dialog", "unit_test_line_1", "speaker=npc_maple")
+    )
 
     assert session.current_event_context is None
+
+
+def test_speaker_can_be_passed_positionally(session):
+    """It is the last parameter, so the ones before it have to be empty."""
+    pages = run_event(
+        session,
+        (
+            "translated_dialog",
+            "unit_test_line_1",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "npc_maple",
+        ),
+    )
+
+    assert pages == [["Maple: unit_test_line_1"]]
+
+
+def test_a_named_parameter_leaves_the_others_alone(session):
+    """Naming the speaker must not shift the positional parameters."""
+    pages = run_event(
+        session,
+        (
+            "translated_dialog",
+            "unit_test_line_1",
+            "",
+            "center",
+            "speaker=npc_maple",
+        ),
+    )
+
+    rect = session.client.push_state.call_args_list[0].kwargs["rect"]
+    assert pages == [["Maple: unit_test_line_1"]]
+    assert rect == calc_dialog_rect(
+        session.client.context.rect, DialogPosition.CENTER
+    )
 
 
 @pytest.fixture
@@ -174,12 +209,10 @@ def test_char_talk_names_the_speaker(session, dialogue_profile):
     assert pages == [["Maple: greeting"]]
 
 
-def test_char_talk_shares_the_exchange_with_char_dialog(
-    session, dialogue_profile
-):
+def test_char_talk_shares_the_exchange_with_dialog(session, dialogue_profile):
     pages = run_event(
         session,
-        ("char_dialog", "npc_maple", "unit_test_line_1"),
+        ("translated_dialog", "unit_test_line_1", "speaker=npc_maple"),
         ("char_talk", "npc_maple", "farewell"),
         ("char_talk", "npc_cleo", "greeting"),
     )

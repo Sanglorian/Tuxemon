@@ -6,7 +6,7 @@ import logging
 import time
 from abc import ABC, abstractmethod
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 from types import TracebackType
 from typing import Any, ClassVar
@@ -254,6 +254,54 @@ class EventAction(ABC):
             return
 
 
+def split_parameters(
+    action: type[EventAction], parameters: Sequence[Any]
+) -> tuple[list[Any], dict[str, Any]]:
+    """
+    Split script parameters into positional and named arguments.
+
+    A parameter written as ``name=value`` is passed by name when ``name`` is
+    one of the action's parameters. This lets a script set a late parameter
+    without spelling out the ones before it, eg::
+
+        translated_dialog junkyard_01,speaker=npc_maple
+
+    Anything else stays positional, so values that happen to contain an "="
+    are passed through untouched.
+
+    Parameters:
+        action: The action the parameters will be passed to.
+        parameters: Parameters as written in the map.
+
+    Returns:
+        The positional arguments and the named arguments.
+    """
+    try:
+        names = {field.name for field in fields(action) if field.init}
+    except TypeError:
+        # not a dataclass, so there are no parameter names to match against
+        return list(parameters), {}
+
+    args: list[Any] = []
+    kwargs: dict[str, Any] = {}
+
+    for parameter in parameters:
+        if isinstance(parameter, str):
+            name, separator, value = parameter.partition("=")
+            if separator and name.isidentifier():
+                if name in names:
+                    kwargs[name] = value
+                    continue
+                logger.warning(
+                    f"'{name}' is not a parameter of action '{action.name}', "
+                    f"treating '{parameter}' as a positional value. "
+                    f"Its parameters are: {', '.join(sorted(names))}"
+                )
+        args.append(parameter)
+
+    return args, kwargs
+
+
 class ActionManager:
     def __init__(self, root_path: Path | None = None) -> None:
         if root_path is None:
@@ -286,7 +334,8 @@ class ActionManager:
 
         Parameters:
             name: Name of the action.
-            parameters: List of parameters that the action accepts.
+            parameters: List of parameters that the action accepts. A
+                parameter written as ``name=value`` is passed by name.
 
         Returns:
             New instance of the action with the appropriate parameters if
@@ -302,8 +351,10 @@ class ActionManager:
             logger.warning(error)
             return None
 
+        args, kwargs = split_parameters(action, parameters)
+
         try:
-            return action(*parameters)
+            return action(*args, **kwargs)
         except TypeError as e:
             logger.warning(
                 f"Error instantiating {action} with parameters {parameters}: {e}"

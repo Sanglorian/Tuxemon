@@ -21,8 +21,8 @@ events:
   Talk Shop Assistant1:
     actions:
     - char_face spyder_flowerpetshop_titus,down
-    - char_dialog spyder_flowerpetshop_titus,spyder_flower_petshopassistant_welcome
-    - char_dialog spyder_flowerpetshop_titus,spyder_flower_petshopassistant
+    - translated_dialog spyder_flower_petshopassistant_welcome,speaker=spyder_flowerpetshop_titus
+    - translated_dialog spyder_flower_petshopassistant,speaker=spyder_flowerpetshop_titus
     - open_shop spyder_flowerpetshop_titus,buy_monster
     conditions:
     - is char_facing_tile player
@@ -33,8 +33,8 @@ events:
   Talk Shop Assistant2:
     actions:
     - char_face spyder_flowerpetshop_titus,right
-    - char_dialog spyder_flowerpetshop_titus,spyder_flower_petshopassistant_welcome
-    - char_dialog spyder_flowerpetshop_titus,spyder_flower_petshopassistant
+    - translated_dialog spyder_flower_petshopassistant_welcome,speaker=spyder_flowerpetshop_titus
+    - translated_dialog spyder_flower_petshopassistant,speaker=spyder_flowerpetshop_titus
     - open_shop spyder_flowerpetshop_titus,buy_monster
     conditions:
     - is char_facing_tile player
@@ -127,8 +127,8 @@ events:
     type: event
   Talk Shop Keeper - First Time:
     actions:
-    - char_dialog spyder_flowerpetshop_denzel,spyder_flower_petshopkeeper1
-    - char_dialog spyder_flowerpetshop_denzel,spyder_flower_petshopkeeper2
+    - translated_dialog spyder_flower_petshopkeeper1,speaker=spyder_flowerpetshop_denzel
+    - translated_dialog spyder_flower_petshopkeeper2,speaker=spyder_flowerpetshop_denzel
     - add_monster vivipere,5
     - translated_dialog vivipere,,center,center,center
     - set_variable flower_talkedpetshop:yes
@@ -139,7 +139,7 @@ events:
     type: event
   Talk Shop Keeper - Later Times:
     actions:
-    - char_dialog spyder_flowerpetshop_denzel,spyder_flower_petshopkeeper3
+    - translated_dialog spyder_flower_petshopkeeper3,speaker=spyder_flowerpetshop_denzel
     - set_variable check_vivipere_morph:yes
     behav:
     - talk spyder_flowerpetshop_denzel

@@ -47,7 +47,7 @@ class TranslatedDialogAction(EventAction):
     Script usage:
         .. code-block::
 
-            translated_dialog <text>[,avatar][,position][,style][,speaker]
+            translated_dialog <text>[,avatar][,position][,h_alignment][,v_alignment][,style][,speaker]
 
     Script parameters:
         text: Text of the dialog.

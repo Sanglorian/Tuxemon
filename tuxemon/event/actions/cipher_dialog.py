@@ -39,7 +39,7 @@ class CipherDialogAction(EventAction):
     Script usage:
         .. code-block::
 
-            cipher_dialog <text>[,avatar][,position][,style]
+            cipher_dialog <text>[,avatar][,position][,h_alignment][,v_alignment][,style]
 
     Script parameters:
         text: Text of the dialog.

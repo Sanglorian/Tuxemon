@@ -28,6 +28,8 @@ class RewardDataEntry:
     levels_gained: int = 0
     bond_milestones_crossed: set[int] = field(default_factory=set)
     total_experience: int = 0
+    moves: list[str] = field(default_factory=list)
+    """Techniques this specific monster learned by levelling up."""
 
 
 @dataclass
@@ -35,6 +37,8 @@ class RewardData:
     winners: list[RewardDataEntry]
     messages: list[str]
     moves: list[str]
+    """Techniques learned by all the winners, regardless of who learned them.
+    Use RewardDataEntry.moves when the learner needs to be identified."""
     update: bool
     prize: int
 
@@ -143,6 +147,7 @@ class RewardCalculator:
             winner, entry.levels_gained
         )
         if new_moves:
+            entry.moves.extend(new_moves)
             rewards_data.moves.extend(new_moves)
 
         rewards_data.messages.append(

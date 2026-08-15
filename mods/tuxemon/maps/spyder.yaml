@@ -230,12 +230,34 @@ events:
   Teleport Faint:
     actions:
     - teleport_faint player,false
-    - translated_dialog heal_before_leave
+    - set_variable faint_recovery:pending
     conditions:
     - is char_defeated player
     - not location_type clinic
     - not check_teleport_faint player
     - not char_at_teleport_faint player
+    - is current_state WorldState
+    type: event
+  Recover After Faint:
+    actions:
+    - set_monster_health
+    - set_monster_status
+    - set_variable faint_recovery:null
+    conditions:
+    - is char_defeated player
+    - is char_at_teleport_faint player
+    - not location_type clinic
+    - is current_state WorldState
+    type: event
+  Fainted At Clinic:
+    actions:
+    - translated_dialog heal_before_leave
+    - set_variable faint_recovery:null
+    conditions:
+    - is variable_set faint_recovery:pending
+    - is char_defeated player
+    - is char_at_teleport_faint player
+    - is location_type clinic
     - is current_state WorldState
     type: event
   Cannot Leave Fainted:

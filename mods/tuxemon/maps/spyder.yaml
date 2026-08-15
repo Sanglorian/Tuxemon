@@ -229,11 +229,13 @@ events:
     type: event
   Teleport Faint:
     actions:
-    - teleport_faint player,true
+    - teleport_faint player,false
     - translated_dialog heal_before_leave
     conditions:
     - is char_defeated player
     - not location_type clinic
+    - not check_teleport_faint player
+    - not char_at_teleport_faint player
     - is current_state WorldState
     type: event
   Cannot Leave Fainted:

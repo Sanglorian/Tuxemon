@@ -29,7 +29,8 @@ class TeleportFaintAction(EventAction):
 
     Script parameters:
         character: Either "player" or npc slug name (e.g. "npc_maple").
-        healing: Trigger healing string flag ("true", "1", "yes" for True),
+        healing: Trigger healing string flag ("true", "1", "yes" for True).
+            When set, the party is restored as the teleport is queued.
         trans_time: Transition time in seconds - default 0.3
         rgb: color (eg red > 255,0,0 > 255:0:0) - default rgb(0,0,0)
 
@@ -80,6 +81,6 @@ class TeleportFaintAction(EventAction):
             ],
         )
 
-        if healing and character.current_map == teleport.map_name:
+        if healing:
             action.execute_action("set_monster_health")
             action.execute_action("set_monster_status")

@@ -6,9 +6,11 @@ import logging
 import random
 from typing import TYPE_CHECKING
 
+from tuxemon.database.runtime import db
 from tuxemon.db import (
     LearningMethod,
     MonsterEvolutionItemModel,
+    MonsterModel,
 )
 from tuxemon.monster.evolution_conditions import (
     check_bond,
@@ -19,6 +21,7 @@ from tuxemon.monster.evolution_conditions import (
     check_tastes,
     check_variables,
 )
+from tuxemon.technique.technique import Technique
 
 if TYPE_CHECKING:
     from tuxemon.entity.npc import NPC
@@ -124,6 +127,8 @@ class Evolution:
 
         owner = self.monster.get_owner()
 
+        self.adopt_species_moveset(new_monster)
+
         for move in new_monster.moves.moveset:
             if move.learning_method == LearningMethod.EVOLUTION:
                 new_monster.moves.learn_by_method(
@@ -132,11 +137,89 @@ class Evolution:
                     move.learning_method,
                 )
 
+        self.learn_missed_moves(new_monster)
+
         if owner.party.replace_monster(self.monster, new_monster):
             owner.tuxepedia.register_caught(new_monster.slug)
             logger.info(f"{self.monster} evolved into {new_monster}")
         else:
             logger.warning(f"Failed to evolve {self.monster}")
+
+    def adopt_species_moveset(self, new_monster: Monster) -> None:
+        """
+        Gives the evolved monster the moveset of its own species.
+
+        ``Monster.transfer_properties_from`` hands the evolved monster the
+        pre-evolution's move handler so that the moves already learned carry
+        over, but that handler also carries the pre-evolution's moveset. Left
+        alone, the evolved form would keep consulting the previous species'
+        learn list on every future level up.
+        """
+        species = MonsterModel.lookup(new_monster.slug, db)
+        new_monster.moves.set_moveset(species.moveset or [])
+
+    def evolution_level(self, new_monster: Monster) -> int | None:
+        """
+        Gets the level at which this evolution became available, if any.
+
+        Returns None when the evolution isn't gated on a level (item, steps,
+        bond, ...), and for devolutions, where the target is reached through
+        the monster's history rather than its evolution paths.
+        """
+        levels = [
+            evolution.at_level
+            for evolution in self.monster.evolutions
+            if evolution.monster_slug == new_monster.slug
+            and evolution.at_level is not None
+        ]
+        return min(levels) if levels else None
+
+    def learn_missed_moves(self, new_monster: Monster) -> list[Technique]:
+        """
+        Teaches the evolved form the moves it skipped while waiting to evolve.
+
+        A monster keeps levelling as its pre-evolution until the player
+        confirms the evolution, and those levels are resolved against the
+        pre-evolution's moveset. Any move the evolved form teaches between its
+        evolution level and the level actually reached would otherwise be
+        skipped for good, since a level up only ever looks at the levels it
+        just gained.
+
+        Only that missed window is caught up: moves the evolved form teaches
+        at or below its evolution level belong to the branch the player didn't
+        take, and are left alone.
+        """
+        at_level = self.evolution_level(new_monster)
+        if at_level is None or new_monster.level <= at_level:
+            return []
+
+        moves = new_monster.moves
+        known = {move.slug for move in moves.get_moves()}
+        learned: list[Technique] = []
+
+        for entry in moves.moveset:
+            if entry.technique in known or entry.level_learned <= at_level:
+                continue
+            if not moves.is_eligible(
+                new_monster, entry.technique, LearningMethod.LEVEL_UP
+            ):
+                continue
+
+            technique = Technique.create(entry.technique)
+            if moves.learn(
+                new_monster, technique, method=LearningMethod.LEVEL_UP
+            ):
+                known.add(technique.slug)
+                learned.append(technique)
+
+        if learned:
+            logger.info(
+                f"{new_monster.name} caught up on "
+                f"{[technique.slug for technique in learned]}, missed between "
+                f"level {at_level} and {new_monster.level} while unevolved."
+            )
+
+        return learned
 
     def can_evolve(
         self,

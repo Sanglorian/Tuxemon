@@ -94,14 +94,17 @@ def evolution_context(monkeypatch):
     yield mon, player, evo
 
 
-def test_evolve_monster_success(evolution_context):
+def test_evolve_monster_success(evolution_context, monkeypatch):
     mon, player, evo = evolution_context
     new_mon = Monster()
     new_mon.slug = "rockat"
     move = MagicMock()
     move.learning_method = LearningMethod.EVOLUTION
     move.technique = "SpecialBeam"
-    new_mon.moves.moveset = [move]
+    # the evolved form's moveset is read from its own species data
+    species = MagicMock()
+    species.moveset = [move]
+    monkeypatch.setattr(MonsterModel, "lookup", lambda slug, db: species)
     evo.is_eligible_for_evolution = lambda: True
     new_mon.transfer_properties_from = MagicMock()
     new_mon.moves.learn_by_method = MagicMock()
@@ -134,6 +137,113 @@ def test_evolve_monster_replace_fails(evolution_context):
     player.tuxepedia = MagicMock()
     evo.evolve_monster(new_mon)
     assert not player.tuxepedia.register_caught.called
+
+
+def make_moveset(*levels: int) -> list[MagicMock]:
+    """Builds moveset entries teaching "tech_<level>" at each given level."""
+    moveset = []
+    for level in levels:
+        entry = MagicMock()
+        entry.technique = f"tech_{level}"
+        entry.level_learned = level
+        entry.learning_method = LearningMethod.LEVEL_UP
+        entry.evolution_stage_learned = None
+        moveset.append(entry)
+    return moveset
+
+
+@pytest.fixture
+def missed_moves_context(evolution_context, monkeypatch):
+    """
+    A monster that evolves at level 14 into a form teaching moves at 13, 18
+    and 25, evolved after it had already reached level 19.
+    """
+    mon, _, evo = evolution_context
+    mon.evolutions = [
+        MonsterEvolutionItemModel(monster_slug="rockat", at_level=14)
+    ]
+
+    new_mon = Monster()
+    new_mon.slug = "rockat"
+    new_mon.set_level(19, 19)
+    new_mon.moves.set_moveset(make_moveset(13, 18, 25))
+
+    monkeypatch.setattr(
+        Technique, "create", lambda slug: MagicMock(spec=Technique, slug=slug)
+    )
+    return mon, new_mon, evo
+
+
+def test_learn_missed_moves_catches_up_window(missed_moves_context):
+    _, new_mon, evo = missed_moves_context
+
+    learned = evo.learn_missed_moves(new_mon)
+
+    # tech_13 belongs to the levels the monster spent as its previous form,
+    # tech_25 is still out of reach; only tech_18 was actually missed.
+    assert [technique.slug for technique in learned] == ["tech_18"]
+
+
+def test_learn_missed_moves_ignores_already_known(missed_moves_context):
+    _, new_mon, evo = missed_moves_context
+    new_mon.moves.moves = [MagicMock(spec=Technique, slug="tech_18")]
+
+    assert evo.learn_missed_moves(new_mon) == []
+
+
+def test_learn_missed_moves_prompt_evolution_catches_up_nothing(
+    missed_moves_context,
+):
+    _, new_mon, evo = missed_moves_context
+    new_mon.set_level(14, 14)
+
+    assert evo.learn_missed_moves(new_mon) == []
+
+
+def test_learn_missed_moves_without_level_requirement(missed_moves_context):
+    mon, new_mon, evo = missed_moves_context
+    # an item evolution has no level the monster can overshoot
+    mon.evolutions = [
+        MonsterEvolutionItemModel(
+            monster_slug="rockat", item={"tuxeball": 1.0}
+        )
+    ]
+
+    assert evo.learn_missed_moves(new_mon) == []
+
+
+def test_learn_missed_moves_uses_earliest_evolution_level(
+    missed_moves_context,
+):
+    mon, new_mon, evo = missed_moves_context
+    mon.evolutions = [
+        MonsterEvolutionItemModel(monster_slug="rockat", at_level=20),
+        MonsterEvolutionItemModel(monster_slug="rockat", at_level=12),
+    ]
+
+    learned = evo.learn_missed_moves(new_mon)
+
+    assert [technique.slug for technique in learned] == ["tech_13", "tech_18"]
+
+
+def test_adopt_species_moveset(evolution_context, monkeypatch):
+    _, _, evo = evolution_context
+    new_mon = Monster()
+    new_mon.slug = "rockat"
+    # the handler inherited from the pre-evolution carries its moveset
+    new_mon.moves.set_moveset(make_moveset(4, 7))
+
+    species = MagicMock()
+    species.moveset = make_moveset(13, 18, 25)
+    monkeypatch.setattr(MonsterModel, "lookup", lambda slug, db: species)
+
+    evo.adopt_species_moveset(new_mon)
+
+    assert [entry.level_learned for entry in new_mon.moves.moveset] == [
+        13,
+        18,
+        25,
+    ]
 
 
 def test_no_owner(evolution_context):

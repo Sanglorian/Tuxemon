@@ -118,32 +118,44 @@ class Evolution:
             and self.monster in self.monster.owner.monsters
         )
 
-    def evolve_monster(self, new_monster: Monster) -> None:
+    def evolve_monster(self, new_monster: Monster) -> list[Technique]:
+        """
+        Evolves the monster, returning the techniques learned on the way.
+
+        The returned techniques are the ones the player hasn't been told
+        about yet, so that the caller can report them alongside the
+        evolution itself.
+        """
         if not self.is_eligible_for_evolution():
             logger.warning(
                 f"evolve_monster called on {self.monster} but it is not eligible for evolution."
             )
-            return
+            return []
 
         owner = self.monster.get_owner()
+        learned: list[Technique] = []
 
         self.adopt_species_moveset(new_monster)
 
         for move in new_monster.moves.moveset:
             if move.learning_method == LearningMethod.EVOLUTION:
-                new_monster.moves.learn_by_method(
+                technique = new_monster.moves.learn_by_method(
                     new_monster,
                     move.technique,
                     move.learning_method,
                 )
+                if technique:
+                    learned.append(technique)
 
-        self.learn_missed_moves(new_monster)
+        learned += self.learn_missed_moves(new_monster)
 
         if owner.party.replace_monster(self.monster, new_monster):
             owner.tuxepedia.register_caught(new_monster.slug)
             logger.info(f"{self.monster} evolved into {new_monster}")
         else:
             logger.warning(f"Failed to evolve {self.monster}")
+
+        return learned
 
     def adopt_species_moveset(self, new_monster: Monster) -> None:
         """

@@ -91,9 +91,12 @@ class EvolutionAction(EventAction):
 
         evolved = Monster.spawn_base(evolution, monster.level)
         evolved.transfer_properties_from(monster)
-        monster.evolution_handler.evolve_monster(evolved)
+        learned = monster.evolution_handler.evolve_monster(evolved)
         self.client.push_state(
-            "EvolutionTransition", original=monster.slug, evolved=evolved.slug
+            "EvolutionTransition",
+            original=monster.slug,
+            evolved=evolved.slug,
+            techniques=[technique.slug for technique in learned],
         )
 
     def process_pending_evolutions(self) -> None:

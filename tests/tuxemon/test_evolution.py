@@ -226,6 +226,22 @@ def test_learn_missed_moves_uses_earliest_evolution_level(
     assert [technique.slug for technique in learned] == ["tech_13", "tech_18"]
 
 
+def test_evolve_monster_returns_learned_techniques(
+    missed_moves_context, monkeypatch
+):
+    """The caught up moves reach the caller, so the player can be told."""
+    mon, new_mon, evo = missed_moves_context
+    species = MagicMock()
+    species.moveset = new_mon.moves.moveset
+    monkeypatch.setattr(MonsterModel, "lookup", lambda slug, db: species)
+    evo.is_eligible_for_evolution = lambda: True
+    new_mon.transfer_properties_from = MagicMock()
+
+    learned = evo.evolve_monster(new_mon)
+
+    assert [technique.slug for technique in learned] == ["tech_18"]
+
+
 def test_adopt_species_moveset(evolution_context, monkeypatch):
     _, _, evo = evolution_context
     new_mon = Monster()

@@ -572,6 +572,8 @@ class CombatState(CombatAnimations):
         self.combat_session.swap_tracker.clear()
         self.remove_monster_actions_from_queue(monster)
         self.animate_monster_faint(monster)
+        # leaving the field severs any bond the monster took part in
+        self.combat_session.clear_broken_bonds(self.session)
 
     def remove_monster_actions_from_queue(self, monster: Monster) -> None:
         """
@@ -1030,6 +1032,8 @@ class CombatState(CombatAnimations):
         self.award_experience_and_money(monster)
         # Remove monster from damage map
         self.combat_session.damage_tracker.remove_monster(monster)
+        # a fainted monster can't keep a bond alive
+        self.combat_session.clear_broken_bonds(self.session)
         if len(self.combat_session.remaining_players) <= 1:
             self.event_bus.publish("play_music_combat", monster=monster)
 

@@ -1521,6 +1521,97 @@ msgstr ""
 "A tuxemon that holds this item receives half of all XP gained by your party, regardless of whether it participated in battle.\n"
 " The remainder of the XP is split between monsters that did participate."
 
+# Elemental Mantles (held items)
+msgid "cosmic_mantle"
+msgstr "Cosmic Mantle"
+
+msgid "cosmic_mantle_description"
+msgstr ""
+"Gain Cosmic resistance."
+
+msgid "earth_mantle"
+msgstr "Earth Mantle"
+
+msgid "earth_mantle_description"
+msgstr ""
+"Gain Earth resistance."
+
+msgid "fire_mantle"
+msgstr "Fire Mantle"
+
+msgid "fire_mantle_description"
+msgstr ""
+"Gain Fire resistance."
+
+msgid "frost_mantle"
+msgstr "Frost Mantle"
+
+msgid "frost_mantle_description"
+msgstr ""
+"Gain Frost resistance."
+
+msgid "heroic_mantle"
+msgstr "Heroic Mantle"
+
+msgid "heroic_mantle_description"
+msgstr ""
+"Gain Heroic resistance."
+
+msgid "lightning_mantle"
+msgstr "Lightning Mantle"
+
+msgid "lightning_mantle_description"
+msgstr ""
+"Gain Lightning resistance."
+
+msgid "metal_mantle"
+msgstr "Metal Mantle"
+
+msgid "metal_mantle_description"
+msgstr ""
+"Gain Metal resistance."
+
+msgid "normal_mantle"
+msgstr "Normal Mantle"
+
+msgid "normal_mantle_description"
+msgstr ""
+"Gain Normal resistance."
+
+msgid "shadow_mantle"
+msgstr "Shadow Mantle"
+
+msgid "shadow_mantle_description"
+msgstr ""
+"Gain Shadow resistance."
+
+msgid "sky_mantle"
+msgstr "Sky Mantle"
+
+msgid "sky_mantle_description"
+msgstr ""
+"Gain Sky resistance."
+
+msgid "venom_mantle"
+msgstr "Venom Mantle"
+
+msgid "venom_mantle_description"
+msgstr ""
+"Gain Venom resistance."
+
+msgid "water_mantle"
+msgstr "Water Mantle"
+
+msgid "water_mantle_description"
+msgstr "Gain Water resistance."
+
+msgid "wood_mantle"
+msgstr "Wood Mantle"
+
+msgid "wood_mantle_description"
+msgstr "Gain Wood resistance."
+
+
 # Map Types:
 msgid "no_type"
 msgstr "No type"

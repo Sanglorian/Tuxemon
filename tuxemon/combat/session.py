@@ -48,6 +48,7 @@ class CombatSession:
         self._players: list[NPC] = []
         self._combat_type: CombatType | None = None
         self._random_tech_hit: dict[Monster, float] = {}
+        self._held_item_uses: dict[Monster, int] = {}
         self._combat_variables: dict[str, Any] = {}
         self.field_monsters = FieldMonsters()
         self.swap_tracker = SwapTracker()
@@ -452,12 +453,88 @@ class CombatSession:
         for player in list(self.active_players):
             monsters = self.field_monsters.get_monsters(player)
             for monster in monsters:
-                held_item = monster.held_item
-                if held_item:
-                    held_item.use(session, player, monster)
+                self.use_held_item(session, player, monster)
                 status = monster.status.current_status
                 if status:
                     status.use(session, EffectPhase.ON_DECISION)
+
+    def use_held_item(
+        self, session: Session, player: NPC, monster: Monster
+    ) -> None:
+        """
+        Fires a monster's held item for this turn, if the use-time gate lets
+        it and the item has uses left in this battle.
+
+        Held items are never consumed, so without a budget a gated item
+        simply fires every turn it qualifies. ``hold_uses_per_battle`` caps
+        that; the count lives on the combat session, so it resets with the
+        battle and never has to survive a trip through the bag.
+
+        A spent item stays equipped. It has to: a stat boost lives on the
+        item (see ``apply_stat_modifiers``) and ``get_combat_stats`` only
+        sums boosts from the item a monster is currently holding, so taking
+        the item away would throw away the boost it just applied. Staying
+        put also spares the player re-equipping between every battle.
+        """
+        held_item = monster.held_item
+        if held_item is None:
+            return
+
+        budget = held_item.hold_uses_per_battle
+        if budget > 0 and self.get_held_item_uses(monster) >= budget:
+            return
+
+        if not held_item.validate_held_use(session, monster):
+            return
+
+        held_item.use(session, player, monster)
+        self.announce_held_item(held_item, monster)
+
+        if budget > 0:
+            used = self.spend_held_item_use(monster)
+            if used >= budget:
+                logger.info(
+                    f"{held_item.name} spent its {budget} use(s) for this "
+                    f"battle on {monster.name}"
+                )
+
+    def announce_held_item(self, item: Item, monster: Monster) -> None:
+        """
+        Tells the player a held item fired, and refreshes the holder's HP bar.
+
+        Held items fire during the decision phase, outside the action queue,
+        so none of the redraws that follow a queued action run for them. The
+        bar would otherwise sit stale until some later action happened to
+        refresh it.
+
+        The message goes through the text animation queue rather than
+        alerting straight away, so that two held items firing on the same
+        turn are read one after the other instead of the second overwriting
+        the first.
+        """
+        context = {
+            "user": monster.name,
+            "name": item.name,
+            "target": monster.name,
+        }
+        self.event_bus.publish(
+            "queue_combat_message", message=T.format(item.use_item, context)
+        )
+        self.event_bus.publish("update_monster_hp", monster)
+
+    def get_held_item_uses(self, monster: Monster) -> int:
+        """How many times this monster's held item has fired this battle."""
+        return self._held_item_uses.get(monster, 0)
+
+    def spend_held_item_use(self, monster: Monster) -> int:
+        """Records one held-item use this battle and returns the new total."""
+        used = self.get_held_item_uses(monster) + 1
+        self._held_item_uses[monster] = used
+        return used
+
+    def clear_held_item_uses(self) -> None:
+        logger.debug("Cleared all held item uses")
+        self._held_item_uses.clear()
 
     def apply_statuses(self, session: Session) -> None:
         """
@@ -637,6 +714,7 @@ class CombatSession:
         self.reset_turn()
         self.reset_prize()
         self.clear_tech_hits()
+        self.clear_held_item_uses()
         self.clear_variables()
         self.reset_players()
         self.set_battle_format(False)

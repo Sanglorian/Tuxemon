@@ -21,12 +21,24 @@ class FakeMonster:
         return f"<FakeMonster {self.name}>"
 
 
+class FakeParty:
+    """Minimal stand-in for a party, for the battlefield-size checks."""
+
+    def __init__(self, npc: "FakeNPC") -> None:
+        self._npc = npc
+
+    @property
+    def alive(self) -> list[FakeMonster]:
+        return [m for m in self._npc.monsters if not m.is_fainted]
+
+
 class FakeNPC:
     """Minimal stand-in for a trainer owning a party."""
 
     def __init__(self, name: str, monsters: list[FakeMonster]) -> None:
         self.name = name
         self.monsters = monsters
+        self.party = FakeParty(self)
 
     def __repr__(self) -> str:
         return f"<FakeNPC {self.name}>"
@@ -131,6 +143,31 @@ def test_bond_doesnt_resume_when_host_returns(battle, session):
     combat.add_monster_into_play(session, opponent, battle["x"], battle["z"])
 
     assert battle["x"].status.get_statuses() == []
+
+
+def test_faint_with_no_replacement_still_breaks_bond(battle, session):
+    """
+    A defeat doesn't always bring a replacement in.
+
+    When the losing side is down to its last monster the battlefield shrinks
+    to a single, no switch-in follows, and nothing else would sweep the bond
+    the fallen monster was part of.
+    """
+    combat, opponent = battle["combat"], battle["opponent"]
+    status = bond_between(battle["a"], battle["x"], slug="grabbed")
+
+    # the opponent's bench is emptied, so only X and Y can be fielded
+    opponent.monsters = [battle["x"], battle["y"]]
+
+    battle["x"].is_fainted = True
+    withdraw(battle, opponent, battle["x"])
+    assert combat.get_available_positions(opponent) == 0
+    assert combat.get_available_positions(battle["player"]) == 0
+
+    combat.clear_broken_bonds(session)
+
+    assert battle["a"].status.get_statuses() == []
+    status.use.assert_called_once_with(session, EffectPhase.ON_END)
 
 
 def test_fainted_participant_breaks_bond(battle, session):

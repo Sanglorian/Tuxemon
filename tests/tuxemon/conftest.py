@@ -33,6 +33,7 @@ def status_model():
             step_effect_type=0,
             stat_modifiers={},
             duration=0,
+            max_stacks=5,
             bond=False,
             category=None,
             on_negative_status=None,

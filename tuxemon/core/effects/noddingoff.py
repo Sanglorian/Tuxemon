@@ -55,7 +55,7 @@ class NoddingOffEffect(CoreEffect):
 
         if (
             status.has_phase(EffectPhase.PERFORM_TECH)
-            and status.nr_turn > 0
+            and status.nr_turn > 1
             and self.wake_up(status)
         ):
             params = {"target": host.name.upper()}
@@ -71,6 +71,6 @@ class NoddingOffEffect(CoreEffect):
     def wake_up(self, status: Status) -> bool:
         if random.random() > self.chance:
             return True
-        if status.has_reached_duration():
+        if status.has_exceeded_duration():
             return True
         return False

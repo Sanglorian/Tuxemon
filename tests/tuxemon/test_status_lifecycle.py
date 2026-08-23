@@ -26,17 +26,16 @@ def test_tick_turn(duration, initial_turn, expected_turn):
     "duration, turn, expected",
     [
         pytest.param(0, 0, False, id="infinite_never_expires"),
-        pytest.param(3, 0, False, id="not_reached_initial"),
-        pytest.param(3, 2, False, id="not_reached_last_turn"),
-        pytest.param(3, 3, True, id="equal_is_reached"),
+        pytest.param(3, 0, False, id="not_exceeded_initial"),
+        pytest.param(3, 3, False, id="equal_not_exceeded"),
         pytest.param(3, 4, True, id="exceeded"),
     ],
 )
-def test_has_reached_duration(duration, turn, expected):
+def test_has_exceeded_duration(duration, turn, expected):
     lc = Lifecycle(duration=duration)
     lc.turn = turn
 
-    assert lc.has_reached_duration() is expected
+    assert lc.has_exceeded_duration() is expected
 
 
 @pytest.mark.parametrize(
@@ -80,8 +79,19 @@ def test_stack_increments_and_caps(
 
 
 def test_stack_resets_turn_and_use_counter():
-    lc = Lifecycle(max_stacks=5)
+    """Restacking returns the status to its first turn, as gaining it does."""
+    lc = Lifecycle(duration=5, max_stacks=5)
     lc.turn = 7
+    lc.use_counter = 3
+
+    lc.stack()
+
+    assert lc.turn == 1
+    assert lc.use_counter == 0
+
+
+def test_stack_leaves_an_endless_status_uncounted():
+    lc = Lifecycle(max_stacks=5)
     lc.use_counter = 3
 
     lc.stack()

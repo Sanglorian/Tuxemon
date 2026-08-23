@@ -115,9 +115,10 @@ def test_on_start_called(session, monster):
 
 
 @patch("tuxemon.status.status.StatusModel.lookup")
-def test_gaining_a_status_does_not_consume_a_turn(
+def test_fresh_and_restacked_statuses_start_on_the_same_turn(
     mock_lookup, session, monster, status_model
 ):
+    """The turn counter is one-based whichever way the status arrives."""
     mock_lookup.return_value = status_model(slug="noddingoff", duration=5)
     monster.held_item = MagicMock()
     monster.held_item.is_immune.return_value = False
@@ -125,10 +126,12 @@ def test_gaining_a_status_does_not_consume_a_turn(
     status = Status.create("noddingoff", monster)
 
     handler.apply_status(session, status)
+    assert status.nr_turn == 1
 
-    # the round counter belongs to CombatSession.apply_statuses
-    assert status.nr_turn == 0
     status.tick_turn()
+    assert status.nr_turn == 2
+
+    handler.apply_status(session, Status.create("noddingoff", monster))
     assert status.nr_turn == 1
 
 

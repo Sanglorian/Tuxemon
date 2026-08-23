@@ -85,10 +85,8 @@ class MonsterStatusHandler:
             if current_status:
                 current_status.use(session, EffectPhase.ON_END)
 
-            # the turn counter is advanced once per round by
-            # CombatSession.apply_statuses, so gaining the status must not
-            # count as a turn of its own
             self.add_status(new_status)
+            new_status.tick_turn()
             new_status.use(session, EffectPhase.ON_START)
 
             gain_message = new_status.get_gain_message()

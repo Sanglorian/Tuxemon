@@ -8,6 +8,7 @@ import yaml
 
 from tuxemon.core.effects.wasting import WastingEffect
 from tuxemon.db import EffectPhase
+from tuxemon.status.lifecycle import Lifecycle
 
 WASTING_DB = (
     Path(__file__).resolve().parents[2]
@@ -56,14 +57,17 @@ def test_damage_ramps_with_the_turn_counter(host, nr_turn, expected_damage):
     assert host.current_hp == 160 - expected_damage
 
 
-def test_no_damage_before_the_first_tick(host):
-    """A status is gained on turn 0, and only ticks at the end of a round."""
-    result = WastingEffect(divisor=16).apply_status(
-        MagicMock(), wasting_status(host, 0)
-    )
+def test_ramp_opens_at_double_the_base_damage():
+    """
+    Gaining a status ticks it to turn 1 and the end of that same round ticks
+    it again, so the first damage a monster actually takes is 2x the base.
+    """
+    lifecycle = Lifecycle(duration=100)
 
-    assert result.success
-    assert host.current_hp == 160
+    lifecycle.tick_turn()  # gained
+    lifecycle.tick_turn()  # end of the round it was gained on
+
+    assert lifecycle.turn == 2
 
 
 def test_wasting_has_a_duration_so_its_counter_advances():

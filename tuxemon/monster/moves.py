@@ -43,7 +43,7 @@ class MonsterMovesHandler:
     def add_move(self, technique: Technique) -> None:
         """
         Adds a technique to this tuxemon's moveset.
-        
+
         Techniques the monster already knows are skipped, as duplicates
         would show up twice in the moves menus.
         """

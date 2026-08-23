@@ -76,6 +76,7 @@ class GiveEffect(CoreEffect):
             result = monster.status.apply_status(session, status)
             if result.applied:
                 successful_targets.append(monster)
+                extras.extend(result.extras)
                 logger.info(
                     f"[COMBAT] give {self.condition} -> {monster.name} (via {tech.name})"
                 )
@@ -94,8 +95,7 @@ class GiveEffect(CoreEffect):
                 else "combat_state_immune_multiple"
             )
             params = {"target": immune_names, "method": status.name}
-            extract_text = T.format(key, params)
-            extras = [extract_text]
+            extras.append(T.format(key, params))
 
         for monster_name, protecting_status, condition_name in protected_info:
             params = {

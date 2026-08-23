@@ -21,9 +21,9 @@ class Lifecycle:
         if self.duration > 0:
             self.turn += 1
 
-    def has_exceeded_duration(self) -> bool:
-        """Returns True if the status has lasted longer than its duration."""
-        return self.duration > 0 and self.turn > self.duration
+    def has_reached_duration(self) -> bool:
+        """Returns True if the status has used up all of its allotted turns."""
+        return self.duration > 0 and self.turn >= self.duration
 
     def advance_use(self) -> None:
         """Increment the use counter."""

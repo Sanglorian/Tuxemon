@@ -172,9 +172,18 @@ class Status:
         """Assigns a linked monster that benefits from this status."""
         self._linked_monster = monster
 
-    def has_exceeded_duration(self) -> bool:
-        """Checks if the status has lasted beyond its intended duration."""
-        return self.lifecycle.has_exceeded_duration()
+    def has_reached_duration(self) -> bool:
+        """Checks if the status has used up its intended duration."""
+        return self.lifecycle.has_reached_duration()
+
+    def get_gain_message(self) -> str:
+        """
+        Returns the text shown when the status is gained, empty if it has none.
+        """
+        if not self.gain_cond:
+            return ""
+        context = {"name": self.name, "target": self.host.name}
+        return T.format(self.gain_cond, context)
 
     def use(self, session: Session, phase: EffectPhase) -> StatusEffectResult:
         """

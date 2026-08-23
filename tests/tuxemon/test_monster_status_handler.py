@@ -8,6 +8,7 @@ from tuxemon.core.asset import init_assets
 from tuxemon.db import CategoryStatus, EffectPhase, ResponseStatus
 from tuxemon.monster.monster import Monster
 from tuxemon.monster.status import MonsterStatusHandler
+from tuxemon.status.status import Status
 
 
 @pytest.fixture
@@ -33,6 +34,38 @@ def status(monster):
     s = MagicMock(slug="test")
     s.host = monster
     return s
+
+
+def status_model(**overrides):
+    """Builds a stand-in StatusModel for statuses created via lookup."""
+    defaults = dict(
+        slug="poison",
+        sort=None,
+        gain_cond=None,
+        use_success=None,
+        use_failure=None,
+        icon="",
+        modifiers=[],
+        behaviors=MagicMock(),
+        step_interval=0,
+        step_effect_value=0,
+        step_effect_type=0,
+        stat_modifiers={},
+        duration=0,
+        bond=False,
+        category=None,
+        on_negative_status=None,
+        on_positive_status=None,
+        on_tech_use=None,
+        on_item_use=None,
+        cond_id=0,
+        effects=[],
+        conditions=[],
+        visuals=MagicMock(),
+        sound=MagicMock(),
+    )
+    defaults.update(overrides)
+    return MagicMock(**defaults)
 
 
 def test_init(basic_handler):
@@ -111,6 +144,63 @@ def test_on_start_called(session, monster):
     handler = MonsterStatusHandler()
     handler.apply_status(session, s)
     s.use.assert_called_with(session, EffectPhase.ON_START)
+
+
+@patch("tuxemon.status.status.StatusModel.lookup")
+def test_gaining_a_status_does_not_consume_a_turn(
+    mock_lookup, session, monster
+):
+    mock_lookup.return_value = status_model(slug="noddingoff", duration=5)
+    monster.held_item = MagicMock()
+    monster.held_item.is_immune.return_value = False
+    handler = MonsterStatusHandler()
+    status = Status.create("noddingoff", monster)
+
+    handler.apply_status(session, status)
+
+    # the round counter belongs to CombatSession.apply_statuses
+    assert status.nr_turn == 0
+    status.tick_turn()
+    assert status.nr_turn == 1
+
+
+@patch("tuxemon.status.status.StatusModel.lookup")
+def test_gain_message_returned_on_start(mock_lookup, session, monster):
+    mock_lookup.return_value = status_model(gain_cond="{target} is poisoned.")
+    monster.held_item = MagicMock()
+    monster.held_item.is_immune.return_value = False
+    handler = MonsterStatusHandler()
+
+    result = handler.apply_status(session, Status.create("poison", monster))
+
+    assert result.applied
+    assert result.extras == ["Rockitten is poisoned."]
+
+
+@patch("tuxemon.status.status.StatusModel.lookup")
+def test_no_gain_message_without_gain_cond(mock_lookup, session, monster):
+    mock_lookup.return_value = status_model(slug="enraged")
+    monster.held_item = MagicMock()
+    monster.held_item.is_immune.return_value = False
+    handler = MonsterStatusHandler()
+
+    result = handler.apply_status(session, Status.create("enraged", monster))
+
+    assert result.applied
+    assert result.extras == []
+
+
+@patch("tuxemon.status.status.StatusModel.lookup")
+def test_no_gain_message_when_blocked(mock_lookup, session, monster):
+    mock_lookup.return_value = status_model(gain_cond="{target} is poisoned.")
+    monster.held_item = MagicMock()
+    monster.held_item.is_immune.return_value = True
+    handler = MonsterStatusHandler()
+
+    result = handler.apply_status(session, Status.create("poison", monster))
+
+    assert not result.applied
+    assert result.extras == []
 
 
 def test_on_end_called(session, monster):

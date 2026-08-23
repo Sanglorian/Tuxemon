@@ -20,13 +20,18 @@ class WastingEffect(CoreEffect):
 
     This effect causes a monster to lose a fraction of its maximum HP each
     turn, with the damage increasing over time. The amount of damage scales
-    based on the number of turns the status has been active.
+    based on the number of times the status has been applied.
+
+    The ramp counts applications rather than turns: the status' turn counter
+    is one-based and only runs for a status with a duration, neither of
+    which suits a ramp that has to open at a single dose and last as long as
+    the battle does.
 
     **Parameters**
 
       - ``divisor``: Integer divisor used to calculate base damage.
-      - Example: With ``divisor = 16``, the monster takes
-        ``(max_hp / 16) * nr_turn`` damage each turn.
+      - Example: With ``divisor = 16``, the monster takes ``max_hp / 16``
+        damage the first turn, ``(max_hp / 16) * 2`` the second, and so on.
 
     **Example**
 
@@ -49,7 +54,8 @@ class WastingEffect(CoreEffect):
             status.has_phase(EffectPhase.PERFORM_STATUS)
             and not host.is_fainted
         ):
-            damage = (host.hp // self.divisor) * status.nr_turn
+            status.advance_round()
+            damage = (host.hp // self.divisor) * status.nr_use
             host.current_hp = max(0, host.current_hp - damage)
             done = True
         return StatusEffectResult(name=status.name, success=done)

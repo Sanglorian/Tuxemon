@@ -1,80 +1,93 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
-from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-import yaml
 
-from tuxemon.core.effects.wasting import WastingEffect
+from tuxemon.core.asset import init_assets
 from tuxemon.db import EffectPhase
-from tuxemon.status.lifecycle import Lifecycle
+from tuxemon.status.status import Status
 
-WASTING_DB = (
-    Path(__file__).resolve().parents[2]
-    / "mods"
-    / "tuxemon"
-    / "db"
-    / "status"
-    / "wasting.yaml"
-)
+
+@pytest.fixture
+def session():
+    init_assets()
+    return MagicMock()
 
 
 @pytest.fixture
 def host():
     monster = MagicMock()
+    monster.name = "Rockitten"
     monster.hp = 160
     monster.current_hp = 160
     monster.is_fainted = False
     return monster
 
 
-def wasting_status(host, nr_turn):
-    status = MagicMock()
-    status.host = host
-    status.name = "Wasting"
-    status.nr_turn = nr_turn
-    status.has_phase.side_effect = lambda phase: (
-        phase == EffectPhase.PERFORM_STATUS
+@pytest.fixture
+def wasting(status_model, host):
+    """A real wasting status, built without loading the database."""
+    model = status_model(
+        slug="wasting",
+        effects=[MagicMock(type="wasting", parameters=["16"])],
     )
-    return status
+    with patch("tuxemon.status.status.StatusModel.lookup", return_value=model):
+        yield Status.create("wasting", host)
 
 
-@pytest.mark.parametrize(
-    "nr_turn, expected_damage",
-    [
-        pytest.param(1, 10, id="first_turn"),
-        pytest.param(2, 20, id="second_turn"),
-        pytest.param(3, 30, id="third_turn"),
-    ],
-)
-def test_damage_ramps_with_the_turn_counter(host, nr_turn, expected_damage):
-    result = WastingEffect(divisor=16).apply_status(
-        MagicMock(), wasting_status(host, nr_turn)
-    )
-
-    assert result.success
-    assert host.current_hp == 160 - expected_damage
+def test_damage_ramps_with_each_application(session, wasting, host):
+    for expected_hp in (150, 130, 100, 60, 10, 0):
+        wasting.use(session, EffectPhase.PERFORM_STATUS)
+        assert host.current_hp == expected_hp
 
 
-def test_ramp_opens_at_double_the_base_damage():
+def test_ramp_opens_at_a_single_dose(session, wasting, host):
     """
-    Gaining a status ticks it to turn 1 and the end of that same round ticks
-    it again, so the first damage a monster actually takes is 2x the base.
+    The ramp has to start at 1x. It counts applications rather than turns
+    precisely because the turn counter is already on 1 when a status is
+    gained, which would open the ramp at double damage.
     """
-    lifecycle = Lifecycle(duration=100)
+    wasting.use(session, EffectPhase.PERFORM_STATUS)
 
-    lifecycle.tick_turn()  # gained
-    lifecycle.tick_turn()  # end of the round it was gained on
-
-    assert lifecycle.turn == 2
+    assert host.current_hp == 160 - 10
 
 
-def test_wasting_has_a_duration_so_its_counter_advances():
+def test_ramp_needs_no_duration(session, wasting, host):
     """
-    ``Lifecycle.tick_turn`` is a no-op while duration is 0, which would pin
-    ``nr_turn`` at 0 and make the ramping damage above always zero.
+    Lifecycle only counts turns for a status with a duration, so a ramp
+    built on nr_turn would silently deal nothing at all here.
     """
-    data = yaml.safe_load(WASTING_DB.read_text(encoding="utf-8"))
+    assert wasting.lifecycle.duration == 0
 
-    assert data["duration"] > 0
+    wasting.use(session, EffectPhase.PERFORM_STATUS)
+
+    assert host.current_hp < 160
+
+
+def test_restacking_restarts_the_ramp(session, wasting, host):
+    wasting.use(session, EffectPhase.PERFORM_STATUS)
+    wasting.use(session, EffectPhase.PERFORM_STATUS)
+    host.current_hp = 160
+
+    wasting.stack()
+    wasting.use(session, EffectPhase.PERFORM_STATUS)
+
+    assert host.current_hp == 160 - 10
+
+
+def test_other_phases_do_not_advance_the_ramp(session, wasting, host):
+    wasting.use(session, EffectPhase.ON_START)
+    wasting.use(session, EffectPhase.PERFORM_TECH)
+    wasting.use(session, EffectPhase.PERFORM_STATUS)
+
+    assert host.current_hp == 160 - 10
+
+
+def test_fainted_host_is_left_alone(session, wasting, host):
+    host.is_fainted = True
+
+    result = wasting.use(session, EffectPhase.PERFORM_STATUS)
+
+    assert not result.success
+    assert host.current_hp == 160

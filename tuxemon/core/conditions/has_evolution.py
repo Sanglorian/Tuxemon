@@ -16,15 +16,21 @@ if TYPE_CHECKING:
 class HasEvolutionCondition(CoreCondition):
     """
     Checks whether the target Monster has an evolution ahead of it.
+
     Where ``can_evolve`` asks whether the Monster meets its evolution
     criteria right now, this asks only whether an evolution remains open to
     it at all, however far off.
+
     **Returns**
+
     - ``True`` if the Monster has an evolution it has not taken.
     - ``False`` if it is fully evolved, has no evolution paths, or has had
       them all blocked.
+
     **Example**
+
     .. code-block:: json
+
         "conditions": [
             "is has_evolution"
         ]

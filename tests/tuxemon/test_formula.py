@@ -251,7 +251,6 @@ def dmg_env():
     # another MagicMock, which is not a usable multiplier
     target.held_item = None
 
-    return tech, user, target
     yield tech, user, target
     ElementTypesHandler.clear_cache()
 

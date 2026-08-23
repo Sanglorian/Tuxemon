@@ -1,6 +1,10 @@
 modifiers: []
 behaviors: {}
 category: negative
+# the damage ramps with the turn counter, and Lifecycle only advances that
+# counter while duration is non-zero, so wasting needs a duration it will
+# never reach in practice
+duration: 100
 effects:
 - type: wasting
   parameters:

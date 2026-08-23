@@ -43,9 +43,15 @@ class SetMonsterStatusAction(EventAction):
     ) -> None:
         if not value:
             monster.status.clear_status(session)
-        else:
-            status = Status.create(value, monster, steps)
-            monster.status.add_status(status)
+            return
+
+        status = Status.create(value, monster, steps)
+        result = monster.status.apply_status(session, status)
+        if not result.applied:
+            logger.info(
+                f"'{status.slug}' not applied to {monster.name}, "
+                f"blocked by '{result.blocked_by}' ({result.blocked_reason})"
+            )
 
     def start(self, session: Session) -> None:
         player = session.player

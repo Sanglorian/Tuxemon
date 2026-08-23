@@ -36,38 +36,6 @@ def status(monster):
     return s
 
 
-def status_model(**overrides):
-    """Builds a stand-in StatusModel for statuses created via lookup."""
-    defaults = dict(
-        slug="poison",
-        sort=None,
-        gain_cond=None,
-        use_success=None,
-        use_failure=None,
-        icon="",
-        modifiers=[],
-        behaviors=MagicMock(),
-        step_interval=0,
-        step_effect_value=0,
-        step_effect_type=0,
-        stat_modifiers={},
-        duration=0,
-        bond=False,
-        category=None,
-        on_negative_status=None,
-        on_positive_status=None,
-        on_tech_use=None,
-        on_item_use=None,
-        cond_id=0,
-        effects=[],
-        conditions=[],
-        visuals=MagicMock(),
-        sound=MagicMock(),
-    )
-    defaults.update(overrides)
-    return MagicMock(**defaults)
-
-
 def test_init(basic_handler):
     assert basic_handler.status == []
 
@@ -148,7 +116,7 @@ def test_on_start_called(session, monster):
 
 @patch("tuxemon.status.status.StatusModel.lookup")
 def test_gaining_a_status_does_not_consume_a_turn(
-    mock_lookup, session, monster
+    mock_lookup, session, monster, status_model
 ):
     mock_lookup.return_value = status_model(slug="noddingoff", duration=5)
     monster.held_item = MagicMock()
@@ -165,7 +133,9 @@ def test_gaining_a_status_does_not_consume_a_turn(
 
 
 @patch("tuxemon.status.status.StatusModel.lookup")
-def test_gain_message_returned_on_start(mock_lookup, session, monster):
+def test_gain_message_returned_on_start(
+    mock_lookup, session, monster, status_model
+):
     mock_lookup.return_value = status_model(gain_cond="{target} is poisoned.")
     monster.held_item = MagicMock()
     monster.held_item.is_immune.return_value = False
@@ -178,7 +148,9 @@ def test_gain_message_returned_on_start(mock_lookup, session, monster):
 
 
 @patch("tuxemon.status.status.StatusModel.lookup")
-def test_no_gain_message_without_gain_cond(mock_lookup, session, monster):
+def test_no_gain_message_without_gain_cond(
+    mock_lookup, session, monster, status_model
+):
     mock_lookup.return_value = status_model(slug="enraged")
     monster.held_item = MagicMock()
     monster.held_item.is_immune.return_value = False
@@ -191,7 +163,9 @@ def test_no_gain_message_without_gain_cond(mock_lookup, session, monster):
 
 
 @patch("tuxemon.status.status.StatusModel.lookup")
-def test_no_gain_message_when_blocked(mock_lookup, session, monster):
+def test_no_gain_message_when_blocked(
+    mock_lookup, session, monster, status_model
+):
     mock_lookup.return_value = status_model(gain_cond="{target} is poisoned.")
     monster.held_item = MagicMock()
     monster.held_item.is_immune.return_value = True

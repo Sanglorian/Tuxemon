@@ -2,10 +2,53 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pygame
 import pytest
 from _pytest.mark.structures import ParameterSet
+
+
+@pytest.fixture
+def status_model():
+    """
+    Factory for a stand-in StatusModel.
+
+    Patch ``tuxemon.status.status.StatusModel.lookup`` with the result to
+    build real ``Status`` objects without loading the whole database.
+    """
+
+    def build(**overrides):
+        defaults = dict(
+            slug="poison",
+            sort=None,
+            gain_cond=None,
+            use_success=None,
+            use_failure=None,
+            icon="",
+            modifiers=[],
+            behaviors=MagicMock(),
+            step_interval=0,
+            step_effect_value=0,
+            step_effect_type=0,
+            stat_modifiers={},
+            duration=0,
+            bond=False,
+            category=None,
+            on_negative_status=None,
+            on_positive_status=None,
+            on_tech_use=None,
+            on_item_use=None,
+            cond_id=0,
+            effects=[],
+            conditions=[],
+            visuals=MagicMock(),
+            sound=MagicMock(),
+        )
+        defaults.update(overrides)
+        return MagicMock(**defaults)
+
+    return build
 
 
 @pytest.fixture(scope="module", autouse=True)

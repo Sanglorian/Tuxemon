@@ -246,6 +246,11 @@ class MonsterMovesHandler:
         """
         Set monster moves according to its current level and evolution stage.
 
+        Used when building a monster from scratch (a wild encounter, an NPC's
+        party): the last `max_moves` rows it already qualifies for. Evolving
+        monsters do not come through here — they keep what they knew and pick
+        up only the levels they gained, see Monster.transfer_properties_from.
+
         Parameters:
             monster: The monster instance.
             max_moves: The maximum number of moves the monster can have at once.
@@ -263,8 +268,12 @@ class MonsterMovesHandler:
             if self.is_eligible(monster, move.technique, method)
         ]
 
-        moves_to_learn = eligible_moves[-max_moves:]
-        for move_name in moves_to_learn:
+        for move_name in eligible_moves[-max_moves:]:
+            # checked per iteration, not up front: the same technique can
+            # appear on more than one moveset row, and a move learned earlier
+            # in this loop must not be granted again
+            if self.has_move(move_name):
+                continue
             technique = Technique.create(move_name)
             if self.learn(
                 monster, technique, max_moves=max_moves, method=method
@@ -295,6 +304,8 @@ class MonsterMovesHandler:
 
         learnable = []
         for tech in techniques:
+            if self.has_move(tech):
+                continue
             technique = Technique.create(tech)
 
             if self.can_learn(monster, technique, method=method):
@@ -315,6 +326,10 @@ class MonsterMovesHandler:
 
         newly_learned = []
         for tech in techniques:
+            # a technique can sit on more than one moveset row, and an
+            # evolving monster brings the moves it already knew with it
+            if self.has_move(tech):
+                continue
             technique = Technique.create(tech)
             if self.learn(monster, technique, method=method):
                 newly_learned.append(technique)

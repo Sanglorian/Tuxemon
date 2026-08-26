@@ -142,7 +142,12 @@ def test_update_moves(handler, monster):
         mock_create.side_effect = lambda slug: MagicMock(slug=slug)
 
         handler.set_moveset(moveset)
-        handler.set_moves(monster, 2)
+        # seeded directly: set_moves would also grant "technique3" here, and
+        # a technique already known is never learned a second time
+        handler.moves = [
+            MagicMock(slug="technique1"),
+            MagicMock(slug="technique2"),
+        ]
 
         monster.level = 3
         new = handler.update_moves(monster, 1)
@@ -289,6 +294,75 @@ def test_apply_item_techniques_does_not_duplicate_moves():
 
     assert {m.slug for m in handler.moves} == {"fireball", "icebeam"}
     assert monster.max_moves == 4
+
+
+def moveset_entry(
+    technique, level_learned, learning_method=LearningMethod.LEVEL_UP
+):
+    return MagicMock(
+        level_learned=level_learned,
+        technique=technique,
+        evolution_stage_learned=None,
+        learning_method=learning_method,
+        can_be_forgotten=True,
+    )
+
+
+def test_set_moves_ignores_repeated_moveset_rows():
+    """
+    A technique may appear on more than one moveset row (shull lists
+    "energy_claws" at level 1 and again at 19). It must still be granted once.
+    """
+    handler = MonsterMovesHandler()
+    handler.set_moveset(
+        [
+            moveset_entry("gnaw", 1),
+            moveset_entry("energy_claws", 1),
+            moveset_entry("ants", 4),
+            moveset_entry("energy_claws", 19),
+        ]
+    )
+    monster = DummyMonster(level=8, stage=None, max_moves=4)
+
+    with patch("tuxemon.technique.technique.Technique.create") as mock_create:
+        mock_create.side_effect = lambda slug: MagicMock(slug=slug)
+        handler.set_moves(monster)
+
+    slugs = [move.slug for move in handler.get_moves()]
+    assert slugs.count("energy_claws") == 1
+    assert sorted(slugs) == ["ants", "energy_claws", "gnaw"]
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        pytest.param("update_moves", id="update_moves"),
+        pytest.param("preview_moves_learned", id="preview_moves_learned"),
+    ],
+)
+def test_level_up_never_relearns_a_known_technique(call):
+    """
+    An evolving monster brings its moves with it, and a technique can sit on
+    two moveset rows, so the level up window can name something already known.
+    """
+    handler = MonsterMovesHandler()
+    handler.set_moveset(
+        [moveset_entry("orbs", 14), moveset_entry("chill_mist", 15)]
+    )
+    handler.moves = [MagicMock(slug="orbs")]
+    monster = DummyMonster(level=15, stage=None, max_moves=4)
+
+    with patch("tuxemon.technique.technique.Technique.create") as mock_create:
+        mock_create.side_effect = lambda slug: MagicMock(slug=slug)
+        result = getattr(handler, call)(monster, 2)
+
+    if call == "update_moves":
+        assert [tech.slug for tech in result] == ["chill_mist"]
+    else:
+        assert result == ["chill_mist"]
+
+    slugs = [move.slug for move in handler.get_moves()]
+    assert slugs.count("orbs") == 1
 
 
 def test_remove_item_techniques_never_negative_capacity():

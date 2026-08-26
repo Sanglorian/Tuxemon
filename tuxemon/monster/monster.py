@@ -116,6 +116,11 @@ class Monster:
         self.out_of_range: bool = False
         self.wild: bool = False
         self.waiting_to_evolve: bool = False
+        # level the monster was at before the level up that flagged the
+        # pending evolution; the evolved form learns the rows it gained
+        # between there and its current level. None when no evolution is
+        # pending, or when one was triggered by an item, steps or a script.
+        self.evolution_level_start: int | None = None
 
         self.is_charging: bool = False
         self.charged_technique: str | None = None
@@ -626,6 +631,11 @@ class Monster:
 
             if slug:
                 self.waiting_to_evolve = True
+                # only on the first flagging: the player may put the
+                # evolution off and level up again, and the rows gained in
+                # between still belong to the window
+                if self.evolution_level_start is None:
+                    self.evolution_level_start = old_level
                 logger.debug(f"{self.name} is ready to evolve into {slug}!")
             else:
                 logger.debug("No evolution flagged at level-up")
@@ -679,6 +689,33 @@ class Monster:
             k=1,
         )[0]
 
+    def learn_moves_gained_before_evolving(self, old_monster: Monster) -> None:
+        """
+        Learns the new form's rows for the levels gained on the way into the
+        evolution.
+
+        The level up that triggers an evolution is processed while the monster
+        is still its old form, so those levels are only ever checked against
+        the old form's moveset. This runs the same window over the new form's
+        rows, using the same strict bounds as an ordinary level up.
+
+        Evolutions not brought on by a level up (an item, a step count, a
+        script, a devolution) have no window and learn nothing here.
+
+        Parameters:
+            old_monster: The pre-evolution monster.
+        """
+        start_level = old_monster.evolution_level_start
+        if start_level is None or start_level >= self.level:
+            return
+
+        learned = self.moves.update_moves(self, self.level - start_level)
+        for technique in learned:
+            logger.info(
+                f"{self.name} learned {technique.slug} on evolving, from the "
+                f"levels gained between {start_level} and {self.level}."
+            )
+
     def transfer_properties_from(self, old_monster: Monster) -> None:
         """Copies essential state and identity properties from the pre-evolved monster."""
         self.experience_handler.set_level(old_monster.level)
@@ -690,6 +727,7 @@ class Monster:
         self.set_stats()
         self.current_hp = min(old_monster.current_hp, self.hp)
         self.moves.transfer_learned_moves_from(old_monster.moves)
+        self.learn_moves_gained_before_evolving(old_monster)
         self.status = old_monster.status
         self.instance_id = old_monster.instance_id
         self.individual_values = old_monster.individual_values

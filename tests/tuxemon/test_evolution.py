@@ -862,3 +862,126 @@ def test_get_eligible_evolution_slug(evolution_context):
     type(mon).held_item = PropertyMock(return_value=None)
     slug = evo.get_eligible_evolution_slug()
     assert slug == "rockat"
+
+
+MORPH_LEVEL = 14
+
+
+def _moveset_entry(technique, level_learned, method=LearningMethod.LEVEL_UP):
+    return MagicMock(
+        level_learned=level_learned,
+        technique=technique,
+        evolution_stage_learned=None,
+        learning_method=method,
+        can_be_forgotten=True,
+    )
+
+
+# the new form's rows: one below the morph level, one exactly on it, one
+# above it, plus rows granted by other means
+NEW_FORM_MOVESET = [
+    _moveset_entry("muck", MORPH_LEVEL - 1),
+    _moveset_entry("torch", MORPH_LEVEL),
+    _moveset_entry("chill_mist", MORPH_LEVEL + 14),
+    _moveset_entry("frost_breath", MORPH_LEVEL, LearningMethod.EVOLUTION),
+    _moveset_entry("struggle", 1, LearningMethod.FALLBACK),
+]
+
+KNOWN_BEFORE = ("beam", "goad", "neutralize")
+
+
+def _morph(window_start, level=MORPH_LEVEL):
+    """
+    Evolves a monster sitting at `level`, having flagged the evolution at
+    `window_start` (None for an item, step, script or devolution evolution).
+    """
+    old_mon = Monster()
+    old_mon.slug = "waysprite"
+    old_mon.stage = EvolutionStage.BASIC
+    old_mon.flairs = {}
+    old_mon.experience_handler.set_level(level)
+    old_mon.evolution_level_start = window_start
+    old_mon.moves.moves = [
+        MagicMock(spec=Technique, slug=slug) for slug in KNOWN_BEFORE
+    ]
+
+    new_mon = Monster()
+    new_mon.slug = "demosnow"
+    new_mon.stage = EvolutionStage.BASIC
+    new_mon.flairs = {}
+    new_mon.max_moves = 4
+    new_mon.moves.set_moveset(NEW_FORM_MOVESET)
+
+    with patch("tuxemon.technique.technique.Technique.create") as mock_create:
+        mock_create.side_effect = lambda slug: MagicMock(
+            spec=Technique, slug=slug
+        )
+        new_mon.transfer_properties_from(old_mon)
+
+    return new_mon
+
+
+def _slugs(monster):
+    return [move.slug for move in monster.moves.get_moves()]
+
+
+def test_evolution_keeps_every_move_it_knew(evolution_context):
+    assert set(KNOWN_BEFORE) <= set(_slugs(_morph(MORPH_LEVEL - 1)))
+
+
+def test_evolution_learns_row_on_the_morph_level(evolution_context):
+    # levelled 13 -> 14, so the window is (13, 14]
+    assert "torch" in _slugs(_morph(MORPH_LEVEL - 1))
+
+
+def test_evolution_ignores_rows_below_the_window(evolution_context):
+    """
+    "muck" sits one level below the morph. The monster passed that level as
+    its old form, so the new form must not hand it over retroactively.
+    """
+    assert "muck" not in _slugs(_morph(MORPH_LEVEL - 1))
+
+
+def test_evolution_ignores_rows_above_the_window(evolution_context):
+    assert "chill_mist" not in _slugs(_morph(MORPH_LEVEL - 1))
+
+
+def test_evolution_ignores_fallback_and_evolution_rows(evolution_context):
+    # evolve_monster grants EVOLUTION rows; FALLBACK is never an ordinary move
+    slugs = _slugs(_morph(MORPH_LEVEL - 1))
+    assert "frost_breath" not in slugs
+    assert "struggle" not in slugs
+
+
+def test_evolution_spanning_several_levels_learns_the_whole_window(
+    evolution_context,
+):
+    # levelled 12 -> 14 in one go, so (12, 14] covers "muck" as well
+    slugs = _slugs(_morph(MORPH_LEVEL - 2))
+    assert "muck" in slugs
+    assert "torch" in slugs
+
+
+def test_evolution_without_a_level_up_learns_nothing(evolution_context):
+    """An item, step count, script or devolution has no level window."""
+    assert _slugs(_morph(None)) == list(KNOWN_BEFORE)
+
+
+def test_evolution_does_not_duplicate_moves(evolution_context):
+    slugs = _slugs(_morph(MORPH_LEVEL - 2))
+    assert len(slugs) == len(set(slugs))
+
+
+def test_evolution_still_learns_later_rows(evolution_context):
+    new_mon = _morph(MORPH_LEVEL - 1)
+    new_mon.experience_handler.set_level(MORPH_LEVEL + 14)
+
+    with patch("tuxemon.technique.technique.Technique.create") as mock_create:
+        mock_create.side_effect = lambda slug: MagicMock(
+            spec=Technique, slug=slug
+        )
+        learned = new_mon.moves.update_moves(new_mon, 14)
+
+    assert [tech.slug for tech in learned] == ["chill_mist"]
+    slugs = _slugs(new_mon)
+    assert len(slugs) == len(set(slugs))

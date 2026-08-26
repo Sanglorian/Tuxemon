@@ -13364,6 +13364,10 @@ msgstr ""
 "Hey, do you want a TIKOAL? I could really do with a CHILLIMP, if you've got "
 "one."
 
+msgid "spyder_timber_berryseller"
+msgstr "They're going to add a vending machine to this corner, but in the meantime you'll have to buy from me. \n"
+" We're selling element berries. Pop one of these and you'll change type."
+
 msgid "spyder_flower_fisher1"
 msgstr "It's a slow pleasure, but there's nothing nicer than fishing by the water. \n"
 " Just select your Rod from the Bag while facing the river." 
@@ -13526,6 +13530,10 @@ msgstr ""
 " And you did it in that particular way? \n"
 " I see. Hmmm, I don't really like the look of that morph. \n"
 " If I give you another Vivipere, can you bring it back if it ever morphs into something different?"
+
+msgid "spyder_flower_mantleseller"
+msgstr "They're going to add a vending machine to this corner, but in the meantime you'll have to buy from me. \n"
+" We're selling element mantles. Wearing one gives resistance to that element."
 
 msgid "spyder_route1_beachcomber"
 msgstr ""
@@ -16241,6 +16249,9 @@ msgstr "Reed"
 msgid "spyder_timbercafe_grady"
 msgstr "Grady"
 
+msgid "spyder_timberscoop_bram"
+msgstr "Bram"
+
 msgid "spyder_mansion_wayne"
 msgstr "Wayne"
 
@@ -16279,6 +16290,9 @@ msgstr "Denzel"
 
 msgid "spyder_flowerpetshop_titus"
 msgstr "Titus"
+
+msgid "spyder_flowerscoop_orla"
+msgstr "Orla"
 
 msgid "spyder_cottonhouse2_davis"
 msgstr "Davis"

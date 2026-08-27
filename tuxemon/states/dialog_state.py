@@ -68,6 +68,9 @@ class DialogState(PopUpMenu[None]):
 
         self._elapsed_time: float = 0.0
         self._timer_active: bool = False
+        # PopUpMenu schedules on_open() for the end of its open animation, but
+        # the state is on the stack (and taking input) for the whole of it.
+        self._is_open: bool = False
 
         default_box_style: dict[str, Any] = {
             "bg_color": self.background_color,
@@ -123,6 +126,8 @@ class DialogState(PopUpMenu[None]):
         if not self.text_queue and not self.auto_close:
             self._timer_active = False
 
+        self._is_open = True
+
     def add_advance_button(self, button: int) -> None:
         """Add a button that can advance the dialog."""
         if button not in self.advance_buttons:
@@ -135,6 +140,13 @@ class DialogState(PopUpMenu[None]):
 
     def process_event(self, event: PlayerInput) -> PlayerInput | None:
         """Handle player input to fast-forward or advance dialog lines."""
+        if not self._is_open:
+            # Still animating open: no text has been queued into the box yet,
+            # so advancing here would pop the first line early and on_open()
+            # would then repaint over it, showing an empty first page.
+            logger.debug("Ignoring input, dialog has not finished opening")
+            return None
+
         if event.pressed and event.button in self.advance_buttons:
             if not self.dialog.is_dialog_complete(self.dialog_box):
                 logger.debug("Fast-forwarding current dialog line")

@@ -67,6 +67,7 @@
 .. autoscriptinfoclass:: tuxemon.core.effects.prop_healing.PropHealingEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.ramp.RampEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.recover.RecoverEffect
+.. autoscriptinfoclass:: tuxemon.core.effects.regenerate.RegenerateEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.release.ReleaseEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.remove.RemoveEffect
 .. autoscriptinfoclass:: tuxemon.core.effects.remove_entity.RemoveEntityEffect

@@ -190,6 +190,7 @@ class EffectPhase(Enum):
     ON_FAINT = "on_faint"
     ON_START = "on_start"
     ON_DECISION = "on_decision"
+    END_OF_ROUND = "end_of_round"
     PERFORM_ITEM = "perform_item"
     PERFORM_STATUS = "perform_status"
     PERFORM_TECH = "perform_tech"

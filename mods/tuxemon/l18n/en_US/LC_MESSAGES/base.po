@@ -1484,6 +1484,14 @@ msgstr "Horseshoe"
 msgid "horseshoe_description"
 msgstr "On the wrong foot? Put a horseshoe on it!"
 
+msgid "life_gem"
+msgstr "Life Gem"
+
+msgid "life_gem_description"
+msgstr ""
+"A gem that pulses with lifeforce. The tuxemon holding it recovers a "
+"sixteenth of its maximum HP at the end of every round of battle."
+
 msgid "marble"
 msgstr "Marble"
 
@@ -1960,6 +1968,9 @@ msgstr "{target} is regenerating."
 
 msgid "combat_state_recover_end"
 msgstr "{target} recovers its lifeforce."
+
+msgid "combat_state_regenerate"
+msgstr "{target} restores a little health with its {name}."
 
 msgid "combat_state_retaliate_get"
 msgstr "{target} will retaliate on its next attack."

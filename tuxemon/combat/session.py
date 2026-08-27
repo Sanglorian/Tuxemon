@@ -454,10 +454,40 @@ class CombatSession:
             for monster in monsters:
                 held_item = monster.held_item
                 if held_item:
-                    held_item.use(session, player, monster)
+                    held_item.use(
+                        session, player, monster, EffectPhase.ON_DECISION
+                    )
                 status = monster.status.current_status
                 if status:
                     status.use(session, EffectPhase.ON_DECISION)
+
+    def apply_held_items(self, session: Session) -> list[ItemEffectResult]:
+        """
+        Triggers the end of round effects of the held items in play.
+
+        Held items are used once per round, after every monster has acted,
+        so passive effects (e.g. regeneration) tick at the end of the round.
+
+        Returns:
+            The results of the held items that did something.
+        """
+        results: list[ItemEffectResult] = []
+        if len(self.remaining_players) <= 1:
+            return results
+
+        for monster in self.active_monsters:
+            held_item = monster.held_item
+            if held_item is None:
+                continue
+            result = held_item.use(
+                session,
+                monster.get_owner(),
+                monster,
+                EffectPhase.END_OF_ROUND,
+            )
+            if result.success or result.extras:
+                results.append(result)
+        return results
 
     def apply_statuses(self, session: Session) -> None:
         """

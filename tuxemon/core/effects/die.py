@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from tuxemon.core.core_effect import CoreEffect, ItemEffectResult
+from tuxemon.db import EffectPhase
 from tuxemon.monster.monster import Monster
 from tuxemon.status.status import Status
 
@@ -43,7 +44,10 @@ class DieEffect(CoreEffect):
     def apply_item_target(
         self, session: Session, item: Item, target: Monster
     ) -> ItemEffectResult:
-        if session.client.combat_session.turn == 1:
+        if (
+            item.has_phase(EffectPhase.ON_DECISION)
+            and session.client.combat_session.turn == 1
+        ):
             statuses = self.statuses.split(":")
             status_slug = random.choice(statuses)
             status = Status.create(status_slug, target, target.steps)

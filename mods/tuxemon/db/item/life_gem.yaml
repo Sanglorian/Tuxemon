@@ -1,0 +1,24 @@
+effects:
+- type: regenerate
+  parameters:
+  - '16'
+slug: life_gem
+sort: utility
+sprite: gfx/items/gem_green_emerald.png
+category: none
+usable_in:
+- ''
+modifiers: []
+behaviors:
+  consumable: false
+  holdable: true
+use_failure: generic_failure
+use_item: combat_used_x
+use_success: generic_success
+visuals:
+  animation: null
+  flip_axes: ''
+  loop: 0
+sound:
+  sfx: null
+  volume: 0.0

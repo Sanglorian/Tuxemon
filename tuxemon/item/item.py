@@ -17,6 +17,7 @@ from tuxemon.core.core_processor import (
 )
 from tuxemon.database.runtime import db
 from tuxemon.db import (
+    EffectPhase,
     ItemModel,
 )
 from tuxemon.item.durability import Durability
@@ -74,6 +75,7 @@ class Item:
             max_wear=db_data.max_wear, break_chance=db_data.break_chance
         )
         self.temporary_stat_boosts = BasicStats()
+        self.phase: EffectPhase = EffectPhase.DEFAULT
 
         self.use_item = T.translate(db_data.use_item)
         self.use_success = T.translate(db_data.use_success)
@@ -179,6 +181,14 @@ class Item:
         self.durability.try_reset()
         logger.debug(f"'{self.slug}' wear reset to 0")
 
+    def has_phase(self, phase: EffectPhase) -> bool:
+        """Returns True if the current phase is equal to the provided phase."""
+        return self.phase == phase
+
+    def set_phase(self, phase: EffectPhase) -> None:
+        """Sets the phase to the provided value."""
+        self.phase = phase
+
     def validate_monster(self, session: Session, target: Monster) -> bool:
         """
         Check if the target meets all conditions that the item has on it's use.
@@ -203,13 +213,18 @@ class Item:
         )
 
     def use(
-        self, session: Session, user: NPC, target: Monster | None
+        self,
+        session: Session,
+        user: NPC,
+        target: Monster | None,
+        phase: EffectPhase = EffectPhase.DEFAULT,
     ) -> ItemEffectResult:
         """
         Applies the item's effects using EffectProcessor and returns the results.
         """
         self.effects = self.core_assets.parse_effects(self.effect_defs)
         self.effect_handler = EffectProcessor(self.effects)
+        self.set_phase(phase)
         result = self.effect_handler.process_item(
             session=session, source=self, target=target
         )

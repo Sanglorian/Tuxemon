@@ -294,6 +294,7 @@ class CombatState(CombatAnimations):
             if c_session.action_queue.pending:
                 c_session.action_queue.autoclean_pending()
                 c_session.action_queue.from_pending_to_action(c_session.turn)
+            self._handle_held_items()
             c_session.apply_statuses(self.session)
 
         elif (
@@ -826,6 +827,25 @@ class CombatState(CombatAnimations):
         self.text_anim.add_text_animation(
             partial(self.dialog.alert, message, self.text_area), action_time
         )
+
+    def _handle_held_items(self) -> None:
+        """
+        Ticks the end of round effects of the held items and reports them.
+        """
+        results = self.combat_session.apply_held_items(self.session)
+        if not results:
+            return
+
+        for result in results:
+            if not result.extras:
+                continue
+            message = "\n".join(T.translate(extra) for extra in result.extras)
+            action_time = self.text_anim.compute_text_anim_time(message)
+            self.text_anim.add_text_animation(
+                partial(self.dialog.alert, message, self.text_area),
+                action_time,
+            )
+        self.event_bus.publish("update_party_hud")
 
     def _handle_status(self, status: Status, target: Monster) -> None:
         if not target.status.has_status(status.slug):

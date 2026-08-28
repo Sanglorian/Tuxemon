@@ -35,10 +35,11 @@ events:
     actions:
     - char_stop player
     - lock_controls
-    - screen_transition 1
+    - farm_sleep 1,0.5
     - wait 0.5
     - unlock_controls
     - translated_dialog spyder_papertown_restinbed
+    - translated_dialog farm_new_day
     - set_monster_health
     - set_monster_status
     - set_teleport_faint player,spyder_bedroom.tmx,6,5

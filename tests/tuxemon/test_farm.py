@@ -1240,3 +1240,58 @@ def test_the_seed_seller_is_wired_into_the_paper_town_scoop():
     talk = events["Talk Orla"]
     assert "talk spyder_papermart_orla" in talk["behav"]
     assert "open_shop spyder_papermart_orla,both_item" in talk["actions"]
+
+
+# ---------------------------------------------------------------------------
+# Reaching the farm without a debug console
+# ---------------------------------------------------------------------------
+
+
+def load_map_events(name: str) -> dict:
+    path = Path("mods/tuxemon/maps") / name
+    with path.open(encoding="utf-8") as handle:
+        return yaml.safe_load(handle)["events"]
+
+
+def test_the_campaign_bed_ends_the_farm_day():
+    """
+    The Spyder campaign is the one route a player can walk end to end, so its
+    bed has to be the one that sleeps. Without this the farm day only moves
+    from the console.
+    """
+    bed = load_map_events("spyder_bedroom.yaml")["Resting in Bed"]
+    actions = bed["actions"]
+
+    assert any(a.startswith("farm_sleep") for a in actions), actions
+    assert "translated_dialog farm_new_day" in actions, actions
+    # it must still do what it did before: heal and set the respawn point
+    assert "set_monster_health" in actions
+    assert any(a.startswith("set_teleport_faint") for a in actions)
+
+
+def test_the_bed_replaced_the_plain_fade_rather_than_adding_one():
+    """
+    farm_sleep fades out and back in by itself. Leaving the original
+    screen_transition in would fade twice.
+    """
+    bed = load_map_events("spyder_bedroom.yaml")["Resting in Bed"]
+    fades = [a for a in bed["actions"] if a.startswith("screen_transition")]
+    assert fades == [], fades
+
+
+def test_the_start_map_offers_the_campaign_that_has_the_farm():
+    """
+    New Game runs a character-creation flow on the start map and then sends
+    the player into a campaign. The farm loop lives in the Spyder one.
+    """
+    events = load_map_events("start_tuxemon.yaml")
+    spyder = events["Spyder"]
+
+    assert any(
+        a.startswith("transition_teleport player,spyder_bedroom.tmx")
+        for a in spyder["actions"]
+    ), spyder["actions"]
+    assert (
+        "is variable_set scenario_choice:spyder_campaign"
+        in spyder["conditions"]
+    )

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import final
 
 from tuxemon.event.eventaction import EventAction
-from tuxemon.farm.targeting import resolve_target, set_result
+from tuxemon.farm.targeting import is_tillable, resolve_target, set_result
 from tuxemon.session import Session
 
 logger = logging.getLogger(__name__)
@@ -37,6 +37,11 @@ class FarmTillAction(EventAction):
     def start(self, session: Session) -> None:
         target = resolve_target(session, self.character)
         if target is None:
+            set_result(session, False)
+            return
+
+        if not is_tillable(session, target.pos):
+            logger.debug(f"{target.pos} is not ground you can break")
             set_result(session, False)
             return
 

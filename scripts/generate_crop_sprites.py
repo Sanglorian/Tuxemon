@@ -2,11 +2,12 @@
 # SPDX-License-Identifier: GPL-3.0
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 """
-Generates placeholder sprite sheets for the farming layer.
+Generates placeholder art for the farming layer.
 
 These are stand-ins so the crop renderer can be seen working before real art
 exists. Each sheet is a horizontal strip of 16-pixel-wide frames: one per
 growth stage, youngest first, then the mature plant, then a withered frame.
+Item icons are 24x24, matching the rest of the inventory art.
 Run from the repository root:
 
     python scripts/generate_crop_sprites.py
@@ -102,6 +103,64 @@ def draw_withered(sheet: pygame.Surface, index: int, height: int) -> None:
     )
 
 
+ITEM_DIR = Path("mods/tuxemon/gfx/items")
+ITEM_SIZE = 24
+
+# slug -> (body colour, accent colour, shape)
+ITEMS: dict[str, tuple[tuple[int, int, int], tuple[int, int, int], str]] = {
+    "hoe": ((140, 100, 62), (170, 176, 182), "tool"),
+    "watering_can": ((104, 148, 176), (176, 200, 216), "can"),
+    "sickle": ((140, 100, 62), (198, 204, 210), "blade"),
+    "turnip_seed": ((166, 138, 96), (236, 236, 220), "pouch"),
+    "potato_seed": ((166, 138, 96), (198, 156, 96), "pouch"),
+    "tomato_seed": ((166, 138, 96), (206, 66, 52), "pouch"),
+    "corn_seed": ((166, 138, 96), (240, 206, 92), "pouch"),
+    "turnip": ((236, 236, 220), (86, 156, 74), "produce"),
+    "potato": ((198, 156, 96), (140, 104, 62), "produce"),
+    "tomato": ((206, 66, 52), (68, 140, 70), "produce"),
+    "corn": ((240, 206, 92), (96, 158, 68), "produce"),
+}
+
+
+def draw_item(
+    slug: str,
+    body: tuple[int, int, int],
+    accent: tuple[int, int, int],
+    shape: str,
+) -> None:
+    """A 24x24 inventory icon, distinct enough to tell the tools apart."""
+    surf = pygame.Surface((ITEM_SIZE, ITEM_SIZE), pygame.SRCALPHA)
+    mid = ITEM_SIZE // 2
+
+    if shape == "tool":
+        pygame.draw.line(surf, body, (16, 4), (8, 19), 3)
+        pygame.draw.line(surf, accent, (16, 4), (20, 8), 4)
+    elif shape == "can":
+        pygame.draw.rect(surf, body, (5, 9, 12, 10), border_radius=2)
+        pygame.draw.line(surf, body, (17, 11), (21, 6), 3)
+        pygame.draw.line(surf, accent, (7, 9), (7, 5), 3)
+    elif shape == "blade":
+        pygame.draw.line(surf, body, (6, 20), (12, 14), 3)
+        pygame.draw.arc(surf, accent, (8, 3, 13, 14), 0.4, 3.4, 3)
+    elif shape == "pouch":
+        pygame.draw.circle(surf, body, (mid, 14), 8)
+        pygame.draw.rect(surf, body, (mid - 3, 4, 6, 6))
+        for offset in (-3, 0, 3):
+            pygame.draw.circle(surf, accent, (mid + offset, 14), 2)
+    else:  # produce
+        pygame.draw.circle(surf, body, (mid, 14), 7)
+        pygame.draw.line(surf, accent, (mid, 7), (mid, 3), 2)
+        pygame.draw.line(surf, accent, (mid, 5), (mid + 4, 2), 2)
+
+    pygame.image.save(surf, str(ITEM_DIR / f"{slug}.png"))
+
+
+def build_items() -> None:
+    ITEM_DIR.mkdir(parents=True, exist_ok=True)
+    for slug, (body, accent, shape) in ITEMS.items():
+        draw_item(slug, body, accent, shape)
+
+
 def build_soil() -> None:
     sheet = new_sheet(2, TILE)
     draw_soil(sheet, 0, wet=False)
@@ -132,8 +191,10 @@ def main() -> None:
     build_soil()
     for slug, (stages, height, leaf, fruit) in CROPS.items():
         build_crop(slug, stages, height, leaf, fruit)
+    build_items()
 
     print(f"Wrote {len(CROPS) + 1} sheets to {OUT_DIR}")
+    print(f"Wrote {len(ITEMS)} icons to {ITEM_DIR}")
     pygame.quit()
 
 

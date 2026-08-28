@@ -19092,3 +19092,97 @@ msgstr "Town Hall"
 
 msgid "flower_lady"
 msgstr "Flower Lady"
+
+# FARMING TRANSLATIONS ##
+msgid "hoe"
+msgstr "Hoe"
+
+msgid "hoe_description"
+msgstr "Breaks the soil in front of you, ready for seed."
+
+msgid "hoe_success"
+msgstr "You break the soil open."
+
+msgid "hoe_failure"
+msgstr "There is nothing to till here."
+
+msgid "watering_can"
+msgstr "Watering Can"
+
+msgid "watering_can_description"
+msgstr "A day without water is a day a crop does not grow."
+
+msgid "watering_can_success"
+msgstr "You water the soil."
+
+msgid "watering_can_failure"
+msgstr "There is no thirsty soil in front of you."
+
+msgid "sickle"
+msgstr "Sickle"
+
+msgid "sickle_description"
+msgstr "Cuts a ripe crop free of the ground."
+
+msgid "sickle_success"
+msgstr "You gather the harvest."
+
+msgid "sickle_failure"
+msgstr "Nothing here is ready to cut."
+
+msgid "farm_plant_failure"
+msgstr "The seed will not take here."
+
+msgid "turnip_seed"
+msgstr "Turnip Seeds"
+
+msgid "turnip_seed_description"
+msgstr "A spring crop. Quick to ripen, easy to forget."
+
+msgid "potato_seed"
+msgstr "Potato Seeds"
+
+msgid "potato_seed_description"
+msgstr "Slow and hardy. Spring or autumn."
+
+msgid "tomato_seed"
+msgstr "Tomato Seeds"
+
+msgid "tomato_seed_description"
+msgstr "A summer crop that keeps giving after the first picking."
+
+msgid "corn_seed"
+msgstr "Corn Seeds"
+
+msgid "corn_seed_description"
+msgstr "Tall summer and autumn crop. Regrows once ripe."
+
+msgid "turnip"
+msgstr "Turnip"
+
+msgid "turnip_description"
+msgstr "Pale, round, and honest."
+
+msgid "potato"
+msgstr "Potato"
+
+msgid "potato_description"
+msgstr "Dug from the earth, still dusty."
+
+msgid "tomato"
+msgstr "Tomato"
+
+msgid "tomato_description"
+msgstr "Ripe enough to eat where you stand."
+
+msgid "corn"
+msgstr "Corn"
+
+msgid "corn_description"
+msgstr "Sweet and heavy in the hand."
+
+msgid "farm_sleep_dialog"
+msgstr "You sleep until morning."
+
+msgid "farm_new_day"
+msgstr "Day ${{farm_day_of_season}} of ${{farm_season}}, year ${{farm_year}}."

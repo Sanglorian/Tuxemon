@@ -1,0 +1,28 @@
+conditions: []
+effects:
+- type: farm_plant
+  parameters:
+  - potato
+slug: potato_seed
+sort: utility
+sprite: gfx/items/potato_seed.png
+category: none
+usable_in:
+- WorldState
+modifiers: []
+behaviors:
+  consumable: false
+  requires_monster_menu: false
+  resellable: true
+  show_dialog_on_success: false
+  show_dialog_on_failure: true
+use_failure: farm_plant_failure
+use_item: combat_used_x
+use_success: generic_success
+visuals:
+  animation: null
+  flip_axes: ''
+  loop: 0
+sound:
+  sfx: null
+  volume: 0.0

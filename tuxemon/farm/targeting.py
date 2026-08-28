@@ -44,6 +44,28 @@ def resolve_target(session: Session, character: str) -> FarmTarget | None:
     return FarmTarget(map_slug, get_next_tile_pos(npc.tile_pos, npc.facing))
 
 
+def is_tillable(session: Session, pos: TilePos) -> bool:
+    """
+    Whether the ground at a tile can be broken with a hoe.
+
+    Soil has to be reachable ground: a tile the player could stand on. This
+    keeps a hoe off walls, furniture and other characters. It does not stop a
+    player tilling their own kitchen floor — restricting a farm to a marked
+    plot is a map-authoring decision, and no map declares one yet.
+    """
+    client = session.client
+
+    if client.collision_manager.is_tile_occupied(pos):
+        return False
+
+    if pos in client.map_manager.collision_map:
+        return False
+
+    width, height = client.map_manager.map_size
+    x, y = pos
+    return 0 <= x < width and 0 <= y < height
+
+
 def set_result(session: Session, success: bool) -> None:
     """
     Records whether a farm action succeeded, so map scripts can branch on it.

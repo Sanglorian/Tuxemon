@@ -1,0 +1,25 @@
+conditions: []
+effects:
+- type: farm_water
+slug: watering_can
+sort: utility
+sprite: gfx/items/watering_can.png
+category: none
+usable_in:
+- WorldState
+modifiers: []
+behaviors:
+  consumable: false
+  requires_monster_menu: false
+  show_dialog_on_success: false
+  show_dialog_on_failure: true
+use_failure: watering_can_failure
+use_item: combat_used_x
+use_success: watering_can_success
+visuals:
+  animation: null
+  flip_axes: ''
+  loop: 0
+sound:
+  sfx: null
+  volume: 0.0

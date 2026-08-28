@@ -3,11 +3,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 import pytest
+import yaml
 from pygame.rect import Rect
 from pygame.surface import Surface
 
+from tuxemon.core.effects.farm_harvest import FarmHarvestEffect
+from tuxemon.core.effects.farm_plant import FarmPlantEffect
+from tuxemon.core.effects.farm_till import FarmTillEffect
+from tuxemon.core.effects.farm_water import FarmWaterEffect
+from tuxemon.db import Direction
+from tuxemon.event.actions.farm_sleep import FarmSleepAction
 from tuxemon.farm.calendar import DEFAULT_SEASON_LENGTH, FarmCalendar
 from tuxemon.farm.crop import CropModel, PlantedCrop, load_crops
 from tuxemon.farm.grid import FarmGrid, FarmTile
@@ -20,6 +28,7 @@ from tuxemon.farm.renderer import (
     CropLayer,
     CropSpriteCache,
 )
+from tuxemon.farm.targeting import is_tillable, resolve_target
 
 MAP = "farm_test"
 
@@ -714,3 +723,349 @@ def test_layer_survives_art_that_failed_to_load():
 def layer_tiles(layer: CropLayer) -> list[tuple[Surface, Rect, int]]:
     """Renders the fake map and returns the surfaces produced."""
     return layer.get_rendered_tiles(FakeMap())  # type: ignore[arg-type]
+
+
+# ---------------------------------------------------------------------------
+# Tool targeting and the tillable-ground rule
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class FakeGameVariables:
+    values: dict = None  # type: ignore[assignment]
+
+    def __post_init__(self) -> None:
+        if self.values is None:
+            self.values = {}
+
+    def set(self, key, value) -> None:
+        self.values[key] = value
+
+    def get(self, key, default=None):
+        return self.values.get(key, default)
+
+
+@dataclass
+class FakeBag:
+    removed: list = None  # type: ignore[assignment]
+    added: list = None  # type: ignore[assignment]
+
+    def __post_init__(self) -> None:
+        self.removed = []
+        self.added = []
+
+    def remove_item(self, item, quantity: int = 1) -> bool:
+        self.removed.append((item, quantity))
+        return True
+
+    def add_item(self, item, quantity: int = 1) -> bool:
+        self.added.append((item, quantity))
+        return True
+
+
+class FakePlayer:
+    def __init__(self, tile_pos=(3, 3), facing=Direction.UP) -> None:
+        self.tile_pos = tile_pos
+        self.facing = facing
+        self.game_variables = FakeGameVariables()
+        self.bag = FakeBag()
+
+
+class FakeCollisionManager:
+    def __init__(self, occupied=()) -> None:
+        self.occupied = set(occupied)
+
+    def is_tile_occupied(self, coords) -> bool:
+        return coords in self.occupied
+
+
+class FakeFarmMapManager:
+    def __init__(self, blocked=(), size=(20, 20)) -> None:
+        self.map_slug = MAP
+        self.collision_map = {pos: None for pos in blocked}
+        self.map_size = size
+
+
+class FakeClient:
+    def __init__(self, farm, player, blocked=(), occupied=()) -> None:
+        self.farm_manager = farm
+        self._player = player
+        self.map_manager = FakeFarmMapManager(blocked)
+        self.collision_manager = FakeCollisionManager(occupied)
+
+    def get_npc(self, slug):
+        return self._player if slug == "player" else None
+
+
+class FakeFarmSession:
+    def __init__(
+        self, farm=None, blocked=(), occupied=(), facing=Direction.UP
+    ):
+        self.player = FakePlayer(facing=facing)
+        self.farm = farm if farm is not None else FarmManager()
+        self.client = FakeClient(self.farm, self.player, blocked, occupied)
+
+
+def test_resolve_target_returns_the_tile_in_front():
+    session = FakeFarmSession(facing=Direction.UP)
+    target = resolve_target(session, "player")  # type: ignore[arg-type]
+    assert target is not None
+    assert target.map_slug == MAP
+    assert target.pos == (3, 2)
+
+
+def test_resolve_target_gives_up_on_an_unknown_character():
+    session = FakeFarmSession()
+    assert resolve_target(session, "npc_nobody") is None  # type: ignore[arg-type]
+
+
+def test_open_ground_is_tillable():
+    session = FakeFarmSession()
+    assert is_tillable(session, (3, 2))  # type: ignore[arg-type]
+
+
+def test_a_wall_is_not_tillable():
+    session = FakeFarmSession(blocked=[(3, 2)])
+    assert not is_tillable(session, (3, 2))  # type: ignore[arg-type]
+
+
+def test_a_tile_someone_is_standing_on_is_not_tillable():
+    session = FakeFarmSession(occupied=[(3, 2)])
+    assert not is_tillable(session, (3, 2))  # type: ignore[arg-type]
+
+
+def test_ground_off_the_edge_of_the_map_is_not_tillable():
+    session = FakeFarmSession()
+    assert not is_tillable(session, (-1, 4))  # type: ignore[arg-type]
+    assert not is_tillable(session, (99, 4))  # type: ignore[arg-type]
+
+
+# ---------------------------------------------------------------------------
+# Tool item effects
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class FakeItem:
+    name: str = "Hoe"
+    slug: str = "hoe"
+
+
+def test_hoe_effect_tills_the_facing_tile():
+    session = FakeFarmSession()
+    result = FarmTillEffect().apply_item(session, FakeItem())  # type: ignore[arg-type]
+
+    assert result.success
+    assert session.farm.get_tile(MAP, (3, 2)) is not None
+
+
+def test_hoe_effect_refuses_a_wall():
+    session = FakeFarmSession(blocked=[(3, 2)])
+    result = FarmTillEffect().apply_item(session, FakeItem())  # type: ignore[arg-type]
+
+    assert not result.success
+    assert session.farm.get_tile(MAP, (3, 2)) is None
+
+
+def test_watering_can_effect_needs_tilled_soil():
+    session = FakeFarmSession()
+    assert not FarmWaterEffect().apply_item(session, FakeItem()).success  # type: ignore[arg-type]
+
+    session.farm.till(MAP, (3, 2))
+    assert FarmWaterEffect().apply_item(session, FakeItem()).success  # type: ignore[arg-type]
+
+
+def test_seed_effect_plants_and_spends_one_seed():
+    session = FakeFarmSession()
+    session.farm.till(MAP, (3, 2))
+    item = FakeItem(name="Turnip Seeds", slug="turnip_seed")
+
+    result = FarmPlantEffect("turnip").apply_item(session, item)  # type: ignore[arg-type]
+
+    assert result.success
+    assert session.farm.get_tile(MAP, (3, 2)).crop.slug == "turnip"
+    assert session.player.bag.removed == [(item, 1)]
+
+
+def test_seed_effect_keeps_the_seed_when_planting_fails():
+    """
+    The item pipeline consumes a failed item by default. Seeds opt out of that
+    and spend themselves on success, so a mistimed swing costs nothing.
+    """
+    session = FakeFarmSession()
+    item = FakeItem(name="Turnip Seeds", slug="turnip_seed")
+
+    result = FarmPlantEffect("turnip").apply_item(session, item)  # type: ignore[arg-type]
+
+    assert not result.success
+    assert session.player.bag.removed == []
+
+
+def test_seed_effect_refuses_a_crop_out_of_season():
+    session = FakeFarmSession()
+    session.farm.till(MAP, (3, 2))
+    item = FakeItem(name="Tomato Seeds", slug="tomato_seed")
+
+    # tomato is summer-only and a new farm starts in spring
+    result = FarmPlantEffect("tomato").apply_item(session, item)  # type: ignore[arg-type]
+
+    assert not result.success
+    assert session.player.bag.removed == []
+
+
+def test_sickle_effect_returns_nothing_from_bare_ground():
+    session = FakeFarmSession()
+    assert not FarmHarvestEffect().apply_item(session, FakeItem()).success  # type: ignore[arg-type]
+
+
+def test_sickle_effect_banks_the_produce(monkeypatch):
+    session = FakeFarmSession()
+    session.farm.till(MAP, (3, 2))
+    session.farm.plant(MAP, (3, 2), "turnip")
+    crop = session.farm.get_tile(MAP, (3, 2)).crop
+    crop.growth = crop.model.days_to_mature
+
+    monkeypatch.setattr(
+        "tuxemon.core.effects.farm_harvest.Item.create", lambda slug: slug
+    )
+    result = FarmHarvestEffect().apply_item(session, FakeItem())  # type: ignore[arg-type]
+
+    assert result.success
+    assert session.player.bag.added == [("turnip", 1)]
+    assert session.player.game_variables.get("farm_harvest_item") == "turnip"
+
+
+# ---------------------------------------------------------------------------
+# Farm items and crop config agree with each other
+# ---------------------------------------------------------------------------
+
+
+FARM_ITEMS = [
+    "hoe",
+    "watering_can",
+    "sickle",
+    "turnip_seed",
+    "potato_seed",
+    "tomato_seed",
+    "corn_seed",
+    "turnip",
+    "potato",
+    "tomato",
+    "corn",
+]
+
+
+def load_item_yaml(slug: str) -> dict:
+    path = Path("mods/tuxemon/db/item") / f"{slug}.yaml"
+    assert path.is_file(), f"missing item definition: {path}"
+    with path.open(encoding="utf-8") as handle:
+        return yaml.safe_load(handle)
+
+
+def test_every_farm_item_has_its_icon():
+    for slug in FARM_ITEMS:
+        data = load_item_yaml(slug)
+        sprite = Path("mods/tuxemon") / data["sprite"]
+        assert sprite.is_file(), f"{slug}: missing sprite {sprite}"
+
+
+def test_every_crop_names_items_that_exist():
+    """
+    A typo between crops.yaml and the item database would only show up as a
+    seed that plants nothing, or a harvest that banks a broken item.
+    """
+    for slug, model in load_crops().items():
+        seed = load_item_yaml(model.seed_item)
+        assert seed["slug"] == model.seed_item
+
+        effect = seed["effects"][0]
+        assert effect["type"] == "farm_plant"
+        assert effect["parameters"] == [slug], (
+            f"{model.seed_item} plants {effect['parameters']}, not {slug}"
+        )
+
+        produce = load_item_yaml(model.produce_item)
+        assert produce["slug"] == model.produce_item
+
+
+def test_seed_bags_are_not_consumed_by_the_item_pipeline():
+    """
+    Seeds spend themselves inside the effect. If they were also marked
+    consumable, a failed planting would still cost a seed.
+    """
+    for slug, model in load_crops().items():
+        seed = load_item_yaml(model.seed_item)
+        assert seed["behaviors"]["consumable"] is False, model.seed_item
+
+
+def test_tools_are_reusable_and_usable_in_the_world():
+    for slug in ("hoe", "watering_can", "sickle"):
+        data = load_item_yaml(slug)
+        assert data["behaviors"]["consumable"] is False, slug
+        assert data["behaviors"]["requires_monster_menu"] is False, slug
+        assert data["usable_in"] == ["WorldState"], slug
+
+
+# ---------------------------------------------------------------------------
+# Sleeping
+# ---------------------------------------------------------------------------
+
+
+class FakeSleepClient(FakeClient):
+    """A client with no world state, so the sleep action skips the fade."""
+
+    active_state_names: list[str] = []
+
+
+def test_sleeping_outside_the_world_still_passes_the_night():
+    """
+    The bed fades the screen while the day turns. With no world to fade the
+    action must still end the day rather than hang waiting for a transition.
+    """
+    session = FakeFarmSession()
+    session.client = FakeSleepClient(session.farm, session.player)
+    session.farm.till(MAP, (1, 1))
+    session.farm.plant(MAP, (1, 1), "turnip")
+    session.farm.water(MAP, (1, 1))
+
+    action = FarmSleepAction()
+    action.days = 1
+    action.trans_time = None
+    action.rgb = None
+    action.start(session)  # type: ignore[arg-type]
+
+    assert session.farm.calendar.day == 2
+    tile = session.farm.get_tile(MAP, (1, 1))
+    assert tile is not None and tile.crop is not None
+    assert tile.crop.growth == 1
+    assert not tile.watered
+
+
+def test_sleeping_records_the_new_date_for_map_scripts():
+    session = FakeFarmSession()
+    session.client = FakeSleepClient(session.farm, session.player)
+
+    action = FarmSleepAction()
+    action.days = 3
+    action.trans_time = None
+    action.rgb = None
+    action.start(session)  # type: ignore[arg-type]
+
+    variables = session.player.game_variables
+    assert variables.get("farm_day") == "4"
+    assert variables.get("farm_day_of_season") == "4"
+    assert variables.get("farm_season") == "spring"
+    assert variables.get("farm_year") == "1"
+
+
+def test_sleeping_for_no_days_is_refused():
+    session = FakeFarmSession()
+    session.client = FakeSleepClient(session.farm, session.player)
+
+    action = FarmSleepAction()
+    action.days = 0
+    action.trans_time = None
+    action.rgb = None
+    action.start(session)  # type: ignore[arg-type]
+
+    assert session.farm.calendar.day == 1

@@ -1,0 +1,25 @@
+conditions: []
+effects:
+- type: farm_till
+slug: hoe
+sort: utility
+sprite: gfx/items/hoe.png
+category: none
+usable_in:
+- WorldState
+modifiers: []
+behaviors:
+  consumable: false
+  requires_monster_menu: false
+  show_dialog_on_success: false
+  show_dialog_on_failure: true
+use_failure: hoe_failure
+use_item: combat_used_x
+use_success: hoe_success
+visuals:
+  animation: null
+  flip_axes: ''
+  loop: 0
+sound:
+  sfx: null
+  volume: 0.0

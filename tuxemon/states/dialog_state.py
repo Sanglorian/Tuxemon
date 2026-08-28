@@ -41,6 +41,11 @@ class DialogState(PopUpMenu[None]):
 
     name: ClassVar[str] = "DialogState"
 
+    # Minimum time a line stays on screen before input may act on it. Armed
+    # when a line starts drawing and again when it finishes, so mashing the
+    # confirm button cannot dump a line and skip past it in two frames.
+    ADVANCE_GUARD = 0.25
+
     def __init__(
         self,
         client: BaseClient,
@@ -68,6 +73,7 @@ class DialogState(PopUpMenu[None]):
 
         self._elapsed_time: float = 0.0
         self._timer_active: bool = False
+        self._advance_guard: float = 0.0
 
         default_box_style: dict[str, Any] = {
             "bg_color": self.background_color,
@@ -144,10 +150,20 @@ class DialogState(PopUpMenu[None]):
             logger.debug("Ignoring input, dialog is not open")
             return None
 
+        if self._advance_guard > 0.0:
+            logger.debug(
+                "Ignoring input, line has not been readable long enough"
+            )
+            return None
+
         if event.pressed and event.button in self.advance_buttons:
             if not self.dialog.is_dialog_complete(self.dialog_box):
                 logger.debug("Fast-forwarding current dialog line")
                 self.dialog.dump_remaining_text(self.dialog_box)
+                # dump_remaining_text also completes the line, so without
+                # re-arming here the next press would advance immediately
+                # and the finished text would never be readable.
+                self._arm_advance_guard()
             else:
                 if self.dialog.is_busy():
                     logger.debug(
@@ -162,6 +178,8 @@ class DialogState(PopUpMenu[None]):
     def update(self, dt: float) -> None:
         """Update dialog text, avatar, and auto-close timer each frame."""
         super().update(dt)
+
+        self._tick_advance_guard(dt)
 
         if self.dialog_box.drawing_text:
             self.dialog.update(dt)
@@ -199,6 +217,7 @@ class DialogState(PopUpMenu[None]):
                 text_area=self.dialog_box,
                 dialog_speed=self.dialog_speed,
             )
+            self._arm_advance_guard()
             self._reset_timer()
             return text
 
@@ -228,6 +247,15 @@ class DialogState(PopUpMenu[None]):
                 logger.error(f"Error in on_complete callback: {e}")
 
         self.close()
+
+    def _tick_advance_guard(self, dt: float) -> None:
+        """Count the input hold-off down by one frame."""
+        if self._advance_guard > 0.0:
+            self._advance_guard = max(0.0, self._advance_guard - dt)
+
+    def _arm_advance_guard(self) -> None:
+        """Hold off input until the current line has been readable."""
+        self._advance_guard = self.ADVANCE_GUARD
 
     def _reset_timer(self) -> None:
         """Reset elapsed time and activate the timer if conditions are met."""

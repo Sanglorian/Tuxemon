@@ -44,6 +44,7 @@ def make_dialog(*, is_open=None, phase=None):
         phase = "normal" if is_open else "opening"
     state = object.__new__(DialogState)
     state.state_controller = controller_in(phase)
+    state._advance_guard = 0.0
     state.advance_buttons = [buttons.A]
     state.text_queue = ["first line", "second line"]
     state.auto_close = True
@@ -122,3 +123,89 @@ def test_guard_follows_the_real_menu_state_machine(phase, advances):
 
     assert state.process_event(press()) is None
     assert state.next_text.called is advances
+
+
+FRAME = 1.0 / 60.0
+
+
+def make_typing_dialog():
+    """An open dialog part-way through drawing a line."""
+    state = make_dialog(phase="normal")
+    state.dialog_box.drawing_text = True
+    state.client.alert_manager.is_dialog_complete.return_value = False
+    return state
+
+
+def test_a_fresh_line_cannot_be_touched_immediately():
+    state = make_typing_dialog()
+    state._arm_advance_guard()
+
+    state.process_event(press())
+
+    state.client.alert_manager.dump_remaining_text.assert_not_called()
+    state.next_text.assert_not_called()
+
+
+def test_the_guard_expires():
+    state = make_typing_dialog()
+    state._arm_advance_guard()
+
+    for _ in range(int(DialogState.ADVANCE_GUARD / FRAME) + 1):
+        state._tick_advance_guard(FRAME)
+    state.process_event(press())
+
+    state.client.alert_manager.dump_remaining_text.assert_called_once()
+
+
+def test_fast_forward_re_arms_so_the_finished_line_stays_readable():
+    """Dumping a line completes it. Advancing on the next press would mean
+    the finished text was never on screen."""
+    state = make_typing_dialog()
+
+    state.process_event(press())  # fast-forwards
+    state.client.alert_manager.dump_remaining_text.assert_called_once()
+
+    # line is complete now; the very next press must not advance
+    state.dialog_box.drawing_text = False
+    state.client.alert_manager.is_dialog_complete.return_value = True
+    state.process_event(press())
+    state.next_text.assert_not_called()
+
+    for _ in range(int(DialogState.ADVANCE_GUARD / FRAME) + 1):
+        state._tick_advance_guard(FRAME)
+    state.process_event(press())
+    state.next_text.assert_called_once()
+
+
+def test_mashing_cannot_blow_through_a_line():
+    """The complaint: press twice and the line displays and is gone.
+
+    Holding the button down every frame must still take a full guard to
+    dump the line and another to move off it.
+    """
+    state = make_typing_dialog()
+    state._arm_advance_guard()
+
+    frames_to_dump = None
+    frames_to_advance = None
+    for frame in range(600):
+        state._tick_advance_guard(FRAME)
+        state.process_event(press())
+        if (
+            frames_to_dump is None
+            and state.client.alert_manager.dump_remaining_text.called
+        ):
+            frames_to_dump = frame
+            # the dump completed the line
+            state.dialog_box.drawing_text = False
+            state.client.alert_manager.is_dialog_complete.return_value = True
+        if state.next_text.called:
+            frames_to_advance = frame
+            break
+
+    guard_frames = DialogState.ADVANCE_GUARD / FRAME
+    assert frames_to_dump is not None, "line was never dumped"
+    assert frames_to_advance is not None, "line was never advanced past"
+    assert frames_to_dump >= guard_frames - 1
+    assert frames_to_advance - frames_to_dump >= guard_frames - 1
+    assert frames_to_advance * FRAME >= 2 * DialogState.ADVANCE_GUARD - FRAME

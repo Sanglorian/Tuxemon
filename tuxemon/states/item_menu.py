@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Generator
+from collections.abc import Callable, Generator, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from pygame.rect import Rect
@@ -33,6 +33,24 @@ from tuxemon.ui.text import TextArea
 if TYPE_CHECKING:
     from tuxemon.base_client import BaseClient
     from tuxemon.entity.npc import NPC
+    from tuxemon.monster.monster import Monster
+    from tuxemon.session import Session
+
+
+def has_valid_target(
+    session: Session, item: Item, monsters: Sequence[Monster]
+) -> bool:
+    """
+    Whether an item has something to be used on.
+
+    An item used *on a monster* needs a monster in the party that accepts it.
+    An item used on the world — a fishing rod, a farm tool — is validated once
+    with no target, so an empty party does not block it while its own
+    conditions, such as which tile the player faces, still decide.
+    """
+    if item.behaviors.requires_monster_menu:
+        return any(item.validate_monster(session, m) for m in monsters)
+    return item.validate_monster(session, None)
 
 
 class ItemMenuState(Menu[Item]):
@@ -122,10 +140,7 @@ class ItemMenuState(Menu[Item]):
 
         item = menu_item.game_object
 
-        # Check if the item can be used on any monster
-        if not any(
-            item.validate_monster(local_session, m) for m in self.char.monsters
-        ):
+        if not has_valid_target(local_session, item, self.char.monsters):
             self.on_menu_selection_change()
             error_message = self.get_error_message(item)
             open_dialog(self.client, [error_message])

@@ -179,9 +179,15 @@ class Item:
         self.durability.try_reset()
         logger.debug(f"'{self.slug}' wear reset to 0")
 
-    def validate_monster(self, session: Session, target: Monster) -> bool:
+    def validate_monster(
+        self, session: Session, target: Monster | None
+    ) -> bool:
         """
         Check if the target meets all conditions that the item has on it's use.
+
+        ``target`` may be ``None`` for an item that is not used on a monster
+        at all. Conditions that ignore the target, such as which tile the
+        player is facing, still apply.
         """
         if self.durability.is_broken:
             logger.debug(f"{self.name} is broken and cannot be used!")

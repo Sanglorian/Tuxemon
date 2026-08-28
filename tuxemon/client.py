@@ -11,6 +11,7 @@ import pygame
 
 from tuxemon.base_client import BaseClient, ClientState
 from tuxemon.config import TuxemonConfig
+from tuxemon.farm.renderer import CropLayer
 from tuxemon.map.tuxemon import NullMap
 from tuxemon.map.view import DebugRenderer, MapRenderer, NullRenderer
 from tuxemon.state.draw import EventDebugDrawer, Renderer, StateDrawer
@@ -79,8 +80,13 @@ class LocalPygameClient(BaseClient):
             self.npc_manager,
             self.debug_renderer,
             self.context,
+            self._build_crop_layer(),
         )
         self.set_renderer(map_renderer)
+
+    def _build_crop_layer(self) -> CropLayer:
+        """Creates the layer that draws tilled soil and growing crops."""
+        return CropLayer(self.farm_manager, self.map_manager, self.context)
 
     def reset_renderer(self) -> None:
         current_map = self.map_manager.current_map
@@ -96,6 +102,7 @@ class LocalPygameClient(BaseClient):
                 self.npc_manager,
                 self.debug_renderer,
                 self.context,
+                self._build_crop_layer(),
             )
             self.set_renderer(map_renderer)
             logger.debug("Renderer reset to MapRenderer.")

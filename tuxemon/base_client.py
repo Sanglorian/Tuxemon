@@ -30,6 +30,7 @@ from tuxemon.event.eventengine import EventEngine
 from tuxemon.event.eventmanager import EventManager
 from tuxemon.event.eventpersist import EventPersist
 from tuxemon.event.running import ConditionEvaluator
+from tuxemon.farm.manager import FarmManager
 from tuxemon.map.collision_manager import CollisionManager
 from tuxemon.map.loader import MapLoader
 from tuxemon.map.manager import MapManager
@@ -190,6 +191,7 @@ class BaseClient(ABC):
         self.cipher_processor: CipherProcessor | None = None
         self.alert_manager = AlertManager(self.event_bus)
         self.shop_manager = ShopManager()
+        self.farm_manager = FarmManager()
 
         self.command_queue: Queue[Callable[[], None]] = Queue()
 

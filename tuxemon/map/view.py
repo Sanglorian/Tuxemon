@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     from tuxemon.db import NpcTemplateModel
     from tuxemon.entity.appearance import RuntimeAppearance
     from tuxemon.entity.npc import NPC
+    from tuxemon.farm.renderer import CropLayer
     from tuxemon.map.manager import MapManager
     from tuxemon.map.tuxemon import AbstractMap
     from tuxemon.npc_manager import NPCManager
@@ -444,12 +445,14 @@ class MapRenderer(AbstractRenderer):
         npc_manager: NPCManager,
         debug_renderer: DebugRenderer,
         context: DisplayContext,
+        crop_layer: CropLayer | None = None,
     ):
         """Initializes the MapRenderer."""
         self.camera_manager = camera_manager
         self.npc_manager = npc_manager
         self.debug_renderer = debug_renderer
         self.context = context
+        self.crop_layer = crop_layer
         self.layer = Surface(context.rect.size, SRCALPHA)
         self.layer_color: ColorLike | None = None
         self.cinema_x_ratio: float | None = None
@@ -504,6 +507,10 @@ class MapRenderer(AbstractRenderer):
         screen_surfaces.extend(
             self.bubble_manager.get_rendered_bubbles(current_map)
         )
+        if self.crop_layer is not None:
+            screen_surfaces.extend(
+                self.crop_layer.get_rendered_tiles(current_map)
+            )
         return screen_surfaces
 
     def _draw_map_and_sprites(

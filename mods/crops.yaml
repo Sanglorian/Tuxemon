@@ -1,0 +1,67 @@
+# Crop definitions for the farming layer.
+#
+# Each key is the crop slug. Fields:
+#   seed_item: str            # Item slug consumed when planting
+#   produce_item: str         # Item slug granted when harvesting
+#   sprite: str               # Sprite sheet, relative to the mod asset root.
+#                             # A horizontal strip: one frame per growth stage,
+#                             # youngest first, then the mature plant, then an
+#                             # optional withered frame.
+#   stage_days: list[int]     # Watered days needed to leave each growth stage.
+#                             # A crop with 3 entries needs 4 sprite frames.
+#   seasons: list[str]        # Seasons the crop may be planted in. Omit or
+#                             # leave empty to allow every season.
+#   water_tolerance: int      # Consecutive dry days survived before withering
+#   regrow_days: int | None   # Watered days to regrow after harvest. Omit for
+#                             # crops that are spent once harvested.
+#   harvest_yield: int        # Produce granted per harvest
+#   frame_width: int          # Native frame size, in pixels. Defaults to one
+#   frame_height: int         # tile (16x16). Taller frames grow upwards out
+#                             # of the soil.
+#   has_withered_frame: bool  # Whether the sheet ends with a withered frame
+
+turnip:
+  seed_item: turnip_seed
+  produce_item: turnip
+  sprite: sprites/crops/turnip.png
+  stage_days: [1, 1, 2]
+  seasons:
+    - spring
+  water_tolerance: 2
+  harvest_yield: 1
+
+potato:
+  seed_item: potato_seed
+  produce_item: potato
+  sprite: sprites/crops/potato.png
+  stage_days: [2, 2, 2, 2]
+  seasons:
+    - spring
+    - autumn
+  water_tolerance: 3
+  harvest_yield: 2
+
+tomato:
+  seed_item: tomato_seed
+  produce_item: tomato
+  sprite: sprites/crops/tomato.png
+  stage_days: [2, 2, 3, 3]
+  seasons:
+    - summer
+  water_tolerance: 2
+  regrow_days: 3
+  harvest_yield: 1
+  frame_height: 24
+
+corn:
+  seed_item: corn_seed
+  produce_item: corn
+  sprite: sprites/crops/corn.png
+  stage_days: [3, 3, 3, 3]
+  seasons:
+    - summer
+    - autumn
+  water_tolerance: 2
+  regrow_days: 4
+  harvest_yield: 1
+  frame_height: 32

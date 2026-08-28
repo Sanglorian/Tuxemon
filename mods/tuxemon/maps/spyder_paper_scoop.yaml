@@ -200,6 +200,15 @@ events:
     - not char_exists spyder_billie
     - not variable_set intro_scoop:done
     type: event
+  Create Seed Seller:
+    actions:
+    - create_npc spyder_papermart_orla,3,8
+    - char_face spyder_papermart_orla,right
+    - set_economy spyder_papermart_orla,paper_scoop_farm
+    conditions:
+    - not char_exists spyder_papermart_orla
+    - is variable_set intro_scoop:done
+    type: event
   Create Shopkeeper:
     actions:
     - create_npc spyder_shopkeeper,0,4
@@ -316,4 +325,13 @@ events:
     conditions:
     - is battle_outcome player,won,spyder_route3_zoolander
     - not variable_set spokendante:yes
+    type: event
+  Talk Orla:
+    actions:
+    - translated_dialog spyder_paper_scoop_farm_welcome
+    - open_shop spyder_papermart_orla,both_item
+    behav:
+    - talk spyder_papermart_orla
+    conditions:
+    - is variable_set intro_scoop:done
     type: event

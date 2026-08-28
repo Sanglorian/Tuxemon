@@ -2,6 +2,7 @@ conditions: []
 effects:
 - type: farm_till
 slug: hoe
+cost: 50
 sort: utility
 sprite: gfx/items/hoe.png
 category: none

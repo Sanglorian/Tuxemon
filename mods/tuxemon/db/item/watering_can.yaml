@@ -2,6 +2,7 @@ conditions: []
 effects:
 - type: farm_water
 slug: watering_can
+cost: 50
 sort: utility
 sprite: gfx/items/watering_can.png
 category: none

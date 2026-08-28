@@ -2,6 +2,7 @@ conditions: []
 effects:
 - type: farm_harvest
 slug: sickle
+cost: 60
 sort: utility
 sprite: gfx/items/sickle.png
 category: none

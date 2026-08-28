@@ -1,5 +1,6 @@
 effects: []
 slug: potato
+cost: 100
 sort: utility
 sprite: gfx/items/potato.png
 category: food

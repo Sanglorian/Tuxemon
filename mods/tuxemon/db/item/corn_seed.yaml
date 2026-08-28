@@ -4,6 +4,7 @@ effects:
   parameters:
   - corn
 slug: corn_seed
+cost: 150
 sort: utility
 sprite: gfx/items/corn_seed.png
 category: none

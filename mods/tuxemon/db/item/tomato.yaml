@@ -1,5 +1,6 @@
 effects: []
 slug: tomato
+cost: 90
 sort: utility
 sprite: gfx/items/tomato.png
 category: food

@@ -4,6 +4,7 @@ effects:
   parameters:
   - turnip
 slug: turnip_seed
+cost: 30
 sort: utility
 sprite: gfx/items/turnip_seed.png
 category: none

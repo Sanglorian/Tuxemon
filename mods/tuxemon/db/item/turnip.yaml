@@ -1,5 +1,6 @@
 effects: []
 slug: turnip
+cost: 100
 sort: utility
 sprite: gfx/items/turnip.png
 category: food

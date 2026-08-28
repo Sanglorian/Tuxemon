@@ -1,0 +1,61 @@
+# The farm supply counter in the Paper Town Scoop.
+#
+# See spyder_scoops.yaml for the full field documentation.
+#
+# Balance notes. The player starts with 500, and a potion costs 100, so the
+# three tools together (320) leave enough for a first planting. Seeds are
+# priced so that profit per day comes out roughly level across the staples,
+# and the crops that regrow pay better in exchange for holding a plot for
+# most of a season:
+#
+#   turnip   4 days, x1          seed  60, sells 100  ->  10/day
+#   potato   8 days, x2          seed 120, sells 100  ->  10/day
+#   tomato  10 days, x1, +3 day  seed 250, sells  90  ->  ~14/day over a season
+#   corn    12 days, x1, +4 day  seed 300, sells 130  ->  ~13/day over a season
+#
+# Produce is listed here with an explicit cost, so this counter pays full
+# value for a harvest. Elsewhere it falls back to the item's own cost times
+# the shop's resale multiplier, which is worth less — selling where you
+# bought the seed is the better deal.
+
+- background: gfx/ui/item/item_menu_bg.png
+  resale_multiplier: 0.5
+  slug: paper_scoop_farm
+  monsters: []
+  items:
+  # tools
+  - slug: hoe
+    price: 100
+    cost: 50
+  - slug: watering_can
+    price: 100
+    cost: 50
+  - slug: sickle
+    price: 120
+    cost: 60
+  # seed
+  - slug: turnip_seed
+    price: 60
+    cost: 30
+  - slug: potato_seed
+    price: 120
+    cost: 60
+  - slug: tomato_seed
+    price: 250
+    cost: 125
+  - slug: corn_seed
+    price: 300
+    cost: 150
+  # produce, bought back from the player at full value
+  - slug: turnip
+    price: 200
+    cost: 100
+  - slug: potato
+    price: 200
+    cost: 100
+  - slug: tomato
+    price: 180
+    cost: 90
+  - slug: corn
+    price: 260
+    cost: 130

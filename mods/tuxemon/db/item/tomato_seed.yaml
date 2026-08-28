@@ -4,6 +4,7 @@ effects:
   parameters:
   - tomato
 slug: tomato_seed
+cost: 125
 sort: utility
 sprite: gfx/items/tomato_seed.png
 category: none

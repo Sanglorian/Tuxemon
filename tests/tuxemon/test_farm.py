@@ -1069,3 +1069,174 @@ def test_sleeping_for_no_days_is_refused():
     action.start(session)  # type: ignore[arg-type]
 
     assert session.farm.calendar.day == 1
+
+
+# ---------------------------------------------------------------------------
+# The farm shop economy
+# ---------------------------------------------------------------------------
+
+FARM_ECONOMY = "paper_scoop_farm"
+STARTING_MONEY = 500  # mods/tuxemon/mod.yaml starting_money
+
+
+def load_farm_economy() -> dict:
+    path = Path("mods/tuxemon/db/economy") / f"{FARM_ECONOMY}.yaml"
+    with path.open(encoding="utf-8") as handle:
+        entries = yaml.safe_load(handle)
+    economy = next(e for e in entries if e["slug"] == FARM_ECONOMY)
+    return {item["slug"]: item for item in economy["items"]}
+
+
+def test_the_farm_shop_stocks_every_crop_and_tool():
+    stock = load_farm_economy()
+
+    for slug in ("hoe", "watering_can", "sickle"):
+        assert slug in stock, f"the farm shop does not sell a {slug}"
+
+    for slug, model in load_crops().items():
+        assert model.seed_item in stock, f"no seed for {slug} on sale"
+        assert model.produce_item in stock, (
+            f"{slug} produce has no price, so it cannot be sold"
+        )
+
+
+def test_a_first_toolkit_and_some_seed_fit_the_starting_purse():
+    """
+    Farming has to be reachable on day one. If the tools cost more than the
+    player starts with, the whole loop is gated behind battling for money.
+    """
+    stock = load_farm_economy()
+    toolkit = sum(
+        stock[slug]["price"] for slug in ("hoe", "watering_can", "sickle")
+    )
+    cheapest_seed = min(
+        stock[model.seed_item]["price"] for model in load_crops().values()
+    )
+
+    assert toolkit + cheapest_seed <= STARTING_MONEY, (
+        f"toolkit {toolkit} plus seed {cheapest_seed} exceeds {STARTING_MONEY}"
+    )
+
+
+def test_every_crop_is_worth_growing():
+    """
+    The shop pays `cost` for produce and charges `price` for seed.
+
+    A one-off crop has to clear its seed in a single harvest. A regrowing
+    crop is allowed to cost more than one picking returns — that is the
+    trade its higher seed price buys — but it must break even well inside a
+    season, or planting one is a trap rather than a commitment.
+    """
+    stock = load_farm_economy()
+    season_length = DEFAULT_SEASON_LENGTH
+
+    for slug, model in load_crops().items():
+        seed_price = stock[model.seed_item]["price"]
+        per_harvest = stock[model.produce_item]["cost"] * model.harvest_yield
+
+        if model.regrow_days is None:
+            assert per_harvest > seed_price, (
+                f"{slug}: seed costs {seed_price}, "
+                f"its one harvest returns {per_harvest}"
+            )
+            continue
+
+        harvests_needed = (
+            -(-seed_price // per_harvest) + 1
+        )  # clear it, not tie
+        day = model.days_to_mature + model.regrow_days * (harvests_needed - 1)
+        assert day <= season_length, (
+            f"{slug}: needs {harvests_needed} harvests to profit, "
+            f"reached on day {day} of a {season_length}-day season"
+        )
+
+
+def test_a_regrowing_crop_beats_a_staple_over_a_full_season():
+    """
+    The premium seeds should reward holding a plot for the season. If they
+    did not, there would be no reason to ever plant anything but turnips.
+    """
+    stock = load_farm_economy()
+    season_length = DEFAULT_SEASON_LENGTH
+
+    def season_profit(model) -> float:
+        seed = stock[model.seed_item]["price"]
+        per_harvest = stock[model.produce_item]["cost"] * model.harvest_yield
+
+        if model.regrow_days is None:
+            cycles = season_length // model.days_to_mature
+            return cycles * (per_harvest - seed)
+
+        harvests = 1 + max(
+            0,
+            (season_length - model.days_to_mature) // model.regrow_days,
+        )
+        return harvests * per_harvest - seed
+
+    crops = load_crops()
+    staple = season_profit(crops["turnip"])
+    for slug, model in crops.items():
+        if model.regrow_days is not None:
+            assert season_profit(model) > staple, (
+                f"{slug} returns {season_profit(model)} over a season, "
+                f"less than turnips at {staple}"
+            )
+
+
+def test_produce_is_worth_something_at_any_shop():
+    """
+    Shops that do not list an item fall back to its intrinsic cost. Produce
+    with no cost would be worth nothing outside the farm counter.
+    """
+    for model in load_crops().values():
+        produce = load_item_yaml(model.produce_item)
+        assert produce.get("cost", 0) > 0, model.produce_item
+
+
+def test_the_farm_counter_pays_better_than_the_fallback():
+    """
+    Selling where you bought the seed should be the better deal.
+    """
+    stock = load_farm_economy()
+    resale_multiplier = 0.5  # the general Scoops all use this
+
+    for model in load_crops().values():
+        here = stock[model.produce_item]["cost"]
+        elsewhere = (
+            load_item_yaml(model.produce_item)["cost"] * resale_multiplier
+        )
+        assert here > elsewhere, model.produce_item
+
+
+def test_the_shop_and_its_seller_are_named():
+    """
+    The shop title and the NPC both read from the locale file. A missing
+    entry shows the raw slug to the player.
+    """
+    po = Path("mods/tuxemon/l18n/en_US/LC_MESSAGES/base.po").read_text(
+        encoding="utf-8"
+    )
+    for msgid in (
+        FARM_ECONOMY,
+        "spyder_papermart_orla",
+        "spyder_paper_scoop_farm_welcome",
+    ):
+        assert f'msgid "{msgid}"' in po, f"no translation for {msgid}"
+
+
+def test_the_seed_seller_is_wired_into_the_paper_town_scoop():
+    path = Path("mods/tuxemon/maps/spyder_paper_scoop.yaml")
+    with path.open(encoding="utf-8") as handle:
+        events = yaml.safe_load(handle)["events"]
+
+    create = events["Create Seed Seller"]
+    assert (
+        f"set_economy spyder_papermart_orla,{FARM_ECONOMY}"
+        in create["actions"]
+    )
+    # she must not appear during the opening cutscene
+    assert "is variable_set intro_scoop:done" in create["conditions"]
+
+    talk = events["Talk Orla"]
+    assert "talk spyder_papermart_orla" in talk["behav"]
+    assert "open_shop spyder_papermart_orla,both_item" in talk["actions"]

@@ -4,6 +4,7 @@ effects:
   parameters:
   - potato
 slug: potato_seed
+cost: 60
 sort: utility
 sprite: gfx/items/potato_seed.png
 category: none

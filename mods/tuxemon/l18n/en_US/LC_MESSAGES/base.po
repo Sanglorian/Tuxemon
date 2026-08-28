@@ -19186,3 +19186,12 @@ msgstr "You sleep until morning."
 
 msgid "farm_new_day"
 msgstr "Day ${{farm_day_of_season}} of ${{farm_season}}, year ${{farm_year}}."
+
+msgid "paper_scoop_farm"
+msgstr "Seed & Soil"
+
+msgid "spyder_papermart_orla"
+msgstr "Orla"
+
+msgid "spyder_paper_scoop_farm_welcome"
+msgstr "Seed and soil, back corner of the Scoop. Nobody comes back here much."

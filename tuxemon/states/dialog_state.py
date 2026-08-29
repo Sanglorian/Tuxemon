@@ -41,9 +41,9 @@ class DialogState(PopUpMenu[None]):
 
     name: ClassVar[str] = "DialogState"
 
-    # Minimum time a line stays on screen before input may act on it. Armed
-    # when a line starts drawing and again when it finishes, so mashing the
-    # confirm button cannot dump a line and skip past it in two frames.
+    # Minimum time a completed line stays on screen before it can be
+    # advanced past. Fast-forwarding is never held off; this only stops the
+    # press after it skipping text the player has not had a chance to read.
     ADVANCE_GUARD = 0.25
 
     def __init__(
@@ -150,21 +150,20 @@ class DialogState(PopUpMenu[None]):
             logger.debug("Ignoring input, dialog is not open")
             return None
 
-        if self._advance_guard > 0.0:
-            logger.debug(
-                "Ignoring input, line has not been readable long enough"
-            )
-            return None
-
         if event.pressed and event.button in self.advance_buttons:
             if not self.dialog.is_dialog_complete(self.dialog_box):
                 logger.debug("Fast-forwarding current dialog line")
                 self.dialog.dump_remaining_text(self.dialog_box)
                 # dump_remaining_text also completes the line, so without
-                # re-arming here the next press would advance immediately
-                # and the finished text would never be readable.
+                # arming here the next press would advance immediately and
+                # the finished text would never be readable.
                 self._arm_advance_guard()
             else:
+                if self._advance_guard > 0.0:
+                    logger.debug(
+                        "Ignoring advance, line has not been readable yet"
+                    )
+                    return None
                 if self.dialog.is_busy():
                     logger.debug(
                         "Ignoring rapid click during AlertManager transition."
@@ -217,7 +216,6 @@ class DialogState(PopUpMenu[None]):
                 text_area=self.dialog_box,
                 dialog_speed=self.dialog_speed,
             )
-            self._arm_advance_guard()
             self._reset_timer()
             return text
 
@@ -254,7 +252,7 @@ class DialogState(PopUpMenu[None]):
             self._advance_guard = max(0.0, self._advance_guard - dt)
 
     def _arm_advance_guard(self) -> None:
-        """Hold off input until the current line has been readable."""
+        """Hold off advancing until the finished line has been readable."""
         self._advance_guard = self.ADVANCE_GUARD
 
     def _reset_timer(self) -> None:

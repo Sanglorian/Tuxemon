@@ -136,55 +136,59 @@ def make_typing_dialog():
     return state
 
 
-def test_a_fresh_line_cannot_be_touched_immediately():
+def test_fast_forwarding_is_never_held_off():
+    """Pressing while text is drawing must dump it straight away."""
     state = make_typing_dialog()
-    state._arm_advance_guard()
 
-    state.process_event(press())
-
-    state.client.alert_manager.dump_remaining_text.assert_not_called()
-    state.next_text.assert_not_called()
-
-
-def test_the_guard_expires():
-    state = make_typing_dialog()
-    state._arm_advance_guard()
-
-    for _ in range(int(DialogState.ADVANCE_GUARD / FRAME) + 1):
-        state._tick_advance_guard(FRAME)
     state.process_event(press())
 
     state.client.alert_manager.dump_remaining_text.assert_called_once()
 
 
-def test_fast_forward_re_arms_so_the_finished_line_stays_readable():
-    """Dumping a line completes it. Advancing on the next press would mean
-    the finished text was never on screen."""
+def test_a_finished_line_cannot_be_advanced_past_immediately():
+    """dump_remaining_text completes the line, so the next press would
+    otherwise skip text that was never readable."""
     state = make_typing_dialog()
 
-    state.process_event(press())  # fast-forwards
-    state.client.alert_manager.dump_remaining_text.assert_called_once()
-
-    # line is complete now; the very next press must not advance
+    state.process_event(press())  # fast-forwards, completing the line
     state.dialog_box.drawing_text = False
     state.client.alert_manager.is_dialog_complete.return_value = True
+
     state.process_event(press())
     state.next_text.assert_not_called()
+
+
+def test_the_advance_guard_expires():
+    state = make_typing_dialog()
+    state.process_event(press())
+    state.dialog_box.drawing_text = False
+    state.client.alert_manager.is_dialog_complete.return_value = True
 
     for _ in range(int(DialogState.ADVANCE_GUARD / FRAME) + 1):
         state._tick_advance_guard(FRAME)
     state.process_event(press())
+
+    state.next_text.assert_called_once()
+
+
+def test_a_line_that_finished_on_its_own_advances_at_once():
+    """The player has already had the whole typing time to read it."""
+    state = make_dialog(phase="normal")
+    state.dialog_box.drawing_text = False
+    state.client.alert_manager.is_dialog_complete.return_value = True
+
+    state.process_event(press())
+
     state.next_text.assert_called_once()
 
 
 def test_mashing_cannot_blow_through_a_line():
     """The complaint: press twice and the line displays and is gone.
 
-    Holding the button down every frame must still take a full guard to
-    dump the line and another to move off it.
+    Holding the button every frame should dump the line on the first frame
+    but still take a full guard before moving off it.
     """
     state = make_typing_dialog()
-    state._arm_advance_guard()
 
     frames_to_dump = None
     frames_to_advance = None
@@ -196,7 +200,6 @@ def test_mashing_cannot_blow_through_a_line():
             and state.client.alert_manager.dump_remaining_text.called
         ):
             frames_to_dump = frame
-            # the dump completed the line
             state.dialog_box.drawing_text = False
             state.client.alert_manager.is_dialog_complete.return_value = True
         if state.next_text.called:
@@ -204,8 +207,20 @@ def test_mashing_cannot_blow_through_a_line():
             break
 
     guard_frames = DialogState.ADVANCE_GUARD / FRAME
-    assert frames_to_dump is not None, "line was never dumped"
+    assert frames_to_dump == 0, "fast-forward should not be held off"
     assert frames_to_advance is not None, "line was never advanced past"
-    assert frames_to_dump >= guard_frames - 1
-    assert frames_to_advance - frames_to_dump >= guard_frames - 1
-    assert frames_to_advance * FRAME >= 2 * DialogState.ADVANCE_GUARD - FRAME
+    assert frames_to_advance >= guard_frames - 1
+
+
+def test_an_armed_guard_never_blocks_fast_forwarding():
+    """The guard belongs on advancing only.
+
+    Moving it back to the top of process_event would hold off
+    fast-forwarding too, which is the behaviour we do not want.
+    """
+    state = make_typing_dialog()
+    state._arm_advance_guard()
+
+    state.process_event(press())
+
+    state.client.alert_manager.dump_remaining_text.assert_called_once()

@@ -44,7 +44,7 @@ class DialogState(PopUpMenu[None]):
     # Minimum time a completed line stays on screen before it can be
     # advanced past. Fast-forwarding is never held off; this only stops the
     # press after it skipping text the player has not had a chance to read.
-    ADVANCE_GUARD = 0.25
+    ADVANCE_GUARD = 0.167
 
     def __init__(
         self,

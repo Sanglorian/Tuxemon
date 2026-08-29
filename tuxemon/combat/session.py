@@ -465,8 +465,10 @@ class CombatSession:
         """
         Triggers the end of round effects of the held items in play.
 
-        Held items are used once per round, after every monster has acted,
-        so passive effects (e.g. regeneration) tick at the end of the round.
+        Every held item in play is used here, once all the monsters have
+        acted, so that the effects written for this phase (e.g. regeneration)
+        tick at the end of the round. Held items are also used during the
+        decision phase, and each effect decides which phases it responds to.
 
         Returns:
             The results of the held items that did something.

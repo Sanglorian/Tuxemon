@@ -7,6 +7,7 @@ import pytest
 
 from tuxemon.combat.session import CombatSession
 from tuxemon.core.asset import init_assets
+from tuxemon.core.core_effect import ItemEffectResult
 from tuxemon.db import (
     GenderType,
     ItemBehaviors,
@@ -15,8 +16,10 @@ from tuxemon.db import (
     ItemSort,
     LogicCondition,
     Operator,
+    ParameterizableRule,
     SoundProperties,
     State,
+    StatModel,
     VisualProperties,
 )
 from tuxemon.item.item import Item
@@ -26,6 +29,7 @@ from tuxemon.monster.stats import IndividualValues
 from tuxemon.session import Session
 from tuxemon.states.monster_menu import MonsterMenuHandler
 from tuxemon.taste import Taste
+from tuxemon.user_config import CONFIG
 
 
 @pytest.fixture(autouse=True)
@@ -60,10 +64,13 @@ def make_item(
     slug: str = "potion",
     *,
     holdable: bool = True,
+    consumable: bool = False,
     hold_conditions=(),
     hold_use_conditions=(),
     max_wear: int = 0,
     hold_uses_per_battle: int = 0,
+    effects=(),
+    stat_modifiers=None,
 ) -> Item:
     model = ItemModel(
         slug=slug,
@@ -72,8 +79,9 @@ def make_item(
         sprite="gfx/items/potion.png",
         category=ItemCategory.NONE,
         usable_in=[State.WorldState],
-        behaviors=ItemBehaviors(consumable=False, holdable=holdable),
-        effects=[],
+        behaviors=ItemBehaviors(consumable=consumable, holdable=holdable),
+        effects=list(effects),
+        stat_modifiers=stat_modifiers or {},
         visuals=VisualProperties(animation=None, flip_axes="", loop=0),
         sound=SoundProperties(sfx=None, volume=0.0),
         modifiers=[],
@@ -646,3 +654,240 @@ def test_picker_removes_item_from_bag_when_equip_succeeds(
 
     handler.party.owner.bag.remove_item.assert_called_once_with(item)
     assert monster.held_item is item
+
+
+# --- consumption ----------------------------------------------------------
+
+
+def make_heal_item(slug: str = "moco_berry", **kwargs) -> Item:
+    """A consumable held item that really heals, effects and all."""
+    return make_item(
+        slug,
+        consumable=True,
+        effects=[
+            ParameterizableRule(type="heal", parameters=["0.25", "percentage"])
+        ],
+        **kwargs,
+    )
+
+
+def test_consumable_item_is_used_up_when_it_fires(monster, session):
+    player = MagicMock()
+    player.party.is_fainted = False
+    item = make_heal_item()
+    monster.equip_item(session, item)
+    monster.current_hp = 10
+
+    make_combat_session(player, monster).check_decisions(session)
+
+    assert monster.held_item is None
+
+
+def test_consumed_item_is_not_given_back_to_the_bag(monster, session):
+    """Used up means gone, not returned to the player."""
+    player = MagicMock()
+    player.party.is_fainted = False
+    item = make_heal_item()
+    monster.equip_item(session, item)
+    monster.current_hp = 10
+
+    make_combat_session(player, monster).check_decisions(session)
+
+    player.bag.add_item.assert_not_called()
+
+
+def test_consumable_item_fires_only_once_without_a_budget(monster, session):
+    """Being used up is its own limit: no ``hold_uses_per_battle`` needed."""
+    player = MagicMock()
+    player.party.is_fainted = False
+    item = make_heal_item()
+    monster.equip_item(session, item)
+    monster.current_hp = 10
+    item.use = MagicMock(return_value=ItemEffectResult(success=True))
+
+    combat = make_combat_session(player, monster)
+    for _ in range(3):
+        combat.check_decisions(session)
+
+    assert item.use.call_count == 1
+
+
+def test_consumable_item_survives_a_turn_it_cannot_fire(monster, session):
+    """A gated item is only used up on the turn it actually fires."""
+    player = MagicMock()
+    player.party.is_fainted = False
+    item = make_heal_item(
+        hold_use_conditions=[make_condition("current_hp", "<", "0.5")]
+    )
+    monster.equip_item(session, item)
+
+    combat = make_combat_session(player, monster)
+    combat.check_decisions(session)
+
+    assert monster.held_item is item
+
+    monster.current_hp = 10
+    combat.check_decisions(session)
+
+    assert monster.held_item is None
+
+
+def test_a_failed_use_still_consumes_by_default(monster, session):
+    """Held items answer to the same consumption rule as bagged ones."""
+    player = MagicMock()
+    player.party.is_fainted = False
+    item = make_item(consumable=True)
+    monster.equip_item(session, item)
+    item.use = MagicMock(return_value=ItemEffectResult(success=False))
+
+    make_combat_session(player, monster).check_decisions(session)
+
+    assert CONFIG.items_consumed_on_failure
+    assert monster.held_item is None
+
+
+def test_consumed_item_keeps_the_boost_it_applied(monster, session):
+    """
+    A step boost lives on the item that applied it, so consuming the item
+    would throw the boost away unless the monster keeps hold of it.
+    """
+    player = MagicMock()
+    player.party.is_fainted = False
+    item = make_item(
+        "alban_nut",
+        consumable=True,
+        effects=[ParameterizableRule(type="statchange")],
+        stat_modifiers={"melee": StatModel(step=1)},
+    )
+    monster.base_stats.melee = 20
+    monster.equip_item(session, item)
+    unboosted = monster.get_combat_stats().melee
+
+    make_combat_session(player, monster).check_decisions(session)
+
+    assert monster.held_item is None
+    assert monster.item_handler.spent_boosts.melee > 0
+    assert monster.get_combat_stats().melee > unboosted
+
+
+def test_the_boost_of_a_consumed_item_ends_with_the_battle(monster, session):
+    player = MagicMock()
+    player.party.is_fainted = False
+    item = make_item(
+        "alban_nut",
+        consumable=True,
+        effects=[ParameterizableRule(type="statchange")],
+        stat_modifiers={"melee": StatModel(step=1)},
+    )
+    monster.base_stats.melee = 20
+    monster.equip_item(session, item)
+
+    make_combat_session(player, monster).check_decisions(session)
+    monster.clear_all_temporary_boosts()
+
+    assert monster.item_handler.spent_boosts.melee == 0
+
+
+def test_a_replacement_item_gets_its_own_budget(monster, session):
+    """
+    The use count is kept per monster, so it has to go when the item does.
+    """
+    player = MagicMock()
+    player.party.is_fainted = False
+    item = make_heal_item(hold_uses_per_battle=1)
+    monster.equip_item(session, item)
+    monster.current_hp = 10
+
+    combat = make_combat_session(player, monster)
+    combat.check_decisions(session)
+
+    assert monster.held_item is None
+    assert not combat._held_item_uses
+
+    replacement = make_heal_item("mocochinchi", hold_uses_per_battle=1)
+    monster.equip_item(session, replacement)
+    combat.check_decisions(session)
+
+    assert monster.held_item is None
+
+
+def test_a_non_consumable_item_is_still_never_used_up(monster, session):
+    player = MagicMock()
+    player.party.is_fainted = False
+    item = make_item(consumable=False)
+    monster.equip_item(session, item)
+
+    combat = make_combat_session(player, monster)
+    combat.check_decisions(session)
+
+    assert monster.held_item is item
+
+
+# --- announcement wording -------------------------------------------------
+
+
+def announced_message(combat) -> str:
+    dialog = next(
+        call
+        for call in combat.event_bus.publish.call_args_list
+        if call.args[0] == "queue_combat_message"
+    )
+    return str(dialog.kwargs["message"])
+
+
+def test_announcement_says_what_the_item_did(monster, session):
+    """
+    "Rockat used Moco Berry!" on its own doesn't say what the player got out
+    of it, so the item's success line follows, as it does out of the bag.
+    """
+    player = MagicMock()
+    player.party.is_fainted = False
+    item = make_heal_item()
+    item.use_success = "{target}'s health was restored."
+    monster.equip_item(session, item)
+    monster.current_hp = 10
+
+    combat = make_combat_session(player, monster)
+    combat.event_bus = MagicMock()
+    combat.check_decisions(session)
+
+    message = announced_message(combat)
+    assert item.name in message
+    assert f"{monster.name}'s health was restored." in message
+
+
+def test_announcement_prefers_what_the_effect_reported(monster, session):
+    """An effect's own line is the specific one, so it wins."""
+    player = MagicMock()
+    player.party.is_fainted = False
+    item = make_item(consumable=True)
+    item.use_success = "It worked!"
+    monster.equip_item(session, item)
+    item.use = MagicMock(
+        return_value=ItemEffectResult(
+            success=True, extras=["It was super effective!"]
+        )
+    )
+
+    combat = make_combat_session(player, monster)
+    combat.event_bus = MagicMock()
+    combat.check_decisions(session)
+
+    message = announced_message(combat)
+    assert "It was super effective!" in message
+    assert "It worked!" not in message
+
+
+def test_announcement_says_when_the_item_failed(monster, session):
+    player = MagicMock()
+    player.party.is_fainted = False
+    item = make_item()
+    item.use_failure = "It failed!"
+    monster.equip_item(session, item)
+    item.use = MagicMock(return_value=ItemEffectResult(success=False))
+
+    combat = make_combat_session(player, monster)
+    combat.event_bus = MagicMock()
+    combat.check_decisions(session)
+
+    assert "It failed!" in announced_message(combat)

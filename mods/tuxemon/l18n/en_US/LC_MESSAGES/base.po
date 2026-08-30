@@ -4522,6 +4522,12 @@ msgstr "{item} can't be held."
 msgid "held_item_unsuitable"
 msgstr "{name} can't hold {item}."
 
+msgid "held_item_healed"
+msgstr "{target}'s health was restored."
+
+msgid "held_item_melee_rose"
+msgstr "{target}'s melee attacks grew stronger."
+
 # Release notifications
 msgid "cant_release"
 msgstr "Can't release only Tuxemon in party."

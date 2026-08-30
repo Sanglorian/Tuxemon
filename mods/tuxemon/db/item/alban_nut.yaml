@@ -1,19 +1,27 @@
 conditions: []
+hold_conditions: []
+hold_use_conditions:
+- type: current_hp
+  parameters:
+  - <=
+  - '0.25'
+  operator: is
+hold_uses_per_battle: 1
 effects:
 - type: statchange
-slug: boost_ranged
 stat_modifiers:
-  ranged:
-    step: 2
+  melee:
+    step: 1
+slug: alban_nut
 sort: utility
-sprite: gfx/items/boost_ranged.png
-category: stats
-cost: 550
+sprite: gfx/items/alban_nut.png
+category: none
 usable_in:
-- MainCombatMenuState
+- ''
 modifiers: []
 behaviors:
-  resellable: true
+  consumable: false
+  holdable: true
 use_failure: generic_failure
 use_item: combat_used_x
 use_success: generic_success

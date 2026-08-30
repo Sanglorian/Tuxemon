@@ -103,6 +103,8 @@ EVENT_HANDLERS: dict[str, str] = {
     "mirror_effect": "_on_mirror_effect",
     "status_applied": "_on_status_applied",
     "update_party_hud": "_on_update_party_hud",
+    "update_monster_hp": "_on_update_monster_hp",
+    "queue_combat_message": "_on_queue_combat_message",
     "clean_combat": "_on_clean_combat",
     "monster_needed": "_on_monster_needed",
     "update_sprite_position": "_on_update_sprite_position",
@@ -345,6 +347,12 @@ class CombatState(CombatAnimations):
         * Do not test conditions to change phase
         """
         if self.phase == CombatPhase.DECISION:
+            # Whatever the round left to say - a held item firing, a status
+            # ticking - is queued during the transition into this phase, so
+            # it has not played yet on the frame the phase begins. Let it
+            # finish before asking the player what to do next.
+            if self.text_anim.is_animating():
+                return
             # show monster action menu for human players
             if self._decision_queue:
                 active_names = {s.name for s in self.client.active_states}
@@ -720,7 +728,6 @@ class CombatState(CombatAnimations):
                 if m:
                     message += "\n" + m
 
-
         self.text_anim.add_text_animation(
             partial(self.dialog.alert, message, self.text_area), action_time
         )
@@ -944,6 +951,13 @@ class CombatState(CombatAnimations):
         Update the HUD and handle visual level up cues (XP bar).
         """
         if winner in self.combat_session.monsters_in_play_right:
+
+            if techniques:
+                tech_list = ", ".join(T.translate(tech) for tech in techniques)
+                params = {"name": winner.name, "tech": tech_list}
+                mex = T.format("tuxemon_new_tech", params)
+                self.text_anim.add_xp_message(mex)
+
             owner = winner.get_owner()
             if owner.is_player:
                 # XP bar animation
@@ -1135,6 +1149,12 @@ class CombatState(CombatAnimations):
 
     def _on_update_party_hud(self) -> None:
         self.animate_update_party_hud()
+
+    def _on_update_monster_hp(self, monster: Monster) -> None:
+        self.animate_hp(monster)
+
+    def _on_queue_combat_message(self, message: str) -> None:
+        self.process_combat_message(message)
 
     def _on_combat_dialog(
         self, message: str, dialog_speed: str = CONFIG.dialog_speed

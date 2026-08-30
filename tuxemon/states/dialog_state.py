@@ -41,9 +41,9 @@ class DialogState(PopUpMenu[None]):
 
     name: ClassVar[str] = "DialogState"
 
-    # Minimum time a completed line stays on screen before it can be
-    # advanced past. Fast-forwarding is never held off; this only stops the
-    # press after it skipping text the player has not had a chance to read.
+    # Minimum time a line stays on screen once it is fully readable before
+    # it can be advanced past or closed. Fast-forwarding is never held off;
+    # this only stops the press after it skipping unread text.
     ADVANCE_GUARD = 0.167
 
     def __init__(
@@ -74,6 +74,7 @@ class DialogState(PopUpMenu[None]):
         self._elapsed_time: float = 0.0
         self._timer_active: bool = False
         self._advance_guard: float = 0.0
+        self._was_drawing: bool = False
 
         default_box_style: dict[str, Any] = {
             "bg_color": self.background_color,
@@ -154,10 +155,6 @@ class DialogState(PopUpMenu[None]):
             if not self.dialog.is_dialog_complete(self.dialog_box):
                 logger.debug("Fast-forwarding current dialog line")
                 self.dialog.dump_remaining_text(self.dialog_box)
-                # dump_remaining_text also completes the line, so without
-                # arming here the next press would advance immediately and
-                # the finished text would never be readable.
-                self._arm_advance_guard()
             else:
                 if self._advance_guard > 0.0:
                     logger.debug(
@@ -178,10 +175,10 @@ class DialogState(PopUpMenu[None]):
         """Update dialog text, avatar, and auto-close timer each frame."""
         super().update(dt)
 
-        self._tick_advance_guard(dt)
-
         if self.dialog_box.drawing_text:
             self.dialog.update(dt)
+
+        self._update_advance_guard(dt)
 
         if self.avatar:
             self.avatar.update(dt)
@@ -216,6 +213,9 @@ class DialogState(PopUpMenu[None]):
                 text_area=self.dialog_box,
                 dialog_speed=self.dialog_speed,
             )
+            # The line is now drawing. Recorded here so the transition to
+            # readable is seen even if it is dumped before a frame elapses.
+            self._was_drawing = True
             self._reset_timer()
             return text
 
@@ -246,10 +246,20 @@ class DialogState(PopUpMenu[None]):
 
         self.close()
 
-    def _tick_advance_guard(self, dt: float) -> None:
-        """Count the input hold-off down by one frame."""
+    def _update_advance_guard(self, dt: float) -> None:
+        """Count the hold-off down, and arm it as a line becomes readable.
+
+        A line becomes readable either by typing out or by being dumped, so
+        arm from the state of the text rather than from the press. A line
+        that finished on its own is then protected too.
+        """
         if self._advance_guard > 0.0:
             self._advance_guard = max(0.0, self._advance_guard - dt)
+
+        drawing = self.dialog_box.drawing_text
+        if self._was_drawing and not drawing:
+            self._arm_advance_guard()
+        self._was_drawing = drawing
 
     def _arm_advance_guard(self) -> None:
         """Hold off advancing until the finished line has been readable."""

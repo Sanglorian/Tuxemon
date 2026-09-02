@@ -291,16 +291,23 @@ class Item:
         self.consume_if_needed(user, result)
         return result
 
+    def should_consume(self, result: ItemEffectResult) -> bool:
+        """
+        Whether a use with this outcome uses the item up.
+
+        Held items ask this too, so that an item consumed out of the bag and
+        one consumed off a monster answer to the same rule.
+        """
+        return (
+            CONFIG.items_consumed_on_failure or result.success
+        ) and self.behaviors.consumable
+
     def consume_if_needed(self, user: NPC, result: ItemEffectResult) -> None:
         """
         Removes this item from the user's inventory if it's marked consumable,
         and if it's supposed to be consumed based on the result.
         """
-        should_consume = (
-            CONFIG.items_consumed_on_failure or result.success
-        ) and self.behaviors.consumable
-
-        if should_consume:
+        if self.should_consume(result):
             self.stock.consume_one()
             if not self.stock.has_any:
                 user.bag.remove_item(self)

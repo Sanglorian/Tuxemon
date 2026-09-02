@@ -757,10 +757,10 @@ class ItemModel(DataModel, BaseLookupModel):
         0,
         description=(
             "How many times a held item may fire in one battle. 0 means no "
-            "limit. Held items are never consumed, so this is what stops a "
-            "gated item firing every turn it qualifies. A spent item stays "
-            "equipped, keeping any stat boost it applied, and its budget "
-            "refills for the next battle."
+            "limit. A held item that isn't consumable is never used up, so "
+            "this is what stops a gated item firing every turn it qualifies. "
+            "A spent item stays equipped, keeping any stat boost it applied, "
+            "and its budget refills for the next battle."
         ),
         ge=0,
     )

@@ -493,6 +493,20 @@ class Monster:
         self.status.apply_item_statuses(self, item)
         return True
 
+    def consume_held_item(self) -> Item | None:
+        """
+        Uses up the held item: it leaves the monster and isn't given back.
+
+        The boost the item just applied is kept, because it lives on the
+        item and would go with it (see ``MonsterItemHandler.retain_boosts``).
+        """
+        item = self.held_item
+        if item is None:
+            return None
+
+        self.item_handler.retain_boosts(item.temporary_stat_boosts)
+        return self.unequip_item()
+
     def unequip_item(self) -> Item | None:
         item = self.item_handler.take_item()
         if item:
@@ -655,6 +669,8 @@ class Monster:
         if held_item:
             combined_temporary_boosts += held_item.temporary_stat_boosts
 
+        combined_temporary_boosts += self.item_handler.spent_boosts
+
         for move in self.moves.get_moves():
             combined_temporary_boosts += move.temporary_stat_boosts
 
@@ -678,6 +694,7 @@ class Monster:
             move.temporary_stat_boosts = BasicStats()
         if self.item_handler.held_item:
             self.item_handler.held_item.temporary_stat_boosts = BasicStats()
+        self.item_handler.clear_spent_boosts()
 
     def set_level(self, new_level: int, old_level: int) -> int:
         if new_level > old_level and self._levelup_start_stats is None:

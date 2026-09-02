@@ -495,6 +495,20 @@ class Monster:
         self.status.apply_item_statuses(self, item)
         return True
 
+    def consume_held_item(self) -> Item | None:
+        """
+        Uses up the held item: it leaves the monster and isn't given back.
+
+        The boost the item just applied is kept, because it lives on the
+        item and would go with it (see ``MonsterItemHandler.retain_boosts``).
+        """
+        item = self.held_item
+        if item is None:
+            return None
+
+        self.item_handler.retain_boosts(item.temporary_stat_boosts)
+        return self.unequip_item()
+
     def unequip_item(self) -> Item | None:
         item = self.item_handler.take_item()
         if item:

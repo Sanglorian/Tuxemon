@@ -465,7 +465,11 @@ class CombatSession:
         Fires a monster's held item for this turn, if the use-time gate lets
         it and the item has uses left in this battle.
 
-        Held items are never consumed, so without a budget a gated item
+        A consumable item is used up the moment it fires: it leaves the
+        monster for good and isn't given back to the bag, keeping the boost
+        it applied behind it (see ``Monster.consume_held_item``).
+
+        Anything else is never used up, so without a budget a gated item
         simply fires every turn it qualifies. ``hold_uses_per_battle`` caps
         that; the count lives on the combat session, so it resets with the
         battle and never has to survive a trip through the bag.
@@ -487,8 +491,14 @@ class CombatSession:
         if not held_item.validate_held_use(session, monster):
             return
 
-        held_item.use(session, player, monster)
-        self.announce_held_item(held_item, monster)
+        result = held_item.use(session, player, monster)
+        self.announce_held_item(held_item, monster, result)
+
+        if held_item.should_consume(result):
+            monster.consume_held_item()
+            self.reset_held_item_uses(monster)
+            logger.info(f"{monster.name} used up its {held_item.name}")
+            return
 
         if budget > 0:
             used = self.spend_held_item_use(monster)
@@ -498,9 +508,17 @@ class CombatSession:
                     f"battle on {monster.name}"
                 )
 
-    def announce_held_item(self, item: Item, monster: Monster) -> None:
+    def announce_held_item(
+        self, item: Item, monster: Monster, result: ItemEffectResult
+    ) -> None:
         """
         Tells the player a held item fired, and refreshes the holder's HP bar.
+
+        The message says what happened, not just that something did, the way
+        an item used out of the bag does (see ``_handle_npc_item``): the item
+        line, then what it did to the holder. The effect's own lines are
+        preferred when it has any, because they are the specific ones; the
+        item's success or failure line is the fallback.
 
         Held items fire during the decision phase, outside the action queue,
         so none of the redraws that follow a queued action run for them. The
@@ -517,8 +535,17 @@ class CombatSession:
             "name": item.name,
             "target": monster.name,
         }
+        lines = [T.format(item.use_item, context)]
+
+        outcome = [T.translate(extra) for extra in result.extras]
+        if not outcome:
+            template = item.use_success if result.success else item.use_failure
+            if template:
+                outcome = [T.format(template, context)]
+        lines.extend(line for line in outcome if line)
+
         self.event_bus.publish(
-            "queue_combat_message", message=T.format(item.use_item, context)
+            "queue_combat_message", message="\n".join(lines)
         )
         self.event_bus.publish("update_monster_hp", monster)
 
@@ -531,6 +558,16 @@ class CombatSession:
         used = self.get_held_item_uses(monster) + 1
         self._held_item_uses[monster] = used
         return used
+
+    def reset_held_item_uses(self, monster: Monster) -> None:
+        """
+        Forgets a monster's held-item uses.
+
+        The count is kept per monster rather than per item, so it has to go
+        when the item does: whatever the monster is given next starts the
+        battle with its own budget.
+        """
+        self._held_item_uses.pop(monster, None)
 
     def clear_held_item_uses(self) -> None:
         logger.debug("Cleared all held item uses")

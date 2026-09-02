@@ -9,6 +9,7 @@ from typing import Any
 
 from tuxemon.item.item import Item
 from tuxemon.locale.locale import T
+from tuxemon.monster.stats import BasicStats
 
 logger = logging.getLogger(__name__)
 
@@ -52,10 +53,26 @@ class EquipResult:
 class MonsterItemHandler:
     def __init__(self, item: Item | None = None):
         self._item = item
+        self.spent_boosts = BasicStats()
 
     @property
     def held_item(self) -> Item | None:
         return self._item
+
+    def retain_boosts(self, boosts: BasicStats) -> None:
+        """
+        Keeps a used-up item's stat boost alive after the item is gone.
+
+        A stat boost lives on the item that applied it (see
+        ``apply_stat_modifiers``) and ``get_combat_stats`` only reads the
+        item a monster is currently holding, so consuming an item would
+        otherwise throw away the boost it just applied. Combat clears these
+        along with every other temporary boost when the battle ends.
+        """
+        self.spent_boosts += boosts
+
+    def clear_spent_boosts(self) -> None:
+        self.spent_boosts = BasicStats()
 
     def set_item(self, item: Item) -> bool:
         if item.behaviors.holdable:

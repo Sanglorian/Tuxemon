@@ -242,3 +242,20 @@ def test_mashing_cannot_blow_through_a_line():
     assert frames_to_dump == 0, "fast-forward should not be held off"
     assert frames_to_advance is not None, "line was never advanced past"
     assert frames_to_advance >= guard_frames - 1
+
+
+def test_several_input_events_in_one_frame_cannot_skip_a_line():
+    """Input arrives per event, but the guard only ticks once per frame.
+
+    A press that dumps a line has to hold off the very next press even if
+    that press lands in the same frame, before any update has run. Whether
+    two events share a frame depends on how fast the player mashes against
+    the frame rate, which makes the leak intermittent.
+    """
+    state = make_typing_dialog()
+
+    state.process_event(press())  # fast-forwards, completing the line
+    finish_line(state)
+    state.process_event(press())  # same frame: no _update_advance_guard yet
+
+    state.next_text.assert_not_called()

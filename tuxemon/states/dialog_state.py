@@ -155,6 +155,10 @@ class DialogState(PopUpMenu[None]):
             if not self.dialog.is_dialog_complete(self.dialog_box):
                 logger.debug("Fast-forwarding current dialog line")
                 self.dialog.dump_remaining_text(self.dialog_box)
+                # Arm here as well as in the per-frame update: several input
+                # events can arrive in a single frame, and the next one must
+                # already be held off rather than waiting for the update.
+                self._arm_advance_guard()
             else:
                 if self._advance_guard > 0.0:
                     logger.debug(

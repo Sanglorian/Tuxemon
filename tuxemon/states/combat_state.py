@@ -285,6 +285,7 @@ class CombatState(CombatAnimations):
             c_session.check_decisions(self.session)
             if not self._decision_queue:
                 c_session.initialize_hit_chances()
+                c_session.initialize_potency_chances()
                 self.process_player_decisions()
 
         elif phase == CombatPhase.ACTION:

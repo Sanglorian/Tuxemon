@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -26,9 +25,11 @@ class GiveEffect(CoreEffect):
     Gives a status to a monster.
 
     This effect attempts to apply a status condition to one or more target
-    monsters. The chance of success depends on the technique's potency and
-    accuracy compared against random rolls. Targets may resist the effect if
-    immune due to items.
+    monsters. Success requires the technique to clear both its accuracy and
+    its potency gate. Both rolls are cached per monster per round, so a
+    technique carrying several potency-gated effects resolves them all on the
+    same roll rather than rolling once per effect. Targets may resist the
+    effect if immune due to items.
 
     **Parameters**
 
@@ -54,8 +55,9 @@ class GiveEffect(CoreEffect):
     ) -> TechEffectResult:
 
         objectives = self.objectives.split(":")
-        potency = random.random()
-        hit = session.client.combat_session.get_tech_hit(user)
+        combat = session.client.combat_session
+        potency = combat.get_tech_potency(user)
+        hit = combat.get_tech_hit(user)
         success = tech.potency >= potency and tech.accuracy >= hit
 
         if not success:
@@ -65,9 +67,7 @@ class GiveEffect(CoreEffect):
         protected_info = []
         successful_targets = []
         extras = []
-        monsters = session.client.combat_session.get_target_monsters(
-            objectives, user, target
-        )
+        monsters = combat.get_target_monsters(objectives, user, target)
 
         for monster in monsters:
             status = Status.create(self.condition, monster, monster.steps)

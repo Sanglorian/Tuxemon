@@ -48,6 +48,7 @@ class CombatSession:
         self._players: list[NPC] = []
         self._combat_type: CombatType | None = None
         self._random_tech_hit: dict[Monster, float] = {}
+        self._random_tech_potency: dict[Monster, float] = {}
         self._combat_variables: dict[str, Any] = {}
         self.field_monsters = FieldMonsters()
         self.swap_tracker = SwapTracker()
@@ -350,6 +351,14 @@ class CombatSession:
     # per technique even when it has both damage and healing effects. The only
     # deliberate exception is multiattack, which calls set_tech_hit() to re-roll
     # for each of its repeated hits.
+    #
+    # Potency is cached the same way, in a separate value rolled by
+    # initialize_potency_chances(). Effects that gate on potency compare
+    # `tech.potency >= get_tech_potency(user)`, so a technique carrying several
+    # potency-gated effects (e.g. two `give` effects) resolves them all on one
+    # roll instead of rolling once per effect. The two caches are independent:
+    # accuracy and potency are separate gates, and set_tech_hit() does not
+    # disturb the potency roll (so multiattack's re-rolls stay accuracy-only).
     def set_tech_hit(
         self, monster: Monster, value: float | None = None
     ) -> None:
@@ -366,6 +375,23 @@ class CombatSession:
     def clear_tech_hits(self) -> None:
         logger.debug("Cleared all tech hits")
         self._random_tech_hit.clear()
+
+    def set_tech_potency(
+        self, monster: Monster, value: float | None = None
+    ) -> None:
+        if value is None:
+            value = random.random()
+        self._random_tech_potency[monster] = value
+        logger.debug(f"Tech potency set for {monster}: {value}")
+
+    def get_tech_potency(self, monster: Monster) -> float:
+        value = self._random_tech_potency.get(monster, 0.0)
+        logger.debug(f"Tech potency retrieved for {monster}: {value}")
+        return value
+
+    def clear_tech_potencies(self) -> None:
+        logger.debug("Cleared all tech potencies")
+        self._random_tech_potency.clear()
 
     # Combat variables
     def set_variable(self, key: str, value: Any) -> None:
@@ -447,6 +473,11 @@ class CombatSession:
         """Initializes random hit chance values for all active monsters."""
         for monster in self.active_monsters:
             self.set_tech_hit(monster)
+
+    def initialize_potency_chances(self) -> None:
+        """Initializes random potency values for all active monsters."""
+        for monster in self.active_monsters:
+            self.set_tech_potency(monster)
 
     def check_decisions(self, session: Session) -> None:
         for player in list(self.active_players):
@@ -637,6 +668,7 @@ class CombatSession:
         self.reset_turn()
         self.reset_prize()
         self.clear_tech_hits()
+        self.clear_tech_potencies()
         self.clear_variables()
         self.reset_players()
         self.set_battle_format(False)

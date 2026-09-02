@@ -2,7 +2,6 @@
 # Copyright (c) 2014-2026 William Edwards <shadowapex@gmail.com>, Benjamin Bean <superman2k5@gmail.com>
 from __future__ import annotations
 
-import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -23,7 +22,10 @@ class RemoveEffect(CoreEffect):
     This effect attempts to remove one or more status effects from the
     specified targets. The status to be removed can be a specific slug
     (e.g., ``enraged``), or a category such as ``positive``, ``negative``,
-    or ``all``.
+    or ``all``. Success requires the technique to clear both its accuracy and
+    its potency gate; both rolls are cached per monster per round, so a
+    technique carrying several potency-gated effects resolves them all on the
+    same roll rather than rolling once per effect.
 
     **Parameters**
 
@@ -57,14 +59,13 @@ class RemoveEffect(CoreEffect):
         monsters: list[Monster] = []
 
         objectives = self.objectives.split(":")
-        potency = random.random()
-        value = session.client.combat_session.get_tech_hit(user)
+        combat = session.client.combat_session
+        potency = combat.get_tech_potency(user)
+        value = combat.get_tech_hit(user)
         success = tech.potency >= potency and tech.accuracy >= value
 
         if success:
-            monsters = session.client.combat_session.get_target_monsters(
-                objectives, user, target
-            )
+            monsters = combat.get_target_monsters(objectives, user, target)
             for monster in monsters:
                 current_status = monster.status.current_status
                 if self.status == "all":

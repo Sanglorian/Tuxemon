@@ -56,9 +56,8 @@ class GiveEffect(CoreEffect):
 
         objectives = self.objectives.split(":")
         combat = session.client.combat_session
-        potency = combat.get_tech_potency(user)
-        hit = combat.get_tech_hit(user)
-        success = tech.potency >= potency and tech.accuracy >= hit
+        hits = tech.accuracy >= combat.get_tech_hit(user)
+        success = hits and self.passes_potency(session, tech, user)
 
         if not success:
             return TechEffectResult(name=tech.name)

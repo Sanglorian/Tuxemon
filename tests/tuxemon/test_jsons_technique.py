@@ -139,7 +139,15 @@ def test_effects_combinations(data_list):
     )
 
 
-def test_effects_give(data_list):
+# Effects whose technique path is gated on potency. The roll is drawn from
+# [0.0, 1.0), so `potency >= roll` at potency 0 is false for every practical
+# roll: a technique combining one of these with potency 0 could never fire.
+POTENCY_GATED_EFFECTS = frozenset(
+    {"give", "remove", "scope", "statchange", "switch"}
+)
+
+
+def test_effects_potency_gated(data_list):
     errors = []
 
     for data in data_list:
@@ -149,9 +157,10 @@ def test_effects_give(data_list):
 
         if effects:
             for effect in effects:
-                if effect.get("type") == "give" and potency == 0.0:
-                    errors.append(f"{slug}: potency is 0")
+                gated = effect.get("type") in POTENCY_GATED_EFFECTS
+                if gated and potency == 0.0:
+                    errors.append(f"{slug}: {effect['type']} with potency 0")
 
-    assert not errors, "give-effects require potency > 0:\n" + "\n".join(
-        errors
+    assert not errors, (
+        "potency-gated effects require potency > 0:\n" + "\n".join(errors)
     )

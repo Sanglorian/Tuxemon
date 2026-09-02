@@ -1699,6 +1699,9 @@ msgstr "Rename"
 msgid "combat_scope"
 msgstr "AR:{AR} DE:{DE} ME:{ME} RD:{RD} SD:{SD}"
 
+msgid "combat_scope_failure"
+msgstr "{user} couldn't get a reading on {target}."
+
 msgid "combat_gain_exp"
 msgstr "{name} gains {xp}xp"
 

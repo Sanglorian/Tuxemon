@@ -7,6 +7,9 @@ import pytest
 from tuxemon.combat.session import CombatSession
 from tuxemon.core.effects.give import GiveEffect
 from tuxemon.core.effects.remove import RemoveEffect
+from tuxemon.core.effects.scope import ScopeEffect
+from tuxemon.core.effects.statchange import StatChangeEffect
+from tuxemon.core.effects.switch import SwitchEffect
 from tuxemon.monster.monster import Monster
 
 
@@ -40,7 +43,9 @@ def test_get_does_not_reroll(combat_session, monsters):
     user, _ = monsters
     combat_session.set_tech_potency(user)
     first = combat_session.get_tech_potency(user)
-    assert all(combat_session.get_tech_potency(user) == first for _ in range(20))
+    assert all(
+        combat_session.get_tech_potency(user) == first for _ in range(20)
+    )
 
 
 def test_initialize_rolls_once_per_active_monster(combat_session, monsters):
@@ -163,3 +168,79 @@ def test_effect_passes_potency_gate_on_favourable_roll(effect, monsters):
 
     # The gate opened, so the effect went on to resolve its targets.
     session.client.combat_session.get_target_monsters.assert_called()
+
+
+@pytest.mark.parametrize(
+    "effect",
+    [
+        pytest.param(
+            StatChangeEffect(objectives="own_monster"), id="statchange"
+        ),
+        pytest.param(ScopeEffect(), id="scope"),
+        pytest.param(
+            SwitchEffect(objectives="enemy_monster", element="fire"),
+            id="switch",
+        ),
+    ],
+)
+def test_newly_gated_effect_fails_on_unfavourable_potency(effect, monsters):
+    user, target = monsters
+    session = _make_session(potency_roll=0.9, hit_roll=0.0)
+    tech = _make_tech(potency=0.5, accuracy=1.0)
+
+    for _ in range(50):
+        result = effect.apply_tech_target(session, tech, user, target)
+        assert not result.success
+
+
+@pytest.mark.parametrize(
+    "effect",
+    [
+        pytest.param(
+            StatChangeEffect(objectives="own_monster"), id="statchange"
+        ),
+        pytest.param(ScopeEffect(), id="scope"),
+    ],
+)
+def test_newly_gated_effect_succeeds_on_favourable_potency(effect, monsters):
+    user, target = monsters
+    session = _make_session(potency_roll=0.4, hit_roll=0.0)
+    tech = _make_tech(potency=0.5, accuracy=1.0)
+
+    assert effect.apply_tech_target(session, tech, user, target).success
+
+
+def test_switch_still_gated_on_accuracy(monsters):
+    # Potency is an additional gate, not a replacement: a miss still fails
+    # even when the potency roll is favourable.
+    user, target = monsters
+    effect = SwitchEffect(objectives="enemy_monster", element="fire")
+    session = _make_session(potency_roll=0.0, hit_roll=0.9)
+    tech = _make_tech(potency=1.0, accuracy=0.5)
+
+    assert not effect.apply_tech_target(session, tech, user, target).success
+
+
+def test_statchange_status_path_is_not_gated():
+    # statchange also runs as a status effect, where there is no technique to
+    # roll against. That path must always apply.
+    effect = StatChangeEffect(objectives="own_monster")
+    status = MagicMock()
+    status.name = "focused"
+    status.is_already_applied.return_value = False
+
+    result = effect.apply_status(MagicMock(), status)
+
+    assert result.success
+
+
+def test_statchange_item_path_is_not_gated():
+    effect = StatChangeEffect(objectives="own_monster")
+    item = MagicMock()
+    item.name = "boost_speed"
+
+    result = effect.apply_item_target(
+        MagicMock(), item, MagicMock(spec=Monster)
+    )
+
+    assert result.success

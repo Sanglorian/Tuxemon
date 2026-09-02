@@ -23,7 +23,7 @@ tags:
 - universal
 types:
 - normal
-use_failure: combat_none
+use_failure: combat_scope_failure
 use_success: null
 use_tech: combat_used_x
 visuals:

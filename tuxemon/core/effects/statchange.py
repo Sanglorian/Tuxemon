@@ -37,6 +37,11 @@ class StatChangeEffect(CoreEffect):
     relative to the stat's base value. Step-based scaling supports clamping
     via ``max_step_limit`` to maintain balance.
 
+    Used as a technique effect, it is gated on the technique's potency: the
+    roll is cached per monster per round, so it shares that roll with any
+    other potency-gated effect of the same technique. Used as a status or
+    item effect it always applies.
+
     **Supported Stats**
     - ``speed``
     - ``armour``
@@ -97,6 +102,11 @@ class StatChangeEffect(CoreEffect):
     def apply_tech_target(
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
+        # Only the technique path is gated. The status and item paths below
+        # have no technique to roll against and must always apply.
+        if not self.passes_potency(session, tech, user):
+            return TechEffectResult(name=tech.name, success=False)
+
         if self.objectives:
             monsters = session.client.combat_session.get_target_monsters(
                 self.objectives.split(":"), user, target

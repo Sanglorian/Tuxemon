@@ -26,6 +26,10 @@ class SwitchEffect(CoreEffect):
     If the monster already has the specified type, the effect fails gracefully
     with a localized failure message.
 
+    The change requires the technique to clear both its accuracy and its
+    potency gate. Both rolls are cached per monster per round, so a technique
+    carrying several potency-gated effects resolves them all on one roll.
+
     **Parameters**
 
     - ``objectives``: Colon-separated string specifying which monsters are
@@ -66,7 +70,7 @@ class SwitchEffect(CoreEffect):
         hit = session.client.combat_session.get_tech_hit(user)
 
         tech.hit = tech.accuracy >= hit
-        if not tech.hit:
+        if not tech.hit or not self.passes_potency(session, tech, user):
             return TechEffectResult(name=tech.name, success=False)
 
         objectives = self.objectives.split(":")

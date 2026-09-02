@@ -23,6 +23,10 @@ class ScopeEffect(CoreEffect):
     them to the player. It is typically used for reconnaissance in battle,
     allowing the user to evaluate the opponent's strengths and weaknesses.
 
+    The scan is gated on the technique's potency. The roll is cached per
+    monster per round, so it shares that roll with any other potency-gated
+    effect of the same technique.
+
     **Example**
 
     .. code-block:: json
@@ -37,6 +41,9 @@ class ScopeEffect(CoreEffect):
     def apply_tech_target(
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:
+        if not self.passes_potency(session, tech, user):
+            return TechEffectResult(name=tech.name, success=False)
+
         params = {
             "AR": target.armour,
             "DE": target.dodge,

@@ -88,6 +88,19 @@ class CoreEffect:
     def apply_globally(self, session: Session) -> EffectResult:
         return EffectResult()
 
+    def passes_potency(
+        self, session: Session, tech: Technique, user: Monster
+    ) -> bool:
+        """
+        Whether the technique clears its potency gate for this user.
+
+        The roll is cached per monster per round, so every potency-gated
+        effect of one technique resolves on the same value rather than
+        rolling once per effect.
+        """
+        combat = session.client.combat_session
+        return tech.potency >= combat.get_tech_potency(user)
+
     def apply_tech_target(
         self, session: Session, tech: Technique, user: Monster, target: Monster
     ) -> TechEffectResult:

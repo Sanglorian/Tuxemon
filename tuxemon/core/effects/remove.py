@@ -60,9 +60,8 @@ class RemoveEffect(CoreEffect):
 
         objectives = self.objectives.split(":")
         combat = session.client.combat_session
-        potency = combat.get_tech_potency(user)
-        value = combat.get_tech_hit(user)
-        success = tech.potency >= potency and tech.accuracy >= value
+        hits = tech.accuracy >= combat.get_tech_hit(user)
+        success = hits and self.passes_potency(session, tech, user)
 
         if success:
             monsters = combat.get_target_monsters(objectives, user, target)

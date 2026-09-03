@@ -663,6 +663,7 @@ class Monster:
 
     def get_combat_stats(self) -> BasicStats:
         """Calculates effective stats for the current combat turn."""
+
         combined_temporary_boosts = self.temporary_stat_boosts.total(
             self.base_stats
         )
@@ -768,7 +769,7 @@ class Monster:
         self.taste_warm = old_monster.taste_warm
         self.set_stats()
         self.current_hp = min(old_monster.current_hp, self.hp)
-        self.moves = old_monster.moves
+        self.moves.transfer_learned_moves_from(old_monster.moves)
         self.status = old_monster.status
         self.temporary_stat_boosts = old_monster.temporary_stat_boosts
         self.instance_id = old_monster.instance_id
@@ -835,7 +836,7 @@ class Monster:
         save_data["training_points"] = self.training_points.to_dict()
         save_data["individual_values"] = self.individual_values.to_dict()
         save_data["modifiers"] = self.custom_stats.to_dict()
-        save_data["bond_dict"] = self.bond_handler.get_state()
+        save_data.update(self.bond_handler.get_state())
         save_data["flair_slugs"] = list(self.flair_slugs)
         save_data["flairs"] = {
             category: flair.get_state()
@@ -853,6 +854,10 @@ class Monster:
         self.types.reset_to_default()
         self.moves.reset_current_stats()
         self.out_of_range = False
+        self.is_charging = False
+        self.charged_technique = None
+        self.locked_turns_left = 0
+        self.locked_move = None
         self.moves.full_recharge_moves()
 
         if not self.status.is_fainted:

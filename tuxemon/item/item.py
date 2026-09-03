@@ -249,6 +249,19 @@ class Item:
             session=session, target=target
         ).passed
 
+    @property
+    def announces_hold_use(self) -> bool:
+        """
+        Whether a firing of this held item is worth telling the player about.
+
+        A firing is announced when it is something the player did not choose
+        and cannot otherwise see: an item that waits for a condition, or one
+        with a limited budget of uses in a battle. An item that is neither
+        is a permanent passive, firing every turn purely because it is
+        equipped, and saying so every turn is noise.
+        """
+        return bool(self.hold_use_conditions) or self.hold_uses_per_battle > 0
+
     def debug_validate_held_use(
         self, session: Session, target: Monster
     ) -> ConditionValidationResult:

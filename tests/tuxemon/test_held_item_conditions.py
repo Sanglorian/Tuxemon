@@ -304,7 +304,7 @@ def test_firing_announces_itself_and_refreshes_the_hp_bar(monster, session):
     """
     player = MagicMock()
     player.party.is_fainted = False
-    item = make_item()
+    item = make_item(hold_uses_per_battle=1)
     monster.equip_item(session, item)
 
     combat = make_combat_session(player, monster)
@@ -321,7 +321,7 @@ def test_firing_announces_itself_and_refreshes_the_hp_bar(monster, session):
 def test_announcement_names_the_monster_and_the_item(monster, session):
     player = MagicMock()
     player.party.is_fainted = False
-    item = make_item()
+    item = make_item(hold_uses_per_battle=1)
     monster.equip_item(session, item)
 
     combat = make_combat_session(player, monster)
@@ -371,6 +371,30 @@ def test_a_gated_item_announces_nothing(monster, session):
     combat.event_bus.publish.assert_not_called()
 
 
+def test_a_permanent_passive_fires_silently(monster, session):
+    """
+    An item with no gate, no budget and nothing to use up fires every single
+    turn purely because it is equipped. The player chose to equip it and can
+    see it in the holder's slot, so saying so every turn is only noise. It
+    still refreshes the HP bar: a silent item can change hit points.
+    """
+    player = MagicMock()
+    player.party.is_fainted = False
+    item = make_item()
+    monster.equip_item(session, item)
+    item.use = MagicMock(return_value=ItemEffectResult(success=True))
+
+    combat = make_combat_session(player, monster)
+    combat.event_bus = MagicMock()
+    combat.check_decisions(session)
+
+    item.use.assert_called_once_with(session, player, monster)
+    published = [
+        call.args[0] for call in combat.event_bus.publish.call_args_list
+    ]
+    assert published == ["update_monster_hp"]
+
+
 def test_two_items_firing_together_queue_both_messages(monster, session):
     """
     In a double battle both holders can fire on the same turn. The messages
@@ -380,8 +404,8 @@ def test_two_items_firing_together_queue_both_messages(monster, session):
     player = MagicMock()
     player.party.is_fainted = False
     other = make_monster("Agnite")
-    monster.equip_item(session, make_item("potion"))
-    other.equip_item(session, make_item("tea"))
+    monster.equip_item(session, make_item("potion", hold_uses_per_battle=1))
+    other.equip_item(session, make_item("tea", hold_uses_per_battle=1))
 
     combat = CombatSession()
     combat._players = [player]
@@ -881,7 +905,7 @@ def test_announcement_prefers_what_the_effect_reported(monster, session):
 def test_announcement_says_when_the_item_failed(monster, session):
     player = MagicMock()
     player.party.is_fainted = False
-    item = make_item()
+    item = make_item(hold_uses_per_battle=1)
     item.use_failure = "It failed!"
     monster.equip_item(session, item)
     item.use = MagicMock(return_value=ItemEffectResult(success=False))

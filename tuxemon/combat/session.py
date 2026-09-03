@@ -478,6 +478,11 @@ class CombatSession:
         it between every battle. Whatever it applied stays too: temporary
         boosts are recorded against the monster rather than the item (see
         ``TemporaryStatBoosts``), so they outlive the item either way.
+
+        The firing is only announced when the player couldn't have seen it
+        coming (see ``Item.announces_hold_use``) or when it used the item
+        up. A permanent passive fires every single turn and would otherwise
+        say so every single turn.
         """
         held_item = monster.held_item
         if held_item is None:
@@ -491,9 +496,18 @@ class CombatSession:
             return
 
         result = held_item.use(session, player, monster)
-        self.announce_held_item(held_item, monster, result)
+        consumed = held_item.should_consume(result)
+        if consumed or held_item.announces_hold_use:
+            self.announce_held_item(held_item, monster, result)
 
-        if held_item.should_consume(result):
+        # Held items fire during the decision phase, outside the action
+        # queue, so none of the redraws that follow a queued action run for
+        # them, and an item that says nothing can still have changed the
+        # holder's hit points. The bar would otherwise sit stale until some
+        # later action happened to refresh it.
+        self.event_bus.publish("update_monster_hp", monster)
+
+        if consumed:
             monster.consume_held_item()
             self.reset_held_item_uses(monster)
             logger.info(f"{monster.name} used up its {held_item.name}")
@@ -511,18 +525,13 @@ class CombatSession:
         self, item: Item, monster: Monster, result: ItemEffectResult
     ) -> None:
         """
-        Tells the player a held item fired, and refreshes the holder's HP bar.
+        Tells the player a held item fired.
 
         The message says what happened, not just that something did, the way
         an item used out of the bag does (see ``_handle_npc_item``): the item
         line, then what it did to the holder. The effect's own lines are
         preferred when it has any, because they are the specific ones; the
         item's success or failure line is the fallback.
-
-        Held items fire during the decision phase, outside the action queue,
-        so none of the redraws that follow a queued action run for them. The
-        bar would otherwise sit stale until some later action happened to
-        refresh it.
 
         The message goes through the text animation queue rather than
         alerting straight away, so that two held items firing on the same
@@ -546,7 +555,6 @@ class CombatSession:
         self.event_bus.publish(
             "queue_combat_message", message="\n".join(lines)
         )
-        self.event_bus.publish("update_monster_hp", monster)
 
     def get_held_item_uses(self, monster: Monster) -> int:
         """How many times this monster's held item has fired this battle."""

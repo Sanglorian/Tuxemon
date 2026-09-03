@@ -499,14 +499,15 @@ class Monster:
         """
         Uses up the held item: it leaves the monster and isn't given back.
 
-        The boost the item just applied is kept, because it lives on the
-        item and would go with it (see ``MonsterItemHandler.retain_boosts``).
+        The boost the item just applied stays behind on its own: temporary
+        boosts are recorded against the monster, not the source that
+        applied them (see ``TemporaryStatBoosts``), and only a source that
+        ends of its own accord withdraws its contribution. Combat drops
+        them along with every other temporary boost when the battle ends.
         """
-        item = self.held_item
-        if item is None:
+        if self.held_item is None:
             return None
 
-        self.item_handler.retain_boosts(item.temporary_stat_boosts)
         return self.unequip_item()
 
     def unequip_item(self) -> Item | None:

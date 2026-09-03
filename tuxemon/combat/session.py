@@ -474,11 +474,10 @@ class CombatSession:
         that; the count lives on the combat session, so it resets with the
         battle and never has to survive a trip through the bag.
 
-        A spent item stays equipped. It has to: a stat boost lives on the
-        item (see ``apply_stat_modifiers``) and ``get_combat_stats`` only
-        sums boosts from the item a monster is currently holding, so taking
-        the item away would throw away the boost it just applied. Staying
-        put also spares the player re-equipping between every battle.
+        A spent item stays equipped, which spares the player re-equipping
+        it between every battle. Whatever it applied stays too: temporary
+        boosts are recorded against the monster rather than the item (see
+        ``TemporaryStatBoosts``), so they outlive the item either way.
         """
         held_item = monster.held_item
         if held_item is None:

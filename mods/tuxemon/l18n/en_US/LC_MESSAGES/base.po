@@ -19,79 +19,79 @@ msgid "cosmic_berry"
 msgstr "Cosmic Berry"
 
 msgid "cosmic_berry_description"
-msgstr "It changes monster type to Cosmic."
+msgstr "It changes monster type to Cosmic. Plant it in tilled soil."
 
 msgid "earth_berry"
 msgstr "Earth Berry"
 
 msgid "earth_berry_description"
-msgstr "It changes monster type to Earth."
+msgstr "It changes monster type to Earth. Plant it in tilled soil."
 
 msgid "fire_berry"
 msgstr "Fire Berry"
 
 msgid "fire_berry_description"
-msgstr "It changes monster type to Fire."
+msgstr "It changes monster type to Fire. Plant it in tilled soil."
 
 msgid "frost_berry"
 msgstr "Frost Berry"
 
 msgid "frost_berry_description"
-msgstr "It changes monster type to Frost."
+msgstr "It changes monster type to Frost. Plant it in tilled soil."
 
 msgid "heroic_berry"
 msgstr "Heroic Berry"
 
 msgid "heroic_berry_description"
-msgstr "It changes monster type to Heroic."
+msgstr "It changes monster type to Heroic. Plant it in tilled soil."
 
 msgid "metal_berry"
 msgstr "Metal Berry"
 
 msgid "metal_berry_description"
-msgstr "It changes monster type to Metal."
+msgstr "It changes monster type to Metal. Plant it in tilled soil."
 
 msgid "lightning_berry"
 msgstr "Lightning Berry"
 
 msgid "lightning_berry_description"
-msgstr "It changes monster type to Lightning."
+msgstr "It changes monster type to Lightning. Plant it in tilled soil."
 
 msgid "normal_berry"
 msgstr "Normal Berry"
 
 msgid "normal_berry_description"
-msgstr "It changes monster type to Normal."
+msgstr "It changes monster type to Normal. Plant it in tilled soil."
 
 msgid "shadow_berry"
 msgstr "Shadow Berry"
 
 msgid "shadow_berry_description"
-msgstr "It changes monster type to Shadow."
+msgstr "It changes monster type to Shadow. Plant it in tilled soil."
 
 msgid "sky_berry"
 msgstr "Sky Berry"
 
 msgid "sky_berry_description"
-msgstr "It changes monster type to Sky."
+msgstr "It changes monster type to Sky. Plant it in tilled soil."
 
 msgid "venom_berry"
 msgstr "Venom Berry"
 
 msgid "venom_berry_description"
-msgstr "It changes monster type to Venom."
+msgstr "It changes monster type to Venom. Plant it in tilled soil."
 
 msgid "water_berry"
 msgstr "Water Berry"
 
 msgid "water_berry_description"
-msgstr "It changes monster type to Water."
+msgstr "It changes monster type to Water. Plant it in tilled soil."
 
 msgid "wood_berry"
 msgstr "Wood Berry"
 
 msgid "wood_berry_description"
-msgstr "It changes monster type to Wood."
+msgstr "It changes monster type to Wood. Plant it in tilled soil."
 
 msgid "potion"
 msgstr "Potion"
@@ -444,6 +444,12 @@ msgstr "Hatchet"
 
 msgid "hatchet_description"
 msgstr "Cut down pesky logs with the Hatchet."
+
+msgid "watering_can"
+msgstr "Watering Can"
+
+msgid "watering_can_description"
+msgstr "Keeps a planted tile wet for a day. A well watered plant bears more fruit."
 
 msgid "surfboard"
 msgstr "Surfboard"
@@ -1557,6 +1563,36 @@ msgstr "{name} can only be used in a {here}!"
 
 msgid "item_no_available_target"
 msgstr "{name} cannot be used on any of your Tuxemon right now."
+
+msgid "planting_planted"
+msgstr "You plant the {name}."
+
+msgid "planting_not_tilled"
+msgstr "The ground here hasn't been tilled."
+
+msgid "planting_occupied"
+msgstr "Something is already growing here."
+
+msgid "planting_cannot_plant"
+msgstr "That can't be planted."
+
+msgid "planting_still_growing"
+msgstr "The {name} isn't ready to pick yet."
+
+msgid "planting_harvested"
+msgstr "You pick {quantity} {name}!"
+
+msgid "watering_watered"
+msgstr "You water the plant. The soil is damp."
+
+msgid "watering_watered_soil"
+msgstr "You water the soil, ready for planting."
+
+msgid "watering_nothing_here"
+msgstr "There's nothing to water here."
+
+msgid "walled_garden_kit"
+msgstr "Someone has left a watering can and a handful of fire berries by the beds. Plant a berry in the tilled soil, keep it watered, and come back later."
 
 msgid "technique_description"
 msgstr ""

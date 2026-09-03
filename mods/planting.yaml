@@ -1,0 +1,48 @@
+# Planting Config
+#
+# Which items can be planted in tilled soil, and how long each one takes.
+# An item is plantable if it appears under "fruits" here AND carries the
+# "plant" effect in its own db/item entry.
+#
+# Fields:
+#   tilled_sprite: str        # drawn on a tilled tile that is dry
+#   tilled_wet_sprite: str    # drawn on a tilled tile watered in the last 24h
+#   defaults:                 # inherited by any fruit that omits a field
+#     stage_seconds: list[float]  # one duration per stage *transition*
+#     stages: list[str]           # one sprite per stage, in growth order
+#   fruits:                   # keyed by item slug
+#     <slug>: {}              # empty entry = use the defaults
+#
+# stages must hold exactly one more entry than stage_seconds: four sprites
+# means three transitions. Growth is measured against the wall clock, so
+# these are real-world seconds and they keep running while the game is shut.
+#
+# The defaults below add up to six minutes, short enough to test by hand.
+# Retune them here; plants already in the ground keep the durations they
+# were planted with.
+
+tilled_sprite: gfx/farming/tilled.png
+tilled_wet_sprite: gfx/farming/tilled_wet.png
+
+defaults:
+  stage_seconds: [60, 120, 180]
+  stages:
+    - gfx/farming/plant_stage0.png
+    - gfx/farming/plant_stage1.png
+    - gfx/farming/plant_stage2.png
+    - gfx/farming/plant_stage3.png
+
+fruits:
+  cosmic_berry: {}
+  earth_berry: {}
+  fire_berry: {}
+  frost_berry: {}
+  heroic_berry: {}
+  lightning_berry: {}
+  metal_berry: {}
+  normal_berry: {}
+  shadow_berry: {}
+  sky_berry: {}
+  venom_berry: {}
+  water_berry: {}
+  wood_berry: {}

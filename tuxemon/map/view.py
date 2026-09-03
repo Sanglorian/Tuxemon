@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     from tuxemon.db import NpcTemplateModel
     from tuxemon.entity.appearance import RuntimeAppearance
     from tuxemon.entity.npc import NPC
+    from tuxemon.farming.manager import FarmingManager
     from tuxemon.map.manager import MapManager
     from tuxemon.map.tuxemon import AbstractMap
     from tuxemon.npc_manager import NPCManager
@@ -73,6 +74,10 @@ sprite_cache: dict[str, Surface] = {}
 DROP_SHADOW_PATH = "sprites/drop_shadow.png"
 _drop_shadow_cache: Surface | None = None
 _drop_shadow_loaded = False
+
+# Farming sprites that failed to load, so the renderer stops retrying them
+# every frame.
+_missing_farming_sprites: set[str] = set()
 
 
 def load_and_scale_with_cache(file_path: str) -> Surface:
@@ -444,12 +449,14 @@ class MapRenderer(AbstractRenderer):
         npc_manager: NPCManager,
         debug_renderer: DebugRenderer,
         context: DisplayContext,
+        farming_manager: FarmingManager | None = None,
     ):
         """Initializes the MapRenderer."""
         self.camera_manager = camera_manager
         self.npc_manager = npc_manager
         self.debug_renderer = debug_renderer
         self.context = context
+        self.farming_manager = farming_manager
         self.layer = Surface(context.rect.size, SRCALPHA)
         self.layer_color: ColorLike | None = None
         self.cinema_x_ratio: float | None = None
@@ -499,7 +506,8 @@ class MapRenderer(AbstractRenderer):
         """Retrieves and positions surfaces for rendering."""
         npc_surfaces = self._get_npc_surfaces(current_map.sprite_layer)
         map_animations = self._get_map_animations()
-        surfaces = npc_surfaces + map_animations
+        farming = self._get_farming_surfaces(current_map)
+        surfaces = npc_surfaces + map_animations + farming
         screen_surfaces = self._position_surfaces(current_map, surfaces)
         screen_surfaces.extend(
             self.bubble_manager.get_rendered_bubbles(current_map)
@@ -538,6 +546,36 @@ class MapRenderer(AbstractRenderer):
             for npc in self.npc_manager.npcs.values()
             for surf in self._get_sprites(npc, sprite_layer)
         ]
+
+    def _get_farming_surfaces(
+        self, current_map: AbstractMap
+    ) -> list[WorldSurfaces]:
+        """
+        Retrieves surfaces for tilled tiles and the plants growing in them.
+
+        Which sprite a plant shows is a pure function of how long ago it was
+        planted, so this reads the current stage every frame rather than
+        being pushed updates.
+        """
+        if self.farming_manager is None:
+            return []
+
+        surfaces: list[WorldSurfaces] = []
+        for path, position, layer in self.farming_manager.render_entries(
+            current_map.slug
+        ):
+            if path in _missing_farming_sprites:
+                continue
+            try:
+                surface = load_and_scale_with_cache(path)
+            except Exception:
+                # load_and_scale_with_cache logs the failure; remember it so
+                # a missing plant sprite neither takes the map down nor
+                # spams the log once a frame.
+                _missing_farming_sprites.add(path)
+                continue
+            surfaces.append(WorldSurfaces(surface, Vector2(position), layer))
+        return surfaces
 
     def _get_map_animations(self) -> list[WorldSurfaces]:
         """Retrieves surfaces for map animations."""

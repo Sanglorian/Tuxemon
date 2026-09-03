@@ -110,12 +110,14 @@ class WorldState(State):
                 self.client.npc_manager
             ),
             menu_flags=self.menu_manager.menu_flags.export(),
+            farming=self.client.farming_manager.get_state(),
         )
 
     def set_state(self, session: Session, save_data: WorldSave) -> None:
         """Recreates the World from the provided saved data."""
         self.faction_manager.get_state(save_data.factions_manager)
         self.menu_manager.menu_flags.import_flags(save_data.menu_flags)
+        self.client.farming_manager.set_state(save_data.farming)
 
     def prepare_for_teleport(self) -> None:
         """

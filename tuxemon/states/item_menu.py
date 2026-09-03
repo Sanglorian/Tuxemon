@@ -122,10 +122,19 @@ class ItemMenuState(Menu[Item]):
 
         item = menu_item.game_object
 
-        # Check if the item can be used on any monster
-        if not any(
-            item.validate_monster(local_session, m) for m in self.char.monsters
-        ):
+        # Check if the item can be used on any monster. An empty party is not
+        # a reason to refuse: world-targeted items (a fishing rod, a watering
+        # can) aim at the map, and their conditions ignore the monster, so
+        # evaluate them with no target rather than over an empty sequence.
+        if self.char.monsters:
+            usable = any(
+                item.validate_monster(local_session, m)
+                for m in self.char.monsters
+            )
+        else:
+            usable = item.validate_monster(local_session, None)
+
+        if not usable:
             self.on_menu_selection_change()
             error_message = self.get_error_message(item)
             open_dialog(self.client, [error_message])

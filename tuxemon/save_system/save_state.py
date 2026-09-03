@@ -13,6 +13,13 @@ TIME_FORMAT = "%Y-%m-%d %H:%M"
 class WorldSave(BaseModel):
     factions_manager: dict[str, Any] = Field(default_factory=dict)
     menu_flags: dict[str, bool] = Field(default_factory=dict)
+    farming: dict[str, Any] = Field(
+        default_factory=dict,
+        description=(
+            "Tilled tiles, their watering timestamps and any plants growing "
+            "in them, keyed by map slug then by 'x,y'."
+        ),
+    )
 
 
 class SessionSave(BaseModel):

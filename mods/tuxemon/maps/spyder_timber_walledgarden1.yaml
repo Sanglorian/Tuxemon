@@ -1,0 +1,33 @@
+events:
+
+  # Lay out the plot: four tiles wide, two deep, in the open ground at the
+  # bottom of the garden. Tilled tiles are saved with the game, and tilling
+  # an already tilled tile leaves whatever is growing in it alone, so this is
+  # safe to run on every load.
+  Till Garden Plot:
+    actions:
+    - set_tilled 5,9,4,2
+    conditions:
+    - is location_name walled_garden1
+    type: init
+
+  # First visit only: hand over the tools, so the planting loop is reachable
+  # without a shop selling them yet.
+  Gardener Kit:
+    actions:
+    - add_item watering_can
+    - add_item fire_berry,3
+    - set_variable walled_garden_kit:yes
+    - translated_dialog walled_garden_kit
+    conditions:
+    - not variable_set walled_garden_kit
+    type: init
+
+  # One event covers the whole plot: face a plant, press INTERACT, and either
+  # pick it or be told it is not ready.
+  Pick Plant:
+    actions:
+    - harvest_plant player
+    conditions:
+    - is to_use_plant player
+    type: event

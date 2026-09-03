@@ -79,6 +79,7 @@ class LocalPygameClient(BaseClient):
             self.npc_manager,
             self.debug_renderer,
             self.context,
+            self.farming_manager,
         )
         self.set_renderer(map_renderer)
 
@@ -96,6 +97,7 @@ class LocalPygameClient(BaseClient):
                 self.npc_manager,
                 self.debug_renderer,
                 self.context,
+                self.farming_manager,
             )
             self.set_renderer(map_renderer)
             logger.debug("Renderer reset to MapRenderer.")

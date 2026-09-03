@@ -8,6 +8,7 @@ effects:
 - type: switch_type
   parameters:
   - normal
+- type: plant
 slug: normal_berry
 sort: utility
 sprite: gfx/items/normal_berry.png
@@ -15,9 +16,14 @@ category: elements
 cost: 450
 usable_in:
 - MainCombatMenuState
+- WorldState
 modifiers: []
 behaviors:
+  consume_on_failure: false
+  requires_monster_menu: false
   resellable: true
+  show_dialog_on_failure: false
+  show_dialog_on_success: false
 use_failure: generic_failure
 use_item: combat_used_x
 use_success: generic_success

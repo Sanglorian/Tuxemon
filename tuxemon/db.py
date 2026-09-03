@@ -569,6 +569,14 @@ class ItemBehaviors(Behaviors):
     consumable: bool = Field(
         True, description="Whether or not this item is consumable."
     )
+    consume_on_failure: bool = Field(
+        True,
+        description=(
+            "Whether a failed use consumes the item, when the game is "
+            "configured to consume items on failure. Set false for items "
+            "whose failure means nothing happened at all."
+        ),
+    )
     visible: bool = Field(
         True, description="Whether this is visible in the UI."
     )

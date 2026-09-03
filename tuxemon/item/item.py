@@ -179,9 +179,14 @@ class Item:
         self.durability.try_reset()
         logger.debug(f"'{self.slug}' wear reset to 0")
 
-    def validate_monster(self, session: Session, target: Monster) -> bool:
+    def validate_monster(
+        self, session: Session, target: Monster | None
+    ) -> bool:
         """
         Check if the target meets all conditions that the item has on it's use.
+
+        A target of ``None`` means "no monster involved", as when a
+        world-targeted item is checked for a character with no party.
         """
         if self.durability.is_broken:
             logger.debug(f"{self.name} is broken and cannot be used!")
@@ -240,8 +245,12 @@ class Item:
         Removes this item from the user's inventory if it's marked consumable,
         and if it's supposed to be consumed based on the result.
         """
+        consume_failure = (
+            CONFIG.items_consumed_on_failure
+            and self.behaviors.consume_on_failure
+        )
         should_consume = (
-            CONFIG.items_consumed_on_failure or result.success
+            consume_failure or result.success
         ) and self.behaviors.consumable
 
         if should_consume:

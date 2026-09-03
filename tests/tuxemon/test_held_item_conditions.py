@@ -444,8 +444,8 @@ def test_item_stops_firing_once_spent(monster, session):
 
 def test_spent_item_stays_equipped(monster, session):
     """
-    A stat boost lives on the item and get_combat_stats only reads it from
-    the item a monster is holding, so a spent item must not be taken away.
+    An item that has spent its budget is not used up: it stays with the
+    monster so the player doesn't have to re-equip it every battle.
     """
     player = MagicMock()
     player.party.is_fainted = False
@@ -748,8 +748,8 @@ def test_a_failed_use_still_consumes_by_default(monster, session):
 
 def test_consumed_item_keeps_the_boost_it_applied(monster, session):
     """
-    A step boost lives on the item that applied it, so consuming the item
-    would throw the boost away unless the monster keeps hold of it.
+    A step boost is recorded against the monster, not the item, so it
+    survives the item being used up.
     """
     player = MagicMock()
     player.party.is_fainted = False
@@ -766,7 +766,7 @@ def test_consumed_item_keeps_the_boost_it_applied(monster, session):
     make_combat_session(player, monster).check_decisions(session)
 
     assert monster.held_item is None
-    assert monster.item_handler.spent_boosts.melee > 0
+    assert monster.temporary_stat_boosts.get_stage("melee") > 0
     assert monster.get_combat_stats().melee > unboosted
 
 
@@ -785,7 +785,7 @@ def test_the_boost_of_a_consumed_item_ends_with_the_battle(monster, session):
     make_combat_session(player, monster).check_decisions(session)
     monster.clear_all_temporary_boosts()
 
-    assert monster.item_handler.spent_boosts.melee == 0
+    assert monster.temporary_stat_boosts.is_empty()
 
 
 def test_a_replacement_item_gets_its_own_budget(monster, session):

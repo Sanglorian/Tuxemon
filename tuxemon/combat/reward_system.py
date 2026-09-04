@@ -190,8 +190,8 @@ class RewardCalculator:
         self, winner: Monster, entry: RewardDataEntry, rewards_data: RewardData
     ) -> None:
         """Update moves and add messages for a winner."""
-        if entry.new_moves:
-            rewards_data.moves.extend(entry.new_moves)
+        if entry.moves:
+            rewards_data.moves.extend(entry.moves)
 
         rewards_data.messages.append(
             T.format(

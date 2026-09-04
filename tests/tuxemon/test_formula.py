@@ -240,6 +240,7 @@ def dmg_env():
     water.slug = "water"
 
     user.level = 10
+    user.held_item = None
     tech.power = 50
 
     tech.types.current = [fire]

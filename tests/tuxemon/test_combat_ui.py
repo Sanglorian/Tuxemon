@@ -209,6 +209,21 @@ def _sweeps(start, target, levels):
     return CombatAnimations.exp_bar_sweeps(start, target, levels)
 
 
+def _peak_speed(distance):
+    """The fastest moment of a single sweep, in bar-widths per second."""
+    from tuxemon.state.animation_transition import AnimationTransition
+    from tuxemon.states.combat_animations import EXP_BAR_TRANSITION
+
+    ease = getattr(AnimationTransition, EXP_BAR_TRANSITION)
+    ((_, duration, _, _),) = _sweeps(0.0, distance, 0)
+
+    step = 0.001
+    return max(
+        (ease(p + step) - ease(p)) * distance / (step * duration)
+        for p in [i * step for i in range(int(1 / step))]
+    )
+
+
 def test_a_plain_gain_is_a_single_sweep():
     ((value, duration, from_empty, delay),) = _sweeps(0.2, 0.6, 0)
     assert (value, from_empty, delay) == (0.6, False, 0.0)
@@ -245,23 +260,23 @@ def test_sweep_time_is_proportional_to_the_distance(distance):
     ],
 )
 def test_the_opening_flick_is_the_same_speed(distance):
-    """The fastest moment of a sweep, in bar-widths per second."""
-    from tuxemon.state.animation_transition import AnimationTransition
-    from tuxemon.states.combat_animations import (
-        EXP_BAR_SWEEP_TIME,
-        EXP_BAR_TRANSITION,
-    )
+    """
+    An ease-out is fastest at its start, and that opening speed is what the
+    eye has to keep up with. It should not depend on the size of the gain.
 
-    ease = getattr(AnimationTransition, EXP_BAR_TRANSITION)
-    ((_, duration, _, _),) = _sweeps(0.0, distance, 0)
+    Only gains long enough to escape EXP_BAR_MIN_SWEEP_TIME are compared; a
+    sliver of a gain is deliberately given more time than its share, which
+    makes it gentler still.
+    """
+    assert _peak_speed(distance) == pytest.approx(_peak_speed(0.5), rel=0.02)
 
-    step = 0.001
-    peak = max(
-        (ease(p + step) - ease(p)) * distance / (step * duration)
-        for p in [i * step for i in range(int(1 / step))]
-    )
-    # out_quint opens at five times its average speed
-    assert peak == pytest.approx(5 / EXP_BAR_SWEEP_TIME, rel=0.02)
+
+def test_the_opening_flick_is_slow_enough_to_follow():
+    """
+    Roughly a bar-width per second. Before this was tuned the bar could cover
+    five in the same time, which is what made it impossible to read.
+    """
+    assert _peak_speed(0.9) < 1.5
 
 
 def test_the_settle_point_lands_before_the_animation_ends():
@@ -271,7 +286,7 @@ def test_the_settle_point_lands_before_the_animation_ends():
     """
     from tuxemon.states.combat_animations import EXP_BAR_SETTLE
 
-    assert 0.5 < EXP_BAR_SETTLE < 0.7
+    assert 0.5 < EXP_BAR_SETTLE < 1.0
 
 
 def test_a_tiny_gain_still_gets_a_visible_sweep():

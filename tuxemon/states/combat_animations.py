@@ -52,13 +52,19 @@ HUD_LAYER = 100
 
 # EXP bar pacing.
 #
-# The bar uses the game-wide easing (see config.py), a quintic ease-out that
-# opens at five times its average speed and decelerates to a stop. Sweep time
-# is proportional to the distance travelled, which keeps that opening flick at
-# a constant 5 / EXP_BAR_SWEEP_TIME bar-widths per second however much
-# experience was gained; lower the flick by raising the sweep time.
-EXP_BAR_TRANSITION = "out_quint"
-EXP_BAR_SWEEP_TIME = 4.0  # seconds for a full empty -> full sweep
+# A cubic ease-out, rather than the quintic the rest of the game defaults to
+# (see config.py). Both open fast and decelerate to a stop, but a quintic
+# opens at five times its average speed against a cubic's three, and spends
+# its last 40% of runtime covering the final 1% of travel against a cubic's
+# 21%. That suits a sprite thrown across the screen; a gauge wants to arrive
+# rather than creep, and matching the two curves' opening speed makes the
+# cubic 40% shorter for the same visible fill.
+#
+# Sweep time is proportional to the distance travelled, which holds that
+# opening speed at a constant 3 / EXP_BAR_SWEEP_TIME bar-widths per second
+# however much experience was gained; raise the sweep time to lower it.
+EXP_BAR_TRANSITION = "out_cubic"
+EXP_BAR_SWEEP_TIME = 2.4  # seconds for a full empty -> full sweep
 EXP_BAR_MIN_SWEEP_TIME = 0.6  # floor, so a tiny gain is still readable
 # A gain worth more than a level or so would run for ten seconds at that pace,
 # which is a long time to hold up the battle, so the whole animation is capped

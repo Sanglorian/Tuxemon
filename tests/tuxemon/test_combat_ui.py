@@ -140,3 +140,64 @@ def test_clear_all_removes_all_bars(combat_ui):
     combat_ui.clear_all()
     assert combat_ui._hp_bars == {}
     assert combat_ui._exp_bars == {}
+
+
+def test_resync_snaps_a_stale_bar_onto_the_model(combat_ui):
+    monster = MagicMock()
+    monster.experience_progress_percent = 0.2
+    bar = combat_ui.get_exp_bar(monster)
+
+    # experience gained with no animation scheduled for it
+    monster.experience_progress_percent = 0.75
+    combat_ui.resync(bar, monster.experience_progress_percent)
+
+    assert bar.value == 0.75
+    assert bar.target_value == 0.75
+
+
+def test_resync_leaves_a_claimed_bar_for_its_animation(combat_ui):
+    monster = MagicMock()
+    monster.experience_progress_percent = 0.2
+    bar = combat_ui.get_exp_bar(monster)
+
+    # experience gained; the animation that will show it starts later
+    monster.experience_progress_percent = 0.75
+    combat_ui.claim(bar, monster.experience_progress_percent)
+    combat_ui.resync(bar, monster.experience_progress_percent)
+
+    assert bar.value == 0.2
+    assert bar.target_value == 0.75
+
+
+def test_resync_recovers_a_bar_whose_animation_never_landed(combat_ui):
+    monster = MagicMock()
+    monster.experience_progress_percent = 0.2
+    bar = combat_ui.get_exp_bar(monster)
+
+    monster.experience_progress_percent = 0.75
+    combat_ui.claim(bar, monster.experience_progress_percent)
+    bar.value = 1.0  # animation aborted part-way through a level-up wrap
+
+    # a later gain moves the model on again, so the claim is stale too
+    monster.experience_progress_percent = 0.8
+    combat_ui.resync(bar, monster.experience_progress_percent)
+
+    assert bar.value == 0.8
+
+
+def test_draw_bars_resyncs_a_stale_exp_bar(combat_ui, graphics):
+    monster = MagicMock()
+    monster.hp_ratio = 1.0
+    monster.experience_progress_percent = 0.2
+    combat_ui.create_rect_for_bar = MagicMock(return_value=MagicMock())
+
+    exp_bar = combat_ui.get_exp_bar(monster)
+    exp_bar.draw = MagicMock()
+    combat_ui.get_hp_bar(monster).draw = MagicMock()
+
+    monster.experience_progress_percent = 0.6
+    combat_ui.draw_bars(
+        {monster: MagicMock(player=True, image=MagicMock())}, graphics
+    )
+
+    assert exp_bar.value == 0.6

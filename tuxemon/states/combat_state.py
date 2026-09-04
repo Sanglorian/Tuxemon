@@ -885,10 +885,13 @@ class CombatState(CombatAnimations):
 
         for data in rewards.winners:
             if data.levels_gained > 0:
-                self.monsters_just_leveled_up[data.winner.slug] = True
-                self.monsters_leftover_xp[data.winner.slug] = (
-                    data.winner.experience_progress_percent
+                self.pending_level_ups[data.winner] = (
+                    self.pending_level_ups.get(data.winner, 0)
+                    + data.levels_gained
                 )
+            # Experience has already been applied to the model, so reserve the
+            # bar right away: the animation itself only starts seconds later.
+            self.claim_exp_bar(data.winner)
 
         # Update combat state with rewards
         self.combat_session.add_prize(rewards.prize)
@@ -896,9 +899,22 @@ class CombatState(CombatAnimations):
             self.text_anim.add_xp_message(message)
 
         if rewards.update:
-            # HUD + XP animation only for the active monster
-            main_winner = rewards.winners[0].winner
+            # The new-technique message belongs to a single monster, but every
+            # winner that is on the field earned experience and needs its HUD
+            # updating, not just the first one.
+            in_play = self.combat_session.monsters_in_play_right
+            main_winner = next(
+                (
+                    data.winner
+                    for data in rewards.winners
+                    if data.winner in in_play
+                ),
+                rewards.winners[0].winner,
+            )
             self.update_hud_and_level_up(main_winner, rewards.moves)
+            for data in rewards.winners:
+                if data.winner is not main_winner:
+                    self.update_hud_and_level_up(data.winner, [])
 
             # Level-up summaries for ALL monsters that leveled up
             for data in rewards.winners:

@@ -73,7 +73,9 @@ class RewardSystem:
         self.calculator.calculate_non_participant_rewards(loser, winners)
 
         # Handle winners
-        for winner in winners:
+        # `winners` is a set, so iterate it in a stable order: which monster
+        # ends up first decides who carries the shared reward messages.
+        for winner in self._ordered(winners):
             if winner.owner and winner.owner.is_player:
                 if winner.is_fainted:
                     continue
@@ -90,6 +92,22 @@ class RewardSystem:
                 rewards_data.update = True
 
         return rewards_data
+
+    @staticmethod
+    def _ordered(winners: set[Monster]) -> list[Monster]:
+        """Order winners by party position, falling back to instance id."""
+
+        def key(monster: Monster) -> tuple[int, str]:
+            owner = monster.owner
+            monsters = list(owner.party.monsters) if owner else []
+            position = (
+                monsters.index(monster)
+                if monster in monsters
+                else len(monsters)
+            )
+            return position, str(monster.instance_id)
+
+        return sorted(winners, key=key)
 
 
 class RewardCalculator:

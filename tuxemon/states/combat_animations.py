@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC
+from collections.abc import Callable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -89,8 +90,9 @@ class CombatAnimations(Menu[None], ABC):
             shadow_text_func=self.shadow_text,
         )
         self.background_sprite: Sprite | None = None
-        self.monsters_just_leveled_up: dict[str, bool] = {}
-        self.monsters_leftover_xp: dict[str, float] = {}
+        # Levels each monster has gained but not yet shown on its EXP bar.
+        # Keyed by the monster itself: two party members can share a slug.
+        self.pending_level_ups: dict[Monster, int] = {}
         env = self.client.environment_manager.get_active_environment()
         if env is None:
             raise RuntimeError(
@@ -261,6 +263,7 @@ class CombatAnimations(Menu[None], ABC):
             self.sprite_map.remove_sprite(monster)
             self.status_icons.remove_monster_icons(monster)
             self.hud_manager.delete_hud(monster)
+            self.bars.remove_monster(monster)
 
         self.animate_monster_leave(monster)
         self.task(kill_monster, interval=2)
@@ -304,62 +307,72 @@ class CombatAnimations(Menu[None], ABC):
         ani.schedule(self.refresh_ui, ScheduleType.ON_FINISH)
         self.animations.add(ani)
 
-    def animate_exp(self, monster: Monster) -> None:
+    def claim_exp_bar(self, monster: Monster) -> None:
+        """
+        Reserve a monster's EXP bar for an animation that has not started yet.
+
+        Experience is granted well before ``animate_exp`` runs; without this
+        the redraws in between would see the bar disagree with the model and
+        snap it straight to the new value, swallowing the animation.
+        """
         exp_bar = self.bars.get_exp_bar(monster)
-        value_for_new_level = monster.experience_progress_percent
+        self.bars.claim(exp_bar, monster.experience_progress_percent)
 
-        def register(ani: Animation) -> Animation:
-            ani.schedule(self.refresh_ui, ScheduleType.ON_UPDATE)
-            self.animations.add(ani)
-            return ani
+    def animate_exp(self, monster: Monster) -> None:
+        """
+        Animate a monster's EXP bar up to its current progress.
 
-        # Level-up case
-        if self.monsters_just_leveled_up.get(monster.slug, False):
-            # leftover percent is already correct in the model
-            leftover = value_for_new_level
+        Each level gained since the last animation is shown as its own sweep:
+        the bar fills to the top, wraps back to empty, and carries on, so a
+        multi-level gain reads as several level-ups rather than one jump.
+        """
+        exp_bar = self.bars.get_exp_bar(monster)
+        target = monster.experience_progress_percent
+        levels_gained = self.pending_level_ups.pop(monster, 0)
+        self.bars.claim(exp_bar, target)
 
-            def animate_new_level_progress() -> Animation:
-                # do NOT reset exp_bar.value to 0
-                ani = register(
-                    self.animate(
-                        exp_bar,
-                        value=leftover,
-                        duration=0.7,
-                        transition="linear",
-                        delay=0.5,
-                    )
-                )
-                ani.schedule(self.refresh_ui, ScheduleType.ON_FINISH)
-                return ani
-
-            # optional: keep the fill-to-max animation
-            def fill_to_max() -> Animation:
-                ani = register(
-                    self.animate(
-                        exp_bar,
-                        value=1.0,
-                        duration=0.3,
-                        transition="linear",
-                    )
-                )
-                ani.schedule(self.refresh_ui, ScheduleType.ON_FINISH)
-                return ani
-
-            # chain both animations
-            self.chain_animations(fill_to_max, animate_new_level_progress)
-            self.monsters_just_leveled_up[monster.slug] = False
-
-        else:
-            # normal XP gain
-            ani = register(
-                self.animate(
+        def make_step(
+            value: float,
+            duration: float,
+            transition: str,
+            from_empty: bool,
+        ) -> Callable[[], Animation]:
+            def step() -> Animation:
+                ani = self.animate(
                     exp_bar,
-                    value=value_for_new_level,
-                    duration=0.7,
-                    transition="out_quint",
+                    value=value,
+                    duration=duration,
+                    transition=transition,
+                    # restarting from 0 is what makes the bar wrap around;
+                    # the delay holds it at full first, so the wrap is seen
+                    initial=0.0 if from_empty else None,
+                    delay=0.4 if from_empty else 0.0,
                 )
+                ani.schedule(self.refresh_ui, ScheduleType.ON_UPDATE)
+                ani.schedule(self.refresh_ui, ScheduleType.ON_FINISH)
+                # if the chain is cut short, leave the bar telling the truth
+                ani.schedule(
+                    partial(exp_bar.sync, target), ScheduleType.ON_ABORT
+                )
+                return ani
+
+            return step
+
+        steps: list[Callable[[], Animation]] = []
+        for wrap in range(levels_gained):
+            # top up the bar for the level that was just completed...
+            steps.append(make_step(1.0, 0.5, "linear", from_empty=wrap > 0))
+        # ...then fill in the progress made towards the level after it
+        steps.append(
+            make_step(
+                target,
+                0.7,
+                "linear" if levels_gained else "out_quint",
+                from_empty=levels_gained > 0,
             )
-            ani.schedule(self.refresh_ui, ScheduleType.ON_FINISH)
+        )
+
+        self.chain_animations(*steps)
 
     def animate_monster_leave(self, monster: Monster) -> None:
         sprite = self.sprite_map.get_sprite(monster)
@@ -413,6 +426,10 @@ class CombatAnimations(Menu[None], ABC):
             owner=owner,
             label_data=label_data,
         )
+
+        # draw_text resets the HUD to its blank base image, wiping the bars
+        # that were composited onto it, so put them back.
+        self.refresh_ui()
 
     def check_hud(self, monster: Monster, filename: str) -> Sprite:
         """

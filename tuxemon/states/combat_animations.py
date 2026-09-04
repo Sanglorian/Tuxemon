@@ -49,6 +49,13 @@ logger = logging.getLogger(__name__)
 
 HUD_LAYER = 100
 
+# EXP bar pacing. The bar sweeps at a steady rate rather than covering any
+# distance in a fixed time, so a big gain takes proportionally longer and the
+# eye can follow it either way.
+EXP_BAR_SWEEP_TIME = 2.0  # seconds for a full empty -> full sweep
+EXP_BAR_MIN_SWEEP_TIME = 0.5  # floor, so a tiny gain is still readable
+EXP_BAR_FULL_HOLD = 0.5  # pause at the top before wrapping round
+
 
 def toggle_visible(sprite: Sprite) -> None:
     sprite.toggle_visible()
@@ -318,14 +325,92 @@ class CombatAnimations(Menu[None], ABC):
         exp_bar = self.bars.get_exp_bar(monster)
         self.bars.claim(exp_bar, monster.experience_progress_percent)
 
-    def animate_exp(self, monster: Monster) -> None:
+    @staticmethod
+    def exp_bar_sweeps(
+        start: float, target: float, levels_gained: int
+    ) -> list[tuple[float, float, bool, float]]:
         """
-        Animate a monster's EXP bar up to its current progress.
+        Plan the sweeps that walk an EXP bar from ``start`` to ``target``.
 
-        Each level gained since the last animation is shown as its own sweep:
-        the bar fills to the top, wraps back to empty, and carries on, so a
-        multi-level gain reads as several level-ups rather than one jump.
+        Each level gained gets a sweep of its own: the bar fills to the top,
+        pauses, wraps back to empty and carries on, so a multi-level gain
+        reads as several level-ups rather than one jump.
+
+        Returns:
+            One ``(value, duration, from_empty, delay)`` tuple per sweep.
         """
+
+        def pace(distance: float) -> float:
+            """Time to travel `distance`, at a fixed rate with a floor."""
+            return max(
+                EXP_BAR_MIN_SWEEP_TIME, abs(distance) * EXP_BAR_SWEEP_TIME
+            )
+
+        sweeps: list[tuple[float, float, bool, float]] = []
+        for wrap in range(levels_gained):
+            # top up the bar for the level that was just completed...
+            from_empty = wrap > 0
+            distance = 1.0 if from_empty else 1.0 - start
+            sweeps.append(
+                (
+                    1.0,
+                    pace(distance),
+                    from_empty,
+                    EXP_BAR_FULL_HOLD if from_empty else 0.0,
+                )
+            )
+
+        # ...then fill in the progress made towards the level after it
+        wrapped = levels_gained > 0
+        distance = target if wrapped else target - start
+        sweeps.append(
+            (
+                target,
+                pace(distance),
+                wrapped,
+                EXP_BAR_FULL_HOLD if wrapped else 0.0,
+            )
+        )
+        return sweeps
+
+    def _pending_exp_sweeps(
+        self, monster: Monster
+    ) -> list[tuple[float, float, bool, float]]:
+        """
+        The sweeps ``animate_exp`` will play for the gain awaiting a monster.
+
+        Only valid before ``animate_exp`` runs: it consumes the pending levels
+        and moves the bar. Callers use it to schedule around the animation.
+        """
+        exp_bar = self.bars.get_exp_bar(monster)
+        return self.exp_bar_sweeps(
+            exp_bar.value,
+            monster.experience_progress_percent,
+            self.pending_level_ups.get(monster, 0),
+        )
+
+    def exp_animation_time(self, monster: Monster) -> float:
+        """How long ``animate_exp`` will take for a pending gain."""
+        return sum(
+            duration + delay
+            for _, duration, _, delay in self._pending_exp_sweeps(monster)
+        )
+
+    def exp_first_wrap_time(self, monster: Monster) -> float:
+        """
+        When the EXP bar will first reach the top, in seconds from the start
+        of the animation. That is the moment the new level should be shown.
+
+        Falls back to the whole animation length when no level was gained,
+        since then there is no wrap to line up with.
+        """
+        first_value, duration, _, delay = self._pending_exp_sweeps(monster)[0]
+        if first_value < 1.0:
+            return self.exp_animation_time(monster)
+        return delay + duration
+
+    def animate_exp(self, monster: Monster) -> None:
+        """Animate a monster's EXP bar up to its current progress."""
         exp_bar = self.bars.get_exp_bar(monster)
         target = monster.experience_progress_percent
         levels_gained = self.pending_level_ups.pop(monster, 0)
@@ -334,19 +419,21 @@ class CombatAnimations(Menu[None], ABC):
         def make_step(
             value: float,
             duration: float,
-            transition: str,
             from_empty: bool,
+            delay: float,
         ) -> Callable[[], Animation]:
             def step() -> Animation:
                 ani = self.animate(
                     exp_bar,
                     value=value,
                     duration=duration,
-                    transition=transition,
+                    # a steady fill is the easiest to follow; eased curves
+                    # put nearly all the travel in the first few frames
+                    transition="linear",
                     # restarting from 0 is what makes the bar wrap around;
                     # the delay holds it at full first, so the wrap is seen
                     initial=0.0 if from_empty else None,
-                    delay=0.4 if from_empty else 0.0,
+                    delay=delay,
                 )
                 ani.schedule(self.refresh_ui, ScheduleType.ON_UPDATE)
                 ani.schedule(self.refresh_ui, ScheduleType.ON_FINISH)
@@ -358,21 +445,14 @@ class CombatAnimations(Menu[None], ABC):
 
             return step
 
-        steps: list[Callable[[], Animation]] = []
-        for wrap in range(levels_gained):
-            # top up the bar for the level that was just completed...
-            steps.append(make_step(1.0, 0.5, "linear", from_empty=wrap > 0))
-        # ...then fill in the progress made towards the level after it
-        steps.append(
-            make_step(
-                target,
-                0.7,
-                "linear" if levels_gained else "out_quint",
-                from_empty=levels_gained > 0,
+        self.chain_animations(
+            *(
+                make_step(*sweep)
+                for sweep in self.exp_bar_sweeps(
+                    exp_bar.value, target, levels_gained
+                )
             )
         )
-
-        self.chain_animations(*steps)
 
     def animate_monster_leave(self, monster: Monster) -> None:
         sprite = self.sprite_map.get_sprite(monster)

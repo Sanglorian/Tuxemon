@@ -94,6 +94,13 @@ logger = logging.getLogger(__name__)
 # the other rather than on top of each other.
 MONSTER_ENTRY_STAGGER = 0.7
 
+# How long after a KO the EXP bar starts moving. The gap leaves room for the
+# faint animation and the "gained N experience" message to be read first.
+EXP_ANIMATION_DELAY = 2.5
+# Earliest a level-up summary may appear; it waits for the bar if the bar
+# takes longer than this (see _levelup_summary_delay).
+LEVELUP_SUMMARY_DELAY = 4.5
+
 
 EVENT_HANDLERS: dict[str, str] = {
     "monster_disappeared": "_on_monster_disappeared",
@@ -931,8 +938,15 @@ class CombatState(CombatAnimations):
                             diff=diff,
                             use_relative_position=True,
                         ),
-                        interval=4.5,
+                        # the summary covers the HUD, so let the EXP bar
+                        # finish wrapping round before it appears
+                        interval=self._levelup_summary_delay(data.winner),
                     )
+
+    def _levelup_summary_delay(self, winner: Monster) -> float:
+        """When to show a monster's level-up summary, in seconds from now."""
+        animation_end = EXP_ANIMATION_DELAY + self.exp_animation_time(winner)
+        return max(LEVELUP_SUMMARY_DELAY, animation_end + 0.4)
 
     def update_hud_and_level_up(
         self, winner: Monster, techniques: list[str]
@@ -952,7 +966,10 @@ class CombatState(CombatAnimations):
             owner = winner.get_owner()
             if owner.is_player:
                 # XP bar animation
-                self.task(partial(self.animate_exp, winner), interval=2.5)
+                self.task(
+                    partial(self.animate_exp, winner),
+                    interval=EXP_ANIMATION_DELAY,
+                )
 
                 # General UI refresh
                 self.task(self.refresh_ui, interval=3.0)
@@ -963,7 +980,10 @@ class CombatState(CombatAnimations):
                         partial(
                             self._update_hud_details, winner, hud, hud.player
                         ),
-                        interval=4.0,
+                        # on a level-up, let the number tick over exactly as
+                        # the bar tops out rather than at a fixed moment
+                        interval=EXP_ANIMATION_DELAY
+                        + self.exp_first_wrap_time(winner),
                     )
 
     def animate_party_status(self) -> None:

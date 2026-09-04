@@ -201,3 +201,57 @@ def test_draw_bars_resyncs_a_stale_exp_bar(combat_ui, graphics):
     )
 
     assert exp_bar.value == 0.6
+
+
+def _sweeps(start, target, levels):
+    from tuxemon.states.combat_animations import CombatAnimations
+
+    return CombatAnimations.exp_bar_sweeps(start, target, levels)
+
+
+def test_a_plain_gain_is_a_single_sweep():
+    ((value, duration, from_empty, delay),) = _sweeps(0.2, 0.6, 0)
+    assert (value, from_empty, delay) == (0.6, False, 0.0)
+    assert duration > 0
+
+
+@pytest.mark.parametrize(
+    "distance",
+    [
+        pytest.param(0.25, id="quarter_bar"),
+        pytest.param(0.5, id="half_bar"),
+        pytest.param(0.9, id="most_of_the_bar"),
+    ],
+)
+def test_the_bar_travels_at_a_steady_rate(distance):
+    """Twice the distance should take twice as long, not the same time."""
+    from tuxemon.states.combat_animations import EXP_BAR_SWEEP_TIME
+
+    ((_, duration, _, _),) = _sweeps(0.0, distance, 0)
+    assert duration == pytest.approx(distance * EXP_BAR_SWEEP_TIME)
+
+
+def test_a_tiny_gain_still_gets_a_visible_sweep():
+    from tuxemon.states.combat_animations import EXP_BAR_MIN_SWEEP_TIME
+
+    ((_, duration, _, _),) = _sweeps(0.5, 0.501, 0)
+    assert duration == EXP_BAR_MIN_SWEEP_TIME
+
+
+def test_a_level_up_tops_the_bar_out_then_wraps_round():
+    top, rest = _sweeps(0.8, 0.15, 1)
+
+    value, duration, from_empty, delay = top
+    assert value == 1.0
+    assert not from_empty and delay == 0.0
+
+    value, duration, from_empty, delay = rest
+    assert value == 0.15
+    assert from_empty  # restarts from empty rather than draining down
+    assert delay > 0  # pauses at the top so the wrap is seen
+
+
+def test_each_level_gained_gets_its_own_sweep():
+    sweeps = _sweeps(0.8, 0.3, 3)
+    assert [value for value, _, _, _ in sweeps] == [1.0, 1.0, 1.0, 0.3]
+    assert all(delay > 0 for _, _, _, delay in sweeps[1:])
